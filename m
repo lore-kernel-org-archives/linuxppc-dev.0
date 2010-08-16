@@ -1,17 +1,16 @@
 Return-Path: <micha@neli.hopto.org>
 Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id 79769B6F0E
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:18:40 +1000 (EST)
-Message-ID: <4C692C9D.6040100@neli.hopto.org>
-Date: Mon, 16 Aug 2010 14:18:37 +0200
+	by ozlabs.org (Postfix) with ESMTP id 606D0B70A7
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:21:37 +1000 (EST)
+Message-ID: <4C692D4D.1030401@neli.hopto.org>
+Date: Mon, 16 Aug 2010 14:21:33 +0200
 From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH 4/9] RapidIO: Add relation links between RIO device
-	structures
+Subject: Re: [PATCH 5/9] RapidIO: Add default handler for error_stopped state
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-5-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1281712686-31308-5-git-send-email-alexandre.bounine@idt.com>
+	<1281712686-31308-6-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1281712686-31308-6-git-send-email-alexandre.bounine@idt.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
@@ -25,23 +24,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Alexandre Bounine wrote:
-> Create back and forward links between RIO devices. These links are intended for
-> use by error management and hot-plug extensions.
+> +
+> +	if (err_status & RIO_PORT_N_ERR_STS_PW_OUT_ES) {
+> +		pr_debug("RIO_EM: servicing Output Error-Stopped state\n");
+> +		/*
+> +		 * Send a Link-Request/Input-Status control symbol
+> +		 */
+> +
+> +		/* Read from link maintenance response register
+> +		 * to clear valid bit */
+> +		rio_mport_read_config_32(mport, destid, hopcount,
+> +			rdev->phys_efptr + RIO_PORT_N_MNT_RSP_CSR(pnum),
+> +			&regval);
+> +		udelay(50);
 
-As RapidIO is a switched network, the concept of 'previous' and 'next' 
-devices is invalid. Perhaps it's just the way they were 
-discovered/enumerated, but that does not matter any more at runtime. Or 
-at least, should not matter.
-
-> @@ -237,6 +241,7 @@ struct rio_switch {
->  	u16 hopcount;
->  	u16 destid;
->  	u8  inport;
-> +	u8  nports;
->  	u8 *route_table;
->  	u32 port_ok;
-
-This can be extracted from the swpinfo field (which you removed in 
-another patch)?
+Perhaps this whole part of operating the MNT_RSP registers (sending 
+link-request symbol is the only useful action IIRC?) can be put in a 
+separate function for readability.
 
 Micha
