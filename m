@@ -1,15 +1,14 @@
-Return-Path: <hellohello008@163.com>
-Received: from m50-135.163.com (m50-135.163.com [123.125.50.135])
-	by ozlabs.org (Postfix) with ESMTP id C40ABB6F11
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 19:59:31 +1000 (EST)
-Message-ID: <00e901cb3d27$97f473b0$9d1cbcc0@sfdomain.com>
-From: "hellohello" <hellohello008@163.com>
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-Subject: JFFS2 question : Mounting /dev/mtdblock1 failed , NOR flash 
-Date: Mon, 16 Aug 2010 17:44:16 +0800
+Return-Path: <richardcochran@gmail.com>
+Date: Mon, 16 Aug 2010 13:17:05 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH v5 0/5] ptp: IEEE 1588 clock support
+Message-ID: <cover.1281956490.git.richard.cochran@omicron.at>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_00E6_01CB3D6A.A5D15BE0"
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Rodolfo Giometti <giometti@linux.it>,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,110 +18,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Now and again there has been talk on the netdev list of adding PTP
+support into Linux. One part of the picture is already in place, the
+SO_TIMESTAMPING API for hardware time stamping. This patch set offers
+the missing second part needed for complete IEEE 1588 support.
 
-------=_NextPart_000_00E6_01CB3D6A.A5D15BE0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+* Why all the CCs?
 
-DQoNCg0KSSBoYXZlIG9uZSBOT1IgZmxhc2ijrCBzZWN0b3Igc2l6ZSBpcyAxMjhrLiANCkkgd2Fu
-dCB0byBtYWtlIGpmZnMyIGZpbGVzeXN0ZW0gb24gaXQgdG8gc3RvcmUgZGF0YS4NCkkgaGF2ZSB1
-c2VkIGZsYXNoX2VyYXNlYWxsIC1qIHRvIGZvcm1hdCBpdCBhcyBqZmZzMi4NCkJ1dCBJIG1lZXQg
-dGhlIHByb2JsZW0gd2hlbiBtb3VudCB0aGUgL2Rldi9tdGRibG9jazEuDQpUaGFua3MgZm9yIGFu
-eSBwb2ludGVycyBvciBpZGVhcy4NCg0KLXNoLTIuMDViIyBtb3VudCAtdCBqZmZzMiAvZGV2L210
-ZGJsb2NrMSAvbW50L2pmZnMgDQpDb3dhcmRseSByZWZ1c2luZyB0byBlcmFzZSBibG9ja3Mgb24g
-ZmlsZXN5c3RlbSB3aXRoIG5vIHZhbGlkIEpGRlMyIG5vZGVzDQplbXB0eV9ibG9ja3MgMCwgYmFk
-X2Jsb2NrcyAwLCBjLT5ucl9ibG9ja3MgNDINCm1vdW50OiBNb3VudGluZyAvZGV2L210ZGJsb2Nr
-MSBvbiAvbW50L2pmZnMgZmFpbGVkOiBJbnB1dC9vdXRwdXQgZXJyb3INCg0KDQoNCkkgaGF2ZSB1
-c2VkIG10ZF9kZWJ1ZyBjbWQgdG8gdGVzdCwgYW5kIHJlc3VsdCBpcyByaWdodDoNCg0KIyBjYXQg
-L3Byb2MvbXRkDQpkZXY6ICAgIHNpemUgICBlcmFzZXNpemUgIG5hbWUNCm10ZDE6IDAwNTQwMDAw
-IDAwMDIwMDAwICJqZmZzIg0KbXRkMjogMDAxODAwMDAgMDAwMjAwMDAgIm90aGVycyINCg0KIyBt
-dGRfZGVidWcgZXJhc2UgL2Rldi9tdGQxIDB4MCAweDIwMDAwIA0KTVREX29wZW4NCk1URF9pb2N0
-bA0KRXJhc2VkIDEzMTA3MiBieXRlcyBmcm9tIGFkZHJlc3MgMHgwMDAwMDAwMCBpbiBmbGFzaA0K
-TVREX2Nsb3NlDQojIGRkIGlmPS9kZXYvemVybyBvZj1maWxlLmltZyBicz0xayBjb3VudD0xMjgN
-CjEyOCswIHJlY29yZHMgaW4NCjEyOCswIHJlY29yZHMgb3V0DQojIG10ZF9kZWJ1ZyB3cml0ZSAv
-ZGV2L210ZGJsb2NrMSAweDAgMHgyMDAwMCBmaWxlLmltZw0KQ29waWVkIDEzMTA3MiBieXRlcyBm
-cm9tIGZpbGUuaW1nIHRvIGFkZHJlc3MgMHgwMDAwMDAwMCBpbiBmbGFzaA0KIyBtdGRfZGVidWcg
-cmVhZCAvZGV2L210ZGJsb2NrMSAweDAgMHgyMDAwMCBmaWxlX3JkLmltZw0KQ29waWVkIDEzMTA3
-MiBieXRlcyBmcm9tIGFkZHJlc3MgMHgwMDAwMDAwMCBpbiBmbGFzaCB0byBmaWxlX3JkLmltZw0K
-IyBjbXAgLWwgZmlsZS5pbWcgZmlsZV9yZC5pbWcNCiMgDQoNCg0KDQpIZXJlIGlzIHRoZSBkZXRh
-aWwgZXJyb3IgaW5mbzoNCg0KDQoNCi1zaC0yLjA1YiMgZmxhc2hfZXJhc2VhbGwgLWogL2Rldi9t
-dGQxDQpNVERfb3Blbg0KTVREX2lvY3RsDQpNVERfaW9jdGwNCkVyYXNpbmcgMTI4IEtpYnl0ZSBA
-IDAgLS0gIDAgJSBNVERfaW9jdGwNCmNvbXBsZXRlLk1URF93cml0ZQ0KRXJhc2lNVERfaW9jdGxl
-biBhdCAwLg0KbmcgMTI4IEtpYnl0ZSBAIDIwMDAwIC0tICAyICUgY29tcGxldGUuTVREX3dyaXRl
-DQpFTVREX2lvY3Rscml0dGVuIGF0IDIwMDAwLg0KcmFzaW5nIDEyOCBLaWJ5dGUgQCA0MDAwMCAt
-LSAgNCAlIGNvbXBsZXRlLk1URF93cml0ZQ0KRU1URF9pb2N0bHJpdHRlbiBhdCA0MDAwMC4NCi4u
-LiAuLi4NCi4uLiAuLi4NCk1URF9pb2N0bHdyaXR0ZW4gYXQgNTAwMDAwLg0KRXJhc2luZyAxMjgg
-S2lieXRlIEAgNTIwMDAwIC0tIDk3ICUgY29tcGxldGUuTVREX3dyaXRlDQpNVERfY2xvc2V3cml0
-dGVuIGF0IDUyMDAwMC4NCkVyYXNpbmcgMTI4IEtpYnl0ZSBAIDU0MDAwMCAtLSAxMDAlIGNvbXBs
-ZXRlLg0KDQoNCg0KLXNoLTIuMDViIyBtb3VudCAtdCBqZmZzMiAvZGV2L210ZGJsb2NrMSAvbW50
-L2pmZnMgDQpDb3dhcmRseSByZWZ1c2luZyB0byBlcmFzZSBibG9ja3Mgb24gZmlsZXN5c3RlbSB3
-aXRoIG5vIHZhbGlkIEpGRlMyIG5vZGVzDQplbXB0eV9ibG9ja3MgMCwgYmFkX2Jsb2NrcyAwLCBj
-LT5ucl9ibG9ja3MgNDINCm1vdW50OiBNb3VudGluZyAvZGV2L210ZGJsb2NrMSBvbiAvbW50L2pm
-ZnMgZmFpbGVkOiBJbnB1dC9vdXRwdXQgZXJyb3I=
+  1. IMHO, the patches should go through netdev.
+  2. A reviewer on netdev said, this should appear on lkml.
+  3. One driver is for PowerPC, and adds device tree stuff.
+  4. One driver is for the ARM Xscale IXP465.
 
-------=_NextPart_000_00E6_01CB3D6A.A5D15BE0
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+* Open Issues:
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjM2OTgiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
-Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj48QlI+PC9ESVY+
-DQo8RElWPjxGT05UIHNpemU9Mj4NCjxESVY+PEZPTlQgc2l6ZT0yPkkmbmJzcDtoYXZlIG9uZSZu
-YnNwO05PUiBmbGFzaKOsIHNlY3RvciBzaXplIGlzIDEyOGsuIA0KPC9GT05UPjwvRElWPg0KPERJ
-Vj5JIHdhbnQgdG8gbWFrZSBqZmZzMiBmaWxlc3lzdGVtIG9uIGl0IHRvIHN0b3JlIGRhdGEuPC9E
-SVY+DQo8RElWPkkgaGF2ZSB1c2VkIGZsYXNoX2VyYXNlYWxsIC1qIHRvIGZvcm1hdCBpdCBhcyBq
-ZmZzMi48L0RJVj4NCjxESVY+QnV0IEkgbWVldCB0aGUgcHJvYmxlbSB3aGVuIG1vdW50IHRoZSAv
-ZGV2L210ZGJsb2NrMS48L0RJVj4NCjxESVY+VGhhbmtzIGZvciBhbnkgcG9pbnRlcnMgb3IgaWRl
-YXMuPC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPi1z
-aC0yLjA1YiMgbW91bnQgLXQgamZmczIgL2Rldi9tdGRibG9jazEgL21udC9qZmZzIA0KPEJSPkNv
-d2FyZGx5IHJlZnVzaW5nIHRvIGVyYXNlIGJsb2NrcyBvbiBmaWxlc3lzdGVtIHdpdGggbm8gdmFs
-aWQgSkZGUzIgDQpub2RlczxCUj5lbXB0eV9ibG9ja3MgMCwgYmFkX2Jsb2NrcyAwLCBjLSZndDtu
-cl9ibG9ja3MgNDI8QlI+bW91bnQ6IE1vdW50aW5nIA0KL2Rldi9tdGRibG9jazEgb24gL21udC9q
-ZmZzIGZhaWxlZDogSW5wdXQvb3V0cHV0IGVycm9yPC9GT05UPjwvRElWPjwvRElWPg0KPERJVj4m
-bmJzcDs8L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj5J
-IGhhdmUgdXNlZCBtdGRfZGVidWcgY21kIHRvIHRlc3QsIGFuZCByZXN1bHQgaXMgcmlnaHQ6PEZP
-TlQgDQpzaXplPTI+PEJSPjwvRk9OVD48L0RJVj4NCjxESVY+DQo8RElWPg0KPERJVj48Rk9OVCBz
-aXplPTI+PC9GT05UPjwvRElWPjxGT05UIHNpemU9Mj48Rk9OVCBzaXplPTI+IyBjYXQgDQovcHJv
-Yy9tdGQ8QlI+ZGV2OiZuYnNwOyZuYnNwOyZuYnNwOyBzaXplJm5ic3A7Jm5ic3A7IGVyYXNlc2l6
-ZSZuYnNwOyANCm5hbWU8L0ZPTlQ+PC9ESVY+DQo8RElWPg0KPERJVj48Rk9OVCBzaXplPTI+bXRk
-MTogMDA1NDAwMDAgMDAwMjAwMDAgImpmZnMiPEJSPm10ZDI6IDAwMTgwMDAwIDAwMDIwMDAwIA0K
-Im90aGVycyI8L0ZPTlQ+PC9ESVY+PC9GT05UPjwvRElWPjwvRElWPg0KPERJVj4mbmJzcDs8L0RJ
-Vj4NCjxESVY+IyBtdGRfZGVidWcgZXJhc2UgL2Rldi9tdGQxIDB4MCAweDIwMDAwIDxCUj5NVERf
-b3BlbjxCUj5NVERfaW9jdGw8QlI+RXJhc2VkIA0KMTMxMDcyIGJ5dGVzIGZyb20gYWRkcmVzcyAw
-eDAwMDAwMDAwIGluIGZsYXNoPEJSPk1URF9jbG9zZTxCUj4jIGRkIGlmPS9kZXYvemVybyANCm9m
-PWZpbGUuaW1nIGJzPTFrIGNvdW50PTEyODxCUj4xMjgrMCByZWNvcmRzIGluPEJSPjEyOCswIHJl
-Y29yZHMgb3V0PEJSPiMgDQptdGRfZGVidWcgd3JpdGUgL2Rldi9tdGRibG9jazEgMHgwIDB4MjAw
-MDAgZmlsZS5pbWc8QlI+Q29waWVkIDEzMTA3MiBieXRlcyBmcm9tIA0KZmlsZS5pbWcgdG8gYWRk
-cmVzcyAweDAwMDAwMDAwIGluIGZsYXNoPEJSPiMgbXRkX2RlYnVnIHJlYWQgL2Rldi9tdGRibG9j
-azEgMHgwIA0KMHgyMDAwMCBmaWxlX3JkLmltZzxCUj5Db3BpZWQgMTMxMDcyIGJ5dGVzIGZyb20g
-YWRkcmVzcyAweDAwMDAwMDAwIGluIGZsYXNoIHRvIA0KZmlsZV9yZC5pbWc8QlI+IyBjbXAgLWwg
-ZmlsZS5pbWcgZmlsZV9yZC5pbWc8QlI+IyA8L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElW
-PiZuYnNwOzwvRElWPg0KPERJVj4mbmJzcDs8L0RJVj4NCjxESVY+SGVyZSBpcyB0aGUgZGV0YWls
-IGVycm9yIGluZm86PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+
-DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9
-Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj4tc2gtMi4wNWIjIGZsYXNo
-X2VyYXNlYWxsIC1qIA0KL2Rldi9tdGQxPEJSPk1URF9vcGVuPEJSPk1URF9pb2N0bDxCUj5NVERf
-aW9jdGw8QlI+RXJhc2luZyAxMjggS2lieXRlIEAgMCANCi0tJm5ic3A7IDAgJSBNVERfaW9jdGw8
-QlI+Y29tcGxldGUuTVREX3dyaXRlPEJSPkVyYXNpTVREX2lvY3RsZW4gYXQgMC48QlI+bmcgMTI4
-IA0KS2lieXRlIEAgMjAwMDAgLS0mbmJzcDsgMiAlIGNvbXBsZXRlLk1URF93cml0ZTxCUj5FTVRE
-X2lvY3Rscml0dGVuIGF0IA0KMjAwMDAuPEJSPnJhc2luZyAxMjggS2lieXRlIEAgNDAwMDAgLS0m
-bmJzcDsgNCAlIA0KY29tcGxldGUuTVREX3dyaXRlPEJSPkVNVERfaW9jdGxyaXR0ZW4gYXQgNDAw
-MDAuPEJSPi4uLiAuLi48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj4uLi4gLi4uPEJS
-Pk1URF9pb2N0bHdyaXR0ZW4gYXQgNTAwMDAwLjxCUj5FcmFzaW5nIDEyOCBLaWJ5dGUgQCANCjUy
-MDAwMCAtLSA5NyAlIGNvbXBsZXRlLk1URF93cml0ZTxCUj5NVERfY2xvc2V3cml0dGVuIGF0IDUy
-MDAwMC48QlI+RXJhc2luZyAxMjggDQpLaWJ5dGUgQCA1NDAwMDAgLS0gMTAwJSBjb21wbGV0ZS48
-L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElW
-PjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZP
-TlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj4tc2gtMi4wNWIjIG1vdW50IC10IGpm
-ZnMyIC9kZXYvbXRkYmxvY2sxIC9tbnQvamZmcyANCjxCUj5Db3dhcmRseSByZWZ1c2luZyB0byBl
-cmFzZSBibG9ja3Mgb24gZmlsZXN5c3RlbSB3aXRoIG5vIHZhbGlkIEpGRlMyIA0Kbm9kZXM8QlI+
-ZW1wdHlfYmxvY2tzIDAsIGJhZF9ibG9ja3MgMCwgYy0mZ3Q7bnJfYmxvY2tzIDQyPEJSPm1vdW50
-OiBNb3VudGluZyANCi9kZXYvbXRkYmxvY2sxIG9uIC9tbnQvamZmcyBmYWlsZWQ6IElucHV0L291
-dHB1dCANCmVycm9yPC9GT05UPjwvRElWPjwvRk9OVD48L0RJVj48L0JPRFk+PC9IVE1MPg0K
+** DP83640
+   In order to make this work, one line must be added into the MAC
+   driver. If you have the DP83640 and want to try the driver, you
+   need to add this one line to your MAC driver: In the
+   .ndo_start_xmit function, add skb_tx_timestamp(skb).
 
-------=_NextPart_000_00E6_01CB3D6A.A5D15BE0--
+** IXP465
+   I do not know how to correctly choose the timestamp "channel" based
+   on the port identifier:
+
++#define PORT2CHANNEL(p)		1
++/*
++ * PHYSICAL_ID(p->id) ?
++ * TODO - Figure out correct mapping.
++ */
+
+   Krzysztof, can you help?
+
+* PTP Patch ChangeLog
+** v5
+*** general
+   - Added a hook into the PPS subsystem
+   - Corrected max_adj in all drivers
+   - Removed unnecessary sysfs stuff
+   - Replaced spinlock with mutex in class driver
+*** gianfar
+   - Added PPS support
+   - Changed underscore to minus in device tree bindings
+   - Use of_iomap instead of ioremap
+*** ixp465
+   - Added an external trigger event
+   - Corrected in_progress logic
+*** phyter
+   - Added an external trigger event
+   - Added support for phy status frames
+
+** v4
+*** general
+   - Added a clock driver for the National Semiconductor PHYTER.
+   - Added a clock driver for the Intel IXP465.
+   - Made more stylish according to checkstyle.pl.
+*** gianfar
+   - Replace device_type and model with compatible string ("fsl,etsec-ptp")
+   - Register only one interrupt, since others are superfluous.
+   - Combine ptp clock instance with private variable structure.
+   - ISR now returns NONE or HANDLED properly.
+   - Print error message if something is missing from the device nodes.
+
+** v3
+*** general
+   - Added documentation on writing clock drivers.
+   - Added the ioctls for the ancillary clock features.
+   - Changed wrong subsys_initcall() to module_init() in clock drivers.
+   - Removed the (too coarse) character device mutex.
+   - Setting the clock now requires CAP_SYS_TIME.
+*** gianfar
+   - Added alarm feature.
+   - Added device tree node binding description.
+   - Added fine grain locking of the clock registers.
+   - Added the external time stamp feature.
+   - Added white space for better style.
+   - Coverted base+offset to structure pointers for register access.
+   - When removing the driver, we now disable all PTP functions.
+
+** v2
+   - Changed clock list from a static array into a dynamic list. Also,
+     use a bitmap to manage the clock's minor numbers.
+   - Replaced character device semaphore with a mutex.
+   - Drop .ko from module names in Kbuild help.
+   - Replace deprecated unifdef-y with header-y for user space header file.
+   - Added links to both of the ptpd patches on sourceforge.
+   - Gianfar driver now gets parameters from device tree.
+   - Added API documentation to Documentation/ptp/ptp.txt
+
+
+Richard Cochran (5):
+  ptp: Added a brand new class driver for ptp clocks.
+  ptp: Added a clock that uses the Linux system time.
+  ptp: Added a clock that uses the eTSEC found on the MPC85xx.
+  ptp: Added a clock driver for the IXP46x.
+  ptp: Added a clock driver for the National Semiconductor PHYTER.
+
+ Documentation/powerpc/dts-bindings/fsl/tsec.txt |   57 ++
+ Documentation/ptp/ptp.txt                       |   95 +++
+ Documentation/ptp/testptp.c                     |  306 ++++++++
+ Documentation/ptp/testptp.mk                    |   33 +
+ arch/arm/mach-ixp4xx/include/mach/ixp46x_ts.h   |   78 ++
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |   14 +
+ arch/powerpc/boot/dts/mpc8572ds.dts             |   14 +
+ arch/powerpc/boot/dts/p2020ds.dts               |   14 +
+ arch/powerpc/boot/dts/p2020rdb.dts              |   14 +
+ drivers/Kconfig                                 |    2 +
+ drivers/Makefile                                |    1 +
+ drivers/net/Makefile                            |    1 +
+ drivers/net/arm/ixp4xx_eth.c                    |  191 +++++
+ drivers/net/gianfar_ptp.c                       |  527 +++++++++++++
+ drivers/net/gianfar_ptp_reg.h                   |  113 +++
+ drivers/net/phy/Kconfig                         |   29 +
+ drivers/net/phy/Makefile                        |    1 +
+ drivers/net/phy/dp83640.c                       |  904 +++++++++++++++++++++++
+ drivers/net/phy/dp83640_reg.h                   |  261 +++++++
+ drivers/ptp/Kconfig                             |   65 ++
+ drivers/ptp/Makefile                            |    7 +
+ drivers/ptp/ptp_clock.c                         |  514 +++++++++++++
+ drivers/ptp/ptp_ixp46x.c                        |  359 +++++++++
+ drivers/ptp/ptp_linux.c                         |  136 ++++
+ include/linux/Kbuild                            |    1 +
+ include/linux/ptp_clock.h                       |   79 ++
+ include/linux/ptp_clock_kernel.h                |  137 ++++
+ kernel/time/ntp.c                               |    2 +
+ 28 files changed, 3955 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ptp/ptp.txt
+ create mode 100644 Documentation/ptp/testptp.c
+ create mode 100644 Documentation/ptp/testptp.mk
+ create mode 100644 arch/arm/mach-ixp4xx/include/mach/ixp46x_ts.h
+ create mode 100644 drivers/net/gianfar_ptp.c
+ create mode 100644 drivers/net/gianfar_ptp_reg.h
+ create mode 100644 drivers/net/phy/dp83640.c
+ create mode 100644 drivers/net/phy/dp83640_reg.h
+ create mode 100644 drivers/ptp/Kconfig
+ create mode 100644 drivers/ptp/Makefile
+ create mode 100644 drivers/ptp/ptp_clock.c
+ create mode 100644 drivers/ptp/ptp_ixp46x.c
+ create mode 100644 drivers/ptp/ptp_linux.c
+ create mode 100644 include/linux/ptp_clock.h
+ create mode 100644 include/linux/ptp_clock_kernel.h
