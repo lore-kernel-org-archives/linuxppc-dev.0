@@ -1,19 +1,19 @@
 Return-Path: <micha@neli.hopto.org>
 Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id CE76AB70AE
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 17:12:41 +1000 (EST)
-Message-ID: <4C6A3665.7030207@neli.hopto.org>
-Date: Tue, 17 Aug 2010 09:12:37 +0200
+	by ozlabs.org (Postfix) with ESMTP id 6B685B6F14
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 17:18:15 +1000 (EST)
+Message-ID: <4C6A37B3.70605@neli.hopto.org>
+Date: Tue, 17 Aug 2010 09:18:11 +0200
 From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
 To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH 2/9] RapidIO, powerpc/85xx: modify RIO port-write interrupt
-	handler
+Subject: Re: [PATCH 6/9] RapidIO: Add switch-specific sysfs initialization
+	callback
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-3-git-send-email-alexandre.bounine@idt.com>
-	<4C692B42.9050407@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552011D5F94@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D5F94@CORPEXCH1.na.ads.idt.com>
+	<1281712686-31308-7-git-send-email-alexandre.bounine@idt.com>
+	<4C692E4C.4040300@neli.hopto.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011D5FFC@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D5FFC@CORPEXCH1.na.ads.idt.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
@@ -27,13 +27,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Bounine, Alexandre wrote:
-> capable to receive and keep only one PW message. Therefore, I copy it
-> into the driver's FIFO and re-enable HW Rx queue (it is called queue but
-> can accept only one entry) ASAP. I have a test setup that is capable
-> generate multiple PW messages and see many messages discarded by PW
-> controller because of this single-entry HW queue.
+>> Why not make a sw_sysfs_create and sw_sysfs_remove? Is better for
+>> readability. Now you call 'sw_sysfs(dev, 0)' or 'sw_sysfs(dev, 1)';
+> 
+> I just do not want to have an extra member here. Not every switch will
+> require own sysfs attributes, but every switch will be presented by a
+> data structure. Based on its intended use I do not see any problem here.
 
-Primarily due to the single entry queue, the order of checking is 
-probably insignificant? :-) Anyway, I don't mind changing the order.
+It's not problematic, but personally I find function calls that pass 0 
+or 1 as an argument hard to read. Likewise for boolean parameters. An 
+alternative would be to have defines SW_SYSFS_CREATE etc. It's a minor item.
 
 Micha
