@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0F34B730F
+	by ozlabs.org (Postfix) with ESMTPS id D0A0DB730E
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 17 Aug 2010 23:58:17 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 26/26] KVM: PPC: allow ppc440gp to pass the compatibility check
-Date: Tue, 17 Aug 2010 15:58:01 +0200
-Message-Id: <1282053481-18787-27-git-send-email-agraf@suse.de>
+Subject: [PATCH 24/26] KVM: PPC: initialize IVORs in addition to IVPR
+Date: Tue, 17 Aug 2010 15:57:59 +0200
+Message-Id: <1282053481-18787-25-git-send-email-agraf@suse.de>
 In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
 References: <1282053481-18787-1-git-send-email-agraf@suse.de>
 Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
@@ -26,37 +26,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hollis Blanchard <hollis_blanchard@mentor.com>
 
-Match only the first part of cur_cpu_spec->platform.
-
-440GP (the first 440 processor) is identified by the string "ppc440gp", while
-all later 440 processors use simply "ppc440".
+Developers can now tell at a glace the exact type of the premature interrupt,
+instead of just knowing that there was some premature interrupt.
 
 Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/44x.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/kvm/booke.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index e7b1f3f..74d0e74 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -43,7 +43,7 @@ int kvmppc_core_check_processor_compat(void)
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index c604277..835f6d0 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -497,15 +497,19 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ /* Initial guest state: 16MB mapping 0 -> 0, PC = 0, MSR = 0, R1 = 16MB */
+ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
  {
- 	int r;
++	int i;
++
+ 	vcpu->arch.pc = 0;
+ 	vcpu->arch.shared->msr = 0;
+ 	kvmppc_set_gpr(vcpu, 1, (16<<20) - 8); /* -8 for the callee-save LR slot */
  
--	if (strcmp(cur_cpu_spec->platform, "ppc440") == 0)
-+	if (strncmp(cur_cpu_spec->platform, "ppc440", 6) == 0)
- 		r = 0;
- 	else
- 		r = -ENOTSUPP;
-@@ -72,6 +72,7 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
- 	/* Since the guest can directly access the timebase, it must know the
- 	 * real timebase frequency. Accordingly, it must see the state of
- 	 * CCR1[TCS]. */
-+	/* XXX CCR1 doesn't exist on all 440 SoCs. */
- 	vcpu->arch.ccr1 = mfspr(SPRN_CCR1);
+ 	vcpu->arch.shadow_pid = 1;
  
- 	for (i = 0; i < ARRAY_SIZE(vcpu_44x->shadow_refs); i++)
+-	/* Eye-catching number so we know if the guest takes an interrupt
+-	 * before it's programmed its own IVPR. */
++	/* Eye-catching numbers so we know if the guest takes an interrupt
++	 * before it's programmed its own IVPR/IVORs. */
+ 	vcpu->arch.ivpr = 0x55550000;
++	for (i = 0; i < BOOKE_IRQPRIO_MAX; i++)
++		vcpu->arch.ivor[i] = 0x7700 | i * 4;
+ 
+ 	kvmppc_init_timing_stats(vcpu);
+ 
 -- 
 1.6.0.2
