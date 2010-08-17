@@ -1,13 +1,15 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 3EF50B70DC
+	by ozlabs.org (Postfix) with ESMTP id 3A02FB6F0D
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 17 Aug 2010 23:58:05 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 00/26] KVM: PPC: Mid-August patch queue
-Date: Tue, 17 Aug 2010 15:57:35 +0200
-Message-Id: <1282053481-18787-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 01/26] KVM: PPC: Move EXIT_DEBUG partially to tracepoints
+Date: Tue, 17 Aug 2010 15:57:36 +0200
+Message-Id: <1282053481-18787-2-git-send-email-agraf@suse.de>
+In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
+References: <1282053481-18787-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,80 +21,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Howdy,
+We have a debug printk on every exit that is usually #ifdef'ed out. Using
+tracepoints makes a lot more sense here though, as they can be dynamically
+enabled.
 
-This is my local patch queue with stuff that has accumulated over the last
-weeks on KVM for PPC with some last minute fixes, speedups and debugging help
-that I needed for the KVM Forum ;-).
+This patch converts the most commonly used debug printks of EXIT_DEBUG to
+tracepoints.
 
-The highlights of this set are:
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kvm/book3s.c |   26 ++++----------------------
+ arch/powerpc/kvm/trace.h  |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+), 22 deletions(-)
 
-  - Converted most important debug points to tracepoints
-  - Flush less PTEs (speedup)
-  - Go back to our own hash (less duplicates)
-  - Make SRs guest settable (speedup for 32 bit guests)
-  - Remove r30/r31 restrictions from PV hooks (speedup!)
-  - Fix random breakages
-  - Fix random guest stalls
-  - 440GP host support (Thanks Hollis!)
-
-Keep in mind that this is the first version that is stable on PPC32 hosts.
-All versions prior to this could occupy otherwise used segment entries and
-thus crash your machine :-).
-
-After finally meeting Avi again, we also agreed to give pulls a try. So
-here we go - this is my tree online:
-
-    git://github.com/agraf/linux-2.6.git kvm-ppc-next
-
-
-Have fun with more accurate, faster and less buggy KVM on PowerPC!
-
-
-Alexander Graf (23):
-  KVM: PPC: Move EXIT_DEBUG partially to tracepoints
-  KVM: PPC: Move book3s_64 mmu map debug print to trace point
-  KVM: PPC: Add tracepoint for generic mmu map
-  KVM: PPC: Move pte invalidate debug code to tracepoint
-  KVM: PPC: Fix sid map search after flush
-  KVM: PPC: Add tracepoints for generic spte flushes
-  KVM: PPC: Preload magic page when in kernel mode
-  KVM: PPC: Don't flush PTEs on NX/RO hit
-  KVM: PPC: Make invalidation code more reliable
-  KVM: PPC: Move slb debugging to tracepoints
-  KVM: PPC: Revert "KVM: PPC: Use kernel hash function"
-  KVM: PPC: Remove unused define
-  KVM: PPC: Add feature bitmap for magic page
-  KVM: PPC: Move BAT handling code into spr handler
-  KVM: PPC: Interpret SR registers on demand
-  KVM: PPC: Put segment registers in shared page
-  KVM: PPC: Add mtsrin PV code
-  KVM: PPC: Make PV mtmsr work with r30 and r31
-  KVM: PPC: Update int_pending also on dequeue
-  KVM: PPC: Make PV mtmsrd L=1 work with r30 and r31
-  KVM: PPC: Force enable nap on KVM
-  KVM: PPC: Implement correct SID mapping on Book3s_32
-  KVM: PPC: Don't put MSR_POW in MSR
-
-Hollis Blanchard (3):
-  KVM: PPC: initialize IVORs in addition to IVPR
-  KVM: PPC: fix compilation of "dump tlbs" debug function
-  KVM: PPC: allow ppc440gp to pass the compatibility check
-
- arch/powerpc/include/asm/kvm_book3s.h |   25 ++--
- arch/powerpc/include/asm/kvm_para.h   |    3 +
- arch/powerpc/kernel/asm-offsets.c     |    1 +
- arch/powerpc/kernel/kvm.c             |  144 ++++++++++++++++++---
- arch/powerpc/kernel/kvm_emul.S        |   75 +++++++++--
- arch/powerpc/kvm/44x.c                |    3 +-
- arch/powerpc/kvm/44x_tlb.c            |    1 +
- arch/powerpc/kvm/book3s.c             |   54 ++++----
- arch/powerpc/kvm/book3s_32_mmu.c      |   83 +++++++------
- arch/powerpc/kvm/book3s_32_mmu_host.c |   67 ++++++----
- arch/powerpc/kvm/book3s_64_mmu_host.c |   59 +++------
- arch/powerpc/kvm/book3s_emulate.c     |   48 +++-----
- arch/powerpc/kvm/book3s_mmu_hpte.c    |   38 ++----
- arch/powerpc/kvm/booke.c              |    8 +-
- arch/powerpc/kvm/powerpc.c            |    5 +-
- arch/powerpc/kvm/trace.h              |  230 +++++++++++++++++++++++++++++++++
- 16 files changed, 614 insertions(+), 230 deletions(-)
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index eee97b5..f8b9aab 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -17,6 +17,7 @@
+ #include <linux/kvm_host.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include "trace.h"
+ 
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+@@ -35,7 +36,6 @@
+ #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
+ 
+ /* #define EXIT_DEBUG */
+-/* #define EXIT_DEBUG_SIMPLE */
+ /* #define DEBUG_EXT */
+ 
+ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
+@@ -105,14 +105,6 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ 	kvmppc_giveup_ext(vcpu, MSR_VSX);
+ }
+ 
+-#if defined(EXIT_DEBUG)
+-static u32 kvmppc_get_dec(struct kvm_vcpu *vcpu)
+-{
+-	u64 jd = mftb() - vcpu->arch.dec_jiffies;
+-	return vcpu->arch.dec - jd;
+-}
+-#endif
+-
+ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
+ {
+ 	ulong smsr = vcpu->arch.shared->msr;
+@@ -848,16 +840,8 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	run->exit_reason = KVM_EXIT_UNKNOWN;
+ 	run->ready_for_interrupt_injection = 1;
+-#ifdef EXIT_DEBUG
+-	printk(KERN_EMERG "exit_nr=0x%x | pc=0x%lx | dar=0x%lx | dec=0x%x | msr=0x%lx\n",
+-		exit_nr, kvmppc_get_pc(vcpu), kvmppc_get_fault_dar(vcpu),
+-		kvmppc_get_dec(vcpu), to_svcpu(vcpu)->shadow_srr1);
+-#elif defined (EXIT_DEBUG_SIMPLE)
+-	if ((exit_nr != 0x900) && (exit_nr != 0x500))
+-		printk(KERN_EMERG "exit_nr=0x%x | pc=0x%lx | dar=0x%lx | msr=0x%lx\n",
+-			exit_nr, kvmppc_get_pc(vcpu), kvmppc_get_fault_dar(vcpu),
+-			vcpu->arch.shared->msr);
+-#endif
++
++	trace_kvm_book3s_exit(exit_nr, vcpu);
+ 	kvm_resched(vcpu);
+ 	switch (exit_nr) {
+ 	case BOOK3S_INTERRUPT_INST_STORAGE:
+@@ -1089,9 +1073,7 @@ program_interrupt:
+ 		}
+ 	}
+ 
+-#ifdef EXIT_DEBUG
+-	printk(KERN_EMERG "KVM exit: vcpu=0x%p pc=0x%lx r=0x%x\n", vcpu, kvmppc_get_pc(vcpu), r);
+-#endif
++	trace_kvm_book3s_reenter(r, vcpu);
+ 
+ 	return r;
+ }
+diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+index a8e8400..56cd162 100644
+--- a/arch/powerpc/kvm/trace.h
++++ b/arch/powerpc/kvm/trace.h
+@@ -98,6 +98,48 @@ TRACE_EVENT(kvm_gtlb_write,
+ 		__entry->word1, __entry->word2)
+ );
+ 
++TRACE_EVENT(kvm_book3s_exit,
++	TP_PROTO(unsigned int exit_nr, struct kvm_vcpu *vcpu),
++	TP_ARGS(exit_nr, vcpu),
++
++	TP_STRUCT__entry(
++		__field(	unsigned int,	exit_nr		)
++		__field(	unsigned long,	pc		)
++		__field(	unsigned long,	msr		)
++		__field(	unsigned long,	dar		)
++		__field(	unsigned long,	srr1		)
++	),
++
++	TP_fast_assign(
++		__entry->exit_nr	= exit_nr;
++		__entry->pc		= kvmppc_get_pc(vcpu);
++		__entry->dar		= kvmppc_get_fault_dar(vcpu);
++		__entry->msr		= vcpu->arch.shared->msr;
++		__entry->srr1		= to_svcpu(vcpu)->shadow_srr1;
++	),
++
++	TP_printk("exit=0x%x | pc=0x%lx | msr=0x%lx | dar=0x%lx | srr1=0x%lx",
++		  __entry->exit_nr, __entry->pc, __entry->msr, __entry->dar,
++		  __entry->srr1)
++);
++
++TRACE_EVENT(kvm_book3s_reenter,
++	TP_PROTO(int r, struct kvm_vcpu *vcpu),
++	TP_ARGS(r, vcpu),
++
++	TP_STRUCT__entry(
++		__field(	unsigned int,	r		)
++		__field(	unsigned long,	pc		)
++	),
++
++	TP_fast_assign(
++		__entry->r		= r;
++		__entry->pc		= kvmppc_get_pc(vcpu);
++	),
++
++	TP_printk("reentry r=%d | pc=0x%lx", __entry->r, __entry->pc)
++);
++
+ #endif /* _TRACE_KVM_H */
+ 
+ /* This part must be outside protection */
+-- 
+1.6.0.2
