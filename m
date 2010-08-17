@@ -1,27 +1,17 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id BC231B70D4
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 22:45:07 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 7/9] RapidIO: Add handling for PW message from a lost
-	device
-Date: Tue, 17 Aug 2010 05:44:25 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D61BF@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <4C6A38A4.6070505@neli.hopto.org>
-References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-8-git-send-email-alexandre.bounine@idt.com>
-	<4C692F31.2020705@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552011D6040@CORPEXCH1.na.ads.idt.com>
-	<4C6A38A4.6070505@neli.hopto.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Micha Nelissen" <micha@neli.hopto.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, "Bounine,
-	Alexandre" <Alexandre.Bounine@idt.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 3A0C0B70D8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 17 Aug 2010 23:58:05 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH 03/26] KVM: PPC: Add tracepoint for generic mmu map
+Date: Tue, 17 Aug 2010 15:57:38 +0200
+Message-Id: <1282053481-18787-4-git-send-email-agraf@suse.de>
+In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
+References: <1282053481-18787-1-git-send-email-agraf@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,15 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Micha Nelissen wrote:
->=20
-> Perhaps an idea is to use the repeated port-write sending feature so
-> that dropped port-writes are not a problem anymore.
->=20
-Unfortunately, this feature is not defined by RIO spec. This is
-proprietary function, so we=20
-cannot rely on it. Yes, this is nice feature of Tsi57x switches and may
-be used if you have=20
-a closed system - just enable it in em_init. The RIO spec part 8 is
-quite open about port-write generation and we cannot expect the same
-behavior from different devices.   =20
+This patch moves the generic mmu map debugging over to tracepoints.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kvm/book3s_mmu_hpte.c |    3 +++
+ arch/powerpc/kvm/trace.h           |   29 +++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
+index 02c64ab..ac94bd9 100644
+--- a/arch/powerpc/kvm/book3s_mmu_hpte.c
++++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
+@@ -21,6 +21,7 @@
+ #include <linux/kvm_host.h>
+ #include <linux/hash.h>
+ #include <linux/slab.h>
++#include "trace.h"
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+@@ -66,6 +67,8 @@ void kvmppc_mmu_hpte_cache_map(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+ {
+ 	u64 index;
+ 
++	trace_kvm_book3s_mmu_map(pte);
++
+ 	spin_lock(&vcpu->arch.mmu_lock);
+ 
+ 	/* Add to ePTE list */
+diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+index 3b9169c..ee6ac88 100644
+--- a/arch/powerpc/kvm/trace.h
++++ b/arch/powerpc/kvm/trace.h
+@@ -174,6 +174,35 @@ TRACE_EVENT(kvm_book3s_64_mmu_map,
+ 
+ #endif
+ 
++TRACE_EVENT(kvm_book3s_mmu_map,
++	TP_PROTO(struct hpte_cache *pte),
++	TP_ARGS(pte),
++
++	TP_STRUCT__entry(
++		__field(	u64,		host_va		)
++		__field(	u64,		pfn		)
++		__field(	ulong,		eaddr		)
++		__field(	u64,		vpage		)
++		__field(	ulong,		raddr		)
++		__field(	int,		flags		)
++	),
++
++	TP_fast_assign(
++		__entry->host_va	= pte->host_va;
++		__entry->pfn		= pte->pfn;
++		__entry->eaddr		= pte->pte.eaddr;
++		__entry->vpage		= pte->pte.vpage;
++		__entry->raddr		= pte->pte.raddr;
++		__entry->flags		= (pte->pte.may_read ? 0x4 : 0) |
++					  (pte->pte.may_write ? 0x2 : 0) |
++					  (pte->pte.may_execute ? 0x1 : 0);
++	),
++
++	TP_printk("Map: hva=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
++		  __entry->host_va, __entry->pfn, __entry->eaddr,
++		  __entry->vpage, __entry->raddr, __entry->flags)
++);
++
+ #endif /* _TRACE_KVM_H */
+ 
+ /* This part must be outside protection */
+-- 
+1.6.0.2
