@@ -1,18 +1,31 @@
-Return-Path: <crmanik@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id 796FAB6F10
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 Aug 2010 15:26:18 +1000 (EST)
-Received: by wwc33 with SMTP id 33so4146173wwc.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 16 Aug 2010 22:26:15 -0700 (PDT)
+Return-Path: <R61911@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id A564CB70A7
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 16:48:57 +1000 (EST)
+Received: from mail92-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail92-tx2-R.bigfish.com (Postfix) with ESMTP id 62A30240181	for
+	<linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 06:48:53 +0000 (UTC)
+Received: from TX2EHSMHS040.bigfish.com (unknown [10.9.14.241])	by
+	mail92-tx2.bigfish.com (Postfix) with ESMTP id 2C2CB9C804E	for
+	<linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 06:48:53 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o7H6mXhR004515	for <linuxppc-dev@ozlabs.org>;
+	Mon, 16 Aug 2010 23:48:43 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP
+	id o7H70F3o026756	for <linuxppc-dev@ozlabs.org>;
+	Tue, 17 Aug 2010 02:00:16 -0500 (CDT)
 MIME-Version: 1.0
-Date: Mon, 16 Aug 2010 22:26:15 -0700
-Message-ID: <AANLkTinFe2ruNJVsAaxN_sei3U1D5pOx8-fTH5e4xx+e@mail.gmail.com>
-Subject: Re: Query regarding 2.6.335 RT[Ingo's] and Non-RT performance
-From: Manikandan Ramachandran <crmanik@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 1/2] mmc: change ACMD12 to AUTO_CMD12 for more clear
+Date: Tue, 17 Aug 2010 14:48:28 +0800
+Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A07C66F@zch01exm23.fsl.freescale.net>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A056400@zch01exm23.fsl.freescale.net>
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: "Zang Roy-R61911" <R61911@freescale.com>, <akpm@linux-foundation.org>,
+	<linux-mmc@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, mirqus@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,65 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> ------------------------------------------------------
-> > Date: Thu, 12 Aug 2010 13:53:51 -0400
-> > From: Jeff Angielski <jeff@theptrgroup.com>
-> > To: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: Query regarding 2.6.335 RT[Ingo's] and Non-RT performance
-> > Message-ID: <4C64352F.4090005@theptrgroup.com>
-> > Content-Type: text/plain; charset=3DISO-8859-1; format=3Dflowed
-> >
-> > On 08/11/2010 06:18 PM, Manikandan Ramachandran wrote:
-> > > Hello All,
-> > > =A0 =A0 =A0I created a very simple program which has higher priority =
-than
-> > > normal tasks and runs a tight loop. Under same test environment I ran
-> > > this program on both non-rt and rt 2.6.33.5 kernel. =A0To my suprise =
-I see
-> > > that performance of non-RT kernel is better than RT. non-RT kernel to=
-ok
-> > > 3 sec and 366156 usec while RT kernel took about 3 sec and 418011
-> > > usec.Can someone please explain why the performance of non-rt kernel =
-is
-> > > better than rt kernel? From the face of the test result, I feel RT ha=
-s
-> > > more overhead,Is there any configuration that I could do to bring dow=
-n
-> > > the overhead?
-> >
-> > Your "surprise" is due to your definition of "performance".
-> >
-> > The purpose of the -rt kernels is to reduce the kernel latency. =A0This=
- is
-> > important for servicing hardware. =A0Normal users find the -rt useful f=
-or
-> > audio/video applications. =A0Engineering and scientific users find the =
--rt
-> > beneficially for servicing hardware like sensors or control systems.
-> >
-> > If you are just trying to run calculations as fast as you can in user
-> > space, you'd be better off using the non-rt variants.
-> >
-> >
-> > --
-> > Jeff Angielski
-> > The PTR Group
-> > www.theptrgroup.com
+=20
 
-
-
- Thanks for your response.
-
-On one hand I hear that RT-kernel is meant for reducing kernel latency on
-other hand I see that there is RT-kernel overhead. So what really RT-kernel
-brings to system performance?
-
-Actually I see that latency for higher priority is more or less same for
-non-rt system.
-
-One more thing, since irqs being threaded in RT, and with CFS scheduler in
-2.6.33, wouldn't we bring down system performance as CFS is O(log(n)) =A0in
-nature?
- --
- Thanks,
- Manik
+> -----Original Message-----
+> From: Zang Roy-R61911=20
+> Sent: Wednesday, August 11, 2010 12:47 PM
+> To: Zang Roy-R61911; akpm@linux-foundation.org;=20
+> linux-mmc@vger.kernel.org
+> Cc: linuxppc-dev@ozlabs.org; mirqus@gmail.com;=20
+> cbouatmailru@gmail.com; grant.likely@secretlab.ca
+> Subject: RE: [PATCH 1/2] mmc: change ACMD12 to AUTO_CMD12 for=20
+> more clear
+>=20
+> =20
+>=20
+> > -----Original Message-----
+> > From: Zang Roy-R61911=20
+> > Sent: Tuesday, August 10, 2010 17:47 PM
+> > To: akpm@linux-foundation.org; linux-mmc@vger.kernel.org
+> > Cc: linuxppc-dev@ozlabs.org; mirqus@gmail.com;=20
+> > cbouatmailru@gmail.com; grant.likely@secretlab.ca
+> > Subject: [PATCH 1/2] mmc: change ACMD12 to AUTO_CMD12 for more clear
+> >=20
+> > Change ACMD12 to AUTO_CMD12 to reduce the confusion.
+> > ACMD12 might be confused with MMC/SD App CMD 12 (CMD55+CMD12 combo).
+> >=20
+> > Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> > ---
+> >  drivers/mmc/host/sdhci-of-core.c |    2 +-
+> >  drivers/mmc/host/sdhci.c         |    8 ++++----
+> >  drivers/mmc/host/sdhci.h         |   10 +++++-----
+> >  3 files changed, 10 insertions(+), 10 deletions(-)
+> Andrew,=20
+> Could you help to pick up this minor fix?
+> Thanks.
+> Roy
+Any update on these two patches?
+Thanks.
+Roy
