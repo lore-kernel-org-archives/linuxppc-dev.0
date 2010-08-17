@@ -1,21 +1,27 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Richard Cochran <richardcochran@gmail.com>,
-	john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Date: Tue, 17 Aug 2010 13:36:29 +0200
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<201008170925.55592.arnd@arndb.de>
-	<20100817105232.GA9079@riccoc20.at.omicron.at>
-In-Reply-To: <20100817105232.GA9079@riccoc20.at.omicron.at>
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BC231B70D4
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 22:45:07 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201008171336.29375.arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	Rodolfo Giometti <giometti@linux.it>, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 7/9] RapidIO: Add handling for PW message from a lost
+	device
+Date: Tue, 17 Aug 2010 05:44:25 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D61BF@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <4C6A38A4.6070505@neli.hopto.org>
+References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
+	<1281712686-31308-8-git-send-email-alexandre.bounine@idt.com>
+	<4C692F31.2020705@neli.hopto.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011D6040@CORPEXCH1.na.ads.idt.com>
+	<4C6A38A4.6070505@neli.hopto.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Micha Nelissen" <micha@neli.hopto.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, "Bounine,
+	Alexandre" <Alexandre.Bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 17 August 2010, Richard Cochran wrote:
-> On Tue, Aug 17, 2010 at 09:25:55AM +0000, Arnd Bergmann wrote:
-> > Another difference is that we generally use ioctl for devices that can
-> > be enumerated, while syscalls are for system services that are not tied to
-> > a specific device. This argument works both ways for PTP IMHO: On the one
-> > hand you want to have a reliable clock that you can use without knowing
-> > where it comes from, on the other you might have multiple PTP sources that
-> > you need to differentiate.
-> 
-> Yes, I agree. In normal use, there will be only one PTP clock in a
-> system. However, for research purposes, it would be nice to have more
-> than one.
-> 
-> I've been looking at offering the PTP clock as a posix clock, and it
-> is not as hard as I first thought. The PTP clock or clocks just have
-> to be registered as one of the posix_clocks[MAX_CLOCKS] in
-> posix-timers.c.
-
-Ok sounds good.
-
-> My suggestion would be to reserve three clock ids in time.h,
-> CLOCK_PTP0, CLOCK_PTP1, and CLOCK_PTP2. The first one would be the
-> same as CLOCK_REALTIME, for SW timestamping, and the other two would
-> allow two different PTP clocks at the same time, for the research use
-> case.
-
-I don't think there is a point in making exactly two independent sources
-available. The clockid_t space is not really limited, so we could define
-an arbitrary range of ids for ptp sources that could be used simultaneously,
-as long as we have space more more ids with a fixed number.
-
-Would it be reasonable to assume that on a machine with a large number
-of NICs, you'd want a separate ptp source for each of them for timestamping?
-Or would you preferably define just one source in such a setup?
-
-I think both could be done with the use of class device attributes in
-sysfs for configuration. Maybe you can have one CLOCK_PTP value for one
-global PTP source and use sysfs to configure which device that is.
-
-If you also need simultaneous access to the specific clocks, you could
-have run-time configured clockid numbers in a sysfs attribute for each
-ptp class device.
-
-> Using the clock id will bring another advantage, since it will then be
-> possible for user space to specify the desired timestamp source for
-> SO_TIMESTAMPING.
-
-God point.
-
-	Arnd
+Micha Nelissen wrote:
+>=20
+> Perhaps an idea is to use the repeated port-write sending feature so
+> that dropped port-writes are not a problem anymore.
+>=20
+Unfortunately, this feature is not defined by RIO spec. This is
+proprietary function, so we=20
+cannot rely on it. Yes, this is nice feature of Tsi57x switches and may
+be used if you have=20
+a closed system - just enable it in em_init. The RIO spec part 8 is
+quite open about port-write generation and we cannot expect the same
+behavior from different devices.   =20
