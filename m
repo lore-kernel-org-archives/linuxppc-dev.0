@@ -1,19 +1,19 @@
 Return-Path: <micha@neli.hopto.org>
 Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id 6B685B6F14
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 17:18:15 +1000 (EST)
-Message-ID: <4C6A37B3.70605@neli.hopto.org>
-Date: Tue, 17 Aug 2010 09:18:11 +0200
+	by ozlabs.org (Postfix) with ESMTP id 204EEB70A8
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 17:22:19 +1000 (EST)
+Message-ID: <4C6A38A4.6070505@neli.hopto.org>
+Date: Tue, 17 Aug 2010 09:22:12 +0200
 From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
 To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH 6/9] RapidIO: Add switch-specific sysfs initialization
-	callback
+Subject: Re: [PATCH 7/9] RapidIO: Add handling for PW message from a lost
+	device
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-7-git-send-email-alexandre.bounine@idt.com>
-	<4C692E4C.4040300@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552011D5FFC@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D5FFC@CORPEXCH1.na.ads.idt.com>
+	<1281712686-31308-8-git-send-email-alexandre.bounine@idt.com>
+	<4C692F31.2020705@neli.hopto.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011D6040@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D6040@CORPEXCH1.na.ads.idt.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
@@ -27,15 +27,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Bounine, Alexandre wrote:
->> Why not make a sw_sysfs_create and sw_sysfs_remove? Is better for
->> readability. Now you call 'sw_sysfs(dev, 0)' or 'sw_sysfs(dev, 1)';
-> 
-> I just do not want to have an extra member here. Not every switch will
-> require own sysfs attributes, but every switch will be presented by a
-> data structure. Based on its intended use I do not see any problem here.
+> That "real" PW message may be dropped by the controller (85xx is good
+> example). Everything depends on number of PW messages directed to the
+> host/controller. I am trying to use the first available notification to
+> service device removal. If the "real" PW message is received it should
+> be processed without any further action. 
 
-It's not problematic, but personally I find function calls that pass 0 
-or 1 as an argument hard to read. Likewise for boolean parameters. An 
-alternative would be to have defines SW_SYSFS_CREATE etc. It's a minor item.
+Perhaps an idea is to use the repeated port-write sending feature so 
+that dropped port-writes are not a problem anymore.
 
 Micha
