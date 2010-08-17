@@ -1,13 +1,16 @@
 Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 6240BB715A
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6A237B715E
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 17 Aug 2010 23:58:08 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 22/26] KVM: PPC: Implement correct SID mapping on Book3s_32
-Date: Tue, 17 Aug 2010 15:57:57 +0200
-Message-Id: <1282053481-18787-23-git-send-email-agraf@suse.de>
+Subject: [PATCH 02/26] KVM: PPC: Move book3s_64 mmu map debug print to trace
+	point
+Date: Tue, 17 Aug 2010 15:57:37 +0200
+Message-Id: <1282053481-18787-3-git-send-email-agraf@suse.de>
 In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
 References: <1282053481-18787-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,186 +24,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Up until now we were doing segment mappings wrong on Book3s_32. For Book3s_64
-we were using a trick where we know that a single mmu_context gives us 16 bits
-of context ids.
-
-The mm system on Book3s_32 instead uses a clever algorithm to distribute VSIDs
-across the available range, so a context id really only gives us 16 available
-VSIDs.
-
-To keep at least a few guest processes in the SID shadow, let's map a number of
-contexts that we can use as VSID pool. This makes the code be actually correct
-and shouldn't hurt performance too much.
+This patch moves Book3s MMU debugging over to tracepoints.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |   15 +++++++-
- arch/powerpc/kvm/book3s_32_mmu_host.c |   57 ++++++++++++++++++---------------
- arch/powerpc/kvm/book3s_64_mmu_host.c |    8 ++--
- 3 files changed, 48 insertions(+), 32 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_host.c |   13 +----------
+ arch/powerpc/kvm/trace.h              |   34 +++++++++++++++++++++++++++++++++
+ 2 files changed, 36 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index be8aac2..d62e703 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -60,6 +60,13 @@ struct kvmppc_sid_map {
- #define SID_MAP_NUM     (1 << SID_MAP_BITS)
- #define SID_MAP_MASK    (SID_MAP_NUM - 1)
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#define SID_CONTEXTS	1
-+#else
-+#define SID_CONTEXTS	128
-+#define VSID_POOL_SIZE	(SID_CONTEXTS * 16)
-+#endif
-+
- struct kvmppc_vcpu_book3s {
- 	struct kvm_vcpu vcpu;
- 	struct kvmppc_book3s_shadow_vcpu *shadow_vcpu;
-@@ -78,10 +85,14 @@ struct kvmppc_vcpu_book3s {
- 	u64 sdr1;
- 	u64 hior;
- 	u64 msr_mask;
--	u64 vsid_first;
- 	u64 vsid_next;
-+#ifdef CONFIG_PPC_BOOK3S_32
-+	u32 vsid_pool[VSID_POOL_SIZE];
-+#else
-+	u64 vsid_first;
- 	u64 vsid_max;
--	int context_id;
-+#endif
-+	int context_id[SID_CONTEXTS];
- 	ulong prog_flags; /* flags to inject when giving a 700 trap */
- };
- 
-diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-index 57dddeb..9fecbfb 100644
---- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-@@ -275,18 +275,15 @@ static struct kvmppc_sid_map *create_sid_map(struct kvm_vcpu *vcpu, u64 gvsid)
- 	backwards_map = !backwards_map;
- 
- 	/* Uh-oh ... out of mappings. Let's flush! */
--	if (vcpu_book3s->vsid_next >= vcpu_book3s->vsid_max) {
--		vcpu_book3s->vsid_next = vcpu_book3s->vsid_first;
-+	if (vcpu_book3s->vsid_next >= VSID_POOL_SIZE) {
-+		vcpu_book3s->vsid_next = 0;
- 		memset(vcpu_book3s->sid_map, 0,
- 		       sizeof(struct kvmppc_sid_map) * SID_MAP_NUM);
- 		kvmppc_mmu_pte_flush(vcpu, 0, 0);
- 		kvmppc_mmu_flush_segments(vcpu);
- 	}
--	map->host_vsid = vcpu_book3s->vsid_next;
--
--	/* Would have to be 111 to be completely aligned with the rest of
--	   Linux, but that is just way too little space! */
--	vcpu_book3s->vsid_next+=1;
-+	map->host_vsid = vcpu_book3s->vsid_pool[vcpu_book3s->vsid_next];
-+	vcpu_book3s->vsid_next++;
- 
- 	map->guest_vsid = gvsid;
- 	map->valid = true;
-@@ -333,40 +330,38 @@ void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu)
- 
- void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
- {
-+	int i;
-+
- 	kvmppc_mmu_hpte_destroy(vcpu);
- 	preempt_disable();
--	__destroy_context(to_book3s(vcpu)->context_id);
-+	for (i = 0; i < SID_CONTEXTS; i++)
-+		__destroy_context(to_book3s(vcpu)->context_id[i]);
- 	preempt_enable();
- }
- 
- /* From mm/mmu_context_hash32.c */
--#define CTX_TO_VSID(ctx) (((ctx) * (897 * 16)) & 0xffffff)
-+#define CTX_TO_VSID(c, id)	((((c) * (897 * 16)) + (id * 0x111)) & 0xffffff)
- 
- int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_vcpu_book3s *vcpu3s = to_book3s(vcpu);
- 	int err;
- 	ulong sdr1;
-+	int i;
-+	int j;
- 
--	err = __init_new_context();
--	if (err < 0)
--		return -1;
--	vcpu3s->context_id = err;
--
--	vcpu3s->vsid_max = CTX_TO_VSID(vcpu3s->context_id + 1) - 1;
--	vcpu3s->vsid_first = CTX_TO_VSID(vcpu3s->context_id);
--
--#if 0 /* XXX still doesn't guarantee uniqueness */
--	/* We could collide with the Linux vsid space because the vsid
--	 * wraps around at 24 bits. We're safe if we do our own space
--	 * though, so let's always set the highest bit. */
-+	for (i = 0; i < SID_CONTEXTS; i++) {
-+		err = __init_new_context();
-+		if (err < 0)
-+			goto init_fail;
-+		vcpu3s->context_id[i] = err;
- 
--	vcpu3s->vsid_max |= 0x00800000;
--	vcpu3s->vsid_first |= 0x00800000;
--#endif
--	BUG_ON(vcpu3s->vsid_max < vcpu3s->vsid_first);
-+		/* Remember context id for this combination */
-+		for (j = 0; j < 16; j++)
-+			vcpu3s->vsid_pool[(i * 16) + j] = CTX_TO_VSID(err, j);
-+	}
- 
--	vcpu3s->vsid_next = vcpu3s->vsid_first;
-+	vcpu3s->vsid_next = 0;
- 
- 	/* Remember where the HTAB is */
- 	asm ( "mfsdr1 %0" : "=r"(sdr1) );
-@@ -376,4 +371,14 @@ int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
- 	kvmppc_mmu_hpte_init(vcpu);
- 
- 	return 0;
-+
-+init_fail:
-+	for (j = 0; j < i; j++) {
-+		if (!vcpu3s->context_id[j])
-+			continue;
-+
-+		__destroy_context(to_book3s(vcpu)->context_id[j]);
-+	}
-+
-+	return -1;
- }
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index 4040c8d..fa2f084 100644
+index 672b149..aa516ad 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -286,7 +286,7 @@ void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu)
- void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
- {
- 	kvmppc_mmu_hpte_destroy(vcpu);
--	__destroy_context(to_book3s(vcpu)->context_id);
-+	__destroy_context(to_book3s(vcpu)->context_id[0]);
- }
+@@ -28,19 +28,13 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu_context.h>
+ #include <asm/hw_irq.h>
++#include "trace.h"
  
- int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
-@@ -297,10 +297,10 @@ int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
- 	err = __init_new_context();
- 	if (err < 0)
- 		return -1;
--	vcpu3s->context_id = err;
-+	vcpu3s->context_id[0] = err;
+ #define PTE_SIZE 12
+ #define VSID_ALL 0
  
--	vcpu3s->vsid_max = ((vcpu3s->context_id + 1) << USER_ESID_BITS) - 1;
--	vcpu3s->vsid_first = vcpu3s->context_id << USER_ESID_BITS;
-+	vcpu3s->vsid_max = ((vcpu3s->context_id[0] + 1) << USER_ESID_BITS) - 1;
-+	vcpu3s->vsid_first = vcpu3s->context_id[0] << USER_ESID_BITS;
- 	vcpu3s->vsid_next = vcpu3s->vsid_first;
+-/* #define DEBUG_MMU */
+ /* #define DEBUG_SLB */
  
- 	kvmppc_mmu_hpte_init(vcpu);
+-#ifdef DEBUG_MMU
+-#define dprintk_mmu(a, ...) printk(KERN_INFO a, __VA_ARGS__)
+-#else
+-#define dprintk_mmu(a, ...) do { } while(0)
+-#endif
+-
+ #ifdef DEBUG_SLB
+ #define dprintk_slb(a, ...) printk(KERN_INFO a, __VA_ARGS__)
+ #else
+@@ -156,10 +150,7 @@ map_again:
+ 	} else {
+ 		struct hpte_cache *pte = kvmppc_mmu_hpte_cache_next(vcpu);
+ 
+-		dprintk_mmu("KVM: %c%c Map 0x%lx: [%lx] 0x%lx (0x%llx) -> %lx\n",
+-			    ((rflags & HPTE_R_PP) == 3) ? '-' : 'w',
+-			    (rflags & HPTE_R_N) ? '-' : 'x',
+-			    orig_pte->eaddr, hpteg, va, orig_pte->vpage, hpaddr);
++		trace_kvm_book3s_64_mmu_map(rflags, hpteg, va, hpaddr, orig_pte);
+ 
+ 		/* The ppc_md code may give us a secondary entry even though we
+ 		   asked for a primary. Fix up. */
+diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+index 56cd162..3b9169c 100644
+--- a/arch/powerpc/kvm/trace.h
++++ b/arch/powerpc/kvm/trace.h
+@@ -140,6 +140,40 @@ TRACE_EVENT(kvm_book3s_reenter,
+ 	TP_printk("reentry r=%d | pc=0x%lx", __entry->r, __entry->pc)
+ );
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
++
++TRACE_EVENT(kvm_book3s_64_mmu_map,
++	TP_PROTO(int rflags, ulong hpteg, ulong va, pfn_t hpaddr,
++		 struct kvmppc_pte *orig_pte),
++	TP_ARGS(rflags, hpteg, va, hpaddr, orig_pte),
++
++	TP_STRUCT__entry(
++		__field(	unsigned char,		flag_w		)
++		__field(	unsigned char,		flag_x		)
++		__field(	unsigned long,		eaddr		)
++		__field(	unsigned long,		hpteg		)
++		__field(	unsigned long,		va		)
++		__field(	unsigned long long,	vpage		)
++		__field(	unsigned long,		hpaddr		)
++	),
++
++	TP_fast_assign(
++		__entry->flag_w	= ((rflags & HPTE_R_PP) == 3) ? '-' : 'w';
++		__entry->flag_x	= (rflags & HPTE_R_N) ? '-' : 'x';
++		__entry->eaddr	= orig_pte->eaddr;
++		__entry->hpteg	= hpteg;
++		__entry->va	= va;
++		__entry->vpage	= orig_pte->vpage;
++		__entry->hpaddr	= hpaddr;
++	),
++
++	TP_printk("KVM: %c%c Map 0x%lx: [%lx] 0x%lx (0x%llx) -> %lx",
++		  __entry->flag_w, __entry->flag_x, __entry->eaddr,
++		  __entry->hpteg, __entry->va, __entry->vpage, __entry->hpaddr)
++);
++
++#endif
++
+ #endif /* _TRACE_KVM_H */
+ 
+ /* This part must be outside protection */
 -- 
 1.6.0.2
