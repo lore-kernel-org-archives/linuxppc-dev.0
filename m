@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 3A02FB6F0D
+	by ozlabs.org (Postfix) with ESMTP id 4160CB70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 17 Aug 2010 23:58:05 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 01/26] KVM: PPC: Move EXIT_DEBUG partially to tracepoints
-Date: Tue, 17 Aug 2010 15:57:36 +0200
-Message-Id: <1282053481-18787-2-git-send-email-agraf@suse.de>
+Subject: [PATCH 06/26] KVM: PPC: Add tracepoints for generic spte flushes
+Date: Tue, 17 Aug 2010 15:57:41 +0200
+Message-Id: <1282053481-18787-7-git-send-email-agraf@suse.de>
 In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
 References: <1282053481-18787-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,132 +21,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a debug printk on every exit that is usually #ifdef'ed out. Using
-tracepoints makes a lot more sense here though, as they can be dynamically
-enabled.
+The different ways of flusing shadow ptes have their own debug prints which use
+stupid old printk.
 
-This patch converts the most commonly used debug printks of EXIT_DEBUG to
-tracepoints.
+Let's move them to tracepoints, making them easier available, faster and
+possible to activate on demand
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/book3s.c |   26 ++++----------------------
- arch/powerpc/kvm/trace.h  |   42 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 46 insertions(+), 22 deletions(-)
+ arch/powerpc/kvm/book3s_mmu_hpte.c |   18 +++---------------
+ arch/powerpc/kvm/trace.h           |   23 +++++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index eee97b5..f8b9aab 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -17,6 +17,7 @@
- #include <linux/kvm_host.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-+#include "trace.h"
+diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
+index 3397152..bd6a767 100644
+--- a/arch/powerpc/kvm/book3s_mmu_hpte.c
++++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
+@@ -31,14 +31,6 @@
  
- #include <asm/reg.h>
- #include <asm/cputable.h>
-@@ -35,7 +36,6 @@
- #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
+ #define PTE_SIZE	12
  
- /* #define EXIT_DEBUG */
--/* #define EXIT_DEBUG_SIMPLE */
- /* #define DEBUG_EXT */
- 
- static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
-@@ -105,14 +105,6 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
- 	kvmppc_giveup_ext(vcpu, MSR_VSX);
- }
- 
--#if defined(EXIT_DEBUG)
--static u32 kvmppc_get_dec(struct kvm_vcpu *vcpu)
--{
--	u64 jd = mftb() - vcpu->arch.dec_jiffies;
--	return vcpu->arch.dec - jd;
--}
+-/* #define DEBUG_MMU */
+-
+-#ifdef DEBUG_MMU
+-#define dprintk_mmu(a, ...) printk(KERN_INFO a, __VA_ARGS__)
+-#else
+-#define dprintk_mmu(a, ...) do { } while(0)
 -#endif
 -
- static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
+ static struct kmem_cache *hpte_cache;
+ 
+ static inline u64 kvmppc_mmu_hash_pte(u64 eaddr)
+@@ -186,9 +178,7 @@ static void kvmppc_mmu_pte_flush_long(struct kvm_vcpu *vcpu, ulong guest_ea)
+ 
+ void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, ulong guest_ea, ulong ea_mask)
  {
- 	ulong smsr = vcpu->arch.shared->msr;
-@@ -848,16 +840,8 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+-	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%lx & 0x%lx\n",
+-		    vcpu->arch.hpte_cache_count, guest_ea, ea_mask);
+-
++	trace_kvm_book3s_mmu_flush("", vcpu, guest_ea, ea_mask);
+ 	guest_ea &= ea_mask;
  
- 	run->exit_reason = KVM_EXIT_UNKNOWN;
- 	run->ready_for_interrupt_injection = 1;
--#ifdef EXIT_DEBUG
--	printk(KERN_EMERG "exit_nr=0x%x | pc=0x%lx | dar=0x%lx | dec=0x%x | msr=0x%lx\n",
--		exit_nr, kvmppc_get_pc(vcpu), kvmppc_get_fault_dar(vcpu),
--		kvmppc_get_dec(vcpu), to_svcpu(vcpu)->shadow_srr1);
--#elif defined (EXIT_DEBUG_SIMPLE)
--	if ((exit_nr != 0x900) && (exit_nr != 0x500))
--		printk(KERN_EMERG "exit_nr=0x%x | pc=0x%lx | dar=0x%lx | msr=0x%lx\n",
--			exit_nr, kvmppc_get_pc(vcpu), kvmppc_get_fault_dar(vcpu),
--			vcpu->arch.shared->msr);
--#endif
-+
-+	trace_kvm_book3s_exit(exit_nr, vcpu);
- 	kvm_resched(vcpu);
- 	switch (exit_nr) {
- 	case BOOK3S_INTERRUPT_INST_STORAGE:
-@@ -1089,9 +1073,7 @@ program_interrupt:
- 		}
- 	}
+ 	switch (ea_mask) {
+@@ -251,8 +241,7 @@ static void kvmppc_mmu_pte_vflush_long(struct kvm_vcpu *vcpu, u64 guest_vp)
  
--#ifdef EXIT_DEBUG
--	printk(KERN_EMERG "KVM exit: vcpu=0x%p pc=0x%lx r=0x%x\n", vcpu, kvmppc_get_pc(vcpu), r);
--#endif
-+	trace_kvm_book3s_reenter(r, vcpu);
+ void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
+ {
+-	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
+-		    vcpu->arch.hpte_cache_count, guest_vp, vp_mask);
++	trace_kvm_book3s_mmu_flush("v", vcpu, guest_vp, vp_mask);
+ 	guest_vp &= vp_mask;
  
- 	return r;
- }
+ 	switch(vp_mask) {
+@@ -274,8 +263,7 @@ void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, ulong pa_start, ulong pa_end)
+ 	struct hpte_cache *pte;
+ 	int i;
+ 
+-	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%lx - 0x%lx\n",
+-		    vcpu->arch.hpte_cache_count, pa_start, pa_end);
++	trace_kvm_book3s_mmu_flush("p", vcpu, pa_start, pa_end);
+ 
+ 	rcu_read_lock();
+ 
 diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index a8e8400..56cd162 100644
+index 4ab1c72..df15d02 100644
 --- a/arch/powerpc/kvm/trace.h
 +++ b/arch/powerpc/kvm/trace.h
-@@ -98,6 +98,48 @@ TRACE_EVENT(kvm_gtlb_write,
- 		__entry->word1, __entry->word2)
+@@ -232,6 +232,29 @@ TRACE_EVENT(kvm_book3s_mmu_invalidate,
+ 		  __entry->vpage, __entry->raddr, __entry->flags)
  );
  
-+TRACE_EVENT(kvm_book3s_exit,
-+	TP_PROTO(unsigned int exit_nr, struct kvm_vcpu *vcpu),
-+	TP_ARGS(exit_nr, vcpu),
++TRACE_EVENT(kvm_book3s_mmu_flush,
++	TP_PROTO(const char *type, struct kvm_vcpu *vcpu, unsigned long long p1,
++		 unsigned long long p2),
++	TP_ARGS(type, vcpu, p1, p2),
 +
 +	TP_STRUCT__entry(
-+		__field(	unsigned int,	exit_nr		)
-+		__field(	unsigned long,	pc		)
-+		__field(	unsigned long,	msr		)
-+		__field(	unsigned long,	dar		)
-+		__field(	unsigned long,	srr1		)
++		__field(	int,			count		)
++		__field(	unsigned long long,	p1		)
++		__field(	unsigned long long,	p2		)
++		__field(	const char *,		type		)
 +	),
 +
 +	TP_fast_assign(
-+		__entry->exit_nr	= exit_nr;
-+		__entry->pc		= kvmppc_get_pc(vcpu);
-+		__entry->dar		= kvmppc_get_fault_dar(vcpu);
-+		__entry->msr		= vcpu->arch.shared->msr;
-+		__entry->srr1		= to_svcpu(vcpu)->shadow_srr1;
++		__entry->count		= vcpu->arch.hpte_cache_count;
++		__entry->p1		= p1;
++		__entry->p2		= p2;
++		__entry->type		= type;
 +	),
 +
-+	TP_printk("exit=0x%x | pc=0x%lx | msr=0x%lx | dar=0x%lx | srr1=0x%lx",
-+		  __entry->exit_nr, __entry->pc, __entry->msr, __entry->dar,
-+		  __entry->srr1)
-+);
-+
-+TRACE_EVENT(kvm_book3s_reenter,
-+	TP_PROTO(int r, struct kvm_vcpu *vcpu),
-+	TP_ARGS(r, vcpu),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned int,	r		)
-+		__field(	unsigned long,	pc		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->r		= r;
-+		__entry->pc		= kvmppc_get_pc(vcpu);
-+	),
-+
-+	TP_printk("reentry r=%d | pc=0x%lx", __entry->r, __entry->pc)
++	TP_printk("Flush %d %sPTEs: %llx - %llx",
++		  __entry->count, __entry->type, __entry->p1, __entry->p2)
 +);
 +
  #endif /* _TRACE_KVM_H */
