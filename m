@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0A0DB730E
+	by ozlabs.org (Postfix) with ESMTPS id 228DAB70E3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 Aug 2010 23:58:17 +1000 (EST)
+	Tue, 17 Aug 2010 23:58:18 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 24/26] KVM: PPC: initialize IVORs in addition to IVPR
-Date: Tue, 17 Aug 2010 15:57:59 +0200
-Message-Id: <1282053481-18787-25-git-send-email-agraf@suse.de>
+Subject: [PATCH 25/26] KVM: PPC: fix compilation of "dump tlbs" debug function
+Date: Tue, 17 Aug 2010 15:58:00 +0200
+Message-Id: <1282053481-18787-26-git-send-email-agraf@suse.de>
 In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
 References: <1282053481-18787-1-git-send-email-agraf@suse.de>
 Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
@@ -26,40 +26,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hollis Blanchard <hollis_blanchard@mentor.com>
 
-Developers can now tell at a glace the exact type of the premature interrupt,
-instead of just knowing that there was some premature interrupt.
+Missing local variable.
 
 Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/booke.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/44x_tlb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index c604277..835f6d0 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -497,15 +497,19 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- /* Initial guest state: 16MB mapping 0 -> 0, PC = 0, MSR = 0, R1 = 16MB */
- int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/kvm/44x_tlb.c b/arch/powerpc/kvm/44x_tlb.c
+index 9f71b8d..5f3cff8 100644
+--- a/arch/powerpc/kvm/44x_tlb.c
++++ b/arch/powerpc/kvm/44x_tlb.c
+@@ -47,6 +47,7 @@
+ #ifdef DEBUG
+ void kvmppc_dump_tlbs(struct kvm_vcpu *vcpu)
  {
-+	int i;
-+
- 	vcpu->arch.pc = 0;
- 	vcpu->arch.shared->msr = 0;
- 	kvmppc_set_gpr(vcpu, 1, (16<<20) - 8); /* -8 for the callee-save LR slot */
- 
- 	vcpu->arch.shadow_pid = 1;
- 
--	/* Eye-catching number so we know if the guest takes an interrupt
--	 * before it's programmed its own IVPR. */
-+	/* Eye-catching numbers so we know if the guest takes an interrupt
-+	 * before it's programmed its own IVPR/IVORs. */
- 	vcpu->arch.ivpr = 0x55550000;
-+	for (i = 0; i < BOOKE_IRQPRIO_MAX; i++)
-+		vcpu->arch.ivor[i] = 0x7700 | i * 4;
- 
- 	kvmppc_init_timing_stats(vcpu);
++	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
+ 	struct kvmppc_44x_tlbe *tlbe;
+ 	int i;
  
 -- 
 1.6.0.2
