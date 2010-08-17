@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 87F42B7249
+	by ozlabs.org (Postfix) with ESMTPS id BCDC7B70F8
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 17 Aug 2010 23:58:13 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 21/26] KVM: PPC: Force enable nap on KVM
-Date: Tue, 17 Aug 2010 15:57:56 +0200
-Message-Id: <1282053481-18787-22-git-send-email-agraf@suse.de>
+Subject: [PATCH 05/26] KVM: PPC: Fix sid map search after flush
+Date: Tue, 17 Aug 2010 15:57:40 +0200
+Message-Id: <1282053481-18787-6-git-send-email-agraf@suse.de>
 In-Reply-To: <1282053481-18787-1-git-send-email-agraf@suse.de>
 References: <1282053481-18787-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,31 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are some heuristics in the PPC power management code that try to find
-out if the particular hardware we're running on supports proper power management
-or just hangs the machine when going into nap mode.
+After a flush the sid map contained lots of entries with 0 for their gvsid and
+hvsid value. Unfortunately, 0 can be a real value the guest searches for when
+looking up a vsid so it would incorrectly find the host's 0 hvsid mapping which
+doesn't belong to our sid space.
 
-Since we know that KVM is safe with nap, let's force enable it in the PV code
-once we're certain that we are on a KVM VM.
+So let's also check for the valid bit that indicated that the sid we're
+looking at actually contains useful data.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/kvm.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_host.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 517da39..95aed6b 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -583,6 +583,9 @@ static int __init kvm_guest_init(void)
- 	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
- 		kvm_use_magic_page();
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index aa516ad..ebb1b5d 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -65,14 +65,14 @@ static struct kvmppc_sid_map *find_sid_vsid(struct kvm_vcpu *vcpu, u64 gvsid)
  
-+	/* Enable napping */
-+	powersave_nap = 1;
-+
- free_tmp:
- 	kvm_free_tmp();
+ 	sid_map_mask = kvmppc_sid_hash(vcpu, gvsid);
+ 	map = &to_book3s(vcpu)->sid_map[sid_map_mask];
+-	if (map->guest_vsid == gvsid) {
++	if (map->valid && (map->guest_vsid == gvsid)) {
+ 		dprintk_slb("SLB: Searching: 0x%llx -> 0x%llx\n",
+ 			    gvsid, map->host_vsid);
+ 		return map;
+ 	}
  
+ 	map = &to_book3s(vcpu)->sid_map[SID_MAP_MASK - sid_map_mask];
+-	if (map->guest_vsid == gvsid) {
++	if (map->valid && (map->guest_vsid == gvsid)) {
+ 		dprintk_slb("SLB: Searching 0x%llx -> 0x%llx\n",
+ 			    gvsid, map->host_vsid);
+ 		return map;
 -- 
 1.6.0.2
