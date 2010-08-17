@@ -1,20 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 30E89B70CC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 Aug 2010 19:26:29 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Richard Cochran <richardcochran@gmail.com>
+Return-Path: <richardcochran@gmail.com>
+Date: Tue, 17 Aug 2010 12:52:32 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Date: Tue, 17 Aug 2010 09:25:55 +0000
+Message-ID: <20100817105232.GA9079@riccoc20.at.omicron.at>
 References: <cover.1281956490.git.richard.cochran@omicron.at>
 	<201008162159.39734.arnd@arndb.de>
 	<20100817083216.GA3330@riccoc20.at.omicron.at>
-In-Reply-To: <20100817083216.GA3330@riccoc20.at.omicron.at>
+	<201008170925.55592.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201008170925.55592.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201008170925.55592.arnd@arndb.de>
 Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
 	Rodolfo Giometti <giometti@linux.it>, linux-arm-kernel@lists.infradead.org,
@@ -28,46 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 17 August 2010, Richard Cochran wrote:
-> > Why did you not want to add syscalls? Adding ioctls instead of syscalls
-> > does not make the interface better, just less visible.
-> 
-> I bet that, had I posted patch set with new syscalls, someone would
-> have said, "You are adding new syscalls. Can't you just use a char
-> device instead!"
+On Tue, Aug 17, 2010 at 09:25:55AM +0000, Arnd Bergmann wrote:
+> Another difference is that we generally use ioctl for devices that can
+> be enumerated, while syscalls are for system services that are not tied to
+> a specific device. This argument works both ways for PTP IMHO: On the one
+> hand you want to have a reliable clock that you can use without knowing
+> where it comes from, on the other you might have multiple PTP sources that
+> you need to differentiate.
 
-Very possible, but after considering both options, I think we would
-still end up with the same conclusion.
- 
-> If you add syscalls and introduce CLOCK_PTP, then you add it to
-> everyone's kernel, even those people who never heard of PTP. A char
-> device has the advantage that can it be simply ignored.
+Yes, I agree. In normal use, there will be only one PTP clock in a
+system. However, for research purposes, it would be nice to have more
+than one.
 
-It's a matter of perspective whether you consider this an advantage
-or disadvantage. I would expect that since you are trying to get support
-for PTP into the kernel, you'd be happy for people to know about it and
-use your code ;-).
+I've been looking at offering the PTP clock as a posix clock, and it
+is not as hard as I first thought. The PTP clock or clocks just have
+to be registered as one of the posix_clocks[MAX_CLOCKS] in
+posix-timers.c.
 
-> Also, a syscall has got to have the right form from the very beginning.
-> If the next generation of PTP hardware looks very different, then it is not
-> that much of a crime to change an ioctl interface, provided it has
-> versioning.
+My suggestion would be to reserve three clock ids in time.h,
+CLOCK_PTP0, CLOCK_PTP1, and CLOCK_PTP2. The first one would be the
+same as CLOCK_REALTIME, for SW timestamping, and the other two would
+allow two different PTP clocks at the same time, for the research use
+case.
 
-No, that's just a myth. The rules for ABI stability are pretty much the
-same. We try hard to avoid ever changing an existing ABI, for both
-syscalls and ioctl. In either case, if you get it wrong, you have to support
-the old interface and create a new syscall or ioctl command.
-As mentioned, versioning does not solve this, it just adds another
-indirection (which we try to avoid).
+Using the clock id will bring another advantage, since it will then be
+possible for user space to specify the desired timestamp source for
+SO_TIMESTAMPING.
 
-One difference is that more people take a look at your code when you suggest
-a new syscall, so the chances of getting it right in the first upstream
-version are higher.
-Another difference is that we generally use ioctl for devices that can
-be enumerated, while syscalls are for system services that are not tied to
-a specific device. This argument works both ways for PTP IMHO: On the one
-hand you want to have a reliable clock that you can use without knowing
-where it comes from, on the other you might have multiple PTP sources that
-you need to differentiate.
-
-	Arnd
+Richard
