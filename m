@@ -1,19 +1,19 @@
 Return-Path: <johnstul@us.ibm.com>
 Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
 From: john stultz <johnstul@us.ibm.com>
-To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <20100817085324.GB3330@riccoc20.at.omicron.at>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <201008171336.29375.arnd@arndb.de>
 References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
-	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
-	<20100817085324.GB3330@riccoc20.at.omicron.at>
+	<201008170925.55592.arnd@arndb.de>
+	<20100817105232.GA9079@riccoc20.at.omicron.at>
+	<201008171336.29375.arnd@arndb.de>
 Content-Type: text/plain; charset="ISO-8859-1"
-Date: Tue, 17 Aug 2010 17:22:43 -0700
-Message-ID: <1282090963.1734.97.camel@localhost>
+Date: Tue, 17 Aug 2010 17:40:39 -0700
+Message-ID: <1282092039.1734.115.camel@localhost>
 Mime-Version: 1.0
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Cc: linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	Rodolfo Giometti <giometti@linux.it>, devicetree-discuss@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,84 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-08-17 at 10:53 +0200, Richard Cochran wrote:
-> On Mon, Aug 16, 2010 at 12:24:48PM -0700, john stultz wrote:
-> > 3) I'm not sure I see the benefit of being able to have multiple
-> > frequency corrected time domains.  In other words, what benefit would
-> > you get from adjusting a PTP clock's frequency instead of just
-> > adjusting the system's time freq? Having the PTP time as a reference
-> > to correct the system time seems reasonable, but I'm not sure I see
-> > why userland would want to adjust the PTP clock's freq.
+On Tue, 2010-08-17 at 13:36 +0200, Arnd Bergmann wrote:
+> On Tuesday 17 August 2010, Richard Cochran wrote:
+> > On Tue, Aug 17, 2010 at 09:25:55AM +0000, Arnd Bergmann wrote:
+> > > Another difference is that we generally use ioctl for devices that can
+> > > be enumerated, while syscalls are for system services that are not tied to
+> > > a specific device. This argument works both ways for PTP IMHO: On the one
+> > > hand you want to have a reliable clock that you can use without knowing
+> > > where it comes from, on the other you might have multiple PTP sources that
+> > > you need to differentiate.
+> > 
+> > Yes, I agree. In normal use, there will be only one PTP clock in a
+> > system. However, for research purposes, it would be nice to have more
+> > than one.
+> > 
+> > I've been looking at offering the PTP clock as a posix clock, and it
+> > is not as hard as I first thought. The PTP clock or clocks just have
+> > to be registered as one of the posix_clocks[MAX_CLOCKS] in
+> > posix-timers.c.
 > 
-> For PTP enabled hardware, the timestamp on the network packet comes
-> from from the PTP clock, not from the system time.
-> 
-> Of course, you can always just leave the PTP clock alone, figure the
-> needed correction, and apply it whenever needed. But this has some
-> disadvantages. First of all, the (one and only) open source PTPd does
-> not do it that way. Also, only one program (the PTPd or equivalent)
-> will know the correct time. Other programs will not be able to ask the
-> operating system for time services. Instead, they would need to use
-> IPC to the PTPd.
+> Ok sounds good.
 
-Why would system time not be adjusted to the PTP time?
+Oh no. I'm starting to waffle here. :)
 
-This is my main concern, that we're presenting a fractured API to
-userland. Suddenly there isn't just system time, but ptp time as well,
-and possibly multiple different ptp times.
+So while I'm not a fan of the duplication of the posix clocks interface
+that the proposed chardev interface introduced, I'm not sure if
+absorbing the PTP clocks as a clockid is much better.
 
-Forgive me, as I suspect I'm missing something key here.
-
-> The PTP protocol (and some PTP hardware) offers a "one step" method,
-> where the timestamps are inserted by the hardware on the fly. Here you
-> really do need the PTP clock to be correctly adjusted.
-> 
-> All of the PTP hardware that I am familiar with provides a clock
-> adjustment method, so it simpler and cleaner just to use this facility
-> to tune the PTP clock.
-
-Hmm. So trying to recap here to see if I'm understanding properly:
-
-The PTP clock is a bit of hardware (usually on the NIC) that can put
-timestamps on packets (both incoming or outgoing?).
-
-The need to offset/freq correct the PTP clock is important so that the
-timestamps (incoming and outgoing) are correct, which makes future
-offset calculations simpler.
-
-Hmm. So I'm actually starting to come around to the chardev interface.
-
-In a way, it seems it has some similarities to how the RTC device is
-used in NTPd. Granted, NTPd doesn't correct the RTC (the kernel does
-when we're synced, but its not a perfect parallel), but it can be used
-as an input the steer the clock.
-
-So while to me, it think it would be more ideal (or maybe just less
-different) to have a read-only interface (like the RTC), leaving PTPd to
-manage offset calculations and use that to steer the system time. I can
-acknowledge the need to have some way to correct the freq so the packet
-timestamps are corrected.
-
-I still feel a little concerned over the timer/alarm related interfaces.
-Could you explain why the alarm interface is necessary? 
-
-So really I think my initial negative gut reaction to this was mostly
-out of the fact that you introduced a char dev that provides almost 100%
-coverage of the posix-time interface. That is duplication we definitely
-don't want. 
-
-Also I think the documentation I've read about PTP (likely just due to
-the engineering focus) has an odd inverted sense of priority, focusing
-on keeping obscure hardware clocks on NIC cards in sync, rather then the
-the more tangible feature of keeping the system time in sync.
-
-This could be comically interpreted as trying to create a shadow-time on
-the system that is the "real time" and "yea, maybe we'll let the system
-know what time it is, but user-apps who want to know the score can send
-a magic ioctl to /dev/something and get the real deal". ;)  I'm sure
-that's not the case, but I'd like to keep any confusion in userland
-about which time is the best time to a minimum (ie: use the system
+Mainly due to the fact that userland apps now have to chose between two
+clockids that supposedly represent the same thing (the current wall
 time).
+
+> > My suggestion would be to reserve three clock ids in time.h,
+> > CLOCK_PTP0, CLOCK_PTP1, and CLOCK_PTP2. The first one would be the
+> > same as CLOCK_REALTIME, for SW timestamping, and the other two would
+> > allow two different PTP clocks at the same time, for the research use
+> > case.
+
+Why would you have CLOCK_PTP0 == CLOCK_REALTIME? Whats the point of
+that?
+
+> I don't think there is a point in making exactly two independent sources
+> available. The clockid_t space is not really limited, so we could define
+> an arbitrary range of ids for ptp sources that could be used simultaneously,
+> as long as we have space more more ids with a fixed number.
+> 
+> Would it be reasonable to assume that on a machine with a large number
+> of NICs, you'd want a separate ptp source for each of them for timestamping?
+> Or would you preferably define just one source in such a setup?
+> 
+> I think both could be done with the use of class device attributes in
+> sysfs for configuration. Maybe you can have one CLOCK_PTP value for one
+> global PTP source and use sysfs to configure which device that is.
+> 
+> If you also need simultaneous access to the specific clocks, you could
+> have run-time configured clockid numbers in a sysfs attribute for each
+> ptp class device.
+> 
+> > Using the clock id will bring another advantage, since it will then be
+> > possible for user space to specify the desired timestamp source for
+> > SO_TIMESTAMPING.
+
+So how exactly would one map CLOCK_PTPx to an eth device?
+
+So this is a little bit further out there, but assuming PTPd can sync
+the PTP clock correctly, why could the kernel itself not sync the PTP
+clock to system time?
+
+So instead of the sync path looking like:
+1) packet from master arrives on NIC, is timestamped by PTP clock
+2) PTPd calculates offset between PTP clock and master time
+3) PTPd corrects PTP clock freq/offset
+4) PTPd corrects system time freq/offset
+
+It would look like:
+1) packet from master arrives on NIC, is timestamped by PTP clock
+2) PTPd calculates offset between PTP clock and master time
+3) PTPd corrects system time freq/offset
+4) kernel corrects PTP clock freq/offset
+
+I'm guessing the indirect PTP clock sync would have greater error, but
+it avoids the fractured sense of time.
+
 
 thanks
 -john
