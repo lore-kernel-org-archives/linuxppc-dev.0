@@ -1,21 +1,31 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
-	[209.85.212.42]) by ozlabs.org (Postfix) with ESMTP id 198E4B70D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 05:31:43 +1000 (EST)
-Received: by vws18 with SMTP id 18so271068vws.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 12:31:42 -0700 (PDT)
+Return-Path: <nfont@austin.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4B041B70D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 05:58:51 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7IJj6Dq022204
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 15:45:06 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o7IJwl94084362
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 15:58:47 -0400
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o7IJwlOb032594
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 13:58:47 -0600
+Received: from [9.53.40.150] (mudbug-009053040150.austin.ibm.com [9.53.40.150])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	o7IJwkhv032568
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 13:58:47 -0600
+Message-ID: <4C6C3B76.8040105@austin.ibm.com>
+Date: Wed, 18 Aug 2010 14:58:46 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
-References: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
-Date: Wed, 18 Aug 2010 14:31:42 -0500
-Message-ID: <AANLkTinOz72GNpVD=+f5n7mMaHpoEeJ4QMwAON9nnu2A@mail.gmail.com>
-Subject: Re: [PATCH 3/3] powerpc/85xx: Cleanup QE initialization for
-	MPC85xxMDS boards
-From: Timur Tabi <timur@freescale.com>
-To: Anton Vorontsov <avorontsov@mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Correct rtas_data_buf locking in dlpar code
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +35,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 8, 2010 at 2:55 PM, Anton Vorontsov <avorontsov@mvista.com> wrote:
-> The mpc85xx_mds_setup_arch() function is incomprehensible
-> and unmaintainable. Factor out all QE specific stuff into
-> mpc85xx_mds_qe_init() and mpc85xx_mds_reset_ucc_phys().
->
-> Also move QE stuff out of mpc85xx_mds_pic_init().
->
-> The diff is unreadable, but only because the code was so. ;-)
-> It should be better now, and less indented.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
-> ---
+The dlpar code can cause a deadlock to occur when making the RTAS
+configure-connector call.  This occurs because we make kmalloc calls,
+which can block, while parsing the rtas_data_buf and holding the
+rtas_data_buf_lock.  This an cause issues if someone else attempts
+to grab the rtas_data_bug_lock.
 
-This patch introduces breaks mpc85xx_smp_defconfig:
+This patch alleviates this issue by copying the contents of the rtas_data_buf
+to a local buffer before parsing.  This allows us to only hold the
+rtas_data_buf_lock around the RTAS configure-connector calls.
 
-  CC      arch/powerpc/platforms/85xx/mpc85xx_mds.o
-arch/powerpc/platforms/85xx/mpc85xx_mds.c: In function 'mpc85xx_mds_setup_arch':
-arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: 'np' undeclared
-(first use in this function)
-arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: (Each undeclared
-identifier is reported only once
-arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: for each
-function it appears in.)
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-Frankly, I've been seeing a lot of build breaks with
-mpc85xx_[smp_]defconfig.  I had a patch that added a
-p1022_ds_defconfig, but was told instead to update
-mpc85xx_[smp_]defconfig.  However, it appears that no one is really
-testing mpc85xx_[smp_]defconfig, since there are now *two* failures
-(this one, and CONFIG_RAPIDIO) with these defconfig files.
+---
+ arch/powerpc/platforms/pseries/dlpar.c |   42 ++++++++++++++++++++++-----------
+ 1 file changed, 29 insertions(+), 13 deletions(-)
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2010-08-05 10:55:46.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2010-08-18 11:42:10.000000000 -0500
+@@ -129,20 +129,35 @@ struct device_node *dlpar_configure_conn
+ 	struct property *property;
+ 	struct property *last_property = NULL;
+ 	struct cc_workarea *ccwa;
++	char *data_buf;
+ 	int cc_token;
+-	int rc;
++	int rc = -1;
+ 
+ 	cc_token = rtas_token("ibm,configure-connector");
+ 	if (cc_token == RTAS_UNKNOWN_SERVICE)
+ 		return NULL;
+ 
+-	spin_lock(&rtas_data_buf_lock);
+-	ccwa = (struct cc_workarea *)&rtas_data_buf[0];
++	data_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
++	if (!data_buf)
++		return NULL;
++
++	ccwa = (struct cc_workarea *)&data_buf[0];
+ 	ccwa->drc_index = drc_index;
+ 	ccwa->zero = 0;
+ 
+-	rc = rtas_call(cc_token, 2, 1, NULL, rtas_data_buf, NULL);
+-	while (rc) {
++	do {
++		/* Since we release the rtas_data_buf lock between configure
++		 * connector calls we want to re-populate the rtas_data_buffer
++		 * with the contents of the previous call.
++		 */
++		spin_lock(&rtas_data_buf_lock);
++
++		memcpy(rtas_data_buf, data_buf, RTAS_DATA_BUF_SIZE);
++		rc = rtas_call(cc_token, 2, 1, NULL, rtas_data_buf, NULL);
++		memcpy(data_buf, rtas_data_buf, RTAS_DATA_BUF_SIZE);
++
++		spin_unlock(&rtas_data_buf_lock);
++
+ 		switch (rc) {
+ 		case NEXT_SIBLING:
+ 			dn = dlpar_parse_cc_node(ccwa);
+@@ -197,18 +212,19 @@ struct device_node *dlpar_configure_conn
+ 			       "returned from configure-connector\n", rc);
+ 			goto cc_error;
+ 		}
++	} while (rc);
+ 
+-		rc = rtas_call(cc_token, 2, 1, NULL, rtas_data_buf, NULL);
++cc_error:
++	kfree(data_buf);
++
++	if (rc) {
++		if (first_dn)
++			dlpar_free_cc_nodes(first_dn);
++
++		return NULL;
+ 	}
+ 
+-	spin_unlock(&rtas_data_buf_lock);
+ 	return first_dn;
+-
+-cc_error:
+-	if (first_dn)
+-		dlpar_free_cc_nodes(first_dn);
+-	spin_unlock(&rtas_data_buf_lock);
+-	return NULL;
+ }
+ 
+ static struct device_node *derive_parent(const char *path)
