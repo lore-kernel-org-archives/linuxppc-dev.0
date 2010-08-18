@@ -1,31 +1,16 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B041B70D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 05:58:51 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7IJj6Dq022204
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 15:45:06 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7IJwl94084362
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 15:58:47 -0400
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o7IJwlOb032594
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 13:58:47 -0600
-Received: from [9.53.40.150] (mudbug-009053040150.austin.ibm.com [9.53.40.150])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o7IJwkhv032568
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 13:58:47 -0600
-Message-ID: <4C6C3B76.8040105@austin.ibm.com>
-Date: Wed, 18 Aug 2010 14:58:46 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id BD980B70CD
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 06:56:50 +1000 (EST)
+To: Rupjyoti Sarmah <rsarmah@amcc.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: 
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Correct rtas_data_buf locking in dlpar code
-Content-Type: text/plain; charset=ISO-8859-1
+Content-type: text/plain; charset=ISO-8859-1
+Date: Wed, 18 Aug 2010 22:56:46 +0200
+Message-Id: <20100818205646.57783157D71@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, Prodyut Hazarika <phazarika@appliedmicro.com>,
+	Mark Miesfeld <mmiesfeld@appliedmicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,92 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The dlpar code can cause a deadlock to occur when making the RTAS
-configure-connector call.  This occurs because we make kmalloc calls,
-which can block, while parsing the rtas_data_buf and holding the
-rtas_data_buf_lock.  This an cause issues if someone else attempts
-to grab the rtas_data_bug_lock.
+Dear Rupjyoti,
 
-This patch alleviates this issue by copying the contents of the rtas_data_buf
-to a local buffer before parsing.  This allows us to only hold the
-rtas_data_buf_lock around the RTAS configure-connector calls.
+drivers/ata/sata_dwc_460ex.c fails to build in current mainline:
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+...
+  CC      drivers/ata/sata_dwc_460ex.o
+drivers/ata/sata_dwc_460ex.c:43:1: warning: "DRV_NAME" redefined
+In file included from drivers/ata/sata_dwc_460ex.c:38:
+drivers/ata/libata.h:31:1: warning: this is the location of the previous definition
+drivers/ata/sata_dwc_460ex.c:44:1: warning: "DRV_VERSION" redefined
+drivers/ata/libata.h:32:1: warning: this is the location of the previous definition
+drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_exec_command_by_tag':
+drivers/ata/sata_dwc_460ex.c:1356: warning: passing argument 1 of 'ata_get_cmd_descript' makes integer from pointer without a cast
+drivers/ata/sata_dwc_460ex.c: At top level:
+drivers/ata/sata_dwc_460ex.c:1592: warning: 'struct of_device' declared inside parameter list
+drivers/ata/sata_dwc_460ex.c:1592: warning: its scope is only this definition or declaration, which is probably not what you want
+drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_probe':
+drivers/ata/sata_dwc_460ex.c:1607: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1614: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1616: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1622: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1628: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1630: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1646: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1650: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1652: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1658: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1660: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1667: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1676: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1678: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1691: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1693: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c: At top level:
+drivers/ata/sata_dwc_460ex.c:1705: warning: 'struct of_device' declared inside parameter list
+drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_remove':
+drivers/ata/sata_dwc_460ex.c:1707: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c:1720: error: dereferencing pointer to incomplete type
+drivers/ata/sata_dwc_460ex.c: At top level:
+drivers/ata/sata_dwc_460ex.c:1736: warning: initialization from incompatible pointer type
+drivers/ata/sata_dwc_460ex.c:1737: warning: initialization from incompatible pointer type
+make[2]: *** [drivers/ata/sata_dwc_460ex.o] Error 1
 
----
- arch/powerpc/platforms/pseries/dlpar.c |   42 ++++++++++++++++++++++-----------
- 1 file changed, 29 insertions(+), 13 deletions(-)
+Do you have any hints how to fix that?
 
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2010-08-05 10:55:46.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2010-08-18 11:42:10.000000000 -0500
-@@ -129,20 +129,35 @@ struct device_node *dlpar_configure_conn
- 	struct property *property;
- 	struct property *last_property = NULL;
- 	struct cc_workarea *ccwa;
-+	char *data_buf;
- 	int cc_token;
--	int rc;
-+	int rc = -1;
- 
- 	cc_token = rtas_token("ibm,configure-connector");
- 	if (cc_token == RTAS_UNKNOWN_SERVICE)
- 		return NULL;
- 
--	spin_lock(&rtas_data_buf_lock);
--	ccwa = (struct cc_workarea *)&rtas_data_buf[0];
-+	data_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!data_buf)
-+		return NULL;
-+
-+	ccwa = (struct cc_workarea *)&data_buf[0];
- 	ccwa->drc_index = drc_index;
- 	ccwa->zero = 0;
- 
--	rc = rtas_call(cc_token, 2, 1, NULL, rtas_data_buf, NULL);
--	while (rc) {
-+	do {
-+		/* Since we release the rtas_data_buf lock between configure
-+		 * connector calls we want to re-populate the rtas_data_buffer
-+		 * with the contents of the previous call.
-+		 */
-+		spin_lock(&rtas_data_buf_lock);
-+
-+		memcpy(rtas_data_buf, data_buf, RTAS_DATA_BUF_SIZE);
-+		rc = rtas_call(cc_token, 2, 1, NULL, rtas_data_buf, NULL);
-+		memcpy(data_buf, rtas_data_buf, RTAS_DATA_BUF_SIZE);
-+
-+		spin_unlock(&rtas_data_buf_lock);
-+
- 		switch (rc) {
- 		case NEXT_SIBLING:
- 			dn = dlpar_parse_cc_node(ccwa);
-@@ -197,18 +212,19 @@ struct device_node *dlpar_configure_conn
- 			       "returned from configure-connector\n", rc);
- 			goto cc_error;
- 		}
-+	} while (rc);
- 
--		rc = rtas_call(cc_token, 2, 1, NULL, rtas_data_buf, NULL);
-+cc_error:
-+	kfree(data_buf);
-+
-+	if (rc) {
-+		if (first_dn)
-+			dlpar_free_cc_nodes(first_dn);
-+
-+		return NULL;
- 	}
- 
--	spin_unlock(&rtas_data_buf_lock);
- 	return first_dn;
--
--cc_error:
--	if (first_dn)
--		dlpar_free_cc_nodes(first_dn);
--	spin_unlock(&rtas_data_buf_lock);
--	return NULL;
- }
- 
- static struct device_node *derive_parent(const char *path)
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Few people do business well who do nothing else.
+                                       -- Philip Earl of Chesterfield
