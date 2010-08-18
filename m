@@ -1,20 +1,25 @@
-Return-Path: <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-From: john stultz <johnstul@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <201008171336.29375.arnd@arndb.de>
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<201008170925.55592.arnd@arndb.de>
-	<20100817105232.GA9079@riccoc20.at.omicron.at>
-	<201008171336.29375.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Tue, 17 Aug 2010 17:40:39 -0700
-Message-ID: <1282092039.1734.115.camel@localhost>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0C7C3B70A6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 18 Aug 2010 14:39:21 +1000 (EST)
+Subject: 64-bit ppc rwsem (was: Re: [GIT] Sparc)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20100817.191424.183031381.davem@davemloft.net>
+References: <20100817.180325.104051399.davem@davemloft.net>
+	<AANLkTikQ1dGw0aO10_ZwmVEc-JAVhB==3HS7SrWycE49@mail.gmail.com>
+	<AANLkTimZ3rhX2AzPExEGfRCXiFNN-BGOWRKqL241-qNa@mail.gmail.com>
+	<20100817.191424.183031381.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Aug 2010 14:38:58 +1000
+Message-ID: <1282106338.22370.151.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	Rodolfo Giometti <giometti@linux.it>, devicetree-discuss@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Cc: torvalds@linux-foundation.org, paulus@au.ibm.com,
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,88 +29,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-08-17 at 13:36 +0200, Arnd Bergmann wrote:
-> On Tuesday 17 August 2010, Richard Cochran wrote:
-> > On Tue, Aug 17, 2010 at 09:25:55AM +0000, Arnd Bergmann wrote:
-> > > Another difference is that we generally use ioctl for devices that can
-> > > be enumerated, while syscalls are for system services that are not tied to
-> > > a specific device. This argument works both ways for PTP IMHO: On the one
-> > > hand you want to have a reliable clock that you can use without knowing
-> > > where it comes from, on the other you might have multiple PTP sources that
-> > > you need to differentiate.
-> > 
-> > Yes, I agree. In normal use, there will be only one PTP clock in a
-> > system. However, for research purposes, it would be nice to have more
-> > than one.
-> > 
-> > I've been looking at offering the PTP clock as a posix clock, and it
-> > is not as hard as I first thought. The PTP clock or clocks just have
-> > to be registered as one of the posix_clocks[MAX_CLOCKS] in
-> > posix-timers.c.
+On Tue, 2010-08-17 at 19:14 -0700, David Miller wrote:
+
+> > I merged your pull request, but you've got some fixing up to do,
+> > methinks. I also really think you need to make your rwsem's use 64-bit
+> > values on sparc64, because otherwise you can overflow the mmap_sem by
+> > having more than 65536 threads doing page-faults (on 32-bit, having
+> > more than 2**16 threads in one process is unlikely to work for other
+> > reasons, like just pure stack usage, so we don't really care about the
+> > 32-bit case)
 > 
-> Ok sounds good.
-
-Oh no. I'm starting to waffle here. :)
-
-So while I'm not a fan of the duplication of the posix clocks interface
-that the proposed chardev interface introduced, I'm not sure if
-absorbing the PTP clocks as a clockid is much better.
-
-Mainly due to the fact that userland apps now have to chose between two
-clockids that supposedly represent the same thing (the current wall
-time).
-
-> > My suggestion would be to reserve three clock ids in time.h,
-> > CLOCK_PTP0, CLOCK_PTP1, and CLOCK_PTP2. The first one would be the
-> > same as CLOCK_REALTIME, for SW timestamping, and the other two would
-> > allow two different PTP clocks at the same time, for the research use
-> > case.
-
-Why would you have CLOCK_PTP0 == CLOCK_REALTIME? Whats the point of
-that?
-
-> I don't think there is a point in making exactly two independent sources
-> available. The clockid_t space is not really limited, so we could define
-> an arbitrary range of ids for ptp sources that could be used simultaneously,
-> as long as we have space more more ids with a fixed number.
+> I have a patch to do this already, just need to test it.
 > 
-> Would it be reasonable to assume that on a machine with a large number
-> of NICs, you'd want a separate ptp source for each of them for timestamping?
-> Or would you preferably define just one source in such a setup?
-> 
-> I think both could be done with the use of class device attributes in
-> sysfs for configuration. Maybe you can have one CLOCK_PTP value for one
-> global PTP source and use sysfs to configure which device that is.
-> 
-> If you also need simultaneous access to the specific clocks, you could
-> have run-time configured clockid numbers in a sysfs attribute for each
-> ptp class device.
-> 
-> > Using the clock id will bring another advantage, since it will then be
-> > possible for user space to specify the desired timestamp source for
-> > SO_TIMESTAMPING.
+> You should bug the powerpc folks too :-)
 
-So how exactly would one map CLOCK_PTPx to an eth device?
+32K threads :-) you guys are nuts !
 
-So this is a little bit further out there, but assuming PTPd can sync
-the PTP clock correctly, why could the kernel itself not sync the PTP
-clock to system time?
+Here's an untested patch for the folks on linuxppc-dev to look at, I'll
+review my own stuff & test tomorrow.
 
-So instead of the sync path looking like:
-1) packet from master arrives on NIC, is timestamped by PTP clock
-2) PTPd calculates offset between PTP clock and master time
-3) PTPd corrects PTP clock freq/offset
-4) PTPd corrects system time freq/offset
+Cheers,
+Ben.
 
-It would look like:
-1) packet from master arrives on NIC, is timestamped by PTP clock
-2) PTPd calculates offset between PTP clock and master time
-3) PTPd corrects system time freq/offset
-4) kernel corrects PTP clock freq/offset
+powerpc: Make rwsem use "long" types on 64-bit platforms
 
-I'm guessing the indirect PTP clock sync would have greater error, but
-it avoids the fractured sense of time.
+This should avoid overflow of the mmap_sem when playing with insane
+number of threads.
 
+Not-signed-off-by-yet.
 
-thanks
--john
+diff --git a/arch/powerpc/include/asm/rwsem.h b/arch/powerpc/include/asm/rwsem.h
+index 24cd928..ca64a98 100644
+--- a/arch/powerpc/include/asm/rwsem.h
++++ b/arch/powerpc/include/asm/rwsem.h
+@@ -21,15 +21,20 @@
+ /*
+  * the semaphore definition
+  */
+-struct rw_semaphore {
+-	/* XXX this should be able to be an atomic_t  -- paulus */
+-	signed int		count;
+-#define RWSEM_UNLOCKED_VALUE		0x00000000
+-#define RWSEM_ACTIVE_BIAS		0x00000001
+-#define RWSEM_ACTIVE_MASK		0x0000ffff
+-#define RWSEM_WAITING_BIAS		(-0x00010000)
++#ifdef CONFIG_PPC64
++# define RWSEM_ACTIVE_MASK		0xffffffffL
++#else
++# define RWSEM_ACTIVE_MASK		0x0000ffffL
++#endif
++
++#define RWSEM_UNLOCKED_VALUE		0x00000000L
++#define RWSEM_ACTIVE_BIAS		0x00000001L
++#define RWSEM_WAITING_BIAS		(-RWSEM_ACTIVE_MASK-1)
+ #define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
+ #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
++
++struct rw_semaphore {
++	atomic_long_t		count;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+@@ -43,9 +48,13 @@ struct rw_semaphore {
+ # define __RWSEM_DEP_MAP_INIT(lockname)
+ #endif
+ 
+-#define __RWSEM_INITIALIZER(name) \
+-	{ RWSEM_UNLOCKED_VALUE, __SPIN_LOCK_UNLOCKED((name).wait_lock), \
+-	  LIST_HEAD_INIT((name).wait_list) __RWSEM_DEP_MAP_INIT(name) }
++#define __RWSEM_INITIALIZER(name)				\
++{								\
++	ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE),			\
++	__SPIN_LOCK_UNLOCKED((name).wait_lock),			\
++	LIST_HEAD_INIT((name).wait_list)			\
++	__RWSEM_DEP_MAP_INIT(name)				\
++}
+ 
+ #define DECLARE_RWSEM(name)		\
+ 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
+@@ -70,16 +79,16 @@ extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
+  */
+ static inline void __down_read(struct rw_semaphore *sem)
+ {
+-	if (unlikely(atomic_inc_return((atomic_t *)(&sem->count)) <= 0))
++	if (unlikely(atomic_long_inc_return(&sem->count) <= 0))
+ 		rwsem_down_read_failed(sem);
+ }
+ 
+ static inline int __down_read_trylock(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	while ((tmp = sem->count) >= 0) {
+-		if (tmp == cmpxchg(&sem->count, tmp,
++	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
++		if (tmp == cmpxchg((long *)&sem->count, tmp,
+ 				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
+ 			return 1;
+ 		}
+@@ -92,10 +101,10 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
+  */
+ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_add_return(RWSEM_ACTIVE_WRITE_BIAS,
+-				(atomic_t *)(&sem->count));
++	tmp = atomic_long_add_return(RWSEM_ACTIVE_WRITE_BIAS,
++				     &sem->count);
+ 	if (unlikely(tmp != RWSEM_ACTIVE_WRITE_BIAS))
+ 		rwsem_down_write_failed(sem);
+ }
+@@ -107,9 +116,9 @@ static inline void __down_write(struct rw_semaphore *sem)
+ 
+ static inline int __down_write_trylock(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = cmpxchg(&sem->count, RWSEM_UNLOCKED_VALUE,
++	tmp = cmpxchg((long *)&sem->count, RWSEM_UNLOCKED_VALUE,
+ 		      RWSEM_ACTIVE_WRITE_BIAS);
+ 	return tmp == RWSEM_UNLOCKED_VALUE;
+ }
+@@ -119,9 +128,9 @@ static inline int __down_write_trylock(struct rw_semaphore *sem)
+  */
+ static inline void __up_read(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_dec_return((atomic_t *)(&sem->count));
++	tmp = atomic_long_dec_return(&sem->count);
+ 	if (unlikely(tmp < -1 && (tmp & RWSEM_ACTIVE_MASK) == 0))
+ 		rwsem_wake(sem);
+ }
+@@ -131,17 +140,17 @@ static inline void __up_read(struct rw_semaphore *sem)
+  */
+ static inline void __up_write(struct rw_semaphore *sem)
+ {
+-	if (unlikely(atomic_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
+-			      (atomic_t *)(&sem->count)) < 0))
++	if (unlikely(atomic_long_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
++					    &sem->count) < 0))
+ 		rwsem_wake(sem);
+ }
+ 
+ /*
+  * implement atomic add functionality
+  */
+-static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
++static inline void rwsem_atomic_add(long delta, struct rw_semaphore *sem)
+ {
+-	atomic_add(delta, (atomic_t *)(&sem->count));
++	atomic_long_add(delta, &sem->count);
+ }
+ 
+ /*
+@@ -149,9 +158,9 @@ static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
+  */
+ static inline void __downgrade_write(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_add_return(-RWSEM_WAITING_BIAS, (atomic_t *)(&sem->count));
++	tmp = atomic_long_add_return(-RWSEM_WAITING_BIAS, &sem->count);
+ 	if (tmp < 0)
+ 		rwsem_downgrade_wake(sem);
+ }
+@@ -159,14 +168,14 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
+ /*
+  * implement exchange and add functionality
+  */
+-static inline int rwsem_atomic_update(int delta, struct rw_semaphore *sem)
++static inline long rwsem_atomic_update(long delta, struct rw_semaphore *sem)
+ {
+-	return atomic_add_return(delta, (atomic_t *)(&sem->count));
++	return atomic_long_add_return(delta, &sem->count);
+ }
+ 
+ static inline int rwsem_is_locked(struct rw_semaphore *sem)
+ {
+-	return (sem->count != 0);
++	return atomic_long_read(&sem->count) != 0;
+ }
+ 
+ #endif	/* __KERNEL__ */
