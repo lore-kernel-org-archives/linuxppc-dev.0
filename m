@@ -1,21 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) by ozlabs.org (Postfix) with ESMTP id 380FCB70A7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 Aug 2010 04:27:59 +1000 (EST)
-Received: by pzk5 with SMTP id 5so436661pzk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 Aug 2010 11:27:58 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH] powerpc/pci: fix checking for child bridges in PCI code.
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 18 Aug 2010 12:27:55 -0600
-Message-ID: <20100818182727.29483.53699.stgit@angua>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
+	[209.85.212.42]) by ozlabs.org (Postfix) with ESMTP id 198E4B70D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 05:31:43 +1000 (EST)
+Received: by vws18 with SMTP id 18so271068vws.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Aug 2010 12:31:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Julia Lawall <julia@diku.dk>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
+References: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
+Date: Wed, 18 Aug 2010 14:31:42 -0500
+Message-ID: <AANLkTinOz72GNpVD=+f5n7mMaHpoEeJ4QMwAON9nnu2A@mail.gmail.com>
+Subject: Re: [PATCH 3/3] powerpc/85xx: Cleanup QE initialization for
+	MPC85xxMDS boards
+From: Timur Tabi <timur@freescale.com>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pci_device_to_OF_node() can return null, and list_for_each_entry will
-never enter the loop when dev is NULL, so it looks like this test is
-a typo.
+On Tue, Jun 8, 2010 at 2:55 PM, Anton Vorontsov <avorontsov@mvista.com> wrote:
+> The mpc85xx_mds_setup_arch() function is incomprehensible
+> and unmaintainable. Factor out all QE specific stuff into
+> mpc85xx_mds_qe_init() and mpc85xx_mds_reset_ucc_phys().
+>
+> Also move QE stuff out of mpc85xx_mds_pic_init().
+>
+> The diff is unreadable, but only because the code was so. ;-)
+> It should be better now, and less indented.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+> ---
 
-Reported-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- arch/powerpc/kernel/pci_of_scan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+This patch introduces breaks mpc85xx_smp_defconfig:
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 6ddb795..e751506 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -336,7 +336,7 @@ static void __devinit __of_scan_bus(struct device_node *node,
- 		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
- 		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS) {
- 			struct device_node *child = pci_device_to_OF_node(dev);
--			if (dev)
-+			if (child)
- 				of_scan_pci_bridge(child, dev);
- 		}
- 	}
+  CC      arch/powerpc/platforms/85xx/mpc85xx_mds.o
+arch/powerpc/platforms/85xx/mpc85xx_mds.c: In function 'mpc85xx_mds_setup_arch':
+arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: 'np' undeclared
+(first use in this function)
+arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: (Each undeclared
+identifier is reported only once
+arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: for each
+function it appears in.)
+
+Frankly, I've been seeing a lot of build breaks with
+mpc85xx_[smp_]defconfig.  I had a patch that added a
+p1022_ds_defconfig, but was told instead to update
+mpc85xx_[smp_]defconfig.  However, it appears that no one is really
+testing mpc85xx_[smp_]defconfig, since there are now *two* failures
+(this one, and CONFIG_RAPIDIO) with these defconfig files.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
