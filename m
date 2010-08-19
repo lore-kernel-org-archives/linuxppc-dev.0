@@ -1,12 +1,26 @@
-Return-Path: <whitebox@nefkom.net>
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH] [powerpc] Wire up fanotify_init, fanotify_mark,
-	prlimit64 syscalls
-Date: Thu, 19 Aug 2010 17:15:37 +0200
-Message-ID: <m28w42prae.fsf@igel.home>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id F1F02B70E5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 Aug 2010 01:23:03 +1000 (EST)
+Date: Thu, 19 Aug 2010 08:23:01 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+Message-ID: <20100819152301.GB25193@ovro.caltech.edu>
+References: <cover.1281956490.git.richard.cochran@omicron.at>
+	<201008181702.03384.arnd@arndb.de>
+	<20100819092246.GA8484@riccoc20.at.omicron.at>
+	<201008191429.50008.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201008191429.50008.arnd@arndb.de>
+Cc: john stultz <johnstul@us.ibm.com>,
+	Richard Cochran <richardcochran@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org, Rodolfo Giometti <giometti@linux.it>,
+	devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,64 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- arch/powerpc/include/asm/systbl.h |    3 +++
- arch/powerpc/include/asm/unistd.h |    5 ++++-
- arch/powerpc/kernel/sys_ppc32.c   |    8 ++++++++
- 3 files changed, 15 insertions(+), 1 deletions(-)
+On Thu, Aug 19, 2010 at 02:29:49PM +0200, Arnd Bergmann wrote:
+> On Thursday 19 August 2010, Richard Cochran wrote:
+> > 
+> > On Wed, Aug 18, 2010 at 05:02:03PM +0200, Arnd Bergmann wrote:
+> > > You might want to use callbacks for these system calls that you
+> > > can register to at module load time, like it is done for the
+> > > existing syscalls.
+> > 
+> > Can you point me to a specific example?
+> 
+> The struct k_clock contains callback functions to clock source
+> specific implementations of the syscalls and other functions.
+> Adding a new clock source that is (potentially) implemented
+> as a module means you have to define a new k_clock in that module
+> that you register using register_posix_clock.
+> 
+> If you need additional syscalls to be implemented by the same
+> module, you can put more callback functions into struct k_clock
+> that would then only be implemented by the new module.
+> 
+> > > The simpler way (e.g. for testing) is using Kconfig dependencies, like
+> > > 
+> > > config PTP
+> > >       bool "IEEE 1588 Precision Time Protocol"
+> > > 
+> > > config PPS
+> > >       tristate "Pulse per Second"
+> > >       depends on PTP || !PTP
+> > > 
+> > > The depends statement is a way of expressing that when PTP is enabled,
+> > > PPS cannot be a module, while it may be a module if PTP is disabled.
+> > 
+> > THis did not work for me.
+> > 
+> > What I got was, in effect, two independent booleans.
+> 
+> Hmm, right. I wonder what I was thinking of then.
+> 
+> You can certainly do
+> 
+> config PTP
+> 	bool "IEEE 1588 Precision Time Protocol"
+> 	depends on PPS != m
+> 
+> but that will hide the PTP option if PPS is set to 'm', which is normally
+> not what you want.
+> 
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index a5ee345..3d21266 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -326,3 +326,6 @@ SYSCALL_SPU(perf_event_open)
- COMPAT_SYS_SPU(preadv)
- COMPAT_SYS_SPU(pwritev)
- COMPAT_SYS(rt_tgsigqueueinfo)
-+SYSCALL(fanotify_init)
-+COMPAT_SYS(fanotify_mark)
-+SYSCALL_SPU(prlimit64)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index f0a1026..597e6f9 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -345,10 +345,13 @@
- #define __NR_preadv		320
- #define __NR_pwritev		321
- #define __NR_rt_tgsigqueueinfo	322
-+#define __NR_fanotify_init	323
-+#define __NR_fanotify_mark	324
-+#define __NR_prlimit64		325
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		323
-+#define __NR_syscalls		326
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index 20fd701..b1b6043 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -616,3 +616,11 @@ asmlinkage long compat_sys_sync_file_range2(int fd, unsigned int flags,
- 
- 	return sys_sync_file_range(fd, offset, nbytes, flags);
- }
-+
-+asmlinkage long compat_sys_fanotify_mark(int fanotify_fd, unsigned int flags,
-+					 unsigned mask_hi, unsigned mask_lo,
-+					 int dfd, const char __user *pathname)
-+{
-+	u64 mask = ((u64)mask_hi << 32) | mask_lo;
-+	return sys_fanotify_mark(fanotify_fd, flags, mask, dfd, pathname);
-+}
--- 
-1.7.2.1
+Arnd,
 
+Perhaps you were thinking of the vhost example (taken from
+drivers/vhost/Kconfig):
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+config VHOST_NET
+	tristate "Host kernel accelerator for virtio net (EXPERIMENTAL)"
+	depends on NET && EVENTFD && (TUN || !TUN) && (MACVTAP || !MACVTAP) && EXPERIMENTAL
+
+They have a similar construct with both TUN and MACVTAP there. Perhaps
+the parens are a necessary part of the "X || !X" syntax? Just a random
+guess.
+
+Ira
