@@ -1,20 +1,21 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Thu, 19 Aug 2010 17:38:47 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
 Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100819153847.GA10695@riccoc20.at.omicron.at>
+Date: Thu, 19 Aug 2010 17:48:51 +0200
 References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<1282176776.2865.100.camel@localhost.localdomain>
-	<20100819055518.GA4084@riccoc20.at.omicron.at>
-	<201008191428.04546.arnd@arndb.de>
+	<201008191429.50008.arnd@arndb.de>
+	<20100819152301.GB25193@ovro.caltech.edu>
+In-Reply-To: <20100819152301.GB25193@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201008191428.04546.arnd@arndb.de>
-Cc: Rodolfo Giometti <giometti@linux.it>, john stultz <johnstul@us.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201008191748.51819.arnd@arndb.de>
+Cc: john stultz <johnstul@us.ibm.com>,
+	Richard Cochran <richardcochran@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org, Rodolfo Giometti <giometti@linux.it>,
+	devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
 	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,67 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 19, 2010 at 02:28:04PM +0200, Arnd Bergmann wrote:
-> My point was that a syscall is better than an ioctl based interface here,
-> which I definitely still think. Given that John knows much more about
-> clocks than I do, we still need to get agreement on the question that
-> he raised, which is whether we actually need to expose this clock to the
-> user or not.
+On Thursday 19 August 2010, Ira W. Snyder wrote:
+> Perhaps you were thinking of the vhost example (taken from
+> drivers/vhost/Kconfig):
 > 
-> If we can find a way to sync system time accurate enough with PTP and
-> PPS, user applications may not need to see two separate clocks at all.
-
-At the very least, one user application (the PTPd) needs to see the
-PTP clock.
-
-> > SYSCALL_DEFINE3(clock_adjtime, const clockid_t, clkid,
-> > 		int, ppb, struct timespec __user *, ts)
-> > 
-> > ppb - desired frequency adjustment in parts per billion
-> > ts  - desired time step (or jump) in <sec,nsec> to correct
-> >       a measured offset
-> > 
-> > Arguably, this syscall might be useful for other clocks, too.
+> config VHOST_NET
+>         tristate "Host kernel accelerator for virtio net (EXPERIMENTAL)"
+>         depends on NET && EVENTFD && (TUN || !TUN) && (MACVTAP || !MACVTAP) && EXPERIMENTAL
 > 
-> This is a mix of adjtime and adjtimex with the addition of
-> the clkid parameter, right?
+> They have a similar construct with both TUN and MACVTAP there. Perhaps
+> the parens are a necessary part of the "X || !X" syntax? Just a random
+> guess.
 
-Sort of, but not really. ADJTIME(3) takes an offset and slowly
-corrects the clock using a servo in the kernel, over hours.
+Yes, that's the one I was thinking of.
 
-For this function, the offset passed in the 'ts' parameter will be
-immediately corrected, by jumping to the new time. This reflects the
-way that PTP works. After the first few samples, the PTPd has an
-estimate of the offset to the master and the rate difference. The PTPd
-can proceed in one of two ways.
+My mistake was that the effect is slightly different here. VHOST and TUN are
+both tristate. What we guarantee here is that if TUN is "m", VHOST cannot be "y",
+because its dependency cannot be fulfilled for y.
 
-1. If resetting the clock is not desired, then the clock is set to the
-   maximum adjustment (in the right direction) until the clock time is
-   close to the master's time.
-
-2. The estimated offset is added to the current time, resulting in a
-   jump in time.
-
-We need clock_adjtime(id, 0, ts) for the second case.
-
-> Have you considered passing a struct timex instead of ppb and ts?
-
-Yes, but the timex is not suitable, IMHO.
-
-> Is using ppb instead of the timex ppm required to get the accuracy
-> you want?
-
-That is one very good reason.
-
-Another is this: can you explain what the 20+ fields mean?
-
-Consider the field, freq. The comment says "frequency offset (scaled
-ppm)."  To what is it scaled? The only way I know of to find out is to
-read the NTP code (which is fairly complex) and see what the unit
-really is meant to be. Ditto for the other fields.
-
-The timex structure reveals, AFAICT, the inner workings of the kernel
-clock servo. For PTP, we don't need or want the kernel servo. The PTPd
-has its own clock servo in user space.
-
-Richard
+	Arnd
