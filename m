@@ -1,20 +1,25 @@
-Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
-	[65.55.88.15]) by ozlabs.org (Postfix) with ESMTP id 34B33B6F01
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 15:12:21 +1000 (EST)
-From: Matthew McClintock <msm@freescale.com>
-To: kexec@lists.infradead.org
-Subject: [PATCH v2 2/3] Prevent multiple reservations for cpu-release-addr
-Date: Wed, 18 Aug 2010 23:56:50 -0500
-Message-ID: <1282193811-23098-3-git-send-email-msm@freescale.com>
-In-Reply-To: <20100819042023.GC13965@verge.net.au>
-References: <20100819042023.GC13965@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: muvarov@gmail.com, linuxppc-dev@ozlabs.org,
-	Kumar Gala <kumar.gala@freescale.com>,
-	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-	Matthew McClintock <msm@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 28FC7B70E2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 Aug 2010 15:23:44 +1000 (EST)
+Subject: Re: 64-bit ppc rwsem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20100817.222818.193699062.davem@davemloft.net>
+References: <20100817.191424.183031381.davem@davemloft.net>
+	<1282106338.22370.151.camel@pasglop>
+	<1282107803.22370.173.camel@pasglop>
+	<20100817.222818.193699062.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 Aug 2010 15:23:23 +1000
+Message-ID: <1282195403.22370.296.camel@pasglop>
+Mime-Version: 1.0
+Cc: torvalds@linux-foundation.org, paulus@au.ibm.com,
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,63 +29,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, we can add a lot of reservations over a small range, this
-does a simple check to verify the previous entry is not the same
-as the current one and skips it if so
+On Tue, 2010-08-17 at 22:28 -0700, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Wed, 18 Aug 2010 15:03:23 +1000
+> 
+> > I tried various tricks but so far they didn't work. I'll have another
+> > look tomorrow, but I may end up having to keep all the crap typecasts.
+> 
+> The casts are pretty much unavoidable.
+> 
+> Here's what I'm going to end up using on sparc64:
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
+Similar here, but using atomic_long_t instead so it works for 32-bit too
+for me. I suppose we could make that part common indeed.
+
+What about asm-generic/rwsem-atomic.h  or rwsem-cmpxchg.h ?
+
+Below is my current patch, seems to boot fine here so far.
+
+Cheers,
+Ben
+
+Subject: [PATCH] powerpc: Make rwsem use "long" type
+
+This makes the 64-bit kernel use 64-bit signed integers for the counter
+(effectively supporting 32-bit of active count in the semaphore), thus
+avoiding things like overflow of the mmap_sem if you use a really crazy
+number of threads
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- kexec/arch/ppc/fixup_dtb.c |   28 +++++++++++++++++-----------
- 1 files changed, 17 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/rwsem.h |   64 ++++++++++++++++++++++----------------
+ 1 files changed, 37 insertions(+), 27 deletions(-)
 
-diff --git a/kexec/arch/ppc/fixup_dtb.c b/kexec/arch/ppc/fixup_dtb.c
-index 09f9ac1..910a3f0 100644
---- a/kexec/arch/ppc/fixup_dtb.c
-+++ b/kexec/arch/ppc/fixup_dtb.c
-@@ -139,6 +139,7 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf, off_t
- {
- 	int ret, i;
- 	int nodeoffset;
-+	u64 val = 0;
- 
- 	/* If this is a KEXEC kernel we add all regions since they will
- 	 * all need to be saved */
-@@ -175,20 +176,25 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf, off_t
- 	while (nodeoffset != -FDT_ERR_NOTFOUND) {
- 		const void *buf;
- 		int sz, ret;
--		u64 val = 0;
-+		u64 tmp;
- 
- 		buf = fdt_getprop(blob_buf, nodeoffset, "cpu-release-addr", &sz);
--		if (sz == 4) {
--			val = *(u32 *)buf;
--		} else if (sz == 8) {
--			val = *(u64 *)buf;
--		}
- 
--		if (val) {
--			ret = fdt_add_mem_rsv(blob_buf, PAGE_ALIGN(val-PAGE_SIZE), PAGE_SIZE);
--			if (ret)
--				printf("%s: Unable to add reserve for cpu-release-addr!\n",
--					fdt_strerror(ret));
-+		if (buf) {
-+			if (sz == 4) {
-+				tmp = *(u32 *)buf;
-+			} else if (sz == 8) {
-+				tmp = *(u64 *)buf;
-+			}
+diff --git a/arch/powerpc/include/asm/rwsem.h b/arch/powerpc/include/asm/rwsem.h
+index 24cd928..8447d89 100644
+--- a/arch/powerpc/include/asm/rwsem.h
++++ b/arch/powerpc/include/asm/rwsem.h
+@@ -21,15 +21,20 @@
+ /*
+  * the semaphore definition
+  */
+-struct rw_semaphore {
+-	/* XXX this should be able to be an atomic_t  -- paulus */
+-	signed int		count;
+-#define RWSEM_UNLOCKED_VALUE		0x00000000
+-#define RWSEM_ACTIVE_BIAS		0x00000001
+-#define RWSEM_ACTIVE_MASK		0x0000ffff
+-#define RWSEM_WAITING_BIAS		(-0x00010000)
++#ifdef CONFIG_PPC64
++# define RWSEM_ACTIVE_MASK		0xffffffffL
++#else
++# define RWSEM_ACTIVE_MASK		0x0000ffffL
++#endif
 +
-+			/* crude check to see if last value is repeated */
-+			if (_ALIGN_DOWN(tmp, PAGE_SIZE) != _ALIGN_DOWN(val, PAGE_SIZE)) {
-+				val = tmp;
-+				ret = fdt_add_mem_rsv(blob_buf, _ALIGN_DOWN(val, PAGE_SIZE), PAGE_SIZE);
-+				if (ret)
-+					printf("%s: Unable to add reserve for cpu-release-addr!\n",
-+						fdt_strerror(ret));
-+			}
- 		}
++#define RWSEM_UNLOCKED_VALUE		0x00000000L
++#define RWSEM_ACTIVE_BIAS		0x00000001L
++#define RWSEM_WAITING_BIAS		(-RWSEM_ACTIVE_MASK-1)
+ #define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
+ #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
++
++struct rw_semaphore {
++	long			count;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+@@ -43,9 +48,13 @@ struct rw_semaphore {
+ # define __RWSEM_DEP_MAP_INIT(lockname)
+ #endif
  
- 		nodeoffset = fdt_node_offset_by_prop_value(blob_buf, nodeoffset,
--- 
-1.6.0.6
+-#define __RWSEM_INITIALIZER(name) \
+-	{ RWSEM_UNLOCKED_VALUE, __SPIN_LOCK_UNLOCKED((name).wait_lock), \
+-	  LIST_HEAD_INIT((name).wait_list) __RWSEM_DEP_MAP_INIT(name) }
++#define __RWSEM_INITIALIZER(name)				\
++{								\
++	RWSEM_UNLOCKED_VALUE,					\
++	__SPIN_LOCK_UNLOCKED((name).wait_lock),			\
++	LIST_HEAD_INIT((name).wait_list)			\
++	__RWSEM_DEP_MAP_INIT(name)				\
++}
+ 
+ #define DECLARE_RWSEM(name)		\
+ 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
+@@ -70,13 +79,13 @@ extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
+  */
+ static inline void __down_read(struct rw_semaphore *sem)
+ {
+-	if (unlikely(atomic_inc_return((atomic_t *)(&sem->count)) <= 0))
++	if (unlikely(atomic_long_inc_return((atomic_long_t *)&sem->count) <= 0))
+ 		rwsem_down_read_failed(sem);
+ }
+ 
+ static inline int __down_read_trylock(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+ 	while ((tmp = sem->count) >= 0) {
+ 		if (tmp == cmpxchg(&sem->count, tmp,
+@@ -92,10 +101,10 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
+  */
+ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_add_return(RWSEM_ACTIVE_WRITE_BIAS,
+-				(atomic_t *)(&sem->count));
++	tmp = atomic_long_add_return(RWSEM_ACTIVE_WRITE_BIAS,
++				     (atomic_long_t *)&sem->count);
+ 	if (unlikely(tmp != RWSEM_ACTIVE_WRITE_BIAS))
+ 		rwsem_down_write_failed(sem);
+ }
+@@ -107,7 +116,7 @@ static inline void __down_write(struct rw_semaphore *sem)
+ 
+ static inline int __down_write_trylock(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+ 	tmp = cmpxchg(&sem->count, RWSEM_UNLOCKED_VALUE,
+ 		      RWSEM_ACTIVE_WRITE_BIAS);
+@@ -119,9 +128,9 @@ static inline int __down_write_trylock(struct rw_semaphore *sem)
+  */
+ static inline void __up_read(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_dec_return((atomic_t *)(&sem->count));
++	tmp = atomic_long_dec_return((atomic_long_t *)&sem->count);
+ 	if (unlikely(tmp < -1 && (tmp & RWSEM_ACTIVE_MASK) == 0))
+ 		rwsem_wake(sem);
+ }
+@@ -131,17 +140,17 @@ static inline void __up_read(struct rw_semaphore *sem)
+  */
+ static inline void __up_write(struct rw_semaphore *sem)
+ {
+-	if (unlikely(atomic_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
+-			      (atomic_t *)(&sem->count)) < 0))
++	if (unlikely(atomic_long_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
++				 (atomic_long_t *)&sem->count) < 0))
+ 		rwsem_wake(sem);
+ }
+ 
+ /*
+  * implement atomic add functionality
+  */
+-static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
++static inline void rwsem_atomic_add(long delta, struct rw_semaphore *sem)
+ {
+-	atomic_add(delta, (atomic_t *)(&sem->count));
++	atomic_long_add(delta, (atomic_long_t *)&sem->count);
+ }
+ 
+ /*
+@@ -149,9 +158,10 @@ static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
+  */
+ static inline void __downgrade_write(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_add_return(-RWSEM_WAITING_BIAS, (atomic_t *)(&sem->count));
++	tmp = atomic_long_add_return(-RWSEM_WAITING_BIAS,
++				     (atomic_long_t *)&sem->count);
+ 	if (tmp < 0)
+ 		rwsem_downgrade_wake(sem);
+ }
+@@ -159,14 +169,14 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
+ /*
+  * implement exchange and add functionality
+  */
+-static inline int rwsem_atomic_update(int delta, struct rw_semaphore *sem)
++static inline long rwsem_atomic_update(long delta, struct rw_semaphore *sem)
+ {
+-	return atomic_add_return(delta, (atomic_t *)(&sem->count));
++	return atomic_long_add_return(delta, (atomic_long_t *)&sem->count);
+ }
+ 
+ static inline int rwsem_is_locked(struct rw_semaphore *sem)
+ {
+-	return (sem->count != 0);
++	return sem->count != 0;
+ }
+ 
+ #endif	/* __KERNEL__ */
