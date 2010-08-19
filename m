@@ -1,13 +1,12 @@
 Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) by ozlabs.org (Postfix) with ESMTP id 2DAD3B6F01
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 15:12:20 +1000 (EST)
+Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+	[65.55.88.15]) by ozlabs.org (Postfix) with ESMTP id 34B33B6F01
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 15:12:21 +1000 (EST)
 From: Matthew McClintock <msm@freescale.com>
 To: kexec@lists.infradead.org
-Subject: [PATCH v2 3/3] Prevent initrd-start and initrd-end from appearing
-	multiple times
-Date: Wed, 18 Aug 2010 23:56:51 -0500
-Message-ID: <1282193811-23098-4-git-send-email-msm@freescale.com>
+Subject: [PATCH v2 2/3] Prevent multiple reservations for cpu-release-addr
+Date: Wed, 18 Aug 2010 23:56:50 -0500
+Message-ID: <1282193811-23098-3-git-send-email-msm@freescale.com>
 In-Reply-To: <20100819042023.GC13965@verge.net.au>
 References: <20100819042023.GC13965@verge.net.au>
 MIME-Version: 1.0
@@ -25,59 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We always remove the old entry, and add it back if it is needed
-on for the kexec'ed kernel
+Currently, we can add a lot of reservations over a small range, this
+does a simple check to verify the previous entry is not the same
+as the current one and skips it if so
 
 Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
- kexec/arch/ppc/fixup_dtb.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ kexec/arch/ppc/fixup_dtb.c |   28 +++++++++++++++++-----------
+ 1 files changed, 17 insertions(+), 11 deletions(-)
 
 diff --git a/kexec/arch/ppc/fixup_dtb.c b/kexec/arch/ppc/fixup_dtb.c
-index 910a3f0..205fd77 100644
+index 09f9ac1..910a3f0 100644
 --- a/kexec/arch/ppc/fixup_dtb.c
 +++ b/kexec/arch/ppc/fixup_dtb.c
-@@ -160,7 +160,7 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf, off_t
- 				goto out;
- 			}
- 		}
--	} else {
-+	} else if (ramdisk || reuse_initrd) {
- 		/* Otherwise we just add back the ramdisk and the device tree
- 		 * is already in the list */
- 		ret = fdt_add_mem_rsv(blob_buf, ramdisk_base, ramdisk_size);
-@@ -300,13 +300,16 @@ static void fixup_initrd(char *blob_buf)
+@@ -139,6 +139,7 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf, off_t
+ {
+ 	int ret, i;
+ 	int nodeoffset;
++	u64 val = 0;
  
- 	nodeoffset = fdt_path_offset(blob_buf, "/chosen");
+ 	/* If this is a KEXEC kernel we add all regions since they will
+ 	 * all need to be saved */
+@@ -175,20 +176,25 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf, off_t
+ 	while (nodeoffset != -FDT_ERR_NOTFOUND) {
+ 		const void *buf;
+ 		int sz, ret;
+-		u64 val = 0;
++		u64 tmp;
  
--	if ((reuse_initrd || ramdisk) &&
--		((ramdisk_base != 0) && (ramdisk_size != 0))) {
--		if (nodeoffset < 0) {
--			printf("fdt_initrd: %s\n", fdt_strerror(nodeoffset));
--			return;
+ 		buf = fdt_getprop(blob_buf, nodeoffset, "cpu-release-addr", &sz);
+-		if (sz == 4) {
+-			val = *(u32 *)buf;
+-		} else if (sz == 8) {
+-			val = *(u64 *)buf;
 -		}
-+	if (nodeoffset < 0) {
-+		printf("fdt_initrd: %s\n", fdt_strerror(nodeoffset));
-+		return;
-+	}
+ 
+-		if (val) {
+-			ret = fdt_add_mem_rsv(blob_buf, PAGE_ALIGN(val-PAGE_SIZE), PAGE_SIZE);
+-			if (ret)
+-				printf("%s: Unable to add reserve for cpu-release-addr!\n",
+-					fdt_strerror(ret));
++		if (buf) {
++			if (sz == 4) {
++				tmp = *(u32 *)buf;
++			} else if (sz == 8) {
++				tmp = *(u64 *)buf;
++			}
 +
-+	fdt_delprop(blob_buf, nodeoffset, "linux,initrd-start");
-+	fdt_delprop(blob_buf, nodeoffset, "linux,initrd-end");
- 
-+	if ((reuse_initrd || ramdisk) &&
-+	   ((ramdisk_base != 0) && (ramdisk_size != 0))) {
- 		tmp = ramdisk_base;
- 		err = fdt_setprop(blob_buf, nodeoffset,
- 			"linux,initrd-start", &tmp, sizeof(tmp));
-@@ -325,9 +328,6 @@ static void fixup_initrd(char *blob_buf)
- 				fdt_strerror(err));
- 				return;
++			/* crude check to see if last value is repeated */
++			if (_ALIGN_DOWN(tmp, PAGE_SIZE) != _ALIGN_DOWN(val, PAGE_SIZE)) {
++				val = tmp;
++				ret = fdt_add_mem_rsv(blob_buf, _ALIGN_DOWN(val, PAGE_SIZE), PAGE_SIZE);
++				if (ret)
++					printf("%s: Unable to add reserve for cpu-release-addr!\n",
++						fdt_strerror(ret));
++			}
  		}
--	} else {
--		fdt_delprop(blob_buf, nodeoffset, "linux,initrd-start");
--		fdt_delprop(blob_buf, nodeoffset, "linux,initrd-end");
- 	}
- }
  
+ 		nodeoffset = fdt_node_offset_by_prop_value(blob_buf, nodeoffset,
 -- 
 1.6.0.6
