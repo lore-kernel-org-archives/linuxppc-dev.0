@@ -1,21 +1,25 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Thu, 19 Aug 2010 11:22:47 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100819092246.GA8484@riccoc20.at.omicron.at>
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<201008171336.29375.arnd@arndb.de>
-	<20100818140440.GA22655@riccoc20.at.omicron.at>
-	<201008181702.03384.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201008181702.03384.arnd@arndb.de>
-Cc: Rodolfo Giometti <giometti@linux.it>, john stultz <johnstul@us.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D0D52B70D6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 Aug 2010 20:24:43 +1000 (EST)
+Subject: Re: 64-bit ppc rwsem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20100818.222925.233689776.davem@davemloft.net>
+References: <1282107803.22370.173.camel@pasglop>
+	<20100817.222818.193699062.davem@davemloft.net>
+	<1282195403.22370.296.camel@pasglop>
+	<20100818.222925.233689776.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 Aug 2010 20:24:19 +1000
+Message-ID: <1282213459.22370.357.camel@pasglop>
+Mime-Version: 1.0
+Cc: torvalds@linux-foundation.org, paulus@au.ibm.com,
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 18, 2010 at 05:02:03PM +0200, Arnd Bergmann wrote:
-> You might want to use callbacks for these system calls that you
-> can register to at module load time, like it is done for the
-> existing syscalls.
-
-Can you point me to a specific example?
-
-> The simpler way (e.g. for testing) is using Kconfig dependencies, like
+On Wed, 2010-08-18 at 22:29 -0700, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Thu, 19 Aug 2010 15:23:23 +1000
 > 
-> config PTP
-> 	bool "IEEE 1588 Precision Time Protocol"
+> > Similar here, but using atomic_long_t instead so it works for 32-bit too
+> > for me. I suppose we could make that part common indeed.
+> > 
+> > What about asm-generic/rwsem-atomic.h  or rwsem-cmpxchg.h ?
 > 
-> config PPS
-> 	tristate "Pulse per Second"
-> 	depends on PTP || !PTP
-> 
-> The depends statement is a way of expressing that when PTP is enabled,
-> PPS cannot be a module, while it may be a module if PTP is disabled.
+> Using rwsem-cmpxchg.h sounds best I guess.
 
-THis did not work for me.
+Ok, I'll send a new patch tomorrow that does that.
 
-What I got was, in effect, two independent booleans.
-
-
-Thanks,
-
-Richard
+Cheers,
+Ben.
