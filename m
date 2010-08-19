@@ -1,15 +1,12 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Thu, 19 Aug 2010 08:34:45 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/4] powerpc/4xx: Index interrupt stacks by physical cpu
-Message-ID: <20100819123445.GA9695@zod.rchland.ibm.com>
-References: <1282149866-4710-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1282149866-4710-4-git-send-email-shaggy@linux.vnet.ibm.com>
+Return-Path: <whitebox@nefkom.net>
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Linuxppc-dev@ozlabs.org
+Subject: [PATCH] [powerpc] Wire up fanotify_init, fanotify_mark,
+	prlimit64 syscalls
+Date: Thu, 19 Aug 2010 17:15:37 +0200
+Message-ID: <m28w42prae.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1282149866-4710-4-git-send-email-shaggy@linux.vnet.ibm.com>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,43 +16,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 18, 2010 at 11:44:25AM -0500, Dave Kleikamp wrote:
->The interrupt stacks need to be indexed by the physical cpu since the
->critical, debug and machine check handlers use the contents of SPRN_PIR to
->index the critirq_ctx, dbgirq_ctx, and mcheckirq_ctx arrays.
->
->Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
->---
-> arch/powerpc/kernel/irq.c      |   15 ++++++++-------
-> arch/powerpc/kernel/setup_32.c |    9 +++++----
-> 2 files changed, 13 insertions(+), 11 deletions(-)
->
->diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
->index d3ce67c..52e9c95 100644
->--- a/arch/powerpc/kernel/irq.c
->+++ b/arch/powerpc/kernel/irq.c
->@@ -446,22 +446,23 @@ struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
-> void exc_lvl_ctx_init(void)
-> {
-> 	struct thread_info *tp;
->-	int i;
->+	int i, hw_cpu;
->
-> 	for_each_possible_cpu(i) {
->-		memset((void *)critirq_ctx[i], 0, THREAD_SIZE);
->-		tp = critirq_ctx[i];
->+		hw_cpu = get_hard_smp_processor_id(i);
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/include/asm/systbl.h |    3 +++
+ arch/powerpc/include/asm/unistd.h |    5 ++++-
+ arch/powerpc/kernel/sys_ppc32.c   |    8 ++++++++
+ 3 files changed, 15 insertions(+), 1 deletions(-)
 
-This one throws this compile error when trying to build
-ppc44x_defconfig:
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index a5ee345..3d21266 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -326,3 +326,6 @@ SYSCALL_SPU(perf_event_open)
+ COMPAT_SYS_SPU(preadv)
+ COMPAT_SYS_SPU(pwritev)
+ COMPAT_SYS(rt_tgsigqueueinfo)
++SYSCALL(fanotify_init)
++COMPAT_SYS(fanotify_mark)
++SYSCALL_SPU(prlimit64)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index f0a1026..597e6f9 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -345,10 +345,13 @@
+ #define __NR_preadv		320
+ #define __NR_pwritev		321
+ #define __NR_rt_tgsigqueueinfo	322
++#define __NR_fanotify_init	323
++#define __NR_fanotify_mark	324
++#define __NR_prlimit64		325
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		323
++#define __NR_syscalls		326
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index 20fd701..b1b6043 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -616,3 +616,11 @@ asmlinkage long compat_sys_sync_file_range2(int fd, unsigned int flags,
+ 
+ 	return sys_sync_file_range(fd, offset, nbytes, flags);
+ }
++
++asmlinkage long compat_sys_fanotify_mark(int fanotify_fd, unsigned int flags,
++					 unsigned mask_hi, unsigned mask_lo,
++					 int dfd, const char __user *pathname)
++{
++	u64 mask = ((u64)mask_hi << 32) | mask_lo;
++	return sys_fanotify_mark(fanotify_fd, flags, mask, dfd, pathname);
++}
+-- 
+1.7.2.1
 
-CC      arch/powerpc/kernel/irq.o
-arch/powerpc/kernel/irq.c: In function 'exc_lvl_ctx_init':
-arch/powerpc/kernel/irq.c:452: error: implicit declaration of function
-'get_hard_smp_processor_id'
-make[1]: *** [arch/powerpc/kernel/irq.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
 
-I'm guessing it needs a #include <asm/smp.h> added to it.
-
-josh
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
