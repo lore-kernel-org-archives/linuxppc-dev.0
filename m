@@ -1,25 +1,20 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id F1F02B70E5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Aug 2010 01:23:03 +1000 (EST)
-Date: Thu, 19 Aug 2010 08:23:01 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Return-Path: <richardcochran@gmail.com>
+Date: Thu, 19 Aug 2010 17:38:47 +0200
+From: Richard Cochran <richardcochran@gmail.com>
 To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100819152301.GB25193@ovro.caltech.edu>
+Message-ID: <20100819153847.GA10695@riccoc20.at.omicron.at>
 References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<201008181702.03384.arnd@arndb.de>
-	<20100819092246.GA8484@riccoc20.at.omicron.at>
-	<201008191429.50008.arnd@arndb.de>
+	<1282176776.2865.100.camel@localhost.localdomain>
+	<20100819055518.GA4084@riccoc20.at.omicron.at>
+	<201008191428.04546.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201008191429.50008.arnd@arndb.de>
-Cc: john stultz <johnstul@us.ibm.com>,
-	Richard Cochran <richardcochran@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org, Rodolfo Giometti <giometti@linux.it>,
-	devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+In-Reply-To: <201008191428.04546.arnd@arndb.de>
+Cc: Rodolfo Giometti <giometti@linux.it>, john stultz <johnstul@us.ibm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
 	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,65 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 19, 2010 at 02:29:49PM +0200, Arnd Bergmann wrote:
-> On Thursday 19 August 2010, Richard Cochran wrote:
+On Thu, Aug 19, 2010 at 02:28:04PM +0200, Arnd Bergmann wrote:
+> My point was that a syscall is better than an ioctl based interface here,
+> which I definitely still think. Given that John knows much more about
+> clocks than I do, we still need to get agreement on the question that
+> he raised, which is whether we actually need to expose this clock to the
+> user or not.
+> 
+> If we can find a way to sync system time accurate enough with PTP and
+> PPS, user applications may not need to see two separate clocks at all.
+
+At the very least, one user application (the PTPd) needs to see the
+PTP clock.
+
+> > SYSCALL_DEFINE3(clock_adjtime, const clockid_t, clkid,
+> > 		int, ppb, struct timespec __user *, ts)
 > > 
-> > On Wed, Aug 18, 2010 at 05:02:03PM +0200, Arnd Bergmann wrote:
-> > > You might want to use callbacks for these system calls that you
-> > > can register to at module load time, like it is done for the
-> > > existing syscalls.
+> > ppb - desired frequency adjustment in parts per billion
+> > ts  - desired time step (or jump) in <sec,nsec> to correct
+> >       a measured offset
 > > 
-> > Can you point me to a specific example?
+> > Arguably, this syscall might be useful for other clocks, too.
 > 
-> The struct k_clock contains callback functions to clock source
-> specific implementations of the syscalls and other functions.
-> Adding a new clock source that is (potentially) implemented
-> as a module means you have to define a new k_clock in that module
-> that you register using register_posix_clock.
-> 
-> If you need additional syscalls to be implemented by the same
-> module, you can put more callback functions into struct k_clock
-> that would then only be implemented by the new module.
-> 
-> > > The simpler way (e.g. for testing) is using Kconfig dependencies, like
-> > > 
-> > > config PTP
-> > >       bool "IEEE 1588 Precision Time Protocol"
-> > > 
-> > > config PPS
-> > >       tristate "Pulse per Second"
-> > >       depends on PTP || !PTP
-> > > 
-> > > The depends statement is a way of expressing that when PTP is enabled,
-> > > PPS cannot be a module, while it may be a module if PTP is disabled.
-> > 
-> > THis did not work for me.
-> > 
-> > What I got was, in effect, two independent booleans.
-> 
-> Hmm, right. I wonder what I was thinking of then.
-> 
-> You can certainly do
-> 
-> config PTP
-> 	bool "IEEE 1588 Precision Time Protocol"
-> 	depends on PPS != m
-> 
-> but that will hide the PTP option if PPS is set to 'm', which is normally
-> not what you want.
-> 
+> This is a mix of adjtime and adjtimex with the addition of
+> the clkid parameter, right?
 
-Arnd,
+Sort of, but not really. ADJTIME(3) takes an offset and slowly
+corrects the clock using a servo in the kernel, over hours.
 
-Perhaps you were thinking of the vhost example (taken from
-drivers/vhost/Kconfig):
+For this function, the offset passed in the 'ts' parameter will be
+immediately corrected, by jumping to the new time. This reflects the
+way that PTP works. After the first few samples, the PTPd has an
+estimate of the offset to the master and the rate difference. The PTPd
+can proceed in one of two ways.
 
-config VHOST_NET
-	tristate "Host kernel accelerator for virtio net (EXPERIMENTAL)"
-	depends on NET && EVENTFD && (TUN || !TUN) && (MACVTAP || !MACVTAP) && EXPERIMENTAL
+1. If resetting the clock is not desired, then the clock is set to the
+   maximum adjustment (in the right direction) until the clock time is
+   close to the master's time.
 
-They have a similar construct with both TUN and MACVTAP there. Perhaps
-the parens are a necessary part of the "X || !X" syntax? Just a random
-guess.
+2. The estimated offset is added to the current time, resulting in a
+   jump in time.
 
-Ira
+We need clock_adjtime(id, 0, ts) for the second case.
+
+> Have you considered passing a struct timex instead of ppb and ts?
+
+Yes, but the timex is not suitable, IMHO.
+
+> Is using ppb instead of the timex ppm required to get the accuracy
+> you want?
+
+That is one very good reason.
+
+Another is this: can you explain what the 20+ fields mean?
+
+Consider the field, freq. The comment says "frequency offset (scaled
+ppm)."  To what is it scaled? The only way I know of to find out is to
+read the NTP code (which is fairly complex) and see what the unit
+really is meant to be. Ditto for the other fields.
+
+The timex structure reveals, AFAICT, the inner workings of the kernel
+clock servo. For PTP, we don't need or want the kernel servo. The PTPd
+has its own clock servo in user space.
+
+Richard
