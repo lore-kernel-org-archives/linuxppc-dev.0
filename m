@@ -1,25 +1,15 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 7BF98B6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 Aug 2010 22:29:49 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Date: Thu, 19 Aug 2010 14:29:49 +0200
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<201008181702.03384.arnd@arndb.de>
-	<20100819092246.GA8484@riccoc20.at.omicron.at>
-In-Reply-To: <20100819092246.GA8484@riccoc20.at.omicron.at>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Thu, 19 Aug 2010 08:34:45 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] powerpc/4xx: Index interrupt stacks by physical cpu
+Message-ID: <20100819123445.GA9695@zod.rchland.ibm.com>
+References: <1282149866-4710-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1282149866-4710-4-git-send-email-shaggy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201008191429.50008.arnd@arndb.de>
-Cc: Rodolfo Giometti <giometti@linux.it>, john stultz <johnstul@us.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1282149866-4710-4-git-send-email-shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 19 August 2010, Richard Cochran wrote:
-> 
-> On Wed, Aug 18, 2010 at 05:02:03PM +0200, Arnd Bergmann wrote:
-> > You might want to use callbacks for these system calls that you
-> > can register to at module load time, like it is done for the
-> > existing syscalls.
-> 
-> Can you point me to a specific example?
+On Wed, Aug 18, 2010 at 11:44:25AM -0500, Dave Kleikamp wrote:
+>The interrupt stacks need to be indexed by the physical cpu since the
+>critical, debug and machine check handlers use the contents of SPRN_PIR to
+>index the critirq_ctx, dbgirq_ctx, and mcheckirq_ctx arrays.
+>
+>Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+>---
+> arch/powerpc/kernel/irq.c      |   15 ++++++++-------
+> arch/powerpc/kernel/setup_32.c |    9 +++++----
+> 2 files changed, 13 insertions(+), 11 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+>index d3ce67c..52e9c95 100644
+>--- a/arch/powerpc/kernel/irq.c
+>+++ b/arch/powerpc/kernel/irq.c
+>@@ -446,22 +446,23 @@ struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
+> void exc_lvl_ctx_init(void)
+> {
+> 	struct thread_info *tp;
+>-	int i;
+>+	int i, hw_cpu;
+>
+> 	for_each_possible_cpu(i) {
+>-		memset((void *)critirq_ctx[i], 0, THREAD_SIZE);
+>-		tp = critirq_ctx[i];
+>+		hw_cpu = get_hard_smp_processor_id(i);
 
-The struct k_clock contains callback functions to clock source
-specific implementations of the syscalls and other functions.
-Adding a new clock source that is (potentially) implemented
-as a module means you have to define a new k_clock in that module
-that you register using register_posix_clock.
+This one throws this compile error when trying to build
+ppc44x_defconfig:
 
-If you need additional syscalls to be implemented by the same
-module, you can put more callback functions into struct k_clock
-that would then only be implemented by the new module.
+CC      arch/powerpc/kernel/irq.o
+arch/powerpc/kernel/irq.c: In function 'exc_lvl_ctx_init':
+arch/powerpc/kernel/irq.c:452: error: implicit declaration of function
+'get_hard_smp_processor_id'
+make[1]: *** [arch/powerpc/kernel/irq.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
 
-> > The simpler way (e.g. for testing) is using Kconfig dependencies, like
-> > 
-> > config PTP
-> >       bool "IEEE 1588 Precision Time Protocol"
-> > 
-> > config PPS
-> >       tristate "Pulse per Second"
-> >       depends on PTP || !PTP
-> > 
-> > The depends statement is a way of expressing that when PTP is enabled,
-> > PPS cannot be a module, while it may be a module if PTP is disabled.
-> 
-> THis did not work for me.
-> 
-> What I got was, in effect, two independent booleans.
+I'm guessing it needs a #include <asm/smp.h> added to it.
 
-Hmm, right. I wonder what I was thinking of then.
-
-You can certainly do
-
-config PTP
-	bool "IEEE 1588 Precision Time Protocol"
-	depends on PPS != m
-
-but that will hide the PTP option if PPS is set to 'm', which is normally
-not what you want.
-
-	Arnd
+josh
