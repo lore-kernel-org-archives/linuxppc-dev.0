@@ -1,25 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0D52B70D6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 Aug 2010 20:24:43 +1000 (EST)
-Subject: Re: 64-bit ppc rwsem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20100818.222925.233689776.davem@davemloft.net>
-References: <1282107803.22370.173.camel@pasglop>
-	<20100817.222818.193699062.davem@davemloft.net>
-	<1282195403.22370.296.camel@pasglop>
-	<20100818.222925.233689776.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 Aug 2010 20:24:19 +1000
-Message-ID: <1282213459.22370.357.camel@pasglop>
-Mime-Version: 1.0
-Cc: torvalds@linux-foundation.org, paulus@au.ibm.com,
-	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Richard Cochran <richardcochran@gmail.com>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+Date: Thu, 19 Aug 2010 14:28:04 +0200
+References: <cover.1281956490.git.richard.cochran@omicron.at>
+	<1282176776.2865.100.camel@localhost.localdomain>
+	<20100819055518.GA4084@riccoc20.at.omicron.at>
+In-Reply-To: <20100819055518.GA4084@riccoc20.at.omicron.at>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201008191428.04546.arnd@arndb.de>
+Cc: Rodolfo Giometti <giometti@linux.it>, john stultz <johnstul@us.ibm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-08-18 at 22:29 -0700, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Thu, 19 Aug 2010 15:23:23 +1000
-> 
-> > Similar here, but using atomic_long_t instead so it works for 32-bit too
-> > for me. I suppose we could make that part common indeed.
+On Thursday 19 August 2010, Richard Cochran wrote:
+> On Wed, Aug 18, 2010 at 05:12:56PM -0700, john stultz wrote:
+> > On Wed, 2010-08-18 at 09:19 +0200, Richard Cochran wrote:
+> > > The timer/alarm stuff is "ancillary" and is not at all necessary. It
+> > > is just a "nice to have." I will happily remove it, if it is too
+> > > troubling for people.
 > > 
-> > What about asm-generic/rwsem-atomic.h  or rwsem-cmpxchg.h ?
+> > If there's a compelling argument for it, I'm interested to hear. But
+> > again, it seems like just
+> > yet-another-way-to-get-alarm/timer-functionality, so before we add an
+> > extra API (or widen an existing API) I'd like to understand the need.
 > 
-> Using rwsem-cmpxchg.h sounds best I guess.
+> We don't really need it, IMHO.
+> 
+> But if we offer clockid_t CLOCK_PTP, then we get timer_settime()
+> without any extra effort.
 
-Ok, I'll send a new patch tomorrow that does that.
+Makes sense.
 
-Cheers,
-Ben.
+> > So in thinking about this, try to focus on what the new clock_id
+> > provides that the other existing clockids do not? Are they at comparable
+> > levels of abstraction? 15 years from now, are folks likely to still be
+> > using it? Will it be maintainable? etc...
+> 
+> Arnd convinced me that clockid_t=CLOCK_PTP is a good fit.
+
+My point was that a syscall is better than an ioctl based interface here,
+which I definitely still think. Given that John knows much more about
+clocks than I do, we still need to get agreement on the question that
+he raised, which is whether we actually need to expose this clock to the
+user or not.
+
+If we can find a way to sync system time accurate enough with PTP and
+PPS, user applications may not need to see two separate clocks at all.
+
+> My plan would be to introduce just one additional syscall:
+> 
+> SYSCALL_DEFINE3(clock_adjtime, const clockid_t, clkid,
+> 		int, ppb, struct timespec __user *, ts)
+> 
+> ppb - desired frequency adjustment in parts per billion
+> ts  - desired time step (or jump) in <sec,nsec> to correct
+>       a measured offset
+> 
+> Arguably, this syscall might be useful for other clocks, too.
+
+This is a mix of adjtime and adjtimex with the addition of
+the clkid parameter, right?
+
+Have you considered passing a struct timex instead of ppb and ts?
+
+Is using ppb instead of the timex ppm required to get the accuracy
+you want?
+
+	Arnd
