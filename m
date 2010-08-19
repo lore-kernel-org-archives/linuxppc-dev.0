@@ -1,21 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 433EDB70CC
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 11:04:12 +1000 (EST)
-Date: Thu, 19 Aug 2010 11:04:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re:
-Message-Id: <20100819110405.4ccb74e1.sfr@canb.auug.org.au>
-In-Reply-To: <20100818205646.57783157D71@gemini.denx.de>
-References: <20100818205646.57783157D71@gemini.denx.de>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] Some 47x patches for the powerpc-4xx tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+In-Reply-To: <1282149960.3679.0.camel@shaggy-w500.austin.ibm.com>
+References: <1282149866-4710-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1282149960.3679.0.camel@shaggy-w500.austin.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 Aug 2010 13:19:57 +1000
+Message-ID: <1282187997.22370.287.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__19_Aug_2010_11_04_05_+1000_USMZVUJ_1XVssG+x"
-Cc: linuxppc-dev@ozlabs.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
-	Prodyut Hazarika <phazarika@appliedmicro.com>,
-	Mark Miesfeld <mmiesfeld@appliedmicro.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,87 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__19_Aug_2010_11_04_05_+1000_USMZVUJ_1XVssG+x
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2010-08-18 at 11:45 -0500, Dave Kleikamp wrote:
+> Sorry!  Forgot to change the subject.
+> 
+> Shaggy
+> 
+> On Wed, 2010-08-18 at 11:44 -0500, Dave Kleikamp wrote:
+> > Josh,
+> > Here are some bug fixes for the powerpc-4xx tree.  It'd be nice if they
+> > could make it into 2.6.46.
 
-Hi Wolfgang,
+Yeah and I'm sure they can make it into 2.6.46... if you want to wait
+that long ! In the meantime, 2.6.36 will do :-)
 
-On Wed, 18 Aug 2010 22:56:46 +0200 Wolfgang Denk <wd@denx.de> wrote:
->
-> drivers/ata/sata_dwc_460ex.c: At top level:
-> drivers/ata/sata_dwc_460ex.c:1592: warning: 'struct of_device' declared i=
-nside parameter list
-> drivers/ata/sata_dwc_460ex.c:1592: warning: its scope is only this defini=
-tion or declaration, which is probably not what you want
-> drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_probe':
-> drivers/ata/sata_dwc_460ex.c:1607: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1614: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1616: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1622: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1628: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1630: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1646: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1650: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1652: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1658: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1660: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1667: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1676: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1678: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1691: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1693: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c: At top level:
-> drivers/ata/sata_dwc_460ex.c:1705: warning: 'struct of_device' declared i=
-nside parameter list
-> drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_remove':
-> drivers/ata/sata_dwc_460ex.c:1707: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c:1720: error: dereferencing pointer to incomp=
-lete type
-> drivers/ata/sata_dwc_460ex.c: At top level:
-> drivers/ata/sata_dwc_460ex.c:1736: warning: initialization from incompati=
-ble pointer type
-> drivers/ata/sata_dwc_460ex.c:1737: warning: initialization from incompati=
-ble pointer type
-
-I think most of these (if not all) are fixed in Linus' tree today.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
 
---Signature=_Thu__19_Aug_2010_11_04_05_+1000_USMZVUJ_1XVssG+x
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMbIMFAAoJEDMEi1NhKgbsPfUH/2EMqgMwS9xkbIQTJwaa3c16
-WGgHVdLZtRIV932hqKd05RcHJlGdwmLo1jRrzFG+JM+LpVQXyNCwQFfaVYgwPKBU
-jUqcvwyxKGbelQs8VO3vMCpF8/+RGuus7ZSwkOmcuPcKdvWOp4NnPDOOL+qsNo9P
-FuBwJMPP1kGugZugzx+aOV+4FlOpq11k7n7oypCyPwT6bxKmsZM0gjYWf450XB7v
-3LYrQUI5HzgpwlmDjvoyltqsRocSyTIaTvRbxAXCyYN0YErm66FA9gXbSn3mOt+U
-7GmNqeqYTGmaCxxW9+hnMuDI7EcGeA4NpeXVRbvnr6G+Gi40IyD1efmpBo8B4XU=
-=yeMC
------END PGP SIGNATURE-----
-
---Signature=_Thu__19_Aug_2010_11_04_05_+1000_USMZVUJ_1XVssG+x--
+> > Thanks,
+> > Shaggy
+> > 
+> > Dave Kleikamp (4):
+> >   powerpc/47x: Make sure mcsr is cleared before enabling machine check
+> >     interrupts
+> >   powerpc/47x: Remove redundant line from cputable.c
+> >   powerpc/4xx: Index interrupt stacks by physical cpu
+> >   powerpc/47x: Add an isync before the tlbivax instruction
+> > 
+> >  arch/powerpc/kernel/cputable.c   |    1 -
+> >  arch/powerpc/kernel/head_44x.S   |    4 ++++
+> >  arch/powerpc/kernel/irq.c        |   15 ++++++++-------
+> >  arch/powerpc/kernel/setup_32.c   |    9 +++++----
+> >  arch/powerpc/mm/tlb_nohash_low.S |    1 +
+> >  5 files changed, 18 insertions(+), 12 deletions(-)
+> > 
+> 
