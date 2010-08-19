@@ -1,16 +1,21 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 27150B70DF
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 17:56:35 +1000 (EST)
-Received: by ewy2 with SMTP id 2so1209136ewy.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 00:56:33 -0700 (PDT)
+Return-Path: <richardcochran@gmail.com>
+Date: Thu, 19 Aug 2010 11:22:47 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+Message-ID: <20100819092246.GA8484@riccoc20.at.omicron.at>
+References: <cover.1281956490.git.richard.cochran@omicron.at>
+	<201008171336.29375.arnd@arndb.de>
+	<20100818140440.GA22655@riccoc20.at.omicron.at>
+	<201008181702.03384.arnd@arndb.de>
 MIME-Version: 1.0
-Date: Thu, 19 Aug 2010 00:56:33 -0700
-Message-ID: <AANLkTikoz2vi5Db1WLcUV-C216c9x0TY4rXQjtXsjFOp@mail.gmail.com>
-Subject: mpc8xx microcode patch?
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201008181702.03384.arnd@arndb.de>
+Cc: Rodolfo Giometti <giometti@linux.it>, john stultz <johnstul@us.ibm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, Aug 18, 2010 at 05:02:03PM +0200, Arnd Bergmann wrote:
+> You might want to use callbacks for these system calls that you
+> can register to at module load time, like it is done for the
+> existing syscalls.
 
-The kernel supports three microcode patch: USB_SOF_UCODE_PATCH,
-I2C_SPI_UCODE_PATCH, and I2C_SPI_SMC1_UCODE_PATCH. However from the
-mpc8xxmc01.zip downloaded from freescale website, there are 4
-combinations of microcode (I2C/SPI, SMC/SPI, SMC/I2C, and SMC). Also
-in the EB662.pdf it's mentioned that SMC relocation patch is
-applicable to all MPC8xx families and revisions. Surprisingly the SMC
-only relocation patch cannot be found in the kernel. My processor is
-MPC870 and I'm not sure what ucode patch I shall apply.
+Can you point me to a specific example?
 
-What am I missing here? This EB662.pdf was published in Jan. 2006.
-It's hard to believe that the kernel hasn't incorporate what needs to
-be done.
+> The simpler way (e.g. for testing) is using Kconfig dependencies, like
+> 
+> config PTP
+> 	bool "IEEE 1588 Precision Time Protocol"
+> 
+> config PPS
+> 	tristate "Pulse per Second"
+> 	depends on PTP || !PTP
+> 
+> The depends statement is a way of expressing that when PTP is enabled,
+> PPS cannot be a module, while it may be a module if PTP is disabled.
+
+THis did not work for me.
+
+What I got was, in effect, two independent booleans.
+
 
 Thanks,
--Shawn.
+
+Richard
