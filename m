@@ -1,15 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/4] Some 47x patches for the powerpc-4xx tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-In-Reply-To: <1282149960.3679.0.camel@shaggy-w500.austin.ibm.com>
-References: <1282149866-4710-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1282149960.3679.0.camel@shaggy-w500.austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 Aug 2010 13:19:57 +1000
-Message-ID: <1282187997.22370.287.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <msm@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 1873BB6EF1
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 14:57:14 +1000 (EST)
+From: Matthew McClintock <msm@freescale.com>
+To: kexec@lists.infradead.org
+Subject: [PATCH v2 1/3] Ramdisk address was not copied correctly on kexec'ed
+	kernel
+Date: Wed, 18 Aug 2010 23:56:49 -0500
+Message-ID: <1282193811-23098-2-git-send-email-msm@freescale.com>
+In-Reply-To: <20100819042023.GC13965@verge.net.au>
+References: <20100819042023.GC13965@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: muvarov@gmail.com, linuxppc-dev@ozlabs.org,
+	Kumar Gala <kumar.gala@freescale.com>,
+	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+	Matthew McClintock <msm@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,37 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-08-18 at 11:45 -0500, Dave Kleikamp wrote:
-> Sorry!  Forgot to change the subject.
-> 
-> Shaggy
-> 
-> On Wed, 2010-08-18 at 11:44 -0500, Dave Kleikamp wrote:
-> > Josh,
-> > Here are some bug fixes for the powerpc-4xx tree.  It'd be nice if they
-> > could make it into 2.6.46.
 
-Yeah and I'm sure they can make it into 2.6.46... if you want to wait
-that long ! In the meantime, 2.6.36 will do :-)
+Signed-off-by: Matthew McClintock <msm@freescale.com>
+---
+ kexec/arch/ppc/fixup_dtb.c |    2 +-
+ kexec/arch/ppc/kexec-ppc.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Cheers,
-Ben.
-
-> > Thanks,
-> > Shaggy
-> > 
-> > Dave Kleikamp (4):
-> >   powerpc/47x: Make sure mcsr is cleared before enabling machine check
-> >     interrupts
-> >   powerpc/47x: Remove redundant line from cputable.c
-> >   powerpc/4xx: Index interrupt stacks by physical cpu
-> >   powerpc/47x: Add an isync before the tlbivax instruction
-> > 
-> >  arch/powerpc/kernel/cputable.c   |    1 -
-> >  arch/powerpc/kernel/head_44x.S   |    4 ++++
-> >  arch/powerpc/kernel/irq.c        |   15 ++++++++-------
-> >  arch/powerpc/kernel/setup_32.c   |    9 +++++----
-> >  arch/powerpc/mm/tlb_nohash_low.S |    1 +
-> >  5 files changed, 18 insertions(+), 12 deletions(-)
-> > 
-> 
+diff --git a/kexec/arch/ppc/fixup_dtb.c b/kexec/arch/ppc/fixup_dtb.c
+index 26c23a3..09f9ac1 100644
+--- a/kexec/arch/ppc/fixup_dtb.c
++++ b/kexec/arch/ppc/fixup_dtb.c
+@@ -311,7 +311,7 @@ static void fixup_initrd(char *blob_buf)
+ 				return;
+ 		}
+ 
+-		tmp = ramdisk_base + ramdisk_size + 1;
++		tmp = ramdisk_base + ramdisk_size;
+ 		err = fdt_setprop(blob_buf, nodeoffset,
+ 			"linux,initrd-end", &tmp, sizeof(tmp));
+ 		if (err < 0) {
+diff --git a/kexec/arch/ppc/kexec-ppc.c b/kexec/arch/ppc/kexec-ppc.c
+index c36c7b3..ab76d6f 100644
+--- a/kexec/arch/ppc/kexec-ppc.c
++++ b/kexec/arch/ppc/kexec-ppc.c
+@@ -481,7 +481,7 @@ static int get_devtree_details(unsigned long kexec_flags)
+ 
+ 			if ((initrd_end - initrd_start) != 0 ) {
+ 				initrd_base = initrd_start;
+-				initrd_size = initrd_end - initrd_start + 1;
++				initrd_size = initrd_end - initrd_start;
+ 			}
+ 
+ 			if (reuse_initrd) {
+-- 
+1.6.0.6
