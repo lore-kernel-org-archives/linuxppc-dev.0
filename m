@@ -1,35 +1,25 @@
-Return-Path: <sonny@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E0077B70DC
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A02F6B70E2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Aug 2010 14:54:24 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7K4nVqU002312
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2010 22:49:31 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7K4sLtj122950
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2010 22:54:21 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o7K4sLBK023220
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2010 22:54:21 -0600
-Received: from us.ibm.com (dyn9414181.austin.ibm.com [9.41.41.81])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o7K4sLAm023215
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2010 22:54:21 -0600
-Resent-Message-ID: <20100820045615.GU16505@us.ibm.com>
-Date: Thu, 19 Aug 2010 23:10:19 -0500
-From: Sonny Rao <sonnyrao@us.ibm.com>
-To: linux-ppc@lists.ozlabs.org
-Subject: [PATCH 2/2]: Powerpc: Fix EHCA driver on relocatable kernel
-Message-ID: <20100820041019.GT16505@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-rdma@vger.kernel.org, fenkes@de.ibm.com, raisch@de.ibm.com
+	Fri, 20 Aug 2010 15:15:18 +1000 (EST)
+Subject: [PATCH 1/2] powerpc: Make rwsem use "long" type
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: torvalds@linux-foundation.org
+In-Reply-To: <20100818.222925.233689776.davem@davemloft.net>
+References: <1282107803.22370.173.camel@pasglop>
+	<20100817.222818.193699062.davem@davemloft.net>
+	<1282195403.22370.296.camel@pasglop>
+	<20100818.222925.233689776.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Aug 2010 15:14:55 +1000
+Message-ID: <1282281295.22370.400.camel@pasglop>
+Mime-Version: 1.0
+Cc: paulus@au.ibm.com, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,48 +29,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-the eHCA driver registers a MR for all of kernel memory, but makes the
-assumption that valid memory exists at KERNELBASE.  This assumption
-may not be true in the case of a relocatable kernel, so use KERNELBASE
-+ PHYSICAL_START to get the true beginning of usable kernel memory.
+This makes the 64-bit kernel use 64-bit signed integers for the counter
+(effectively supporting 32-bit of active count in the semaphore), thus
+avoiding things like overflow of the mmap_sem if you use a really crazy
+number of threads
 
-This patch depends on the earlier patch which exports the necessary
-symbol for PHYSICAL_START in a relocatable kernel.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/rwsem.h |   64 ++++++++++++++++++++++----------------
+ 1 files changed, 37 insertions(+), 27 deletions(-)
 
-cc: Joachim Fenkes <fenkes@de.ibm.com>
-cc: Christoph Raisch <raisch@de.ibm.com>
-cc: Hoan-Ham Hguyen <hnguyen@de.ibm.com>
-Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
-
-
-Index: linux-2.6/drivers/infiniband/hw/ehca/ehca_mrmw.c
-===================================================================
---- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_mrmw.c	2010-08-09 22:16:57.688652613 -0500
-+++ linux-2.6/drivers/infiniband/hw/ehca/ehca_mrmw.c	2010-08-19 22:53:03.451507146 -0500
-@@ -171,7 +171,7 @@
- 		}
-
- 		ret = ehca_reg_maxmr(shca, e_maxmr,
--				     (void *)ehca_map_vaddr((void *)KERNELBASE),
-+				     (void *)ehca_map_vaddr((void *)(KERNELBASE + PHYSICAL_START)),
- 				     mr_access_flags, e_pd,
- 				     &e_maxmr->ib.ib_mr.lkey,
- 				     &e_maxmr->ib.ib_mr.rkey);
-@@ -1636,7 +1636,7 @@
-
- 	/* register internal max-MR on HCA */
- 	size_maxmr = ehca_mr_len;
--	iova_start = (u64 *)ehca_map_vaddr((void *)KERNELBASE);
-+	iova_start = (u64 *)ehca_map_vaddr((void *)(KERNELBASE + PHYSICAL_START));
- 	ib_pbuf.addr = 0;
- 	ib_pbuf.size = size_maxmr;
- 	num_kpages = NUM_CHUNKS(((u64)iova_start % PAGE_SIZE) + size_maxmr,
-@@ -2209,7 +2209,7 @@
+diff --git a/arch/powerpc/include/asm/rwsem.h b/arch/powerpc/include/asm/rwsem.h
+index 24cd928..8447d89 100644
+--- a/arch/powerpc/include/asm/rwsem.h
++++ b/arch/powerpc/include/asm/rwsem.h
+@@ -21,15 +21,20 @@
+ /*
+  * the semaphore definition
+  */
+-struct rw_semaphore {
+-	/* XXX this should be able to be an atomic_t  -- paulus */
+-	signed int		count;
+-#define RWSEM_UNLOCKED_VALUE		0x00000000
+-#define RWSEM_ACTIVE_BIAS		0x00000001
+-#define RWSEM_ACTIVE_MASK		0x0000ffff
+-#define RWSEM_WAITING_BIAS		(-0x00010000)
++#ifdef CONFIG_PPC64
++# define RWSEM_ACTIVE_MASK		0xffffffffL
++#else
++# define RWSEM_ACTIVE_MASK		0x0000ffffL
++#endif
++
++#define RWSEM_UNLOCKED_VALUE		0x00000000L
++#define RWSEM_ACTIVE_BIAS		0x00000001L
++#define RWSEM_WAITING_BIAS		(-RWSEM_ACTIVE_MASK-1)
+ #define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
+ #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
++
++struct rw_semaphore {
++	long			count;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+@@ -43,9 +48,13 @@ struct rw_semaphore {
+ # define __RWSEM_DEP_MAP_INIT(lockname)
+ #endif
+ 
+-#define __RWSEM_INITIALIZER(name) \
+-	{ RWSEM_UNLOCKED_VALUE, __SPIN_LOCK_UNLOCKED((name).wait_lock), \
+-	  LIST_HEAD_INIT((name).wait_list) __RWSEM_DEP_MAP_INIT(name) }
++#define __RWSEM_INITIALIZER(name)				\
++{								\
++	RWSEM_UNLOCKED_VALUE,					\
++	__SPIN_LOCK_UNLOCKED((name).wait_lock),			\
++	LIST_HEAD_INIT((name).wait_list)			\
++	__RWSEM_DEP_MAP_INIT(name)				\
++}
+ 
+ #define DECLARE_RWSEM(name)		\
+ 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
+@@ -70,13 +79,13 @@ extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
+  */
+ static inline void __down_read(struct rw_semaphore *sem)
  {
- 	/* a MR is treated as max-MR only if it fits following: */
- 	if ((size == ehca_mr_len) &&
--	    (iova_start == (void *)ehca_map_vaddr((void *)KERNELBASE))) {
-+	    (iova_start == (void *)ehca_map_vaddr((void *)(KERNELBASE + PHYSICAL_START)))) {
- 		ehca_gen_dbg("this is a max-MR");
- 		return 1;
- 	} else
+-	if (unlikely(atomic_inc_return((atomic_t *)(&sem->count)) <= 0))
++	if (unlikely(atomic_long_inc_return((atomic_long_t *)&sem->count) <= 0))
+ 		rwsem_down_read_failed(sem);
+ }
+ 
+ static inline int __down_read_trylock(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+ 	while ((tmp = sem->count) >= 0) {
+ 		if (tmp == cmpxchg(&sem->count, tmp,
+@@ -92,10 +101,10 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
+  */
+ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_add_return(RWSEM_ACTIVE_WRITE_BIAS,
+-				(atomic_t *)(&sem->count));
++	tmp = atomic_long_add_return(RWSEM_ACTIVE_WRITE_BIAS,
++				     (atomic_long_t *)&sem->count);
+ 	if (unlikely(tmp != RWSEM_ACTIVE_WRITE_BIAS))
+ 		rwsem_down_write_failed(sem);
+ }
+@@ -107,7 +116,7 @@ static inline void __down_write(struct rw_semaphore *sem)
+ 
+ static inline int __down_write_trylock(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+ 	tmp = cmpxchg(&sem->count, RWSEM_UNLOCKED_VALUE,
+ 		      RWSEM_ACTIVE_WRITE_BIAS);
+@@ -119,9 +128,9 @@ static inline int __down_write_trylock(struct rw_semaphore *sem)
+  */
+ static inline void __up_read(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_dec_return((atomic_t *)(&sem->count));
++	tmp = atomic_long_dec_return((atomic_long_t *)&sem->count);
+ 	if (unlikely(tmp < -1 && (tmp & RWSEM_ACTIVE_MASK) == 0))
+ 		rwsem_wake(sem);
+ }
+@@ -131,17 +140,17 @@ static inline void __up_read(struct rw_semaphore *sem)
+  */
+ static inline void __up_write(struct rw_semaphore *sem)
+ {
+-	if (unlikely(atomic_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
+-			      (atomic_t *)(&sem->count)) < 0))
++	if (unlikely(atomic_long_sub_return(RWSEM_ACTIVE_WRITE_BIAS,
++				 (atomic_long_t *)&sem->count) < 0))
+ 		rwsem_wake(sem);
+ }
+ 
+ /*
+  * implement atomic add functionality
+  */
+-static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
++static inline void rwsem_atomic_add(long delta, struct rw_semaphore *sem)
+ {
+-	atomic_add(delta, (atomic_t *)(&sem->count));
++	atomic_long_add(delta, (atomic_long_t *)&sem->count);
+ }
+ 
+ /*
+@@ -149,9 +158,10 @@ static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
+  */
+ static inline void __downgrade_write(struct rw_semaphore *sem)
+ {
+-	int tmp;
++	long tmp;
+ 
+-	tmp = atomic_add_return(-RWSEM_WAITING_BIAS, (atomic_t *)(&sem->count));
++	tmp = atomic_long_add_return(-RWSEM_WAITING_BIAS,
++				     (atomic_long_t *)&sem->count);
+ 	if (tmp < 0)
+ 		rwsem_downgrade_wake(sem);
+ }
+@@ -159,14 +169,14 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
+ /*
+  * implement exchange and add functionality
+  */
+-static inline int rwsem_atomic_update(int delta, struct rw_semaphore *sem)
++static inline long rwsem_atomic_update(long delta, struct rw_semaphore *sem)
+ {
+-	return atomic_add_return(delta, (atomic_t *)(&sem->count));
++	return atomic_long_add_return(delta, (atomic_long_t *)&sem->count);
+ }
+ 
+ static inline int rwsem_is_locked(struct rw_semaphore *sem)
+ {
+-	return (sem->count != 0);
++	return sem->count != 0;
+ }
+ 
+ #endif	/* __KERNEL__ */
