@@ -1,24 +1,20 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
-	by ozlabs.org (Postfix) with ESMTP id 5B98CB70E1
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 17:01:04 +1000 (EST)
-Received: by wwb18 with SMTP id 18so3109173wwb.21
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 00:01:00 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH v4] powerpc/mpc8xxx_gpio.c: extend the driver to support
-	mpc512x gpios
-References: <1281331211-17878-1-git-send-email-agust@denx.de>
-	<1281333528-20694-1-git-send-email-agust@denx.de>
-Date: Fri, 20 Aug 2010 09:00:56 +0200
-In-Reply-To: <1281333528-20694-1-git-send-email-agust@denx.de> (Anatolij
-	Gustschin's message of "Mon, 9 Aug 2010 07:58:48 +0200")
-Message-ID: <87aaohpy3b.fsf@macbook.be.48ers.dk>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id A8874B70DD
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 18:27:36 +1000 (EST)
+Date: Fri, 20 Aug 2010 17:27:31 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: [PATCH v2 0/3] Misc. bug fixes for ppc32
+Message-ID: <20100820082731.GA773@verge.net.au>
+References: <20100819042023.GC13965@verge.net.au>
+	<1282193811-23098-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>
+In-Reply-To: <1282193811-23098-1-git-send-email-msm@freescale.com>
+Cc: muvarov@gmail.com, linuxppc-dev@ozlabs.org,
+	Kumar Gala <kumar.gala@freescale.com>, kexec@lists.infradead.org,
+	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +24,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Anatolij" == Anatolij Gustschin <agust@denx.de> writes:
+On Wed, Aug 18, 2010 at 11:56:48PM -0500, Matthew McClintock wrote:
+> This patch series fixes a few issues I have discovered with my previous
+> patch series. Nothing new has been added.
 
- Anatolij> The GPIO controller of MPC512x is slightly different from
- Anatolij> 8xxx GPIO controllers. The register interface is the same
- Anatolij> except the external interrupt control register. The MPC512x
- Anatolij> GPIO controller differentiates between four interrupt event
- Anatolij> types and therefore provides two interrupt control registers,
- Anatolij> GPICR1 and GPICR2. GPIO[0:15] interrupt event types are
- Anatolij> configured in GPICR1 register, GPIO[16:31] - in GPICR2 register.
-
- Anatolij> This patch adds MPC512x speciffic set_type() callback and
- Anatolij> updates config file and comments. Additionally the gpio chip
- Anatolij> registration function is changed to use for_each_matching_node()
- Anatolij> preventing multiple registration if a node claimes compatibility
- Anatolij> with another gpio controller type.
-
- Anatolij> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-
-Sorry, was away on holiday.
-
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
--- 
-Bye, Peter Korsgaard
+Thanks, all applied.
