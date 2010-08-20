@@ -1,30 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
-	[209.85.213.170]) by ozlabs.org (Postfix) with ESMTP id 87791B6F07
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 08:23:58 +1000 (EST)
-Received: by yxj4 with SMTP id 4so1411046yxj.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Aug 2010 15:23:56 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4C6DA3E7.20206@freescale.com>
-References: <20100801074831.1099.3318.stgit@angua>
-	<AANLkTiny_N-UqzuVaftLj75e_b0PjsdHstH8ZKx5mw7O@mail.gmail.com>
-	<AANLkTi=12oe7hquDJ4NN_S=cFdfndfxxkOmzqPziD2CE@mail.gmail.com>
-	<4C6DA3E7.20206@freescale.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 19 Aug 2010 16:23:36 -0600
-Message-ID: <AANLkTiktjcwQrjBf1sF+2Y8ZTpmsTwo+-4cXfkkb5H+i@mail.gmail.com>
-Subject: Re: [PATCH] of/device: Replace struct of_device with struct
-	of_platform
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu,
-	alsa-devel mailing list <alsa-devel@alsa-project.org>,
-	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org, davem@davemloft.net,
-	Liam Girdwood <lrg@slimlogic.co.uk>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id BD58CB6EF0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 Aug 2010 13:26:46 +1000 (EST)
+Received: from canb.auug.org.au (ibmaus65.lnk.telstra.net [165.228.126.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtps.tip.net.au (Postfix) with ESMTPSA id A4108144032
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 Aug 2010 13:26:46 +1000 (EST)
+Date: Fri, 20 Aug 2010 13:26:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: cc'ing old list
+Message-Id: <20100820132642.2d413666.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__20_Aug_2010_13_26_42_+1000_G7o11Dmk2.M5m9.="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 19, 2010 at 3:36 PM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->> On Thu, Aug 19, 2010 at 2:36 PM, Timur Tabi <timur@freescale.com> wrote:
->>> On Sun, Aug 1, 2010 at 2:57 AM, Grant Likely <grant.likely@secretlab.ca=
-> wrote:
->>>
->>>> =A0sound/soc/fsl/mpc8610_hpcd.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 =A04 +-
->>>
->>> This file is/was significantly rewritten for 2.6.37. =A0I posted a fix
->>> to the alsa mailing list, but it will conflict with your patch. =A0You
->>> might want to remove all changes to sound/soc/fsl from this commit.
->>
->> This change is already in Linus' tree.
->
-> Then I suspect the ALSA guys are going to have a merge conflict coming up=
-,
-> because I had to make these changes to the -next branch.
+--Signature=_Fri__20_Aug_2010_13_26_42_+1000_G7o11Dmk2.M5m9.=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is a trivial conflict.  They shouldn't have any problem fixing it up.
+Hi all,
 
-g.
+The posting address of this list is linuxppc-dev@lists.ozlabs.org.
+Please do *not* cc linuxppc-dev@ozlabs.org (the old posting address) as
+that just means we get two copies of the mail on the list.
+
+Yes, I do know that the kernel MAINTAINERS file has the old address. :-(
+
+Thanks.
 
 --=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__20_Aug_2010_13_26_42_+1000_G7o11Dmk2.M5m9.=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMbfXyAAoJEDMEi1NhKgbsj+8H/jn06xkd8S6Qjr2V4Fb1lkQw
+jWU1Eyjnwa/RuNlfZpdMzJCRyYXhv10IdOQfirJeF4d/4zmIZKuYOWMtNwPWKIW4
+svd9RV+Kb84Jliw8H0xON5rJlgyVXxS42WEm9br2VDE0sI15qSCTKBebxEEdf26u
+U8Kqr6mn3trV6x89e6E80iCMVygxlJ6GBCLPLsnP0DhbyKTwxEAXtwCJu1CkwsPP
+s7JtZwDcN4xSxqQamKaoEOqGaRP4LzVLAUi8ydeXh3HrnWX2MQOVpENLWZVO4Uau
+Fxwvi2XU9aszTUMa22sYw5Bllyk1a69E8XMdwj7N/QB6Y3WUuAX+IgbjcVmY6BY=
+=Vf0K
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_Aug_2010_13_26_42_+1000_G7o11Dmk2.M5m9.=--
