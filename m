@@ -1,26 +1,24 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
-	by ozlabs.org (Postfix) with ESMTP id BD4A8B70E1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Aug 2010 16:43:54 +1000 (EST)
-Date: Fri, 20 Aug 2010 08:43:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] rwsem: Move powerpc atomic-long based
-	implementation to asm-generic
-Message-ID: <20100820064348.GA19989@merkur.ravnborg.org>
-References: <1282107803.22370.173.camel@pasglop>
-	<20100817.222818.193699062.davem@davemloft.net>
-	<1282195403.22370.296.camel@pasglop>
-	<20100818.222925.233689776.davem@davemloft.net>
-	<1282281295.22370.401.camel@pasglop>
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
+	by ozlabs.org (Postfix) with ESMTP id 5B98CB70E1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 17:01:04 +1000 (EST)
+Received: by wwb18 with SMTP id 18so3109173wwb.21
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 00:01:00 -0700 (PDT)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v4] powerpc/mpc8xxx_gpio.c: extend the driver to support
+	mpc512x gpios
+References: <1281331211-17878-1-git-send-email-agust@denx.de>
+	<1281333528-20694-1-git-send-email-agust@denx.de>
+Date: Fri, 20 Aug 2010 09:00:56 +0200
+In-Reply-To: <1281333528-20694-1-git-send-email-agust@denx.de> (Anatolij
+	Gustschin's message of "Mon, 9 Aug 2010 07:58:48 +0200")
+Message-ID: <87aaohpy3b.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1282281295.22370.401.camel@pasglop>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, paulus@au.ibm.com,
-	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> diff --git a/include/asm-generic/rwsem-cmpxchg.h b/include/asm-generic/rwsem-cmpxchg.h
-> new file mode 100644
-> index 0000000..2b1c859
-> --- /dev/null
-> +++ b/include/asm-generic/rwsem-cmpxchg.h
-> @@ -0,0 +1,183 @@
-> +#ifndef _RWSEM_CMPXCHG_H
-> +#define _RWSEM_CMPXCHG_H
-> +
-> +#ifndef _LINUX_RWSEM_H
-> +#error "Please don't include <asm/rwsem.h> directly, use <linux/rwsem.h> instead."
-> +#endif
-> +
-> +#ifdef __KERNEL__
+>>>>> "Anatolij" == Anatolij Gustschin <agust@denx.de> writes:
 
-#ifdef __KERNEL__ is only relevant for exported headers.
-For kernel only headers like this is does not make sense,
-but it does not harm.
+ Anatolij> The GPIO controller of MPC512x is slightly different from
+ Anatolij> 8xxx GPIO controllers. The register interface is the same
+ Anatolij> except the external interrupt control register. The MPC512x
+ Anatolij> GPIO controller differentiates between four interrupt event
+ Anatolij> types and therefore provides two interrupt control registers,
+ Anatolij> GPICR1 and GPICR2. GPIO[0:15] interrupt event types are
+ Anatolij> configured in GPICR1 register, GPIO[16:31] - in GPICR2 register.
 
-	Sam
+ Anatolij> This patch adds MPC512x speciffic set_type() callback and
+ Anatolij> updates config file and comments. Additionally the gpio chip
+ Anatolij> registration function is changed to use for_each_matching_node()
+ Anatolij> preventing multiple registration if a node claimes compatibility
+ Anatolij> with another gpio controller type.
+
+ Anatolij> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+
+Sorry, was away on holiday.
+
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+
+-- 
+Bye, Peter Korsgaard
