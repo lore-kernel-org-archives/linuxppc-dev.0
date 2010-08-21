@@ -1,16 +1,17 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id CB043B70DE
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Aug 2010 16:59:34 +1000 (EST)
-Received: by ewy2 with SMTP id 2so3168046ewy.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Aug 2010 23:59:32 -0700 (PDT)
+Return-Path: <hofrat@hofr.at>
+Received: from mail.hofr.at (hofr.at [212.69.189.236])
+	by ozlabs.org (Postfix) with ESMTP id 28994B70DB
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Aug 2010 17:37:13 +1000 (EST)
+Date: Sat, 21 Aug 2010 09:31:16 +0200
+From: Nicholas Mc Guire <der.herr@hofr.at>
+To: Shawn Jin <shawnxjin@gmail.com>
+Subject: Re: How to build the kernel without any optimization?
+Message-ID: <20100821073116.GA1597@opentech.at>
+References: <AANLkTinb9yJk10yE2nAT_exNaANHyFbAH59LOM=Jy7Oz@mail.gmail.com>
 MIME-Version: 1.0
-Date: Fri, 20 Aug 2010 23:59:30 -0700
-Message-ID: <AANLkTinb9yJk10yE2nAT_exNaANHyFbAH59LOM=Jy7Oz@mail.gmail.com>
-Subject: How to build the kernel without any optimization?
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTinb9yJk10yE2nAT_exNaANHyFbAH59LOM=Jy7Oz@mail.gmail.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 20 Aug 2010, Shawn Jin wrote:
 
-I'm tracing the execution of ds1307_probe() and find that some of
-variables or function arguments cannot be printed in gdb because they
-are optimized out or not in the current context. This really gives
-some headache. Is there a way to build the kernel without any
-optimization? What gcc option shall I disable or add?
+> Hi,
+> 
+> I'm tracing the execution of ds1307_probe() and find that some of
+> variables or function arguments cannot be printed in gdb because they
+> are optimized out or not in the current context. This really gives
+> some headache. Is there a way to build the kernel without any
+> optimization? What gcc option shall I disable or add?
+> 
+> I already added the following to arch/powerpc/Makefile.
+> 
+> # Prevent GDB from jumping around in the code when trying to single step
+> ifeq ($(CONFIG_DEBUG_KERNEL),y)
+> KBUILD_CFLAGS           += -fno-schedule-insns -fno-schedule-insns2
+> endif
+>
 
-I already added the following to arch/powerpc/Makefile.
+much of the kernel can not be build without optimization - what you 
+can do though is slectively try to disable optimization for specific
+files by putting 
 
-# Prevent GDB from jumping around in the code when trying to single step
-ifeq ($(CONFIG_DEBUG_KERNEL),y)
-KBUILD_CFLAGS           += -fno-schedule-insns -fno-schedule-insns2
-endif
+ CFLAGS_REMOVE_objfilenam.o = -SOME_OPT
 
-Thanks,
--Shawn.
+in the Makefile. I think that is safer than what you did above as this would
+always depend on the order of options that ultimately get passed to gcc.
+
+hofrat 
