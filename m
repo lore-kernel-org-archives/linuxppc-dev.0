@@ -1,17 +1,21 @@
-Return-Path: <hofrat@hofr.at>
-Received: from mail.hofr.at (hofr.at [212.69.189.236])
-	by ozlabs.org (Postfix) with ESMTP id 28994B70DB
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Aug 2010 17:37:13 +1000 (EST)
-Date: Sat, 21 Aug 2010 09:31:16 +0200
-From: Nicholas Mc Guire <der.herr@hofr.at>
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: How to build the kernel without any optimization?
-Message-ID: <20100821073116.GA1597@opentech.at>
-References: <AANLkTinb9yJk10yE2nAT_exNaANHyFbAH59LOM=Jy7Oz@mail.gmail.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9D59DB70D4
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Aug 2010 07:32:26 +1000 (EST)
+Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
+	by mail-out.m-online.net (Postfix) with ESMTP id B0B2C1C159FA
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Aug 2010 23:32:24 +0200 (CEST)
+Received: from igel.home (ppp-93-104-151-37.dynamic.mnet-online.de
+	[93.104.151.37])
+	by mail.mnet-online.de (Postfix) with ESMTP id B536F1C00106
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Aug 2010 23:32:23 +0200 (CEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] pmu: add compat_pmu_ioctl
+Date: Sat, 21 Aug 2010 23:32:23 +0200
+Message-ID: <m2lj7zzm6w.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTinb9yJk10yE2nAT_exNaANHyFbAH59LOM=Jy7Oz@mail.gmail.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 20 Aug 2010, Shawn Jin wrote:
+The ioctls are actually compatible, but due to historical mistake the
+numbers differ between 32bit and 64bit.
 
-> Hi,
-> 
-> I'm tracing the execution of ds1307_probe() and find that some of
-> variables or function arguments cannot be printed in gdb because they
-> are optimized out or not in the current context. This really gives
-> some headache. Is there a way to build the kernel without any
-> optimization? What gcc option shall I disable or add?
-> 
-> I already added the following to arch/powerpc/Makefile.
-> 
-> # Prevent GDB from jumping around in the code when trying to single step
-> ifeq ($(CONFIG_DEBUG_KERNEL),y)
-> KBUILD_CFLAGS           += -fno-schedule-insns -fno-schedule-insns2
-> endif
->
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ drivers/macintosh/via-pmu.c |   41 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 41 insertions(+), 0 deletions(-)
 
-much of the kernel can not be build without optimization - what you 
-can do though is slectively try to disable optimization for specific
-files by putting 
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 35bc273..610f247 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -2349,11 +2349,52 @@ static long pmu_unlocked_ioctl(struct file *filp,
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_COMPAT
++#define PMU_IOC_GET_BACKLIGHT32	_IOR('B', 1, u32)
++#define PMU_IOC_SET_BACKLIGHT32	_IOW('B', 2, u32)
++#define PMU_IOC_GET_MODEL32	_IOR('B', 3, u32)
++#define PMU_IOC_HAS_ADB32	_IOR('B', 4, u32)
++#define PMU_IOC_CAN_SLEEP32	_IOR('B', 5, u32)
++#define PMU_IOC_GRAB_BACKLIGHT32 _IOR('B', 6, u32)
++
++static long compat_pmu_ioctl (struct file *filp, u_int cmd, u_long arg)
++{
++	switch (cmd) {
++	case PMU_IOC_SLEEP:
++		break;
++	case PMU_IOC_GET_BACKLIGHT32:
++		cmd = PMU_IOC_GET_BACKLIGHT;
++		break;
++	case PMU_IOC_SET_BACKLIGHT32:
++		cmd = PMU_IOC_SET_BACKLIGHT;
++		break;
++	case PMU_IOC_GET_MODEL32:
++		cmd = PMU_IOC_GET_MODEL;
++		break;
++	case PMU_IOC_HAS_ADB32:
++		cmd = PMU_IOC_HAS_ADB;
++		break;
++	case PMU_IOC_CAN_SLEEP32:
++		cmd = PMU_IOC_CAN_SLEEP;
++		break;
++	case PMU_IOC_GRAB_BACKLIGHT32:
++		cmd = PMU_IOC_GRAB_BACKLIGHT;
++		break;
++	default:
++		return -ENOIOCTLCMD;
++	}
++	return pmu_unlocked_ioctl(filp, cmd, arg);
++}
++#endif
++
+ static const struct file_operations pmu_device_fops = {
+ 	.read		= pmu_read,
+ 	.write		= pmu_write,
+ 	.poll		= pmu_fpoll,
+ 	.unlocked_ioctl	= pmu_unlocked_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= compat_pmu_ioctl,
++#endif
+ 	.open		= pmu_open,
+ 	.release	= pmu_release,
+ };
+-- 
+1.7.2.2
 
- CFLAGS_REMOVE_objfilenam.o = -SOME_OPT
 
-in the Makefile. I think that is safer than what you did above as this would
-always depend on the order of options that ultimately get passed to gcc.
-
-hofrat 
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
