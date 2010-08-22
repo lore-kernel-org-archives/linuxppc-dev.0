@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE596B6F11
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id DA8AAB6F06
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Aug 2010 08:35:00 +1000 (EST)
+	Mon, 23 Aug 2010 08:48:46 +1000 (EST)
+Date: Sun, 22 Aug 2010 18:48:44 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: mtmsrd not defined
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <20100822180958.6305f5b1@lappy.seanm.ca>
+Message-ID: <20100822184844.37c30d5e@lappy.seanm.ca>
+In-Reply-To: <1282516494.22370.440.camel@pasglop>
 References: <20100822180958.6305f5b1@lappy.seanm.ca>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Aug 2010 08:34:54 +1000
-Message-ID: <1282516494.22370.440.camel@pasglop>
+	<1282516494.22370.440.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,43 +23,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-08-22 at 18:09 -0400, Sean MacLennan wrote:
-> Let's try a patch to get the ball rolling. 
-> 
-> ldstfp.S does not compile if mtmsrd not defined. But is it only defined
-> for BOOK3S_64. This defines mtmsrd to be mtmsr on all but BOOK3S_64.
-> This solves the compile problem... but I am not sure how to test it.
-> 
-> I am also not sure if this is the best place to define it. If the
-> mapping of mtmsrd to mtmsr is correct, maybe it should be in asm/reg.h?
+On Mon, 23 Aug 2010 08:34:54 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I'd rather have a macro somewhere in ppc_asm.h (MTMSR ?) that does the
-right thing. We might even already have one...
+> I'd rather have a macro somewhere in ppc_asm.h (MTMSR ?) that does the
+> right thing. We might even already have one...
+
+We do.... here is a new, improved patch.
+
+Replace the BOOK3S_64 specific mtmsrd with the generic MTMSRD macro.
+
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
+diff --git a/arch/powerpc/lib/ldstfp.S b/arch/powerpc/lib/ldstfp.S
+index f644863..ce818a5 100644
+--- a/arch/powerpc/lib/ldstfp.S
++++ b/arch/powerpc/lib/ldstfp.S
+@@ -81,7 +81,7 @@ _GLOBAL(do_lfs)
+ 	mfmsr	r6
+ 	ori	r7,r6,MSR_FP
+ 	cmpwi	cr7,r3,0
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	stfd	fr0,STKFRM-16(r1)
+@@ -93,7 +93,7 @@ _GLOBAL(do_lfs)
+ 	lfd	fr0,STKFRM-16(r1)
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -108,7 +108,7 @@ _GLOBAL(do_lfd)
+ 	mfmsr	r6
+ 	ori	r7,r6,MSR_FP
+ 	cmpwi	cr7,r3,0
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	stfd	fr0,STKFRM-16(r1)
+@@ -120,7 +120,7 @@ _GLOBAL(do_lfd)
+ 	lfd	fr0,STKFRM-16(r1)
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -135,7 +135,7 @@ _GLOBAL(do_stfs)
+ 	mfmsr	r6
+ 	ori	r7,r6,MSR_FP
+ 	cmpwi	cr7,r3,0
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	stfd	fr0,STKFRM-16(r1)
+@@ -147,7 +147,7 @@ _GLOBAL(do_stfs)
+ 	lfd	fr0,STKFRM-16(r1)
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -162,7 +162,7 @@ _GLOBAL(do_stfd)
+ 	mfmsr	r6
+ 	ori	r7,r6,MSR_FP
+ 	cmpwi	cr7,r3,0
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	stfd	fr0,STKFRM-16(r1)
+@@ -174,7 +174,7 @@ _GLOBAL(do_stfd)
+ 	lfd	fr0,STKFRM-16(r1)
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -229,7 +229,7 @@ _GLOBAL(do_lvx)
+ 	oris	r7,r6,MSR_VEC@h
+ 	cmpwi	cr7,r3,0
+ 	li	r8,STKFRM-16
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	stvx	vr0,r1,r8
+@@ -241,7 +241,7 @@ _GLOBAL(do_lvx)
+ 	lvx	vr0,r1,r8
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -257,7 +257,7 @@ _GLOBAL(do_stvx)
+ 	oris	r7,r6,MSR_VEC@h
+ 	cmpwi	cr7,r3,0
+ 	li	r8,STKFRM-16
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	stvx	vr0,r1,r8
+@@ -269,7 +269,7 @@ _GLOBAL(do_stvx)
+ 	lvx	vr0,r1,r8
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -325,7 +325,7 @@ _GLOBAL(do_lxvd2x)
+ 	oris	r7,r6,MSR_VSX@h
+ 	cmpwi	cr7,r3,0
+ 	li	r8,STKFRM-16
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	STXVD2X(0,r1,r8)
+@@ -337,7 +337,7 @@ _GLOBAL(do_lxvd2x)
+ 	LXVD2X(0,r1,r8)
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+@@ -353,7 +353,7 @@ _GLOBAL(do_stxvd2x)
+ 	oris	r7,r6,MSR_VSX@h
+ 	cmpwi	cr7,r3,0
+ 	li	r8,STKFRM-16
+-	mtmsrd	r7
++	MTMSRD(r7)
+ 	isync
+ 	beq	cr7,1f
+ 	STXVD2X(0,r1,r8)
+@@ -365,7 +365,7 @@ _GLOBAL(do_stxvd2x)
+ 	LXVD2X(0,r1,r8)
+ 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+-	mtmsrd	r6
++	MTMSRD(r6)
+ 	isync
+ 	mr	r3,r9
+ 	addi	r1,r1,STKFRM
+
+
 
 Cheers,
-Ben.
-
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-> ---
-> diff --git a/arch/powerpc/lib/ldstfp.S b/arch/powerpc/lib/ldstfp.S
-> index f644863..df8a03b 100644
-> --- a/arch/powerpc/lib/ldstfp.S
-> +++ b/arch/powerpc/lib/ldstfp.S
-> @@ -17,6 +17,10 @@
->  #include <asm/asm-offsets.h>
->  #include <linux/errno.h>
->  
-> +#ifndef CONFIG_PPC_BOOK3S_64
-> +#define mtmsrd mtmsr
-> +#endif
-> +
->  #define STKFRM	(PPC_MIN_STKFRM + 16)
->  
->  	.macro	extab	instr,handler
-> 
-> Cheers,
->    Sean
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+   Sean
