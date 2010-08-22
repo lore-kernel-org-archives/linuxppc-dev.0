@@ -1,15 +1,19 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A88DEB70D2
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
+	by ozlabs.org (Postfix) with ESMTP id DE201B70D0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 Aug 2010 16:07:32 +1000 (EST)
-Date: Sun, 22 Aug 2010 02:00:49 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Problems with compiling ldstfp.S
-Message-ID: <20100822020049.05e42021@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Aug 2010 21:39:35 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] pmu: add compat_pmu_ioctl
+Date: Sun, 22 Aug 2010 13:33:50 +0200
+References: <m2lj7zzm6w.fsf@igel.home>
+In-Reply-To: <m2lj7zzm6w.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201008221333.50575.arnd@arndb.de>
+Cc: Andreas Schwab <schwab@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,25 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new file ldstfp.S is getting pulled in on the Warp due to
-CONFIG_KPROBES, but does not compile:
+On Saturday 21 August 2010 23:32:23 Andreas Schwab wrote:
+> The ioctls are actually compatible, but due to historical mistake the
+> numbers differ between 32bit and 64bit.
 
-  AS      arch/powerpc/lib/ldstfp.o
-arch/powerpc/lib/ldstfp.S: Assembler messages:
-arch/powerpc/lib/ldstfp.S:84: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:96: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:111: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:123: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:138: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:150: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:165: Error: Unrecognized opcode: `mtmsrd'
-arch/powerpc/lib/ldstfp.S:177: Error: Unrecognized opcode: `mtmsrd'
-make[1]: *** [arch/powerpc/lib/ldstfp.o] Error 1
+Looks good to me, but
 
-The Warp has a 440EP processor which does have floating point. But it
-looks like mtmsrd is only defined for PPC64.
+> +#ifdef CONFIG_COMPAT
+> +#define PMU_IOC_GET_BACKLIGHT32	_IOR('B', 1, u32)
+> +#define PMU_IOC_SET_BACKLIGHT32	_IOW('B', 2, u32)
+> +#define PMU_IOC_GET_MODEL32	_IOR('B', 3, u32)
+> +#define PMU_IOC_HAS_ADB32	_IOR('B', 4, u32)
+> +#define PMU_IOC_CAN_SLEEP32	_IOR('B', 5, u32)
+> +#define PMU_IOC_GRAB_BACKLIGHT32 _IOR('B', 6, u32)
 
-I would hate to lose KPROBES, it has been a huge help.
+It would be nicer to use compat_size_t instead of u32 for annotation
+purposes. Obviously both of them are defined as unsigned int, so
+that is no functional change.
 
-Cheers,
-   Sean
+> +	return pmu_unlocked_ioctl(filp, cmd, arg);
+
+This should ideally use "(unsigned long)compat_ptr(arg)" instead of
+just arg. Also doesn't matter on powerpc, but it's better to do
+it the strict way.
+
+	Arnd
