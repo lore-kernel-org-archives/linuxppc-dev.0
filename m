@@ -1,21 +1,26 @@
-Return-Path: <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-From: john stultz <johnstul@us.ibm.com>
-To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <20100819153847.GA10695@riccoc20.at.omicron.at>
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<1282176776.2865.100.camel@localhost.localdomain>
-	<20100819055518.GA4084@riccoc20.at.omicron.at>
-	<201008191428.04546.arnd@arndb.de>
-	<20100819153847.GA10695@riccoc20.at.omicron.at>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5BF40B6F14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 24 Aug 2010 08:02:16 +1000 (EST)
+Subject: Re: 64-bit ppc rwsem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <201008231544.16422.arnd@arndb.de>
+References: <1282107803.22370.173.camel@pasglop>
+	<1282195403.22370.296.camel@pasglop>
+	<20100818.222925.233689776.davem@davemloft.net>
+	<201008231544.16422.arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Aug 2010 13:21:39 -0700
-Message-ID: <1282594899.3111.358.camel@localhost.localdomain>
+Date: Tue, 24 Aug 2010 08:01:25 +1000
+Message-ID: <1282600885.22370.453.camel@pasglop>
 Mime-Version: 1.0
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@au.ibm.com,
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,91 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-08-19 at 17:38 +0200, Richard Cochran wrote:
-> On Thu, Aug 19, 2010 at 02:28:04PM +0200, Arnd Bergmann wrote:
-> > My point was that a syscall is better than an ioctl based interface here,
-> > which I definitely still think. Given that John knows much more about
-> > clocks than I do, we still need to get agreement on the question that
-> > he raised, which is whether we actually need to expose this clock to the
-> > user or not.
-> > 
-> > If we can find a way to sync system time accurate enough with PTP and
-> > PPS, user applications may not need to see two separate clocks at all.
+On Mon, 2010-08-23 at 15:44 +0200, Arnd Bergmann wrote:
 > 
-> At the very least, one user application (the PTPd) needs to see the
-> PTP clock.
-> 
-> > > SYSCALL_DEFINE3(clock_adjtime, const clockid_t, clkid,
-> > > 		int, ppb, struct timespec __user *, ts)
-> > > 
-> > > ppb - desired frequency adjustment in parts per billion
-> > > ts  - desired time step (or jump) in <sec,nsec> to correct
-> > >       a measured offset
-> > > 
-> > > Arguably, this syscall might be useful for other clocks, too.
-> > 
-> > This is a mix of adjtime and adjtimex with the addition of
-> > the clkid parameter, right?
-> 
-> Sort of, but not really. ADJTIME(3) takes an offset and slowly
-> corrects the clock using a servo in the kernel, over hours.
-> 
-> For this function, the offset passed in the 'ts' parameter will be
-> immediately corrected, by jumping to the new time. This reflects the
-> way that PTP works. After the first few samples, the PTPd has an
-> estimate of the offset to the master and the rate difference. The PTPd
-> can proceed in one of two ways.
-> 
-> 1. If resetting the clock is not desired, then the clock is set to the
->    maximum adjustment (in the right direction) until the clock time is
->    close to the master's time.
-> 
-> 2. The estimated offset is added to the current time, resulting in a
->    jump in time.
-> 
-> We need clock_adjtime(id, 0, ts) for the second case.
->
-> > Have you considered passing a struct timex instead of ppb and ts?
-> 
-> Yes, but the timex is not suitable, IMHO.
+> * Alpha has an optimization for the uniprocessor case, where the atomic
+> instructions get turned into nonatomic additions. The spinlock based
+> version uses no locks on UP but disables interrupts for reasons I don't
+> understand (nothing running at interrupt time should try to access an rwsem).
+> Should the generic version do the same as Alpha?
 
-Could you expand on this?
+I've seen drivers in the past do trylocks at interrupt time ... tho I
+agree it sucks.
 
-Could we not add a adjustment mode ADJ_SETOFFSET or something that would
-provide the instantaneous offset correction?
+> * Is there any architecture that would still benefit from having a separate
+> rwsem implementation? AFAICT all the remaining ones are just variations of
+> the same concept of using cmpxchg (or xadd in case of x86), which is what
+> atomics typically end up doing anyway.
 
-> > Is using ppb instead of the timex ppm required to get the accuracy
-> > you want?
-> 
-> That is one very good reason.
-> 
-> Another is this: can you explain what the 20+ fields mean?
-> 
-> Consider the field, freq. The comment says "frequency offset (scaled
-> ppm)."  To what is it scaled? The only way I know of to find out is to
-> read the NTP code (which is fairly complex) and see what the unit
-> really is meant to be. Ditto for the other fields.
-> 
-> The timex structure reveals, AFAICT, the inner workings of the kernel
-> clock servo. For PTP, we don't need or want the kernel servo. The PTPd
-> has its own clock servo in user space.
+It depends how sensitive rwsems are. 
 
-You're right that the timex is a little crufty. But its legacy that we
-will support indefinitely. So following the established interface helps
-maintainability.
+The "generic" variant based on atomic's and cmpxchg on powerpc is
+sub-optimal in the sense that it has stronger memory barriers that would
+be necessary (atomic_inc_return for example has both acquire and
+release).
 
-So if the clock_adjtime interface is needed, it would seem best for it
-to be generic enough to support not only PTP, but also the NTP kernel
-PLL. 
+But that vs. one more pile of inline asm, we decided it wasn't hot
+enough a spot for us to care back then.
 
-In effect, this would make clock_adjtime(or clock_adjtimex) identical to
-adjtimex, but only applicable to different CLOCK_ids. Additionally, it
-would simplify the code for the CLOCK_REALTIME case as you could just
-call directly into do_adjtimex(). 
-
-Of course, extending adjtimex for ADJ_SETOFFSET would be needed first,
-but that seems like a reasonable expansion of the interface that could
-be used by more then just PTP.
-
-thanks
--john
+Cheers,
+Ben.
