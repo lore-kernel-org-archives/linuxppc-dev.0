@@ -1,24 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 12611B70B4
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 3BEEBB70AB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Aug 2010 14:39:30 +1000 (EST)
-Date: Sun, 22 Aug 2010 21:39:45 -0700 (PDT)
-Message-Id: <20100822.213945.241455303.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 2/2] rwsem: Move powerpc atomic-long based
-	implementation to asm-generic
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1282281295.22370.401.camel@pasglop>
-References: <1282195403.22370.296.camel@pasglop>
-	<20100818.222925.233689776.davem@davemloft.net>
-	<1282281295.22370.401.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: torvalds@linux-foundation.org, paulus@au.ibm.com,
-	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+	Mon, 23 Aug 2010 18:53:17 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH/v2] via-pmu: add compat_pmu_ioctl
+Date: Mon, 23 Aug 2010 10:53:07 +0200
+References: <m2lj7zzm6w.fsf@igel.home> <201008221333.50575.arnd@arndb.de>
+	<m2hbimmxai.fsf_-_@igel.home>
+In-Reply-To: <m2hbimmxai.fsf_-_@igel.home>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201008231053.07836.arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 20 Aug 2010 15:14:55 +1000
-
-> Other architectures who support cmpxchg and atomic_long can
-> use that directly.
+On Sunday 22 August 2010, Andreas Schwab wrote:
+> The ioctls are actually compatible, but due to historical mistake the
+> numbers differ between 32bit and 64bit.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
 
-Acked-by: David S. Miller <davem@davemloft.net>
-
-I'll move sparc64 over to this once it hits Linus's tree.
+Acked-by: Arnd Bergmann <arnd@arndb.de>
