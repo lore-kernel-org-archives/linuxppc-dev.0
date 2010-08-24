@@ -1,21 +1,33 @@
-Return-Path: <stephan@gatzka.org>
-Message-ID: <4C740FC7.90106@gatzka.org>
-Date: Tue, 24 Aug 2010 20:30:31 +0200
-From: Stephan Gatzka <stephan@gatzka.org>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDCD7B70B8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 Aug 2010 07:40:56 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7OLVakb003206
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Aug 2010 15:31:36 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o7OLeliq246546
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Aug 2010 15:40:47 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o7OLiIMp008794
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Aug 2010 15:44:19 -0600
+Message-ID: <4C743C61.8060906@linux.vnet.ibm.com>
+Date: Tue, 24 Aug 2010 16:40:49 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-References: <cover.1281956490.git.richard.cochran@omicron.at>	<363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>	<20100817085324.GB3330@riccoc20.at.omicron.at>	<1282090963.1734.97.camel@localhost>	<20100818071942.GA4096@riccoc20.at.omicron.at>	<1282176776.2865.100.camel@localhost.localdomain>	<20100819055518.GA4084@riccoc20.at.omicron.at>
-	<1282594125.3111.344.camel@localhost.localdomain>
-In-Reply-To: <1282594125.3111.344.camel@localhost.localdomain>
-Content-Type: multipart/signed; protocol="application/pkcs7-signature";
-	micalg=sha1; boundary="------------ms060008080704040805010902"
-Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-	Richard Cochran <richardcochran@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Rodolfo Giometti <giometti@linux.it>, devicetree-discuss@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
-Reply-To: stephan@gatzka.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] powerpc: Clear cpu_sibling_map in cpu_die
+References: <201008112034.o7BKYvEJ013392@d03av04.boulder.ibm.com>
+	<1282627487.22370.508.camel@pasglop>
+In-Reply-To: <1282627487.22370.508.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,134 +37,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a cryptographically signed message in MIME format.
+On 08/24/2010 12:24 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2010-08-11 at 15:34 -0500, Brian King wrote:
+>> While testing CPU DLPAR, the following problem was discovered.
+>> We were DLPAR removing the first CPU, which in this case was
+>> logical CPUs 0-3. CPUs 0-2 were already marked offline and
+>> we were in the process of offlining CPU 3. After marking
+>> the CPU inactive and offline in cpu_disable, but before the
+>> cpu was completely idle (cpu_die), we ended up in __make_request
+>> on CPU 3. There we looked at the topology map to see which CPU
+>> to complete the I/O on and found no CPUs in the cpu_sibling_map.
+>> This resulted in the block layer setting the completion cpu
+>> to be NR_CPUS, which then caused an oops when we tried to
+>> complete the I/O.
+>>
+>> Fix this by delaying clearing the sibling map of the cpu we
+>> are offlining for the cpu we are offlining until cpu_die.
+> 
+> So I'm not getting a clear mental picture of the situation, sorry about
+> that.
+> 
+> We are offlining CPU 3, and we have already marked it inactive and
+> online, so how come we end up in __make_request() on it at this stage
 
---------------ms060008080704040805010902
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+I'm not sure about that. My thought was that until we get into cpu_die,
+the cpu could still be executing code.
 
-Hello!
+> and shouldn't it be the block layer that notices that it's targeting an
+> offlined CPU ?
 
-> I'm curious if its possible to do the PTP hardware offset/adjustment
-> calculation in a module internally to the kernel? That would allow the
-> PPS interface to still be used to sync the system time, and not expose
-> additional interfaces.
-Just my 2 cents on this issue. PTP is very often used in embedded=20
-systems, where the PTP timestamps will go into some dedicated hardware,=20
-for instance an FPGA.
+It could be easily fixed in blk_cpu_to_group as well. I'll look into
+this.
 
-I'm currently working on a project where it is not necessary to adjust=20
-the Linux system time via PTP (although it would be a nice to have), but =
+> IE. I have doubts about leaving a CPU in the sibling map which isn't
+> online... Wouldn't we end up "scheduling" things to it after it's
+> supposed to have freed itself of everything (timers, workqueues,
+> etc...) ?
 
-we only need the timestamps from the PHY to put them into our FPGA=20
-device. So we need some kind of API to access the PTP timestamp registers=
-=2E
-
-Kind regards,
-
-Stephan
+I was assuming this wouldn't happen since the cpu is no longer online.
 
 
---------------ms060008080704040805010902
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
+Thanks,
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIO5jCC
-BEYwggOvoAMCAQICEGb9R+PCGeToms2Z3fU6yyQwDQYJKoZIhvcNAQEFBQAwXzELMAkGA1UE
-BhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFzcyAxIFB1Ymxp
-YyBQcmltYXJ5IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTA1MTAyODAwMDAwMFoXDTE1
-MTAyNzIzNTk1OVowgd0xCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjEf
-MB0GA1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazE7MDkGA1UECxMyVGVybXMgb2YgdXNl
-IGF0IGh0dHBzOi8vd3d3LnZlcmlzaWduLmNvbS9ycGEgKGMpMDUxHjAcBgNVBAsTFVBlcnNv
-bmEgTm90IFZhbGlkYXRlZDE3MDUGA1UEAxMuVmVyaVNpZ24gQ2xhc3MgMSBJbmRpdmlkdWFs
-IFN1YnNjcmliZXIgQ0EgLSBHMjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMnf
-rOfq+PgDFMQAktXBfjbCPO98chXLwKuMPRyVzm8eECw/AO2XJua2x+atQx0/pIdHR0w+VPhs
-+Mf8sZ69MHC8l7EDBeqV8a1AxUR6SwWi8mD81zplYu//EHuiVrvFTnAt1qIfPO2wQuhejVch
-rKaZ2RHp0hoHwHRHQgv8xTTq/ea6JNEdCBU3otdzzwFBL2OyOj++pRpu9MlKWz2VphW7NQIZ
-+dTvvI8OcXZZu0u2Ptb8Whb01g6J8kn+bAztFenZiHWcec5gJ925rXXOL3OVekA6hXVJsLjf
-aLyrzROChRFQo+A8C67AClPN1zBvhTJGG+RJEMJs4q8fef/btLUCAwEAAaOB/zCB/DASBgNV
-HRMBAf8ECDAGAQH/AgEAMEQGA1UdIAQ9MDswOQYLYIZIAYb4RQEHFwEwKjAoBggrBgEFBQcC
-ARYcaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYTALBgNVHQ8EBAMCAQYwEQYJYIZIAYb4
-QgEBBAQDAgEGMC4GA1UdEQQnMCWkIzAhMR8wHQYDVQQDExZQcml2YXRlTGFiZWwzLTIwNDgt
-MTU1MB0GA1UdDgQWBBQRfV4ZfTwE32ps1qKKGj8x2DuUUjAxBgNVHR8EKjAoMCagJKAihiBo
-dHRwOi8vY3JsLnZlcmlzaWduLmNvbS9wY2ExLmNybDANBgkqhkiG9w0BAQUFAAOBgQA8o9oC
-YzrEk6qrctPcrVA4HgyeFkqIt+7r2f8PjZWg1rv6aguuYYTYaEeJ70+ssh9JQZtJM3aTi55u
-uUMcYL3C3Ioth8FFwBFyBBprJCpsb+f8BxMp0Hc6I+f1wYVoGb/GAVQgGa41gsxiPGEJxvTV
-67APpp8zhZrTcY5Qj5ndYjCCBUowggQyoAMCAQICEGYeo7xQ0H5LubI9b+ru3w4wDQYJKoZI
-hvcNAQEFBQAwgd0xCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0G
-A1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazE7MDkGA1UECxMyVGVybXMgb2YgdXNlIGF0
-IGh0dHBzOi8vd3d3LnZlcmlzaWduLmNvbS9ycGEgKGMpMDUxHjAcBgNVBAsTFVBlcnNvbmEg
-Tm90IFZhbGlkYXRlZDE3MDUGA1UEAxMuVmVyaVNpZ24gQ2xhc3MgMSBJbmRpdmlkdWFsIFN1
-YnNjcmliZXIgQ0EgLSBHMjAeFw0wOTExMTMwMDAwMDBaFw0xMDExMTMyMzU5NTlaMIIBEzEX
-MBUGA1UEChMOVmVyaVNpZ24sIEluYy4xHzAdBgNVBAsTFlZlcmlTaWduIFRydXN0IE5ldHdv
-cmsxRjBEBgNVBAsTPXd3dy52ZXJpc2lnbi5jb20vcmVwb3NpdG9yeS9SUEEgSW5jb3JwLiBi
-eSBSZWYuLExJQUIuTFREKGMpOTgxHjAcBgNVBAsTFVBlcnNvbmEgTm90IFZhbGlkYXRlZDEz
-MDEGA1UECxMqRGlnaXRhbCBJRCBDbGFzcyAxIC0gTmV0c2NhcGUgRnVsbCBTZXJ2aWNlMRcw
-FQYDVQQDFA5TdGVwaGFuIEdhdHprYTEhMB8GCSqGSIb3DQEJARYSc3RlcGhhbkBnYXR6a2Eu
-b3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzoYff7/WOfp73wx1jWbTO26u
-vXBVo5E5ScnXuN1NozLAeUw7ZbFwLlRjQfbcz4oMQqhR5P4G620sF0MPu8PxkFwmiCmBPNcJ
-oFvlHtZEktXp4Zj6hzIRFKZjdjDZWmyL7niIHUr1mh1x1yHAyPgA74KrfwaZaHqawflfjVl5
-CJv8QwEFaTGSwW7XU3l5czwLrzUTSkdEytANFSSPI7aL5ub1uwzWltu9QsVa1mosFk4lKO4f
-jKhKaixKV03hoTm9Yv6p2arRbBprtrq076QjH6r28c6ndiTPveVbQ9WNNJ3UrFQjEK9AnJGR
-nfyA4FD62+YL5/s5aHMGd5zJeE793QIDAQABo4HMMIHJMAkGA1UdEwQCMAAwRAYDVR0gBD0w
-OzA5BgtghkgBhvhFAQcXATAqMCgGCCsGAQUFBwIBFhxodHRwczovL3d3dy52ZXJpc2lnbi5j
-b20vcnBhMAsGA1UdDwQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDBAYIKwYBBQUHAwIwSgYD
-VR0fBEMwQTA/oD2gO4Y5aHR0cDovL0luZEMxRGlnaXRhbElELWNybC52ZXJpc2lnbi5jb20v
-SW5kQzFEaWdpdGFsSUQuY3JsMA0GCSqGSIb3DQEBBQUAA4IBAQAntbPeTrLjXajrDpS4CKTK
-CW3SFpIJ7qxrvXhXO0aT1w/tmpWEmGJks7QkJkReDNTi9fb4qAoywb8XTdWcWRAxxiVHHvya
-o3quyuqa2yl7Te9UxqDUlXKV9d6WBGudlPDpcFGk/lgaMZ15Zb6mvfMx7IZMFCPJAOB3ns7g
-SW++HOm8d4mKKd/x5pY1zLCqD1RTp9wD+y4rj0Xm6v8tNgJXWLBO7d9bfZIhajfju907yEaA
-IyQXiLGq/AM52fbsss/RNp3qeOvRf81bAoseLhWV5CiuXCKsK5BTtREeMZwMLnl/rDwcsdzR
-Pu8ccRl3aKKR6gl40l3MZEy77bb1PP0HMIIFSjCCBDKgAwIBAgIQZh6jvFDQfku5sj1v6u7f
-DjANBgkqhkiG9w0BAQUFADCB3TELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJ
-bmMuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBv
-ZiB1c2UgYXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNTEeMBwGA1UECxMV
-UGVyc29uYSBOb3QgVmFsaWRhdGVkMTcwNQYDVQQDEy5WZXJpU2lnbiBDbGFzcyAxIEluZGl2
-aWR1YWwgU3Vic2NyaWJlciBDQSAtIEcyMB4XDTA5MTExMzAwMDAwMFoXDTEwMTExMzIzNTk1
-OVowggETMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1
-c3QgTmV0d29yazFGMEQGA1UECxM9d3d3LnZlcmlzaWduLmNvbS9yZXBvc2l0b3J5L1JQQSBJ
-bmNvcnAuIGJ5IFJlZi4sTElBQi5MVEQoYyk5ODEeMBwGA1UECxMVUGVyc29uYSBOb3QgVmFs
-aWRhdGVkMTMwMQYDVQQLEypEaWdpdGFsIElEIENsYXNzIDEgLSBOZXRzY2FwZSBGdWxsIFNl
-cnZpY2UxFzAVBgNVBAMUDlN0ZXBoYW4gR2F0emthMSEwHwYJKoZIhvcNAQkBFhJzdGVwaGFu
-QGdhdHprYS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDOhh9/v9Y5+nvf
-DHWNZtM7bq69cFWjkTlJyde43U2jMsB5TDtlsXAuVGNB9tzPigxCqFHk/gbrbSwXQw+7w/GQ
-XCaIKYE81wmgW+Ue1kSS1enhmPqHMhEUpmN2MNlabIvueIgdSvWaHXHXIcDI+ADvgqt/Bplo
-eprB+V+NWXkIm/xDAQVpMZLBbtdTeXlzPAuvNRNKR0TK0A0VJI8jtovm5vW7DNaW271CxVrW
-aiwWTiUo7h+MqEpqLEpXTeGhOb1i/qnZqtFsGmu2urTvpCMfqvbxzqd2JM+95VtD1Y00ndSs
-VCMQr0CckZGd/IDgUPrb5gvn+zlocwZ3nMl4Tv3dAgMBAAGjgcwwgckwCQYDVR0TBAIwADBE
-BgNVHSAEPTA7MDkGC2CGSAGG+EUBBxcBMCowKAYIKwYBBQUHAgEWHGh0dHBzOi8vd3d3LnZl
-cmlzaWduLmNvbS9ycGEwCwYDVR0PBAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMEBggrBgEF
-BQcDAjBKBgNVHR8EQzBBMD+gPaA7hjlodHRwOi8vSW5kQzFEaWdpdGFsSUQtY3JsLnZlcmlz
-aWduLmNvbS9JbmRDMURpZ2l0YWxJRC5jcmwwDQYJKoZIhvcNAQEFBQADggEBACe1s95OsuNd
-qOsOlLgIpMoJbdIWkgnurGu9eFc7RpPXD+2alYSYYmSztCQmRF4M1OL19vioCjLBvxdN1ZxZ
-EDHGJUce/Jqjeq7K6prbKXtN71TGoNSVcpX13pYEa52U8OlwUaT+WBoxnXllvqa98zHshkwU
-I8kA4HeezuBJb74c6bx3iYop3/HmljXMsKoPVFOn3AP7LiuPRebq/y02AldYsE7t31t9kiFq
-N+O73TvIRoAjJBeIsar8AznZ9uyyz9E2nep469F/zVsCix4uFZXkKK5cIqwrkFO1ER4xnAwu
-eX+sPByx3NE+7xxxGXdoopHqCXjSXcxkTLvttvU8/QcxggTsMIIE6AIBATCB8jCB3TELMAkG
-A1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQLExZWZXJpU2lnbiBU
-cnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2UgYXQgaHR0cHM6Ly93d3cudmVy
-aXNpZ24uY29tL3JwYSAoYykwNTEeMBwGA1UECxMVUGVyc29uYSBOb3QgVmFsaWRhdGVkMTcw
-NQYDVQQDEy5WZXJpU2lnbiBDbGFzcyAxIEluZGl2aWR1YWwgU3Vic2NyaWJlciBDQSAtIEcy
-AhBmHqO8UNB+S7myPW/q7t8OMAkGBSsOAwIaBQCgggLOMBgGCSqGSIb3DQEJAzELBgkqhkiG
-9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEwMDgyNDE4MzAzMVowIwYJKoZIhvcNAQkEMRYEFORd
-KaiqASnm3TyI2tVZm90MI05OMF8GCSqGSIb3DQEJDzFSMFAwCwYJYIZIAWUDBAECMAoGCCqG
-SIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggqhkiG
-9w0DAgIBKDCCAQMGCSsGAQQBgjcQBDGB9TCB8jCB3TELMAkGA1UEBhMCVVMxFzAVBgNVBAoT
-DlZlcmlTaWduLCBJbmMuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYD
-VQQLEzJUZXJtcyBvZiB1c2UgYXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykw
-NTEeMBwGA1UECxMVUGVyc29uYSBOb3QgVmFsaWRhdGVkMTcwNQYDVQQDEy5WZXJpU2lnbiBD
-bGFzcyAxIEluZGl2aWR1YWwgU3Vic2NyaWJlciBDQSAtIEcyAhBmHqO8UNB+S7myPW/q7t8O
-MIIBBQYLKoZIhvcNAQkQAgsxgfWggfIwgd0xCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJp
-U2lnbiwgSW5jLjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazE7MDkGA1UECxMy
-VGVybXMgb2YgdXNlIGF0IGh0dHBzOi8vd3d3LnZlcmlzaWduLmNvbS9ycGEgKGMpMDUxHjAc
-BgNVBAsTFVBlcnNvbmEgTm90IFZhbGlkYXRlZDE3MDUGA1UEAxMuVmVyaVNpZ24gQ2xhc3Mg
-MSBJbmRpdmlkdWFsIFN1YnNjcmliZXIgQ0EgLSBHMgIQZh6jvFDQfku5sj1v6u7fDjANBgkq
-hkiG9w0BAQEFAASCAQBmoolDPuz6L1zrlGx/NvkoBaA/aoV1rP69vTQ0Upj55ZSRmLRdJ5Qy
-TumxVggMZKNFz8yJmkCzxPwfU4NPRqhfUdXpxRtgZCPDYLDlYADaMSk8FlgKIQ9aXL266As+
-I4hhat8LqSKNv9Nn2BbCHI3UiatNBUSB4bvvlIrZbvCKv0xLy2uf9lFU1aIVLBgdkNv5ZfAH
-MOXeyljc1jfCleT3g/bNO7Eyc+g4F+aFhji0nqld+HNHaWc3cxPwTqMhpulfIgc/nyJdth+r
-QMbWWwlX568QnLr7Dd3IWWFc7vSEiwd01Rb8YMVUU9JtoiglAE/VD4htLk5mFmIGH4tnBkWL
-AAAAAAAA
---------------ms060008080704040805010902--
+Brian
+
+> 
+> As I said, I'm probably missing a part of the puzzle ..
+> 
+> Ben.
+> 
+>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+>> ---
+>>
+>>  arch/powerpc/kernel/smp.c |    9 +++++++--
+>>  1 file changed, 7 insertions(+), 2 deletions(-)
+>>
+>> diff -puN arch/powerpc/kernel/smp.c~powerpc_sibling_map_offline arch/powerpc/kernel/smp.c
+>> --- linux-2.6/arch/powerpc/kernel/smp.c~powerpc_sibling_map_offline	2010-08-09 16:49:47.000000000 -0500
+>> +++ linux-2.6-bjking1/arch/powerpc/kernel/smp.c	2010-08-09 16:49:47.000000000 -0500
+>> @@ -598,8 +598,11 @@ int __cpu_disable(void)
+>>  	/* Update sibling maps */
+>>  	base = cpu_first_thread_in_core(cpu);
+>>  	for (i = 0; i < threads_per_core; i++) {
+>> -		cpumask_clear_cpu(cpu, cpu_sibling_mask(base + i));
+>> -		cpumask_clear_cpu(base + i, cpu_sibling_mask(cpu));
+>> +		if ((base + i) != cpu) {
+>> +			cpumask_clear_cpu(cpu, cpu_sibling_mask(base + i));
+>> +			cpumask_clear_cpu(base + i, cpu_sibling_mask(cpu));
+>> +		}
+>> +
+>>  		cpumask_clear_cpu(cpu, cpu_core_mask(base + i));
+>>  		cpumask_clear_cpu(base + i, cpu_core_mask(cpu));
+>>  	}
+>> @@ -641,6 +644,8 @@ void cpu_hotplug_driver_unlock()
+>>  
+>>  void cpu_die(void)
+>>  {
+>> +	cpumask_clear_cpu(smp_processor_id(), cpu_sibling_mask(smp_processor_id()));
+>> +
+>>  	if (ppc_md.cpu_die)
+>>  		ppc_md.cpu_die();
+>>  }
+>> _
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
