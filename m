@@ -1,15 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: remove fpscr use from [kvm_]cvt_{fd,df}
-In-reply-to: <1282699836.22370.566.camel@pasglop>
-References: <m2hbinzlon.fsf@igel.home> <27922.1282523025@neuling.org>
-	<1282626718.22370.505.camel@pasglop> <32250.1282626925@neuling.org>
-	<1282699836.22370.566.camel@pasglop>
-Date: Wed, 25 Aug 2010 11:34:12 +1000
-Message-ID: <10192.1282700052@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>,
-	kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <anton@ozlabs.org>
+Date: Wed, 25 Aug 2010 11:51:12 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Check end of stack canary at oops time
+Message-ID: <20100825015112.GF28360@kryten>
+References: <20100824231528.GC28360@kryten>
+	<1282699778.21145.54.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1282699778.21145.54.camel@concordia>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,29 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1282699836.22370.566.camel@pasglop> you wrote:
-> On Tue, 2010-08-24 at 15:15 +1000, Michael Neuling wrote:
-> > > > Do some 32 bit processors need this? 
-> > > > 
-> > > > In 32 bit before the merge, we use to have code that did:
-> > > > 
-> > > >   #if defined(CONFIG_4xx) || defined(CONFIG_E500)
-> > > >    #define cvt_fd without save/restore fpscr
-> > > >   #else
-> > > >    #define cvt_fd with save/restore fpscr
-> > > >   #end if
-> > > > 
-> > > > Kumar; does this ring any bells?
-> > > 
-> > > I don't see anything in the various 440 docs I have at hand that would
-> > > hint at lfd/stfs adffecting FPSCR.
-> > 
-> > The way the ifdefs are, it's the other way around.  4xx procs don't need
-> > to save/restore fpscr and others do.
-> 
-> Right, my bad. In any case, Paulus reckons it's all his mistake and we
-> really never need to save/restore fpscr.
+ 
+Hi,
 
-ACK :-P
+> The check for init is just because we haven't set the magic value for
+> init's stack right? But we could.
 
-Mikey
+Yeah, it's similar to what x86 are doing now:
+
+
+commit 0e7810be30f66e9f430c4ce2cd3b14634211690f
+Author: Jan Beulich <JBeulich@novell.com>
+Date:   Fri Nov 20 14:00:14 2009 +0000
+
+    x86: Suppress stack overrun message for init_task
+    
+    init_task doesn't get its stack end location set to
+    STACK_END_MAGIC, and hence the message is confusing
+    rather than helpful in this case.
+
+
+Adding it directly to init_task would be nice but I suspect we'd
+either have to make assumptions about end_of_stack in our code or move the
+canary into the thread_info (so we can statically allocate it via
+INIT_THREAD_INFO()) or do it at runtime somewhere, hopefully early enough that
+we couldn't take an oops.
+
+Anton
