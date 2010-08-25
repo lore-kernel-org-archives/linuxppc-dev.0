@@ -1,15 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 25 Aug 2010 11:51:12 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Check end of stack canary at oops time
-Message-ID: <20100825015112.GF28360@kryten>
-References: <20100824231528.GC28360@kryten>
-	<1282699778.21145.54.camel@concordia>
+Return-Path: <ebiederm@xmission.com>
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+	by ozlabs.org (Postfix) with ESMTP id 2B4B9B70DB
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Aug 2010 13:08:36 +1000 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Anton Blanchard <anton@samba.org>
+References: <20100825002258.GD28360@kryten>
+Date: Tue, 24 Aug 2010 17:37:57 -0700
+In-Reply-To: <20100825002258.GD28360@kryten> (Anton Blanchard's message of
+	"Wed, 25 Aug 2010 10:22:58 +1000")
+Message-ID: <m139u37cii.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1282699778.21145.54.camel@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
+	overridden
+Cc: akpm@linux-foundation.org, kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,30 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi,
+Anton Blanchard <anton@samba.org> writes:
 
-> The check for init is just because we haven't set the magic value for
-> init's stack right? But we could.
+> On ppc64 the crashkernel region almost always overlaps an area of firmware.
+> This works fine except when using the sysfs interface to reduce the kdump
+> region. If we free the firmware area we are guaranteed to crash.
 
-Yeah, it's similar to what x86 are doing now:
+That is ppc64 bug.  firmware should not be in the reserved region.  Any
+random kernel like thing can be put in to that region at any valid
+address and the fact that shrinking the region frees your firmware means
+that using that region could also stomp your firmware (which I assume
+would be a bad thing).
 
+So please fix the ppc64 reservation.
 
-commit 0e7810be30f66e9f430c4ce2cd3b14634211690f
-Author: Jan Beulich <JBeulich@novell.com>
-Date:   Fri Nov 20 14:00:14 2009 +0000
-
-    x86: Suppress stack overrun message for init_task
-    
-    init_task doesn't get its stack end location set to
-    STACK_END_MAGIC, and hence the message is confusing
-    rather than helpful in this case.
-
-
-Adding it directly to init_task would be nice but I suspect we'd
-either have to make assumptions about end_of_stack in our code or move the
-canary into the thread_info (so we can statically allocate it via
-INIT_THREAD_INFO()) or do it at runtime somewhere, hopefully early enough that
-we couldn't take an oops.
-
-Anton
+Eric
