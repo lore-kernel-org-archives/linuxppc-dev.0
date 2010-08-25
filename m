@@ -1,13 +1,17 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 25 Aug 2010 10:22:58 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, ebiederm@xmission.com, akpm@linux-foundation.org
-Subject: [PATCH 1/2] kdump: Allow shrinking of kdump region to be overridden
-Message-ID: <20100825002258.GD28360@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Check end of stack canary at oops time
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20100824231528.GC28360@kryten>
+References: <20100824231528.GC28360@kryten>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-GeqlrKlbBrNhMMsHEQvT"
+Date: Wed, 25 Aug 2010 11:29:38 +1000
+Message-ID: <1282699778.21145.54.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,48 +22,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On ppc64 the crashkernel region almost always overlaps an area of firmware.
-This works fine except when using the sysfs interface to reduce the kdump
-region. If we free the firmware area we are guaranteed to crash.
+--=-GeqlrKlbBrNhMMsHEQvT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Rename free_reserved_phys_range to crash_free_reserved_phys_range and make
-it a weak function so we can override it.
+On Wed, 2010-08-25 at 09:15 +1000, Anton Blanchard wrote:
+> Add a check for the stack canary when we oops, similar to x86. This shoul=
+d make
+> it clear that we overran our stack:
+>=20
+> Unable to handle kernel paging request for data at address 0x24652f63700a=
+c689
+> Faulting instruction address: 0xc000000000063d24
+> Thread overran stack, or stack corrupted
+>=20
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>=20
+> Index: powerpc.git/arch/powerpc/mm/fault.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- powerpc.git.orig/arch/powerpc/mm/fault.c	2010-08-25 08:41:08.23008618=
+6 +1000
+> +++ powerpc.git/arch/powerpc/mm/fault.c	2010-08-25 09:12:38.276553103 +10=
+00
+> @@ -30,6 +30,7 @@
+>  #include <linux/kprobes.h>
+>  #include <linux/kdebug.h>
+>  #include <linux/perf_event.h>
+> +#include <linux/magic.h>
+> =20
+>  #include <asm/firmware.h>
+>  #include <asm/page.h>
+> @@ -385,6 +386,7 @@ do_sigbus:
+>  void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig=
+)
+>  {
+>  	const struct exception_table_entry *entry;
+> +	unsigned long *stackend;
+> =20
+>  	/* Are we prepared to handle this fault?  */
+>  	if ((entry =3D search_exception_tables(regs->nip)) !=3D NULL) {
+> @@ -413,5 +415,9 @@ void bad_page_fault(struct pt_regs *regs
+>  	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
+>  		regs->nip);
+> =20
+> +	stackend =3D end_of_stack(current);
+> +	if (current !=3D &init_task && *stackend !=3D STACK_END_MAGIC)
+> +		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+The check for init is just because we haven't set the magic value for
+init's stack right? But we could.
 
-Index: powerpc.git/kernel/kexec.c
-===================================================================
---- powerpc.git.orig/kernel/kexec.c	2010-08-25 10:12:11.493863566 +1000
-+++ powerpc.git/kernel/kexec.c	2010-08-25 10:12:35.907264327 +1000
-@@ -1097,7 +1097,8 @@ size_t crash_get_memory_size(void)
- 	return size;
- }
- 
--static void free_reserved_phys_range(unsigned long begin, unsigned long end)
-+void __weak crash_free_reserved_phys_range(unsigned long begin,
-+					   unsigned long end)
- {
- 	unsigned long addr;
- 
-@@ -1133,7 +1134,7 @@ int crash_shrink_memory(unsigned long ne
- 	start = roundup(start, PAGE_SIZE);
- 	end = roundup(start + new_size, PAGE_SIZE);
- 
--	free_reserved_phys_range(end, crashk_res.end);
-+	crash_free_reserved_phys_range(end, crashk_res.end);
- 
- 	if ((start == end) && (crashk_res.parent != NULL))
- 		release_resource(&crashk_res);
-Index: powerpc.git/include/linux/kexec.h
-===================================================================
---- powerpc.git.orig/include/linux/kexec.h	2010-08-25 10:12:11.483862172 +1000
-+++ powerpc.git/include/linux/kexec.h	2010-08-25 10:12:13.664166570 +1000
-@@ -208,6 +208,7 @@ int __init parse_crashkernel(char *cmdli
- 		unsigned long long *crash_size, unsigned long long *crash_base);
- int crash_shrink_memory(unsigned long new_size);
- size_t crash_get_memory_size(void);
-+void crash_free_reserved_phys_range(unsigned long begin, unsigned long end);
- 
- #else /* !CONFIG_KEXEC */
- struct pt_regs;
+cheers
+
+
+--=-GeqlrKlbBrNhMMsHEQvT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkx0cf0ACgkQdSjSd0sB4dLKSgCdE4/Tkfk101MR9wAHPuBWpQSk
+gxMAniU13LqzkCExI63IK62/KmhmwwFV
+=6oqg
+-----END PGP SIGNATURE-----
+
+--=-GeqlrKlbBrNhMMsHEQvT--
