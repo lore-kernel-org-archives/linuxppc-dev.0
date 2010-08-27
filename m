@@ -1,20 +1,15 @@
-Return-Path: <dceravigupta@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) by ozlabs.org (Postfix) with ESMTP id 4C15DB70DC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Aug 2010 19:39:58 +1000 (EST)
-Received: by pzk5 with SMTP id 5so696898pzk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Aug 2010 02:39:56 -0700 (PDT)
+Return-Path: <tony@bakeyournoodle.com>
+Date: Fri, 27 Aug 2010 10:46:26 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: divya <dipraksh@linux.vnet.ibm.com>
+Subject: Re: Power machines fail to boot after build being successful
+Message-ID: <20100827004626.GU24591@ozlabs.org>
+References: <4C764F52.5050707@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Date: Thu, 26 Aug 2010 15:09:56 +0530
-Message-ID: <AANLkTiktTpduot+GJNmqRWPoXWbFnTbN=3pN8vvDU6FE@mail.gmail.com>
-Subject: SPI bitbanging driver
-From: Ravi Gupta <dceravigupta@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, MJ embd <mj.embd@gmail.com>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>,
-	Anton Vorontsov <cbouatmailru@gmail.com>
-Content-Type: multipart/alternative; boundary=0016364582baf3fb10048eb6c74d
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4C764F52.5050707@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016364582baf3fb10048eb6c74d
-Content-Type: text/plain; charset=ISO-8859-1
+On Thu, Aug 26, 2010 at 04:56:10PM +0530, divya wrote:
+> Hi,
+> 
+> After successfully building the kernel version 2.6.36-rc2-git4(commitid
+> d4348c678977c) with the config file attached(used make oldconfig),
+> P5 and P6 power machines fails to reboot with the following logs
 
-Hi,
+<snip>
 
-I am new to linux device driver development. I have to develop a spi
-bitbanging driver for MPC837xERDB board. So far I have found that linux
-kernel already has support for bitbanging over gpio(I am using linux kernel
-2.6.35). Now I am confused that how I am going to configure SPI pins as GPIO
-and what API to use to write my driver. I searched over internet a lot for a
-sample SPI bitbang driver but unable to do so. Can anyone provide me some
-sample bitbang driver explaning how to use the spi_bitbang.c and spi_gpio.c.
-Do I need to change the mpc8377_rdb.dts file to register spi pins as gpio?
+> Preparing to boot Linux version 2.6.36-rc2-autotest-next-20100826 (root@llm62) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #1 SMP Thu Aug 26 10:55:01 IST 2010
 
-Thanks in advance
-Ravi Gupta
+You say you're booting -git4 but you're running kernel is Linux next from Aug.
+26th  Can you confirm you see this boot failure with Linus's tree NOT linux
+next?
 
---0016364582baf3fb10048eb6c74d
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Adding linux-ppc and linux-next lists.
 
-Hi,<br><br>I am new to linux device driver development. I have to develop a=
- spi bitbanging driver for MPC837xERDB board. So far I have found that linu=
-x kernel already has support for bitbanging over gpio(I am using linux kern=
-el 2.6.35). Now I am confused that how I am going to configure SPI pins as =
-GPIO and what API to use to write my driver. I searched over internet a lot=
- for a sample SPI bitbang driver but unable to do so. Can anyone provide me=
- some sample bitbang driver explaning how to use the spi_bitbang.c and spi_=
-gpio.c. Do I need to change the mpc8377_rdb.dts file to register spi pins a=
-s gpio?<br>
-<br>Thanks in advance <br>Ravi Gupta<br>
-
---0016364582baf3fb10048eb6c74d--
+Yours Tony
