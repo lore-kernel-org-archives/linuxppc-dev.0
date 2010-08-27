@@ -1,14 +1,22 @@
-Return-Path: <yanok@emcraft.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9A983B70DA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Aug 2010 20:57:25 +1000 (EST)
-From: Ilya Yanok <yanok@emcraft.com>
-To: linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de, vlad@emcraft.com
-Subject: [PATCH] mpc8308: fix USB DR controller initialization
-Date: Fri, 27 Aug 2010 12:57:21 +0200
-Message-Id: <1282906641-25351-1-git-send-email-yanok@emcraft.com>
-Cc: Ilya Yanok <yanok@emcraft.com>
+Return-Path: <richardcochran@gmail.com>
+Date: Fri, 27 Aug 2010 13:08:55 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+Message-ID: <20100827110855.GA11657@riccoc20.at.omicron.at>
+References: <cover.1281956490.git.richard.cochran@omicron.at>
+	<1282176776.2865.100.camel@localhost.localdomain>
+	<20100819055518.GA4084@riccoc20.at.omicron.at>
+	<201008191428.04546.arnd@arndb.de>
+	<20100819153847.GA10695@riccoc20.at.omicron.at>
+	<1282594899.3111.358.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1282594899.3111.358.camel@localhost.localdomain>
+Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,103 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC8308 has ULPI pin muxing settings in SICRH register, bits 17-18
-which is different from both MPC8313 and MPC8315.
-Also MPC8308 doesn't have REFSEL, UTMI_PHY_EN and OTG_PORT fields
-in the USB DR controller CONTROL register.
+On Mon, Aug 23, 2010 at 01:21:39PM -0700, john stultz wrote:
+> On Thu, 2010-08-19 at 17:38 +0200, Richard Cochran wrote:
+> > On Thu, Aug 19, 2010 at 02:28:04PM +0200, Arnd Bergmann wrote:
+> > > My point was that a syscall is better than an ioctl based interface here,
+> > > which I definitely still think. Given that John knows much more about
+> > > clocks than I do, we still need to get agreement on the question that
+> > > he raised, which is whether we actually need to expose this clock to the
+> > > user or not.
+> > > 
+> > > If we can find a way to sync system time accurate enough with PTP and
+> > > PPS, user applications may not need to see two separate clocks at all.
+> > 
+> > At the very least, one user application (the PTPd) needs to see the
+> > PTP clock.
+> > 
+> > > > SYSCALL_DEFINE3(clock_adjtime, const clockid_t, clkid,
+> > > > 		int, ppb, struct timespec __user *, ts)
+> > > > 
+> > > > ppb - desired frequency adjustment in parts per billion
+> > > > ts  - desired time step (or jump) in <sec,nsec> to correct
+> > > >       a measured offset
+> > > > 
+> > > > Arguably, this syscall might be useful for other clocks, too.
+> > > 
+> > > This is a mix of adjtime and adjtimex with the addition of
+> > > the clkid parameter, right?
+> > 
+> > Sort of, but not really. ADJTIME(3) takes an offset and slowly
+> > corrects the clock using a servo in the kernel, over hours.
+> > 
+> > For this function, the offset passed in the 'ts' parameter will be
+> > immediately corrected, by jumping to the new time. This reflects the
+> > way that PTP works. After the first few samples, the PTPd has an
+> > estimate of the offset to the master and the rate difference. The PTPd
+> > can proceed in one of two ways.
+> > 
+> > 1. If resetting the clock is not desired, then the clock is set to the
+> >    maximum adjustment (in the right direction) until the clock time is
+> >    close to the master's time.
+> > 
+> > 2. The estimated offset is added to the current time, resulting in a
+> >    jump in time.
+> > 
+> > We need clock_adjtime(id, 0, ts) for the second case.
+> >
+> > > Have you considered passing a struct timex instead of ppb and ts?
+> > 
+> > Yes, but the timex is not suitable, IMHO.
+> 
+> Could you expand on this?
 
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- arch/powerpc/boot/dts/mpc8308rdb.dts  |    2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
- arch/powerpc/platforms/83xx/usb.c     |   21 ++++++++++++++++-----
- 3 files changed, 19 insertions(+), 6 deletions(-)
+We need to able to specify that the call is for a PTP clock. We could
+add that to the modes flag, like this:
 
-diff --git a/arch/powerpc/boot/dts/mpc8308rdb.dts b/arch/powerpc/boot/dts/mpc8308rdb.dts
-index a97eb2d..1e2b888 100644
---- a/arch/powerpc/boot/dts/mpc8308rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8308rdb.dts
-@@ -109,7 +109,7 @@
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		device_type = "soc";
--		compatible = "fsl,mpc8315-immr", "simple-bus";
-+		compatible = "fsl,mpc8308-immr", "simple-bus";
- 		ranges = <0 0xe0000000 0x00100000>;
- 		reg = <0xe0000000 0x00000200>;
- 		bus-frequency = <0>;
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index 0fea881..82a4345 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -35,6 +35,8 @@
+/*timex.h*/
+#define ADJ_PTP_0 0x10000
+#define ADJ_PTP_1 0x20000
+#define ADJ_PTP_2 0x30000
+#define ADJ_PTP_3 0x40000
+
+I can live with this, if everyone else can, too.
  
- /* system i/o configuration register high */
- #define MPC83XX_SICRH_OFFS         0x118
-+#define MPC8308_SICRH_USB_MASK     0x000c0000
-+#define MPC8308_SICRH_USB_ULPI     0x00040000
- #define MPC834X_SICRH_USB_UTMI     0x00020000
- #define MPC831X_SICRH_USB_MASK     0x000000e0
- #define MPC831X_SICRH_USB_ULPI     0x000000a0
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 3ba4bb7..2c64164 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -127,7 +127,8 @@ int mpc831x_usb_cfg(void)
+> Could we not add a adjustment mode ADJ_SETOFFSET or something that would
+> provide the instantaneous offset correction?
+
+Yes, but we would also need to add a struct timespec to the struct
+timex, in order to get nanosecond resolution. I think it would be
+possible to do in the padding at the end?
+
+> You're right that the timex is a little crufty. But its legacy that we
+> will support indefinitely. So following the established interface helps
+> maintainability.
+
+We can use it for PTP, with the modifications suggested above. Or we
+can just introduce the clock_adjtime method, instead.
  
- 	/* Configure clock */
- 	immr_node = of_get_parent(np);
--	if (immr_node && of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
-+	if (immr_node && (of_device_is_compatible(immr_node, "fsl,mpc8315-immr") ||
-+			of_device_is_compatible(immr_node, "fsl,mpc8308-immr")))
- 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
- 		                MPC8315_SCCR_USB_MASK,
- 		                MPC8315_SCCR_USB_DRCM_01);
-@@ -138,7 +139,11 @@ int mpc831x_usb_cfg(void)
- 
- 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
- 	if (prop && !strcmp(prop, "ulpi")) {
--		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr")) {
-+		if (of_device_is_compatible(immr_node, "fsl,mpc8308-immr")) {
-+			clrsetbits_be32(immap + MPC83XX_SICRH_OFFS,
-+					MPC8308_SICRH_USB_MASK,
-+					MPC8308_SICRH_USB_ULPI);
-+		} else if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr")) {
- 			clrsetbits_be32(immap + MPC83XX_SICRL_OFFS,
- 					MPC8315_SICRL_USB_MASK,
- 					MPC8315_SICRL_USB_ULPI);
-@@ -173,6 +178,9 @@ int mpc831x_usb_cfg(void)
- 		     !strcmp(prop, "utmi"))) {
- 		u32 refsel;
- 
-+		if (of_device_is_compatible(immr_node, "fsl,mpc8308-immr"))
-+			goto out;
-+
- 		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
- 			refsel = CONTROL_REFSEL_24MHZ;
- 		else
-@@ -186,9 +194,11 @@ int mpc831x_usb_cfg(void)
- 		temp = CONTROL_PHY_CLK_SEL_ULPI;
- #ifdef CONFIG_USB_OTG
- 		/* Set OTG_PORT */
--		dr_mode = of_get_property(np, "dr_mode", NULL);
--		if (dr_mode && !strcmp(dr_mode, "otg"))
--			temp |= CONTROL_OTG_PORT;
-+		if (!of_device_is_compatible(immr_node, "fsl,mpc8308-immr")) {
-+			dr_mode = of_get_property(np, "dr_mode", NULL);
-+			if (dr_mode && !strcmp(dr_mode, "otg"))
-+				temp |= CONTROL_OTG_PORT;
-+		}
- #endif /* CONFIG_USB_OTG */
- 		out_be32(usb_regs + FSL_USB2_CONTROL_OFFS, temp);
- 	} else {
-@@ -196,6 +206,7 @@ int mpc831x_usb_cfg(void)
- 		ret = -EINVAL;
- 	}
- 
-+out:
- 	iounmap(usb_regs);
- 	of_node_put(np);
- 	return ret;
--- 
-1.6.2.5
+> So if the clock_adjtime interface is needed, it would seem best for it
+> to be generic enough to support not only PTP, but also the NTP kernel
+> PLL.
+
+For the proposed clock_adjime, what else is needed to support clock
+adjustment in general?
+
+I don't mind making the interface generic enough to support any
+(realistic) conceivable clock adjustment scheme, but beyond the
+present PTP hardware clocks, I don't know what else might be needed.
+
+Richard
