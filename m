@@ -1,9 +1,10 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Fri, 27 Aug 2010 16:34:37 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Date: Fri, 27 Aug 2010 16:06:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Richard Cochran <richardcochran@gmail.com>
 Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100827143437.GB3293@riccoc20.at.omicron.at>
+Message-ID: <20100827160624.433b3374@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100827143437.GB3293@riccoc20.at.omicron.at>
 References: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
 	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
 	<20100817085324.GB3330@riccoc20.at.omicron.at>
@@ -14,9 +15,9 @@ References: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.coc
 	<1282594125.3111.344.camel@localhost.localdomain>
 	<20100827123849.GC11657@riccoc20.at.omicron.at>
 	<20100827143844.646eccf6@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100827143844.646eccf6@lxorguk.ukuu.org.uk>
+	<20100827143437.GB3293@riccoc20.at.omicron.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
 	john stultz <johnstul@us.ibm.com>, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
@@ -31,63 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 27, 2010 at 02:38:44PM +0100, Alan Cox wrote:
-> > 2007. If we can justify adding a clock id in this case, surely we can
-> > add one for PTP as well!
+> Sorry for causing confusion, but please understand "a hardware clock
+> with timestamping capabilities than can be used for PTP support"
+> whenever I wrote "PTP" or "PTP clock."
+
+Ok that makes sense.
 > 
-> But PTP isn't really a clock - its a time sync protocol. You can (and may
-> need to) have multiple clocks of this form on the same host because it's
-> master based and you may have to deal with multiple masters who disagree.
+> Well, what I just said is not entirely true.
+> most are bound to the PTP protocol. That may change in the future...
 
-Okay, I really meant "for PTP hardware clocks". In general the
-discussion is about supporting a kind of hardware and not about the
-PTP network protocol. In fact, the hardware clocks and clock servo
-loops are not at all part of the IEEE 1588 standard.
+Which seems fine to me too - its an implementation detail of that time
+source.
 
-Sorry for causing confusion, but please understand "a hardware clock
-with timestamping capabilities than can be used for PTP support"
-whenever I wrote "PTP" or "PTP clock."
-
-Well, what I just said is not entirely true.
-
-In fact, most of the current crop of PTP hardware clocks operate by
-recognizing PTP network frames and timestamping them. One clock I know
-of can timestamp every frame, but that seems to be the exception
-rather than the rule. So, in theory they are just clocks, but actually
-most are bound to the PTP protocol. That may change in the future...
-
-> > viable approach. After the lkml discussion, I think it is even cleaner
-> > and nicer to just offer a new clock id.
+> > Specialist applications will presumably need to know which time source or
+> > sources they are tracking and synchronizing too out of multiple potential
+> > PTP sources
 > 
-> PTP is not a clock, it's many clocks so a clock id doesn't really work.
-> You could assume a single time domain and add a CLOCK_TAI plus then use
-> PTP to track it I guess ?
+> Yes, the PTPd will have some special knowledge.
+
+Not only that but consumers of different time synchronizations will need
+to be able to describe which time source they want to talk about from a
+selection of PTP or similar things.
+
+> > system time bimble track a source makes sense just as with NTP but making
+> > it a new clock seems the wrong model extending a non-too-bright API when
+> > you can just put the time sources in a file tree.
 > 
-> The question then is who would consume it and how ?
-> 
-> Generic applications want POSIX time, which is managed by NTP but could
-> in userspace also be slewed via the existing API to track a PTP source if
-> someone wanted and if there is a GPS source around they can compute UTC
-> from it.
+> Don't get your meaning here, what did you mean by "file tree?"
 
-Yes, and even without a GPS, the PTP protocol (this time I really do
-mean the protocol!) does provide the UTC offset whenever it is known.
+Something like
 
-> Specialist applications will presumably need to know which time source or
-> sources they are tracking and synchronizing too out of multiple potential
-> PTP sources
+	/sys/class/timesource/<name>/...
 
-Yes, the PTPd will have some special knowledge.
+at which point we don't have to enumerate them all, add special system
+calls and then fret about the fact you can't access them from things like
+shell scripts.
 
-> Kernel stuff is more of a problem.
-> 
-> I'm not sure shoehorning a source of many clocks and time sync bases into
-> a jump up and down and make it fit single time assumption is wise. Making
-> system time bimble track a source makes sense just as with NTP but making
-> it a new clock seems the wrong model extending a non-too-bright API when
-> you can just put the time sources in a file tree.
+The fact SYS5.4 Unix and SuS got obsessed with numbering things
+rather than using names unlike Unix doesn't mean it's the right model to
+number them - usually the reverse is true, a heirarchy of file names is
+rather more future proof.
 
-Don't get your meaning here, what did you mean by "file tree?"
-
-Thanks,
-Richard
+Alan
