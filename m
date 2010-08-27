@@ -1,21 +1,26 @@
-Return-Path: <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-From: John Stultz <johnstul@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <201008271403.41949.arnd@arndb.de>
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<1282594899.3111.358.camel@localhost.localdomain>
-	<20100827110855.GA11657@riccoc20.at.omicron.at>
-	<201008271403.41949.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 27 Aug 2010 13:56:08 -0700
-Message-ID: <1282942568.2268.60.camel@jstultz-laptop>
-Mime-Version: 1.0
-Cc: Rodolfo Giometti <giometti@linux.it>, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Richard Cochran <richardcochran@gmail.com>,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <msm@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 0FF05B710C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 28 Aug 2010 07:49:48 +1000 (EST)
+Received: from mail164-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail164-tx2-R.bigfish.com (Postfix) with ESMTP id 2ED12D08232	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2010 21:49:36 +0000 (UTC)
+Received: from TX2EHSMHS047.bigfish.com (unknown [10.9.14.250])	by
+	mail164-tx2.bigfish.com (Postfix) with ESMTP id 0408F120804F	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2010 21:49:35 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o7RLnNEw003152	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 Aug 2010 14:49:34 -0700 (MST)
+From: Matthew McClintock <msm@freescale.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/fsl_soc: Search all global-utilities nodes for rstccr
+Date: Fri, 27 Aug 2010 16:55:47 -0500
+Message-ID: <1282946147-28164-1-git-send-email-msm@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-08-27 at 14:03 +0200, Arnd Bergmann wrote:
-> On Friday 27 August 2010, Richard Cochran wrote:
-> > On Mon, Aug 23, 2010 at 01:21:39PM -0700, john stultz wrote:
-> > > On Thu, 2010-08-19 at 17:38 +0200, Richard Cochran wrote:
-> > > > On Thu, Aug 19, 2010 at 02:28:04PM +0200, Arnd Bergmann wrote:
-> > > > > Have you considered passing a struct timex instead of ppb and ts?
-> > > > 
-> > > > Yes, but the timex is not suitable, IMHO.
-> > > 
-> > > Could you expand on this?
-> > 
-> > We need to able to specify that the call is for a PTP clock. We could
-> > add that to the modes flag, like this:
-> > 
-> > /*timex.h*/
-> > #define ADJ_PTP_0 0x10000
-> > #define ADJ_PTP_1 0x20000
-> > #define ADJ_PTP_2 0x30000
-> > #define ADJ_PTP_3 0x40000
-> >
-> > I can live with this, if everyone else can, too.
-> 
-> My suggestion was actually to have a new syscall with the existing
-> structure, and pass a clockid_t value to it, similar to your
-> sys_clock_adjtime(), not change the actual sys_adjtime syscall.
->   
-> > > Could we not add a adjustment mode ADJ_SETOFFSET or something that would
-> > > provide the instantaneous offset correction?
-> > 
-> > Yes, but we would also need to add a struct timespec to the struct
-> > timex, in order to get nanosecond resolution. I think it would be
-> > possible to do in the padding at the end?
-> 
-> Yes, that's exactly what the padding is for. Instead of timespec, you can
-> probably have a extra values for replacing the existing ppm values with
-> ppb values.
+The first global-utilities node might not contain the rstcr
+property, so we should search all the nodes
 
-Right, although the ppm/ppb issue shouldn't be a problem as the timex
-allows for much finer then ppb resolution changes.
+Signed-off-by: Matthew McClintock <msm@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_soc.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
 
-The only adjustment to the adjtimex/timex interface that may be needed
-is the ability to set the time by an offset (ie: ADJ_SETOFFSET), rather
-then slewing the offset in (ADJ_OFFSET, or ADJ_OFFSET_SINGLESHOT).
-
-This avoids the calc offset, gettime(&now), settime(now+offset) method
-where any latency between the gettime and settime adds to the error.
-
-thanks
--john
-
-
-
-
-thanks
--john
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index b91f7ac..e2c8e47 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -378,17 +378,19 @@ static __be32 __iomem *rstcr;
+ static int __init setup_rstcr(void)
+ {
+ 	struct device_node *np;
+-	np = of_find_node_by_name(NULL, "global-utilities");
+-	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
+-		rstcr = of_iomap(np, 0) + 0xb0;
+-		if (!rstcr)
+-			printk (KERN_EMERG "Error: reset control register "
+-					"not mapped!\n");
+-	} else if (ppc_md.restart == fsl_rstcr_restart)
++
++	for_each_node_by_name(np, "global-utilities") {
++		if ((of_get_property(np, "fsl,has-rstcr", NULL))) {
++			rstcr = of_iomap(np, 0) + 0xb0;
++			if (!rstcr)
++				printk (KERN_EMERG "Error: reset control "
++						"register not mapped!\n");
++		}
++	}
++
++	if (!rstcr && ppc_md.restart == fsl_rstcr_restart)
+ 		printk(KERN_ERR "No RSTCR register, warm reboot won't work\n");
+ 
+-	if (np)
+-		of_node_put(np);
+ 	return 0;
+ }
+ 
+-- 
+1.6.6.1
