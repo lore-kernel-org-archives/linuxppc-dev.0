@@ -1,36 +1,15 @@
-Return-Path: <jacob.keller@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <4C77D804.9060500@gmx.net>
-References: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
-	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
-	<20100817085324.GB3330@riccoc20.at.omicron.at>
-	<1282090963.1734.97.camel@localhost>
-	<20100818071942.GA4096@riccoc20.at.omicron.at>
-	<1282176776.2865.100.camel@localhost.localdomain>
-	<20100819055518.GA4084@riccoc20.at.omicron.at>
-	<1282594125.3111.344.camel@localhost.localdomain>
-	<20100827123849.GC11657@riccoc20.at.omicron.at>
-	<20100827143844.646eccf6@lxorguk.ukuu.org.uk>
-	<20100827143437.GB3293@riccoc20.at.omicron.at>
-	<20100827160624.433b3374@lxorguk.ukuu.org.uk>
-	<4C77D804.9060500@gmx.net>
-From: Jacob Keller <jacob.keller@gmail.com>
-Date: Fri, 27 Aug 2010 09:17:10 -0700
-Message-ID: <AANLkTimG+cMnGL=K9Cf1Xjhnh3HKyH3k-scXRHLQdh7Y@mail.gmail.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-To: Patrick Loschmidt <Patrick.Loschmidt@gmx.net>
-Content-Type: multipart/alternative; boundary=001517478b50a36814048ed07392
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	john stultz <johnstul@us.ibm.com>,
-	Richard Cochran <richardcochran@gmail.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from firewall1 (wsip-70-167-241-26.dc.dc.cox.net [70.167.241.26])
+	by ozlabs.org (Postfix) with ESMTP id 254B8B7109
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Aug 2010 05:15:51 +1000 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/kvm/e500_tlb: Fix a minor copy-paste tracing bug
+Date: Fri, 27 Aug 2010 15:06:45 -0400
+Message-Id: <1282936005-17078-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Cc: linuxppc-dev@ozlabs.org, Kyle Moffett <kyle@moffetthome.net>,
+	Liu Yu <yu.liu@freescale.com>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,64 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001517478b50a36814048ed07392
-Content-Type: text/plain; charset=ISO-8859-1
+The kvmppc_e500_stlbe_invalidate() function was trying to pass too many
+parameters to trace_kvm_stlb_inval().  This appears to be a bad
+copy-paste from a call to trace_kvm_stlb_write().
 
-On Fri, Aug 27, 2010 at 8:06 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote
+Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+---
+ arch/powerpc/kvm/e500_tlb.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-> > > system time bimble track a source makes sense just as with NTP but
-> making
-> > > it a new clock seems the wrong model extending a non-too-bright API
-> when
-> > > you can just put the time sources in a file tree.
-> >
-> > Don't get your meaning here, what did you mean by "file tree?"
->
-> Something like
->
->        /sys/class/timesource/<name>/...
->
-> at which point we don't have to enumerate them all, add special system
-> calls and then fret about the fact you can't access them from things like
-> shell scripts.
->
-
-I agree that this interface is the best way to be future proof. This appears
-to allow for multiple "clocks" or nodes, and doesn't get messed up when we
-add more than one NIC with separate clocks to a machine.
-
---001517478b50a36814048ed07392
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Aug 27, 2010 at 8:06 AM, Alan Cox <span dir=3D"ltr">&lt;<a href=3D"=
-mailto:alan@lxorguk.ukuu.org.uk">alan@lxorguk.ukuu.org.uk</a>&gt;</span> wr=
-ote<br>
-<blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; borde=
-r-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;"><div class=3D"im"=
->
-&gt; &gt; system time bimble track a source makes sense just as with NTP bu=
-t making<br>
-&gt; &gt; it a new clock seems the wrong model extending a non-too-bright A=
-PI when<br>
-&gt; &gt; you can just put the time sources in a file tree.<br>
-&gt;<br>
-&gt; Don&#39;t get your meaning here, what did you mean by &quot;file tree?=
-&quot;<br>
-<br>
-</div>Something like<br>
-<br>
- =A0 =A0 =A0 =A0/sys/class/timesource/&lt;name&gt;/...<br>
-<br>
-at which point we don&#39;t have to enumerate them all, add special system<=
-br>
-calls and then fret about the fact you can&#39;t access them from things li=
-ke<br>
-shell scripts.<br>
-</blockquote><br>
-I agree that this interface is the best way to be future proof. This=20
-appears to allow for multiple &quot;clocks&quot; or nodes, and doesn&#39;t =
-get messed=20
-up when we add more than one NIC with separate clocks to a machine.<br>
-
---001517478b50a36814048ed07392--
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 21011e1..1261a21 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -226,8 +226,7 @@ static void kvmppc_e500_stlbe_invalidate(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 
+ 	kvmppc_e500_shadow_release(vcpu_e500, tlbsel, esel);
+ 	stlbe->mas1 = 0;
+-	trace_kvm_stlb_inval(index_of(tlbsel, esel), stlbe->mas1, stlbe->mas2,
+-			     stlbe->mas3, stlbe->mas7);
++	trace_kvm_stlb_inval(index_of(tlbsel, esel));
+ }
+ 
+ static void kvmppc_e500_tlb1_invalidate(struct kvmppc_vcpu_e500 *vcpu_e500,
+-- 
+1.7.1
