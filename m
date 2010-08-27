@@ -1,23 +1,24 @@
 Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 0FF05B710C
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id AB23BB7112
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 Aug 2010 07:49:48 +1000 (EST)
-Received: from mail164-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail164-tx2-R.bigfish.com (Postfix) with ESMTP id 2ED12D08232	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2010 21:49:36 +0000 (UTC)
-Received: from TX2EHSMHS047.bigfish.com (unknown [10.9.14.250])	by
-	mail164-tx2.bigfish.com (Postfix) with ESMTP id 0408F120804F	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2010 21:49:35 +0000 (UTC)
+	Sat, 28 Aug 2010 07:52:15 +1000 (EST)
+Received: from mail9-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail9-tx2-R.bigfish.com (Postfix) with ESMTP id 7CF007503ED	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2010 21:51:58 +0000 (UTC)
+Received: from TX2EHSMHS044.bigfish.com (unknown [10.9.14.251])	by
+	mail9-tx2.bigfish.com (Postfix) with ESMTP id 471541AB0046	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2010 21:51:58 +0000 (UTC)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net
 	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o7RLnNEw003152	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Aug 2010 14:49:34 -0700 (MST)
+	id o7RLpvZa003355	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 Aug 2010 14:51:57 -0700 (MST)
 From: Matthew McClintock <msm@freescale.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/fsl_soc: Search all global-utilities nodes for rstccr
-Date: Fri, 27 Aug 2010 16:55:47 -0500
-Message-ID: <1282946147-28164-1-git-send-email-msm@freescale.com>
+Subject: [PATCH] powerpc/kernel: Adds correct calling convention for kexec
+	purgatory
+Date: Fri, 27 Aug 2010 16:58:21 -0500
+Message-ID: <1282946301-28207-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com
@@ -30,46 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first global-utilities node might not contain the rstcr
-property, so we should search all the nodes
+Call kexec purgatory code correctly. We were getting lucky before.
+If you examine the powerpc 32bit kexec "purgatory" code you will
+see it expects the following:
+
+>From kexec-tools: purgatory/arch/ppc/v2wrap_32.S
+-> calling convention:
+->   r3 = physical number of this cpu (all cpus)
+->   r4 = address of this chunk (master only)
+
+As such, we need to set r3 to the current core, r4 happens to be
+unused by purgatory at the moment but we go ahead and set it
+here as well
 
 Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/misc_32.S |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index b91f7ac..e2c8e47 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -378,17 +378,19 @@ static __be32 __iomem *rstcr;
- static int __init setup_rstcr(void)
- {
- 	struct device_node *np;
--	np = of_find_node_by_name(NULL, "global-utilities");
--	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
--		rstcr = of_iomap(np, 0) + 0xb0;
--		if (!rstcr)
--			printk (KERN_EMERG "Error: reset control register "
--					"not mapped!\n");
--	} else if (ppc_md.restart == fsl_rstcr_restart)
-+
-+	for_each_node_by_name(np, "global-utilities") {
-+		if ((of_get_property(np, "fsl,has-rstcr", NULL))) {
-+			rstcr = of_iomap(np, 0) + 0xb0;
-+			if (!rstcr)
-+				printk (KERN_EMERG "Error: reset control "
-+						"register not mapped!\n");
-+		}
-+	}
-+
-+	if (!rstcr && ppc_md.restart == fsl_rstcr_restart)
- 		printk(KERN_ERR "No RSTCR register, warm reboot won't work\n");
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 99bc652..6d1151f 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -807,6 +807,9 @@ relocate_new_kernel:
+ 	isync
+ 	sync
  
--	if (np)
--		of_node_put(np);
- 	return 0;
- }
- 
++	mfspr	r3, SPRN_PIR /* current core we are running on */
++	mr	r4, r5 /* load physical address of chunk called */
++
+ 	/* jump to the entry point, usually the setup routine */
+ 	mtlr	r5
+ 	blrl
 -- 
 1.6.6.1
