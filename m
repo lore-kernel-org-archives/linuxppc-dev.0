@@ -1,21 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id BF393B711D
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Aug 2010 20:51:36 +1000 (EST)
-Subject: Re: [PATCH] powerpc/kvm/e500_tlb: Fix a minor copy-paste tracing bug
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: multipart/alternative; boundary=Apple-Mail-63--257188238
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <AANLkTimwBL42bAxa5okPeJ-y_oSCfp05_POxxRasZGFn@mail.gmail.com>
-Date: Sat, 28 Aug 2010 12:51:29 +0200
-Message-Id: <F3844EE1-639D-441D-A1B1-AFC6B8CB8AAF@suse.de>
-References: <1282936005-17078-1-git-send-email-Kyle.D.Moffett@boeing.com>
-	<B3286B71-599C-405E-847F-06B843A46449@suse.de>
-	<AANLkTimwBL42bAxa5okPeJ-y_oSCfp05_POxxRasZGFn@mail.gmail.com>
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Liu Yu <yu.liu@freescale.com>, linux-kernel@vger.kernel.org,
-	Kyle Moffett <Kyle.D.Moffett@boeing.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id CF7A6B710E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 29 Aug 2010 08:34:20 +1000 (EST)
+Received: by iwn4 with SMTP id 4so3663921iwn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 28 Aug 2010 15:34:18 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1282946147-28164-1-git-send-email-msm@freescale.com>
+References: <1282946147-28164-1-git-send-email-msm@freescale.com>
+Date: Sat, 28 Aug 2010 17:34:18 -0500
+Message-ID: <AANLkTimYz6v2tMJRYnki9Ph33HL9yGsOcpgJ78LTDCTG@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fsl_soc: Search all global-utilities nodes for
+	rstccr
+From: Timur Tabi <timur.tabi@gmail.com>
+To: Matthew McClintock <msm@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,65 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> <msm@freescale.com> wrote:
 
---Apple-Mail-63--257188238
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=us-ascii
+> +
+> + =A0 =A0 =A0 for_each_node_by_name(np, "global-utilities") {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if ((of_get_property(np, "fsl,has-rstcr", N=
+ULL))) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 rstcr =3D of_iomap(np, 0) +=
+ 0xb0;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!rstcr)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk (KER=
+N_EMERG "Error: reset control "
 
+I'm not sure KERN_EMERG is warranted for this kind of error.
 
-On 28.08.2010, at 07:24, Kyle Moffett wrote:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 "register not mapped!\n");
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
 
-> On Fri, Aug 27, 2010 at 20:58, Alexander Graf <agraf@suse.de> wrote:
->> On 27.08.2010, at 21:06, Kyle Moffett wrote:
->>> The kvmppc_e500_stlbe_invalidate() function was trying to pass too =
-many
->>> parameters to trace_kvm_stlb_inval().  This appears to be a bad
->>> copy-paste from a call to trace_kvm_stlb_write().
->>=20
->> Which kernel is this against? That trace point is already commented =
-out in my tree.
->=20
-> Oh, hm, I guess I haven't rebased this patch since 2.6.35-ish.  The
-> trace point seems to work correctly with the fixed arguments; if
-> you'll tell me which tree I should base it on I can easily resubmit.
+So if a node has an fsl,rstcr property, but the of_iomap() fails, we
+jump to the next global-utilities node?  Perhaps you need a 'break'
+after the printk()?
 
-My tree is at git://github.com/agraf/linux-2.6.git kvm-ppc-next. If you =
-like I'll gladly take a patch in to enable the point again :).
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 if (!rstcr && ppc_md.restart =3D=3D fsl_rstcr_restart)
 
-Alex
+Wouldn't it make more sense to assign fsl_rstcr_restart to
+ppc_md.restart only if we find a valid fsl,has-rstcr property?
 
-
---Apple-Mail-63--257188238
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=us-ascii
-
-<html><head></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; -webkit-line-break: after-white-space; =
-"><br><div><div>On 28.08.2010, at 07:24, Kyle Moffett wrote:</div><br =
-class=3D"Apple-interchange-newline"><blockquote type=3D"cite"><div>On =
-Fri, Aug 27, 2010 at 20:58, Alexander Graf &lt;<a =
-href=3D"mailto:agraf@suse.de">agraf@suse.de</a>&gt; =
-wrote:<br><blockquote type=3D"cite">On 27.08.2010, at 21:06, Kyle =
-Moffett wrote:<br></blockquote><blockquote type=3D"cite"><blockquote =
-type=3D"cite">The kvmppc_e500_stlbe_invalidate() function was trying to =
-pass too many<br></blockquote></blockquote><blockquote =
-type=3D"cite"><blockquote type=3D"cite">parameters to =
-trace_kvm_stlb_inval(). &nbsp;This appears to be a =
-bad<br></blockquote></blockquote><blockquote type=3D"cite"><blockquote =
-type=3D"cite">copy-paste from a call to =
-trace_kvm_stlb_write().<br></blockquote></blockquote><blockquote =
-type=3D"cite"><br></blockquote><blockquote type=3D"cite">Which kernel is =
-this against? That trace point is already commented out in my =
-tree.<br></blockquote><br>Oh, hm, I guess I haven't rebased this patch =
-since 2.6.35-ish. &nbsp;The<br>trace point seems to work correctly with =
-the fixed arguments; if<br>you'll tell me which tree I should base it on =
-I can easily resubmit.<br></div></blockquote><div><br></div><div>My tree =
-is at&nbsp;<a =
-href=3D"git://github.com/agraf/linux-2.6.git">git://github.com/agraf/linux=
--2.6.git</a>&nbsp;kvm-ppc-next. If you like I'll gladly take a patch in =
-to enable the point again =
-:).</div><div><br></div><div>Alex</div></div><br></body></html>=
-
---Apple-Mail-63--257188238--
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
