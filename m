@@ -1,22 +1,15 @@
 Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AE78CB7109
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 29 Aug 2010 20:22:02 +1000 (EST)
 From: Julia Lawall <julia@diku.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4/7] arch/powerpc/platforms/powermac/pfunc_core.c: Add
-	of_node_put to avoid memory leak
-Date: Sun, 29 Aug 2010 11:52:43 +0200
-Message-Id: <1283075566-27441-5-git-send-email-julia@diku.dk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 7/7] arch/powerpc/platforms/cell: Add of_node_put to avoid
+	memory leak
+Date: Sun, 29 Aug 2010 11:52:46 +0200
+Message-Id: <1283075566-27441-8-git-send-email-julia@diku.dk>
 In-Reply-To: <1283075566-27441-1-git-send-email-julia@diku.dk>
 References: <1283075566-27441-1-git-send-email-julia@diku.dk>
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,8 +19,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a call to of_node_put in the error handling code following a call to
-of_find_node_by_phandle.
+Add calls to of_node_put in the error handling code following calls to
+of_find_node_by_path and of_find_node_by_phandle.
 
 The semantic match that finds this problem is as follows:
 (http://coccinelle.lip6.fr/)
@@ -68,34 +61,39 @@ of_node_put(x);
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/powerpc/platforms/powermac/pfunc_core.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/cell/ras.c        |    4 +++-
+ arch/powerpc/platforms/cell/spider-pic.c |    4 +++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powermac/pfunc_core.c b/arch/powerpc/platforms/powermac/pfunc_core.c
-index cec6359..b0c3777 100644
---- a/arch/powerpc/platforms/powermac/pfunc_core.c
-+++ b/arch/powerpc/platforms/powermac/pfunc_core.c
-@@ -837,8 +837,10 @@ struct pmf_function *__pmf_find_function(struct device_node *target,
- 		return NULL;
-  find_it:
- 	dev = pmf_find_device(actor);
--	if (dev == NULL)
--		return NULL;
-+	if (dev == NULL) {
-+		result = NULL;
-+		goto out;
+diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
+index 1d3c4ef..5ec1e47 100644
+--- a/arch/powerpc/platforms/cell/ras.c
++++ b/arch/powerpc/platforms/cell/ras.c
+@@ -173,8 +173,10 @@ static int __init cbe_ptcal_enable(void)
+ 		return -ENODEV;
+ 
+ 	size = of_get_property(np, "ibm,cbe-ptcal-size", NULL);
+-	if (!size)
++	if (!size) {
++		of_node_put(np);
+ 		return -ENODEV;
 +	}
  
- 	list_for_each_entry(func, &dev->functions, link) {
- 		if (name && strcmp(name, func->name))
-@@ -850,8 +852,9 @@ struct pmf_function *__pmf_find_function(struct device_node *target,
- 		result = func;
- 		break;
- 	}
--	of_node_put(actor);
- 	pmf_put_device(dev);
-+out:
-+	of_node_put(actor);
- 	return result;
- }
- 
+ 	pr_debug("%s: enabling PTCAL, size = 0x%x\n", __func__, *size);
+ 	order = get_order(*size);
+diff --git a/arch/powerpc/platforms/cell/spider-pic.c b/arch/powerpc/platforms/cell/spider-pic.c
+index 5876e88..3f2e557 100644
+--- a/arch/powerpc/platforms/cell/spider-pic.c
++++ b/arch/powerpc/platforms/cell/spider-pic.c
+@@ -258,8 +258,10 @@ static unsigned int __init spider_find_cascade_and_node(struct spider_pic *pic)
+ 		return NO_IRQ;
+ 	imap += intsize + 1;
+ 	tmp = of_get_property(iic, "#interrupt-cells", NULL);
+-	if (tmp == NULL)
++	if (tmp == NULL) {
++		of_node_put(iic);
+ 		return NO_IRQ;
++	}
+ 	intsize = *tmp;
+ 	/* Assume unit is last entry of interrupt specifier */
+ 	unit = imap[intsize - 1];
