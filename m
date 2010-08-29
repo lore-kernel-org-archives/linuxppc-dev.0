@@ -1,23 +1,21 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id BAD93B7116
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Aug 2010 21:06:54 +1000 (EST)
-Received: by gyd10 with SMTP id 10so2698136gyd.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Aug 2010 04:06:53 -0700 (PDT)
-Subject: RE: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc interrupt
-	common to elbc devices
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Zang Roy-R61911 <r61911@freescale.com>
-In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A03E044@zch01exm23.fsl.freescale.net>
-References: <3850A844E6A3854C827AC5C0BEC7B60A03E044@zch01exm23.fsl.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 29 Aug 2010 14:06:46 +0300
-Message-ID: <1283080006.2131.2.camel@brekeke>
-Mime-Version: 1.0
-Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, linux-mtd@lists.infradead.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
-Reply-To: dedekind1@gmail.com
+Return-Path: <christian@riesch.at>
+Message-ID: <4C7A6164.60208@riesch.at>
+Date: Sun, 29 Aug 2010 15:32:20 +0200
+From: Christian Riesch <christian@riesch.at>
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+References: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>	<20100817085324.GB3330@riccoc20.at.omicron.at>	<1282090963.1734.97.camel@localhost>	<20100818071942.GA4096@riccoc20.at.omicron.at>	<1282176776.2865.100.camel@localhost.localdomain>	<20100819055518.GA4084@riccoc20.at.omicron.at>	<1282594125.3111.344.camel@localhost.localdomain>	<AANLkTi=nKrRHH6+9mvny718gov8Q+u7DHFikdgNY8YdX@mail.gmail.com>	<1282874269.4371.74.camel@localhost.localdomain>	<20100827075727.GA3818@riccoc20.at.omicron.at>
+	<20100827134154.50eef56c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100827134154.50eef56c@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	john stultz <johnstul@us.ibm.com>,
+	Richard Cochran <richardcochran@gmail.com>, linux-kernel@vger.kernel.org,
+	Christian Riesch <christian.riesch@omicron.at>,
+	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,12 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-08-09 at 15:33 +0800, Zang Roy-R61911 wrote:
-> Any comment about this serial patches?
-> If none, I'd ask Andrew to merge to his mm tree.
+Alan Cox wrote:
+>> The master node in a PTP network probably takes its time from a
+>> precise external time source, like GPS. The GPS provides a 1 PPS
+>> directly to the PTP clock hardware, which latches the PTP hardware
+>> clock time on the PPS edge. This provides one sample as input to a
+>> clock servo (in the PTPd) that, in turn, regulates the PTP clock
+>> hardware.
+> 
+> A PTP clock is TAI, Unix time is UTC.
 
-Could you please separate out MTD stuff, to the extent it is possible to
-do?
--- 
-Best Regards,
-Artem Bityutskiy (Битюцкий Артём)
+Not necessarily. AFAIK, the time distributed by IEEE1588v2 can either be 
+based on the "PTP epoch" (timePropertiesDS.ptpTimescale=TRUE) and thus 
+represent TAI or be based on an implementation specific arbitrary epoch 
+(timePropertiesDS.ptpTimescale=FALSE) and represent time on some 
+arbitrary time scale.
+
+Christian
