@@ -1,21 +1,24 @@
-Return-Path: <christian@riesch.at>
-Message-ID: <4C7A6164.60208@riesch.at>
-Date: Sun, 29 Aug 2010 15:32:20 +0200
-From: Christian Riesch <christian@riesch.at>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2AF11B70F2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 30 Aug 2010 01:42:17 +1000 (EST)
+Date: Sun, 29 Aug 2010 17:42:08 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 2/7] drivers/serial/mpc52xx_uart.c: Add of_node_put to
+	avoid memory leak
+Message-ID: <20100829154208.GA4647@pengutronix.de>
+References: <1283075566-27441-1-git-send-email-julia@diku.dk>
+	<1283075566-27441-3-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-References: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>	<20100817085324.GB3330@riccoc20.at.omicron.at>	<1282090963.1734.97.camel@localhost>	<20100818071942.GA4096@riccoc20.at.omicron.at>	<1282176776.2865.100.camel@localhost.localdomain>	<20100819055518.GA4084@riccoc20.at.omicron.at>	<1282594125.3111.344.camel@localhost.localdomain>	<AANLkTi=nKrRHH6+9mvny718gov8Q+u7DHFikdgNY8YdX@mail.gmail.com>	<1282874269.4371.74.camel@localhost.localdomain>	<20100827075727.GA3818@riccoc20.at.omicron.at>
-	<20100827134154.50eef56c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100827134154.50eef56c@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	john stultz <johnstul@us.ibm.com>,
-	Richard Cochran <richardcochran@gmail.com>, linux-kernel@vger.kernel.org,
-	Christian Riesch <christian.riesch@omicron.at>,
-	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
+In-Reply-To: <1283075566-27441-3-git-send-email-julia@diku.dk>
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +28,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Cox wrote:
->> The master node in a PTP network probably takes its time from a
->> precise external time source, like GPS. The GPS provides a 1 PPS
->> directly to the PTP clock hardware, which latches the PTP hardware
->> clock time on the PPS edge. This provides one sample as input to a
->> clock servo (in the PTPd) that, in turn, regulates the PTP clock
->> hardware.
-> 
-> A PTP clock is TAI, Unix time is UTC.
 
-Not necessarily. AFAIK, the time distributed by IEEE1588v2 can either be 
-based on the "PTP epoch" (timePropertiesDS.ptpTimescale=TRUE) and thus 
-represent TAI or be based on an implementation specific arbitrary epoch 
-(timePropertiesDS.ptpTimescale=FALSE) and represent time on some 
-arbitrary time scale.
+--zYM0uCDKw75PZbzx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Christian
+On Sun, Aug 29, 2010 at 11:52:41AM +0200, Julia Lawall wrote:
+> Add a call to of_node_put in the error handling code following a call to
+> of_find_compatible_node.
+>=20
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+>=20
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> expression E,E1;
+> statement S;
+> @@
+>=20
+> *x =3D=20
+> (of_find_node_by_path
+> |of_find_node_by_name
+> |of_find_node_by_phandle
+> |of_get_parent
+> |of_get_next_parent
+> |of_get_next_child
+> |of_find_compatible_node
+> |of_match_node
+> )(...);
+> ...
+> if (x =3D=3D NULL) S
+> <... when !=3D x =3D E
+> *if (...) {
+>   ... when !=3D of_node_put(x)
+>       when !=3D if (...) { ... of_node_put(x); ... }
+> (
+>   return <+...x...+>;
+> |
+> *  return ...;
+> )
+> }
+> ...>
+> of_node_put(x);
+> // </smpl>
+>=20
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+
+adding ppc-list to CC.
+
+>=20
+> ---
+>  drivers/serial/mpc52xx_uart.c |    1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+> index 8dedb26..c4399e2 100644
+> --- a/drivers/serial/mpc52xx_uart.c
+> +++ b/drivers/serial/mpc52xx_uart.c
+> @@ -500,6 +500,7 @@ static int __init mpc512x_psc_fifoc_init(void)
+>  	psc_fifoc =3D of_iomap(np, 0);
+>  	if (!psc_fifoc) {
+>  		pr_err("%s: Can't map FIFOC\n", __func__);
+> +		of_node_put(np);
+>  		return -ENODEV;
+>  	}
+> =20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--zYM0uCDKw75PZbzx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkx6f9AACgkQD27XaX1/VRvCagCfaXB7s7ylnvsqXSENeL/ElY2F
+Fm8An17DInsA6VeUdGFB3XFlG1Si+Yj5
+=FU2M
+-----END PGP SIGNATURE-----
+
+--zYM0uCDKw75PZbzx--
