@@ -2,23 +2,24 @@ Return-Path: <wsa@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
 	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2AF11B70F2
+	by ozlabs.org (Postfix) with ESMTPS id 4409CB70F7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Aug 2010 01:42:17 +1000 (EST)
-Date: Sun, 29 Aug 2010 17:42:08 +0200
+	Mon, 30 Aug 2010 01:47:55 +1000 (EST)
+Date: Sun, 29 Aug 2010 17:47:44 +0200
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 2/7] drivers/serial/mpc52xx_uart.c: Add of_node_put to
+Subject: Re: [PATCH 3/7] drivers/mtd/nand/mpc5121_nfc.c: Add of_node_put to
 	avoid memory leak
-Message-ID: <20100829154208.GA4647@pengutronix.de>
+Message-ID: <20100829154744.GB4647@pengutronix.de>
 References: <1283075566-27441-1-git-send-email-julia@diku.dk>
-	<1283075566-27441-3-git-send-email-julia@diku.dk>
+	<1283075566-27441-4-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
-In-Reply-To: <1283075566-27441-3-git-send-email-julia@diku.dk>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	protocol="application/pgp-signature"; boundary="p4qYPpj5QlsIQJ0K"
+In-Reply-To: <1283075566-27441-4-git-send-email-julia@diku.dk>
+Cc: David Woodhouse <dwmw2@infradead.org>, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +30,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---zYM0uCDKw75PZbzx
+--p4qYPpj5QlsIQJ0K
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Aug 29, 2010 at 11:52:41AM +0200, Julia Lawall wrote:
+On Sun, Aug 29, 2010 at 11:52:42AM +0200, Julia Lawall wrote:
 > Add a call to of_node_put in the error handling code following a call to
 > of_find_compatible_node.
 >=20
@@ -78,37 +79,61 @@ On Sun, Aug 29, 2010 at 11:52:41AM +0200, Julia Lawall wrote:
 
 Acked-by: Wolfram Sang <w.sang@pengutronix.de>
 
-adding ppc-list to CC.
+adding ppc-list to cc.
 
 >=20
 > ---
->  drivers/serial/mpc52xx_uart.c |    1 +
->  1 file changed, 1 insertion(+)
+>  drivers/mtd/nand/mpc5121_nfc.c |    7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
 >=20
-> diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-> index 8dedb26..c4399e2 100644
-> --- a/drivers/serial/mpc52xx_uart.c
-> +++ b/drivers/serial/mpc52xx_uart.c
-> @@ -500,6 +500,7 @@ static int __init mpc512x_psc_fifoc_init(void)
->  	psc_fifoc =3D of_iomap(np, 0);
->  	if (!psc_fifoc) {
->  		pr_err("%s: Can't map FIFOC\n", __func__);
-> +		of_node_put(np);
->  		return -ENODEV;
+> diff --git a/drivers/mtd/nand/mpc5121_nfc.c b/drivers/mtd/nand/mpc5121_nf=
+c.c
+> index df0c1da..f4610bc 100644
+> --- a/drivers/mtd/nand/mpc5121_nfc.c
+> +++ b/drivers/mtd/nand/mpc5121_nfc.c
+> @@ -568,6 +568,7 @@ static int mpc5121_nfc_read_hw_config(struct mtd_info=
+ *mtd)
+>  	uint rcw_width;
+>  	uint rcwh;
+>  	uint romloc, ps;
+> +	int ret =3D 0;
+> =20
+>  	rmnode =3D of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
+>  	if (!rmnode) {
+> @@ -579,7 +580,8 @@ static int mpc5121_nfc_read_hw_config(struct mtd_info=
+ *mtd)
+>  	rm =3D of_iomap(rmnode, 0);
+>  	if (!rm) {
+>  		dev_err(prv->dev, "Error mapping reset module node!\n");
+> -		return -EBUSY;
+> +		ret =3D -EBUSY;
+> +		goto out;
 >  	}
 > =20
+>  	rcwh =3D in_be32(&rm->rcwhr);
+> @@ -628,8 +630,9 @@ static int mpc5121_nfc_read_hw_config(struct mtd_info=
+ *mtd)
+>  				rcw_width * 8, rcw_pagesize,
+>  				rcw_sparesize);
+>  	iounmap(rm);
+> +out:
+>  	of_node_put(rmnode);
+> -	return 0;
+> +	return ret;
+>  }
+> =20
+>  /* Free driver resources */
 >=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
 
 --=20
 Pengutronix e.K.                           | Wolfram Sang                |
 Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---zYM0uCDKw75PZbzx
+--p4qYPpj5QlsIQJ0K
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -116,9 +141,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkx6f9AACgkQD27XaX1/VRvCagCfaXB7s7ylnvsqXSENeL/ElY2F
-Fm8An17DInsA6VeUdGFB3XFlG1Si+Yj5
-=FU2M
+iEYEARECAAYFAkx6gSAACgkQD27XaX1/VRu0AgCgtucFBgSniN12c8AQGNzYv0jp
+B0AAnRHH0tAw2XCxIB4aR3p+Gk3D0luH
+=0rXz
 -----END PGP SIGNATURE-----
 
---zYM0uCDKw75PZbzx--
+--p4qYPpj5QlsIQJ0K--
