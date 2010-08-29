@@ -1,15 +1,23 @@
-Return-Path: <julia@diku.dk>
-From: Julia Lawall <julia@diku.dk>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 7/7] arch/powerpc/platforms/cell: Add of_node_put to avoid
-	memory leak
-Date: Sun, 29 Aug 2010 11:52:46 +0200
-Message-Id: <1283075566-27441-8-git-send-email-julia@diku.dk>
-In-Reply-To: <1283075566-27441-1-git-send-email-julia@diku.dk>
-References: <1283075566-27441-1-git-send-email-julia@diku.dk>
-Cc: cbe-oss-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <dedekind1@gmail.com>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id BAD93B7116
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Aug 2010 21:06:54 +1000 (EST)
+Received: by gyd10 with SMTP id 10so2698136gyd.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Aug 2010 04:06:53 -0700 (PDT)
+Subject: RE: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc interrupt
+	common to elbc devices
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A03E044@zch01exm23.fsl.freescale.net>
+References: <3850A844E6A3854C827AC5C0BEC7B60A03E044@zch01exm23.fsl.freescale.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 29 Aug 2010 14:06:46 +0300
+Message-ID: <1283080006.2131.2.camel@brekeke>
+Mime-Version: 1.0
+Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, linux-mtd@lists.infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,81 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add calls to of_node_put in the error handling code following calls to
-of_find_node_by_path and of_find_node_by_phandle.
+On Mon, 2010-08-09 at 15:33 +0800, Zang Roy-R61911 wrote:
+> Any comment about this serial patches?
+> If none, I'd ask Andrew to merge to his mm tree.
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@r exists@
-local idexpression x;
-expression E,E1;
-statement S;
-@@
-
-*x = 
-(of_find_node_by_path
-|of_find_node_by_name
-|of_find_node_by_phandle
-|of_get_parent
-|of_get_next_parent
-|of_get_next_child
-|of_find_compatible_node
-|of_match_node
-)(...);
-...
-if (x == NULL) S
-<... when != x = E
-*if (...) {
-  ... when != of_node_put(x)
-      when != if (...) { ... of_node_put(x); ... }
-(
-  return <+...x...+>;
-|
-*  return ...;
-)
-}
-...>
-of_node_put(x);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/powerpc/platforms/cell/ras.c        |    4 +++-
- arch/powerpc/platforms/cell/spider-pic.c |    4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
-index 1d3c4ef..5ec1e47 100644
---- a/arch/powerpc/platforms/cell/ras.c
-+++ b/arch/powerpc/platforms/cell/ras.c
-@@ -173,8 +173,10 @@ static int __init cbe_ptcal_enable(void)
- 		return -ENODEV;
- 
- 	size = of_get_property(np, "ibm,cbe-ptcal-size", NULL);
--	if (!size)
-+	if (!size) {
-+		of_node_put(np);
- 		return -ENODEV;
-+	}
- 
- 	pr_debug("%s: enabling PTCAL, size = 0x%x\n", __func__, *size);
- 	order = get_order(*size);
-diff --git a/arch/powerpc/platforms/cell/spider-pic.c b/arch/powerpc/platforms/cell/spider-pic.c
-index 5876e88..3f2e557 100644
---- a/arch/powerpc/platforms/cell/spider-pic.c
-+++ b/arch/powerpc/platforms/cell/spider-pic.c
-@@ -258,8 +258,10 @@ static unsigned int __init spider_find_cascade_and_node(struct spider_pic *pic)
- 		return NO_IRQ;
- 	imap += intsize + 1;
- 	tmp = of_get_property(iic, "#interrupt-cells", NULL);
--	if (tmp == NULL)
-+	if (tmp == NULL) {
-+		of_node_put(iic);
- 		return NO_IRQ;
-+	}
- 	intsize = *tmp;
- 	/* Assume unit is last entry of interrupt specifier */
- 	unit = imap[intsize - 1];
+Could you please separate out MTD stuff, to the extent it is possible to
+do?
+-- 
+Best Regards,
+Artem Bityutskiy (Битюцкий Артём)
