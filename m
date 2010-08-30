@@ -1,12 +1,20 @@
-Return-Path: <julia@diku.dk>
-From: Julia Lawall <julia@diku.dk>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] arch/powerpc/platforms/83xx/mpc837x_mds.c: Add missing iounmap
-Date: Sun, 29 Aug 2010 21:47:18 +0200
-Message-Id: <1283111238-3129-1-git-send-email-julia@diku.dk>
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E9FC1B70E5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 30 Aug 2010 10:18:28 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Check end of stack canary at oops time
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20100824231528.GC28360@kryten>
+References: <20100824231528.GC28360@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Aug 2010 10:18:19 +1000
+Message-ID: <1283127499.1922.66.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,75 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function of_iomap returns the result of calling ioremap, so iounmap
-should be called on the result in the error handling code, as done in the
-normal exit of the function.
+On Wed, 2010-08-25 at 09:15 +1000, Anton Blanchard wrote:
 
-The sematic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
+>  	/* Are we prepared to handle this fault?  */
+>  	if ((entry = search_exception_tables(regs->nip)) != NULL) {
+> @@ -413,5 +415,9 @@ void bad_page_fault(struct pt_regs *regs
+>  	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
+>  		regs->nip);
+>  
+> +	stackend = end_of_stack(current);
+> +	if (current != &init_task && *stackend != STACK_END_MAGIC)
+> +		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
+> +
+>  	die("Kernel access of bad area", regs, sig);
+>  }
 
-// <smpl>
-@r exists@
-local idexpression x;
-expression E,E1;
-identifier l;
-statement S;
-@@
+Is it worth making it a __get_user or similar just in case ? I suppose
+if the stack is really busted we wouldn't even have reached that
+code ...
 
-*x = of_iomap(...);
-...  when != iounmap(x)
-     when != if (...) { ... iounmap(x); ... }
-     when != E = x
-     when any
-(
-if (x == NULL) S
-|
-if (...) {
-  ... when != iounmap(x)
-      when != if (...) { ... iounmap(x); ... }
-(
-  return <+...x...+>;
-|
-*  return ...;
-)
-}
-)
-... when != x = E1
-    when any
-iounmap(x);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/powerpc/platforms/83xx/mpc837x_mds.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index f9751c8..8306832 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -48,8 +48,10 @@ static int mpc837xmds_usb_cfg(void)
- 		return -1;
- 
- 	np = of_find_node_by_name(NULL, "usb");
--	if (!np)
--		return -ENODEV;
-+	if (!np) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
- 	phy_type = of_get_property(np, "phy_type", NULL);
- 	if (phy_type && !strcmp(phy_type, "ulpi")) {
- 		clrbits8(bcsr_regs + 12, BCSR12_USB_SER_PIN);
-@@ -65,8 +67,9 @@ static int mpc837xmds_usb_cfg(void)
- 	}
- 
- 	of_node_put(np);
-+out:
- 	iounmap(bcsr_regs);
--	return 0;
-+	return ret;
- }
- 
- /* ************************************************************************
+Cheers,
+Ben.
