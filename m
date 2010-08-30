@@ -1,21 +1,17 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id A70F2B6EEC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Aug 2010 23:29:20 +1000 (EST)
-Received: by eyd9 with SMTP id 9so3079761eyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Aug 2010 06:29:17 -0700 (PDT)
-Date: Mon, 30 Aug 2010 17:29:14 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Esben Haabendal <esbenhaabendal@gmail.com>
-Subject: Re: [PATCH] of_mmc_spi: add card detect irq support
-Message-ID: <20100830132914.GA32266@oksana.dev.rtsoft.ru>
-References: <AANLkTikH+H6+sXN_hcfm_guvUwgM-NKQ83nCwgAk-23G@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <AANLkTikH+H6+sXN_hcfm_guvUwgM-NKQ83nCwgAk-23G@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from firewall1 (wsip-70-167-241-26.dc.dc.cox.net [70.167.241.26])
+	by ozlabs.org (Postfix) with ESMTP id A75F4B70E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 01:39:00 +1000 (EST)
+From: Kyle Moffett <Kyle.D.Moffett@boeing.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/kvm/e500_tlb: Fix a minor copy-paste tracing bug
+Date: Mon, 30 Aug 2010 11:38:39 -0400
+Message-Id: <1283182719-4621-1-git-send-email-Kyle.D.Moffett@boeing.com>
+In-Reply-To: <1282936005-17078-1-git-send-email-Kyle.D.Moffett@boeing.com>
+References: <1282936005-17078-1-git-send-email-Kyle.D.Moffett@boeing.com>
+Cc: linuxppc-dev@ozlabs.org, Kyle Moffett <kyle@moffetthome.net>,
+	Liu Yu <yu.liu@freescale.com>, Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,99 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+The kvmppc_e500_stlbe_invalidate() function was trying to pass too many
+parameters to trace_kvm_stlb_inval().  This appears to be a bad
+copy-paste from a call to trace_kvm_stlb_write().
 
-The patch looks mostly good. A few cosmetic issues down below.
+Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
 
-On Mon, Aug 30, 2010 at 02:04:59PM +0200, Esben Haabendal wrote:
+---
+Alex,
 
-Please add some change log, a couple of sentences would work.
+This is the rebased patch to re-enable the tracepoint.
 
-> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
-> ---
+I also pushed a tree with this patch on top of kvm-ppc-next out to:
+  git://opensource.exmeritus.com/hww-1u-1a/linux.git kvm-ppc-patches
+  http://opensource.exmeritus.com/git/hww-1u-1a/linux.git/kvm-ppc-patches
 
->  drivers/mmc/host/of_mmc_spi.c |   25 +++++++++++++++++++++++--
->  1 files changed, 23 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/of_mmc_spi.c b/drivers/mmc/host/of_mmc_spi.c
-> index 1247e5d..e872b61 100644
-> --- a/drivers/mmc/host/of_mmc_spi.c
-> +++ b/drivers/mmc/host/of_mmc_spi.c
-> @@ -34,6 +34,7 @@ enum {
->  struct of_mmc_spi {
->         int gpios[NUM_GPIOS];
->         bool alow_gpios[NUM_GPIOS];
-> +       int detect_irq;
->         struct mmc_spi_platform_data pdata;
->  };
-> 
-> @@ -61,6 +62,20 @@ static int of_mmc_spi_get_ro(struct device *dev)
->         return of_mmc_spi_read_gpio(dev, WP_GPIO);
->  }
-> 
-> +static int of_mmc_spi_init(struct device *dev,
-> +                          irqreturn_t (*irqhandler)(int, void *), void *mmc)
-> +{
-> +       struct of_mmc_spi *oms = to_of_mmc_spi(dev);
+Thanks again!
 
-Please add an empty line here.
+Cheers,
+Kyle Moffett
 
-> +       return request_threaded_irq(
-> +               oms->detect_irq, NULL, irqhandler, 0, dev_name(dev), mmc);
+---
+ arch/powerpc/kvm/e500_tlb.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
-I'd write it this way:
-
-return request_threaded_irq(oms->detect_irq, NULL, irqhandler,
-			    0, dev_name(dev), mmc);
-
-But that's a matter of taste.
-
-> +}
-> +
-> +static void of_mmc_spi_exit(struct device *dev, void *mmc)
-> +{
-> +       struct of_mmc_spi *oms = to_of_mmc_spi(dev);
-
-Empty line.
-
-> +       free_irq(oms->detect_irq, mmc);
-> +}
-> +
->  struct mmc_spi_platform_data *mmc_spi_get_pdata(struct spi_device *spi)
->  {
->         struct device *dev = &spi->dev;
-> @@ -121,8 +136,14 @@ struct mmc_spi_platform_data
-> *mmc_spi_get_pdata(struct spi_device *spi)
->         if (gpio_is_valid(oms->gpios[WP_GPIO]))
->                 oms->pdata.get_ro = of_mmc_spi_get_ro;
-> 
-> -       /* We don't support interrupts yet, let's poll. */
-> -       oms->pdata.caps |= MMC_CAP_NEEDS_POLL;
-> +       oms->detect_irq = irq_of_parse_and_map(np, 0);
-> +       if (oms->detect_irq != NO_IRQ) {
-
-I'd write "if (oms->detect_irq)", which is a bit more natural
-(and still correct, 0 is the only invalid VIRQ number).
-
-> +               oms->pdata.init = of_mmc_spi_init;
-> +               oms->pdata.exit = of_mmc_spi_exit;
-> +       }
-> +       else {
-
-} else {
-
-
-Plus, please add an appropriate interrupts = <> bindings into
-Documentation/powerpc/dts-bindings/mmc-spi-slot.txt.
-
-And on the next resend, be sure to add Andrew Morton
-<akpm@linux-foundation.org>, David Brownell
-<dbrownell@users.sourceforge.net>, and linux-mmc@vger.kernel.org
-the Cc list.
-
-Thanks!
-
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 66845a5..a413883 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -226,11 +226,7 @@ static void kvmppc_e500_stlbe_invalidate(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 
+ 	kvmppc_e500_shadow_release(vcpu_e500, tlbsel, esel);
+ 	stlbe->mas1 = 0;
+-	/* XXX doesn't compile */
+-#if 0
+-	trace_kvm_stlb_inval(index_of(tlbsel, esel), stlbe->mas1, stlbe->mas2,
+-			     stlbe->mas3, stlbe->mas7);
+-#endif
++	trace_kvm_stlb_inval(index_of(tlbsel, esel));
+ }
+ 
+ static void kvmppc_e500_tlb1_invalidate(struct kvmppc_vcpu_e500 *vcpu_e500,
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.7.1
