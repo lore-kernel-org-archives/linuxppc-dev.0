@@ -1,34 +1,17 @@
-Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DECBBB7100
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 17:35:50 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp04.in.ibm.com (8.14.4/8.13.1) with ESMTP id o7U7Zi9S016539
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 13:05:44 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7U7ZiBA4509774
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 13:05:44 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o7U7Zhlg006547
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 13:05:44 +0530
-Message-ID: <4C7B5F4C.4000001@linux.vnet.ibm.com>
-Date: Mon, 30 Aug 2010 13:05:40 +0530
-From: divya <dipraksh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: Power machines fail to boot after build being successful
-References: <4C764F52.5050707@linux.vnet.ibm.com> <2311.1282871746@neuling.org>
-	<20100827120144.1736a2f6.sfr@canb.auug.org.au>
-	<4C7B4C1F.7010003@linux.vnet.ibm.com>
-	<21473.1283150987@neuling.org>
-In-Reply-To: <21473.1283150987@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4828CB70F3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 30 Aug 2010 20:02:02 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Fix CONFIG_KVM_GUEST && !CONFIG_KVM case
+Date: Mon, 30 Aug 2010 12:01:56 +0200
+Message-Id: <1283162516-29879-1-git-send-email-agraf@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,52 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 30 August 2010 12:19 PM, Michael Neuling wrote:
-> In message<4C7B4C1F.7010003@linux.vnet.ibm.com>  you wrote:
->    
->> On Friday 27 August 2010 07:31 AM, Stephen Rothwell wrote:
->>      
->>> Hi Mikey,
->>>
->>> On Fri, 27 Aug 2010 11:15:46 +1000 Michael Neuling<mikey@neuling.org>   wrot
->>>        
-> e:
->    
->>>
->>>        
->>>>
->>>>          
->>>>> After successfully building the kernel version
->>>>> 2.6.36-rc2-git4(commitid d4348c678977c) with the config file
->>>>> attached(used make oldconfig), P5 and P6 power machines fails to
->>>>> reboot with the following logs
->>>>>
->>>>> Logs collected while rebooting into today next, same occurs with the
->>>>> upstream kernel too.
->>>>>
->>>>>            
->>>> This will fix your problem:
->>>> http://patchwork.ozlabs.org/patch/62757/
->>>>
->>>>          
->>> I have seen something similar in my linux-next boot tests, so I will add
->>> this patch to linux-next for today.
->>>
->>>        
->> Hi,
->>
->> The same problem occurs on the linux-tree , now that since the patch
->> is integrated into linux-next, im not able to find the problem with
->> linux-next-20100827.
->>
->> When will the patch be integrated with the linux-tree.
->>      
-> By "the linux-tree" do you mean Linus' tree?
->
-> If so, benh is likely to ask Linus to pull the fix in the next few days.
->
-> Mikey
->    
-Yes i mean to say Linus' tree.ccing benh.
+When CONFIG_KVM_GUEST is selected, but CONFIG_KVM is not, we were missing
+some defines in asm-offsets.c and included too many headers at other places.
 
-Divya
+This patch makes above configuration work.
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kernel/asm-offsets.c |    6 +++---
+ arch/powerpc/kernel/kvm.c         |    1 -
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 5e54d0f..893ba35 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -48,11 +48,11 @@
+ #ifdef CONFIG_PPC_ISERIES
+ #include <asm/iseries/alpaca.h>
+ #endif
+-#ifdef CONFIG_KVM
++#if defined(CONFIG_KVM) || defined(CONFIG_KVM_GUEST)
+ #include <linux/kvm_host.h>
+-#ifndef CONFIG_BOOKE
+-#include <asm/kvm_book3s.h>
+ #endif
++#if defined(CONFIG_KVM) && defined(CONFIG_PPC_BOOK3S)
++#include <asm/kvm_book3s.h>
+ #endif
+ 
+ #ifdef CONFIG_PPC32
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 293765a..428d0e5 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -25,7 +25,6 @@
+ #include <linux/of.h>
+ 
+ #include <asm/reg.h>
+-#include <asm/kvm_ppc.h>
+ #include <asm/sections.h>
+ #include <asm/cacheflush.h>
+ #include <asm/disassemble.h>
+-- 
+1.6.0.2
