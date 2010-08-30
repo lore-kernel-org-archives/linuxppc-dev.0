@@ -1,18 +1,32 @@
-Return-Path: <deebuls@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id D46F0B70EC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Aug 2010 16:02:07 +1000 (EST)
-Received: by ywg8 with SMTP id 8so2086812ywg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 29 Aug 2010 23:02:05 -0700 (PDT)
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4F47DB70F1
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 16:13:57 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id o7U69Qt7015308
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 16:09:26 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o7U6DuN92212046
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 16:13:56 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o7U6Du1a029816
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Aug 2010 16:13:56 +1000
+Message-ID: <4C7B4C1F.7010003@linux.vnet.ibm.com>
+Date: Mon, 30 Aug 2010 11:43:51 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Date: Mon, 30 Aug 2010 11:32:05 +0530
-Message-ID: <AANLkTim5FXeRvx2TiPMGSkwqdbOeei6bL5PebK7+toLZ@mail.gmail.com>
-Subject: MPC85xx - accessing external interrupt
-From: deebul nair <deebuls@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001636164a55322faf048f0434c5
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Power machines fail to boot after build being successful
+References: <4C764F52.5050707@linux.vnet.ibm.com> <2311.1282871746@neuling.org>
+	<20100827120144.1736a2f6.sfr@canb.auug.org.au>
+In-Reply-To: <20100827120144.1736a2f6.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,95 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001636164a55322faf048f0434c5
-Content-Type: text/plain; charset=ISO-8859-1
+On Friday 27 August 2010 07:31 AM, Stephen Rothwell wrote:
+> Hi Mikey,
+>
+> On Fri, 27 Aug 2010 11:15:46 +1000 Michael Neuling<mikey@neuling.org>  wrote:
+>    
+>>      
+>>> After successfully building the kernel version
+>>> 2.6.36-rc2-git4(commitid d4348c678977c) with the config file
+>>> attached(used make oldconfig), P5 and P6 power machines fails to
+>>> reboot with the following logs
+>>>
+>>> Logs collected while rebooting into today next, same occurs with the
+>>> upstream kernel too.
+>>>        
+>> This will fix your problem:
+>> http://patchwork.ozlabs.org/patch/62757/
+>>      
+> I have seen something similar in my linux-next boot tests, so I will add
+> this patch to linux-next for today.
+>    
+Hi,
 
-Hi all
+The same problem occurs on the linux-tree , now that since the patch is integrated into linux-next,
+im not able to find the problem with linux-next-20100827.
 
-I am trying to use the external interrupts on the Powerpc architecture
-MPC8542 .
+When will the patch be integrated with the linux-tree.
 
-My  problem is that my driver is trying to request the external
-interrupt IRQ1, and I dont know what number use in INTR_NUM:
-
-request_irq(INTR_NUM, , , , )
-
-As per the MPC85xx documentation
-Documentation/powerpc/dts-bindings/fsl/mpic.txt
-about the implementation of interrupts virtual numbers
-the external interrupt virtual irq number for IRQ1 should be 1
-
-but when i try to give INTR_NUM ins request_irq as 1 it gives error .
-
-When i use irq_create_mapping() it gives me output as 16.. and it registers
-.. but the problem is it is not fixed
-neither it gives interrupts .
-when i remove and add it registers to some other addresses
-
-i even tried irq_of_parse_map()
-
-for_each_node_by_type(np,"interrupt-controller"){
-    if(of_device_is_compatible(np,"chrp,open-pic")){
-           found=np;
-           break;
-}
-}
-
-virq = irq_of_parse_and_map(found, irq);
-
-this always returns 0
-whatever may be the irq value..
-as a result the driver gives error for irq 0
-
-
-
--- 
-Cheeers
-
-Deebul !!!!!!
-
---001636164a55322faf048f0434c5
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div><br clear=3D"all">Hi all </div>
-<div>=A0</div>
-<div>I am trying to use the external interrupts on the Powerpc architecture=
- MPC8542 .</div>
-<div>=A0</div>
-<div>My=A0 problem is that my driver is trying to request the external <br>=
-interrupt IRQ1, and I dont know what number use in INTR_NUM: <br><br>reques=
-t_irq(INTR_NUM, , , , ) </div>
-<div>=A0</div>
-<div>As per the MPC85xx documentation Documentation/powerpc/dts-bindings/fs=
-l/mpic.txt </div>
-<div>about the implementation of interrupts virtual numbers </div>
-<div>the external interrupt=A0virtual irq number=A0for IRQ1 should be=A01</=
-div>
-<div>=A0</div>
-<div>but when i try to give INTR_NUM ins request_irq as 1 it gives error .<=
-/div>
-<div>=A0</div>
-<div>When i use irq_create_mapping() it gives me output as 16.. and it regi=
-sters .. but the problem is it is not fixed </div>
-<div>neither it gives interrupts .</div>
-<div>when i remove and add it registers to some other addresses</div>
-<div>=A0</div>
-<div>i even tried irq_of_parse_map()</div>
-<div>=A0</div>
-<div>for_each_node_by_type(np,&quot;interrupt-controller&quot;){</div>
-<div>=A0=A0=A0 if(of_device_is_compatible(np,&quot;chrp,open-pic&quot;)){</=
-div>
-<div>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 found=3Dnp;</div>
-<div>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 break;</div>
-<div>}</div>
-<div>}</div>
-<div><br>virq =3D irq_of_parse_and_map(found, irq);</div>
-<div>=A0</div>
-<div>this always returns 0</div>
-<div>whatever may be the irq value..</div>
-<div>as a result the driver gives error for irq 0</div>
-<div>=A0</div>
-<div><br><br>-- <br>Cheeers<br><br>Deebul !!!!!!<br><br></div>
-
---001636164a55322faf048f0434c5--
+Thanks
+Divya
