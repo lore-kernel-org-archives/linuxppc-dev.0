@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5EA17B71D5
+	by ozlabs.org (Postfix) with ESMTPS id 1D362B719A
 	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:25 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 23/35] KVM: PPC: Don't put MSR_POW in MSR
-Date: Tue, 31 Aug 2010 04:32:04 +0200
-Message-Id: <1283221937-21006-24-git-send-email-agraf@suse.de>
+Subject: [PATCH 11/35] KVM: PPC: Revert "KVM: PPC: Use kernel hash function"
+Date: Tue, 31 Aug 2010 04:31:52 +0200
+Message-Id: <1283221937-21006-12-git-send-email-agraf@suse.de>
 In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
 References: <1283221937-21006-1-git-send-email-agraf@suse.de>
 Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>
@@ -21,47 +21,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Book3S a mtmsr with the MSR_POW bit set indicates that the OS is in
-idle and only needs to be waked up on the next interrupt.
+It turns out the in-kernel hash function is sub-optimal for our subtle
+hash inputs where every bit is significant. So let's revert to the original
+hash functions.
 
-Now, unfortunately we let that bit slip into the stored MSR value which
-is not what the real CPU does, so that we ended up executing code like
-this:
-
-	r = mfmsr();
-	/* r containts MSR_POW */
-	mtmsr(r | MSR_EE);
-
-This obviously breaks, as we're going into idle mode in code sections that
-don't expect to be idling.
-
-This patch masks MSR_POW out of the stored MSR value on wakeup, making
-guests happy again.
+This reverts commit 05340ab4f9a6626f7a2e8f9fe5397c61d494f445.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/book3s.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ arch/powerpc/kvm/book3s_32_mmu_host.c |   10 ++++++++--
+ arch/powerpc/kvm/book3s_64_mmu_host.c |   11 +++++++++--
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 7adea63..5833df7 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -134,10 +134,14 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
- 	vcpu->arch.shared->msr = msr;
- 	kvmppc_recalc_shadow_msr(vcpu);
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 343452c..57dddeb 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -19,7 +19,6 @@
+  */
  
--	if (msr & (MSR_WE|MSR_POW)) {
-+	if (msr & MSR_POW) {
- 		if (!vcpu->arch.pending_exceptions) {
- 			kvm_vcpu_block(vcpu);
- 			vcpu->stat.halt_wakeup++;
+ #include <linux/kvm_host.h>
+-#include <linux/hash.h>
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+@@ -77,7 +76,14 @@ void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+  * a hash, so we don't waste cycles on looping */
+ static u16 kvmppc_sid_hash(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
+-	return hash_64(gvsid, SID_MAP_BITS);
++	return (u16)(((gvsid >> (SID_MAP_BITS * 7)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 6)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 5)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 4)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 3)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 2)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 1)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 0)) & SID_MAP_MASK));
+ }
+ 
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index 321c931..e7c4d00 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -20,7 +20,6 @@
+  */
+ 
+ #include <linux/kvm_host.h>
+-#include <linux/hash.h>
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+@@ -44,9 +43,17 @@ void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+  * a hash, so we don't waste cycles on looping */
+ static u16 kvmppc_sid_hash(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
+-	return hash_64(gvsid, SID_MAP_BITS);
++	return (u16)(((gvsid >> (SID_MAP_BITS * 7)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 6)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 5)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 4)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 3)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 2)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 1)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 0)) & SID_MAP_MASK));
+ }
+ 
 +
-+			/* Unset POW bit after we woke up */
-+			msr &= ~MSR_POW;
-+			vcpu->arch.shared->msr = msr;
- 		}
- 	}
- 
+ static struct kvmppc_sid_map *find_sid_vsid(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
+ 	struct kvmppc_sid_map *map;
 -- 
 1.6.0.2
