@@ -1,17 +1,18 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH] arch/powerpc/platforms/83xx/mpc837x_mds.c: Add missing
-	iounmap
+Subject: Re: [PATCH 5/7] arch/powerpc/sysdev/qe_lib/qe.c: Add of_node_put to
+	avoid memory leak
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1283111238-3129-1-git-send-email-julia@diku.dk>
-Date: Tue, 31 Aug 2010 16:39:11 -0500
-Message-Id: <D97B05D5-3ABF-4B47-97C7-A3EC629A1987@kernel.crashing.org>
-References: <1283111238-3129-1-git-send-email-julia@diku.dk>
+In-Reply-To: <1283075566-27441-6-git-send-email-julia@diku.dk>
+Date: Tue, 31 Aug 2010 16:41:24 -0500
+Message-Id: <7C2AF4A1-A33B-4D1F-859A-BCB48738D9D1@kernel.crashing.org>
+References: <1283075566-27441-1-git-send-email-julia@diku.dk>
+	<1283075566-27441-6-git-send-email-julia@diku.dk>
 To: Julia Lawall <julia@diku.dk>
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org,
+	Timur Tabi <timur@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +23,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 29, 2010, at 2:47 PM, Julia Lawall wrote:
+On Aug 29, 2010, at 4:52 AM, Julia Lawall wrote:
 
-> The function of_iomap returns the result of calling ioremap, so iounmap
-> should be called on the result in the error handling code, as done in the
-> normal exit of the function.
+> Add a call to of_node_put in the error handling code following a call to
+> of_find_compatible_node.
 > 
-> The sematic match that finds this problem is as follows:
+> The semantic match that finds this problem is as follows:
 > (http://coccinelle.lip6.fr/)
 > 
 > // <smpl>
 > @r exists@
 > local idexpression x;
 > expression E,E1;
-> identifier l;
 > statement S;
 > @@
 > 
-> *x = of_iomap(...);
-> ...  when != iounmap(x)
->     when != if (...) { ... iounmap(x); ... }
->     when != E = x
->     when any
-> (
+> *x = 
+> (of_find_node_by_path
+> |of_find_node_by_name
+> |of_find_node_by_phandle
+> |of_get_parent
+> |of_get_next_parent
+> |of_get_next_child
+> |of_find_compatible_node
+> |of_match_node
+> )(...);
+> ...
 > if (x == NULL) S
-> |
-> if (...) {
->  ... when != iounmap(x)
->      when != if (...) { ... iounmap(x); ... }
+> <... when != x = E
+> *if (...) {
+>  ... when != of_node_put(x)
+>      when != if (...) { ... of_node_put(x); ... }
 > (
 >  return <+...x...+>;
 > |
 > *  return ...;
 > )
 > }
-> )
-> ... when != x = E1
->    when any
-> iounmap(x);
+> ...>
+> of_node_put(x);
 > // </smpl>
 > 
 > Signed-off-by: Julia Lawall <julia@diku.dk>
 > 
 > ---
-> arch/powerpc/platforms/83xx/mpc837x_mds.c |    9 ++++++---
-> 1 file changed, 6 insertions(+), 3 deletions(-)
+> arch/powerpc/sysdev/qe_lib/qe.c |    1 +
+> 1 file changed, 1 insertion(+)
 
 applied to merge
 
