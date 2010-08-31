@@ -1,12 +1,12 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 58082B7179
+	by ozlabs.org (Postfix) with ESMTP id 54C06B7174
 	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:22 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 35/35] KVM: PPC: Add documentation for magic page enhancements
-Date: Tue, 31 Aug 2010 04:32:16 +0200
-Message-Id: <1283221937-21006-36-git-send-email-agraf@suse.de>
+Subject: [PATCH 30/35] KVM: PPC: Expose level based interrupt cap
+Date: Tue, 31 Aug 2010 04:32:11 +0200
+Message-Id: <1283221937-21006-31-git-send-email-agraf@suse.de>
 In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
 References: <1283221937-21006-1-git-send-email-agraf@suse.de>
 Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>
@@ -19,38 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This documents how to detect additional features inside the magic
-page when a guest maps it.
+Now that we have all the level interrupt magic in place, let's
+expose the capability to user space, so it can make use of it!
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- Documentation/kvm/ppc-pv.txt |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+ arch/powerpc/kvm/powerpc.c |    1 +
+ include/linux/kvm.h        |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kvm/ppc-pv.txt b/Documentation/kvm/ppc-pv.txt
-index 922cf95..a7f2244 100644
---- a/Documentation/kvm/ppc-pv.txt
-+++ b/Documentation/kvm/ppc-pv.txt
-@@ -102,6 +102,20 @@ struct kvm_vcpu_arch_shared {
- Additions to the page must only occur at the end. Struct fields are always 32
- or 64 bit aligned, depending on them being 32 or 64 bit wide respectively.
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 028891c..2f87a16 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -192,6 +192,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_PPC_SEGSTATE:
+ 	case KVM_CAP_PPC_PAIRED_SINGLES:
+ 	case KVM_CAP_PPC_UNSET_IRQ:
++	case KVM_CAP_PPC_IRQ_LEVEL:
+ 	case KVM_CAP_ENABLE_CAP:
+ 	case KVM_CAP_PPC_OSI:
+ 	case KVM_CAP_PPC_GET_PVINFO:
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 3707704..919ae53 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -539,6 +539,7 @@ struct kvm_ppc_pvinfo {
+ #define KVM_CAP_XCRS 56
+ #endif
+ #define KVM_CAP_PPC_GET_PVINFO 57
++#define KVM_CAP_PPC_IRQ_LEVEL 58
  
-+Magic page features
-+===================
-+
-+When mapping the magic page using the KVM hypercall KVM_HC_PPC_MAP_MAGIC_PAGE,
-+a second return value is passed to the guest. This second return value contains
-+a bitmap of available features inside the magic page.
-+
-+The following enhancements to the magic page are currently available:
-+
-+  KVM_MAGIC_FEAT_SR		Maps SR registers r/w in the magic page
-+
-+For enhanced features in the magic page, please check for the existence of the
-+feature before using them!
-+
- MSR bits
- ========
+ #ifdef KVM_CAP_IRQ_ROUTING
  
 -- 
 1.6.0.2
