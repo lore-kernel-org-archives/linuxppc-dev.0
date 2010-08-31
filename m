@@ -1,27 +1,16 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 736E6B712C
+Return-Path: <mita@dhcpa11143.tky.aist.go.jp>
+Received: from dhcpa11143.tky.aist.go.jp (unknown [150.82.175.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3F680B713D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 Aug 2010 18:37:22 +1000 (EST)
-Received: by eyd9 with SMTP id 9so3497962eyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 Aug 2010 01:37:19 -0700 (PDT)
-Date: Tue, 31 Aug 2010 12:37:16 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] gpiolib: Add 'struct gpio_chip' forward declaration
-	for !GPIOLIB case
-Message-ID: <20100831083716.GA28362@oksana.dev.rtsoft.ru>
-References: <1282631168.22370.517.camel@pasglop>
-	<20100824092623.GA20334@oksana.dev.rtsoft.ru>
-	<20100831080344.GA20515@angua.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100831080344.GA20515@angua.secretlab.ca>
-Cc: David Brownell <david-b@pacbell.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+	Tue, 31 Aug 2010 19:01:10 +1000 (EST)
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/512x: fix clk_get() return value
+Date: Tue, 31 Aug 2010 17:43:51 +0900
+Message-Id: <1283244231-23659-1-git-send-email-akinobu.mita@gmail.com>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,77 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 31, 2010 at 02:03:44AM -0600, Grant Likely wrote:
-> On Tue, Aug 24, 2010 at 01:26:23PM +0400, Anton Vorontsov wrote:
-> > With CONFIG_GPIOLIB=n, the 'struct gpio_chip' is not declared,
-> > so the following pops up on PowerPC:
-> > 
-> >   cc1: warnings being treated as errors
-> >   In file included from arch/powerpc/platforms/52xx/mpc52xx_common.c:19:
-> >   include/linux/of_gpio.h:74: warning: 'struct gpio_chip' declared
-> >                               inside parameter list
-> >   include/linux/of_gpio.h:74: warning: its scope is only this definition
-> >                               or declaration, which is probably not what
-> > 			      you want
-> >   include/linux/of_gpio.h:75: warning: 'struct gpio_chip' declared
-> >                               inside parameter list
-> >   make[2]: *** [arch/powerpc/platforms/52xx/mpc52xx_common.o] Error 1
-> > 
-> > This patch fixes the issue by providing the proper forward declaration.
-> > 
-> > Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
-> 
-> This doesn't actually solve the problem, and gpiochip should 
-> remain undefined when CONFIG_GPIOLIB=n to catch exactly these
-> build failures.  The real problem is that I merged a change
-> into the mpc5200 code that required CONFIG_GPIOLIB be enabled
-> without reflecting that requirement in Kconfig.
+clk_get() should return an ERR_PTR value on error, not NULL.
 
-No, look closer. The error is in of_gpio.h, and it's perfectly
-fine to include it w/o GPIOLIB=y.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/512x/clock.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > ---
-> > 
-> > On Tue, Aug 24, 2010 at 04:26:08PM +1000, Benjamin Herrenschmidt wrote:
-> > > I get that with my current stuff:
-> > > 
-> > > cc1: warnings being treated as errors
-> > > In file included from [..]/mpc52xx_common.c:19:
-> > > of_gpio.h:74: error: ‘struct gpio_chip’ declared inside parameter list
-> > [...]
-> > > make[3]: *** Waiting for unfinished jobs....
-> > 
-> > That's because with GPIOCHIP=n no one declares struct gpio_chip.
-> > 
-> > It should be either of_gpio.h or gpio.h. Let's make it gpio.h, as
-> > this feels more generic, and we already have some !GPIOLIB handling
-> > in there.
-> > 
-> >  include/linux/gpio.h |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/gpio.h b/include/linux/gpio.h
-> > index 03f616b..85207d2 100644
-> > --- a/include/linux/gpio.h
-> > +++ b/include/linux/gpio.h
-> > @@ -15,6 +15,12 @@
-> >  struct device;
-> >  
-> >  /*
-> > + * Some code might rely on the declaration. Still, it is illegal
-> > + * to dereference it for !GPIOLIB case.
-> > + */
-> > +struct gpio_chip;
-> > +
-> > +/*
-> >   * Some platforms don't support the GPIO programming interface.
-> >   *
-> >   * In case some driver uses it anyway (it should normally have
-> > -- 
-> > 1.7.0.5
-> > 
-
+diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
+index 5b243bd..3dc2a8d 100644
+--- a/arch/powerpc/platforms/512x/clock.c
++++ b/arch/powerpc/platforms/512x/clock.c
+@@ -57,7 +57,7 @@ static struct clk *mpc5121_clk_get(struct device *dev, const char *id)
+ 	int id_match = 0;
+ 
+ 	if (dev == NULL || id == NULL)
+-		return NULL;
++		return clk;
+ 
+ 	mutex_lock(&clocks_mutex);
+ 	list_for_each_entry(p, &clocks, node) {
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.7.1.231.gd0b16
