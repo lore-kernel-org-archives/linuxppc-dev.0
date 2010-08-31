@@ -1,24 +1,29 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id 64F40B7113
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
+	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id 5D1EBB715E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 02:57:20 +1000 (EST)
-Received: by pvg13 with SMTP id 13so3148701pvg.38
+	Wed,  1 Sep 2010 03:08:02 +1000 (EST)
+Received: by ewy21 with SMTP id 21so3723651ewy.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 Aug 2010 09:57:18 -0700 (PDT)
+	Tue, 31 Aug 2010 10:08:00 -0700 (PDT)
+Date: Tue, 31 Aug 2010 21:07:56 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] gpiolib: Add 'struct gpio_chip' forward declaration
+	for !GPIOLIB case
+Message-ID: <20100831170756.GA24887@oksana.dev.rtsoft.ru>
+References: <1282631168.22370.517.camel@pasglop>
+	<20100824092623.GA20334@oksana.dev.rtsoft.ru>
+	<20100831080344.GA20515@angua.secretlab.ca>
+	<20100831083716.GA28362@oksana.dev.rtsoft.ru>
+	<AANLkTi=EaHxDgwVfh-bhGANcBYWjHW7-aZt4K5ZZ7WRi@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <09C49916-9A20-41CD-A7BA-2F467BFD24DA@freescale.com>
-References: <1282946147-28164-1-git-send-email-msm@freescale.com>
-	<AANLkTimYz6v2tMJRYnki9Ph33HL9yGsOcpgJ78LTDCTG@mail.gmail.com>
-	<09C49916-9A20-41CD-A7BA-2F467BFD24DA@freescale.com>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Tue, 31 Aug 2010 11:56:48 -0500
-Message-ID: <AANLkTikdm6f6dRDoOXuBx0-viwNqHuez4P+xTum+M+9O@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/fsl_soc: Search all global-utilities nodes for
-	rstccr
-To: Matthew McClintock <msm@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AANLkTi=EaHxDgwVfh-bhGANcBYWjHW7-aZt4K5ZZ7WRi@mail.gmail.com>
+Cc: David Brownell <david-b@pacbell.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +33,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 31, 2010 at 11:26 AM, Matthew McClintock <msm@freescale.com> wr=
-ote:
+On Tue, Aug 31, 2010 at 10:44:14AM -0600, Grant Likely wrote:
+> On Tue, Aug 31, 2010 at 2:37 AM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+> > On Tue, Aug 31, 2010 at 02:03:44AM -0600, Grant Likely wrote:
+> >> On Tue, Aug 24, 2010 at 01:26:23PM +0400, Anton Vorontsov wrote:
+> >> > With CONFIG_GPIOLIB=n, the 'struct gpio_chip' is not declared,
+> >> > so the following pops up on PowerPC:
+> >> >
+> >> >   cc1: warnings being treated as errors
+> >> >   In file included from arch/powerpc/platforms/52xx/mpc52xx_common.c:19:
+> >> >   include/linux/of_gpio.h:74: warning: 'struct gpio_chip' declared
+> >> >                               inside parameter list
+> >> >   include/linux/of_gpio.h:74: warning: its scope is only this definition
+> >> >                               or declaration, which is probably not what
+> >> >                           you want
+> >> >   include/linux/of_gpio.h:75: warning: 'struct gpio_chip' declared
+> >> >                               inside parameter list
+> >> >   make[2]: *** [arch/powerpc/platforms/52xx/mpc52xx_common.o] Error 1
+> >> >
+> >> > This patch fixes the issue by providing the proper forward declaration.
+> >> >
+> >> > Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> >>
+> >> This doesn't actually solve the problem, and gpiochip should
+> >> remain undefined when CONFIG_GPIOLIB=n to catch exactly these
+> >> build failures.  The real problem is that I merged a change
+> >> into the mpc5200 code that required CONFIG_GPIOLIB be enabled
+> >> without reflecting that requirement in Kconfig.
+> >
+> > No, look closer. The error is in of_gpio.h, and it's perfectly
+> > fine to include it w/o GPIOLIB=y.
+> 
+> Looking even closer, we're both wrong.  You're right I didn't look
+> carefully enough, and the error is in of_gpio.h, not the .c file.
+> 
+> However, it is not okay to get the definitions from of_gpio.h when
+> CONFIG_GPIOLIB=n.  If GPIOLIB, or more specifically OF_GPIO isn't set,
+> then the of_gpio.h definitions should either not be defined, or should
+> be defined as empty stubs (where appropriate).
 
->> I'm not sure KERN_EMERG is warranted for this kind of error.
->
-> I'm not sure either - I left it as it was before.
+Grrr. Grant, look again, even closer than you did.
 
-My vote is to change it to KERN_ERR, but it's your call.
+They are stubs!
 
->> So if a node has an fsl,rstcr property, but the of_iomap() fails, we
->> jump to the next global-utilities node? =A0Perhaps you need a 'break'
->> after the printk()?
->
-> Or potentially a continue to be more robust? Or would two (or more) "has-=
-rstcr" nodes be wrong?
+#else /* CONFIG_OF_GPIO */  <<<<<< !OF_GPIO (or !GPIOLIB) case.
 
-My point is that if the of_iomap() call fails, looking for another
-global-utilities node is not the right course of action.  of_iomap()
-failing is a serious error that should result in an immediate exit.
+/* Drivers may not strictly depend on the GPIO support, so let them link. */
+static inline int of_get_gpio_flags(struct device_node *np, int index,
+                                    enum of_gpio_flags *flags)
+{
+        return -ENOSYS;
+}
 
->> Wouldn't it make more sense to assign fsl_rstcr_restart to
->> ppc_md.restart only if we find a valid fsl,has-rstcr property?
->
-> Again I'm not entirely sure, I left this as it was before. Is there anoth=
-er way to reset the board if the rstcr node was not found correctly?
+static inline unsigned int of_gpio_count(struct device_node *np)
+{
+        return 0;
+}
 
-Not on our 85xx boards.  On 83xx, there's mpc83xx_restart().  I just
-don't like "ppc_md.restart =3D=3D fsl_rstcr_restart", because it assumes
-that the define_machine() entry is incorrect.
+static inline void of_gpiochip_add(struct gpio_chip *gc) { }
+static inline void of_gpiochip_remove(struct gpio_chip *gc) { }
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+#endif /* CONFIG_OF_GPIO */
+
+The errors are triggered by the of_gpiochip_*() stubs, which
+are needed by the drivers/gpio/gpiolib.c.
+
+Do you want to add another #ifdef CONFIG_GPIOLIB around
+of_gpiochip_*()? That would be ugly.
+
+There's nothing wrong in providing the forward decls, you
+can't dereference it anyway (so you would still catch the
+bogus users). And at the same time it's will work great
+for these stubs.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
