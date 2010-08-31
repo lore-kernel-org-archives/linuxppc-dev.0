@@ -1,20 +1,22 @@
-Return-Path: <segooon@gmail.com>
-Date: Tue, 31 Aug 2010 20:16:44 +0400
-From: Vasiliy Kulikov <segooon@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 1/7] drivers/macintosh/via-pmu-led.c: Add of_node_put
-	to avoid memory leak
-Message-ID: <20100831161644.GA14505@albatros>
-References: <1283075566-27441-1-git-send-email-julia@diku.dk>
-	<1283075566-27441-2-git-send-email-julia@diku.dk>
-	<4C7D247F.4060500@bfs.de>
-	<Pine.LNX.4.64.1008311807470.2668@ask.diku.dk>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DAB8CB7104
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  1 Sep 2010 02:17:28 +1000 (EST)
+Subject: Re: [PATCH] powerpc: mtmsrd not defined
+Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.1008311807470.2668@ask.diku.dk>
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	walter harms <wharms@bfs.de>
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20100822184844.37c30d5e@lappy.seanm.ca>
+Date: Tue, 31 Aug 2010 11:17:17 -0500
+Message-Id: <D9007E15-F764-450D-9B20-6506F0051BA7@kernel.crashing.org>
+References: <20100822180958.6305f5b1@lappy.seanm.ca>
+	<1282516494.22370.440.camel@pasglop>
+	<20100822184844.37c30d5e@lappy.seanm.ca>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 31, 2010 at 18:08 +0200, Julia Lawall wrote:
-> On Tue, 31 Aug 2010, walter harms wrote:
+
+On Aug 22, 2010, at 5:48 PM, Sean MacLennan wrote:
+
+> On Mon, 23 Aug 2010 08:34:54 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> > 
-> > 
-> > Julia Lawall schrieb:
-> > > Add a call to of_node_put in the error handling code following a call to
-> > > of_find_node_by_path.
-[...]
-> > > --- a/drivers/macintosh/via-pmu-led.c
-> > > +++ b/drivers/macintosh/via-pmu-led.c
-> > > @@ -92,8 +92,10 @@ static int __init via_pmu_led_init(void)
-> > >  	if (dt == NULL)
-> > >  		return -ENODEV;
-> > >  	model = of_get_property(dt, "model", NULL);
-> > > -	if (model == NULL)
-> > > +	if (model == NULL) {
-> > > +		of_node_put(dt);
-> > >  		return -ENODEV;
-> > > +	}
-> > >  	if (strncmp(model, "PowerBook", strlen("PowerBook")) != 0 &&
-> > >  	    strncmp(model, "iBook", strlen("iBook")) != 0 &&
-> > >  	    strcmp(model, "PowerMac7,2") != 0 &&
-> > > 
-> > 
-> > is there any rule that says when to use strncmp ? it seems perfecly valid to use strcpy here
-> > (what is done in the last cmp).
+>> I'd rather have a macro somewhere in ppc_asm.h (MTMSR ?) that does the
+>> right thing. We might even already have one...
 > 
-> Perhaps there are some characters after eg PowerBook that one doesn't want 
-> to compare with?
+> We do.... here is a new, improved patch.
+> 
+> Replace the BOOK3S_64 specific mtmsrd with the generic MTMSRD macro.
+> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> ---
 
-It seems to me that model has no '\0' in the end. If model is got from
-the hardware then we should double check it - maybe harware is buggy.
-Otherwise we'll overflow model.
+Can we add proper CONFIG_PPC_FPU into this file.
 
-But why strcmp(model, "PowerMac7,2")? IMO it should be replaced
-with strncmp().
-
--- 
-Vasiliy
+- k
