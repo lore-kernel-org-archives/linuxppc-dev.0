@@ -1,16 +1,15 @@
-Return-Path: <mita@dhcpa11143.tky.aist.go.jp>
-Received: from dhcpa11143.tky.aist.go.jp (unknown [150.82.175.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F680B713D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 Aug 2010 19:01:10 +1000 (EST)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/512x: fix clk_get() return value
-Date: Tue, 31 Aug 2010 17:43:51 +0900
-Message-Id: <1283244231-23659-1-git-send-email-akinobu.mita@gmail.com>
-Cc: Akinobu Mita <akinobu.mita@gmail.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 31 Aug 2010 21:59:53 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/2 v2] powerpc, pseries: Re-enable dispatch trace log
+	userspace interface
+Message-ID: <20100831115953.GA2531@brick.ozlabs.ibm.com>
+References: <20100827055643.GA19033@brick.ozlabs.ibm.com>
+	<20100827055732.GB19033@brick.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100827055732.GB19033@brick.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,27 +19,391 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-clk_get() should return an ERR_PTR value on error, not NULL.
+Since the cpu accounting code uses the hypervisor dispatch trace log
+now when CONFIG_VIRT_CPU_ACCOUNTING = y, the previous commit disabled
+access to it via files in the /sys/kernel/debug/powerpc/dtl/ directory
+in that case.  This restores those files.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@lists.ozlabs.org
+To do this, we now have a hook that the cpu accounting code will call
+as it processes each entry from the hypervisor dispatch trace log.
+The code in dtl.c now uses that to fill up its ring buffer, rather
+than having the hypervisor fill the ring buffer directly.
+
+This also fixes dtl_file_read() to handle overflow conditions a bit
+better and adds a spinlock to ensure that race conditions (multiple
+processes opening or reading the file concurrently) are handled
+correctly.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/platforms/512x/clock.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Removed extraneous increment of dtl->last_idx in this version.
+Patch 1/1 of this series is unchanged.
 
-diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
-index 5b243bd..3dc2a8d 100644
---- a/arch/powerpc/platforms/512x/clock.c
-+++ b/arch/powerpc/platforms/512x/clock.c
-@@ -57,7 +57,7 @@ static struct clk *mpc5121_clk_get(struct device *dev, const char *id)
- 	int id_match = 0;
+ arch/powerpc/include/asm/lppaca.h    |    8 ++
+ arch/powerpc/kernel/time.c           |    6 +-
+ arch/powerpc/platforms/pseries/dtl.c |  207 +++++++++++++++++++++++++++-------
+ 3 files changed, 180 insertions(+), 41 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index cfb85ec..7f5e0fe 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -191,6 +191,14 @@ struct dtl_entry {
+ #define DISPATCH_LOG_BYTES	4096	/* bytes per cpu */
+ #define N_DISPATCH_LOG		(DISPATCH_LOG_BYTES / sizeof(struct dtl_entry))
  
- 	if (dev == NULL || id == NULL)
--		return NULL;
-+		return clk;
++/*
++ * When CONFIG_VIRT_CPU_ACCOUNTING = y, the cpu accounting code controls
++ * reading from the dispatch trace log.  If other code wants to consume
++ * DTL entries, it can set this pointer to a function that will get
++ * called once for each DTL entry that gets processed.
++ */
++extern void (*dtl_consumer)(struct dtl_entry *entry, u64 index);
++
+ #endif /* CONFIG_PPC_BOOK3S */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_LPPACA_H */
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index fca2064..bcb738b 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -183,6 +183,8 @@ DEFINE_PER_CPU(unsigned long, cputime_scaled_last_delta);
  
- 	mutex_lock(&clocks_mutex);
- 	list_for_each_entry(p, &clocks, node) {
+ cputime_t cputime_one_jiffy;
+ 
++void (*dtl_consumer)(struct dtl_entry *, u64);
++
+ static void calc_cputime_factors(void)
+ {
+ 	struct div_result res;
+@@ -218,7 +220,7 @@ static u64 read_spurr(u64 tb)
+  */
+ static u64 scan_dispatch_log(u64 stop_tb)
+ {
+-	unsigned long i = local_paca->dtl_ridx;
++	u64 i = local_paca->dtl_ridx;
+ 	struct dtl_entry *dtl = local_paca->dtl_curr;
+ 	struct dtl_entry *dtl_end = local_paca->dispatch_log_end;
+ 	struct lppaca *vpa = local_paca->lppaca_ptr;
+@@ -229,6 +231,8 @@ static u64 scan_dispatch_log(u64 stop_tb)
+ 	if (i == vpa->dtl_idx)
+ 		return 0;
+ 	while (i < vpa->dtl_idx) {
++		if (dtl_consumer)
++			dtl_consumer(dtl, i);
+ 		dtb = dtl->timebase;
+ 		tb_delta = dtl->enqueue_to_dispatch_time +
+ 			dtl->ready_to_enqueue_time;
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index 0357655..68cb2f2 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/debugfs.h>
++#include <linux/spinlock.h>
+ #include <asm/smp.h>
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+@@ -37,6 +38,7 @@ struct dtl {
+ 	int			cpu;
+ 	int			buf_entries;
+ 	u64			last_idx;
++	spinlock_t		lock;
+ };
+ static DEFINE_PER_CPU(struct dtl, cpu_dtl);
+ 
+@@ -55,25 +57,97 @@ static u8 dtl_event_mask = 0x7;
+ static int dtl_buf_entries = (16 * 85);
+ 
+ 
+-static int dtl_enable(struct dtl *dtl)
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING
++struct dtl_ring {
++	u64	write_index;
++	struct dtl_entry *write_ptr;
++	struct dtl_entry *buf;
++	struct dtl_entry *buf_end;
++	u8	saved_dtl_mask;
++};
++
++static DEFINE_PER_CPU(struct dtl_ring, dtl_rings);
++
++static atomic_t dtl_count;
++
++/*
++ * The cpu accounting code controls the DTL ring buffer, and we get
++ * given entries as they are processed.
++ */
++static void consume_dtle(struct dtl_entry *dtle, u64 index)
+ {
+-	unsigned long addr;
+-	int ret, hwcpu;
++	struct dtl_ring *dtlr = &__get_cpu_var(dtl_rings);
++	struct dtl_entry *wp = dtlr->write_ptr;
++	struct lppaca *vpa = local_paca->lppaca_ptr;
+ 
+-	/* only allow one reader */
+-	if (dtl->buf)
+-		return -EBUSY;
++	if (!wp)
++		return;
+ 
+-	/* we need to store the original allocation size for use during read */
+-	dtl->buf_entries = dtl_buf_entries;
++	*wp = *dtle;
++	barrier();
+ 
+-	dtl->buf = kmalloc_node(dtl->buf_entries * sizeof(struct dtl_entry),
+-			GFP_KERNEL, cpu_to_node(dtl->cpu));
+-	if (!dtl->buf) {
+-		printk(KERN_WARNING "%s: buffer alloc failed for cpu %d\n",
+-				__func__, dtl->cpu);
+-		return -ENOMEM;
+-	}
++	/* check for hypervisor ring buffer overflow, ignore this entry if so */
++	if (index + N_DISPATCH_LOG < vpa->dtl_idx)
++		return;
++
++	++wp;
++	if (wp == dtlr->buf_end)
++		wp = dtlr->buf;
++	dtlr->write_ptr = wp;
++
++	/* incrementing write_index makes the new entry visible */
++	smp_wmb();
++	++dtlr->write_index;
++}
++
++static int dtl_start(struct dtl *dtl)
++{
++	struct dtl_ring *dtlr = &per_cpu(dtl_rings, dtl->cpu);
++
++	dtlr->buf = dtl->buf;
++	dtlr->buf_end = dtl->buf + dtl->buf_entries;
++	dtlr->write_index = 0;
++
++	/* setting write_ptr enables logging into our buffer */
++	smp_wmb();
++	dtlr->write_ptr = dtl->buf;
++
++	/* enable event logging */
++	dtlr->saved_dtl_mask = lppaca_of(dtl->cpu).dtl_enable_mask;
++	lppaca_of(dtl->cpu).dtl_enable_mask |= dtl_event_mask;
++
++	dtl_consumer = consume_dtle;
++	atomic_inc(&dtl_count);
++	return 0;
++}
++
++static void dtl_stop(struct dtl *dtl)
++{
++	struct dtl_ring *dtlr = &per_cpu(dtl_rings, dtl->cpu);
++
++	dtlr->write_ptr = NULL;
++	smp_wmb();
++
++	dtlr->buf = NULL;
++
++	/* restore dtl_enable_mask */
++	lppaca_of(dtl->cpu).dtl_enable_mask = dtlr->saved_dtl_mask;
++
++	if (atomic_dec_and_test(&dtl_count))
++		dtl_consumer = NULL;
++}
++
++static u64 dtl_current_index(struct dtl *dtl)
++{
++	return per_cpu(dtl_rings, dtl->cpu).write_index;
++}
++
++#else /* CONFIG_VIRT_CPU_ACCOUNTING */
++
++static int dtl_start(struct dtl *dtl)
++{
++	unsigned long addr;
++	int ret, hwcpu;
+ 
+ 	/* Register our dtl buffer with the hypervisor. The HV expects the
+ 	 * buffer size to be passed in the second word of the buffer */
+@@ -85,12 +159,11 @@ static int dtl_enable(struct dtl *dtl)
+ 	if (ret) {
+ 		printk(KERN_WARNING "%s: DTL registration for cpu %d (hw %d) "
+ 		       "failed with %d\n", __func__, dtl->cpu, hwcpu, ret);
+-		kfree(dtl->buf);
+ 		return -EIO;
+ 	}
+ 
+ 	/* set our initial buffer indices */
+-	dtl->last_idx = lppaca_of(dtl->cpu).dtl_idx = 0;
++	lppaca_of(dtl->cpu).dtl_idx = 0;
+ 
+ 	/* ensure that our updates to the lppaca fields have occurred before
+ 	 * we actually enable the logging */
+@@ -102,17 +175,66 @@ static int dtl_enable(struct dtl *dtl)
+ 	return 0;
+ }
+ 
+-static void dtl_disable(struct dtl *dtl)
++static void dtl_stop(struct dtl *dtl)
+ {
+ 	int hwcpu = get_hard_smp_processor_id(dtl->cpu);
+ 
+ 	lppaca_of(dtl->cpu).dtl_enable_mask = 0x0;
+ 
+ 	unregister_dtl(hwcpu, __pa(dtl->buf));
++}
++
++static u64 dtl_current_index(struct dtl *dtl)
++{
++	return lppaca_of(dtl->cpu).dtl_idx;
++}
++#endif /* CONFIG_VIRT_CPU_ACCOUNTING */
+ 
++static int dtl_enable(struct dtl *dtl)
++{
++	long int n_entries;
++	long int rc;
++	struct dtl_entry *buf = NULL;
++
++	/* only allow one reader */
++	if (dtl->buf)
++		return -EBUSY;
++
++	n_entries = dtl_buf_entries;
++	buf = kmalloc_node(n_entries * sizeof(struct dtl_entry),
++			GFP_KERNEL, cpu_to_node(dtl->cpu));
++	if (!buf) {
++		printk(KERN_WARNING "%s: buffer alloc failed for cpu %d\n",
++				__func__, dtl->cpu);
++		return -ENOMEM;
++	}
++
++	spin_lock(&dtl->lock);
++	rc = -EBUSY;
++	if (!dtl->buf) {
++		/* store the original allocation size for use during read */
++		dtl->buf_entries = n_entries;
++		dtl->buf = buf;
++		dtl->last_idx = 0;
++		rc = dtl_start(dtl);
++		if (rc)
++			dtl->buf = NULL;
++	}
++	spin_unlock(&dtl->lock);
++
++	if (rc)
++		kfree(buf);
++	return rc;
++}
++
++static void dtl_disable(struct dtl *dtl)
++{
++	spin_lock(&dtl->lock);
++	dtl_stop(dtl);
+ 	kfree(dtl->buf);
+ 	dtl->buf = NULL;
+ 	dtl->buf_entries = 0;
++	spin_unlock(&dtl->lock);
+ }
+ 
+ /* file interface */
+@@ -140,8 +262,9 @@ static int dtl_file_release(struct inode *inode, struct file *filp)
+ static ssize_t dtl_file_read(struct file *filp, char __user *buf, size_t len,
+ 		loff_t *pos)
+ {
+-	int rc, cur_idx, last_idx, n_read, n_req, read_size;
++	long int rc, n_read, n_req, read_size;
+ 	struct dtl *dtl;
++	u64 cur_idx, last_idx, i;
+ 
+ 	if ((len % sizeof(struct dtl_entry)) != 0)
+ 		return -EINVAL;
+@@ -154,41 +277,48 @@ static ssize_t dtl_file_read(struct file *filp, char __user *buf, size_t len,
+ 	/* actual number of entries read */
+ 	n_read = 0;
+ 
+-	cur_idx = lppaca_of(dtl->cpu).dtl_idx;
++	spin_lock(&dtl->lock);
++
++	cur_idx = dtl_current_index(dtl);
+ 	last_idx = dtl->last_idx;
+ 
+-	if (cur_idx - last_idx > dtl->buf_entries) {
+-		pr_debug("%s: hv buffer overflow for cpu %d, samples lost\n",
+-				__func__, dtl->cpu);
+-	}
++	if (last_idx + dtl->buf_entries <= cur_idx)
++		last_idx = cur_idx - dtl->buf_entries + 1;
++
++	if (last_idx + n_req > cur_idx)
++		n_req = cur_idx - last_idx;
+ 
+-	cur_idx  %= dtl->buf_entries;
+-	last_idx %= dtl->buf_entries;
++	if (n_req > 0)
++		dtl->last_idx = last_idx + n_req;
++
++	spin_unlock(&dtl->lock);
++
++	if (n_req <= 0)
++		return 0;
++
++	i = last_idx % dtl->buf_entries;
+ 
+ 	/* read the tail of the buffer if we've wrapped */
+-	if (last_idx > cur_idx) {
+-		read_size = min(n_req, dtl->buf_entries - last_idx);
++	if (i + n_req > dtl->buf_entries) {
++		read_size = dtl->buf_entries - i;
+ 
+-		rc = copy_to_user(buf, &dtl->buf[last_idx],
++		rc = copy_to_user(buf, &dtl->buf[i],
+ 				read_size * sizeof(struct dtl_entry));
+ 		if (rc)
+ 			return -EFAULT;
+ 
+-		last_idx = 0;
++		i = 0;
+ 		n_req -= read_size;
+ 		n_read += read_size;
+ 		buf += read_size * sizeof(struct dtl_entry);
+ 	}
+ 
+ 	/* .. and now the head */
+-	read_size = min(n_req, cur_idx - last_idx);
+-	rc = copy_to_user(buf, &dtl->buf[last_idx],
+-			read_size * sizeof(struct dtl_entry));
++	rc = copy_to_user(buf, &dtl->buf[i], n_req * sizeof(struct dtl_entry));
+ 	if (rc)
+ 		return -EFAULT;
+ 
+-	n_read += read_size;
+-	dtl->last_idx += n_read;
++	n_read += n_req;
+ 
+ 	return n_read * sizeof(struct dtl_entry);
+ }
+@@ -220,11 +351,6 @@ static int dtl_init(void)
+ 	struct dentry *event_mask_file, *buf_entries_file;
+ 	int rc, i;
+ 
+-#ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	/* disable this for now */
+-	return -ENODEV;
+-#endif
+-
+ 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return -ENODEV;
+ 
+@@ -251,6 +377,7 @@ static int dtl_init(void)
+ 	/* set up the per-cpu log structures */
+ 	for_each_possible_cpu(i) {
+ 		struct dtl *dtl = &per_cpu(cpu_dtl, i);
++		spin_lock_init(&dtl->lock);
+ 		dtl->cpu = i;
+ 
+ 		rc = dtl_setup_file(dtl);
 -- 
-1.7.1.231.gd0b16
+1.7.1
