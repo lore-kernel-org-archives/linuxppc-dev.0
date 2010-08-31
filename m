@@ -1,20 +1,18 @@
-Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) by ozlabs.org (Postfix) with ESMTP id 9D242B70E2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 02:41:38 +1000 (EST)
-Subject: Re: [PATCH] powerpc/fsl_soc: Search all global-utilities nodes for
-	rstccr
-MIME-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset="us-ascii"
-From: Matthew McClintock <msm@freescale.com>
-In-Reply-To: <AANLkTimYz6v2tMJRYnki9Ph33HL9yGsOcpgJ78LTDCTG@mail.gmail.com>
-Date: Tue, 31 Aug 2010 11:26:19 -0500
-Message-ID: <09C49916-9A20-41CD-A7BA-2F467BFD24DA@freescale.com>
-References: <1282946147-28164-1-git-send-email-msm@freescale.com>
-	<AANLkTimYz6v2tMJRYnki9Ph33HL9yGsOcpgJ78LTDCTG@mail.gmail.com>
-To: Timur Tabi <timur.tabi@gmail.com>
-Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 09938B7154
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Sep 2010 02:42:26 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o7VGgN6w028554
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 11:42:23 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Fix compile issue with p1022_ds due to lmb
+	rename to memblock
+Date: Tue, 31 Aug 2010 11:42:23 -0500
+Message-Id: <1283272943-2454-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+arch/powerpc/platforms/85xx/p1022_ds.c:22:23: error: linux/lmb.h: No such file or directory
+arch/powerpc/platforms/85xx/p1022_ds.c: In function 'p1022_ds_setup_arch':
+arch/powerpc/platforms/85xx/p1022_ds.c:100: error: implicit declaration of function 'memblock_end_of_DRAM'
+arch/powerpc/platforms/85xx/p1022_ds.c: At top level:
+arch/powerpc/platforms/85xx/p1022_ds.c:147: error: 'udbg_progress' undeclared here (not in a function)
+make[2]: *** [arch/powerpc/platforms/85xx/p1022_ds.o] Error 1
 
-On Aug 28, 2010, at 5:34 PM, Timur Tabi wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/platforms/85xx/p1022_ds.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
->> <msm@freescale.com> wrote:
->=20
->> +
->> +       for_each_node_by_name(np, "global-utilities") {
->> +               if ((of_get_property(np, "fsl,has-rstcr", NULL))) {
->> +                       rstcr =3D of_iomap(np, 0) + 0xb0;
->> +                       if (!rstcr)
->> +                               printk (KERN_EMERG "Error: reset =
-control "
->=20
-> I'm not sure KERN_EMERG is warranted for this kind of error.
-
-I'm not sure either - I left it as it was before.
-
->=20
->> +                                               "register not =
-mapped!\n");
->> +               }
->=20
-> So if a node has an fsl,rstcr property, but the of_iomap() fails, we
-> jump to the next global-utilities node?  Perhaps you need a 'break'
-> after the printk()?
-
-Or potentially a continue to be more robust? Or would two (or more) =
-"has-rstcr" nodes be wrong?
-
->=20
->> +       }
->> +
->> +       if (!rstcr && ppc_md.restart =3D=3D fsl_rstcr_restart)
->=20
-> Wouldn't it make more sense to assign fsl_rstcr_restart to
-> ppc_md.restart only if we find a valid fsl,has-rstcr property?
-
-Again I'm not entirely sure, I left this as it was before. Is there =
-another way to reset the board if the rstcr node was not found =
-correctly?
-
--M
-
->=20
-> --=20
-> Timur Tabi
-> Linux kernel developer at Freescale
->=20
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index e1467c9..34e0090 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -19,7 +19,7 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/lmb.h>
++#include <linux/memblock.h>
+ 
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
+@@ -97,7 +97,7 @@ static void __init p1022_ds_setup_arch(void)
+ #endif
+ 
+ #ifdef CONFIG_SWIOTLB
+-	if (lmb_end_of_DRAM() > max) {
++	if (memblock_end_of_DRAM() > max) {
+ 		ppc_swiotlb_enable = 1;
+ 		set_pci_dma_ops(&swiotlb_dma_ops);
+ 		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-- 
+1.6.0.6
