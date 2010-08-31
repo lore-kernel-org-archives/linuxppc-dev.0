@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 456CFB710D
+	by ozlabs.org (Postfix) with ESMTPS id 45723B71C8
 	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:25 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 20/35] KVM: PPC: Make PV mtmsrd L=1 work with r30 and r31
-Date: Tue, 31 Aug 2010 04:32:01 +0200
-Message-Id: <1283221937-21006-21-git-send-email-agraf@suse.de>
+Subject: [PATCH 13/35] KVM: PPC: Add feature bitmap for magic page
+Date: Tue, 31 Aug 2010 04:31:54 +0200
+Message-Id: <1283221937-21006-14-git-send-email-agraf@suse.de>
 In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
 References: <1283221937-21006-1-git-send-email-agraf@suse.de>
 Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>
@@ -21,93 +21,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We had an arbitrary limitation in mtmsrd L=1 that kept us from using r30 and
-r31 as input registers. Let's get rid of that and get more potential speedups!
+We will soon add SR PV support to the shared page, so we need some
+infrastructure that allows the guest to query for features KVM exports.
+
+This patch adds a second return value to the magic mapping that
+indicated to the guest which features are available.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/kvm.c      |   21 +++++++++++++++++----
- arch/powerpc/kernel/kvm_emul.S |    8 +++++++-
- 2 files changed, 24 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/kvm_para.h |    2 ++
+ arch/powerpc/kernel/kvm.c           |   21 +++++++++++++++------
+ arch/powerpc/kvm/powerpc.c          |    5 ++++-
+ 3 files changed, 21 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
+index 7438ab3..43c1b22 100644
+--- a/arch/powerpc/include/asm/kvm_para.h
++++ b/arch/powerpc/include/asm/kvm_para.h
+@@ -47,6 +47,8 @@ struct kvm_vcpu_arch_shared {
+ 
+ #define KVM_FEATURE_MAGIC_PAGE	1
+ 
++#define KVM_MAGIC_FEAT_SR	(1 << 0)
++
+ #ifdef __KERNEL__
+ 
+ #ifdef CONFIG_KVM_GUEST
 diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 517967d..517da39 100644
+index e936817..f48144f 100644
 --- a/arch/powerpc/kernel/kvm.c
 +++ b/arch/powerpc/kernel/kvm.c
-@@ -159,6 +159,7 @@ static u32 *kvm_alloc(int len)
+@@ -267,12 +267,20 @@ static void kvm_patch_ins_wrteei(u32 *inst)
  
- extern u32 kvm_emulate_mtmsrd_branch_offs;
- extern u32 kvm_emulate_mtmsrd_reg_offs;
-+extern u32 kvm_emulate_mtmsrd_orig_ins_offs;
- extern u32 kvm_emulate_mtmsrd_len;
- extern u32 kvm_emulate_mtmsrd[];
- 
-@@ -187,7 +188,21 @@ static void kvm_patch_ins_mtmsrd(u32 *inst, u32 rt)
- 	/* Modify the chunk to fit the invocation */
- 	memcpy(p, kvm_emulate_mtmsrd, kvm_emulate_mtmsrd_len * 4);
- 	p[kvm_emulate_mtmsrd_branch_offs] |= distance_end & KVM_INST_B_MASK;
--	p[kvm_emulate_mtmsrd_reg_offs] |= rt;
-+	switch (get_rt(rt)) {
-+	case 30:
-+		kvm_patch_ins_ll(&p[kvm_emulate_mtmsrd_reg_offs],
-+				 magic_var(scratch2), KVM_RT_30);
-+		break;
-+	case 31:
-+		kvm_patch_ins_ll(&p[kvm_emulate_mtmsrd_reg_offs],
-+				 magic_var(scratch1), KVM_RT_30);
-+		break;
-+	default:
-+		p[kvm_emulate_mtmsrd_reg_offs] |= rt;
-+		break;
-+	}
+ static void kvm_map_magic_page(void *data)
+ {
+-	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+-		       KVM_MAGIC_PAGE,  /* Physical Address */
+-		       KVM_MAGIC_PAGE); /* Effective Address */
++	u32 *features = data;
 +
-+	p[kvm_emulate_mtmsrd_orig_ins_offs] = *inst;
- 	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_mtmsrd_len * 4);
++	ulong in[8];
++	ulong out[8];
++
++	in[0] = KVM_MAGIC_PAGE;
++	in[1] = KVM_MAGIC_PAGE;
++
++	kvm_hypercall(in, out, HC_VENDOR_KVM | KVM_HC_PPC_MAP_MAGIC_PAGE);
++
++	*features = out[0];
+ }
  
- 	/* Patch the invocation */
-@@ -424,9 +439,7 @@ static void kvm_check_ins(u32 *inst, u32 features)
+-static void kvm_check_ins(u32 *inst)
++static void kvm_check_ins(u32 *inst, u32 features)
+ {
+ 	u32 _inst = *inst;
+ 	u32 inst_no_rt = _inst & ~KVM_MASK_RT;
+@@ -368,9 +376,10 @@ static void kvm_use_magic_page(void)
+ 	u32 *p;
+ 	u32 *start, *end;
+ 	u32 tmp;
++	u32 features;
  
- 	/* Rewrites */
- 	case KVM_INST_MTMSRD_L1:
--		/* We use r30 and r31 during the hook */
--		if (get_rt(inst_rt) < 30)
--			kvm_patch_ins_mtmsrd(inst, inst_rt);
-+		kvm_patch_ins_mtmsrd(inst, inst_rt);
+ 	/* Tell the host to map the magic page to -4096 on all CPUs */
+-	on_each_cpu(kvm_map_magic_page, NULL, 1);
++	on_each_cpu(kvm_map_magic_page, &features, 1);
+ 
+ 	/* Quick self-test to see if the mapping works */
+ 	if (__get_user(tmp, (u32*)KVM_MAGIC_PAGE)) {
+@@ -383,7 +392,7 @@ static void kvm_use_magic_page(void)
+ 	end = (void*)_etext;
+ 
+ 	for (p = start; p < end; p++)
+-		kvm_check_ins(p);
++		kvm_check_ins(p, features);
+ 
+ 	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
+ 			 kvm_patching_worked ? "worked" : "failed");
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 6a53a3f..496d7a5 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -66,6 +66,8 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+ 		vcpu->arch.magic_page_pa = param1;
+ 		vcpu->arch.magic_page_ea = param2;
+ 
++		r2 = 0;
++
+ 		r = HC_EV_SUCCESS;
  		break;
- 	case KVM_INST_MTMSR:
- 	case KVM_INST_MTMSRD_L0:
-diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index 6530532..f2b1b25 100644
---- a/arch/powerpc/kernel/kvm_emul.S
-+++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -78,7 +78,8 @@ kvm_emulate_mtmsrd:
+ 	}
+@@ -76,13 +78,14 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+ #endif
  
- 	/* OR the register's (MSR_EE|MSR_RI) on MSR */
- kvm_emulate_mtmsrd_reg:
--	andi.	r30, r0, (MSR_EE|MSR_RI)
-+	ori	r30, r0, 0
-+	andi.	r30, r30, (MSR_EE|MSR_RI)
- 	or	r31, r31, r30
+ 		/* Second return value is in r4 */
+-		kvmppc_set_gpr(vcpu, 4, r2);
+ 		break;
+ 	default:
+ 		r = HC_EV_UNIMPLEMENTED;
+ 		break;
+ 	}
  
- 	/* Put MSR back into magic page */
-@@ -96,6 +97,7 @@ kvm_emulate_mtmsrd_reg:
- 	SCRATCH_RESTORE
- 
- 	/* Nag hypervisor */
-+kvm_emulate_mtmsrd_orig_ins:
- 	tlbsync
- 
- 	b	kvm_emulate_mtmsrd_branch
-@@ -117,6 +119,10 @@ kvm_emulate_mtmsrd_branch_offs:
- kvm_emulate_mtmsrd_reg_offs:
- 	.long (kvm_emulate_mtmsrd_reg - kvm_emulate_mtmsrd) / 4
- 
-+.global kvm_emulate_mtmsrd_orig_ins_offs
-+kvm_emulate_mtmsrd_orig_ins_offs:
-+	.long (kvm_emulate_mtmsrd_orig_ins - kvm_emulate_mtmsrd) / 4
++	kvmppc_set_gpr(vcpu, 4, r2);
 +
- .global kvm_emulate_mtmsrd_len
- kvm_emulate_mtmsrd_len:
- 	.long (kvm_emulate_mtmsrd_end - kvm_emulate_mtmsrd) / 4
+ 	return r;
+ }
+ 
 -- 
 1.6.0.2
