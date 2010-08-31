@@ -1,30 +1,29 @@
 Return-Path: <msm@freescale.com>
 Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141]) by ozlabs.org (Postfix) with ESMTP id 0B0CFB7116
+	[213.199.154.141]) by ozlabs.org (Postfix) with ESMTP id DC3D3B715A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 08:38:16 +1000 (EST)
-Received: from mail69-db3 (localhost.localdomain [127.0.0.1])	by
-	mail69-db3-R.bigfish.com (Postfix) with ESMTP id 9805714980F4	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2010 22:38:08 +0000 (UTC)
-Received: from DB3EHSMHS006.bigfish.com (unknown [10.3.81.249])	by
-	mail69-db3.bigfish.com (Postfix) with ESMTP id 09A4FD8004F	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2010 22:38:07 +0000 (UTC)
+	Wed,  1 Sep 2010 09:18:08 +1000 (EST)
+Received: from mail38-db3 (localhost.localdomain [127.0.0.1])	by
+	mail38-db3-R.bigfish.com (Postfix) with ESMTP id 6352116400B7	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2010 23:18:01 +0000 (UTC)
+Received: from DB3EHSMHS001.bigfish.com (unknown [10.3.81.250])	by
+	mail38-db3.bigfish.com (Postfix) with ESMTP id ADAF03E004B	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2010 23:18:00 +0000 (UTC)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net
 	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o7VMbr6m001345	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 Aug 2010 15:38:04 -0700 (MST)
+	id o7VNHmjt004490	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 31 Aug 2010 16:17:58 -0700 (MST)
 From: Matthew McClintock <msm@freescale.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/fsl_soc: Search all global-utilities nodes for
-	rstccr
-Date: Tue, 31 Aug 2010 17:44:51 -0500
-Message-ID: <1283294691-18765-1-git-send-email-msm@freescale.com>
-In-Reply-To: <AANLkTikdm6f6dRDoOXuBx0-viwNqHuez4P+xTum+M+9O@mail.gmail.com>
-References: <AANLkTikdm6f6dRDoOXuBx0-viwNqHuez4P+xTum+M+9O@mail.gmail.com>
+Subject: [PATCH 2/2] powerpc/fsl_booke: Add support to boot from core other
+	than 0
+Date: Tue, 31 Aug 2010 18:24:45 -0500
+Message-ID: <1283297085-3455-2-git-send-email-msm@freescale.com>
+In-Reply-To: <1283297085-3455-1-git-send-email-msm@freescale.com>
+References: <1283297085-3455-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com,
-	timur@freescale.com
+Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,52 +33,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first global-utilities node might not contain the rstcr
-property, so we should search all the nodes
+First we check to see if we are the first core booting up. This
+is accomplished by comparing the boot_cpuid with -1, if it is we
+assume this is the first core coming up.
+
+Secondly, we need to update the initial thread info structure
+to reflect the actual cpu we are running on otherwise
+smp_processor_id() and related functions will return the default
+initialization value of the struct or 0.
 
 Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
--Changed KERN_EMERG to KERN_ERR
--Break if we do not find rstcr mapped
--Restore of_put_node that was dropped
+ arch/powerpc/kernel/head_fsl_booke.S |   10 ++++++++--
+ arch/powerpc/kernel/setup_32.c       |    2 +-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
- arch/powerpc/sysdev/fsl_soc.c |   20 +++++++++++++-------
- 1 files changed, 13 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index b91f7ac..6c67d9e 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -378,17 +378,23 @@ static __be32 __iomem *rstcr;
- static int __init setup_rstcr(void)
- {
- 	struct device_node *np;
--	np = of_find_node_by_name(NULL, "global-utilities");
--	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
--		rstcr = of_iomap(np, 0) + 0xb0;
--		if (!rstcr)
--			printk (KERN_EMERG "Error: reset control register "
--					"not mapped!\n");
--	} else if (ppc_md.restart == fsl_rstcr_restart)
-+
-+	for_each_node_by_name(np, "global-utilities") {
-+		if ((of_get_property(np, "fsl,has-rstcr", NULL))) {
-+			rstcr = of_iomap(np, 0) + 0xb0;
-+			if (!rstcr)
-+				printk (KERN_ERR "Error: reset control "
-+						"register not mapped!\n");
-+			break;
-+		}
-+	}
-+
-+	if (!rstcr && ppc_md.restart == fsl_rstcr_restart)
- 		printk(KERN_ERR "No RSTCR register, warm reboot won't work\n");
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 258315a..5bbf593 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -152,8 +152,11 @@ _ENTRY(__early_start)
+ 	/* Check to see if we're the second processor, and jump
+ 	 * to the secondary_start code if so
+ 	 */
+-	mfspr	r24,SPRN_PIR
+-	cmpwi	r24,0
++	lis	r24, boot_cpuid@h
++	ori	r24, r24, boot_cpuid@l
++	lwz	r24, 0(r24)
++	cmpwi	r24, -1
++	mfspr   r24,SPRN_PIR
+ 	bne	__secondary_start
+ #endif
  
- 	if (np)
- 		of_node_put(np);
+@@ -175,6 +178,9 @@ _ENTRY(__early_start)
+ 	li	r0,0
+ 	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+ 
++	rlwinm  r22,r1,0,0,31-THREAD_SHIFT      /* current thread_info */
++	stw	r24, TI_CPU(r22)
 +
- 	return 0;
- }
+ 	bl	early_init
+ 
+ #ifdef CONFIG_RELOCATABLE
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 8f58986..4be3ef4 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -46,7 +46,7 @@
+ 
+ extern void bootx_init(unsigned long r4, unsigned long phys);
+ 
+-int boot_cpuid;
++int boot_cpuid = -1;
+ EXPORT_SYMBOL_GPL(boot_cpuid);
+ int boot_cpuid_phys;
  
 -- 
 1.6.6.1
