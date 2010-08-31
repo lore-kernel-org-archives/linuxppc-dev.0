@@ -1,20 +1,15 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 9B2E2B70FE
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 11:07:49 +1000 (EST)
-Subject: Re: [PATCH] powerpc/kvm/e500_tlb: Fix a minor copy-paste tracing bug
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTP id 66241B70FC
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:15:27 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1283182719-4621-1-git-send-email-Kyle.D.Moffett@boeing.com>
-Date: Tue, 31 Aug 2010 03:07:43 +0200
-Message-Id: <4B040308-883F-4A90-BEA4-034DC6B2C6A6@suse.de>
-References: <1282936005-17078-1-git-send-email-Kyle.D.Moffett@boeing.com>
-	<1283182719-4621-1-git-send-email-Kyle.D.Moffett@boeing.com>
-To: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-Cc: linuxppc-dev@ozlabs.org, Kyle Moffett <kyle@moffetthome.net>,
-	Liu Yu <yu.liu@freescale.com>, linux-kernel@vger.kernel.org,
-	kvm-ppc@vger.kernel.org
+To: Linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 3/3] PPC: Fix compilation of mpc85xx_mds.c
+Date: Tue, 31 Aug 2010 04:15:22 +0200
+Message-Id: <1283220922-20369-4-git-send-email-agraf@suse.de>
+In-Reply-To: <1283220922-20369-1-git-send-email-agraf@suse.de>
+References: <1283220922-20369-1-git-send-email-agraf@suse.de>
+Cc: Anton Vorontsov <avorontsov@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,15 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit 99d8238f berobbed the for_each loop of its iterator! Let's be
+nice and give it back, so it compiles for us.
 
-On 30.08.2010, at 17:38, Kyle Moffett wrote:
+CC: Anton Vorontsov <avorontsov@mvista.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> The kvmppc_e500_stlbe_invalidate() function was trying to pass too many
-> parameters to trace_kvm_stlb_inval().  This appears to be a bad
-> copy-paste from a call to trace_kvm_stlb_write().
-> 
-> Signed-off-by: Kyle Moffett <Kyle.D.Moffett@boeing.com>
-
-Thanks, applied.
-
-Alex
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index da64be1..aa34cac 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -357,6 +357,7 @@ static void __init mpc85xx_mds_setup_arch(void)
+ {
+ #ifdef CONFIG_PCI
+ 	struct pci_controller *hose;
++	struct device_node *np;
+ #endif
+ 	dma_addr_t max = 0xffffffff;
+ 
+-- 
+1.6.0.2
