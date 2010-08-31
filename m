@@ -1,20 +1,17 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B368FB713A
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Sep 2010 07:40:34 +1000 (EST)
-Subject: Re: [PATCH] powerpc/85xx: Fix compile issue with p1022_ds due to lmb
-	rename to memblock
+Subject: Re: [PATCH] arch/powerpc/platforms/83xx/mpc837x_mds.c: Add missing
+	iounmap
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1283272943-2454-1-git-send-email-galak@kernel.crashing.org>
-Date: Tue, 31 Aug 2010 16:40:17 -0500
-Message-Id: <3CD62C9C-C146-4988-8E7F-062B6FB540C0@kernel.crashing.org>
-References: <1283272943-2454-1-git-send-email-galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1283111238-3129-1-git-send-email-julia@diku.dk>
+Date: Tue, 31 Aug 2010 16:39:11 -0500
+Message-Id: <D97B05D5-3ABF-4B47-97C7-A3EC629A1987@kernel.crashing.org>
+References: <1283111238-3129-1-git-send-email-julia@diku.dk>
+To: Julia Lawall <julia@diku.dk>
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +22,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 31, 2010, at 11:42 AM, Kumar Gala wrote:
+On Aug 29, 2010, at 2:47 PM, Julia Lawall wrote:
 
-> arch/powerpc/platforms/85xx/p1022_ds.c:22:23: error: linux/lmb.h: No =
-such file or directory
-> arch/powerpc/platforms/85xx/p1022_ds.c: In function =
-'p1022_ds_setup_arch':
-> arch/powerpc/platforms/85xx/p1022_ds.c:100: error: implicit =
-declaration of function 'memblock_end_of_DRAM'
-> arch/powerpc/platforms/85xx/p1022_ds.c: At top level:
-> arch/powerpc/platforms/85xx/p1022_ds.c:147: error: 'udbg_progress' =
-undeclared here (not in a function)
-> make[2]: *** [arch/powerpc/platforms/85xx/p1022_ds.o] Error 1
->=20
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> The function of_iomap returns the result of calling ioremap, so iounmap
+> should be called on the result in the error handling code, as done in the
+> normal exit of the function.
+> 
+> The sematic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> expression E,E1;
+> identifier l;
+> statement S;
+> @@
+> 
+> *x = of_iomap(...);
+> ...  when != iounmap(x)
+>     when != if (...) { ... iounmap(x); ... }
+>     when != E = x
+>     when any
+> (
+> if (x == NULL) S
+> |
+> if (...) {
+>  ... when != iounmap(x)
+>      when != if (...) { ... iounmap(x); ... }
+> (
+>  return <+...x...+>;
+> |
+> *  return ...;
+> )
+> }
+> )
+> ... when != x = E1
+>    when any
+> iounmap(x);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
 > ---
-> arch/powerpc/platforms/85xx/p1022_ds.c |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
+> arch/powerpc/platforms/83xx/mpc837x_mds.c |    9 ++++++---
+> 1 file changed, 6 insertions(+), 3 deletions(-)
 
 applied to merge
 
-- k=
+- k
