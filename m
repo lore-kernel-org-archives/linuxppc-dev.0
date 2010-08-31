@@ -1,21 +1,14 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from exchange.solarflare.com (mail.solarflare.com [216.237.3.220])
-	by ozlabs.org (Postfix) with ESMTP id 4CC25B6F10
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 01:23:35 +1000 (EST)
-Subject: Re: [PATCH] ucc_geth: fix ethtool set ring param bug
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Liang Li <liang.li@windriver.com>
-In-Reply-To: <20100831151629.GA21442@localhost>
-References: <1283179677-21262-1-git-send-email-liang.li@windriver.com>
-	<1283265682.2244.0.camel@achroite.uk.solarflarecom.com>
-	<20100831151629.GA21442@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 31 Aug 2010 16:23:30 +0100
-Message-ID: <1283268210.2244.2.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Return-Path: <julia@diku.dk>
+From: Julia Lawall <julia@diku.dk>
+To: Timur Tabi <timur@freescale.com>
+Subject: [PATCH 1/4] drivers/serial/ucc_uart.c: Add of_node_put to avoid
+	memory leak
+Date: Tue, 31 Aug 2010 17:48:55 +0200
+Message-Id: <1283269738-14612-2-git-send-email-julia@diku.dk>
+In-Reply-To: <1283269738-14612-1-git-send-email-julia@diku.dk>
+References: <1283269738-14612-1-git-send-email-julia@diku.dk>
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +18,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-08-31 at 23:16 +0800, Liang Li wrote:
-> On Tue, Aug 31, 2010 at 03:41:22PM +0100, Ben Hutchings wrote:
-> > On Mon, 2010-08-30 at 22:47 +0800, Liang Li wrote:
-> > > It's common sense that when we should do change to driver ring
-> > > desc/buffer etc only after 'stop/shutdown' the device. When we
-> > > do change while devices/driver is running, kernel oops occur:
-> > [...]
-> > > diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
-> > > index 6f92e48..1b37aaa 100644
-> > > --- a/drivers/net/ucc_geth_ethtool.c
-> > > +++ b/drivers/net/ucc_geth_ethtool.c
-> > > @@ -255,13 +255,18 @@ uec_set_ringparam(struct net_device *netdev,
-> > >  		return -EINVAL;
-> > >  	}
-> > >  
-> > > -	ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> > > -	ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> > > -
-> > >  	if (netif_running(netdev)) {
-> > > -		/* FIXME: restart automatically */
-> > > -		printk(KERN_INFO
-> > > -			"Please re-open the interface.\n");
-> > > +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
-> > > +		ucc_geth_close(netdev);
-> > > +
-> > > +		ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> > > +		ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> > > +
-> > > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
-> > > +		ucc_geth_open(netdev);
-> > 
-> > What if ucc_geth_open() fails?
-> 
-> I did some runtime tests but did not witness the ucc_geth_open fail.
-> Assume it may fail for some reason, then I tend to think give out
-> warnings for request user to open/enable it mannually?  Or we may need
-> to keep the 'FIXME' line?
+Add a call to of_node_put in the error handling code following a call to
+of_find_compatible_node or of_find_node_by_type.
 
-The easy way out is to allow changing the ring size only while the
-interface is down.  The hard way is to make the change in such a way
-that you can roll back in case of failure.
+This patch also substantially reorganizes the error handling code in the
+function, to that it is possible first to jump to code that frees qe_port
+and then to jump to code that also puts np.
 
-Ben.
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+// <smpl>
+@r exists@
+local idexpression x;
+expression E,E1,E2;
+statement S;
+@@
+
+*x = 
+(of_find_node_by_path
+|of_find_node_by_name
+|of_find_node_by_phandle
+|of_get_parent
+|of_get_next_parent
+|of_get_next_child
+|of_find_compatible_node
+|of_match_node
+|of_find_node_by_type
+|of_find_node_with_property
+|of_find_matching_node
+|of_parse_phandle
+)(...);
+...
+if (x == NULL) S
+<... when != x = E
+*if (...) {
+  ... when != of_node_put(x)
+      when != if (...) { ... of_node_put(x); ... }
+(
+  return <+...x...+>;
+|
+*  return ...;
+)
+}
+...>
+(
+E2 = x;
+|
+of_node_put(x);
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/serial/ucc_uart.c |   67 ++++++++++++++++++++++++----------------------
+ 1 file changed, 35 insertions(+), 32 deletions(-)
+
+diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
+index 3f4848e..38a5ef0 100644
+--- a/drivers/serial/ucc_uart.c
++++ b/drivers/serial/ucc_uart.c
+@@ -1270,13 +1270,12 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	ret = of_address_to_resource(np, 0, &res);
+ 	if (ret) {
+ 		dev_err(&ofdev->dev, "missing 'reg' property in device tree\n");
+-		kfree(qe_port);
+-		return ret;
++		goto out_free;
+ 	}
+ 	if (!res.start) {
+ 		dev_err(&ofdev->dev, "invalid 'reg' property in device tree\n");
+-		kfree(qe_port);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto out_free;
+ 	}
+ 	qe_port->port.mapbase = res.start;
+ 
+@@ -1286,17 +1285,17 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	if (!iprop) {
+ 		iprop = of_get_property(np, "device-id", NULL);
+ 		if (!iprop) {
+-			kfree(qe_port);
+ 			dev_err(&ofdev->dev, "UCC is unspecified in "
+ 				"device tree\n");
+-			return -EINVAL;
++			ret = -EINVAL;
++			goto out_free;
+ 		}
+ 	}
+ 
+ 	if ((*iprop < 1) || (*iprop > UCC_MAX_NUM)) {
+ 		dev_err(&ofdev->dev, "no support for UCC%u\n", *iprop);
+-		kfree(qe_port);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_free;
+ 	}
+ 	qe_port->ucc_num = *iprop - 1;
+ 
+@@ -1310,16 +1309,16 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	sprop = of_get_property(np, "rx-clock-name", NULL);
+ 	if (!sprop) {
+ 		dev_err(&ofdev->dev, "missing rx-clock-name in device tree\n");
+-		kfree(qe_port);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_free;
+ 	}
+ 
+ 	qe_port->us_info.rx_clock = qe_clock_source(sprop);
+ 	if ((qe_port->us_info.rx_clock < QE_BRG1) ||
+ 	    (qe_port->us_info.rx_clock > QE_BRG16)) {
+ 		dev_err(&ofdev->dev, "rx-clock-name must be a BRG for UART\n");
+-		kfree(qe_port);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_free;
+ 	}
+ 
+ #ifdef LOOPBACK
+@@ -1329,39 +1328,39 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	sprop = of_get_property(np, "tx-clock-name", NULL);
+ 	if (!sprop) {
+ 		dev_err(&ofdev->dev, "missing tx-clock-name in device tree\n");
+-		kfree(qe_port);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_free;
+ 	}
+ 	qe_port->us_info.tx_clock = qe_clock_source(sprop);
+ #endif
+ 	if ((qe_port->us_info.tx_clock < QE_BRG1) ||
+ 	    (qe_port->us_info.tx_clock > QE_BRG16)) {
+ 		dev_err(&ofdev->dev, "tx-clock-name must be a BRG for UART\n");
+-		kfree(qe_port);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_free;
+ 	}
+ 
+ 	/* Get the port number, numbered 0-3 */
+ 	iprop = of_get_property(np, "port-number", NULL);
+ 	if (!iprop) {
+ 		dev_err(&ofdev->dev, "missing port-number in device tree\n");
+-		kfree(qe_port);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto out_free;
+ 	}
+ 	qe_port->port.line = *iprop;
+ 	if (qe_port->port.line >= UCC_MAX_UART) {
+ 		dev_err(&ofdev->dev, "port-number must be 0-%u\n",
+ 			UCC_MAX_UART - 1);
+-		kfree(qe_port);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto out_free;
+ 	}
+ 
+ 	qe_port->port.irq = irq_of_parse_and_map(np, 0);
+ 	if (qe_port->port.irq == NO_IRQ) {
+ 		dev_err(&ofdev->dev, "could not map IRQ for UCC%u\n",
+ 		       qe_port->ucc_num + 1);
+-		kfree(qe_port);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto out_free;
+ 	}
+ 
+ 	/*
+@@ -1373,8 +1372,8 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 		np = of_find_node_by_type(NULL, "qe");
+ 		if (!np) {
+ 			dev_err(&ofdev->dev, "could not find 'qe' node\n");
+-			kfree(qe_port);
+-			return -EINVAL;
++			ret = -EINVAL;
++			goto out_free;
+ 		}
+ 	}
+ 
+@@ -1382,8 +1381,8 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	if (!iprop) {
+ 		dev_err(&ofdev->dev,
+ 		       "missing brg-frequency in device tree\n");
+-		kfree(qe_port);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto out_np;
+ 	}
+ 
+ 	if (*iprop)
+@@ -1398,16 +1397,16 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 		if (!iprop) {
+ 			dev_err(&ofdev->dev,
+ 				"missing QE bus-frequency in device tree\n");
+-			kfree(qe_port);
+-			return -EINVAL;
++			ret = -EINVAL;
++			goto out_np;
+ 		}
+ 		if (*iprop)
+ 			qe_port->port.uartclk = *iprop / 2;
+ 		else {
+ 			dev_err(&ofdev->dev,
+ 				"invalid QE bus-frequency in device tree\n");
+-			kfree(qe_port);
+-			return -EINVAL;
++			ret = -EINVAL;
++			goto out_np;
+ 		}
+ 	}
+ 
+@@ -1445,8 +1444,7 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	if (ret) {
+ 		dev_err(&ofdev->dev, "could not add /dev/ttyQE%u\n",
+ 		       qe_port->port.line);
+-		kfree(qe_port);
+-		return ret;
++		goto out_np;
+ 	}
+ 
+ 	dev_set_drvdata(&ofdev->dev, qe_port);
+@@ -1460,6 +1458,11 @@ static int ucc_uart_probe(struct platform_device *ofdev,
+ 	       SERIAL_QE_MINOR + qe_port->port.line);
+ 
+ 	return 0;
++out_np:
++	of_node_put(np);
++out_free:
++	kfree(qe_port);
++	return ret;
+ }
+ 
+ static int ucc_uart_remove(struct platform_device *ofdev)
