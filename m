@@ -1,18 +1,19 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/7] arch/powerpc/sysdev/qe_lib/qe.c: Add of_node_put to
-	avoid memory leak
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 40968B70EA
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Sep 2010 07:44:39 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Add P1021 PCI IDs and quirks
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1283075566-27441-6-git-send-email-julia@diku.dk>
-Date: Tue, 31 Aug 2010 16:41:24 -0500
-Message-Id: <7C2AF4A1-A33B-4D1F-859A-BCB48738D9D1@kernel.crashing.org>
-References: <1283075566-27441-1-git-send-email-julia@diku.dk>
-	<1283075566-27441-6-git-send-email-julia@diku.dk>
-To: Julia Lawall <julia@diku.dk>
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	kernel-janitors@vger.kernel.org,
-	Timur Tabi <timur@freescale.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100808140333.GA4706@oksana.dev.rtsoft.ru>
+Date: Tue, 31 Aug 2010 16:44:34 -0500
+Message-Id: <F9852CAD-0739-463D-A833-029078DEBD37@kernel.crashing.org>
+References: <20100808140333.GA4706@oksana.dev.rtsoft.ru>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +24,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 29, 2010, at 4:52 AM, Julia Lawall wrote:
+On Aug 8, 2010, at 9:03 AM, Anton Vorontsov wrote:
 
-> Add a call to of_node_put in the error handling code following a call to
-> of_find_compatible_node.
+> This is needed for proper PCI-E support on P1021 SoCs.
 > 
-> The semantic match that finds this problem is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> expression E,E1;
-> statement S;
-> @@
-> 
-> *x = 
-> (of_find_node_by_path
-> |of_find_node_by_name
-> |of_find_node_by_phandle
-> |of_get_parent
-> |of_get_next_parent
-> |of_get_next_child
-> |of_find_compatible_node
-> |of_match_node
-> )(...);
-> ...
-> if (x == NULL) S
-> <... when != x = E
-> *if (...) {
->  ... when != of_node_put(x)
->      when != if (...) { ... of_node_put(x); ... }
-> (
->  return <+...x...+>;
-> |
-> *  return ...;
-> )
-> }
-> ...>
-> of_node_put(x);
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
+> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 > ---
-> arch/powerpc/sysdev/qe_lib/qe.c |    1 +
-> 1 file changed, 1 insertion(+)
+> arch/powerpc/sysdev/fsl_pci.c |    2 ++
+> include/linux/pci_ids.h       |    2 ++
+> 2 files changed, 4 insertions(+), 0 deletions(-)
 
-applied to merge
+applied
 
 - k
