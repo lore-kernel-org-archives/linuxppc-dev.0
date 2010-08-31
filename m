@@ -1,14 +1,16 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 06091B715D
+	by ozlabs.org (Postfix) with ESMTP id 54C20B7175
 	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:22 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 27/35] KVM: PPC: Enable napping only for Book3s_64
-Date: Tue, 31 Aug 2010 04:32:08 +0200
-Message-Id: <1283221937-21006-28-git-send-email-agraf@suse.de>
+Subject: [PATCH 34/35] KVM: PPC: Fix compile error in e500_tlb.c
+Date: Tue, 31 Aug 2010 04:32:15 +0200
+Message-Id: <1283221937-21006-35-git-send-email-agraf@suse.de>
 In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
 References: <1283221937-21006-1-git-send-email-agraf@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,31 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before I incorrectly enabled napping also for BookE, which would result in
-needless dcache flushes. Since we only need to force enable napping on
-Book3s_64 because it doesn't go into MSR_POW otherwise, we can just #ifdef
-that code to this particular platform.
+The e500_tlb.c file didn't compile for me due to the following error:
 
-Reported-by: Scott Wood <scottwood@freescale.com>
+arch/powerpc/kvm/e500_tlb.c: In function ‘kvmppc_e500_shadow_map’:
+arch/powerpc/kvm/e500_tlb.c:300: error: format ‘%lx’ expects type ‘long unsigned int’, but argument 2 has type ‘gfn_t’
+
+So let's explicitly cast the argument to make printk happy.
+
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/kvm.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/kvm/e500_tlb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 95aed6b..293765a 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -583,8 +583,10 @@ static int __init kvm_guest_init(void)
- 	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
- 		kvm_use_magic_page();
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/* Enable napping */
- 	powersave_nap = 1;
-+#endif
- 
- free_tmp:
- 	kvm_free_tmp();
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index a413883..d6d6d47 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -297,7 +297,8 @@ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	/* Get reference to new page. */
+ 	new_page = gfn_to_page(vcpu_e500->vcpu.kvm, gfn);
+ 	if (is_error_page(new_page)) {
+-		printk(KERN_ERR "Couldn't get guest page for gfn %lx!\n", gfn);
++		printk(KERN_ERR "Couldn't get guest page for gfn %lx!\n",
++				(long)gfn);
+ 		kvm_release_page_clean(new_page);
+ 		return;
+ 	}
 -- 
 1.6.0.2
