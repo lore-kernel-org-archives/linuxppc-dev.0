@@ -1,12 +1,12 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id BD345B7108
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:18 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 53D93B7104
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:20 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 06/35] KVM: PPC: Add tracepoints for generic spte flushes
-Date: Tue, 31 Aug 2010 04:31:47 +0200
-Message-Id: <1283221937-21006-7-git-send-email-agraf@suse.de>
+Subject: [PATCH 14/35] KVM: PPC: Move BAT handling code into spr handler
+Date: Tue, 31 Aug 2010 04:31:55 +0200
+Message-Id: <1283221937-21006-15-git-send-email-agraf@suse.de>
 In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
 References: <1283221937-21006-1-git-send-email-agraf@suse.de>
 Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>
@@ -19,101 +19,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The different ways of flusing shadow ptes have their own debug prints which use
-stupid old printk.
-
-Let's move them to tracepoints, making them easier available, faster and
-possible to activate on demand
+The current approach duplicates the spr->bat finding logic and makes it harder
+to reuse the actually used variables. So let's move everything down to the spr
+handler.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/book3s_mmu_hpte.c |   18 +++---------------
- arch/powerpc/kvm/trace.h           |   23 +++++++++++++++++++++++
- 2 files changed, 26 insertions(+), 15 deletions(-)
+ arch/powerpc/kvm/book3s_emulate.c |   48 ++++++++++++------------------------
+ 1 files changed, 16 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
-index 3397152..bd6a767 100644
---- a/arch/powerpc/kvm/book3s_mmu_hpte.c
-+++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
-@@ -31,14 +31,6 @@
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index f333cb4..4668465 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -264,7 +264,7 @@ void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat, bool upper,
+ 	}
+ }
  
- #define PTE_SIZE	12
- 
--/* #define DEBUG_MMU */
--
--#ifdef DEBUG_MMU
--#define dprintk_mmu(a, ...) printk(KERN_INFO a, __VA_ARGS__)
--#else
--#define dprintk_mmu(a, ...) do { } while(0)
--#endif
--
- static struct kmem_cache *hpte_cache;
- 
- static inline u64 kvmppc_mmu_hash_pte(u64 eaddr)
-@@ -186,9 +178,7 @@ static void kvmppc_mmu_pte_flush_long(struct kvm_vcpu *vcpu, ulong guest_ea)
- 
- void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, ulong guest_ea, ulong ea_mask)
+-static u32 kvmppc_read_bat(struct kvm_vcpu *vcpu, int sprn)
++static struct kvmppc_bat *kvmppc_find_bat(struct kvm_vcpu *vcpu, int sprn)
  {
--	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%lx & 0x%lx\n",
--		    vcpu->arch.hpte_cache_count, guest_ea, ea_mask);
+ 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+ 	struct kvmppc_bat *bat;
+@@ -286,35 +286,7 @@ static u32 kvmppc_read_bat(struct kvm_vcpu *vcpu, int sprn)
+ 		BUG();
+ 	}
+ 
+-	if (sprn % 2)
+-		return bat->raw >> 32;
+-	else
+-		return bat->raw;
+-}
 -
-+	trace_kvm_book3s_mmu_flush("", vcpu, guest_ea, ea_mask);
- 	guest_ea &= ea_mask;
+-static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u32 val)
+-{
+-	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+-	struct kvmppc_bat *bat;
+-
+-	switch (sprn) {
+-	case SPRN_IBAT0U ... SPRN_IBAT3L:
+-		bat = &vcpu_book3s->ibat[(sprn - SPRN_IBAT0U) / 2];
+-		break;
+-	case SPRN_IBAT4U ... SPRN_IBAT7L:
+-		bat = &vcpu_book3s->ibat[4 + ((sprn - SPRN_IBAT4U) / 2)];
+-		break;
+-	case SPRN_DBAT0U ... SPRN_DBAT3L:
+-		bat = &vcpu_book3s->dbat[(sprn - SPRN_DBAT0U) / 2];
+-		break;
+-	case SPRN_DBAT4U ... SPRN_DBAT7L:
+-		bat = &vcpu_book3s->dbat[4 + ((sprn - SPRN_DBAT4U) / 2)];
+-		break;
+-	default:
+-		BUG();
+-	}
+-
+-	kvmppc_set_bat(vcpu, bat, !(sprn % 2), val);
++	return bat;
+ }
  
- 	switch (ea_mask) {
-@@ -251,8 +241,7 @@ static void kvmppc_mmu_pte_vflush_long(struct kvm_vcpu *vcpu, u64 guest_vp)
- 
- void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
- {
--	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
--		    vcpu->arch.hpte_cache_count, guest_vp, vp_mask);
-+	trace_kvm_book3s_mmu_flush("v", vcpu, guest_vp, vp_mask);
- 	guest_vp &= vp_mask;
- 
- 	switch(vp_mask) {
-@@ -274,8 +263,7 @@ void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, ulong pa_start, ulong pa_end)
- 	struct hpte_cache *pte;
- 	int i;
- 
--	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%lx - 0x%lx\n",
--		    vcpu->arch.hpte_cache_count, pa_start, pa_end);
-+	trace_kvm_book3s_mmu_flush("p", vcpu, pa_start, pa_end);
- 
- 	rcu_read_lock();
- 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index 06ad93e..23f757a 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -239,6 +239,29 @@ TRACE_EVENT(kvm_book3s_mmu_invalidate,
- 		  __entry->vpage, __entry->raddr, __entry->flags)
- );
- 
-+TRACE_EVENT(kvm_book3s_mmu_flush,
-+	TP_PROTO(const char *type, struct kvm_vcpu *vcpu, unsigned long long p1,
-+		 unsigned long long p2),
-+	TP_ARGS(type, vcpu, p1, p2),
+ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+@@ -339,12 +311,16 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 	case SPRN_IBAT4U ... SPRN_IBAT7L:
+ 	case SPRN_DBAT0U ... SPRN_DBAT3L:
+ 	case SPRN_DBAT4U ... SPRN_DBAT7L:
+-		kvmppc_write_bat(vcpu, sprn, (u32)spr_val);
++	{
++		struct kvmppc_bat *bat = kvmppc_find_bat(vcpu, sprn);
 +
-+	TP_STRUCT__entry(
-+		__field(	int,			count		)
-+		__field(	unsigned long long,	p1		)
-+		__field(	unsigned long long,	p2		)
-+		__field(	const char *,		type		)
-+	),
++		kvmppc_set_bat(vcpu, bat, !(sprn % 2), (u32)spr_val);
+ 		/* BAT writes happen so rarely that we're ok to flush
+ 		 * everything here */
+ 		kvmppc_mmu_pte_flush(vcpu, 0, 0);
+ 		kvmppc_mmu_flush_segments(vcpu);
+ 		break;
++	}
+ 	case SPRN_HID0:
+ 		to_book3s(vcpu)->hid[0] = spr_val;
+ 		break;
+@@ -434,8 +410,16 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 	case SPRN_IBAT4U ... SPRN_IBAT7L:
+ 	case SPRN_DBAT0U ... SPRN_DBAT3L:
+ 	case SPRN_DBAT4U ... SPRN_DBAT7L:
+-		kvmppc_set_gpr(vcpu, rt, kvmppc_read_bat(vcpu, sprn));
++	{
++		struct kvmppc_bat *bat = kvmppc_find_bat(vcpu, sprn);
 +
-+	TP_fast_assign(
-+		__entry->count		= vcpu->arch.hpte_cache_count;
-+		__entry->p1		= p1;
-+		__entry->p2		= p2;
-+		__entry->type		= type;
-+	),
++		if (sprn % 2)
++			kvmppc_set_gpr(vcpu, rt, bat->raw >> 32);
++		else
++			kvmppc_set_gpr(vcpu, rt, bat->raw);
 +
-+	TP_printk("Flush %d %sPTEs: %llx - %llx",
-+		  __entry->count, __entry->type, __entry->p1, __entry->p2)
-+);
-+
- #endif /* CONFIG_PPC_BOOK3S */
- 
- #endif /* _TRACE_KVM_H */
+ 		break;
++	}
+ 	case SPRN_SDR1:
+ 		kvmppc_set_gpr(vcpu, rt, to_book3s(vcpu)->sdr1);
+ 		break;
 -- 
 1.6.0.2
