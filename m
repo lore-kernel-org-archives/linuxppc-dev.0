@@ -1,16 +1,14 @@
 Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 68E9EB70FE
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:15:27 +1000 (EST)
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A9F84B725D
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:15:31 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: Linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/3] PPC: Fix compilation of fsl_rio.c
-Date: Tue, 31 Aug 2010 04:15:21 +0200
-Message-Id: <1283220922-20369-3-git-send-email-agraf@suse.de>
-In-Reply-To: <1283220922-20369-1-git-send-email-agraf@suse.de>
-References: <1283220922-20369-1-git-send-email-agraf@suse.de>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
-	Thomas Moll <thomas.moll@sysgo.com>
+Subject: [PATCH 0/3] MPC85xx compile fixes
+Date: Tue, 31 Aug 2010 04:15:19 +0200
+Message-Id: <1283220922-20369-1-git-send-email-agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a52c8f52 introduced machine check magic for the RapidIO chip.
-Unfortunately it was so magical that it used constants that aren't even
-defined!
+While trying to compile a recent git kernel on my e500v2 box, I came
+across some pretty simple compilation bugs.
 
-This patch bluntly comments out the broken constant's usage. This
-probably means that said functionality thus doesn't work, but at
-least it makes it compile for me.
+Since I have no idea which tree those go through, I'm sending them to
+you, but please coordinate who takes them in.
 
-CC: Alexandre Bounine <alexandre.bounine@idt.com>
-CC: Thomas Moll <thomas.moll@sysgo.com>
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/sysdev/fsl_rio.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Also, it might be useful to set up a make defconfig machine that does
+regression testing for booke builds. These really shouldn't be caught
+by me in the kvm.git tree :).
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 6425abe..dba2969 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -245,7 +245,7 @@ static int (*saved_mcheck_exception)(struct pt_regs *regs);
- static int fsl_rio_mcheck_exception(struct pt_regs *regs)
- {
- 	const struct exception_table_entry *entry = NULL;
--	unsigned long reason = (mfspr(SPRN_MCSR) & MCSR_MASK);
-+	unsigned long reason = (mfspr(SPRN_MCSR) /* & MCSR_MASK */);
- 
- 	if (reason & MCSR_BUS_RBERR) {
- 		reason = in_be32((u32 *)(rio_regs_win + RIO_LTLEDCSR));
--- 
-1.6.0.2
+Alexander Graf (3):
+  PPC: s/mtmsrd/MTMSR in ldstfp.S
+  PPC: Fix compilation of fsl_rio.c
+  PPC: Fix compilation of mpc85xx_mds.c
+
+ arch/powerpc/lib/ldstfp.S                 |   32 ++++++++++++++--------------
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    1 +
+ arch/powerpc/sysdev/fsl_rio.c             |    2 +-
+ 3 files changed, 18 insertions(+), 17 deletions(-)
