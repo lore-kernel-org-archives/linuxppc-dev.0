@@ -1,18 +1,33 @@
-Return-Path: <wharms@bfs.de>
-Message-ID: <4C7D247F.4060500@bfs.de>
-Date: Tue, 31 Aug 2010 17:49:19 +0200
-From: walter harms <wharms@bfs.de>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 4353CB710E
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Sep 2010 04:11:12 +1000 (EST)
+Received: from mail144-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail144-tx2-R.bigfish.com (Postfix) with ESMTP id 68E54600147	for
+	<linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 18:11:09 +0000 (UTC)
+Received: from TX2EHSMHS034.bigfish.com (unknown [10.9.14.252])	by
+	mail144-tx2.bigfish.com (Postfix) with ESMTP id 4560E18C804C	for
+	<linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 18:11:09 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o7VIAvtl005173	for
+	<linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 11:10:57 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o7VIOdu9004082	for <linuxppc-dev@ozlabs.org>;
+	Tue, 31 Aug 2010 13:24:39 -0500 (CDT)
+Date: Tue, 31 Aug 2010 13:10:55 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 2/3] PPC: Fix compilation of fsl_rio.c
+Message-ID: <20100831131055.01e844d3@schlenkerla.am.freescale.net>
+In-Reply-To: <1283220922-20369-3-git-send-email-agraf@suse.de>
+References: <1283220922-20369-1-git-send-email-agraf@suse.de>
+	<1283220922-20369-3-git-send-email-agraf@suse.de>
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 1/7] drivers/macintosh/via-pmu-led.c: Add of_node_put
-	to avoid memory leak
-References: <1283075566-27441-1-git-send-email-julia@diku.dk>
-	<1283075566-27441-2-git-send-email-julia@diku.dk>
-In-Reply-To: <1283075566-27441-2-git-send-email-julia@diku.dk>
-Content-Type: text/plain; charset=UTF-8
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: wharms@bfs.de
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, Thomas Moll <thomas.moll@sysgo.com>,
+	Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,74 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 31 Aug 2010 04:15:21 +0200
+Alexander Graf <agraf@suse.de> wrote:
 
+> Commit a52c8f52 introduced machine check magic for the RapidIO chip.
+> Unfortunately it was so magical that it used constants that aren't even
+> defined!
+> 
+> This patch bluntly comments out the broken constant's usage. This
+> probably means that said functionality thus doesn't work, but at
+> least it makes it compile for me.
 
-Julia Lawall schrieb:
-> Add a call to of_node_put in the error handling code following a call to
-> of_find_node_by_path.
-> 
-> The semantic match that finds this problem is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> expression E,E1;
-> statement S;
-> @@
-> 
-> *x = 
-> (of_find_node_by_path
-> |of_find_node_by_name
-> |of_find_node_by_phandle
-> |of_get_parent
-> |of_get_next_parent
-> |of_get_next_child
-> |of_find_compatible_node
-> |of_match_node
-> )(...);
-> ...
-> if (x == NULL) S
-> <... when != x = E
-> *if (...) {
->   ... when != of_node_put(x)
->       when != if (...) { ... of_node_put(x); ... }
-> (
->   return <+...x...+>;
-> |
-> *  return ...;
-> )
-> }
-> ...>
-> of_node_put(x);
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/macintosh/via-pmu-led.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/macintosh/via-pmu-led.c b/drivers/macintosh/via-pmu-led.c
-> index d242976..19c3718 100644
-> --- a/drivers/macintosh/via-pmu-led.c
-> +++ b/drivers/macintosh/via-pmu-led.c
-> @@ -92,8 +92,10 @@ static int __init via_pmu_led_init(void)
->  	if (dt == NULL)
->  		return -ENODEV;
->  	model = of_get_property(dt, "model", NULL);
-> -	if (model == NULL)
-> +	if (model == NULL) {
-> +		of_node_put(dt);
->  		return -ENODEV;
-> +	}
->  	if (strncmp(model, "PowerBook", strlen("PowerBook")) != 0 &&
->  	    strncmp(model, "iBook", strlen("iBook")) != 0 &&
->  	    strcmp(model, "PowerMac7,2") != 0 &&
-> 
+The MCSR_MASK is actually completely unnecessary -- it doesn't change
+the result of testing bits that are within the mask.
 
-is there any rule that says when to use strncmp ? it seems perfecly valid to use strcpy here
-(what is done in the last cmp).
+Multiple patches have been posted for this already, including:
+http://patchwork.ozlabs.org/patch/56135/
 
-re,
- wh
+Someone just needs to apply it. :-)
+
+-Scott
