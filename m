@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 45723B71C8
+	by ozlabs.org (Postfix) with ESMTPS id 65F5AB71D7
 	for <linuxppc-dev@ozlabs.org>; Tue, 31 Aug 2010 12:32:25 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 13/35] KVM: PPC: Add feature bitmap for magic page
-Date: Tue, 31 Aug 2010 04:31:54 +0200
-Message-Id: <1283221937-21006-14-git-send-email-agraf@suse.de>
+Subject: [PATCH 31/35] KVM: PPC: Implement level interrupts for BookE
+Date: Tue, 31 Aug 2010 04:32:12 +0200
+Message-Id: <1283221937-21006-32-git-send-email-agraf@suse.de>
 In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
 References: <1283221937-21006-1-git-send-email-agraf@suse.de>
 Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>
@@ -21,110 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will soon add SR PV support to the shared page, so we need some
-infrastructure that allows the guest to query for features KVM exports.
-
-This patch adds a second return value to the magic mapping that
-indicated to the guest which features are available.
+BookE also wants to support level based interrupts, so let's implement
+all the necessary logic there. We need to trick a bit here because the
+irqprios are 1:1 assigned to architecture defined values. But since there
+is some space left there, we can just pick a random one and move it later
+on - it's internal anyways.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_para.h |    2 ++
- arch/powerpc/kernel/kvm.c           |   21 +++++++++++++++------
- arch/powerpc/kvm/powerpc.c          |    5 ++++-
- 3 files changed, 21 insertions(+), 7 deletions(-)
+ arch/powerpc/kvm/booke.c |   17 +++++++++++++++--
+ arch/powerpc/kvm/booke.h |    4 +++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 7438ab3..43c1b22 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -47,6 +47,8 @@ struct kvm_vcpu_arch_shared {
- 
- #define KVM_FEATURE_MAGIC_PAGE	1
- 
-+#define KVM_MAGIC_FEAT_SR	(1 << 0)
-+
- #ifdef __KERNEL__
- 
- #ifdef CONFIG_KVM_GUEST
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index e936817..f48144f 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -267,12 +267,20 @@ static void kvm_patch_ins_wrteei(u32 *inst)
- 
- static void kvm_map_magic_page(void *data)
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 835f6d0..77575d0 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -131,13 +131,19 @@ void kvmppc_core_dequeue_dec(struct kvm_vcpu *vcpu)
+ void kvmppc_core_queue_external(struct kvm_vcpu *vcpu,
+                                 struct kvm_interrupt *irq)
  {
--	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
--		       KVM_MAGIC_PAGE,  /* Physical Address */
--		       KVM_MAGIC_PAGE); /* Effective Address */
-+	u32 *features = data;
+-	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_EXTERNAL);
++	unsigned int prio = BOOKE_IRQPRIO_EXTERNAL;
 +
-+	ulong in[8];
-+	ulong out[8];
++	if (irq->irq == KVM_INTERRUPT_SET_LEVEL)
++		prio = BOOKE_IRQPRIO_EXTERNAL_LEVEL;
 +
-+	in[0] = KVM_MAGIC_PAGE;
-+	in[1] = KVM_MAGIC_PAGE;
-+
-+	kvm_hypercall(in, out, HC_VENDOR_KVM | KVM_HC_PPC_MAP_MAGIC_PAGE);
-+
-+	*features = out[0];
++	kvmppc_booke_queue_irqprio(vcpu, prio);
  }
  
--static void kvm_check_ins(u32 *inst)
-+static void kvm_check_ins(u32 *inst, u32 features)
+ void kvmppc_core_dequeue_external(struct kvm_vcpu *vcpu,
+                                   struct kvm_interrupt *irq)
  {
- 	u32 _inst = *inst;
- 	u32 inst_no_rt = _inst & ~KVM_MASK_RT;
-@@ -368,9 +376,10 @@ static void kvm_use_magic_page(void)
- 	u32 *p;
- 	u32 *start, *end;
- 	u32 tmp;
-+	u32 features;
- 
- 	/* Tell the host to map the magic page to -4096 on all CPUs */
--	on_each_cpu(kvm_map_magic_page, NULL, 1);
-+	on_each_cpu(kvm_map_magic_page, &features, 1);
- 
- 	/* Quick self-test to see if the mapping works */
- 	if (__get_user(tmp, (u32*)KVM_MAGIC_PAGE)) {
-@@ -383,7 +392,7 @@ static void kvm_use_magic_page(void)
- 	end = (void*)_etext;
- 
- 	for (p = start; p < end; p++)
--		kvm_check_ins(p);
-+		kvm_check_ins(p, features);
- 
- 	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
- 			 kvm_patching_worked ? "worked" : "failed");
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 6a53a3f..496d7a5 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -66,6 +66,8 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 		vcpu->arch.magic_page_pa = param1;
- 		vcpu->arch.magic_page_ea = param2;
- 
-+		r2 = 0;
-+
- 		r = HC_EV_SUCCESS;
- 		break;
- 	}
-@@ -76,13 +78,14 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- #endif
- 
- 		/* Second return value is in r4 */
--		kvmppc_set_gpr(vcpu, 4, r2);
- 		break;
- 	default:
- 		r = HC_EV_UNIMPLEMENTED;
- 		break;
- 	}
- 
-+	kvmppc_set_gpr(vcpu, 4, r2);
-+
- 	return r;
+ 	clear_bit(BOOKE_IRQPRIO_EXTERNAL, &vcpu->arch.pending_exceptions);
++	clear_bit(BOOKE_IRQPRIO_EXTERNAL_LEVEL, &vcpu->arch.pending_exceptions);
  }
+ 
+ /* Deliver the interrupt of the corresponding priority, if possible. */
+@@ -150,6 +156,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 	ulong crit_raw = vcpu->arch.shared->critical;
+ 	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
+ 	bool crit;
++	bool keep_irq = false;
+ 
+ 	/* Truncate crit indicators in 32 bit mode */
+ 	if (!(vcpu->arch.shared->msr & MSR_SF)) {
+@@ -162,6 +169,11 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 	/* ... and we're in supervisor mode */
+ 	crit = crit && !(vcpu->arch.shared->msr & MSR_PR);
+ 
++	if (priority == BOOKE_IRQPRIO_EXTERNAL_LEVEL) {
++		priority = BOOKE_IRQPRIO_EXTERNAL;
++		keep_irq = true;
++	}
++
+ 	switch (priority) {
+ 	case BOOKE_IRQPRIO_DTLB_MISS:
+ 	case BOOKE_IRQPRIO_DATA_STORAGE:
+@@ -214,7 +226,8 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 			vcpu->arch.shared->dar = vcpu->arch.queued_dear;
+ 		kvmppc_set_msr(vcpu, vcpu->arch.shared->msr & msr_mask);
+ 
+-		clear_bit(priority, &vcpu->arch.pending_exceptions);
++		if (!keep_irq)
++			clear_bit(priority, &vcpu->arch.pending_exceptions);
+ 	}
+ 
+ 	return allowed;
+diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+index 88258ac..492bb70 100644
+--- a/arch/powerpc/kvm/booke.h
++++ b/arch/powerpc/kvm/booke.h
+@@ -46,7 +46,9 @@
+ #define BOOKE_IRQPRIO_FIT 17
+ #define BOOKE_IRQPRIO_DECREMENTER 18
+ #define BOOKE_IRQPRIO_PERFORMANCE_MONITOR 19
+-#define BOOKE_IRQPRIO_MAX 19
++/* Internal pseudo-irqprio for level triggered externals */
++#define BOOKE_IRQPRIO_EXTERNAL_LEVEL 20
++#define BOOKE_IRQPRIO_MAX 20
+ 
+ extern unsigned long kvmppc_booke_handlers;
  
 -- 
 1.6.0.2
