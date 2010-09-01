@@ -1,19 +1,20 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from exchange.solarflare.com (exchange.solarflare.com
-	[216.237.3.220]) by ozlabs.org (Postfix) with ESMTP id C6578B716C
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Sep 2010 23:42:34 +1000 (EST)
-Subject: Re: [v1 PATCH] ucc_geth: fix ethtool set ring param bug
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Liang Li <liang.li@windriver.com>
-In-Reply-To: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
-References: <1283179677-21262-1-git-send-email-liang.li@windriver.com>
-	<1283305429-8426-1-git-send-email-liang.li@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 01 Sep 2010 14:42:30 +0100
-Message-ID: <1283348550.2268.7.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
-	linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 85002B712D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Sep 2010 00:43:13 +1000 (EST)
+Received: by gyh4 with SMTP id 4so3313522gyh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 01 Sep 2010 07:43:10 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 1 Sep 2010 08:42:49 -0600
+Message-ID: <AANLkTimjVZTNeLdm4qptU1MqREODLASdGGanUyxqxfub@mail.gmail.com>
+Subject: ERR_PTR pattern in phylib
+To: Andy Fleming <afleming@freescale.com>, netdev <netdev@vger.kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-09-01 at 09:43 +0800, Liang Li wrote:
-> It's common sense that when we should do change to driver ring
-> desc/buffer etc only after 'stop/shutdown' the device. When we
-> do change while devices/driver is running, kernel oops occur:
-[...]
-> -	ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> -	ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> -
->  	if (netif_running(netdev)) {
-> -		/* FIXME: restart automatically */
-> -		printk(KERN_INFO
-> -			"Please re-open the interface.\n");
-> +		u16 rx_t;
-> +		u16 tx_t;
-> +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
-> +		ucc_geth_close(netdev);
-> +
-> +		rx_t = ug_info->bdRingLenRx[queue];
-> +		tx_t = ug_info->bdRingLenTx[queue];
-> +
-> +		ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> +		ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> +
-> +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
-> +		ret = ucc_geth_open(netdev);
-> +		if (ret) {
-> +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
-> +					" interface %s failed. Please try to make the interface "
-> +					" down, then try again.\n", netdev->name);
-> +			ug_info->bdRingLenRx[queue] = rx_t;
-> +			ug_info->bdRingLenTx[queue] = tx_t;
-> +		}
-[...]
+Hi Andy,
 
-Bringing the interface down will call ucc_geth_close(), which will try
-to free resources that have not been allocated!
+I've been looking at the phylib code, and specifically at the use of
+the ERR_PTR() pattern.  I'm personally not a big fan of ERR_PTR()
+because the compiler cannot type check the result and it runs
+completely counter to the pattern "if (!ptr)" than is common for
+testing a pointer return value.
 
-If you cannot roll back a failed change then at least use dev_close()
-and dev_open() rather than calling ucc_geth_{close,open}() directly, so
-that the interface state is updated correctly.  Or just refuse to make
-the change if the interface is up.
+(That being said, I do understand the need for it in certain parts of
+the kernel (like the filesystem code) where it is important to be both
+efficient because it is a hot path and still able to accurately return
+an error code that is used by userspace.)
 
-Ben.
+It seems to me that phylib is one of the cases where the users (the
+network drivers) don't actually care about the specific error code
+when calling phylib functions.  The drivers only seem to care whether
+or not the function failed, and if it did then bail out.  I've also
+noticed that using the "if (!ptr)" test on phylib return values is a
+common error for driver writers.
+
+In the interest of making driver code easier to write and review,
+would you be opposed to a set of patches to remove the ERR_PTR()
+pattern from phylib and its users?
+
+g.
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
