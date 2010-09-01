@@ -2,21 +2,24 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBD57B7114
+	by ozlabs.org (Postfix) with ESMTPS id D4DD7B7159
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 16:44:54 +1000 (EST)
-Subject: Re: [PATCH v2 1/4] fsl_rio: fix compile errors
+	Wed,  1 Sep 2010 16:45:55 +1000 (EST)
+Subject: Re: [PATCH] powerpc: mtmsrd not defined
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <AANLkTikcfOQOEK=-oV2DBN7et9jkHM5s-v08EWHBjKno@mail.gmail.com>
-Date: Wed, 1 Sep 2010 01:44:46 -0500
-Message-Id: <F508DEEC-D2A3-406E-AC8C-45DCC466C769@kernel.crashing.org>
-References: <1276842263-4186-1-git-send-email-leoli@freescale.com>
-	<C038AA46-E821-49EF-8958-747953FF56A0@kernel.crashing.org>
-	<AANLkTikcfOQOEK=-oV2DBN7et9jkHM5s-v08EWHBjKno@mail.gmail.com>
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20100831225525.1c9bd5a8@lappy.seanm.ca>
+Date: Wed, 1 Sep 2010 01:45:46 -0500
+Message-Id: <9B0CD60E-F3E4-47FD-AE4D-3065E742E3A2@kernel.crashing.org>
+References: <20100822180958.6305f5b1@lappy.seanm.ca>
+	<1282516494.22370.440.camel@pasglop>
+	<20100822184844.37c30d5e@lappy.seanm.ca>
+	<D9007E15-F764-450D-9B20-6506F0051BA7@kernel.crashing.org>
+	<20100831134605.1fca5fdf@lappy.seanm.ca>
+	<20100831225525.1c9bd5a8@lappy.seanm.ca>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +30,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 31, 2010, at 10:40 PM, Li Yang wrote:
+On Aug 31, 2010, at 9:55 PM, Sean MacLennan wrote:
 
-> On Wed, Sep 1, 2010 at 5:39 AM, Kumar Gala <galak@kernel.crashing.org> =
-wrote:
->>=20
->> On Jun 18, 2010, at 1:24 AM, Li Yang wrote:
->>=20
->>> Fixes the following compile problem on E500 platforms:
->>> arch/powerpc/sysdev/fsl_rio.c: In function =
-'fsl_rio_mcheck_exception':
->>> arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared =
-(first use in this function)
->>>=20
->>> Also fixes the compile problem on non-E500 platforms.
->>>=20
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> arch/powerpc/sysdev/fsl_rio.c |    6 +++++-
->>> 1 files changed, 5 insertions(+), 1 deletions(-)
->>=20
->> applied to merge
+> On Tue, 31 Aug 2010 13:46:05 -0400
+> Sean MacLennan <smaclennan@pikatech.com> wrote:
 >=20
-> Thanks, Kumar.
+>> On Tue, 31 Aug 2010 11:17:17 -0500
+>> Kumar Gala <galak@kernel.crashing.org> wrote:
+>>=20
+>>> Can we add proper CONFIG_PPC_FPU into this file. =20
+>>=20
+>> If nobody beats me to it.... I can try this evening.
 >=20
-> How about the other ones in the series?
+> I had to give up. Without the CONFIG_PPC_FPU it compiles fine for an
+> FPU less 44x. But with the CONFIG_PPC_FPU, I get the following errors:
+>=20
+> arch/powerpc/lib/built-in.o: In function `__copy_tofrom_user':
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0xf8e): undefined reference =
+to `do_lfs'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0xf96): undefined reference =
+to `do_lfs'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0xfc2): undefined reference =
+to `do_lfd'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0xfca): undefined reference =
+to `do_lfd'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0xff6): undefined reference =
+to `do_stfs'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0xffe): undefined reference =
+to `do_stfs'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0x102a): undefined reference =
+to `do_stfd'
+> arch/powerpc/lib/copy_32.S:(.kprobes.text+0x1032): undefined reference =
+to `do_stfd'
+> make: *** [.tmp_vmlinux1] Error 1
+>=20
+>=20
+> Oops, sorry, it will say arch/powerpc/lib/copy32.S... I corrected =
+that.
+> But I cannot find how copy_32.S is including those functions.
+>=20
+> Cheers,
+>   Sean
 
-I want to rework how the whole RIO mcheck works and will do so for =
-2.6.37.  Part of the problem I have is that we are ignoring the fact =
-that this code isn't right for 8641 support of SRIO.
+For what defconfig setup do you get the errors above?
 
-- k
+- k=
