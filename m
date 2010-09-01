@@ -1,22 +1,23 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0CB12B7134
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 7C438B715A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 12:55:29 +1000 (EST)
-Date: Tue, 31 Aug 2010 22:55:25 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
+	Wed,  1 Sep 2010 13:40:04 +1000 (EST)
+Received: by fxm11 with SMTP id 11so4479025fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 31 Aug 2010 20:40:01 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <C038AA46-E821-49EF-8958-747953FF56A0@kernel.crashing.org>
+References: <1276842263-4186-1-git-send-email-leoli@freescale.com>
+	<C038AA46-E821-49EF-8958-747953FF56A0@kernel.crashing.org>
+Date: Wed, 1 Sep 2010 11:40:01 +0800
+Message-ID: <AANLkTikcfOQOEK=-oV2DBN7et9jkHM5s-v08EWHBjKno@mail.gmail.com>
+Subject: Re: [PATCH v2 1/4] fsl_rio: fix compile errors
+From: Li Yang <leoli@freescale.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: mtmsrd not defined
-Message-ID: <20100831225525.1c9bd5a8@lappy.seanm.ca>
-In-Reply-To: <20100831134605.1fca5fdf@lappy.seanm.ca>
-References: <20100822180958.6305f5b1@lappy.seanm.ca>
-	<1282516494.22370.440.camel@pasglop>
-	<20100822184844.37c30d5e@lappy.seanm.ca>
-	<D9007E15-F764-450D-9B20-6506F0051BA7@kernel.crashing.org>
-	<20100831134605.1fca5fdf@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 31 Aug 2010 13:46:05 -0400
-Sean MacLennan <smaclennan@pikatech.com> wrote:
+On Wed, Sep 1, 2010 at 5:39 AM, Kumar Gala <galak@kernel.crashing.org> wrot=
+e:
+>
+> On Jun 18, 2010, at 1:24 AM, Li Yang wrote:
+>
+>> Fixes the following compile problem on E500 platforms:
+>> arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
+>> arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared (first =
+use in this function)
+>>
+>> Also fixes the compile problem on non-E500 platforms.
+>>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> arch/powerpc/sysdev/fsl_rio.c | =C2=A0 =C2=A06 +++++-
+>> 1 files changed, 5 insertions(+), 1 deletions(-)
+>
+> applied to merge
 
-> On Tue, 31 Aug 2010 11:17:17 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
-> 
-> > Can we add proper CONFIG_PPC_FPU into this file.  
-> 
-> If nobody beats me to it.... I can try this evening.
+Thanks, Kumar.
 
-I had to give up. Without the CONFIG_PPC_FPU it compiles fine for an
-FPU less 44x. But with the CONFIG_PPC_FPU, I get the following errors:
+How about the other ones in the series?
 
-arch/powerpc/lib/built-in.o: In function `__copy_tofrom_user':
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0xf8e): undefined reference to `do_lfs'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0xf96): undefined reference to `do_lfs'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0xfc2): undefined reference to `do_lfd'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0xfca): undefined reference to `do_lfd'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0xff6): undefined reference to `do_stfs'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0xffe): undefined reference to `do_stfs'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0x102a): undefined reference to `do_stfd'
-arch/powerpc/lib/copy_32.S:(.kprobes.text+0x1032): undefined reference to `do_stfd'
-make: *** [.tmp_vmlinux1] Error 1
-
-
-Oops, sorry, it will say arch/powerpc/lib/copy32.S... I corrected that.
-But I cannot find how copy_32.S is including those functions.
-
-Cheers,
-   Sean
+- Leo
