@@ -1,22 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id F23BCB7218
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Sep 2010 01:32:43 +1000 (EST)
-Received: by pvg13 with SMTP id 13so3577924pvg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 01 Sep 2010 08:32:42 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 1 Sep 2010 09:32:39 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [PATCH] powerpc/512x: fix clk_get() return value
-Message-ID: <20100901153239.GF13421@angua.secretlab.ca>
-References: <1283244231-23659-1-git-send-email-akinobu.mita@gmail.com>
+Return-Path: <julia@diku.dk>
+Date: Wed, 1 Sep 2010 17:51:10 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Arnd Bergmann <arnd@arndb.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: question about arch/powerpc/platforms/cell/celleb_scc_uhc.c
+Message-ID: <Pine.LNX.4.64.1009011748050.32566@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283244231-23659-1-git-send-email-akinobu.mita@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, joe@perches.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 31, 2010 at 05:43:51PM +0900, Akinobu Mita wrote:
-> clk_get() should return an ERR_PTR value on error, not NULL.
-> 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: linuxppc-dev@lists.ozlabs.org
+The file arch/powerpc/platforms/cell/celleb_scc_uhc.c contains the 
+following function:
 
-applied, thanks.
+static inline int uhc_clkctrl_ready(u32 val)
+{
+        const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
+        return((val & mask) == mask);
+}
 
-g.
+The variable mask is a bit or of two identical constants.  Later in the 
+same file in the function enable_scc_uhc, I see the code:
 
-> ---
->  arch/powerpc/platforms/512x/clock.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
-> index 5b243bd..3dc2a8d 100644
-> --- a/arch/powerpc/platforms/512x/clock.c
-> +++ b/arch/powerpc/platforms/512x/clock.c
-> @@ -57,7 +57,7 @@ static struct clk *mpc5121_clk_get(struct device *dev, const char *id)
->  	int id_match = 0;
->  
->  	if (dev == NULL || id == NULL)
-> -		return NULL;
-> +		return clk;
->  
->  	mutex_lock(&clocks_mutex);
->  	list_for_each_entry(p, &clocks, node) {
-> -- 
-> 1.7.1.231.gd0b16
-> 
+val |= (SCC_UHC_USBCEN | SCC_UHC_USBEN);
+
+Should the code in uhc_clkctrl_ready also be SCC_UHC_USBCEN | SCC_UHC_USBEN?
+Or something else?
+
+thanks,
+julia
