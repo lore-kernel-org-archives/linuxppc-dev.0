@@ -1,23 +1,23 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 7C438B715A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 13:40:04 +1000 (EST)
-Received: by fxm11 with SMTP id 11so4479025fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 Aug 2010 20:40:01 -0700 (PDT)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <C038AA46-E821-49EF-8958-747953FF56A0@kernel.crashing.org>
-References: <1276842263-4186-1-git-send-email-leoli@freescale.com>
-	<C038AA46-E821-49EF-8958-747953FF56A0@kernel.crashing.org>
-Date: Wed, 1 Sep 2010 11:40:01 +0800
-Message-ID: <AANLkTikcfOQOEK=-oV2DBN7et9jkHM5s-v08EWHBjKno@mail.gmail.com>
-Subject: Re: [PATCH v2 1/4] fsl_rio: fix compile errors
-From: Li Yang <leoli@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
+	CONFIG_PREEMPT on pseries
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <4C7CAB72.2050305@us.ibm.com>
+References: <4C488CCD.60004@us.ibm.com> <20100819155824.GD2690@in.ibm.com>
+	<4C7CAB72.2050305@us.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-uwfii3Rd4vP3Pc4mFkwt"
+Date: Wed, 01 Sep 2010 15:54:41 +1000
+Message-ID: <1283320481.32679.32.camel@concordia>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
+	Josh Triplett <josh@joshtriplett.org>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Ankita Garg <ankita@in.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 1, 2010 at 5:39 AM, Kumar Gala <galak@kernel.crashing.org> wrot=
-e:
->
-> On Jun 18, 2010, at 1:24 AM, Li Yang wrote:
->
->> Fixes the following compile problem on E500 platforms:
->> arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
->> arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared (first =
-use in this function)
->>
->> Also fixes the compile problem on non-E500 platforms.
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->> arch/powerpc/sysdev/fsl_rio.c | =C2=A0 =C2=A06 +++++-
->> 1 files changed, 5 insertions(+), 1 deletions(-)
->
-> applied to merge
 
-Thanks, Kumar.
+--=-uwfii3Rd4vP3Pc4mFkwt
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-How about the other ones in the series?
+On Tue, 2010-08-31 at 00:12 -0700, Darren Hart wrote:
+..
+>=20
+> When running with the function plugin I had to stop the trace
+> immediately before entering start_secondary after an online or my traces
+> would not include the pseries_mach_cpu_die function, nor the tracing I
+> added there (possibly buffer size, I am using 2048). The following trace
+> was collected using "trace-cmd record -p function -e irq -e sched" and
+> has been filtered to only show CPU [001] (the CPU undergoing the
+> offline/online test, and the one seeing preempt_count (pcnt) go to
+> ffffffff after cede. The function tracer does not indicate anything
+> running on the CPU other than the HCALL - unless the __trace_hcall*
+> commands might be to blame.=20
 
-- Leo
+It's not impossible. Though normally they're disabled right, so the only
+reason they're running is because you're tracing. So if they are causing
+the bug then that doesn't explain why you see it normally.
+
+Still, might be worth disabling just the hcall tracepoints just to be
+100% sure.
+
+cheers
+
+
+--=-uwfii3Rd4vP3Pc4mFkwt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkx96p4ACgkQdSjSd0sB4dLbOgCgjDMLTrQFvWzT7FpTwfng5lnh
+osIAniT3idLuu4O9gh0dtThRZGHICjIr
+=FKzd
+-----END PGP SIGNATURE-----
+
+--=-uwfii3Rd4vP3Pc4mFkwt--
