@@ -1,24 +1,18 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 73574B7144
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Sep 2010 16:58:02 +1000 (EST)
-Date: Wed, 1 Sep 2010 02:57:58 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: mtmsrd not defined
-Message-ID: <20100901025758.2dbada27@lappy.seanm.ca>
-In-Reply-To: <9B0CD60E-F3E4-47FD-AE4D-3065E742E3A2@kernel.crashing.org>
-References: <20100822180958.6305f5b1@lappy.seanm.ca>
-	<1282516494.22370.440.camel@pasglop>
-	<20100822184844.37c30d5e@lappy.seanm.ca>
-	<D9007E15-F764-450D-9B20-6506F0051BA7@kernel.crashing.org>
-	<20100831134605.1fca5fdf@lappy.seanm.ca>
-	<20100831225525.1c9bd5a8@lappy.seanm.ca>
-	<9B0CD60E-F3E4-47FD-AE4D-3065E742E3A2@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 2160AB7160
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Sep 2010 17:50:09 +1000 (EST)
+Message-ID: <4C7E05AB.40608@redhat.com>
+Date: Wed, 01 Sep 2010 10:50:03 +0300
+From: Avi Kivity <avi@redhat.com>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PULL 00/35] KVM: PPC: End-August patch queue
+References: <1283221937-21006-1-git-send-email-agraf@suse.de>
+In-Reply-To: <1283221937-21006-1-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, KVM list <kvm@vger.kernel.org>,
+	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Sep 2010 01:45:46 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+  On 08/31/2010 05:31 AM, Alexander Graf wrote:
+> Howdy,
+>
+> This is my local patch queue with stuff that has accumulated over the last
+> weeks on KVM for PPC with some last minute fixes, speedups and debugging help
+> that I needed for the KVM Forum ;-).
+>
+> The highlights of this set are:
+>
+>    - Converted most important debug points to tracepoints
+>    - Flush less PTEs (speedup)
+>    - Go back to our own hash (less duplicates)
+>    - Make SRs guest settable (speedup for 32 bit guests)
+>    - Remove r30/r31 restrictions from PV hooks (speedup!)
+>    - Fix random breakages
+>    - Fix random guest stalls
+>    - 440GP host support (Thanks Hollis!)
+>    - Reliable interrupt injection
+>
+> Keep in mind that this is the first version that is stable on PPC32 hosts.
+> All versions prior to this could occupy otherwise used segment entries and
+> thus crash your machine :-).
+>
+> It is also the first version that is stable with PPC64 guests, because they
+> require more sophisticated interrupt injection logic for which qemu patches
+> are also required.
+>
+> Please pull this tree from:
+>
+>      git://github.com/agraf/linux-2.6.git kvm-ppc-next
+>
+> Have fun with more accurate, faster and less buggy KVM on PowerPC!
 
-> For what defconfig setup do you get the errors above?
+Pulled, thanks.
 
-44x/ebony_defconfig
-
-Then enable KPROBES (or XMON).
-
-Then put an #ifdef CONFIG_PPC_FPU in ldstfp.S.
-
-Cheers,
-   Sean
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
