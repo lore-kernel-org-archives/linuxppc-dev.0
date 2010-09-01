@@ -1,20 +1,31 @@
-Return-Path: <dceravigupta@gmail.com>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id D63CBB7154
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+	[209.85.210.51]) by ozlabs.org (Postfix) with ESMTP id 56342B7108
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Sep 2010 01:08:03 +1000 (EST)
-Received: by pwj1 with SMTP id 1so3667437pwj.38
+	Thu,  2 Sep 2010 01:26:22 +1000 (EST)
+Received: by pzk5 with SMTP id 5so3568984pzk.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 01 Sep 2010 08:08:02 -0700 (PDT)
+	Wed, 01 Sep 2010 08:26:20 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Wed, 1 Sep 2010 09:26:16 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [PATCH] gpiolib: Add 'struct gpio_chip' forward declaration
+	for !GPIOLIB case
+Message-ID: <20100901152616.GD13421@angua.secretlab.ca>
+References: <1282631168.22370.517.camel@pasglop>
+	<20100824092623.GA20334@oksana.dev.rtsoft.ru>
+	<20100831080344.GA20515@angua.secretlab.ca>
+	<20100831083716.GA28362@oksana.dev.rtsoft.ru>
+	<AANLkTi=EaHxDgwVfh-bhGANcBYWjHW7-aZt4K5ZZ7WRi@mail.gmail.com>
+	<20100831170756.GA24887@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Date: Wed, 1 Sep 2010 20:37:53 +0530
-Message-ID: <AANLkTi=_UfGNf0uHNiQAWiRjpgv8X0AbXkXkNa0ymFyD@mail.gmail.com>
-Subject: PCI: device not available (can't reserve [mem 0x00000000-0x0003ffff])
-From: Ravi Gupta <dceravigupta@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, MJ embd <mj.embd@gmail.com>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>,
-	Anton Vorontsov <cbouatmailru@gmail.com>
-Content-Type: multipart/alternative; boundary=0016364c5f2fd926f7048f340f0c
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20100831170756.GA24887@oksana.dev.rtsoft.ru>
+Cc: David Brownell <david-b@pacbell.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,73 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016364c5f2fd926f7048f340f0c
-Content-Type: text/plain; charset=ISO-8859-1
+On Tue, Aug 31, 2010 at 09:07:56PM +0400, Anton Vorontsov wrote:
+> On Tue, Aug 31, 2010 at 10:44:14AM -0600, Grant Likely wrote:
+> > On Tue, Aug 31, 2010 at 2:37 AM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+> > > On Tue, Aug 31, 2010 at 02:03:44AM -0600, Grant Likely wrote:
+> > >> On Tue, Aug 24, 2010 at 01:26:23PM +0400, Anton Vorontsov wrote:
+> > >> > With CONFIG_GPIOLIB=n, the 'struct gpio_chip' is not declared,
+> > >> > so the following pops up on PowerPC:
+> > >> >
+> > >> >   cc1: warnings being treated as errors
+> > >> >   In file included from arch/powerpc/platforms/52xx/mpc52xx_common.c:19:
+> > >> >   include/linux/of_gpio.h:74: warning: 'struct gpio_chip' declared
+> > >> >                               inside parameter list
+> > >> >   include/linux/of_gpio.h:74: warning: its scope is only this definition
+> > >> >                               or declaration, which is probably not what
+> > >> >                           you want
+> > >> >   include/linux/of_gpio.h:75: warning: 'struct gpio_chip' declared
+> > >> >                               inside parameter list
+> > >> >   make[2]: *** [arch/powerpc/platforms/52xx/mpc52xx_common.o] Error 1
+> > >> >
+> > >> > This patch fixes the issue by providing the proper forward declaration.
+> > >> >
+> > >> > Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> > >>
+> > >> This doesn't actually solve the problem, and gpiochip should
+> > >> remain undefined when CONFIG_GPIOLIB=n to catch exactly these
+> > >> build failures.  The real problem is that I merged a change
+> > >> into the mpc5200 code that required CONFIG_GPIOLIB be enabled
+> > >> without reflecting that requirement in Kconfig.
+> > >
+> > > No, look closer. The error is in of_gpio.h, and it's perfectly
+> > > fine to include it w/o GPIOLIB=y.
+> > 
+> > Looking even closer, we're both wrong.  You're right I didn't look
+> > carefully enough, and the error is in of_gpio.h, not the .c file.
+> > 
+> > However, it is not okay to get the definitions from of_gpio.h when
+> > CONFIG_GPIOLIB=n.  If GPIOLIB, or more specifically OF_GPIO isn't set,
+> > then the of_gpio.h definitions should either not be defined, or should
+> > be defined as empty stubs (where appropriate).
+> 
+> Grrr. Grant, look again, even closer than you did.
 
-Hi,
+Gah.  Very bad day yesterday.  Applied and sorry for the noise.
 
-I am facing a strange problem with a PCI express device. I have written a
-simple PCI driver(pci_skel sample driver for LDD book) just to detect a PCI
-device and read its vender and device id from its configuration space. When
-I connect the device on a standard i386 based PC, it works fine, as
-expected. But when I run the same driver on the MPC837xERDB board(powerpc
-arch based processor from freescale), it gives me error. Below is the O/P on
-both the architectures. Could anyone suggest what can be the cause of this
-problem? I am new to linux device driver development.
-
-i386 output.
-
-[  921.097050] PCI driver: Init function
-[  921.097415] PCI driver: Probe function
-[  921.097442] pci_skel 0000:04:00.0: PCI INT A -> GSI 18 (level, low) ->
-IRQ 18
-[  921.097453] PCI driver Vendor ID = 1204
-[  921.097462] PCI driver Device ID = e250
-[  921.097471] PCI driver Revision = 0
-
-
-Powerpc output
-
-PCI driver: Init function
-PCI driver: Probe function
-pci_skel 0001:02:00.0: device not available (can't reserve [mem
-0x00000000-0x0003ffff])
-Unable to Enable PCI device:-22
-pci_skel: probe of 0001:02:00.0 failed with error -22
-
-
-Thanks in advance
-Ravi Gupta
-
---0016364c5f2fd926f7048f340f0c
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi,<br><br>I am facing a strange problem with a PCI express device. I have =
-written a simple PCI driver(pci_skel sample driver for LDD book) just to de=
-tect a PCI device and read its vender and device id from its configuration =
-space. When I connect the device on a standard i386 based PC, it works fine=
-, as expected. But when I run the same driver on the MPC837xERDB board(powe=
-rpc arch based processor from freescale), it gives me error. Below is the O=
-/P on both the architectures. Could anyone suggest what can be the cause of=
- this problem? I am new to linux device driver development.<br>
-
-
-
-<br>i386 output.<br><br>[=A0 921.097050] PCI driver: Init function<br>[=A0=
-=20
-921.097415] PCI driver: Probe function<br>[=A0 921.097442] pci_skel=20
-0000:04:00.0: PCI INT A -&gt; GSI 18 (level, low) -&gt; IRQ 18<br>[=A0=20
-921.097453] PCI driver Vendor ID =3D 1204<br>
-
-[=A0 921.097462] PCI driver Device ID =3D e250<br>[=A0 921.097471] PCI driv=
-er=20
-Revision =3D 0<br><br><br>Powerpc output<br><br>PCI driver: Init function<b=
-r>PCI
- driver: Probe function<br>pci_skel 0001:02:00.0: device not available=20
-(can&#39;t reserve [mem 0x00000000-0x0003ffff])<br>
-
-Unable to Enable PCI device:-22<br>pci_skel: probe of 0001:02:00.0=20
-failed with error -22<br><br><br>Thanks in advance<br>Ravi Gupta<br>
-
---0016364c5f2fd926f7048f340f0c--
+g.
