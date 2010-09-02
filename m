@@ -1,26 +1,35 @@
-Return-Path: <macro@linux-mips.org>
-Received: from cvs.linux-mips.org (eddie.linux-mips.org [78.24.191.182])
-	by ozlabs.org (Postfix) with ESMTP id 98145B70FE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 02:43:39 +1000 (EST)
-Received: from localhost.localdomain ([127.0.0.1]:33471 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-OK)
-	by eddie.linux-mips.org with ESMTP id S1491020Ab0IBQnf (ORCPT
-	<rfc822;linuxppc-dev@lists.ozlabs.org>);
-	Thu, 2 Sep 2010 18:43:35 +0200
-Date: Thu, 2 Sep 2010 17:43:35 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: David Miller <davem@davemloft.net>
-Subject: Re: ERR_PTR pattern in phylib
-In-Reply-To: <20100902.093451.189703514.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.00.1009021735320.410@eddie.linux-mips.org>
-References: <AANLkTimjVZTNeLdm4qptU1MqREODLASdGGanUyxqxfub@mail.gmail.com>
-	<alpine.LFD.2.00.1009021617500.410@eddie.linux-mips.org>
-	<20100902.093451.189703514.davem@davemloft.net>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09251B7176
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 03:39:52 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o82HOlNY025329
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Sep 2010 13:24:47 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o82Hdn7X080940
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Sep 2010 13:39:49 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o82HdmQG026134
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Sep 2010 11:39:48 -0600
+Message-ID: <4C7FE163.4000906@austin.ibm.com>
+Date: Thu, 02 Sep 2010 12:39:47 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, afleming@freescale.com,
-	linuxppc-dev@lists.ozlabs.org
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 0/8] v5 De-couple sysfs memory directories from memory
+	sections
+References: <4C60407C.2080608@austin.ibm.com> <20100831215745.GA7641@kryten>
+In-Reply-To: <20100831215745.GA7641@kryten>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2 Sep 2010, David Miller wrote:
-
-> >  Arguably using a union here would make things cleaner and any reasonable 
-> > ABI will place small unions used as arguments or return values in 
-> > registers, but I'm not sure if the cost of the rewrite is worth the 
+On 08/31/2010 04:57 PM, Anton Blanchard wrote:
 > 
-> Well, sparc 32-bit's ABI for one is "not reasonable" and these return
-> values will always get stack slots and passed back by reference.
+> Hi Nathan,
+> 
+>> This set of patches de-couples the idea that there is a single
+>> directory in sysfs for each memory section.  The intent of the
+>> patches is to reduce the number of sysfs directories created to
+>> resolve a boot-time performance issue.  On very large systems
+>> boot time are getting very long (as seen on powerpc hardware)
+>> due to the enormous number of sysfs directories being created.
+>> On a system with 1 TB of memory we create ~63,000 directories.
+>> For even larger systems boot times are being measured in hours.
+>>
+>> This set of patches allows for each directory created in sysfs
+>> to cover more than one memory section.  The default behavior for
+>> sysfs directory creation is the same, in that each directory
+>> represents a single memory section.  A new file 'end_phys_index'
+>> in each directory contains the physical_id of the last memory
+>> section covered by the directory so that users can easily
+>> determine the memory section range of a directory.
+> 
+> I tested this on a POWER7 with 2TB memory and the boot time improved from
+> greater than 6 hours (I gave up), to under 5 minutes. Nice!
 
- So that makes it two -- together with MIPS o32. ;)  Still used by 
-everybody concerned as contraptions tend to stick. :/  That doesn't make 
-it reasonable though.  Nor me to push the union approach -- that's an 
-elegant approach that would probably give us less than take in return.
+Thanks for testing this out.  I was able to test this on a 1 TB system
+and saw memory sysfs creation times go from 10 minutes to a few seconds.
+It's good to see the difference for a 2 TB system.
 
-  Maciej
+-Nathan
