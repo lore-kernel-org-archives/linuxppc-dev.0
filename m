@@ -1,27 +1,18 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-Received: from echo.usurf.usu.edu (unknown [129.123.194.129])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "echo", Issuer "echo" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8A102B719E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 01:54:55 +1000 (EST)
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: Memory allocation modifications in ibm_newemac driver AND sil24
-	driver
-Date: Thu, 2 Sep 2010 15:54:50 +0000
-Message-ID: <5ABE8A5E96C0364CAF2B4DC1DEB7CEAC12822018@Mercury.usurf.usu.edu>
-References: <5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A2F09@Mercury.usurf.usu.edu>
-	, <5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A2FBE@Mercury.usurf.usu.edu>	 ,
-	<5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A301B@Mercury.usurf.usu.edu>
-	<5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A305B@Mercury.usurf.usu.edu>
-	<1283401130.16240.9.camel@pasglop>
-In-Reply-To: <1283401130.16240.9.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linux-net@vger.kernel.org" <linux-net@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <Liang.Li@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BCB3FB71A2
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 02:00:58 +1000 (EST)
+From: Liang Li <liang.li@windriver.com>
+To: leoli@freescale.com, davem@davemloft.net, avorontsov@ru.mvista.com,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [v2 PATCH] ucc_geth: fix ethtool set ring param bug
+Date: Fri,  3 Sep 2010 00:02:44 +0800
+Message-Id: <1283443364-2136-1-git-send-email-liang.li@windriver.com>
+In-Reply-To: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
+References: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +22,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pj4gQ2FuIGFueW9uZSBleHBsYWluIHRvIG1lIHdoeSBJIHdvdWxkIGJlIGdldHRpbmcgdGhpcyBl
-cnJvciBpbiB0aGUNCj4+IGZpcnN0IHBsYWNlPyAgV2h5IGlzIGl0IGZhaWxpbmcgdG8gYWxsb2Nh
-dGUgYSBwYWdlIHdoZW4gdGhlcmUgYXJlDQo+PiBwYWdlcyBhdmFpbGFibGU/ICBUaGF0IGRvZXMg
-bm90IG1ha2UgYW55IHNlbnNlIHRvIG1lLg0KDQo+IG9yZGVyOjENCg0KPiBJdCdzIGZhaWxpbmcg
-dG8gYWxsb2NhdGUgLXR3by0gcGFnZXMuDQoNCkdvb2QgcG9pbnQuICBIb3dldmVyLCB3aHkgaXMg
-aXQgZmFpbGluZz8gIEFjY29yZGluZyB0byB0aGUgZHVtcCwgdGhlcmUgYXJlIDI4IDhrIHBhZ2Vz
-IGF2YWlsYWJsZS4NCg0KRnJvbSBkb2luZyBtb3JlIHRlc3RpbmcgeWVzdGVyZGF5LCBJIGZvdW5k
-IHRoYXQgdGhpcyBlcnJvciBpcyBhbHNvIGNvbWluZyB1cCBmcm9tIHRoZSBTQVRBIGRyaXZlciBh
-cyB3ZWxsIChzaWwyNCkuICBBZ2FpbiB3aXRoIHRob3NlIGVycm9ycywgaXQgZmFpbHMgYWxsb2Nh
-dGluZyBhIHBhZ2Ugb2Ygb3JkZXIgMCwgd2hlbiB0aGVyZSBhcmUgYSBmZXcgaHVuZHJlZCBvZiB0
-aG9zZSBhdmFpbGFibGUuICBXaGF0IGlzIHVwIHdpdGggdGhlIFZNTT8gIFdoeSBhcmUgcGFnZXMg
-ZmFpbGluZyB0byBhbGxvY2F0ZSB3aGVuIHRoZXkgYXJlIGF2YWlsYWJsZT8NCg0KVGhhbmtzLA0K
-DQpKb25hdGhhbg0KDQoNCg==
+It's common sense that when we should do change to driver ring
+desc/buffer etc only after 'stop/shutdown' the device. When we
+do change while devices/driver is running, kernel oops occur:
+
+[
+root@fsl_8569mds:/root> ethtool -G eth0 tx 256
+root@fsl_8569mds:/root> Oops: Kernel access of bad area, sig: 11 [#1]
+MPC8569 MDS
+last sysfs file: /sys/kernel/uevent_seqnum
+Modules linked in:
+NIP: 00000000 LR: c0072fbc CTR: 00000000
+REGS: effefef0 TRAP: 0400   Not tainted  (2.6.36-rc3-00002-g6c3b118-dirty)
+MSR: 00021000 <ME,CE>  CR: 24442048  XER: 00000000
+TASK = c0518350[0] 'swapper' THREAD: c0544000
+GPR00: 00000000 effeffa0 c0518350 00000020 ef0be000 ef005000 80000000 00000200
+GPR08: c03b5d00 00000000 f1010080 ef08d458 000dda96 00000000 3ffb2900 00000000
+GPR16: 00000000 3ffa8948 3fff1314 3ffac3f8 00000000 00000000 00000000 00000000
+GPR24: 00000000 00000000 00000000 c0530000 00000000 00000000 00000020 ef3709c0
+NIP [00000000] (null)
+LR [c0072fbc] handle_IRQ_event+0x4c/0x12c
+Call Trace:
+[effeffa0] [c0019414] qe_ic_mask_irq+0x1c/0x90 (unreliable)
+[effeffc0] [c0075b74] handle_level_irq+0x88/0x128
+[effeffd0] [c001ca44] qe_ic_cascade_muxed_mpic+0x50/0x88
+[effefff0] [c000d5fc] call_handle_irq+0x18/0x28
+[c0545ea0] [c0004f3c] do_IRQ+0xa8/0x140
+[c0545ed0] [c000e2bc] ret_from_except+0x0/0x18
+-- Exception: 501 at cpu_idle+0x9c/0xdc
+    LR = cpu_idle+0x9c/0xdc
+[c0545f90] [c0008318] cpu_idle+0x54/0xdc (unreliable)
+[c0545fb0] [c000231c] rest_init+0x68/0x7c
+[c0545fc0] [c04e686c] start_kernel+0x230/0x2b0
+[c0545ff0] [c000039c] skpinv+0x2b4/0x2f0
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+Kernel panic - not syncing: Fatal exception in interrupt
+Rebooting in 180 seconds..
+]
+
+Then the natural solution would be 'stop driver/device then adjust
+ring buffer parameter then reactivate driver/device'.
+
+v1: add roll back state for 'auto reopen fail'
+v2: just do dev_close when 'reopen fail'
+
+Signed-off-by: Liang Li <liang.li@windriver.com>
+---
+ drivers/net/ucc_geth.c         |    4 ++--
+ drivers/net/ucc_geth.h         |    2 ++
+ drivers/net/ucc_geth_ethtool.c |   27 +++++++++++++++++++++------
+ 3 files changed, 25 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 7d2e33a..5eadfa3 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3485,7 +3485,7 @@ err:
+ 
+ /* Called when something needs to use the ethernet device */
+ /* Returns 0 for success. */
+-static int ucc_geth_open(struct net_device *dev)
++int ucc_geth_open(struct net_device *dev)
+ {
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 	int err;
+@@ -3542,7 +3542,7 @@ err:
+ }
+ 
+ /* Stops the kernel queue, and halts the controller */
+-static int ucc_geth_close(struct net_device *dev)
++int ucc_geth_close(struct net_device *dev)
+ {
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+index 05a9558..1cfb400 100644
+--- a/drivers/net/ucc_geth.h
++++ b/drivers/net/ucc_geth.h
+@@ -1235,5 +1235,7 @@ int init_flow_control_params(u32 automatic_flow_control_mode,
+ 		u32 __iomem *upsmr_register, u32 __iomem *uempr_register,
+ 		u32 __iomem *maccfg1_register);
+ 
++extern int ucc_geth_open(struct net_device *);
++extern int ucc_geth_close(struct net_device *);
+ 
+ #endif				/* __UCC_GETH_H__ */
+diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
+index 6f92e48..2a615ee 100644
+--- a/drivers/net/ucc_geth_ethtool.c
++++ b/drivers/net/ucc_geth_ethtool.c
+@@ -255,13 +255,28 @@ uec_set_ringparam(struct net_device *netdev,
+ 		return -EINVAL;
+ 	}
+ 
+-	ug_info->bdRingLenRx[queue] = ring->rx_pending;
+-	ug_info->bdRingLenTx[queue] = ring->tx_pending;
+-
+ 	if (netif_running(netdev)) {
+-		/* FIXME: restart automatically */
+-		printk(KERN_INFO
+-			"Please re-open the interface.\n");
++		u16 rx_t;
++		u16 tx_t;
++		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
++		ucc_geth_close(netdev);
++
++		rx_t = ug_info->bdRingLenRx[queue];
++		tx_t = ug_info->bdRingLenTx[queue];
++
++		ug_info->bdRingLenRx[queue] = ring->rx_pending;
++		ug_info->bdRingLenTx[queue] = ring->tx_pending;
++
++		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
++		ret = ucc_geth_open(netdev);
++		if (ret) {
++			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
++					" interface %s failed. Please try again.\n", netdev->name);
++			dev_close(netdev);
++		}
++	} else {
++		ug_info->bdRingLenRx[queue] = ring->rx_pending;
++		ug_info->bdRingLenTx[queue] = ring->tx_pending;
+ 	}
+ 
+ 	return ret;
+-- 
+1.7.2
