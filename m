@@ -1,18 +1,34 @@
-Return-Path: <Liang.Li@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id BCB3FB71A2
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 02:00:58 +1000 (EST)
-From: Liang Li <liang.li@windriver.com>
-To: leoli@freescale.com, davem@davemloft.net, avorontsov@ru.mvista.com,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [v2 PATCH] ucc_geth: fix ethtool set ring param bug
-Date: Fri,  3 Sep 2010 00:02:44 +0800
-Message-Id: <1283443364-2136-1-git-send-email-liang.li@windriver.com>
-In-Reply-To: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
-References: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
+Return-Path: <bhutchings@solarflare.com>
+Received: from smtp.covadwireless.com (smtp.covadwireless.com [216.237.6.30])
+	by ozlabs.org (Postfix) with ESMTP id EE744B7170
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 02:33:04 +1000 (EST)
+Received: from mail.nextweb.net (mail.nextweb.net [216.237.6.33])
+	by smtp.covadwireless.com (Spam & Virus Firewall) with ESMTP id
+	11BD44AC3F6
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 09:33:01 -0700 (PDT)
+Received: from mail.nextweb.net (mail.nextweb.net [216.237.6.33]) by
+	smtp.covadwireless.com with ESMTP id 0JDl3MUQFSg2dWWX for
+	<linuxppc-dev@ozlabs.org>; Thu, 02 Sep 2010 09:33:01 -0700 (PDT)
+Received: from unknown (HELO exchange.solarflare.com) ([216.237.3.220])
+	(envelope-sender <bhutchings@solarflare.com>)
+	by mail.nextweb.net (qmail-ldap-1.03) with SMTP
+	for <linuxppc-dev@ozlabs.org>; 2 Sep 2010 16:32:59 -0000
+Subject: Re: [v1 PATCH] ucc_geth: fix ethtool set ring param bug
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Liang Li <liang.li@windriver.com>
+In-Reply-To: <20100902154818.GA30293@localhost>
+References: <1283179677-21262-1-git-send-email-liang.li@windriver.com>
+	<1283305429-8426-1-git-send-email-liang.li@windriver.com>
+	<1283348550.2268.7.camel@achroite.uk.solarflarecom.com>
+	<20100902005034.GA9901@localhost>
+	<1283425907.2272.0.camel@achroite.uk.solarflarecom.com>
+	<20100902154818.GA30293@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 02 Sep 2010 17:32:56 +0100
+Message-ID: <1283445176.2272.3.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,131 +38,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's common sense that when we should do change to driver ring
-desc/buffer etc only after 'stop/shutdown' the device. When we
-do change while devices/driver is running, kernel oops occur:
+On Thu, 2010-09-02 at 23:48 +0800, Liang Li wrote:
+> On Thu, Sep 02, 2010 at 12:11:47PM +0100, Ben Hutchings wrote:
+> > On Thu, 2010-09-02 at 08:50 +0800, Liang Li wrote:
+> > > On Wed, Sep 01, 2010 at 02:42:30PM +0100, Ben Hutchings wrote:
+> > > > On Wed, 2010-09-01 at 09:43 +0800, Liang Li wrote:
+> > > > > It's common sense that when we should do change to driver ring
+> > > > > desc/buffer etc only after 'stop/shutdown' the device. When we
+> > > > > do change while devices/driver is running, kernel oops occur:
+> > > > [...]
+> > > > > -	ug_info->bdRingLenRx[queue] = ring->rx_pending;
+> > > > > -	ug_info->bdRingLenTx[queue] = ring->tx_pending;
+> > > > > -
+> > > > >  	if (netif_running(netdev)) {
+> > > > > -		/* FIXME: restart automatically */
+> > > > > -		printk(KERN_INFO
+> > > > > -			"Please re-open the interface.\n");
+> > > > > +		u16 rx_t;
+> > > > > +		u16 tx_t;
+> > > > > +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
+> > > > > +		ucc_geth_close(netdev);
+> > > > > +
+> > > > > +		rx_t = ug_info->bdRingLenRx[queue];
+> > > > > +		tx_t = ug_info->bdRingLenTx[queue];
+> > > > > +
+> > > > > +		ug_info->bdRingLenRx[queue] = ring->rx_pending;
+> > > > > +		ug_info->bdRingLenTx[queue] = ring->tx_pending;
+> > > > > +
+> > > > > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
+> > > > > +		ret = ucc_geth_open(netdev);
+> > > > > +		if (ret) {
+> > > > > +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
+> > > > > +					" interface %s failed. Please try to make the interface "
+> > > > > +					" down, then try again.\n", netdev->name);
+> > > > > +			ug_info->bdRingLenRx[queue] = rx_t;
+> > > > > +			ug_info->bdRingLenTx[queue] = tx_t;
+> > > > > +		}
+> > > > [...]
+> > > > 
+> > > > Bringing the interface down will call ucc_geth_close(), which will try
+> > > > to free resources that have not been allocated!
+> > > 
+> > > Sorry, I did not understand you on this point. There is no
+> > > ucc_geth_close when 'open fail'. What you mean here exactly?
+> > [...]
+> > 
+> > Read your own warning.
+> 
+> So the warning is mis-leading... We may not need it... Still, let's talk
+> about the rare case that 'fail of open', may you please show me what is
+> the right thing to do 'clean up work' when ever the open fail. Maybe
+> dev_close(net_dev)?
 
-[
-root@fsl_8569mds:/root> ethtool -G eth0 tx 256
-root@fsl_8569mds:/root> Oops: Kernel access of bad area, sig: 11 [#1]
-MPC8569 MDS
-last sysfs file: /sys/kernel/uevent_seqnum
-Modules linked in:
-NIP: 00000000 LR: c0072fbc CTR: 00000000
-REGS: effefef0 TRAP: 0400   Not tainted  (2.6.36-rc3-00002-g6c3b118-dirty)
-MSR: 00021000 <ME,CE>  CR: 24442048  XER: 00000000
-TASK = c0518350[0] 'swapper' THREAD: c0544000
-GPR00: 00000000 effeffa0 c0518350 00000020 ef0be000 ef005000 80000000 00000200
-GPR08: c03b5d00 00000000 f1010080 ef08d458 000dda96 00000000 3ffb2900 00000000
-GPR16: 00000000 3ffa8948 3fff1314 3ffac3f8 00000000 00000000 00000000 00000000
-GPR24: 00000000 00000000 00000000 c0530000 00000000 00000000 00000020 ef3709c0
-NIP [00000000] (null)
-LR [c0072fbc] handle_IRQ_event+0x4c/0x12c
-Call Trace:
-[effeffa0] [c0019414] qe_ic_mask_irq+0x1c/0x90 (unreliable)
-[effeffc0] [c0075b74] handle_level_irq+0x88/0x128
-[effeffd0] [c001ca44] qe_ic_cascade_muxed_mpic+0x50/0x88
-[effefff0] [c000d5fc] call_handle_irq+0x18/0x28
-[c0545ea0] [c0004f3c] do_IRQ+0xa8/0x140
-[c0545ed0] [c000e2bc] ret_from_except+0x0/0x18
--- Exception: 501 at cpu_idle+0x9c/0xdc
-    LR = cpu_idle+0x9c/0xdc
-[c0545f90] [c0008318] cpu_idle+0x54/0xdc (unreliable)
-[c0545fb0] [c000231c] rest_init+0x68/0x7c
-[c0545fc0] [c04e686c] start_kernel+0x230/0x2b0
-[c0545ff0] [c000039c] skpinv+0x2b4/0x2f0
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-Kernel panic - not syncing: Fatal exception in interrupt
-Rebooting in 180 seconds..
-]
+I give up.
 
-Then the natural solution would be 'stop driver/device then adjust
-ring buffer parameter then reactivate driver/device'.
+Just s/ucc_geth_open/dev_open/ and s/ucc_geth_close/dev_close/.
 
-v1: add roll back state for 'auto reopen fail'
-v2: just do dev_close when 'reopen fail'
+Ben.
 
-Signed-off-by: Liang Li <liang.li@windriver.com>
----
- drivers/net/ucc_geth.c         |    4 ++--
- drivers/net/ucc_geth.h         |    2 ++
- drivers/net/ucc_geth_ethtool.c |   27 +++++++++++++++++++++------
- 3 files changed, 25 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 7d2e33a..5eadfa3 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3485,7 +3485,7 @@ err:
- 
- /* Called when something needs to use the ethernet device */
- /* Returns 0 for success. */
--static int ucc_geth_open(struct net_device *dev)
-+int ucc_geth_open(struct net_device *dev)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- 	int err;
-@@ -3542,7 +3542,7 @@ err:
- }
- 
- /* Stops the kernel queue, and halts the controller */
--static int ucc_geth_close(struct net_device *dev)
-+int ucc_geth_close(struct net_device *dev)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- 
-diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
-index 05a9558..1cfb400 100644
---- a/drivers/net/ucc_geth.h
-+++ b/drivers/net/ucc_geth.h
-@@ -1235,5 +1235,7 @@ int init_flow_control_params(u32 automatic_flow_control_mode,
- 		u32 __iomem *upsmr_register, u32 __iomem *uempr_register,
- 		u32 __iomem *maccfg1_register);
- 
-+extern int ucc_geth_open(struct net_device *);
-+extern int ucc_geth_close(struct net_device *);
- 
- #endif				/* __UCC_GETH_H__ */
-diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
-index 6f92e48..2a615ee 100644
---- a/drivers/net/ucc_geth_ethtool.c
-+++ b/drivers/net/ucc_geth_ethtool.c
-@@ -255,13 +255,28 @@ uec_set_ringparam(struct net_device *netdev,
- 		return -EINVAL;
- 	}
- 
--	ug_info->bdRingLenRx[queue] = ring->rx_pending;
--	ug_info->bdRingLenTx[queue] = ring->tx_pending;
--
- 	if (netif_running(netdev)) {
--		/* FIXME: restart automatically */
--		printk(KERN_INFO
--			"Please re-open the interface.\n");
-+		u16 rx_t;
-+		u16 tx_t;
-+		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
-+		ucc_geth_close(netdev);
-+
-+		rx_t = ug_info->bdRingLenRx[queue];
-+		tx_t = ug_info->bdRingLenTx[queue];
-+
-+		ug_info->bdRingLenRx[queue] = ring->rx_pending;
-+		ug_info->bdRingLenTx[queue] = ring->tx_pending;
-+
-+		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
-+		ret = ucc_geth_open(netdev);
-+		if (ret) {
-+			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
-+					" interface %s failed. Please try again.\n", netdev->name);
-+			dev_close(netdev);
-+		}
-+	} else {
-+		ug_info->bdRingLenRx[queue] = ring->rx_pending;
-+		ug_info->bdRingLenTx[queue] = ring->tx_pending;
- 	}
- 
- 	return ret;
 -- 
-1.7.2
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
