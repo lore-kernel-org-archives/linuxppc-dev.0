@@ -1,26 +1,27 @@
-Return-Path: <Liang.Li@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CF9FCB7192
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 01:46:33 +1000 (EST)
-Date: Thu, 2 Sep 2010 23:48:18 +0800
-From: Liang Li <liang.li@windriver.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [v1 PATCH] ucc_geth: fix ethtool set ring param bug
-Message-ID: <20100902154818.GA30293@localhost>
-References: <1283179677-21262-1-git-send-email-liang.li@windriver.com>
-	<1283305429-8426-1-git-send-email-liang.li@windriver.com>
-	<1283348550.2268.7.camel@achroite.uk.solarflarecom.com>
-	<20100902005034.GA9901@localhost>
-	<1283425907.2272.0.camel@achroite.uk.solarflarecom.com>
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+Received: from echo.usurf.usu.edu (unknown [129.123.194.129])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "echo", Issuer "echo" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8A102B719E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 01:54:55 +1000 (EST)
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: Memory allocation modifications in ibm_newemac driver AND sil24
+	driver
+Date: Thu, 2 Sep 2010 15:54:50 +0000
+Message-ID: <5ABE8A5E96C0364CAF2B4DC1DEB7CEAC12822018@Mercury.usurf.usu.edu>
+References: <5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A2F09@Mercury.usurf.usu.edu>
+	, <5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A2FBE@Mercury.usurf.usu.edu>	 ,
+	<5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A301B@Mercury.usurf.usu.edu>
+	<5ABE8A5E96C0364CAF2B4DC1DEB7CEAC127A305B@Mercury.usurf.usu.edu>
+	<1283401130.16240.9.camel@pasglop>
+In-Reply-To: <1283401130.16240.9.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283425907.2272.0.camel@achroite.uk.solarflarecom.com>
-Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
-	linuxppc-dev@ozlabs.org
-Reply-To: Liang Li <liang.li@windriver.com>
+Cc: "linux-net@vger.kernel.org" <linux-net@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 02, 2010 at 12:11:47PM +0100, Ben Hutchings wrote:
-> On Thu, 2010-09-02 at 08:50 +0800, Liang Li wrote:
-> > On Wed, Sep 01, 2010 at 02:42:30PM +0100, Ben Hutchings wrote:
-> > > On Wed, 2010-09-01 at 09:43 +0800, Liang Li wrote:
-> > > > It's common sense that when we should do change to driver ring
-> > > > desc/buffer etc only after 'stop/shutdown' the device. When we
-> > > > do change while devices/driver is running, kernel oops occur:
-> > > [...]
-> > > > -	ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> > > > -	ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> > > > -
-> > > >  	if (netif_running(netdev)) {
-> > > > -		/* FIXME: restart automatically */
-> > > > -		printk(KERN_INFO
-> > > > -			"Please re-open the interface.\n");
-> > > > +		u16 rx_t;
-> > > > +		u16 tx_t;
-> > > > +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
-> > > > +		ucc_geth_close(netdev);
-> > > > +
-> > > > +		rx_t = ug_info->bdRingLenRx[queue];
-> > > > +		tx_t = ug_info->bdRingLenTx[queue];
-> > > > +
-> > > > +		ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> > > > +		ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> > > > +
-> > > > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
-> > > > +		ret = ucc_geth_open(netdev);
-> > > > +		if (ret) {
-> > > > +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
-> > > > +					" interface %s failed. Please try to make the interface "
-> > > > +					" down, then try again.\n", netdev->name);
-> > > > +			ug_info->bdRingLenRx[queue] = rx_t;
-> > > > +			ug_info->bdRingLenTx[queue] = tx_t;
-> > > > +		}
-> > > [...]
-> > > 
-> > > Bringing the interface down will call ucc_geth_close(), which will try
-> > > to free resources that have not been allocated!
-> > 
-> > Sorry, I did not understand you on this point. There is no
-> > ucc_geth_close when 'open fail'. What you mean here exactly?
-> [...]
-> 
-> Read your own warning.
-
-So the warning is mis-leading... We may not need it... Still, let's talk
-about the rare case that 'fail of open', may you please show me what is
-the right thing to do 'clean up work' when ever the open fail. Maybe
-dev_close(net_dev)?
-
-Thanks,
-				-Liang Li
-
-> 
-> Ben.
-> 
-> -- 
-> Ben Hutchings, Senior Software Engineer, Solarflare Communications
-> Not speaking for my employer; that's the marketing department's job.
-> They asked us to note that Solarflare product names are trademarked.
+Pj4gQ2FuIGFueW9uZSBleHBsYWluIHRvIG1lIHdoeSBJIHdvdWxkIGJlIGdldHRpbmcgdGhpcyBl
+cnJvciBpbiB0aGUNCj4+IGZpcnN0IHBsYWNlPyAgV2h5IGlzIGl0IGZhaWxpbmcgdG8gYWxsb2Nh
+dGUgYSBwYWdlIHdoZW4gdGhlcmUgYXJlDQo+PiBwYWdlcyBhdmFpbGFibGU/ICBUaGF0IGRvZXMg
+bm90IG1ha2UgYW55IHNlbnNlIHRvIG1lLg0KDQo+IG9yZGVyOjENCg0KPiBJdCdzIGZhaWxpbmcg
+dG8gYWxsb2NhdGUgLXR3by0gcGFnZXMuDQoNCkdvb2QgcG9pbnQuICBIb3dldmVyLCB3aHkgaXMg
+aXQgZmFpbGluZz8gIEFjY29yZGluZyB0byB0aGUgZHVtcCwgdGhlcmUgYXJlIDI4IDhrIHBhZ2Vz
+IGF2YWlsYWJsZS4NCg0KRnJvbSBkb2luZyBtb3JlIHRlc3RpbmcgeWVzdGVyZGF5LCBJIGZvdW5k
+IHRoYXQgdGhpcyBlcnJvciBpcyBhbHNvIGNvbWluZyB1cCBmcm9tIHRoZSBTQVRBIGRyaXZlciBh
+cyB3ZWxsIChzaWwyNCkuICBBZ2FpbiB3aXRoIHRob3NlIGVycm9ycywgaXQgZmFpbHMgYWxsb2Nh
+dGluZyBhIHBhZ2Ugb2Ygb3JkZXIgMCwgd2hlbiB0aGVyZSBhcmUgYSBmZXcgaHVuZHJlZCBvZiB0
+aG9zZSBhdmFpbGFibGUuICBXaGF0IGlzIHVwIHdpdGggdGhlIFZNTT8gIFdoeSBhcmUgcGFnZXMg
+ZmFpbGluZyB0byBhbGxvY2F0ZSB3aGVuIHRoZXkgYXJlIGF2YWlsYWJsZT8NCg0KVGhhbmtzLA0K
+DQpKb25hdGhhbg0KDQoNCg==
