@@ -1,24 +1,19 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
-	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id 80488B712F
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 21A9EB7163
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Sep 2010 22:46:25 +1000 (EST)
-Received: by ewy21 with SMTP id 21so180475ewy.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 02 Sep 2010 05:46:23 -0700 (PDT)
-Date: Thu, 2 Sep 2010 16:46:17 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: sposelenov@emcraft.com
-Subject: Re: [PATCH 1/2] [PPC] Motion-PRO: Added LED support for the
-	Promess Motion-Pro board. The driver is based on the original
-	version(http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg06694.html),
-	adapted for the current kernel structures.
-Message-ID: <20100902124617.GA27957@oksana.dev.rtsoft.ru>
-References: <1283422832-9620-1-git-send-email-sposelenov@emcraft.com>
+	Thu,  2 Sep 2010 23:33:24 +1000 (EST)
+Subject: RE: P1021MDS QE Ethernet Ports
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: Ioannis Kokkoris <johnkokko@hotmail.com>
+In-Reply-To: <COL120-W10FFCD057D88A833B4B46EA78C0@phx.gbl>
+References: <COL120-W4274596E983E02BCBF4AD0A78B0@phx.gbl>
+	<COL120-W10FFCD057D88A833B4B46EA78C0@phx.gbl>
+Content-Type: text/plain
+Date: Thu, 2 Sep 2010 09:32:48 -0400
+Message-ID: <1283434368.2904.2.camel@udp120119uds.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1283422832-9620-1-git-send-email-sposelenov@emcraft.com>
-Cc: linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 02, 2010 at 12:20:31PM +0200, sposelenov@emcraft.com wrote:
-[...]
-> +config LEDS_MOTIONPRO
-> +	tristate "Motionpro LEDs Support"
-> +	depends on LEDS_CLASS
-> +	help
-> +	  This option enables support for status and ready LEDs connected
-> +	  to GPIO lines on Motionpro board.
+On Thu, 2010-02-09 at 11:26 +0300, Ioannis Kokkoris wrote:
+> > From: johnkokko@hotmail.com
+> > To: linuxppc-dev@lists.ozlabs.org
+> > Subject: P1021MDS QE Ethernet Ports
+> > Date: Wed, 1 Sep 2010 15:11:56 +0300
+> >
+> >
+> > Hello,
+> >
+> > we are seeing a strange behavior when trying to use the QE Ethernet interfaces.
+> > ENET5 (UCC5 - RMII) interface on P1021MDS boards does not come up if there is no physical link on the ENET1 (UCC1 - MII) Port.
+> > It seems that interrupts from ENET5 are normally received but the link comes up and works properly only if we have physical connection on ENET1.
+> >
+> So far I found the following:
+> 
+> After adding traces, it seems that genphy_update_link() polls the correct device, with the correct address (0x03), but although a physical link is present in ENET5, the polling is not successful until there is a link in ENET1 (address 0x02)!
+> 
+> genphy_update_link: Dev: Micrel KS8041 ADD: 3 Status read 0x7849  (without ENET1 Link)
+> genphy_update_link: Dev: Micrel KS8041 ADD: 3 Status read 0x786D  (with    ENET1 Link)
+> 
+> How does the MDIO of ENET1 affect the management of the physical interface in a different HW address?
+Which board version are you using? this problem is now fixed in the new board version but not available right now. You can connect two UECs for your current development.
 
-Why not expose these GPIOs via GPIOLIB[1] and use generic GPIO
-LEDs[2] driver, along with the timer LED trigger[3] for blinking?
-
-Thanks,
-
-[1] Documentation/gpio.txt
-    Documentation/powerpc/dts-bindings/gpio/gpio.txt
-[2] drivers/leds/leds-gpio.c
-    Documentation/powerpc/dts-bindings/gpio/led.txt
-[3] drivers/leds/ledtrig-timer.c
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> 
+> > Can anyone think of a possible reason for this behavior, is there a way to trace this problem?
+> > I can provide any further information needed.
+> >
+> > Any help would be appreciated,
+> > Regards,
+> > John
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+>  		 	   		  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
