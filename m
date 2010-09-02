@@ -1,24 +1,26 @@
-Return-Path: <macro@linux-mips.org>
-Received: from cvs.linux-mips.org (eddie.linux-mips.org [78.24.191.182])
-	by ozlabs.org (Postfix) with ESMTP id 179A1B7197
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 01:26:45 +1000 (EST)
-Received: from localhost.localdomain ([127.0.0.1]:49015 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-OK)
-	by eddie.linux-mips.org with ESMTP id S1491020Ab0IBPUe (ORCPT
-	<rfc822;linuxppc-dev@lists.ozlabs.org>);
-	Thu, 2 Sep 2010 17:20:34 +0200
-Date: Thu, 2 Sep 2010 16:20:34 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: ERR_PTR pattern in phylib
-In-Reply-To: <AANLkTimjVZTNeLdm4qptU1MqREODLASdGGanUyxqxfub@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1009021617500.410@eddie.linux-mips.org>
-References: <AANLkTimjVZTNeLdm4qptU1MqREODLASdGGanUyxqxfub@mail.gmail.com>
+Return-Path: <Liang.Li@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CF9FCB7192
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 01:46:33 +1000 (EST)
+Date: Thu, 2 Sep 2010 23:48:18 +0800
+From: Liang Li <liang.li@windriver.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Subject: Re: [v1 PATCH] ucc_geth: fix ethtool set ring param bug
+Message-ID: <20100902154818.GA30293@localhost>
+References: <1283179677-21262-1-git-send-email-liang.li@windriver.com>
+	<1283305429-8426-1-git-send-email-liang.li@windriver.com>
+	<1283348550.2268.7.camel@achroite.uk.solarflarecom.com>
+	<20100902005034.GA9901@localhost>
+	<1283425907.2272.0.camel@achroite.uk.solarflarecom.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev <netdev@vger.kernel.org>, Andy Fleming <afleming@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1283425907.2272.0.camel@achroite.uk.solarflarecom.com>
+Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org
+Reply-To: Liang Li <liang.li@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Sep 2010, Grant Likely wrote:
+On Thu, Sep 02, 2010 at 12:11:47PM +0100, Ben Hutchings wrote:
+> On Thu, 2010-09-02 at 08:50 +0800, Liang Li wrote:
+> > On Wed, Sep 01, 2010 at 02:42:30PM +0100, Ben Hutchings wrote:
+> > > On Wed, 2010-09-01 at 09:43 +0800, Liang Li wrote:
+> > > > It's common sense that when we should do change to driver ring
+> > > > desc/buffer etc only after 'stop/shutdown' the device. When we
+> > > > do change while devices/driver is running, kernel oops occur:
+> > > [...]
+> > > > -	ug_info->bdRingLenRx[queue] = ring->rx_pending;
+> > > > -	ug_info->bdRingLenTx[queue] = ring->tx_pending;
+> > > > -
+> > > >  	if (netif_running(netdev)) {
+> > > > -		/* FIXME: restart automatically */
+> > > > -		printk(KERN_INFO
+> > > > -			"Please re-open the interface.\n");
+> > > > +		u16 rx_t;
+> > > > +		u16 tx_t;
+> > > > +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
+> > > > +		ucc_geth_close(netdev);
+> > > > +
+> > > > +		rx_t = ug_info->bdRingLenRx[queue];
+> > > > +		tx_t = ug_info->bdRingLenTx[queue];
+> > > > +
+> > > > +		ug_info->bdRingLenRx[queue] = ring->rx_pending;
+> > > > +		ug_info->bdRingLenTx[queue] = ring->tx_pending;
+> > > > +
+> > > > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
+> > > > +		ret = ucc_geth_open(netdev);
+> > > > +		if (ret) {
+> > > > +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
+> > > > +					" interface %s failed. Please try to make the interface "
+> > > > +					" down, then try again.\n", netdev->name);
+> > > > +			ug_info->bdRingLenRx[queue] = rx_t;
+> > > > +			ug_info->bdRingLenTx[queue] = tx_t;
+> > > > +		}
+> > > [...]
+> > > 
+> > > Bringing the interface down will call ucc_geth_close(), which will try
+> > > to free resources that have not been allocated!
+> > 
+> > Sorry, I did not understand you on this point. There is no
+> > ucc_geth_close when 'open fail'. What you mean here exactly?
+> [...]
+> 
+> Read your own warning.
 
-> I've been looking at the phylib code, and specifically at the use of
-> the ERR_PTR() pattern.  I'm personally not a big fan of ERR_PTR()
-> because the compiler cannot type check the result and it runs
-> completely counter to the pattern "if (!ptr)" than is common for
-> testing a pointer return value.
+So the warning is mis-leading... We may not need it... Still, let's talk
+about the rare case that 'fail of open', may you please show me what is
+the right thing to do 'clean up work' when ever the open fail. Maybe
+dev_close(net_dev)?
 
- Arguably using a union here would make things cleaner and any reasonable 
-ABI will place small unions used as arguments or return values in 
-registers, but I'm not sure if the cost of the rewrite is worth the 
-benefit.  Probably not, but feel free to propose a change.
+Thanks,
+				-Liang Li
 
-  Maciej
+> 
+> Ben.
+> 
+> -- 
+> Ben Hutchings, Senior Software Engineer, Solarflare Communications
+> Not speaking for my employer; that's the marketing department's job.
+> They asked us to note that Solarflare product names are trademarked.
