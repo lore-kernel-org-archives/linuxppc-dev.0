@@ -1,32 +1,17 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from smtp.covadwireless.com (smtp.covadwireless.com [216.237.6.30])
-	by ozlabs.org (Postfix) with ESMTP id 701EDB716C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 21:23:40 +1000 (EST)
-Received: from mail.nextweb.net (mail.nextweb.net [216.237.6.33])
-	by smtp.covadwireless.com (Spam & Virus Firewall) with ESMTP id
-	09BB14AC3FD
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 04:11:51 -0700 (PDT)
-Received: from mail.nextweb.net (mail.nextweb.net [216.237.6.33]) by
-	smtp.covadwireless.com with ESMTP id D8jEXZSFSGueiE0D for
-	<linuxppc-dev@ozlabs.org>; Thu, 02 Sep 2010 04:11:51 -0700 (PDT)
-Received: from unknown (HELO exchange.solarflare.com) ([216.237.3.220])
-	(envelope-sender <bhutchings@solarflare.com>)
-	by mail.nextweb.net (qmail-ldap-1.03) with SMTP
-	for <linuxppc-dev@ozlabs.org>; 2 Sep 2010 11:11:50 -0000
-Subject: Re: [v1 PATCH] ucc_geth: fix ethtool set ring param bug
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Liang Li <liang.li@windriver.com>
-In-Reply-To: <20100902005034.GA9901@localhost>
-References: <1283179677-21262-1-git-send-email-liang.li@windriver.com>
-	<1283305429-8426-1-git-send-email-liang.li@windriver.com>
-	<1283348550.2268.7.camel@achroite.uk.solarflarecom.com>
-	<20100902005034.GA9901@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 02 Sep 2010 12:11:47 +0100
-Message-ID: <1283425907.2272.0.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
-	linuxppc-dev@ozlabs.org
+Return-Path: <sposelenov@emcraft.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 796CEB7174
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Sep 2010 20:20:36 +1000 (EST)
+From: sposelenov@emcraft.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] [PPC] Motion-PRO: Changed the default blinking rate for
+	the status LED to 200 ms, as per the customer's request.
+Date: Thu,  2 Sep 2010 12:20:32 +0200
+Message-Id: <1283422832-9620-2-git-send-email-sposelenov@emcraft.com>
+In-Reply-To: <1283422832-9620-1-git-send-email-sposelenov@emcraft.com>
+References: <1283422832-9620-1-git-send-email-sposelenov@emcraft.com>
+Cc: Sergei Poselenov <sposelenov@emcraft.com>, wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,54 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-09-02 at 08:50 +0800, Liang Li wrote:
-> On Wed, Sep 01, 2010 at 02:42:30PM +0100, Ben Hutchings wrote:
-> > On Wed, 2010-09-01 at 09:43 +0800, Liang Li wrote:
-> > > It's common sense that when we should do change to driver ring
-> > > desc/buffer etc only after 'stop/shutdown' the device. When we
-> > > do change while devices/driver is running, kernel oops occur:
-> > [...]
-> > > -	ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> > > -	ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> > > -
-> > >  	if (netif_running(netdev)) {
-> > > -		/* FIXME: restart automatically */
-> > > -		printk(KERN_INFO
-> > > -			"Please re-open the interface.\n");
-> > > +		u16 rx_t;
-> > > +		u16 tx_t;
-> > > +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
-> > > +		ucc_geth_close(netdev);
-> > > +
-> > > +		rx_t = ug_info->bdRingLenRx[queue];
-> > > +		tx_t = ug_info->bdRingLenTx[queue];
-> > > +
-> > > +		ug_info->bdRingLenRx[queue] = ring->rx_pending;
-> > > +		ug_info->bdRingLenTx[queue] = ring->tx_pending;
-> > > +
-> > > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
-> > > +		ret = ucc_geth_open(netdev);
-> > > +		if (ret) {
-> > > +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
-> > > +					" interface %s failed. Please try to make the interface "
-> > > +					" down, then try again.\n", netdev->name);
-> > > +			ug_info->bdRingLenRx[queue] = rx_t;
-> > > +			ug_info->bdRingLenTx[queue] = tx_t;
-> > > +		}
-> > [...]
-> > 
-> > Bringing the interface down will call ucc_geth_close(), which will try
-> > to free resources that have not been allocated!
-> 
-> Sorry, I did not understand you on this point. There is no
-> ucc_geth_close when 'open fail'. What you mean here exactly?
-[...]
+From: Sergei Poselenov <sposelenov@emcraft.com>
 
-Read your own warning.
+Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
+---
+ arch/powerpc/boot/dts/motionpro.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Ben.
-
+diff --git a/arch/powerpc/boot/dts/motionpro.dts b/arch/powerpc/boot/dts/motionpro.dts
+index 6ca4fc1..b469fc6 100644
+--- a/arch/powerpc/boot/dts/motionpro.dts
++++ b/arch/powerpc/boot/dts/motionpro.dts
+@@ -105,7 +105,7 @@
+ 			label = "motionpro-statusled";
+ 			reg = <0x660 0x10>;
+ 			interrupts = <1 15 0>;
+-			blink-delay = <100>; // 100 msec
++			blink-delay = <200>; // 200 msec
+ 		};
+ 
+ 		motionpro-led@670 {	// Motion-PRO ready LED
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+1.6.2.5
