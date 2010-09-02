@@ -1,35 +1,30 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 09251B7176
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 03:39:52 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o82HOlNY025329
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Sep 2010 13:24:47 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o82Hdn7X080940
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Sep 2010 13:39:49 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o82HdmQG026134
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Sep 2010 11:39:48 -0600
-Message-ID: <4C7FE163.4000906@austin.ibm.com>
-Date: Thu, 02 Sep 2010 12:39:47 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 0/8] v5 De-couple sysfs memory directories from memory
-	sections
-References: <4C60407C.2080608@austin.ibm.com> <20100831215745.GA7641@kryten>
-In-Reply-To: <20100831215745.GA7641@kryten>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <bhutchings@solarflare.com>
+Received: from smtp.covadwireless.com (smtp.covadwireless.com [216.237.6.30])
+	by ozlabs.org (Postfix) with ESMTP id 45387B7182
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 04:05:06 +1000 (EST)
+Received: from mail.nextweb.net (mail.nextweb.net [216.237.6.33])
+	by smtp.covadwireless.com (Spam & Virus Firewall) with ESMTP id
+	53E304AC3F6
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 11:05:04 -0700 (PDT)
+Received: from mail.nextweb.net (mail.nextweb.net [216.237.6.33]) by
+	smtp.covadwireless.com with ESMTP id H6fD6pGns0z9ncM0 for
+	<linuxppc-dev@ozlabs.org>; Thu, 02 Sep 2010 11:05:04 -0700 (PDT)
+Received: from unknown (HELO exchange.solarflare.com) ([216.237.3.220])
+	(envelope-sender <bhutchings@solarflare.com>)
+	by mail.nextweb.net (qmail-ldap-1.03) with SMTP
+	for <linuxppc-dev@ozlabs.org>; 2 Sep 2010 18:05:02 -0000
+Subject: Re: [v2 PATCH] ucc_geth: fix ethtool set ring param bug
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Liang Li <liang.li@windriver.com>
+In-Reply-To: <1283443364-2136-1-git-send-email-liang.li@windriver.com>
+References: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
+	<1283443364-2136-1-git-send-email-liang.li@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 02 Sep 2010 19:04:59 +0100
+Message-ID: <1283450699.2272.18.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,32 +34,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/31/2010 04:57 PM, Anton Blanchard wrote:
-> 
-> Hi Nathan,
-> 
->> This set of patches de-couples the idea that there is a single
->> directory in sysfs for each memory section.  The intent of the
->> patches is to reduce the number of sysfs directories created to
->> resolve a boot-time performance issue.  On very large systems
->> boot time are getting very long (as seen on powerpc hardware)
->> due to the enormous number of sysfs directories being created.
->> On a system with 1 TB of memory we create ~63,000 directories.
->> For even larger systems boot times are being measured in hours.
->>
->> This set of patches allows for each directory created in sysfs
->> to cover more than one memory section.  The default behavior for
->> sysfs directory creation is the same, in that each directory
->> represents a single memory section.  A new file 'end_phys_index'
->> in each directory contains the physical_id of the last memory
->> section covered by the directory so that users can easily
->> determine the memory section range of a directory.
-> 
-> I tested this on a POWER7 with 2TB memory and the boot time improved from
-> greater than 6 hours (I gave up), to under 5 minutes. Nice!
+On Fri, 2010-09-03 at 00:02 +0800, Liang Li wrote:
+> It's common sense that when we should do change to driver ring
+> desc/buffer etc only after 'stop/shutdown' the device. When we
+> do change while devices/driver is running, kernel oops occur:
+[...]
+> +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
+> +		ret = ucc_geth_open(netdev);
+> +		if (ret) {
+> +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
+> +					" interface %s failed. Please try again.\n", netdev->name);
+> +			dev_close(netdev);
+[...]
 
-Thanks for testing this out.  I was able to test this on a 1 TB system
-and saw memory sysfs creation times go from 10 minutes to a few seconds.
-It's good to see the difference for a 2 TB system.
+If ucc_geth_open() failed you MUST NOT call ucc_geth_close(), but that
+is what dev_close() is going to do.  But the device is still flagged as
+running so 'ifconfig down' is going to call dev_close() as well.  There
+is no way out.
 
--Nathan
+This is why I said you must call dev_close() and then dev_open()
+instead.  Then if dev_open() fails, just print the error, e.g.:
+
+               dev_close(netdev);
+               ret = dev_open(netdev);
+               if (ret)
+                       netdev_err(netdev,
+                                  "uec_set_ringparam: failed to restart"
+                                  " interface with new ring parameters\n");
+
+(And I think this really is a serious error, hence the 'err' rather than
+'warning' severity.)
+
+(By the way, I noticed there are other places where ucc_geth_close() and
+ucc_geth_open() are called, without error checking.  These are also
+bugs, but that doesn't justify adding new bugs.)
+
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
