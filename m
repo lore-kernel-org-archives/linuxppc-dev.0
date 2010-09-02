@@ -1,39 +1,35 @@
 Return-Path: <B21284@freescale.com>
 Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
-	[213.199.154.209]) by ozlabs.org (Postfix) with ESMTP id 8FFF7B7170
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 19:04:37 +1000 (EST)
-Received: from mail36-am1 (localhost.localdomain [127.0.0.1])	by
-	mail36-am1-R.bigfish.com (Postfix) with ESMTP id 7FB615582D5	for
-	<linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 09:04:31 +0000 (UTC)
-Received: from am1ehsmhs002.bigfish.com (unknown [10.3.201.241])	by
-	mail36-am1.bigfish.com (Postfix) with ESMTP id 6DA1D180804B	for
-	<linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 09:04:29 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o8294R2Y014061	for <linuxppc-dev@ozlabs.org>;
-	Thu, 2 Sep 2010 02:04:27 -0700 (MST)
+	[213.199.154.209]) by ozlabs.org (Postfix) with ESMTP id D9263B7123
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 19:23:59 +1000 (EST)
+Received: from mail62-am1 (localhost.localdomain [127.0.0.1])	by
+	mail62-am1-R.bigfish.com (Postfix) with ESMTP id 926B317E08CB	for
+	<linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 09:23:55 +0000 (UTC)
+Received: from am1ehsmhs004.bigfish.com (unknown [10.3.201.241])	by
+	mail62-am1.bigfish.com (Postfix) with ESMTP id 24662128004B	for
+	<linuxppc-dev@ozlabs.org>; Thu,  2 Sep 2010 09:23:55 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o828Rgg2004360	for <linuxppc-dev@ozlabs.org>;
+	Thu, 2 Sep 2010 01:27:52 -0700 (MST)
 Received: from zmy16exm20.fsl.freescale.net (zmy16exm20.ap.freescale.net
-	[10.211.3.23])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o829Gb0o005148	for <linuxppc-dev@ozlabs.org>;
-	Thu, 2 Sep 2010 04:16:38 -0500 (CDT)
+	[10.211.3.23])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o828RldD021370	for <linuxppc-dev@ozlabs.org>;
+	Thu, 2 Sep 2010 03:27:48 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: [PATCH v2 4/6] mtd: m25p80: add a read function to read page by
-	page
-Date: Thu, 2 Sep 2010 17:04:07 +0800
-Message-ID: <73839B4A0818E747864426270AC332C30561B6F3@zmy16exm20.fsl.freescale.net>
-In-Reply-To: <AANLkTikM5je7Ckt=7bP6fj7OKCaroSn_AqgcS4T+Bv5d@mail.gmail.com>
+Subject: RE: [PATCH v2 1/6] spi/mpc8xxx: refactor the common code for SPI/eSPI
+	controller
+Date: Thu, 2 Sep 2010 16:27:38 +0800
+Message-ID: <73839B4A0818E747864426270AC332C30561B6CF@zmy16exm20.fsl.freescale.net>
+In-Reply-To: <AANLkTim=Qc-zA=9E0SfOB+8V48Y957MXkefD324xoq0w@mail.gmail.com>
 References: <1280735524-17547-1-git-send-email-Mingkai.hu@freescale.com>
 	<1280735524-17547-2-git-send-email-Mingkai.hu@freescale.com>
-	<1280735524-17547-3-git-send-email-Mingkai.hu@freescale.com>
-	<1280735524-17547-4-git-send-email-Mingkai.hu@freescale.com>
-	<1280735524-17547-5-git-send-email-Mingkai.hu@freescale.com>
-	<AANLkTikM5je7Ckt=7bP6fj7OKCaroSn_AqgcS4T+Bv5d@mail.gmail.com>
+	<AANLkTim=Qc-zA=9E0SfOB+8V48Y957MXkefD324xoq0w@mail.gmail.com>
 From: Hu Mingkai-B21284 <B21284@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"David Woodhouse" <dwmw2@infradead.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <B11780@freescale.com>,
-	linux-mtd@lists.infradead.org, Zang Roy-R61911 <R61911@freescale.com>,
+	Zang Roy-R61911 <R61911@freescale.com>,
 	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,220 +40,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[adding mtd list]
+Hi Grant and all,
 
-Hi guys,
-
-Could you please take a look at this patch and give some suggestion?
-
-Thanks,
-Mingkai
+Sorry for the delay, I'm on business trip some weeks ago.
 
 > -----Original Message-----
 > From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of =
 Grant
 > Likely
-> Sent: Tuesday, August 10, 2010 3:00 PM
-> To: Hu Mingkai-B21284; David Woodhouse
+> Sent: Tuesday, August 10, 2010 2:40 PM
+> To: Hu Mingkai-B21284
 > Cc: linuxppc-dev@ozlabs.org; spi-devel-general@lists.sourceforge.net; =
 Gala
 > Kumar-B11780; Zang Roy-R61911
-> Subject: Re: [PATCH v2 4/6] mtd: m25p80: add a read function to read =
-page by
-> page
+> Subject: Re: [PATCH v2 1/6] spi/mpc8xxx: refactor the common code for =
+SPI/eSPI
+> controller
 >=20
-> [adding David Woodhouse]
->=20
-> (Btw, you should cc: David Woodhouse and the mtd list on the MTD =
-patches).
->=20
-> On Mon, Aug 2, 2010 at 1:52 AM, Mingkai Hu <Mingkai.hu@freescale.com> =
+> On Mon, Aug 2, 2010 at 1:51 AM, Mingkai Hu <Mingkai.hu@freescale.com> =
 wrote:
-> > For Freescale's eSPI controller, the max transaction length one time
-> > is limitted by the SPCOM[TRANSLEN] field which is 0xFFFF. When used
-> > mkfs.ext2 command to create ext2 filesystem on the flash, the read
-> > length will exceed the max value of the SPCOM[TRANSLEN] field, so
-> > change the read function to read page by page.
+> > Refactor the common code in file spi_mpc8xxx.c to spi_fsl_lib.c used
+> > by SPI/eSPI controller driver as a library, move the SPI controller
+> > driver to a new file spi_fsl_spi.c, and leave the QE/CPM SPI
+> > controller code in this file.
 > >
-> > For other SPI flash driver, also needed to supply the read function =
-if
-> > used the eSPI controller.
+> > Because the register map of the SPI controller and eSPI controller =
+is
+> > so different, also leave the code operated the register to the =
+driver
+> > code, not the common code.
 > >
 > > Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
->=20
-> This one bothers me, but I can't put my finger on it.  The flag feels =
-like a
-> controller specific hack.  David, can you take a look at this patch?
->=20
-> g.
->=20
 > > ---
-> >
 > > v2:
-> > =A0- Add SPI_MASTER_TRANS_LIMIT flag to indicate the master's trans
-> > length
-> > =A0 limitation, so the MTD driver can select the correct transfer
-> > behaviour
-> > =A0 at driver probe time
+> > =A0- Rename spi_mpc8xxx.c to spi_fsl_lib.c, also the config name
+> > =A0- Rename fsl_spi.c to spi_fsl_spi.c, also the config name
+> > =A0- Move register map definiton from spi_fsl_lib.c to spi_fsl_spi.c
+> > =A0- Break some funcions line in the arguments instead of the
+> > declaration
+> > =A0- Init bits_per_word to 0 to eliminate the else clause
+> > =A0- Add brace for the else clause to match if clause
+> > =A0- Drop the last entry's comma in the match table
+> > =A0- move module_init() immediately after the init fsl_spi_init()
+> > function
 > >
-> > =A0drivers/mtd/devices/m25p80.c | =A0 78
-> > ++++++++++++++++++++++++++++++++++++++++++
-> > =A0drivers/spi/spi_fsl_espi.c =A0 | =A0 =A01 +
-> > =A0include/linux/spi/spi.h =A0 =A0 =A0| =A0 =A01 +
-> > =A03 files changed, 80 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/mtd/devices/m25p80.c
-> > b/drivers/mtd/devices/m25p80.c index 5f00075..30e4568 100644
-> > --- a/drivers/mtd/devices/m25p80.c
-> > +++ b/drivers/mtd/devices/m25p80.c
-> > @@ -376,6 +376,81 @@ static int m25p80_read(struct mtd_info *mtd,
-> > loff_t from, size_t len,
-> > =A0}
-> >
-> > =A0/*
-> > + * Read an address range from the flash chip page by page.
-> > + * Some controller has transaction length limitation such as the
-> > + * Freescale's eSPI controller can only trasmit 0xFFFF bytes one
-> > + * time, so we have to read page by page if the len is more than
-> > + * the limitation.
-> > + */
-> > +static int m25p80_page_read(struct mtd_info *mtd, loff_t from, =
-size_t
-> > +len,
-> > + =A0 =A0 =A0 size_t *retlen, u_char *buf)
-> > +{
-> > + =A0 =A0 =A0 struct m25p *flash =3D mtd_to_m25p(mtd);
-> > + =A0 =A0 =A0 struct spi_transfer t[2];
-> > + =A0 =A0 =A0 struct spi_message m;
-> > + =A0 =A0 =A0 u32 i, page_size =3D 0;
-> > +
-> > + =A0 =A0 =A0 DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %zd\n",
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-dev_name(&flash->spi->dev), __func__, "from",
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (u32)from, len);
-> > +
-> > + =A0 =A0 =A0 /* sanity checks */
-> > + =A0 =A0 =A0 if (!len)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> > +
-> > + =A0 =A0 =A0 if (from + len > flash->mtd.size)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> > +
-> > + =A0 =A0 =A0 spi_message_init(&m);
-> > + =A0 =A0 =A0 memset(t, 0, (sizeof t));
-> > +
-> > + =A0 =A0 =A0 /* NOTE:
-> > + =A0 =A0 =A0 =A0* OPCODE_FAST_READ (if available) is faster.
-> > + =A0 =A0 =A0 =A0* Should add 1 byte DUMMY_BYTE.
-> > + =A0 =A0 =A0 =A0*/
-> > + =A0 =A0 =A0 t[0].tx_buf =3D flash->command;
-> > + =A0 =A0 =A0 t[0].len =3D m25p_cmdsz(flash) + FAST_READ_DUMMY_BYTE;
-> > + =A0 =A0 =A0 spi_message_add_tail(&t[0], &m);
-> > +
-> > + =A0 =A0 =A0 t[1].rx_buf =3D buf;
-> > + =A0 =A0 =A0 spi_message_add_tail(&t[1], &m);
-> > +
-> > + =A0 =A0 =A0 /* Byte count starts at zero. */
-> > + =A0 =A0 =A0 if (retlen)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *retlen =3D 0;
-> > +
-> > + =A0 =A0 =A0 mutex_lock(&flash->lock);
-> > +
-> > + =A0 =A0 =A0 /* Wait till previous write/erase is done. */
-> > + =A0 =A0 =A0 if (wait_till_ready(flash)) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* REVISIT status return?? */
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&flash->lock);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 1;
-> > + =A0 =A0 =A0 }
-> > +
-> > + =A0 =A0 =A0 /* Set up the write data buffer. */
-> > + =A0 =A0 =A0 flash->command[0] =3D OPCODE_READ;
-> > +
-> > + =A0 =A0 =A0 for (i =3D page_size; i < len; i +=3D page_size) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 page_size =3D len - i;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (page_size > flash->page_size)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 page_size =3D =
-flash->page_size;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 m25p_addr2cmd(flash, from + i, =
-flash->command);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 t[1].len =3D page_size;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 t[1].rx_buf =3D buf + i;
-> > +
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 spi_sync(flash->spi, &m);
-> > +
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *retlen +=3D m.actual_length - =
-m25p_cmdsz(flash)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 - =
-FAST_READ_DUMMY_BYTE;
-> > + =A0 =A0 =A0 }
-> > +
-> > + =A0 =A0 =A0 mutex_unlock(&flash->lock);
-> > +
-> > + =A0 =A0 =A0 return 0;
-> > +}
-> > +
-> > +/*
-> > =A0* Write an address range to the flash chip. =A0Data must be =
-written in
-> > =A0* FLASH_PAGESIZE chunks. =A0The address range may be any size =
-provided
-> > =A0* it is within the physical boundaries.
-> > @@ -877,6 +952,9 @@ static int __devinit m25p_probe(struct =
-spi_device
-> > *spi)
-> > =A0 =A0 =A0 =A0flash->mtd.erase =3D m25p80_erase;
-> > =A0 =A0 =A0 =A0flash->mtd.read =3D m25p80_read;
-> >
-> > + =A0 =A0 =A0 if (spi->master->flags & SPI_MASTER_TRANS_LIMIT)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 flash->mtd.read =3D m25p80_page_read;
-> > +
-> > =A0 =A0 =A0 =A0/* sst flash chips use AAI word program */
-> > =A0 =A0 =A0 =A0if (info->jedec_id >> 16 =3D=3D 0xbf)
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0flash->mtd.write =3D sst_write; diff =
---git
-> > a/drivers/spi/spi_fsl_espi.c b/drivers/spi/spi_fsl_espi.c index
-> > 61987cf..e15b7dc 100644
-> > --- a/drivers/spi/spi_fsl_espi.c
-> > +++ b/drivers/spi/spi_fsl_espi.c
-> > @@ -470,6 +470,7 @@ static struct spi_master * __devinit
-> > fsl_espi_probe(struct device *dev,
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err_probe;
-> >
-> > =A0 =A0 =A0 =A0master->setup =3D fsl_espi_setup;
-> > + =A0 =A0 =A0 master->flags =3D SPI_MASTER_TRANS_LIMIT;
-> >
-> > =A0 =A0 =A0 =A0mpc8xxx_spi =3D spi_master_get_devdata(master);
-> > =A0 =A0 =A0 =A0mpc8xxx_spi->spi_do_one_msg =3D fsl_espi_do_one_msg; =
-diff --git
-> > a/include/linux/spi/spi.h b/include/linux/spi/spi.h index
-> > af56071..0729cbd 100644
-> > --- a/include/linux/spi/spi.h
-> > +++ b/include/linux/spi/spi.h
-> > @@ -261,6 +261,7 @@ struct spi_master {
-> > =A0#define SPI_MASTER_HALF_DUPLEX BIT(0) =A0 =A0 =A0 =A0 =A0/* can't =
-do full
-> > duplex */
-> > =A0#define SPI_MASTER_NO_RX =A0 =A0 =A0 BIT(1) =A0 =A0 =A0 =A0 =A0/* =
-can't do buffer
-> > read */
-> > =A0#define SPI_MASTER_NO_TX =A0 =A0 =A0 BIT(2) =A0 =A0 =A0 =A0 =A0/* =
-can't do buffer
-> > write */
-> > +#define SPI_MASTER_TRANS_LIMIT BIT(3) =A0 =A0 =A0 =A0 =A0/* have =
-trans length
-> > +limit */
-> >
-> > =A0 =A0 =A0 =A0/* Setup mode and clock, etc (spi driver may call =
-many times).
-> > =A0 =A0 =A0 =A0 *
-> > --
-> > 1.6.4
-> >
-> >
-> >
+> > =A0drivers/spi/Kconfig =A0 =A0 =A0 | =A0 20 +-
+> > =A0drivers/spi/Makefile =A0 =A0 =A0| =A0 =A03 +-
+> > =A0drivers/spi/spi_fsl_lib.c | =A0237 ++++++++
+> > =A0drivers/spi/spi_fsl_lib.h | =A0119 ++++
+> > =A0drivers/spi/spi_fsl_spi.c | 1173
+> > +++++++++++++++++++++++++++++++++++++
+> > =A0drivers/spi/spi_mpc8xxx.c | 1421
+> > ---------------------------------------------
 >=20
+> This patch seems pretty good now.  However, the rename from =
+spi_mpc8xxx.c to
+> spi_fsl_lib.c should be done in a separate patch.  It is too difficult =
+to track
+> what has changed, when the file gets moved at the same time.  Move the =
+file in
+> one patch verbatim (with the required Makefile change), and then move =
+out the
+> fsl_spi specific bits in a second patch.
 >=20
->=20
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
+
+Ok, I'll spilt this patch.
+
+Thanks,
+Mingkai
