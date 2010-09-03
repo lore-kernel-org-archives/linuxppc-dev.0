@@ -1,24 +1,40 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 41966B717F
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 21:44:01 +1000 (EST)
-Received: by ewy2 with SMTP id 2so1181784ewy.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 03 Sep 2010 04:44:00 -0700 (PDT)
-Date: Fri, 3 Sep 2010 15:43:57 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH 2/3][MTD] P4080/nand: Only make elbc nand driver detect
-	nand flash partitions
-Message-ID: <20100903114357.GC11847@oksana.dev.rtsoft.ru>
-References: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
-	<1281063096-26598-2-git-send-email-tie-fei.zang@freescale.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
+	by ozlabs.org (Postfix) with ESMTP id 3D50AB7198
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 21:49:41 +1000 (EST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+	by localhost (Postfix) with ESMTP id 04C601C81EE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 13:49:38 +0200 (CEST)
+Received: from mailhub1.si.c-s.fr ([192.168.12.234])
+	by localhost (mailhub1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id KG0Mxc++XExm for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id E3CF71C81BF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D6B58C73DF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new,
+	port 10023)
+	with ESMTP id f2Z1PmVm91t5 for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
+Received: from [192.168.4.167] (unknown [192.168.4.167])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 965BDC73DD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
+Message-ID: <4C80E0CB.9050507@c-s.fr>
+Date: Fri, 03 Sep 2010 13:49:31 +0200
+From: LEROY Christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1281063096-26598-2-git-send-email-tie-fei.zang@freescale.com>
-Cc: B25806@freescale.com, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org,
-	Scott Wood <scottwood@freescale.com>, akpm@linux-foundation.org,
-	B11780@freescale.com
+To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Dual ethernet attachment with single FEC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +44,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 06, 2010 at 10:51:35AM +0800, Roy Zang wrote:
-[...]
->  
-> +static struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl;
-> +
+  Hello,
 
-Are you sure that you want it as a global var? A bit scary change.
+I have a board with 2 PHYs attached to one FEC.
+I want to implement some kind of main-standby attachment to LAN by 
+setting the ISOLATE bit on one on the two PHYs then monitoring the link 
+status and switch to the other PHY when the link status goes down.
 
-Oh, you probably don't need it, as you can get it from
-fsl_lbc_ctrl_dev->nand?
+What would be the most proper way to implement this functionality ?
+* Modify FEC driver to manage that ?
+* Implement a virtual PHY driver that would manage that ?
+* Other solution ?
 
-I wonder if Scott saw these patches? Cc'ed.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Best regards
+C. Leroy
