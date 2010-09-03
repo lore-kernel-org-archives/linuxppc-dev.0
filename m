@@ -1,20 +1,21 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 3E3F8B714E
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 22:09:03 +1000 (EST)
-Received: by eyg24 with SMTP id 24so1204577eyg.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 03 Sep 2010 05:09:01 -0700 (PDT)
-Date: Fri, 3 Sep 2010 16:08:58 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: =?utf-8?B?QW5kcsOp?= Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: How to define an I2C-to-SPI bridge device ?
-Message-ID: <20100903120858.GA19380@oksana.dev.rtsoft.ru>
-References: <1283502979.17812.22.camel@swa-m460>
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id CA93BB718B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  4 Sep 2010 00:50:24 +1000 (EST)
+Subject: RE: P1021MDS QE Ethernet Ports
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: Ioannis Kokkoris <johnkokko@hotmail.com>
+In-Reply-To: <COL120-W1B541E7CCFDA55F070E79A78D0@phx.gbl>
+References: <COL120-W4274596E983E02BCBF4AD0A78B0@phx.gbl>
+	,<COL120-W10FFCD057D88A833B4B46EA78C0@phx.gbl>
+	,<1283434368.2904.2.camel@udp120119uds.am.freescale.net>
+	<COL120-W1B541E7CCFDA55F070E79A78D0@phx.gbl>
+Content-Type: text/plain
+Date: Fri, 3 Sep 2010 10:39:47 -0400
+Message-ID: <1283524788.2930.6.camel@udp120119uds.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1283502979.17812.22.camel@swa-m460>
-Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
-	DevTreeDiscuss <devicetree-discuss@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 03, 2010 at 10:36:19AM +0200, André Schwarz wrote:
-> Hi,
+On Fri, 2010-03-09 at 10:05 +0300, Ioannis Kokkoris wrote:
+> We are using a board revision 2 (pilot version). Our main concern is whether this issue affects the working UCC1 eth interface performance.
+No, it won't affect the performance. We got line rate for performance
+for UECs on this board.
+
+> Do you think that removing or pulling-down R79 (pin 21@U11) will fix the problem with ENET1?
+I don't know.
+
+> > You can connect two UECs for your current development.
 > 
-> we're about to get new MPC8377 based hardware with various peripherals.
-> There are two I2C-to-SPI bridge devices (NXP SC18IS602) and I'm not sure
-> how to define a proper dts...
-> 
-> Of course it's an easy thing creating 2 child nodes on the CPU's I2C
-> device - but how can I represent the created SPI bus ?
+> Do you mean that changing the ENET1 interface from UCC1 to UCC3 in dts may solve the problem?
+No, I did not mean that. Only UCC1 and UCC5 are wired out for Ethernet
+mode on this board, you can not change the UCC#. I meant, you should
+have both UCC1/UCC5(ENET1/ENET5) connected with Ethernet cable.
 
-Um.. the same as the other SPI buses? I.e.
-
-i2c-controller {  /* SOC I2C controller */
-	spi-controller {  /* The I2C-to-SPI bridge */
-		spi-device@0 {
-		};
-		spi-device@1 {
-		};
-	};
-};
-
-> Is the (possibly) required driver (of_sc18is60x_spi ?) supposed to be an
-> I2C slave or an SPI host driver ?
-
-It should be an I2C driver that registers an SPI master (i.e.
-calls spi_alloc_master() and spi_register_master()).
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Haiying
