@@ -1,17 +1,36 @@
-Return-Path: <emillbrandt@dekaresearch.com>
-Received: from dekaexchange07.deka.local (mail.dekaresearch.com
-	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id 5D02FB714C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Sep 2010 03:34:01 +1000 (EST)
-From: Eric Millbrandt <emillbrandt@dekaresearch.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2] powerpc/5200: tighten up ac97 reset timing
-Date: Fri, 3 Sep 2010 13:27:38 -0400
-Message-ID: <1283534858-17951-1-git-send-email-emillbrandt@dekaresearch.com>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
+	[213.199.154.209]) by ozlabs.org (Postfix) with ESMTP id EF3AEB7157
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Sep 2010 03:49:09 +1000 (EST)
+Received: from mail12-am1 (localhost.localdomain [127.0.0.1])	by
+	mail12-am1-R.bigfish.com (Postfix) with ESMTP id ED8B312E811C	for
+	<linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 17:33:59 +0000 (UTC)
+Received: from am1ehsmhs008.bigfish.com (unknown [10.3.201.240])	by
+	mail12-am1.bigfish.com (Postfix) with ESMTP id BC8A966804B	for
+	<linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 17:33:59 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o83HXeeZ008834	for
+	<linuxppc-dev@ozlabs.org>; Fri, 3 Sep 2010 10:33:51 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o83HmRG4021129	for <linuxppc-dev@ozlabs.org>;
+	Fri, 3 Sep 2010 12:48:27 -0500 (CDT)
+Date: Fri, 3 Sep 2010 12:33:38 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [PATCH 2/3][MTD] P4080/nand: Only make elbc nand driver detect
+	nand flash partitions
+Message-ID: <20100903123338.0884a761@schlenkerla.am.freescale.net>
+In-Reply-To: <20100903114357.GC11847@oksana.dev.rtsoft.ru>
+References: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
+	<1281063096-26598-2-git-send-email-tie-fei.zang@freescale.com>
+	<20100903114357.GC11847@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: B25806@freescale.com, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
+	B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,59 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tighten up time timing around the gpio reset functionality.  Add a 200ns
-delay before remuxing the pins back to ac97 to comply with the ac97 spec.
+On Fri, 3 Sep 2010 15:43:57 +0400
+Anton Vorontsov <cbouatmailru@gmail.com> wrote:
 
-Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
----
+> On Fri, Aug 06, 2010 at 10:51:35AM +0800, Roy Zang wrote:
+> [...]
+> >  
+> > +static struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl;
+> > +
+> 
+> Are you sure that you want it as a global var? A bit scary change.
+> 
+> Oh, you probably don't need it, as you can get it from
+> fsl_lbc_ctrl_dev->nand?
+> 
+> I wonder if Scott saw these patches? Cc'ed.
 
-Scope shots availible upon request
+I saw many iterations of these patches. :-)
 
-changes since v1
-- amended with comments from Wolfram Sang
+I had the same reaction to this, but during internal review it did not
+seem to be the most pressing concern to focus on.
 
- arch/powerpc/platforms/52xx/mpc52xx_common.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+In practice, there will only be one eLBC, and properly handling multiple
+devices and binding the right one across this new boundary would have
+been unnecessary complexity.
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/pl=
-atforms/52xx/mpc52xx_common.c
-index 6e90531..41f3a7e 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -325,12 +325,16 @@ int mpc5200_psc_ac97_gpio_reset(int psc_number)
-        clrbits32(&simple_gpio->simple_dvo, sync | out);
-        clrbits8(&wkup_gpio->wkup_dvo, reset);
-
--       /* wait at lease 1 us */
--       udelay(2);
-+       /* wait for 1 us */
-+       udelay(1);
-
-        /* Deassert reset */
-        setbits8(&wkup_gpio->wkup_dvo, reset);
-
-+       /* wait at least 200ns */
-+       /* 7 ~=3D (200ns * timebase) / ns2sec */
-+       __delay(7);
-+
-        /* Restore pin-muxing */
-        out_be32(&simple_gpio->port_config, mux);
-
---
-1.6.3.1
-
--DISCLAIMER: an automatically appended disclaimer may follow. By posting-
--to a public e-mail mailing list I hereby grant permission to distribute-
--and copy this message.-
-
-This e-mail and the information, including any attachments, it contains are=
- intended to be a confidential communication only to the person or entity t=
-o whom it is addressed and may contain information that is privileged. If t=
-he reader of this message is not the intended recipient, you are hereby not=
-ified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, =
-please immediately notify the sender and destroy the original message.
-
-Thank you.
-
-Please consider the environment before printing this email.
+-Scott
