@@ -1,21 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id B6CAAB717F
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4B106B7155
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 12:09:02 +1000 (EST)
-Received: by iwn4 with SMTP id 4so1075182iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 02 Sep 2010 19:09:00 -0700 (PDT)
-Date: Thu, 2 Sep 2010 22:08:51 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: tmarri@apm.com
-Subject: Re: [PATCH] APM821xx: Add support for new SoC APM821xx
-Message-ID: <20100903020851.GC29732@hansolo.jdub.homelinux.org>
-References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283464653-18492-1-git-send-email-tmarri@apm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri,  3 Sep 2010 13:24:12 +1000 (EST)
+Date: Fri, 3 Sep 2010 13:24:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the final tree (powerpc
+	related)
+Message-Id: <20100903132410.ede593ed.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 02, 2010 at 02:57:33PM -0700, tmarri@apm.com wrote:
->From: Tirumala Marri <tmarri@apm.com>
->
->This patch adds CPU, device tree, defconfig and bluestone board
->support for APM821xx SoC.
->
->Signed-off-by: Tirumala R Marri <tmarri@apm.com>
->---
->APM821xx is Applied Micro Circuits Corporations naming convention for
->new line of SoCs.
+Hi all,
 
-So is it a 440x6 core then?  Or what core is inside the SoC?
+After merging the final tree, today's linux-next build
+(powerpc64 allnoconfig) failed like this:
 
-josh
+arch/powerpc/kernel/built-in.o: In function `.sys_call_table':
+(.text+0x8d48): undefined reference to `.compat_sys_recv'
+
+Caused by commit 86250b9d12caa1a3dee12a7cf638b7dd70eaadb6 ("powerpc: Wire
+up direct socket system calls").
+
+I have applied this patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 3 Sep 2010 13:19:04 +1000
+Subject: [PATCH] powerpc: define a compat_sys_recv cond_syscall
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ kernel/sys_ni.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index bad369e..c782fe9 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -50,6 +50,7 @@ cond_syscall(compat_sys_sendmsg);
+ cond_syscall(sys_recvmsg);
+ cond_syscall(sys_recvmmsg);
+ cond_syscall(compat_sys_recvmsg);
++cond_syscall(compat_sys_recv);
+ cond_syscall(compat_sys_recvfrom);
+ cond_syscall(compat_sys_recvmmsg);
+ cond_syscall(sys_socketcall);
+-- 
+1.7.1
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
