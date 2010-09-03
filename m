@@ -1,24 +1,21 @@
-Return-Path: <Liang.Li@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7D495B71A6
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 11:18:41 +1000 (EST)
-Date: Fri, 3 Sep 2010 09:20:29 +0800
-From: Liang Li <liang.li@windriver.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [v2 PATCH] ucc_geth: fix ethtool set ring param bug
-Message-ID: <20100903012029.GB9901@localhost>
-References: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
-	<1283443364-2136-1-git-send-email-liang.li@windriver.com>
-	<1283450699.2272.18.camel@achroite.uk.solarflarecom.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id B6CAAB717F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Sep 2010 12:09:02 +1000 (EST)
+Received: by iwn4 with SMTP id 4so1075182iwn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 02 Sep 2010 19:09:00 -0700 (PDT)
+Date: Thu, 2 Sep 2010 22:08:51 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: tmarri@apm.com
+Subject: Re: [PATCH] APM821xx: Add support for new SoC APM821xx
+Message-ID: <20100903020851.GC29732@hansolo.jdub.homelinux.org>
+References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283450699.2272.18.camel@achroite.uk.solarflarecom.com>
-Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
-	linuxppc-dev@ozlabs.org
-Reply-To: Liang Li <liang.li@windriver.com>
+In-Reply-To: <1283464653-18492-1-git-send-email-tmarri@apm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 02, 2010 at 07:04:59PM +0100, Ben Hutchings wrote:
-> On Fri, 2010-09-03 at 00:02 +0800, Liang Li wrote:
-> > It's common sense that when we should do change to driver ring
-> > desc/buffer etc only after 'stop/shutdown' the device. When we
-> > do change while devices/driver is running, kernel oops occur:
-> [...]
-> > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
-> > +		ret = ucc_geth_open(netdev);
-> > +		if (ret) {
-> > +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
-> > +					" interface %s failed. Please try again.\n", netdev->name);
-> > +			dev_close(netdev);
-> [...]
-> 
-> If ucc_geth_open() failed you MUST NOT call ucc_geth_close(), but that
-> is what dev_close() is going to do.  But the device is still flagged as
-> running so 'ifconfig down' is going to call dev_close() as well.  There
-> is no way out.
+On Thu, Sep 02, 2010 at 02:57:33PM -0700, tmarri@apm.com wrote:
+>From: Tirumala Marri <tmarri@apm.com>
+>
+>This patch adds CPU, device tree, defconfig and bluestone board
+>support for APM821xx SoC.
+>
+>Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+>---
+>APM821xx is Applied Micro Circuits Corporations naming convention for
+>new line of SoCs.
 
-dev_close is safe enough IMHO. Call dev_close repeatly won't cause
-problem though.
+So is it a 440x6 core then?  Or what core is inside the SoC?
 
-> 
-> This is why I said you must call dev_close() and then dev_open()
-> instead.  Then if dev_open() fails, just print the error, e.g.:
-> 
->                dev_close(netdev);
->                ret = dev_open(netdev);
->                if (ret)
->                        netdev_err(netdev,
->                                   "uec_set_ringparam: failed to restart"
->                                   " interface with new ring parameters\n");
-> 
-> (And I think this really is a serious error, hence the 'err' rather than
-> 'warning' severity.)
-
-I checked NIC drivers in drivers/net, there is no such:
-
-	dev_close(netdev);
-	ret = dev_open(netdev)
-	if (ret)
-		netdev_err(...);
-
-Instead, there are:
-
-	nic_driver_close/down(netdev);
-	ret = nic_driver_open/restart(netdev);
-	if (ret) {
-		waring;
-		dev_close(netdev);
-	}
-
-> 
-> (By the way, I noticed there are other places where ucc_geth_close() and
-> ucc_geth_open() are called, without error checking.  These are also
-> bugs, but that doesn't justify adding new bugs.)
-
-I think I did not invite new bugs, as I mentioned before, can you show
-scenario that the reopen fail and perfect cleanup way?
-
-Thanks,
-				-Liang Li
-
-> 
-> Ben.
-> 
-> -- 
-> Ben Hutchings, Senior Software Engineer, Solarflare Communications
-> Not speaking for my employer; that's the marketing department's job.
-> They asked us to note that Solarflare product names are trademarked.
+josh
