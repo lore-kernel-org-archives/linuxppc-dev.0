@@ -1,20 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C7B4AB7189
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 11:12:09 +1000 (EST)
-Date: Fri, 3 Sep 2010 11:12:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: linux-next: manual merge of the galak tree with the powerpc-merge tree
-Message-Id: <20100903111202.6529b9c4.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__3_Sep_2010_11_12_02_+1000_FoOh2.BmjlSlcK1B"
-Cc: linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <Liang.Li@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7D495B71A6
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 11:18:41 +1000 (EST)
+Date: Fri, 3 Sep 2010 09:20:29 +0800
+From: Liang Li <liang.li@windriver.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Subject: Re: [v2 PATCH] ucc_geth: fix ethtool set ring param bug
+Message-ID: <20100903012029.GB9901@localhost>
+References: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
+	<1283443364-2136-1-git-send-email-liang.li@windriver.com>
+	<1283450699.2272.18.camel@achroite.uk.solarflarecom.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1283450699.2272.18.camel@achroite.uk.solarflarecom.com>
+Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org
+Reply-To: Liang Li <liang.li@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__3_Sep_2010_11_12_02_+1000_FoOh2.BmjlSlcK1B
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Sep 02, 2010 at 07:04:59PM +0100, Ben Hutchings wrote:
+> On Fri, 2010-09-03 at 00:02 +0800, Liang Li wrote:
+> > It's common sense that when we should do change to driver ring
+> > desc/buffer etc only after 'stop/shutdown' the device. When we
+> > do change while devices/driver is running, kernel oops occur:
+> [...]
+> > +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
+> > +		ret = ucc_geth_open(netdev);
+> > +		if (ret) {
+> > +			printk(KERN_WARNING "uec_set_ringparam: set ring param for running"
+> > +					" interface %s failed. Please try again.\n", netdev->name);
+> > +			dev_close(netdev);
+> [...]
+> 
+> If ucc_geth_open() failed you MUST NOT call ucc_geth_close(), but that
+> is what dev_close() is going to do.  But the device is still flagged as
+> running so 'ifconfig down' is going to call dev_close() as well.  There
+> is no way out.
 
-Hi Kumar,
+dev_close is safe enough IMHO. Call dev_close repeatly won't cause
+problem though.
 
-Today's linux-next merge of the galak tree got a conflict in
-arch/powerpc/platforms/85xx/mpc85xx_mds.c between commit
-6d4f2fb0860c36e7ef16cc41126242a8b6542771 ("powerpc/85xx: Fix compilation
-of mpc85xx_mds.c") from the powerpc-merge tree and commit
-5dc45967402dd124980fce88d34d7f4a012a381b ("powerpc/85xx: Fix compile
-error in mpc85xx_mds.c") from the galak tree.
+> 
+> This is why I said you must call dev_close() and then dev_open()
+> instead.  Then if dev_open() fails, just print the error, e.g.:
+> 
+>                dev_close(netdev);
+>                ret = dev_open(netdev);
+>                if (ret)
+>                        netdev_err(netdev,
+>                                   "uec_set_ringparam: failed to restart"
+>                                   " interface with new ring parameters\n");
+> 
+> (And I think this really is a serious error, hence the 'err' rather than
+> 'warning' severity.)
 
-I used the version in the powerpc-merge tree as the inititalisation of np
-is unnecessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I checked NIC drivers in drivers/net, there is no such:
 
---Signature=_Fri__3_Sep_2010_11_12_02_+1000_FoOh2.BmjlSlcK1B
-Content-Type: application/pgp-signature
+	dev_close(netdev);
+	ret = dev_open(netdev)
+	if (ret)
+		netdev_err(...);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Instead, there are:
 
-iQEcBAEBAgAGBQJMgEtiAAoJEDMEi1NhKgbsh6oH/jrfmOL7kCK6FhIe5T7E4nDi
-HE/vSbMMW5tPQupQTy2srr9drBupSnBUg6EMuJJrbHmk4c+0iD3YjtmT4RYHYHNG
-oy05IccAIYmNuf+w3zOY/CewZPTr/ibLNMdbML7C1OrR3+RY6ZCfCcpTDBcy4COA
-LBBLfTgA4176QRVhcU7YdckxeSCVyB6K3vXkNCJNUpnERoJzEWV7XMe056/7DiuR
-Ij/zGn5LdGyS4zHbHTOEHr4vZDWIR/acwKx5c5ro0hvIi5CrMeTdOxM1n+BXLyT6
-Q1L7jAs221gCwGAdNrv0nH2Pci5OsS+eyys8wBMd13ruUhzsTAR2h+YnlAjM/tc=
-=DHLf
------END PGP SIGNATURE-----
+	nic_driver_close/down(netdev);
+	ret = nic_driver_open/restart(netdev);
+	if (ret) {
+		waring;
+		dev_close(netdev);
+	}
 
---Signature=_Fri__3_Sep_2010_11_12_02_+1000_FoOh2.BmjlSlcK1B--
+> 
+> (By the way, I noticed there are other places where ucc_geth_close() and
+> ucc_geth_open() are called, without error checking.  These are also
+> bugs, but that doesn't justify adding new bugs.)
+
+I think I did not invite new bugs, as I mentioned before, can you show
+scenario that the reopen fail and perfect cleanup way?
+
+Thanks,
+				-Liang Li
+
+> 
+> Ben.
+> 
+> -- 
+> Ben Hutchings, Senior Software Engineer, Solarflare Communications
+> Not speaking for my employer; that's the marketing department's job.
+> They asked us to note that Solarflare product names are trademarked.
