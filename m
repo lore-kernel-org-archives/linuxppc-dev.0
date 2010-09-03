@@ -1,40 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
-	by ozlabs.org (Postfix) with ESMTP id 3D50AB7198
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 21:49:41 +1000 (EST)
-Received: from localhost (mailhub1-int [192.168.12.234])
-	by localhost (Postfix) with ESMTP id 04C601C81EE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 13:49:38 +0200 (CEST)
-Received: from mailhub1.si.c-s.fr ([192.168.12.234])
-	by localhost (mailhub1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KG0Mxc++XExm for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id E3CF71C81BF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D6B58C73DF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new,
-	port 10023)
-	with ESMTP id f2Z1PmVm91t5 for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
-Received: from [192.168.4.167] (unknown [192.168.4.167])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 965BDC73DD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Sep 2010 13:49:37 +0200 (CEST)
-Message-ID: <4C80E0CB.9050507@c-s.fr>
-Date: Fri, 03 Sep 2010 13:49:31 +0200
-From: LEROY Christophe <christophe.leroy@c-s.fr>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 3E3F8B714E
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Sep 2010 22:09:03 +1000 (EST)
+Received: by eyg24 with SMTP id 24so1204577eyg.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 03 Sep 2010 05:09:01 -0700 (PDT)
+Date: Fri, 3 Sep 2010 16:08:58 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: =?utf-8?B?QW5kcsOp?= Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: How to define an I2C-to-SPI bridge device ?
+Message-ID: <20100903120858.GA19380@oksana.dev.rtsoft.ru>
+References: <1283502979.17812.22.camel@swa-m460>
 MIME-Version: 1.0
-To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Dual ethernet attachment with single FEC
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1283502979.17812.22.camel@swa-m460>
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
+	DevTreeDiscuss <devicetree-discuss@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,17 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  Hello,
+On Fri, Sep 03, 2010 at 10:36:19AM +0200, André Schwarz wrote:
+> Hi,
+> 
+> we're about to get new MPC8377 based hardware with various peripherals.
+> There are two I2C-to-SPI bridge devices (NXP SC18IS602) and I'm not sure
+> how to define a proper dts...
+> 
+> Of course it's an easy thing creating 2 child nodes on the CPU's I2C
+> device - but how can I represent the created SPI bus ?
 
-I have a board with 2 PHYs attached to one FEC.
-I want to implement some kind of main-standby attachment to LAN by 
-setting the ISOLATE bit on one on the two PHYs then monitoring the link 
-status and switch to the other PHY when the link status goes down.
+Um.. the same as the other SPI buses? I.e.
 
-What would be the most proper way to implement this functionality ?
-* Modify FEC driver to manage that ?
-* Implement a virtual PHY driver that would manage that ?
-* Other solution ?
+i2c-controller {  /* SOC I2C controller */
+	spi-controller {  /* The I2C-to-SPI bridge */
+		spi-device@0 {
+		};
+		spi-device@1 {
+		};
+	};
+};
 
-Best regards
-C. Leroy
+> Is the (possibly) required driver (of_sc18is60x_spi ?) supposed to be an
+> I2C slave or an SPI host driver ?
+
+It should be an I2C driver that registers an SPI master (i.e.
+calls spi_alloc_master() and spi_register_master()).
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
