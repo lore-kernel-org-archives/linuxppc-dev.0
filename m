@@ -1,19 +1,13 @@
 Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 03015B7151
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Sep 2010 20:12:07 +1000 (EST)
 From: Julia Lawall <julia@diku.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] arch/powerpc/kernel/irq.c: Add of_node_put to avoid
-	memory leak
-Date: Sat,  4 Sep 2010 12:12:44 +0200
-Message-Id: <1283595164-29146-2-git-send-email-julia@diku.dk>
-Cc: Paul Mackerras <paulus@samba.org>, kernel-janitors@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Subject: [PATCH 1/2] drivers/net/fs_enet/fs_enet-main.c: Add of_node_put to
+	avoid memory leak
+Date: Sat,  4 Sep 2010 12:12:43 +0200
+Message-Id: <1283595164-29146-1-git-send-email-julia@diku.dk>
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,22 +46,27 @@ cocci.print_secs("free",p2)
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/powerpc/kernel/irq.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/fs_enet/fs_enet-main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 4a65386..0a5bbe5 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -587,8 +587,10 @@ struct irq_host *irq_alloc_host(struct device_node *of_node,
- 			 * this will be fixed once slab is made available early
- 			 * instead of the current cruft
- 			 */
--			if (mem_init_done)
-+			if (mem_init_done) {
-+				of_node_put(host->of_node);
- 				kfree(host);
-+			}
- 			return NULL;
- 		}
- 		irq_map[0].host = host;
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index d6e3111..d684f18 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -1036,7 +1036,7 @@ static int __devinit fs_enet_probe(struct platform_device *ofdev,
+ 	ndev = alloc_etherdev(privsize);
+ 	if (!ndev) {
+ 		ret = -ENOMEM;
+-		goto out_free_fpi;
++		goto out_put;
+ 	}
+ 
+ 	SET_NETDEV_DEV(ndev, &ofdev->dev);
+@@ -1099,6 +1099,7 @@ out_cleanup_data:
+ out_free_dev:
+ 	free_netdev(ndev);
+ 	dev_set_drvdata(&ofdev->dev, NULL);
++out_put:
+ 	of_node_put(fpi->phy_node);
+ out_free_fpi:
+ 	kfree(fpi);
