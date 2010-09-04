@@ -1,25 +1,13 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB93CB714E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Sep 2010 10:54:00 +1000 (EST)
-Date: Fri, 3 Sep 2010 17:58:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH] fsldma: fix missing header include
-Message-Id: <20100903175831.27bb56fc.akpm@linux-foundation.org>
-In-Reply-To: <20100904004724.GA4085@ovro.caltech.edu>
-References: <20100902194752.GA24861@ovro.caltech.edu>
-	<20100903164033.6ae37727.akpm@linux-foundation.org>
-	<20100904004724.GA4085@ovro.caltech.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <julia@diku.dk>
+From: Julia Lawall <julia@diku.dk>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] arch/powerpc/platforms/52xx/efika.c: Add of_node_put to avoid
+	memory leak
+Date: Sat,  4 Sep 2010 09:13:17 +0200
+Message-Id: <1283584397-7697-1-git-send-email-julia@diku.dk>
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +17,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 3 Sep 2010 17:47:24 -0700 "Ira W. Snyder" <iws@ovro.caltech.edu> wrote:
+This function is implemented as though the function of_get_next_child does
+not increment the reference count of its result, but actually it does.
+Thus the patch adds of_node_put in error handling code and drops a call to
+of_node_get.
 
-> On Fri, Sep 03, 2010 at 04:40:33PM -0700, Andrew Morton wrote:
-> > On Thu, 2 Sep 2010 12:47:52 -0700
-> > "Ira W. Snyder" <iws@ovro.caltech.edu> wrote:
-> > 
-> > > The slab.h header is required to use the kmalloc() family of functions.
-> > > Due to recent kernel changes, this header must be directly included by
-> > > code that calls into the memory allocator.
-> > > 
-> > > Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
-> > > ---
-> > > 
-> > > Without this patch, any code which includes this header fails to build.
-> > > 
-> > >  arch/powerpc/include/asm/fsldma.h |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/fsldma.h b/arch/powerpc/include/asm/fsldma.h
-> > > index a67aeed..debc5ed 100644
-> > > --- a/arch/powerpc/include/asm/fsldma.h
-> > > +++ b/arch/powerpc/include/asm/fsldma.h
-> > > @@ -11,6 +11,7 @@
-> > >  #ifndef __ARCH_POWERPC_ASM_FSLDMA_H__
-> > >  #define __ARCH_POWERPC_ASM_FSLDMA_H__
-> > >  
-> > > +#include <linux/slab.h>
-> > >  #include <linux/dmaengine.h>
-> > >  
-> > 
-> > It also needs list.h, but appears to get it via sheer luck.
-> > 
-> > The functions in that header simply shouldn't have been inlined.
-> > 
-> > It's peculiar that fsl_dma_slave_append() hardwires GFP_ATOMIC, whereas
-> > fsl_dma_slave_alloc() takes a gfp_t.
-> > 
-> 
-> Would you like a patch that moves the functions to drivers/dma/fsldma.c
-> and EXPORT_SYMBOL_GPL()'s them?
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-Sure, thanks.  Then I can harrass Dan with it ;)
+// <smpl>
+@r exists@
+local idexpression x;
+expression E1;
+position p1,p2;
+@@
 
-> I don't know the consequences to doing
-> so, which is why I avoided it when I wrote
-> arch/powerpc/include/asm/fsldma.h.
+x@p1 = of_get_next_child(...);
+... when != x = E1
+of_node_get@p2(x)
 
-The minimal fix for the bug was appropriate.
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+cocci.print_main("call",p1)
+cocci.print_secs("get",p2)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/powerpc/platforms/52xx/efika.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
+index 45c0cb9..18c1048 100644
+--- a/arch/powerpc/platforms/52xx/efika.c
++++ b/arch/powerpc/platforms/52xx/efika.c
+@@ -99,7 +99,7 @@ static void __init efika_pcisetup(void)
+ 	if (bus_range == NULL || len < 2 * sizeof(int)) {
+ 		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+ 		       ": Can't get bus-range for %s\n", pcictrl->full_name);
+-		return;
++		goto out_put;
+ 	}
+ 
+ 	if (bus_range[1] == bus_range[0])
+@@ -111,12 +111,12 @@ static void __init efika_pcisetup(void)
+ 	printk(" controlled by %s\n", pcictrl->full_name);
+ 	printk("\n");
+ 
+-	hose = pcibios_alloc_controller(of_node_get(pcictrl));
++	hose = pcibios_alloc_controller(pcictrl);
+ 	if (!hose) {
+ 		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+ 		       ": Can't allocate PCI controller structure for %s\n",
+ 		       pcictrl->full_name);
+-		return;
++		goto out_put;
+ 	}
+ 
+ 	hose->first_busno = bus_range[0];
+@@ -124,6 +124,9 @@ static void __init efika_pcisetup(void)
+ 	hose->ops = &rtas_pci_ops;
+ 
+ 	pci_process_bridge_OF_ranges(hose, pcictrl, 0);
++	return;
++out_put:
++	of_node_put(pcictrl);
+ }
+ 
+ #else
