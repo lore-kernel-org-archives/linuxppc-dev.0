@@ -1,23 +1,22 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (mail.lixom.net [70.86.134.90])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EE805B70EB
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B23BEB70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  6 Sep 2010 04:59:45 +1000 (EST)
-From: Julia Lawall <julia@diku.dk>
-To: Olof Johansson <olof@lixom.net>
-Subject: [PATCH 4/8] drivers/i2c/busses/i2c-pasemi.c: Fix unsigned return type
-Date: Sun,  5 Sep 2010 21:00:22 +0200
-Message-Id: <1283713226-8429-5-git-send-email-julia@diku.dk>
-In-Reply-To: <1283713226-8429-1-git-send-email-julia@diku.dk>
-References: <1283713226-8429-1-git-send-email-julia@diku.dk>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-i2c@vger.kernel.org,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
-	"Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
-	linuxppc-dev@lists.ozlabs.org
+	Mon,  6 Sep 2010 08:30:56 +1000 (EST)
+Date: Sun, 5 Sep 2010 17:23:40 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Tirumala Marri <tmarri@apm.com>
+Subject: Re: [PATCH] APM821xx: Add support for new SoC APM821xx
+Message-ID: <20100905222340.GC2150@lixom.net>
+References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
+	<20100903020851.GC29732@hansolo.jdub.homelinux.org>
+	<197d4509c0b1206ce2d686c03701a6b4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <197d4509c0b1206ce2d686c03701a6b4@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function has an unsigned return type, but returns a negative constant
-to indicate an error condition.  The result of calling the function is
-always stored in a variable of type (signed) int, and thus unsigned can be
-dropped from the return type.
+On Fri, Sep 03, 2010 at 01:38:46PM -0700, Tirumala Marri wrote:
+> > >APM821xx is Applied Micro Circuits Corporations naming convention for
+> > >new line of SoCs.
+> >
+> > So is it a 440x6 core then?  Or what core is inside the SoC?
+> [Marri] It is 464 core.
 
-A sematic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
+Then the device tree identifier, and the cpu setup functions, etc, should indicate
+464, not APM821xx.
 
-// <smpl>
-@exists@
-identifier f;
-constant C;
-@@
+Also, why add yet another defconfig? Isn't the eval board similar to
+many others and can be supported with just a tweak of some existing
+common defconfig instead?
 
- unsigned f(...)
- { <+...
-*  return -C;
- ...+> }
-// </smpl>
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/i2c/busses/i2c-pasemi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
-index 4174101..837b8c1 100644
---- a/drivers/i2c/busses/i2c-pasemi.c
-+++ b/drivers/i2c/busses/i2c-pasemi.c
-@@ -88,7 +88,7 @@ static void pasemi_smb_clear(struct pasemi_smbus *smbus)
- 	reg_write(smbus, REG_SMSTA, status);
- }
- 
--static unsigned int pasemi_smb_waitready(struct pasemi_smbus *smbus)
-+static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
- {
- 	int timeout = 10;
- 	unsigned int status;
+-Olof
