@@ -1,26 +1,28 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 629AEB70F2
+Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
+Received: from faui40.informatik.uni-erlangen.de
+	(faui40.informatik.uni-erlangen.de [131.188.34.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 12EF8B70FF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Sep 2010 00:15:33 +1000 (EST)
-Received: by iwn4 with SMTP id 4so4318350iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 06 Sep 2010 07:15:31 -0700 (PDT)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Mon, 6 Sep 2010 10:15:13 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Tirumala Marri <tmarri@apm.com>
-Subject: Re: [PATCH] APM821xx: Add support for new SoC APM821xx
-Message-ID: <20100906141513.GA15942@hansolo.jdub.homelinux.org>
-References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
-	<20100903020851.GC29732@hansolo.jdub.homelinux.org>
-	<197d4509c0b1206ce2d686c03701a6b4@mail.gmail.com>
-	<20100905222340.GC2150@lixom.net>
-	<01bb9090932e6984c887273078fd586f@mail.gmail.com>
+	Tue,  7 Sep 2010 00:36:18 +1000 (EST)
+Date: Mon, 6 Sep 2010 16:36:12 +0200
+From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-s390@vger.kernel.org
+Subject: [PATCH 04/14] arch/{s390,powerpc}: Removing undead ifdef __KERNEL__
+Message-ID: <816d0f12ef97b609b367cfb7319792b95e0ad943.1283782701.git.qy03fugy@stud.informatik.uni-erlangen.de>
+References: <cover.1283782698.git.qy03fugy@stud.informatik.uni-erlangen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <01bb9090932e6984c887273078fd586f@mail.gmail.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <cover.1283782698.git.qy03fugy@stud.informatik.uni-erlangen.de>
+Cc: vamos-dev@i4.informatik.uni-erlangen.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 05, 2010 at 10:19:53PM -0700, Tirumala Marri wrote:
->>
->> Then the device tree identifier, and the cpu setup functions, etc,
->> should indicate
->> 464, not APM821xx.
->This is new SoC based on 464 cpu core. All the previous SoC device tree
->CPU portion uses SoC name.
->
->>
->> Also, why add yet another defconfig? Isn't the eval board similar to
->> many others and can be supported with just a tweak of some existing
->> common defconfig instead?
->>
->Every new board needs new defconfig. And it is not same as others. It has
->Different features from other.
+The __KERNEL__ ifdef isn't necessary at this point, because it is
+checked in an outer ifdef level already and has no effect here.
 
-You make it sound as if that is a hard and fixed rule.  It's not.  Not all
-boards need a defconfig.  Also, there was recent work to trim the defconfigs
-that exist today down so they are not so large.  I suggest you do the same
-if you want the defconfig included.
+Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+---
+ arch/powerpc/include/asm/processor.h     |    2 --
+ arch/powerpc/include/asm/vdso_datapage.h |    2 --
+ arch/s390/include/asm/processor.h        |    4 ----
+ 3 files changed, 0 insertions(+), 8 deletions(-)
 
-josh
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 19c05b0..3defd7a 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -122,7 +122,6 @@ extern struct task_struct *last_task_used_spe;
+ 		TASK_UNMAPPED_BASE_USER32 : TASK_UNMAPPED_BASE_USER64 )
+ #endif
+ 
+-#ifdef __KERNEL__
+ #ifdef __powerpc64__
+ 
+ #define STACK_TOP_USER64 TASK_SIZE_USER64
+@@ -139,7 +138,6 @@ extern struct task_struct *last_task_used_spe;
+ #define STACK_TOP_MAX	STACK_TOP
+ 
+ #endif /* __powerpc64__ */
+-#endif /* __KERNEL__ */
+ 
+ typedef struct {
+ 	unsigned long seg;
+diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
+index 08679c5..25e3922 100644
+--- a/arch/powerpc/include/asm/vdso_datapage.h
++++ b/arch/powerpc/include/asm/vdso_datapage.h
+@@ -116,9 +116,7 @@ struct vdso_data {
+ 
+ #endif /* CONFIG_PPC64 */
+ 
+-#ifdef __KERNEL__
+ extern struct vdso_data *vdso_data;
+-#endif
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/s390/include/asm/processor.h b/arch/s390/include/asm/processor.h
+index 73e2598..0e2a436 100644
+--- a/arch/s390/include/asm/processor.h
++++ b/arch/s390/include/asm/processor.h
+@@ -52,8 +52,6 @@ extern int get_cpu_capability(unsigned int *);
+ 
+ #endif /* __s390x__ */
+ 
+-#ifdef __KERNEL__
+-
+ #ifndef __s390x__
+ #define STACK_TOP		(1UL << 31)
+ #define STACK_TOP_MAX		(1UL << 31)
+@@ -63,8 +61,6 @@ extern int get_cpu_capability(unsigned int *);
+ #endif /* __s390x__ */
+ 
+ 
+-#endif
+-
+ #define HAVE_ARCH_PICK_MMAP_LAYOUT
+ 
+ typedef struct {
+-- 
+1.7.0.4
