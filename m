@@ -1,22 +1,21 @@
 Return-Path: <cbouatmailru@gmail.com>
 Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 315F7B70DC
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 18:09:44 +1000 (EST)
-Received: by eyg24 with SMTP id 24so2507787eyg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 06 Sep 2010 01:09:42 -0700 (PDT)
-Date: Mon, 6 Sep 2010 12:09:38 +0400
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id E7FB9B70F1
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 18:21:47 +1000 (EST)
+Received: by eyg24 with SMTP id 24so2510626eyg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Sep 2010 01:21:46 -0700 (PDT)
+Date: Mon, 6 Sep 2010 12:21:42 +0400
 From: Anton Vorontsov <cbouatmailru@gmail.com>
 To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH 2/3][MTD] P4080/nand: Only make elbc nand driver detect
-	nand flash partitions
-Message-ID: <20100906080938.GA13755@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc interrupt
+	common to elbc devices
+Message-ID: <20100906082142.GB13755@oksana.dev.rtsoft.ru>
 References: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
-	<1281063096-26598-2-git-send-email-tie-fei.zang@freescale.com>
-	<20100903114357.GC11847@oksana.dev.rtsoft.ru>
-	<3850A844E6A3854C827AC5C0BEC7B60A1B37B0@zch01exm23.fsl.freescale.net>
+	<20100903112755.GA11847@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A1B378F@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A1B37B0@zch01exm23.fsl.freescale.net>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A1B378F@zch01exm23.fsl.freescale.net>
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
 	Lan Chunhe-B25806 <B25806@freescale.com>,
 	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
@@ -30,40 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 06, 2010 at 12:49:17PM +0800, Zang Roy-R61911 wrote:
-> > On Fri, Aug 06, 2010 at 10:51:35AM +0800, Roy Zang wrote:
-> > [...]
-> > >
-> > > +static struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl;
-> > > +
+On Mon, Sep 06, 2010 at 11:38:09AM +0800, Zang Roy-R61911 wrote:
+[...]
+> > >  	switch (br & BR_MSEL) {
+> > >  	case BR_MS_UPMA:
+> > > -		upm->mxmr = &fsl_lbc_regs->mamr;
+> > > +		upm->mxmr = &fsl_lbc_ctrl_dev->regs->mamr;
 > > 
-> > Are you sure that you want it as a global var? A bit scary change.
+> > Ditto, a very repetitive stuff, desires a variable for regs?
+> But the fact is that the variable represents different reg
+> address according to the condition. It will be ugly to use
+> the reg address directoly.
+
+I meant a dedicated var for 'fsl_lbc_ctrl_dev->regs'.
+I.e.
+
+regs = fsl_lbc_ctrl_dev->regs;
+...
+mxmr = &regs->mamr;
+...
+mxmr = &regs->mbmr;
+..
+mxmr = &regs->mcmr;
+
+Instead of
+
+mxmr = &fsl_lbc_ctrl_dev->regs->mamr;
+...
+mxmr = &fsl_lbc_ctrl_dev->regs->mbmr;
+..
+mxmr = &fsl_lbc_ctrl_dev->regs->mcmr;
+
+[...]
+> > > +static int __devinit fsl_lbc_ctrl_probe(struct of_device *ofdev,
+> > > +					 const struct of_device_id *match)
+> > > +{
+> > > +	int ret = 0;
 > > 
-> > Oh, you probably don't need it, as you can get it from
-> > fsl_lbc_ctrl_dev->nand?
-> Get it form fsl_lbc_ctrl_dev->nand or assign it to
-> fsl_lbc_ctrl_dev->nand in probe?
+> > no need for the initial value here.
+> Any harm?
 
-I meant to get it from fsl_lbc_ctrl_dev->nand. I.e. in
-probe() you do: fsl_lbc_ctrl_dev->nand = elbc_fcm_ctrl, so
-you probably don't need the global var.
-
-(fsl_lbc_ctrl_dev seems to be global as well, duh. Well,
-one variable less in the global name space. But I'd
-probably use lbc_np->data to store the LBC private
-struct).
-
-Scott seem to be fine with it as there are probably no
-plans to to add several localbus controllers into the SoCs.
-
-But, I saw a custom board with two MPC82xx SoCs connected
-together, one as a master (core + peripheral devs), and
-other as a slave (its core was halted, and only slave's
-CPM peripheral devices were used by the master CPU).
-
-I think it is possible to connect two (or more) SoCs in
-a such way so that two or more LBC controllers would
-be visible for the Linux.
+Probably not as gcc will likely optimize it away,
+but it's not needed, so why keep it there?
 
 Thanks,
 
