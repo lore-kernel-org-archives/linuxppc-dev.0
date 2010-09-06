@@ -1,28 +1,22 @@
-Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
-Received: from faui40.informatik.uni-erlangen.de
-	(faui40.informatik.uni-erlangen.de [131.188.34.40])
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 12EF8B70FF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Sep 2010 00:36:18 +1000 (EST)
-Date: Mon, 6 Sep 2010 16:36:12 +0200
-From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-s390@vger.kernel.org
-Subject: [PATCH 04/14] arch/{s390,powerpc}: Removing undead ifdef __KERNEL__
-Message-ID: <816d0f12ef97b609b367cfb7319792b95e0ad943.1283782701.git.qy03fugy@stud.informatik.uni-erlangen.de>
-References: <cover.1283782698.git.qy03fugy@stud.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1283782698.git.qy03fugy@stud.informatik.uni-erlangen.de>
-Cc: vamos-dev@i4.informatik.uni-erlangen.de
+	(Client CN "localhost", Issuer "localhost" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 07DEDB70D0
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Sep 2010 00:37:58 +1000 (EST)
+Subject: Re: How to define an I2C-to-SPI bridge device ?
+From: =?ISO-8859-1?Q?Andr=E9?= Schwarz <andre.schwarz@matrix-vision.de>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+In-Reply-To: <4C84D334.6060008@matrix-vision.de>
+References: <1283502979.17812.22.camel@swa-m460>
+	<20100903120858.GA19380@oksana.dev.rtsoft.ru>
+	<4C84D334.6060008@matrix-vision.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Mon, 06 Sep 2010 16:37:52 +0200
+Message-ID: <1283783872.4426.1.camel@swa-m460>
+Mime-Version: 1.0
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
+	DevTreeDiscuss <devicetree-discuss@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,71 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The __KERNEL__ ifdef isn't necessary at this point, because it is
-checked in an outer ifdef level already and has no effect here.
+Anton,
 
-Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
----
- arch/powerpc/include/asm/processor.h     |    2 --
- arch/powerpc/include/asm/vdso_datapage.h |    2 --
- arch/s390/include/asm/processor.h        |    4 ----
- 3 files changed, 0 insertions(+), 8 deletions(-)
+looks like I should have looked at include/spi/spi.h earlier :
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 19c05b0..3defd7a 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -122,7 +122,6 @@ extern struct task_struct *last_task_used_spe;
- 		TASK_UNMAPPED_BASE_USER32 : TASK_UNMAPPED_BASE_USER64 )
- #endif
- 
--#ifdef __KERNEL__
- #ifdef __powerpc64__
- 
- #define STACK_TOP_USER64 TASK_SIZE_USER64
-@@ -139,7 +138,6 @@ extern struct task_struct *last_task_used_spe;
- #define STACK_TOP_MAX	STACK_TOP
- 
- #endif /* __powerpc64__ */
--#endif /* __KERNEL__ */
- 
- typedef struct {
- 	unsigned long seg;
-diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
-index 08679c5..25e3922 100644
---- a/arch/powerpc/include/asm/vdso_datapage.h
-+++ b/arch/powerpc/include/asm/vdso_datapage.h
-@@ -116,9 +116,7 @@ struct vdso_data {
- 
- #endif /* CONFIG_PPC64 */
- 
--#ifdef __KERNEL__
- extern struct vdso_data *vdso_data;
--#endif
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/s390/include/asm/processor.h b/arch/s390/include/asm/processor.h
-index 73e2598..0e2a436 100644
---- a/arch/s390/include/asm/processor.h
-+++ b/arch/s390/include/asm/processor.h
-@@ -52,8 +52,6 @@ extern int get_cpu_capability(unsigned int *);
- 
- #endif /* __s390x__ */
- 
--#ifdef __KERNEL__
--
- #ifndef __s390x__
- #define STACK_TOP		(1UL << 31)
- #define STACK_TOP_MAX		(1UL << 31)
-@@ -63,8 +61,6 @@ extern int get_cpu_capability(unsigned int *);
- #endif /* __s390x__ */
- 
- 
--#endif
--
- #define HAVE_ARCH_PICK_MMAP_LAYOUT
- 
- typedef struct {
--- 
-1.7.0.4
+/*
+ * INTERFACES between SPI master-side drivers and SPI infrastructure.
+ * (There's no SPI slave support for Linux yet...)
+ */
+
+...this is what I've been looking for.
+
+
+thanks for your help and sorry for the noise.
+
+
+Regards,
+André
+
+
+
+
+
+On Mon, 2010-09-06 at 13:40 +0200, Andre Schwarz wrote:
+> Anton,
+> 
+> > we're about to get new MPC8377 based hardware with various peripherals.
+> >> There are two I2C-to-SPI bridge devices (NXP SC18IS602) and I'm not sure
+> >> how to define a proper dts...
+> >>
+> >> Of course it's an easy thing creating 2 child nodes on the CPU's I2C
+> >> device - but how can I represent the created SPI bus ?
+> > Um.. the same as the other SPI buses? I.e.
+> >
+> > i2c-controller {  /* SOC I2C controller */
+> > 	spi-controller {  /* The I2C-to-SPI bridge */
+> > 		spi-device@0 {
+> > 		};
+> > 		spi-device@1 {
+> > 		};
+> > 	};
+> > };
+> >
+> ok , thanks - looks straight forward.
+> Is this any more than plain definition, i.e. will this trigger any I2C 
+> or SPI device registration/linking ?
+> >> Is the (possibly) required driver (of_sc18is60x_spi ?) supposed to be an
+> >> I2C slave or an SPI host driver ?
+> > It should be an I2C driver that registers an SPI master (i.e.
+> > calls spi_alloc_master() and spi_register_master()).
+> hmm - ok. Will have to do it manually then ...
+> 
+> I still wonder how to make the driver arch-generic *and* of-capable.
+> Do we need a generic I2C slave driver that can be probed along with an 
+> "of glue driver" or should the of-binding be part of a single device 
+> driver ?
+> 
+> Sorry for the dumb questions - looks like I expected a little too much 
+> functionality already existing.
+> 
+> 
+> Regards,
+> André
+> 
+
+
+
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
