@@ -1,52 +1,24 @@
-Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
-Received: from faui40.informatik.uni-erlangen.de
-	(faui40.informatik.uni-erlangen.de [131.188.34.40])
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (mail.lixom.net [70.86.134.90])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E92D5B70FB
+	by ozlabs.org (Postfix) with ESMTPS id 4F223B6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Sep 2010 00:35:59 +1000 (EST)
-Date: Mon, 6 Sep 2010 16:35:49 +0200
-From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-To: Lennert Buytenhek <kernel@wantstofly.org>,
-	Russell King <linux@arm.linux.org.uk>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
-	"James E.J. Bottomley" <jejb@parisc-linux.org>,
-	Akinobu Mita <akinobu.mita@gmail.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-	x86@kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
-	"David S. Miller" <davem@davemloft.net>, Roland Dreier <rolandd@cisco.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
-	"Juergen E. Fischer" <fischer@norbit.de>, Tejun Heo <tj@kernel.org>,
-	Krzysztof Helt <krzysztof.h1@wp.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Petr Vandrovec <vandrove@vc.cvut.cz>, Jean Delvare <khali@linux-fr.org>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Ben Hutchings <ben@decadent.org.uk>, Cyrill Gorcunov <gorcunov@openvz.org>,
-	Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-	Dipankar Sarma <dipankar@in.ibm.com>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Josh Triplett <josh@joshtriplett.org>,
-	Lai Jiangshan <laijs@cn.fujitsu.com>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, netdev@vger.kernel.org,
-	linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 00/14] Removing dead code
-Message-ID: <cover.1283782698.git.qy03fugy@stud.informatik.uni-erlangen.de>
+	Tue,  7 Sep 2010 01:45:28 +1000 (EST)
+Date: Mon, 6 Sep 2010 10:45:26 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Tirumala Marri <tmarri@apm.com>
+Subject: Re: [PATCH] APM821xx: Add support for new SoC APM821xx
+Message-ID: <20100906154526.GA515@lixom.net>
+References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
+	<20100903020851.GC29732@hansolo.jdub.homelinux.org>
+	<197d4509c0b1206ce2d686c03701a6b4@mail.gmail.com>
+	<20100905222340.GC2150@lixom.net>
+	<01bb9090932e6984c887273078fd586f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: vamos-dev@i4.informatik.uni-erlangen.de
+In-Reply-To: <01bb9090932e6984c887273078fd586f@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,71 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all!
-       
-As part of the VAMOS[0] research project at the University of Erlangen
-we are looking at multiple integrity errors in linux' configuration
-system.
+On Sun, Sep 05, 2010 at 10:19:53PM -0700, Tirumala Marri wrote:
+> >
+> > Then the device tree identifier, and the cpu setup functions, etc,
+> > should indicate
+> > 464, not APM821xx.
+> This is new SoC based on 464 cpu core. All the previous SoC device tree
+> CPU portion uses SoC name.
 
-I've been running a check on the whole sourcetree for
-code block which are undead. This means they can't be deselected and
-are always in the kernel if the enviroment of the block is
-selected. They have often the form of
+Hm, you're right. Confusing.
 
-#ifdef ABC
-....
-#ifdef ABC
-fooooo
-#endif
-#endif
+Still, the cpu setup functions would make more sense to have the core
+name in, not the SoC name. Especially since multiple SoC families might
+use the same core, etc.
 
-Here the ifdefs of the inner block can be removed without any harm. At
-this point we just checked the source code (for the undead), but we
-want to do a crosscheck with the Kconfig for undead code blocks in the
-future.
+> > Also, why add yet another defconfig? Isn't the eval board similar to
+> > many others and can be supported with just a tweak of some existing
+> > common defconfig instead?
+> >
+> Every new board needs new defconfig. And it is not same as others. It has
+> Different features from other.
 
-I build the patches against a vanilla kernel (v2.6.36-rc3) in order to
-try if the kernel compiles with this patches.
+Actually, it doesn't. Linus has had a strong pushback to the ARM community
+because of this mentality. arch/powerpc already has 100 defconfigs.
 
-Please keep me informed of this patch getting confirmed / merged so we
-can keep track of it.
+The use of devicetrees means that only the actual devices on your board,
+will be configured, so it doesn't do any damage to compile in more drivers
+than you happen to have. Thus generating a defconfig that is a superset
+of some of your more common boards, or for example one per family of boards.
 
-Regards
+One of the arguments for having custom defconfigs per board is that customers that
+base designs off of your eval board needs them. But they will make other changes
+to the config to add drivers for whatever additional devices they have anyway.
 
-        Christian Dietrich
 
-[0] http://vamos1.informatik.uni-erlangen.de/
-
-Christian Dietrich (14):
-  arch/arm: Removing undead ifdef __ASSEMBLY__
-  arch/h8300: Removing dead ifdef __H8300_TLB_H__
-  arch/parisc: Removing undead ifdef CONFIG_PA20
-  arch/{s390,powerpc}: Removing undead ifdef __KERNEL__
-  arch/x86: Removing undead ifdef ACPI/X86_IO_ACPI
-  drivers/net: Removing undead ifdef CHELSIO_T1_1G
-  drivers/scsi: Removing undead ifdef __ISAPNP__
-  drivers/scsi: Removing undead ifdef CONFIG_PCI
-  drivers/scsi: Removing undead ifdef REAL_DMA
-  drivers/video: Removing undead ifdef ATAFB_FALCON
-  drivers/video: Removing undead ifdef CONFIG_FB_MATROX_G
-  include/linux: Removing undead ifdef __KERNEL__
-  kernel/: Removing undead ifdef CONFIG_SMP
-  kernel/: Removing undead ifdef CONFIG_DEBUG_LOCK_ALLOC
-
- arch/arm/mach-ixp23xx/include/mach/platform.h |    3 ---
- arch/h8300/include/asm/tlb.h                  |   13 -------------
- arch/parisc/kernel/unaligned.c                |    3 ---
- arch/powerpc/include/asm/processor.h          |    2 --
- arch/powerpc/include/asm/vdso_datapage.h      |    2 --
- arch/s390/include/asm/processor.h             |    4 ----
- arch/x86/kernel/early-quirks.c                |    2 --
- drivers/net/chelsio/subr.c                    |    2 --
- drivers/scsi/aha152x.c                        |    2 --
- drivers/scsi/aic7xxx_old.c                    |    2 --
- drivers/scsi/atari_NCR5380.c                  |    6 ------
- drivers/video/atafb.c                         |    2 --
- drivers/video/matrox/matroxfb_DAC1064.c       |    5 +----
- include/linux/socket.h                        |    6 +-----
- kernel/sched.c                                |    4 +---
- kernel/srcu.c                                 |    2 --
- 16 files changed, 3 insertions(+), 57 deletions(-)
+-Olof
