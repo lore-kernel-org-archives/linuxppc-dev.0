@@ -1,26 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (mail.lixom.net [70.86.134.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6DE81B70F1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Sep 2010 02:30:47 +1000 (EST)
-Date: Mon, 6 Sep 2010 11:30:44 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 4/8] drivers/i2c/busses/i2c-pasemi.c: Fix unsigned
-	return type
-Message-ID: <20100906163044.GA14188@lixom.net>
-References: <1283713226-8429-1-git-send-email-julia@diku.dk>
-	<1283713226-8429-5-git-send-email-julia@diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283713226-8429-5-git-send-email-julia@diku.dk>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-i2c@vger.kernel.org,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
-	"Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 672C1B6EF2
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Sep 2010 06:22:07 +1000 (EST)
+Date: Mon, 06 Sep 2010 13:22:23 -0700 (PDT)
+Message-Id: <20100906.132223.48506151.davem@davemloft.net>
+To: liang.li@windriver.com
+Subject: Re: [v2 PATCH] ucc_geth: fix ethtool set ring param bug
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1283443364-2136-1-git-send-email-liang.li@windriver.com>
+References: <1283305429-8426-1-git-send-email-liang.li@windriver.com>
+	<1283443364-2136-1-git-send-email-liang.li@windriver.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, avorontsov@ru.mvista.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 05, 2010 at 09:00:22PM +0200, Julia Lawall wrote:
-> The function has an unsigned return type, but returns a negative constant
-> to indicate an error condition.  The result of calling the function is
-> always stored in a variable of type (signed) int, and thus unsigned can be
-> dropped from the return type.
-> 
-> A sematic match that finds this problem is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @exists@
-> identifier f;
-> constant C;
-> @@
-> 
->  unsigned f(...)
->  { <+...
-> *  return -C;
->  ...+> }
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+From: Liang Li <liang.li@windriver.com>
+Date: Fri,  3 Sep 2010 00:02:44 +0800
 
-Acked-by: Olof Johansson <olof@lixom.net>
+> +		printk(KERN_INFO "Stopping interface %s.\n", netdev->name);
+ ...
+> +		printk(KERN_INFO "Reactivating interface %s.\n", netdev->name);
+
+Please get rid of these log messages.
+
+Also, this isn't the way to implement this.
+
+Abstract out the one and only operation that can fail when you change
+the ring size, which is the memory allocations, into seperate code.
+
+Allocate the newly sized rings first, and if that fails abort the
+ring size change attempt.  This will let the device continue to
+function and operate properly even if the ring resizing fails.
+
+Then stop the RX/TX DMA, switch the ring pointers and configuration
+inside of the device, restart RX/TX DMA, and finally free up the
+old ring memory.
+
+I know why you want to use *_close() and *_open(), it requires less
+coding and work on your part.  But this is why the error handling
+behavior is difficult and what happens on failure (device goes down
+and becomes inoperative) is extremely unpleasant for the user.
+
+The user should be able to make this kind of change over an SSH
+shell that uses the interface itself, and not expect to lose
+connectivity completely just because the ring allocation fails.
+
+Thanks.
