@@ -1,40 +1,21 @@
-Return-Path: <R61911@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
-	[213.199.154.208]) by ozlabs.org (Postfix) with ESMTP id 8E489B70F3
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 20:15:52 +1000 (EST)
-Received: from mail5-am1 (localhost.localdomain [127.0.0.1])	by
-	mail5-am1-R.bigfish.com (Postfix) with ESMTP id 7A48C160046B	for
-	<linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 10:15:47 +0000 (UTC)
-Received: from am1ehsmhs003.bigfish.com (unknown [10.3.201.248])	by
-	mail5-am1.bigfish.com (Postfix) with ESMTP id 2AA2246804B	for
-	<linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 10:15:47 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o86AFY2M026631	for
-	<linuxppc-dev@ozlabs.org>; Mon, 6 Sep 2010 03:15:44 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o86ATRF0022265	for <linuxppc-dev@ozlabs.org>;
-	Mon, 6 Sep 2010 05:29:28 -0500 (CDT)
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "localhost", Issuer "localhost" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3B856B70E1
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 21:40:37 +1000 (EST)
+Message-ID: <4C84D334.6060008@matrix-vision.de>
+Date: Mon, 06 Sep 2010 13:40:36 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Subject: RE: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc interrupt common
-	to elbc devices
-Date: Mon, 6 Sep 2010 18:15:30 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A1B3898@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20100906094414.GA27034@oksana.dev.rtsoft.ru>
-References: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
-	<20100903112755.GA11847@oksana.dev.rtsoft.ru>
-	<3850A844E6A3854C827AC5C0BEC7B60A1B378F@zch01exm23.fsl.freescale.net>
-	<20100906082142.GB13755@oksana.dev.rtsoft.ru>
-	<3850A844E6A3854C827AC5C0BEC7B60A1B3872@zch01exm23.fsl.freescale.net>
-	<20100906094414.GA27034@oksana.dev.rtsoft.ru>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: "Anton Vorontsov" <cbouatmailru@gmail.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: How to define an I2C-to-SPI bridge device ?
+References: <1283502979.17812.22.camel@swa-m460>
+	<20100903120858.GA19380@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100903120858.GA19380@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
+	DevTreeDiscuss <devicetree-discuss@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,26 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW50b24gVm9yb250c292
-IFttYWlsdG86Y2JvdWF0bWFpbHJ1QGdtYWlsLmNvbV0NCj4gU2VudDogTW9uZGF5LCBTZXB0ZW1i
-ZXIgMDYsIDIwMTAgMTc6NDQgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgt
-bXRkQGxpc3RzLmluZnJhZGVhZC5vcmc7IExhbiBDaHVuaGUtQjI1ODA2OyBsaW51eHBwYy1kZXZA
-b3psYWJzLm9yZzsNCj4gYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZzsgR2FsYSBLdW1hci1CMTE3
-ODA7IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8zXVtNVERdIFA0
-MDgwL2VMQkM6IE1ha2UgRnJlZXNjYWxlIGVsYmMgaW50ZXJydXB0IGNvbW1vbg0KPiB0byBlbGJj
-IGRldmljZXMNCj4gDQo+IE9uIE1vbiwgU2VwIDA2LCAyMDEwIGF0IDA1OjI0OjM1UE0gKzA4MDAs
-IFphbmcgUm95LVI2MTkxMSB3cm90ZToNCj4gWy4uXQ0KPiA+ID4gbXhtciA9ICZmc2xfbGJjX2N0
-cmxfZGV2LT5yZWdzLT5tY21yOw0KPiA+IFRoYXQgbWFrZXMgc2Vuc2UuICBBIGdsb2JhbCBvciBs
-b2NhbCB2YXJpYWJsZSBmb3IgZnNsX2xiY19jdHJsX2Rldi0+cmVncz8NCj4gV2hpY2ggb25lIGlz
-IGJldHRlcj8NCj4gDQo+IFRoZSBsZXNzIGdsb2JhbCB2YXJpYWJsZXMsIHRoZSBiZXR0ZXIuIFNv
-LCBJJ2Qgdm90ZSBmb3INCj4gYSBsb2NhbCBvbmUuDQpJIGFsc28gcHJlZmVyIGxvY2FsIG9uZS4N
-Cj4gDQo+ID4gPiBbLi4uXQ0KPiA+ID4gPiA+ID4gK3N0YXRpYyBpbnQgX19kZXZpbml0IGZzbF9s
-YmNfY3RybF9wcm9iZShzdHJ1Y3Qgb2ZfZGV2aWNlICpvZmRldiwNCj4gPiA+ID4gPiA+ICsJCQkJ
-CSBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkICptYXRjaCkNCj4gPiA+ID4gPiA+ICt7DQo+ID4g
-PiA+ID4gPiArCWludCByZXQgPSAwOw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gbm8gbmVlZCBmb3Ig
-dGhlIGluaXRpYWwgdmFsdWUgaGVyZS4NCj4gPiA+ID4gQW55IGhhcm0/DQo+ID4gPg0KPiA+ID4g
-UHJvYmFibHkgbm90IGFzIGdjYyB3aWxsIGxpa2VseSBvcHRpbWl6ZSBpdCBhd2F5LA0KPiA+ID4g
-YnV0IGl0J3Mgbm90IG5lZWRlZCwgc28gd2h5IGtlZXAgaXQgdGhlcmU/DQo+ID4gaGFiaXQuDQo+
-IA0KPiA7LSkNCjotKC4NClRoYW5rcyBmb3IgYWxsIHlvdXIgY29tbWVudHMuIFRoYXQgaXMgdmFs
-dWFibGUuDQpJIHdpbGwgdXBkYXRlIHRoZSBwYXRjaCBhY2NvcmRpbmcgdG8geW91ciBjb21tZW50
-IGFuZCB0aGUgbmV3IHBsYXRmb3JtIGRldmljZSBhcmNoLg0KUm95DQo=
+  Anton,
+
+> we're about to get new MPC8377 based hardware with various peripherals.
+>> There are two I2C-to-SPI bridge devices (NXP SC18IS602) and I'm not sure
+>> how to define a proper dts...
+>>
+>> Of course it's an easy thing creating 2 child nodes on the CPU's I2C
+>> device - but how can I represent the created SPI bus ?
+> Um.. the same as the other SPI buses? I.e.
+>
+> i2c-controller {  /* SOC I2C controller */
+> 	spi-controller {  /* The I2C-to-SPI bridge */
+> 		spi-device@0 {
+> 		};
+> 		spi-device@1 {
+> 		};
+> 	};
+> };
+>
+ok , thanks - looks straight forward.
+Is this any more than plain definition, i.e. will this trigger any I2C 
+or SPI device registration/linking ?
+>> Is the (possibly) required driver (of_sc18is60x_spi ?) supposed to be an
+>> I2C slave or an SPI host driver ?
+> It should be an I2C driver that registers an SPI master (i.e.
+> calls spi_alloc_master() and spi_register_master()).
+hmm - ok. Will have to do it manually then ...
+
+I still wonder how to make the driver arch-generic *and* of-capable.
+Do we need a generic I2C slave driver that can be probed along with an 
+"of glue driver" or should the of-binding be part of a single device 
+driver ?
+
+Sorry for the dumb questions - looks like I expected a little too much 
+functionality already existing.
+
+
+Regards,
+André
+
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
