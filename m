@@ -1,37 +1,24 @@
-Return-Path: <R61911@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) by ozlabs.org (Postfix) with ESMTP id 68E11B70E1
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 14:49:35 +1000 (EST)
-Received: from mail50-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail50-tx2-R.bigfish.com (Postfix) with ESMTP id C8E30780129	for
-	<linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 04:49:31 +0000 (UTC)
-Received: from TX2EHSMHS006.bigfish.com (unknown [10.9.14.240])	by
-	mail50-tx2.bigfish.com (Postfix) with ESMTP id A65FA1B48050	for
-	<linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 04:49:31 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o864nKZN019169	for
-	<linuxppc-dev@ozlabs.org>; Sun, 5 Sep 2010 21:49:30 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o8654A8C000429	for <linuxppc-dev@ozlabs.org>;
-	Mon, 6 Sep 2010 00:04:11 -0500 (CDT)
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
+	by ozlabs.org (Postfix) with SMTP id EABC4B70EE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  6 Sep 2010 15:19:58 +1000 (EST)
+Received: by mail-qw0-f45.google.com with SMTP id 5so3673558qwh.4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 05 Sep 2010 22:19:56 -0700 (PDT)
+From: Tirumala Marri <tmarri@apm.com>
+References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
+	<20100903020851.GC29732@hansolo.jdub.homelinux.org>
+	<197d4509c0b1206ce2d686c03701a6b4@mail.gmail.com>
+	<20100905222340.GC2150@lixom.net>
+In-Reply-To: <20100905222340.GC2150@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Subject: RE: [PATCH 2/3][MTD] P4080/nand: Only make elbc nand driver detect
-	nand flash partitions
-Date: Mon, 6 Sep 2010 12:49:17 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A1B37B0@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20100903114357.GC11847@oksana.dev.rtsoft.ru>
-References: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
-	<1281063096-26598-2-git-send-email-tie-fei.zang@freescale.com>
-	<20100903114357.GC11847@oksana.dev.rtsoft.ru>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: "Anton Vorontsov" <cbouatmailru@gmail.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>
+Date: Sun, 5 Sep 2010 22:19:53 -0700
+Message-ID: <01bb9090932e6984c887273078fd586f@mail.gmail.com>
+Subject: RE: [PATCH] APM821xx: Add support for new SoC APM821xx
+To: Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,18 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW50b24gVm9yb250c292
-IFttYWlsdG86Y2JvdWF0bWFpbHJ1QGdtYWlsLmNvbV0NCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1i
-ZXIgMDMsIDIwMTAgMTk6NDQgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgt
-bXRkQGxpc3RzLmluZnJhZGVhZC5vcmc7IExhbiBDaHVuaGUtQjI1ODA2OyBsaW51eHBwYy1kZXZA
-b3psYWJzLm9yZzsNCj4gYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZzsgR2FsYSBLdW1hci1CMTE3
-ODA7IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8zXVtNVERdIFA0
-MDgwL25hbmQ6IE9ubHkgbWFrZSBlbGJjIG5hbmQgZHJpdmVyIGRldGVjdA0KPiBuYW5kIGZsYXNo
-IHBhcnRpdGlvbnMNCj4gDQo+IE9uIEZyaSwgQXVnIDA2LCAyMDEwIGF0IDEwOjUxOjM1QU0gKzA4
-MDAsIFJveSBaYW5nIHdyb3RlOg0KPiBbLi4uXQ0KPiA+DQo+ID4gK3N0YXRpYyBzdHJ1Y3QgZnNs
-X2VsYmNfZmNtX2N0cmwgKmVsYmNfZmNtX2N0cmw7DQo+ID4gKw0KPiANCj4gQXJlIHlvdSBzdXJl
-IHRoYXQgeW91IHdhbnQgaXQgYXMgYSBnbG9iYWwgdmFyPyBBIGJpdCBzY2FyeSBjaGFuZ2UuDQo+
-IA0KPiBPaCwgeW91IHByb2JhYmx5IGRvbid0IG5lZWQgaXQsIGFzIHlvdSBjYW4gZ2V0IGl0IGZy
-b20NCj4gZnNsX2xiY19jdHJsX2Rldi0+bmFuZD8NCkdldCBpdCBmb3JtIGZzbF9sYmNfY3RybF9k
-ZXYtPm5hbmQgb3IgYXNzaWduIGl0IHRvIGZzbF9sYmNfY3RybF9kZXYtPm5hbmQgaW4gcHJvYmU/
-DQpUaGFua3MuDQpSb3kNCg0K
+>
+> Then the device tree identifier, and the cpu setup functions, etc,
+> should indicate
+> 464, not APM821xx.
+This is new SoC based on 464 cpu core. All the previous SoC device tree
+CPU portion uses SoC name.
+
+>
+> Also, why add yet another defconfig? Isn't the eval board similar to
+> many others and can be supported with just a tweak of some existing
+> common defconfig instead?
+>
+Every new board needs new defconfig. And it is not same as others. It has
+Different features from other.
