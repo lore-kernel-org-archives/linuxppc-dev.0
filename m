@@ -1,26 +1,26 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Mon, 6 Sep 2010 08:33:27 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100906063327.GA4549@riccoc20.at.omicron.at>
-References: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
-	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
-	<20100817085324.GB3330@riccoc20.at.omicron.at>
-	<1282090963.1734.97.camel@localhost>
-	<20100818071942.GA4096@riccoc20.at.omicron.at>
-	<1282176776.2865.100.camel@localhost.localdomain>
-	<20100819055518.GA4084@riccoc20.at.omicron.at>
-	<1282594125.3111.344.camel@localhost.localdomain>
-	<20100827123849.GC11657@riccoc20.at.omicron.at>
-	<1282948239.2268.155.camel@jstultz-laptop>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 315F7B70DC
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Sep 2010 18:09:44 +1000 (EST)
+Received: by eyg24 with SMTP id 24so2507787eyg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Sep 2010 01:09:42 -0700 (PDT)
+Date: Mon, 6 Sep 2010 12:09:38 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 2/3][MTD] P4080/nand: Only make elbc nand driver detect
+	nand flash partitions
+Message-ID: <20100906080938.GA13755@oksana.dev.rtsoft.ru>
+References: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
+	<1281063096-26598-2-git-send-email-tie-fei.zang@freescale.com>
+	<20100903114357.GC11847@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A1B37B0@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1282948239.2268.155.camel@jstultz-laptop>
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A1B37B0@zch01exm23.fsl.freescale.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,114 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 27, 2010 at 03:30:39PM -0700, John Stultz wrote:
-> On Fri, 2010-08-27 at 14:38 +0200, Richard Cochran wrote:
-> > We have not introduced new PPS interface. We use existing PPS subsystem.
-> 
-> Doesn't the pps subsystem have its own way to control the pps signal
-> interrupt? I'm not totally sure here, but given your point above that
-> having multiple pps events it seems like they should be selectable. It
-> seems something that we'd want to control via the global pps interface,
-> rather then having a pps-enable flag on every random bit of hardware
-> that can support it.
-
-The PPS subsystem offers no way to disable PPS interrupts. 
-
-> > > Same for the timestamps and periodic output (ie: and how do they differ
-> > > from reading or setting a timer on CLOCK_PTP?)
+On Mon, Sep 06, 2010 at 12:49:17PM +0800, Zang Roy-R61911 wrote:
+> > On Fri, Aug 06, 2010 at 10:51:35AM +0800, Roy Zang wrote:
+> > [...]
+> > >
+> > > +static struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl;
+> > > +
 > > 
-> > The posix timer calls won't work:
+> > Are you sure that you want it as a global var? A bit scary change.
 > > 
-> > I have a PTP hardware clocks with multiple external timestamp
-> > channels. Using timer_gettime, how can I specify (or decode) the
-> > channel of interest to me?
-> 
-> I guess I'm not following you here. Again, I'm not super familiar with
-> the hardware involved. Could you clarify a bit more? What do you mean by
-> external timestamp? Is this what is used on the packet timestamping? 
+> > Oh, you probably don't need it, as you can get it from
+> > fsl_lbc_ctrl_dev->nand?
+> Get it form fsl_lbc_ctrl_dev->nand or assign it to
+> fsl_lbc_ctrl_dev->nand in probe?
 
-No, the packet timestamp occurs in the PHY, MAC, or on the MII bus and
-is an essential feature to support the PTP.
+I meant to get it from fsl_lbc_ctrl_dev->nand. I.e. in
+probe() you do: fsl_lbc_ctrl_dev->nand = elbc_fcm_ctrl, so
+you probably don't need the global var.
 
-An external timestamp is just a wire going into the clock and is an
-optional feature to make the clock more useful. The clock can latch
-the current time value when an edge is dectected on the wire. Using
-external timestamps, you correlate real world events with the absolute
-time in the clock.
+(fsl_lbc_ctrl_dev seems to be global as well, duh. Well,
+one variable less in the global name space. But I'd
+probably use lbc_np->data to store the LBC private
+struct).
 
-Typically, a clock offers two or more such input channels (wires), but
-timer_gettime does not offer a way to differentiate between them, and
-thus is not suitable.
+Scott seem to be fine with it as there are probably no
+plans to to add several localbus controllers into the SoCs.
 
-> The posix clock id interface is frustrating because the flat static
-> enumeration is really limiting.
-> 
-> I wonder if a dynamic enumeration for posix clocks would be possibly a
-> way to go?
+But, I saw a custom board with two MPC82xx SoCs connected
+together, one as a master (core + peripheral devs), and
+other as a slave (its core was halted, and only slave's
+CPM peripheral devices were used by the master CPU).
 
-I am perfectly happy with this.
-
-> In other words, a driver registers a clock with the system, and the
-> system reserves a clock_id for it from the designated available pool and
-> assigns it back. Then userland could query the driver via something like
-> sysfs to get the clockid for the hardware. 
-> 
-> Would that maybe work? 
-
-I have now posted a sample implementation of this idea. Do you like it?
-
-> > The sysfs will include one class device for each PTP clock. Each clock
-> > has a sysfs attribute with the corresponding clock id.
-> 
-> Do you mean the clock_id # in the posix clocks namespace?
-
-Yes.
-
-> > I would also be happy with the character device idea already
-> > posted. Just pick one of the two, and I'll resubmit the patch set...
-> 
-> Personally, with regard to exposing the ptp clock to userland I'm more
-> comfortable via the chardev. However, the posix clocks/timer api is
-> really close to what you need, so I'm not totally set against it. And
-> maybe the dynamic enumeration would resolve my main problems with it?
-
-Okay, I have posted a draft of the dynamic idea. Can you support it?
-
-> That said, with the chardev method, I don't like the idea of duplicating
-> the existing time apis via a systemtime device. Dropping that from your
-> earlier patch would ease the majority of my objections.
-
-Well, the clock interface needs to offer basic services:
-
-1. Set time
-2. Get time
-3. Jump offset
-4. Adjust frequency
-
-This is similar to what the posix clock and ntp API offer. Using a
-chardev, should I make the ioctls really different, just for the
-purpose of being different?
-
-To me, it makes more sense to offer a familiar interface.
-
-I was perfectly happy with the chardev idea. In fact, that is the way
-I first implemented it. Now, I have also gone ahead and implemented
-the dynamic posix clock idea, too.
-
-> > At this point I would just like to go forward with one of the two
-> > proposed APIs. I had modelled the character device on the posix clock
-> > calls in order to make it immediately familar, and I think it is a
-> > viable approach. After the lkml discussion, I think it is even cleaner
-> > and nicer to just offer a new clock id.
-
-I would like to repeat the sentiment in this last paragraph! I already
-implemented and would be content with either form for the new clock
-control API:
-
-1. Character device
-2. POSIX clock with dynamic ids
-
-Please, just take your pick ;^)
+I think it is possible to connect two (or more) SoCs in
+a such way so that two or more LBC controllers would
+be visible for the Linux.
 
 Thanks,
-Richard
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
