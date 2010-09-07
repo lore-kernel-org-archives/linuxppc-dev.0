@@ -1,26 +1,16 @@
-Return-Path: <msm@freescale.com>
-Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
-	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id CC7D3B6F06
+Return-Path: <dcb314@hotmail.com>
+Received: from blu0-omc3-s33.blu0.hotmail.com (blu0-omc3-s33.blu0.hotmail.com
+	[65.55.116.108]) by ozlabs.org (Postfix) with ESMTP id E0D5EB6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Sep 2010 04:49:15 +1000 (EST)
-Received: from mail69-db3 (localhost.localdomain [127.0.0.1])	by
-	mail69-db3-R.bigfish.com (Postfix) with ESMTP id 74B6114980EB	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2010 18:49:05 +0000 (UTC)
-Received: from DB3EHSMHS003.bigfish.com (unknown [10.3.81.244])	by
-	mail69-db3.bigfish.com (Postfix) with ESMTP id 488FAD80053	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2010 18:49:05 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o87In1Be001933	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 7 Sep 2010 11:49:01 -0700 (MST)
-From: Matthew McClintock <msm@freescale.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC] arch/powerpc: Remove duplicate/redundant Altivec entries
-Date: Tue, 7 Sep 2010 13:56:55 -0500
-Message-ID: <1283885815-11175-1-git-send-email-msm@freescale.com>
+	Wed,  8 Sep 2010 05:00:48 +1000 (EST)
+Message-ID: <BLU108-W2623DC5A7393DA1E1E4B079C710@phx.gbl>
+From: d binderman <dcb314@hotmail.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>
+Subject: linux-2.6.36-rc3 bug report
+Date: Tue, 7 Sep 2010 19:00:44 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Matthew McClintock <msm@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In lieu of having multiple similiar lines, we can just have one
-generic cpu-as line for CONFIG_ALTIVEC
 
----
-Was hoping to get comments about this change and if anyone sees any potential
-problems?
 
- arch/powerpc/Makefile |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+Hello there=2C
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index e07d499..4e88b42 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -131,8 +131,7 @@ KBUILD_CFLAGS		+= -mno-sched-epilog
- endif
- 
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
--cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
--cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
-+cpu-as-$(CONFIG_ALTIVEC)	+= -Wa,-maltivec
- cpu-as-$(CONFIG_E500)		+= -Wa,-me500
- cpu-as-$(CONFIG_E200)		+= -Wa,-me200
- 
--- 
-1.6.6.1
+I just tried out cppcheck-1.44 on the linux-2.6.36-rc3 source code.
+
+It said
+
+Checking arch/powerpc/kernel/ppc970-pmu.c...
+[arch/powerpc/kernel/ppc970-pmu.c:171]: (style) Redundant assignment of "ma=
+sk" in switch
+
+The source code is
+
+=A0=A0=A0=A0=A0=A0=A0 case PM_VPU:
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mask =3D 0x4c=3B=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 /* byte 0 bits 2=2C3=2C6 */
+=A0=A0=A0=A0=A0=A0=A0 case PM_LSU0:
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* byte 2 bits 0=2C2=2C3=2C4=
+=2C6=3B all of byte 1 */
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mask =3D 0x085dff00=3B
+=A0=A0=A0=A0=A0=A0=A0 case PM_LSU1L:
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mask =3D 0x50 << 24=3B=A0=A0=
+=A0=A0=A0 /* byte 3 bits 4=2C6 */
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 break=3B
+
+It looks to me like a missing break on the first and second cases.
+Suggest code rework.
+
+Regards
+
+David Binderman
+
+ 		 	   		  =
