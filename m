@@ -1,16 +1,33 @@
-Return-Path: <dcb314@hotmail.com>
-Received: from blu0-omc3-s33.blu0.hotmail.com (blu0-omc3-s33.blu0.hotmail.com
-	[65.55.116.108]) by ozlabs.org (Postfix) with ESMTP id E0D5EB6F10
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 4F478B6EF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Sep 2010 05:00:48 +1000 (EST)
-Message-ID: <BLU108-W2623DC5A7393DA1E1E4B079C710@phx.gbl>
-From: d binderman <dcb314@hotmail.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>
-Subject: linux-2.6.36-rc3 bug report
-Date: Tue, 7 Sep 2010 19:00:44 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed,  8 Sep 2010 06:01:11 +1000 (EST)
+Received: from mail26-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail26-tx2-R.bigfish.com (Postfix) with ESMTP id 8110DE0439	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2010 20:01:04 +0000 (UTC)
+Received: from TX2EHSMHS009.bigfish.com (unknown [10.9.14.247])	by
+	mail26-tx2.bigfish.com (Postfix) with ESMTP id 246DD1590052	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2010 20:01:04 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o87K0e8f009102	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 7 Sep 2010 13:00:50 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o87KD2vx011794	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 7 Sep 2010 15:13:02 -0500 (CDT)
+Date: Tue, 7 Sep 2010 15:00:38 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Subject: Re: Small issue at init with spi_mpc8xxx.c with CPM1
+Message-ID: <20100907150038.57a7b065@schlenkerla.am.freescale.net>
+In-Reply-To: <4C86031D.5080804@c-s.fr>
+References: <4C86031D.5080804@c-s.fr>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,37 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 7 Sep 2010 11:17:17 +0200
+LEROY Christophe <christophe.leroy@c-s.fr> wrote:
 
+> 
+>   Dear Kumar,
+> 
+> I have a small issue in the init of spi_mpc8xxx.c with MPC866 (CPM1)
+> 
+> Unlike cpm_uart that maps the parameter ram directly using 
+> of_iomap(np,1), spi_mpc8xxx.c uses cpm_muram_alloc_fixed().
+> 
+> This has two impacts in the .dts file:
+> * The driver must be declared with pram at 1d80 instead of 3d80 whereas 
+> it is not a child of muram@2000 but a child of cpm@9c0
+> * muram@2000/data@0 must be declared with reg = <0x0 0x2000>   whereas 
+> is should be reg=<0x0 0x1c00> to avoid cpm_muram_alloc() to allocate 
+> space from parameters ram.
+> 
+> Maybe I misunderstood something ?
 
-Hello there=2C
+Don't make the device tree lie, fix the driver instead.
 
-I just tried out cppcheck-1.44 on the linux-2.6.36-rc3 source code.
+The allocator should not be given any chunks of muram that are
+dedicated to a fixed purpose -- it might hand it out to something else
+before you reserve it.  I don't think that cpm_muram_alloc_fixed() has
+any legitimate use at all.
 
-It said
-
-Checking arch/powerpc/kernel/ppc970-pmu.c...
-[arch/powerpc/kernel/ppc970-pmu.c:171]: (style) Redundant assignment of "ma=
-sk" in switch
-
-The source code is
-
-=A0=A0=A0=A0=A0=A0=A0 case PM_VPU:
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mask =3D 0x4c=3B=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0 /* byte 0 bits 2=2C3=2C6 */
-=A0=A0=A0=A0=A0=A0=A0 case PM_LSU0:
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* byte 2 bits 0=2C2=2C3=2C4=
-=2C6=3B all of byte 1 */
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mask =3D 0x085dff00=3B
-=A0=A0=A0=A0=A0=A0=A0 case PM_LSU1L:
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mask =3D 0x50 << 24=3B=A0=A0=
-=A0=A0=A0 /* byte 3 bits 4=2C6 */
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 break=3B
-
-It looks to me like a missing break on the first and second cases.
-Suggest code rework.
-
-Regards
-
-David Binderman
-
- 		 	   		  =
+-Scott
