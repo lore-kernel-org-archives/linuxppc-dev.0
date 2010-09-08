@@ -1,22 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 8EDBCB6F0D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 03:55:39 +1000 (EST)
-Received: by pwj1 with SMTP id 1so196791pwj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 08 Sep 2010 10:55:38 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 8 Sep 2010 11:55:36 -0600
+Date: Wed, 8 Sep 2010 13:46:58 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Eric Millbrandt <emillbrandt@dekaresearch.com>
-Subject: Re: [PATCH v2] powerpc/5200: tighten up ac97 reset timing
-Message-ID: <20100908175536.GP3686@angua.secretlab.ca>
-References: <1283534858-17951-1-git-send-email-emillbrandt@dekaresearch.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 7/7] arch/powerpc/platforms/cell: Add of_node_put to
+	avoid memory leak
+Message-ID: <20100908194658.GA7065@angua.secretlab.ca>
+References: <1283075566-27441-1-git-send-email-julia@diku.dk>
+	<1283075566-27441-8-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283534858-17951-1-git-send-email-emillbrandt@dekaresearch.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1283075566-27441-8-git-send-email-julia@diku.dk>
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 03, 2010 at 01:27:38PM -0400, Eric Millbrandt wrote:
-> Tighten up time timing around the gpio reset functionality.  Add a 200ns
-> delay before remuxing the pins back to ac97 to comply with the ac97 spec.
+On Sun, Aug 29, 2010 at 11:52:46AM +0200, Julia Lawall wrote:
+> Add calls to of_node_put in the error handling code following calls to
+> of_find_node_by_path and of_find_node_by_phandle.
 > 
-> Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> expression E,E1;
+> statement S;
+> @@
+> 
+> *x = 
+> (of_find_node_by_path
+> |of_find_node_by_name
+> |of_find_node_by_phandle
+> |of_get_parent
+> |of_get_next_parent
+> |of_get_next_child
+> |of_find_compatible_node
+> |of_match_node
+> )(...);
+> ...
+> if (x == NULL) S
+> <... when != x = E
+> *if (...) {
+>   ... when != of_node_put(x)
+>       when != if (...) { ... of_node_put(x); ... }
+> (
+>   return <+...x...+>;
+> |
+> *  return ...;
+> )
+> }
+> ...>
+> of_node_put(x);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+> 
 > ---
+>  arch/powerpc/platforms/cell/ras.c        |    4 +++-
+>  arch/powerpc/platforms/cell/spider-pic.c |    4 +++-
+>  2 files changed, 6 insertions(+), 2 deletions(-)
 > 
-> Scope shots availible upon request
+> diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
+> index 1d3c4ef..5ec1e47 100644
+> --- a/arch/powerpc/platforms/cell/ras.c
+> +++ b/arch/powerpc/platforms/cell/ras.c
+> @@ -173,8 +173,10 @@ static int __init cbe_ptcal_enable(void)
+>  		return -ENODEV;
+>  
+>  	size = of_get_property(np, "ibm,cbe-ptcal-size", NULL);
+> -	if (!size)
+> +	if (!size) {
+> +		of_node_put(np);
+>  		return -ENODEV;
+> +	}
+>  
+>  	pr_debug("%s: enabling PTCAL, size = 0x%x\n", __func__, *size);
+>  	order = get_order(*size);
+> diff --git a/arch/powerpc/platforms/cell/spider-pic.c b/arch/powerpc/platforms/cell/spider-pic.c
+> index 5876e88..3f2e557 100644
+> --- a/arch/powerpc/platforms/cell/spider-pic.c
+> +++ b/arch/powerpc/platforms/cell/spider-pic.c
+> @@ -258,8 +258,10 @@ static unsigned int __init spider_find_cascade_and_node(struct spider_pic *pic)
+>  		return NO_IRQ;
+>  	imap += intsize + 1;
+>  	tmp = of_get_property(iic, "#interrupt-cells", NULL);
+> -	if (tmp == NULL)
+> +	if (tmp == NULL) {
+> +		of_node_put(iic);
+>  		return NO_IRQ;
+> +	}
+>  	intsize = *tmp;
+>  	/* Assume unit is last entry of interrupt specifier */
+>  	unit = imap[intsize - 1];
 > 
-> changes since v1
-> - amended with comments from Wolfram Sang
-> 
->  arch/powerpc/platforms/52xx/mpc52xx_common.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
-
-Applied, but the patch was mangled (tabs->spaces) and I had to fix it
-up by hand.  You'll need to find a way to get out from under your
-corporate email manging server.
-
-g.
-
-> 
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> index 6e90531..41f3a7e 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> @@ -325,12 +325,16 @@ int mpc5200_psc_ac97_gpio_reset(int psc_number)
->         clrbits32(&simple_gpio->simple_dvo, sync | out);
->         clrbits8(&wkup_gpio->wkup_dvo, reset);
-> 
-> -       /* wait at lease 1 us */
-> -       udelay(2);
-> +       /* wait for 1 us */
-> +       udelay(1);
-> 
->         /* Deassert reset */
->         setbits8(&wkup_gpio->wkup_dvo, reset);
-> 
-> +       /* wait at least 200ns */
-> +       /* 7 ~= (200ns * timebase) / ns2sec */
-> +       __delay(7);
-> +
->         /* Restore pin-muxing */
->         out_be32(&simple_gpio->port_config, mux);
-> 
-> --
-> 1.6.3.1
-> 
-> -DISCLAIMER: an automatically appended disclaimer may follow. By posting-
-> -to a public e-mail mailing list I hereby grant permission to distribute-
-> -and copy this message.-
-> 
-> This e-mail and the information, including any attachments, it contains are intended to be a confidential communication only to the person or entity to whom it is addressed and may contain information that is privileged. If the reader of this message is not the intended recipient, you are hereby notified that any dissemination, distribution or copying of this communication is strictly prohibited. If you have received this communication in error, please immediately notify the sender and destroy the original message.
-> 
-> Thank you.
-> 
-> Please consider the environment before printing this email.
