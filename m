@@ -1,26 +1,18 @@
-Return-Path: <chris@void.printf.net>
-Received: from void.printf.net (void.printf.net [89.145.121.20])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10279B6EDD
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 08:06:11 +1000 (EST)
-Date: Wed, 8 Sep 2010 23:05:48 +0100
-From: Chris Ball <cjb@laptop.org>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCH 0/8] sdhci: Move real work out of an atomic context
-Message-ID: <20100908220548.GA7967@void.printf.net>
-References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
-	<20100907153813.936db0c6.akpm@linux-foundation.org>
-	<20100908213740.GA7550@void.printf.net>
-	<20100908215750.GA17232@oksana.dev.rtsoft.ru>
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
+	by ozlabs.org (Postfix) with SMTP id 010E3B6EE9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  9 Sep 2010 08:33:46 +1000 (EST)
+Received: by mail-qy0-f170.google.com with SMTP id 35so5619178qyk.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 08 Sep 2010 15:33:44 -0700 (PDT)
+From: Tirumala Marri <tmarri@apm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100908215750.GA17232@oksana.dev.rtsoft.ru>
-Cc: Matt Fleming <matt@console-pimps.org>,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Pierre Ossman <pierre@ossman.eu>
+Date: Wed, 8 Sep 2010 15:33:43 -0700
+Message-ID: <72491a83088b2f2efc3c98f9af7a20d6@mail.gmail.com>
+Subject: Combining defconfigs for 44x based boards
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0015175cde903090fd048fc71b86
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anton,
+--0015175cde903090fd048fc71b86
+Content-Type: text/plain; charset=ISO-8859-1
 
-On Thu, Sep 09, 2010 at 01:57:50AM +0400, Anton Vorontsov wrote:
-> Thanks!
-> 
-> Would be also great if you could point out which patch causes
-> most of the performance drop (if any)?
-> 
-> Albert, if you could find time, can you also "bisect" the
-> patchset? I wouldn't want to buy Nintendo WII just to debug the
-> perf regression. ;-) FWIW, I tried to disable multiblock
-> read/writes and test with SD cards, and still didn't notice
-> any performance drops.
-> 
-> Maybe it's SDIO IRQs that cause the performance drop for the
-> WII case, as we delay them a little bit? Or it could be the
-> patch that introduces threaded IRQ handler in whole causes
-> it. If so, I guess we'd need to move some of the processing to
-> the real IRQ context, keeping the handler lockless (if
-> possible) or introducing a very fine grained locking.
+Is anyone working on combining defconfigs for 44x or 4xx devices ?
 
-I didn't know anything about a reported performance drop, and I don't
-think Andrew did either -- Albert's test results don't seem to have
-made it to this list, or anywhere else that I can see.  Could you 
-link to/repost his comments?
+Regards,
 
-(I'll be testing with libertas, so that will stress-test SDIO IRQs.)
+Marri
 
-Thanks,
+--0015175cde903090fd048fc71b86
+Content-Type: text/html; charset=ISO-8859-1
 
--- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<meta name="Generator" content="Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang="EN-US" link="blue" vlink="purple">
+
+<div class="Section1">
+
+<p class="MsoNormal">Is anyone working on combining defconfigs for 44x or 4xx
+devices ? </p>
+
+<p class="MsoNormal">Regards,</p>
+
+<p class="MsoNormal">Marri</p>
+
+</div>
+
+</body>
+
+</html>
+
+--0015175cde903090fd048fc71b86--
