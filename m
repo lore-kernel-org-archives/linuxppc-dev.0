@@ -1,16 +1,17 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 3F5ADB70D1
+Return-Path: <yanok@emcraft.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 3C8C3B70CB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 09:21:27 +1000 (EST)
-Date: Wed, 8 Sep 2010 16:21:24 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
-Message-ID: <20100908232124.GB30291@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: peterz@infradead.org, mingo@redhat.com
+	Thu,  9 Sep 2010 09:55:21 +1000 (EST)
+From: Ilya Yanok <yanok@emcraft.com>
+To: linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com, wd@denx.de,
+	dzu@denx.de, vlad@emcraft.com
+Subject: [PATCH][v3] mpc8308_p1m: support for MPC8308 P1M board
+Date: Thu,  9 Sep 2010 01:55:16 +0200
+Message-Id: <1283990116-29441-1-git-send-email-yanok@emcraft.com>
+In-Reply-To: <20100908170203.7cfa76a1@schlenkerla.am.freescale.net>
+References: <20100908170203.7cfa76a1@schlenkerla.am.freescale.net>
+Cc: Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,48 +21,396 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone,
+This patch adds support for MPC8308 P1M board.
+Supported devices:
+ DUART
+ Dual Ethernet
+ NOR flash
+ Both I2C controllers
+ USB in peripheral mode
+ PCI Express
 
-I'm running Linux on a Freescale MPC8349EA board (PowerPC 6xx processor). When
-I enable the CONFIG_PROVE_LOCKING option, the kernel fails to boot. If I
-toggle that option (and ONLY that option) off, the kernel boots normally.
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
 
-The lockup happens very, very early during boot. Much too early to even have
-console messages coming out on the serial port. Therefore, I've hooked up a
-JTAG debugger and gained as much information as I can.
+Changed 'compatible' entry for 'cpld' node to "denx,mpc8308_p1m-cpld"
 
-I would guess that something in lockdep_init() is breaking things, based on
-the backtrace provided. It is called in machine_init(), which is part of the
-backtrace. I think some part of lockdep is overwriting the flat device tree.
-The __log_buf output supports this claim. I am booting the two kernels with
-*exactly* the same device tree.
+ arch/powerpc/boot/dts/mpc8308_p1m.dts     |  332 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/Kconfig       |    4 +-
+ arch/powerpc/platforms/83xx/mpc830x_rdb.c |    3 +-
+ 3 files changed, 336 insertions(+), 3 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8308_p1m.dts
 
-(gdb) target remote bdi2k:2001
-Remote debugging using bdi2k:2001
-0x0ffbf760 in ?? ()
-(gdb) cont
-Continuing.
-
-Program received signal SIGTRAP, Trace/breakpoint trap.
-0xc031e0ec in memblock_reserve (base=8355840, size=0) at /home/iws/devel/linux-2.6/mm/memblock.c:270
-270             BUG_ON(0 == size);
-(gdb) info stack
-#0  0xc031e0ec in memblock_reserve (base=8355840, size=0) at /home/iws/devel/linux-2.6/mm/memblock.c:270
-#1  0xc0315f04 in early_init_devtree (params=<value optimized out>) at /home/iws/devel/linux-2.6/arch/powerpc/kernel/prom.c:537
-#2  0xc031691c in machine_init (dt_ptr=8355840) at /home/iws/devel/linux-2.6/arch/powerpc/kernel/setup_32.c:127
-#3  0xc0003410 in start_here () at /home/iws/devel/linux-2.6/arch/powerpc/kernel/head_32.S:982
-Backtrace stopped: previous frame inner to this frame (corrupt stack?)
-(gdb) print __log_buf 
-$3 = "<3>[    0.000000] Invalid tag 0 in flat device tree!\n<3>[    0.000000] Invalid tag 0 in flat device tree!\n<3>[    0.000000] Invalid tag 0 in flat device tree!\n", '\0' <repeats 130912 times>
-
-
-I am happy to provide more information if it will help. I'm not especially
-good at working the debugger. I can't get it to stop at machine_init() and let
-me step through the code.
-
-I tried this feature when it first became available on powerpc, and it
-did not work then. At that time, I didn't have the resources to
-investigate further. I don't think a git bisect will help in this case.
-
-Thanks,
-Ira
+diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
+new file mode 100644
+index 0000000..05a76cc
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
+@@ -0,0 +1,332 @@
++/*
++ * mpc8308_p1m Device Tree Source
++ *
++ * Copyright 2010 Ilya Yanok, Emcraft Systems, yanok@emcraft.com
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	compatible = "denx,mpc8308_p1m";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8308@0 {
++			device_type = "cpu";
++			reg = <0x0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <16384>;
++			i-cache-size = <16384>;
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>;	// 128MB at 0
++	};
++
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8315-elbc", "fsl,elbc", "simple-bus";
++		reg = <0xe0005000 0x1000>;
++		interrupts = <77 0x8>;
++		interrupt-parent = <&ipic>;
++
++		ranges = <0x0 0x0 0xfc000000 0x04000000
++		          0x1 0x0 0xfbff0000 0x00008000
++		          0x2 0x0 0xfbff8000 0x00008000>;
++
++		flash@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x4000000>;
++			bank-width = <2>;
++			device-width = <1>;
++
++			u-boot@0 {
++				reg = <0x0 0x60000>;
++				read-only;
++			};
++			env@60000 {
++				reg = <0x60000 0x20000>;
++			};
++			env1@80000 {
++				reg = <0x80000 0x20000>;
++			};
++			kernel@a0000 {
++				reg = <0xa0000 0x200000>;
++			};
++			dtb@2a0000 {
++				reg = <0x2a0000 0x20000>;
++			};
++			ramdisk@2c0000 {
++				reg = <0x2c0000 0x640000>;
++			};
++			user@700000 {
++				reg = <0x700000 0x3900000>;
++			};
++		};
++
++		can@1,0 {
++			compatible = "nxp,sja1000";
++			reg = <0x1 0x0 0x80>;
++			interrupts = <18 0x8>;
++			interrups-parent = <&ipic>;
++		};
++
++		cpld@2,0 {
++			compatible = "denx,mpc8308_p1m-cpld";
++			reg = <0x2 0x0 0x8>;
++			interrupts = <48 0x8>;
++			interrups-parent = <&ipic>;
++		};
++	};
++
++	immr@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "fsl,mpc8308-immr", "simple-bus";
++		ranges = <0 0xe0000000 0x00100000>;
++		reg = <0xe0000000 0x00000200>;
++		bus-frequency = <0>;
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <14 0x8>;
++			interrupt-parent = <&ipic>;
++			dfsrr;
++			fram@50 {
++				compatible = "ramtron,24c64";
++				reg = <0x50>;
++			};
++		};
++
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <15 0x8>;
++			interrupt-parent = <&ipic>;
++			dfsrr;
++			pwm@28 {
++				compatible = "maxim,ds1050";
++				reg = <0x28>;
++			};
++			sensor@48 {
++				compatible = "maxim,max6625";
++				reg = <0x48>;
++			};
++			sensor@49 {
++				compatible = "maxim,max6625";
++				reg = <0x49>;
++			};
++			sensor@4b {
++				compatible = "maxim,max6625";
++				reg = <0x4b>;
++			};
++		};
++
++		usb@23000 {
++			compatible = "fsl-usb2-dr";
++			reg = <0x23000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <&ipic>;
++			interrupts = <38 0x8>;
++			dr_mode = "peripheral";
++			phy_type = "ulpi";
++		};
++
++		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <0x0 0x24000 0x1000>;
++
++			cell-index = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <32 0x8 33 0x8 34 0x8>;
++			interrupt-parent = <&ipic>;
++			phy-handle = < &phy1 >;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&ipic>;
++					interrupts = <17 0x8>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&ipic>;
++					interrupts = <19 0x8>;
++					reg = <0x2>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <1>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <35 0x8 36 0x8 37 0x8>;
++			interrupt-parent = <&ipic>;
++			phy-handle = < &phy2 >;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <133333333>;
++			interrupts = <9 0x8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <133333333>;
++			interrupts = <10 0x8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		gpio@c00 {
++			#gpio-cells = <2>;
++			compatible = "fsl,mpc8308-gpio", "fsl,mpc8349-gpio";
++			reg = <0xc00 0x18>;
++			interrupts = <74 0x8>;
++			interrupt-parent = <&ipic>;
++			gpio-controller;
++		};
++
++		timer@500 {
++			compatible = "fsl,mpc8308-gtm", "fsl,gtm";
++			reg = <0x500 0x100>;
++			interrupts = <90 8 78 8 84 8 72 8>;
++			interrupt-parent = <&ipic>;
++			clock-frequency = <133333333>;
++		};
++
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense values match linux IORESOURCE_IRQ_* defines:
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		ipic: interrupt-controller@700 {
++			compatible = "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x700 0x100>;
++			device_type = "ipic";
++		};
++
++		ipic-msi@7c0 {
++			compatible = "fsl,ipic-msi";
++			reg = <0x7c0 0x40>;
++			msi-available-ranges = <0x0 0x100>;
++			interrupts = < 0x43 0x8
++					0x4  0x8
++					0x51 0x8
++					0x52 0x8
++					0x56 0x8
++					0x57 0x8
++					0x58 0x8
++					0x59 0x8 >;
++			interrupt-parent = < &ipic >;
++		};
++
++	};
++
++	pci0: pcie@e0009000 {
++		#address-cells = <3>;
++		#size-cells = <2>;
++		#interrupt-cells = <1>;
++		device_type = "pci";
++		compatible = "fsl,mpc8308-pcie", "fsl,mpc8314-pcie";
++		reg = <0xe0009000 0x00001000
++			0xb0000000 0x01000000>;
++		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
++		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
++		bus-range = <0 0>;
++		interrupt-map-mask = <0 0 0 0>;
++		interrupt-map = <0 0 0 0 &ipic 1 8>;
++		interrupts = <0x1 0x8>;
++		interrupt-parent = <&ipic>;
++		clock-frequency = <0>;
++
++		pcie@0 {
++			#address-cells = <3>;
++			#size-cells = <2>;
++			device_type = "pci";
++			reg = <0 0 0 0 0>;
++			ranges = <0x02000000 0 0xa0000000
++				  0x02000000 0 0xa0000000
++				  0 0x10000000
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00800000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 021763a..73f4135 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -10,12 +10,12 @@ menuconfig PPC_83xx
+ if PPC_83xx
+ 
+ config MPC830x_RDB
+-	bool "Freescale MPC830x RDB"
++	bool "Freescale MPC830x RDB and derivatives"
+ 	select DEFAULT_UIMAGE
+ 	select PPC_MPC831x
+ 	select FSL_GTM
+ 	help
+-	  This option enables support for the MPC8308 RDB board.
++	  This option enables support for the MPC8308 RDB and MPC8308 P1M boards.
+ 
+ config MPC831x_RDB
+ 	bool "Freescale MPC831x RDB"
+diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+index ac102ee..846831d 100644
+--- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+@@ -65,7 +65,8 @@ static int __init mpc830x_rdb_probe(void)
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+ 	return of_flat_dt_is_compatible(root, "MPC8308RDB") ||
+-	       of_flat_dt_is_compatible(root, "fsl,mpc8308rdb");
++	       of_flat_dt_is_compatible(root, "fsl,mpc8308rdb") ||
++	       of_flat_dt_is_compatible(root, "denx,mpc8308_p1m");
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+-- 
+1.6.2.5
