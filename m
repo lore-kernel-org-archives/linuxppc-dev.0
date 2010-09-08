@@ -1,12 +1,14 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 8 Sep 2010 11:59:16 +1000
+From: Paul Mackerras <paulus@samba.org>
 To: Matthew McClintock <msm@freescale.com>
-Subject: Re: kexec on ppc64
-In-reply-to: <0D324CAF-2A5D-4363-9000-7EB48179C11C@freescale.com>
-References: <0D324CAF-2A5D-4363-9000-7EB48179C11C@freescale.com>
-Date: Wed, 08 Sep 2010 09:49:59 +1000
-Message-ID: <19803.1283903399@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org
+Subject: Re: [RFC] arch/powerpc: Remove duplicate/redundant Altivec entries
+Message-ID: <20100908015916.GB17010@brick.ozlabs.ibm.com>
+References: <1283885815-11175-1-git-send-email-msm@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1283885815-11175-1-git-send-email-msm@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,14 +18,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I'm trying to determine how kexec'ing works on 64 bit powerpc. When
-> allocating a region for the kexec'ed kernel is it ever the same as the
-> currently running kernel or do you always boot the kexec'ed kernel
-> from a different memory region? I understand that a crash kernel will
-> be in a different region, however I was hoping to confirm the behavior
-> for a normal "kexec -e".
+On Tue, Sep 07, 2010 at 01:56:55PM -0500, Matthew McClintock wrote:
 
-The kernel will be loaded at a non zero address, but it will copy itself
-to zero before it starts running.
+> In lieu of having multiple similiar lines, we can just have one
+> generic cpu-as line for CONFIG_ALTIVEC
+> 
+> ---
+> Was hoping to get comments about this change and if anyone sees any potential
+> problems?
 
-Mikey
+I have a memory that we can get some altivec instructions even with
+CONFIG_ALTIVEC = n, though presumably they never get executed.  We
+would have to check that before applying your patch.
+
+Paul.
