@@ -1,18 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 8EDBCB6F0D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  9 Sep 2010 03:55:39 +1000 (EST)
+Received: by pwj1 with SMTP id 1so196791pwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 08 Sep 2010 10:55:38 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 8 Sep 2010 11:45:47 -0600
+Date: Wed, 8 Sep 2010 11:55:36 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH] arch/powerpc/platforms/52xx/efika.c: Add of_node_put
-	to avoid memory leak
-Message-ID: <20100908174547.GN3686@angua.secretlab.ca>
-References: <1283584397-7697-1-git-send-email-julia@diku.dk>
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Subject: Re: [PATCH v2] powerpc/5200: tighten up ac97 reset timing
+Message-ID: <20100908175536.GP3686@angua.secretlab.ca>
+References: <1283534858-17951-1-git-send-email-emillbrandt@dekaresearch.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1283584397-7697-1-git-send-email-julia@diku.dk>
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1283534858-17951-1-git-send-email-emillbrandt@dekaresearch.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 04, 2010 at 09:13:17AM +0200, Julia Lawall wrote:
-> This function is implemented as though the function of_get_next_child does
-> not increment the reference count of its result, but actually it does.
-> Thus the patch adds of_node_put in error handling code and drops a call to
-> of_node_get.
+On Fri, Sep 03, 2010 at 01:27:38PM -0400, Eric Millbrandt wrote:
+> Tighten up time timing around the gpio reset functionality.  Add a 200ns
+> delay before remuxing the pins back to ac97 to comply with the ac97 spec.
+> 
+> Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
+> ---
+> 
+> Scope shots availible upon request
+> 
+> changes since v1
+> - amended with comments from Wolfram Sang
+> 
+>  arch/powerpc/platforms/52xx/mpc52xx_common.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
 
-applied, thanks.
+Applied, but the patch was mangled (tabs->spaces) and I had to fix it
+up by hand.  You'll need to find a way to get out from under your
+corporate email manging server.
 
 g.
 
 > 
-> The semantic match that finds this problem is as follows:
-> (http://coccinelle.lip6.fr/)
+> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+> index 6e90531..41f3a7e 100644
+> --- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
+> +++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+> @@ -325,12 +325,16 @@ int mpc5200_psc_ac97_gpio_reset(int psc_number)
+>         clrbits32(&simple_gpio->simple_dvo, sync | out);
+>         clrbits8(&wkup_gpio->wkup_dvo, reset);
 > 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> expression E1;
-> position p1,p2;
-> @@
+> -       /* wait at lease 1 us */
+> -       udelay(2);
+> +       /* wait for 1 us */
+> +       udelay(1);
 > 
-> x@p1 = of_get_next_child(...);
-> ... when != x = E1
-> of_node_get@p2(x)
+>         /* Deassert reset */
+>         setbits8(&wkup_gpio->wkup_dvo, reset);
 > 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
+> +       /* wait at least 200ns */
+> +       /* 7 ~= (200ns * timebase) / ns2sec */
+> +       __delay(7);
+> +
+>         /* Restore pin-muxing */
+>         out_be32(&simple_gpio->port_config, mux);
 > 
-> cocci.print_main("call",p1)
-> cocci.print_secs("get",p2)
-> // </smpl>
+> --
+> 1.6.3.1
 > 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> -DISCLAIMER: an automatically appended disclaimer may follow. By posting-
+> -to a public e-mail mailing list I hereby grant permission to distribute-
+> -and copy this message.-
 > 
-> ---
->  arch/powerpc/platforms/52xx/efika.c |    9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+> This e-mail and the information, including any attachments, it contains are intended to be a confidential communication only to the person or entity to whom it is addressed and may contain information that is privileged. If the reader of this message is not the intended recipient, you are hereby notified that any dissemination, distribution or copying of this communication is strictly prohibited. If you have received this communication in error, please immediately notify the sender and destroy the original message.
 > 
-> diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
-> index 45c0cb9..18c1048 100644
-> --- a/arch/powerpc/platforms/52xx/efika.c
-> +++ b/arch/powerpc/platforms/52xx/efika.c
-> @@ -99,7 +99,7 @@ static void __init efika_pcisetup(void)
->  	if (bus_range == NULL || len < 2 * sizeof(int)) {
->  		printk(KERN_WARNING EFIKA_PLATFORM_NAME
->  		       ": Can't get bus-range for %s\n", pcictrl->full_name);
-> -		return;
-> +		goto out_put;
->  	}
->  
->  	if (bus_range[1] == bus_range[0])
-> @@ -111,12 +111,12 @@ static void __init efika_pcisetup(void)
->  	printk(" controlled by %s\n", pcictrl->full_name);
->  	printk("\n");
->  
-> -	hose = pcibios_alloc_controller(of_node_get(pcictrl));
-> +	hose = pcibios_alloc_controller(pcictrl);
->  	if (!hose) {
->  		printk(KERN_WARNING EFIKA_PLATFORM_NAME
->  		       ": Can't allocate PCI controller structure for %s\n",
->  		       pcictrl->full_name);
-> -		return;
-> +		goto out_put;
->  	}
->  
->  	hose->first_busno = bus_range[0];
-> @@ -124,6 +124,9 @@ static void __init efika_pcisetup(void)
->  	hose->ops = &rtas_pci_ops;
->  
->  	pci_process_bridge_OF_ranges(hose, pcictrl, 0);
-> +	return;
-> +out_put:
-> +	of_node_put(pcictrl);
->  }
->  
->  #else
+> Thank you.
 > 
+> Please consider the environment before printing this email.
