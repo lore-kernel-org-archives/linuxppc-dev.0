@@ -1,18 +1,16 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
-	by ozlabs.org (Postfix) with SMTP id 010E3B6EE9
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 3F5ADB70D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 08:33:46 +1000 (EST)
-Received: by mail-qy0-f170.google.com with SMTP id 35so5619178qyk.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 08 Sep 2010 15:33:44 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-MIME-Version: 1.0
-Date: Wed, 8 Sep 2010 15:33:43 -0700
-Message-ID: <72491a83088b2f2efc3c98f9af7a20d6@mail.gmail.com>
-Subject: Combining defconfigs for 44x based boards
+	Thu,  9 Sep 2010 09:21:27 +1000 (EST)
+Date: Wed, 8 Sep 2010 16:21:24 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0015175cde903090fd048fc71b86
+Subject: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
+Message-ID: <20100908232124.GB30291@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: peterz@infradead.org, mingo@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,74 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0015175cde903090fd048fc71b86
-Content-Type: text/plain; charset=ISO-8859-1
+Hello everyone,
 
-Is anyone working on combining defconfigs for 44x or 4xx devices ?
+I'm running Linux on a Freescale MPC8349EA board (PowerPC 6xx processor). When
+I enable the CONFIG_PROVE_LOCKING option, the kernel fails to boot. If I
+toggle that option (and ONLY that option) off, the kernel boots normally.
 
-Regards,
+The lockup happens very, very early during boot. Much too early to even have
+console messages coming out on the serial port. Therefore, I've hooked up a
+JTAG debugger and gained as much information as I can.
 
-Marri
+I would guess that something in lockdep_init() is breaking things, based on
+the backtrace provided. It is called in machine_init(), which is part of the
+backtrace. I think some part of lockdep is overwriting the flat device tree.
+The __log_buf output supports this claim. I am booting the two kernels with
+*exactly* the same device tree.
 
---0015175cde903090fd048fc71b86
-Content-Type: text/html; charset=ISO-8859-1
+(gdb) target remote bdi2k:2001
+Remote debugging using bdi2k:2001
+0x0ffbf760 in ?? ()
+(gdb) cont
+Continuing.
 
-<html>
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0xc031e0ec in memblock_reserve (base=8355840, size=0) at /home/iws/devel/linux-2.6/mm/memblock.c:270
+270             BUG_ON(0 == size);
+(gdb) info stack
+#0  0xc031e0ec in memblock_reserve (base=8355840, size=0) at /home/iws/devel/linux-2.6/mm/memblock.c:270
+#1  0xc0315f04 in early_init_devtree (params=<value optimized out>) at /home/iws/devel/linux-2.6/arch/powerpc/kernel/prom.c:537
+#2  0xc031691c in machine_init (dt_ptr=8355840) at /home/iws/devel/linux-2.6/arch/powerpc/kernel/setup_32.c:127
+#3  0xc0003410 in start_here () at /home/iws/devel/linux-2.6/arch/powerpc/kernel/head_32.S:982
+Backtrace stopped: previous frame inner to this frame (corrupt stack?)
+(gdb) print __log_buf 
+$3 = "<3>[    0.000000] Invalid tag 0 in flat device tree!\n<3>[    0.000000] Invalid tag 0 in flat device tree!\n<3>[    0.000000] Invalid tag 0 in flat device tree!\n", '\0' <repeats 130912 times>
 
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
-<meta name="Generator" content="Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
 
-</head>
+I am happy to provide more information if it will help. I'm not especially
+good at working the debugger. I can't get it to stop at machine_init() and let
+me step through the code.
 
-<body lang="EN-US" link="blue" vlink="purple">
+I tried this feature when it first became available on powerpc, and it
+did not work then. At that time, I didn't have the resources to
+investigate further. I don't think a git bisect will help in this case.
 
-<div class="Section1">
-
-<p class="MsoNormal">Is anyone working on combining defconfigs for 44x or 4xx
-devices ? </p>
-
-<p class="MsoNormal">Regards,</p>
-
-<p class="MsoNormal">Marri</p>
-
-</div>
-
-</body>
-
-</html>
-
---0015175cde903090fd048fc71b86--
+Thanks,
+Ira
