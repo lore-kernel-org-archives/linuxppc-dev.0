@@ -1,26 +1,18 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
-	by ozlabs.org (Postfix) with SMTP id 2A1EEB70AE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 03:27:32 +1000 (EST)
-Received: by mail-qy0-f171.google.com with SMTP id 30so5182304qyk.16
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 08 Sep 2010 10:27:29 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <1283464653-18492-1-git-send-email-tmarri@apm.com>
-	<20100903020851.GC29732@hansolo.jdub.homelinux.org>
-	<197d4509c0b1206ce2d686c03701a6b4@mail.gmail.com>
-	<20100905222340.GC2150@lixom.net>
-	<01bb9090932e6984c887273078fd586f@mail.gmail.com>
-	<20100906154526.GA515@lixom.net>
-In-Reply-To: <20100906154526.GA515@lixom.net>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Wed, 8 Sep 2010 11:45:47 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] arch/powerpc/platforms/52xx/efika.c: Add of_node_put
+	to avoid memory leak
+Message-ID: <20100908174547.GN3686@angua.secretlab.ca>
+References: <1283584397-7697-1-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
-Date: Wed, 8 Sep 2010 10:27:25 -0700
-Message-ID: <32d3989ca61a0bbfdfb691b1e578976b@mail.gmail.com>
-Subject: RE: [PATCH] APM821xx: Add support for new SoC APM821xx
-To: Olof Johansson <olof@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1283584397-7697-1-git-send-email-julia@diku.dk>
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > CPU portion uses SoC name.
->
-> Hm, you're right. Confusing.
->
-> Still, the cpu setup functions would make more sense to have the core
-> name in, not the SoC name. Especially since multiple SoC families might
-> use the same core, etc.
-[Marri] I agree. Probably we need another node which identifies SoC as
-well.
+On Sat, Sep 04, 2010 at 09:13:17AM +0200, Julia Lawall wrote:
+> This function is implemented as though the function of_get_next_child does
+> not increment the reference count of its result, but actually it does.
+> Thus the patch adds of_node_put in error handling code and drops a call to
+> of_node_get.
 
+applied, thanks.
 
-> > Different features from other.
->
-> Actually, it doesn't. Linus has had a strong pushback to the ARM
-> community
-> because of this mentality. arch/powerpc already has 100 defconfigs.
->
-> The use of devicetrees means that only the actual devices on your
-> board,
-> will be configured, so it doesn't do any damage to compile in more
-> drivers
-> than you happen to have. Thus generating a defconfig that is a superset
-> of some of your more common boards, or for example one per family of
-> boards.
->
-> One of the arguments for having custom defconfigs per board is that
-> customers that
-> base designs off of your eval board needs them. But they will make
-> other changes
-> to the config to add drivers for whatever additional devices they have
-> anyway.
-[Marri] I see. I am working on the modifications.
-Thanks
--marri
+g.
+
+> 
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> expression E1;
+> position p1,p2;
+> @@
+> 
+> x@p1 = of_get_next_child(...);
+> ... when != x = E1
+> of_node_get@p2(x)
+> 
+> @script:python@
+> p1 << r.p1;
+> p2 << r.p2;
+> @@
+> 
+> cocci.print_main("call",p1)
+> cocci.print_secs("get",p2)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  arch/powerpc/platforms/52xx/efika.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
+> index 45c0cb9..18c1048 100644
+> --- a/arch/powerpc/platforms/52xx/efika.c
+> +++ b/arch/powerpc/platforms/52xx/efika.c
+> @@ -99,7 +99,7 @@ static void __init efika_pcisetup(void)
+>  	if (bus_range == NULL || len < 2 * sizeof(int)) {
+>  		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+>  		       ": Can't get bus-range for %s\n", pcictrl->full_name);
+> -		return;
+> +		goto out_put;
+>  	}
+>  
+>  	if (bus_range[1] == bus_range[0])
+> @@ -111,12 +111,12 @@ static void __init efika_pcisetup(void)
+>  	printk(" controlled by %s\n", pcictrl->full_name);
+>  	printk("\n");
+>  
+> -	hose = pcibios_alloc_controller(of_node_get(pcictrl));
+> +	hose = pcibios_alloc_controller(pcictrl);
+>  	if (!hose) {
+>  		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+>  		       ": Can't allocate PCI controller structure for %s\n",
+>  		       pcictrl->full_name);
+> -		return;
+> +		goto out_put;
+>  	}
+>  
+>  	hose->first_busno = bus_range[0];
+> @@ -124,6 +124,9 @@ static void __init efika_pcisetup(void)
+>  	hose->ops = &rtas_pci_ops;
+>  
+>  	pci_process_bridge_OF_ranges(hose, pcictrl, 0);
+> +	return;
+> +out_put:
+> +	of_node_put(pcictrl);
+>  }
+>  
+>  #else
+> 
