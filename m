@@ -1,26 +1,25 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 6C870B6F01
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 17:15:14 +1000 (EST)
-Received: by ewy2 with SMTP id 2so738063ewy.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Sep 2010 00:15:12 -0700 (PDT)
-Date: Thu, 9 Sep 2010 11:15:07 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Chris Ball <cjb@laptop.org>
-Subject: Re: [PATCH 0/8] sdhci: Move real work out of an atomic context
-Message-ID: <20100909071507.GA14308@oksana.dev.rtsoft.ru>
-References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
-	<20100907153813.936db0c6.akpm@linux-foundation.org>
-	<20100908213740.GA7550@void.printf.net>
-	<20100909022834.GA10542@void.printf.net>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+	[213.199.154.141]) by ozlabs.org (Postfix) with ESMTP id 9EAEBB6EEF
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 18:27:05 +1000 (EST)
+Received: from mail27-db3 (localhost.localdomain [127.0.0.1])	by
+	mail27-db3-R.bigfish.com (Postfix) with ESMTP id 7E63FAA8372	for
+	<linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 08:36:17 +0000 (UTC)
+Received: from DB3EHSMHS005.bigfish.com (unknown [10.3.81.249])	by
+	mail27-db3.bigfish.com (Postfix) with ESMTP id 5222A113804C	for
+	<linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 08:36:17 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o898QlFJ017162	for <linuxppc-dev@ozlabs.org>;
+	Thu, 9 Sep 2010 01:26:57 -0700 (MST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/dts: add interrupt parent for lbc node for p4080
+Date: Thu, 9 Sep 2010 16:05:15 +0800
+Message-ID: <1284019515-26258-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100909022834.GA10542@void.printf.net>
-Cc: Matt Fleming <matt@console-pimps.org>,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Pierre Ossman <pierre@ossman.eu>
+Content-Type: text/plain
+Cc: B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 09, 2010 at 03:28:34AM +0100, Chris Ball wrote:
-[...]
-> [    7.372843]  [<b04193ce>] __might_sleep+0xd9/0xe0
-> [    7.387864]  [<b07260cc>] mutex_lock+0x1c/0x2a
-> [    7.402576]  [<b06396e8>] sdhci_led_control+0x1a/0x41
-> [    7.417727]  [<b063bece>] led_trigger_event+0x42/0x5c
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/boot/dts/p4080ds.dts |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-led_trigger_even grabs a readlock. :-(
-
-> [    7.432807]  [<b06326f8>] mmc_request_done+0x56/0x6f
-> [    7.447597]  [<b063a2d1>] sdhci_finish_work+0xc8/0xcd
-> [    7.462643]  [<b063a209>] ? sdhci_finish_work+0x0/0xcd
-> [    7.477941]  [<b0432776>] worker_thread+0x165/0x1ed
-> [    7.492856]  [<b063a209>] ? sdhci_finish_work+0x0/0xcd
-> [    7.508204]  [<b0435591>] ? autoremove_wake_function+0x0/0x34
-> [    7.524178]  [<b0432611>] ? worker_thread+0x0/0x1ed
-> [    7.538953]  [<b04352a0>] kthread+0x63/0x68
-> [    7.552659]  [<b043523d>] ? kthread+0x0/0x68
-> [    7.566349]  [<b0402cf6>] kernel_thread_helper+0x6/0x10
-> [    7.709931] udev: starting version 141
-> [    7.940374] mmc2: new high speed SDHC card at address e4da
-> [    8.058165] mmcblk0: mmc2:e4da SU04G 3.69 GiB 
-> [    8.135730]  mmcblk0: p1 p2
-> 
-> Full dmesg is at http://chris.printf.net/anton-mutex-dmesg.txt. 
-> Anton, the kernel is 2.6.35.4-olpc plus your patchset from -mm.
-> I can think about how to test on an upstream kernel instead, but
-> perhaps your own tests simply didn't hit sdhci_led_control(). 
-
-Yep, LEDS support was turned off.
-
-> Andrew, if you want to drop this while the BUG() and potential
-> performance regressions are worked out, I'd be happy to keep 
-> testing patches from Anton until it's without regressions here.
-
-Thanks Chris.
-
-I also think that it's better to drop these series now,
-and meanwhile I'll try to prepare another patchset.
-
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index 2f0de24..0a18138 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -431,6 +431,7 @@
+ 		compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
+ 		reg = <0xf 0xfe124000 0 0x1000>;
+ 		interrupts = <25 2>;
++		interrupt-parent = <&mpic>;
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+ 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.6.5
