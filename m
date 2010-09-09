@@ -1,22 +1,20 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 52E84B70A9
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 21:06:07 +1000 (EST)
-Received: by gwb19 with SMTP id 19so724870gwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Sep 2010 04:06:05 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1284027632-32573-3-git-send-email-tie-fei.zang@freescale.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 8F213B70AA
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 21:23:22 +1000 (EST)
+Received: by eyg24 with SMTP id 24so886062eyg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Sep 2010 04:23:19 -0700 (PDT)
+Date: Thu, 9 Sep 2010 15:23:15 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Subject: Re: [PATCH 2/3 v2][MTD] P4080/mtd: Only make elbc nand driver
+	detect nand flash partitions
+Message-ID: <20100909112315.GA6622@oksana.dev.rtsoft.ru>
 References: <1284027632-32573-1-git-send-email-tie-fei.zang@freescale.com>
 	<1284027632-32573-2-git-send-email-tie-fei.zang@freescale.com>
-	<1284027632-32573-3-git-send-email-tie-fei.zang@freescale.com>
-Date: Thu, 9 Sep 2010 13:06:00 +0200
-Message-ID: <AANLkTik3ViwjmOFfm6GUwmuzMkO75+2pCUdnC0z8A7Jb@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc issue with
-	36bit mode
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1284027632-32573-2-git-send-email-tie-fei.zang@freescale.com>
 Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
 	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
 	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
@@ -29,70 +27,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 9, 2010 at 12:20, Roy Zang <tie-fei.zang@freescale.com> wrote:
-> From: Lan Chunhe-B25806 <b25806@freescale.com>
->
-> When system uses 36bit physical address, res.start is 36bit
-> physical address. But the function of in_be32 returns 32bit
-> physical address. Then both of them compared each other is
-> wrong. So by converting the address of res.start into
-> the right format fixes this issue.
+On Thu, Sep 09, 2010 at 06:20:31PM +0800, Roy Zang wrote:
+[...]
+>  #include <linux/types.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+> -#include <linux/string.h>
+> -#include <linux/ioport.h>
+> -#include <linux/of_platform.h>
+> -#include <linux/slab.h>
+> -#include <linux/interrupt.h>
+>  
+> -#include <linux/mtd/mtd.h>
+>  #include <linux/mtd/nand.h>
+> -#include <linux/mtd/nand_ecc.h>
+>  #include <linux/mtd/partitions.h>
+> -
+> -#include <asm/io.h>
+>  #include <asm/fsl_lbc.h>
+> +#include <linux/slab.h>
 
-> =C2=A0/**
-> + * fsl_lbc_addr - convert the base address
-> + * @addr_base: base address of the memory bank
-> + *
-> + * This function converts a base address of lbc into the right format fo=
-r the BR
-> + * registers. If the SOC has eLBC then it returns 32bit physical address=
- else
-> + * it returns 34bit physical address for local bus(Example: MPC8641).
-> + */
-> +unsigned int fsl_lbc_addr(phys_addr_t addr_base)
-    ^^^^^^^^^^^^
-Shouldn't this be u32 or __be32, for consistency with the actual
-comparisons below?
+Why move slab.h?
 
-> @@ -52,7 +76,7 @@ int fsl_lbc_find(phys_addr_t addr_base)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 br =3D in_b=
-e32(&lbc->bank[i].br);
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 or =3D in_b=
-e32(&lbc->bank[i].or);
->
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (br & BR_V && (br &=
- or & BR_BA) =3D=3D addr_base)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (br & BR_V && (br &=
- or & BR_BA) =3D=3D fsl_lbc_addr(addr_base))
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0return i;
+[...]
+>  	for (i = 0; i < len; i++)
+> -		if (in_8(&ctrl->addr[ctrl->index + i]) != buf[i])
+> +		if (in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index + i])
+> +				!= buf[i])
+>  			break;
+>  
+> -	ctrl->index += len;
+> -	return i == len && ctrl->status == LTESR_CC ? 0 : -EIO;
+> +	elbc_fcm_ctrl->index += len;
+> +	return i == len && elbc_fcm_ctrl->status == LTESR_CC ? 0 : -EIO;
+>  }
+>  
+>  /* This function is called after Program and Erase Operations to
+> @@ -635,22 +625,21 @@ static int fsl_elbc_verify_buf(struct mtd_info *mtd, const u_char *buf, int len)
+>  static int fsl_elbc_wait(struct mtd_info *mtd, struct nand_chip *chip)
+>  {
+>  	struct fsl_elbc_mtd *priv = chip->priv;
+> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
+> -
 
-> @@ -851,7 +851,7 @@ static int __devinit fsl_elbc_nand_probe(struct platf=
-orm_device *dev,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(in_=
-be32(&lbc->bank[bank].br) & BR_MSEL) =3D=3D BR_MS_FCM &&
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(in_=
-be32(&lbc->bank[bank].br) &
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 in_=
-be32(&lbc->bank[bank].or) & BR_BA)
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
-=3D=3D res.start)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
-=3D=3D fsl_lbc_addr(res.start))
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0break;
+Please keep the empty line between variables declaration and the code.
 
-Gr{oetje,eeting}s,
+> -	if (ctrl->status != LTESR_CC)
+> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
+> +	if (elbc_fcm_ctrl->status != LTESR_CC)
+>  		return NAND_STATUS_FAIL;
+[...]
+> @@ -750,18 +739,18 @@ static void fsl_elbc_write_page(struct mtd_info *mtd,
+>                                  const uint8_t *buf)
+>  {
+>  	struct fsl_elbc_mtd *priv = chip->priv;
+> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
+> -
+> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
 
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
+Ditto.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+>  	fsl_elbc_write_buf(mtd, buf, mtd->writesize);
+>  	fsl_elbc_write_buf(mtd, chip->oob_poi, mtd->oobsize);
+>  
+> -	ctrl->oob_poi = chip->oob_poi;
+> +	elbc_fcm_ctrl->oob_poi = chip->oob_poi;
+>  }
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+[...]
+> -static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
+> -					 struct device_node *node)
+> +static int __devinit fsl_elbc_nand_probe(struct platform_device *dev,
+> +					 const struct of_device_id *match)
+>  {
+> -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+> +	struct fsl_lbc_regs __iomem *lbc;
+>  	struct fsl_elbc_mtd *priv;
+>  	struct resource res;
+> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = NULL;
+
+(***1)
+
+>  #ifdef CONFIG_MTD_PARTITIONS
+>  	static const char *part_probe_types[]
+>  		= { "cmdlinepart", "RedBoot", NULL };
+> @@ -843,11 +832,16 @@ static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
+>  #endif
+>  	int ret;
+>  	int bank;
+> +	struct device_node *node = dev->dev.of_node;
+> +
+> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
+> +		return -ENODEV;
+> +	lbc = fsl_lbc_ctrl_dev->regs;
+>  
+>  	/* get, allocate and map the memory resource */
+>  	ret = of_address_to_resource(node, 0, &res);
+>  	if (ret) {
+> -		dev_err(ctrl->dev, "failed to get resource\n");
+> +		dev_err(fsl_lbc_ctrl_dev->dev, "failed to get resource\n");
+>  		return ret;
+>  	}
+>  
+> @@ -861,7 +855,8 @@ static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
+>  			break;
+>  
+>  	if (bank >= MAX_BANKS) {
+> -		dev_err(ctrl->dev, "address did not match any chip selects\n");
+> +		dev_err(fsl_lbc_ctrl_dev->dev, "address did not match any "
+> +			"chip selects\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -869,14 +864,28 @@ static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+> -	ctrl->chips[bank] = priv;
+> +	if (fsl_lbc_ctrl_dev->nand == NULL) {
+> +		elbc_fcm_ctrl = kzalloc(sizeof(*elbc_fcm_ctrl), GFP_KERNEL);
+> +		if (!elbc_fcm_ctrl)
+> +			return -ENOMEM;
+
+'priv' leaked.
+
+> +
+> +		elbc_fcm_ctrl->read_bytes = 0;
+> +		elbc_fcm_ctrl->index = 0;
+> +		elbc_fcm_ctrl->addr = NULL;
+> +
+> +		spin_lock_init(&elbc_fcm_ctrl->controller.lock);
+> +		init_waitqueue_head(&elbc_fcm_ctrl->controller.wq);
+> +		fsl_lbc_ctrl_dev->nand = elbc_fcm_ctrl;
+> +	}
+> +
+> +	elbc_fcm_ctrl->chips[bank] = priv;
+
+The driver will oops on the second probe.
+
+You probably meant
+
+  struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = fsl_lbc_ctrl_dev->nand;
+
+at (***1).
+
+Also, nowadays the kernel may probe devices in parallel, which
+means that you probably need a mutex for fsl_lbc_ctrl_dev->nand.
+
+[...]
+> -static const struct of_device_id fsl_elbc_match[] = {
+> +static const struct of_device_id fsl_elbc_nand_match[] = {
+
+linux/mod_devicetable.h is needed for this.
+
+>  	{
+> -		.compatible = "fsl,elbc",
+> +		.compatible = "fsl,elbc-fcm-nand",
+>  	},
+>  	{}
+>  };
+>  
+> -static struct of_platform_driver fsl_elbc_ctrl_driver = {
+> +static struct of_platform_driver fsl_elbc_nand_driver = {
+
+If you write of_platform_driver, you need linux/of_platform.h (which
+you removed in this patch).
+
+But I think that you need just 'struct platform_driver' here, and
+include linux/platform_device.h.
+
+>  	.driver = {
+> -		.name = "fsl-elbc",
+> +		.name = "fsl,elbc-fcm-nand",
+>  		.owner = THIS_MODULE,
+> -		.of_match_table = fsl_elbc_match,
+> +		.of_match_table = fsl_elbc_nand_match,
+>  	},
+> -	.probe = fsl_elbc_ctrl_probe,
+> -	.remove = fsl_elbc_ctrl_remove,
+> +	.probe = fsl_elbc_nand_probe,
+> +	.remove = fsl_elbc_nand_remove,
+>  };
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
