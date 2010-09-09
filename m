@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 58F8AB6EF1
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 99C4BB6EEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 12:58:31 +1000 (EST)
-Subject: Re: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-In-Reply-To: <20100909025214.GA21846@ovro.caltech.edu>
-References: <20100908232124.GB30291@ovro.caltech.edu>
-	<1283994156.6515.6.camel@pasglop>
-	<20100909025214.GA21846@ovro.caltech.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 09 Sep 2010 12:58:16 +1000
-Message-ID: <1284001096.6515.33.camel@pasglop>
-Mime-Version: 1.0
-Cc: peterz@infradead.org, mingo@redhat.com, linuxppc-dev@lists.ozlabs.org
+	Thu,  9 Sep 2010 16:36:05 +1000 (EST)
+To: Tirumala Marri <tmarri@apm.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Combining defconfigs for 44x based boards
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <49073d172310031addb3aa7d08a60c99@mail.gmail.com>
+References: <a3a9eb5a2e770f931950ad13c01960da@mail.gmail.com>
+	<20100909004853.GA11808@zod.rchland.ibm.com>
+	<49073d172310031addb3aa7d08a60c99@mail.gmail.com>
+Date: Thu, 09 Sep 2010 08:36:00 +0200
+Message-Id: <20100909063601.03CCE1506AA@gemini.denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-09-08 at 19:52 -0700, Ira W. Snyder wrote:
-> 
-> I will attempt to get the debugger to stop at start_kernel. I'm having
-> trouble driving the JTAG debugger (a BDI2000). I have used Denx's
-> guide
-> [1] in the past, but the section on debugging the kernel itself is now
-> missing.
-> 
-> [1] http://www.denx.de/wiki/view/DULG/DebuggingLinuxKernel
-> 
-> I'll keep trying. 
+Dear Tirumala Marri,
 
-start_kernel might be too late...
+In message <49073d172310031addb3aa7d08a60c99@mail.gmail.com> you wrote:
+>
+> I am thinking that we can combine arches, Canyonlands, glacier, redwood
+> and eiger can be combined as ppc46x_defconfig.
 
-You can also hack thing :-) Like in the asm, before machine_init(),
-stick something in the DABR and put a HW breakpoint with the BDI2000 on
-the Data Access exception handler to "catch" when it faults.
+We already have arch/powerpc/configs/ppc40x_defconfig and
+arch/powerpc/configs/ppc44x_defconfig in mainline.
 
-Ben.
+What's wrong with using these?
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+CONSUMER NOTICE:  Because  of  the  "Uncertainty  Principle,"  It  Is
+Impossible  for  the  Consumer  to  Find  Out  at  the Same Time Both
+Precisely Where This Product Is and How Fast It Is Moving.
