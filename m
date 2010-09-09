@@ -1,21 +1,25 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
-	[213.199.154.204]) by ozlabs.org (Postfix) with ESMTP id 7664AB6F01
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 20:58:30 +1000 (EST)
-From: Roy Zang <tie-fei.zang@freescale.com>
-To: linux-mtd@lists.infradead.org
-Subject: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc issue with 36bit
-	mode
-Date: Thu, 9 Sep 2010 18:20:32 +0800
-Message-ID: <1284027632-32573-3-git-send-email-tie-fei.zang@freescale.com>
-In-Reply-To: <1284027632-32573-2-git-send-email-tie-fei.zang@freescale.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 52E84B70A9
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 21:06:07 +1000 (EST)
+Received: by gwb19 with SMTP id 19so724870gwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Sep 2010 04:06:05 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1284027632-32573-3-git-send-email-tie-fei.zang@freescale.com>
 References: <1284027632-32573-1-git-send-email-tie-fei.zang@freescale.com>
 	<1284027632-32573-2-git-send-email-tie-fei.zang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+	<1284027632-32573-3-git-send-email-tie-fei.zang@freescale.com>
+Date: Thu, 9 Sep 2010 13:06:00 +0200
+Message-ID: <AANLkTik3ViwjmOFfm6GUwmuzMkO75+2pCUdnC0z8A7Jb@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc issue with
+	36bit mode
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
-	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	dwmw2@infradead.org, B11780@freescale.com
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,91 +29,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Lan Chunhe-B25806 <b25806@freescale.com>
+On Thu, Sep 9, 2010 at 12:20, Roy Zang <tie-fei.zang@freescale.com> wrote:
+> From: Lan Chunhe-B25806 <b25806@freescale.com>
+>
+> When system uses 36bit physical address, res.start is 36bit
+> physical address. But the function of in_be32 returns 32bit
+> physical address. Then both of them compared each other is
+> wrong. So by converting the address of res.start into
+> the right format fixes this issue.
 
-When system uses 36bit physical address, res.start is 36bit
-physical address. But the function of in_be32 returns 32bit
-physical address. Then both of them compared each other is
-wrong. So by converting the address of res.start into
-the right format fixes this issue.
+> =C2=A0/**
+> + * fsl_lbc_addr - convert the base address
+> + * @addr_base: base address of the memory bank
+> + *
+> + * This function converts a base address of lbc into the right format fo=
+r the BR
+> + * registers. If the SOC has eLBC then it returns 32bit physical address=
+ else
+> + * it returns 34bit physical address for local bus(Example: MPC8641).
+> + */
+> +unsigned int fsl_lbc_addr(phys_addr_t addr_base)
+    ^^^^^^^^^^^^
+Shouldn't this be u32 or __be32, for consistency with the actual
+comparisons below?
 
-Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
----
-Comparing with v1, according to the feedback, add some decorations.
- arch/powerpc/include/asm/fsl_lbc.h |    1 +
- arch/powerpc/sysdev/fsl_lbc.c      |   26 +++++++++++++++++++++++++-
- drivers/mtd/nand/fsl_elbc_nand.c   |    2 +-
- 3 files changed, 27 insertions(+), 2 deletions(-)
+> @@ -52,7 +76,7 @@ int fsl_lbc_find(phys_addr_t addr_base)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 br =3D in_b=
+e32(&lbc->bank[i].br);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 or =3D in_b=
+e32(&lbc->bank[i].or);
+>
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (br & BR_V && (br &=
+ or & BR_BA) =3D=3D addr_base)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (br & BR_V && (br &=
+ or & BR_BA) =3D=3D fsl_lbc_addr(addr_base))
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0return i;
 
-diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
-index 9b95eab..bff85c8 100644
---- a/arch/powerpc/include/asm/fsl_lbc.h
-+++ b/arch/powerpc/include/asm/fsl_lbc.h
-@@ -249,6 +249,7 @@ struct fsl_upm {
- 	int width;
- };
- 
-+extern unsigned int fsl_lbc_addr(phys_addr_t addr_base);
- extern int fsl_lbc_find(phys_addr_t addr_base);
- extern int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm);
- 
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index f4eca8d..3a09e90 100644
---- a/arch/powerpc/sysdev/fsl_lbc.c
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -31,6 +31,30 @@ struct fsl_lbc_ctrl *fsl_lbc_ctrl_dev;
- EXPORT_SYMBOL(fsl_lbc_ctrl_dev);
- 
- /**
-+ * fsl_lbc_addr - convert the base address
-+ * @addr_base:	base address of the memory bank
-+ *
-+ * This function converts a base address of lbc into the right format for the BR
-+ * registers. If the SOC has eLBC then it returns 32bit physical address else
-+ * it returns 34bit physical address for local bus(Example: MPC8641).
-+ */
-+unsigned int fsl_lbc_addr(phys_addr_t addr_base)
-+{
-+	void *dev;
-+	int compatible;
-+
-+	dev = fsl_lbc_ctrl_dev->dev->of_node;
-+	compatible = of_device_is_compatible(dev, "fsl,elbc");
-+
-+	if (compatible)
-+		return addr_base & 0xffff8000;
-+	else
-+		return (addr_base & 0x0ffff8000ull)
-+			| ((addr_base & 0x300000000ull) >> 19);
-+}
-+EXPORT_SYMBOL(fsl_lbc_addr);
-+
-+/**
-  * fsl_lbc_find - find Localbus bank
-  * @addr_base:	base address of the memory bank
-  *
-@@ -52,7 +76,7 @@ int fsl_lbc_find(phys_addr_t addr_base)
- 		__be32 br = in_be32(&lbc->bank[i].br);
- 		__be32 or = in_be32(&lbc->bank[i].or);
- 
--		if (br & BR_V && (br & or & BR_BA) == addr_base)
-+		if (br & BR_V && (br & or & BR_BA) == fsl_lbc_addr(addr_base))
- 			return i;
- 	}
- 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index 64c840f..6dec268 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -851,7 +851,7 @@ static int __devinit fsl_elbc_nand_probe(struct platform_device *dev,
- 		    (in_be32(&lbc->bank[bank].br) & BR_MSEL) == BR_MS_FCM &&
- 		    (in_be32(&lbc->bank[bank].br) &
- 		     in_be32(&lbc->bank[bank].or) & BR_BA)
--		     == res.start)
-+		     == fsl_lbc_addr(res.start))
- 			break;
- 
- 	if (bank >= MAX_BANKS) {
--- 
-1.5.6.5
+> @@ -851,7 +851,7 @@ static int __devinit fsl_elbc_nand_probe(struct platf=
+orm_device *dev,
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(in_=
+be32(&lbc->bank[bank].br) & BR_MSEL) =3D=3D BR_MS_FCM &&
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(in_=
+be32(&lbc->bank[bank].br) &
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 in_=
+be32(&lbc->bank[bank].or) & BR_BA)
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+=3D=3D res.start)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+=3D=3D fsl_lbc_addr(res.start))
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0break;
+
+Gr{oetje,eeting}s,
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
