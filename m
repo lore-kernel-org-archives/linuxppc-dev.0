@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0DB13B70AA
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id DF90CB70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 11:02:52 +1000 (EST)
-Subject: Re: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-In-Reply-To: <20100908232124.GB30291@ovro.caltech.edu>
-References: <20100908232124.GB30291@ovro.caltech.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 09 Sep 2010 11:02:36 +1000
-Message-ID: <1283994156.6515.6.camel@pasglop>
+	Thu,  9 Sep 2010 11:53:17 +1000 (EST)
+Date: Thu, 9 Sep 2010 11:53:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tirumala Marri <tmarri@apm.com>
+Subject: Re: Combining defconfigs for 44x based boards
+Message-Id: <20100909115313.ab1c39c9.sfr@canb.auug.org.au>
+In-Reply-To: <9ea324bba2b8cb5e651f186d28c4f722@mail.gmail.com>
+References: <9ea324bba2b8cb5e651f186d28c4f722@mail.gmail.com>
 Mime-Version: 1.0
-Cc: peterz@infradead.org, mingo@redhat.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__9_Sep_2010_11_53_13_+1000_c8ANVidmo5yAdHVq"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-09-08 at 16:21 -0700, Ira W. Snyder wrote:
-> 
-> 
-> I am happy to provide more information if it will help. I'm not
-> especially
-> good at working the debugger. I can't get it to stop at machine_init()
-> and let
-> me step through the code.
-> 
-> I tried this feature when it first became available on powerpc, and it
-> did not work then. At that time, I didn't have the resources to
-> investigate further. I don't think a git bisect will help in this
-> case.
+--Signature=_Thu__9_Sep_2010_11_53_13_+1000_c8ANVidmo5yAdHVq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's a concern... lockdep_init() is expected to only perform static
-initializations...
+Hi Marri,
 
-Any chance you can stick a data breakpoint early on to catch when the
-corruption happens ?
+On Wed, 8 Sep 2010 15:39:29 -0700 Tirumala Marri <tmarri@apm.com> wrote:
+>
+> Is anyone working on Linus suggestion to combine the defconfigs under 44x
+> or 4xx ?
 
+Are arch/powerpc/configs/ppc44x_defconfig and ppc40x_defconfig what you wan=
+t?
+Or do you mean the Kconfig based versions?
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__9_Sep_2010_11_53_13_+1000_c8ANVidmo5yAdHVq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMiD4JAAoJEDMEi1NhKgbsNpAH/AvGUT+cGUwU8qtsJL2fRssD
+EKtwRhyrVCzPbbzZG6aih/JQ5h1Abb3jYI38zvdzL8IWEeudd/ARwq6A0uwMKRrp
+qpB6S6V33MNezGjwrImQWuqB7BV02Y7l2k9U2jwhVWftl3ZyIK6lBEu7ikLZIkPL
+L2482fcpizRM6SaqFKG6sqi2jh0aH5a0aVcfBW8YPtqV2wu9GLlKZif2ODOX/WMW
+9Q6q5kMw0Zeyon5TZjN5Xl0G8SemeaaY1wNOA+4uOY0eN6TCao9lMxbgiR58lY3X
+PLSmT7mFzvKrvA6T6LOiI9fpctbXLRWmHtOlmgr+rhlBf94abYNYkK1/lNjyGk0=
+=y5Y7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__9_Sep_2010_11_53_13_+1000_c8ANVidmo5yAdHVq--
