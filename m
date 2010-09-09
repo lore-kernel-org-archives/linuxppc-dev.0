@@ -1,22 +1,26 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (mail.lixom.net [70.86.134.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chris@void.printf.net>
+Received: from void.printf.net (void.printf.net [89.145.121.20])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0733B70D9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 12:16:34 +1000 (EST)
-Date: Wed, 8 Sep 2010 21:16:32 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Tirumala Marri <tmarri@apm.com>
-Subject: Re: Combining defconfigs for 44x based boards
-Message-ID: <20100909021632.GA16215@lixom.net>
-References: <a3a9eb5a2e770f931950ad13c01960da@mail.gmail.com>
-	<20100909004957.GA13061@lixom.net>
-	<b1e9b49612809d568bd1a4bdd1607b07@mail.gmail.com>
+	by ozlabs.org (Postfix) with ESMTPS id 9BDF6B6EDD
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 12:28:58 +1000 (EST)
+Date: Thu, 9 Sep 2010 03:28:34 +0100
+From: Chris Ball <cjb@laptop.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/8] sdhci: Move real work out of an atomic context
+Message-ID: <20100909022834.GA10542@void.printf.net>
+References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
+	<20100907153813.936db0c6.akpm@linux-foundation.org>
+	<20100908213740.GA7550@void.printf.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b1e9b49612809d568bd1a4bdd1607b07@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20100908213740.GA7550@void.printf.net>
+Cc: Matt Fleming <matt@console-pimps.org>,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	Anton Vorontsov <avorontsov@mvista.com>,
+	linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
+	Pierre Ossman <pierre@ossman.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 08, 2010 at 07:11:11PM -0700, Tirumala Marri wrote:
-> >
-> > On Wed, Sep 08, 2010 at 03:40:37PM -0700, Tirumala Marri wrote:
-> > > Is anyone working on Linus suggestion to combine the defconfigs under
-> > 44x
-> > > or 4xx ?
-> >
-> > Do you mean ppc44x_defconfig? Already there.
-> No it is not there yet. I should have said "Linus suggestion about
-> defconfigs in ARM mailing list".
+Hi,
 
-ARM and powerpc are somewhat different in this aspect, since
-ARM traditionally has not been able to build multiplatform kernels
-(especially not multi-soc-family kernels).
+On Wed, Sep 08, 2010 at 10:37:41PM +0100, Chris Ball wrote:
+> Hi Andrew,
+> 
+> On Tue, Sep 07, 2010 at 03:38:13PM -0700, Andrew Morton wrote:
+> > > I noticed no throughput drop neither with PIO transfers nor
+> > > with DMA (tested on MPC8569E CPU), while latencies should be
+> > > greatly improved.
+> > 
+> > This patchset isn't causing any problems yet, but may do so in the
+> > future and will impact the validity of any testing.  It seems to be
+> > kind of stuck.  Should I drop it all?
+> 
+> I suggest keeping it -- I'll find time to test it out here soon, and
+> will keep it in mind as a possible regression cause.
 
-Powerpc can build a kernel that will boot on all machines of a certain
-class (server, fsl-booke, ibm-booke, ppc32). So there's not really
-a whole lot of reason to have the custom per-board defconfigs in the
-kernel tree any more.
+Am running this now.  The first thing I'm noticing is a repeated BUG():
 
-For specific products it might still make sense for a vendor to make a custom
-minimal defconfig, but that doesn't mean it's a requirement to have them in the
-upstream repository.
+[    7.288186] Write protecting the kernel read-only data: 1072k
+[    7.306446] BUG: sleeping function called from invalid context at kernel/mutex.c:94
+[    7.324375] in_atomic(): 1, irqs_disabled(): 0, pid: 532, name: mmc2/0
+[    7.340989] Pid: 532, comm: mmc2/0 Not tainted 2.6.35.4_xo1.5-20100908.2141.olpc.44f3b38_DIRTY #1
+[    7.360129] Call Trace:
+[    7.372843]  [<b04193ce>] __might_sleep+0xd9/0xe0
+[    7.387864]  [<b07260cc>] mutex_lock+0x1c/0x2a
+[    7.402576]  [<b06396e8>] sdhci_led_control+0x1a/0x41
+[    7.417727]  [<b063bece>] led_trigger_event+0x42/0x5c
+[    7.432807]  [<b06326f8>] mmc_request_done+0x56/0x6f
+[    7.447597]  [<b063a2d1>] sdhci_finish_work+0xc8/0xcd
+[    7.462643]  [<b063a209>] ? sdhci_finish_work+0x0/0xcd
+[    7.477941]  [<b0432776>] worker_thread+0x165/0x1ed
+[    7.492856]  [<b063a209>] ? sdhci_finish_work+0x0/0xcd
+[    7.508204]  [<b0435591>] ? autoremove_wake_function+0x0/0x34
+[    7.524178]  [<b0432611>] ? worker_thread+0x0/0x1ed
+[    7.538953]  [<b04352a0>] kthread+0x63/0x68
+[    7.552659]  [<b043523d>] ? kthread+0x0/0x68
+[    7.566349]  [<b0402cf6>] kernel_thread_helper+0x6/0x10
+[    7.709931] udev: starting version 141
+[    7.940374] mmc2: new high speed SDHC card at address e4da
+[    8.058165] mmcblk0: mmc2:e4da SU04G 3.69 GiB 
+[    8.135730]  mmcblk0: p1 p2
 
+Full dmesg is at http://chris.printf.net/anton-mutex-dmesg.txt. 
+Anton, the kernel is 2.6.35.4-olpc plus your patchset from -mm.
+I can think about how to test on an upstream kernel instead, but
+perhaps your own tests simply didn't hit sdhci_led_control(). 
 
--Olof
+Andrew, if you want to drop this while the BUG() and potential
+performance regressions are worked out, I'd be happy to keep 
+testing patches from Anton until it's without regressions here.
+
+Thanks,
+
+-- 
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
