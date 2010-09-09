@@ -1,20 +1,26 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 99C4BB6EEB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 16:36:05 +1000 (EST)
-To: Tirumala Marri <tmarri@apm.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Combining defconfigs for 44x based boards
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 6C870B6F01
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Sep 2010 17:15:14 +1000 (EST)
+Received: by ewy2 with SMTP id 2so738063ewy.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Sep 2010 00:15:12 -0700 (PDT)
+Date: Thu, 9 Sep 2010 11:15:07 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Chris Ball <cjb@laptop.org>
+Subject: Re: [PATCH 0/8] sdhci: Move real work out of an atomic context
+Message-ID: <20100909071507.GA14308@oksana.dev.rtsoft.ru>
+References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
+	<20100907153813.936db0c6.akpm@linux-foundation.org>
+	<20100908213740.GA7550@void.printf.net>
+	<20100909022834.GA10542@void.printf.net>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <49073d172310031addb3aa7d08a60c99@mail.gmail.com>
-References: <a3a9eb5a2e770f931950ad13c01960da@mail.gmail.com>
-	<20100909004853.GA11808@zod.rchland.ibm.com>
-	<49073d172310031addb3aa7d08a60c99@mail.gmail.com>
-Date: Thu, 09 Sep 2010 08:36:00 +0200
-Message-Id: <20100909063601.03CCE1506AA@gemini.denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20100909022834.GA10542@void.printf.net>
+Cc: Matt Fleming <matt@console-pimps.org>,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Pierre Ossman <pierre@ossman.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Tirumala Marri,
+On Thu, Sep 09, 2010 at 03:28:34AM +0100, Chris Ball wrote:
+[...]
+> [    7.372843]  [<b04193ce>] __might_sleep+0xd9/0xe0
+> [    7.387864]  [<b07260cc>] mutex_lock+0x1c/0x2a
+> [    7.402576]  [<b06396e8>] sdhci_led_control+0x1a/0x41
+> [    7.417727]  [<b063bece>] led_trigger_event+0x42/0x5c
 
-In message <49073d172310031addb3aa7d08a60c99@mail.gmail.com> you wrote:
->
-> I am thinking that we can combine arches, Canyonlands, glacier, redwood
-> and eiger can be combined as ppc46x_defconfig.
+led_trigger_even grabs a readlock. :-(
 
-We already have arch/powerpc/configs/ppc40x_defconfig and
-arch/powerpc/configs/ppc44x_defconfig in mainline.
+> [    7.432807]  [<b06326f8>] mmc_request_done+0x56/0x6f
+> [    7.447597]  [<b063a2d1>] sdhci_finish_work+0xc8/0xcd
+> [    7.462643]  [<b063a209>] ? sdhci_finish_work+0x0/0xcd
+> [    7.477941]  [<b0432776>] worker_thread+0x165/0x1ed
+> [    7.492856]  [<b063a209>] ? sdhci_finish_work+0x0/0xcd
+> [    7.508204]  [<b0435591>] ? autoremove_wake_function+0x0/0x34
+> [    7.524178]  [<b0432611>] ? worker_thread+0x0/0x1ed
+> [    7.538953]  [<b04352a0>] kthread+0x63/0x68
+> [    7.552659]  [<b043523d>] ? kthread+0x0/0x68
+> [    7.566349]  [<b0402cf6>] kernel_thread_helper+0x6/0x10
+> [    7.709931] udev: starting version 141
+> [    7.940374] mmc2: new high speed SDHC card at address e4da
+> [    8.058165] mmcblk0: mmc2:e4da SU04G 3.69 GiB 
+> [    8.135730]  mmcblk0: p1 p2
+> 
+> Full dmesg is at http://chris.printf.net/anton-mutex-dmesg.txt. 
+> Anton, the kernel is 2.6.35.4-olpc plus your patchset from -mm.
+> I can think about how to test on an upstream kernel instead, but
+> perhaps your own tests simply didn't hit sdhci_led_control(). 
 
-What's wrong with using these?
+Yep, LEDS support was turned off.
 
-Best regards,
+> Andrew, if you want to drop this while the BUG() and potential
+> performance regressions are worked out, I'd be happy to keep 
+> testing patches from Anton until it's without regressions here.
 
-Wolfgang Denk
+Thanks Chris.
+
+I also think that it's better to drop these series now,
+and meanwhile I'll try to prepare another patchset.
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-CONSUMER NOTICE:  Because  of  the  "Uncertainty  Principle,"  It  Is
-Impossible  for  the  Consumer  to  Find  Out  at  the Same Time Both
-Precisely Where This Product Is and How Fast It Is Moving.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
