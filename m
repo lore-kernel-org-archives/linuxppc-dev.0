@@ -1,26 +1,21 @@
-Return-Path: <dceravigupta@gmail.com>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 7BA35B70A6
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 8A092B6EF2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 22:37:24 +1000 (EST)
-Received: by pwi4 with SMTP id 4so82338pwi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 09 Sep 2010 05:37:22 -0700 (PDT)
+	Fri, 10 Sep 2010 02:23:10 +1000 (EST)
+Date: Thu, 9 Sep 2010 09:23:07 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
+Message-ID: <20100909162306.GA3496@ovro.caltech.edu>
+References: <20100908232124.GB30291@ovro.caltech.edu>
+	<1283994156.6515.6.camel@pasglop>
+	<20100909025214.GA21846@ovro.caltech.edu>
+	<1284001096.6515.33.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <4C88AF1E.8010608@windriver.com>
-References: <AANLkTim5kasMWC6u-mhQyCRiPv1w7BCg7o-mBfy28DfS@mail.gmail.com>
-	<4C85CCD6.3020504@windriver.com>
-	<AANLkTi=bDOtCxW9VuXrSyAiCLoFCvWoskORpc_1ebDe7@mail.gmail.com>
-	<4C8604E1.4080908@windriver.com>
-	<AANLkTimLO+xf2Z1zoQfZ8bfB-b--Uu701afr7zg+1r6k@mail.gmail.com>
-	<4C88AF1E.8010608@windriver.com>
-Date: Thu, 9 Sep 2010 18:07:22 +0530
-Message-ID: <AANLkTik1gWKO6vif+HgtM-j_5EUMJGwKRf+saRgK4TZg@mail.gmail.com>
-Subject: Re: pci_request_regions() failure
-From: Ravi Gupta <dceravigupta@gmail.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Content-Type: multipart/alternative; boundary=000e0cd21480473ac1048fd2e44e
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1284001096.6515.33.camel@pasglop>
+Cc: peterz@infradead.org, mingo@redhat.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,82 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd21480473ac1048fd2e44e
-Content-Type: text/plain; charset=ISO-8859-1
+On Thu, Sep 09, 2010 at 12:58:16PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2010-09-08 at 19:52 -0700, Ira W. Snyder wrote:
+> > 
+> > I will attempt to get the debugger to stop at start_kernel. I'm having
+> > trouble driving the JTAG debugger (a BDI2000). I have used Denx's
+> > guide
+> > [1] in the past, but the section on debugging the kernel itself is now
+> > missing.
+> > 
+> > [1] http://www.denx.de/wiki/view/DULG/DebuggingLinuxKernel
+> > 
+> > I'll keep trying. 
+> 
+> start_kernel might be too late...
+> 
+> You can also hack thing :-) Like in the asm, before machine_init(),
+> stick something in the DABR and put a HW breakpoint with the BDI2000 on
+> the Data Access exception handler to "catch" when it faults.
+> 
 
-Hi Tiejun,
+I have succeeded in getting the debugger to break early on during boot.
+I have it set to break at start_here, in arch/powerpc/kernel/head_32.S.
 
-Thanks for the reply.
+My U-Boot bootloader indicates that the fdt is being loaded to address
+0x7f8000, which translates to VA 0xc07f8000. See this output:
 
-Omm.
->
-> Often we always disable this pref windows so please disable this window.
-> Try use
-> the following ways to clear PCI_PREF_MEMORY_BASE and PCI_PREF_MEMORY_LIMIT.
-> ------
->        pci_write_config_word(dev, PCI_PREF_MEMORY_BASE, 0);
->        pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, 0);
->
->
-I have a little confusion about what you said. You said I should disable
-prefetched window corresponds to PCI Bridge to [bus 02-ff], the dmesgs shows
-that it is already disabled.
+   Booting using the fdt blob at 0x2269f1c
+   Uncompressing Kernel Image ... OK
+   Loading Ramdisk to 0fea0000, end 0ff76699 ... OK
+   Loading Device Tree to 007f8000, end 007ff78f ... OK
 
-pci 0001:01:00.0: PCI bridge to [bus 02-ff]
-pci 0001:01:00.0:   bridge window [io  0x0000-0x0000] (disabled)
-pci 0001:01:00.0:   bridge window [mem 0x00000000-0x000fffff] (disabled)
-*pci 0001:01:00.0:   bridge window [mem 0x00000000-0x000fffff pref]
-(disabled)*
+As soon an the debugger hit the start_here breakpoint, I ran the
+following command. It should dump out the flat device tree to a file,
+which I can then analyze:
 
-Is it something that I am not getting right or you have miss read something?
-If it is problem with me, then what should be the O/P in case when I disable
-the prefetch window (by issuing pci_write_config_word(dev,
-PCI_PREF_MEMORY_BASE, 0); and pci_write_config_word(dev,
-PCI_PREF_MEMORY_LIMIT, 0); function calls)? And also, I will be really
-thankful to you if you also tell me the function in which I should place
-there function calls as I am new to linux device driver programming.
+(gdb) dump memory ~/fdt.bin 0xc07f8000 0xc07ff78f
 
-Regards,
-Ravi
+On the good kernel (CONFIG_PROVE_LOCKING=n), I get a valid device tree
+in fdt.bin. I see the stuff I would expect.
 
---000e0cd21480473ac1048fd2e44e
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On the bad kernel (CONFIG_PROVE_LOCKING=y), I get all zeroes in fdt.bin.
+So clearly something is overwriting the fdt.
 
-Hi Tiejun,<br><br>Thanks for the reply.<br><br><div class=3D"gmail_quote"><=
-blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; border=
--left: 1px solid rgb(204, 204, 204); padding-left: 1ex;"><div class=3D"im">
-</div>Omm.<br>
-<br>
-Often we always disable this pref windows so please disable this window. Tr=
-y use<br>
-the following ways to clear PCI_PREF_MEMORY_BASE and PCI_PREF_MEMORY_LIMIT.=
-<br>
-------<br>
- =A0 =A0 =A0 =A0pci_write_config_word(dev, PCI_PREF_MEMORY_BASE, 0);<br>
- =A0 =A0 =A0 =A0pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, 0);<br>
-<div><div class=3D"h5"><br></div></div></blockquote><div><br>I have a littl=
-e confusion about what you said. You said I should=20
-disable prefetched window corresponds to PCI Bridge to [bus 02-ff], the=20
-dmesgs shows that it is already disabled. <br>
-<br>
-pci 0001:01:00.0: PCI bridge to [bus 02-ff]<br>
+However, note that this happens *before* lockdep_init() runs. Grepping
+for CONFIG_PROVE_LOCKING in arch/powerpc and drivers/of shows nothing.
+I'm not sure exactly how this is related to lockdep.
 
-pci 0001:01:00.0:=A0=A0 bridge window [io=A0 0x0000-0x0000] (disabled)<br>
+Some more suggestions for things to try would be great. For now, I'm
+going to try getting the debugger to break near the end of U-Boot, to
+see if the memory is overwritten there, and not in Linux.
 
-pci 0001:01:00.0:=A0=A0 bridge window [mem 0x00000000-0x000fffff] (disabled=
-)<br>
-
-<b>pci 0001:01:00.0:=A0=A0 bridge window [mem 0x00000000-0x000fffff pref] (=
-disabled)</b><br>
-<br>
-Is it something that I am not getting right or you have miss read=20
-something? If it is problem with me, then what should be the O/P in case
- when I disable the prefetch window (by issuing=20
-pci_write_config_word(dev, PCI_PREF_MEMORY_BASE, 0); and=20
-pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, 0); function calls)?=20
-And also, I will be really thankful to you if you also tell me the=20
-function in which I should place there function calls as I am new to linux =
-device driver programming.<br><br>Regards,<br>Ravi</div></div>
-
---000e0cd21480473ac1048fd2e44e--
+Ira
