@@ -1,20 +1,20 @@
 Return-Path: <tmarri@apm.com>
-Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
-	by ozlabs.org (Postfix) with SMTP id 6AD80B70AE
+Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
+	by ozlabs.org (Postfix) with SMTP id 68E56B70CB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Sep 2010 12:09:18 +1000 (EST)
-Received: by mail-qy0-f182.google.com with SMTP id 4so931064qyk.6
+	Thu,  9 Sep 2010 12:11:13 +1000 (EST)
+Received: by mail-qy0-f173.google.com with SMTP id 34so5911264qyk.11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 08 Sep 2010 19:09:16 -0700 (PDT)
+	Wed, 08 Sep 2010 19:11:11 -0700 (PDT)
 From: Tirumala Marri <tmarri@apm.com>
 References: <a3a9eb5a2e770f931950ad13c01960da@mail.gmail.com>
-	<20100909004853.GA11808@zod.rchland.ibm.com>
-In-Reply-To: <20100909004853.GA11808@zod.rchland.ibm.com>
+	<20100909004957.GA13061@lixom.net>
+In-Reply-To: <20100909004957.GA13061@lixom.net>
 MIME-Version: 1.0
-Date: Wed, 8 Sep 2010 19:09:16 -0700
-Message-ID: <5769f3acee477be2178d5b3bbd0191d7@mail.gmail.com>
+Date: Wed, 8 Sep 2010 19:11:11 -0700
+Message-ID: <b1e9b49612809d568bd1a4bdd1607b07@mail.gmail.com>
 Subject: RE: Combining defconfigs for 44x based boards
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,16 +27,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 >
-> Linus made a suggestion to that effect?  If so, I missed it.  Have a
-> pointer?
-
-There was discussion going on in arm-kernel mailing list. And I see some
-patches being submitted for ARM based boards.
-I think we can also combine some of the defconfigs under
-arch/powerpc/configs/44x/ directory.
-
-Here is ARM dfconfigs discussion
-http://lkml.indiana.edu/hypermail/linux/kernel/1006.0/01464.html
-
-Here is the link for some of the defconfig submissions
-http://www.spinics.net/lists/arm-kernel/msg96972.html
+> On Wed, Sep 08, 2010 at 03:40:37PM -0700, Tirumala Marri wrote:
+> > Is anyone working on Linus suggestion to combine the defconfigs under
+> 44x
+> > or 4xx ?
+>
+> Do you mean ppc44x_defconfig? Already there.
+No it is not there yet. I should have said "Linus suggestion about
+defconfigs in ARM mailing list".
