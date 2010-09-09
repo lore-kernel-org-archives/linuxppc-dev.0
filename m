@@ -1,24 +1,38 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
-	by ozlabs.org (Postfix) with SMTP id C74D9B713B
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+	[213.199.154.205]) by ozlabs.org (Postfix) with ESMTP id E80FEB713C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Sep 2010 08:17:14 +1000 (EST)
-Received: by qwj9 with SMTP id 9so961475qwj.24
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 09 Sep 2010 15:17:11 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <a3a9eb5a2e770f931950ad13c01960da@mail.gmail.com>
-	<20100909004853.GA11808@zod.rchland.ibm.com>	<49073d172310031addb3aa7d08a60c99@mail.gmail.com>
-	<20100909063601.03CCE1506AA@gemini.denx.de>	<56886bb653a2198b7a5bdcf5f38d4a98@mail.gmail.com>
-	<20100909130954.265adb37@lappy.seanm.ca>
-In-Reply-To: <20100909130954.265adb37@lappy.seanm.ca>
+	Fri, 10 Sep 2010 08:26:52 +1000 (EST)
+Received: from mail27-am1 (localhost.localdomain [127.0.0.1])	by
+	mail27-am1-R.bigfish.com (Postfix) with ESMTP id F0F931990247	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu,  9 Sep 2010 22:11:34 +0000 (UTC)
+Received: from AM1EHSMHS009.bigfish.com (unknown [10.3.201.241])	by
+	mail27-am1.bigfish.com (Postfix) with ESMTP id 72008A4005F	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu,  9 Sep 2010 22:11:32 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o89MBIu9014198	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 9 Sep 2010 15:11:18 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o89MQH0g029763	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 9 Sep 2010 17:26:17 -0500 (CDT)
+Date: Thu, 9 Sep 2010 17:11:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
+Message-ID: <20100909171116.1b9b6e44@schlenkerla.am.freescale.net>
+In-Reply-To: <1284069534.6515.36.camel@pasglop>
+References: <20100908232124.GB30291@ovro.caltech.edu>
+	<1283994156.6515.6.camel@pasglop>
+	<20100909025214.GA21846@ovro.caltech.edu>
+	<1284001096.6515.33.camel@pasglop>
+	<20100909162306.GA3496@ovro.caltech.edu>
+	<1284069534.6515.36.camel@pasglop>
 MIME-Version: 1.0
-Date: Thu, 9 Sep 2010 15:17:10 -0700
-Message-ID: <69da3260c595cc3870a9ff1eee9a7898@mail.gmail.com>
-Subject: RE: Combining defconfigs for 44x based boards
-To: Sean MacLennan <smaclennan@pikatech.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: peterz@infradead.org, mingo@redhat.com, linuxppc-dev@lists.ozlabs.org,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +42,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Thu, 9 Sep 2010 09:49:14 -0700
-> Tirumala Marri <tmarri@apm.com> wrote:
->
-> > [Marri] Great we already have it. We should remove the defconfigs
-> > under 44x then ?
->
-> I'd rather we didn't. I thought Linus' beef was over the churn in the
-> defconfigs, not the fact that they exist. The 44x defconfigs change
-> very rarely.
-[Marri]That is kind of true. Can we create new defconfigs then ?
-I am trying to check-in new defconfig.
+On Fri, 10 Sep 2010 07:58:54 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> I would have expected uboot to warn (the kernel ELF header contains the
+> BSS size) but apparently that isn't the case.
+
+U-Boot doesn't use ELF files with Linux, so it has no idea where the
+BSS is.  uImage is just a wrapper around a flat binary.
+
+-Scott
