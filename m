@@ -1,29 +1,26 @@
-Return-Path: <temerkhanov@cifronik.ru>
-Received: from cifronik.21th.com (cifronik.21th.com [62.16.86.116])
-	by ozlabs.org (Postfix) with ESMTP id 08402B7109
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Sep 2010 19:13:39 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.cifronic.local (Postfix) with ESMTP id 5391E89560
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Sep 2010 13:13:35 +0400 (MSD)
-Received: from mail.cifronic.local ([127.0.0.1])
-	by localhost (server.cifronic.local [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with LMTP id DWeTtVgPtdfv for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Sep 2010 13:13:33 +0400 (MSD)
-Received: from satanklaus.localnet (satanklaus.cifronic.local [192.168.0.99])
-	by mail.cifronic.local (Postfix) with ESMTPSA id CF6D18955E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Sep 2010 13:13:33 +0400 (MSD)
-From: Sergey Temerkhanov <temerkhanov@cifronik.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv4] Xilinx Virtex 4 FX Soft FPU support
-Date: Fri, 10 Sep 2010 13:14:43 +0400
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 7D768B70DF
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Sep 2010 19:31:20 +1000 (EST)
+Received: by eyg24 with SMTP id 24so1787365eyg.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Sep 2010 02:31:18 -0700 (PDT)
+Date: Fri, 10 Sep 2010 13:31:13 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 1/3 v2][MTD] P4080/eLBC: Make Freescale elbc interrupt
+	common to elbc devices
+Message-ID: <20100910093113.GA22204@oksana.dev.rtsoft.ru>
+References: <1284027632-32573-1-git-send-email-tie-fei.zang@freescale.com>
+	<20100909115338.GA12320@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A1FBF4A@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <201009101314.43831.temerkhanov@cifronik.ru>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A1FBF4A@zch01exm23.fsl.freescale.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,203 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables support for Xilinx Virtex 4 FX singe-float FPU.> This patch 
-enables support for Xilinx Virtex 4 FX singe-float FPU.
+On Fri, Sep 10, 2010 at 02:58:15PM +0800, Zang Roy-R61911 wrote:
+[...]
+> > > +static struct of_platform_driver fsl_lbc_ctrl_driver = {
+> > 
+> > Need linux/of_platform.h for this.
+> It has been include by
+> fsl_lbc.h->linux/of_platform.h-> linux/platform_device.h
+> Before submitting the patch, I have built and tested it.
 
-Changelog v3-v4
-	-Added help for CONFIG_XILINX_SOFTFPU option
-	-Made kernel math emulation dependent on !PPC_FPU.
+In Linux we try to include all the headers explicitly (except
+for asm/* if the same header name exists in linux/).
 
-Changelog v2-v3:
-        -Fixed whitespaces for SAVE_FPR/REST_FPR.
-        -Changed description of MSR_AP bit.
-        -Removed the stub for APU unavailable exception.
+That's to avoid problems if for some reason fsl_lbc.h will stop
+including of_plaform.h some day.
 
-Changelog v1->v2:
-        -Added MSR_AP bit definition
-        -Renamed CONFIG_XILINX_FPU to CONFIG_XILINX_SOFTFPU, moved it to
-         'Platform support' and made it Virtex4-FX-only.
-        -Changed SAVE_FPR/REST_FPR definition style.
+Oh, and by the way, there is absolutely no reason to add
+linux/of_platform.h and interrupts.h into fsl_lbc.h, they're
+is simply not needed in fsl_lbc.h.
 
-Caveats:
-        - Hard-float binaries which rely on in-kernel math emulation will
-        give wrong results since they expect 64-bit double-precision instead 	
-	of 32-bit single-precision numbers which Xilinx V4-FX Soft FPU produces.
+> Do you think I do not build the tree before I send out the patch?
 
+Nope, that's not what I think. I didn't say that the file
+won't build w/o these fixes, but they're still needed.
 
-Signed-off-by: Sergey Temerkhanov<temerkhanov@cifronik.ru>
+> > > +
+> > > +static struct of_platform_driver fsl_lbc_ctrl_driver = {
+> > 
+> > Need linux/of_platform.h for this.
+> > 
+> > But you actually don't need of_platform_driver, as for the
+> > new code you can use platform_driver (and thus
+> > linux/platform_device.h).
+> I'd prefer using of_platform_driver here for simplified code.
+> Any special reason to use platform_device here?
 
-diff -r df25ff2b70a4 arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig	Fri Aug 27 21:10:12 2010 +0400
-+++ b/arch/powerpc/Kconfig	Fri Sep 10 13:08:13 2010 +0400
-@@ -293,7 +293,7 @@
- 
- config MATH_EMULATION
- 	bool "Math emulation"
--	depends on 4xx || 8xx || E200 || PPC_MPC832x || E500
-+	depends on (4xx || 8xx || E200 || PPC_MPC832x || E500) && !PPC_FPU
- 	---help---
- 	  Some PowerPC chips designed for embedded applications do not have
- 	  a floating-point unit and therefore do not implement the
-diff -r df25ff2b70a4 arch/powerpc/include/asm/ppc_asm.h
---- a/arch/powerpc/include/asm/ppc_asm.h	Fri Aug 27 21:10:12 2010 +0400
-+++ b/arch/powerpc/include/asm/ppc_asm.h	Fri Sep 10 13:08:13 2010 +0400
-@@ -85,13 +85,21 @@
- #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
- #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
- 
--#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+
-+#ifdef CONFIG_XILINX_SOFTFPU
-+#define SAVE_FPR(n, base)	stfs n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#define REST_FPR(n, base)	lfs n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#else
-+#define SAVE_FPR(n, base)	stfd n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#define REST_FPR(n, base)	lfd n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#endif
-+
- #define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
- #define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
- #define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
- #define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
- #define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
--#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+
- #define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
- #define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
- #define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
-diff -r df25ff2b70a4 arch/powerpc/include/asm/reg.h
---- a/arch/powerpc/include/asm/reg.h	Fri Aug 27 21:10:12 2010 +0400
-+++ b/arch/powerpc/include/asm/reg.h	Fri Sep 10 13:08:13 2010 +0400
-@@ -30,6 +30,7 @@
- #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
- #define MSR_HV_LG 	60              /* Hypervisor state */
- #define MSR_VEC_LG	25	        /* Enable AltiVec */
-+#define MSR_AP_LG	25	        /* Enable APU */
- #define MSR_VSX_LG	23		/* Enable VSX */
- #define MSR_POW_LG	18		/* Enable Power Management */
- #define MSR_WE_LG	18		/* Wait State Enable */
-@@ -71,6 +72,7 @@
- #define MSR_HV		0
- #endif
- 
-+#define MSR_AP		__MASK(MSR_AP_LG)	/* Enable APU */
- #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
- #define MSR_VSX		__MASK(MSR_VSX_LG)	/* Enable VSX */
- #define MSR_POW		__MASK(MSR_POW_LG)	/* Enable Power Management */
-diff -r df25ff2b70a4 arch/powerpc/kernel/fpu.S
---- a/arch/powerpc/kernel/fpu.S	Fri Aug 27 21:10:12 2010 +0400
-+++ b/arch/powerpc/kernel/fpu.S	Fri Sep 10 13:08:13 2010 +0400
-@@ -57,6 +57,9 @@
- _GLOBAL(load_up_fpu)
- 	mfmsr	r5
- 	ori	r5,r5,MSR_FP
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r5,r5,MSR_AP@h
-+#endif
- #ifdef CONFIG_VSX
- BEGIN_FTR_SECTION
- 	oris	r5,r5,MSR_VSX@h
-@@ -85,6 +88,9 @@
- 	toreal(r5)
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 	li	r10,MSR_FP|MSR_FE0|MSR_FE1
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r10,r10,MSR_AP@h
-+#endif
- 	andc	r4,r4,r10		/* disable FP for previous task */
- 	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 1:
-@@ -94,6 +100,9 @@
- 	mfspr	r5,SPRN_SPRG_THREAD		/* current task's THREAD (phys) */
- 	lwz	r4,THREAD_FPEXC_MODE(r5)
- 	ori	r9,r9,MSR_FP		/* enable FP for current */
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r9,r9,MSR_AP@h
-+#endif
- 	or	r9,r9,r4
- #else
- 	ld	r4,PACACURRENT(r13)
-@@ -124,6 +133,9 @@
- _GLOBAL(giveup_fpu)
- 	mfmsr	r5
- 	ori	r5,r5,MSR_FP
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r5,r5,MSR_AP@h
-+#endif
- #ifdef CONFIG_VSX
- BEGIN_FTR_SECTION
- 	oris	r5,r5,MSR_VSX@h
-@@ -145,6 +157,9 @@
- 	beq	1f
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 	li	r3,MSR_FP|MSR_FE0|MSR_FE1
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r3,r3,MSR_AP@h
-+#endif
- #ifdef CONFIG_VSX
- BEGIN_FTR_SECTION
- 	oris	r3,r3,MSR_VSX@h
-diff -r df25ff2b70a4 arch/powerpc/kernel/head_40x.S
---- a/arch/powerpc/kernel/head_40x.S	Fri Aug 27 21:10:12 2010 +0400
-+++ b/arch/powerpc/kernel/head_40x.S	Fri Sep 10 13:08:13 2010 +0400
-@@ -420,7 +420,19 @@
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x700, program_check_exception)
- 
-+/* 0x0800 - FPU unavailable Exception */
-+#ifdef CONFIG_PPC_FPU
-+	START_EXCEPTION(0x0800, FloatingPointUnavailable)
-+	NORMAL_EXCEPTION_PROLOG
-+	beq	1f;							      \
-+	bl	load_up_fpu;		/* if from user, just load it up */   \
-+	b	fast_exception_return;					      \
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
-+	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
-+#else
- 	EXCEPTION(0x0800, Trap_08, unknown_exception, EXC_XFER_EE)
-+#endif
-+
- 	EXCEPTION(0x0900, Trap_09, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x0A00, Trap_0A, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x0B00, Trap_0B, unknown_exception, EXC_XFER_EE)
-@@ -432,7 +444,7 @@
- 
- 	EXCEPTION(0x0D00, Trap_0D, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x0E00, Trap_0E, unknown_exception, EXC_XFER_EE)
--	EXCEPTION(0x0F00, Trap_0F, unknown_exception, EXC_XFER_EE)
-+	EXCEPTION(0x0F20, Trap_0F, unknown_exception, EXC_XFER_EE)
- 
- /* 0x1000 - Programmable Interval Timer (PIT) Exception */
- 	START_EXCEPTION(0x1000, Decrementer)
-@@ -821,8 +833,10 @@
-  * The PowerPC 4xx family of processors do not have an FPU, so this just
-  * returns.
-  */
-+#ifndef CONFIG_PPC_FPU
- _ENTRY(giveup_fpu)
- 	blr
-+#endif
- 
- /* This is where the main kernel code starts.
-  */
-diff -r df25ff2b70a4 arch/powerpc/platforms/Kconfig
---- a/arch/powerpc/platforms/Kconfig	Fri Aug 27 21:10:12 2010 +0400
-+++ b/arch/powerpc/platforms/Kconfig	Fri Sep 10 13:08:13 2010 +0400
-@@ -338,4 +338,15 @@
- 	bool "Xilinx PCI host bridge support"
- 	depends on PCI && XILINX_VIRTEX
- 
-+config XILINX_SOFTFPU
-+	bool "Xilinx Soft FPU support"
-+	select PPC_FPU
-+	depends on XILINX_VIRTEX_4_FX && !PPC40x_SIMPLE && !405GP && !405GPR
-+	help
-+	 Say Y to enable support for Xilinx Virtex 4 FX singe-float FPU.
-+	 Caveats:
-+	   - Hard-float binaries which rely on in-kernel math emulation will give 
-wrong
-+	   results since they expect 64-bit double-precision instead of 32-bit
-+	   single-precision numbers which Virtex-4 soft FPU produces.
-+
- endmenu
+In the new kernels, of_platform_driver is almost a synonym of
+platform_driver, and 'of_platform_driver' stuff is soon to be
+deleted. You can use platform_driver just like
+of_platform_driver nowadays.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
