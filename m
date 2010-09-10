@@ -1,29 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4A1FEB718A
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 8EBECB7105
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Sep 2010 08:49:57 +1000 (EST)
-Subject: Re: CONFIG_PROVE_LOCKING broken on 83xx (and all of powerpc?)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20100909173735.503c4cc0@schlenkerla.am.freescale.net>
-References: <20100908232124.GB30291@ovro.caltech.edu>
-	<1283994156.6515.6.camel@pasglop>
-	<20100909025214.GA21846@ovro.caltech.edu>
-	<1284001096.6515.33.camel@pasglop>
-	<20100909162306.GA3496@ovro.caltech.edu>
-	<1284069534.6515.36.camel@pasglop>
-	<20100909171116.1b9b6e44@schlenkerla.am.freescale.net>
-	<1284070433.6515.39.camel@pasglop>
-	<20100909173735.503c4cc0@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 10 Sep 2010 08:49:45 +1000
-Message-ID: <1284072585.6515.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: peterz@infradead.org, mingo@redhat.com, linuxppc-dev@lists.ozlabs.org,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+	Fri, 10 Sep 2010 12:14:32 +1000 (EST)
+Date: Fri, 10 Sep 2010 10:41:48 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: [PATCH] ppc64: increase TREEWORDS value in ppc64
+Message-ID: <20100910014148.GE8477@verge.net.au>
+References: <20100909202711.GA22581@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100909202711.GA22581@hmsreliant.think-freely.org>
+Cc: linuxppc-dev@lists.ozlabs.org, vgoyal@redhat.com, kexec@lists.infadead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-09-09 at 17:37 -0500, Scott Wood wrote:
+[ CCed linuxppc-dev ]
+
+On Thu, Sep 09, 2010 at 04:27:11PM -0400, Neil Horman wrote:
+> hey-
+>      Got a segfault recently on ppc64 kexec with a system with 256Gb of ram.
+> Tracked it back to running over the end of the device tree buffer that we have
+> allocated.  I can't find any docs on how big the device tree can legally be, so
+> for now I figure just upping its size is sufficient.  Confirmed that this fixed
+> the segfault.
+
+Thanks Neil, though it would be nice to know what the limit actually is.
+I'll hold off on applying this for a few days to see of the ppc people
+have any comments on that.
+
 > 
-> Wolfgang was just defending it on the U-Boot list the past couple
-> days...  seems like the main thing in its favor is the CRC, especially
-> as a final check before reflashing an image.
-
-Right, then fwd my 2 cents:
-
-Makes sense to have a wrapper like that for flashing, but
-
- - It could/should contain an ELF
-
- - u-boot should be capable to just load/boot the ELF, not everybody
-uses flashable images (netboot anyone ? espectially when debugging) and
-it's really a burden to do the wrapping all the time. In addition, we
-just see how it can actually hurt due to losing information such as the
-BSS size.
-
-Cheers,
-Ben.
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  fs2dt.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> 
+> diff --git a/kexec/arch/ppc/fs2dt.c b/kexec/arch/ppc/fs2dt.c
+> index 238a3f2..2f0f937 100644
+> --- a/kexec/arch/ppc/fs2dt.c
+> +++ b/kexec/arch/ppc/fs2dt.c
+> @@ -33,7 +33,7 @@
+>  
+>  #define MAXPATH			1024	/* max path name length */
+>  #define NAMESPACE		16384	/* max bytes for property names */
+> -#define TREEWORDS		65536	/* max 32 bit words for properties */
+> +#define TREEWORDS		131070	/* max 32 bit words for properties */
+>  #define MEMRESERVE		256	/* max number of reserved memory blks */
+>  #define MAX_MEMORY_RANGES	1024
+>  #define COMMAND_LINE_SIZE	512	/* from kernel */
