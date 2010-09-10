@@ -1,18 +1,18 @@
 Return-Path: <horms@verge.net.au>
 Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id 8EBECB7105
+	by ozlabs.org (Postfix) with ESMTP id 8EDAAB7119
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Fri, 10 Sep 2010 12:14:32 +1000 (EST)
-Date: Fri, 10 Sep 2010 10:41:48 +0900
+Date: Fri, 10 Sep 2010 10:43:07 +0900
 From: Simon Horman <horms@verge.net.au>
 To: Neil Horman <nhorman@tuxdriver.com>
 Subject: Re: [PATCH] ppc64: increase TREEWORDS value in ppc64
-Message-ID: <20100910014148.GE8477@verge.net.au>
+Message-ID: <20100910014307.GF8477@verge.net.au>
 References: <20100909202711.GA22581@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20100909202711.GA22581@hmsreliant.think-freely.org>
-Cc: linuxppc-dev@lists.ozlabs.org, vgoyal@redhat.com, kexec@lists.infadead.org
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org, vgoyal@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,6 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+[ Repost with correct kexec ML address ]
 [ CCed linuxppc-dev ]
 
 On Thu, Sep 09, 2010 at 04:27:11PM -0400, Neil Horman wrote:
@@ -33,7 +34,7 @@ On Thu, Sep 09, 2010 at 04:27:11PM -0400, Neil Horman wrote:
 > the segfault.
 
 Thanks Neil, though it would be nice to know what the limit actually is.
-I'll hold off on applying this for a few days to see of the ppc people
+I'll hold off on applying this for a few days to see of the PPC people
 have any comments on that.
 
 > 
