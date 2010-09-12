@@ -1,20 +1,38 @@
-Return-Path: <segooon@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 7F0ADB6F10
+Return-Path: <ibr@radix50.net>
+Received: from almaty.kz-easy.com (kz-easy.com [85.214.25.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5DA901007D9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Sep 2010 04:57:21 +1000 (EST)
-Received: by eye27 with SMTP id 27so1447412eye.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 12 Sep 2010 11:57:18 -0700 (PDT)
-From: Vasiliy Kulikov <segooon@gmail.com>
-To: kernel-janitors@vger.kernel.org
-Subject: [PATCH] char: hvc: check for error case
-Date: Sun, 12 Sep 2010 22:57:14 +0400
-Message-Id: <1284317835-5086-1-git-send-email-segooon@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Paul Mundt <lethal@linux-sh.org>, linuxppc-dev@lists.ozlabs.org
+	Mon, 13 Sep 2010 07:14:03 +1000 (EST)
+Received: from alatau.radix50.net (dslb-092-074-053-195.pools.arcor-ip.net
+	[92.74.53.195]) (authenticated bits=0)
+	by almaty.kz-easy.com (8.13.8/8.13.8/Debian-3) with ESMTP id
+	o8CL8XRD027485
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Sep 2010 23:08:35 +0200
+Received: from medeu.radix50.net (root@medeu [192.168.0.3])
+	by alatau.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
+	o8CL8SpG002711
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Sep 2010 23:08:28 +0200
+Received: from medeu.radix50.net (ibr@localhost [127.0.0.1])
+	by medeu.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
+	o8CL8R1t013710
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Sep 2010 23:08:27 +0200
+Received: (from ibr@localhost)
+	by medeu.radix50.net (8.14.3/8.14.3/Submit) id o8CL8RtE013709
+	for linuxppc-dev@lists.ozlabs.org; Sun, 12 Sep 2010 23:08:27 +0200
+Date: Sun, 12 Sep 2010 23:08:27 +0200
+From: Baurzhan Ismagulov <ibr@radix50.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: how to understand powerpc's BRx ORx
+Message-ID: <20100912210827.GB6825@radix50.net>
+References: <201009101356067140460@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201009101356067140460@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hvc_alloc() may fail, if so exit from init() with error.
+On Fri, Sep 10, 2010 at 01:56:08PM +0800, hacklu wrote:
+>  I didn't understand the address mask.
+> it's said that: BR[BA] is the base address,the OR[AM] is the  address mask,
+...
+> for instance, if my BR0[BA]=0111_0000_0000_0000_0, OR0[AM]=1111_1111_1111
+> if I want to access the 0x70000000 or the 0x71000001.what address calculate will be taken?
 
-Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
----
- I cannot compile this driver at all, so it is not tested.
+Assuming that BR0 is set to valid, the right chip select machine is
+selected, etc., my understanding of MPC885RM is:
 
- drivers/char/hvc_tile.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+* 0x70000000 & OR0[AM] = 0x70000000
+  0x70000000 == BR0[BA]
+  => CS0 active, 0x0000 on the address bus (haven't checked the actual
+  bus width).
 
-diff --git a/drivers/char/hvc_tile.c b/drivers/char/hvc_tile.c
-index c4efb55..7a84a05 100644
---- a/drivers/char/hvc_tile.c
-+++ b/drivers/char/hvc_tile.c
-@@ -61,7 +61,8 @@ console_initcall(hvc_tile_console_init);
- 
- static int __init hvc_tile_init(void)
- {
--	hvc_alloc(0, 0, &hvc_tile_get_put_ops, 128);
--	return 0;
-+	struct hvc_struct *s;
-+	s = hvc_alloc(0, 0, &hvc_tile_get_put_ops, 128);
-+	return IS_ERR(s) ? PTR_ERR(s) : 0;
- }
- device_initcall(hvc_tile_init);
+* 0x71000001 & OR0[AM] = 0x71000000
+  0x71000000 != BR0[BA]
+  => CS0 inactive, will check the following BR/ORs
+
+With kind regards,
 -- 
-1.7.0.4
+Baurzhan Ismagulov
+http://www.kz-easy.com/
