@@ -1,31 +1,27 @@
-Return-Path: <joe@perches.com>
-From: Joe Perches <joe@perches.com>
-To: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH 00/11] treewide: Remove pr_<level> uses with KERN_<level>
-Date: Sat, 11 Sep 2010 22:10:48 -0700
-Message-Id: <cover.1284267142.git.joe@perches.com>
-Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org,
-	Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-	Takashi Iwai <tiwai@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-	Tom Tucker <tom@opengridcomputing.com>, Jaroslav Kysela <perex@perex.cz>,
-	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
-	Sean Hefty <sean.hefty@intel.com>, devel@driverdev.osuosl.org,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Russell King <linux@arm.linux.org.uk>,
-	linux-rdma@vger.kernel.org, x86@kernel.org,
-	Alexander Graf <agraf@suse.de>, Ingo Molnar <mingo@redhat.com>,
-	Avi Kivity <avi@redhat.com>, Hal Rosenstock <hal.rosenstock@gmail.com>,
-	cbe-oss-dev@lists.ozlabs.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	microblaze-uclinux@itee.uq.edu.au, kvm-ppc@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
-	Liam Girdwood <lrg@slimlogic.co.uk>, Michal Simek <monstr@monstr.eu>,
-	Eric Miao <eric.y.miao@gmail.com>,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	Geoff Levand <geoff@infradead.org>, netdev@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "localhost", Issuer "localhost" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1ACBDB6F10
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Sep 2010 01:10:46 +1000 (EST)
+Subject: Re: How to define an I2C-to-SPI bridge device ?
+From: =?ISO-8859-1?Q?Andr=E9?= Schwarz <andre.schwarz@matrix-vision.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20100910182815.GH11284@angua.secretlab.ca>
+References: <1283502979.17812.22.camel@swa-m460>
+	<20100903120858.GA19380@oksana.dev.rtsoft.ru>
+	<4C84D334.6060008@matrix-vision.de>
+	<c843f864-2a5a-4146-bd95-13c2fb91f430@email.android.com>
+	<1284106293.2267.42.camel@swa-m460>
+	<20100910173706.GD11284@angua.secretlab.ca>
+	<1284142484.2152.18.camel@swa-e6500>
+	<20100910182815.GH11284@angua.secretlab.ca>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 12 Sep 2010 17:10:35 +0200
+Message-ID: <1284304235.2913.8.camel@swa-e6500>
+Mime-Version: 1.0
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
+	DevTreeDiscuss <devicetree-discuss@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Most of these are pr_debug(KERN_<foo>.
-pr_<level>(KERN_<level> is unnecessary.
+Grant, Anton,
 
-Joe Perches (11):
-  arch/arm: Remove pr_<level> uses of KERN_<level>
-  arch/avr32: Remove pr_<level> uses of KERN_<level>
-  arch/microblaze: Remove pr_<level> uses of KERN_<level>
-  arch/mips: Remove pr_<level> uses of KERN_<level>
-  arch/powerpc: Remove pr_<level> uses of KERN_<level>
-  arch/x86: Remove pr_<level> uses of KERN_<level>
-  drivers/infiniband: Remove pr_<level> uses of KERN_<level>
-  drivers/net/skfp: Remove pr_<level> uses of KERN_<level>
-  drivers/staging/msm: Remove pr_<level> uses of KERN_<level>
-  drivers/usb/gadget: Remove pr_<level> uses of KERN_<level>
-  sound: Remove pr_<level> uses of KERN_<level>
+[snip]
 
- arch/arm/mach-pxa/cpufreq-pxa2xx.c       |    3 +-
- arch/avr32/mach-at32ap/at32ap700x.c      |    4 +-
- arch/microblaze/kernel/exceptions.c      |   16 ++----
- arch/mips/kernel/irq-gic.c               |    2 +-
- arch/mips/pci/pci-rc32434.c              |    2 +-
- arch/powerpc/kvm/emulate.c               |    4 +-
- arch/powerpc/sysdev/pmi.c                |    2 +-
- arch/x86/kernel/apb_timer.c              |    4 +-
- drivers/infiniband/hw/amso1100/c2_intr.c |    4 +-
- drivers/net/skfp/skfddi.c                |   84 +++++++++++++++---------------
- drivers/staging/msm/staging-devices.c    |    2 +-
- drivers/usb/gadget/r8a66597-udc.c        |    2 +-
- sound/ppc/snd_ps3.c                      |    2 +-
- sound/soc/s3c24xx/s3c-dma.c              |    3 +-
- 14 files changed, 64 insertions(+), 70 deletions(-)
+> > 
+> > Doing this in parallel will speed things up significantly.
+> 
+> Yeah; Then I would handle it as a separate cs# and map it to enabling
+> multiple CS lines at a time.
 
--- 
-1.7.3.rc1
+sounds reasonable - will do it that way.
+
+> 
+> > BTW: would "drivers/misc" be a proper location ?
+> > Who's supposed to pick that driver up and on what list shall I post it
+> > for review ?
+> 
+> You should cc spi-devel-general, and feel free to cc me.  drivers/misc
+> would probably be an okay place for it to live; but if it only appears
+> on a single machine, then it may make more sense in
+> arch/*/<board-directory>.  What arch or SoC is this running on?
+
+
+ok - currently I'm preparing bring up of a MPC8377 based system.
+But we have this chips on multiple boards and also on generic PCIe
+grabber cards running on any desktop PC.
+
+Since we could use the driver directly after registering the various I2C
+masters I'd prefer to go with drivers/misc. After all it's a simple I2C
+slave device usable by anyone ...
+
+
+Will send an initial patch for review after basic verification with real
+hardware.
+
+
+Thanks for your help.
+
+Cheers,
+André
+
+
+
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
