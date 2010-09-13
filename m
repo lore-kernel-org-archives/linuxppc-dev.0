@@ -1,25 +1,29 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A570B1007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Sep 2010 14:39:47 +1000 (EST)
-Date: Mon, 13 Sep 2010 14:39:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: linux-next: build warnings after merge of the final tree (tip
-	treee related)
-Message-Id: <20100913143942.7344ada4.sfr@canb.auug.org.au>
-In-Reply-To: <4C8DA517.9000603@kernel.org>
-References: <20100913132721.5a02cfbc.sfr@canb.auug.org.au>
-	<4C8DA517.9000603@kernel.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__13_Sep_2010_14_39_42_+1000_LFB1mbA64F_p94jI"
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-	Ingo Molnar <mingo@elte.hu>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id B37D81007D9
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Sep 2010 14:40:02 +1000 (EST)
+Received: by pvg16 with SMTP id 16so3004344pvg.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Sep 2010 21:40:00 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Sun, 12 Sep 2010 22:39:57 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: =?iso-8859-1?Q?Andr=E9?= Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: How to define an I2C-to-SPI bridge device ?
+Message-ID: <20100913043957.GA2144@angua.secretlab.ca>
+References: <1283502979.17812.22.camel@swa-m460>
+	<20100903120858.GA19380@oksana.dev.rtsoft.ru>
+	<4C84D334.6060008@matrix-vision.de>
+	<c843f864-2a5a-4146-bd95-13c2fb91f430@email.android.com>
+	<1284106293.2267.42.camel@swa-m460>
+	<20100910173706.GD11284@angua.secretlab.ca>
+	<1284142484.2152.18.camel@swa-e6500>
+	<20100910182815.GH11284@angua.secretlab.ca>
+	<1284304235.2913.8.camel@swa-e6500>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1284304235.2913.8.camel@swa-e6500>
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
+	DevTreeDiscuss <devicetree-discuss@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,89 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__13_Sep_2010_14_39_42_+1000_LFB1mbA64F_p94jI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Sep 12, 2010 at 05:10:35PM +0200, André Schwarz wrote:
+> > > BTW: would "drivers/misc" be a proper location ?
+> > > Who's supposed to pick that driver up and on what list shall I post it
+> > > for review ?
+> > 
+> > You should cc spi-devel-general, and feel free to cc me.  drivers/misc
+> > would probably be an okay place for it to live; but if it only appears
+> > on a single machine, then it may make more sense in
+> > arch/*/<board-directory>.  What arch or SoC is this running on?
+> 
+> ok - currently I'm preparing bring up of a MPC8377 based system.
+> But we have this chips on multiple boards and also on generic PCIe
+> grabber cards running on any desktop PC.
+> 
+> Since we could use the driver directly after registering the various I2C
+> masters I'd prefer to go with drivers/misc. After all it's a simple I2C
+> slave device usable by anyone ...
 
-Hi Yinghai,
+If it is a video capture device, then wouldn't drivers/video
+or drivers/media make sense?  Search for "MEDIA INPUT" in the
+MAINTAINERS file.
 
-On Sun, 12 Sep 2010 21:14:15 -0700 Yinghai Lu <yinghai@kernel.org> wrote:
->
-> please check it, and it should get into core/memblock branch.
->=20
-> Thanks
->=20
-> Yinghai
->=20
-> [PATCH] memblock: Fix section mismatch warning
->=20
-> for arches that use memblock other than x86
->=20
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Yinghai Lu <Yinghai@kernel.org>
-
-Your patch fixes some of the warnings, but still leaves these for a
-powerpc allnoconfig build:
-
-WARNING: mm/built-in.o(.text+0x25d80): Section mismatch in reference from t=
-he function memblock_double_array() to the function .init.text:memblock_fre=
-e()
-The function memblock_double_array() references
-the function __init memblock_free().
-This is often because memblock_double_array lacks a __init=20
-annotation or the annotation of memblock_free is wrong.
-
-WARNING: mm/built-in.o(.text+0x26318): Section mismatch in reference from t=
-he function memblock_reserve_reserved_regions() to the function .init.text:=
-memblock_reserve()
-The function memblock_reserve_reserved_regions() references
-the function __init memblock_reserve().
-This is often because memblock_reserve_reserved_regions lacks a __init=20
-annotation or the annotation of memblock_reserve is wrong.
-
-WARNING: mm/built-in.o(.text+0x26490): Section mismatch in reference from t=
-he function memblock_free_reserved_regions() to the function .init.text:mem=
-block_free()
-The function memblock_free_reserved_regions() references
-the function __init memblock_free().
-This is often because memblock_free_reserved_regions lacks a __init=20
-annotation or the annotation of memblock_free is wrong.
-
-And these for a i386 defconfig build:
-
-WARNING: mm/built-in.o(.text+0x1e261): Section mismatch in reference from t=
-he function memblock_is_memory() to the variable .init.data:memblock
-The function memblock_is_memory() references
-the variable __initdata memblock.
-This is often because memblock_is_memory lacks a __initdata=20
-annotation or the annotation of memblock is wrong.
-
-WARNING: mm/built-in.o(.text+0x1e27f): Section mismatch in reference from t=
-he function memblock_is_region_memory() to the variable .init.data:memblock
-The function memblock_is_region_memory() references
-the variable __initdata memblock.
-This is often because memblock_is_region_memory lacks a __initdata=20
-annotation or the annotation of memblock is wrong.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__13_Sep_2010_14_39_42_+1000_LFB1mbA64F_p94jI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMjasOAAoJEDMEi1NhKgbsz/4H/iB0Vmgh2Jrw0CadUixbRYZX
-a9Ch6JcU9KN1U74N7yG8o08r9CHb/BGjYIqnnAMfAh5HJfrF7+yNLzUXE76DpTrN
-rgbZBTgJf61hZKbtYrGdIjRDrbU1dL3NhJ8wStVD+oeUCJwQ9h0f6Kh3EHrHcCoe
-0zqrF8S4uR2uxIDzWQvyluUVg7Qlr34o5CKQxkh9XtIacHSgE6fI9DzZa05vYWHQ
-FUOIGZ+coT+zeCsQXy44Hfaxb6g8LB7YKQuvXEk6wvydkkgfeYry0rI1DLRfylYo
-j6QMjbbxU1rz7cYtpY3pPDVAcShf1mMZWFK1rixabGTnf9cL8s5vj5Mixj3z5P4=
-=TEN7
------END PGP SIGNATURE-----
-
---Signature=_Mon__13_Sep_2010_14_39_42_+1000_LFB1mbA64F_p94jI--
+g.
