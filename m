@@ -1,38 +1,21 @@
-Return-Path: <ibr@radix50.net>
-Received: from almaty.kz-easy.com (kz-easy.com [85.214.25.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5DA901007D9
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 47B52B6EEE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Sep 2010 07:14:03 +1000 (EST)
-Received: from alatau.radix50.net (dslb-092-074-053-195.pools.arcor-ip.net
-	[92.74.53.195]) (authenticated bits=0)
-	by almaty.kz-easy.com (8.13.8/8.13.8/Debian-3) with ESMTP id
-	o8CL8XRD027485
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Sep 2010 23:08:35 +0200
-Received: from medeu.radix50.net (root@medeu [192.168.0.3])
-	by alatau.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
-	o8CL8SpG002711
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Sep 2010 23:08:28 +0200
-Received: from medeu.radix50.net (ibr@localhost [127.0.0.1])
-	by medeu.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
-	o8CL8R1t013710
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Sep 2010 23:08:27 +0200
-Received: (from ibr@localhost)
-	by medeu.radix50.net (8.14.3/8.14.3/Submit) id o8CL8RtE013709
-	for linuxppc-dev@lists.ozlabs.org; Sun, 12 Sep 2010 23:08:27 +0200
-Date: Sun, 12 Sep 2010 23:08:27 +0200
-From: Baurzhan Ismagulov <ibr@radix50.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: how to understand powerpc's BRx ORx
-Message-ID: <20100912210827.GB6825@radix50.net>
-References: <201009101356067140460@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201009101356067140460@gmail.com>
+	Mon, 13 Sep 2010 13:27:29 +1000 (EST)
+Date: Mon, 13 Sep 2010 13:27:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: build warnings after merge of the final tree (tip treee
+	related)
+Message-Id: <20100913132721.5a02cfbc.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__13_Sep_2010_13_27_21_+1000_Yqw_V2bT.5qnRvRn"
+Cc: linux-next@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+	linux-kernel@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,26 +25,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 10, 2010 at 01:56:08PM +0800, hacklu wrote:
->  I didn't understand the address mask.
-> it's said that: BR[BA] is the base address,the OR[AM] is the  address mask,
-...
-> for instance, if my BR0[BA]=0111_0000_0000_0000_0, OR0[AM]=1111_1111_1111
-> if I want to access the 0x70000000 or the 0x71000001.what address calculate will be taken?
+--Signature=_Mon__13_Sep_2010_13_27_21_+1000_Yqw_V2bT.5qnRvRn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Assuming that BR0 is set to valid, the right chip select machine is
-selected, etc., my understanding of MPC885RM is:
+Hi all,
 
-* 0x70000000 & OR0[AM] = 0x70000000
-  0x70000000 == BR0[BA]
-  => CS0 active, 0x0000 on the address bus (haven't checked the actual
-  bus width).
+After merging the scsi-post-merge tree, today's linux-next build (powerpc
+allnoconfig, i386 defconfig and others) produced these warnings (I build
+with CONFIG_DEBUG_SECTION_MISMATCH=3Dy):
 
-* 0x71000001 & OR0[AM] = 0x71000000
-  0x71000000 != BR0[BA]
-  => CS0 inactive, will check the following BR/ORs
+WARNING: mm/built-in.o(.text+0x25910): Section mismatch in reference from t=
+he function memblock_find_in_range() to the function .init.text:memblock_fi=
+nd_base()
+The function memblock_find_in_range() references
+the function __init memblock_find_base().
+This is often because memblock_find_in_range lacks a __init=20
+annotation or the annotation of memblock_find_base is wrong.
 
-With kind regards,
--- 
-Baurzhan Ismagulov
-http://www.kz-easy.com/
+WARNING: mm/built-in.o(.text+0x25bfc): Section mismatch in reference from t=
+he function memblock_double_array() to the function .init.text:memblock_fre=
+e()
+The function memblock_double_array() references
+the function __init memblock_free().
+This is often because memblock_double_array lacks a __init=20
+annotation or the annotation of memblock_free is wrong.
+
+WARNING: mm/built-in.o(.text+0x25c5c): Section mismatch in reference from t=
+he function memblock_double_array() to the function .init.text:memblock_fin=
+d_base()
+The function memblock_double_array() references
+the function __init memblock_find_base().
+This is often because memblock_double_array lacks a __init=20
+annotation or the annotation of memblock_find_base is wrong.
+
+WARNING: mm/built-in.o(.text+0x26194): Section mismatch in reference from t=
+he function memblock_reserve_reserved_regions() to the function .init.text:=
+memblock_reserve()
+The function memblock_reserve_reserved_regions() references
+the function __init memblock_reserve().
+This is often because memblock_reserve_reserved_regions lacks a __init=20
+annotation or the annotation of memblock_reserve is wrong.
+
+WARNING: mm/built-in.o(.text+0x2630c): Section mismatch in reference from t=
+he function memblock_free_reserved_regions() to the function .init.text:mem=
+block_free()
+The function memblock_free_reserved_regions() references
+the function __init memblock_free().
+This is often because memblock_free_reserved_regions lacks a __init=20
+annotation or the annotation of memblock_free is wrong.
+
+WARNING: vmlinux.o(.text+0x10190): Section mismatch in reference from the f=
+unction setup_initial_memory_limit() to the function .init.text:memblock_se=
+t_current_limit()
+The function setup_initial_memory_limit() references
+the function __init memblock_set_current_limit().
+This is often because setup_initial_memory_limit lacks a __init=20
+annotation or the annotation of memblock_set_current_limit is wrong.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__13_Sep_2010_13_27_21_+1000_Yqw_V2bT.5qnRvRn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMjZoZAAoJEDMEi1NhKgbsOjkH/RnmET4cKNni/2VdIYsGTZft
+VPgLjLYjntYCCkOFqhrBU8VB7UCTyXmSG18H7DkA8bzDeUD1ZnRzpO4sFNZMo4mN
+hxPL9xo04TOs5waQDmPkOD1B5oc5luARt9iMWu4uRiMa8hghTHhuO8HLDY3da8bT
+XDso6gaEaVGtdRQOfHIiswMjnxsOAUqXjxAE4ArEraOUhDrFVdGDVFNupmZEh0xQ
+wMjLkcnX9uYcQGZhT5mFVVYoaGLPS/kNXPJAIcZyQTjbPAfO/UCV8lnqq6QEclih
+Ar34c8LHy192jl07gNfRlnAWNDHBdgNjLHg32b1FBjT3zGW3B7XYWp/pCz544XY=
+=8Of3
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__13_Sep_2010_13_27_21_+1000_Yqw_V2bT.5qnRvRn--
