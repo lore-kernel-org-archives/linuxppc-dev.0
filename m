@@ -1,35 +1,16 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id 28968B6F14
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 04:46:35 +1000 (EST)
-Received: by bwz7 with SMTP id 7so7222947bwz.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Sep 2010 11:46:33 -0700 (PDT)
-Subject: Re: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc issue
-	with 36bit mode
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Timur Tabi <timur.tabi@gmail.com>
-In-Reply-To: <AANLkTimUR5-hWRkDAwWTXJYCOcse7LTR0r-vSsZec1g1@mail.gmail.com>
-References: <1284027632-32573-1-git-send-email-tie-fei.zang@freescale.com>
-	<1284027632-32573-2-git-send-email-tie-fei.zang@freescale.com>
-	<1284027632-32573-3-git-send-email-tie-fei.zang@freescale.com>
-	<20100909114153.GB6622@oksana.dev.rtsoft.ru>
-	<3850A844E6A3854C827AC5C0BEC7B60A1FC158@zch01exm23.fsl.freescale.net>
-	<AANLkTimfKwdw+nLAjDjxf52dbZKLF-3aES+bT7CHskAS@mail.gmail.com>
-	<1284388075.10955.51.camel@localhost>
-	<AANLkTinyELs7KNDQxWsaR8Ea13SewWYwgtnie_P7cAzC@mail.gmail.com>
-	<1284396320.1783.30.camel@brekeke>
-	<AANLkTimUR5-hWRkDAwWTXJYCOcse7LTR0r-vSsZec1g1@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 13 Sep 2010 21:46:26 +0300
-Message-ID: <1284403586.1783.42.camel@brekeke>
-Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Zang Roy-R61911 <r61911@freescale.com>,
-	Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
-Reply-To: dedekind1@gmail.com
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (mail.perches.com [173.55.12.10])
+	by ozlabs.org (Postfix) with ESMTP id 9AB83B70A6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Sep 2010 05:48:24 +1000 (EST)
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 02/25] arch/powerpc: Use static const char arrays
+Date: Mon, 13 Sep 2010 12:47:40 -0700
+Message-Id: <a2d6296e9aabed2de77ae0b44f16b13008129e48.1284406638.git.joe@perches.com>
+In-Reply-To: <cover.1284406638.git.joe@perches.com>
+References: <cover.1284406638.git.joe@perches.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +20,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-09-13 at 13:36 -0500, Timur Tabi wrote:
-> On Mon, Sep 13, 2010 at 11:45 AM, Artem Bityutskiy <dedekind1@gmail.com> wrote:
-> > Unsigned int is reliably >= 4 in Linux.
-> 
-> Not exactly.  sizeof(unsigned int) is effectively never greater than 4
-> in Linux
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/powerpc/boot/addnote.c    |    4 ++--
+ arch/powerpc/boot/cuboot-c2k.c |    4 ++--
+ arch/powerpc/kernel/irq.c      |    2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-I know and said the same in the other paragraph which you cut.
-
->  (I think it's still 32 bits even on a 64-bit kernel)
-
-Yes.
-
-> , so it
-> makes no sense to say >=.  So since you can't say that sizeof(int) ==
-> 4, and you can't say that sizeof(int) > 4, then you certainly can't
-> say that sizeof(int) >= 4.
-
-It also makes no sense to send "makes no sense" answer 2 times in a row
-and it makes no sense to not read and not try to understand the e-mail
-you are replying (even though the english of the writer is not perfect)
-So it makes no sense to continue arguing.
-
-But it makes some sense to go sleep, good night.
-
+diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
+index b1e5611..349b553 100644
+--- a/arch/powerpc/boot/addnote.c
++++ b/arch/powerpc/boot/addnote.c
+@@ -20,7 +20,7 @@
+ #include <string.h>
+ 
+ /* CHRP note section */
+-char arch[] = "PowerPC";
++static const char arch[] = "PowerPC";
+ 
+ #define N_DESCR	6
+ unsigned int descr[N_DESCR] = {
+@@ -33,7 +33,7 @@ unsigned int descr[N_DESCR] = {
+ };
+ 
+ /* RPA note section */
+-char rpaname[] = "IBM,RPA-Client-Config";
++static const char rpaname[] = "IBM,RPA-Client-Config";
+ 
+ /*
+  * Note: setting ignore_my_client_config *should* mean that OF ignores
+diff --git a/arch/powerpc/boot/cuboot-c2k.c b/arch/powerpc/boot/cuboot-c2k.c
+index e435949..030d7db 100644
+--- a/arch/powerpc/boot/cuboot-c2k.c
++++ b/arch/powerpc/boot/cuboot-c2k.c
+@@ -62,9 +62,9 @@ static void c2k_bridge_setup(u32 mem_size)
+ 	/* Get the cpu -> pci i/o & mem mappings from the device tree */
+ 	devp = NULL;
+ 	for (bus = 0; ; bus++) {
+-		char name[] = "pci ";
++		char name[sizeof("pciX")];
+ 
+-		name[strlen(name)-1] = bus+'0';
++		sprintf(name, "pci%c", bus + '0');
+ 
+ 		devp = find_node_by_alias(name);
+ 		if (devp == NULL)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 4a65386..47fbc56 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -1143,7 +1143,7 @@ static int virq_debug_show(struct seq_file *m, void *private)
+ 	unsigned long flags;
+ 	struct irq_desc *desc;
+ 	const char *p;
+-	char none[] = "none";
++	static const char none[] = "none";
+ 	int i;
+ 
+ 	seq_printf(m, "%-5s  %-7s  %-15s  %s\n", "virq", "hwirq",
 -- 
-Best Regards,
-Artem Bityutskiy (Битюцкий Артём)
+1.7.3.rc1
