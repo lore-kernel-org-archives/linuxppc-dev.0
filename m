@@ -4,17 +4,17 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B9417B70A7
+	by ozlabs.org (Postfix) with ESMTPS id 5F185B70A6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Sep 2010 08:05:21 +1000 (EST)
-Date: Tue, 14 Sep 2010 15:04:29 -0700
+	Wed, 15 Sep 2010 08:10:42 +1000 (EST)
+Date: Tue, 14 Sep 2010 15:10:26 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH v2 01/10] RapidIO: Fix RapidIO sysfs hierarchy
-Message-Id: <20100914150429.6256b311.akpm@linux-foundation.org>
-In-Reply-To: <1284476363-1677-2-git-send-email-alexandre.bounine@idt.com>
+Subject: Re: [PATCH v2 06/10] RapidIO: Modify sysfs initialization for switches
+Message-Id: <20100914151026.4d9599b4.akpm@linux-foundation.org>
+In-Reply-To: <1284476363-1677-7-git-send-email-alexandre.bounine@idt.com>
 References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
-	<1284476363-1677-2-git-send-email-alexandre.bounine@idt.com>
+	<1284476363-1677-7-git-send-email-alexandre.bounine@idt.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
@@ -28,11 +28,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Sep 2010 10:59:14 -0400
+On Tue, 14 Sep 2010 10:59:19 -0400
 Alexandre Bounine <alexandre.bounine@idt.com> wrote:
 
-> Make RapidIO devices appear in /sys/devices/rapidio directory instead of top
-> of /sys/devices directory.
+> 1. Change to create attribute "routes" only for switches.
 
-Non-backward compatible change?  What is the risk of breaking existing
-setups with this change?
+This is also a non-back compatible userspace-visible change?
