@@ -1,37 +1,27 @@
-Return-Path: <R61911@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) by ozlabs.org (Postfix) with ESMTP id 103F7B6EF7
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 14:09:34 +1000 (EST)
-Received: from mail189-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail189-tx2-R.bigfish.com (Postfix) with ESMTP id 603231EA817D	for
-	<linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 04:09:31 +0000 (UTC)
-Received: from TX2EHSMHS025.bigfish.com (unknown [10.9.14.238])	by
-	mail189-tx2.bigfish.com (Postfix) with ESMTP id 0B4872A2004B	for
-	<linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 04:09:31 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8E49TTo004728	for
-	<linuxppc-dev@ozlabs.org>; Mon, 13 Sep 2010 21:09:29 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o8E4OZb1003749	for <linuxppc-dev@ozlabs.org>;
-	Mon, 13 Sep 2010 23:24:36 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc issue with
-	36bit mode
-Date: Tue, 14 Sep 2010 12:09:20 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A1FC299@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20100913112749.2fb32b3d@schlenkerla.am.freescale.net>
-References: <AANLkTik3ViwjmOFfm6GUwmuzMkO75+2pCUdnC0z8A7Jb@mail.gmail.com><3850A844E6A3854C827AC5C0BEC7B60A1FC150@zch01exm23.fsl.freescale.net>
-	<20100913112749.2fb32b3d@schlenkerla.am.freescale.net>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: "Wood Scott-B07421" <B07421@freescale.com>
-Cc: dedekind1@gmail.com, Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 92C5BB6EF7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Sep 2010 14:50:31 +1000 (EST)
+Date: Tue, 14 Sep 2010 14:50:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: linux-next: build warnings after merge of the final tree (tip
+	treee related)
+Message-Id: <20100914145025.977ec2a6.sfr@canb.auug.org.au>
+In-Reply-To: <4C8DDFB4.1020508@kernel.org>
+References: <20100913132721.5a02cfbc.sfr@canb.auug.org.au>
+	<4C8DA517.9000603@kernel.org>
+	<20100913143942.7344ada4.sfr@canb.auug.org.au>
+	<4C8DDFB4.1020508@kernel.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__14_Sep_2010_14_50_25_+1000_uL/CVplq9TRXS./6"
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+	Ingo Molnar <mingo@elte.hu>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,77 +31,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__14_Sep_2010_14_50_25_+1000_uL/CVplq9TRXS./6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Yinghai,
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, September 14, 2010 0:28 AM
-> To: Zang Roy-R61911
-> Cc: Geert Uytterhoeven; linux-mtd@lists.infradead.org; Wood =
-Scott-B07421;
-> dedekind1@gmail.com; Lan Chunhe-B25806; linuxppc-dev@ozlabs.org; =
-akpm@linux-
-> foundation.org; dwmw2@infradead.org; Gala Kumar-B11780
-> Subject: Re: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc =
-issue with
-> 36bit mode
+On Mon, 13 Sep 2010 01:24:20 -0700 Yinghai Lu <yinghai@kernel.org> wrote:
+>
+> On 09/12/2010 09:39 PM, Stephen Rothwell wrote:
+> >=20
+> > Your patch fixes some of the warnings, but still leaves these for a
+> > powerpc allnoconfig build:
+> >=20
+> > WARNING: mm/built-in.o(.text+0x25d80): Section mismatch in reference fr=
+om the function memblock_double_array() to the function .init.text:memblock=
+_free()
+> > The function memblock_double_array() references
+> > the function __init memblock_free().
+> > This is often because memblock_double_array lacks a __init=20
+> > annotation or the annotation of memblock_free is wrong.
+> >=20
+> > WARNING: mm/built-in.o(.text+0x26318): Section mismatch in reference fr=
+om the function memblock_reserve_reserved_regions() to the function .init.t=
+ext:memblock_reserve()
+> > The function memblock_reserve_reserved_regions() references
+> > the function __init memblock_reserve().
+> > This is often because memblock_reserve_reserved_regions lacks a __init=
+=20
+> > annotation or the annotation of memblock_reserve is wrong.
+> >=20
+> > WARNING: mm/built-in.o(.text+0x26490): Section mismatch in reference fr=
+om the function memblock_free_reserved_regions() to the function .init.text=
+:memblock_free()
+> > The function memblock_free_reserved_regions() references
+> > the function __init memblock_free().
+> > This is often because memblock_free_reserved_regions lacks a __init=20
+> > annotation or the annotation of memblock_free is wrong.
 >=20
-> On Mon, 13 Sep 2010 00:22:10 -0700
-> "Zang Roy-R61911" <r61911@freescale.com> wrote:
+> v1 already changed them all to __init_memblock, so we should not have tho=
+se warnings.
+
+They are still marked as __init in include/linux/memblock.h.  I don't
+think that they need to be marked at all there.
+
+> > And these for a i386 defconfig build:
+> >=20
+> > WARNING: mm/built-in.o(.text+0x1e261): Section mismatch in reference fr=
+om the function memblock_is_memory() to the variable .init.data:memblock
+> > The function memblock_is_memory() references
+> > the variable __initdata memblock.
+> > This is often because memblock_is_memory lacks a __initdata=20
+> > annotation or the annotation of memblock is wrong.
+> >=20
+> > WARNING: mm/built-in.o(.text+0x1e27f): Section mismatch in reference fr=
+om the function memblock_is_region_memory() to the variable .init.data:memb=
+lock
+> > The function memblock_is_region_memory() references
+> > the variable __initdata memblock.
+> > This is often because memblock_is_region_memory lacks a __initdata=20
+> > annotation or the annotation of memblock is wrong.
 >=20
-> >
-> >
-> > > -----Original Message-----
-> > > From: geert.uytterhoeven@gmail.com =
-[mailto:geert.uytterhoeven@gmail.com]
-> On
-> > > Behalf Of Geert Uytterhoeven
-> > > Sent: Thursday, September 09, 2010 19:06 PM
-> > > To: Zang Roy-R61911
-> > > Cc: linux-mtd@lists.infradead.org; Wood Scott-B07421; =
-dedekind1@gmail.com;
-> Lan
-> > > Chunhe-B25806; linuxppc-dev@ozlabs.org; akpm@linux-foundation.org;
-> > > dwmw2@infradead.org; Gala Kumar-B11780
-> > > Subject: Re: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc =
-issue
-> with
-> > > 36bit mode
-> > >
-> > > On Thu, Sep 9, 2010 at 12:20, Roy Zang =
-<tie-fei.zang@freescale.com> wrote:
-> > > > From: Lan Chunhe-B25806 <b25806@freescale.com>
-> > > >
-> > > > When system uses 36bit physical address, res.start is 36bit
-> > > > physical address. But the function of in_be32 returns 32bit
-> > > > physical address. Then both of them compared each other is
-> > > > wrong. So by converting the address of res.start into
-> > > > the right format fixes this issue.
-> > >
-> > > > =A0/**
-> > > > + * fsl_lbc_addr - convert the base address
-> > > > + * @addr_base: base address of the memory bank
-> > > > + *
-> > > > + * This function converts a base address of lbc into the right =
-format
-> for
-> > > the BR
-> > > > + * registers. If the SOC has eLBC then it returns 32bit =
-physical
-> address
-> > > else
-> > > > + * it returns 34bit physical address for local bus(Example: =
-MPC8641).
-> > > > + */
-> > > > +unsigned int fsl_lbc_addr(phys_addr_t addr_base)
-> > >     ^^^^^^^^^^^^
-> > > Shouldn't this be u32 or __be32, for consistency with the actual
-> > > comparisons below?
-> > __be32 is better.
->=20
-> I disagree, the return from this function is native-endian.  It should
-> be u32.
-But the return of this value is ONLY used for br comparing. It is big =
-endia.
-Thanks.
-Roy=20
+> you must have old gcc, those functions are not used with i386.
+
+I am not sure what the compiler version has to do with it, but I am using
+gcc 4.4.4 which is fairly recent.  The X86 Kconfig selects HAVE_MEMBLOCK
+unconditionally, so mm/memblock.c is built on i386.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__14_Sep_2010_14_50_25_+1000_uL/CVplq9TRXS./6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMjv8RAAoJEDMEi1NhKgbsw5QH/25XOrKNFybBSAnq4AwtfEvr
+ndAUSv2zF8PSzoObfNSpubddyZrkWaSxJPoFy6srXU2jkuhJRVS/JsXd5ZBkwZ7S
+K3R/OTK6+JuFk/6utGN7ua564Z0XSdgz6VMgR/dlG9DB95lsbLg/wjrQ9heeGr+l
+s7bvJsqb/1pOQLMCWvKfItwKYm6o6P/SY16k0a47ktcU7OipNrUPWysCm3bpmGUE
+syY7fZS1H4+68wi5zT/IqAgMhzzUqZd05a+n4b9KlgQeYpHKdt/zoyPDHiDyPdHv
+j4ny2nZl40zKdk3cBvKYVQdtnDn1pRtCxf23GmtPHd8+1473njIpx/XmHch0GcA=
+=EcLo
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__14_Sep_2010_14_50_25_+1000_uL/CVplq9TRXS./6--
