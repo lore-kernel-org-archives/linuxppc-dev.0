@@ -1,13 +1,18 @@
-Return-Path: <stefan.roese@gmail.com>
-From: Stefan Roese <stefan.roese@gmail.com>
-To: devicetree-discuss@lists.ozlabs.org
-Subject: Question on of_address_to_resource() with offset != 0
-Date: Tue, 14 Sep 2010 16:29:06 +0200
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201009141629.06825.stefan.roese@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Detlev Zundel <dzu@denx.de>
+Return-Path: <abounine@tundra.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5E782B6EF0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Sep 2010 01:14:01 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/10] RapidIO: Set of patches to add Gen2 switches
+Date: Tue, 14 Sep 2010 10:59:13 -0400
+Message-Id: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+	Thomas Moll <thomas.moll@sysgo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,35 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This set of RapidIO patches extends support for standard error recovery
+mechanism and adds new IDT Gen2 sRIO switch devices - CPS-1848 and CPS-1616.
+Implementation of the standard error-stopped state recovery mechanism (as
+defined by the RapidIO specification) is required for the new switches.
 
-I'm stumbling upon a problem noticed on the Ebony (440GP) eval board.
-Here the first chip-select is connected to 512KiB of SRAM and 512KiB
-NOR flash. The dts part look this way:
-
-				small-flash@0,80000 {
-					compatible = "jedec-flash";
-					bank-width = <1>;
-					reg = <0x00000000 0x00080000 0x00080000>;
-					#address-cells = <1>;
-					#size-cells = <1>;
-					partition@0 {
-						label = "OpenBIOS";
-						reg = <0x00000000 0x00080000>;
-						read-only;
-					};
-				};
-
-Chip-select 0 has this setup:
-base-addr = 0xfff00000, size = 0x100000 (phys addr 0x1fff00000 .. 0x1ffffffff)
-
-The problem/crash happens in the physmap_of driver, when the the driver
-calls do_map_probe() with the following range:
-base-addr = 0xfff80000, size = 0x100000 (phys addr 0x1fff80000 .. 0x20007ffff)
-
-My question now is, should of_address_to_resource() subtract the
-offset (here 0x80000) from the size? Is this is bug here? Or should
-the physmap_of driver take care of this issue somehow?
-
-Cheers,
-Stefan
+The version 2 of this set of patches addresses received comments and fixes
+an error notification setup issue found in the idt_gen2.c after the first
+version was released.
