@@ -2,15 +2,16 @@ Return-Path: <abounine@tundra.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6DDB5B7179
+	by ozlabs.org (Postfix) with ESMTPS id 5DAF6B7158
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Sep 2010 01:14:06 +1000 (EST)
+	Wed, 15 Sep 2010 01:14:07 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 07/10] RapidIO: Add handling of orphan port-write message
-Date: Tue, 14 Sep 2010 10:59:20 -0400
-Message-Id: <1284476363-1677-8-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH v2 03/10] RapidIO: Use stored ingress port number instead of
+	register read
+Date: Tue, 14 Sep 2010 10:59:16 -0400
+Message-Id: <1284476363-1677-4-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
 References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
@@ -24,10 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add check for access to port-write (PW) message source device before processing
-the PW message. If source RIO device is not available (power down or RIO link
-failure) trace back to a last available switch/port on the PW message route
-and service failure at that point.
+A switch port information is obtained and stored during RIO device setup.
+Therefore repeated reads from Switch Port Information CAR may be removed.
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Cc: Thomas Moll <thomas.moll@sysgo.com>
@@ -36,167 +35,148 @@ Cc: Li Yang <leoli@freescale.com>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: Micha Nelissen <micha@neli.hopto.org>
 ---
- drivers/rapidio/rio.c |  113 ++++++++++++++++++++++++++++++++++++++++++++++--
- drivers/rapidio/rio.h |    2 +
- 2 files changed, 110 insertions(+), 5 deletions(-)
+ drivers/rapidio/rio-scan.c |   36 +++++++++---------------------------
+ include/linux/rio.h        |    4 +++-
+ include/linux/rio_regs.h   |    2 ++
+ 3 files changed, 14 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index 77bd416..aefc2a0 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -495,6 +495,92 @@ int rio_set_port_lockout(struct rio_dev *rdev, u32 pnum, int lock)
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 1123be8..d09c359 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -420,6 +420,11 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 						hopcount, RIO_EFB_ERR_MGMNT);
+ 	}
+ 
++	if (rdev->pef & (RIO_PEF_SWITCH | RIO_PEF_MULTIPORT)) {
++		rio_mport_read_config_32(port, destid, hopcount,
++					 RIO_SWP_INFO_CAR, &rdev->swpinfo);
++	}
++
+ 	rio_mport_read_config_32(port, destid, hopcount, RIO_SRC_OPS_CAR,
+ 				 &rdev->src_ops);
+ 	rio_mport_read_config_32(port, destid, hopcount, RIO_DST_OPS_CAR,
+@@ -439,8 +444,6 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 
+ 	/* If a PE has both switch and other functions, show it as a switch */
+ 	if (rio_is_switch(rdev)) {
+-		rio_mport_read_config_32(port, destid, hopcount,
+-					 RIO_SWP_INFO_CAR, &rdev->swpinfo);
+ 		rswitch = kzalloc(sizeof(struct rio_switch), GFP_KERNEL);
+ 		if (!rswitch)
+ 			goto cleanup;
+@@ -458,6 +461,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 				rdid++)
+ 			rswitch->route_table[rdid] = RIO_INVALID_ROUTE;
+ 		rdev->rswitch = rswitch;
++		rswitch->rdev = rdev;
+ 		dev_set_name(&rdev->dev, "%02x:s:%04x", rdev->net->id,
+ 			     rdev->rswitch->switchid);
+ 		rio_switch_init(rdev, do_enum);
+@@ -719,25 +723,6 @@ static u16 rio_get_host_deviceid_lock(struct rio_mport *port, u8 hopcount)
  }
  
  /**
-+ * rio_chk_dev_route - Validate route to the specified device.
-+ * @rdev:  RIO device failed to respond
-+ * @nrdev: Last active device on the route to rdev
-+ * @npnum: nrdev's port number on the route to rdev
-+ *
-+ * Follows a route to the specified RIO device to determine the last available
-+ * device (and corresponding RIO port) on the route.
-+ */
-+static int
-+rio_chk_dev_route(struct rio_dev *rdev, struct rio_dev **nrdev, int *npnum)
-+{
-+	u32 result;
-+	int p_port, rc = -EIO;
-+	struct rio_dev *prev = NULL;
-+
-+	/* Find switch with failed RIO link */
-+	while (rdev->prev && (rdev->prev->pef & RIO_PEF_SWITCH)) {
-+		if (!rio_read_config_32(rdev->prev, RIO_DEV_ID_CAR, &result)) {
-+			prev = rdev->prev;
-+			break;
-+		}
-+		rdev = rdev->prev;
-+	}
-+
-+	if (prev == NULL)
-+		goto err_out;
-+
-+	/* Find port with failed RIO link */
-+	for (p_port = 0;
-+	     p_port < RIO_GET_TOTAL_PORTS(prev->swpinfo); p_port++)
-+		if (prev->rswitch->nextdev[p_port] == rdev)
-+			break;
-+
-+	if (p_port < RIO_GET_TOTAL_PORTS(prev->swpinfo)) {
-+		pr_debug("RIO: link failed on [%s]-P%d\n",
-+			 rio_name(prev), p_port);
-+		*nrdev = prev;
-+		*npnum = p_port;
-+		rc = 0;
-+	} else
-+		pr_debug("RIO: failed to trace route to %s\n", rio_name(prev));
-+err_out:
-+	return rc;
-+}
-+
-+/**
-+ * rio_mport_chk_dev_access - Validate access to the specified device.
-+ * @mport: Master port to send transactions
-+ * @destid: Device destination ID in network
-+ * @hopcount: Number of hops into the network
-+ */
-+static int
-+rio_mport_chk_dev_access(struct rio_mport *mport, u16 destid, u8 hopcount)
-+{
-+	int i = 0;
-+	u32 tmp;
-+
-+	while (rio_mport_read_config_32(mport, destid, hopcount,
-+					RIO_DEV_ID_CAR, &tmp)) {
-+		i++;
-+		if (i == RIO_MAX_CHK_RETRY)
-+			return -EIO;
-+		mdelay(1);
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * rio_chk_dev_access - Validate access to the specified device.
-+ * @rdev: Pointer to RIO device control structure
-+ */
-+static int rio_chk_dev_access(struct rio_dev *rdev)
-+{
-+	u8 hopcount = 0xff;
-+	u16 destid = rdev->destid;
-+
-+	if (rdev->rswitch) {
-+		destid = rdev->rswitch->destid;
-+		hopcount = rdev->rswitch->hopcount;
-+	}
-+
-+	return rio_mport_chk_dev_access(rdev->net->hport, destid, hopcount);
-+}
-+
-+/**
-  * rio_get_input_status - Sends a Link-Request/Input-Status control symbol and
-  *                        returns link-response (if requested).
-  * @rdev: RIO devive to issue Input-status command
-@@ -654,8 +740,8 @@ int rio_inb_pwrite_handler(union rio_pw_msg *pw_msg)
- 
- 	rdev = rio_get_comptag(pw_msg->em.comptag, NULL);
- 	if (rdev == NULL) {
--		/* Someting bad here (probably enumeration error) */
--		pr_err("RIO: %s No matching device for CTag 0x%08x\n",
-+		/* Device removed or enumeration error */
-+		pr_debug("RIO: %s No matching device for CTag 0x%08x\n",
- 			__func__, pw_msg->em.comptag);
- 		return -EIO;
- 	}
-@@ -686,6 +772,26 @@ int rio_inb_pwrite_handler(union rio_pw_msg *pw_msg)
- 			return 0;
- 	}
- 
-+	portnum = pw_msg->em.is_port & 0xFF;
-+
-+	/* Check if device and route to it are functional:
-+	 * Sometimes devices may send PW message(s) just before being
-+	 * powered down (or link being lost).
-+	 */
-+	if (rio_chk_dev_access(rdev)) {
-+		pr_debug("RIO: device access failed - get link partner\n");
-+		/* Scan route to the device and identify failed link.
-+		 * This will replace device and port reported in PW message.
-+		 * PW message should not be used after this point.
-+		 */
-+		if (rio_chk_dev_route(rdev, &rdev, &portnum)) {
-+			pr_err("RIO: Route trace for %s failed\n",
-+				rio_name(rdev));
-+			return -EIO;
-+		}
-+		pw_msg = NULL;
-+	}
-+
- 	/* For End-point devices processing stops here */
- 	if (!(rdev->pef & RIO_PEF_SWITCH))
- 		return 0;
-@@ -703,9 +809,6 @@ int rio_inb_pwrite_handler(union rio_pw_msg *pw_msg)
- 	/*
- 	 * Process the port-write notification from switch
- 	 */
+- * rio_get_swpinfo_inport- Gets the ingress port number
+- * @mport: Master port to send transaction
+- * @destid: Destination ID associated with the switch
+- * @hopcount: Number of hops to the device
+- *
+- * Returns port number being used to access the switch device.
+- */
+-static u8
+-rio_get_swpinfo_inport(struct rio_mport *mport, u16 destid, u8 hopcount)
+-{
+-	u32 result;
 -
--	portnum = pw_msg->em.is_port & 0xFF;
+-	rio_mport_read_config_32(mport, destid, hopcount, RIO_SWP_INFO_CAR,
+-				 &result);
 -
- 	if (rdev->rswitch->em_handle)
- 		rdev->rswitch->em_handle(rdev, portnum);
+-	return (u8) (result & 0xff);
+-}
+-
+-/**
+  * rio_get_swpinfo_tports- Gets total number of ports on the switch
+  * @mport: Master port to send transaction
+  * @destid: Destination ID associated with the switch
+@@ -834,8 +819,7 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
  
-diff --git a/drivers/rapidio/rio.h b/drivers/rapidio/rio.h
-index f27b7a9..bc71ba1 100644
---- a/drivers/rapidio/rio.h
-+++ b/drivers/rapidio/rio.h
-@@ -14,6 +14,8 @@
- #include <linux/list.h>
- #include <linux/rio.h>
+ 	if (rio_is_switch(rdev)) {
+ 		next_switchid++;
+-		sw_inport = rio_get_swpinfo_inport(port,
+-				RIO_ANY_DESTID(port->sys_size), hopcount);
++		sw_inport = RIO_GET_PORT_NUM(rdev->swpinfo);
+ 		rio_route_add_entry(port, rdev->rswitch, RIO_GLOBAL_TABLE,
+ 				    port->host_deviceid, sw_inport, 0);
+ 		rdev->rswitch->route_table[port->host_deviceid] = sw_inport;
+@@ -989,8 +973,7 @@ rio_disc_peer(struct rio_net *net, struct rio_mport *port, u16 destid,
+ 		    "RIO: found %s (vid %4.4x did %4.4x) with %d ports\n",
+ 		    rio_name(rdev), rdev->vid, rdev->did, num_ports);
+ 		for (port_num = 0; port_num < num_ports; port_num++) {
+-			if (rio_get_swpinfo_inport(port, destid, hopcount) ==
+-			    port_num)
++			if (RIO_GET_PORT_NUM(rdev->swpinfo) == port_num)
+ 				continue;
  
-+#define RIO_MAX_CHK_RETRY	3
-+
- /* Functions internal to the RIO core code */
+ 			if (rio_sport_is_active
+@@ -1109,8 +1092,7 @@ static void rio_update_route_tables(struct rio_mport *port)
+ 				if (rswitch->destid == destid)
+ 					continue;
  
- extern u32 rio_mport_get_feature(struct rio_mport *mport, int local, u16 destid,
+-				sport = rio_get_swpinfo_inport(port,
+-						rswitch->destid, rswitch->hopcount);
++				sport = RIO_GET_PORT_NUM(rswitch->rdev->swpinfo);
+ 
+ 				if (rswitch->add_entry)	{
+ 					rio_route_add_entry(port, rswitch,
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index 84c9f8c..ffdfe5a 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -112,7 +112,7 @@ struct rio_dev {
+ 	u16 asm_rev;
+ 	u16 efptr;
+ 	u32 pef;
+-	u32 swpinfo;		/* Only used for switches */
++	u32 swpinfo;
+ 	u32 src_ops;
+ 	u32 dst_ops;
+ 	u32 comp_tag;
+@@ -219,6 +219,7 @@ struct rio_net {
+ /**
+  * struct rio_switch - RIO switch info
+  * @node: Node in global list of switches
++ * @rdev: Associated RIO device structure
+  * @switchid: Switch ID that is unique across a network
+  * @hopcount: Hopcount to this switch
+  * @destid: Associated destid in the path
+@@ -234,6 +235,7 @@ struct rio_net {
+  */
+ struct rio_switch {
+ 	struct list_head node;
++	struct rio_dev *rdev;
+ 	u16 switchid;
+ 	u16 hopcount;
+ 	u16 destid;
+diff --git a/include/linux/rio_regs.h b/include/linux/rio_regs.h
+index aedee04..be80b1b 100644
+--- a/include/linux/rio_regs.h
++++ b/include/linux/rio_regs.h
+@@ -33,6 +33,7 @@
+ #define  RIO_PEF_MEMORY			0x40000000	/* [I] MMIO */
+ #define  RIO_PEF_PROCESSOR		0x20000000	/* [I] Processor */
+ #define  RIO_PEF_SWITCH			0x10000000	/* [I] Switch */
++#define  RIO_PEF_MULTIPORT		0x08000000	/* [VI, 2.1] Multiport */
+ #define  RIO_PEF_INB_MBOX		0x00f00000	/* [II] Mailboxes */
+ #define  RIO_PEF_INB_MBOX0		0x00800000	/* [II] Mailbox 0 */
+ #define  RIO_PEF_INB_MBOX1		0x00400000	/* [II] Mailbox 1 */
+@@ -51,6 +52,7 @@
+ #define  RIO_SWP_INFO_PORT_TOTAL_MASK	0x0000ff00	/* [I] Total number of ports */
+ #define  RIO_SWP_INFO_PORT_NUM_MASK	0x000000ff	/* [I] Maintenance transaction port number */
+ #define  RIO_GET_TOTAL_PORTS(x)		((x & RIO_SWP_INFO_PORT_TOTAL_MASK) >> 8)
++#define  RIO_GET_PORT_NUM(x)		(x & RIO_SWP_INFO_PORT_NUM_MASK)
+ 
+ #define RIO_SRC_OPS_CAR		0x18	/* [I] Source Operations CAR */
+ #define  RIO_SRC_OPS_READ		0x00008000	/* [I] Read op */
 -- 
 1.7.0.5
