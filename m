@@ -1,27 +1,38 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 8D9CDB6F11
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 21:57:16 +1000 (EST)
-Received: by iwn37 with SMTP id 37so6984876iwn.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 04:57:15 -0700 (PDT)
+Return-Path: <ibr@radix50.net>
+Received: from almaty.kz-easy.com (kz-easy.com [85.214.25.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0ADBAB6F06
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Sep 2010 22:57:30 +1000 (EST)
+Received: from alatau.radix50.net (dslb-092-074-053-195.pools.arcor-ip.net
+	[92.74.53.195]) (authenticated bits=0)
+	by almaty.kz-easy.com (8.13.8/8.13.8/Debian-3) with ESMTP id
+	o8ECvJlC009717
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2010 14:57:21 +0200
+Received: from medeu.radix50.net (root@medeu [192.168.0.3])
+	by alatau.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
+	o8ECvDSR006306
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2010 14:57:14 +0200
+Received: from medeu.radix50.net (ibr@localhost [127.0.0.1])
+	by medeu.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
+	o8ECvDI3010524
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2010 14:57:13 +0200
+Received: (from ibr@localhost)
+	by medeu.radix50.net (8.14.3/8.14.3/Submit) id o8ECvDB1010523
+	for linuxppc-dev@lists.ozlabs.org; Tue, 14 Sep 2010 14:57:13 +0200
+Date: Tue, 14 Sep 2010 14:57:13 +0200
+From: Baurzhan Ismagulov <ibr@radix50.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Generating elf kernel ?
+Message-ID: <20100914125713.GB5768@radix50.net>
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
 MIME-Version: 1.0
-In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A1FC299@zch01exm23.fsl.freescale.net>
-References: <AANLkTik3ViwjmOFfm6GUwmuzMkO75+2pCUdnC0z8A7Jb@mail.gmail.com>
-	<3850A844E6A3854C827AC5C0BEC7B60A1FC150@zch01exm23.fsl.freescale.net>
-	<20100913112749.2fb32b3d@schlenkerla.am.freescale.net>
-	<3850A844E6A3854C827AC5C0BEC7B60A1FC299@zch01exm23.fsl.freescale.net>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Tue, 14 Sep 2010 06:56:44 -0500
-Message-ID: <AANLkTim2HAnwF7wdbJb_Oc9rzPVe0Y-B7nOHiUVoWef=@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3][MTD] P4080/mtd: Fix the freescale lbc issue with
-	36bit mode
-To: Zang Roy-R61911 <r61911@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
-	Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-mtd@lists.infradead.org, akpm@linux-foundation.org,
-	dwmw2@infradead.org, Gala Kumar-B11780 <B11780@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201009141053.11946.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +42,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 13, 2010 at 11:09 PM, Zang Roy-R61911 <r61911@freescale.com> wr=
-ote:
+On Tue, Sep 14, 2010 at 10:53:11AM +0200, Guillaume Dargaud wrote:
+> How do I generate an elf file ?
 
->> > > Shouldn't this be u32 or __be32, for consistency with the actual
->> > > comparisons below?
->> > __be32 is better.
->>
->> I disagree, the return from this function is native-endian. =A0It should
->> be u32.
-> But the return of this value is ONLY used for br comparing. It is big end=
-ia.
-> Thanks.
+vmlinux?
 
-No, Scott is right.  The return value is native-endian (NE).  You've
-converted it from BE to NE already.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+With kind regards,
+-- 
+Baurzhan Ismagulov
+http://www.kz-easy.com/
