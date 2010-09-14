@@ -1,35 +1,15 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) by ozlabs.org (Postfix) with ESMTP id 4E9BDB70A5
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 05:44:56 +1000 (EST)
-Received: from mail44-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail44-tx2-R.bigfish.com (Postfix) with ESMTP id 1E1B96E01C1	for
-	<linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 19:44:53 +0000 (UTC)
-Received: from TX2EHSMHS004.bigfish.com (unknown [10.9.14.249])	by
-	mail44-tx2.bigfish.com (Postfix) with ESMTP id EFE27C18061	for
-	<linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2010 19:44:51 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o8EJinGs003895	for <linuxppc-dev@ozlabs.org>;
-	Tue, 14 Sep 2010 12:44:49 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o8EJvNOw021125	for <linuxppc-dev@ozlabs.org>;
-	Tue, 14 Sep 2010 14:57:23 -0500 (CDT)
-Message-ID: <4C8FD0B0.70500@freescale.com>
-Date: Tue, 14 Sep 2010 14:44:48 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] hvc_console: fix dropping of characters when output byte
-	channel is full
-References: <1282329921-24394-1-git-send-email-timur@freescale.com>	<20100914121721.c8671ed8.akpm@linux-foundation.org>	<20100914204410.71942cdc@lxorguk.ukuu.org.uk>	<4C8FCC2E.1020107@freescale.com>
-	<20100914205246.0e35c9af@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100914205246.0e35c9af@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, amit.shah@redhat.com,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id D1D5EB70A8
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 05:53:55 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 3/7] mac: autoconvert trivial BKL users to private mutex
+Date: Tue, 14 Sep 2010 21:53:38 +0200
+Message-Id: <1284494022-7346-4-git-send-email-arnd@arndb.de>
+In-Reply-To: <1284494022-7346-1-git-send-email-arnd@arndb.de>
+References: <1284494022-7346-1-git-send-email-arnd@arndb.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,15 +19,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Cox wrote:
-> If you want to make that change then I guess you need to audit every
-> other hvc driver first.
-> 
-> But I never understood the point of the hvc layer anyway 8)
+All these files use the big kernel lock in a trivial
+way to serialize their private file operations,
+typically resulting from an earlier semi-automatic
+pushdown from VFS.
 
-We've come to the same conclusion here.  I think we're just going to drop
-the hvc layer and make the driver a standard console driver.
+None of these drivers appears to want to lock against
+other code, and they all use the BKL as the top-level
+lock in their file operations, meaning that there
+is no lock-order inversion problem.
 
+Consequently, we can remove the BKL completely,
+replacing it with a per-file mutex in every case.
+Using a scripted approach means we can avoid
+typos.
+
+file=$1
+name=$2
+if grep -q lock_kernel ${file} ; then
+    if grep -q 'include.*linux.mutex.h' ${file} ; then
+            sed -i '/include.*<linux\/smp_lock.h>/d' ${file}
+    else
+            sed -i 's/include.*<linux\/smp_lock.h>.*$/include <linux\/mutex.h>/g' ${file}
+    fi
+    sed -i ${file} \
+        -e "/^#include.*linux.mutex.h/,$ {
+                1,/^\(static\|int\|long\)/ {
+                     /^\(static\|int\|long\)/istatic DEFINE_MUTEX(${name}_mutex);
+
+} }"  \
+    -e "s/\(un\)*lock_kernel\>[ ]*()/mutex_\1lock(\&${name}_mutex)/g" \
+    -e '/[      ]*cycle_kernel_lock();/d'
+else
+    sed -i -e '/include.*\<smp_lock.h\>/d' ${file}  \
+                -e '/cycle_kernel_lock()/d'
+fi
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+---
+ drivers/macintosh/adb.c     |   10 +++++-----
+ drivers/macintosh/smu.c     |    6 +++---
+ drivers/macintosh/via-pmu.c |   11 ++++++-----
+ 3 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index 1c4ee6e..e75e3be 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -24,7 +24,6 @@
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+ #include <linux/sched.h>
+-#include <linux/smp_lock.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+ #include <linux/pmu.h>
+@@ -55,6 +54,7 @@ extern struct adb_driver adb_iop_driver;
+ extern struct adb_driver via_pmu_driver;
+ extern struct adb_driver macio_adb_driver;
+ 
++static DEFINE_MUTEX(adb_mutex);
+ static struct adb_driver *adb_driver_list[] = {
+ #ifdef CONFIG_ADB_MACII
+ 	&via_macii_driver,
+@@ -647,7 +647,7 @@ static int adb_open(struct inode *inode, struct file *file)
+ 	struct adbdev_state *state;
+ 	int ret = 0;
+ 
+-	lock_kernel();
++	mutex_lock(&adb_mutex);
+ 	if (iminor(inode) > 0 || adb_controller == NULL) {
+ 		ret = -ENXIO;
+ 		goto out;
+@@ -665,7 +665,7 @@ static int adb_open(struct inode *inode, struct file *file)
+ 	state->inuse = 1;
+ 
+ out:
+-	unlock_kernel();
++	mutex_unlock(&adb_mutex);
+ 	return ret;
+ }
+ 
+@@ -674,7 +674,7 @@ static int adb_release(struct inode *inode, struct file *file)
+ 	struct adbdev_state *state = file->private_data;
+ 	unsigned long flags;
+ 
+-	lock_kernel();
++	mutex_lock(&adb_mutex);
+ 	if (state) {
+ 		file->private_data = NULL;
+ 		spin_lock_irqsave(&state->lock, flags);
+@@ -687,7 +687,7 @@ static int adb_release(struct inode *inode, struct file *file)
+ 			spin_unlock_irqrestore(&state->lock, flags);
+ 		}
+ 	}
+-	unlock_kernel();
++	mutex_unlock(&adb_mutex);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index e58c3d3..290cb32 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -19,7 +19,6 @@
+  *    the userland interface
+  */
+ 
+-#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/device.h>
+@@ -97,6 +96,7 @@ struct smu_device {
+  * I don't think there will ever be more than one SMU, so
+  * for now, just hard code that
+  */
++static DEFINE_MUTEX(smu_mutex);
+ static struct smu_device	*smu;
+ static DEFINE_MUTEX(smu_part_access);
+ static int smu_irq_inited;
+@@ -1095,12 +1095,12 @@ static int smu_open(struct inode *inode, struct file *file)
+ 	pp->mode = smu_file_commands;
+ 	init_waitqueue_head(&pp->wait);
+ 
+-	lock_kernel();
++	mutex_lock(&smu_mutex);
+ 	spin_lock_irqsave(&smu_clist_lock, flags);
+ 	list_add(&pp->list, &smu_clist);
+ 	spin_unlock_irqrestore(&smu_clist_lock, flags);
+ 	file->private_data = pp;
+-	unlock_kernel();
++	mutex_unlock(&smu_mutex);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 2d17e76..7b8b1de 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -18,7 +18,7 @@
+  *
+  */
+ #include <stdarg.h>
+-#include <linux/smp_lock.h>
++#include <linux/mutex.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
+@@ -73,6 +73,7 @@
+ /* How many iterations between battery polls */
+ #define BATTERY_POLLING_COUNT	2
+ 
++static DEFINE_MUTEX(pmu_info_proc_mutex);
+ static volatile unsigned char __iomem *via;
+ 
+ /* VIA registers - spaced 0x200 bytes apart */
+@@ -2078,7 +2079,7 @@ pmu_open(struct inode *inode, struct file *file)
+ 	pp->rb_get = pp->rb_put = 0;
+ 	spin_lock_init(&pp->lock);
+ 	init_waitqueue_head(&pp->wait);
+-	lock_kernel();
++	mutex_lock(&pmu_info_proc_mutex);
+ 	spin_lock_irqsave(&all_pvt_lock, flags);
+ #if defined(CONFIG_INPUT_ADBHID) && defined(CONFIG_PMAC_BACKLIGHT)
+ 	pp->backlight_locker = 0;
+@@ -2086,7 +2087,7 @@ pmu_open(struct inode *inode, struct file *file)
+ 	list_add(&pp->list, &all_pmu_pvt);
+ 	spin_unlock_irqrestore(&all_pvt_lock, flags);
+ 	file->private_data = pp;
+-	unlock_kernel();
++	mutex_unlock(&pmu_info_proc_mutex);
+ 	return 0;
+ }
+ 
+@@ -2343,9 +2344,9 @@ static long pmu_unlocked_ioctl(struct file *filp,
+ {
+ 	int ret;
+ 
+-	lock_kernel();
++	mutex_lock(&pmu_info_proc_mutex);
+ 	ret = pmu_ioctl(filp, cmd, arg);
+-	unlock_kernel();
++	mutex_unlock(&pmu_info_proc_mutex);
+ 
+ 	return ret;
+ }
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.1
