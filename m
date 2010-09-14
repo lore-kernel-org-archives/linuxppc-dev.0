@@ -1,23 +1,26 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4A379B6F07
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 05:17:28 +1000 (EST)
-Date: Tue, 14 Sep 2010 12:17:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CD17EB6EEF
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 05:31:44 +1000 (EST)
+Date: Tue, 14 Sep 2010 20:52:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH] hvc_console: fix dropping of characters when output
 	byte channel is full
-Message-Id: <20100914121721.c8671ed8.akpm@linux-foundation.org>
-In-Reply-To: <1282329921-24394-1-git-send-email-timur@freescale.com>
+Message-ID: <20100914205246.0e35c9af@lxorguk.ukuu.org.uk>
+In-Reply-To: <4C8FCC2E.1020107@freescale.com>
 References: <1282329921-24394-1-git-send-email-timur@freescale.com>
+	<20100914121721.c8671ed8.akpm@linux-foundation.org>
+	<20100914204410.71942cdc@lxorguk.ukuu.org.uk>
+	<4C8FCC2E.1020107@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: amit.shah@redhat.com, linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
-	linux-kernel@vger.kernel.org
+Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, amit.shah@redhat.com,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 20 Aug 2010 13:45:21 -0500
+On Tue, 14 Sep 2010 14:25:34 -0500
 Timur Tabi <timur@freescale.com> wrote:
 
-> hvc_console_print() calls the HVC client driver's put_chars() callback
-> to write some characters to the console.  If the callback returns 0, that
-> indicates that no characters were written (perhaps the output buffer is
-> full), but hvc_console_print() treats that as an error and discards the
-> rest of the buffer.
+> Alan Cox wrote:
+> > Its a printk handler - better to lose the bytes than hang the box. I
+> > think the current code is probably right.
 > 
-> So change hvc_console_print() to just loop and call put_chars() again if it
-> returns a 0 return code.
+> What do you think about this change:
+> 
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-October/thread.html#76830
+> 
+> This is the original version of my patch.  In it, I simply allow drivers to
+> return 0 to indicate that they're too busy to accept data.  It works great
+> on the hvc driver that we have in-house today, but it might break other
+> drivers that return 0 to indicate error.
 
-Seems rather dangerous.  The upper layer will sit there chewing 100%
-CPU for as long as the lower layer is congested.
+If you want to make that change then I guess you need to audit every
+other hvc driver first.
 
-> This change makes hvc_console_print() behave more like hvc_push(), which
-> does check for a 0 return code and re-schedules itself.
-
-Yes, hvc_push() reschedules.  It doesn't sit in a tight loop burning
-electrons!
-
-Can we do something safer&smarter here?
+But I never understood the point of the hvc layer anyway 8)
