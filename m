@@ -2,15 +2,15 @@ Return-Path: <abounine@tundra.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DED8DB6EF0
+	by ozlabs.org (Postfix) with ESMTPS id B6219B6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Sep 2010 01:14:02 +1000 (EST)
+	Wed, 15 Sep 2010 01:14:03 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 01/10] RapidIO: Fix RapidIO sysfs hierarchy
-Date: Tue, 14 Sep 2010 10:59:14 -0400
-Message-Id: <1284476363-1677-2-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH v2 08/10] RapidIO: Add device access check into the enumeration
+Date: Tue, 14 Sep 2010 10:59:21 -0400
+Message-Id: <1284476363-1677-9-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
 References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
@@ -24,8 +24,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make RapidIO devices appear in /sys/devices/rapidio directory instead of top
-of /sys/devices directory.
+Add explicit device access check before performing device enumeration.
+This gives a chance to clear possible link error conditions by issuing safe
+maintenance read request(s).
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Cc: Thomas Moll <thomas.moll@sysgo.com>
@@ -34,47 +35,53 @@ Cc: Li Yang <leoli@freescale.com>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: Micha Nelissen <micha@neli.hopto.org>
 ---
- drivers/rapidio/rio-driver.c |    2 +-
- drivers/rapidio/rio-scan.c   |    1 +
- include/linux/rio.h          |    1 +
- 3 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/rapidio/rio-scan.c |    6 ++++++
+ drivers/rapidio/rio.c      |    2 +-
+ drivers/rapidio/rio.h      |    2 ++
+ 3 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/rapidio/rio-driver.c b/drivers/rapidio/rio-driver.c
-index 3222fa3..0f4a53b 100644
---- a/drivers/rapidio/rio-driver.c
-+++ b/drivers/rapidio/rio-driver.c
-@@ -192,7 +192,7 @@ static int rio_match_bus(struct device *dev, struct device_driver *drv)
-       out:return 0;
- }
- 
--static struct device rio_bus = {
-+struct device rio_bus = {
- 	.init_name = "rapidio",
- };
- 
 diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
-index 8070e07..1123be8 100644
+index d2ea018..e3efdf9 100644
 --- a/drivers/rapidio/rio-scan.c
 +++ b/drivers/rapidio/rio-scan.c
-@@ -478,6 +478,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
- 	}
+@@ -762,6 +762,12 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 	u16 destid;
+ 	int tmp;
  
- 	rdev->dev.bus = &rio_bus_type;
-+	rdev->dev.parent = &rio_bus;
- 
- 	device_initialize(&rdev->dev);
- 	rdev->dev.release = rio_release_dev;
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index bd6eb0e..84c9f8c 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -67,6 +67,7 @@
- #define RIO_PW_MSG_SIZE		64
- 
- extern struct bus_type rio_bus_type;
-+extern struct device rio_bus;
- extern struct list_head rio_devices;	/* list of all devices */
- 
- struct rio_mport;
++	if (rio_mport_chk_dev_access(port,
++			RIO_ANY_DESTID(port->sys_size), hopcount)) {
++		pr_debug("RIO: device access check failed\n");
++		return -1;
++	}
++
+ 	if (rio_get_host_deviceid_lock(port, hopcount) == port->host_deviceid) {
+ 		pr_debug("RIO: PE already discovered by this host\n");
+ 		/*
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index aefc2a0..fa5e3cb 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -546,7 +546,7 @@ err_out:
+  * @destid: Device destination ID in network
+  * @hopcount: Number of hops into the network
+  */
+-static int
++int
+ rio_mport_chk_dev_access(struct rio_mport *mport, u16 destid, u8 hopcount)
+ {
+ 	int i = 0;
+diff --git a/drivers/rapidio/rio.h b/drivers/rapidio/rio.h
+index bc71ba1..d249a12 100644
+--- a/drivers/rapidio/rio.h
++++ b/drivers/rapidio/rio.h
+@@ -24,6 +24,8 @@ extern u32 rio_mport_get_physefb(struct rio_mport *port, int local,
+ 				 u16 destid, u8 hopcount);
+ extern u32 rio_mport_get_efb(struct rio_mport *port, int local, u16 destid,
+ 			     u8 hopcount, u32 from);
++extern int rio_mport_chk_dev_access(struct rio_mport *mport, u16 destid,
++				    u8 hopcount);
+ extern int rio_create_sysfs_dev_files(struct rio_dev *rdev);
+ extern int rio_enum_mport(struct rio_mport *mport);
+ extern int rio_disc_mport(struct rio_mport *mport);
 -- 
 1.7.0.5
