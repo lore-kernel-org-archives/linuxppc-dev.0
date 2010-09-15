@@ -1,26 +1,23 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CF379B6F01
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 19:38:37 +1000 (EST)
-Date: Wed, 15 Sep 2010 19:38:30 +1000
+Date: Wed, 15 Sep 2010 19:39:26 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/7] BKL mass-conversion to mutex
-Message-Id: <20100915193830.27722c3a.sfr@canb.auug.org.au>
-In-Reply-To: <1284494022-7346-1-git-send-email-arnd@arndb.de>
-References: <1284494022-7346-1-git-send-email-arnd@arndb.de>
+Subject: Re: [PATCH 00/15] change default_llseek action
+Message-Id: <20100915193926.ae2fe838.sfr@canb.auug.org.au>
+In-Reply-To: <1284495763-7506-1-git-send-email-arnd@arndb.de>
+References: <1284495763-7506-1-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0"
-Cc: Corey Minyard <minyard@acm.org>, Jens Axboe <axboe@kernel.dk>,
-	David Woodhouse <David.Woodhouse@intel.com>,
-	linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"James E.J. Bottomley" <James.Bottomley@suse.de>,
-	linux-mtd@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	openipmi-developer@lists.sourceforge.net
+	boundary="Signature=_Wed__15_Sep_2010_19_39_26_+1000_DQXdvYbRSl_dI/ss"
+Cc: Samuel Ortiz <samuel@sortiz.org>, David Airlie <airlied@linux.ie>,
+	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Tony Lindgren <tony@atomide.com>, Julia Lawall <julia@diku.dk>,
+	Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
+	linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Al Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0
+--Signature=_Wed__15_Sep_2010_19_39_26_+1000_DQXdvYbRSl_dI/ss
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Arnd,
 
-On Tue, 14 Sep 2010 21:53:35 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
+On Tue, 14 Sep 2010 22:22:28 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
 >
 > Stephen, please add
-> git+ssh://master.kernel.org/pub/scm/linux/kernel/git/arnd/bkl.git trivial
+> git+ssh://master.kernel.org/pub/scm/linux/kernel/git/arnd/bkl.git llseek
 
 Added from today.
 
@@ -78,19 +75,19 @@ project, the testing procedures, the results, the e-mails, etc.  If you
 don't agree to these ground rules, let me know and I'll remove your tree
 from participation in linux-next.
 
---Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0
+--Signature=_Wed__15_Sep_2010_19_39_26_+1000_DQXdvYbRSl_dI/ss
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQEcBAEBAgAGBQJMkJQWAAoJEDMEi1NhKgbs/qcH/j6Q5d5mYGECz3JtxE/Em3WG
-qO7Bk3/4JfuxCzIjBlDyoz4EpG0a2ghiIiPrCM3kGwg3awScEMf9lFKYJE0KSBsH
-yxGilZjzBDG/XxMa58hGxb/ZmaIr/W5dwA7/XCUuF8lgGiqsvpoP94ncTf7mVQ1/
-KPV+S767DPzqOQK1w8RVMBx+0slO2MEr0qEtyEsbjYFfrfSPCqpUruASJh53GiVi
-SdPkjxstl8yG0YG6VGvGs2FHv1yeWbL5R4kFBARVIf+78ZDAzNYUhn2bgLZolL4Z
-0PboNcLQDByMqUfOQ+Wh7rdjouKzQLeDNqq/2GAfzhWaZCJ16X7kYnBQuvTXwFI=
-=52gd
+iQEcBAEBAgAGBQJMkJROAAoJEDMEi1NhKgbsYp0H+wXse/dv0zaLotuqwSwNBEwU
+pGyUJJlbgnsQrSCuQ0RowdoQ0djjfK9vpruhdv82egNE/g/Fce/cGx7W4VH1danv
+kAEkH42TGgqfbRZ2/bzxBNrewRNLZWd35RPHraMbuYWifGWvrvcY0XqbXL8shP1a
+7yQhIdm7yhETa0pCWNgNr96Uxm6zn5Dh6VcF7ux+CoabO9OJ/UTHwnS9YSg2Jq8V
+IY9XXeTrwUbKHiZlBTyLXqexe74h04hK5Dl6xz1+PQw+cLnwwgX07lNa+MzEMeLC
+FnQcuYnjVedEKfJvTdO4omXXPscchuPj1fJAAVs6jD8/2n4/+fA6nY6UNCKzN9k=
+=B+lf
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0--
+--Signature=_Wed__15_Sep_2010_19_39_26_+1000_DQXdvYbRSl_dI/ss--
