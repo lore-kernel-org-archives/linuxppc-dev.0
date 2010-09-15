@@ -1,24 +1,35 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 00/15] change default_llseek action
-Date: Wed, 15 Sep 2010 18:37:29 +0200
-References: <1284495763-7506-1-git-send-email-arnd@arndb.de>
-	<9828.1284565136@localhost>
-In-Reply-To: <9828.1284565136@localhost>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+	[65.55.88.11]) by ozlabs.org (Postfix) with ESMTP id 60095B6EEA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 16 Sep 2010 02:49:34 +1000 (EST)
+Received: from mail21-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail21-tx2-R.bigfish.com (Postfix) with ESMTP id 4B607A40596	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 16:49:17 +0000 (UTC)
+Received: from TX2EHSMHS041.bigfish.com (unknown [10.9.14.243])	by
+	mail21-tx2.bigfish.com (Postfix) with ESMTP id 08172F00046	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 16:49:16 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o8FGnEi6010210	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 09:49:14 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o8FH4QIX023977	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Sep 2010 12:04:26 -0500 (CDT)
+Date: Wed, 15 Sep 2010 11:49:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Subject: Re: Generating elf kernel ?
+Message-ID: <20100915114912.06bc7ed1@schlenkerla.am.freescale.net>
+In-Reply-To: <4C90835E.4050803@windriver.com>
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
+	<20100914125713.GB5768@radix50.net>
+	<201009151007.50706.dargaud@lpsc.in2p3.fr>
+	<4C90835E.4050803@windriver.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <201009151837.30026.arnd@arndb.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Samuel Ortiz <samuel@sortiz.org>,
-	David Airlie <airlied@linux.ie>, netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Tony Lindgren <tony@atomide.com>, Julia Lawall <julia@diku.dk>,
-	Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
-	linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +39,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 15 September 2010, Valdis.Kletnieks@vt.edu wrote:
->   Show Details
->   On Tue, 14 Sep 2010 22:22:28 +0200, Arnd Bergmann said:
-> 
-> > This changes all instances of struct file_operations in
-> > the kernel to have a .llseek operation and then changes
-> > the default to no_llseek, which returns -ESPIPE, which
-> > is what we had decided some time ago in a discussion
-> > with Christoph Hellwig.
-> 
-> I don't suppose there's any clean way to throw a build error or a
-> printk_on_once() or something if we encounter an unconverted 'struct
-> file_operations', is there? I have this creeping fear that this patch will go
-> upstream during the merge window - as will 12 new staging/ drivers from authors
-> who didn't get the memo yet.
-> 
-> Other than the "missed converting a new usage" issue, it looks OK to me.
+On Wed, 15 Sep 2010 16:27:10 +0800
+"tiejun.chen" <tiejun.chen@windriver.com> wrote:
 
-One advantage of the scripted approach is that I can run the script
-repeatedly, and send a patch after -rc1 fixing up all the new file
-operations.
+> It's impossible to boot PPC vmlinux format directly if you only change the
+> original entry point address, 0xc0000000.
 
-Moreover, any new drivers are by definition not regressions and staging
-drivers are expected to have issues. IIRC the most common llseek operation
-is 'noop_llseek', which usually means it should have been 'no_llseek' to
-start with, but since this has been in a released kernel, some random
-user application might expect a seek on that file to succeed without
-error.
+Why?  That's pretty much what the bootwrapper does.  Our hypervisor has
+directly booted vmlinux this way.
 
-	Arnd
+Note that in recent kernels physaddr is even set to zero, allowing the
+ELF loader to just use that instead of magically knowing the kernel
+wants to go at address zero.
+
+> For kernel the following is as default:
+> v:0xc0000000 --> p:0x0
+
+That mapping is set up by code at the entry point of vmlinux, not by
+the bootwrapper.
+
+-Scott
