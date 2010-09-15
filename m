@@ -1,23 +1,26 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EE1E9B6EF7
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DAC21B6F01
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 00:05:27 +1000 (EST)
+	Thu, 16 Sep 2010 00:48:58 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	o8FEmqe6009036
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 16:48:53 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Generating elf kernel ?
+Date: Wed, 15 Sep 2010 16:51:06 +0200
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
+	<201009151007.50706.dargaud@lpsc.in2p3.fr>
+	<4C90835E.4050803@windriver.com>
+In-Reply-To: <4C90835E.4050803@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2 01/10] RapidIO: Fix RapidIO sysfs hierarchy
-Date: Wed, 15 Sep 2010 07:04:41 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520130318F@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20100914150429.6256b311.akpm@linux-foundation.org>
-References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-2-git-send-email-alexandre.bounine@idt.com>
-	<20100914150429.6256b311.akpm@linux-foundation.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201009151651.06816.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,12 +30,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-=20
-> Non-backward compatible change?  What is the risk of breaking existing
-> setups with this change?
+> Please use simpleImage.<your target dts name>.elf.
 
-I think that risk is very low. Assuming that this change brings sysfs
-entries
-to their intended hierarchy, it has sense to do it now (at relatively
-early stage).
+Great, that seems to be it...
+Except that nothing happens when I jump to 0x40000, no message from the 
+kernel, nothing.
+I'm a bit stumped here as my old kernel worked fine.
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
