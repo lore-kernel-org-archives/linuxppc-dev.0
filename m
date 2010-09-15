@@ -1,31 +1,33 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DC5A710083F
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3EED2B6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 04:07:01 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8FHvdR1021906
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 11:57:39 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8FI6aCm208498
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 12:06:48 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o8FI6Z7d005965
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 12:06:35 -0600
+	Thu, 16 Sep 2010 04:13:19 +1000 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8FHsMM9003267
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 13:54:22 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8FIDGiH364450
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 14:13:16 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o8FIDFVo026421
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 15:13:15 -0300
+Received: from arkanoid.localdomain (sig-9-65-116-150.mts.ibm.com
+	[9.65.116.150])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	o8FIDEiE026339
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 15:13:15 -0300
+Date: Wed, 15 Sep 2010 11:13:07 -0700
 From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: nacc@us.ibm.com
-Subject: [PATCH 15/15] ppc/vio: ensure dma_coherent_mask is set
-Date: Wed, 15 Sep 2010 11:05:58 -0700
-Message-Id: <1284573958-8397-16-git-send-email-nacc@us.ibm.com>
-In-Reply-To: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
-References: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
-Cc: Milton Miller <miltonm@bga.com>, Paul Mackerras <paulus@samba.org>,
-	Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [nacc@us.ibm.com: [PATCH 00/15] ppc iommu cleanups]
+Message-ID: <20100915181307.GA3683@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,25 +37,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Without this change drivers, such as ibmvscsi, fail to load with the
-previous change.
----
- arch/powerpc/kernel/vio.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Clearly need to work on my git-send-mail usage! Apologies...
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 3c3083f..e8d73de 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1259,6 +1259,9 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
- 	viodev->dev.parent = &vio_bus_device.dev;
- 	viodev->dev.bus = &vio_bus_type;
- 	viodev->dev.release = vio_dev_release;
-+        /* needed to ensure proper operation of coherent allocations
-+         * later, in case driver doesn't set it explicitly */
-+        dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
- 
- 	/* register with generic device framework */
- 	if (device_register(&viodev->dev)) {
+----- Forwarded message from Nishanth Aravamudan <nacc@us.ibm.com> -----
+
+Date: Wed, 15 Sep 2010 11:05:43 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: nacc@us.ibm.com
+Subject: [PATCH 00/15] ppc iommu cleanups
+
+While working on some upcoming IOMMU-related changes, we found the
+following cleanups throughout the ppc code.
+
+Nishanth Aravamudan (15):
+  ppc: fix return type of BUID_{HI,LO} macros
+  ppc64: fix dma_iommu_dma_supported compare
+  ppc64 iommu: fix check for direct DMA support
+  vio: put device on device_register failure
+  viobus: free TCE table on device release
+  pseries/dlpar: use kmemdup
+  ppc: pci-common cleanup
+  microblaze: pci-common cleanup
+  ppc/vio: use dma ops helpers
+  ppc/pasemi: clean up pasemi iommu table initializations
+  ppc/cell: beat dma ops cleanup
+  ppc/dart: iommu table cleanup
+  ppc/pseries: iommu cleanup
+  ppc64 iommu: use coherent_dma_mask for alloc_coherent
+  ppc/vio: ensure dma_coherent_mask is set
+
+ arch/microblaze/pci/pci-common.c         |    6 ++----
+ arch/powerpc/include/asm/ppc-pci.h       |    4 ++--
+ arch/powerpc/kernel/dma-iommu.c          |   23 ++++++++++++-----------
+ arch/powerpc/kernel/dma.c                |    2 +-
+ arch/powerpc/kernel/pci-common.c         |    4 +---
+ arch/powerpc/kernel/vio.c                |   24 ++++++++++++++++++------
+ arch/powerpc/platforms/cell/beat_iommu.c |    3 +--
+ arch/powerpc/platforms/pasemi/iommu.c    |   19 +------------------
+ arch/powerpc/platforms/pseries/dlpar.c   |    3 +--
+ arch/powerpc/platforms/pseries/iommu.c   |    9 ++-------
+ arch/powerpc/sysdev/dart_iommu.c         |   18 +-----------------
+ 11 files changed, 42 insertions(+), 73 deletions(-)
+
+---
+
+I used git-send-email for this series, and noticed that
+get_maintainer.pl will always pull in LKML to the Cc because of the
+following in MAINTAINERS:
+
+THE REST
+M:	Linus Torvalds <torvalds@linux-foundation.org>
+L:	linux-kernel@vger.kernel.org
+Q:	http://patchwork.kernel.org/project/LKML/list/
+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+S:	Buried alive in reporters
+F:	*
+F:	*/
+
+Is there any way to exclude that in the script that anyone knows of? Or
+am I mis-using the script (as the --cc-cmd option to git-send-email).
+
+Thanks,
+Nish
+
+----- End forwarded message -----
+
 -- 
-1.7.0.4
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
