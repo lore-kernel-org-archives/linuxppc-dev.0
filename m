@@ -1,19 +1,23 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
-	by ozlabs.org (Postfix) with ESMTP id 3BB9AB6EDD
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 86EF7B6EDD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Sep 2010 23:29:54 +1000 (EST)
-Message-ID: <4C90CA4D.2020902@c-s.fr>
-Date: Wed, 15 Sep 2010 15:29:49 +0200
-From: LEROY Christophe <christophe.leroy@c-s.fr>
+	Thu, 16 Sep 2010 00:01:06 +1000 (EST)
 MIME-Version: 1.0
-To: David Brownell <dbrownell@users.sourceforge.net>,
-	Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] fixes probe issue and hangup in spi_mpc8xxx.c for data bigger
-	than PAGE_SIZE
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: spi-devel-general@lists.sourceforge.net,
-	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 06/10] RapidIO: Modify sysfs initialization for switches
+Date: Wed, 15 Sep 2010 06:38:32 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201303168@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <20100914151026.4d9599b4.akpm@linux-foundation.org>
+References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-7-git-send-email-alexandre.bounine@idt.com>
+	<20100914151026.4d9599b4.akpm@linux-foundation.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This patch applies to 2.6.34.7. It also applies to 2.6.35.4 althought 
-part of it is already included in 2.6.35.4
-It fixed a problem with spi_mpc8xxx.c when transmitting or receiving 
-data bigger than PAGE_SIZE when doing a read only or write only operation
-It also fixed an issue with the init probe when fetching the information 
-on parameter RAM from the DTB.
+Andrew Morton <akpm@linux-foundation.org> wrote:
+=20
+> This is also a non-back compatible userspace-visible change?
 
-Signed-off-by: christophe leroy <christophe.leroy@c-s.fr>
-
-Index: trunk/drivers/spi/spi_mpc8xxx.c
-===================================================================
---- trunk/drivers/spi/spi_mpc8xxx.c    (révision 963)
-+++ trunk/drivers/spi/spi_mpc8xxx.c    (copie de travail)
-@@ -393,11 +393,17 @@
-
-      xfer_ofs = mspi->xfer_in_progress->len - mspi->count;
-
--    out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma + xfer_ofs);
-+    if (mspi->rx_dma == mspi->dma_dummy_rx)
-+        out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma);
-+    else
-+        out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma + xfer_ofs);
-      out_be16(&rx_bd->cbd_datlen, 0);
-      out_be16(&rx_bd->cbd_sc, BD_SC_EMPTY | BD_SC_INTRPT | BD_SC_WRAP);
-
--    out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma + xfer_ofs);
-+    if (mspi->tx_dma == mspi->dma_dummy_tx)
-+        out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma);
-+    else
-+        out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma + xfer_ofs);
-      out_be16(&tx_bd->cbd_datlen, xfer_len);
-      out_be16(&tx_bd->cbd_sc, BD_SC_READY | BD_SC_INTRPT | BD_SC_WRAP |
-                   BD_SC_LAST);
-@@ -438,7 +444,7 @@
-              dev_err(dev, "unable to map tx dma\n");
-              return -ENOMEM;
-          }
--    } else {
-+    } else if (t->tx_buf) {
-          mspi->tx_dma = t->tx_dma;
-      }
-
-@@ -449,7 +455,7 @@
-              dev_err(dev, "unable to map rx dma\n");
-              goto err_rx_dma;
-          }
--    } else {
-+    } else if (t->rx_buf) {
-          mspi->rx_dma = t->rx_dma;
-      }
-
-@@ -822,7 +828,7 @@
-      if (!iprop || size != sizeof(*iprop) * 4)
-          return -ENOMEM;
-
--    spi_base_ofs = cpm_muram_alloc_fixed(iprop[2], 2);
-+    spi_base_ofs = iprop[2];
-      if (IS_ERR_VALUE(spi_base_ofs))
-          return -ENOMEM;
-
-@@ -844,7 +850,6 @@
-              return spi_base_ofs;
-      }
-
--    cpm_muram_free(spi_base_ofs);
-      return pram_ofs;
-  }
+This should be a safe change because endpoints do not have a routing
+table.
+RapidIO differentiates devices by using naming templates for switches
+and endpoints (":s:" and ":e:") and this indicates which device features
+are available to a userspace application.  =20
