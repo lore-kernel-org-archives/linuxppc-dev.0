@@ -1,22 +1,25 @@
-Return-Path: <yinghai@kernel.org>
-Received: from rcsinet10.oracle.com (rcsinet10.oracle.com [148.87.113.121])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rcsinet10.oracle.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35742B6F0D
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3B57FB6F01
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Sep 2010 09:02:10 +1000 (EST)
-Message-ID: <4C8FFE76.8070801@kernel.org>
-Date: Tue, 14 Sep 2010 16:00:06 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+	Wed, 15 Sep 2010 10:29:38 +1000 (EST)
+Date: Wed, 15 Sep 2010 10:29:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Yinghai Lu <yinghai@kernel.org>
 Subject: Re: linux-next: build warnings after merge of the final tree (tip
 	treee related)
-References: <20100913132721.5a02cfbc.sfr@canb.auug.org.au>	<4C8DA517.9000603@kernel.org>	<20100913143942.7344ada4.sfr@canb.auug.org.au>	<4C8DDFB4.1020508@kernel.org>
+Message-Id: <20100915102930.5e4d59cb.sfr@canb.auug.org.au>
+In-Reply-To: <4C8FFE76.8070801@kernel.org>
+References: <20100913132721.5a02cfbc.sfr@canb.auug.org.au>
+	<4C8DA517.9000603@kernel.org>
+	<20100913143942.7344ada4.sfr@canb.auug.org.au>
+	<4C8DDFB4.1020508@kernel.org>
 	<20100914145025.977ec2a6.sfr@canb.auug.org.au>
-In-Reply-To: <20100914145025.977ec2a6.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	<4C8FFE76.8070801@kernel.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__15_Sep_2010_10_29_30_+1000__P6bUE0_GA63Zk5."
 Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
 	linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
 	Ingo Molnar <mingo@elte.hu>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -30,192 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/13/2010 09:50 PM, Stephen Rothwell wrote:
-> Hi Yinghai,
-> 
-> On Mon, 13 Sep 2010 01:24:20 -0700 Yinghai Lu <yinghai@kernel.org> wrote:
->>
->> On 09/12/2010 09:39 PM, Stephen Rothwell wrote:
->>>
->>> Your patch fixes some of the warnings, but still leaves these for a
->>> powerpc allnoconfig build:
->>>
->>> WARNING: mm/built-in.o(.text+0x25d80): Section mismatch in reference from the function memblock_double_array() to the function .init.text:memblock_free()
->>> The function memblock_double_array() references
->>> the function __init memblock_free().
->>> This is often because memblock_double_array lacks a __init 
->>> annotation or the annotation of memblock_free is wrong.
->>>
->>> WARNING: mm/built-in.o(.text+0x26318): Section mismatch in reference from the function memblock_reserve_reserved_regions() to the function .init.text:memblock_reserve()
->>> The function memblock_reserve_reserved_regions() references
->>> the function __init memblock_reserve().
->>> This is often because memblock_reserve_reserved_regions lacks a __init 
->>> annotation or the annotation of memblock_reserve is wrong.
->>>
->>> WARNING: mm/built-in.o(.text+0x26490): Section mismatch in reference from the function memblock_free_reserved_regions() to the function .init.text:memblock_free()
->>> The function memblock_free_reserved_regions() references
->>> the function __init memblock_free().
->>> This is often because memblock_free_reserved_regions lacks a __init 
->>> annotation or the annotation of memblock_free is wrong.
->>
->> v1 already changed them all to __init_memblock, so we should not have those warnings.
-> 
-> They are still marked as __init in include/linux/memblock.h.  I don't
-> think that they need to be marked at all there.
+--Signature=_Wed__15_Sep_2010_10_29_30_+1000__P6bUE0_GA63Zk5.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-good,
+Hi Yinghai,
 
-Also, we may need to remove all extern and __init and __initdata etc in .h files.
+On Tue, 14 Sep 2010 16:00:06 -0700 Yinghai Lu <yinghai@kernel.org> wrote:
+>
+> Also, we may need to remove all extern and __init and __initdata etc in .=
+h files.
 
-please check
+Do not remove the "extern" key word.
 
-[PATCH -v3] memblock: Fix section mismatch warning
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Use __init_memblock to replace __init, and remove __init in memblock.h
+--Signature=_Wed__15_Sep_2010_10_29_30_+1000__P6bUE0_GA63Zk5.
+Content-Type: application/pgp-signature
 
--v2: more with memblock_is_meory()
--v3: remove __init for function declaring in memblock.h. Pointed out by Stephen.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Yinghai Lu <Yinghai@kernel.org>
+iQEcBAEBAgAGBQJMkBNqAAoJEDMEi1NhKgbsjU8H/jWyF3dOSE6wfc4GmC8PNtzz
+BiYYJbqj1Kxmdja37pfcKSA0HK45kVktwSwjMoPi/nuSTuI3V6rzBAChIA+/Lo0I
+gGMPJpYu4H4I3vRbSMLcBjQjvliUURag2yNvlDOqFss7ybCjPMBqMxuOXnteibQk
+ihc2SvZcUTEJbgP1ulVBjaNBxkjkum153+bL8QYdBIbwCcLWTcQsls00tixkSZYC
+QnkQ3cU6Z/p7oCNr3bBW06x1srSdmvFkyFpULpXn+KM4yjnecBZBa0wuR6YOoBgc
+9qEZ/equOeukk2BzfS9sjHKy+sIVlQuHfLGiQ6SliLj37gnZaPRt5BHWH5HuPfw=
+=lKb4
+-----END PGP SIGNATURE-----
 
----
- include/linux/memblock.h |   44 ++++++++++++++++++++++----------------------
- mm/memblock.c            |   14 +++++++-------
- 2 files changed, 29 insertions(+), 29 deletions(-)
-
-Index: linux-2.6/mm/memblock.c
-===================================================================
---- linux-2.6.orig/mm/memblock.c
-+++ linux-2.6/mm/memblock.c
-@@ -125,8 +125,8 @@ static phys_addr_t __init memblock_find_
- 	return MEMBLOCK_ERROR;
- }
- 
--static phys_addr_t __init memblock_find_base(phys_addr_t size, phys_addr_t align,
--					phys_addr_t start, phys_addr_t end)
-+static phys_addr_t __init_memblock memblock_find_base(phys_addr_t size,
-+			phys_addr_t align, phys_addr_t start, phys_addr_t end)
- {
- 	long i;
- 
-@@ -439,12 +439,12 @@ long __init_memblock memblock_remove(phy
- 	return __memblock_remove(&memblock.memory, base, size);
- }
- 
--long __init memblock_free(phys_addr_t base, phys_addr_t size)
-+long __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
- {
- 	return __memblock_remove(&memblock.reserved, base, size);
- }
- 
--long __init memblock_reserve(phys_addr_t base, phys_addr_t size)
-+long __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
- {
- 	struct memblock_type *_rgn = &memblock.reserved;
- 
-@@ -671,12 +671,12 @@ int __init memblock_is_reserved(phys_add
- 	return memblock_search(&memblock.reserved, addr) != -1;
- }
- 
--int memblock_is_memory(phys_addr_t addr)
-+int __init_memblock memblock_is_memory(phys_addr_t addr)
- {
- 	return memblock_search(&memblock.memory, addr) != -1;
- }
- 
--int memblock_is_region_memory(phys_addr_t base, phys_addr_t size)
-+int __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size)
- {
- 	int idx = memblock_search(&memblock.reserved, base);
- 
-@@ -693,7 +693,7 @@ int __init_memblock memblock_is_region_r
- }
- 
- 
--void __init memblock_set_current_limit(phys_addr_t limit)
-+void __init_memblock memblock_set_current_limit(phys_addr_t limit)
- {
- 	memblock.current_limit = limit;
- }
-Index: linux-2.6/include/linux/memblock.h
-===================================================================
---- linux-2.6.orig/include/linux/memblock.h
-+++ linux-2.6/include/linux/memblock.h
-@@ -51,46 +51,46 @@ u64 memblock_find_in_range(u64 start, u6
- int memblock_free_reserved_regions(void);
- int memblock_reserve_reserved_regions(void);
- 
--extern void __init memblock_init(void);
--extern void __init memblock_analyze(void);
--extern long memblock_add(phys_addr_t base, phys_addr_t size);
--extern long memblock_remove(phys_addr_t base, phys_addr_t size);
--extern long __init memblock_free(phys_addr_t base, phys_addr_t size);
--extern long __init memblock_reserve(phys_addr_t base, phys_addr_t size);
-+void memblock_init(void);
-+void memblock_analyze(void);
-+long memblock_add(phys_addr_t base, phys_addr_t size);
-+long memblock_remove(phys_addr_t base, phys_addr_t size);
-+long memblock_free(phys_addr_t base, phys_addr_t size);
-+long memblock_reserve(phys_addr_t base, phys_addr_t size);
- 
- /* The numa aware allocator is only available if
-  * CONFIG_ARCH_POPULATES_NODE_MAP is set
-  */
--extern phys_addr_t __init memblock_alloc_nid(phys_addr_t size, phys_addr_t align,
-+phys_addr_t memblock_alloc_nid(phys_addr_t size, phys_addr_t align,
- 					int nid);
--extern phys_addr_t __init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
-+phys_addr_t memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
- 					    int nid);
- 
--extern phys_addr_t __init memblock_alloc(phys_addr_t size, phys_addr_t align);
-+phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align);
- 
- /* Flags for memblock_alloc_base() amd __memblock_alloc_base() */
- #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
- #define MEMBLOCK_ALLOC_ACCESSIBLE	0
- 
--extern phys_addr_t __init memblock_alloc_base(phys_addr_t size,
-+phys_addr_t memblock_alloc_base(phys_addr_t size,
- 					 phys_addr_t align,
- 					 phys_addr_t max_addr);
--extern phys_addr_t __init __memblock_alloc_base(phys_addr_t size,
-+phys_addr_t __memblock_alloc_base(phys_addr_t size,
- 					   phys_addr_t align,
- 					   phys_addr_t max_addr);
--extern phys_addr_t __init memblock_phys_mem_size(void);
--extern phys_addr_t memblock_end_of_DRAM(void);
--extern void __init memblock_enforce_memory_limit(phys_addr_t memory_limit);
--extern int memblock_is_memory(phys_addr_t addr);
--extern int memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
--extern int __init memblock_is_reserved(phys_addr_t addr);
--extern int memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
-+phys_addr_t memblock_phys_mem_size(void);
-+phys_addr_t memblock_end_of_DRAM(void);
-+void memblock_enforce_memory_limit(phys_addr_t memory_limit);
-+int memblock_is_memory(phys_addr_t addr);
-+int memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
-+int memblock_is_reserved(phys_addr_t addr);
-+int memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
- 
--extern void memblock_dump_all(void);
-+void memblock_dump_all(void);
- 
- /* Provided by the architecture */
--extern phys_addr_t memblock_nid_range(phys_addr_t start, phys_addr_t end, int *nid);
--extern int memblock_memory_can_coalesce(phys_addr_t addr1, phys_addr_t size1,
-+phys_addr_t memblock_nid_range(phys_addr_t start, phys_addr_t end, int *nid);
-+int memblock_memory_can_coalesce(phys_addr_t addr1, phys_addr_t size1,
- 				   phys_addr_t addr2, phys_addr_t size2);
- 
- /**
-@@ -99,7 +99,7 @@ extern int memblock_memory_can_coalesce(
-  *                         accessible during boot
-  * @limit: New limit value (physical address)
-  */
--extern void memblock_set_current_limit(phys_addr_t limit);
-+void memblock_set_current_limit(phys_addr_t limit);
- 
- 
- /*
+--Signature=_Wed__15_Sep_2010_10_29_30_+1000__P6bUE0_GA63Zk5.--
