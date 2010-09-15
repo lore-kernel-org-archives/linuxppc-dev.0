@@ -1,35 +1,26 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DD13B6EEC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Sep 2010 19:26:06 +1000 (EST)
-Received: from mx2.mail.elte.hu ([157.181.151.9])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1OvoFc-000402-5a
-	from <mingo@elte.hu>
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2010 11:26:00 +0200
-Date: Wed, 15 Sep 2010 11:25:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build warnings after merge of the final tree (tip
-	treee related)
-Message-ID: <20100915092532.GH16593@elte.hu>
-References: <20100913132721.5a02cfbc.sfr@canb.auug.org.au>
-	<4C8DA517.9000603@kernel.org>
-	<20100913143942.7344ada4.sfr@canb.auug.org.au>
-	<4C8DDFB4.1020508@kernel.org>
-	<20100914145025.977ec2a6.sfr@canb.auug.org.au>
-	<4C8FFE76.8070801@kernel.org>
-	<20100915150047.42551e34.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100915150047.42551e34.sfr@canb.auug.org.au>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Yinghai Lu <yinghai@kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id CF379B6F01
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 19:38:37 +1000 (EST)
+Date: Wed, 15 Sep 2010 19:38:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/7] BKL mass-conversion to mutex
+Message-Id: <20100915193830.27722c3a.sfr@canb.auug.org.au>
+In-Reply-To: <1284494022-7346-1-git-send-email-arnd@arndb.de>
+References: <1284494022-7346-1-git-send-email-arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0"
+Cc: Corey Minyard <minyard@acm.org>, Jens Axboe <axboe@kernel.dk>,
+	David Woodhouse <David.Woodhouse@intel.com>,
+	linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	"James E.J. Bottomley" <James.Bottomley@suse.de>,
+	linux-mtd@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	openipmi-developer@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,36 +30,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Hi Arnd,
 
-> Hi Yinghai,
-> 
-> On Tue, 14 Sep 2010 16:00:06 -0700 Yinghai Lu <yinghai@kernel.org> wrote:
-> >
-> > Also, we may need to remove all extern and __init and __initdata etc in .h files.
-> > 
-> > please check
-> > 
-> > [PATCH -v3] memblock: Fix section mismatch warning
-> > 
-> > Use __init_memblock to replace __init, and remove __init in memblock.h
-> > 
-> > -v2: more with memblock_is_meory()
-> > -v3: remove __init for function declaring in memblock.h. Pointed out by Stephen.
-> > 
-> > Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Signed-off-by: Yinghai Lu <Yinghai@kernel.org>
-> 
-> This version fixes all the warnings for me.  So if you put the "extern"s
-> back, you can add:
-> 
-> Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+On Tue, 14 Sep 2010 21:53:35 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> Stephen, please add
+> git+ssh://master.kernel.org/pub/scm/linux/kernel/git/arnd/bkl.git trivial
 
-Yinghai, mind posting the final version of the patch as a standalone 
-posting, with a proper changelog, and with the extern issue fixed as 
-well, plus all Reported-by and Tested-by tags added?
+Added from today.
 
-Thanks,
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
 
-	Ingo
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
+
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
+
+--Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMkJQWAAoJEDMEi1NhKgbs/qcH/j6Q5d5mYGECz3JtxE/Em3WG
+qO7Bk3/4JfuxCzIjBlDyoz4EpG0a2ghiIiPrCM3kGwg3awScEMf9lFKYJE0KSBsH
+yxGilZjzBDG/XxMa58hGxb/ZmaIr/W5dwA7/XCUuF8lgGiqsvpoP94ncTf7mVQ1/
+KPV+S767DPzqOQK1w8RVMBx+0slO2MEr0qEtyEsbjYFfrfSPCqpUruASJh53GiVi
+SdPkjxstl8yG0YG6VGvGs2FHv1yeWbL5R4kFBARVIf+78ZDAzNYUhn2bgLZolL4Z
+0PboNcLQDByMqUfOQ+Wh7rdjouKzQLeDNqq/2GAfzhWaZCJ16X7kYnBQuvTXwFI=
+=52gd
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__15_Sep_2010_19_38_30_+1000_x_8PDlRlfK6atX+0--
