@@ -2,18 +2,18 @@ Return-Path: <Alexandre.Bounine@idt.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 86EF7B6EDD
+	by ozlabs.org (Postfix) with ESMTPS id EE1E9B6EF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 00:01:06 +1000 (EST)
+	Thu, 16 Sep 2010 00:05:27 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: [PATCH v2 06/10] RapidIO: Modify sysfs initialization for switches
-Date: Wed, 15 Sep 2010 06:38:32 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201303168@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20100914151026.4d9599b4.akpm@linux-foundation.org>
-References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-7-git-send-email-alexandre.bounine@idt.com>
-	<20100914151026.4d9599b4.akpm@linux-foundation.org>
+Subject: RE: [PATCH v2 01/10] RapidIO: Fix RapidIO sysfs hierarchy
+Date: Wed, 15 Sep 2010 07:04:41 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520130318F@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <20100914150429.6256b311.akpm@linux-foundation.org>
+References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-2-git-send-email-alexandre.bounine@idt.com>
+	<20100914150429.6256b311.akpm@linux-foundation.org>
 From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
 To: "Andrew Morton" <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
@@ -29,10 +29,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Andrew Morton <akpm@linux-foundation.org> wrote:
 =20
-> This is also a non-back compatible userspace-visible change?
+> Non-backward compatible change?  What is the risk of breaking existing
+> setups with this change?
 
-This should be a safe change because endpoints do not have a routing
-table.
-RapidIO differentiates devices by using naming templates for switches
-and endpoints (":s:" and ":e:") and this indicates which device features
-are available to a userspace application.  =20
+I think that risk is very low. Assuming that this change brings sysfs
+entries
+to their intended hierarchy, it has sense to do it now (at relatively
+early stage).
