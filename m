@@ -1,36 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
-	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id 0C1D51007D8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Sep 2010 09:04:12 +1000 (EST)
-Received: from mail68-db3 (localhost.localdomain [127.0.0.1])	by
-	mail68-db3-R.bigfish.com (Postfix) with ESMTP id B04E216D051D	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 23:04:05 +0000 (UTC)
-Received: from DB3EHSMHS012.bigfish.com (unknown [10.3.81.249])	by
-	mail68-db3.bigfish.com (Postfix) with ESMTP id 54D3B6A004C	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 23:04:05 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o8GN42s7029639	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 16:04:02 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o8GN48XO005153	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 18:04:09 -0500 (CDT)
-Date: Thu, 16 Sep 2010 18:04:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linasvepstas@gmail.com
-Subject: Re: [PATCH 01/15] ppc: fix return type of BUID_{HI,LO} macros
-Message-ID: <20100916180401.5ff1fc5d@schlenkerla.am.freescale.net>
-In-Reply-To: <AANLkTikHxiUQR2+Gao0sNn2mzVN-M=Z=+3Z3=7H7GJdK@mail.gmail.com>
-References: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
-	<20100915181319.GB3683@us.ibm.com>
-	<AANLkTikHxiUQR2+Gao0sNn2mzVN-M=Z=+3Z3=7H7GJdK@mail.gmail.com>
+Return-Path: <msm@freescale.com>
+Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
+	[216.32.180.14]) by ozlabs.org (Postfix) with ESMTP id C4E6010C76A
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2010 09:04:24 +1000 (EST)
+Received: from mail25-va3 (localhost.localdomain [127.0.0.1])	by
+	mail25-va3-R.bigfish.com (Postfix) with ESMTP id 4F0905080AE	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 22:49:18 +0000 (UTC)
+Received: from VA3EHSMHS031.bigfish.com (unknown [10.7.14.241])	by
+	mail25-va3.bigfish.com (Postfix) with ESMTP id E72DF1500054	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 22:49:17 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o8GMnGqt002210	for <linuxppc-dev@ozlabs.org>;
+	Thu, 16 Sep 2010 15:49:17 -0700 (MST)
+From: Matthew McClintock <msm@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 4/4] powerpc/85xx: flush dcache before resetting cores
+Date: Thu, 16 Sep 2010 17:58:26 -0500
+Message-ID: <1284677906-23787-4-git-send-email-msm@freescale.com>
+In-Reply-To: <1284677906-23787-1-git-send-email-msm@freescale.com>
+References: <1284677906-23787-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Nishanth Aravamudan <nacc@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	Breno Leitao <leitao@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>
+Content-Type: text/plain
+Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,23 +31,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Sep 2010 17:54:46 -0500
-Linas Vepstas <linasvepstas@gmail.com> wrote:
+When we do an mpic_reset_core we need to make sure the dcache
+is flushed
 
-> Acked-by: Linas Vepstas <linasvepstas@gmail.com>
-> 
-> I'm guessing this worked up til now because the rtas_call function prototype
-> was telling compiler to cast these to 32-bit before passing them as args.
-> (and since these would still get passed as one arg per 64-bit reg, it
-> still wouldn't go wrong.)
-> 
-> What I'm wondering about is why there was no compiler warning about an
-> implicit cast of a 64-bit int to a 32-bit int?  Surely, this is something that
-> should be warned about!
+Signed-off-by: Matthew McClintock <msm@freescale.com>
+---
+ arch/powerpc/platforms/85xx/smp.c |   50 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 50 insertions(+), 0 deletions(-)
 
--Wconversion enables this.
-
-There'd be a lot of false positives to squash with that enabled --
-and it might not be worth the resulting explosion in casts.
-
--Scott
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 29416a9..c89a370 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -16,6 +16,7 @@
+ #include <linux/delay.h>
+ #include <linux/of.h>
+ #include <linux/kexec.h>
++#include <linux/highmem.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/pgtable.h>
+@@ -133,11 +134,60 @@ static void mpc85xx_smp_kexec_down(void *arg)
+ 		ppc_md.kexec_cpu_down(0,1);
+ }
+ 
++static void map_and_flush(unsigned long paddr)
++{
++	struct page *page = pfn_to_page(paddr >> PAGE_SHIFT);
++	unsigned long kaddr  = (unsigned long)kmap(page);
++
++	flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
++	kunmap(page);
++}
++
++/**
++ * Before we reset the other cores, we need to flush relevant cache
++ * out to memory so we don't get anything corrupted, some of these flushes
++ * are performed out of an overabundance of caution as interrupts are not
++ * disabled yet and we can switch cores
++ */
++static void mpc85xx_smp_flush_dcache_kexec(struct kimage *image)
++{
++	kimage_entry_t *ptr, entry;
++	unsigned long paddr;
++	int i;
++
++	if (image->type == KEXEC_TYPE_DEFAULT) {
++		/* normal kexec images are stored in temporary pages */
++		for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE);
++		     ptr = (entry & IND_INDIRECTION) ?
++				phys_to_virt(entry & PAGE_MASK) : ptr + 1) {
++			if (!(entry & IND_DESTINATION)) {
++				map_and_flush(entry);
++			}
++		}
++		/* flush out last IND_DONE page */
++		map_and_flush(entry);
++	} else {
++		/* crash type kexec images are copied to the crash region */
++		for (i = 0; i < image->nr_segments; i++) {
++			struct kexec_segment *seg = &image->segment[i];
++			for (paddr = seg->mem; paddr < seg->mem + seg->memsz;
++			     paddr += PAGE_SIZE) {
++				map_and_flush(paddr);
++			}
++		}
++	}
++
++	/* also flush the kimage struct to be passed in as well */
++	flush_dcache_range((unsigned long)image,
++			   (unsigned long)image + sizeof(*image));
++}
++
+ static void mpc85xx_smp_machine_kexec(struct kimage *image)
+ {
+ 	int timeout = INT_MAX;
+ 	int i, num_cpus = num_present_cpus();
+ 
++	mpc85xx_smp_flush_dcache_kexec(image);
+ 
+ 	if (image->type == KEXEC_TYPE_DEFAULT)
+ 		smp_call_function(mpc85xx_smp_kexec_down, NULL, 0);
+-- 
+1.6.6.1
