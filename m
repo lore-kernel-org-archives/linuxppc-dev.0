@@ -1,28 +1,16 @@
-Return-Path: <ankita@in.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 77C07B70A5
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 15:23:16 +1000 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp07.in.ibm.com (8.14.4/8.13.1) with ESMTP id o8G5NCw5024060
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 10:53:12 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8G5NCAU3645640
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 10:53:12 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o8G5NBPS015700
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 15:23:11 +1000
-Date: Thu, 16 Sep 2010 10:53:11 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-mm@kvack.org
-Subject: Reserved pages in PowerPC
-Message-ID: <20100916052311.GC2332@in.ibm.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 3151CB70AA
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 16:21:23 +1000 (EST)
+Received: by ewy2 with SMTP id 2so634711ewy.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2010 23:21:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Reply-To: Ankita Garg <ankita@in.ibm.com>
+Date: Wed, 15 Sep 2010 23:21:21 -0700
+Message-ID: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
+Subject: cuImage and multi image?
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>, uboot <u-boot@lists.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +22,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi,
 
-I am trying to hotplug/offline sections of memory on a Power machine.
-I boot the kernel with kernelcore=1G commandline parameter. I see that except
-for 512MB, the rest of the memory is movable. When trying to do hot-remove, I
-notice that I am unable to remove the very last section of memory, one with
-the highest physical address. It is always marked as non-movable.
+I have a cuImage kernel in order to support legacy u-boot and a
+ramdisk image. Kernel boots fine if these two images are separate and
+"bootm $kernel $ramdisk" is used. But I can not make it to work using
+a single multi image that contains the kernel and ramdisk images. Is
+it even technically possible to boot a multi-image with cuboot
+wrapper?
 
-With some debugging I found that that section has reserved pages. On
-instrumenting the memblock_reserve() and reserve_bootmem() routines, I can see
-that many of the memory areas are reserved for kernel and initrd by the
-memblock reserve() itself. reserve_bootmem then looks at the pages already
-reserved and marks them reserved. However, for the very last section, I see
-that bootmem reserves it but I am unable to find a corresponding reservation
-by the memblock code.
+On the cuImage kernel I have load address set to 0x400000 and the
+entry address set to 0x400554 due to the cuboot wrapper. But to make a
+multi image, both the load and the entry addresses should be set to
+zero. And u-boot (1.1.2) bootm takes the entry address of the multi
+image (i.e. 0x0) as the kernel entry address. 0x0 is certainly not the
+entry address for a cuImage kernel.
 
+Is there a possible workaround other than using two separate images?
 
-memblock_reserve: start 0 size 3519 
-reserve_bootmem 0 dbf000 nid=0
-memblock_reserve: start 12096 size 15372
-reserve_bootmem 2f40000 ccc000 nid=0
-memblock_reserve: start 15628 size 15650
-reserve_bootmem 3d0c000 16000 nid=0
-...
-...
-memblock_reserve: start 1982455 size 1982464
-reserve_bootmem 1e3ff7c00 8400 nid=0
-reserve_bootmem 3d7f64000 3f000 nid=1
-reserve_bootmem 3d7fa3c00 48400 nid=1
-reserve_bootmem 3d7feeda8 11258 nid=1
-..
- 
-Is it a known behavior on Power ? If yes, for what purpose is the memory
-in the higher address reserved for ? I have seen that even if the system
-has multiple nodes, only the very last section of the last node is not
-removable.
-
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs,
-Bangalore, India
+Thanks,
+-Shawn.
