@@ -1,37 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id D96471007D8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Sep 2010 03:09:54 +1000 (EST)
-Received: from mail85-va3 (localhost.localdomain [127.0.0.1])	by
-	mail85-va3-R.bigfish.com (Postfix) with ESMTP id 680C81040584	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 17:09:48 +0000 (UTC)
-Received: from VA3EHSMHS012.bigfish.com (unknown [10.7.14.241])	by
-	mail85-va3.bigfish.com (Postfix) with ESMTP id 32A3C9E004C	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 17:09:48 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8GH9k5v010336	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 10:09:46 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o8GHP0em018138	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 12:25:00 -0500 (CDT)
-Date: Thu, 16 Sep 2010 12:09:44 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Subject: Re: Generating elf kernel ?
-Message-ID: <20100916120944.11c45c31@schlenkerla.am.freescale.net>
-In-Reply-To: <4C9182EC.5030900@windriver.com>
-References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
-	<20100914125713.GB5768@radix50.net>
-	<201009151007.50706.dargaud@lpsc.in2p3.fr>
-	<4C90835E.4050803@windriver.com>
-	<20100915114912.06bc7ed1@schlenkerla.am.freescale.net>
-	<4C9182EC.5030900@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+Return-Path: <subrata@linux.vnet.ibm.com>
+Subject: Re: 2.6.35-stable/ppc64/p7: suspicious rcu_dereference_check()
+	usage detected during 2.6.35-stable boot
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <20100916161259.GF2462@linux.vnet.ibm.com>
+References: <1280739132.15317.9.camel@subratamodak.linux.ibm.com>
+	<20100809161200.GC3026@linux.vnet.ibm.com>
+	<1284652231.2275.569.camel@laptop>
+	<20100916161259.GF2462@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 16 Sep 2010 23:49:47 +0530
+Message-Id: <1284661189.5984.0.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	"Valdis.Kletnieks" <Valdis.Kletnieks@vt.edu>,
+	Li Zefan <lizf@cn.fujitsu.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>, paulmck@linux.vnet.ibm.com,
+	DIVYA PRAKASH <dipraksh@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,32 +28,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Sep 2010 10:37:32 +0800
-"tiejun.chen" <tiejun.chen@windriver.com> wrote:
+On Thu, 2010-09-16 at 09:12 -0700, Paul E. McKenney wrote:
+> On Thu, Sep 16, 2010 at 05:50:31PM +0200, Peter Zijlstra wrote:
+> > On Mon, 2010-08-09 at 09:12 -0700, Paul E. McKenney wrote:
+> > 
+> > > > [    0.051203] CPU0: AMD QEMU Virtual CPU version 0.12.4 stepping 03
+> > > > [    0.052999] lockdep: fixing up alternatives.
+> > > > [    0.054105]
+> > > > [    0.054106] ===================================================
+> > > > [    0.054999] [ INFO: suspicious rcu_dereference_check() usage. ]
+> > > > [    0.054999] ---------------------------------------------------
+> > > > [    0.054999] kernel/sched.c:616 invoked rcu_dereference_check() without protection!
+> > > > [    0.054999]
+> > > > [    0.054999] other info that might help us debug this:
+> > > > [    0.054999]
+> > > > [    0.054999]
+> > > > [    0.054999] rcu_scheduler_active = 1, debug_locks = 1
+> > > > [    0.054999] 3 locks held by swapper/1:
+> > > > [    0.054999]  #0:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff814be933>] cpu_up+0x42/0x6a
+> > > > [    0.054999]  #1:  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff810400d8>] cpu_hotplug_begin+0x2a/0x51
+> > > > [    0.054999]  #2:  (&rq->lock){-.-...}, at: [<ffffffff814be2f7>] init_idle+0x2f/0x113
+> > > > [    0.054999]
+> > > > [    0.054999] stack backtrace:
+> > > > [    0.054999] Pid: 1, comm: swapper Not tainted 2.6.35 #1
+> > > > [    0.054999] Call Trace:
+> > > > [    0.054999]  [<ffffffff81068054>] lockdep_rcu_dereference+0x9b/0xa3
+> > > > [    0.054999]  [<ffffffff810325c3>] task_group+0x7b/0x8a
+> > > > [    0.054999]  [<ffffffff810325e5>] set_task_rq+0x13/0x40
+> > > > [    0.054999]  [<ffffffff814be39a>] init_idle+0xd2/0x113
+> > > > [    0.054999]  [<ffffffff814be78a>] fork_idle+0xb8/0xc7
+> > > > [    0.054999]  [<ffffffff81068717>] ? mark_held_locks+0x4d/0x6b
+> > > > [    0.054999]  [<ffffffff814bcebd>] do_fork_idle+0x17/0x2b
+> > > > [    0.054999]  [<ffffffff814bc89b>] native_cpu_up+0x1c1/0x724
+> > > > [    0.054999]  [<ffffffff814bcea6>] ? do_fork_idle+0x0/0x2b
+> > > > [    0.054999]  [<ffffffff814be876>] _cpu_up+0xac/0x127
+> > > > [    0.054999]  [<ffffffff814be946>] cpu_up+0x55/0x6a
+> > > > [    0.054999]  [<ffffffff81ab562a>] kernel_init+0xe1/0x1ff
+> > > > [    0.054999]  [<ffffffff81003854>] kernel_thread_helper+0x4/0x10
+> > > > [    0.054999]  [<ffffffff814c353c>] ? restore_args+0x0/0x30
+> > > > [    0.054999]  [<ffffffff81ab5549>] ? kernel_init+0x0/0x1ff
+> > > > [    0.054999]  [<ffffffff81003850>] ? kernel_thread_helper+0x0/0x10
+> > > > [    0.056074] Booting Node   0, Processors  #1lockdep: fixing up alternatives.
+> > > > [    0.130045]  #2lockdep: fixing up alternatives.
+> > > > [    0.203089]  #3 Ok.
+> > > > [    0.275286] Brought up 4 CPUs
+> > > > [    0.276005] Total of 4 processors activated (16017.17 BogoMIPS).
+> > > 
+> > > This does look like a new one, thank you for reporting it!
+> > > 
+> > > Here is my analysis, which should at least provide some humor value to
+> > > those who understand the code better than I do.  ;-)
+> > > 
+> > > So the corresponding rcu_dereference_check() is in
+> > > task_subsys_state_check(), and is fetching the cpu_cgroup_subsys_id
+> > > element of the newly created task's task->cgroups->subsys[] array.
+> > > The "git grep" command finds only three uses of cpu_cgroup_subsys_id,
+> > > but no definition.
+> > > 
+> > > Now, fork_idle() invokes copy_process(), which invokes cgroup_fork(),
+> > > which sets the child process's ->cgroups pointer to that of the parent,
+> > > also invoking get_css_set(), which increments the corresponding reference
+> > > count, doing both operations under task_lock() protection (->alloc_lock).
+> > > Because fork_idle() does not specify any of CLONE_NEWNS, CLONE_NEWUTS,
+> > > CLONE_NEWIPC, CLONE_NEWPID, or CLONE_NEWNET, copy_namespaces() should
+> > > not create a new namespace, and so there should be no ns_cgroup_clone().
+> > > We should thus retain the parent's ->cgroups pointer.  And copy_process()
+> > > installs the new task in the various lists, so that the task is externally
+> > > accessible upon return.
+> > > 
+> > > After a non-error return from copy_process(), fork_init() invokes
+> > > init_idle_pid(), which does not appear to affect the task's cgroup
+> > > state.  Next fork_init() invokes init_idle(), which in turn invokes
+> > > __set_task_cpu(), which invokes set_task_rq(), which calls task_group()
+> > > several times, which calls task_subsys_state_check(), which calls the
+> > > rcu_dereference_check() that complained above.
+> > > 
+> > > However, the result returns by rcu_dereference_check() is stored into
+> > > the task structure:
+> > > 
+> > > 	p->se.cfs_rq = task_group(p)->cfs_rq[cpu];
+> > > 	p->se.parent = task_group(p)->se[cpu];
+> > > 
+> > > This means that the corresponding structure must have been tied down with
+> > > a reference count or some such.  If such a reference has been taken, then
+> > > this complaint is a false positive, and could be suppressed by putting
+> > > rcu_read_lock() and rcu_read_unlock() around the call to init_idle()
+> > > from fork_idle().  However, although, reference to the enclosing ->cgroups
+> > > struct css_set is held, it is not clear to me that this reference applies
+> > > to the structures pointed to by the ->subsys[] array, especially given
+> > > that the cgroup_subsys_state structures referenced by this array have
+> > > their own reference count, which does not appear to me to be acquired
+> > > by this code path.
+> > > 
+> > > Or are the cgroup_subsys_state structures referenced by idle tasks
+> > > never freed or some such?
+> > 
+> > I would hope so!, the idle tasks should be part of the root cgroup,
+> > which is not removable.
+> > 
+> > The problem is that while we do in-fact hold rq->lock, the newly spawned
+> > idle thread's cpu is not yet set to the correct cpu so the lockdep check
+> > in task_group():
+> > 
+> >   lockdep_is_held(&task_rq(p)->lock)
+> > 
+> > will fail.
+> > 
+> > But of a chicken and egg problem. Setting the cpu needs to have the cpu
+> > set ;-)
+> 
+> OK, makes sense to me.
+> 
+> > Ingo, why do we have rq->lock there at all? The CPU isn't up and running
+> > yet, nothing should be touching it.
+> 
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-> 1> can you load the Linux vmlinux directly to the physical address '0' on
-> current bootloader?
+Thanks Peter for the fix.
 
-That depends on what bootloader we're talking about -- I don't know
-what the original poster's custom loader can do.  Obviously the
-bootloader itself would have to be executing from some other address
-(e.g. U-Boot runs from the top of RAM).
+Regards--
+Subrata
 
-> 2> additionally you have to find a way to pass dtb to the native vmlinux.
-
-Yes, of course.  But that's a different issue. :-)
-
-> I believe the hypervisor can boot vmlinux directly. But your so-called vmlinux
-> should be guest OS. And the hypervisor will handle/assit TLB exception for the
-> guest OS on MMU. Right?  So you can use the hypervisor to load vmlinux to any
-> physical address as you expect. 
-
-I was just using our hypervisor as an example, since it has an ELF
-loader that can pass a device tree.
-
-> But the guest OS should not be same as the native Linux.
-
-The guest OS *is* the same as native Linux, as far as TLB handling is
-concerned.
-
--Scott
+> > ---
+> >  kernel/sched.c |   12 ++++++++++++
+> >  1 files changed, 12 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index bd8b487..6241049 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -5332,7 +5332,19 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
+> >  	idle->se.exec_start = sched_clock();
+> >  
+> >  	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
+> > +	/*
+> > +	 * We're having a chicken and egg problem, even though we are
+> > +	 * holding rq->lock, the cpu isn't yet set to this cpu so the
+> > +	 * lockdep check in task_group() will fail.
+> > +	 *
+> > +	 * Similar case to sched_fork(). / Alternatively we could
+> > +	 * use task_rq_lock() here and obtain the other rq->lock.
+> > +	 *
+> > +	 * Silence PROVE_RCU
+> > +	 */
+> > +	rcu_read_lock();
+> >  	__set_task_cpu(idle, cpu);
+> > +	rcu_read_unlock();
+> >  
+> >  	rq->curr = rq->idle = idle;
+> >  #if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
+> > 
