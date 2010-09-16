@@ -1,24 +1,36 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 4751F1007DE
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
+	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id 0C1D51007D8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Sep 2010 08:55:09 +1000 (EST)
-Received: by vws20 with SMTP id 20so1451275vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 15:55:06 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20100915181319.GB3683@us.ibm.com>
+	Fri, 17 Sep 2010 09:04:12 +1000 (EST)
+Received: from mail68-db3 (localhost.localdomain [127.0.0.1])	by
+	mail68-db3-R.bigfish.com (Postfix) with ESMTP id B04E216D051D	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 23:04:05 +0000 (UTC)
+Received: from DB3EHSMHS012.bigfish.com (unknown [10.3.81.249])	by
+	mail68-db3.bigfish.com (Postfix) with ESMTP id 54D3B6A004C	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 23:04:05 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o8GN42s7029639	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 16 Sep 2010 16:04:02 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8GN48XO005153	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 16 Sep 2010 18:04:09 -0500 (CDT)
+Date: Thu, 16 Sep 2010 18:04:01 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linasvepstas@gmail.com
+Subject: Re: [PATCH 01/15] ppc: fix return type of BUID_{HI,LO} macros
+Message-ID: <20100916180401.5ff1fc5d@schlenkerla.am.freescale.net>
+In-Reply-To: <AANLkTikHxiUQR2+Gao0sNn2mzVN-M=Z=+3Z3=7H7GJdK@mail.gmail.com>
 References: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
 	<20100915181319.GB3683@us.ibm.com>
-From: Linas Vepstas <linasvepstas@gmail.com>
-Date: Thu, 16 Sep 2010 17:54:46 -0500
-Message-ID: <AANLkTikHxiUQR2+Gao0sNn2mzVN-M=Z=+3Z3=7H7GJdK@mail.gmail.com>
-Subject: Re: [PATCH 01/15] ppc: fix return type of BUID_{HI,LO} macros
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Breno Leitao <leitao@linux.vnet.ibm.com>, Milton Miller <miltonm@bga.com>
-Reply-To: linasvepstas@gmail.com
+	<AANLkTikHxiUQR2+Gao0sNn2mzVN-M=Z=+3Z3=7H7GJdK@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Nishanth Aravamudan <nacc@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	Breno Leitao <leitao@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +40,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Linas Vepstas <linasvepstas@gmail.com>
+On Thu, 16 Sep 2010 17:54:46 -0500
+Linas Vepstas <linasvepstas@gmail.com> wrote:
 
-I'm guessing this worked up til now because the rtas_call function prototyp=
-e
-was telling compiler to cast these to 32-bit before passing them as args.
-(and since these would still get passed as one arg per 64-bit reg, it
-still wouldn't go wrong.)
+> Acked-by: Linas Vepstas <linasvepstas@gmail.com>
+> 
+> I'm guessing this worked up til now because the rtas_call function prototype
+> was telling compiler to cast these to 32-bit before passing them as args.
+> (and since these would still get passed as one arg per 64-bit reg, it
+> still wouldn't go wrong.)
+> 
+> What I'm wondering about is why there was no compiler warning about an
+> implicit cast of a 64-bit int to a 32-bit int?  Surely, this is something that
+> should be warned about!
 
-What I'm wondering about is why there was no compiler warning about an
-implicit cast of a 64-bit int to a 32-bit int?  Surely, this is something t=
-hat
-should be warned about!
+-Wconversion enables this.
 
--- Linas
+There'd be a lot of false positives to squash with that enabled --
+and it might not be worth the resulting explosion in casts.
 
-On 15 September 2010 13:13, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
-> BUID_HI and BUID_LO are used to pass data to call_rtas, which expects
-> ints or u32s. But the macro doesn't cast the return, so the result is
-> still u64. Use the upper_32_bits and lower_32_bits macros that have been
-> added to kernel.h.
->
-> Found by getting printf format errors trying to debug print the args, no
-> actual code change for 64 bit kernels where the macros are actually
-> used.
->
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> ---
-> =C2=A0arch/powerpc/include/asm/ppc-pci.h | =C2=A0 =C2=A04 ++--
-> =C2=A01 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/as=
-m/ppc-pci.h
-> index 42fdff0..43268f1 100644
-> --- a/arch/powerpc/include/asm/ppc-pci.h
-> +++ b/arch/powerpc/include/asm/ppc-pci.h
-> @@ -28,8 +28,8 @@ extern void find_and_init_phbs(void);
-> =C2=A0extern struct pci_dev *isa_bridge_pcidev; =C2=A0 =C2=A0 =C2=A0/* ma=
-y be NULL if no ISA bus */
->
-> =C2=A0/** Bus Unit ID macros; get low and hi 32-bits of the 64-bit BUID *=
-/
-> -#define BUID_HI(buid) ((buid) >> 32)
-> -#define BUID_LO(buid) ((buid) & 0xffffffff)
-> +#define BUID_HI(buid) upper_32_bits(buid)
-> +#define BUID_LO(buid) lower_32_bits(buid)
->
-> =C2=A0/* PCI device_node operations */
-> =C2=A0struct device_node;
-> --
-> 1.7.0.4
->
->
+-Scott
