@@ -1,32 +1,23 @@
-Return-Path: <ankita@in.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C71C01007DA
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 22:08:13 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp04.in.ibm.com (8.14.4/8.13.1) with ESMTP id o8GC88dq023210
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:38:08 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8GC88Me4116486
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:38:08 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o8GC87KM003514
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 22:08:08 +1000
-Date: Thu, 16 Sep 2010 17:38:06 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Reserved pages in PowerPC
-Message-ID: <20100916120806.GJ2332@in.ibm.com>
-References: <20100916052311.GC2332@in.ibm.com>
-	<1284631464.30449.85.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1284631464.30449.85.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, linux-mm@kvack.org
-Reply-To: Ankita Garg <ankita@in.ibm.com>
+Return-Path: <Valdis.Kletnieks@vt.edu>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: 2.6.35-stable/ppc64/p7: suspicious rcu_dereference_check() usage
+	detected during 2.6.35-stable boot
+In-Reply-To: Your message of "Mon, 09 Aug 2010 09:12:00 PDT."
+	<20100809161200.GC3026@linux.vnet.ibm.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1280739132.15317.9.camel@subratamodak.linux.ibm.com>
+	<20100809161200.GC3026@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1284649951_6055P";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
+Date: Thu, 16 Sep 2010 11:12:31 -0400
+Message-ID: <10430.1284649951@localhost>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Subrata Modak <subrata@linux.vnet.ibm.com>,
+	DIVYA PRAKASH <dipraksh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,34 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+--==_Exmh_1284649951_6055P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 16, 2010 at 08:04:24PM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2010-09-16 at 10:53 +0530, Ankita Garg wrote:
-> > 
-> > With some debugging I found that that section has reserved pages. On
-> > instrumenting the memblock_reserve() and reserve_bootmem() routines, I can see
-> > that many of the memory areas are reserved for kernel and initrd by the
-> > memblock reserve() itself. reserve_bootmem then looks at the pages already
-> > reserved and marks them reserved. However, for the very last section, I see
-> > that bootmem reserves it but I am unable to find a corresponding reservation
-> > by the memblock code.
-> 
-> It's probably RTAS (firmware runtime services). I'ts instanciated at
-> boot from prom_init and we do favor high addresses for it below 1G iirc.
->
+On Mon, 09 Aug 2010 09:12:00 PDT, =22Paul E. McKenney=22 said:
+> On Mon, Aug 02, 2010 at 02:22:12PM +0530, Subrata Modak wrote:
+> > Hi,
+> >
+> > The following suspicious rcu_dereference_check() usage is detected
+> > during 2.6.35-stable boot on my ppc64/p7 machine:
+> >
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D
+> > =5B INFO: suspicious rcu_dereference_check() usage. =5D
+> > ---------------------------------------------------
+> > kernel/sched.c:616 invoked rcu_dereference_check() without protection=
+=21
+> > other info that might help us debug this:
 
-Thanks Ben for taking a look at this. So I checked the rtas messages on
-the serial console and see the following:
+> Thank you for locating this one=21  This looks like the same issue that=
 
-instantiating rtas at 0x000000000f632000... done
+> Ilia Mirkin located.  Please see below for my analysis -- no fix yet,
+> as I need confirmation from cgroups experts.  I can easily create a
+> patch that suppresses the warning, but I don't yet know whether this is=
 
-Which does not correspond to the higher addresses that I see as reserved
-(observation on a 16G machine).
+> the right thing to do.
 
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs,
-Bangalore, India
+Ping?  I just hit it on 2.6.36-rc4-mmotm0915.  Just wanted to make sure t=
+he
+issue hadn't been lost/forgotten.
+
+--==_Exmh_1284649951_6055P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFMkjPfcC3lWbTT17ARAuvZAKCh4ydqf/ApMNSrY0b1/RMlnA6ucQCg6awG
+qG+TLw5VQ8RKFcRb7NP0F3A=
+=R13/
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1284649951_6055P--
