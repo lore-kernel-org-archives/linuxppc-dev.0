@@ -1,25 +1,22 @@
-Return-Path: <ash@shisha.kicks-ass.net>
-Received: from filtteri6.pp.htv.fi (filtteri6.pp.htv.fi [213.243.153.189])
-	by ozlabs.org (Postfix) with ESMTP id DBCEAB70CB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Sep 2010 08:26:34 +1000 (EST)
-From: Alexander Shishkin <virtuoso@slind.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/7] wire up sys_time_change_notify() on powerpc
-Date: Fri, 17 Sep 2010 01:10:46 +0300
-Message-Id: <1284675049-23479-5-git-send-email-virtuoso@slind.org>
-In-Reply-To: <1284675049-23479-1-git-send-email-virtuoso@slind.org>
-References: <1284675049-23479-1-git-send-email-virtuoso@slind.org>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Greg KH <gregkh@suse.de>,
-	Chris Friesen <chris.friesen@genband.com>,
-	John Stultz <johnstul@us.ibm.com>, Andreas Schwab <schwab@linux-m68k.org>,
-	Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@lists.ozlabs.org,
-	Alexander Shishkin <virtuoso@slind.org>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Kirill A. Shutemov" <kirill@shutemov.name>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Christoph Hellwig <hch@lst.de>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1B06FB70D6
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2010 08:45:18 +1000 (EST)
+Message-ID: <4C92998C.7000903@nortel.com>
+Date: Thu, 16 Sep 2010 16:26:20 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: linux support for freescale e5500 core?
+References: <4C9278CD.10607@genband.com>	<20100916163911.6255d359@schlenkerla.am.freescale.net>	<4C928FC5.9050700@genband.com>
+	<1284674628.30449.98.camel@pasglop>
+In-Reply-To: <1284674628.30449.98.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Chris Friesen <chris.friesen@genband.com>,
+	Scott Wood <scottwood@freescale.com>, paulus@samba.org,
+	timur@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Alexander Shishkin <virtuoso@slind.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Andreas Schwab <schwab@linux-m68k.org>
-CC: Alexander Shishkin <virtuoso@slind.org>
-CC: Christoph Hellwig <hch@lst.de>
-CC: Jesper Nilsson <jesper.nilsson@axis.com>
-CC: linuxppc-dev@lists.ozlabs.org
-CC: linux-kernel@vger.kernel.org
----
- arch/powerpc/include/asm/systbl.h |    1 +
- arch/powerpc/include/asm/unistd.h |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletions(-)
+On 09/16/2010 04:03 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2010-09-16 at 15:44 -0600, Chris Friesen wrote:
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 3d21266..124b610 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -329,3 +329,4 @@ COMPAT_SYS(rt_tgsigqueueinfo)
- SYSCALL(fanotify_init)
- COMPAT_SYS(fanotify_mark)
- SYSCALL_SPU(prlimit64)
-+SYSCALL(time_change_notify)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 597e6f9..6ab64da 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -348,10 +348,11 @@
- #define __NR_fanotify_init	323
- #define __NR_fanotify_mark	324
- #define __NR_prlimit64		325
-+#define __NR_time_change_notify	326
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		326
-+#define __NR_syscalls		327
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
+>> Right.  We currently use a 970-series cpu and have implemented a
+>> per-process flag to indicate whether 32-byte mode is needed or not.
+>> We'd have to do something similar with the new cpu.
+> 
+> Sounds like a candidate for upstreaming the patch :-)
+
+As I recall we proposed upstreaming it a while back but there wasn't a
+lot of interest since it's most useful in supporting poorly-written
+legacy apps. :)
+
+Chris
+
+
+
 -- 
-1.7.2.1.45.gb66c2
+The author works for GENBAND Corporation (GENBAND) who is solely
+responsible for this email and its contents. All enquiries regarding
+this email should be addressed to GENBAND. Nortel has provided the use
+of the nortel.com domain to GENBAND in connection with this email solely
+for the purpose of connectivity and Nortel Networks Inc. has no
+liability for the email or its contents. GENBAND's web site is
+http://www.genband.com
