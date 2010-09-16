@@ -1,17 +1,26 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
-	by ozlabs.org (Postfix) with ESMTP id 2517CB70CC
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E1409B70CD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 17:05:38 +1000 (EST)
-Subject: [PATCH] spi_mpc8xxx: fix buffer overrun when sending only/receiving
-	only more than PAGE_SIZE bytes
-From: christophe leroy <christophe.leroy@c-s.fr>
-To: David Brownell <dbrownell@users.sourceforge.net>,
-	Grant Likely <grant.likely@secretlab.ca>,
-	spi-devel-general@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20100916070525.4882CC7391@messagerie.si.c-s.fr>
-Date: Thu, 16 Sep 2010 09:05:25 +0200 (CEST)
+	Thu, 16 Sep 2010 17:23:40 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	o8G7NZcw019689
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2010 09:23:35 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Generating elf kernel ?
+Date: Thu, 16 Sep 2010 09:25:49 +0200
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
+	<201009151651.06816.dargaud@lpsc.in2p3.fr>
+	<4C9188DC.2040300@windriver.com>
+In-Reply-To: <4C9188DC.2040300@windriver.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201009160925.50082.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch applies to 2.6.34.7 and 2.6.35.4
-It fixes an issue when sending only or receiving only more than PAGE_SIZE bytes
+> >> Please use simpleImage.<your target dts name>.elf.
+> > 
+> > Great, that seems to be it...
+> > Except that nothing happens when I jump to 0x40000, no message from the
+> 
+> 0x40000? I recalled the entry point should be 0x400000 for
+> simepleImage.*.elf. So you have to change this on the file,
+> arch/powerpc/boot/wrapper.
 
-Signed-off-by: christophe leroy <christophe.leroy@c-s.fr>
+Correct, I skipped a zero, the address is indeed 0x400000
 
-diff -urN c/drivers/spi/spi_mpc8xxx.c d/drivers/spi/spi_mpc8xxx.c
---- c/drivers/spi/spi_mpc8xxx.c	2010-09-08 16:44:03.000000000 +0200
-+++ d/drivers/spi/spi_mpc8xxx.c	2010-09-08 16:44:14.000000000 +0200
-@@ -393,11 +393,17 @@
- 
- 	xfer_ofs = mspi->xfer_in_progress->len - mspi->count;
- 
--	out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma + xfer_ofs);
-+	if (mspi->rx_dma == mspi->dma_dummy_rx)
-+		out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma);
-+	else
-+		out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma + xfer_ofs);
- 	out_be16(&rx_bd->cbd_datlen, 0);
- 	out_be16(&rx_bd->cbd_sc, BD_SC_EMPTY | BD_SC_INTRPT | BD_SC_WRAP);
- 
--	out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma + xfer_ofs);
-+	if (mspi->tx_dma == mspi->dma_dummy_tx)
-+		out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma);
-+	else
-+		out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma + xfer_ofs);
- 	out_be16(&tx_bd->cbd_datlen, xfer_len);
- 	out_be16(&tx_bd->cbd_sc, BD_SC_READY | BD_SC_INTRPT | BD_SC_WRAP |
- 				 BD_SC_LAST);
+> And also you should confirm if the upstream kernel support your board.
+
+Our board is a custom derivative from a ML405.
+My previous project uses ARCH=PPC and has been working fine for 2 years.
+I'm currently trying to go to ARCH=PowerPC and understand dts files in order to 
+boot my first kernel.
+I assume I shouldn't have to change anything in my bootloader.
+After I jump to the kernel address, I don't even get the usual:
+loaded at:     00400000 004F559C
+board data at: 004F3520 004F359C
+relocated to:  0040505C 004050D8
+zimage at:     00405E48 004F211C
+avail ram:     004F6000 08000000
+Linux/PPC load: console=ttyUL0,115200 rw root=/dev/nfs ip=bootp
+Uncompressing Linux...done.
+Now booting the kernel
+
+Something wrong with my serial console ?
+
+> Additionally let's assume your bootloader create the map between the
+> virtual address and the physical address as 1:1. If so you want to execute
+> from 0x40000. But the actual PC address should be the loader address +
+> offset. You can get this by readelf. Here if your loader address is zero,
+> the offset will be pc address, not 0x40000. You can dump your memory to
+> check this.
+
+The bootloader has no concept of virtual address, right ?
+
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
