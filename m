@@ -1,20 +1,24 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 83C01B70D2
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:28:49 +1000 (EST)
-Message-ID: <4C91C77B.8080501@windriver.com>
-Date: Thu, 16 Sep 2010 15:30:03 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 9DD83B70DA
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:31:42 +1000 (EST)
+Received: by eyg24 with SMTP id 24so653404eyg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 00:31:40 -0700 (PDT)
+Date: Thu, 16 Sep 2010 11:31:35 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Subject: Re: [PATCH 3/3 v3] P4080/mtd: Fix the freescale lbc issue with
+	36bit mode
+Message-ID: <20100916073135.GA5431@oksana.dev.rtsoft.ru>
+References: <1284619284-23614-1-git-send-email-tie-fei.zang@freescale.com>
+	<1284619284-23614-2-git-send-email-tie-fei.zang@freescale.com>
+	<1284619284-23614-3-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: cuImage and multi image?
-References: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
-In-Reply-To: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, uboot <u-boot@lists.denx.de>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1284619284-23614-3-git-send-email-tie-fei.zang@freescale.com>
+Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shawn Jin wrote:
-> Hi,
+On Thu, Sep 16, 2010 at 02:41:24PM +0800, Roy Zang wrote:
+> From: Lan Chunhe-B25806 <b25806@freescale.com>
 > 
-> I have a cuImage kernel in order to support legacy u-boot and a
-> ramdisk image. Kernel boots fine if these two images are separate and
-> "bootm $kernel $ramdisk" is used. But I can not make it to work using
-> a single multi image that contains the kernel and ramdisk images. Is
-> it even technically possible to boot a multi-image with cuboot
-> wrapper?
+> When system uses 36bit physical address, res.start is 36bit
+> physical address. But the function of in_be32 returns 32bit
+> physical address. Then both of them compared each other is
+> wrong. So by converting the address of res.start into
+> the right format fixes this issue.
+> 
+> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> ---
+>  arch/powerpc/include/asm/fsl_lbc.h |    1 +
+>  arch/powerpc/sysdev/fsl_lbc.c      |   23 ++++++++++++++++++++++-
+>  drivers/mtd/nand/fsl_elbc_nand.c   |    2 +-
+>  3 files changed, 24 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
+> index db94698..5638b1e 100644
+> --- a/arch/powerpc/include/asm/fsl_lbc.h
+> +++ b/arch/powerpc/include/asm/fsl_lbc.h
+> @@ -246,6 +246,7 @@ struct fsl_upm {
+>  	int width;
+>  };
+>  
+> +extern unsigned int fsl_lbc_addr(phys_addr_t addr_base);
 
-Try the following steps:
-------
-1. cp <your ramdisk.gz> arch/powerpc/boot/ramdisk.image.gz
-2. make cuImage.initrd.<your target>
+u32 here.
 
-You can get one Image, cuImage.initrd.<your target>, including kernel and ramdisk.
+Other than that, the patch looks good.
 
-Cheers
-Tiejun
+Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-> 
-> On the cuImage kernel I have load address set to 0x400000 and the
-> entry address set to 0x400554 due to the cuboot wrapper. But to make a
-> multi image, both the load and the entry addresses should be set to
-> zero. And u-boot (1.1.2) bootm takes the entry address of the multi
-> image (i.e. 0x0) as the kernel entry address. 0x0 is certainly not the
-> entry address for a cuImage kernel.
-> 
-> Is there a possible workaround other than using two separate images?
-> 
-> Thanks,
-> -Shawn.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
