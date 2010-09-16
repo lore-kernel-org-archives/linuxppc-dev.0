@@ -1,24 +1,45 @@
-Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
-Date: Thu, 16 Sep 2010 09:12:59 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: 2.6.35-stable/ppc64/p7: suspicious rcu_dereference_check()
-	usage detected during 2.6.35-stable boot
-Message-ID: <20100916161259.GF2462@linux.vnet.ibm.com>
-References: <1280739132.15317.9.camel@subratamodak.linux.ibm.com>
-	<20100809161200.GC3026@linux.vnet.ibm.com>
-	<1284652231.2275.569.camel@laptop>
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) by ozlabs.org (Postfix) with ESMTP id 79C80B70CD
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2010 02:15:04 +1000 (EST)
+Received: from mail159-va3 (localhost.localdomain [127.0.0.1])	by
+	mail159-va3-R.bigfish.com (Postfix) with ESMTP id DD87968009D	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 16:14:59 +0000 (UTC)
+Received: from VA3EHSMHS029.bigfish.com (unknown [10.7.14.244])	by
+	mail159-va3.bigfish.com (Postfix) with ESMTP id 6EF9C8E004C	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 16:14:59 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o8GGEoxp003899	for <linuxppc-dev@ozlabs.org>;
+	Thu, 16 Sep 2010 09:14:50 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8GGRSH9013149	for <linuxppc-dev@ozlabs.org>;
+	Thu, 16 Sep 2010 11:27:28 -0500 (CDT)
+Date: Thu, 16 Sep 2010 11:14:48 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [PATCH 2/3 v3] P4080/mtd: Only make elbc nand driver detect
+	nand flash partitions
+Message-ID: <20100916111448.27ef7440@schlenkerla.am.freescale.net>
+In-Reply-To: <20100916112624.GA32074@oksana.dev.rtsoft.ru>
+References: <1284619284-23614-1-git-send-email-tie-fei.zang@freescale.com>
+	<1284619284-23614-2-git-send-email-tie-fei.zang@freescale.com>
+	<20100916082141.GA10978@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A1FC6B8@zch01exm23.fsl.freescale.net>
+	<20100916092551.GA17548@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A1FC6DB@zch01exm23.fsl.freescale.net>
+	<20100916101429.GA27393@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A1FC6E1@zch01exm23.fsl.freescale.net>
+	<20100916112624.GA32074@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1284652231.2275.569.camel@laptop>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	"Valdis.Kletnieks" <Valdis.Kletnieks@vt.edu>,
-	Li Zefan <lizf@cn.fujitsu.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>,
-	DIVYA PRAKASH <dipraksh@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
+	Zang Roy-R61911 <r61911@freescale.com>,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,148 +49,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 16, 2010 at 05:50:31PM +0200, Peter Zijlstra wrote:
-> On Mon, 2010-08-09 at 09:12 -0700, Paul E. McKenney wrote:
-> 
-> > > [    0.051203] CPU0: AMD QEMU Virtual CPU version 0.12.4 stepping 03
-> > > [    0.052999] lockdep: fixing up alternatives.
-> > > [    0.054105]
-> > > [    0.054106] ===================================================
-> > > [    0.054999] [ INFO: suspicious rcu_dereference_check() usage. ]
-> > > [    0.054999] ---------------------------------------------------
-> > > [    0.054999] kernel/sched.c:616 invoked rcu_dereference_check() without protection!
-> > > [    0.054999]
-> > > [    0.054999] other info that might help us debug this:
-> > > [    0.054999]
-> > > [    0.054999]
-> > > [    0.054999] rcu_scheduler_active = 1, debug_locks = 1
-> > > [    0.054999] 3 locks held by swapper/1:
-> > > [    0.054999]  #0:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff814be933>] cpu_up+0x42/0x6a
-> > > [    0.054999]  #1:  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff810400d8>] cpu_hotplug_begin+0x2a/0x51
-> > > [    0.054999]  #2:  (&rq->lock){-.-...}, at: [<ffffffff814be2f7>] init_idle+0x2f/0x113
-> > > [    0.054999]
-> > > [    0.054999] stack backtrace:
-> > > [    0.054999] Pid: 1, comm: swapper Not tainted 2.6.35 #1
-> > > [    0.054999] Call Trace:
-> > > [    0.054999]  [<ffffffff81068054>] lockdep_rcu_dereference+0x9b/0xa3
-> > > [    0.054999]  [<ffffffff810325c3>] task_group+0x7b/0x8a
-> > > [    0.054999]  [<ffffffff810325e5>] set_task_rq+0x13/0x40
-> > > [    0.054999]  [<ffffffff814be39a>] init_idle+0xd2/0x113
-> > > [    0.054999]  [<ffffffff814be78a>] fork_idle+0xb8/0xc7
-> > > [    0.054999]  [<ffffffff81068717>] ? mark_held_locks+0x4d/0x6b
-> > > [    0.054999]  [<ffffffff814bcebd>] do_fork_idle+0x17/0x2b
-> > > [    0.054999]  [<ffffffff814bc89b>] native_cpu_up+0x1c1/0x724
-> > > [    0.054999]  [<ffffffff814bcea6>] ? do_fork_idle+0x0/0x2b
-> > > [    0.054999]  [<ffffffff814be876>] _cpu_up+0xac/0x127
-> > > [    0.054999]  [<ffffffff814be946>] cpu_up+0x55/0x6a
-> > > [    0.054999]  [<ffffffff81ab562a>] kernel_init+0xe1/0x1ff
-> > > [    0.054999]  [<ffffffff81003854>] kernel_thread_helper+0x4/0x10
-> > > [    0.054999]  [<ffffffff814c353c>] ? restore_args+0x0/0x30
-> > > [    0.054999]  [<ffffffff81ab5549>] ? kernel_init+0x0/0x1ff
-> > > [    0.054999]  [<ffffffff81003850>] ? kernel_thread_helper+0x0/0x10
-> > > [    0.056074] Booting Node   0, Processors  #1lockdep: fixing up alternatives.
-> > > [    0.130045]  #2lockdep: fixing up alternatives.
-> > > [    0.203089]  #3 Ok.
-> > > [    0.275286] Brought up 4 CPUs
-> > > [    0.276005] Total of 4 processors activated (16017.17 BogoMIPS).
-> > 
-> > This does look like a new one, thank you for reporting it!
-> > 
-> > Here is my analysis, which should at least provide some humor value to
-> > those who understand the code better than I do.  ;-)
-> > 
-> > So the corresponding rcu_dereference_check() is in
-> > task_subsys_state_check(), and is fetching the cpu_cgroup_subsys_id
-> > element of the newly created task's task->cgroups->subsys[] array.
-> > The "git grep" command finds only three uses of cpu_cgroup_subsys_id,
-> > but no definition.
-> > 
-> > Now, fork_idle() invokes copy_process(), which invokes cgroup_fork(),
-> > which sets the child process's ->cgroups pointer to that of the parent,
-> > also invoking get_css_set(), which increments the corresponding reference
-> > count, doing both operations under task_lock() protection (->alloc_lock).
-> > Because fork_idle() does not specify any of CLONE_NEWNS, CLONE_NEWUTS,
-> > CLONE_NEWIPC, CLONE_NEWPID, or CLONE_NEWNET, copy_namespaces() should
-> > not create a new namespace, and so there should be no ns_cgroup_clone().
-> > We should thus retain the parent's ->cgroups pointer.  And copy_process()
-> > installs the new task in the various lists, so that the task is externally
-> > accessible upon return.
-> > 
-> > After a non-error return from copy_process(), fork_init() invokes
-> > init_idle_pid(), which does not appear to affect the task's cgroup
-> > state.  Next fork_init() invokes init_idle(), which in turn invokes
-> > __set_task_cpu(), which invokes set_task_rq(), which calls task_group()
-> > several times, which calls task_subsys_state_check(), which calls the
-> > rcu_dereference_check() that complained above.
-> > 
-> > However, the result returns by rcu_dereference_check() is stored into
-> > the task structure:
-> > 
-> > 	p->se.cfs_rq = task_group(p)->cfs_rq[cpu];
-> > 	p->se.parent = task_group(p)->se[cpu];
-> > 
-> > This means that the corresponding structure must have been tied down with
-> > a reference count or some such.  If such a reference has been taken, then
-> > this complaint is a false positive, and could be suppressed by putting
-> > rcu_read_lock() and rcu_read_unlock() around the call to init_idle()
-> > from fork_idle().  However, although, reference to the enclosing ->cgroups
-> > struct css_set is held, it is not clear to me that this reference applies
-> > to the structures pointed to by the ->subsys[] array, especially given
-> > that the cgroup_subsys_state structures referenced by this array have
-> > their own reference count, which does not appear to me to be acquired
-> > by this code path.
-> > 
-> > Or are the cgroup_subsys_state structures referenced by idle tasks
-> > never freed or some such?
-> 
-> I would hope so!, the idle tasks should be part of the root cgroup,
-> which is not removable.
-> 
-> The problem is that while we do in-fact hold rq->lock, the newly spawned
-> idle thread's cpu is not yet set to the correct cpu so the lockdep check
-> in task_group():
-> 
->   lockdep_is_held(&task_rq(p)->lock)
-> 
-> will fail.
-> 
-> But of a chicken and egg problem. Setting the cpu needs to have the cpu
-> set ;-)
+On Thu, 16 Sep 2010 15:26:24 +0400
+Anton Vorontsov <cbouatmailru@gmail.com> wrote:
 
-OK, makes sense to me.
-
-> Ingo, why do we have rq->lock there at all? The CPU isn't up and running
-> yet, nothing should be touching it.
-
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched.c |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
+> On Thu, Sep 16, 2010 at 06:39:40PM +0800, Zang Roy-R61911 wrote:
+> [...]
+> > But my code has some assignment for "foo" instead of a simple
+> > allocation, how about this way for my code:
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index bd8b487..6241049 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -5332,7 +5332,19 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
->  	idle->se.exec_start = sched_clock();
->  
->  	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
-> +	/*
-> +	 * We're having a chicken and egg problem, even though we are
-> +	 * holding rq->lock, the cpu isn't yet set to this cpu so the
-> +	 * lockdep check in task_group() will fail.
-> +	 *
-> +	 * Similar case to sched_fork(). / Alternatively we could
-> +	 * use task_rq_lock() here and obtain the other rq->lock.
-> +	 *
-> +	 * Silence PROVE_RCU
-> +	 */
-> +	rcu_read_lock();
->  	__set_task_cpu(idle, cpu);
-> +	rcu_read_unlock();
->  
->  	rq->curr = rq->idle = idle;
->  #if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
+> This will surely work, and all the rest is just a matter of
+> taste. So, I'm fine with it. But see below, I think I found
+> some new, quite serious issues.
 > 
+> > DEFINE_MUTEX(fsl_elbc_mutex);
+> 
+> I'd place the mutex inside the fsl_lbc_ctrl_dev,
+> i.e. fsl_lbc_ctrl_dev->nand_lock. This is to avoid more
+> global variables.
+
+I wouldn't.  If the lock is only meaningful to the NAND driver, it
+should be declared in the NAND driver.
+
+Besides, it's not any less of a global just because it's sitting inside
+a singleton struct.
+
+Perhaps it should be declared as a static local inside the probe
+function, if it's just to guard against this one race.
+
+> >                 elbc_fcm_ctrl->read_bytes = 0;
+> >                 elbc_fcm_ctrl->index = 0;
+> >                 elbc_fcm_ctrl->addr = NULL;
+> 
+> I guess these variables should be per chip select, as
+> otherwise there will be tons of races when somebody try
+> to access two or more NAND chips simultaneously.
+
+The NAND layer has its own per-controller mutex that prevents this.
+
+> So, I'd suggest to redo the whole thing this way: don't allocate
+> elbc_fcm_ctrl in this driver, but make an array inside the
+> fsl_lbc_ctrl_dev. I.e.
+> fsl_lbc_ctrl_dev->nand_ctrl[MAX_CHIP_SELECTS]
+
+NACK.
+
+There is not a separate controller per chip select.
+
+> Btw, even before this patch, it seems that the driver had
+> all these bugs/races, i.e. ctrl->controller.lock was not
+> used at all. Ugh.
+
+It is used, search nand_base.c for controller->lock.
+
+-Scott
