@@ -1,22 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3DDFAB70CB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Sep 2010 17:41:51 +1000 (EST)
-In-Reply-To: <20100916070420.95083C7391@messagerie.si.c-s.fr>
-References: <20100916070420.95083C7391@messagerie.si.c-s.fr>
-Subject: Re: [PATCH] spi_mpc8xxx: fix writing to adress 0
-To: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <OFE491C952.64B1BE24-ONC12577A0.0029DACE-C12577A0.002A0993@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 16 Sep 2010 09:39:09 +0200
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 78B86B70A3
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:49:04 +1000 (EST)
+Received: by ewy2 with SMTP id 2so653538ewy.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 00:49:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: spi-devel-general@lists.sourceforge.net,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4C91C77B.8080501@windriver.com>
+References: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
+	<4C91C77B.8080501@windriver.com>
+Date: Thu, 16 Sep 2010 00:49:02 -0700
+Message-ID: <AANLkTin9yErB4dUfBQg2kC+dnz_sH6scazHqp=vfCV5g@mail.gmail.com>
+Subject: Re: cuImage and multi image?
+From: Shawn Jin <shawnxjin@gmail.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, uboot <u-boot@lists.denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: christophe leroy <christophe.leroy@c-s.fr>
-> To: David Brownell <dbrownell@users.sourceforge.net>, Grant Likely
-> <grant.likely@secretlab.ca>, spi-devel-general@lists.sourceforge.net, linux-
-> kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-> Date: 2010/09/16 09:06
-> Subject: [PATCH] spi_mpc8xxx: fix writing to adress 0
-> Sent by: linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org
+> Try the following steps:
+> ------
+> 1. cp <your ramdisk.gz> arch/powerpc/boot/ramdisk.image.gz
+> 2. make cuImage.initrd.<your target>
 >
-> This patch applies to 2.6.34.7 (already included in 2.6.35.4)
-> It fixes an issue when sending only or receiving only (mspi->tx-dma was reset
-> as when no tx_buf is defined, tx_dma is 0)
->
-> Signed-off-by: christophe leroy <christophe.leroy@c-s.fr>
+> You can get one Image, cuImage.initrd.<your target>, including kernel and ramdisk.
 
-Acked-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Cool! Thanks a lot, Tiejun.
+
+-Shawn.
