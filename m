@@ -1,22 +1,20 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 8FF0CB70CC
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:27:49 +1000 (EST)
-Received: by eyg24 with SMTP id 24so652604eyg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 00:27:47 -0700 (PDT)
-Date: Thu, 16 Sep 2010 11:27:42 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH 1/3 v3] P4080/eLBC: Make Freescale elbc interrupt
-	common to elbc devices
-Message-ID: <20100916072742.GA3176@oksana.dev.rtsoft.ru>
-References: <1284619284-23614-1-git-send-email-tie-fei.zang@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 83C01B70D2
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 17:28:49 +1000 (EST)
+Message-ID: <4C91C77B.8080501@windriver.com>
+Date: Thu, 16 Sep 2010 15:30:03 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1284619284-23614-1-git-send-email-tie-fei.zang@freescale.com>
-Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
+To: Shawn Jin <shawnxjin@gmail.com>
+Subject: Re: cuImage and multi image?
+References: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
+In-Reply-To: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, uboot <u-boot@lists.denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 16, 2010 at 02:41:22PM +0800, Roy Zang wrote:
-[...]
-> +static const struct platform_device_id fsl_lbc_match[] = {
-> +	{ "fsl,elbc", },
-> +	{ "fsl,pq3-localbus", },
-> +	{ "fsl,pq2-localbus", },
-> +	{ "fsl,pq2pro-localbus", },
-> +	{},
-> +};
-> +
-> +static struct platform_driver fsl_lbc_ctrl_driver = {
-> +	.driver = {
-> +		.name = "fsl-lbc",
-> +	},
-> +	.probe = fsl_lbc_ctrl_probe,
-> +	.id_table = fsl_lbc_match,
-> +};
+Shawn Jin wrote:
+> Hi,
+> 
+> I have a cuImage kernel in order to support legacy u-boot and a
+> ramdisk image. Kernel boots fine if these two images are separate and
+> "bootm $kernel $ramdisk" is used. But I can not make it to work using
+> a single multi image that contains the kernel and ramdisk images. Is
+> it even technically possible to boot a multi-image with cuboot
+> wrapper?
 
-No, it won't work that way (at least not w/o a device constructor
-somewhere in fsl_soc.c). Instead, you should write something like
+Try the following steps:
+------
+1. cp <your ramdisk.gz> arch/powerpc/boot/ramdisk.image.gz
+2. make cuImage.initrd.<your target>
 
-static const struct of_device_id fsl_lbc_match[] = {
-	...
-};
+You can get one Image, cuImage.initrd.<your target>, including kernel and ramdisk.
 
-static struct platform_driver fsl_lbc_ctrl_driver = {
-	.driver = {
-		.name = "fsl-lbc",
-		.of_match_table = fsl_lbc_match;
-	}
-	...
-};
+Cheers
+Tiejun
 
-(Note that platform_driver.driver has of_match_table nowadays --
- that's what makes it possible to seamlessly transit from
- of_platform_driver to platform_driver.)
-
-The same applies for the second patch as well.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> 
+> On the cuImage kernel I have load address set to 0x400000 and the
+> entry address set to 0x400554 due to the cuboot wrapper. But to make a
+> multi image, both the load and the entry addresses should be set to
+> zero. And u-boot (1.1.2) bootm takes the entry address of the multi
+> image (i.e. 0x0) as the kernel entry address. 0x0 is certainly not the
+> entry address for a cuImage kernel.
+> 
+> Is there a possible workaround other than using two separate images?
+> 
+> Thanks,
+> -Shawn.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
