@@ -1,24 +1,31 @@
-Return-Path: <Valdis.Kletnieks@vt.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 00/15] change default_llseek action
-In-Reply-To: Your message of "Tue, 14 Sep 2010 22:22:28 +0200."
-	<1284495763-7506-1-git-send-email-arnd@arndb.de>
-From: Valdis.Kletnieks@vt.edu
-References: <1284495763-7506-1-git-send-email-arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1284565136_4463P";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
-Date: Wed, 15 Sep 2010 11:38:56 -0400
-Message-ID: <9828.1284565136@localhost>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Samuel Ortiz <samuel@sortiz.org>,
-	David Airlie <airlied@linux.ie>, netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Tony Lindgren <tony@atomide.com>, Julia Lawall <julia@diku.dk>,
-	Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
-	linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Al Viro <viro@zeniv.linux.org.uk>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 1DF531007D8
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2010 07:39:19 +1000 (EST)
+Received: from mail18-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail18-tx2-R.bigfish.com (Postfix) with ESMTP id 55D00B40158	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 21:39:16 +0000 (UTC)
+Received: from TX2EHSMHS008.bigfish.com (unknown [10.9.14.253])	by
+	mail18-tx2.bigfish.com (Postfix) with ESMTP id F3D841468052	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 21:39:15 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o8GLdEKV006693	for
+	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 14:39:14 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8GLrSdE013329	for <linuxppc-dev@ozlabs.org>;
+	Thu, 16 Sep 2010 16:53:28 -0500 (CDT)
+Date: Thu, 16 Sep 2010 16:39:11 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Chris Friesen <chris.friesen@genband.com>
+Subject: Re: linux support for freescale e5500 core?
+Message-ID: <20100916163911.6255d359@schlenkerla.am.freescale.net>
+In-Reply-To: <4C9278CD.10607@genband.com>
+References: <4C9278CD.10607@genband.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +35,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---==_Exmh_1284565136_4463P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 16 Sep 2010 14:06:37 -0600
+Chris Friesen <chris.friesen@genband.com> wrote:
 
-On Tue, 14 Sep 2010 22:22:28 +0200, Arnd Bergmann said:
+> We're looking at maybe doing some work with an e5500-based system.  Is
+> there any support existing/planned for this core?
 
-> This changes *all* instances of struct file_operations in
-> the kernel to have a .llseek operation and then changes
-> the default to no_llseek, which returns -ESPIPE, which
-> is what we had decided some time ago in a discussion
-> with Christoph Hellwig.
+Check with whoever you'd be getting the hardware from about a BSP.
 
-I don't suppose there's any clean way to throw a build error or a
-printk_on_once() or something if we encounter an unconverted 'struct
-file_operations', is there? I have this creeping fear that this patch will go
-upstream during the merge window - as will 12 new staging/ drivers from authors
-who didn't get the memo yet.
+And yes, it should be supported upstream at some point.
 
-Other than the "missed converting a new usage" issue, it looks OK to me.
+> Also, do we know what the cache line size is--we have some legacy apps
+> that assume 32-byte.
 
+The cache line is 64 bytes.  As with e500mc, there is a "dcbz32" mode
+for compatibility, though you probably lose much of the performance
+benefit of dcbz, and it might upset other software that properly checks
+for the cache line size but doesn't use dcbzl.
 
-
---==_Exmh_1284565136_4463P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFMkOiQcC3lWbTT17ARAqwmAKDtt7WLCtHcS+CHyD0HhQqZdVYOywCgg7fS
-U3JZpm40giJnTm/uyS6JlMA=
-=9mVq
------END PGP SIGNATURE-----
-
---==_Exmh_1284565136_4463P--
+-Scott
