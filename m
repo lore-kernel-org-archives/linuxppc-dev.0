@@ -1,25 +1,24 @@
-Return-Path: <msm@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id AC9D51007DA
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2010 08:49:21 +1000 (EST)
-Received: from mail19-va3 (localhost.localdomain [127.0.0.1])	by
-	mail19-va3-R.bigfish.com (Postfix) with ESMTP id 8CED017B00D9	for
-	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 22:49:17 +0000 (UTC)
-Received: from VA3EHSMHS028.bigfish.com (unknown [10.7.14.235])	by
-	mail19-va3.bigfish.com (Postfix) with ESMTP id 1C347F4004F	for
-	<linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2010 22:49:17 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o8GMnFaj002208	for <linuxppc-dev@ozlabs.org>;
-	Thu, 16 Sep 2010 15:49:16 -0700 (MST)
-From: Matthew McClintock <msm@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] powerpc/kexec: make masking/disabling interrupts generic
-Date: Thu, 16 Sep 2010 17:58:23 -0500
-Message-ID: <1284677906-23787-1-git-send-email-msm@freescale.com>
+Return-Path: <linasvepstas@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 4751F1007DE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 17 Sep 2010 08:55:09 +1000 (EST)
+Received: by vws20 with SMTP id 20so1451275vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 16 Sep 2010 15:55:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com
+In-Reply-To: <20100915181319.GB3683@us.ibm.com>
+References: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
+	<20100915181319.GB3683@us.ibm.com>
+From: Linas Vepstas <linasvepstas@gmail.com>
+Date: Thu, 16 Sep 2010 17:54:46 -0500
+Message-ID: <AANLkTikHxiUQR2+Gao0sNn2mzVN-M=Z=+3Z3=7H7GJdK@mail.gmail.com>
+Subject: Re: [PATCH 01/15] ppc: fix return type of BUID_{HI,LO} macros
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Breno Leitao <leitao@linux.vnet.ibm.com>, Milton Miller <miltonm@bga.com>
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,107 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Right now just the kexec crash pathway turns turns off the
-interrupts. Pull that out and make a generic version for
-use elsewhere
+Acked-by: Linas Vepstas <linasvepstas@gmail.com>
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
----
- arch/powerpc/include/asm/kexec.h       |    1 +
- arch/powerpc/kernel/crash.c            |   13 +------------
- arch/powerpc/kernel/machine_kexec.c    |   24 ++++++++++++++++++++++++
- arch/powerpc/kernel/machine_kexec_32.c |    4 ++++
- 4 files changed, 30 insertions(+), 12 deletions(-)
+I'm guessing this worked up til now because the rtas_call function prototyp=
+e
+was telling compiler to cast these to 32-bit before passing them as args.
+(and since these would still get passed as one arg per 64-bit reg, it
+still wouldn't go wrong.)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index 076327f..f54408d 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -91,6 +91,7 @@ extern void machine_kexec_simple(struct kimage *image);
- extern void crash_kexec_secondary(struct pt_regs *regs);
- extern int overlaps_crashkernel(unsigned long start, unsigned long size);
- extern void reserve_crashkernel(void);
-+extern void machine_kexec_mask_interrupts(void);
- 
- #else /* !CONFIG_KEXEC */
- static inline int kexec_sr_activated(int cpu) { return 0; }
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index 4457382..832c8c4 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -414,18 +414,7 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
- 	crash_kexec_wait_realmode(crashing_cpu);
- #endif
- 
--	for_each_irq(i) {
--		struct irq_desc *desc = irq_to_desc(i);
--
--		if (!desc || !desc->chip || !desc->chip->eoi)
--			continue;
--
--		if (desc->status & IRQ_INPROGRESS)
--			desc->chip->eoi(i);
--
--		if (!(desc->status & IRQ_DISABLED))
--			desc->chip->shutdown(i);
--	}
-+	machine_kexec_mask_interrupts();
- 
- 	/*
- 	 * Call registered shutdown routines savely.  Swap out
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index dd6c141..df7e20c 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -14,10 +14,34 @@
- #include <linux/threads.h>
- #include <linux/memblock.h>
- #include <linux/of.h>
-+#include <linux/irq.h>
-+
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/sections.h>
- 
-+void machine_kexec_mask_interrupts(void) {
-+	unsigned int i;
-+
-+	for_each_irq(i) {
-+		struct irq_desc *desc = irq_to_desc(i);
-+
-+		if (!desc || !desc->chip)
-+			continue;
-+
-+		if (desc->chip->eoi &&
-+		    desc->status & IRQ_INPROGRESS)
-+			desc->chip->eoi(i);
-+
-+		if (desc->chip->mask)
-+			desc->chip->mask(i);
-+
-+		if (desc->chip->disable &&
-+		    !(desc->status & IRQ_DISABLED))
-+			desc->chip->disable(i);
-+	}
-+}
-+
- void machine_crash_shutdown(struct pt_regs *regs)
- {
- 	if (ppc_md.machine_crash_shutdown)
-diff --git a/arch/powerpc/kernel/machine_kexec_32.c b/arch/powerpc/kernel/machine_kexec_32.c
-index ae63a96..e63f2e7 100644
---- a/arch/powerpc/kernel/machine_kexec_32.c
-+++ b/arch/powerpc/kernel/machine_kexec_32.c
-@@ -39,6 +39,10 @@ void default_machine_kexec(struct kimage *image)
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
- 
-+	/* mask each interrupt so we are in a more sane state for the
-+	 * kexec kernel */
-+	machine_kexec_mask_interrupts();
-+
- 	page_list = image->head;
- 
- 	/* we need both effective and real address here */
--- 
-1.6.6.1
+What I'm wondering about is why there was no compiler warning about an
+implicit cast of a 64-bit int to a 32-bit int?  Surely, this is something t=
+hat
+should be warned about!
+
+-- Linas
+
+On 15 September 2010 13:13, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
+> BUID_HI and BUID_LO are used to pass data to call_rtas, which expects
+> ints or u32s. But the macro doesn't cast the return, so the result is
+> still u64. Use the upper_32_bits and lower_32_bits macros that have been
+> added to kernel.h.
+>
+> Found by getting printf format errors trying to debug print the args, no
+> actual code change for 64 bit kernels where the macros are actually
+> used.
+>
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> ---
+> =C2=A0arch/powerpc/include/asm/ppc-pci.h | =C2=A0 =C2=A04 ++--
+> =C2=A01 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/as=
+m/ppc-pci.h
+> index 42fdff0..43268f1 100644
+> --- a/arch/powerpc/include/asm/ppc-pci.h
+> +++ b/arch/powerpc/include/asm/ppc-pci.h
+> @@ -28,8 +28,8 @@ extern void find_and_init_phbs(void);
+> =C2=A0extern struct pci_dev *isa_bridge_pcidev; =C2=A0 =C2=A0 =C2=A0/* ma=
+y be NULL if no ISA bus */
+>
+> =C2=A0/** Bus Unit ID macros; get low and hi 32-bits of the 64-bit BUID *=
+/
+> -#define BUID_HI(buid) ((buid) >> 32)
+> -#define BUID_LO(buid) ((buid) & 0xffffffff)
+> +#define BUID_HI(buid) upper_32_bits(buid)
+> +#define BUID_LO(buid) lower_32_bits(buid)
+>
+> =C2=A0/* PCI device_node operations */
+> =C2=A0struct device_node;
+> --
+> 1.7.0.4
+>
+>
