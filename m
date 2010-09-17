@@ -1,25 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9F12B70AB
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2010 17:40:10 +1000 (EST)
-Subject: Re: linux support for freescale e5500 core?
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4C930C55.5030008@genband.com>
-Date: Fri, 17 Sep 2010 02:39:44 -0500
-Message-Id: <4737649C-42E5-47EC-8839-314820EAE45E@kernel.crashing.org>
-References: <4C9278CD.10607@genband.com>	
-	<20100916163911.6255d359@schlenkerla.am.freescale.net>	
-	<4C928FC5.9050700@genband.com> <1284674628.30449.98.camel@pasglop>	
-	<4C92998C.7000903@nortel.com> <1284681832.30449.101.camel@pasglop>	
-	<7EDBB1DD-BB9D-417D-8F4E-B9D5D9E030EF@kernel.crashing.org>
-	<1284701585.30449.102.camel@pasglop> <4C930C55.5030008@genband.com>
-To: Chris Friesen <chris.friesen@genband.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Scott Wood <scottwood@freescale.com>, timur@freescale.com
+	by ozlabs.org (Postfix) with ESMTPS id 8F71BB70AB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 17 Sep 2010 19:25:40 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	o8H9PYpL010235
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2010 11:25:34 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Initial kernel command string (Was: Generating elf kernel ?)
+Date: Fri, 17 Sep 2010 11:27:50 +0200
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
+	<201009160925.50082.dargaud@lpsc.in2p3.fr>
+	<4C91CC78.2020802@windriver.com>
+In-Reply-To: <4C91CC78.2020802@windriver.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201009171127.51017.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +30,292 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thanks for helping about the elf issue, I got it running. The problem was that 
+I wasn't using the proper file produced by make !
 
-On Sep 17, 2010, at 1:36 AM, Chris Friesen wrote:
 
-> On 09/16/2010 11:33 PM, Benjamin Herrenschmidt wrote:
->> On Fri, 2010-09-17 at 00:17 -0500, Kumar Gala wrote:
->>> Not sure how the 970 bit worked, but this seems a bit problematic =
-for
->>> switching between kernel and application for how we do this on
->>> e500mc/e5500.  We'd have to touch the control bit on every exception
->>> path which seems ugly to me.
->>=20
->> Unless the kernel uses dcbzl (feature fixup replacement ?)
->>=20
->> In that case it's on context switch only.
->=20
-> This is basically what we did.  Kernel and system libraries (glibc and
-> friends) always use dcbzl, process flag indicates compatibility, touch
-> the control bit on task context switch if the prev and next processes
-> have different compatibility modes.
->=20
-> On the 970 you have to invalidate the entire icache whenever you =
-change
-> the control bit.  This is a pain involving a loop that calls icbi on =
-512
-> cachelines.
+Now I have a strange and probably simple problem that the Initial kernel 
+command string is incorrect. I want, and I have set in the .config:
+CONFIG_CMDLINE="console=ttyUL0,115200 rw root=/dev/nfs ip=bootp"
 
-I'm pretty sure on e500mc / e5500 you only need proper sync/isync/msync =
-after the change in the control register.
+But when my kernel boots it uses:
+console=ttyUL0 root=/dev/ram
 
-- k=
+I can check:
+strings arch/powerpc/boot/simpleImage.virtex405-ml405.elf | grep console
+Vconsole=ttyUL0 root=/dev/ram
+
+
+Also my previous kernel would wait for 2 seconds at the beginning to allow me 
+to change the initial command string via the serial port, but now it just runs 
+right through. How can I enable this option ?
+
+On the plus side it boots in .5 seconds !
+
+Here's my .config:
+CONFIG_40x=y
+CONFIG_4xx=y
+CONFIG_PPC_MMU_NOHASH=y
+CONFIG_PPC_MMU_NOHASH_32=y
+CONFIG_NOT_COHERENT_CACHE=y
+CONFIG_PPC32=y
+CONFIG_WORD_SIZE=32
+CONFIG_MMU=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_TIME_VSYSCALL=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_IRQ_PER_CPU=y
+CONFIG_NR_IRQS=512
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_ILOG2_U32=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_GPIO=y
+CONFIG_PPC=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_GENERIC_NVRAM=y
+CONFIG_SCHED_OMIT_FRAME_POINTER=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_PPC_OF=y
+CONFIG_OF=y
+CONFIG_PPC_UDBG_16550=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_BUG=y
+CONFIG_DTC=y
+CONFIG_DEFAULT_UIMAGE=y
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_PPC_DCR_NATIVE=y
+CONFIG_PPC_DCR_MMIO=y
+CONFIG_PPC_DCR=y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_PPC_ADV_DEBUG_REGS=y
+CONFIG_PPC_ADV_DEBUG_IACS=2
+CONFIG_PPC_ADV_DEBUG_DACS=2
+CONFIG_PPC_ADV_DEBUG_DVCS=0
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_CONSTRUCTORS=y
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_TREE_RCU=y
+CONFIG_RCU_FANOUT=32
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=14
+CONFIG_NAMESPACES=y
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_ANON_INODES=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_HAVE_PERF_EVENTS=y
+CONFIG_PERF_EVENTS=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_COMPAT_BRK=y
+CONFIG_SLAB=y
+CONFIG_HAVE_OPROFILE=y
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+CONFIG_HAVE_IOREMAP_PROT=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_HAVE_DMA_ATTRS=y
+CONFIG_HAVE_DMA_API_DEBUG=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_BLOCK=y
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_CFQ=y
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_INLINE_SPIN_UNLOCK=y
+CONFIG_INLINE_SPIN_UNLOCK_IRQ=y
+CONFIG_INLINE_READ_UNLOCK=y
+CONFIG_INLINE_READ_UNLOCK_IRQ=y
+CONFIG_INLINE_WRITE_UNLOCK=y
+CONFIG_INLINE_WRITE_UNLOCK_IRQ=y
+CONFIG_PPC4xx_GPIO=y
+CONFIG_XILINX_VIRTEX=y
+CONFIG_XILINX_VIRTEX_GENERIC_BOARD=y
+CONFIG_PPC40x_SIMPLE=y
+CONFIG_XILINX_VIRTEX_II_PRO=y
+CONFIG_XILINX_VIRTEX_4_FX=y
+CONFIG_IBM405_ERR77=y
+CONFIG_IBM405_ERR51=y
+CONFIG_SIMPLE_GPIO=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_HZ_250=y
+CONFIG_HZ=250
+CONFIG_PREEMPT_VOLUNTARY=y
+CONFIG_BINFMT_ELF=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_ARCH_HAS_WALK_MEMORY=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+CONFIG_SPARSE_IRQ=y
+CONFIG_MAX_ACTIVE_REGIONS=32
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
+CONFIG_PPC_4K_PAGES=y
+CONFIG_FORCE_MAX_ZONEORDER=11
+CONFIG_PROC_DEVICETREE=y
+CONFIG_CMDLINE_BOOL=y
+CONFIG_CMDLINE="console=ttyUL0,115200 rw root=/dev/nfs ip=bootp"
+CONFIG_EXTRA_TARGETS=""
+CONFIG_ISA_DMA_API=y
+CONFIG_ZONE_DMA=y
+CONFIG_NEED_DMA_MAP_STATE=y
+CONFIG_4xx_SOC=y
+CONFIG_PPC_PCI_CHOICE=y
+CONFIG_ADVANCED_OPTIONS=y
+CONFIG_LOWMEM_SIZE=0x30000000
+CONFIG_PAGE_OFFSET=0xc0000000
+CONFIG_KERNEL_START=0xc0000000
+CONFIG_PHYSICAL_START=0x00000000
+CONFIG_TASK_SIZE=0xc0000000
+CONFIG_CONSISTENT_SIZE=0x00200000
+CONFIG_NET=y
+CONFIG_PACKET=y
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+CONFIG_IP_PNP_BOOTP=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+CONFIG_EXTRA_FIRMWARE=""
+CONFIG_OF_FLATTREE=y
+CONFIG_OF_DYNAMIC=y
+CONFIG_OF_DEVICE=y
+CONFIG_OF_GPIO=y
+CONFIG_XILINX_DRIVERS=y
+CONFIG_NEED_XILINX_LLDMA=y
+CONFIG_HAVE_IDE=y
+CONFIG_SCSI_MOD=y
+CONFIG_NETDEVICES=y
+CONFIG_NETDEV_1000=y
+CONFIG_XILINX_LLTEMAC=y
+CONFIG_XILINX_LLTEMAC_MARVELL_88E1111_GMII=y
+CONFIG_INPUT=y
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_SERIO=y
+CONFIG_SERIO_SERPORT=y
+CONFIG_VT=y
+CONFIG_CONSOLE_TRANSLATIONS=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_DEVKMEM=y
+CONFIG_SERIAL_UARTLITE=y
+CONFIG_SERIAL_UARTLITE_CONSOLE=y
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+CONFIG_ARCH_REQUIRE_GPIOLIB=y
+CONFIG_GPIOLIB=y
+CONFIG_GPIO_SYSFS=y
+CONFIG_GPIO_XILINX=y
+CONFIG_SSB_POSSIBLE=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_XILINX_EDK=y
+CONFIG_UIO=y
+CONFIG_UIO_PDRV=y
+CONFIG_UIO_PDRV_GENIRQ=y
+CONFIG_FILE_LOCKING=y
+CONFIG_PROC_FS=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_CONFIGFS_FS=y
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_ROOT_NFS=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_LAST_BIT=y
+CONFIG_CRC_CCITT=y
+CONFIG_CRC32=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_HAVE_LMB=y
+CONFIG_NLATTR=y
+CONFIG_GENERIC_ATOMIC64=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_FRAME_WARN=1024
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_RCU_CPU_STALL_DETECTOR=y
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_TRACING_SUPPORT=y
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_PPC_WERROR=y
+CONFIG_PRINT_STACK_DEPTH=64
+CONFIG_DEFAULT_SECURITY_DAC=y
+CONFIG_DEFAULT_SECURITY=""
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_ANSI_CPRNG=y
+
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
