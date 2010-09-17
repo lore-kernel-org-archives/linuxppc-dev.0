@@ -1,22 +1,39 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 28109B70A5
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140]) by ozlabs.org (Postfix) with ESMTP id D138DB6EF2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Sep 2010 19:45:06 +1000 (EST)
-Message-ID: <4C9338F3.2010104@windriver.com>
-Date: Fri, 17 Sep 2010 17:46:27 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+	Sat, 18 Sep 2010 03:45:03 +1000 (EST)
+Received: from mail18-db3 (localhost.localdomain [127.0.0.1])	by
+	mail18-db3-R.bigfish.com (Postfix) with ESMTP id 91831172025E	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2010 17:54:19 +0000 (UTC)
+Received: from DB3EHSMHS006.bigfish.com (unknown [10.3.81.253])	by
+	mail18-db3.bigfish.com (Postfix) with ESMTP id 2F0D0600050	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2010 17:54:19 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o8HHiom4024860	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2010 10:44:50 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o8HI05xe029485	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 17 Sep 2010 13:00:06 -0500 (CDT)
+Date: Fri, 17 Sep 2010 12:44:48 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Subject: Re: Generating elf kernel ?
+Message-ID: <20100917124448.255b08cc@schlenkerla.am.freescale.net>
+In-Reply-To: <4C92CB51.5010008@windriver.com>
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
+	<20100914125713.GB5768@radix50.net>
+	<201009151007.50706.dargaud@lpsc.in2p3.fr>
+	<4C90835E.4050803@windriver.com>
+	<20100915114912.06bc7ed1@schlenkerla.am.freescale.net>
+	<4C9182EC.5030900@windriver.com>
+	<20100916120944.11c45c31@schlenkerla.am.freescale.net>
+	<4C92CB51.5010008@windriver.com>
 MIME-Version: 1.0
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Initial kernel command string (Was: Generating elf kernel ?)
-References: <201009141053.11946.dargaud@lpsc.in2p3.fr>	<201009160925.50082.dargaud@lpsc.in2p3.fr>	<4C91CC78.2020802@windriver.com>
-	<201009171127.51017.dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201009171127.51017.dargaud@lpsc.in2p3.fr>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,323 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guillaume Dargaud wrote:
-> Thanks for helping about the elf issue, I got it running. The problem was that 
-> I wasn't using the proper file produced by make !
-> 
-> 
-> Now I have a strange and probably simple problem that the Initial kernel 
-> command string is incorrect. I want, and I have set in the .config:
-> CONFIG_CMDLINE="console=ttyUL0,115200 rw root=/dev/nfs ip=bootp"
+On Fri, 17 Sep 2010 09:58:41 +0800
+"tiejun.chen" <tiejun.chen@windriver.com> wrote:
 
-I think you should modify the bootargs on your dts.
-------
-        chosen {
-                bootargs = "console=ttyS0 root=/dev/ram";
-                linux,stdout-path = "/plb@0/serial@83e00000";
-        } ;
-
+> Scott Wood wrote:
+> > The guest OS *is* the same as native Linux, as far as TLB handling is
+> > concerned.
 > 
-> But when my kernel boots it uses:
-> console=ttyUL0 root=/dev/ram
-> 
-> I can check:
-> strings arch/powerpc/boot/simpleImage.virtex405-ml405.elf | grep console
-> Vconsole=ttyUL0 root=/dev/ram
-> 
-> 
-> Also my previous kernel would wait for 2 seconds at the beginning to allow me 
-> to change the initial command string via the serial port, but now it just runs 
-> right through. How can I enable this option ?
+> Looks you means the TLB exception handler should be same between the native and
+> the guest OS. Right?
 
-It's possible on PowerPC kernel :)
+Yes.
 
-You can take a look at the file, arch/powerpc/boot/main.c.
-------
-static void prep_cmdline(void *chosen)
-{
-        if (cmdline[0] == '\0')
-                getprop(chosen, "bootargs", cmdline, COMMAND_LINE_SIZE-1);
+> Here I assume we're talking about e500mc since as far as I know for Freescale
+> only e500mc is designed to support virtual machine based on ISA 2.0.6.
 
-        printf("\n\rLinux/PowerPC load: %s", cmdline);
-        /* If possible, edit the command line */
-        if (console_ops.edit_cmdline)
-                console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE);
-        printf("\n\r");
-.......
+Yes, though there's nothing preventing virtualization on cores without
+category E.HV (KVM supports this) -- it's just slower.
 
+> I also know all TLB exceptions can direct to the guest OS when we enable
+> EPCR[DTLBGS|ITLBGS|DSIGS|ISIGS]. But some TLB instructions (i.e. tlbwe )are the
+> privileged instructions. So the guest OS always trap into the hypervisor and
+> then the hypervisor should complete the real action with appropriate physical
+> address. 
 
-So you have to define one function, console_ops.edit_cmdline -->
-serial_edit_cmdline. Or you can try bind this to your boot console ops directly.
-Please refer to the file, arch/powerpc/boot/serial.c.
+Yes, of course.  But that's not the point.  I was just using it as a
+convenient example because that's what I've recently done ELF loading
+with...  There's no reason U-Boot couldn't do the same if its ELF
+loader were updated to support device trees.  Currently U-Boot loads
+bootwrapperless uImages to physical address zero.
 
-Cheers!
-Tiejun
+And FWIW, we have run setups where our hv loads Linux to true
+physical zero (with the hv living elsewhere), not just guest physical.
 
-> 
-> On the plus side it boots in .5 seconds !
-> 
-> Here's my .config:
-> CONFIG_40x=y
-> CONFIG_4xx=y
-> CONFIG_PPC_MMU_NOHASH=y
-> CONFIG_PPC_MMU_NOHASH_32=y
-> CONFIG_NOT_COHERENT_CACHE=y
-> CONFIG_PPC32=y
-> CONFIG_WORD_SIZE=32
-> CONFIG_MMU=y
-> CONFIG_GENERIC_CMOS_UPDATE=y
-> CONFIG_GENERIC_TIME=y
-> CONFIG_GENERIC_TIME_VSYSCALL=y
-> CONFIG_GENERIC_CLOCKEVENTS=y
-> CONFIG_GENERIC_HARDIRQS=y
-> CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-> CONFIG_IRQ_PER_CPU=y
-> CONFIG_NR_IRQS=512
-> CONFIG_STACKTRACE_SUPPORT=y
-> CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-> CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-> CONFIG_LOCKDEP_SUPPORT=y
-> CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-> CONFIG_ARCH_HAS_ILOG2_U32=y
-> CONFIG_GENERIC_HWEIGHT=y
-> CONFIG_GENERIC_FIND_NEXT_BIT=y
-> CONFIG_GENERIC_GPIO=y
-> CONFIG_PPC=y
-> CONFIG_EARLY_PRINTK=y
-> CONFIG_GENERIC_NVRAM=y
-> CONFIG_SCHED_OMIT_FRAME_POINTER=y
-> CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-> CONFIG_PPC_OF=y
-> CONFIG_OF=y
-> CONFIG_PPC_UDBG_16550=y
-> CONFIG_AUDIT_ARCH=y
-> CONFIG_GENERIC_BUG=y
-> CONFIG_DTC=y
-> CONFIG_DEFAULT_UIMAGE=y
-> CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-> CONFIG_PPC_DCR_NATIVE=y
-> CONFIG_PPC_DCR_MMIO=y
-> CONFIG_PPC_DCR=y
-> CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-> CONFIG_PPC_ADV_DEBUG_REGS=y
-> CONFIG_PPC_ADV_DEBUG_IACS=2
-> CONFIG_PPC_ADV_DEBUG_DACS=2
-> CONFIG_PPC_ADV_DEBUG_DVCS=0
-> CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-> CONFIG_CONSTRUCTORS=y
-> CONFIG_EXPERIMENTAL=y
-> CONFIG_BROKEN_ON_SMP=y
-> CONFIG_INIT_ENV_ARG_LIMIT=32
-> CONFIG_LOCALVERSION=""
-> CONFIG_TREE_RCU=y
-> CONFIG_RCU_FANOUT=32
-> CONFIG_IKCONFIG=y
-> CONFIG_IKCONFIG_PROC=y
-> CONFIG_LOG_BUF_SHIFT=14
-> CONFIG_NAMESPACES=y
-> CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-> CONFIG_SYSCTL=y
-> CONFIG_ANON_INODES=y
-> CONFIG_SYSCTL_SYSCALL=y
-> CONFIG_KALLSYMS=y
-> CONFIG_HOTPLUG=y
-> CONFIG_PRINTK=y
-> CONFIG_BUG=y
-> CONFIG_ELF_CORE=y
-> CONFIG_BASE_FULL=y
-> CONFIG_FUTEX=y
-> CONFIG_EPOLL=y
-> CONFIG_SIGNALFD=y
-> CONFIG_TIMERFD=y
-> CONFIG_EVENTFD=y
-> CONFIG_SHMEM=y
-> CONFIG_AIO=y
-> CONFIG_HAVE_PERF_EVENTS=y
-> CONFIG_PERF_EVENTS=y
-> CONFIG_VM_EVENT_COUNTERS=y
-> CONFIG_COMPAT_BRK=y
-> CONFIG_SLAB=y
-> CONFIG_HAVE_OPROFILE=y
-> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-> CONFIG_HAVE_IOREMAP_PROT=y
-> CONFIG_HAVE_KPROBES=y
-> CONFIG_HAVE_KRETPROBES=y
-> CONFIG_HAVE_ARCH_TRACEHOOK=y
-> CONFIG_HAVE_DMA_ATTRS=y
-> CONFIG_HAVE_DMA_API_DEBUG=y
-> CONFIG_SLABINFO=y
-> CONFIG_RT_MUTEXES=y
-> CONFIG_BASE_SMALL=0
-> CONFIG_MODULES=y
-> CONFIG_MODULE_UNLOAD=y
-> CONFIG_MODULE_FORCE_UNLOAD=y
-> CONFIG_BLOCK=y
-> CONFIG_IOSCHED_NOOP=y
-> CONFIG_IOSCHED_DEADLINE=y
-> CONFIG_IOSCHED_CFQ=y
-> CONFIG_DEFAULT_CFQ=y
-> CONFIG_DEFAULT_IOSCHED="cfq"
-> CONFIG_INLINE_SPIN_UNLOCK=y
-> CONFIG_INLINE_SPIN_UNLOCK_IRQ=y
-> CONFIG_INLINE_READ_UNLOCK=y
-> CONFIG_INLINE_READ_UNLOCK_IRQ=y
-> CONFIG_INLINE_WRITE_UNLOCK=y
-> CONFIG_INLINE_WRITE_UNLOCK_IRQ=y
-> CONFIG_PPC4xx_GPIO=y
-> CONFIG_XILINX_VIRTEX=y
-> CONFIG_XILINX_VIRTEX_GENERIC_BOARD=y
-> CONFIG_PPC40x_SIMPLE=y
-> CONFIG_XILINX_VIRTEX_II_PRO=y
-> CONFIG_XILINX_VIRTEX_4_FX=y
-> CONFIG_IBM405_ERR77=y
-> CONFIG_IBM405_ERR51=y
-> CONFIG_SIMPLE_GPIO=y
-> CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-> CONFIG_HZ_250=y
-> CONFIG_HZ=250
-> CONFIG_PREEMPT_VOLUNTARY=y
-> CONFIG_BINFMT_ELF=y
-> CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-> CONFIG_ARCH_HAS_WALK_MEMORY=y
-> CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
-> CONFIG_SPARSE_IRQ=y
-> CONFIG_MAX_ACTIVE_REGIONS=32
-> CONFIG_ARCH_FLATMEM_ENABLE=y
-> CONFIG_ARCH_POPULATES_NODE_MAP=y
-> CONFIG_SELECT_MEMORY_MODEL=y
-> CONFIG_FLATMEM_MANUAL=y
-> CONFIG_FLATMEM=y
-> CONFIG_FLAT_NODE_MEM_MAP=y
-> CONFIG_PAGEFLAGS_EXTENDED=y
-> CONFIG_SPLIT_PTLOCK_CPUS=4
-> CONFIG_ZONE_DMA_FLAG=1
-> CONFIG_BOUNCE=y
-> CONFIG_VIRT_TO_BUS=y
-> CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
-> CONFIG_PPC_4K_PAGES=y
-> CONFIG_FORCE_MAX_ZONEORDER=11
-> CONFIG_PROC_DEVICETREE=y
-> CONFIG_CMDLINE_BOOL=y
-> CONFIG_CMDLINE="console=ttyUL0,115200 rw root=/dev/nfs ip=bootp"
-> CONFIG_EXTRA_TARGETS=""
-> CONFIG_ISA_DMA_API=y
-> CONFIG_ZONE_DMA=y
-> CONFIG_NEED_DMA_MAP_STATE=y
-> CONFIG_4xx_SOC=y
-> CONFIG_PPC_PCI_CHOICE=y
-> CONFIG_ADVANCED_OPTIONS=y
-> CONFIG_LOWMEM_SIZE=0x30000000
-> CONFIG_PAGE_OFFSET=0xc0000000
-> CONFIG_KERNEL_START=0xc0000000
-> CONFIG_PHYSICAL_START=0x00000000
-> CONFIG_TASK_SIZE=0xc0000000
-> CONFIG_CONSISTENT_SIZE=0x00200000
-> CONFIG_NET=y
-> CONFIG_PACKET=y
-> CONFIG_UNIX=y
-> CONFIG_INET=y
-> CONFIG_IP_FIB_HASH=y
-> CONFIG_IP_PNP=y
-> CONFIG_IP_PNP_DHCP=y
-> CONFIG_IP_PNP_BOOTP=y
-> CONFIG_INET_DIAG=y
-> CONFIG_INET_TCP_DIAG=y
-> CONFIG_TCP_CONG_CUBIC=y
-> CONFIG_DEFAULT_TCP_CONG="cubic"
-> CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-> CONFIG_STANDALONE=y
-> CONFIG_PREVENT_FIRMWARE_BUILD=y
-> CONFIG_FW_LOADER=y
-> CONFIG_FIRMWARE_IN_KERNEL=y
-> CONFIG_EXTRA_FIRMWARE=""
-> CONFIG_OF_FLATTREE=y
-> CONFIG_OF_DYNAMIC=y
-> CONFIG_OF_DEVICE=y
-> CONFIG_OF_GPIO=y
-> CONFIG_XILINX_DRIVERS=y
-> CONFIG_NEED_XILINX_LLDMA=y
-> CONFIG_HAVE_IDE=y
-> CONFIG_SCSI_MOD=y
-> CONFIG_NETDEVICES=y
-> CONFIG_NETDEV_1000=y
-> CONFIG_XILINX_LLTEMAC=y
-> CONFIG_XILINX_LLTEMAC_MARVELL_88E1111_GMII=y
-> CONFIG_INPUT=y
-> CONFIG_INPUT_MOUSEDEV=y
-> CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-> CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-> CONFIG_SERIO=y
-> CONFIG_SERIO_SERPORT=y
-> CONFIG_VT=y
-> CONFIG_CONSOLE_TRANSLATIONS=y
-> CONFIG_VT_CONSOLE=y
-> CONFIG_HW_CONSOLE=y
-> CONFIG_DEVKMEM=y
-> CONFIG_SERIAL_UARTLITE=y
-> CONFIG_SERIAL_UARTLITE_CONSOLE=y
-> CONFIG_SERIAL_CORE=y
-> CONFIG_SERIAL_CORE_CONSOLE=y
-> CONFIG_UNIX98_PTYS=y
-> CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-> CONFIG_ARCH_REQUIRE_GPIOLIB=y
-> CONFIG_GPIOLIB=y
-> CONFIG_GPIO_SYSFS=y
-> CONFIG_GPIO_XILINX=y
-> CONFIG_SSB_POSSIBLE=y
-> CONFIG_DUMMY_CONSOLE=y
-> CONFIG_XILINX_EDK=y
-> CONFIG_UIO=y
-> CONFIG_UIO_PDRV=y
-> CONFIG_UIO_PDRV_GENIRQ=y
-> CONFIG_FILE_LOCKING=y
-> CONFIG_PROC_FS=y
-> CONFIG_PROC_SYSCTL=y
-> CONFIG_PROC_PAGE_MONITOR=y
-> CONFIG_SYSFS=y
-> CONFIG_CONFIGFS_FS=y
-> CONFIG_NETWORK_FILESYSTEMS=y
-> CONFIG_NFS_FS=y
-> CONFIG_NFS_V3=y
-> CONFIG_ROOT_NFS=y
-> CONFIG_LOCKD=y
-> CONFIG_LOCKD_V4=y
-> CONFIG_NFS_COMMON=y
-> CONFIG_SUNRPC=y
-> CONFIG_MSDOS_PARTITION=y
-> CONFIG_BITREVERSE=y
-> CONFIG_GENERIC_FIND_LAST_BIT=y
-> CONFIG_CRC_CCITT=y
-> CONFIG_CRC32=y
-> CONFIG_HAS_IOMEM=y
-> CONFIG_HAS_IOPORT=y
-> CONFIG_HAS_DMA=y
-> CONFIG_HAVE_LMB=y
-> CONFIG_NLATTR=y
-> CONFIG_GENERIC_ATOMIC64=y
-> CONFIG_PRINTK_TIME=y
-> CONFIG_ENABLE_WARN_DEPRECATED=y
-> CONFIG_ENABLE_MUST_CHECK=y
-> CONFIG_FRAME_WARN=1024
-> CONFIG_DEBUG_BUGVERBOSE=y
-> CONFIG_DEBUG_MEMORY_INIT=y
-> CONFIG_RCU_CPU_STALL_DETECTOR=y
-> CONFIG_SYSCTL_SYSCALL_CHECK=y
-> CONFIG_HAVE_FUNCTION_TRACER=y
-> CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-> CONFIG_HAVE_DYNAMIC_FTRACE=y
-> CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-> CONFIG_TRACING_SUPPORT=y
-> CONFIG_HAVE_ARCH_KGDB=y
-> CONFIG_PPC_WERROR=y
-> CONFIG_PRINT_STACK_DEPTH=64
-> CONFIG_DEFAULT_SECURITY_DAC=y
-> CONFIG_DEFAULT_SECURITY=""
-> CONFIG_CRYPTO=y
-> CONFIG_CRYPTO_ALGAPI=y
-> CONFIG_CRYPTO_ALGAPI2=y
-> CONFIG_CRYPTO_RNG=y
-> CONFIG_CRYPTO_RNG2=y
-> CONFIG_CRYPTO_AES=y
-> CONFIG_CRYPTO_ANSI_CPRNG=y
-> 
+-Scott
