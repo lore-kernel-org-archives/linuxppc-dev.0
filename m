@@ -1,19 +1,20 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id AF83FB70D1
+	by ozlabs.org (Postfix) with ESMTP id CB1B2B70DA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 19 Sep 2010 07:09:26 +1000 (EST)
+	Sun, 19 Sep 2010 07:12:03 +1000 (EST)
 To: tmarri@apm.com
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
+Subject: Re: [PATCH 2/2] PPC4xx: Merge xor.h and dma.h into onefile
+	ppc440spe-dma.h
 MIME-Version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-Date: Sat, 18 Sep 2010 23:09:20 +0200
-Message-Id: <20100918210920.E05AE157D71@gemini.denx.de>
-Cc: neilb@suse.de, yur@emcraft.com, linux-raid@vger.kernel.org,
-	herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
+In-reply-to: <1284774162-14652-1-git-send-email-tmarri@apm.com>
+References: <1284774162-14652-1-git-send-email-tmarri@apm.com>
+Date: Sat, 18 Sep 2010 23:12:01 +0200
+Message-Id: <20100918211201.EE714157D71@gemini.denx.de>
+Cc: herbert@gondor.apana.org.au, neilb@suse.de, yur@emcraft.com,
+	linux-raid@vger.kernel.org, linux-crypto@vger.kernel.org,
 	dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,79 +27,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Dear tmarri@apm.com,
 
-In message <1284774145-14543-1-git-send-email-tmarri@apm.com> you wrote:
+In message <1284774162-14652-1-git-send-email-tmarri@apm.com> you wrote:
+> From: Tirumala Marri <tmarri@apm.com>
 > 
-> This patch generalizes the existing drver/dma/ppc4xx/adma.c, so that
-> common code can be shared between different similar DMA engine
-> drivers in other SoCs.
-...
->   * This driver supports the asynchrounous DMA copy and RAID engines available
-> - * on the AMCC PPC440SPe Processors.
-> + * on the AMCC PPC4XX Processors.
+> This patch combines drivers/dma/ppc4xx/xor.h and driver/dma/dma/ppc4xx/dma.h
+> into drivers/dma/ppc4xx/ppx440spe-dma.h .
+> 
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> ---
+>  drivers/dma/ppc4xx/dma.h           |  223 -------------------------
+>  drivers/dma/ppc4xx/ppc440spe-dma.h |  318 ++++++++++++++++++++++++++++++++++++
+>  drivers/dma/ppc4xx/xor.h           |  110 -------------
+>  3 files changed, 318 insertions(+), 333 deletions(-)
 
-Will this driver ever include any 40x processors? If not, you probably
-should use "44x" instead (here and everywhere in the rest of the
-code).
+Please use -M with "git format-patch" so it detects renames (here we
+should probably see a rename from dma.h into ppc440spe-dma.h [plus
+some changes]) instead of a remove plus add file.
 
+That would make it much easier to review your changes.
 
-> diff --git a/drivers/dma/ppc4xx/ppc4xx-adma.h b/drivers/dma/ppc4xx/ppc4xx-adma.h
-> new file mode 100644
-> index 0000000..7457237
-> --- /dev/null
-> +++ b/drivers/dma/ppc4xx/ppc4xx-adma.h
-...
-> +#include <linux/of.h>
-> +#include <linux/of_platform.h>
-> +#include <asm/dcr.h>
-> +#include <asm/dcr-regs.h>
-> +#include "adma.h"
-> +#include "ppc440spe-dma.h"
-> +
-> +/* Default polynomial (for 440SP is only available) */
-> +#define PPC4XX_DEFAULT_POLY	0x4d
-
-Should this go into "ppc440spe-dma.h"?
-
-> +/* The list of channels exported by ppc440spe ADMA */
-> +struct list_head
-> + ppc4xx_adma_chan_list = LIST_HEAD_INIT(ppc4xx_adma_chan_list);
-> +
-> +/* This flag is set when want to refetch the xor chain in the interrupt
-> + * handler
-> + */
-> +static u32 do_xor_refetch;
-> +
-> +/* Pointer to DMA0, DMA1 CP/CS FIFO */
-> +static void *ppc440spe_dma_fifo_buf;
-
-Seems this should go into "ppc440spe-dma.h"?
-
-
-> +/* This array is used in data-check operations for storing a pattern */
-> +static char ppc440spe_qword[16];
-> +
-> +static atomic_t ppc4xx_adma_err_irq_ref;
-> +static dcr_host_t ppc440spe_mq_dcr_host;
-> +static unsigned int ppc440spe_mq_dcr_len;
-
-Ditto?
-
-> +static unsigned long ppc440spe_rxor_state;
-> +
-> +static struct page *ppc440spe_rxor_srcs[32];
-
-And here again - please check globally!
-
-
-> +/**
-> + * ppc440spe_can_rxor - check if the operands may be processed with RXOR
-> + */
-> +static int ppc440spe_can_rxor(struct page **srcs, int src_cnt, size_t len)
-
-Again, should this then not be in ppc440spe specific files?
-
-
-It seems the split / generalization is highly incomplete yet.
+Thanks.
 
 Best regards,
 
@@ -108,6 +56,4 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-What can it profit a man to gain the whole world and to come  to  his
-property with a gastric ulcer, a blown prostate, and bifocals?
-                                     -- John Steinbeck, _Cannery Row_
+It's a small world, but I wouldn't want to paint it.
