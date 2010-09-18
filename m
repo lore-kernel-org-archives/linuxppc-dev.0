@@ -1,31 +1,31 @@
 Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id C32D6B70D0
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 03:36:13 +1000 (EST)
-Received: from mail159-va3 (localhost.localdomain [127.0.0.1])	by
-	mail159-va3-R.bigfish.com (Postfix) with ESMTP id 7768D680086	for
-	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 17:36:09 +0000 (UTC)
-Received: from VA3EHSMHS006.bigfish.com (unknown [10.7.14.245])	by
-	mail159-va3.bigfish.com (Postfix) with ESMTP id C054F8E004C	for
-	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 17:36:08 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8IHa8Vk028680	for
-	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 10:36:08 -0700 (MST)
+Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
+	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id 609A6B70D1
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 04:10:44 +1000 (EST)
+Received: from mail20-db3 (localhost.localdomain [127.0.0.1])	by
+	mail20-db3-R.bigfish.com (Postfix) with ESMTP id 650B61168374	for
+	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 18:04:59 +0000 (UTC)
+Received: from DB3EHSMHS010.bigfish.com (unknown [10.3.81.246])	by
+	mail20-db3.bigfish.com (Postfix) with ESMTP id BD58B37004B	for
+	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 18:04:58 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o8IHtTYu025282	for
+	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 10:55:29 -0700 (MST)
 Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o8IHpQ2Z001606	for <linuxppc-dev@ozlabs.org>;
-	Sat, 18 Sep 2010 12:51:26 -0500 (CDT)
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8II9md2024276	for <linuxppc-dev@ozlabs.org>;
+	Sat, 18 Sep 2010 13:09:48 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CB5757.F8FE0438"
+	boundary="----_=_NextPart_001_01CB575A.ADFFAA56"
 Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
 	reference it
-Date: Sat, 18 Sep 2010 10:36:05 -0700
-Message-ID: <5610599F537DD74A8D1F5CC946A75073034792F7@az33exm25.fsl.freescale.net>
-In-Reply-To: <AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>
-References: <1284764008-19469-1-git-send-email-timur@freescale.com>	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>	<1284779678.30449.108.camel@pasglop>	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>
-	<AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>
+Date: Sat, 18 Sep 2010 10:55:28 -0700
+Message-ID: <5610599F537DD74A8D1F5CC946A75073034792F9@az33exm25.fsl.freescale.net>
+In-Reply-To: <AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
+References: <1284764008-19469-1-git-send-email-timur@freescale.com>	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>	<1284779678.30449.108.camel@pasglop>	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>	<AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>	<5610599F537DD74A8D1F5CC946A75073034792F7@az33exm25.fsl.freescale.net>
+	<AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
 From: Tabi Timur-B04825 <B04825@freescale.com>
 To: "Josh Boyer" <jwboyer@gmail.com>
 Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
@@ -39,35 +39,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------_=_NextPart_001_01CB5757.F8FE0438
+------_=_NextPart_001_01CB575A.ADFFAA56
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
 Josh Boyer wrote:
-> It is not, in my opinion, about what is technically possible and what
-> isn't.  The kernel is licensed under the GPL.  This is a Linux kernel
-> only symbol.  One would be hard pressed to claim they have a driver
-> that wasn't written for Linux that happens to need that symbol.  As a
-> member of the Linux kernel community, I find it important to encourage
-> the contribution of code back to the kernel, and this is one way to
-> help that.  This isn't BSD.
+> This is a new symbol being exported, not
+> one that has been exported for years.
 
-Fine, but this goes back to my original question -- if this is how the=20
-community feels, then why hasn't someone posted a patch that converts =
-all=20
-EXPORT_SYMBOL into EXPORT_SYMBOL_GPL?
+Except that Ben says that I should change ppc_proc_freq from =
+EXPORT_SYMBOL to=20
+EXPORT_SYMBOL_GPL as well.  In a sense, we're in a catch-22.  We have =
+three=20
+choices:
 
-Either we allow non-GPL drivers, or we don't.  If we don't, then we need =
-to=20
-eliminate EXPORT_SYMBOL once and for all.  Otherwise, the message is=20
-hypocritical.
+1. We *arbitrarily* change ppc_proc_freq from EXPORT_SYMBOL to=20
+EXPORT_SYMBOL_GPL, so that the two symbols are exported the same way
 
+2. We GPL-export only ppc_tb_freq and leave ppc_proc_freq as-is, but =
+then it=20
+looks dumb.
+
+3. We export ppc_tb_freq the same way we're exporting ppc_proc_freq,=20
+providing the most options and maintaining consistency.
+
+I just don't see how options #1 or #2 are better than #3, and so far the =
+only=20
+explanations I've heard are along the lines of "we just like it that =
+way".
+
+Obviously, Linus thinks it's okay to allow some non-GPL modules, =
+otherwise he=20
+would have long ago changed all EXPORT_SYMBOLs to EXPORT_SYMBOL_GPL.  =
+I'm=20
+just capitalizing on that mindset.
 
 --=20
 Timur Tabi
 Linux kernel developer
 
-------_=_NextPart_001_01CB5757.F8FE0438
+------_=_NextPart_001_01CB575A.ADFFAA56
 Content-Type: text/html; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
@@ -85,32 +96,35 @@ reference it</TITLE>
 <!-- Converted from text/plain format -->
 
 <P><FONT SIZE=3D2>Josh Boyer wrote:<BR>
-&gt; It is not, in my opinion, about what is technically possible and =
-what<BR>
-&gt; isn't.&nbsp; The kernel is licensed under the GPL.&nbsp; This is a =
-Linux kernel<BR>
-&gt; only symbol.&nbsp; One would be hard pressed to claim they have a =
-driver<BR>
-&gt; that wasn't written for Linux that happens to need that =
-symbol.&nbsp; As a<BR>
-&gt; member of the Linux kernel community, I find it important to =
-encourage<BR>
-&gt; the contribution of code back to the kernel, and this is one way =
-to<BR>
-&gt; help that.&nbsp; This isn't BSD.<BR>
+&gt; This is a new symbol being exported, not<BR>
+&gt; one that has been exported for years.<BR>
 <BR>
-Fine, but this goes back to my original question -- if this is how =
-the<BR>
-community feels, then why hasn't someone posted a patch that converts =
-all<BR>
-EXPORT_SYMBOL into EXPORT_SYMBOL_GPL?<BR>
+Except that Ben says that I should change ppc_proc_freq from =
+EXPORT_SYMBOL to<BR>
+EXPORT_SYMBOL_GPL as well.&nbsp; In a sense, we're in a catch-22.&nbsp; =
+We have three<BR>
+choices:<BR>
 <BR>
-Either we allow non-GPL drivers, or we don't.&nbsp; If we don't, then we =
-need to<BR>
-eliminate EXPORT_SYMBOL once and for all.&nbsp; Otherwise, the message =
-is<BR>
-hypocritical.<BR>
+1. We *arbitrarily* change ppc_proc_freq from EXPORT_SYMBOL to<BR>
+EXPORT_SYMBOL_GPL, so that the two symbols are exported the same way<BR>
 <BR>
+2. We GPL-export only ppc_tb_freq and leave ppc_proc_freq as-is, but =
+then it<BR>
+looks dumb.<BR>
+<BR>
+3. We export ppc_tb_freq the same way we're exporting ppc_proc_freq,<BR>
+providing the most options and maintaining consistency.<BR>
+<BR>
+I just don't see how options #1 or #2 are better than #3, and so far the =
+only<BR>
+explanations I've heard are along the lines of &quot;we just like it =
+that way&quot;.<BR>
+<BR>
+Obviously, Linus thinks it's okay to allow some non-GPL modules, =
+otherwise he<BR>
+would have long ago changed all EXPORT_SYMBOLs to =
+EXPORT_SYMBOL_GPL.&nbsp; I'm<BR>
+just capitalizing on that mindset.<BR>
 <BR>
 --<BR>
 Timur Tabi<BR>
@@ -120,4 +134,4 @@ Linux kernel developer<BR>
 
 </BODY>
 </HTML>
-------_=_NextPart_001_01CB5757.F8FE0438--
+------_=_NextPart_001_01CB575A.ADFFAA56--
