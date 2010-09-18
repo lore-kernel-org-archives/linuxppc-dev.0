@@ -1,11 +1,15 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
-	by ozlabs.org (Postfix) with ESMTP id DBD77B70A8
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 04:22:14 +1000 (EST)
-Received: by wwi18 with SMTP id 18so888283wwi.21
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 11:22:12 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <5610599F537DD74A8D1F5CC946A75073034792F9@az33exm25.fsl.freescale.net>
+Return-Path: <kumar.gala@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 08BBBB70D1
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 04:36:51 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
+	reference it
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>
+Date: Sat, 18 Sep 2010 13:36:43 -0500
+Message-ID: <3AE9EB1F-2F5A-4A56-9171-BBAB8651C76C@freescale.com>
 References: <1284764008-19469-1-git-send-email-timur@freescale.com>
 	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>
 	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>
@@ -13,17 +17,8 @@ References: <1284764008-19469-1-git-send-email-timur@freescale.com>
 	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>
 	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>
 	<AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>
-	<5610599F537DD74A8D1F5CC946A75073034792F7@az33exm25.fsl.freescale.net>
-	<AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
-	<5610599F537DD74A8D1F5CC946A75073034792F9@az33exm25.fsl.freescale.net>
-Date: Sat, 18 Sep 2010 14:22:12 -0400
-Message-ID: <AANLkTi=RXjc=GZ+RRsKjL3qdYFayXOCX0s1SU5jojeXg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
-	reference it
-From: Josh Boyer <jwboyer@gmail.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Tabi Timur-B04825 <B04825@freescale.com>,
 	linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,52 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 18, 2010 at 1:55 PM, Tabi Timur-B04825 <B04825@freescale.com> w=
-rote:
-> Josh Boyer wrote:
->> This is a new symbol being exported, not
->> one that has been exported for years.
->
-> Except that Ben says that I should change ppc_proc_freq from EXPORT_SYMBO=
-L
-> to
-> EXPORT_SYMBOL_GPL as well.=A0 In a sense, we're in a catch-22.=A0 We have=
- three
-> choices:
->
-> 1. We *arbitrarily* change ppc_proc_freq from EXPORT_SYMBOL to
-> EXPORT_SYMBOL_GPL, so that the two symbols are exported the same way
->
-> 2. We GPL-export only ppc_tb_freq and leave ppc_proc_freq as-is, but then=
- it
-> looks dumb.
 
-I dunno.  I don't think it looks dumb.  It could mean nothing more
-than we were paying closer attention this time.
+On Sep 18, 2010, at 11:56 AM, Josh Boyer wrote:
 
-> 3. We export ppc_tb_freq the same way we're exporting ppc_proc_freq,
-> providing the most options and maintaining consistency.
->
-> I just don't see how options #1 or #2 are better than #3, and so far the
-> only
-> explanations I've heard are along the lines of "we just like it that way"=
-.
+> On Sat, Sep 18, 2010 at 11:34 AM, Kumar Gala =
+<kumar.gala@freescale.com> wrote:
+>>=20
+>> On Sep 18, 2010, at 9:36 AM, Tabi Timur-B04825 wrote:
+>>=20
+>>> On Sep 17, 2010, at 10:14 PM, "Benjamin Herrenschmidt" =
+<benh@kernel.crashing.org> wrote:
+>>>=20
+>>>> On Fri, 2010-09-17 at 20:20 -0500, Timur Tabi wrote:
+>>>>> I don't see any reason to limit it to GPL drivers.  Not only that, =
+but
+>>>>> then we'll have this:
+>>>>=20
+>>>> I do
+>>>=20
+>>> Can you elaborate on that, or are you just going to pull rank on me?
+>>>=20
+>>>>=20
+>>>>> EXPORT_SYMBOL(ppc_proc_freq);
+>>>>> EXPORT_SYMBOL_GPL(ppc_tb_freq);
+>>>>>=20
+>>>>> That just looks dumb.
+>>>>=20
+>>>> Right, so send a patch to fix the first one too :-)
+>>=20
+>> I don't think either of these should be EXPORT_SYMBOL_GPL.  Why =
+shouldn't a binary module be allowed to know these frequencies?  My view =
+is why preclude anyone from using this how they want.  If they want to =
+live in the gray area so be it.  Who am I to say they shouldn't have =
+that choice.
+>>=20
+>=20
+> It is not, in my opinion, about what is technically possible and what
+> isn't.  The kernel is licensed under the GPL.  This is a Linux kernel
+> only symbol.  One would be hard pressed to claim they have a driver
+> that wasn't written for Linux that happens to need that symbol.  As a
+> member of the Linux kernel community, I find it important to encourage
+> the contribution of code back to the kernel, and this is one way to
+> help that.  This isn't BSD.
+>=20
+> Besides, a developer is free to export it however they wish in their
+> own kernel tree.  They can deviate from mainline if they so choose.
 
-Now I think I've been a bit more detailed than that.  I at least
-explained why I prefer it that way.  If you disagree, that's fine but
-don't make me sound like some kind of petulant child.
+I'll buy this argument as a reason to make both EXPORT_SYMBOL_GPL.
 
-> Obviously, Linus thinks it's okay to allow some non-GPL modules, otherwis=
-e
-> he
-> would have long ago changed all EXPORT_SYMBOLs to EXPORT_SYMBOL_GPL.=A0 I=
-'m
-> just capitalizing on that mindset.
-
-Capitalizing?  The patch you posted that uses this symbol is for a GPL
-driver so you gain or lose nothing by having this symbol be
-EXPORT_SYMBOL_GPL.  Are you somehow advocating and getting some sort
-of gain by allowing non-GPL modules?  If so, I find that unfortunate.
-If not, then I guess I don't understand what you mean by capitalizing.
-
-josh
+- k=
