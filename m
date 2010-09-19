@@ -1,26 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 91906B70CD
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 12:43:04 +1000 (EST)
-Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
-	reference it
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>
-References: <1284764008-19469-1-git-send-email-timur@freescale.com>
-	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>
-	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>
-	<1284779678.30449.108.camel@pasglop>
-	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>
-	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 19 Sep 2010 12:42:53 +1000
-Message-ID: <1284864173.30449.111.camel@pasglop>
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
+	by ozlabs.org (Postfix) with ESMTP id 1A205B70A6
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 06:20:15 +1000 (EST)
+Received: from list by lo.gmane.org with local (Exim 4.69)
+	(envelope-from <glppe-linuxppc-embedded-2@m.gmane.org>)
+	id 1OxQ8F-0006aj-UJ
+	for linuxppc-dev@ozlabs.org; Sun, 19 Sep 2010 22:05:03 +0200
+Received: from nat032-252-205-109.tvoe.tv ([109.205.252.32])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 22:05:03 +0200
+Received: from yanok by nat032-252-205-109.tvoe.tv with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 22:05:03 +0200
+To: linuxppc-dev@ozlabs.org
+From: Ilya Yanok <yanok@emcraft.com>
+Subject: Re: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
+Date: Sun, 19 Sep 2010 20:00:30 +0000 (UTC)
+Message-ID: <loom.20100919T215645-646@post.gmane.org>
+References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Tabi Timur-B04825 <B04825@freescale.com>,
-	linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +30,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-09-18 at 10:34 -0500, Kumar Gala wrote:
-> On Sep 18, 2010, at 9:36 AM, Tabi Timur-B04825 wrote:
-> 
-> > On Sep 17, 2010, at 10:14 PM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
-> > 
-> >> On Fri, 2010-09-17 at 20:20 -0500, Timur Tabi wrote:
-> >>> I don't see any reason to limit it to GPL drivers.  Not only that, but
-> >>> then we'll have this:
-> >> 
-> >> I do
-> > 
-> > Can you elaborate on that, or are you just going to pull rank on me?
-> > 
-> >> 
-> >>> EXPORT_SYMBOL(ppc_proc_freq);
-> >>> EXPORT_SYMBOL_GPL(ppc_tb_freq);
-> >>> 
-> >>> That just looks dumb. 
-> >> 
-> >> Right, so send a patch to fix the first one too :-)
-> 
-> I don't think either of these should be EXPORT_SYMBOL_GPL.  Why
-> shouldn't a binary module be allowed to know these frequencies?  My
-> view is why preclude anyone from using this how they want.  If they
-> want to live in the gray area so be it.  Who am I to say they
-> shouldn't have that choice.
+Hi Tirumala,
 
-Well, I'm all for making binary modules life as hard as possible just
-for the sake of it :-)
+>  drivers/dma/ppc4xx/adma.c        | 4370 +++-----------------------------------
+>  drivers/dma/ppc4xx/adma.h        |  116 +-
+>  drivers/dma/ppc4xx/ppc4xx-adma.h | 4020 +++++++++++++++++++++++++++++++++++
 
-Cheers,
-Ben.
+You've moved tons of code to the header file. Why?
+
+Regards, Ilya.
