@@ -1,35 +1,22 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
-	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id 609A6B70D1
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Sep 2010 04:10:44 +1000 (EST)
-Received: from mail20-db3 (localhost.localdomain [127.0.0.1])	by
-	mail20-db3-R.bigfish.com (Postfix) with ESMTP id 650B61168374	for
-	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 18:04:59 +0000 (UTC)
-Received: from DB3EHSMHS010.bigfish.com (unknown [10.3.81.246])	by
-	mail20-db3.bigfish.com (Postfix) with ESMTP id BD58B37004B	for
-	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 18:04:58 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8IHtTYu025282	for
-	<linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2010 10:55:29 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o8II9md2024276	for <linuxppc-dev@ozlabs.org>;
-	Sat, 18 Sep 2010 13:09:48 -0500 (CDT)
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 31DD9B70A6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 19 Sep 2010 11:38:53 +1000 (EST)
+Message-ID: <4C9569FF.6090807@windriver.com>
+Date: Sun, 19 Sep 2010 09:40:15 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CB575A.ADFFAA56"
-Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
-	reference it
-Date: Sat, 18 Sep 2010 10:55:28 -0700
-Message-ID: <5610599F537DD74A8D1F5CC946A75073034792F9@az33exm25.fsl.freescale.net>
-In-Reply-To: <AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
-References: <1284764008-19469-1-git-send-email-timur@freescale.com>	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>	<1284779678.30449.108.camel@pasglop>	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>	<AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>	<5610599F537DD74A8D1F5CC946A75073034792F7@az33exm25.fsl.freescale.net>
-	<AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: "Josh Boyer" <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
-	linux-watchdog@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Generating elf kernel ?
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>	<20100914125713.GB5768@radix50.net>	<201009151007.50706.dargaud@lpsc.in2p3.fr>	<4C90835E.4050803@windriver.com>	<20100915114912.06bc7ed1@schlenkerla.am.freescale.net>	<4C9182EC.5030900@windriver.com>	<20100916120944.11c45c31@schlenkerla.am.freescale.net>	<4C92CB51.5010008@windriver.com>
+	<20100917124448.255b08cc@schlenkerla.am.freescale.net>
+In-Reply-To: <20100917124448.255b08cc@schlenkerla.am.freescale.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,99 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------_=_NextPart_001_01CB575A.ADFFAA56
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Scott Wood wrote:
+> On Fri, 17 Sep 2010 09:58:41 +0800
+> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
+> 
+>> Scott Wood wrote:
+>>> The guest OS *is* the same as native Linux, as far as TLB handling is
+>>> concerned.
+>> Looks you means the TLB exception handler should be same between the native and
+>> the guest OS. Right?
+> 
+> Yes.
 
-Josh Boyer wrote:
-> This is a new symbol being exported, not
-> one that has been exported for years.
+I don't think so. The HY should assist the guest OS on MMU since I already point
+the guest OS have no authority to create a real TLB directly as I previously said.
 
-Except that Ben says that I should change ppc_proc_freq from =
-EXPORT_SYMBOL to=20
-EXPORT_SYMBOL_GPL as well.  In a sense, we're in a catch-22.  We have =
-three=20
-choices:
+> 
+>> Here I assume we're talking about e500mc since as far as I know for Freescale
+>> only e500mc is designed to support virtual machine based on ISA 2.0.6.
+> 
+> Yes, though there's nothing preventing virtualization on cores without
+> category E.HV (KVM supports this) -- it's just slower.
 
-1. We *arbitrarily* change ppc_proc_freq from EXPORT_SYMBOL to=20
-EXPORT_SYMBOL_GPL, so that the two symbols are exported the same way
+Absolutely.
 
-2. We GPL-export only ppc_tb_freq and leave ppc_proc_freq as-is, but =
-then it=20
-looks dumb.
+> 
+>> I also know all TLB exceptions can direct to the guest OS when we enable
+>> EPCR[DTLBGS|ITLBGS|DSIGS|ISIGS]. But some TLB instructions (i.e. tlbwe )are the
+>> privileged instructions. So the guest OS always trap into the hypervisor and
+>> then the hypervisor should complete the real action with appropriate physical
+>> address. 
+> 
+> Yes, of course.  But that's not the point.  I was just using it as a
+> convenient example because that's what I've recently done ELF loading
+> with...  There's no reason U-Boot couldn't do the same if its ELF
+> loader were updated to support device trees.  Currently U-Boot loads
+> bootwrapperless uImages to physical address zero.
 
-3. We export ppc_tb_freq the same way we're exporting ppc_proc_freq,=20
-providing the most options and maintaining consistency.
+I never doubt the U-boot can do this for uImage. But I think we're always
+talking about vmlinux, a bare Image.
 
-I just don't see how options #1 or #2 are better than #3, and so far the =
-only=20
-explanations I've heard are along the lines of "we just like it that =
-way".
+Here you already assume so many conditions for vmlinux before we were
+discussing. Such as bootwrapperlee uImage, its ELF loader can update/support
+dtb, the HY... I think this is just why I say we cannot boot vmlinux based on
+common boot loader if only change entry point of vmlinux.
 
-Obviously, Linus thinks it's okay to allow some non-GPL modules, =
-otherwise he=20
-would have long ago changed all EXPORT_SYMBOLs to EXPORT_SYMBOL_GPL.  =
-I'm=20
-just capitalizing on that mindset.
+> 
+> And FWIW, we have run setups where our hv loads Linux to true
+> physical zero (with the hv living elsewhere), not just guest physical.
 
---=20
-Timur Tabi
-Linux kernel developer
+That's true. The HY should be allowed to access any address.
 
-------_=_NextPart_001_01CB575A.ADFFAA56
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Best Regards
+Tiejun
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7655.10">
-<TITLE>Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can =
-reference it</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Josh Boyer wrote:<BR>
-&gt; This is a new symbol being exported, not<BR>
-&gt; one that has been exported for years.<BR>
-<BR>
-Except that Ben says that I should change ppc_proc_freq from =
-EXPORT_SYMBOL to<BR>
-EXPORT_SYMBOL_GPL as well.&nbsp; In a sense, we're in a catch-22.&nbsp; =
-We have three<BR>
-choices:<BR>
-<BR>
-1. We *arbitrarily* change ppc_proc_freq from EXPORT_SYMBOL to<BR>
-EXPORT_SYMBOL_GPL, so that the two symbols are exported the same way<BR>
-<BR>
-2. We GPL-export only ppc_tb_freq and leave ppc_proc_freq as-is, but =
-then it<BR>
-looks dumb.<BR>
-<BR>
-3. We export ppc_tb_freq the same way we're exporting ppc_proc_freq,<BR>
-providing the most options and maintaining consistency.<BR>
-<BR>
-I just don't see how options #1 or #2 are better than #3, and so far the =
-only<BR>
-explanations I've heard are along the lines of &quot;we just like it =
-that way&quot;.<BR>
-<BR>
-Obviously, Linus thinks it's okay to allow some non-GPL modules, =
-otherwise he<BR>
-would have long ago changed all EXPORT_SYMBOLs to =
-EXPORT_SYMBOL_GPL.&nbsp; I'm<BR>
-just capitalizing on that mindset.<BR>
-<BR>
---<BR>
-Timur Tabi<BR>
-Linux kernel developer<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01CB575A.ADFFAA56--
+> 
+> -Scott
+> 
+> 
