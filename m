@@ -1,24 +1,43 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
-	by ozlabs.org (Postfix) with SMTP id 44098B70AB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 04:00:11 +1000 (EST)
-Received: by qwf7 with SMTP id 7so3738356qwf.28
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Sep 2010 11:00:08 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-	<20100918210920.E05AE157D71@gemini.denx.de>
-In-Reply-To: <20100918210920.E05AE157D71@gemini.denx.de>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 38316B70AB
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 04:51:58 +1000 (EST)
+Received: from mail54-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail54-tx2-R.bigfish.com (Postfix) with ESMTP id B3F931203EE	for
+	<linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 18:51:55 +0000 (UTC)
+Received: from TX2EHSMHS031.bigfish.com (unknown [10.9.14.241])	by
+	mail54-tx2.bigfish.com (Postfix) with ESMTP id 3B530191805F	for
+	<linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 18:51:41 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o8KIpdsO008039	for
+	<linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 11:51:39 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o8KJ724k000977	for <linuxppc-dev@ozlabs.org>;
+	Mon, 20 Sep 2010 14:07:02 -0500 (CDT)
+Date: Mon, 20 Sep 2010 13:51:36 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
+	reference it
+Message-ID: <20100920135136.04ceb772@udp111988uds.am.freescale.net>
+In-Reply-To: <AANLkTi=RXjc=GZ+RRsKjL3qdYFayXOCX0s1SU5jojeXg@mail.gmail.com>
+References: <1284764008-19469-1-git-send-email-timur@freescale.com>
+	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>
+	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>
+	<1284779678.30449.108.camel@pasglop>
+	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>
+	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>
+	<AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>
+	<5610599F537DD74A8D1F5CC946A75073034792F7@az33exm25.fsl.freescale.net>
+	<AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
+	<5610599F537DD74A8D1F5CC946A75073034792F9@az33exm25.fsl.freescale.net>
+	<AANLkTi=RXjc=GZ+RRsKjL3qdYFayXOCX0s1SU5jojeXg@mail.gmail.com>
 MIME-Version: 1.0
-Date: Mon, 20 Sep 2010 11:00:03 -0700
-Message-ID: <7707889dee57e97ad50b4ce5c7697466@mail.gmail.com>
-Subject: RE: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: neilb@suse.de, yur@emcraft.com, linux-raid@vger.kernel.org,
-	herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
-	dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>, linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +47,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mr. Wolfgang
->
-> Will this driver ever include any 40x processors? If not, you probably
-> should use "44x" instead (here and everywhere in the rest of the
-> code).
-[Marri] Yes there is 40x based DMA engine we planned to include in the
-future.
+On Sat, 18 Sep 2010 14:22:12 -0400
+Josh Boyer <jwboyer@gmail.com> wrote:
 
-> > +/* Pointer to DMA0, DMA1 CP/CS FIFO */
-> > +static void *ppc440spe_dma_fifo_buf;
->
-> Seems this should go into "ppc440spe-dma.h"?
->
->
-> > +/* This array is used in data-check operations for storing a pattern
-> */
-> > +static char ppc440spe_qword[16];
-> > +
-> > +static atomic_t ppc4xx_adma_err_irq_ref;
-> > +static dcr_host_t ppc440spe_mq_dcr_host;
-> > +static unsigned int ppc440spe_mq_dcr_len;
->
-> Ditto?
->
-> > +static unsigned long ppc440spe_rxor_state;
-> > +
-> > +static struct page *ppc440spe_rxor_srcs[32];
->
-> And here again - please check globally!
->
->
-> > +/**
-> > + * ppc440spe_can_rxor - check if the operands may be processed with
-> RXOR
-> > + */
-> > +static int ppc440spe_can_rxor(struct page **srcs, int src_cnt,
-> size_t len)
->
-> Again, should this then not be in ppc440spe specific files?
->
->
-> It seems the split / generalization is highly incomplete yet.
+> Capitalizing?  The patch you posted that uses this symbol is for a GPL
+> driver so you gain or lose nothing by having this symbol be
+> EXPORT_SYMBOL_GPL.  Are you somehow advocating and getting some sort
+> of gain by allowing non-GPL modules?  If so, I find that unfortunate.
+> If not, then I guess I don't understand what you mean by capitalizing.
 
-[Marri] Some of the stuff can go into ppc440spe-dma.h. This is just
-Beginning to add more new DMA engines support. I expect more changes to
-come in.
+One can dislike DRM (even a very weak form such as this) without having
+a particular desire to go outside the bounds of what it allows.
 
-Regards,
-Marri
+I thought EXPORT_SYMBOL_GPL was originally meant to indicate the
+symbols whose use is likely to be indicitave of code that is, in some
+copyright-meaningful way, derived from GPL code?  I have a hard time
+seeing that being the case here.  If every symbol is made GPL-only,
+then that just gives the binary-only people[1] more incentive to
+circumvent the entire mechanism.  It loses its meaning.
+
+Documentation/DocBook/kernel-hacking.tmpl says, "It implies that the
+function is considered an internal implementation issue, and not really
+an interface."
+
+-Scott
+
+[1] Plus anyone who might want to make a kernel module out of code
+which is open source, but not under a license the GPLv2 is compatible
+with.
