@@ -1,45 +1,23 @@
-Return-Path: <THEMANN@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.17.167])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 02613B70AE
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 98229B70D0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 00:26:33 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.1/8.13.1) with ESMTP id o8KEQSaD014899
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 14:26:28 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id o8KEQOL74116712
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 16:26:28 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id o8KEQNc1009931
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 16:26:24 +0200
-In-Reply-To: <1274433481_6943@mail4.comsite.net>
-References: <4BF30793.5070300@us.ibm.com> <4BF30C32.1020403@linux.vnet.ibm.com>
-	<4BF31322.5090206@us.ibm.com> <1274232324.29980.9.camel@concordia>
-	<4BF3F2DB.7030701@us.ibm.com>
-	<alpine.LFD.2.00.1005191620350.3368@localhost.localdomain>
-	<1274319125.22892.38.camel@concordia>
-	<1274319125.22892.38.camel@concordia>
-	<alpine.LFD.2.00.1005201014250.3368@localhost.localdomain>
-	<1274433481_6943@mail4.comsite.net>
-Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
-	(IRQF_NODELAY)
-To: Milton Miller <miltonm@bga.com>
-Message-ID: <OF6B4F50FA.27908491-ONC12577A4.004EB556-C12577A4.004F51A1@de.ibm.com>
-From: Jan-Bernd Themann <THEMANN@de.ibm.com>
-Date: Mon, 20 Sep 2010 16:26:22 +0200
+	Tue, 21 Sep 2010 00:32:01 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linux-kernel-owner@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-	dvhltc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>, niv@linux.vnet.ibm.com,
-	Thomas Gleixner <tglx@linutronix.de>, Doug Maxey <doug.maxey@us.ibm.com>,
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 03/10] RapidIO: Use stored ingress port number instead
+	of register read
+Date: Mon, 20 Sep 2010 07:31:22 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201303D0E@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <20100914151219.5d92c6f9.akpm@linux-foundation.org>
+References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-4-git-send-email-alexandre.bounine@idt.com>
+	<20100914151219.5d92c6f9.akpm@linux-foundation.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
 	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -50,63 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Milton,
+Andrew Morton <akpm@linux-foundation.org> wrote:
+>=20
+> > @@ -219,6 +219,7 @@ struct rio_net {
+> >  /**
+> >   * struct rio_switch - RIO switch info
+> >   * @node: Node in global list of switches
+> > + * @rdev: Associated RIO device structure
+> >   * @switchid: Switch ID that is unique across a network
+> >   * @hopcount: Hopcount to this switch
+> >   * @destid: Associated destid in the path
+> > @@ -234,6 +235,7 @@ struct rio_net {
+> >   */
+> >  struct rio_switch {
+> >  	struct list_head node;
+> > +	struct rio_dev *rdev;
+> >  	u16 switchid;
+> >  	u16 hopcount;
+> >  	u16 destid;
+>=20
+> What is the locking for rdev?
 
-sorry for the delayed answer, was on vacation.
+This question prompted me consider the following change:
 
-linux-kernel-owner@vger.kernel.org wrote on 21.05.2010 11:18:01:
-> linux-kernel-owner@vger.kernel.org
->
-> On Thu, 20 May 2010 at 10:21:36 +0200 (CEST) Thomas Gleixner  wrote:
-> > On Thu, 20 May 2010, Michael Ellerman wrote:
-> > > On Wed, 2010-05-19 at 16:38 +0200, Thomas Gleixner wrote:
-> > > > On Wed, 19 May 2010, Darren Hart wrote:
-> > > >
-> > > > > On 05/18/2010 06:25 PM, Michael Ellerman wrote:
-> > > > > > On Tue, 2010-05-18 at 15:22 -0700, Darren Hart wrote:
-> > >
-> > > > > > The result of the discussion about two years ago on this was
-that we
-> > > > > > needed a custom flow handler for XICS on RT.
-> > > > >
-> > > > > I'm still not clear on why the ultimate solution wasn't to
-> have XICS report
-> > > > > edge triggered as edge triggered. Probably some complexity
-> of the entire power
-> > > > > stack that I am ignorant of.
-> > > > >
-> > > > > > Apart from the issue of loosing interrupts there is also
-> the fact that
-> > > > > > masking on the XICS requires an RTAS call which takes a global
-lock.
-> > > >
-> > > > Right, I'd love to avoid that but with real level interrupts we'd
-run
-> > > > into an interrupt storm. Though another solution would be to issue
-the
-> > > > EOI after the threaded handler finished, that'd work as well, but
-> > > > needs testing.
-> > >
-> > > Yeah I think that was the idea for the custom flow handler. We'd
-reset
-> > > the processor priority so we can take other interrupts (which the EOI
-> > > usually does for you), then do the actual EOI after the handler
-> > > finished.
-> >
-> > That only works when the card does not issue new interrupts until the
-> > EOI happens. If the EOI is only relevant for the interrupt controller,
-> > then you are going to lose any edge which comes in before the EOI as
-> > well.
->
-> Well, the real MSIs have an extra bit to allow the eoi to dally behind
-> the mmio on another path and that should cover this race when the irq
-> is left enabled.
->
-> Jan-Bernd HEA has that change, right?
+Because the rio_switch structure (in current implementation) is a
+dynamically allocated part of rio_dev, I think it may be simpler to
+combine them into single allocation by using zero length array
+declaration:
 
-I don't now. We never hit problems so we did not look very deep into this
-area.
-We probably have to talk to the HEA HW developers to be sure.
+struct rio_dev {
+    struct list_head global_list;
+    struct list_head net_list;
+    .....
+    ..... rest of rio_dev
+    .....
+    struct rio_switch switch[0];
+}
 
-Regards,
-Jan-Bernd
+This will remove extra memory allocation, remove overlapping structure
+members and clean code sections like one shown below:
+
+	u8 hopcount =3D 0xff;
+	u16 destid =3D rdev->destid;
+
+	if (rdev->rswitch) {
+		destid =3D rdev->rswitch->destid;
+		hopcount =3D rdev->rswitch->hopcount;
+	}   =20
+
+And this looks better aligned with RapidIO definitions - both: endpoints
+and switches are RIO devices. The current implementation of rio_dev
+somewhat separates rio_switch from its common part (this is why I have
+added that link into rio_switch). We may keep using the pointer to
+associated rio_dev, but reworking the rio_dev structure seems better way
+to me.
+
+Please, let me know what do you think about this conversion. And if
+there are no objections I will make a patch.
+
+Alex.
+    =20
