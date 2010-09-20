@@ -1,22 +1,22 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id 6F514B70CB
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 48EC9B6EED
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 06:48:59 +1000 (EST)
-Message-ID: <4C97C6D8.4010407@neli.hopto.org>
-Date: Mon, 20 Sep 2010 22:40:56 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+	Tue, 21 Sep 2010 07:31:31 +1000 (EST)
+To: Tirumala Marri <tmarri@apm.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
 MIME-Version: 1.0
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH v2 03/10] RapidIO: Use stored ingress port number instead
-	of register read
-References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-4-git-send-email-alexandre.bounine@idt.com>
-	<20100914151219.5d92c6f9.akpm@linux-foundation.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201303D0E@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55201303D0E@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <7707889dee57e97ad50b4ce5c7697466@mail.gmail.com>
+References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
+	<20100918210920.E05AE157D71@gemini.denx.de>
+	<7707889dee57e97ad50b4ce5c7697466@mail.gmail.com>
+Date: Mon, 20 Sep 2010 23:31:26 +0200
+Message-Id: <20100920213126.0A1B1157D71@gemini.denx.de>
+Cc: neilb@suse.de, yur@emcraft.com, linux-raid@vger.kernel.org,
+	herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
+	dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alex,
+Dear Tirumala Marri,
 
-Bounine, Alexandre wrote:
-> struct rio_dev {
->     struct list_head global_list;
->     struct list_head net_list;
->     .....
->     ..... rest of rio_dev
->     .....
->     struct rio_switch switch[0];
-> }
-
-It makes sense to let rio_dev structures point to the switch they are 
-attached to. That can be useful in various situations, but is not 
-possible with this setup.
-
-If a rio_dev is a switch then rdev->rswitch->rdev == rdev holds.
-
-> This will remove extra memory allocation, remove overlapping structure
-> members and clean code sections like one shown below:
+In message <7707889dee57e97ad50b4ce5c7697466@mail.gmail.com> you wrote:
+>
+> > > +/**
+> > > + * ppc440spe_can_rxor - check if the operands may be processed with RXOR
+> > > + */
+> > > +static int ppc440spe_can_rxor(struct page **srcs, int src_cnt,
+> > size_t len)
+> >
+> > Again, should this then not be in ppc440spe specific files?
+> >
+> >
+> > It seems the split / generalization is highly incomplete yet.
 > 
-> 	u8 hopcount = 0xff;
-> 	u16 destid = rdev->destid;
-> 
-> 	if (rdev->rswitch) {
-> 		destid = rdev->rswitch->destid;
-> 		hopcount = rdev->rswitch->hopcount;
-> 	}    
+> [Marri] Some of the stuff can go into ppc440spe-dma.h. This is just
+> Beginning to add more new DMA engines support. I expect more changes to
+> come in.
 
-Note that it is possible for rdev->destid to differ from 
-rdev->rswitch->destid even if rswitch->rdev == rdev (for non-hosts i.e. 
-agents). rswitch->destid is the destid by which we discovered the switch 
-(and can reach it) but rdev->destid is the actual id given to the switch.
+Why would that go into a header file? This is source code, not header
+stuff. It should stay in a .c file!  [Note that Ilya asked the same
+question.]
 
-Micha
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Intel's new motto: United we stand. Divided we fall!
