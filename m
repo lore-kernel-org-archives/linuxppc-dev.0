@@ -1,22 +1,23 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 40B84B70D9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Sep 2010 18:09:29 +1000 (EST)
-Message-ID: <4C971712.2020901@windriver.com>
-Date: Mon, 20 Sep 2010 16:10:58 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 8239BB6EF7
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 23:19:16 +1000 (EST)
+Received: by eyg24 with SMTP id 24so2353888eyg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 06:19:13 -0700 (PDT)
+Date: Mon, 20 Sep 2010 17:19:07 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Subject: Re: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect
+	nand flash partitions
+Message-ID: <20100920131907.GA2184@oksana.dev.rtsoft.ru>
+References: <1284706869-12555-1-git-send-email-tie-fei.zang@freescale.com>
+	<1284706869-12555-2-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Initial kernel command string (Was: Generating elf kernel ?)
-References: <201009141053.11946.dargaud@lpsc.in2p3.fr>	<201009171127.51017.dargaud@lpsc.in2p3.fr>	<4C9338F3.2010104@windriver.com>
-	<201009200921.09800.dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201009200921.09800.dargaud@lpsc.in2p3.fr>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1284706869-12555-2-git-send-email-tie-fei.zang@freescale.com>
+Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guillaume Dargaud wrote:
->> I think you should modify the bootargs on your dts.
->> ------
->>         chosen {
->>                 bootargs = "console=ttyS0 root=/dev/ram";
->>                 linux,stdout-path = "/plb@0/serial@83e00000";
->>         } ;
-> 
-> Thanks, that worked great, I now have a fully bootable not only kernel, but 
-> full OS as well.
+On Fri, Sep 17, 2010 at 03:01:08PM +0800, Roy Zang wrote:
+[...]
+> +static struct mutex fsl_elbc_nand_mutex;
+> +
+> +static int __devinit fsl_elbc_nand_probe(struct platform_device *dev)
+>  {
+> -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+> +	struct fsl_lbc_regs __iomem *lbc;
+>  	struct fsl_elbc_mtd *priv;
+>  	struct resource res;
+> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = NULL;
 
-Sounds good :)
+No need for = NULL.
 
-> 
->>> Also my previous kernel would wait for 2 seconds at the beginning to
->>> allow me to change the initial command string via the serial port, but
->>> now it just runs right through. How can I enable this option ?
->> It's possible on PowerPC kernel :)
->>
->> You can take a look at the file, arch/powerpc/boot/main.c.
->> ------
->> static void prep_cmdline(void *chosen)
->> {
->>         if (cmdline[0] == '\0')
->>                 getprop(chosen, "bootargs", cmdline, COMMAND_LINE_SIZE-1);
->>
->>         printf("\n\rLinux/PowerPC load: %s", cmdline);
->>         /* If possible, edit the command line */
->>         if (console_ops.edit_cmdline)
->>                 console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE);
->>         printf("\n\r");
->> .......
->>
->>
->> So you have to define one function, console_ops.edit_cmdline -->
->> serial_edit_cmdline. Or you can try bind this to your boot console ops
->> directly. Please refer to the file, arch/powerpc/boot/serial.c.
-> 
-> So I forced
->  		console_ops.edit_cmdline = serial_edit_cmdline;
-> in serial.c, bu that didn't do the trick...
+[...]
+> -	ctrl->chips[bank] = priv;
+> +	mutex_init(&fsl_elbc_nand_mutex);
 
-Where are/how do your way implement? Can you paste your code sections here?
+This may cause all sorts of misbehaviours, e.g.
 
-If I remember ML405 properly the serial port should be compliant to ns16550. So
-I think the sub-functions, putc()/getc()/tstc(), should be from the file,
-arch/powerpc/boot/ns16550.c. If so it's fine.
+A: mutex_init(foo)
+A: mutex_lock(foo)
+B: mutex_init(foo)   <- destroyed "A"-context mutex.
+A: mutex_unlock(foo) <- oops
 
-Maybe you can add some extra printf() into the function, serial_edit_cmdline, to
-track this in detail.
+Instead of dynamically initializing the mutex, just define it
+with DEFINE_MUTEX() above.
 
-Cheers
-Tiejun
+(Btw, #include <linux/mutex.h> is needed.)
+
+> +
+> +	mutex_lock(&fsl_elbc_nand_mutex);
+[...]
+> -static int __devinit fsl_elbc_ctrl_init(struct fsl_elbc_ctrl *ctrl)
+> +static int fsl_elbc_nand_remove(struct platform_device *dev)
+[...]
+> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = fsl_lbc_ctrl_dev->nand;
+[...]
+> +		if (elbc_fcm_ctrl->chips[i])
+> +			fsl_elbc_chip_remove(elbc_fcm_ctrl->chips[i]);
+[...]
+> +	fsl_lbc_ctrl_dev->nand = NULL;
+> +	kfree(elbc_fcm_ctrl);
+
+Will cause NULL dereference and/or use-after-free for other
+elbc nand instances. To avoid that, reference counting for
+elbc_fcm_ctrl is required.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
