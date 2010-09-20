@@ -1,20 +1,24 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 2A255B6EF2
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 03:52:32 +1000 (EST)
-Received: by eyg24 with SMTP id 24so2520750eyg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 10:52:31 -0700 (PDT)
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
+	by ozlabs.org (Postfix) with SMTP id 44098B70AB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 21 Sep 2010 04:00:11 +1000 (EST)
+Received: by qwf7 with SMTP id 7so3738356qwf.28
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 20 Sep 2010 11:00:08 -0700 (PDT)
+From: Tirumala Marri <tmarri@apm.com>
+References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
+	<20100918210920.E05AE157D71@gemini.denx.de>
+In-Reply-To: <20100918210920.E05AE157D71@gemini.denx.de>
 MIME-Version: 1.0
-In-Reply-To: <4C91C77B.8080501@windriver.com>
-References: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
-	<4C91C77B.8080501@windriver.com>
-Date: Mon, 20 Sep 2010 10:52:30 -0700
-Message-ID: <AANLkTikrYdi=V6jM4HS3V4XzMutGdkPA2qHRBgviKHM8@mail.gmail.com>
-Subject: Re: cuImage and multi image?
-From: Shawn Jin <shawnxjin@gmail.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Mon, 20 Sep 2010 11:00:03 -0700
+Message-ID: <7707889dee57e97ad50b4ce5c7697466@mail.gmail.com>
+Subject: RE: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
+To: Wolfgang Denk <wd@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, uboot <u-boot@lists.denx.de>
+Cc: neilb@suse.de, yur@emcraft.com, linux-raid@vger.kernel.org,
+	herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
+	dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> I have a cuImage kernel in order to support legacy u-boot and a
->> ramdisk image. Kernel boots fine if these two images are separate and
->> "bootm $kernel $ramdisk" is used. But I can not make it to work using
->> a single multi image that contains the kernel and ramdisk images. Is
->> it even technically possible to boot a multi-image with cuboot
->> wrapper?
+Mr. Wolfgang
 >
-> Try the following steps:
-> ------
-> 1. cp <your ramdisk.gz> arch/powerpc/boot/ramdisk.image.gz
-> 2. make cuImage.initrd.<your target>
+> Will this driver ever include any 40x processors? If not, you probably
+> should use "44x" instead (here and everywhere in the rest of the
+> code).
+[Marri] Yes there is 40x based DMA engine we planned to include in the
+future.
+
+> > +/* Pointer to DMA0, DMA1 CP/CS FIFO */
+> > +static void *ppc440spe_dma_fifo_buf;
 >
-> You can get one Image, cuImage.initrd.<your target>, including kernel and ramdisk.
+> Seems this should go into "ppc440spe-dma.h"?
+>
+>
+> > +/* This array is used in data-check operations for storing a pattern
+> */
+> > +static char ppc440spe_qword[16];
+> > +
+> > +static atomic_t ppc4xx_adma_err_irq_ref;
+> > +static dcr_host_t ppc440spe_mq_dcr_host;
+> > +static unsigned int ppc440spe_mq_dcr_len;
+>
+> Ditto?
+>
+> > +static unsigned long ppc440spe_rxor_state;
+> > +
+> > +static struct page *ppc440spe_rxor_srcs[32];
+>
+> And here again - please check globally!
+>
+>
+> > +/**
+> > + * ppc440spe_can_rxor - check if the operands may be processed with
+> RXOR
+> > + */
+> > +static int ppc440spe_can_rxor(struct page **srcs, int src_cnt,
+> size_t len)
+>
+> Again, should this then not be in ppc440spe specific files?
+>
+>
+> It seems the split / generalization is highly incomplete yet.
 
-A follow up question. With this method, the total image size
-(uncompressed) is limited to the 4MB (the link address of the boot
-wrapper)?
+[Marri] Some of the stuff can go into ppc440spe-dma.h. This is just
+Beginning to add more new DMA engines support. I expect more changes to
+come in.
 
-Thanks,
--Shawn.
+Regards,
+Marri
