@@ -1,22 +1,41 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 1FC6CB6EEB
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 01:37:26 +1000 (EST)
-Received: by eyg24 with SMTP id 24so2440495eyg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 08:37:24 -0700 (PDT)
-Date: Mon, 20 Sep 2010 19:37:18 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH 1/3 v4] P4080/eLBC: Make Freescale elbc interrupt
-	common to elbc devices
-Message-ID: <20100920153718.GA4411@oksana.dev.rtsoft.ru>
-References: <1284706869-12555-1-git-send-email-tie-fei.zang@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 5F12BB70D0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 21 Sep 2010 01:44:31 +1000 (EST)
+Received: from mail48-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail48-tx2-R.bigfish.com (Postfix) with ESMTP id B4B9E11183B4	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 15:44:19 +0000 (UTC)
+Received: from TX2EHSMHS047.bigfish.com (unknown [10.9.14.247])	by
+	mail48-tx2.bigfish.com (Postfix) with ESMTP id 6DA55568092	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 15:44:09 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o8KFhtbJ001671	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 20 Sep 2010 08:43:55 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8KFudaf026363	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 20 Sep 2010 10:56:40 -0500 (CDT)
+Date: Mon, 20 Sep 2010 10:43:53 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Subject: Re: Generating elf kernel ?
+Message-ID: <20100920104353.5dbd9201@udp111988uds.am.freescale.net>
+In-Reply-To: <4C9569FF.6090807@windriver.com>
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr>
+	<20100914125713.GB5768@radix50.net>
+	<201009151007.50706.dargaud@lpsc.in2p3.fr>
+	<4C90835E.4050803@windriver.com>
+	<20100915114912.06bc7ed1@schlenkerla.am.freescale.net>
+	<4C9182EC.5030900@windriver.com>
+	<20100916120944.11c45c31@schlenkerla.am.freescale.net>
+	<4C92CB51.5010008@windriver.com>
+	<20100917124448.255b08cc@schlenkerla.am.freescale.net>
+	<4C9569FF.6090807@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1284706869-12555-1-git-send-email-tie-fei.zang@freescale.com>
-Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,126 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 17, 2010 at 03:01:07PM +0800, Roy Zang wrote:
-[...]
-> +struct fsl_lbc_ctrl {
-> +	/* device info */
-> +	struct device			*dev;
+On Sun, 19 Sep 2010 09:40:15 +0800
+"tiejun.chen" <tiejun.chen@windriver.com> wrote:
 
-Forward declaration for struct device is needed (and enough).
+> Scott Wood wrote:
+> > On Fri, 17 Sep 2010 09:58:41 +0800
+> > "tiejun.chen" <tiejun.chen@windriver.com> wrote:
+> > 
+> >> Scott Wood wrote:
+> >>> The guest OS *is* the same as native Linux, as far as TLB handling is
+> >>> concerned.
+> >> Looks you means the TLB exception handler should be same between the native and
+> >> the guest OS. Right?
+> > 
+> > Yes.
+> 
+> I don't think so. The HY should assist the guest OS on MMU since I already point
+> the guest OS have no authority to create a real TLB directly as I previously said.
 
-> +	struct fsl_lbc_regs __iomem	*regs;
-> +	int				irq;
-> +	wait_queue_head_t		irq_wait;
+Of course the hypervisor assists, when a trap is taken.  That doesn't
+mean the code is any different in the guest.
 
-#include <linux/wait.h> is needed for this.
+> > Yes, of course.  But that's not the point.  I was just using it as a
+> > convenient example because that's what I've recently done ELF loading
+> > with...  There's no reason U-Boot couldn't do the same if its ELF
+> > loader were updated to support device trees.  Currently U-Boot loads
+> > bootwrapperless uImages to physical address zero.
+> 
+> I never doubt the U-boot can do this for uImage. But I think we're always
+> talking about vmlinux, a bare Image.
 
-> +	spinlock_t			lock;
+uImage is pretty much a bare image.  It just has a header with a
+checksum and some info like OS/architecture, kernel version, build
+date, etc.
 
-#include <linux/spinlock.h>
+There would be *no* problem doing this with vmlinux in U-Boot if
+someone put in the code to pass a device tree.
 
-[...]
-> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-> index dceb8d1..4920cd3 100644
-> --- a/arch/powerpc/sysdev/fsl_lbc.c
-> +++ b/arch/powerpc/sysdev/fsl_lbc.c
-[...]
-> +#include <linux/slab.h>
-> +#include <linux/of_platform.h>
-
-I guess of_platform.h is not needed any longer.
-
-> +#include <linux/platform_device.h>
-> +#include <linux/interrupt.h>
->  
-[...]
->  	default:
->  		return -EINVAL;
-> @@ -143,14 +130,18 @@ EXPORT_SYMBOL(fsl_upm_find);
->   * thus UPM pattern actually executed. Note that mar usage depends on the
->   * pre-programmed AMX bits in the UPM RAM.
->   */
-> +
-
-No need for this empty line.
-
->  int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
->  {
->  	int ret = 0;
->  	unsigned long flags;
-[...]
-> +static int __devinit fsl_lbc_ctrl_probe(struct platform_device *dev)
-> +{
-> +	int ret;
-> +
-> +	if (!dev->dev.of_node) {
-> +		dev_err(&dev->dev, "Device OF-Node is NULL");
-> +		return -EFAULT;
-> +	}
-> +	fsl_lbc_ctrl_dev = kzalloc(sizeof(*fsl_lbc_ctrl_dev), GFP_KERNEL);
-
-Btw, the code in the NAND driver checks for !fsl_lbc_ctrl_dev.
-
-So it might make sense to assign the global variable after the
-struct is fully initialized.
-
-> +	if (!fsl_lbc_ctrl_dev)
-> +		return -ENOMEM;
-> +
-> +	dev_set_drvdata(&dev->dev, fsl_lbc_ctrl_dev);
-> +
-> +	spin_lock_init(&fsl_lbc_ctrl_dev->lock);
-> +	init_waitqueue_head(&fsl_lbc_ctrl_dev->irq_wait);
-> +
-> +	fsl_lbc_ctrl_dev->regs = of_iomap(dev->dev.of_node, 0);
-> +	if (!fsl_lbc_ctrl_dev->regs) {
-> +		dev_err(&dev->dev, "failed to get memory region\n");
-> +		ret = -ENODEV;
-> +		goto err;
-> +	}
-> +
-> +	fsl_lbc_ctrl_dev->irq = irq_of_parse_and_map(dev->dev.of_node, 0);
-> +	if (fsl_lbc_ctrl_dev->irq == NO_IRQ) {
-> +		dev_err(&dev->dev, "failed to get irq resource\n");
-> +		ret = -ENODEV;
-> +		goto err;
-> +	}
-> +
-> +	fsl_lbc_ctrl_dev->dev = &dev->dev;
-> +
-> +	ret = fsl_lbc_ctrl_init(fsl_lbc_ctrl_dev);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	ret = request_irq(fsl_lbc_ctrl_dev->irq, fsl_lbc_ctrl_irq, 0,
-> +				"fsl-lbc", fsl_lbc_ctrl_dev);
-> +	if (ret != 0) {
-> +		dev_err(&dev->dev, "failed to install irq (%d)\n",
-> +			fsl_lbc_ctrl_dev->irq);
-> +		ret = fsl_lbc_ctrl_dev->irq;
-> +		goto err;
-> +	}
-> +
-> +	return 0;
-> +
-> +err:
-> +	iounmap(fsl_lbc_ctrl_dev->regs);
-> +	kfree(fsl_lbc_ctrl_dev);
-> +	return ret;
-> +}
-> +
-> +static const struct of_device_id fsl_lbc_match[] = {
-
-#include <linux/mod_devicetable.h> is needed for this.
-
-
-Plus, I think the patch is not runtime bisectable (i.e. you
-now do request_irq() here, but not removing it from the nand
-driver, so nand will fail to probe).
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-Scott
