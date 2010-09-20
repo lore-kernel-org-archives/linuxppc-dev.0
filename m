@@ -1,24 +1,34 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <alexs@linux.vnet.ibm.com>
+Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [194.196.100.162])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 98229B70D0
+	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F369FB6EF2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 00:32:01 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2 03/10] RapidIO: Use stored ingress port number instead
-	of register read
-Date: Mon, 20 Sep 2010 07:31:22 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201303D0E@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20100914151219.5d92c6f9.akpm@linux-foundation.org>
-References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com><1284476363-1677-4-git-send-email-alexandre.bounine@idt.com>
-	<20100914151219.5d92c6f9.akpm@linux-foundation.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	linuxppc-dev@lists.ozlabs.org
+	Tue, 21 Sep 2010 00:41:46 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate2.uk.ibm.com (8.13.1/8.13.1) with ESMTP id o8KEfdVx020755
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 14:41:39 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id o8KEfdTv3276898
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 15:41:39 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id o8KEfdTP031708
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2010 15:41:39 +0100
+Date: Mon, 20 Sep 2010 16:41:37 +0200
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: Sonny Rao <sonnyrao@us.ibm.com>
+Subject: Re: [PATCH 1/2]: Powerpc: Fix EHCA driver on relocatable kernel
+Message-ID: <20100920164137.2c86faef@alex-laptop>
+In-Reply-To: <20100820040809.GS16505@us.ibm.com>
+References: <20100820040809.GS16505@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-rdma@vger.kernel.org, fenkes@de.ibm.com,
+	linuxppc-dev@lists.ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
->=20
-> > @@ -219,6 +219,7 @@ struct rio_net {
-> >  /**
-> >   * struct rio_switch - RIO switch info
-> >   * @node: Node in global list of switches
-> > + * @rdev: Associated RIO device structure
-> >   * @switchid: Switch ID that is unique across a network
-> >   * @hopcount: Hopcount to this switch
-> >   * @destid: Associated destid in the path
-> > @@ -234,6 +235,7 @@ struct rio_net {
-> >   */
-> >  struct rio_switch {
-> >  	struct list_head node;
-> > +	struct rio_dev *rdev;
-> >  	u16 switchid;
-> >  	u16 hopcount;
-> >  	u16 destid;
->=20
-> What is the locking for rdev?
+On Thu, 19 Aug 2010 23:08:09 -0500
+Sonny Rao <sonnyrao@us.ibm.com> wrote:
 
-This question prompted me consider the following change:
+> Some modules (like eHCA) want to map all of kernel memory, for this to
+> work with a relocated kernel, we need to export kernstart_addr so
+> modules can use PHYSICAL_START and memstart_addr so they could use
+> MEMORY_START.  Note that the 32bit code already exports these symbols.
+> 
+> Signed-off-By: Sonny Rao <sonnyrao@us.ibm.com>
 
-Because the rio_switch structure (in current implementation) is a
-dynamically allocated part of rio_dev, I think it may be simpler to
-combine them into single allocation by using zero length array
-declaration:
+Acked-by: Alexander Schmidt <alexs@linux.vnet.ibm.com>
 
-struct rio_dev {
-    struct list_head global_list;
-    struct list_head net_list;
-    .....
-    ..... rest of rio_dev
-    .....
-    struct rio_switch switch[0];
-}
-
-This will remove extra memory allocation, remove overlapping structure
-members and clean code sections like one shown below:
-
-	u8 hopcount =3D 0xff;
-	u16 destid =3D rdev->destid;
-
-	if (rdev->rswitch) {
-		destid =3D rdev->rswitch->destid;
-		hopcount =3D rdev->rswitch->hopcount;
-	}   =20
-
-And this looks better aligned with RapidIO definitions - both: endpoints
-and switches are RIO devices. The current implementation of rio_dev
-somewhat separates rio_switch from its common part (this is why I have
-added that link into rio_switch). We may keep using the pointer to
-associated rio_dev, but reworking the rio_dev structure seems better way
-to me.
-
-Please, let me know what do you think about this conversion. And if
-there are no objections I will make a patch.
-
-Alex.
-    =20
+> Index: common/arch/powerpc/mm/init_64.c
+> ===================================================================
+> --- common.orig/arch/powerpc/mm/init_64.c	2010-08-16 02:38:33.000000000 -0500
+> +++ common/arch/powerpc/mm/init_64.c	2010-08-16 02:39:25.000000000 -0500
+> @@ -79,7 +79,9 @@
+>  #endif /* CONFIG_PPC_STD_MMU_64 */
+> 
+>  phys_addr_t memstart_addr = ~0;
+> +EXPORT_SYMBOL(memstart_addr);
+>  phys_addr_t kernstart_addr;
+> +EXPORT_SYMBOL(kernstart_addr);
+> 
+>  void free_initmem(void)
+>  {
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
