@@ -1,43 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 38316B70AB
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 04:51:58 +1000 (EST)
-Received: from mail54-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail54-tx2-R.bigfish.com (Postfix) with ESMTP id B3F931203EE	for
-	<linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 18:51:55 +0000 (UTC)
-Received: from TX2EHSMHS031.bigfish.com (unknown [10.9.14.241])	by
-	mail54-tx2.bigfish.com (Postfix) with ESMTP id 3B530191805F	for
-	<linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 18:51:41 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8KIpdsO008039	for
-	<linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2010 11:51:39 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o8KJ724k000977	for <linuxppc-dev@ozlabs.org>;
-	Mon, 20 Sep 2010 14:07:02 -0500 (CDT)
-Date: Mon, 20 Sep 2010 13:51:36 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc: export ppc_tb_freq so that modules can
-	reference it
-Message-ID: <20100920135136.04ceb772@udp111988uds.am.freescale.net>
-In-Reply-To: <AANLkTi=RXjc=GZ+RRsKjL3qdYFayXOCX0s1SU5jojeXg@mail.gmail.com>
-References: <1284764008-19469-1-git-send-email-timur@freescale.com>
-	<AANLkTikmfd=2N3GE1zpTqQ59583EEe1PDXggwHBUAj_5@mail.gmail.com>
-	<AANLkTinidrifo3ry7o=DPKF96f3o4+_2zt7rsn=Zvh9D@mail.gmail.com>
-	<1284779678.30449.108.camel@pasglop>
-	<AC849F1A-BC8A-4705-90E0-26991FAE6EED@freescale.com>
-	<70810686-1EB6-4AD9-A89B-C2A8BA6AC30D@freescale.com>
-	<AANLkTi=sa1LJOnw4fK-fX23Egxm7NoJVNKB1vtc9Eg4q@mail.gmail.com>
-	<5610599F537DD74A8D1F5CC946A75073034792F7@az33exm25.fsl.freescale.net>
-	<AANLkTimSewEEhbBoBb+fpPgY9EbE5bWsknPS7OkQgkcy@mail.gmail.com>
-	<5610599F537DD74A8D1F5CC946A75073034792F9@az33exm25.fsl.freescale.net>
-	<AANLkTi=RXjc=GZ+RRsKjL3qdYFayXOCX0s1SU5jojeXg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
-	Tabi Timur-B04825 <B04825@freescale.com>, linux-watchdog@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7E2B6B70B8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 21 Sep 2010 05:18:13 +1000 (EST)
+Date: Mon, 20 Sep 2010 12:17:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+Subject: Re: [PATCH v2 03/10] RapidIO: Use stored ingress port number
+	instead of register read
+Message-Id: <20100920121725.66bb96d0.akpm@linux-foundation.org>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55201303D0E@CORPEXCH1.na.ads.idt.com>
+References: <1284476363-1677-1-git-send-email-alexandre.bounine@idt.com>
+	<1284476363-1677-4-git-send-email-alexandre.bounine@idt.com>
+	<20100914151219.5d92c6f9.akpm@linux-foundation.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E55201303D0E@CORPEXCH1.na.ads.idt.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,31 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 18 Sep 2010 14:22:12 -0400
-Josh Boyer <jwboyer@gmail.com> wrote:
+On Mon, 20 Sep 2010 07:31:22 -0700
+"Bounine, Alexandre" <Alexandre.Bounine@idt.com> wrote:
 
-> Capitalizing?  The patch you posted that uses this symbol is for a GPL
-> driver so you gain or lose nothing by having this symbol be
-> EXPORT_SYMBOL_GPL.  Are you somehow advocating and getting some sort
-> of gain by allowing non-GPL modules?  If so, I find that unfortunate.
-> If not, then I guess I don't understand what you mean by capitalizing.
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > @@ -219,6 +219,7 @@ struct rio_net {
+> > >  /**
+> > >   * struct rio_switch - RIO switch info
+> > >   * @node: Node in global list of switches
+> > > + * @rdev: Associated RIO device structure
+> > >   * @switchid: Switch ID that is unique across a network
+> > >   * @hopcount: Hopcount to this switch
+> > >   * @destid: Associated destid in the path
+> > > @@ -234,6 +235,7 @@ struct rio_net {
+> > >   */
+> > >  struct rio_switch {
+> > >  	struct list_head node;
+> > > +	struct rio_dev *rdev;
+> > >  	u16 switchid;
+> > >  	u16 hopcount;
+> > >  	u16 destid;
+> > 
+> > What is the locking for rdev?
+> 
+> This question prompted me consider the following change:
+> 
+> Because the rio_switch structure (in current implementation) is a
+> dynamically allocated part of rio_dev, I think it may be simpler to
+> combine them into single allocation by using zero length array
+> declaration:
+> 
+> struct rio_dev {
+>     struct list_head global_list;
+>     struct list_head net_list;
+>     .....
+>     ..... rest of rio_dev
+>     .....
+>     struct rio_switch switch[0];
+> }
+> 
+> This will remove extra memory allocation, remove overlapping structure
+> members and clean code sections like one shown below:
+> 
+> 	u8 hopcount = 0xff;
+> 	u16 destid = rdev->destid;
+> 
+> 	if (rdev->rswitch) {
+> 		destid = rdev->rswitch->destid;
+> 		hopcount = rdev->rswitch->hopcount;
+> 	}    
+> 
+> And this looks better aligned with RapidIO definitions - both: endpoints
+> and switches are RIO devices. The current implementation of rio_dev
+> somewhat separates rio_switch from its common part (this is why I have
+> added that link into rio_switch). We may keep using the pointer to
+> associated rio_dev, but reworking the rio_dev structure seems better way
+> to me.
+> 
+> Please, let me know what do you think about this conversion. And if
+> there are no objections I will make a patch.
+> 
 
-One can dislike DRM (even a very weak form such as this) without having
-a particular desire to go outside the bounds of what it allows.
+If you say so ;)
 
-I thought EXPORT_SYMBOL_GPL was originally meant to indicate the
-symbols whose use is likely to be indicitave of code that is, in some
-copyright-meaningful way, derived from GPL code?  I have a hard time
-seeing that being the case here.  If every symbol is made GPL-only,
-then that just gives the binary-only people[1] more incentive to
-circumvent the entire mechanism.  It loses its meaning.
-
-Documentation/DocBook/kernel-hacking.tmpl says, "It implies that the
-function is considered an internal implementation issue, and not really
-an interface."
-
--Scott
-
-[1] Plus anyone who might want to make a kernel module out of code
-which is open source, but not under a license the GPLv2 is compatible
-with.
+The "variable length array at the end of the struct" thing is pretty
+commonly used and works well.  As long as we never want to change the
+number of switches on the fly (hotplug?).
