@@ -1,34 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id C00A1B70E4
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id B5003B70E2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Sep 2010 08:07:14 +1000 (EST)
-Received: from mail81-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail81-tx2-R.bigfish.com (Postfix) with ESMTP id 83FF8C9035B	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2010 22:07:03 +0000 (UTC)
-Received: from TX2EHSMHS038.bigfish.com (unknown [10.9.14.243])	by
-	mail81-tx2.bigfish.com (Postfix) with ESMTP id 45D4A45804C	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2010 22:07:03 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o8LM71xn029793	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 15:07:01 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o8LM78QS004158	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 17:07:08 -0500 (CDT)
-Date: Tue, 21 Sep 2010 17:07:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Anderson, Trevor" <tanderson@curtisswright.com>
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-Message-ID: <20100921170700.53a99e56@udp111988uds.am.freescale.net>
-In-Reply-To: <1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
+	Wed, 22 Sep 2010 08:09:26 +1000 (EST)
+Received: by iwn4 with SMTP id 4so2320517iwn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 21 Sep 2010 15:09:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: "david.hagood@gmail.com" <david.hagood@gmail.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <2C3F2C02-35B6-46AF-82DA-44ACCBFB8362@digitaldans.com>
+References: <1285066638-7473-1-git-send-email-leoli@freescale.com>
+	<877FD0B5-19A7-4A16-831E-369B80B104EA@kernel.crashing.org>
+	<AANLkTimiwtoa6i10OTcgFnvbvcO9N4KWHyt4Poj-yj=T@mail.gmail.com>
+	<20100921163456.7e2c9b32@udp111988uds.am.freescale.net>
+	<AANLkTine--kry0c0n87WOqYyi3AQOb2KnmNRs-MeXcQt@mail.gmail.com>
+	<20100921164944.164ed0af@udp111988uds.am.freescale.net>
+	<2C3F2C02-35B6-46AF-82DA-44ACCBFB8362@digitaldans.com>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Tue, 21 Sep 2010 17:08:54 -0500
+Message-ID: <AANLkTinKbBBbC1gmPewhn1f3MW-1MbARtiQZNX4w7Mi+@mail.gmail.com>
+Subject: Re: [PATCH] fsldma: add support to 36-bit physical address
+To: Dan Malek <ppc6dev@digitaldans.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, dan.j.williams@intel.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Sep 2010 17:37:15 -0400
-"Anderson, Trevor" <tanderson@curtisswright.com> wrote:
+On Tue, Sep 21, 2010 at 5:05 PM, Dan Malek <ppc6dev@digitaldans.com> wrote:
 
-> IRQ assignments for MPC8641D are "virtual", 
+> The DMA descriptors are accessed using DMA by the
+> controller itself.
 
-This is true for powerpc in general.
+Yes and no.  Technically, it is DMA, but it's not something that
+SWIOTLB could ever know about.  We just pass the physical address to
+the DMA controller, and it does a memory read to obtain the data.
+That's not the kind of DMA that SWIOTLB would deal with, I think.
 
-> meaning "made up" and quite difficult to determine by looking through code.
-> But I believe the plan goes something like this:
-> 
->   IRQ
-> ---------
->     0           No interrupt
->   1 - 15        External interrupts (only 1..12 would be used)
->  16 - 127       Internal interrupts - see Table 9-2 of 8641D ref man,
->             Add 15 to the numbers shown
-> 128 - 255       Yours, or your BSP's, to do with as you like
-> 256 - 511       Message Signaled Interrupts
-> 
-> If you look in the sample device trees for 8641 cards you'll see that
-> the interrupt values cited there for various devices match the 16..127
-> group above.
+> The APIs need to ensure proper coherency
+> between the CPU and the DMA controller for the
+> descriptor access. =A0The underlying implementation of the
+> API will depend upon the hardware capabilities that
+> ensure this coherency.
 
-There are two different numberspaces involved here.
+I think that's already covered.  The dma_set_mask() call is supposed
+to only affect the dma_map_single() calls that dmaengine makes, as
+Scott pointed out.
 
-The MPIC interrupt numberspace in the device tree (which is not
-virtual; it is a private numberspace to MPIC) is based on the offset of
-the registers for that interrupt source. External interrupts start at
-zero (which is valid), internal at 16, and special things like MSIs at
-higher numbers (I don't think it's quite 256).
+My question is, should dmaengine be using the same 'dev' that fsldma
+uses to allocate the DMA descriptors?  I wonder if the 'dev' should be
+allocated internally by dmaengine, or provided by the client drivers.
 
-The numberspace for virtual interrupts, which is what you pass to
-request_irq(), is dynamically allocated.  You shouldn't need to know
-anything about it other than that zero is invalid, and you get the
-virtual IRQ from irq_of_parse_and_map() or another such mapping
-function.
-
-In neither case is there a range that is set aside for you "to do with
-as you like".  If you have another interrupt controller and need a
-block of virtual interrupts, register the controller with
-irq_alloc_host() and you'll get a block assigned.
-
--Scott
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
