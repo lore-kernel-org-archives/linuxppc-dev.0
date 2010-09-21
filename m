@@ -1,22 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 48EC9B6EED
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 83132B70A6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Sep 2010 07:31:31 +1000 (EST)
-To: Tirumala Marri <tmarri@apm.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
+	Tue, 21 Sep 2010 11:00:53 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <7707889dee57e97ad50b4ce5c7697466@mail.gmail.com>
-References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-	<20100918210920.E05AE157D71@gemini.denx.de>
-	<7707889dee57e97ad50b4ce5c7697466@mail.gmail.com>
-Date: Mon, 20 Sep 2010 23:31:26 +0200
-Message-Id: <20100920213126.0A1B1157D71@gemini.denx.de>
-Cc: neilb@suse.de, yur@emcraft.com, linux-raid@vger.kernel.org,
-	herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
-	dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Generating elf kernel ?
+Date: Tue, 21 Sep 2010 03:00:40 +0200
+Message-ID: <52CF90264091A14888078A031D780F4306C8BD2F@ism-mail03.corp.ad.wrs.com>
+In-Reply-To: <20100920104353.5dbd9201@udp111988uds.am.freescale.net>
+References: <201009141053.11946.dargaud@lpsc.in2p3.fr><20100914125713.GB5768@radix50.net><201009151007.50706.dargaud@lpsc.in2p3.fr><4C90835E.4050803@windriver.com><20100915114912.06bc7ed1@schlenkerla.am.freescale.net><4C9182EC.5030900@windriver.com><20100916120944.11c45c31@schlenkerla.am.freescale.net><4C92CB51.5010008@windriver.com><20100917124448.255b08cc@schlenkerla.am.freescale.net><4C9569FF.6090807@windriver.com>
+	<20100920104353.5dbd9201@udp111988uds.am.freescale.net>
+From: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Tirumala Marri,
+> -----Original Message-----
+> From: Scott Wood [mailto:scottwood@freescale.com]=20
+> Sent: Monday, September 20, 2010 11:44 PM
+> To: Chen, Tiejun
+> Cc: linuxppc-dev@lists.ozlabs.org; Guillaume Dargaud
+> Subject: Re: Generating elf kernel ?
+>=20
+> On Sun, 19 Sep 2010 09:40:15 +0800
+> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
+>=20
+> > Scott Wood wrote:
+> > > On Fri, 17 Sep 2010 09:58:41 +0800
+> > > "tiejun.chen" <tiejun.chen@windriver.com> wrote:
+> > >=20
+> > >> Scott Wood wrote:
+> > >>> The guest OS *is* the same as native Linux, as far as=20
+> TLB handling=20
+> > >>> is concerned.
+> > >> Looks you means the TLB exception handler should be same between=20
+> > >> the native and the guest OS. Right?
+> > >=20
+> > > Yes.
+> >=20
+> > I don't think so. The HY should assist the guest OS on MMU since I=20
+> > already point the guest OS have no authority to create a=20
+> real TLB directly as I previously said.
+>=20
+> Of course the hypervisor assists, when a trap is taken.  That=20
+> doesn't mean the code is any different in the guest.
 
-In message <7707889dee57e97ad50b4ce5c7697466@mail.gmail.com> you wrote:
->
-> > > +/**
-> > > + * ppc440spe_can_rxor - check if the operands may be processed with RXOR
-> > > + */
-> > > +static int ppc440spe_can_rxor(struct page **srcs, int src_cnt,
-> > size_t len)
-> >
-> > Again, should this then not be in ppc440spe specific files?
-> >
-> >
-> > It seems the split / generalization is highly incomplete yet.
-> 
-> [Marri] Some of the stuff can go into ppc440spe-dma.h. This is just
-> Beginning to add more new DMA engines support. I expect more changes to
-> come in.
+This should be depend on the hypervisor design implementation. I think
+your=20
+option should be based on the Freescale hypervisor.
 
-Why would that go into a header file? This is source code, not header
-stuff. It should stay in a .c file!  [Note that Ilya asked the same
-question.]
+>=20
+> > > Yes, of course.  But that's not the point.  I was just=20
+> using it as a=20
+> > > convenient example because that's what I've recently done ELF=20
+> > > loading with...  There's no reason U-Boot couldn't do the same if=20
+> > > its ELF loader were updated to support device trees.  Currently=20
+> > > U-Boot loads bootwrapperless uImages to physical address zero.
+> >=20
+> > I never doubt the U-boot can do this for uImage. But I think we're=20
+> > always talking about vmlinux, a bare Image.
+>=20
+> uImage is pretty much a bare image.  It just has a header=20
+> with a checksum and some info like OS/architecture, kernel=20
+> version, build date, etc.
 
-Best regards,
+Yes. But it also inlcude load address and entry point used to u-boot.
 
-Wolfgang Denk
+>=20
+> There would be *no* problem doing this with vmlinux in U-Boot=20
+> if someone put in the code to pass a device tree.
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Intel's new motto: United we stand. Divided we fall!
+This is just I always emphasize previously.
+
+Cheers
+Tiejun
+
+>=20
+> -Scott
+>=20
+>=20
