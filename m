@@ -1,34 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id C9A85B70CD
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2010 03:52:57 +1000 (EST)
-Received: from mail55-va3 (localhost.localdomain [127.0.0.1])	by
-	mail55-va3-R.bigfish.com (Postfix) with ESMTP id 1655A41817D	for
-	<linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 17:52:53 +0000 (UTC)
-Received: from VA3EHSMHS016.bigfish.com (unknown [10.7.14.248])	by
-	mail55-va3.bigfish.com (Postfix) with ESMTP id 70DFE18B004C	for
-	<linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 17:52:52 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o8LHqn0g019944	for <linuxppc-dev@ozlabs.org>;
-	Tue, 21 Sep 2010 10:52:49 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o8LHqtn6014463	for <linuxppc-dev@ozlabs.org>;
-	Tue, 21 Sep 2010 12:52:55 -0500 (CDT)
-Date: Tue, 21 Sep 2010 12:52:47 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
-Subject: Re: [U-Boot] cuImage and multi image?
-Message-ID: <20100921125247.49f8d101@udp111988uds.am.freescale.net>
-In-Reply-To: <52CF90264091A14888078A031D780F4306C8BD30@ism-mail03.corp.ad.wrs.com>
-References: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
-	<4C91C77B.8080501@windriver.com>
-	<AANLkTikrYdi=V6jM4HS3V4XzMutGdkPA2qHRBgviKHM8@mail.gmail.com>
-	<52CF90264091A14888078A031D780F4306C8BD30@ism-mail03.corp.ad.wrs.com>
+Return-Path: <kyle@moffetthome.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, uboot <u-boot@lists.denx.de>
+In-Reply-To: <1282948239.2268.155.camel@jstultz-laptop>
+References: <cover.1281956490.git.richard.cochran@omicron.at>
+	<363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
+	<AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
+	<20100817085324.GB3330@riccoc20.at.omicron.at>
+	<1282090963.1734.97.camel@localhost>
+	<20100818071942.GA4096@riccoc20.at.omicron.at>
+	<1282176776.2865.100.camel@localhost.localdomain>
+	<20100819055518.GA4084@riccoc20.at.omicron.at>
+	<1282594125.3111.344.camel@localhost.localdomain>
+	<20100827123849.GC11657@riccoc20.at.omicron.at>
+	<1282948239.2268.155.camel@jstultz-laptop>
+From: Kyle Moffett <kyle@moffetthome.net>
+Date: Tue, 21 Sep 2010 16:47:45 -0400
+Message-ID: <AANLkTinRM3_kBc5S3wV=_S6P8+x7A43kz0qSYbixJYnq@mail.gmail.com>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+To: John Stultz <johnstul@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Richard Cochran <richardcochran@gmail.com>,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Sep 2010 03:03:22 +0200
-"Chen, Tiejun" <Tiejun.Chen@windriver.com> wrote:
+On Fri, Aug 27, 2010 at 18:30, John Stultz <johnstul@us.ibm.com> wrote:
+> On one side, there is the view that the kernel should abstract and hide
+> the hardware details to increase app portability. And the other is that
+> the raw hardware details should be exposed, so the OS stays out of the
+> way.
+>
+> Neither of these views are always right. Ideally we can come up with a
+> abstracted way to provide the hardware data needed that's generic enough
+> that applications don't have to be changed when moving between hardware
+> or configurations.
+>
+> The posix clock id interface is frustrating because the flat static
+> enumeration is really limiting.
+>
+> I wonder if a dynamic enumeration for posix clocks would be possibly a
+> way to go?
 
-> > -----Original Message-----
-> > From: Shawn Jin [mailto:shawnxjin@gmail.com] 
-> > Sent: Tuesday, September 21, 2010 1:53 AM
-> > To: Chen, Tiejun
-> > Cc: ppcdev; uboot
-> > Subject: Re: cuImage and multi image?
-> > 
-> > >> I have a cuImage kernel in order to support legacy u-boot and a 
-> > >> ramdisk image. Kernel boots fine if these two images are 
-> > separate and 
-> > >> "bootm $kernel $ramdisk" is used. But I can not make it to 
-> > work using 
-> > >> a single multi image that contains the kernel and ramdisk 
-> > images. Is 
-> > >> it even technically possible to boot a multi-image with cuboot 
-> > >> wrapper?
-> > >
-> > > Try the following steps:
-> > > ------
-> > > 1. cp <your ramdisk.gz> arch/powerpc/boot/ramdisk.image.gz
-> > > 2. make cuImage.initrd.<your target>
-> > >
-> > > You can get one Image, cuImage.initrd.<your target>, 
-> > including kernel and ramdisk.
-> > 
-> > A follow up question. With this method, the total image size
-> > (uncompressed) is limited to the 4MB (the link address of the 
-> > boot wrapper)?
-> 
-> No.
+Well how about something much more straightforward:
 
-Yes, unless you change the link address, or provide a vmlinux_alloc
-callback (which currently only happens on true OF, not cuImage).
+#define CLOCK_FD 0x80000000
+fd = open("/dev/clocks/some_clock_name", O_RDONLY);
+clock_gettime(CLOCK_FD | fd, &ts);
 
-Unless you're talking about the "(uncompressed)"?  The limit applies to
-the uncompressed boot image -- anything that the bootwrapper itself is
-decompressing.  It does not apply to any further uncompression of the
-ramdisk itself.
+This would provide all of the standard character-device semantics that
+everyone is accustomed to, and furthermore you could allow non-root
+users to manage specific clocks using just DAC permission bits.
 
--Scott
+You'd still probably need to add a clock_adjtimex() syscall, but it
+could easily fail with EINVAL for software or per-thread clocks, but
+that seems like it would nicely abstract the hardware without forcing
+a numeric address space.
+
+Cheers,
+Kyle Moffett
