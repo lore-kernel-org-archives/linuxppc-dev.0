@@ -1,25 +1,12 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 9A4A4B7105
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2010 15:43:19 +1000 (EST)
-Received: by eyg24 with SMTP id 24so69445eyg.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2010 22:43:17 -0700 (PDT)
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Arjen Van De Ven <arjanvandeven@gmail.com>, Neil Horman <nhorman@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <52CF90264091A14888078A031D780F4306C8C0A0@ism-mail03.corp.ad.wrs.com>
-References: <AANLkTinhvh+G1Q8yU0y5bMDVi5Sc=pYqSfAbXCeuHvBH@mail.gmail.com>
-	<4C91C77B.8080501@windriver.com>
-	<AANLkTikrYdi=V6jM4HS3V4XzMutGdkPA2qHRBgviKHM8@mail.gmail.com>
-	<52CF90264091A14888078A031D780F4306C8BD30@ism-mail03.corp.ad.wrs.com>
-	<20100921125247.49f8d101@udp111988uds.am.freescale.net>
-	<52CF90264091A14888078A031D780F4306C8C0A0@ism-mail03.corp.ad.wrs.com>
-Date: Tue, 21 Sep 2010 22:43:16 -0700
-Message-ID: <AANLkTi=kySFBW8Lwt_hoOZMObGc=kFom22GjbwoccQR-@mail.gmail.com>
-Subject: Re: [U-Boot] cuImage and multi image?
-From: Shawn Jin <shawnxjin@gmail.com>
-To: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, ppcdev <linuxppc-dev@ozlabs.org>,
-	uboot <u-boot@lists.denx.de>
+Subject: [PATCH] irqbalance,
+	powerpc: add IRQs without settable SMP affinity to banned list
+Date: Wed, 22 Sep 2010 16:04:17 +1000
+Message-ID: <12972.1285135457@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> > > A follow up question. With this method, the total image size
->> > > (uncompressed) is limited to the 4MB (the link address of
->> the boot
->> > > wrapper)?
->> >
->> > No.
->>
->> Yes, unless you change the link address, or provide a
->> vmlinux_alloc callback (which currently only happens on true
->> OF, not cuImage).
->>
->> Unless you're talking about the "(uncompressed)"? =A0The limit
->> applies to the uncompressed boot image -- anything that the
->> bootwrapper itself is decompressing. =A0It does not apply to
->> any further uncompression of the ramdisk itself.
->>
->
-> He should point the latter, "the total image size", including ramdisk.
-> But the link address should be limited for the boot Image, not for the
-> attached ramdisk.
+On pseries powerpc, IPIs are registered with an IRQ number so
+/proc/interrupts looks like this on a 2 core/2 thread machine:
 
-Thanks for the clarification. Scott, so what are the things that the
-bootwrapper is decompressing? The kernel for sure. And anything else?
-I understand that the ramdisk image will be decompressed later when
-trying to boot it.
+           CPU0       CPU1       CPU2       CPU3
+ 16:    3164282    3290514    1138794     983121   XICS             Level        IPI
+ 18:    2605674          0     304994          0   XICS             Level        lan0
+ 30:     400057          0     169209          0   XICS             Level        ibmvscsi
+LOC:     133734      77250     106425      91951   Local timer interrupts
+SPU:          0          0          0          0   Spurious interrupts
+CNT:          0          0          0          0   Performance monitoring interrupts
+MCE:          0          0          0          0   Machine check exceptions
 
-I have a large ramdisk image. The size of the image itself (i.e. the
-*.gz) is about 4MB. When the ramdisk was being decompressed in the
-later stage. It had the following errors. It seems to me that the
-ramdisk image somehow was corrupted. Did the script wrapper mess up
-the image? Is there any known bug in the wrapper? My kernel is 2.6.33.
-BTW the ramdisk image can be mounted properly if it's separated from
-the kernel image.
+Unfortunately this means irqbalance attempts to set the affinity of IPIs
+which is not possible.  So in the above case, when irqbalance is in
+performance mode due to heavy IPI, lan0 and ibmvscsi activity, it
+sometimes attempts to put the IPIs on one core (CPU0&1) and lan0 and
+ibmvscsi on the other core (CPU2&3).  This is suboptimal as we want lan0
+and ibmvscsi to be on separate cores and IPIs to be ignored.
 
-RAMDISK: gzip image found at block 0
-uncompression error
-VFS: Mounted root (ext2 filesystem) readonly on device 1:0.
-Freeing unused kernel memory: 104k init
-EXT2-fs (ram0): error: ext2_check_page: bad entry in directory #336: :
-rec_len is smaller than minimal - offset=3D0, inode=3D0, rec_len=3D0,
-name_len=3D0
-EXT2-fs (ram0): error: remounting filesystem read-only
-Kernel panic - not syncing: No init found.  Try passing init=3D option to k=
-ernel.
-Call Trace:
-[c7821f30] [c0006cd8] show_stack+0x40/0x168 (unreliable)
-[c7821f70] [c001cefc] panic+0x8c/0x178
-[c7821fc0] [c00026d4] init_post+0xe4/0xf4
-[c7821fd0] [c01ee224] kernel_init+0x108/0x130
-[c7821ff0] [c000dcc0] kernel_thread+0x4c/0x68
-Rebooting in 180 seconds..
+When irqblance attempts writes to the IPI smp_affinity (ie.
+/proc/irq/16/smp_affinity in the above example) it fails but irqbalance
+ignores currently ignores this.
 
-Thanks,
--Shawn.
+This patch catches these write fails and in this case adds that IRQ
+number to the banned IRQ list.  This will catch the above IPI case and
+any other IRQ where the SMP affinity can't be set.
+
+Tested on POWER6, POWER7 and x86.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+
+Index: irqbalance/irqlist.c
+===================================================================
+--- irqbalance.orig/irqlist.c
++++ irqbalance/irqlist.c
+@@ -67,7 +67,7 @@
+ 	DIR *dir;
+ 	struct dirent *entry;
+ 	char *c, *c2;
+-	int nr , count = 0;
++	int nr , count = 0, can_set = 1;
+ 	char buf[PATH_MAX];
+ 	sprintf(buf, "/proc/irq/%i", number);
+ 	dir = opendir(buf);
+@@ -80,7 +80,7 @@
+ 			size_t size = 0;
+ 			FILE *file;
+ 			sprintf(buf, "/proc/irq/%i/smp_affinity", number);
+-			file = fopen(buf, "r");
++			file = fopen(buf, "r+");
+ 			if (!file)
+ 				continue;
+ 			if (getline(&line, &size, file)==0) {
+@@ -89,7 +89,14 @@
+ 				continue;
+ 			}
+ 			cpumask_parse_user(line, strlen(line), irq->mask);
+-			fclose(file);
++			/*
++			 * Check that we can write the affinity, if
++			 * not take it out of the list.
++			 */
++			if (fwrite(line, strlen(line) - 1, 1, file) == 0)
++				can_set = 0;
++			if (fclose(file))
++				can_set = 0;
+ 			free(line);
+ 		} else if (strcmp(entry->d_name,"allowed_affinity")==0) {
+ 			char *line = NULL;
+@@ -122,7 +129,7 @@
+ 			count++;
+ 
+ 	/* if there is no choice in the allowed mask, don't bother to balance */
+-	if (count<2)
++	if ((count<2) || (can_set == 0))
+ 		 irq->balance_level = BALANCE_NONE;
+ 		
+ 
