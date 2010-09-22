@@ -1,28 +1,29 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Wed, 22 Sep 2010 12:14:21 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Kyle Moffett <kyle@moffetthome.net>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100922101421.GA3337@riccoc20.at.omicron.at>
-References: <AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
-	<20100817085324.GB3330@riccoc20.at.omicron.at>
-	<1282090963.1734.97.camel@localhost>
-	<20100818071942.GA4096@riccoc20.at.omicron.at>
-	<1282176776.2865.100.camel@localhost.localdomain>
-	<20100819055518.GA4084@riccoc20.at.omicron.at>
-	<1282594125.3111.344.camel@localhost.localdomain>
-	<20100827123849.GC11657@riccoc20.at.omicron.at>
-	<1282948239.2268.155.camel@jstultz-laptop>
-	<AANLkTinRM3_kBc5S3wV=_S6P8+x7A43kz0qSYbixJYnq@mail.gmail.com>
+Return-Path: <m.johansen@no.parkairsystems.com>
+Received: from mail1.parkairsystems.no (mail1.parkairsystems.no
+	[195.204.13.200])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3A7B7B70DB
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2010 20:40:15 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail1.parkairsystems.no (Postfix) with ESMTP id 13AB5B350
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2010 12:31:39 +0200 (CEST)
+Received: from mail1.parkairsystems.no ([127.0.0.1])
+	by localhost (mail1.parkairsystems.no [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id 6ne2MQU+8glA for <linuxppc-dev@ozlabs.org>;
+	Wed, 22 Sep 2010 12:31:35 +0200 (CEST)
+Received: from Exchange.parkairsystems.net (exchange.parkairsystems.net
+	[172.20.0.63])
+	by mail1.parkairsystems.no (Postfix) with ESMTP id 6243EB347
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2010 12:31:35 +0200 (CEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTinRM3_kBc5S3wV=_S6P8+x7A43kz0qSYbixJYnq@mail.gmail.com>
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	John Stultz <johnstul@us.ibm.com>, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Stephan Gatzka <stephan@gatzka.org>, netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Modifying mpc8308rdb.dts
+Date: Wed, 22 Sep 2010 12:32:20 +0200
+Message-ID: <DF61B4AD1C20A54EADF5C05E1F1110DE08D43B@Exchange.parkairsystems.net>
+From: "Maria Johansen" <m.johansen@no.parkairsystems.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,11 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 21, 2010 at 04:47:45PM -0400, Kyle Moffett wrote:
-> Well how about something much more straightforward:
+Hi,
 
-I am about to post another patch set for discussion, so please comment
-on it when it appears.
+I am working on an MPC8308rdb, and have needed to add support for spi
+and an lm75 thermal sensor on the i2c-bus. Is it possible to upload my
+changes to the "official" mpc8308rdb.dts, or should I just keep
+modifying it locally and hope the maintainers of the file will add
+support for more devices soon?
 
-Thanks,
-Richard
+I apologize if this may seem like a silly question, but this is the
+first time I feel the need to add something into the official kernel :)=20
+
+--=20
+Regards,
+Maria
