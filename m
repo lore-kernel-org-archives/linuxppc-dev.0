@@ -1,22 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A367EB70DA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Sep 2010 20:19:38 +1000 (EST)
-Date: Thu, 23 Sep 2010 20:19:23 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: matt mooney <mfm@muteddisk.com>
-Subject: Re: [PATCH 12/20] powerpc: change to new flag variables
-Message-Id: <20100923201923.366779a1.sfr@canb.auug.org.au>
-In-Reply-To: <1285224669-29865-1-git-send-email-mfm@muteddisk.com>
-References: <1285224669-29865-1-git-send-email-mfm@muteddisk.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ"
-Cc: kernel-janitors@vger.kernel.org, Alexander Graf <agraf@suse.de>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] irqbalance,
+	powerpc: add IRQs without settable SMP affinity to banned list
+In-reply-to: <1285230159.30617.2.camel@concordia>
+References: <12972.1285135457@neuling.org> <1285230159.30617.2.camel@concordia>
+Date: Thu, 23 Sep 2010 20:57:20 +1000
+Message-ID: <1243.1285239440@neuling.org>
+Cc: nhorman@tuxdriver.com, Neil Horman <nhorman@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Arjen Van De Ven <arjanvandeven@gmail.com>, arjan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +19,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Matt,
+> > +		if (fwrite(line, strlen(line) - 1, 1, file) == 0)
+> 
+> if (fputs(line, file) == EOF)
 
-On Wed, 22 Sep 2010 23:51:09 -0700 matt mooney <mfm@muteddisk.com> wrote:
->
-> Replace EXTRA_CFLAGS with ccflags-y and EXTRA_AFLAGS with asflags-y.
+Good point thanks... new patch below
 
-This looks good.  One comment below ...
+Mikey
 
-> --- a/arch/powerpc/platforms/pseries/Makefile
-> +++ b/arch/powerpc/platforms/pseries/Makefile
-> @@ -1,10 +1,5 @@
-> -ifeq ($(CONFIG_PPC64),y)
-> -EXTRA_CFLAGS		+=3D -mno-minimal-toc
-> -endif
-> -
-> -ifeq ($(CONFIG_PPC_PSERIES_DEBUG),y)
-> -EXTRA_CFLAGS		+=3D -DDEBUG
-> -endif
-> +ccflags-$(CONFIG_PPC64)			:=3D -mno-minimal-toc
-> +ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+=3D -DDEBUG
-> =20
->  obj-y			:=3D lpar.o hvCall.o nvram.o reconfig.o \
->  			   setup.o iommu.o event_sources.o ras.o \
-> @@ -23,7 +18,7 @@ obj-$(CONFIG_MEMORY_HOTPLUG)	+=3D hotplug-memory.o
->  obj-$(CONFIG_HVC_CONSOLE)	+=3D hvconsole.o
->  obj-$(CONFIG_HVCS)		+=3D hvcserver.o
->  obj-$(CONFIG_HCALL_STATS)	+=3D hvCall_inst.o
-> -obj-$(CONFIG_PHYP_DUMP)	+=3D phyp_dump.o
-> +obj-$(CONFIG_PHYP_DUMP)		+=3D phyp_dump.o
->  obj-$(CONFIG_CMM)		+=3D cmm.o
->  obj-$(CONFIG_DTL)		+=3D dtl.o
+irqbalance, powerpc: add IRQs without settable SMP affinity to banned list
 
-This looks like a spurious extra hunk.
+On pseries powerpc, IPIs are registered with an IRQ number so
+/proc/interrupts looks like this on a 2 core/2 thread machine:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+           CPU0       CPU1       CPU2       CPU3
+ 16:    3164282    3290514    1138794     983121   XICS             Level        IPI
+ 18:    2605674          0     304994          0   XICS             Level        lan0
+ 30:     400057          0     169209          0   XICS             Level        ibmvscsi
+LOC:     133734      77250     106425      91951   Local timer interrupts
+SPU:          0          0          0          0   Spurious interrupts
+CNT:          0          0          0          0   Performance monitoring interrupts
+MCE:          0          0          0          0   Machine check exceptions
 
---Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ
-Content-Type: application/pgp-signature
+Unfortunately this means irqbalance attempts to set the affinity of IPIs
+which is not possible.  So in the above case, when irqbalance is in
+performance mode due to heavy IPI, lan0 and ibmvscsi activity, it
+sometimes attempts to put the IPIs on one core (CPU0&1) and lan0 and
+ibmvscsi on the other core (CPU2&3).  This is suboptimal as we want lan0
+and ibmvscsi to be on separate cores and IPIs to be ignored.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+When irqblance attempts writes to the IPI smp_affinity (ie.
+/proc/irq/16/smp_affinity in the above example) it fails but irqbalance
+ignores currently ignores this.
 
-iQEcBAEBAgAGBQJMmymrAAoJEDMEi1NhKgbs3pEIAKIWVwdyxN2glmFn2xoe5p0z
-pX4OLcx1oFXurmzdbbnjbVH3BDNPhapfoHs3B2iKr+szw0G1hfFDpX5s5ZC2dSEj
-w2IhV0gSl27nt2f2HdxbNxSElOTsr/Nb32MVaJBXXoOlrSWb4NVxRCA+VgrJ+dt0
-1HbP94xWUIZDrOdojkQScH7SPgjkfMbtAQJfxjLfwAaFPcs9Zpawq3np4VZfGduP
-8kCAWZ+aTt+FWfGcW0sM4JeB5mwnrozlHR3SZD6YDRxFob/0HsqJXNkmHaudv+kQ
-yKs3sFz4HO3zol75i1yajDDl8GsrPlNQ0GIC2WGxTxSUJ4hJDpMtJmoF12/z1mE=
-=uQp9
------END PGP SIGNATURE-----
+This patch catches these write fails and in this case adds that IRQ
+number to the banned IRQ list.  This will catch the above IPI case and
+any other IRQ where the SMP affinity can't be set.
 
---Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ--
+Tested on POWER6, POWER7 and x86.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+
+Index: irqbalance/irqlist.c
+===================================================================
+--- irqbalance.orig/irqlist.c
++++ irqbalance/irqlist.c
+@@ -67,7 +67,7 @@
+ 	DIR *dir;
+ 	struct dirent *entry;
+ 	char *c, *c2;
+-	int nr , count = 0;
++	int nr , count = 0, can_set = 1;
+ 	char buf[PATH_MAX];
+ 	sprintf(buf, "/proc/irq/%i", number);
+ 	dir = opendir(buf);
+@@ -80,7 +80,7 @@
+ 			size_t size = 0;
+ 			FILE *file;
+ 			sprintf(buf, "/proc/irq/%i/smp_affinity", number);
+-			file = fopen(buf, "r");
++			file = fopen(buf, "r+");
+ 			if (!file)
+ 				continue;
+ 			if (getline(&line, &size, file)==0) {
+@@ -89,7 +89,14 @@
+ 				continue;
+ 			}
+ 			cpumask_parse_user(line, strlen(line), irq->mask);
+-			fclose(file);
++			/*
++			 * Check that we can write the affinity, if
++			 * not take it out of the list.
++			 */
++			if (fputs(line, file) == EOF)
++				can_set = 0;
++			if (fclose(file))
++				can_set = 0;
+ 			free(line);
+ 		} else if (strcmp(entry->d_name,"allowed_affinity")==0) {
+ 			char *line = NULL;
+@@ -122,7 +129,7 @@
+ 			count++;
+ 
+ 	/* if there is no choice in the allowed mask, don't bother to balance */
+-	if (count<2)
++	if ((count<2) || (can_set == 0))
+ 		 irq->balance_level = BALANCE_NONE;
+ 		
+ 
