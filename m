@@ -1,23 +1,22 @@
-Return-Path: <nhorman@tuxdriver.com>
-Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CED64B70EC
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 00:02:31 +1000 (EST)
-Date: Thu, 23 Sep 2010 09:13:02 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] irqbalance, powerpc: add IRQs without settable SMP
-	affinity to banned list
-Message-ID: <20100923131302.GA6560@shamino.rdu.redhat.com>
-References: <12972.1285135457@neuling.org> <1285230159.30617.2.camel@concordia>
-	<1243.1285239440@neuling.org>
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 71AACB70DA
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 00:10:34 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1243.1285239440@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Neil Horman <nhorman@gmail.com>,
-	Arjen Van De Ven <arjanvandeven@gmail.com>, arjan@linux.intel.com
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: MPC8641D PEX: programming OWBAR in Endpoint mode?
+Date: Thu, 23 Sep 2010 16:10:26 +0200
+Message-ID: <52CF90264091A14888078A031D780F4306C8C14B@ism-mail03.corp.ad.wrs.com>
+In-Reply-To: <1285240268.2454.8.camel@chumley>
+References: <08f8439b89ad5771221aaba1cee86fc4.squirrel@localhost>
+	<52CF90264091A14888078A031D780F4306C8C0FF@ism-mail03.corp.ad.wrs.com>
+	<1285240268.2454.8.camel@chumley>
+From: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
+To: "David Hagood" <david.hagood@gmail.com>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,91 +26,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 23, 2010 at 08:57:20PM +1000, Michael Neuling wrote:
-> 
-> > > +		if (fwrite(line, strlen(line) - 1, 1, file) == 0)
-> > 
-> > if (fputs(line, file) == EOF)
-> 
-> Good point thanks... new patch below
-> 
-> Mikey
-> 
-> irqbalance, powerpc: add IRQs without settable SMP affinity to banned list
-> 
-> On pseries powerpc, IPIs are registered with an IRQ number so
-> /proc/interrupts looks like this on a 2 core/2 thread machine:
-> 
->            CPU0       CPU1       CPU2       CPU3
->  16:    3164282    3290514    1138794     983121   XICS             Level        IPI
->  18:    2605674          0     304994          0   XICS             Level        lan0
->  30:     400057          0     169209          0   XICS             Level        ibmvscsi
-> LOC:     133734      77250     106425      91951   Local timer interrupts
-> SPU:          0          0          0          0   Spurious interrupts
-> CNT:          0          0          0          0   Performance monitoring interrupts
-> MCE:          0          0          0          0   Machine check exceptions
-> 
-> Unfortunately this means irqbalance attempts to set the affinity of IPIs
-> which is not possible.  So in the above case, when irqbalance is in
-> performance mode due to heavy IPI, lan0 and ibmvscsi activity, it
-> sometimes attempts to put the IPIs on one core (CPU0&1) and lan0 and
-> ibmvscsi on the other core (CPU2&3).  This is suboptimal as we want lan0
-> and ibmvscsi to be on separate cores and IPIs to be ignored.
-> 
-> When irqblance attempts writes to the IPI smp_affinity (ie.
-> /proc/irq/16/smp_affinity in the above example) it fails but irqbalance
-> ignores currently ignores this.
-> 
-> This patch catches these write fails and in this case adds that IRQ
-> number to the banned IRQ list.  This will catch the above IPI case and
-> any other IRQ where the SMP affinity can't be set.
-> 
-> Tested on POWER6, POWER7 and x86.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> 
-> Index: irqbalance/irqlist.c
-> ===================================================================
-> --- irqbalance.orig/irqlist.c
-> +++ irqbalance/irqlist.c
-> @@ -67,7 +67,7 @@
->  	DIR *dir;
->  	struct dirent *entry;
->  	char *c, *c2;
-> -	int nr , count = 0;
-> +	int nr , count = 0, can_set = 1;
->  	char buf[PATH_MAX];
->  	sprintf(buf, "/proc/irq/%i", number);
->  	dir = opendir(buf);
-> @@ -80,7 +80,7 @@
->  			size_t size = 0;
->  			FILE *file;
->  			sprintf(buf, "/proc/irq/%i/smp_affinity", number);
-> -			file = fopen(buf, "r");
-> +			file = fopen(buf, "r+");
->  			if (!file)
->  				continue;
->  			if (getline(&line, &size, file)==0) {
-> @@ -89,7 +89,14 @@
->  				continue;
->  			}
->  			cpumask_parse_user(line, strlen(line), irq->mask);
-> -			fclose(file);
-> +			/*
-> +			 * Check that we can write the affinity, if
-> +			 * not take it out of the list.
-> +			 */
-> +			if (fputs(line, file) == EOF)
-> +				can_set = 0;
-This is maybe a nit, but writing to the affinity file can fail for a few
-different reasons, some of them permanent, some transient.  For instance, if
-we're in a memory constrained condition temporarily irq_affinity_proc_write
-might return -ENOMEM.  Might it be better to modify this code so that, instead
-of using fputs to merge the various errors into an EOF, we use some other write
-method that lets us better determine the error and selectively ban the interrupt
-only for those errors which we consider permanent?
+> -----Original Message-----
+> From: David Hagood [mailto:david.hagood@gmail.com]=20
+> Sent: Thursday, September 23, 2010 7:11 PM
+> To: Chen, Tiejun; linuxppc-dev@ozlabs.org
+> Subject: RE: MPC8641D PEX: programming OWBAR in Endpoint mode?
+>=20
+> On Thu, 2010-09-23 at 05:21 +0200, Chen, Tiejun wrote:
+> > > I can get the device to show up on the host's PCI bus, I can
+> >=20
+> > This only ensure you can access the PCIe configure space.
+> Not quite: I can also read the BARs that I program, and the=20
+> memory behind them on the PPC.
 
-Otherwise this looks fine to me.
+Absolutely.=20
 
-Thanks
-Neil
+> >=20
+> > > program the inbound ATMUs such that the BARS are updated when the=20
+> > > host (re-)scans them, but I cannot for the life of me get
+> >=20
+> > What value are configured to IntBound REGs?
+> I can program them at run time via sysfs on the PPC's side,=20
+> so there is no single set of values. However, I am pointing=20
+> them at the PPC's RAM space, and as I stated above, I can=20
+> read the PPC's RAM from the host side via the BARs.
+
+I read your email again and something hint me. I notice you clarify you
+already condigure InBound successfully. Right? If so I'm a bit confused.
+For PCIe EP mode PEXIWBARs are not implemented in the memory-mapped
+space. If you read any PEXIWBAR these registers always return zero
+regardless of writing any value at first.=20
+
+You only can program 4 inbound BARs by type 0 configure action like
+normal PCIe device.
+
+>=20
+> > How do you configure OWS of PEXOWAR?
+> >=20
+> > I means you still access that if OWS is match the whole=20
+> target memory=20
+> > size even when '0' is as the internal platform address.
+> As I understand it, not if the OWS is not correctly mapped on=20
+> the PPC side - the PEX outbound ATMU's OWBAR must be mapped=20
+> to a region of the PPCs address space that is also mapped to=20
+> PEX in the LAW. The LAW does NOT indicate that PPC address 0=20
+> is mapped to the PEX.
+
+If there is no any law entry for PCIe the kernel should trap machine
+check when you access PCIe space. And as my above comment I'm afraid you
+mix up InBound and OutBound on EP mode? So you always read zero from
+your so-called OutBound? I means that should be PEXIWBAR in fact. I'm
+not sure but you can check this.
+
+>=20
+> >=20
+> > Out_be32 should be fine for atmu REGs. And also you can refe to the=20
+> > function, setup_pci_atmu & setup_one_atmu, on the file,=20
+> > arch/powerpc/sysdev/fsl_pci.c, to know how to access atmu=20
+> REGs. Often=20
+> > you should disable them, configure then enable/invoke atmu antry as=20
+> > normal configuring sequent.
+> I have tried disabling the outbound ATMU when I program it,=20
+> with no change.
+> I have looked at the functions you mention, and that is a=20
+> part of my confusion, as they aren't doing anything different=20
+> than I am.
+
+I only means you can refer how to access these registers.
+
+> >=20
+> > Additionally I'm a bit afraid your initial phase :) As you=20
+> know PCIe=20
+> > would be used as RC mode on Freescale PowerPC kernel. So I=20
+> don't know=20
+> > if you also drop this path on your kernel to conflict each other :)
+> I have tried doing this under a kernel built without PCI=20
+> support with no change.
+
+Good.
+
+Tiejun
+
+>=20
+>=20
+>=20
