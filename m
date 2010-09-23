@@ -1,22 +1,28 @@
-Return-Path: <mfm@muteddisk.com>
-Received: from qmta08.emeryville.ca.mail.comcast.net
-	(qmta08.emeryville.ca.mail.comcast.net [76.96.30.80])
-	by ozlabs.org (Postfix) with ESMTP id DC387B70FB
+Return-Path: <cl@linux.com>
+Received: from smtp109.prem.mail.ac4.yahoo.com
+	(smtp109.prem.mail.ac4.yahoo.com [76.13.13.92])
+	by ozlabs.org (Postfix) with SMTP id EEC95B70E8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 03:58:23 +1000 (EST)
-Date: Thu, 23 Sep 2010 10:49:18 -0700
-From: matt mooney <mfm@muteddisk.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 12/20] powerpc: change to new flag variables
-Message-ID: <20100923174918.GA3035@haskell.muteddisk.com>
-References: <1285224669-29865-1-git-send-email-mfm@muteddisk.com>
-	<20100923201923.366779a1.sfr@canb.auug.org.au>
+	Fri, 24 Sep 2010 04:36:49 +1000 (EST)
+Date: Thu, 23 Sep 2010 13:36:41 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Jacob Keller <jacob.keller@gmail.com>
+Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
+In-Reply-To: <AANLkTim0JqVTyvrvjLRp1Cg423MdrwmyZG2uN6uSyeLb@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.1009231327000.2962@router.home>
+References: <cover.1285261533.git.richard.cochran@omicron.at>
+	<alpine.DEB.2.00.1009231238170.2962@router.home>
+	<AANLkTim0JqVTyvrvjLRp1Cg423MdrwmyZG2uN6uSyeLb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100923201923.366779a1.sfr@canb.auug.org.au>
-Cc: kernel-janitors@vger.kernel.org, Alexander Graf <agraf@suse.de>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20:19 Thu 23 Sep     , Stephen Rothwell wrote:
-> Hi Matt,
-> 
-> On Wed, 22 Sep 2010 23:51:09 -0700 matt mooney <mfm@muteddisk.com> wrote:
+On Thu, 23 Sep 2010, Jacob Keller wrote:
+
+> > There is a reason for not being able to shift posix clocks: The system has
+> > one time base. The various clocks are contributing to maintaining that
+> > sytem wide time.
 > >
-> > Replace EXTRA_CFLAGS with ccflags-y and EXTRA_AFLAGS with asflags-y.
-> 
-> This looks good.  One comment below ...
-> 
-> > --- a/arch/powerpc/platforms/pseries/Makefile
-> > +++ b/arch/powerpc/platforms/pseries/Makefile
-> > @@ -1,10 +1,5 @@
-> > -ifeq ($(CONFIG_PPC64),y)
-> > -EXTRA_CFLAGS		+= -mno-minimal-toc
-> > -endif
-> > -
-> > -ifeq ($(CONFIG_PPC_PSERIES_DEBUG),y)
-> > -EXTRA_CFLAGS		+= -DDEBUG
-> > -endif
-> > +ccflags-$(CONFIG_PPC64)			:= -mno-minimal-toc
-> > +ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
-> >  
-> >  obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
-> >  			   setup.o iommu.o event_sources.o ras.o \
-> > @@ -23,7 +18,7 @@ obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
-> >  obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
-> >  obj-$(CONFIG_HVCS)		+= hvcserver.o
-> >  obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
-> > -obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
-> > +obj-$(CONFIG_PHYP_DUMP)		+= phyp_dump.o
-> >  obj-$(CONFIG_CMM)		+= cmm.o
-> >  obj-$(CONFIG_DTL)		+= dtl.o
-> 
-> This looks like a spurious extra hunk.
+> > Adjusting clocks is absolutely essential for proper functioning of the PTP
+> protocol. The slave obtains and calculates the offset from master and uses
+> that in order to adjust the clock properly, The problem is that the
+> timestamps are done via the hardware. We need a method to expose that
+> hardware so that the ptp software can properly adjust those clocks.
 
-Hi Stephen,
+There is no way to use that clock directly to avoid all the user space
+tuning etc? There are already tuning mechanisms in the kernel that do this
+with system time based on periodic clocks. If you calculate the
+nanoseconds since the epoch then you should be able to use that to tune
+system time.
 
-Yeah your right, logically it doesn't follow from my changeset. I should
-have left it alone, but it was the only line in the file that didn't align
-properly with its surrounding area.
+> > I do not understand why you want to maintain different clocks running at
+> > different speeds. Certainly interesting for some uses I guess that I
+> > do not have the energy to imagine right now. But can we get the PTP killer
+> > feature of synchronized accurate system time first?
+> >
+>
+> The problem is maintaining a hardware clock at the correct speed/frequency
+> and time. The timestamping is done via hardware, and that hardware clock
+> needs to be accurate. We need to be able to modify that clock. Yes, having
+> the system time be the same value would be nice, but the problem comes
+> because we don't want to jump through hoops to keep that hardware clock
+> accurate to the ptp protocol running on the network.
 
--mfm
+Then allow system time == hardware clock?
+
+> All of the necessary features for microsecond or better accuracy are done
+> via the hardware. You can get accuracy to within <10 mircoseconds while only
+> sending sync packets and such once per second. The reason is because the
+> hardware timestamps are very accurate. But if we can't properly adjust the
+> clocks time and frequency, we cannot maintain the accuracy of the
+> timestamps.
+
+You can already adjust the system time with the existing APIs. Tuning
+hardware clocks is currently done using device specific controls. But I
+would think that you do not need to expose this to user space if you can
+do it all in kernel.
