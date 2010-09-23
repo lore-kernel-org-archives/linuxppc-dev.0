@@ -1,30 +1,33 @@
-Return-Path: <cl@linux.com>
-Received: from smtp107.prem.mail.ac4.yahoo.com
-	(smtp107.prem.mail.ac4.yahoo.com [76.13.13.46])
-	by ozlabs.org (Postfix) with SMTP id CDB25B70E5
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 2EA0BB70D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 06:32:56 +1000 (EST)
-Date: Thu, 23 Sep 2010 15:32:50 -0500 (CDT)
-From: Christoph Lameter <cl@linux.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 6/8] ptp: Added a clock that uses the eTSEC found on the
-	MPC85xx.
-In-Reply-To: <20100923214359.3f287b11@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.DEB.2.00.1009231527330.7522@router.home>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<57b64051c816dc9cb856bbb9f38fc901c9d3d651.1285261535.git.richard.cochran@omicron.at>
-	<alpine.DEB.2.00.1009231348150.2962@router.home>
-	<20100923214359.3f287b11@lxorguk.ukuu.org.uk>
+	Fri, 24 Sep 2010 06:34:14 +1000 (EST)
+Received: from mail182-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail182-tx2-R.bigfish.com (Postfix) with ESMTP id A306A11886DC	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2010 20:34:03 +0000 (UTC)
+Received: from TX2EHSMHS038.bigfish.com (unknown [10.9.14.244])	by
+	mail182-tx2.bigfish.com (Postfix) with ESMTP id 49A7513A804F	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2010 20:34:03 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o8NKXn52019124	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Sep 2010 13:33:59 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8NKXtYe012195	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Sep 2010 15:33:55 -0500 (CDT)
+Date: Thu, 23 Sep 2010 15:33:47 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] powerpc: Fix invalid page flags in create TLB CAM path
+	for PTE_64BIT
+Message-ID: <20100923153347.4b517105@udp111988uds.am.freescale.net>
+In-Reply-To: <1285272615-22758-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1285272615-22758-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Sep 2010, Alan Cox wrote:
+On Thu, 23 Sep 2010 16:10:15 -0400
+Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
 
-> > Please do not introduce useless additional layers for clock sync. Load
-> > these ptp clocks like the other regular clock modules and make them sync
-> > system time like any other clock.
->
-> I don't think you understand PTP. PTP has masters, a system can need to
-> be honouring multiple conflicting masters at once.
+> So the possibility exists to wrongly assign the user MAS3_U<RWX> bits
+> to kernel (PAGE_KERNEL_X) address space via the following code fragment:
+> 
+>         if (flags & _PAGE_USER) {
+>            TLBCAM[index].MAS3 |= MAS3_UX | MAS3_UR;
+>            TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_UW : 0);
+>         }
+> 
+> Here is a dump of the TLB info from Simics with the above code present:
+> ------
+> L2 TLB1
+>                                             GT                   SSS UUU V I
+>  Row  Logical           Physical            SS TLPID  TID  WIMGE XWR XWR F P   V
+> ----- ----------------- ------------------- -- ----- ----- ----- --- --- - -   -
+>   0   c0000000-cfffffff 000000000-00fffffff 00     0     0   M   XWR XWR 0 1   1
+>   1   d0000000-dfffffff 010000000-01fffffff 00     0     0   M   XWR XWR 0 1   1
+>   2   e0000000-efffffff 020000000-02fffffff 00     0     0   M   XWR XWR 0 1   1
+> 
+> Actually this conditional code was only used for two legacy functions:
+> 
+>   1: support KGDB to set break point.
+>      KGDB already dropped this; now uses its core write to set break point.
+> 
+>   2: io_block_mapping() to create TLB in segmentation size (not PAGE_SIZE)
+>      for device IO space.
+>      This use case is also removed from the latest PowerPC kernel.
 
-The upshot of it all has to be some synchronized notion of time regardless
-of how many other things are going on under the hood. And the spec here
-suggests a hardware able to generate periodic accurate events that can be
-used to sync system time.
+io_block_mapping() went away, but the feature itself is still useful
+and might come back with something like this:
 
-> > Really guys: I want a PTP solution! Now! And not some idiotic additional
-> > kernel layers that just pass bits around because its so much fun and
-> > screws up clock accurary in due to the latency noise introduced while
-> > having so much fun with the bits.
->
-> There are some interesting complications in putting a PTP sync
-> interface in kernel.
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg33851.html
 
-If the PTP logic internally has to juggle multiple clocks then that is a
-complication for the driver ok. In any case the driver ultimately has to
-provide *one* source of time for the system to sync to.
+...though I'm not sure why such mappings would ever have user access.
+
+This could end up being used for large user pages by something like
+hugetlbfs or KVM, though.  I don't think we want to make large user
+pages fail, especailly if it just happens with the 32-bit page table
+format (which i may not what the person adding such a feature tests
+with).
+
+I don't see a generic accessor that can test PTE flags for user
+access -- in the absence of one, I guess we need an ifdef here.  Or at
+least put in a comment so anyone who adds a userspace use knows they
+need to fix it.
+
+-Scott
