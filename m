@@ -1,24 +1,22 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Date: Thu, 23 Sep 2010 22:34:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-Message-ID: <20100923223417.4ed62e5b@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.2.00.1009231533040.7522@router.home>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<alpine.DEB.2.00.1009231238170.2962@router.home>
-	<1285268380.2587.11.camel@localhost.localdomain>
-	<alpine.DEB.2.00.1009231402420.2962@router.home>
-	<1285273684.2587.92.camel@localhost.localdomain>
-	<alpine.DEB.2.00.1009231533040.7522@router.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, john stultz <johnstul@us.ibm.com>,
+Return-Path: <christian@riesch.at>
+Message-ID: <4C9BC620.3@riesch.at>
+Date: Thu, 23 Sep 2010 23:26:56 +0200
+From: Christian Riesch <christian@riesch.at>
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 6/8] ptp: Added a clock that uses the eTSEC found on the
+	MPC85xx.
+References: <cover.1285261533.git.richard.cochran@omicron.at>	<57b64051c816dc9cb856bbb9f38fc901c9d3d651.1285261535.git.richard.cochran@omicron.at>	<alpine.DEB.2.00.1009231348150.2962@router.home>
+	<20100923214359.3f287b11@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100923214359.3f287b11@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
 	devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	netdev@vger.kernel.org, linux-api@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
+	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
 	Richard Cochran <richardcochran@gmail.com>,
 	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,37 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> There is no other scalable time source available for fast timer access
-> than the time stamp counter in the cpu. Other time source require
-> memory accesses which is inherently slower.
+Alan Cox wrote:
+>> Please do not introduce useless additional layers for clock sync. Load
+>> these ptp clocks like the other regular clock modules and make them sync
+>> system time like any other clock.
+> 
+> I don't think you understand PTP. PTP has masters, a system can need to
+> be honouring multiple conflicting masters at once.
 
-On what hardware ?
+AFAIK the master's should not be conflicting. The Best Master Clock 
+algorithm (BMC) defined in IEEE1588 selects the best master clock. This 
+clock distributes its notion of time on the network while the other 
+masters, that is the other clocks/nodes that are configured to 
+potentially become a master, keep quiet. So usually we will only have 
+one source of time (the master clock selected by the BMC) and we will 
+steer our single PHC (PTP hardware clock) to follow this master (Of 
+course there may be use-cases that require more than one PTP clock, 
+e.g., for research purposes).
 
-> An accurate other time source is used to adjust this clock. NTP does that
-> via the clock interfaces from user space which has its problems with
-> accuracy. PTP can provide the network synced time access
-> that would a more accurate calibration of the time.
+However, if the clock selected by the BMC is switched off, loses its 
+network connection..., the second best clock is selected by the BMC and 
+becomes master. This clock may be less accurate and thus our slave clock 
+has to switch from one notion of time to another. Is that the conflict 
+you mentioned?
 
-Accuracy does not require speed of access. Accuracy requires predictible
-latency of access.
-
-> Userland code would introduce latencies that would make sub microsecond
-> time sync very difficult.
-
-You can take a multiple micro-second I/O stall or SMI trap on a PC so you
-already lost the battle on the platform you seem to be discussing.
-
-> You dont need the user APIs if you directly use the PTP time source to
-> steer the system clock. In fact I think you have to do it in kernel space
-> since user space latencies will degrade accuracy otherwise.
-
-PTP is not a 'time source' it is one or more source of time. The
-distinction is rather important.
-
-> It implies clock tuning in userspace for a potential sub microsecond
-> accurate clock. The clock accuracy will be limited by user space
-> latencies and noise. You wont be able to discipline the system clock
-> accurately.
-
-Noise matters, latency doesn't. And the kernel is getting more and more
-real time support all the time.
+Christian
