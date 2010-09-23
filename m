@@ -1,22 +1,30 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	by ozlabs.org (Postfix) with ESMTP id 7E2C6B70F4
+Return-Path: <cl@linux.com>
+Received: from smtp107.prem.mail.ac4.yahoo.com
+	(smtp107.prem.mail.ac4.yahoo.com [76.13.13.46])
+	by ozlabs.org (Postfix) with SMTP id CDB25B70E5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 06:32:10 +1000 (EST)
-Message-ID: <4C9BB6EB.7020802@intel.com>
-Date: Thu, 23 Sep 2010 13:22:03 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+	Fri, 24 Sep 2010 06:32:56 +1000 (EST)
+Date: Thu, 23 Sep 2010 15:32:50 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 6/8] ptp: Added a clock that uses the eTSEC found on the
+	MPC85xx.
+In-Reply-To: <20100923214359.3f287b11@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.2.00.1009231527330.7522@router.home>
+References: <cover.1285261533.git.richard.cochran@omicron.at>
+	<57b64051c816dc9cb856bbb9f38fc901c9d3d651.1285261535.git.richard.cochran@omicron.at>
+	<alpine.DEB.2.00.1009231348150.2962@router.home>
+	<20100923214359.3f287b11@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: "tmarri@apm.com" <tmarri@apm.com>
-Subject: Re: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
-References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-In-Reply-To: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "neilb@suse.de" <neilb@suse.de>, "yur@emcraft.com" <yur@emcraft.com>,
-	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"herbert@gondor.hengli.com.au" <herbert@gondor.hengli.com.au>,
-	"linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/17/2010 6:42 PM, tmarri@apm.com wrote:
-> From: Tirumala Marri<tmarri@apm.com>
+On Thu, 23 Sep 2010, Alan Cox wrote:
+
+> > Please do not introduce useless additional layers for clock sync. Load
+> > these ptp clocks like the other regular clock modules and make them sync
+> > system time like any other clock.
 >
-> This patch generalizes the existing drver/dma/ppc4xx/adma.c, so that
-> common code can be shared between different similar DMA engine
-> drivers in other SoCs.
+> I don't think you understand PTP. PTP has masters, a system can need to
+> be honouring multiple conflicting masters at once.
+
+The upshot of it all has to be some synchronized notion of time regardless
+of how many other things are going on under the hood. And the spec here
+suggests a hardware able to generate periodic accurate events that can be
+used to sync system time.
+
+> > Really guys: I want a PTP solution! Now! And not some idiotic additional
+> > kernel layers that just pass bits around because its so much fun and
+> > screws up clock accurary in due to the latency noise introduced while
+> > having so much fun with the bits.
 >
-> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
-> ---
->   drivers/dma/ppc4xx/adma.c        | 4370 +++-----------------------------------
->   drivers/dma/ppc4xx/adma.h        |  116 +-
->   drivers/dma/ppc4xx/ppc4xx-adma.h | 4020 +++++++++++++++++++++++++++++++++++
->   3 files changed, 4357 insertions(+), 4149 deletions(-)
->   create mode 100644 drivers/dma/ppc4xx/ppc4xx-adma.h
->
+> There are some interesting complications in putting a PTP sync
+> interface in kernel.
 
-Will both versions of this driver exist in the same kernel build?  For 
-example the iop-adma driver supports iop13xx and iop3xx, but we select 
-the archtitecture at build time?  Or, as I assume in this case, will the 
-two (maybe more?) ppc4xx adma drivers all be built in the same image, 
-more like ioatdma?
-
-In the latter case I would recommend a file structure like:
-
-drivers/dma/ppc4xx/adma.c
-drivers/dma/ppc4xx/adma_440spe.c
-drivers/dma/ppc4xx/adma_460ex.c
-
-With patches to move the chipset specific pieces to their own file. 
-Minimizing the code churn in adma.c, or at least showing a progression 
-of what is unique and needs to be moved.
-
-This would be similar to how ioatdma is structured and compiles a single 
-driver to cover the three major hardware revisions.
-
---
-Dan
+If the PTP logic internally has to juggle multiple clocks then that is a
+complication for the driver ok. In any case the driver ultimately has to
+provide *one* source of time for the system to sync to.
