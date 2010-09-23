@@ -1,36 +1,21 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D6934B7160
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 04:40:12 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8NIWSJc008568
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2010 12:32:28 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8NIe9U4120106
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2010 12:40:09 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o8NIe7go012955
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2010 12:40:08 -0600
-Date: Fri, 24 Sep 2010 00:10:02 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 0/8] De-couple sysfs memory directories from memory
-	sections
-Message-ID: <20100923184002.GM3952@balbir.in.ibm.com>
-References: <4C9A0F8F.2030409@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <4C9A0F8F.2030409@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: balbir@linux.vnet.ibm.com
+Return-Path: <johnstul@us.ibm.com>
+Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
+From: john stultz <johnstul@us.ibm.com>
+To: Christoph Lameter <cl@linux.com>
+In-Reply-To: <alpine.DEB.2.00.1009231238170.2962@router.home>
+References: <cover.1285261533.git.richard.cochran@omicron.at>
+	<alpine.DEB.2.00.1009231238170.2962@router.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 23 Sep 2010 11:59:40 -0700
+Message-ID: <1285268380.2587.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,50 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Nathan Fontenot <nfont@austin.ibm.com> [2010-09-22 09:15:43]:
+On Thu, 2010-09-23 at 12:53 -0500, Christoph Lameter wrote:
+> On Thu, 23 Sep 2010, Richard Cochran wrote:
+> >     In contrast to the standard Linux system clock, a PHC is
+> >     adjustable in hardware, for example using frequency compensation
+> >     registers or a VCO. The ability to directly tune the PHC is
+> >     essential to reap the benefit of hardware timestamping.
+> 
+> There is a reason for not being able to shift posix clocks: The system has
+> one time base. The various clocks are contributing to maintaining that
+> sytem wide time.
+> 
+> I do not understand why you want to maintain different clocks running at
+> different speeds. Certainly interesting for some uses I guess that I
+> do not have the energy to imagine right now. But can we get the PTP killer
+> feature of synchronized accurate system time first?
 
-> This set of patches decouples the concept that a single memory
-> section corresponds to a single directory in 
-> /sys/devices/system/memory/.  On systems
-> with large amounts of memory (1+ TB) there are performance issues
-> related to creating the large number of sysfs directories.  For
-> a powerpc machine with 1 TB of memory we are creating 63,000+
-> directories.  This is resulting in boot times of around 45-50
-> minutes for systems with 1 TB of memory and 8 hours for systems
-> with 2 TB of memory.  With this patch set applied I am now seeing
-> boot times of 5 minutes or less.
-> 
-> The root of this issue is in sysfs directory creation. Every time
-> a directory is created a string compare is done against all sibling
-> directories to ensure we do not create duplicates.  The list of
-> directory nodes in sysfs is kept as an unsorted list which results
-> in this being an exponentially longer operation as the number of
-> directories are created.
-> 
-> The solution solved by this patch set is to allow a single
-> directory in sysfs to span multiple memory sections.  This is
-> controlled by an optional architecturally defined function
-> memory_block_size_bytes().  The default definition of this
-> routine returns a memory block size equal to the memory section
-> size. This maintains the current layout of sysfs memory
-> directories as it appears to userspace to remain the same as it
-> is today.
-> 
-> For architectures that define their own version of this routine,
-> as is done for powerpc in this patchset, the view in userspace
-> would change such that each memoryXXX directory would span
-> multiple memory sections.  The number of sections spanned would
-> depend on the value reported by memory_block_size_bytes.
-> 
-> In both cases a new file 'end_phys_index' is created in each
-> memoryXXX directory.  This file will contain the physical id
-> of the last memory section covered by the sysfs directory.  For
-> the default case, the value in 'end_phys_index' will be the same
-> as in the existing 'phys_index' file.
->
+This was my initial gut reaction as well, but in the end, I agree with
+Richard that in the case of one or multiple PTP hardware clocks, we
+really can't abstract over the different time domains.
 
-What does this mean for memory hotplug or hotunplug? 
 
--- 
-	Three Cheers,
-	Balbir
+
+> > 3.3 Synchronizing the Linux System Time
+> > ========================================
+> >
+> >    One could offer a PHC as a combined clock source and clock event
+> >    device. The advantage of this approach would be that it obviates
+> >    the need for synchronization when the PHC is selected as the system
+> >    timer. However, some PHCs, namely the PHY based clocks, cannot be
+> >    used in this way.
+> 
+> Why not? Do PHY based clock not at least provide a counter that increments
+> in synchronized intervals throughout the network?
+
+I really don't think the PTP clock can be used as a clocksource sanely.
+
+First, the hardware access is much to slow for system timekeeping.
+
+Second, there is the problem that the system time is a software clock,
+and adjustments made (like freq) are made in the layer that interprets
+the underlying hardware cycle counter. Adjustments made in PTP (in order
+to sync the network timestamps) are made at the hardware level. 
+
+This would cause a disconnect between the hardware freq understood by
+the system time management code and the actual hardware freq.
+
+Richard, I'd actually strike this paragraph from the rational, as I feel
+it has the tendency to confuse as it suggests having the PHC as a
+clocksource is feasible when really it isn't. Or alternatively, maybe
+express more clearly why its not feasible, so it doesn't just seem like
+a minor design choice.
+
+thanks
+-john
