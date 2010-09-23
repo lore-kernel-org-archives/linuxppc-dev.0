@@ -1,19 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] irqbalance, powerpc: add IRQs without settable SMP
-	affinity to banned list
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <12972.1285135457@neuling.org>
-References: <12972.1285135457@neuling.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-YLKN/vRQ4t4qCkN4f5zj"
-Date: Thu, 23 Sep 2010 18:22:39 +1000
-Message-ID: <1285230159.30617.2.camel@concordia>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A367EB70DA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Sep 2010 20:19:38 +1000 (EST)
+Date: Thu, 23 Sep 2010 20:19:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: matt mooney <mfm@muteddisk.com>
+Subject: Re: [PATCH 12/20] powerpc: change to new flag variables
+Message-Id: <20100923201923.366779a1.sfr@canb.auug.org.au>
+In-Reply-To: <1285224669-29865-1-git-send-email-mfm@muteddisk.com>
+References: <1285224669-29865-1-git-send-email-mfm@muteddisk.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Arjen Van De Ven <arjanvandeven@gmail.com>,
-	linux-kernel@vger.kernel.org, Neil Horman <nhorman@gmail.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ"
+Cc: kernel-janitors@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,74 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---=-YLKN/vRQ4t4qCkN4f5zj
-Content-Type: text/plain; charset="UTF-8"
+--Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2010-09-22 at 16:04 +1000, Michael Neuling wrote:
-> When irqblance attempts writes to the IPI smp_affinity (ie.
-> /proc/irq/16/smp_affinity in the above example) it fails but irqbalance
-> ignores currently ignores this.
->=20
-> This patch catches these write fails and in this case adds that IRQ
-> number to the banned IRQ list.  This will catch the above IPI case and
-> any other IRQ where the SMP affinity can't be set.
+Hi Matt,
 
-Cool!
+On Wed, 22 Sep 2010 23:51:09 -0700 matt mooney <mfm@muteddisk.com> wrote:
+>
+> Replace EXTRA_CFLAGS with ccflags-y and EXTRA_AFLAGS with asflags-y.
 
-> Index: irqbalance/irqlist.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- irqbalance.orig/irqlist.c
-> +++ irqbalance/irqlist.c
-> @@ -67,7 +67,7 @@
->  	DIR *dir;
->  	struct dirent *entry;
->  	char *c, *c2;
-> -	int nr , count =3D 0;
-> +	int nr , count =3D 0, can_set =3D 1;
->  	char buf[PATH_MAX];
->  	sprintf(buf, "/proc/irq/%i", number);
->  	dir =3D opendir(buf);
-> @@ -80,7 +80,7 @@
->  			size_t size =3D 0;
->  			FILE *file;
->  			sprintf(buf, "/proc/irq/%i/smp_affinity", number);
-> -			file =3D fopen(buf, "r");
-> +			file =3D fopen(buf, "r+");
->  			if (!file)
->  				continue;
->  			if (getline(&line, &size, file)=3D=3D0) {
-> @@ -89,7 +89,14 @@
->  				continue;
->  			}
->  			cpumask_parse_user(line, strlen(line), irq->mask);
-> -			fclose(file);
-> +			/*
-> +			 * Check that we can write the affinity, if
-> +			 * not take it out of the list.
-> +			 */
-> +			if (fwrite(line, strlen(line) - 1, 1, file) =3D=3D 0)
+This looks good.  One comment below ...
 
-if (fputs(line, file) =3D=3D EOF)
+> --- a/arch/powerpc/platforms/pseries/Makefile
+> +++ b/arch/powerpc/platforms/pseries/Makefile
+> @@ -1,10 +1,5 @@
+> -ifeq ($(CONFIG_PPC64),y)
+> -EXTRA_CFLAGS		+=3D -mno-minimal-toc
+> -endif
+> -
+> -ifeq ($(CONFIG_PPC_PSERIES_DEBUG),y)
+> -EXTRA_CFLAGS		+=3D -DDEBUG
+> -endif
+> +ccflags-$(CONFIG_PPC64)			:=3D -mno-minimal-toc
+> +ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+=3D -DDEBUG
+> =20
+>  obj-y			:=3D lpar.o hvCall.o nvram.o reconfig.o \
+>  			   setup.o iommu.o event_sources.o ras.o \
+> @@ -23,7 +18,7 @@ obj-$(CONFIG_MEMORY_HOTPLUG)	+=3D hotplug-memory.o
+>  obj-$(CONFIG_HVC_CONSOLE)	+=3D hvconsole.o
+>  obj-$(CONFIG_HVCS)		+=3D hvcserver.o
+>  obj-$(CONFIG_HCALL_STATS)	+=3D hvCall_inst.o
+> -obj-$(CONFIG_PHYP_DUMP)	+=3D phyp_dump.o
+> +obj-$(CONFIG_PHYP_DUMP)		+=3D phyp_dump.o
+>  obj-$(CONFIG_CMM)		+=3D cmm.o
+>  obj-$(CONFIG_DTL)		+=3D dtl.o
 
-?
+This looks like a spurious extra hunk.
 
-cheers
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-
---=-YLKN/vRQ4t4qCkN4f5zj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+--Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkybDkwACgkQdSjSd0sB4dI0LACfcrcA9fp8EDT4ett9KZnXN8lT
-msgAoLSEF/EQ9cTulZlhFoyI3oNaG53K
-=FD+G
+iQEcBAEBAgAGBQJMmymrAAoJEDMEi1NhKgbs3pEIAKIWVwdyxN2glmFn2xoe5p0z
+pX4OLcx1oFXurmzdbbnjbVH3BDNPhapfoHs3B2iKr+szw0G1hfFDpX5s5ZC2dSEj
+w2IhV0gSl27nt2f2HdxbNxSElOTsr/Nb32MVaJBXXoOlrSWb4NVxRCA+VgrJ+dt0
+1HbP94xWUIZDrOdojkQScH7SPgjkfMbtAQJfxjLfwAaFPcs9Zpawq3np4VZfGduP
+8kCAWZ+aTt+FWfGcW0sM4JeB5mwnrozlHR3SZD6YDRxFob/0HsqJXNkmHaudv+kQ
+yKs3sFz4HO3zol75i1yajDDl8GsrPlNQ0GIC2WGxTxSUJ4hJDpMtJmoF12/z1mE=
+=uQp9
 -----END PGP SIGNATURE-----
 
---=-YLKN/vRQ4t4qCkN4f5zj--
+--Signature=_Thu__23_Sep_2010_20_19_23_+1000_sx+5_UeLEINEpBFJ--
