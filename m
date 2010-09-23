@@ -1,22 +1,22 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
-	[209.85.213.170]) by ozlabs.org (Postfix) with ESMTP id 965A4B70D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 00:44:14 +1000 (EST)
-Received: by yxt33 with SMTP id 33so1006861yxt.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2010 07:44:12 -0700 (PDT)
-Message-ID: <409c3f6d508ece73c18f6ce750513b22.squirrel@localhost>
-In-Reply-To: <52CF90264091A14888078A031D780F4306C8C14B@ism-mail03.corp.ad.wrs.com>
-References: <08f8439b89ad5771221aaba1cee86fc4.squirrel@localhost>
-	<52CF90264091A14888078A031D780F4306C8C0FF@ism-mail03.corp.ad.wrs.com>
-	<1285240268.2454.8.camel@chumley>
-	<52CF90264091A14888078A031D780F4306C8C14B@ism-mail03.corp.ad.wrs.com>
-Date: Thu, 23 Sep 2010 09:44:09 -0500
-Subject: RE: MPC8641D PEX: programming OWBAR in Endpoint mode?
-From: david.hagood@gmail.com
-To: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
+Return-Path: <ayman@elkhashab.com>
+Received: from hrndva-omtalb.mail.rr.com (unknown [71.74.56.123])
+	by ozlabs.org (Postfix) with ESMTP id 4CA4EB70E4
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 01:12:58 +1000 (EST)
+Received: from crust.elkhashab.com (localhost [127.0.0.1])
+	by crust.elkhashab.com (8.14.3/8.14.3/Debian-5) with ESMTP id
+	o8NFCkEx017185
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2010 10:12:46 -0500
+Received: (from ayman@localhost)
+	by crust.elkhashab.com (8.14.3/8.14.3/Submit) id o8NFCk9S017184
+	for linuxppc-dev@ozlabs.org; Thu, 23 Sep 2010 10:12:46 -0500
+Date: Thu, 23 Sep 2010 10:12:46 -0500
+From: Ayman El-Khashab <ayman@elkhashab.com>
+To: linuxppc-dev@ozlabs.org
+Subject: ppc44x - how do i optimize driver for tlb hits
+Message-ID: <20100923151246.GA17015@crust.elkhashab.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, David Hagood <david.hagood@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> -----Original Message-----
- via the BARs.
->
-> I read your email again and something hint me. I notice you clarify you
-> already condigure InBound successfully.
+I've implemented a working driver on my 460EX.  it allocates a couple
+of buffers of 4MB each.  I have a custom memcmp algorithm in asm that
+is extremely fast in user space, but 1/2 as fast when run on these
+buffers.
 
-I am programming BOTH the inbound ATMUs to make PPC memory available to
-the root complex, AND programming outbound ATMUs to enable the PPC to bus
-master to the root complex's memory space on PCIe.
+my tests are showing that the algorithm seems to be memory bandwidth
+bound.  my guess is that i am having tlb or cache misses (my algo
+uses the dbct) that is slowing performance.  curiously when in user
+space, i can affect the performance by small changes in the size of
+the buffer, i.e. 4MB + 32B is fast, 4MB + 4K is much worse.
 
-I am NOT attempting to program the IWBARs - as you noted, they get
-programmed by the root complex via PCI config operations.
+Can i adjust my driver code that is using kmalloc to make sure that
+the ppc44x has 4MB tlb entries for these and that they stay put?
 
->
->  And as my above comment I'm afraid you
-> mix up InBound and OutBound on EP mode?
-
-No, I am NOT confusing the two - that is why I am being VERY EXPLICIT
-about accessing the OUTBOUND ATMUs.
-
-The only reason I mention the inbound ATMUs is to demonstrate that the
-physical layer is working.
+thanks
+ayman
