@@ -1,28 +1,21 @@
-Return-Path: <cl@linux.com>
-Received: from smtp109.prem.mail.ac4.yahoo.com
-	(smtp109.prem.mail.ac4.yahoo.com [76.13.13.92])
-	by ozlabs.org (Postfix) with SMTP id EEC95B70E8
+Return-Path: <rdunlap@xenotime.net>
+Received: from xenotime.net (xenotime.net [72.52.115.56])
+	by ozlabs.org (Postfix) with SMTP id 1E7F3B70DA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 04:36:49 +1000 (EST)
-Date: Thu, 23 Sep 2010 13:36:41 -0500 (CDT)
-From: Christoph Lameter <cl@linux.com>
-To: Jacob Keller <jacob.keller@gmail.com>
-Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-In-Reply-To: <AANLkTim0JqVTyvrvjLRp1Cg423MdrwmyZG2uN6uSyeLb@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.1009231327000.2962@router.home>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<alpine.DEB.2.00.1009231238170.2962@router.home>
-	<AANLkTim0JqVTyvrvjLRp1Cg423MdrwmyZG2uN6uSyeLb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+	Fri, 24 Sep 2010 04:38:15 +1000 (EST)
+Received: from chimera.site ([173.50.240.230]) by xenotime.net for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2010 11:38:08 -0700
+Date: Thu, 23 Sep 2010 11:38:07 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
+Message-Id: <20100923113807.4643fbbb.rdunlap@xenotime.net>
+In-Reply-To: <19611.16302.262307.129176@pilspetsen.it.uu.se>
+References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Sep 2010, Jacob Keller wrote:
+On Thu, 23 Sep 2010 13:53:18 +0200 Mikael Pettersson wrote:
 
-> > There is a reason for not being able to shift posix clocks: The system has
-> > one time base. The various clocks are contributing to maintaining that
-> > sytem wide time.
-> >
-> > Adjusting clocks is absolutely essential for proper functioning of the PTP
-> protocol. The slave obtains and calculates the offset from master and uses
-> that in order to adjust the clock properly, The problem is that the
-> timestamps are done via the hardware. We need a method to expose that
-> hardware so that the ptp software can properly adjust those clocks.
+> Running modules_install from a newly built 2.6.36-rc5 kernel
+> on my 32-bit PowerMac results in:
+> 
+> WARNING: Module /lib/modules/2.6.36-rc5/kernel/drivers/i2c/busses/i2c-powermac.ko ignored, due to loop
+> WARNING: Loop detected: /lib/modules/2.6.36-rc5/kernel/drivers/i2c/i2c-core.ko needs of_i2c.ko which needs i2c-core.ko again!
+> WARNING: Module /lib/modules/2.6.36-rc5/kernel/drivers/i2c/i2c-core.ko ignored, due to loop
+> WARNING: Module /lib/modules/2.6.36-rc5/kernel/drivers/i2c/i2c-dev.ko ignored, due to loop
+> WARNING: Module /lib/modules/2.6.36-rc5/kernel/drivers/of/of_i2c.ko ignored, due to loop
+> WARNING: Module /lib/modules/2.6.36-rc5/kernel/sound/ppc/snd-powermac.ko ignored, due to loop
+> 
+> > grep '.*I2C.*=' .config
+> CONFIG_OF_I2C=m
+> CONFIG_I2C=m
+> CONFIG_I2C_BOARDINFO=y
+> CONFIG_I2C_CHARDEV=m
+> CONFIG_I2C_POWERMAC=m
+> 
+> I can't say exactly when this started, haven't built kernels on this
+> box in a while.
 
-There is no way to use that clock directly to avoid all the user space
-tuning etc? There are already tuning mechanisms in the kernel that do this
-with system time based on periodic clocks. If you calculate the
-nanoseconds since the epoch then you should be able to use that to tune
-system time.
 
-> > I do not understand why you want to maintain different clocks running at
-> > different speeds. Certainly interesting for some uses I guess that I
-> > do not have the energy to imagine right now. But can we get the PTP killer
-> > feature of synchronized accurate system time first?
-> >
->
-> The problem is maintaining a hardware clock at the correct speed/frequency
-> and time. The timestamping is done via hardware, and that hardware clock
-> needs to be accurate. We need to be able to modify that clock. Yes, having
-> the system time be the same value would be nice, but the problem comes
-> because we don't want to jump through hoops to keep that hardware clock
-> accurate to the ptp protocol running on the network.
+No kconfig warnings?  Please post your full .config file.
 
-Then allow system time == hardware clock?
-
-> All of the necessary features for microsecond or better accuracy are done
-> via the hardware. You can get accuracy to within <10 mircoseconds while only
-> sending sync packets and such once per second. The reason is because the
-> hardware timestamps are very accurate. But if we can't properly adjust the
-> clocks time and frequency, we cannot maintain the accuracy of the
-> timestamps.
-
-You can already adjust the system time with the existing APIs. Tuning
-hardware clocks is currently done using device specific controls. But I
-would think that you do not need to expose this to user space if you can
-do it all in kernel.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
