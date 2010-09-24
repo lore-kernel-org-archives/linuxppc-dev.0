@@ -1,25 +1,35 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D2C17B70FE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 19:29:39 +1000 (EST)
-Date: Fri, 24 Sep 2010 11:12:09 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Randy Dunlap <rdunlap@xenotime.net>, Grant Likely
-	<grant.likely@secretlab.ca>
-Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
-Message-ID: <20100924111209.3c071da3@endymion.delvare>
-In-Reply-To: <20100923150559.9c67da11.rdunlap@xenotime.net>
-References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
-	<20100923113807.4643fbbb.rdunlap@xenotime.net>
-	<19611.46496.782340.466509@pilspetsen.it.uu.se>
-	<20100923150559.9c67da11.rdunlap@xenotime.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 56942B70F2
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 20:30:41 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8OANrVm009763
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 06:23:53 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8OAUbvJ129938
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 06:30:37 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o8OAUbbl010324
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 07:30:37 -0300
+Date: Fri, 24 Sep 2010 06:30:34 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ppc44x - how do i optimize driver for tlb hits
+Message-ID: <20100924103034.GA27958@zod.rchland.ibm.com>
+References: <20100923151246.GA17015@crust.elkhashab.com>
+	<1285279264.5158.18.camel@pasglop>
+	<20100923223516.GA30033@crust.elkhashab.com>
+	<1285290444.14081.6.camel@pasglop>
+	<20100924025849.GA5619@crust.elkhashab.com>
+	<1285303432.14081.28.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1285303432.14081.28.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Ayman El-Khashab <ayman@elkhashab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Sep 2010 15:05:59 -0700, Randy Dunlap wrote:
-> On Thu, 23 Sep 2010 22:16:32 +0200 Mikael Pettersson wrote:
-> > Randy Dunlap writes:
-> >  > No kconfig warnings?
-> > 
-> > Not that I recall.  I can check tomorrow if necessary.
-> 
-> No kconfig warnings.  I checked with your .config file.
-> 
-> >  > Please post your full .config file.
-> 
-> Just a matter of module i2c-core calls of_ functions and module of_i2c calls
-> i2c_ functions.  Hmph.  Something for Grant, Jean, and Ben to work out.
+On Fri, Sep 24, 2010 at 02:43:52PM +1000, Benjamin Herrenschmidt wrote:
+>> The DMA is what I use in the "real world case" to get data into and out 
+>> of these buffers.  However, I can disable the DMA completely and do only
+>> the kmalloc.  In this case I still see the same poor performance.  My
+>> prefetching is part of my algo using the dcbt instructions.  I know the
+>> instructions are effective b/c without them the algo is much less 
+>> performant.  So yes, my prefetches are explicit.
+>
+>Could be some "effect" of the cache structure, L2 cache, cache geometry
+>(number of ways etc...). You might be able to alleviate that by changing
+>the "stride" of your prefetch.
+>
+>Unfortunately, I'm not familiar enough with the 440 micro architecture
+>and its caches to be able to help you much here.
 
-As far as I can see this is caused by this commit from Grant:
+Also, doesn't kmalloc have a limit to the size of the request it will
+let you allocate?  I know in the distant past you could allocate 128K
+with kmalloc, and 2M with an explicit call to get_free_pages.  Anything
+larger than that had to use vmalloc.  The limit might indeed be higher
+now, but a 4MB kmalloc buffer sounds very large, given that it would be
+contiguous pages.  Two of them even less so.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5
+>> Ok, I will give that a try ... in addition, is there an easy way to use
+>> any sort of gprof like tool to see the system performance?  What about
+>> looking at the 44x performance counters in some meaningful way?  All
+>> the experiments point to the fetching being slower in the full program
+>> as opposed to the algo in a testbench, so I want to determine what it is
+>> that could cause that.
+>
+>Does it have any useful performance counters ? I didn't think it did but
+>I may be mistaken.
 
-Mikael, can you please try reverting this patch and see if it solves
-your problem?
+No, it doesn't.
 
--- 
-Jean Delvare
+josh
