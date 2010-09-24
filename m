@@ -1,21 +1,29 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) by ozlabs.org (Postfix) with ESMTP id DC0FCB7102
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id 9CFD5B7199
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Sep 2010 08:14:57 +1000 (EST)
-Received: by pzk5 with SMTP id 5so1023172pzk.38
+	Sat, 25 Sep 2010 08:15:08 +1000 (EST)
+Received: by ywg8 with SMTP id 8so1306486ywg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 15:14:56 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH (Option 1)] of/i2c: fix module load order issue caused by
-	of_i2c.c
-To: khali@linux-fr.org, mikpe@it.uu.se
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 24 Sep 2010 16:14:53 -0600
-Message-ID: <20100924221313.28357.61419.stgit@angua>
+	Fri, 24 Sep 2010 15:15:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: rdunlap@xenotime.net, linuxppc-dev@lists.ozlabs.org,
+Sender: glikely@secretlab.ca
+In-Reply-To: <f1f37e21-f04a-4fef-868c-27c7d2ebe594@email.android.com>
+References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
+	<20100923113807.4643fbbb.rdunlap@xenotime.net>
+	<19611.46496.782340.466509@pilspetsen.it.uu.se>
+	<20100923150559.9c67da11.rdunlap@xenotime.net>
+	<20100924111209.3c071da3@endymion.delvare>
+	<19612.33369.175358.879889@pilspetsen.it.uu.se>
+	<20100924133932.4320b993@endymion.delvare>
+	<f1f37e21-f04a-4fef-868c-27c7d2ebe594@email.android.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 24 Sep 2010 16:14:44 -0600
+Message-ID: <AANLkTikS8RSycQL4_Qn7EKuV=K0_Yx_VEojrx+oz5R4a@mail.gmail.com>
+Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
+To: Jean Delvare <khali@linux-fr.org>, Mikael Pettersson <mikpe@it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Randy Dunlap <rdunlap@xenotime.net>, linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,201 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 959e85f7, "i2c: add OF-style registration and binding" caused a
-module dependency loop where of_i2c.c calls functions in i2c-core, and
-i2c-core calls of_i2c_register_devices() in of_i2c.  This means that
-when i2c support is built as a module when CONFIG_OF is set, then
-neither i2c_core nor of_i2c are able to be loaded.
+On Fri, Sep 24, 2010 at 7:48 AM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+>
+>
+> "Jean Delvare" <khali@linux-fr.org> wrote:
+>
+>>Hi Mikael,
+>>
+>>On Fri, 24 Sep 2010 12:50:01 +0200, Mikael Pettersson wrote:
+>>> Jean Delvare writes:
+>>> =A0> As far as I can see this is caused by this commit from Grant:
+>>> =A0>
+>>> =A0> http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git=
+;a=3Dcommitdiff;h=3D959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5
+>>> =A0>
+>>> =A0> Mikael, can you please try reverting this patch and see if it solv=
+es
+>>> =A0> your problem?
+>>>
+>>> Yes, reverting the above commit from 2.6.36-rc5 eliminated the warnings=
+,
+>>> and I was able to insmod the i2c-{core,dev,powermac}.ko modules.
+>>
+>>Thanks for testing and reporting. Grant, unless you come up with a fix
+>>very quickly, I'll have to revert
+>>959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5 for 2.6.36.
+>
+> I'll get a fix out today.
 
-This patch fixes the problem by moving the of_i2c_register_devices()
-function into the body of i2c_core and renaming it to
-i2c_scan_of_devices (of_i2c_register_devices is analogous to the
-existing i2c_scan_static_board_info function and so should be named
-similarly).  This function isn't called by any code outside of
-i2c_core, and it must always be present when CONFIG_OF is selected, so
-it makes sense to locate it there.  When CONFIG_OF is not selected,
-of_i2c_register_devices() becomes a no-op.
+I've got two different fixes that I'm about to send you.  You can
+choose the fix that you prefer.  The first option moves the offending
+function into i2c-core.c.  The function parses the device tree data
+and creates i2c_device for each i2c device node that it finds.  This
+is analogous to i2c_scan_static_board_info().
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- drivers/i2c/i2c-core.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++--
- drivers/of/of_i2c.c    |   57 ---------------------------------------------
- include/linux/of_i2c.h |    7 ------
- 3 files changed, 59 insertions(+), 66 deletions(-)
+The second options reverts most of the 959e85f7 commit, but keeps the
+line that allows of-style matching is retained so that all i2c_devices
+on powerpc machines will still bind correctly.
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 6649176..64a261b 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -32,8 +32,8 @@
- #include <linux/init.h>
- #include <linux/idr.h>
- #include <linux/mutex.h>
--#include <linux/of_i2c.h>
- #include <linux/of_device.h>
-+#include <linux/of_irq.h>
- #include <linux/completion.h>
- #include <linux/hardirq.h>
- #include <linux/irqflags.h>
-@@ -818,6 +818,63 @@ static void i2c_scan_static_board_info(struct i2c_adapter *adapter)
- 	up_read(&__i2c_board_lock);
- }
- 
-+#ifdef CONFIG_OF
-+void i2c_scan_of_devices(struct i2c_adapter *adap)
-+{
-+	void *result;
-+	struct device_node *node;
-+
-+	/* Only register child devices if the adapter has a node pointer set */
-+	if (!adap->dev.of_node)
-+		return;
-+
-+	for_each_child_of_node(adap->dev.of_node, node) {
-+		struct i2c_board_info info = {};
-+		struct dev_archdata dev_ad = {};
-+		const __be32 *addr;
-+		int len;
-+
-+		dev_dbg(&adap->dev, "of_i2c: register %s\n", node->full_name);
-+		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0) {
-+			dev_err(&adap->dev, "of_i2c: modalias failure on %s\n",
-+				node->full_name);
-+			continue;
-+		}
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || (len < sizeof(int))) {
-+			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
-+				node->full_name);
-+			continue;
-+		}
-+
-+		info.addr = be32_to_cpup(addr);
-+		if (info.addr > (1 << 10) - 1) {
-+			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
-+				info.addr, node->full_name);
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		info.of_node = of_node_get(node);
-+		info.archdata = &dev_ad;
-+
-+		request_module("%s", info.type);
-+
-+		result = i2c_new_device(adap, &info);
-+		if (result == NULL) {
-+			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
-+			        node->full_name);
-+			of_node_put(node);
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+	}
-+}
-+#else
-+static inline void i2c_scan_of_devices(struct i2c_adapter *adap) { }
-+#endif
-+
- static int i2c_do_add_adapter(struct i2c_driver *driver,
- 			      struct i2c_adapter *adap)
- {
-@@ -877,7 +934,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
- 		i2c_scan_static_board_info(adap);
- 
- 	/* Register devices from the device tree */
--	of_i2c_register_devices(adap);
-+	i2c_scan_of_devices(adap);
- 
- 	/* Notify drivers */
- 	mutex_lock(&core_lock);
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index 0a694de..e0c3841 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -17,63 +17,6 @@
- #include <linux/of_irq.h>
- #include <linux/module.h>
- 
--void of_i2c_register_devices(struct i2c_adapter *adap)
--{
--	void *result;
--	struct device_node *node;
--
--	/* Only register child devices if the adapter has a node pointer set */
--	if (!adap->dev.of_node)
--		return;
--
--	dev_dbg(&adap->dev, "of_i2c: walking child nodes\n");
--
--	for_each_child_of_node(adap->dev.of_node, node) {
--		struct i2c_board_info info = {};
--		struct dev_archdata dev_ad = {};
--		const __be32 *addr;
--		int len;
--
--		dev_dbg(&adap->dev, "of_i2c: register %s\n", node->full_name);
--
--		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0) {
--			dev_err(&adap->dev, "of_i2c: modalias failure on %s\n",
--				node->full_name);
--			continue;
--		}
--
--		addr = of_get_property(node, "reg", &len);
--		if (!addr || (len < sizeof(int))) {
--			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
--				node->full_name);
--			continue;
--		}
--
--		info.addr = be32_to_cpup(addr);
--		if (info.addr > (1 << 10) - 1) {
--			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
--				info.addr, node->full_name);
--			continue;
--		}
--
--		info.irq = irq_of_parse_and_map(node, 0);
--		info.of_node = of_node_get(node);
--		info.archdata = &dev_ad;
--
--		request_module("%s", info.type);
--
--		result = i2c_new_device(adap, &info);
--		if (result == NULL) {
--			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
--			        node->full_name);
--			of_node_put(node);
--			irq_dispose_mapping(info.irq);
--			continue;
--		}
--	}
--}
--EXPORT_SYMBOL(of_i2c_register_devices);
--
- static int of_dev_node_match(struct device *dev, void *data)
- {
-         return dev->of_node == data;
-diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
-index 0efe8d4..1998cf8 100644
---- a/include/linux/of_i2c.h
-+++ b/include/linux/of_i2c.h
-@@ -15,16 +15,9 @@
- #if defined(CONFIG_OF_I2C) || defined(CONFIG_OF_I2C_MODULE)
- #include <linux/i2c.h>
- 
--extern void of_i2c_register_devices(struct i2c_adapter *adap);
--
- /* must call put_device() when done with returned i2c_client device */
- extern struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
- 
--#else
--static inline void of_i2c_register_devices(struct i2c_adapter *adap)
--{
--	return;
--}
- #endif /* CONFIG_OF_I2C */
- 
- #endif /* __LINUX_OF_I2C_H */
+My preferred solution is the first option because the tested code path
+does not changed.  The offending function is simply moved verbatim.
+The second option is a smaller patch, but I can only test one of the
+affected drivers.  However, I'll let you make the decision.
+
+Both have been build tested on PowerPC and ARM, and run tested on a
+PowerPC MPC5200 board.
+
+patches to follow in a few minutes..
+
+g.
