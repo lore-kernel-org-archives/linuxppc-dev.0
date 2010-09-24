@@ -1,25 +1,30 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Date: Fri, 24 Sep 2010 15:07:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-Message-ID: <20100924150738.744297d0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100924150246.0e6064b6@lxorguk.ukuu.org.uk>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<20100923213654.0c64b047@lxorguk.ukuu.org.uk>
-	<20100924131407.GA3113@riccoc20.at.omicron.at>
-	<20100924150246.0e6064b6@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	Richard Cochran <richardcochran@gmail.com>,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id BA221B70CB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 24 Sep 2010 23:48:50 +1000 (EST)
+Received: by fxm2 with SMTP id 2so1850109fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 24 Sep 2010 06:48:46 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
+	<20100923113807.4643fbbb.rdunlap@xenotime.net>
+	<19611.46496.782340.466509@pilspetsen.it.uu.se>
+	<20100923150559.9c67da11.rdunlap@xenotime.net>
+	<20100924111209.3c071da3@endymion.delvare>
+	<19612.33369.175358.879889@pilspetsen.it.uu.se>
+	<20100924133932.4320b993@endymion.delvare>
+In-Reply-To: <20100924133932.4320b993@endymion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 24 Sep 2010 07:48:38 -0600
+To: Jean Delvare <khali@linux-fr.org>,Mikael Pettersson <mikpe@it.uu.se>
+Message-ID: <f1f37e21-f04a-4fef-868c-27c7d2ebe594@email.android.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> You can't do that avoiding as you might like because the behaviour of
-> file handle numbering is defined by the standards. Hence the "f*"
-> versions of the calls (and of lots of other stuff)
-> 
-> Whether you add new syscalls or do the fd passing using flags and hide
-> the ugly bits in glibc is another question.
 
-To add an example of what I mean you might end up defining "CLOCK_FD" to
-indicate to use the fd in the struct, but given syscalls are trivial
-codewise and would end up as
 
-	fclock_foo(int fd, blah)
-	{
-		clock = fd_to_clock(fd);
-		if (error)
-			return error
-		clock_do_foo(clock, blah);
-		clock_put(clock);
-	}
+"Jean Delvare" <khali@linux-fr.org> wrote:
 
-and
+>Hi Mikael,
+>
+>On Fri, 24 Sep 2010 12:50:01 +0200, Mikael Pettersson wrote:
+>> Jean Delvare writes:
+>>  > As far as I can see this is caused by this commit from Grant:
+>>  > 
+>>  > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5
+>>  > 
+>>  > Mikael, can you please try reverting this patch and see if it solves
+>>  > your problem?
+>> 
+>> Yes, reverting the above commit from 2.6.36-rc5 eliminated the warnings,
+>> and I was able to insmod the i2c-{core,dev,powermac}.ko modules.
+>
+>Thanks for testing and reporting. Grant, unless you come up with a fix
+>very quickly, I'll have to revert
+>959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5 for 2.6.36.
 
-	clock_foo(int posixid, blah)
-	{
-		clock = posix_to_clock(posixid)
-		...
-		rest same
-	}
+I'll get a fix out today.
+g.
 
-as wrappers it seems hardly worth adding ugly hacks
+>
+>-- 
+>Jean Delvare
+
+-- 
+Sent from my Android phone with K-9 Mail. Please excuse my brevity.
