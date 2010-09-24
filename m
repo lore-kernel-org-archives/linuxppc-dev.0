@@ -1,25 +1,14 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id E04DBB711A
+	by ozlabs.org (Postfix) with ESMTP id 76E49B711F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Sep 2010 08:53:56 +1000 (EST)
-Date: Fri, 24 Sep 2010 15:53:53 -0700
+	Sat, 25 Sep 2010 09:13:54 +1000 (EST)
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Dan Williams <dan.j.williams@intel.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFCv1 1/2] dmaengine: add support for scatterlist to
-	scatterlist transfers
-Message-ID: <20100924225352.GD24654@ovro.caltech.edu>
-References: <1285357571-23377-1-git-send-email-iws@ovro.caltech.edu>
-	<1285357571-23377-2-git-send-email-iws@ovro.caltech.edu>
-	<AANLkTimfZa+N51Tww_pWFqtqMmcYYkH_V0V_P1Qizt5b@mail.gmail.com>
-	<20100924212443.GA24654@ovro.caltech.edu>
-	<1285365194.21375.22.camel@dwillia2-linux>
-	<20100924220419.GC24654@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100924220419.GC24654@ovro.caltech.edu>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH RFCv2 0/2] dma: add support for sg-to-sg transfers
+Date: Fri, 24 Sep 2010 16:13:50 -0700
+Message-Id: <1285370032-16937-1-git-send-email-iws@ovro.caltech.edu>
+Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,105 +18,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 24, 2010 at 03:04:19PM -0700, Ira W. Snyder wrote:
-> On Fri, Sep 24, 2010 at 02:53:14PM -0700, Dan Williams wrote:
-> > On Fri, 2010-09-24 at 14:24 -0700, Ira W. Snyder wrote:
-> > > On Fri, Sep 24, 2010 at 01:40:56PM -0700, Dan Williams wrote:
-> > > > I don't think any dma channels gracefully handle descriptors that were
-> > > > prepped but not submitted.  You would probably need to submit the
-> > > > backlog, poll for completion, and then return the error.
-> > > > Alternatively, the expectation is that descriptor allocations are
-> > > > transient, i.e. once previously submitted transactions are completed
-> > > > the descriptors will return to the available pool.  So you could do
-> > > > what async_tx routines do and just poll for a descriptor.
-> > > >
-> > > 
-> > > Can you give me an example? Even some pseudocode would help.
-> > 
-> > Here is one from do_async_gen_syndrome() in crypto/async_tx/async_pq.c:
-> > 
-> >         /* Since we have clobbered the src_list we are committed
-> >          * to doing this asynchronously.  Drivers force forward
-> >          * progress in case they can not provide a descriptor
-> >          */
-> >         for (;;) {
-> >                 tx = dma->device_prep_dma_pq(chan, dma_dest,
-> >                                              &dma_src[src_off],
-> >                                              pq_src_cnt,
-> >                                              &coefs[src_off], len,
-> >                                              dma_flags);
-> >                 if (likely(tx))
-> >                         break;  
-> >                 async_tx_quiesce(&submit->depend_tx);
-> >                 dma_async_issue_pending(chan);
-> >         }       
-> > 
-> > > The other DMAEngine functions (dma_async_memcpy_*()) don't do anything
-> > > with the descriptor if submit fails. Take for example
-> > > dma_async_memcpy_buf_to_buf(). If tx->tx_submit(tx); fails, any code
-> > > using it has no way to return the descriptor to the free pool.
-> > > 
-> > > Does tx_submit() implicitly return descriptors to the free pool if it
-> > > fails?
-> > 
-> > No, submit() failures are a hold over from when the ioatdma driver used
-> > to perform additional descriptor allocation at ->submit() time.  After
-> > prep() the expectation is that the engine is just waiting to be told
-> > "go" and can't fail.  The only reason ->submit() retains a return code
-> > is to support the "cookie" based method for polling for operation
-> > completion.  A dma driver should handle all descriptor submission
-> > failure scenarios at prep time.
-> > 
-> 
-> Ok, that's more like what I expected. So we still need the try forever
-> code similar to the above. I can add that for the next version.
-> 
+This series adds support for scatterlist to scatterlist transfers to the
+generic DMAEngine API. I have hidden it behind a configuration option to
+allow specific drivers that need this functionality to enable it.
 
-When coding this change, I've noticed one problem that would break my
-driver. I cannot issue dma_async_issue_pending() on the channel while
-creating the descriptors, since this will start transferring the
-previously submitted DMA descriptors. This breaks the external hardware
-control requirement.
+This series is intended to lay the groundwork for further changes to the
+series titled "CARMA Board Support". That series will be updated when I
+have time and hardware to test with.
 
-Imagine this scenario:
-1) device is not yet setup for external control (nothing is pulsing the pins)
-2) dma_async_memcpy_sg_to_sg()
+This series has not been runtime tested yet. I am posting it only to
+gain comments before I spend the effort to update the driver that
+depends on this.
 
-- this hits an allocation failure, which calls dma_async_issue_pending()
-- this causes the DMA engine to start transferring to a device which is
-  not ready yet
-- memory pressure stops, and allocation succeeds again
-- some descriptors have been transferred, but not the ones since the
-  alloc failure
-- now the first half of the descriptors (pre alloc failure) have been
-  transferred
-- the second half of the descriptors (post alloc failure) are still
-  pending
-- the dma_async_memcpy_sg_to_sg() returns success: all tx_submit()
-  succeeded
+To help reviewers, I'd like to comment on the architecture of
+dma_async_memcpy_sg_to_sg(). It explicitly avoids using descriptor
+chaining due to the way that feature interacts with the fsldma
+controller's external start feature. To use the external start feature
+properly, the in-memory descriptor chain must not be fragmented into
+multiple smaller chains. This is what is achieved by submitting all
+descriptors without using chaining.
 
-3) device_control() - setup external control mode
-4) dma_async_issue_pending() - start the externally controlled transfer
-5) tell the external agent to start controlling the DMA transaction
+An alternative implementation would create a device_prep_sg_to_sg()
+function, and use that to allocate all descriptors in one shot. That
+implementation would be safer against allocation failures than this one.
 
-- now there isn't enough data left, and the external agent fails to
-  program the FPGAs
+I would recommend against committing this until I've tested it on real
+hardware.
 
-I don't mind adding it to the code, since I have enough memory that I
-don't ever see allocation failures. It is an embedded system, and we've
-been careful not to overcommit memory. I think for all other users, it
-would be the appropriate thing to do. Most people don't care if the
-scatterlist is copied in two chunks with a time gap in the middle.
+Ira W. Snyder (2):
+  dmaengine: add support for scatterlist to scatterlist transfers
+  fsldma: use generic support for scatterlist to scatterlist transfers
 
-An alternative implementation would be to implement
-device_prep_sg_to_sg() that returned a struct dma_async_tx_descriptor,
-which could then be used as normal by higher layers. This would allow
-the driver to allocate / cleanup all descriptors in one shot. This would
-be completely robust to this error situation.
-
-Is there one solution you'd prefer over the other? They're both similar
-in the amount of code, though duplication would probably be increased in
-the device_prep_sg_to_sg() case. If any other driver implements it.
-
-Thanks,
-Ira
+ arch/powerpc/include/asm/fsldma.h |  115 ++------------------
+ drivers/dma/Kconfig               |    4 +
+ drivers/dma/dmaengine.c           |  119 ++++++++++++++++++++
+ drivers/dma/fsldma.c              |  219 +++++++------------------------------
+ include/linux/dmaengine.h         |   10 ++
+ 5 files changed, 181 insertions(+), 286 deletions(-)
