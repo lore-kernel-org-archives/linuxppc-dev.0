@@ -1,27 +1,27 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Date: Fri, 24 Sep 2010 12:52:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christian Riesch <christian@riesch.at>
-Subject: Re: [PATCH 6/8] ptp: Added a clock that uses the eTSEC found on the
-	MPC85xx.
-Message-ID: <20100924125238.4c30f3a4@lxorguk.ukuu.org.uk>
-In-Reply-To: <4C9BC620.3@riesch.at>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<57b64051c816dc9cb856bbb9f38fc901c9d3d651.1285261535.git.richard.cochran@omicron.at>
-	<alpine.DEB.2.00.1009231348150.2962@router.home>
-	<20100923214359.3f287b11@lxorguk.ukuu.org.uk>
-	<4C9BC620.3@riesch.at>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CCB80B70FE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 24 Sep 2010 21:39:51 +1000 (EST)
+Date: Fri, 24 Sep 2010 13:39:32 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mikael Pettersson <mikpe@it.uu.se>, Grant Likely
+	<grant.likely@secretlab.ca>
+Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
+Message-ID: <20100924133932.4320b993@endymion.delvare>
+In-Reply-To: <19612.33369.175358.879889@pilspetsen.it.uu.se>
+References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
+	<20100923113807.4643fbbb.rdunlap@xenotime.net>
+	<19611.46496.782340.466509@pilspetsen.it.uu.se>
+	<20100923150559.9c67da11.rdunlap@xenotime.net>
+	<20100924111209.3c071da3@endymion.delvare>
+	<19612.33369.175358.879889@pilspetsen.it.uu.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	Richard Cochran <richardcochran@gmail.com>,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> However, if the clock selected by the BMC is switched off, loses its 
-> network connection..., the second best clock is selected by the BMC and 
-> becomes master. This clock may be less accurate and thus our slave clock 
-> has to switch from one notion of time to another. Is that the conflict 
-> you mentioned?
+Hi Mikael,
 
-No you get situations where you have policy reasons for trusting
-particular clocks for particular things.
+On Fri, 24 Sep 2010 12:50:01 +0200, Mikael Pettersson wrote:
+> Jean Delvare writes:
+>  > As far as I can see this is caused by this commit from Grant:
+>  > 
+>  > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5
+>  > 
+>  > Mikael, can you please try reverting this patch and see if it solves
+>  > your problem?
+> 
+> Yes, reverting the above commit from 2.6.36-rc5 eliminated the warnings,
+> and I was able to insmod the i2c-{core,dev,powermac}.ko modules.
 
-So you may have a PTP or NTP clock providing basic system time but also
-have other PTP clocks that are actually being used for synchronization
-work.
+Thanks for testing and reporting. Grant, unless you come up with a fix
+very quickly, I'll have to revert
+959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5 for 2.6.36.
 
-With NTP it's not so far been a big issue - NTP isn't used for industrial
-high precision control and the cases we end up with multiple NTP clocks
-it's on a virtualised systems where it is isolated.
-
-With high precision clocks you sometimes want to honour a specific PTP
-time source and use it rather than try and merge it with your other time
-sources (which may differ from the equipment elsewhere). What matters is
-things like all the parts of a several mile long conveyor belt of hot
-steel slab stopping at the same moment [1].
-
-In lots of control applications you've got assorted different time planes
-which wish to talk their own time and you have to accept it, so we need
-to support that kind of use.
-
-I agree entirely the normal boring 'I installed my distro and..' case for
-PTP or for NTP is merging all the sources, running the algorithm and using
-the system time for it. Likewise almost all "normal" application code
-will be watching system time.
-
-Alan
-[1] Which was my first encounter with writing Vax/VMS assembly language
+-- 
+Jean Delvare
