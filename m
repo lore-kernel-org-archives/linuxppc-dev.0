@@ -1,24 +1,25 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Fri, 24 Sep 2010 10:49:12 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [PATCH 6/8] ptp: Added a clock that uses the eTSEC found on
-	the MPC85xx.
-Message-ID: <20100924084912.GA15286@riccoc20.at.omicron.at>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<57b64051c816dc9cb856bbb9f38fc901c9d3d651.1285261535.git.richard.cochran@omicron.at>
-	<alpine.DEB.2.00.1009231348150.2962@router.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.00.1009231348150.2962@router.home>
-Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D2C17B70FE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 24 Sep 2010 19:29:39 +1000 (EST)
+Date: Fri, 24 Sep 2010 11:12:09 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Randy Dunlap <rdunlap@xenotime.net>, Grant Likely
+	<grant.likely@secretlab.ca>
+Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
+Message-ID: <20100924111209.3c071da3@endymion.delvare>
+In-Reply-To: <20100923150559.9c67da11.rdunlap@xenotime.net>
+References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
+	<20100923113807.4643fbbb.rdunlap@xenotime.net>
+	<19611.46496.782340.466509@pilspetsen.it.uu.se>
+	<20100923150559.9c67da11.rdunlap@xenotime.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 23, 2010 at 02:17:36PM -0500, Christoph Lameter wrote:
-> On Thu, 23 Sep 2010, Richard Cochran wrote:
-> > +  These properties set the operational parameters for the PTP
-> > +  clock. You must choose these carefully for the clock to work right.
-> > +  Here is how to figure good values:
-> > +
-> > +  TimerOsc     = system clock               MHz
-> > +  tclk_period  = desired clock period       nanoseconds
-> > +  NominalFreq  = 1000 / tclk_period         MHz
-> > +  FreqDivRatio = TimerOsc / NominalFreq     (must be greater that 1.0)
-> > +  tmr_add      = ceil(2^32 / FreqDivRatio)
-> > +  OutputClock  = NominalFreq / tmr_prsc     MHz
-> > +  PulseWidth   = 1 / OutputClock            microseconds
-> > +  FiperFreq1   = desired frequency in Hz
-> > +  FiperDiv1    = 1000000 * OutputClock / FiperFreq1
-> > +  tmr_fiper1   = tmr_prsc * tclk_period * FiperDiv1 - tclk_period
-> > +  max_adj      = 1000000000 * (FreqDivRatio - 1.0) - 1
+On Thu, 23 Sep 2010 15:05:59 -0700, Randy Dunlap wrote:
+> On Thu, 23 Sep 2010 22:16:32 +0200 Mikael Pettersson wrote:
+> > Randy Dunlap writes:
+> >  > No kconfig warnings?
+> > 
+> > Not that I recall.  I can check tomorrow if necessary.
 > 
-> Great stuff for clock synchronization...
+> No kconfig warnings.  I checked with your .config file.
 > 
-> > +  The calculation for tmr_fiper2 is the same as for tmr_fiper1. The
-> > +  driver expects that tmr_fiper1 will be correctly set to produce a 1
-> > +  Pulse Per Second (PPS) signal, since this will be offered to the PPS
-> > +  subsystem to synchronize the Linux clock.
+> >  > Please post your full .config file.
 > 
-> Argh. And conceptually completely screwed up. Why go through the PPS
-> subsystem if you can directly tune the system clock based on a number of
-> the cool periodic clock features that you have above? See how the other
-> clocks do that easily? Look into drivers/clocksource. Add it there.
-> 
-> Please do not introduce useless additional layers for clock sync. Load
-> these ptp clocks like the other regular clock modules and make them sync
-> system time like any other clock.
-> 
-> Really guys: I want a PTP solution! Now! And not some idiotic additional
-> kernel layers that just pass bits around because its so much fun and
-> screws up clock accurary in due to the latency noise introduced while
-> having so much fun with the bits.
+> Just a matter of module i2c-core calls of_ functions and module of_i2c calls
+> i2c_ functions.  Hmph.  Something for Grant, Jean, and Ben to work out.
 
-(Sorry if this message comes twice. Mutt/Gmail flaked out again.)
+As far as I can see this is caused by this commit from Grant:
 
-I think you misunderstood this particular patch. The device tree
-parameters are really just internal driver stuff. When you use the
-eTSEC, you must make some design choices at the same time as you plan
-your board. The proper values for some of the eTSEC registers are
-based on these design choices. Since the Freescale documentation is a
-bit thin on this, I added a few notes to help my fellow board
-designers.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5
 
-Because these values are closely related to the board itself, I think
-that it is nicer to configure them via the device tree than using
-either CONFIG_ variables or platform data.
+Mikael, can you please try reverting this patch and see if it solves
+your problem?
 
-Richard
+-- 
+Jean Delvare
