@@ -1,27 +1,23 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CCB80B70FE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 21:39:51 +1000 (EST)
-Date: Fri, 24 Sep 2010 13:39:32 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Mikael Pettersson <mikpe@it.uu.se>, Grant Likely
-	<grant.likely@secretlab.ca>
-Subject: Re: [BUG 2.6.36-rc5] of_i2c.ko <-> i2c-core.ko dependency loop
-Message-ID: <20100924133932.4320b993@endymion.delvare>
-In-Reply-To: <19612.33369.175358.879889@pilspetsen.it.uu.se>
-References: <19611.16302.262307.129176@pilspetsen.it.uu.se>
-	<20100923113807.4643fbbb.rdunlap@xenotime.net>
-	<19611.46496.782340.466509@pilspetsen.it.uu.se>
-	<20100923150559.9c67da11.rdunlap@xenotime.net>
-	<20100924111209.3c071da3@endymion.delvare>
-	<19612.33369.175358.879889@pilspetsen.it.uu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Randy Dunlap <rdunlap@xenotime.net>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+Return-Path: <ayman@elkhashab.com>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 4E4F9B6EFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 23:08:56 +1000 (EST)
+Date: Fri, 24 Sep 2010 08:08:51 -0500
+From: Ayman El-Khashab <ayman@elkhashab.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: ppc44x - how do i optimize driver for tlb hits
+Message-ID: <20100924130851.GA14016@crust.elkhashab.com>
+References: <20100923151246.GA17015@crust.elkhashab.com>
+	<1285279264.5158.18.camel@pasglop>
+	<20100923223516.GA30033@crust.elkhashab.com>
+	<1285290444.14081.6.camel@pasglop>
+	<20100924025849.GA5619@crust.elkhashab.com>
+	<1285303432.14081.28.camel@pasglop>
+	<20100924103034.GA27958@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100924103034.GA27958@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mikael,
+On Fri, Sep 24, 2010 at 06:30:34AM -0400, Josh Boyer wrote:
+> On Fri, Sep 24, 2010 at 02:43:52PM +1000, Benjamin Herrenschmidt wrote:
+> >> The DMA is what I use in the "real world case" to get data into and out 
+> >> of these buffers.  However, I can disable the DMA completely and do only
+> >> the kmalloc.  In this case I still see the same poor performance.  My
+> >> prefetching is part of my algo using the dcbt instructions.  I know the
+> >> instructions are effective b/c without them the algo is much less 
+> >> performant.  So yes, my prefetches are explicit.
+> >
+> >Could be some "effect" of the cache structure, L2 cache, cache geometry
+> >(number of ways etc...). You might be able to alleviate that by changing
+> >the "stride" of your prefetch.
 
-On Fri, 24 Sep 2010 12:50:01 +0200, Mikael Pettersson wrote:
-> Jean Delvare writes:
->  > As far as I can see this is caused by this commit from Grant:
->  > 
->  > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5
->  > 
->  > Mikael, can you please try reverting this patch and see if it solves
->  > your problem?
+My original theory was that it was having lots of cache misses.  But since
+the algorithm works standalone fast and uses large enough buffers (4MB),
+much of the cache is flushed and replaced with my data.  The cache is 32K,
+8 way, 32b/line.  I've crafted the algorithm to use those parameters.
+
+> >
+> >Unfortunately, I'm not familiar enough with the 440 micro architecture
+> >and its caches to be able to help you much here.
 > 
-> Yes, reverting the above commit from 2.6.36-rc5 eliminated the warnings,
-> and I was able to insmod the i2c-{core,dev,powermac}.ko modules.
+> Also, doesn't kmalloc have a limit to the size of the request it will
+> let you allocate?  I know in the distant past you could allocate 128K
+> with kmalloc, and 2M with an explicit call to get_free_pages.  Anything
+> larger than that had to use vmalloc.  The limit might indeed be higher
+> now, but a 4MB kmalloc buffer sounds very large, given that it would be
+> contiguous pages.  Two of them even less so.
 
-Thanks for testing and reporting. Grant, unless you come up with a fix
-very quickly, I'll have to revert
-959e85f7751c33d1a2dabc5cc3fe2ed0db7052e5 for 2.6.36.
+I thought so too, but at least in the current implementation we found
+empirically that we could kmalloc up to but no more than 4MB.  We have 
+also tried an approach in user memory and then using "get_user_pages"
+and building a scatter-gather.  We found that the compare code doesn't 
+perform any better. 
 
--- 
-Jean Delvare
+I suppose another option is to to use the kernel profiling option I 
+always see but have never used.  Is that a viable option to figure out
+what is happening here?  
+
+ayman
