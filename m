@@ -1,35 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <nhorman@tuxdriver.com>
+Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 56942B70F2
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 20:30:41 +1000 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8OANrVm009763
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 06:23:53 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8OAUbvJ129938
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 06:30:37 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o8OAUbbl010324
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 07:30:37 -0300
-Date: Fri, 24 Sep 2010 06:30:34 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: ppc44x - how do i optimize driver for tlb hits
-Message-ID: <20100924103034.GA27958@zod.rchland.ibm.com>
-References: <20100923151246.GA17015@crust.elkhashab.com>
-	<1285279264.5158.18.camel@pasglop>
-	<20100923223516.GA30033@crust.elkhashab.com>
-	<1285290444.14081.6.camel@pasglop>
-	<20100924025849.GA5619@crust.elkhashab.com>
-	<1285303432.14081.28.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E224B70F6
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2010 20:40:35 +1000 (EST)
+Date: Fri, 24 Sep 2010 06:37:04 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] irqbalance, powerpc: add IRQs without settable SMP
+	affinity to banned list
+Message-ID: <20100924103704.GA30252@hmsreliant.think-freely.org>
+References: <12972.1285135457@neuling.org> <1285230159.30617.2.camel@concordia>
+	<1243.1285239440@neuling.org>
+	<20100923131302.GA6560@shamino.rdu.redhat.com>
+	<1285304622.7637.55.camel@concordia> <25264.1285311394@neuling.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1285303432.14081.28.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Ayman El-Khashab <ayman@elkhashab.com>
+In-Reply-To: <25264.1285311394@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Neil Horman <nhorman@gmail.com>,
+	Arjen Van De Ven <arjanvandeven@gmail.com>, arjan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,38 +29,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 24, 2010 at 02:43:52PM +1000, Benjamin Herrenschmidt wrote:
->> The DMA is what I use in the "real world case" to get data into and out 
->> of these buffers.  However, I can disable the DMA completely and do only
->> the kmalloc.  In this case I still see the same poor performance.  My
->> prefetching is part of my algo using the dcbt instructions.  I know the
->> instructions are effective b/c without them the algo is much less 
->> performant.  So yes, my prefetches are explicit.
->
->Could be some "effect" of the cache structure, L2 cache, cache geometry
->(number of ways etc...). You might be able to alleviate that by changing
->the "stride" of your prefetch.
->
->Unfortunately, I'm not familiar enough with the 440 micro architecture
->and its caches to be able to help you much here.
-
-Also, doesn't kmalloc have a limit to the size of the request it will
-let you allocate?  I know in the distant past you could allocate 128K
-with kmalloc, and 2M with an explicit call to get_free_pages.  Anything
-larger than that had to use vmalloc.  The limit might indeed be higher
-now, but a 4MB kmalloc buffer sounds very large, given that it would be
-contiguous pages.  Two of them even less so.
-
->> Ok, I will give that a try ... in addition, is there an easy way to use
->> any sort of gprof like tool to see the system performance?  What about
->> looking at the 44x performance counters in some meaningful way?  All
->> the experiments point to the fetching being slower in the full program
->> as opposed to the algo in a testbench, so I want to determine what it is
->> that could cause that.
->
->Does it have any useful performance counters ? I didn't think it did but
->I may be mistaken.
-
-No, it doesn't.
-
-josh
+On Fri, Sep 24, 2010 at 04:56:34PM +1000, Michael Neuling wrote:
+> 
+> > > >  			size_t size =3D 0;
+> > > >  			FILE *file;
+> > > >  			sprintf(buf, "/proc/irq/%i/smp_affinity", number);
+> > > > -			file =3D fopen(buf, "r");
+> > > > +			file =3D fopen(buf, "r+");
+> > > >  			if (!file)
+> > > >  				continue;
+> > > >  			if (getline(&line, &size, file)=3D=3D0) {
+> > > > @@ -89,7 +89,14 @@
+> > > >  				continue;
+> > > >  			}
+> > > >  			cpumask_parse_user(line, strlen(line), irq->mask);
+> > > > -			fclose(file);
+> > > > +			/*
+> > > > +			 * Check that we can write the affinity, if
+> > > > +			 * not take it out of the list.
+> > > > +			 */
+> > > > +			if (fputs(line, file) =3D=3D EOF)
+> > > > +				can_set =3D 0;
+> > 
+> > > This is maybe a nit, but writing to the affinity file can fail for a few
+> > > different reasons, some of them permanent, some transient.  For instance,=
+> >  if
+> > > we're in a memory constrained condition temporarily irq_affinity_proc_wri=
+> > te
+> > > might return -ENOMEM. =20
+> > 
+> > Yeah true, usually followed shortly by your kernel going so far into
+> > swap you never get it back, or OOMing, but I guess it's possible.
+> > 
+> > > Might it be better to modify this code so that, instead
+> > > of using fputs to merge the various errors into an EOF, we use some other=
+> >  write
+> > > method that lets us better determine the error and selectively ban the in=
+> > terrupt
+> > > only for those errors which we consider permanent?
+> > 
+> > Yep. It seems fputs() gives you know way to get the actual error from
+> > write(), so it looks we'll need to switch to open/write, but that's
+> > probably not so terrible.
+> 
+> fclose inherits the error from fputs and it sets errno correctly.  Below
+> uses this to catch only EIO errors and mark them for the banned list.
+> 
+> Mikey
+> 
+> irqbalance, powerpc: add IRQs without settable SMP affinity to banned list
+> 
+> On pseries powerpc, IPIs are registered with an IRQ number so
+> /proc/interrupts looks like this on a 2 core/2 thread machine:
+> 
+>            CPU0       CPU1       CPU2       CPU3
+>  16:    3164282    3290514    1138794     983121   XICS             Level        IPI
+>  18:    2605674          0     304994          0   XICS             Level        lan0
+>  30:     400057          0     169209          0   XICS             Level        ibmvscsi
+> LOC:     133734      77250     106425      91951   Local timer interrupts
+> SPU:          0          0          0          0   Spurious interrupts
+> CNT:          0          0          0          0   Performance monitoring interrupts
+> MCE:          0          0          0          0   Machine check exceptions
+> 
+> Unfortunately this means irqbalance attempts to set the affinity of IPIs
+> which is not possible.  So in the above case, when irqbalance is in
+> performance mode due to heavy IPI, lan0 and ibmvscsi activity, it
+> sometimes attempts to put the IPIs on one core (CPU0&1) and lan0 and
+> ibmvscsi on the other core (CPU2&3).  This is suboptimal as we want lan0
+> and ibmvscsi to be on separate cores and IPIs to be ignored.
+> 
+> When irqblance attempts writes to the IPI smp_affinity (ie.
+> /proc/irq/16/smp_affinity in the above example) it fails with an EIO but
+> irqbalance currently ignores this.
+> 
+> This patch catches these write fails and in this case adds that IRQ
+> number to the banned IRQ list.  This will catch the above IPI case and
+> any other IRQ where the SMP affinity can't be set.
+> 
+> Tested on POWER6, POWER7 and x86.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+>  
+> Index: irqbalance/irqlist.c
+> ===================================================================
+> --- irqbalance.orig/irqlist.c
+> +++ irqbalance/irqlist.c
+> @@ -28,6 +28,7 @@
+>  #include <unistd.h>
+>  #include <sys/types.h>
+>  #include <dirent.h>
+> +#include <errno.h>
+>  
+>  #include "types.h"
+>  #include "irqbalance.h"
+> @@ -67,7 +68,7 @@
+>  	DIR *dir;
+>  	struct dirent *entry;
+>  	char *c, *c2;
+> -	int nr , count = 0;
+> +	int nr , count = 0, can_set = 1;
+>  	char buf[PATH_MAX];
+>  	sprintf(buf, "/proc/irq/%i", number);
+>  	dir = opendir(buf);
+> @@ -80,7 +81,7 @@
+>  			size_t size = 0;
+>  			FILE *file;
+>  			sprintf(buf, "/proc/irq/%i/smp_affinity", number);
+> -			file = fopen(buf, "r");
+> +			file = fopen(buf, "r+");
+>  			if (!file)
+>  				continue;
+>  			if (getline(&line, &size, file)==0) {
+> @@ -89,7 +90,13 @@
+>  				continue;
+>  			}
+>  			cpumask_parse_user(line, strlen(line), irq->mask);
+> -			fclose(file);
+> +			/*
+> +			 * Check that we can write the affinity, if
+> +			 * not take it out of the list.
+> +			 */
+> +			fputs(line, file);
+> +			if (fclose(file) && errno == EIO)
+> +				can_set = 0;
+>  			free(line);
+>  		} else if (strcmp(entry->d_name,"allowed_affinity")==0) {
+>  			char *line = NULL;
+> @@ -122,7 +129,7 @@
+>  			count++;
+>  
+>  	/* if there is no choice in the allowed mask, don't bother to balance */
+> -	if (count<2)
+> +	if ((count<2) || (can_set == 0))
+>  		 irq->balance_level = BALANCE_NONE;
+>  		
+>  
+> 
+Thank you, this looks good to me, I'll integrate this shortly.
+Neil
