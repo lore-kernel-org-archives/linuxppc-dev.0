@@ -2,10 +2,9 @@ Return-Path: <shaggy@linux.vnet.ibm.com>
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] 476: Set CCR2[DSTI] to prevent isync from flushing shadow
-	TLB
-Date: Fri, 24 Sep 2010 13:01:36 -0500
-Message-Id: <1285351297-9999-2-git-send-email-shaggy@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] ppc: lazy flush_tlb_mm for nohash architectures
+Date: Fri, 24 Sep 2010 13:01:37 -0500
+Message-Id: <1285351297-9999-3-git-send-email-shaggy@linux.vnet.ibm.com>
 In-Reply-To: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
 References: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
@@ -19,211 +18,383 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the DSTI (Disable Shadow TLB Invalidate) bit is set in the CCR2
-register, the isync command does not flush the shadow TLB (iTLB & dTLB).
+On PPC_MMU_NOHASH processors that support a large number of contexts,
+implement a lazy flush_tlb_mm() that switches to a free context, marking
+the old one stale.  The tlb is only flushed when no free contexts are
+available.
 
-However, since the shadow TLB does not contain context information, we
-want the shadow TLB flushed in situations where we are switching context.
-In those situations, we explicitly clear the DSTI bit before performing
-isync, and set it again afterward.  We also need to do the same when we
-perform isync after explicitly flushing the TLB.
-
-Th setting of the DSTI bit is dependent on
-CONFIG_PPC_47x_DISABLE_SHADOW_TLB_INVALIDATE.  When we are confident that
-the feature works as expected, the option can probably be removed.
+The lazy tlb flushing is controlled by the global variable tlb_lazy_flush
+which is set during init, dependent upon MMU_FTR_TYPE_47x.
 
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/reg_booke.h  |    4 ++++
- arch/powerpc/kernel/head_44x.S        |   25 +++++++++++++++++++++++++
- arch/powerpc/mm/tlb_nohash_low.S      |   14 +++++++++++++-
- arch/powerpc/platforms/44x/Kconfig    |    7 +++++++
- arch/powerpc/platforms/44x/misc_44x.S |   26 ++++++++++++++++++++++++++
- 5 files changed, 75 insertions(+), 1 deletions(-)
+ arch/powerpc/mm/mmu_context_nohash.c |  154 +++++++++++++++++++++++++++++++---
+ arch/powerpc/mm/mmu_decl.h           |    8 ++
+ arch/powerpc/mm/tlb_nohash.c         |   28 +++++-
+ 3 files changed, 174 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 667a498..a7ecbfe 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -120,6 +120,7 @@
- #define SPRN_TLB3CFG	0x2B3	/* TLB 3 Config Register */
- #define SPRN_EPR	0x2BE	/* External Proxy Register */
- #define SPRN_CCR1	0x378	/* Core Configuration Register 1 */
-+#define SPRN_CCR2_476	0x379	/* Core Configuration Register 2 (476)*/
- #define SPRN_ZPR	0x3B0	/* Zone Protection Register (40x) */
- #define SPRN_MAS7	0x3B0	/* MMU Assist Register 7 */
- #define SPRN_MMUCR	0x3B2	/* MMU Control Register */
-@@ -188,6 +189,9 @@
- #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity checking */
- #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
- 
-+/* Bit definitions for CCR2. */
-+#define CCR2_476_DSTI	0x08000000 /* Disable Shadow TLB Invalidate */
-+
- /* Bit definitions for the MCSR. */
- #define MCSR_MCS	0x80000000 /* Machine Check Summary */
- #define MCSR_IB		0x40000000 /* Instruction PLB Error */
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 562305b..0c1b118 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -703,8 +703,23 @@ _GLOBAL(set_context)
- 	stw	r4, 0x4(r5)
- #endif
- 	mtspr	SPRN_PID,r3
-+BEGIN_MMU_FTR_SECTION
-+	b	1f
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
- 	isync			/* Force context change */
- 	blr
-+1:
-+#ifdef CONFIG_PPC_47x
-+	mfspr	r10,SPRN_CCR2_476
-+	rlwinm	r11,r10,0,~CCR2_476_DSTI
-+	mtspr	SPRN_CCR2_476,r11
-+	isync			/* Force context change */
-+	mtspr	SPRN_CCR2_476,r10
-+#else /* CONFIG_PPC_47x */
-+2:	trap
-+	EMIT_BUG_ENTRY 2b,__FILE__,__LINE__,0;
-+#endif /* CONFIG_PPC_47x */
-+	blr
- 
- /*
-  * Init CPU state. This is called at boot time or for secondary CPUs
-@@ -861,6 +876,16 @@ skpinv:	addi	r4,r4,1				/* Increment */
- 	isync
- #endif /* CONFIG_PPC_EARLY_DEBUG_44x */
- 
-+	mfspr   r3,SPRN_CCR2_476
-+#ifdef CONFIG_PPC_47x_DISABLE_SHADOW_TLB_INVALIDATE
-+	/* With CCR2(DSTI) set, isync does not invalidate the shadow TLB */
-+	oris	r3,r3,CCR2_476_DSTI@h
-+#else
-+	rlwinm	r3,r3,0,~CCR2_476_DSTI
-+#endif
-+	mtspr   SPRN_CCR2_476,r3
-+	isync
-+
- 	/* Establish the interrupt vector offsets */
- 	SET_IVOR(0,  CriticalInput);
- 	SET_IVOR(1,  MachineCheck);
-diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
-index b9d9fed..f28fb52 100644
---- a/arch/powerpc/mm/tlb_nohash_low.S
-+++ b/arch/powerpc/mm/tlb_nohash_low.S
-@@ -112,7 +112,11 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
- 	clrrwi	r4,r3,12	/* get an EPN for the hashing with V = 0 */
- 	ori	r4,r4,PPC47x_TLBE_SIZE
- 	tlbwe   r4,r7,0		/* write it */
-+	mfspr	r8,SPRN_CCR2_476
-+	rlwinm	r9,r8,0,~CCR2_476_DSTI
-+	mtspr	SPRN_CCR2_476,r9
- 	isync
-+	mtspr	SPRN_CCR2_476,r8
- 	wrtee	r10
- 	blr
- #else /* CONFIG_PPC_47x */
-@@ -180,7 +184,11 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
- 	lwz	r8,0(r10)	/* Load boltmap entry */
- 	addi	r10,r10,4	/* Next word */
- 	b	1b		/* Then loop */
--1:	isync			/* Sync shadows */
-+1:	mfspr	r9,SPRN_CCR2_476
-+	rlwinm	r10,r9,0,~CCR2_476_DSTI
-+	mtspr	SPRN_CCR2_476,r10
-+	isync			/* Sync shadows */
-+	mtspr	SPRN_CCR2_476,r9
- 	wrtee	r11
- #else /* CONFIG_PPC_47x */
- 1:	trap
-@@ -203,7 +211,11 @@ _GLOBAL(_tlbivax_bcast)
- 	isync
- /*	tlbivax	0,r3 - use .long to avoid binutils deps */
- 	.long 0x7c000624 | (r3 << 11)
-+	mfspr	r8,SPRN_CCR2_476
-+	rlwinm	r9,r8,0,~CCR2_476_DSTI
-+	mtspr	SPRN_CCR2_476,r9
- 	isync
-+	mtspr	SPRN_CCR2_476,r8
- 	eieio
- 	tlbsync
- 	sync
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 69d668c..b5ae862 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -307,3 +307,10 @@ config XILINX_VIRTEX_5_FXT
- 	bool
- 	select XILINX_VIRTEX
- 
-+config PPC_47x_DISABLE_SHADOW_TLB_INVALIDATE
-+	bool "Disable shadow TLB invalidate"
-+	depends on PPC_47x
-+	default y
-+	help
-+	  This option prevents the isync operation from flushing the shadow
-+	  TLB (iTLB and dTLB) on 476 boards.
-diff --git a/arch/powerpc/platforms/44x/misc_44x.S b/arch/powerpc/platforms/44x/misc_44x.S
-index dc12b80..a635312 100644
---- a/arch/powerpc/platforms/44x/misc_44x.S
-+++ b/arch/powerpc/platforms/44x/misc_44x.S
-@@ -9,15 +9,38 @@
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index ddfd7ad..87c7dc2 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -17,10 +17,6 @@
+  * TODO:
   *
+  *   - The global context lock will not scale very well
+- *   - The maps should be dynamically allocated to allow for processors
+- *     that support more PID bits at runtime
+- *   - Implement flush_tlb_mm() by making the context stale and picking
+- *     a new one
+  *   - More aggressively clear stale map bits and maybe find some way to
+  *     also clear mm->cpu_vm_mask bits when processes are migrated
   */
+@@ -52,6 +48,8 @@
+ #include <asm/mmu_context.h>
+ #include <asm/tlbflush.h>
  
-+#include <asm/mmu.h>
- #include <asm/reg.h>
- #include <asm/ppc_asm.h>
++#include "mmu_decl.h"
++
+ static unsigned int first_context, last_context;
+ static unsigned int next_context, nr_free_contexts;
+ static unsigned long *context_map;
+@@ -59,9 +57,31 @@ static unsigned long *stale_map[NR_CPUS];
+ static struct mm_struct **context_mm;
+ static DEFINE_RAW_SPINLOCK(context_lock);
  
- 	.text
++int tlb_lazy_flush;
++static int tlb_needs_flush[NR_CPUS];
++static unsigned long *context_available_map;
++static unsigned int nr_stale_contexts;
++
+ #define CTX_MAP_SIZE	\
+ 	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
  
-+#ifdef CONFIG_PPC_47x
++/*
++ * if another cpu recycled the stale contexts, we need to flush
++ * the local TLB, so that we may re-use those contexts
++ */
++void flush_recycled_contexts(int cpu)
++{
++	int i;
 +
-+#define LOAD_CLEAR_CCR2_DSTI(REG1, REG2)	\
-+BEGIN_MMU_FTR_SECTION				\
-+	mfspr REG1,SPRN_CCR2_476;		\
-+	rlwinm	REG2,REG1,0,~CCR2_476_DSTI;	\
-+	mtspr	SPRN_CCR2_476,REG2;		\
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
++	if (tlb_needs_flush[cpu]) {
++		pr_hard("[%d] flushing tlb\n", cpu);
++		_tlbil_all();
++		for (i = cpu_first_thread_in_core(cpu);
++		     i <= cpu_last_thread_in_core(cpu); i++) {
++			tlb_needs_flush[i] = 0;
++		}
++	}
++}
+ 
+ /* Steal a context from a task that has one at the moment.
+  *
+@@ -147,7 +167,7 @@ static unsigned int steal_context_up(unsigned int id)
+ 	pr_hardcont(" | steal %d from 0x%p", id, mm);
+ 
+ 	/* Flush the TLB for that context */
+-	local_flush_tlb_mm(mm);
++	__local_flush_tlb_mm(mm);
+ 
+ 	/* Mark this mm has having no context anymore */
+ 	mm->context.id = MMU_NO_CONTEXT;
+@@ -161,13 +181,19 @@ static unsigned int steal_context_up(unsigned int id)
+ #ifdef DEBUG_MAP_CONSISTENCY
+ static void context_check_map(void)
+ {
+-	unsigned int id, nrf, nact;
++	unsigned int id, nrf, nact, nstale;
+ 
+-	nrf = nact = 0;
++	nrf = nact = nstale = 0;
+ 	for (id = first_context; id <= last_context; id++) {
+ 		int used = test_bit(id, context_map);
+-		if (!used)
+-			nrf++;
++		int allocated = tlb_lazy_flush &&
++				test_bit(id, context_available_map);
++		if (!used) {
++			if (allocated)
++				nstale++;
++			else
++				nrf++;
++		}
+ 		if (used != (context_mm[id] != NULL))
+ 			pr_err("MMU: Context %d is %s and MM is %p !\n",
+ 			       id, used ? "used" : "free", context_mm[id]);
+@@ -179,6 +205,11 @@ static void context_check_map(void)
+ 		       nr_free_contexts, nrf);
+ 		nr_free_contexts = nrf;
+ 	}
++	if (nstale != nr_stale_contexts) {
++		pr_err("MMU: Stale context count out of sync ! (%d vs %d)\n",
++		       nr_stale_contexts, nstale);
++		nr_stale_contexts = nstale;
++	}
+ 	if (nact > num_online_cpus())
+ 		pr_err("MMU: More active contexts than CPUs ! (%d vs %d)\n",
+ 		       nact, num_online_cpus());
+@@ -189,6 +220,38 @@ static void context_check_map(void)
+ static void context_check_map(void) { }
+ #endif
+ 
++/*
++ * On architectures that support a large number of contexts, the tlb
++ * can be flushed lazily by picking a new context and making the stale
++ * context unusable until a lazy tlb flush has been issued.
++ *
++ * context_available_map keeps track of both active and stale contexts,
++ * while context_map continues to track only active contexts.  When the
++ * lazy tlb flush is triggered, context_map is copied to
++ * context_available_map, making the once-stale contexts available again
++ */
++static void recycle_stale_contexts(void)
++{
++	if (nr_free_contexts == 0 && nr_stale_contexts > 0) {
++		unsigned int cpu = smp_processor_id();
++		unsigned int i;
 +
-+#define RESTORE_CCR2_DSTI(REG)			\
-+BEGIN_MMU_FTR_SECTION				\
-+	mtspr	SPRN_CCR2_476,REG;		\
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
++		pr_hard("[%d] recycling stale contexts\n", cpu);
++		/* Time to flush the TLB's */
++		memcpy(context_available_map, context_map, CTX_MAP_SIZE);
++		nr_free_contexts = nr_stale_contexts;
++		nr_stale_contexts = 0;
++		for_each_online_cpu(i) {
++			if ((i < cpu_first_thread_in_core(cpu)) ||
++			    (i > cpu_last_thread_in_core(cpu)))
++				tlb_needs_flush[i] = 1;
++			else
++				tlb_needs_flush[i] = 0;	/* This core */
++		}
++		_tlbil_all();
++	}
++}
 +
-+#else	/* CONFIG_PPC_47x */
+ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ {
+ 	unsigned int i, id, cpu = smp_processor_id();
+@@ -197,6 +260,8 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	/* No lockless fast path .. yet */
+ 	raw_spin_lock(&context_lock);
+ 
++	flush_recycled_contexts(cpu);
 +
-+#define LOAD_CLEAR_CCR2_DSTI(REG1, REG2)
-+#define RESTORE_CCR2_DSTI(REG)
+ 	pr_hard("[%d] activating context for mm @%p, active=%d, id=%d",
+ 		cpu, next, next->context.active, next->context.id);
+ 
+@@ -227,7 +292,12 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	id = next_context;
+ 	if (id > last_context)
+ 		id = first_context;
+-	map = context_map;
 +
-+#endif	/* CONFIG_PPC_47x */
++	if (tlb_lazy_flush) {
++		recycle_stale_contexts();
++		map = context_available_map;
++	} else
++		map = context_map;
+ 
+ 	/* No more free contexts, let's try to steal one */
+ 	if (nr_free_contexts == 0) {
+@@ -250,6 +320,13 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 		if (id > last_context)
+ 			id = first_context;
+ 	}
++	if (tlb_lazy_flush)
++		/*
++		 * In the while loop above, we set the bit in
++		 * context_available_map, it also needs to be set in
++		 * context_map
++		 */
++		__set_bit(id, context_map);
+  stolen:
+ 	next_context = id + 1;
+ 	context_mm[id] = next;
+@@ -267,7 +344,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 			    id, cpu_first_thread_in_core(cpu),
+ 			    cpu_last_thread_in_core(cpu));
+ 
+-		local_flush_tlb_mm(next);
++		__local_flush_tlb_mm(next);
+ 
+ 		/* XXX This clear should ultimately be part of local_flush_tlb_mm */
+ 		for (i = cpu_first_thread_in_core(cpu);
+@@ -317,11 +394,61 @@ void destroy_context(struct mm_struct *mm)
+ 		mm->context.active = 0;
+ #endif
+ 		context_mm[id] = NULL;
+-		nr_free_contexts++;
 +
++		if (tlb_lazy_flush)
++			nr_stale_contexts++;
++		else
++			nr_free_contexts++;
+ 	}
+ 	raw_spin_unlock_irqrestore(&context_lock, flags);
+ }
+ 
++/*
++ * This is called from flush_tlb_mm().  Mark the current context as stale
++ * and grab an available one.  The tlb will be flushed when no more
++ * contexts are available
++ */
++void lazy_flush_context(struct mm_struct *mm)
++{
++	unsigned int id;
++	unsigned long flags;
++	unsigned long *map;
++
++	raw_spin_lock_irqsave(&context_lock, flags);
++
++	id = mm->context.id;
++	if (unlikely(id == MMU_NO_CONTEXT))
++		goto no_context;
++
++	/*
++	 * Make the existing context stale.  It remains in
++	 * context_available_map as long as nr_free_contexts remains non-zero
++	 */
++	 __clear_bit(id, context_map);
++	 context_mm[id] = NULL;
++	 nr_stale_contexts++;
++
++	recycle_stale_contexts();
++	BUG_ON(nr_free_contexts == 0);
++
++	nr_free_contexts--;
++	id = last_context;
++	map = context_available_map;
++	while (__test_and_set_bit(id, map)) {
++		id = find_next_zero_bit(map, last_context+1, id);
++		if (id > last_context)
++			id = first_context;
++	}
++	set_bit(id, context_map);
++	next_context = id + 1;
++	context_mm[id] = mm;
++	mm->context.id = id;
++	if (current->active_mm == mm)
++		set_context(id, mm->pgd);
++no_context:
++	raw_spin_unlock_irqrestore(&context_lock, flags);
++}
++
+ #ifdef CONFIG_SMP
+ 
+ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+@@ -407,6 +534,7 @@ void __init mmu_context_init(void)
+ 	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
+ 		first_context = 1;
+ 		last_context = 65535;
++		tlb_lazy_flush = 1;
+ 	} else {
+ 		first_context = 1;
+ 		last_context = 255;
+@@ -419,6 +547,8 @@ void __init mmu_context_init(void)
+ 	 * Allocate the maps used by context management
+ 	 */
+ 	context_map = alloc_bootmem(CTX_MAP_SIZE);
++	if (tlb_lazy_flush)
++		context_available_map = alloc_bootmem(CTX_MAP_SIZE);
+ 	context_mm = alloc_bootmem(sizeof(void *) * (last_context + 1));
+ 	stale_map[0] = alloc_bootmem(CTX_MAP_SIZE);
+ 
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 63b84a0..64240f1 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -25,6 +25,14 @@
+ #ifdef CONFIG_PPC_MMU_NOHASH
+ 
  /*
-  * Do an IO access in AS1
++ * Lazy tlb flush
++ */
++extern int tlb_lazy_flush;
++extern void flush_recycled_contexts(int);
++void lazy_flush_context(struct mm_struct *mm);
++void __local_flush_tlb_mm(struct mm_struct *mm);
++
++/*
+  * On 40x and 8xx, we directly inline tlbia and tlbivax
   */
- _GLOBAL(as1_readb)
-+	LOAD_CLEAR_CCR2_DSTI(r8, r9)
- 	mfmsr	r7
- 	ori	r0,r7,MSR_DS
- 	sync
-@@ -29,9 +52,11 @@ _GLOBAL(as1_readb)
- 	mtmsr	r7
- 	sync
- 	isync
-+	RESTORE_CCR2_DSTI(r8)
- 	blr
+ #if defined(CONFIG_40x) || defined(CONFIG_8xx)
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index fe391e9..264d0ea 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -36,6 +36,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/memblock.h>
  
- _GLOBAL(as1_writeb)
-+	LOAD_CLEAR_CCR2_DSTI(r8, r9)
- 	mfmsr	r7
- 	ori	r0,r7,MSR_DS
- 	sync
-@@ -43,4 +68,5 @@ _GLOBAL(as1_writeb)
- 	mtmsr	r7
- 	sync
- 	isync
-+	RESTORE_CCR2_DSTI(r8)
- 	blr
++#include <asm/mmu_context.h>
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+ #include <asm/code-patching.h>
+@@ -117,7 +118,7 @@ unsigned long linear_map_top;	/* Top of linear mapping */
+ /*
+  * These are the base non-SMP variants of page and mm flushing
+  */
+-void local_flush_tlb_mm(struct mm_struct *mm)
++void __local_flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	unsigned int pid;
+ 
+@@ -127,6 +128,14 @@ void local_flush_tlb_mm(struct mm_struct *mm)
+ 		_tlbil_pid(pid);
+ 	preempt_enable();
+ }
++
++void local_flush_tlb_mm(struct mm_struct *mm)
++{
++	if (tlb_lazy_flush)
++		lazy_flush_context(mm);
++	else
++		__local_flush_tlb_mm(mm);
++}
+ EXPORT_SYMBOL(local_flush_tlb_mm);
+ 
+ void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+@@ -166,13 +175,19 @@ struct tlb_flush_param {
+ 	unsigned int pid;
+ 	unsigned int tsize;
+ 	unsigned int ind;
++	struct mm_struct *mm;
+ };
+ 
+ static void do_flush_tlb_mm_ipi(void *param)
+ {
+ 	struct tlb_flush_param *p = param;
+ 
+-	_tlbil_pid(p ? p->pid : 0);
++	if (tlb_lazy_flush && p) {
++		flush_recycled_contexts(smp_processor_id());
++		if (current->active_mm == p->mm)
++			set_context(p->pid, p->mm->pgd);
++	} else
++		_tlbil_pid(p ? p->pid : 0);
+ }
+ 
+ static void do_flush_tlb_page_ipi(void *param)
+@@ -207,13 +222,18 @@ void flush_tlb_mm(struct mm_struct *mm)
+ 	pid = mm->context.id;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		goto no_context;
++	if (tlb_lazy_flush) {
++		lazy_flush_context(mm);
++		pid = mm->context.id;
++	}
+ 	if (!mm_is_core_local(mm)) {
+-		struct tlb_flush_param p = { .pid = pid };
++		struct tlb_flush_param p = { .pid = pid, .mm = mm };
+ 		/* Ignores smp_processor_id() even if set. */
+ 		smp_call_function_many(mm_cpumask(mm),
+ 				       do_flush_tlb_mm_ipi, &p, 1);
+ 	}
+-	_tlbil_pid(pid);
++	if (!tlb_lazy_flush)
++		_tlbil_pid(pid);
+  no_context:
+ 	preempt_enable();
+ }
 -- 
 1.7.2.2
