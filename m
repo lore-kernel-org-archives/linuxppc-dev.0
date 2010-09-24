@@ -1,26 +1,14 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
-	by ozlabs.org (Postfix) with SMTP id E836BB70D1
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 35C09B7103
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Sep 2010 04:53:03 +1000 (EST)
-Received: by qyk5 with SMTP id 5so4377574qyk.11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Sep 2010 11:53:00 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <1284774145-14543-1-git-send-email-tmarri@apm.com>
-	<4C9BB6EB.7020802@intel.com>
-	<d2d7c3068b5582bde7529ccc65d71e52@mail.gmail.com>
-	<201009240858.05018.sr@denx.de>
-In-Reply-To: <201009240858.05018.sr@denx.de>
-MIME-Version: 1.0
-Date: Fri, 24 Sep 2010 11:52:49 -0700
-Message-ID: <ba171a39721d9cfd3e7c8ca8d287f485@mail.gmail.com>
-Subject: RE: [PATCH 1/2] PPC4xx: Generelizing drivers/dma/ppc4xx/adma.c
-To: Stefan Roese <sr@denx.de>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: neilb@suse.de, yur@emcraft.com, linux-raid@vger.kernel.org,
-	herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
-	Dan Williams <dan.j.williams@intel.com>
+	Sat, 25 Sep 2010 05:46:13 +1000 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH RFCv1 0/2] dma: add support for sg-to-sg transfers
+Date: Fri, 24 Sep 2010 12:46:09 -0700
+Message-Id: <1285357571-23377-1-git-send-email-iws@ovro.caltech.edu>
+Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,14 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
-> It would be really preferable to support all those platforms in a
-> single Linux
-> image. If technically possible, please try to move this direction.
-It is do-able for couple of SoCs. Other SoC DMA engines are quite a bit
-different.
-Let me first do small steps first and slowly achieve some run time
-Differentiation.
+This series adds support for scatterlist to scatterlist transfers to the
+generic DMAEngine API. I have unconditionally enabled it when the fsldma
+driver is used to make testing easier. This feature should probably be
+selected by individual drivers.
 
-Thanks,
-Marri
+This series is intended to lay the groundwork for further changes to the
+series titled "CARMA Board Support". That series will be updated when I
+have time and hardware to test with.
+
+This series has not been runtime tested yet. I am posting it only to
+gain comments before I spend the effort to update the driver that
+depends on this.
+
+To help reviewers, I'd like to comment on the architecture of
+dma_async_memcpy_sg_to_sg(). It explicitly avoids using descriptor
+chaining due to the way that feature interacts with the fsldma
+controller's external start feature. To use the external start feature
+properly, the in-memory descriptor chain must not be fragmented into
+multiple smaller chains. This is what is achieved by submitting all
+descriptors without using chaining.
+
+Ira W. Snyder (2):
+  dmaengine: add support for scatterlist to scatterlist transfers
+  fsldma: use generic support for scatterlist to scatterlist transfers
+
+ arch/powerpc/include/asm/fsldma.h |  115 ++------------------
+ drivers/dma/Kconfig               |    4 +
+ drivers/dma/dmaengine.c           |  119 ++++++++++++++++++++
+ drivers/dma/fsldma.c              |  219 +++++++------------------------------
+ include/linux/dmaengine.h         |   10 ++
+ 5 files changed, 181 insertions(+), 286 deletions(-)
