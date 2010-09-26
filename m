@@ -1,20 +1,27 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (mail.lixom.net [70.86.134.90])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6879B70F5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 26 Sep 2010 13:49:05 +1000 (EST)
-Date: Sat, 25 Sep 2010 22:49:03 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH 1/1]  Add config option for batched hcalls
-Message-ID: <20100926034903.GA5473@lixom.net>
-References: <1285364655.3016.25.camel@lexx>
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EC451B70D5
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Sep 2010 20:12:48 +1000 (EST)
+Message-ID: <4C9F1D09.3040907@windriver.com>
+Date: Sun, 26 Sep 2010 18:14:33 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1285364655.3016.25.camel@lexx>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+To: David Hagood <david.hagood@gmail.com>
+Subject: Re: MPC8641D PEX: programming OWBAR in Endpoint mode?
+References: <08f8439b89ad5771221aaba1cee86fc4.squirrel@localhost>	
+	<52CF90264091A14888078A031D780F4306C8C0FF@ism-mail03.corp.ad.wrs.com>	
+	<1285240268.2454.8.camel@chumley>	
+	<52CF90264091A14888078A031D780F4306C8C14B@ism-mail03.corp.ad.wrs.com>	
+	<409c3f6d508ece73c18f6ce750513b22.squirrel@localhost>	
+	<52CF90264091A14888078A031D780F4306C8C176@ism-mail03.corp.ad.wrs.com>	
+	<1285325425.2454.11.camel@chumley> <4C9DC510.8010403@windriver.com>
+	<1285415473.2454.15.camel@chumley>
+In-Reply-To: <1285415473.2454.15.camel@chumley>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 24, 2010 at 04:44:15PM -0500, Will Schmidt wrote:
+David Hagood wrote:
+> On Sat, 2010-09-25 at 17:46 +0800, tiejun.chen wrote:
+>> As a summary you have no any issue to access InBound/BAR/LAW.
 > 
-> Add a config option for the (batched) MULTITCE and BULK_REMOVE h-calls.
+> Correct: full access to the inbound.
+>> And I remember there is only one
+>> requirement to OutBound, and that is the window address should be aligned based
+>> on the size from OWS. Are you sure?
+> Yes. As my first test I've been using 4k and 64k sizes, aligned on 16M
+> boundaries.
+>> And did you try to configure OutBound REGS when RC mode? If so I'm afraid we may
+>> miss some errata on EP.
+> In RC mode the built-in drivers take over.
+
+Can you confirm the build-in driver can write/read OutBound correctly on your
+target?
+
+-Tiejun
+
 > 
-> By default, these options are on and are beneficial for performance and
-> throughput reasons.   If disabled, the code will fall back to using less
-> optimal TCE and REMOVE hcalls.   The ability to easily disable these
-> options is useful for some of the PREEMPT_RT related investigation and
-> work occurring on Power.
-
-Hi,
-
-I can see why it's useful to enable and disable, but these are all
-runtime-checked, wouldn't it be more useful to add a bootarg to handle
-it instead of adding some new config options that pretty much everyone
-will always go with the defaults on?
-
-The bits are set early, but from looking at where they're used, there
-doesn't seem to be any harm in disabling them later on when a bootarg
-is convenient to parse and deal with?
-
-It has the benefit of easier on/off testing, if that has any value for
-production debug down the road.
-
-
--Olof
+> 
+> 
