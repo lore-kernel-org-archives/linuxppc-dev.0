@@ -1,25 +1,33 @@
-Return-Path: <linus.ml.walleij@gmail.com>
-Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
-	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id D5FACB70AF
+Return-Path: <cl@linux.com>
+Received: from smtp107.prem.mail.ac4.yahoo.com
+	(smtp107.prem.mail.ac4.yahoo.com [76.13.13.46])
+	by ozlabs.org (Postfix) with SMTP id B4AB5B70F2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Sep 2010 01:23:37 +1000 (EST)
-Received: by ewy21 with SMTP id 21so1362589ewy.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 27 Sep 2010 08:23:34 -0700 (PDT)
+	Tue, 28 Sep 2010 01:37:42 +1000 (EST)
+Date: Mon, 27 Sep 2010 10:37:35 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Christian Riesch <christian@riesch.at>
+Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
+In-Reply-To: <4C9BC7CE.8020400@riesch.at>
+Message-ID: <alpine.DEB.2.00.1009271035110.9258@router.home>
+References: <cover.1285261533.git.richard.cochran@omicron.at>
+	<alpine.DEB.2.00.1009231238170.2962@router.home>
+	<1285268380.2587.11.camel@localhost.localdomain>
+	<alpine.DEB.2.00.1009231402420.2962@router.home>
+	<1285273684.2587.92.camel@localhost.localdomain>
+	<alpine.DEB.2.00.1009231533040.7522@router.home>
+	<20100923223417.4ed62e5b@lxorguk.ukuu.org.uk>
+	<4C9BC7CE.8020400@riesch.at>
 MIME-Version: 1.0
-In-Reply-To: <1285370032-16937-2-git-send-email-iws@ovro.caltech.edu>
-References: <1285370032-16937-1-git-send-email-iws@ovro.caltech.edu>
-	<1285370032-16937-2-git-send-email-iws@ovro.caltech.edu>
-Date: Mon, 27 Sep 2010 17:23:34 +0200
-Message-ID: <AANLkTimzdEhAZ=oXbbB3Ge5=YY7OXq3fjaRH4roPNB-k@mail.gmail.com>
-Subject: Re: [PATCH RFCv2 1/2] dmaengine: add support for scatterlist to
-	scatterlist transfers
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Per_Frid=E9n?= <per.friden@stericsson.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, john stultz <johnstul@us.ibm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/9/25 Ira W. Snyder <iws@ovro.caltech.edu>:
+On Thu, 23 Sep 2010, Christian Riesch wrote:
 
-> This adds support for scatterlist to scatterlist DMA transfers.
+> > > It implies clock tuning in userspace for a potential sub microsecond
+> > > accurate clock. The clock accuracy will be limited by user space
+> > > latencies and noise. You wont be able to discipline the system clock
+> > > accurately.
+> >
+> > Noise matters, latency doesn't.
+>
+> Well put! That's why we need hardware support for PTP timestamping to reduce
+> the noise, but get along well with the clock servo that is steering the PHC in
+> user space.
 
-This is a good idea, we have a local function to do this in DMA40 already,
-stedma40_memcpy_sg().
-
-> This is
-> currently hidden behind a configuration option, which will allow drivers
-> which need this functionality to select it individually.
-
-Why? Isn't it better to add this as a new capability flag
-if you don't want to announce it? Or is the intent to save
-memory footprint?
-
-Yours,
-Linus Walleij
+Even if I buy into the catch phrase above: User space is subject to noise
+that the in kernel code is not. If you do the tuning over long intervals
+then it hopefully averages out but it still causes jitter effects that
+affects the degree of accuracy (or sync) that you can reach. And the noise
+varies with the load on the system.
