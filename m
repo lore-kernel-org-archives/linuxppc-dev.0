@@ -1,27 +1,27 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D2679B70E2
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 05:22:32 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8RJEf0P017372
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2010 13:14:41 -0600
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 37EBAB70DC
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 05:23:55 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8RJIhfW022103
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2010 13:18:43 -0600
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8RJMPaA120538
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2010 13:22:25 -0600
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8RJNq6K162810
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2010 13:23:52 -0600
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o8RJMPZB014530
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2010 13:22:25 -0600
-Message-ID: <4CA0EEF0.70402@austin.ibm.com>
-Date: Mon, 27 Sep 2010 14:22:24 -0500
+	id o8RJNo4W021784
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2010 13:23:51 -0600
+Message-ID: <4CA0EF45.3000601@austin.ibm.com>
+Date: Mon, 27 Sep 2010 14:23:49 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/8] v2 Add section count to memory_block struct
+Subject: [PATCH 3/8] v2 Add mutex for adding/removing memory blocks
 References: <4CA0EBEB.1030204@austin.ibm.com>
 In-Reply-To: <4CA0EBEB.1030204@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -37,67 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a section count property to the memory_block struct to track the number
-of memory sections that have been added/removed from a memory block. This
-allows us to know when the last memory section of a memory block has been
-removed so we can remove the memory block.
+Add a new mutex for use in adding and removing of memory blocks.  This
+is needed to avoid any race conditions in which the same memory block could
+be added and removed at the same time.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
 ---
- drivers/base/memory.c  |   16 ++++++++++------
- include/linux/memory.h |    3 +++
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ drivers/base/memory.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
 Index: linux-next/drivers/base/memory.c
 ===================================================================
---- linux-next.orig/drivers/base/memory.c	2010-09-27 09:17:20.000000000 -0500
-+++ linux-next/drivers/base/memory.c	2010-09-27 09:31:35.000000000 -0500
-@@ -478,6 +478,7 @@
+--- linux-next.orig/drivers/base/memory.c	2010-09-27 09:31:35.000000000 -0500
++++ linux-next/drivers/base/memory.c	2010-09-27 09:31:57.000000000 -0500
+@@ -27,6 +27,8 @@
+ #include <asm/atomic.h>
+ #include <asm/uaccess.h>
  
++static DEFINE_MUTEX(mem_sysfs_mutex);
++
+ #define MEMORY_CLASS_NAME	"memory"
+ 
+ static struct sysdev_class memory_sysdev_class = {
+@@ -476,6 +478,8 @@
+ 	if (!mem)
+ 		return -ENOMEM;
+ 
++	mutex_lock(&mem_sysfs_mutex);
++
  	mem->phys_index = __section_nr(section);
  	mem->state = state;
-+	atomic_inc(&mem->section_count);
- 	mutex_init(&mem->state_mutex);
- 	start_pfn = section_nr_to_pfn(mem->phys_index);
- 	mem->phys_device = arch_get_memory_phys_device(start_pfn);
-@@ -505,12 +506,15 @@
+ 	atomic_inc(&mem->section_count);
+@@ -497,6 +501,7 @@
+ 			ret = register_mem_sect_under_node(mem, nid);
+ 	}
+ 
++	mutex_unlock(&mem_sysfs_mutex);
+ 	return ret;
+ }
+ 
+@@ -505,6 +510,7 @@
+ {
  	struct memory_block *mem;
  
++	mutex_lock(&mem_sysfs_mutex);
  	mem = find_memory_block(section);
--	unregister_mem_sect_under_nodes(mem);
--	mem_remove_simple_file(mem, phys_index);
--	mem_remove_simple_file(mem, state);
--	mem_remove_simple_file(mem, phys_device);
--	mem_remove_simple_file(mem, removable);
--	unregister_memory(mem, section);
-+
-+	if (atomic_dec_and_test(&mem->section_count)) {
-+		unregister_mem_sect_under_nodes(mem);
-+		mem_remove_simple_file(mem, phys_index);
-+		mem_remove_simple_file(mem, state);
-+		mem_remove_simple_file(mem, phys_device);
-+		mem_remove_simple_file(mem, removable);
-+		unregister_memory(mem, section);
-+	}
  
+ 	if (atomic_dec_and_test(&mem->section_count)) {
+@@ -516,6 +522,7 @@
+ 		unregister_memory(mem, section);
+ 	}
+ 
++	mutex_unlock(&mem_sysfs_mutex);
  	return 0;
  }
-Index: linux-next/include/linux/memory.h
-===================================================================
---- linux-next.orig/include/linux/memory.h	2010-09-27 09:17:20.000000000 -0500
-+++ linux-next/include/linux/memory.h	2010-09-27 09:22:56.000000000 -0500
-@@ -19,10 +19,13 @@
- #include <linux/node.h>
- #include <linux/compiler.h>
- #include <linux/mutex.h>
-+#include <asm/atomic.h>
- 
- struct memory_block {
- 	unsigned long phys_index;
- 	unsigned long state;
-+	atomic_t section_count;
-+
- 	/*
- 	 * This serializes all state change requests.  It isn't
- 	 * held during creation because the control files are
