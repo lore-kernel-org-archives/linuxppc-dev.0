@@ -1,33 +1,31 @@
 Return-Path: <cl@linux.com>
-Received: from smtp107.prem.mail.ac4.yahoo.com
-	(smtp107.prem.mail.ac4.yahoo.com [76.13.13.46])
-	by ozlabs.org (Postfix) with SMTP id B4AB5B70F2
+Received: from smtp101.prem.mail.ac4.yahoo.com
+	(smtp101.prem.mail.ac4.yahoo.com [76.13.13.40])
+	by ozlabs.org (Postfix) with SMTP id BEE81B70E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Sep 2010 01:37:42 +1000 (EST)
-Date: Mon, 27 Sep 2010 10:37:35 -0500 (CDT)
+	Tue, 28 Sep 2010 01:52:08 +1000 (EST)
+Date: Mon, 27 Sep 2010 10:52:02 -0500 (CDT)
 From: Christoph Lameter <cl@linux.com>
-To: Christian Riesch <christian@riesch.at>
+To: john stultz <johnstul@us.ibm.com>
 Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-In-Reply-To: <4C9BC7CE.8020400@riesch.at>
-Message-ID: <alpine.DEB.2.00.1009271035110.9258@router.home>
+In-Reply-To: <1285278136.2587.154.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.1009271038150.9258@router.home>
 References: <cover.1285261533.git.richard.cochran@omicron.at>
 	<alpine.DEB.2.00.1009231238170.2962@router.home>
 	<1285268380.2587.11.camel@localhost.localdomain>
 	<alpine.DEB.2.00.1009231402420.2962@router.home>
 	<1285273684.2587.92.camel@localhost.localdomain>
 	<alpine.DEB.2.00.1009231533040.7522@router.home>
-	<20100923223417.4ed62e5b@lxorguk.ukuu.org.uk>
-	<4C9BC7CE.8020400@riesch.at>
+	<1285278136.2587.154.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, john stultz <johnstul@us.ibm.com>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
 	devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
 	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,21 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Sep 2010, Christian Riesch wrote:
+On Thu, 23 Sep 2010, john stultz wrote:
 
-> > > It implies clock tuning in userspace for a potential sub microsecond
-> > > accurate clock. The clock accuracy will be limited by user space
-> > > latencies and noise. You wont be able to discipline the system clock
-> > > accurately.
+> > > 3) Further, the PTP hardware counter can be simply set to a new offset
+> > > to put it in line with the network time. This could cause trouble with
+> > > timekeeping much like unsynced TSCs do.
 > >
-> > Noise matters, latency doesn't.
+> > You can do the same for system time.
 >
-> Well put! That's why we need hardware support for PTP timestamping to reduce
-> the noise, but get along well with the clock servo that is steering the PHC in
-> user space.
+> Settimeofday does allow CLOCK_REALTIME to jump, but the CLOCK_MONOTONIC
+> time cannot jump around. Having a clocksource that is non-monotonic
+> would break this.
 
-Even if I buy into the catch phrase above: User space is subject to noise
-that the in kernel code is not. If you do the tuning over long intervals
-then it hopefully averages out but it still causes jitter effects that
-affects the degree of accuracy (or sync) that you can reach. And the noise
-varies with the load on the system.
+Currently time runs at the same speed. CLOCK_MONOTONIC runs at a offset
+to CLOCK_REALTIME. We are creating APIs here that allow time to run at
+different speeds.
+
+> The design actually avoids most userland induced latency.
+>
+> 1) On the PTP hardware syncing point, the reference packet gets
+> timestamped with the PTP hardware time on arrival. This allows the
+> offset calculation to be done in userland without introducing latency.
+
+The timestamps allows the calculation of the network transmission time I
+guess and therefore its more accurate to calculate that effect out. Ok but
+then the overhead of getting to code in user space (that does the proper
+clock adjustments) is resulting in the addition of a relatively long time
+that is subject to OS scheduling latencies and noises.
+
+> 2) On the system syncing side, the proposal for the PPS interrupt allows
+> the PTP hardware to trigger an interrupt on the second boundary that
+> would take a timestamp of the system time. Then the pps interface allows
+> for the timestamp to be read from userland allowing the offset to be
+> calculated without introducing additional latency.
+
+Sorry dont really get the whole picture here it seems. Sounds like one is
+going through additional unnecessary layers. Why would the PTP hardware
+triggger an interrupt? I thought the PTP messages came in via
+timestamping and are then processed by software. Then the software is
+issuing a hardware interrupt that then triggers the PPS subsystem. And
+that is supposed to be better than directly interfacing with the PTP?
+
+
+> Additionally, even just in userland, it would be easy to bracket two
+> reads of the system time around one read of the PTP clock to bound any
+> userland latency fairly well. It may not be as good as the PPS interface
+> (although that depends on the interrupt latency), but if the accesses
+> are all local, it probably could get fairly close.
+
+That sounds hacky.
+
+> > Ok maybe we need some sort of control interface to manage the clock like
+> > the others have.
+>
+> That's what the clock_adjtime call provides.
+
+Ummm... You are managing a hardware device with hardware (driver) specific
+settings. That is currently being done via ioctls. Why generalize it?
+
+> > The posix clocks today assumes one notion of real "time" in the kernel.
+> > All clocks increase in lockstep (aside from offset updates).
+>
+> Not true. The cputime clockids do not increment at the same rate (as the
+> apps don't always run). Further CLOCK_MONOTONIC_RAW provides a non-freq
+> corrected view of CLOCK_MONOTONIC, so it increments at a slightly
+> different rate.
+
+cputime clockids are not tracking time but cpu resource use.
+
+> Re-using the fairly nice (Alan of course disagrees :) posix interface
+> seems at least a little better for application developers who actually
+> have to use the hardware.
+
+Well it may also be confusing for others. The application developers also
+will have a hard time using a generic clock interface to control PTP
+device specific things like frequencies, rates etc etc. So you always need
+to ioctl/device specific control interface regardless.
