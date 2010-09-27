@@ -1,27 +1,16 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EC451B70D5
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Sep 2010 20:12:48 +1000 (EST)
-Message-ID: <4C9F1D09.3040907@windriver.com>
-Date: Sun, 26 Sep 2010 18:14:33 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Mon, 27 Sep 2010 11:04:34 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] 476: Set CCR2[DSTI] to prevent isync from flushing
+	shadow TLB
+Message-ID: <20100927150434.GA2888@zod.rchland.ibm.com>
+References: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1285351297-9999-2-git-send-email-shaggy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: David Hagood <david.hagood@gmail.com>
-Subject: Re: MPC8641D PEX: programming OWBAR in Endpoint mode?
-References: <08f8439b89ad5771221aaba1cee86fc4.squirrel@localhost>	
-	<52CF90264091A14888078A031D780F4306C8C0FF@ism-mail03.corp.ad.wrs.com>	
-	<1285240268.2454.8.camel@chumley>	
-	<52CF90264091A14888078A031D780F4306C8C14B@ism-mail03.corp.ad.wrs.com>	
-	<409c3f6d508ece73c18f6ce750513b22.squirrel@localhost>	
-	<52CF90264091A14888078A031D780F4306C8C176@ism-mail03.corp.ad.wrs.com>	
-	<1285325425.2454.11.camel@chumley> <4C9DC510.8010403@windriver.com>
-	<1285415473.2454.15.camel@chumley>
-In-Reply-To: <1285415473.2454.15.camel@chumley>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1285351297-9999-2-git-send-email-shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Hagood wrote:
-> On Sat, 2010-09-25 at 17:46 +0800, tiejun.chen wrote:
->> As a summary you have no any issue to access InBound/BAR/LAW.
-> 
-> Correct: full access to the inbound.
->> And I remember there is only one
->> requirement to OutBound, and that is the window address should be aligned based
->> on the size from OWS. Are you sure?
-> Yes. As my first test I've been using 4k and 64k sizes, aligned on 16M
-> boundaries.
->> And did you try to configure OutBound REGS when RC mode? If so I'm afraid we may
->> miss some errata on EP.
-> In RC mode the built-in drivers take over.
+On Fri, Sep 24, 2010 at 01:01:36PM -0500, Dave Kleikamp wrote:
+>When the DSTI (Disable Shadow TLB Invalidate) bit is set in the CCR2
+>register, the isync command does not flush the shadow TLB (iTLB & dTLB).
+>
+>However, since the shadow TLB does not contain context information, we
+>want the shadow TLB flushed in situations where we are switching context.
+>In those situations, we explicitly clear the DSTI bit before performing
+>isync, and set it again afterward.  We also need to do the same when we
+>perform isync after explicitly flushing the TLB.
+>
+>Th setting of the DSTI bit is dependent on
+>CONFIG_PPC_47x_DISABLE_SHADOW_TLB_INVALIDATE.  When we are confident that
+>the feature works as expected, the option can probably be removed.
 
-Can you confirm the build-in driver can write/read OutBound correctly on your
-target?
+You're defaulting it to 'y' in the Kconfig.  Technically someone could
+turn it off I guess, but practice mostly shows that nobody mucks with
+the defaults.  Do you want it to default 'n' for now if you aren't
+confident in it just quite yet?
 
--Tiejun
+(Linus also has some kind of gripe with new options being default 'y',
+but I don't recall all the details and I doubt he'd care about something
+in low-level PPC code.)
 
-> 
-> 
-> 
+josh
