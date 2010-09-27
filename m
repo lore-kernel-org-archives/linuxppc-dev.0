@@ -1,17 +1,20 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] 476: Set CCR2[DSTI] to prevent isync from flushing
-	shadow TLB
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20100927150434.GA2888@zod.rchland.ibm.com>
-References: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1285351297-9999-2-git-send-email-shaggy@linux.vnet.ibm.com>
-	<20100927150434.GA2888@zod.rchland.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Mon, 27 Sep 2010 10:26:45 -0500
-Message-ID: <1285601205.17411.23.camel@shaggy-w500>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <joerg@alea.gnuu.de>
+Received: from uucp.gnuu.de (uucp.gnuu.de [83.246.114.63])
+	by ozlabs.org (Postfix) with ESMTP id 7A18CB70B8
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 00:23:21 +1000 (EST)
+Date: Mon, 27 Sep 2010 14:50:37 +0200
+From: =?iso-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Oops in trace_hardirqs_on (powerpc)
+Message-ID: <20100927125037.GA4497@alea.gnuu.de>
+References: <20100806233157.GA7117@alea.gnuu.de>
+	<1285184671.26872.127.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
+In-Reply-To: <1285184671.26872.127.camel@gandalf.stny.rr.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-09-27 at 11:04 -0400, Josh Boyer wrote:
-> On Fri, Sep 24, 2010 at 01:01:36PM -0500, Dave Kleikamp wrote:
-> >When the DSTI (Disable Shadow TLB Invalidate) bit is set in the CCR2
-> >register, the isync command does not flush the shadow TLB (iTLB & dTLB).
-> >
-> >However, since the shadow TLB does not contain context information, we
-> >want the shadow TLB flushed in situations where we are switching context.
-> >In those situations, we explicitly clear the DSTI bit before performing
-> >isync, and set it again afterward.  We also need to do the same when we
-> >perform isync after explicitly flushing the TLB.
-> >
-> >Th setting of the DSTI bit is dependent on
-> >CONFIG_PPC_47x_DISABLE_SHADOW_TLB_INVALIDATE.  When we are confident that
-> >the feature works as expected, the option can probably be removed.
-> 
-> You're defaulting it to 'y' in the Kconfig.  Technically someone could
-> turn it off I guess, but practice mostly shows that nobody mucks with
-> the defaults.  Do you want it to default 'n' for now if you aren't
-> confident in it just quite yet?
 
-I think I made it a config option at Ben's request when I first started
-this work last year, before being sidetracked by other priorities.  I
-could either remove the option, or default it to 'n'.  It might be best
-to just hard-code the behavior to make sure it's exercised, since
-there's no 47x hardware in production yet, but we can give Ben a chance
-to weigh in with his opinion.
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> (Linus also has some kind of gripe with new options being default 'y',
-> but I don't recall all the details and I doubt he'd care about something
-> in low-level PPC code.)
-> 
-> josh
+Hello Steven,
 
--- 
-Dave Kleikamp
-IBM Linux Technology Center
+Steven Rostedt hat am Wed 22. Sep, 15:44 (-0400) geschrieben:
+> Sorry for the late reply, but I was on vacation when you sent this, and
+> I missed it while going through email.
+>=20
+> Do you still have this issue?
+
+No. I've rebuild my kernel without TRACE_IRQFLAGS and the problem
+vanished, as expected. The problem is, that in some cases the stack is
+only two frames deep, which causes the macro CALLER_ADDR1 makes an
+invalid access. Someone told me, there a workaround for the problem on
+i386, too.
+
+% sed -n 2p arch/x86/lib/thunk_32.S
+ * Trampoline to trace irqs off. (otherwise CALLER_ADDR1 might crash)
+
+Bye, J=F6rg.
+--=20
+Angenehme Worte sind nie wahr,
+wahre Worte sind nie angenehm.
+
+--MGYHOYXEY6WxJCY8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature http://en.wikipedia.org/wiki/OpenPGP
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkygkx0ACgkQwe0mZwH1VICMRACfS1qucjIyFj+p8CB55kopPB3Q
+oHwAoJmA2XysgTSHqoBhVchfOs7Fdm8J
+=zPt1
+-----END PGP SIGNATURE-----
+
+--MGYHOYXEY6WxJCY8--
