@@ -1,33 +1,18 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C51D8B70E0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Sep 2010 06:07:10 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8RK1lhL026056
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Sep 2010 14:01:47 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8RK6uRO205848
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Sep 2010 14:06:56 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o8RK6tKJ012175
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Sep 2010 14:06:55 -0600
-Subject: Re: [PATCH 1/1]  Add config option for batched hcalls
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20100926034903.GA5473@lixom.net>
-References: <1285364655.3016.25.camel@lexx> <20100926034903.GA5473@lixom.net>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] 476: Set CCR2[DSTI] to prevent isync from flushing
+	shadow TLB
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+In-Reply-To: <1285601205.17411.23.camel@shaggy-w500>
+References: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1285351297-9999-2-git-send-email-shaggy@linux.vnet.ibm.com>
+	<20100927150434.GA2888@zod.rchland.ibm.com>
+	<1285601205.17411.23.camel@shaggy-w500>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 27 Sep 2010 15:06:46 -0500
-Message-ID: <1285618006.3016.27.camel@lexx>
+Date: Tue, 28 Sep 2010 07:10:52 +1000
+Message-ID: <1285621852.14081.62.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Reply-To: will_schmidt@vnet.ibm.com
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,39 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-09-25 at 22:49 -0500, Olof Johansson wrote:
-> On Fri, Sep 24, 2010 at 04:44:15PM -0500, Will Schmidt wrote:
-> > 
-> > Add a config option for the (batched) MULTITCE and BULK_REMOVE h-calls.
-> > 
-> > By default, these options are on and are beneficial for performance and
-> > throughput reasons.   If disabled, the code will fall back to using less
-> > optimal TCE and REMOVE hcalls.   The ability to easily disable these
-> > options is useful for some of the PREEMPT_RT related investigation and
-> > work occurring on Power.
-> 
-> Hi,
-> 
-> I can see why it's useful to enable and disable, but these are all
-> runtime-checked, wouldn't it be more useful to add a bootarg to handle
-> it instead of adding some new config options that pretty much everyone
-> will always go with the defaults on?
-> 
-> The bits are set early, but from looking at where they're used, there
-> doesn't seem to be any harm in disabling them later on when a bootarg
-> is convenient to parse and deal with?
-> 
-> It has the benefit of easier on/off testing, if that has any value for
-> production debug down the road.
+On Mon, 2010-09-27 at 10:26 -0500, Dave Kleikamp wrote:
+> I think I made it a config option at Ben's request when I first started
+> this work last year, before being sidetracked by other priorities.  I
+> could either remove the option, or default it to 'n'.  It might be best
+> to just hard-code the behavior to make sure it's exercised, since
+> there's no 47x hardware in production yet, but we can give Ben a chance
+> to weigh in with his opinion.
 
-Hi Olof, 
-  Thats a good idea, let me poke at this a bit more, see if I can get
-bootargs for this.  
+You can remove the option I suppose. It was useful to have it during
+early bringup but probably not anymore.
 
-Thanks, 
--Will
-
-> 
-> 
-> -Olof
-> 
+Cheers,
+Ben.
