@@ -1,20 +1,25 @@
-Return-Path: <joerg@alea.gnuu.de>
-Received: from uucp.gnuu.de (uucp.gnuu.de [83.246.114.63])
-	by ozlabs.org (Postfix) with ESMTP id 7A18CB70B8
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 00:23:21 +1000 (EST)
-Date: Mon, 27 Sep 2010 14:50:37 +0200
-From: =?iso-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: Oops in trace_hardirqs_on (powerpc)
-Message-ID: <20100927125037.GA4497@alea.gnuu.de>
-References: <20100806233157.GA7117@alea.gnuu.de>
-	<1285184671.26872.127.camel@gandalf.stny.rr.com>
+Return-Path: <linus.ml.walleij@gmail.com>
+Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
+	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id D5FACB70AF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 28 Sep 2010 01:23:37 +1000 (EST)
+Received: by ewy21 with SMTP id 21so1362589ewy.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 27 Sep 2010 08:23:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
-In-Reply-To: <1285184671.26872.127.camel@gandalf.stny.rr.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <1285370032-16937-2-git-send-email-iws@ovro.caltech.edu>
+References: <1285370032-16937-1-git-send-email-iws@ovro.caltech.edu>
+	<1285370032-16937-2-git-send-email-iws@ovro.caltech.edu>
+Date: Mon, 27 Sep 2010 17:23:34 +0200
+Message-ID: <AANLkTimzdEhAZ=oXbbB3Ge5=YY7OXq3fjaRH4roPNB-k@mail.gmail.com>
+Subject: Re: [PATCH RFCv2 1/2] dmaengine: add support for scatterlist to
+	scatterlist transfers
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?Q?Per_Frid=E9n?= <per.friden@stericsson.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2010/9/25 Ira W. Snyder <iws@ovro.caltech.edu>:
 
---MGYHOYXEY6WxJCY8
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> This adds support for scatterlist to scatterlist DMA transfers.
 
-Hello Steven,
+This is a good idea, we have a local function to do this in DMA40 already,
+stedma40_memcpy_sg().
 
-Steven Rostedt hat am Wed 22. Sep, 15:44 (-0400) geschrieben:
-> Sorry for the late reply, but I was on vacation when you sent this, and
-> I missed it while going through email.
->=20
-> Do you still have this issue?
+> This is
+> currently hidden behind a configuration option, which will allow drivers
+> which need this functionality to select it individually.
 
-No. I've rebuild my kernel without TRACE_IRQFLAGS and the problem
-vanished, as expected. The problem is, that in some cases the stack is
-only two frames deep, which causes the macro CALLER_ADDR1 makes an
-invalid access. Someone told me, there a workaround for the problem on
-i386, too.
+Why? Isn't it better to add this as a new capability flag
+if you don't want to announce it? Or is the intent to save
+memory footprint?
 
-% sed -n 2p arch/x86/lib/thunk_32.S
- * Trampoline to trace irqs off. (otherwise CALLER_ADDR1 might crash)
-
-Bye, J=F6rg.
---=20
-Angenehme Worte sind nie wahr,
-wahre Worte sind nie angenehm.
-
---MGYHOYXEY6WxJCY8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature http://en.wikipedia.org/wiki/OpenPGP
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkygkx0ACgkQwe0mZwH1VICMRACfS1qucjIyFj+p8CB55kopPB3Q
-oHwAoJmA2XysgTSHqoBhVchfOs7Fdm8J
-=zPt1
------END PGP SIGNATURE-----
-
---MGYHOYXEY6WxJCY8--
+Yours,
+Linus Walleij
