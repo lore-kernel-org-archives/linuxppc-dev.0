@@ -1,20 +1,29 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 54978B713B
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3FD0AB7154
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Sep 2010 23:09:28 +1000 (EST)
-To: Ilya Yanok <yanok@emcraft.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 3/3] mpc512x_dma: add MPC8308 support
+	Tue, 28 Sep 2010 23:10:33 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8SDA8SS022830
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 09:10:08 -0400
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8SD9tQa110176
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 09:09:56 -0400
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o8SD9tXO025174
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 07:09:55 -0600
+Date: Tue, 28 Sep 2010 09:09:41 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'next' branch of 4xx tree
+Message-ID: <20100928130941.GA31993@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1285676696-5358-4-git-send-email-yanok@emcraft.com>
-References: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
-	<1285676696-5358-4-git-send-email-yanok@emcraft.com>
-Date: Tue, 28 Sep 2010 15:09:19 +0200
-Message-Id: <20100928130919.1558AD5218F@gemini.denx.de>
-Cc: vlad@emcraft.com, linuxppc-dev@lists.ozlabs.org,
-	Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Ilya Yanok,
+Hi Ben,
 
-In message <1285676696-5358-4-git-send-email-yanok@emcraft.com> you wrote:
-> MPC8308 has pretty much the same DMA controller as MPC5121 and
-> this patch adds support for MPC8308 to the mpc512x_dma driver.
-> 
-> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-> Cc: Piotr Ziecik <kosmo@semihalf.com>
-> ---
->  drivers/dma/Kconfig       |    2 +-
->  drivers/dma/mpc512x_dma.c |   95 +++++++++++++++++++++++++++++++++-----------
->  2 files changed, 72 insertions(+), 25 deletions(-)
-> 
-> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-> index 9520cf0..5c5e95b 100644
-> --- a/drivers/dma/Kconfig
-> +++ b/drivers/dma/Kconfig
-> @@ -100,7 +100,7 @@ config FSL_DMA
->  
->  config MPC512X_DMA
->  	tristate "Freescale MPC512x built-in DMA engine support"
-> -	depends on PPC_MPC512x
-> +	depends on PPC_MPC512x || PPC_MPC831x
+A few small updates for the next branch.  A new board/SoC from AMCC, and
+some 476 changes from Shaggy.  Please pull.
 
-Is MPC831x correct here? My understanding is that MPC831x processors
-have yet other DMA cotnrollers, and we're on a MPC8308 here?
+josh
 
-Best regards,
+The following changes since commit 9f5f9ffe50e90ed73040d2100db8bfc341cee352:
 
-Wolfgang Denk
+  powerpc/perf: Fix sampling enable for PPC970 (2010-09-23 17:03:56 +1000)
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"A little knowledge is a dangerous thing."                - Doug Gwyn
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+
+Dave Kleikamp (2):
+      powerpc/476: Set CCR2[DSTI] to prevent isync from flushing shadow TLB
+      powerpc/476: lazy flush_tlb_mm for nohash architectures
+
+Josh Boyer (1):
+      powerpc/44x: Update ppc44x_defconfig
+
+Tirumala Marri (1):
+      powerpc/44x: Add support for the AMCC APM821xx SoC
+
+ arch/powerpc/boot/dts/bluestone.dts          |  254 ++++++++++++++++++++++++++
+ arch/powerpc/configs/44x/bluestone_defconfig |   68 +++++++
+ arch/powerpc/configs/ppc44x_defconfig        |    9 +-
+ arch/powerpc/include/asm/reg_booke.h         |    4 +
+ arch/powerpc/kernel/cpu_setup_44x.S          |    1 +
+ arch/powerpc/kernel/cputable.c               |   15 ++
+ arch/powerpc/kernel/head_44x.S               |   25 +++
+ arch/powerpc/mm/mmu_context_nohash.c         |  154 ++++++++++++++--
+ arch/powerpc/mm/mmu_decl.h                   |    8 +
+ arch/powerpc/mm/tlb_nohash.c                 |   28 +++-
+ arch/powerpc/mm/tlb_nohash_low.S             |   14 ++-
+ arch/powerpc/platforms/44x/Kconfig           |   16 ++
+ arch/powerpc/platforms/44x/misc_44x.S        |   26 +++
+ arch/powerpc/platforms/44x/ppc44x_simple.c   |    1 +
+ 14 files changed, 602 insertions(+), 21 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/bluestone.dts
+ create mode 100644 arch/powerpc/configs/44x/bluestone_defconfig
