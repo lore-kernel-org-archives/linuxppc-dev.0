@@ -1,33 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
-	[213.199.154.208]) by ozlabs.org (Postfix) with ESMTP id D6CA2B7123
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Sep 2010 04:47:25 +1000 (EST)
-Received: from mail76-am1 (localhost.localdomain [127.0.0.1])	by
-	mail76-am1-R.bigfish.com (Postfix) with ESMTP id 800B850577	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 18:47:17 +0000 (UTC)
-Received: from am1ehsmhs006.bigfish.com (unknown [10.3.201.242])	by
-	mail76-am1.bigfish.com (Postfix) with ESMTP id 99A531C40143	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 18:46:03 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8SIjvXM011196	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 11:45:57 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o8SJ0aTO025393	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Sep 2010 14:00:37 -0500 (CDT)
-Date: Tue, 28 Sep 2010 13:45:54 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: Parsing a bus fault message?
-Message-ID: <20100928134554.323667e5@udp111988uds.am.freescale.net>
-In-Reply-To: <20100928153153.GA22485@ovro.caltech.edu>
-References: <2bef2051c143a8d6e619519b222016f9.squirrel@localhost>
-	<20100928153153.GA22485@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: david.hagood@gmail.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id A1B94B7123
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 04:55:41 +1000 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: linux-usb@vger.kernel.org
+Subject: [PATCH v3 0/2] Add USB Host support for MPC5121 SoC
+Date: Tue, 28 Sep 2010 20:55:19 +0200
+Message-Id: <1285700121-9991-1-git-send-email-agust@denx.de>
+In-Reply-To: <1285666594-21150-1-git-send-email-agust@denx.de>
+References: <1285666594-21150-1-git-send-email-agust@denx.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Sep 2010 08:31:54 -0700
-"Ira W. Snyder" <iws@ovro.caltech.edu> wrote:
+Version 3 of the patches to add MPC512x USB support in
+mainline kernel. USB OTG support is not included in
+this patch series, it will be submitted later.
 
-> On Tue, Sep 28, 2010 at 09:26:51AM -0500, david.hagood@gmail.com wrote:
-> > Alternatively, can somebody see a hint in the message that I don't know
-> > enough to pick out? At this point, my code is trying to memcpy() from the
-> > PCIe bus (mapped via the outbound ATMU) to local memory, so the fault is
-> > either a) the ATMU is not accessible b) the ATMU is accessible but not
-> > mapped (which I would have thought the ioremap call I made would have
-> > handled) or c) the chip is not able to bus master on the PCI bus.
+There are only two patches now: patches 1/3 and 2/3 of
+the previous version are merged into the first patch and
+now bisectable. Additionally the 2nd patch of the previous
+version is changed as requested by Grant. Please consider
+for inclusion in 2.6.37.
 
-Check the LAWs, the outbound ATMU, and the PCI device's BAR.  Make sure
-the address goes where you're expecting at each level.
+Anatolij Gustschin (2):
+  USB: add platform glue driver for FSL USB DR controller
+  USB: add USB EHCI support for MPC5121 SoC
 
-> > Machine check in kernel mode.
-> > Caused by (from SRR1=149030): Transfer error ack signal
-> 
-> ^^^ this is the line that contains some critical info
-> 
-> In the 86xx CPU manual, you should be able to find information about the
-> SRR1 register. Decoding the hex SRR1=0x149030 may help.
-> 
-> The kernel is telling you this is a TEA (transfer error acknowledge)
-> error. I've only seen this when I get an unhandled timeout on the local
-> bus. For example, a FPGA that has died in the middle of a request.
-
-I've seen it when you access a physical address that has no device
-backing it up.
-
-> On the PCI bus, I haven't seen this error. The 83xx PCI controller is
-> smart enough to return 0xffffffff when reading a non-existent device.
-
-I believe that behavior is configurable.
-
--Scott
+ Documentation/powerpc/dts-bindings/fsl/usb.txt |   22 ++
+ arch/powerpc/sysdev/fsl_soc.c                  |  163 -------------
+ drivers/usb/Kconfig                            |    1 +
+ drivers/usb/gadget/Kconfig                     |    1 +
+ drivers/usb/host/Kconfig                       |   10 +-
+ drivers/usb/host/Makefile                      |    1 +
+ drivers/usb/host/ehci-fsl.c                    |   99 ++++++---
+ drivers/usb/host/ehci-fsl.h                    |   13 +-
+ drivers/usb/host/ehci-mem.c                    |    2 +-
+ drivers/usb/host/fsl-mph-dr-of.c               |  308 ++++++++++++++++++++++++
+ include/linux/fsl_devices.h                    |   15 ++
+ 11 files changed, 440 insertions(+), 195 deletions(-)
+ create mode 100644 drivers/usb/host/fsl-mph-dr-of.c
