@@ -1,33 +1,34 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 70414B7121
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 04:07:02 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8SI09C1021952
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:00:09 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8SI6U4M2011282
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:06:31 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o8SI6TW1023169
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:06:30 -0400
-Message-ID: <4CA22EA2.8060307@austin.ibm.com>
-Date: Tue, 28 Sep 2010 13:06:26 -0500
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1D8D6B711D
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 04:14:32 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8SHxN7n000364
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 13:59:23 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8SIEUvs336180
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:14:30 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o8SIES2a016726
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 15:14:29 -0300
+Message-ID: <4CA2307C.9060202@austin.ibm.com>
+Date: Tue, 28 Sep 2010 13:14:20 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/8] v2 Allow memory block to span multiple memory sections
-References: <4CA0EBEB.1030204@austin.ibm.com>	
-	<4CA0EFAA.8050000@austin.ibm.com>
-	<1285631707.19976.3385.camel@nimitz>
-In-Reply-To: <1285631707.19976.3385.camel@nimitz>
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-mm@kvack.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH 2/8] v2 Add section count to memory_block struct
+References: <4CA0EBEB.1030204@austin.ibm.com> <4CA0EEF0.70402@austin.ibm.com>
+	<20100928093132.GG14068@sgi.com>
+In-Reply-To: <20100928093132.GG14068@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,55 +38,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/27/2010 06:55 PM, Dave Hansen wrote:
-> On Mon, 2010-09-27 at 14:25 -0500, Nathan Fontenot wrote:
->> +static inline int base_memory_block_id(int section_nr)
->> +{
->> +       return section_nr / sections_per_block;
->> +}
-> ...
->> -       mutex_lock(&mem_sysfs_mutex);
->> -
->> -       mem->phys_index = __section_nr(section);
->> +       scn_nr = __section_nr(section);
->> +       mem->phys_index = base_memory_block_id(scn_nr) * sections_per_block; 
+On 09/28/2010 04:31 AM, Robin Holt wrote:
+> In the next patch, you introduce a mutex for adding/removing memory blocks.
+> Is there really a need for this to be atomic?  If you reorder the patches
+> so the mutex comes first, would the atomic be needed any longer?
 > 
-> I'm really regretting giving this variable such a horrid name.  I suck.
-> 
-> I think this is correct now:
-> 
-> 	mem->phys_index = base_memory_block_id(scn_nr) * sections_per_block;
-> 	mem->phys_index = section_nr / sections_per_block * sections_per_block;
-> 	mem->phys_index = section_nr
-> 
-> Since it gets exported to userspace this way:
-> 
->> +static ssize_t show_mem_start_phys_index(struct sys_device *dev,
->>                         struct sysdev_attribute *attr, char *buf)
->>  {
->>         struct memory_block *mem =
->>                 container_of(dev, struct memory_block, sysdev);
->> -       return sprintf(buf, "%08lx\n", mem->phys_index / sections_per_block);
->> +       unsigned long phys_index;
->> +
->> +       phys_index = mem->start_phys_index / sections_per_block;
->> +       return sprintf(buf, "%08lx\n", phys_index);
->> +}
-> 
-> The only other thing I'd say is that we need to put phys_index out of
-> its misery and call it what it is now: a section number.  I think it's
-> OK to call them "start/end_section_nr", at least inside the kernel.  I
-> intentionally used "phys_index" terminology in sysfs so that we _could_
-> eventually do this stuff and break the relationship between sections and
-> the sysfs dirs, but I think keeping the terminology around inside the
-> kernel is confusing now.
 
-Yes, it took me a couple o looks to get the phys_index <-> section number
-correlation.  I think changing the kernel names to start/end_section_number
-is a good idea.
+I think you're right.  Looking at the code with all patches applied I am only
+updating the atomic when holding the mem_sysfs_mutex.  I think the atomic
+could safely be changed to a regular int.
 
 -Nathan
 
+> Robin
 > 
-> -- Dave
-> 
+> On Mon, Sep 27, 2010 at 02:22:24PM -0500, Nathan Fontenot wrote:
+>> Add a section count property to the memory_block struct to track the number
+>> of memory sections that have been added/removed from a memory block. This
+>> allows us to know when the last memory section of a memory block has been
+>> removed so we can remove the memory block.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+>>
+>> ---
+>>  drivers/base/memory.c  |   16 ++++++++++------
+>>  include/linux/memory.h |    3 +++
+>>  2 files changed, 13 insertions(+), 6 deletions(-)
+>>
+>> Index: linux-next/drivers/base/memory.c
+>> ===================================================================
+>> --- linux-next.orig/drivers/base/memory.c	2010-09-27 09:17:20.000000000 -0500
+>> +++ linux-next/drivers/base/memory.c	2010-09-27 09:31:35.000000000 -0500
+>> @@ -478,6 +478,7 @@
+>>  
+>>  	mem->phys_index = __section_nr(section);
+>>  	mem->state = state;
+>> +	atomic_inc(&mem->section_count);
+>>  	mutex_init(&mem->state_mutex);
+>>  	start_pfn = section_nr_to_pfn(mem->phys_index);
+>>  	mem->phys_device = arch_get_memory_phys_device(start_pfn);
+>> @@ -505,12 +506,15 @@
+>>  	struct memory_block *mem;
+>>  
+>>  	mem = find_memory_block(section);
+>> -	unregister_mem_sect_under_nodes(mem);
+>> -	mem_remove_simple_file(mem, phys_index);
+>> -	mem_remove_simple_file(mem, state);
+>> -	mem_remove_simple_file(mem, phys_device);
+>> -	mem_remove_simple_file(mem, removable);
+>> -	unregister_memory(mem, section);
+>> +
+>> +	if (atomic_dec_and_test(&mem->section_count)) {
+>> +		unregister_mem_sect_under_nodes(mem);
+>> +		mem_remove_simple_file(mem, phys_index);
+>> +		mem_remove_simple_file(mem, state);
+>> +		mem_remove_simple_file(mem, phys_device);
+>> +		mem_remove_simple_file(mem, removable);
+>> +		unregister_memory(mem, section);
+>> +	}
+>>  
+>>  	return 0;
+>>  }
+>> Index: linux-next/include/linux/memory.h
+>> ===================================================================
+>> --- linux-next.orig/include/linux/memory.h	2010-09-27 09:17:20.000000000 -0500
+>> +++ linux-next/include/linux/memory.h	2010-09-27 09:22:56.000000000 -0500
+>> @@ -19,10 +19,13 @@
+>>  #include <linux/node.h>
+>>  #include <linux/compiler.h>
+>>  #include <linux/mutex.h>
+>> +#include <asm/atomic.h>
+>>  
+>>  struct memory_block {
+>>  	unsigned long phys_index;
+>>  	unsigned long state;
+>> +	atomic_t section_count;
+>> +
+>>  	/*
+>>  	 * This serializes all state change requests.  It isn't
+>>  	 * held during creation because the control files are
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
