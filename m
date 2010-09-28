@@ -1,22 +1,33 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id CF4F3B713B
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 02:35:25 +1000 (EST)
-Message-ID: <4CA21906.1080002@redhat.com>
-Date: Tue, 28 Sep 2010 18:34:14 +0200
-From: Avi Kivity <avi@redhat.com>
-MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH 0/8] v2 De-Couple sysfs memory directories from memory
-	sections
-References: <4CA0EBEB.1030204@austin.ibm.com> <4CA1E338.6070201@redhat.com>
-	<20100928151218.GJ14068@sgi.com>
-In-Reply-To: <20100928151218.GJ14068@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C10B8B70A9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Sep 2010 03:02:56 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8SGvi70002596
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 10:57:44 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o8SH2rew215782
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 11:02:53 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o8SH2rXw032226
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 11:02:53 -0600
+Subject: [PATCH 1/1  v2 ]  Add kernel parameter to disable batched hcalls
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20100926034903.GA5473@lixom.net>
+References: <1285364655.3016.25.camel@lexx> <20100926034903.GA5473@lixom.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 28 Sep 2010 12:02:51 -0500
+Message-ID: <1285693371.2843.43.camel@lexx>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +37,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  On 09/28/2010 05:12 PM, Robin Holt wrote:
-> >  Why not update sysfs directory creation to be fast, for example by
-> >  using an rbtree instead of a linked list.  This fixes an
-> >  implementation problem in the kernel instead of working around it
-> >  and creating a new ABI.
->
-> Because the old ABI creates 129,000+ entries inside
-> /sys/devices/system/memory with their associated links from
-> /sys/devices/system/node/node*/ back to those directory entries.
->
-> Thankfully things like rpm, hald, and other miscellaneous commands scan
-> that information.  On our 8 TB test machine, hald runs continuously
-> following boot for nearly an hour mostly scanning useless information
-> from /sys/
 
-I see - so the problem wasn't just kernel internal; the ABI itself was 
-unsuitable.  Too bad this wasn't considered at the time it was added.
+This introduces a pair of kernel parameters that can be used to disable
+the MULTITCE and BULK_REMOVE h-calls. 
 
-(129k entries / 1 hour = 35 entries/sec; not very impressive)
+By default, those hcalls are enabled, active, and good for throughput
+and performance.  The ability to disable them will be useful for some of
+the PREEMPT_RT related investigation and work occurring on Power.
 
--- 
-error compiling committee.c: too many arguments to function
+
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+cc: Olof Johansson <olof@lixom.net>
+cc: Anton Blanchard <anton@samba.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+
+v2 - Per feedback from Olof, the code is reworked to utilize kernel
+parameter runtime checks, rather than CONFIG options.
+   - Added relevant change to kernel-parameters.txt
+
+
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index e2c7487..5c40801 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -426,6 +426,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	bttv.pll=	See Documentation/video4linux/bttv/Insmod-options
+ 	bttv.tuner=	and Documentation/video4linux/bttv/CARDLIST
+ 
++	bulk_remove=off	[PPC]  This parameter disables the use of the pSeries
++			firmware feature for flushing multiple hpte entries
++			at a time.
++
+ 	BusLogic=	[HW,SCSI]
+ 			See drivers/scsi/BusLogic.c, comment before function
+ 			BusLogic_ParseDriverOptions().
+@@ -1499,6 +1503,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	mtdparts=	[MTD]
+ 			See drivers/mtd/cmdlinepart.c.
+ 
++	multitce=off	[PPC]  This parameter disables the use of the pSeries
++			firmware feature for updating multiple TCE entries
++			at a time.
++
+ 	onenand.bdry=	[HW,MTD] Flex-OneNAND Boundary Configuration
+ 
+ 			Format: [die0_boundary][,die0_lock][,die1_boundary][,die1_lock]
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 902987d..e174a2f 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -625,3 +625,19 @@ void iommu_init_early_pSeries(void)
+ 	set_pci_dma_ops(&dma_iommu_ops);
+ }
+ 
++static int __init disable_multitce(char *str)
++{
++	if (strcmp(str,"off")==0) {
++		if (firmware_has_feature(FW_FEATURE_LPAR)) {
++			if (firmware_has_feature(FW_FEATURE_MULTITCE)) {
++				printk(KERN_INFO "Disabling MULTITCE firmware feature\n");
++				ppc_md.tce_build = tce_build_pSeriesLP;
++				ppc_md.tce_free	 = tce_free_pSeriesLP;
++				powerpc_firmware_features &= ~FW_FEATURE_MULTITCE;
++			}
++		}
++	}
++	return 1;
++}
++
++__setup("multitce=",disable_multitce);
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 0707653..82d15e7 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -599,6 +599,19 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
+ 		spin_unlock_irqrestore(&pSeries_lpar_tlbie_lock, flags);
+ }
+ 
++static int __init disable_bulk_remove(char *str)
++{
++	if (strcmp(str,"off")==0) {
++		if (firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
++			printk(KERN_INFO "Disabling BULK_REMOVE firmware feature");
++			powerpc_firmware_features &= ~FW_FEATURE_BULK_REMOVE;
++		}
++	}
++	return 1;
++}
++
++__setup("bulk_remove=",disable_bulk_remove);
++
+ void __init hpte_init_lpar(void)
+ {
+ 	ppc_md.hpte_invalidate	= pSeries_lpar_hpte_invalidate;
