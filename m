@@ -1,26 +1,20 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Tue, 28 Sep 2010 08:47:10 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-Message-ID: <20100928064710.GB7224@riccoc20.at.omicron.at>
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<20100923213654.0c64b047@lxorguk.ukuu.org.uk>
-	<20100924131407.GA3113@riccoc20.at.omicron.at>
-	<20100924150246.0e6064b6@lxorguk.ukuu.org.uk>
-	<alpine.DEB.2.00.1009271054320.9258@router.home>
-	<20100927180558.52817d5f@lxorguk.ukuu.org.uk>
+Return-Path: <holt@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.179.29])
+	by ozlabs.org (Postfix) with ESMTP id 3035FB70D4
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 19:36:02 +1000 (EST)
+Date: Tue, 28 Sep 2010 04:29:19 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 6/8] v2 Update node sysfs code
+Message-ID: <20100928092919.GF14068@sgi.com>
+References: <4CA0EBEB.1030204@austin.ibm.com> <4CA0F00D.9000702@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100927180558.52817d5f@lxorguk.ukuu.org.uk>
-Cc: John Stultz <johnstul@us.ibm.com>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <4CA0F00D.9000702@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +24,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 27, 2010 at 06:05:58PM +0100, Alan Cox wrote:
-> On Mon, 27 Sep 2010 10:56:09 -0500 (CDT)
-> Christoph Lameter <cl@linux.com> wrote:
+This patch may work, but it appears it is lacking in, at least the
+link_mem_sections() function.  Assuming you have a memory block covering
+2GB and a section size of 128MB (some values we are toying with for
+large SGI machines), you end up calling register_mem_sect_under_node()
+16 times which then takes the same steps.
+
+I think you also need:
+
+Index: linux-2.6.32/drivers/base/node.c
+===================================================================
+--- linux-2.6.32.orig/drivers/base/node.c	2010-09-28 04:18:53.848448349 -0500
++++ linux-2.6.32/drivers/base/node.c	2010-09-28 04:21:35.169446261 -0500
+@@ -342,6 +342,7 @@
+ 		if (!err)
+ 			err = ret;
+ 
++		pfn = section_nr_to_pfn(mem_blk->end_phys_index);
+ 		/* discard ref obtained in find_memory_block() */
+ 		kobject_put(&mem_blk->sysdev.kobj);
+ 	}
+
+Also, I don't think I much care for the weirdness that occurs if a
+memory block spans two nodes.  I have not thought through how possible
+(or likely) this is, but the code certainly permits it.  If that were
+the case, how would we know which sections need to be taken offline, etc?
+I wonder how much this will muddy up the information available in sysfs.
+
+Thanks,
+Robin
+
+On Mon, Sep 27, 2010 at 02:27:09PM -0500, Nathan Fontenot wrote:
+> Update the node sysfs code to be aware of the new capability for a memory
+> block to contain multiple memory sections.  This requires an additional
+> parameter to unregister_mem_sect_under_nodes so that we know which memory
+> section of the memory block to unregister.
 > 
-> > 
-> > On Fri, 24 Sep 2010, Alan Cox wrote:
-> > 
-> > > Whether you add new syscalls or do the fd passing using flags and hide
-> > > the ugly bits in glibc is another question.
-> > 
-> > Use device specific ioctls instead of syscalls?
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 > 
-> Some of the ioctls are probably not device specific, the job of the OS in
-> part is to present a unified interface. We already have a mess of HPET
-> and RTC driver ioctls.
-
-Yes, and the whole point of introducing a PTP hardare clock API was to
-avoid each new clock driver introducing yet another ioctl interface.
-
-I had proposed a standard ioctl interface for PTP hardware clocks, but
-that interface was rightly criticized for duplicating the posix clock
-API. It does not make sense to have multiple interfaces with the exact
-same functionality.
-
-It is impossible to support every last feature of every possible
-hardware clock with a generic interface, so there will always need to
-be special ioctls for such features.
-
-However, some clock functions *are* completely generic and apply to
-every clock:
-
-- set time
-- get time
-- adjust the frequency by N ppb
-- shift the time by a given offset
-
-The first two are provided by the posix clock interface, the third by
-the NTP adjtimex call, which also can support (by a single mode
-extension) the last item.
-
-Richard
+> ---
+>  drivers/base/memory.c |    2 +-
+>  drivers/base/node.c   |   12 ++++++++----
+>  include/linux/node.h  |    6 ++++--
+>  3 files changed, 13 insertions(+), 7 deletions(-)
+> 
+> Index: linux-next/drivers/base/node.c
+> ===================================================================
+> --- linux-next.orig/drivers/base/node.c	2010-09-27 13:49:36.000000000 -0500
+> +++ linux-next/drivers/base/node.c	2010-09-27 13:50:43.000000000 -0500
+> @@ -346,8 +346,10 @@
+>  		return -EFAULT;
+>  	if (!node_online(nid))
+>  		return 0;
+> -	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+> -	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+> +
+> +	sect_start_pfn = section_nr_to_pfn(mem_blk->start_phys_index);
+> +	sect_end_pfn = section_nr_to_pfn(mem_blk->end_phys_index);
+> +	sect_end_pfn += PAGES_PER_SECTION - 1;
+>  	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+>  		int page_nid;
+>  
+> @@ -371,7 +373,8 @@
+>  }
+>  
+>  /* unregister memory section under all nodes that it spans */
+> -int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+> +int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
+> +				    unsigned long phys_index)
+>  {
+>  	NODEMASK_ALLOC(nodemask_t, unlinked_nodes, GFP_KERNEL);
+>  	unsigned long pfn, sect_start_pfn, sect_end_pfn;
+> @@ -383,7 +386,8 @@
+>  	if (!unlinked_nodes)
+>  		return -ENOMEM;
+>  	nodes_clear(*unlinked_nodes);
+> -	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
+> +
+> +	sect_start_pfn = section_nr_to_pfn(phys_index);
+>  	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+>  	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
+>  		int nid;
+> Index: linux-next/drivers/base/memory.c
+> ===================================================================
+> --- linux-next.orig/drivers/base/memory.c	2010-09-27 13:50:38.000000000 -0500
+> +++ linux-next/drivers/base/memory.c	2010-09-27 13:50:43.000000000 -0500
+> @@ -587,9 +587,9 @@
+>  
+>  	mutex_lock(&mem_sysfs_mutex);
+>  	mem = find_memory_block(section);
+> +	unregister_mem_sect_under_nodes(mem, __section_nr(section));
+>  
+>  	if (atomic_dec_and_test(&mem->section_count)) {
+> -		unregister_mem_sect_under_nodes(mem);
+>  		mem_remove_simple_file(mem, phys_index);
+>  		mem_remove_simple_file(mem, end_phys_index);
+>  		mem_remove_simple_file(mem, state);
+> Index: linux-next/include/linux/node.h
+> ===================================================================
+> --- linux-next.orig/include/linux/node.h	2010-09-27 13:49:36.000000000 -0500
+> +++ linux-next/include/linux/node.h	2010-09-27 13:50:43.000000000 -0500
+> @@ -44,7 +44,8 @@
+>  extern int unregister_cpu_under_node(unsigned int cpu, unsigned int nid);
+>  extern int register_mem_sect_under_node(struct memory_block *mem_blk,
+>  						int nid);
+> -extern int unregister_mem_sect_under_nodes(struct memory_block *mem_blk);
+> +extern int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
+> +					   unsigned long phys_index);
+>  
+>  #ifdef CONFIG_HUGETLBFS
+>  extern void register_hugetlbfs_with_node(node_registration_func_t doregister,
+> @@ -72,7 +73,8 @@
+>  {
+>  	return 0;
+>  }
+> -static inline int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+> +static inline int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
+> +						  unsigned long phys_index)
+>  {
+>  	return 0;
+>  }
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
