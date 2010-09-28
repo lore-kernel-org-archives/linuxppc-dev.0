@@ -1,16 +1,15 @@
 Return-Path: <avi@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 8185AB70DF
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 22:44:56 +1000 (EST)
-Message-ID: <4CA1E338.6070201@redhat.com>
-Date: Tue, 28 Sep 2010 14:44:40 +0200
+	by ozlabs.org (Postfix) with ESMTP id A8DFAB7153
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 22:45:47 +1000 (EST)
+Message-ID: <4CA1E36A.2000005@redhat.com>
+Date: Tue, 28 Sep 2010 14:45:30 +0200
 From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 0/8] v2 De-Couple sysfs memory directories from memory
-	sections
-References: <4CA0EBEB.1030204@austin.ibm.com>
-In-Reply-To: <4CA0EBEB.1030204@austin.ibm.com>
+Subject: Re: [PATCH 8/8] v2 Update memory hotplug documentation
+References: <4CA0EBEB.1030204@austin.ibm.com> <4CA0F076.1070803@austin.ibm.com>
+In-Reply-To: <4CA0F076.1070803@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
 	linux-kernel@vger.kernel.org,
@@ -25,41 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  On 09/27/2010 09:09 PM, Nathan Fontenot wrote:
-> This set of patches decouples the concept that a single memory
-> section corresponds to a single directory in
-> /sys/devices/system/memory/.  On systems
-> with large amounts of memory (1+ TB) there are perfomance issues
-> related to creating the large number of sysfs directories.  For
-> a powerpc machine with 1 TB of memory we are creating 63,000+
-> directories.  This is resulting in boot times of around 45-50
-> minutes for systems with 1 TB of memory and 8 hours for systems
-> with 2 TB of memory.  With this patch set applied I am now seeing
-> boot times of 5 minutes or less.
+  On 09/27/2010 09:28 PM, Nathan Fontenot wrote:
 >
-> The root of this issue is in sysfs directory creation. Every time
-> a directory is created a string compare is done against all sibling
-> directories to ensure we do not create duplicates.  The list of
-> directory nodes in sysfs is kept as an unsorted list which results
-> in this being an exponentially longer operation as the number of
-> directories are created.
+>   For example, assume 1GiB section size. A device for a memory starting at
+>   0x100000000 is /sys/device/system/memory/memory4
+>   (0x100000000 / 1Gib = 4)
+>   This device covers address range [0x100000000 ... 0x140000000)
 >
-> The solution solved by this patch set is to allow a single
-> directory in sysfs to span multiple memory sections.  This is
-> controlled by an optional architecturally defined function
-> memory_block_size_bytes().  The default definition of this
-> routine returns a memory block size equal to the memory section
-> size. This maintains the current layout of sysfs memory
-> directories as it appears to userspace to remain the same as it
-> is today.
->
+> -Under each section, you can see 4 files.
+> +Under each section, you can see 5 files.
 
-Why not update sysfs directory creation to be fast, for example by using 
-an rbtree instead of a linked list.  This fixes an implementation 
-problem in the kernel instead of working around it and creating a new ABI.
-
-New ABIs mean old tools won't work, and new tools need to understand 
-both ABIs.
+Shouldn't this be, 4 or 5 files depending on kernel version?
 
 -- 
 error compiling committee.c: too many arguments to function
