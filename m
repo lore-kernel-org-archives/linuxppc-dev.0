@@ -1,22 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 3BC2EB70D6
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 21:35:27 +1000 (EST)
-Date: Tue, 28 Sep 2010 13:35:24 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2 2/3] USB: add of_platform glue driver for FSL USB DR
-	controller
-Message-ID: <20100928133524.6262c35c@wker>
-In-Reply-To: <AANLkTinnodk8wA2aHXBjmZRhv_OFS+zQdb5Tc6of36jQ@mail.gmail.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id CBBB6B70F7
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 21:40:46 +1000 (EST)
+Received: by eyg24 with SMTP id 24so2550161eyg.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 04:40:44 -0700 (PDT)
+Date: Tue, 28 Sep 2010 15:40:32 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v2 1/3] powerpc/fsl_soc.c: remove FSL USB platform code
+Message-ID: <20100928114032.GA27285@oksana.dev.rtsoft.ru>
 References: <1285666594-21150-1-git-send-email-agust@denx.de>
-	<1285666594-21150-3-git-send-email-agust@denx.de>
-	<AANLkTinnodk8wA2aHXBjmZRhv_OFS+zQdb5Tc6of36jQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linux-usb@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>
+	<1285666594-21150-2-git-send-email-agust@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1285666594-21150-2-git-send-email-agust@denx.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Greg Kroah-Hartman <gregkh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Tue, Sep 28, 2010 at 11:36:32AM +0200, Anatolij Gustschin wrote:
+> This removed code will be replaced by simple of_platform
+> driver for creation of FSL USB platform devices which is
+> added by next patch of the series.
+> 
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> ---
 
-On Tue, 28 Sep 2010 19:01:28 +0900
-Grant Likely <grant.likely@secretlab.ca> wrote:
-...
-> Looks pretty good.  Comments below.  Main comment is that with the
-> recent changes in mainline, this no longer needs to be an
-> of_platform_driver.  It can be a plain old platform_driver instead.
-> It gets registered as a platform_driver anyway, but of_platform_driver
-> is a shim that adds a bit of overhead, so it is best to avoid it.
-> I'll detail the changes you need to make in my comments below.
-
-Thanks. I'll change to platform_driver. My reply below.
-
-...
-> > +{
-> > + =A0 =A0 =A0 struct device_node *np =3D ofdev->dev.of_node;
-> > + =A0 =A0 =A0 struct platform_device *usb_dev;
-> > + =A0 =A0 =A0 struct fsl_usb2_platform_data data, *pdata;
-> > + =A0 =A0 =A0 struct fsl_usb2_dev_data *dev_data;
-> > + =A0 =A0 =A0 const unsigned char *prop;
-> > + =A0 =A0 =A0 static unsigned int idx;
-> > + =A0 =A0 =A0 int i;
-> > +
-> > + =A0 =A0 =A0 if (!of_device_is_available(np))
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
-> > +
-> > + =A0 =A0 =A0 pdata =3D match->data;
-> > + =A0 =A0 =A0 if (!pdata) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 memset(&data, 0, sizeof(data));
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata =3D &data;
-> > + =A0 =A0 =A0 }
->=20
-> This is bad behaviour.  *match->data must not be modified in probe
-> because multiple instances of the device can exist.  The target of
-> pdata is modified later in the probe routine.
->=20
-> However, the above 4 lines can be removed entirely since none of the
-> fsl_usb2_mph_dr_of_match entries actually set the data pointer.  The
-> local 'data' structure can be used directly.
-
-A match entry for mpc5121 is added by the third patch. I'll fix
-this so that only local 'data' structure is modified later in the
-probe routine.
+This is not bisectable. You have to merge 1/3 and 2/3.
 
 Thanks,
-Anatolij
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
