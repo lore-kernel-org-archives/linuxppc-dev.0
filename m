@@ -1,20 +1,28 @@
-Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id 9E765B70F1
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 19:41:05 +1000 (EST)
-Date: Tue, 28 Sep 2010 04:31:32 -0500
-From: Robin Holt <holt@sgi.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 2/8] v2 Add section count to memory_block struct
-Message-ID: <20100928093132.GG14068@sgi.com>
-References: <4CA0EBEB.1030204@austin.ibm.com> <4CA0EEF0.70402@austin.ibm.com>
+Return-Path: <per.friden@stericsson.com>
+Received: from eu1sys200aog105.obsmtp.com (eu1sys200aog105.obsmtp.com
+	[207.126.144.119])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 87101B70E6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 28 Sep 2010 17:36:45 +1000 (EST)
+Message-ID: <4CA1959F.8050806@stericsson.com>
+Date: Tue, 28 Sep 2010 09:13:35 +0200
+From: =?ISO-8859-1?Q?Per_F=F6rlin?= <per.friden@stericsson.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4CA0EEF0.70402@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH RFCv2 1/2] dmaengine: add support for scatterlist to
+	scatterlist transfers
+References: <1285370032-16937-1-git-send-email-iws@ovro.caltech.edu>
+	<1285370032-16937-2-git-send-email-iws@ovro.caltech.edu>
+	<AANLkTimzdEhAZ=oXbbB3Ge5=YY7OXq3fjaRH4roPNB-k@mail.gmail.com>
+	<20100927172356.GA805@ovro.caltech.edu>
+In-Reply-To: <20100927172356.GA805@ovro.caltech.edu>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,81 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the next patch, you introduce a mutex for adding/removing memory blocks.
-Is there really a need for this to be atomic?  If you reorder the patches
-so the mutex comes first, would the atomic be needed any longer?
+> On Mon, Sep 27, 2010 at 05:23:34PM +0200, Linus Walleij wrote:
+>> 2010/9/25 Ira W. Snyder <iws@ovro.caltech.edu>:
+>>
+>>> This adds support for scatterlist to scatterlist DMA transfers.
+>>
+>> This is a good idea, we have a local function to do this in DMA40 already,
+>> stedma40_memcpy_sg().
+>>
+> 
+> I think that having two devices that want to implement this
+> functionality as part of the DMAEngine API is a good argument for making
+> it available as part of the core API. I think it would be good to add
+> this to struct dma_device, and add a capability (DMA_SG?) for it as
+> well.
+> 
+> I have looked at the stedma40_memcpy_sg() function, and I think we would
+> want to extend it slightly for the generic API. Is there any good reason
+> to prohibit scatterlists with different numbers of elements?
+No
 
-Robin
-
-On Mon, Sep 27, 2010 at 02:22:24PM -0500, Nathan Fontenot wrote:
-> Add a section count property to the memory_block struct to track the number
-> of memory sections that have been added/removed from a memory block. This
-> allows us to know when the last memory section of a memory block has been
-> removed so we can remove the memory block.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-> 
-> ---
->  drivers/base/memory.c  |   16 ++++++++++------
->  include/linux/memory.h |    3 +++
->  2 files changed, 13 insertions(+), 6 deletions(-)
-> 
-> Index: linux-next/drivers/base/memory.c
-> ===================================================================
-> --- linux-next.orig/drivers/base/memory.c	2010-09-27 09:17:20.000000000 -0500
-> +++ linux-next/drivers/base/memory.c	2010-09-27 09:31:35.000000000 -0500
-> @@ -478,6 +478,7 @@
->  
->  	mem->phys_index = __section_nr(section);
->  	mem->state = state;
-> +	atomic_inc(&mem->section_count);
->  	mutex_init(&mem->state_mutex);
->  	start_pfn = section_nr_to_pfn(mem->phys_index);
->  	mem->phys_device = arch_get_memory_phys_device(start_pfn);
-> @@ -505,12 +506,15 @@
->  	struct memory_block *mem;
->  
->  	mem = find_memory_block(section);
-> -	unregister_mem_sect_under_nodes(mem);
-> -	mem_remove_simple_file(mem, phys_index);
-> -	mem_remove_simple_file(mem, state);
-> -	mem_remove_simple_file(mem, phys_device);
-> -	mem_remove_simple_file(mem, removable);
-> -	unregister_memory(mem, section);
-> +
-> +	if (atomic_dec_and_test(&mem->section_count)) {
-> +		unregister_mem_sect_under_nodes(mem);
-> +		mem_remove_simple_file(mem, phys_index);
-> +		mem_remove_simple_file(mem, state);
-> +		mem_remove_simple_file(mem, phys_device);
-> +		mem_remove_simple_file(mem, removable);
-> +		unregister_memory(mem, section);
-> +	}
->  
->  	return 0;
->  }
-> Index: linux-next/include/linux/memory.h
-> ===================================================================
-> --- linux-next.orig/include/linux/memory.h	2010-09-27 09:17:20.000000000 -0500
-> +++ linux-next/include/linux/memory.h	2010-09-27 09:22:56.000000000 -0500
-> @@ -19,10 +19,13 @@
->  #include <linux/node.h>
->  #include <linux/compiler.h>
->  #include <linux/mutex.h>
-> +#include <asm/atomic.h>
->  
->  struct memory_block {
->  	unsigned long phys_index;
->  	unsigned long state;
-> +	atomic_t section_count;
-> +
->  	/*
->  	 * This serializes all state change requests.  It isn't
->  	 * held during creation because the control files are
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+/Per
