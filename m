@@ -1,34 +1,33 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9DED9B7115
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 04:21:35 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8SI5tZP031671
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:05:55 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o8SILWnd121688
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:21:32 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o8SILTWO007632
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 15:21:32 -0300
-Message-ID: <4CA231FA.4070907@austin.ibm.com>
-Date: Tue, 28 Sep 2010 13:20:42 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
+	[213.199.154.208]) by ozlabs.org (Postfix) with ESMTP id D6CA2B7123
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Sep 2010 04:47:25 +1000 (EST)
+Received: from mail76-am1 (localhost.localdomain [127.0.0.1])	by
+	mail76-am1-R.bigfish.com (Postfix) with ESMTP id 800B850577	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 18:47:17 +0000 (UTC)
+Received: from am1ehsmhs006.bigfish.com (unknown [10.3.201.242])	by
+	mail76-am1.bigfish.com (Postfix) with ESMTP id 99A531C40143	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 18:46:03 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o8SIjvXM011196	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 11:45:57 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o8SJ0aTO025393	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 28 Sep 2010 14:00:37 -0500 (CDT)
+Date: Tue, 28 Sep 2010 13:45:54 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: Parsing a bus fault message?
+Message-ID: <20100928134554.323667e5@udp111988uds.am.freescale.net>
+In-Reply-To: <20100928153153.GA22485@ovro.caltech.edu>
+References: <2bef2051c143a8d6e619519b222016f9.squirrel@localhost>
+	<20100928153153.GA22485@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH 4/8] v2 Allow memory block to span multiple memory sections
-References: <4CA0EBEB.1030204@austin.ibm.com> <4CA0EFAA.8050000@austin.ibm.com>
-	<20100928124810.GI14068@sgi.com>
-In-Reply-To: <20100928124810.GI14068@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: david.hagood@gmail.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/28/2010 07:48 AM, Robin Holt wrote:
->> +u32 __weak memory_block_size_bytes(void)
->> +{
->> +	return MIN_MEMORY_BLOCK_SIZE;
->> +}
->> +
->> +static u32 get_memory_block_size(void)
+On Tue, 28 Sep 2010 08:31:54 -0700
+"Ira W. Snyder" <iws@ovro.caltech.edu> wrote:
+
+> On Tue, Sep 28, 2010 at 09:26:51AM -0500, david.hagood@gmail.com wrote:
+> > Alternatively, can somebody see a hint in the message that I don't know
+> > enough to pick out? At this point, my code is trying to memcpy() from the
+> > PCIe bus (mapped via the outbound ATMU) to local memory, so the fault is
+> > either a) the ATMU is not accessible b) the ATMU is accessible but not
+> > mapped (which I would have thought the ioremap call I made would have
+> > handled) or c) the chip is not able to bus master on the PCI bus.
+
+Check the LAWs, the outbound ATMU, and the PCI device's BAR.  Make sure
+the address goes where you're expecting at each level.
+
+> > Machine check in kernel mode.
+> > Caused by (from SRR1=149030): Transfer error ack signal
 > 
-> Can we make this an unsigned long?  We are testing on a system whose
-> smallest possible configuration is 4GB per socket with 512 sockets.
-> We would like to be able to specify this as 2GB by default (results
-> in the least lost memory) and suggest we add a command line option
-> which overrides this value.  We have many installations where 16GB may
-> be optimal.  Large configurations will certainly become more prevalent.
-
-Works for me.
-
+> ^^^ this is the line that contains some critical info
 > 
-> ...
->> @@ -551,12 +608,16 @@
->>  	unsigned int i;
->>  	int ret;
->>  	int err;
->> +	int block_sz;
+> In the 86xx CPU manual, you should be able to find information about the
+> SRR1 register. Decoding the hex SRR1=0x149030 may help.
 > 
-> This one needs to match the return above.  In our tests, we ended up
-> with a negative sections_per_block which caused very unexpected results.
+> The kernel is telling you this is a TEA (transfer error acknowledge)
+> error. I've only seen this when I get an unhandled timeout on the local
+> bus. For example, a FPGA that has died in the middle of a request.
 
-Oh, nice catch.  I'll update both of these.
+I've seen it when you access a physical address that has no device
+backing it up.
 
--Nathan
+> On the PCI bus, I haven't seen this error. The 83xx PCI controller is
+> smart enough to return 0xffffffff when reading a non-existent device.
+
+I believe that behavior is configurable.
+
+-Scott
