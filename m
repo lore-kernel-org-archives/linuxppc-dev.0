@@ -2,15 +2,15 @@ Return-Path: <ben@trinity.fluff.org>
 Received: from trinity.fluff.org (trinity.fluff.org [89.16.178.74])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 62CA4B6EEC
+	by ozlabs.org (Postfix) with ESMTPS id 99CD2B6EEC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Sep 2010 09:47:55 +1000 (EST)
-Date: Wed, 29 Sep 2010 00:21:47 +0100
+	Wed, 29 Sep 2010 09:48:00 +1000 (EST)
+Date: Wed, 29 Sep 2010 00:20:54 +0100
 From: Ben Dooks <ben-i2c@fluff.org>
 To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH (Option 1)] of/i2c: fix module load order issue caused
 	by of_i2c.c
-Message-ID: <20100928232147.GR21564@trinity.fluff.org>
+Message-ID: <20100928232054.GQ21564@trinity.fluff.org>
 References: <20100924221313.28357.61419.stgit@angua>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,91 +42,8 @@ On Fri, Sep 24, 2010 at 04:14:53PM -0600, Grant Likely wrote:
 > i2c_core, and it must always be present when CONFIG_OF is selected, so
 > it makes sense to locate it there.  When CONFIG_OF is not selected,
 > of_i2c_register_devices() becomes a no-op.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->  drivers/i2c/i2c-core.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++--
->  drivers/of/of_i2c.c    |   57 ---------------------------------------------
->  include/linux/of_i2c.h |    7 ------
->  3 files changed, 59 insertions(+), 66 deletions(-)
-> 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 6649176..64a261b 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -32,8 +32,8 @@
->  #include <linux/init.h>
->  #include <linux/idr.h>
->  #include <linux/mutex.h>
-> -#include <linux/of_i2c.h>
->  #include <linux/of_device.h>
-> +#include <linux/of_irq.h>
->  #include <linux/completion.h>
->  #include <linux/hardirq.h>
->  #include <linux/irqflags.h>
-> @@ -818,6 +818,63 @@ static void i2c_scan_static_board_info(struct i2c_adapter *adapter)
->  	up_read(&__i2c_board_lock);
->  }
->  
-> +#ifdef CONFIG_OF
-> +void i2c_scan_of_devices(struct i2c_adapter *adap)
-> +{
-> +	void *result;
-> +	struct device_node *node;
-> +
-> +	/* Only register child devices if the adapter has a node pointer set */
-> +	if (!adap->dev.of_node)
-> +		return;
-> +
-> +	for_each_child_of_node(adap->dev.of_node, node) {
-> +		struct i2c_board_info info = {};
-> +		struct dev_archdata dev_ad = {};
-> +		const __be32 *addr;
-> +		int len;
-> +
-> +		dev_dbg(&adap->dev, "of_i2c: register %s\n", node->full_name);
-> +		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0) {
-> +			dev_err(&adap->dev, "of_i2c: modalias failure on %s\n",
-> +				node->full_name);
-> +			continue;
-> +		}
-> +
-> +		addr = of_get_property(node, "reg", &len);
-> +		if (!addr || (len < sizeof(int))) {
-> +			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
-> +				node->full_name);
-> +			continue;
-> +		}
-> +
-> +		info.addr = be32_to_cpup(addr);
-> +		if (info.addr > (1 << 10) - 1) {
-> +			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
-> +				info.addr, node->full_name);
-> +			continue;
-> +		}
-> +
-> +		info.irq = irq_of_parse_and_map(node, 0);
-> +		info.of_node = of_node_get(node);
-> +		info.archdata = &dev_ad;
-> +
-> +		request_module("%s", info.type);
-> +
-> +		result = i2c_new_device(adap, &info);
-> +		if (result == NULL) {
-> +			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
-> +			        node->full_name);
-> +			of_node_put(node);
-> +			irq_dispose_mapping(info.irq);
-> +			continue;
-> +		}
-> +	}
-> +}
-> +#else
-> +static inline void i2c_scan_of_devices(struct i2c_adapter *adap) { }
-> +#endif
 
-Is there any advantage to just making the definition in the header
-file a static inline and removing the #else part of this?
+I sort of go with this one.
 
 -- 
 Ben
