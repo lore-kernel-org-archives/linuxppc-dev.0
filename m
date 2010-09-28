@@ -1,21 +1,33 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (mail.lixom.net [70.86.134.90])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 13EE1B711C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Sep 2010 03:52:09 +1000 (EST)
-Date: Tue, 28 Sep 2010 12:52:06 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH 1/1  v2 ]  Add kernel parameter to disable batched hcalls
-Message-ID: <20100928175206.GA15783@lixom.net>
-References: <1285364655.3016.25.camel@lexx> <20100926034903.GA5473@lixom.net>
-	<1285693371.2843.43.camel@lexx>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 70414B7121
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 04:07:02 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8SI09C1021952
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:00:09 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8SI6U4M2011282
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:06:31 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o8SI6TW1023169
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2010 14:06:30 -0400
+Message-ID: <4CA22EA2.8060307@austin.ibm.com>
+Date: Tue, 28 Sep 2010 13:06:26 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/8] v2 Allow memory block to span multiple memory sections
+References: <4CA0EBEB.1030204@austin.ibm.com>	
+	<4CA0EFAA.8050000@austin.ibm.com>
+	<1285631707.19976.3385.camel@nimitz>
+In-Reply-To: <1285631707.19976.3385.camel@nimitz>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1285693371.2843.43.camel@lexx>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Cc: linux-mm@kvack.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,119 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nice. I've got minor nits below, and you might also want to run the patch
-through checkpatch and fix up some of the whitespace warnings.
+On 09/27/2010 06:55 PM, Dave Hansen wrote:
+> On Mon, 2010-09-27 at 14:25 -0500, Nathan Fontenot wrote:
+>> +static inline int base_memory_block_id(int section_nr)
+>> +{
+>> +       return section_nr / sections_per_block;
+>> +}
+> ...
+>> -       mutex_lock(&mem_sysfs_mutex);
+>> -
+>> -       mem->phys_index = __section_nr(section);
+>> +       scn_nr = __section_nr(section);
+>> +       mem->phys_index = base_memory_block_id(scn_nr) * sections_per_block; 
+> 
+> I'm really regretting giving this variable such a horrid name.  I suck.
+> 
+> I think this is correct now:
+> 
+> 	mem->phys_index = base_memory_block_id(scn_nr) * sections_per_block;
+> 	mem->phys_index = section_nr / sections_per_block * sections_per_block;
+> 	mem->phys_index = section_nr
+> 
+> Since it gets exported to userspace this way:
+> 
+>> +static ssize_t show_mem_start_phys_index(struct sys_device *dev,
+>>                         struct sysdev_attribute *attr, char *buf)
+>>  {
+>>         struct memory_block *mem =
+>>                 container_of(dev, struct memory_block, sysdev);
+>> -       return sprintf(buf, "%08lx\n", mem->phys_index / sections_per_block);
+>> +       unsigned long phys_index;
+>> +
+>> +       phys_index = mem->start_phys_index / sections_per_block;
+>> +       return sprintf(buf, "%08lx\n", phys_index);
+>> +}
+> 
+> The only other thing I'd say is that we need to put phys_index out of
+> its misery and call it what it is now: a section number.  I think it's
+> OK to call them "start/end_section_nr", at least inside the kernel.  I
+> intentionally used "phys_index" terminology in sysfs so that we _could_
+> eventually do this stuff and break the relationship between sections and
+> the sysfs dirs, but I think keeping the terminology around inside the
+> kernel is confusing now.
 
+Yes, it took me a couple o looks to get the phys_index <-> section number
+correlation.  I think changing the kernel names to start/end_section_number
+is a good idea.
 
--Olof
+-Nathan
 
-On Tue, Sep 28, 2010 at 12:02:51PM -0500, Will Schmidt wrote:
 > 
-> This introduces a pair of kernel parameters that can be used to disable
-> the MULTITCE and BULK_REMOVE h-calls. 
-> 
-> By default, those hcalls are enabled, active, and good for throughput
-> and performance.  The ability to disable them will be useful for some of
-> the PREEMPT_RT related investigation and work occurring on Power.
-> 
-> 
-> Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-> cc: Olof Johansson <olof@lixom.net>
-> cc: Anton Blanchard <anton@samba.org>
-> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> ---
-> 
-> v2 - Per feedback from Olof, the code is reworked to utilize kernel
-> parameter runtime checks, rather than CONFIG options.
->    - Added relevant change to kernel-parameters.txt
-> 
-> 
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index e2c7487..5c40801 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -426,6 +426,10 @@ and is between 256 and 4096 characters. It is defined in the file
->  	bttv.pll=	See Documentation/video4linux/bttv/Insmod-options
->  	bttv.tuner=	and Documentation/video4linux/bttv/CARDLIST
->  
-> +	bulk_remove=off	[PPC]  This parameter disables the use of the pSeries
-> +			firmware feature for flushing multiple hpte entries
-> +			at a time.
-> +
->  	BusLogic=	[HW,SCSI]
->  			See drivers/scsi/BusLogic.c, comment before function
->  			BusLogic_ParseDriverOptions().
-> @@ -1499,6 +1503,10 @@ and is between 256 and 4096 characters. It is defined in the file
->  	mtdparts=	[MTD]
->  			See drivers/mtd/cmdlinepart.c.
->  
-> +	multitce=off	[PPC]  This parameter disables the use of the pSeries
-> +			firmware feature for updating multiple TCE entries
-> +			at a time.
-> +
->  	onenand.bdry=	[HW,MTD] Flex-OneNAND Boundary Configuration
->  
->  			Format: [die0_boundary][,die0_lock][,die1_boundary][,die1_lock]
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 902987d..e174a2f 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -625,3 +625,19 @@ void iommu_init_early_pSeries(void)
->  	set_pci_dma_ops(&dma_iommu_ops);
->  }
->  
-> +static int __init disable_multitce(char *str)
-> +{
-> +	if (strcmp(str,"off")==0) {
-> +		if (firmware_has_feature(FW_FEATURE_LPAR)) {
-> +			if (firmware_has_feature(FW_FEATURE_MULTITCE)) {
-> +				printk(KERN_INFO "Disabling MULTITCE firmware feature\n");
-> +				ppc_md.tce_build = tce_build_pSeriesLP;
-> +				ppc_md.tce_free	 = tce_free_pSeriesLP;
-> +				powerpc_firmware_features &= ~FW_FEATURE_MULTITCE;
-> +			}
-> +		}
-> +	}
-
-I personally prefer to keep cases like these in one if statement to save indentation:
-
-	if (strcmp(str, "off") == 0 &&
-	    firmware_has_feature(FW_FEATURE_LPAR) &&
-	    firmware_has_feature(FW_FEATURE_MULTITCE)) {
-		<...>
-	}
-
-> +	return 1;
-> +}
-> +
-> +__setup("multitce=",disable_multitce);
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index 0707653..82d15e7 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -599,6 +599,19 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
->  		spin_unlock_irqrestore(&pSeries_lpar_tlbie_lock, flags);
->  }
->  
-> +static int __init disable_bulk_remove(char *str)
-> +{
-> +	if (strcmp(str,"off")==0) {
-> +		if (firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
-> +			printk(KERN_INFO "Disabling BULK_REMOVE firmware feature");
-> +			powerpc_firmware_features &= ~FW_FEATURE_BULK_REMOVE;
-> +		}
-> +	}
-
-Same here.
-
-> +	return 1;
-> +}
-> +
-> +__setup("bulk_remove=",disable_bulk_remove);
-> +
->  void __init hpte_init_lpar(void)
->  {
->  	ppc_md.hpte_invalidate	= pSeries_lpar_hpte_invalidate;
+> -- Dave
 > 
