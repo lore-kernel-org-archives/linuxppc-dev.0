@@ -1,22 +1,26 @@
-Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id B9753B6F07
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 05:28:33 +1000 (EST)
-Date: Wed, 29 Sep 2010 14:28:30 -0500
-From: Robin Holt <holt@sgi.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 0/8] v2 De-Couple sysfs memory directories from memory
-	sections
-Message-ID: <20100929192830.GK14068@sgi.com>
-References: <4CA0EBEB.1030204@austin.ibm.com> <20100928123848.GH14068@sgi.com>
-	<4CA2313D.2030508@austin.ibm.com>
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id 37D3EB6F07
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 30 Sep 2010 07:19:36 +1000 (EST)
+Received: by wyb42 with SMTP id 42so1225557wyb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Sep 2010 14:19:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4CA2313D.2030508@austin.ibm.com>
-Cc: linux-mm@kvack.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	Robin Holt <holt@sgi.com>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <1285628277-26894-5-git-send-email-iws@ovro.caltech.edu>
+References: <1285628277-26894-1-git-send-email-iws@ovro.caltech.edu>
+	<1285628277-26894-5-git-send-email-iws@ovro.caltech.edu>
+Date: Wed, 29 Sep 2010 14:19:32 -0700
+Message-ID: <AANLkTinYG4LqtEXxM5pdA0vavahtqbt6=yV341pnFmZw@mail.gmail.com>
+Subject: Re: [PATCH 4/4] ste_dma40: implement support for scatterlist to
+	scatterlist copy
+From: Dan Williams <dan.j.williams@intel.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?Q?Per_Frid=E9n?= <per.friden@stericsson.com>,
+	Linus Walleij <linus.ml.walleij@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 28, 2010 at 01:17:33PM -0500, Nathan Fontenot wrote:
-> On 09/28/2010 07:38 AM, Robin Holt wrote:
-> > I was tasked with looking at a slowdown in similar sized SGI machines
-> > booting x86_64.  Jack Steiner had already looked into the memory_dev_init.
-> > I was looking at link_mem_sections().
-> > 
-> > I made a dramatic improvement on a 16TB machine in that function by
-> > merely caching the most recent memory section and checking to see if
-> > the next memory section happens to be the subsequent in the linked list
-> > of kobjects.
-> > 
-> > That simple cache reduced the time for link_mem_sections from 1 hour 27
-> > minutes down to 46 seconds.
-> 
-> Nice!
-> 
-> > 
-> > I would like to propose we implement something along those lines also,
-> > but I am currently swamped.  I can probably get you a patch tomorrow
-> > afternoon that applies at the end of this set.
-> 
-> Should this be done as a separate patch?  This patch set concentrates on
-> updates to the memory code with the node updates only being done due to the
-> memory changes.
-> 
-> I think its a good idea to do the caching and have no problem adding on to
-> this patchset if no one else has any objections.
+On Mon, Sep 27, 2010 at 3:57 PM, Ira W. Snyder <iws@ovro.caltech.edu> wrote=
+:
+> Now that the DMAEngine API has support for scatterlist to scatterlist
+> copy, implement support for the STE DMA40 DMA controller.
+>
+> Cc: Linus Walleij <linus.ml.walleij@gmail.com>
+> Cc: Per Frid=E9n <per.friden@stericsson.com>
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+> ---
+> =A0drivers/dma/ste_dma40.c | =A0 17 +++++++++++++++++
+> =A01 files changed, 17 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/dma/ste_dma40.c b/drivers/dma/ste_dma40.c
+> index 17e2600..cd48859 100644
+> --- a/drivers/dma/ste_dma40.c
+> +++ b/drivers/dma/ste_dma40.c
+> @@ -1857,6 +1857,18 @@ err:
+> =A0 =A0 =A0 =A0return NULL;
+> =A0}
+>
+> +static struct dma_async_tx_descriptor *
+> +d40_prep_sg(struct dma_chan *chan,
+> + =A0 =A0 =A0 =A0 =A0 struct scatterlist *dst_sg, unsigned int dst_nents,
+> + =A0 =A0 =A0 =A0 =A0 struct scatterlist *src_sg, unsigned int src_nents,
+> + =A0 =A0 =A0 =A0 =A0 unsigned long dma_flags)
+> +{
+> + =A0 =A0 =A0 if (dst_nents !=3D src_nents)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
 
-I am sorry.  I had meant to include you on the Cc: list.  I just posted a
-set of patches (3 small patches) which implement the cache most recent bit
-I aluded to above.  Search for a subject of "Speed up link_mem_sections
-during boot" and you will find them.  I did add you to the Cc: list for
-the next time I end up sending the set.
+I suspect you wanted "return NULL;" here.  I can fix that up.
 
-My next task is to implement a x86_64 SGI UV specific chunk of code
-to memory_block_size_bytes().  Would you consider adding that to your
-patch set?  I expect to have that either later today or early tomorrow.
+Linus, Per ack?
 
-Robin
+--
+Dan
