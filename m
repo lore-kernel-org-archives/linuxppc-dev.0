@@ -1,23 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 12A8DB70AF
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 12:54:33 +1000 (EST)
-Date: Tue, 28 Sep 2010 19:50:35 -0700
-From: Greg KH <greg@kroah.com>
-To: Robin Holt <holt@sgi.com>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 3E5B3B70A8
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 18:32:53 +1000 (EST)
+Message-ID: <4CA2F9A2.3090202@redhat.com>
+Date: Wed, 29 Sep 2010 10:32:34 +0200
+From: Avi Kivity <avi@redhat.com>
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
 Subject: Re: [PATCH 0/8] v2 De-Couple sysfs memory directories from memory
 	sections
-Message-ID: <20100929025035.GA13096@kroah.com>
 References: <4CA0EBEB.1030204@austin.ibm.com> <4CA1E338.6070201@redhat.com>
-	<20100928151218.GJ14068@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100928151218.GJ14068@sgi.com>
+	<20100928151218.GJ14068@sgi.com> <20100929025035.GA13096@kroah.com>
+In-Reply-To: <20100929025035.GA13096@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	Avi Kivity <avi@redhat.com>,
+	Robin Holt <holt@sgi.com>,
 	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,53 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 28, 2010 at 10:12:18AM -0500, Robin Holt wrote:
-> On Tue, Sep 28, 2010 at 02:44:40PM +0200, Avi Kivity wrote:
-> >  On 09/27/2010 09:09 PM, Nathan Fontenot wrote:
-> > >This set of patches decouples the concept that a single memory
-> > >section corresponds to a single directory in
-> > >/sys/devices/system/memory/.  On systems
-> > >with large amounts of memory (1+ TB) there are perfomance issues
-> > >related to creating the large number of sysfs directories.  For
-> > >a powerpc machine with 1 TB of memory we are creating 63,000+
-> > >directories.  This is resulting in boot times of around 45-50
-> > >minutes for systems with 1 TB of memory and 8 hours for systems
-> > >with 2 TB of memory.  With this patch set applied I am now seeing
-> > >boot times of 5 minutes or less.
-> > >
-> > >The root of this issue is in sysfs directory creation. Every time
-> > >a directory is created a string compare is done against all sibling
-> > >directories to ensure we do not create duplicates.  The list of
-> > >directory nodes in sysfs is kept as an unsorted list which results
-> > >in this being an exponentially longer operation as the number of
-> > >directories are created.
-> > >
-> > >The solution solved by this patch set is to allow a single
-> > >directory in sysfs to span multiple memory sections.  This is
-> > >controlled by an optional architecturally defined function
-> > >memory_block_size_bytes().  The default definition of this
-> > >routine returns a memory block size equal to the memory section
-> > >size. This maintains the current layout of sysfs memory
-> > >directories as it appears to userspace to remain the same as it
-> > >is today.
-> > >
-> > 
-> > Why not update sysfs directory creation to be fast, for example by
-> > using an rbtree instead of a linked list.  This fixes an
-> > implementation problem in the kernel instead of working around it
-> > and creating a new ABI.
-> 
-> Because the old ABI creates 129,000+ entries inside
-> /sys/devices/system/memory with their associated links from
-> /sys/devices/system/node/node*/ back to those directory entries.
-> 
-> Thankfully things like rpm, hald, and other miscellaneous commands scan
-> that information.
+  On 09/29/2010 04:50 AM, Greg KH wrote:
+> >
+> >  Because the old ABI creates 129,000+ entries inside
+> >  /sys/devices/system/memory with their associated links from
+> >  /sys/devices/system/node/node*/ back to those directory entries.
+> >
+> >  Thankfully things like rpm, hald, and other miscellaneous commands scan
+> >  that information.
+>
+> Really?  Why?  Why would rpm care about this?  hald is dead now so we
+> don't need to worry about that anymore,
 
-Really?  Why?  Why would rpm care about this?  hald is dead now so we
-don't need to worry about that anymore, but what other commands/programs
-read this information?
+That's not what compatiblity means.  We can't just support 
+latest-and-greatest userspace on latest-and-greatest kernels.
 
-thanks,
-
-greg k-h
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
