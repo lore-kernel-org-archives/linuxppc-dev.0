@@ -1,26 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	by ozlabs.org (Postfix) with ESMTP id 10CE3B710A
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 15BE9B70B8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Sep 2010 09:26:28 +1000 (EST)
-Received: by gwb10 with SMTP id 10so96872gwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Sep 2010 16:26:26 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100928232147.GR21564@trinity.fluff.org>
-References: <20100924221313.28357.61419.stgit@angua>
-	<20100928232147.GR21564@trinity.fluff.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 29 Sep 2010 08:26:03 +0900
-Message-ID: <AANLkTimB1dACK0QdnJk-Ry0hPpUO7eKv3n_GSBJTttCx@mail.gmail.com>
-Subject: Re: [PATCH (Option 1)] of/i2c: fix module load order issue caused by
-	of_i2c.c
-To: Ben Dooks <ben-i2c@fluff.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikpe@it.uu.se, linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-	linux-i2c@vger.kernel.org, khali@linux-fr.org,
-	linuxppc-dev@lists.ozlabs.org
+	Wed, 29 Sep 2010 11:33:36 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o8T1HHXp015332
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 21:17:17 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o8T1XUg5313544
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 21:33:32 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o8T1XU9v022794
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2010 21:33:30 -0400
+Subject: Re: [PATCH 1/1  v3]  Add kernel parameter to disable batched hcalls
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20100928175206.GA15783@lixom.net>
+References: <1285364655.3016.25.camel@lexx>
+	<20100926034903.GA5473@lixom.net> <1285693371.2843.43.camel@lexx>
+	<20100928175206.GA15783@lixom.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 28 Sep 2010 20:33:12 -0500
+Message-ID: <1285723992.4408.3.camel@lexx>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,139 +38,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 29, 2010 at 8:21 AM, Ben Dooks <ben-i2c@fluff.org> wrote:
-> On Fri, Sep 24, 2010 at 04:14:53PM -0600, Grant Likely wrote:
->> Commit 959e85f7, "i2c: add OF-style registration and binding" caused a
->> module dependency loop where of_i2c.c calls functions in i2c-core, and
->> i2c-core calls of_i2c_register_devices() in of_i2c. =A0This means that
->> when i2c support is built as a module when CONFIG_OF is set, then
->> neither i2c_core nor of_i2c are able to be loaded.
->>
->> This patch fixes the problem by moving the of_i2c_register_devices()
->> function into the body of i2c_core and renaming it to
->> i2c_scan_of_devices (of_i2c_register_devices is analogous to the
->> existing i2c_scan_static_board_info function and so should be named
->> similarly). =A0This function isn't called by any code outside of
->> i2c_core, and it must always be present when CONFIG_OF is selected, so
->> it makes sense to locate it there. =A0When CONFIG_OF is not selected,
->> of_i2c_register_devices() becomes a no-op.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->> =A0drivers/i2c/i2c-core.c | =A0 61 +++++++++++++++++++++++++++++++++++++=
-+++++++++--
->> =A0drivers/of/of_i2c.c =A0 =A0| =A0 57 ---------------------------------=
-------------
->> =A0include/linux/of_i2c.h | =A0 =A07 ------
->> =A03 files changed, 59 insertions(+), 66 deletions(-)
->>
->> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
->> index 6649176..64a261b 100644
->> --- a/drivers/i2c/i2c-core.c
->> +++ b/drivers/i2c/i2c-core.c
->> @@ -32,8 +32,8 @@
->> =A0#include <linux/init.h>
->> =A0#include <linux/idr.h>
->> =A0#include <linux/mutex.h>
->> -#include <linux/of_i2c.h>
->> =A0#include <linux/of_device.h>
->> +#include <linux/of_irq.h>
->> =A0#include <linux/completion.h>
->> =A0#include <linux/hardirq.h>
->> =A0#include <linux/irqflags.h>
->> @@ -818,6 +818,63 @@ static void i2c_scan_static_board_info(struct i2c_a=
-dapter *adapter)
->> =A0 =A0 =A0 up_read(&__i2c_board_lock);
->> =A0}
->>
->> +#ifdef CONFIG_OF
->> +void i2c_scan_of_devices(struct i2c_adapter *adap)
->> +{
->> + =A0 =A0 void *result;
->> + =A0 =A0 struct device_node *node;
->> +
->> + =A0 =A0 /* Only register child devices if the adapter has a node point=
-er set */
->> + =A0 =A0 if (!adap->dev.of_node)
->> + =A0 =A0 =A0 =A0 =A0 =A0 return;
->> +
->> + =A0 =A0 for_each_child_of_node(adap->dev.of_node, node) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 struct i2c_board_info info =3D {};
->> + =A0 =A0 =A0 =A0 =A0 =A0 struct dev_archdata dev_ad =3D {};
->> + =A0 =A0 =A0 =A0 =A0 =A0 const __be32 *addr;
->> + =A0 =A0 =A0 =A0 =A0 =A0 int len;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(&adap->dev, "of_i2c: register %s\n", n=
-ode->full_name);
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (of_modalias_node(node, info.type, sizeof(i=
-nfo.type)) < 0) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&adap->dev, "of_i2c: m=
-odalias failure on %s\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 node->full_nam=
-e);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 addr =3D of_get_property(node, "reg", &len);
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!addr || (len < sizeof(int))) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&adap->dev, "of_i2c: i=
-nvalid reg on %s\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 node->full_nam=
-e);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 info.addr =3D be32_to_cpup(addr);
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (info.addr > (1 << 10) - 1) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&adap->dev, "of_i2c: i=
-nvalid addr=3D%x on %s\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 info.addr, nod=
-e->full_name);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 info.irq =3D irq_of_parse_and_map(node, 0);
->> + =A0 =A0 =A0 =A0 =A0 =A0 info.of_node =3D of_node_get(node);
->> + =A0 =A0 =A0 =A0 =A0 =A0 info.archdata =3D &dev_ad;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 request_module("%s", info.type);
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 result =3D i2c_new_device(adap, &info);
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (result =3D=3D NULL) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&adap->dev, "of_i2c: F=
-ailure registering %s\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 node->full_nam=
-e);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_node_put(node);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_dispose_mapping(info.irq);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> + =A0 =A0 }
->> +}
->> +#else
->> +static inline void i2c_scan_of_devices(struct i2c_adapter *adap) { }
->> +#endif
->
-> Is there any advantage to just making the definition in the header
-> file a static inline and removing the #else part of this?
 
-I'm not sure what you mean.  This particular patch makes
-i2c_scan_of_devices() completely internal to i2c-core.c so that there
-is no need to expose it in the header file at all.
+This introduces a pair of kernel parameters that can be used to disable
+the MULTITCE and BULK_REMOVE h-calls.
 
-g.
+By default, those hcalls are enabled, active, and good for throughput
+and performance.  The ability to disable them will be useful for some of
+the PREEMPT_RT related investigation and work occurring on Power.
 
->
-> --
-> Ben
->
-> Q: =A0 =A0 =A0What's a light-year?
-> A: =A0 =A0 =A0One-third less calories than a regular year.
->
->
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+cc: Olof Johansson <olof@lixom.net>
+cc: Anton Blanchard <anton@samba.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+
+v2 - Per feedback from Olof, the code is reworked to utilize kernel
+    parameter runtime checks, rather than CONFIG options.
+   - Added relevant change to kernel-parameters.txt
+
+v3 - ran through checkpatch and fixed whitespace issues.
+   - consolidated the if() staircases to save indentation.
 
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index e2c7487..5c40801 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -426,6 +426,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	bttv.pll=	See Documentation/video4linux/bttv/Insmod-options
+ 	bttv.tuner=	and Documentation/video4linux/bttv/CARDLIST
+ 
++	bulk_remove=off	[PPC]  This parameter disables the use of the pSeries
++			firmware feature for flushing multiple hpte entries
++			at a time.
++
+ 	BusLogic=	[HW,SCSI]
+ 			See drivers/scsi/BusLogic.c, comment before function
+ 			BusLogic_ParseDriverOptions().
+@@ -1499,6 +1503,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	mtdparts=	[MTD]
+ 			See drivers/mtd/cmdlinepart.c.
+ 
++	multitce=off	[PPC]  This parameter disables the use of the pSeries
++			firmware feature for updating multiple TCE entries
++			at a time.
++
+ 	onenand.bdry=	[HW,MTD] Flex-OneNAND Boundary Configuration
+ 
+ 			Format: [die0_boundary][,die0_lock][,die1_boundary][,die1_lock]
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 902987d..e174a2f 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -625,3 +625,17 @@ void iommu_init_early_pSeries(void)
+ 	set_pci_dma_ops(&dma_iommu_ops);
+ }
+ 
++static int __init disable_multitce(char *str)
++{
++	if (strcmp(str, "off") == 0 &&
++	    firmware_has_feature(FW_FEATURE_LPAR) &&
++	    firmware_has_feature(FW_FEATURE_MULTITCE)) {
++		printk(KERN_INFO "Disabling MULTITCE firmware feature\n");
++		ppc_md.tce_build = tce_build_pSeriesLP;
++		ppc_md.tce_free	 = tce_free_pSeriesLP;
++		powerpc_firmware_features &= ~FW_FEATURE_MULTITCE;
++	}
++	return 1;
++}
++
++__setup("multitce=", disable_multitce);
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 0707653..82d15e7 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -599,6 +599,18 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
+ 		spin_unlock_irqrestore(&pSeries_lpar_tlbie_lock, flags);
+ }
+ 
++static int __init disable_bulk_remove(char *str)
++{
++	if (strcmp(str, "off") == 0 &&
++	    firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
++			printk(KERN_INFO "Disabling BULK_REMOVE firmware feature");
++			powerpc_firmware_features &= ~FW_FEATURE_BULK_REMOVE;
++	}
++	return 1;
++}
++
++__setup("bulk_remove=", disable_bulk_remove);
++
+ void __init hpte_init_lpar(void)
+ {
+ 	ppc_md.hpte_invalidate	= pSeries_lpar_hpte_invalidate;
