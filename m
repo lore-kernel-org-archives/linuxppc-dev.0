@@ -1,23 +1,24 @@
-Return-Path: <ben@trinity.fluff.org>
-Received: from trinity.fluff.org (trinity.fluff.org [89.16.178.74])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99CD2B6EEC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Sep 2010 09:48:00 +1000 (EST)
-Date: Wed, 29 Sep 2010 00:20:54 +0100
-From: Ben Dooks <ben-i2c@fluff.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH (Option 1)] of/i2c: fix module load order issue caused
-	by of_i2c.c
-Message-ID: <20100928232054.GQ21564@trinity.fluff.org>
-References: <20100924221313.28357.61419.stgit@angua>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 12A8DB70AF
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Sep 2010 12:54:33 +1000 (EST)
+Date: Tue, 28 Sep 2010 19:50:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH 0/8] v2 De-Couple sysfs memory directories from memory
+	sections
+Message-ID: <20100929025035.GA13096@kroah.com>
+References: <4CA0EBEB.1030204@austin.ibm.com> <4CA1E338.6070201@redhat.com>
+	<20100928151218.GJ14068@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100924221313.28357.61419.stgit@angua>
-Cc: mikpe@it.uu.se, linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-	linux-i2c@vger.kernel.org, khali@linux-fr.org,
-	linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20100928151218.GJ14068@sgi.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	Avi Kivity <avi@redhat.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 24, 2010 at 04:14:53PM -0600, Grant Likely wrote:
-> Commit 959e85f7, "i2c: add OF-style registration and binding" caused a
-> module dependency loop where of_i2c.c calls functions in i2c-core, and
-> i2c-core calls of_i2c_register_devices() in of_i2c.  This means that
-> when i2c support is built as a module when CONFIG_OF is set, then
-> neither i2c_core nor of_i2c are able to be loaded.
+On Tue, Sep 28, 2010 at 10:12:18AM -0500, Robin Holt wrote:
+> On Tue, Sep 28, 2010 at 02:44:40PM +0200, Avi Kivity wrote:
+> >  On 09/27/2010 09:09 PM, Nathan Fontenot wrote:
+> > >This set of patches decouples the concept that a single memory
+> > >section corresponds to a single directory in
+> > >/sys/devices/system/memory/.  On systems
+> > >with large amounts of memory (1+ TB) there are perfomance issues
+> > >related to creating the large number of sysfs directories.  For
+> > >a powerpc machine with 1 TB of memory we are creating 63,000+
+> > >directories.  This is resulting in boot times of around 45-50
+> > >minutes for systems with 1 TB of memory and 8 hours for systems
+> > >with 2 TB of memory.  With this patch set applied I am now seeing
+> > >boot times of 5 minutes or less.
+> > >
+> > >The root of this issue is in sysfs directory creation. Every time
+> > >a directory is created a string compare is done against all sibling
+> > >directories to ensure we do not create duplicates.  The list of
+> > >directory nodes in sysfs is kept as an unsorted list which results
+> > >in this being an exponentially longer operation as the number of
+> > >directories are created.
+> > >
+> > >The solution solved by this patch set is to allow a single
+> > >directory in sysfs to span multiple memory sections.  This is
+> > >controlled by an optional architecturally defined function
+> > >memory_block_size_bytes().  The default definition of this
+> > >routine returns a memory block size equal to the memory section
+> > >size. This maintains the current layout of sysfs memory
+> > >directories as it appears to userspace to remain the same as it
+> > >is today.
+> > >
+> > 
+> > Why not update sysfs directory creation to be fast, for example by
+> > using an rbtree instead of a linked list.  This fixes an
+> > implementation problem in the kernel instead of working around it
+> > and creating a new ABI.
 > 
-> This patch fixes the problem by moving the of_i2c_register_devices()
-> function into the body of i2c_core and renaming it to
-> i2c_scan_of_devices (of_i2c_register_devices is analogous to the
-> existing i2c_scan_static_board_info function and so should be named
-> similarly).  This function isn't called by any code outside of
-> i2c_core, and it must always be present when CONFIG_OF is selected, so
-> it makes sense to locate it there.  When CONFIG_OF is not selected,
-> of_i2c_register_devices() becomes a no-op.
+> Because the old ABI creates 129,000+ entries inside
+> /sys/devices/system/memory with their associated links from
+> /sys/devices/system/node/node*/ back to those directory entries.
+> 
+> Thankfully things like rpm, hald, and other miscellaneous commands scan
+> that information.
 
-I sort of go with this one.
+Really?  Why?  Why would rpm care about this?  hald is dead now so we
+don't need to worry about that anymore, but what other commands/programs
+read this information?
 
--- 
-Ben
+thanks,
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+greg k-h
