@@ -1,23 +1,22 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6C9B2B6F0D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Sep 2010 01:43:43 +1000 (EST)
-Date: Wed, 29 Sep 2010 17:43:28 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH (Option 2)] of/i2c: fix module load order issue caused
-	by  of_i2c.c
-Message-ID: <20100929174328.48af4735@endymion.delvare>
-In-Reply-To: <20100924221458.28357.58921.stgit@angua>
-References: <20100924221313.28357.61419.stgit@angua>
-	<20100924221458.28357.58921.stgit@angua>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: rdunlap@xenotime.net, mikpe@it.uu.se, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+Return-Path: <holt@sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
+	by ozlabs.org (Postfix) with ESMTP id B9753B6F07
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 05:28:33 +1000 (EST)
+Date: Wed, 29 Sep 2010 14:28:30 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 0/8] v2 De-Couple sysfs memory directories from memory
+	sections
+Message-ID: <20100929192830.GK14068@sgi.com>
+References: <4CA0EBEB.1030204@austin.ibm.com> <20100928123848.GH14068@sgi.com>
+	<4CA2313D.2030508@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4CA2313D.2030508@austin.ibm.com>
+Cc: linux-mm@kvack.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	Robin Holt <holt@sgi.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,95 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 24 Sep 2010 16:15:18 -0600, Grant Likely wrote:
-> Commit 959e85f7, "i2c: add OF-style registration and binding" caused a
-> module dependency loop where of_i2c.c calls functions in i2c-core, and
-> i2c-core calls of_i2c_register_devices() in of_i2c.  This means that
-> when i2c support is built as a module when CONFIG_OF is set, then
-> neither i2c_core nor of_i2c are able to be loaded.
+On Tue, Sep 28, 2010 at 01:17:33PM -0500, Nathan Fontenot wrote:
+> On 09/28/2010 07:38 AM, Robin Holt wrote:
+> > I was tasked with looking at a slowdown in similar sized SGI machines
+> > booting x86_64.  Jack Steiner had already looked into the memory_dev_init.
+> > I was looking at link_mem_sections().
+> > 
+> > I made a dramatic improvement on a 16TB machine in that function by
+> > merely caching the most recent memory section and checking to see if
+> > the next memory section happens to be the subsequent in the linked list
+> > of kobjects.
+> > 
+> > That simple cache reduced the time for link_mem_sections from 1 hour 27
+> > minutes down to 46 seconds.
 > 
-> This patch fixes the problem by moving the of_i2c_register_devices()
-> calls back into the device drivers.  Device drivers already
-> specifically request the core code to parse the device tree for
-> devices anyway by setting the of_node pointer, so it isn't a big
-> deal to also call the registration function.  The drivers just become
-> slightly more verbose.
+> Nice!
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->  drivers/i2c/busses/i2c-cpm.c     |    5 +++++
->  drivers/i2c/busses/i2c-ibm_iic.c |    3 +++
->  drivers/i2c/busses/i2c-mpc.c     |    1 +
->  drivers/i2c/i2c-core.c           |    4 ----
->  4 files changed, 9 insertions(+), 4 deletions(-)
+> > 
+> > I would like to propose we implement something along those lines also,
+> > but I am currently swamped.  I can probably get you a patch tomorrow
+> > afternoon that applies at the end of this set.
 > 
-> diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-> index f7bd261..f2de3be 100644
-> --- a/drivers/i2c/busses/i2c-cpm.c
-> +++ b/drivers/i2c/busses/i2c-cpm.c
-> @@ -677,6 +677,11 @@ static int __devinit cpm_i2c_probe(struct platform_device *ofdev,
->  	dev_dbg(&ofdev->dev, "hw routines for %s registered.\n",
->  		cpm->adap.name);
->  
-> +	/*
-> +	 * register OF I2C devices
-> +	 */
-> +	of_i2c_register_devices(&cpm->adap);
-> +
->  	return 0;
->  out_shut:
->  	cpm_i2c_shutdown(cpm);
-> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-> index 43ca32f..89eedf4 100644
-> --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> @@ -761,6 +761,9 @@ static int __devinit iic_probe(struct platform_device *ofdev,
->  	dev_info(&ofdev->dev, "using %s mode\n",
->  		 dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
->  
-> +	/* Now register all the child nodes */
-> +	of_i2c_register_devices(adap);
-> +
->  	return 0;
->  
->  error_cleanup:
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index a1c419a..b74e6dc 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -632,6 +632,7 @@ static int __devinit fsl_i2c_probe(struct platform_device *op,
->  		dev_err(i2c->dev, "failed to add adapter\n");
->  		goto fail_add;
->  	}
-> +	of_i2c_register_devices(&i2c->adap);
->  
->  	return result;
->  
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 6649176..a9589f5 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -32,7 +32,6 @@
->  #include <linux/init.h>
->  #include <linux/idr.h>
->  #include <linux/mutex.h>
-> -#include <linux/of_i2c.h>
->  #include <linux/of_device.h>
->  #include <linux/completion.h>
->  #include <linux/hardirq.h>
-> @@ -876,9 +875,6 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
->  	if (adap->nr < __i2c_first_dynamic_bus_num)
->  		i2c_scan_static_board_info(adap);
->  
-> -	/* Register devices from the device tree */
-> -	of_i2c_register_devices(adap);
-> -
->  	/* Notify drivers */
->  	mutex_lock(&core_lock);
->  	bus_for_each_drv(&i2c_bus_type, NULL, adap, __process_new_adapter);
+> Should this be done as a separate patch?  This patch set concentrates on
+> updates to the memory code with the node updates only being done due to the
+> memory changes.
 > 
+> I think its a good idea to do the caching and have no problem adding on to
+> this patchset if no one else has any objections.
 
-I've applied this variant, thanks.
+I am sorry.  I had meant to include you on the Cc: list.  I just posted a
+set of patches (3 small patches) which implement the cache most recent bit
+I aluded to above.  Search for a subject of "Speed up link_mem_sections
+during boot" and you will find them.  I did add you to the Cc: list for
+the next time I end up sending the set.
 
--- 
-Jean Delvare
+My next task is to implement a x86_64 SGI UV specific chunk of code
+to memory_block_size_bytes().  Would you consider adding that to your
+patch set?  I expect to have that either later today or early tomorrow.
+
+Robin
