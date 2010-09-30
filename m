@@ -1,20 +1,27 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 1BBBAB6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 05:08:19 +1000 (EST)
-To: tmarri@apm.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] PPC4xx: ADMA separating SoC specific functions
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 0BD1AB6F0D
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Oct 2010 06:57:43 +1000 (EST)
+Received: by iwn37 with SMTP id 37so3317458iwn.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 13:57:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1285865736-32074-1-git-send-email-tmarri@apm.com>
-References: <1285865736-32074-1-git-send-email-tmarri@apm.com>
-Date: Thu, 30 Sep 2010 21:08:14 +0200
-Message-Id: <20100930190814.52268D2B48C@gemini.denx.de>
-Cc: linux-raid@vger.kernel.org, dan.j.williams@intel.com,
-	linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
-	yur@emcraft.com
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100930150633.GA13741@oksana.dev.rtsoft.ru>
+References: <841976.76219.qm@web180306.mail.gq1.yahoo.com>
+	<AANLkTinBDdEyMDt3KoauNdmTCz1ZAJ5mZ23iMWiwsUm4@mail.gmail.com>
+	<AANLkTi=GydTyhf3TOzCZOtrme1Jh0UmNDHqTVP59q=LH@mail.gmail.com>
+	<20100930150633.GA13741@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 1 Oct 2010 05:57:21 +0900
+Message-ID: <AANLkTim2osW_BoOOUZ4EXx7P=qK3-23Co+Mdj7kLRyt4@mail.gmail.com>
+Subject: Re: [PATCH v3 6/7] mtd: m25p80: add a read function to read page by
+	page
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kumar.gala@freescale.com, David Brownell <david-b@pacbell.net>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	spi-devel-general@lists.sourceforge.net,
+	Mingkai Hu <Mingkai.hu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,179 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear tmarri@apm.com,
+On Fri, Oct 1, 2010 at 12:06 AM, Anton Vorontsov <cbouatmailru@gmail.com> w=
+rote:
+> On Thu, Sep 30, 2010 at 11:41:40PM +0900, Grant Likely wrote:
+>> On Thu, Sep 30, 2010 at 11:16 PM, Grant Likely
+>> <grant.likely@secretlab.ca> wrote:
+>> > On Thu, Sep 30, 2010 at 7:46 PM, David Brownell <david-b@pacbell.net> =
+wrote:
+>> >>
+>> >> --- On Thu, 9/30/10, Mingkai Hu <Mingkai.hu@freescale.com> wrote:
+>> >>
+>> >>> From: Mingkai Hu <Mingkai.hu@freescale.com>
+>> >>> Subject: [PATCH v3 6/7] mtd: m25p80: add a read function to read pag=
+e by page
+>> >>
+>> >> NAK.
+>> >>
+>> >> We went over this before.
+>> >
+>> > Yes, I agree with David on this. =A0If large transfers don't work, the=
+n
+>> > it is the SPI master driver that is buggy.
+>>
+>> By the way, does this fix your problem?
+>>
+>> https://patchwork.kernel.org/patch/184752/
+>
+> It shouldn't. AFAIK, eSPI is PIO-only controller, and the overrun
+> fix is for the DMA mode.
+>
+> Thanks,
+>
+> p.s. Btw, in patch 3/7, is_dma_mapped argument of fsl_espi_bufs()
+> is unneeded.
 
-In message <1285865736-32074-1-git-send-email-tmarri@apm.com> you wrote:
-> From: Tirumala Marri <tmarri@apm.com>
-> 
-> This patch separates the SoC specific functions and moved
-> to different files.
-> 
-> The reason for ppc440spe-adma.h is to define in-line functions which
-> are called by both adma.c and ppc440spe-adma.c . 
-> 
-> Where as ppc440spe-adma.c is to define functions are completely
-> completely dependent on 440spe, also which are too big to define
-> as in-line functions.
+Thanks Anton.  Please reply to that patch with this comment so that
+patchwork records it and I don't forget about it.
 
-When reposting a patch, please always indicate that this is new
-version by using something like "[PATCH v2]" in the Subject line.
+Thanks,
+g.
 
-> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
-> Acked-by: Yuri Tikhonov <yur@emcraft.com>
-> CC:  Dan Williams <dan.j.williams@intel.com>
-> CC:  Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> ---
-
-Also, please include here (i. e. below the "---" line, i. e. in the
-comments section, a description of what was changed compared to the
-previous version of this patch.
-
-As is, you enforce us to rescan the whole patch again and check
-manually if you have reacted to any of the comments sent before, and
-how.  As is, you make reviewing your poatches harder than necessary.
-
-
-> diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-> index 0d58a4a..a1053cb 100644
-> --- a/drivers/dma/ppc4xx/adma.c
-> +++ b/drivers/dma/ppc4xx/adma.c
-...
-> +#include "ppc440spe-adma.h"
-> +
-> +struct dma_async_tx_descriptor
-> +*ppc440spe_adma_prep_dma_pq(struct dma_chan *chan,
-> +			       dma_addr_t * dst,
-> +			       dma_addr_t * src,
-> +			       unsigned int src_cnt,
-> +			       const unsigned char *scf,
-> +			       size_t len,
-> +			       unsigned long flags);
-> +struct dma_async_tx_descriptor
-> +*ppc440spe_adma_prep_dma_pqzero_sum(struct dma_chan *chan,
-
-Should such 440SPe specific code not be removed here and placed into
-ppc440spe-adma.c instead?
-
-> +#if 0
->  static void prep_dma_pq_dbg(int id, dma_addr_t *dst, dma_addr_t *src,
->  			    unsigned int src_cnt)
->  {
-> @@ -213,8 +104,9 @@ static void prep_dma_pq_dbg(int id, dma_addr_t *dst, dma_addr_t *src,
->  	for (i = 0; i < 2; i++)
->  		pr_debug("\t0x%016llx ", dst[i]);
->  }
-> +#endif
-
-Please do not add dead code - remove the whole "#if 0" block.
+>
+> --
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+>
 
 
->  /******************************************************************************
->   * ADMA channel low-level routines
->   ******************************************************************************/
->  
-> -static u32
-...
-...
-> -}
->  
->  /******************************************************************************
->   * ADMA device level
->   ******************************************************************************/
 
-It seems youremove all code, but leave the (now empty) comment
-headers? This makes little sense to me.
-
-...
->  /**
->   * ppc440spe_adma_free_slots - flags descriptor slots for reuse
->   * @slot: Slot to free
->   * Caller must hold &ppc440spe_chan->lock while calling this function
->   */
-
-Again, all this is pretty low-level 440SPe specific code. Why do you
-keep this in the common drive rfile instead of moving it into the new
-440SPe specific file?
-
-
-> diff --git a/drivers/dma/ppc4xx/ppc440spe-adma.c b/drivers/dma/ppc4xx/ppc440spe-adma.c
-> new file mode 100644
-> index 0000000..da467b4
-...
-> +	/*  In the current implementation of ppc440spe ADMA driver it
-> +
-> +
-> +
-> +	 * makes sense to pick out only pq case, because it may be
-
-Formatting problems?
-
-
-> diff --git a/drivers/dma/ppc4xx/ppc440spe-adma.h b/drivers/dma/ppc4xx/ppc440spe-adma.h
-> new file mode 100644
-> index 0000000..81a1f46
-> --- /dev/null
-> +++ b/drivers/dma/ppc4xx/ppc440spe-adma.h
-...
-> +/*
-> + * ppc440spe_get_group_entry - get group entry with index idx
-> + * @tdesc: is the last allocated slot in the group.
-> + */
-> +static struct ppc440spe_adma_desc_slot *ppc440spe_get_group_entry(struct
-> +							    ppc440spe_adma_desc_slot
-> +							    *tdesc,
-> +							    u32 entry_idx)
-> +{
-> +	struct ppc440spe_adma_desc_slot *iter = tdesc->group_head;
-> +	int i = 0;
-> +
-> +	if (entry_idx < 0 || entry_idx >= (tdesc->src_cnt + tdesc->dst_cnt)) {
-> +		printk("%s: entry_idx %d, src_cnt %d, dst_cnt %d\n",
-> +		       __func__, entry_idx, tdesc->src_cnt, tdesc->dst_cnt);
-> +		BUG();
-> +	}
-> +
-> +	list_for_each_entry(iter, &tdesc->group_list, chain_node) {
-> +		if (i++ == entry_idx)
-> +			break;
-> +	}
-> +	return iter;
-> +}
-
-This is a header file, yet you add here literally thousands of lines of
-code.
-
-
-Note that more or less similar questions have been asked for the
-previous version of this patch, but I fail to find any good
-justification in your replies.
-
-
-Selecting the architecture at build time is bad as it prevents using a
-sinlge kernel image across a wide range of boards.  You only replied
-"We select the architecture at build time." without any explanation if
-there is a pressing technical reason to do it this way, or if this was
-just a arbitrary decision.
-
-The same goes for putting so much source code in a header file - I
-really see no technical need for this (especially not if you build for
-a single architecture only).
-
-Also I wonder why you still keep so many 440SPe specific code in the
-common file, even though you just create new 440SPe specific header
-and source files.
-
-
-Please elucidate.
-
-
-Thanks.
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Unix is simple, but it takes a genius to understand the simplicity."
-					             - Dennis Ritchie
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
