@@ -1,15 +1,15 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 8F19CB70CB
+	by ozlabs.org (Postfix) with ESMTP id 8F2AEB70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Fri,  1 Oct 2010 07:46:50 +1000 (EST)
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/4] dma: add support for scatterlist to scatterlist copy
-Date: Thu, 30 Sep 2010 14:46:44 -0700
-Message-Id: <1285883207-13761-2-git-send-email-iws@ovro.caltech.edu>
-In-Reply-To: <1285883207-13761-1-git-send-email-iws@ovro.caltech.edu>
-References: <1285883207-13761-1-git-send-email-iws@ovro.caltech.edu>
+Subject: [PATCH v4 0/4] dma: add support for scatterlist to scatterlist copy
+Date: Thu, 30 Sep 2010 14:46:43 -0700
+Message-Id: <1285883207-13761-1-git-send-email-iws@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,56 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds support for scatterlist to scatterlist DMA transfers. A
-similar interface is exposed by the fsldma driver (through the DMA_SLAVE
-API) and by the ste_dma40 driver (through an exported function).
+This series adds support for scatterlist to scatterlist copies to the
+generic DMAEngine API. Both the fsldma and ste_dma40 drivers currently
+implement a similar API using different, non-generic methods. This series
+converts both of them to the new, standardized API.
 
-This patch paves the way for making this type of copy operation a part
-of the generic DMAEngine API. Futher patches will add support in
-individual drivers.
+By doing this as part of the core DMAEngine API, the individual drivers
+have control over how to chain their descriptors together. In addition,
+this makes graceful failure much easier to support.
 
-Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
----
- drivers/dma/dmaengine.c   |    2 ++
- include/linux/dmaengine.h |    6 ++++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
+The fsldma implementation has been tested on real hardware, using slightly
+modified versions of the patches posted a few weeks ago, titled:
+[PATCH RFCv2 0/5] CARMA Board Support
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 9d31d5e..db403b8 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -690,6 +690,8 @@ int dma_async_device_register(struct dma_device *device)
- 		!device->device_prep_dma_memset);
- 	BUG_ON(dma_has_cap(DMA_INTERRUPT, device->cap_mask) &&
- 		!device->device_prep_dma_interrupt);
-+	BUG_ON(dma_has_cap(DMA_SG, device->cap_mask) &&
-+		!device->device_prep_dma_sg);
- 	BUG_ON(dma_has_cap(DMA_SLAVE, device->cap_mask) &&
- 		!device->device_prep_slave_sg);
- 	BUG_ON(dma_has_cap(DMA_SLAVE, device->cap_mask) &&
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index c61d4ca..7c44620 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -64,6 +64,7 @@ enum dma_transaction_type {
- 	DMA_PQ_VAL,
- 	DMA_MEMSET,
- 	DMA_INTERRUPT,
-+	DMA_SG,
- 	DMA_PRIVATE,
- 	DMA_ASYNC_TX,
- 	DMA_SLAVE,
-@@ -473,6 +474,11 @@ struct dma_device {
- 		unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_interrupt)(
- 		struct dma_chan *chan, unsigned long flags);
-+	struct dma_async_tx_descriptor *(*device_prep_dma_sg)(
-+		struct dma_chan *chan,
-+		struct scatterlist *dst_sg, unsigned int dst_nents,
-+		struct scatterlist *src_sg, unsigned int src_nents,
-+		unsigned long flags);
- 
- 	struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
- 		struct dma_chan *chan, struct scatterlist *sgl,
--- 
-1.7.1
+These patches will be re-submitted with the appropriate changes after we're
+happy with this series.
+
+Thanks to all that provided input!
+Ira
+
+Changes since v3:
+- ste40_dma's implementation now returns NULL (thanks Dan!)
+- fsldma now uses a custom command for external control
+- fsldma now uses the standard struct dma_slave_config
+- tested on real hardware
+
+Ira W. Snyder (4):
+  dma: add support for scatterlist to scatterlist copy
+  fsldma: implement support for scatterlist to scatterlist copy
+  fsldma: improved DMA_SLAVE support
+  ste_dma40: implement support for scatterlist to scatterlist copy
+
+ arch/powerpc/include/asm/fsldma.h |  137 ---------------
+ drivers/dma/dmaengine.c           |    2 +
+ drivers/dma/fsldma.c              |  328 ++++++++++++++++++-------------------
+ drivers/dma/ste_dma40.c           |   17 ++
+ include/linux/dmaengine.h         |    9 +
+ 5 files changed, 184 insertions(+), 309 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/fsldma.h
