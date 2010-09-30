@@ -1,16 +1,17 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 8E764B70A7
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Oct 2010 00:16:32 +1000 (EST)
-Received: by iwn37 with SMTP id 37so2878966iwn.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 07:16:30 -0700 (PDT)
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 58FDBB6EFE
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Oct 2010 00:42:16 +1000 (EST)
+Received: by ewy2 with SMTP id 2so1054103ewy.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 07:42:13 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <841976.76219.qm@web180306.mail.gq1.yahoo.com>
+In-Reply-To: <AANLkTinBDdEyMDt3KoauNdmTCz1ZAJ5mZ23iMWiwsUm4@mail.gmail.com>
 References: <841976.76219.qm@web180306.mail.gq1.yahoo.com>
+	<AANLkTinBDdEyMDt3KoauNdmTCz1ZAJ5mZ23iMWiwsUm4@mail.gmail.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 30 Sep 2010 23:16:09 +0900
-Message-ID: <AANLkTinBDdEyMDt3KoauNdmTCz1ZAJ5mZ23iMWiwsUm4@mail.gmail.com>
+Date: Thu, 30 Sep 2010 23:41:40 +0900
+Message-ID: <AANLkTi=GydTyhf3TOzCZOtrme1Jh0UmNDHqTVP59q=LH@mail.gmail.com>
 Subject: Re: [PATCH v3 6/7] mtd: m25p80: add a read function to read page by
 	page
 To: David Brownell <david-b@pacbell.net>
@@ -27,18 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 30, 2010 at 7:46 PM, David Brownell <david-b@pacbell.net> wrote:
+On Thu, Sep 30, 2010 at 11:16 PM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> On Thu, Sep 30, 2010 at 7:46 PM, David Brownell <david-b@pacbell.net> wro=
+te:
+>>
+>> --- On Thu, 9/30/10, Mingkai Hu <Mingkai.hu@freescale.com> wrote:
+>>
+>>> From: Mingkai Hu <Mingkai.hu@freescale.com>
+>>> Subject: [PATCH v3 6/7] mtd: m25p80: add a read function to read page b=
+y page
+>>
+>> NAK.
+>>
+>> We went over this before.
 >
-> --- On Thu, 9/30/10, Mingkai Hu <Mingkai.hu@freescale.com> wrote:
->
->> From: Mingkai Hu <Mingkai.hu@freescale.com>
->> Subject: [PATCH v3 6/7] mtd: m25p80: add a read function to read page by page
->
-> NAK.
->
-> We went over this before.
+> Yes, I agree with David on this. =A0If large transfers don't work, then
+> it is the SPI master driver that is buggy.
 
-Yes, I agree with David on this.  If large transfers don't work, then
-it is the SPI master driver that is buggy.
+By the way, does this fix your problem?
+
+https://patchwork.kernel.org/patch/184752/
 
 g.
