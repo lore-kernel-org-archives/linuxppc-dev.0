@@ -1,32 +1,27 @@
-Return-Path: <christian@riesch.at>
-Message-ID: <20100930055058.51095mqjao91pe88@webmail.df.eu>
-Date: Thu, 30 Sep 2010 05:50:58 +0200
-From: Christian Riesch <christian@riesch.at>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-References: <cover.1285261533.git.richard.cochran@omicron.at>
-	<alpine.DEB.2.00.1009231238170.2962@router.home>
-	<1285268380.2587.11.camel@localhost.localdomain>
-	<alpine.DEB.2.00.1009231402420.2962@router.home>
-	<1285273684.2587.92.camel@localhost.localdomain>
-	<alpine.DEB.2.00.1009231533040.7522@router.home>
-	<20100923223417.4ed62e5b@lxorguk.ukuu.org.uk>
-	<4C9BC7CE.8020400@riesch.at>
-	<alpine.DEB.2.00.1009271035110.9258@router.home>
-In-Reply-To: <alpine.DEB.2.00.1009271035110.9258@router.home>
+Return-Path: <per.forlin@stericsson.com>
+Received: from eu1sys200aog110.obsmtp.com (eu1sys200aog110.obsmtp.com
+	[207.126.144.129])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3D754B6F0D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 30 Sep 2010 17:40:02 +1000 (EST)
+Message-ID: <4CA438B4.4040106@stericsson.com>
+Date: Thu, 30 Sep 2010 09:13:56 +0200
+From: Per Friden <per.friden@stericsson.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8;
- DelSp="Yes";
- format="flowed"
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, john stultz <johnstul@us.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	linuxppc-dev@lists.ozlabs.org, Richard Cochran <richardcochran@gmail.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 4/4] ste_dma40: implement support for scatterlist to
+	scatterlist copy
+References: <1285628277-26894-1-git-send-email-iws@ovro.caltech.edu>	<1285628277-26894-5-git-send-email-iws@ovro.caltech.edu>
+	<AANLkTinYG4LqtEXxM5pdA0vavahtqbt6=yV341pnFmZw@mail.gmail.com>
+In-Reply-To: <AANLkTinYG4LqtEXxM5pdA0vavahtqbt6=yV341pnFmZw@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Per FORLIN <per.forlin@stericsson.com>,
+	Linus Walleij <linus.ml.walleij@gmail.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,37 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Christoph Lameter <cl@linux.com>:
-> On Thu, 23 Sep 2010, Christian Riesch wrote:
->
->> > > It implies clock tuning in userspace for a potential sub microsecond
->> > > accurate clock. The clock accuracy will be limited by user space
->> > > latencies and noise. You wont be able to discipline the system clock
->> > > accurately.
->> >
->> > Noise matters, latency doesn't.
+On 09/29/2010 11:19 PM, Dan Williams wrote:
+> On Mon, Sep 27, 2010 at 3:57 PM, Ira W. Snyder <iws@ovro.caltech.edu> wrote:
+>> Now that the DMAEngine API has support for scatterlist to scatterlist
+>> copy, implement support for the STE DMA40 DMA controller.
 >>
->> Well put! That's why we need hardware support for PTP timestamping to reduce
->> the noise, but get along well with the clock servo that is steering  
->> the PHC in
->> user space.
->
-> Even if I buy into the catch phrase above: User space is subject to noise
-> that the in kernel code is not. If you do the tuning over long intervals
-> then it hopefully averages out but it still causes jitter effects that
-> affects the degree of accuracy (or sync) that you can reach. And the noise
-> varies with the load on the system.
+>> Cc: Linus Walleij <linus.ml.walleij@gmail.com>
+>> Cc: Per Fridén <per.friden@stericsson.com>
+>> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+>> ---
+>>  drivers/dma/ste_dma40.c |   17 +++++++++++++++++
+>>  1 files changed, 17 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/dma/ste_dma40.c b/drivers/dma/ste_dma40.c
+>> index 17e2600..cd48859 100644
+>> --- a/drivers/dma/ste_dma40.c
+>> +++ b/drivers/dma/ste_dma40.c
+>> @@ -1857,6 +1857,18 @@ err:
+>>        return NULL;
+>>  }
+>>
+>> +static struct dma_async_tx_descriptor *
+>> +d40_prep_sg(struct dma_chan *chan,
+>> +           struct scatterlist *dst_sg, unsigned int dst_nents,
+>> +           struct scatterlist *src_sg, unsigned int src_nents,
+>> +           unsigned long dma_flags)
+>> +{
+>> +       if (dst_nents != src_nents)
+>> +               return -EINVAL;
+> 
+> I suspect you wanted "return NULL;" here.  I can fix that up.
+> 
+> Linus, Per ack?
+> 
+> --
+> Dan
+Thanks Dan. Acked by Per.
 
-Yes and no. If you regard it as a control system: The latencies of the  
-operating system are a dead time in the control system. The sampling  
-time is quite large, one second, maybe around 100ms or 10ms in  
-telecommunication applications, but that is still large compared to  
-the latencies you expect to have in the operating system. Hence, this  
-latencies (=dead time) can be neglected and the important thing that  
-remains is the noise that you introduce in the measurements of the  
-time stamps, which is therefore done in hardware.
-I admit that my short statement above is not completely correct, I  
-should have mentioned the rather large sampling time we are dealing  
-with here.
-
-Christian
+/Per
