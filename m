@@ -1,37 +1,16 @@
-Return-Path: <B21284@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id C2128B70B8
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 18:26:15 +1000 (EST)
-Received: from mail50-va3 (localhost.localdomain [127.0.0.1])	by
-	mail50-va3-R.bigfish.com (Postfix) with ESMTP id 1E820193827C	for
-	<linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 08:26:13 +0000 (UTC)
-Received: from VA3EHSMHS020.bigfish.com (unknown [10.7.14.243])	by
-	mail50-va3.bigfish.com (Postfix) with ESMTP id D4FCC510050	for
-	<linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 08:26:12 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o8U8QAXW006864	for
-	<linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 01:26:10 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o8U8fXHI017737	for <linuxppc-dev@ozlabs.org>;
-	Thu, 30 Sep 2010 03:41:53 -0500 (CDT)
-From: Mingkai Hu <Mingkai.hu@freescale.com>
+Return-Path: <david-b@pacbell.net>
+Received: from n76.bullet.mail.sp1.yahoo.com (n76.bullet.mail.sp1.yahoo.com
+	[98.136.44.48]) by ozlabs.org (Postfix) with SMTP id D4061B70AB
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Sep 2010 20:46:27 +1000 (EST)
+Message-ID: <841976.76219.qm@web180306.mail.gq1.yahoo.com>
+Date: Thu, 30 Sep 2010 03:46:25 -0700 (PDT)
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v3 6/7] mtd: m25p80: add a read function to read page by
+	page
 To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	linux-mtd@lists.infradead.org
-Subject: [PATCH v3 7/7] DTS: add fsl,spi-quirk-trans-len-limit property
-Date: Thu, 30 Sep 2010 16:00:46 +0800
-Message-ID: <1285833646-12006-8-git-send-email-Mingkai.hu@freescale.com>
-In-Reply-To: <1285833646-12006-7-git-send-email-Mingkai.hu@freescale.com>
-References: <1285833646-12006-1-git-send-email-Mingkai.hu@freescale.com>
-	<1285833646-12006-2-git-send-email-Mingkai.hu@freescale.com>
-	<1285833646-12006-3-git-send-email-Mingkai.hu@freescale.com>
-	<1285833646-12006-4-git-send-email-Mingkai.hu@freescale.com>
-	<1285833646-12006-5-git-send-email-Mingkai.hu@freescale.com>
-	<1285833646-12006-6-git-send-email-Mingkai.hu@freescale.com>
-	<1285833646-12006-7-git-send-email-Mingkai.hu@freescale.com>
+	linux-mtd@lists.infradead.org, Mingkai Hu <Mingkai.hu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
 Cc: kumar.gala@freescale.com, Mingkai Hu <Mingkai.hu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,53 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
----
-v3:
- - Add "spi-quirk-trans-len-limit" property to the board's dts.
-
- Documentation/powerpc/dts-bindings/fsl/spi.txt |    3 +++
- arch/powerpc/boot/dts/mpc8536ds.dts            |    1 +
- arch/powerpc/boot/dts/p4080ds.dts              |    1 +
- 3 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/powerpc/dts-bindings/fsl/spi.txt b/Documentation/powerpc/dts-bindings/fsl/spi.txt
-index 777abd7..e1cb84e 100644
---- a/Documentation/powerpc/dts-bindings/fsl/spi.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/spi.txt
-@@ -41,6 +41,9 @@ Required properties:
- - interrupts : should contain eSPI interrupt, the device has one interrupt.
- - fsl,espi-num-chipselects : the number of the chipselect signals.
- 
-+Optional properties:
-+- fsl,spi-quirk-trans-len-limit : the max trans length is limited to 0xFFFF.
-+
- Example:
- 	spi@110000 {
- 		#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
-index a75c10e..6911c76 100644
---- a/arch/powerpc/boot/dts/mpc8536ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-@@ -116,6 +116,7 @@
- 			interrupts = <59 0x2>;
- 			interrupt-parent = <&mpic>;
- 			fsl,espi-num-chipselects = <4>;
-+			fsl,spi-quirk-trans-len-limit;
- 
- 			flash@0 {
- 				#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
-index 5b7fc29..060fc45 100644
---- a/arch/powerpc/boot/dts/p4080ds.dts
-+++ b/arch/powerpc/boot/dts/p4080ds.dts
-@@ -243,6 +243,7 @@
- 			interrupts = <53 0x2>;
- 			interrupt-parent = <&mpic>;
- 			fsl,espi-num-chipselects = <4>;
-+			fsl,spi-quirk-trans-len-limit;
- 
- 			flash@0 {
- 				#address-cells = <1>;
--- 
-1.6.4
+=0A--- On Thu, 9/30/10, Mingkai Hu <Mingkai.hu@freescale.com> wrote:=0A=0A>=
+ From: Mingkai Hu <Mingkai.hu@freescale.com>=0A> Subject: [PATCH v3 6/7] mt=
+d: m25p80: add a read function to read page by page=0A=0ANAK.=0A=0AWe went =
+over this before.=0A=0A=A0 The bug is in your SPI master controller driver,=
+=0Aand the fix there involves mapping large reads=0A into multiple smaller =
+reads.=A0 (Example, 128K=0Aread as two 64K reads instead of one of 128K.=0A=
+=0AIt's *NEVER* appropriate to commit to patching all=0Aupper level drivers=
+ in order to work around bugs=0Ain lower level ones.=A0 The set of such upp=
+er level=0Adrivers that may need bugfixing is quite large,=0Amost will neve=
+r be used with your buggy controller=0Adriver, and all such patches will ne=
+ed testing (but=0Athe test resources are probably not available).=0A=0AWhat=
+ever SPI controller driver you're working with=0Ais clearly buggy ... but n=
+ot unfixably so.=0A=0ADO NOT head down the path of requiring every SPI=0Ade=
+vice driver to include workarounds for this odd=0Alittle SPI master driver =
+bug.=0A=0A- Dave=0A=0A=0A=0A=0A=0A
