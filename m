@@ -1,19 +1,18 @@
-Return-Path: <Lorenzo.Pieralisi@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
-	[217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 3E690B70A7
+Return-Path: <bastiaan.nijkamp@gmail.com>
+Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
+	[209.85.216.172]) by ozlabs.org (Postfix) with ESMTP id E2CBDB70FF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 22:50:14 +1000 (EST)
-From: "Lorenzo Pieralisi" <Lorenzo.Pieralisi@arm.com>
-To: "'Grant Likely'" <grant.likely@secretlab.ca>, <benh@kernel.crashing.org>,
-	<devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>
-References: <20100922203117.10426.69278.stgit@angua>
-In-Reply-To: <20100922203117.10426.69278.stgit@angua>
-Subject: RE: [RFC] irq: Migrate powerpc virq subsystem into generic code
-Date: Fri, 1 Oct 2010 13:44:10 +0100
-Message-ID: <000b01cb6166$588cebe0$09a6c3a0$@Pieralisi@arm.com>
+	Sat,  2 Oct 2010 08:36:22 +1000 (EST)
+Received: by qyk7 with SMTP id 7so1507337qyk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 01 Oct 2010 15:36:20 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+From: Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com>
+Date: Sat, 2 Oct 2010 00:35:57 +0200
+Message-ID: <AANLkTikSaBR4vEikhGp0fsY3FnZCJQT2D-vw9=Kh4UHn@mail.gmail.com>
+Subject: Serial RapidIO Maintaintance read causes lock up
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0016363b9164b7b15c049195d232
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,2257 +22,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant, Ben, all
+--0016363b9164b7b15c049195d232
+Content-Type: text/plain; charset=ISO-8859-1
 
-> -----Original Message-----
-> From: devicetree-discuss-
-> bounces+lorenzo.pieralisi=arm.com@lists.ozlabs.org [mailto:devicetree-
-> discuss-bounces+lorenzo.pieralisi=arm.com@lists.ozlabs.org] On Behalf
-> Of Grant Likely
-> Sent: 22 September 2010 21:33
-> To: benh@kernel.crashing.org; devicetree-discuss@lists.ozlabs.org;
-> linuxppc-dev@lists.ozlabs.org
-> Subject: [RFC] irq: Migrate powerpc virq subsystem into generic code
-> 
-> Being able to dynamically manage linux irq ranges is useful.  Migrate
-> the powerpc virq code into common code so that other architectures can
-> use it.
-> 
-> This patch also removes the unused irq_early_init() references.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> Only compile tested; but I wanted to get this out for comments.  I
-> think this is the right set of routines to generalize for virq on
-> other architectures.
-> 
-> g.
+Hi,
 
-I have a question on the PowerPC IRQ layer and how to use it
-for device drivers and device tree in general.
+We are currently evaluating Serial RapidIO on two WindRiver SBC8548 boards
+that use a Freescale Powerquicc III processor (MPC8548E rev. 2). We are
+running U-Boot version 2010.09 as bootloader and are using kernel version
+2.6.35.6 stable.
 
-A device such as eth smsc911x (example) requires the platform_data 
-pointer to specify irq sense/level to programme the chip accordingly. 
-As agreed with Grant these pieces of information should be retrieved 
-from the device tree, from the interrupt-specifier.
+We have consulted multiple resources to collect al the requirements for
+a successful RapidIO connection (LAW, TLB, Registers) and we seem to have
+configured everything correctly. However, as soon as the board that is
+configured as the host starts the enumeration process, the system locks up.
+It locks in such a manner that we cannot use a JTAG interface to read any of
+the registers.  We have also added a breakpoint just before the command that
+causes the lock up, to make sure the registers are correctly set at that
+point, and it seems they are.
 
-Now: the device driver should be interrupt-controller agnostic, so
-I cannot just retrieve the interrupts property at probe and decode it
-in order to get the interrupt sense/level bits (the driver has no clue 
-about the interrupt-controller irq flags encoding).
-I need to associate a irq_host to the interrupt controller node, with
-a proper xlate function to correctly decode the interrupt-specifier 
-and set the irq type accordingly (irq_create_of_mapping(),
-for now 1:1 on ARM, so useless from this standpoint).
+We have tripple checked everything that we could possibly think of and
+everything seems to be configured as required but the system keeps
+locking-up so there must be something that we are missing. I really hope
+that someone could point us in the right direction. The lock-up occurs when
+__fsl_read_rio_config is called by fsl_rio_config_read in fsl-rio.c.
 
-At platform device init time, of_irq_to_resource() is called to parse
-and map irqs; if we code the irq_host correctly for the ARM GIC for
-instance the xlate function gets called and irq type set accordingly
-(and maybe the function could set platform_device IRQ resource 
-flags as well ?)
+The LAW and TLB entries we have added to U-Boot are as follows:
 
-At driver dt probe, from the hwirq number defined in "interrupts"
-the driver retrieves the virq, hence sense/level flags and use them,
-or just use the platform_device IRQ resource flags if set properly
-by the OF layer. 
+#define CONFIG_RIO 1
+#define CONFIG_SYS_RIO_MEM_VIRT 0xc0000000 /* base address */
+#define CONFIG_SYS_RIO_MEM_BUS 0xc0000000 /* base address */
+#define CONFIG_SYS_RIO_MEM_PHYS 0xc0000000
+#define CONFIG_SYS_RIO_MEM_SIZE 0x20000000 /* 512M */
 
-Correct ?
+SET_LAW(CONFIG_SYS_RIO_MEM_PHYS, LAW_SIZE_512M, LAW_TRGT_IF_RIO),
 
-If yes I will have a stab at it on a ARM platform with complex
-IRQ routing.
+-------------
 
-Thank you very much.
+Here is the kernel log:
 
-Cheers,
-Lorenzo
+Using SBC8548 machine description
+Memory CAM mapping: 256 Mb, residual: 0Mb
+Linux version 2.6.35.6 (dl704@lxws006) (gcc version 4.1.2 (Wind River Linux
+Sourcery G++ 4.1-91)) #7 We
+d Sep 29 13:27:18 CEST 2010
+bootconsole [udbg0] enabled
+setup_arch: bootmem
+sbc8548_setup_arch()
+arch: exit
+Zone PFN ranges:
+ DMA      0x00000000 -> 0x00010000
+ Normal   empty
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+   0: 0x00000000 -> 0x00010000
+MMU: Allocated 1088 bytes of context maps for 255 contexts
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
+Kernel command line: root=/dev/nfs rw
+nfsroot=192.168.100.21:/thales/target/rfs/sbc8548_wrlinux4
+ip=192
+.168.100.151:192.168.100.21:192.168.100.21:255.255.255.0:sbc8548_1:eth0:off
+console=ttyS0,115200 riohdid=1
+PID hash table entries: 1024 (order: 0, 4096 bytes)
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Memory: 256884k/262144k available (2712k kernel code, 5260k reserved, 112k
+data, 77k bss, 144k init)
+Kernel virtual memory layout:
+ * 0xfffdf000..0xfffff000  : fixmap
+ * 0xfc7f9000..0xfe000000  : early ioremap
+ * 0xd1000000..0xfc7f9000  : vmalloc & ioremap
+Hierarchical RCU implementation.
+       RCU-based detection of stalled CPUs is disabled.
+       Verbose stalled-CPUs detection is disabled.
+NR_IRQS:512 nr_irqs:512
+mpic: Setting up MPIC " OpenPIC  " version 1.2 at e0040000, max 1 CPUs
+mpic: ISU size: 80, shift: 7, mask: 7f
+mpic: Initializing for 80 sources
+clocksource: timebase mult[50cede6] shift[22] registered
+pid_max: default: 32768 minimum: 301
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
 
-> 
->  arch/microblaze/kernel/setup.c |    2
->  arch/powerpc/Kconfig           |    3
->  arch/powerpc/include/asm/irq.h |  270 ----------------
->  arch/powerpc/kernel/irq.c      |  659 --------------------------------
-> ------
->  include/linux/virq.h           |  302 ++++++++++++++++++
->  kernel/irq/Makefile            |    1
->  kernel/irq/virq.c              |  687
-> ++++++++++++++++++++++++++++++++++++++++
->  7 files changed, 995 insertions(+), 929 deletions(-)
->  create mode 100644 include/linux/virq.h
->  create mode 100644 kernel/irq/virq.c
-> 
-> diff --git a/arch/microblaze/kernel/setup.c
-> b/arch/microblaze/kernel/setup.c
-> index f5f7688..39cf20d 100644
-> --- a/arch/microblaze/kernel/setup.c
-> +++ b/arch/microblaze/kernel/setup.c
-> @@ -51,8 +51,6 @@ void __init setup_arch(char **cmdline_p)
-> 
->  	unflatten_device_tree();
-> 
-> -	/* NOTE I think that this function is not necessary to call */
-> -	/* irq_early_init(); */
->  	setup_cpuinfo();
-> 
->  	microblaze_cache_init();
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 631e5a0..cc06e59 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -146,6 +146,9 @@ config EARLY_PRINTK
->  	bool
->  	default y
-> 
-> +config VIRQ
-> +	def_bool y
-> +
->  config COMPAT
->  	bool
->  	default y if PPC64
-> diff --git a/arch/powerpc/include/asm/irq.h
-> b/arch/powerpc/include/asm/irq.h
-> index 67ab5fb..6dea0cb 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -17,10 +17,6 @@
->  #include <asm/atomic.h>
-> 
-> 
-> -/* Define a way to iterate across irqs. */
-> -#define for_each_irq(i) \
-> -	for ((i) = 0; (i) < NR_IRQS; ++(i))
-> -
->  extern atomic_t ppc_n_lost_interrupts;
-> 
->  /* This number is used when no interrupt has been assigned */
-> @@ -41,270 +37,6 @@ extern atomic_t ppc_n_lost_interrupts;
->  /* Same thing, used by the generic IRQ code */
->  #define NR_IRQS_LEGACY		NUM_ISA_INTERRUPTS
-> 
-> -/* This type is the placeholder for a hardware interrupt number. It
-> has to
-> - * be big enough to enclose whatever representation is used by a given
-> - * platform.
-> - */
-> -typedef unsigned long irq_hw_number_t;
-> -
-> -/* Interrupt controller "host" data structure. This could be defined
-> as a
-> - * irq domain controller. That is, it handles the mapping between
-> hardware
-> - * and virtual interrupt numbers for a given interrupt domain. The
-> host
-> - * structure is generally created by the PIC code for a given PIC
-> instance
-> - * (though a host can cover more than one PIC if they have a flat
-> number
-> - * model). It's the host callbacks that are responsible for setting
-> the
-> - * irq_chip on a given irq_desc after it's been mapped.
-> - *
-> - * The host code and data structures are fairly agnostic to the fact
-> that
-> - * we use an open firmware device-tree. We do have references to
-> struct
-> - * device_node in two places: in irq_find_host() to find the host
-> matching
-> - * a given interrupt controller node, and of course as an argument to
-> its
-> - * counterpart host->ops->match() callback. However, those are treated
-> as
-> - * generic pointers by the core and the fact that it's actually a
-> device-node
-> - * pointer is purely a convention between callers and implementation.
-> This
-> - * code could thus be used on other architectures by replacing those
-> two
-> - * by some sort of arch-specific void * "token" used to identify
-> interrupt
-> - * controllers.
-> - */
-> -struct irq_host;
-> -struct radix_tree_root;
-> -
-> -/* Functions below are provided by the host and called whenever a new
-> mapping
-> - * is created or an old mapping is disposed. The host can then proceed
-> to
-> - * whatever internal data structures management is required. It also
-> needs
-> - * to setup the irq_desc when returning from map().
-> - */
-> -struct irq_host_ops {
-> -	/* Match an interrupt controller device node to a host, returns
-> -	 * 1 on a match
-> -	 */
-> -	int (*match)(struct irq_host *h, struct device_node *node);
-> -
-> -	/* Create or update a mapping between a virtual irq number and a
-> hw
-> -	 * irq number. This is called only once for a given mapping.
-> -	 */
-> -	int (*map)(struct irq_host *h, unsigned int virq, irq_hw_number_t
-> hw);
-> -
-> -	/* Dispose of such a mapping */
-> -	void (*unmap)(struct irq_host *h, unsigned int virq);
-> -
-> -	/* Update of such a mapping  */
-> -	void (*remap)(struct irq_host *h, unsigned int virq,
-> irq_hw_number_t hw);
-> -
-> -	/* Translate device-tree interrupt specifier from raw format
-> coming
-> -	 * from the firmware to a irq_hw_number_t (interrupt line number)
-> and
-> -	 * type (sense) that can be passed to set_irq_type(). In the
-> absence
-> -	 * of this callback, irq_create_of_mapping() and
-> irq_of_parse_and_map()
-> -	 * will return the hw number in the first cell and IRQ_TYPE_NONE
-> for
-> -	 * the type (which amount to keeping whatever default value the
-> -	 * interrupt controller has for that line)
-> -	 */
-> -	int (*xlate)(struct irq_host *h, struct device_node *ctrler,
-> -		     const u32 *intspec, unsigned int intsize,
-> -		     irq_hw_number_t *out_hwirq, unsigned int *out_type);
-> -};
-> -
-> -struct irq_host {
-> -	struct list_head	link;
-> -
-> -	/* type of reverse mapping technique */
-> -	unsigned int		revmap_type;
-> -#define IRQ_HOST_MAP_LEGACY     0 /* legacy 8259, gets irqs 1..15 */
-> -#define IRQ_HOST_MAP_NOMAP	1 /* no fast reverse mapping */
-> -#define IRQ_HOST_MAP_LINEAR	2 /* linear map of interrupts */
-> -#define IRQ_HOST_MAP_TREE	3 /* radix tree */
-> -	union {
-> -		struct {
-> -			unsigned int size;
-> -			unsigned int *revmap;
-> -		} linear;
-> -		struct radix_tree_root tree;
-> -	} revmap_data;
-> -	struct irq_host_ops	*ops;
-> -	void			*host_data;
-> -	irq_hw_number_t		inval_irq;
-> -
-> -	/* Optional device node pointer */
-> -	struct device_node	*of_node;
-> -};
-> -
-> -/* The main irq map itself is an array of NR_IRQ entries containing
-> the
-> - * associate host and irq number. An entry with a host of NULL is
-> free.
-> - * An entry can be allocated if it's free, the allocator always then
-> sets
-> - * hwirq first to the host's invalid irq number and then fills ops.
-> - */
-> -struct irq_map_entry {
-> -	irq_hw_number_t	hwirq;
-> -	struct irq_host	*host;
-> -};
-> -
-> -extern struct irq_map_entry irq_map[NR_IRQS];
-> -
-> -extern irq_hw_number_t virq_to_hw(unsigned int virq);
-> -
-> -/**
-> - * irq_alloc_host - Allocate a new irq_host data structure
-> - * @of_node: optional device-tree node of the interrupt controller
-> - * @revmap_type: type of reverse mapping to use
-> - * @revmap_arg: for IRQ_HOST_MAP_LINEAR linear only: size of the map
-> - * @ops: map/unmap host callbacks
-> - * @inval_irq: provide a hw number in that host space that is always
-> invalid
-> - *
-> - * Allocates and initialize and irq_host structure. Note that in the
-> case of
-> - * IRQ_HOST_MAP_LEGACY, the map() callback will be called before this
-> returns
-> - * for all legacy interrupts except 0 (which is always the invalid irq
-> for
-> - * a legacy controller). For a IRQ_HOST_MAP_LINEAR, the map is
-> allocated by
-> - * this call as well. For a IRQ_HOST_MAP_TREE, the radix tree will be
-> allocated
-> - * later during boot automatically (the reverse mapping will use the
-> slow path
-> - * until that happens).
-> - */
-> -extern struct irq_host *irq_alloc_host(struct device_node *of_node,
-> -				       unsigned int revmap_type,
-> -				       unsigned int revmap_arg,
-> -				       struct irq_host_ops *ops,
-> -				       irq_hw_number_t inval_irq);
-> -
-> -
-> -/**
-> - * irq_find_host - Locates a host for a given device node
-> - * @node: device-tree node of the interrupt controller
-> - */
-> -extern struct irq_host *irq_find_host(struct device_node *node);
-> -
-> -
-> -/**
-> - * irq_set_default_host - Set a "default" host
-> - * @host: default host pointer
-> - *
-> - * For convenience, it's possible to set a "default" host that will be
-> used
-> - * whenever NULL is passed to irq_create_mapping(). It makes life
-> easier for
-> - * platforms that want to manipulate a few hard coded interrupt
-> numbers that
-> - * aren't properly represented in the device-tree.
-> - */
-> -extern void irq_set_default_host(struct irq_host *host);
-> -
-> -
-> -/**
-> - * irq_set_virq_count - Set the maximum number of virt irqs
-> - * @count: number of linux virtual irqs, capped with NR_IRQS
-> - *
-> - * This is mainly for use by platforms like iSeries who want to
-> program
-> - * the virtual irq number in the controller to avoid the reverse
-> mapping
-> - */
-> -extern void irq_set_virq_count(unsigned int count);
-> -
-> -
-> -/**
-> - * irq_create_mapping - Map a hardware interrupt into linux virq space
-> - * @host: host owning this hardware interrupt or NULL for default host
-> - * @hwirq: hardware irq number in that host space
-> - *
-> - * Only one mapping per hardware interrupt is permitted. Returns a
-> linux
-> - * virq number.
-> - * If the sense/trigger is to be specified, set_irq_type() should be
-> called
-> - * on the number returned from that call.
-> - */
-> -extern unsigned int irq_create_mapping(struct irq_host *host,
-> -				       irq_hw_number_t hwirq);
-> -
-> -
-> -/**
-> - * irq_dispose_mapping - Unmap an interrupt
-> - * @virq: linux virq number of the interrupt to unmap
-> - */
-> -extern void irq_dispose_mapping(unsigned int virq);
-> -
-> -/**
-> - * irq_find_mapping - Find a linux virq from an hw irq number.
-> - * @host: host owning this hardware interrupt
-> - * @hwirq: hardware irq number in that host space
-> - *
-> - * This is a slow path, for use by generic code. It's expected that an
-> - * irq controller implementation directly calls the appropriate low
-> level
-> - * mapping function.
-> - */
-> -extern unsigned int irq_find_mapping(struct irq_host *host,
-> -				     irq_hw_number_t hwirq);
-> -
-> -/**
-> - * irq_create_direct_mapping - Allocate a virq for direct mapping
-> - * @host: host to allocate the virq for or NULL for default host
-> - *
-> - * This routine is used for irq controllers which can choose the
-> hardware
-> - * interrupt numbers they generate. In such a case it's simplest to
-> use
-> - * the linux virq as the hardware interrupt number.
-> - */
-> -extern unsigned int irq_create_direct_mapping(struct irq_host *host);
-> -
-> -/**
-> - * irq_radix_revmap_insert - Insert a hw irq to linux virq number
-> mapping.
-> - * @host: host owning this hardware interrupt
-> - * @virq: linux irq number
-> - * @hwirq: hardware irq number in that host space
-> - *
-> - * This is for use by irq controllers that use a radix tree reverse
-> - * mapping for fast lookup.
-> - */
-> -extern void irq_radix_revmap_insert(struct irq_host *host, unsigned
-> int virq,
-> -				    irq_hw_number_t hwirq);
-> -
-> -/**
-> - * irq_radix_revmap_lookup - Find a linux virq from a hw irq number.
-> - * @host: host owning this hardware interrupt
-> - * @hwirq: hardware irq number in that host space
-> - *
-> - * This is a fast path, for use by irq controller code that uses radix
-> tree
-> - * revmaps
-> - */
-> -extern unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> -					    irq_hw_number_t hwirq);
-> -
-> -/**
-> - * irq_linear_revmap - Find a linux virq from a hw irq number.
-> - * @host: host owning this hardware interrupt
-> - * @hwirq: hardware irq number in that host space
-> - *
-> - * This is a fast path, for use by irq controller code that uses
-> linear
-> - * revmaps. It does fallback to the slow path if the revmap doesn't
-> exist
-> - * yet and will create the revmap entry with appropriate locking
-> - */
-> -
-> -extern unsigned int irq_linear_revmap(struct irq_host *host,
-> -				      irq_hw_number_t hwirq);
-> -
-> -
-> -
-> -/**
-> - * irq_alloc_virt - Allocate virtual irq numbers
-> - * @host: host owning these new virtual irqs
-> - * @count: number of consecutive numbers to allocate
-> - * @hint: pass a hint number, the allocator will try to use a 1:1
-> mapping
-> - *
-> - * This is a low level function that is used internally by
-> irq_create_mapping()
-> - * and that can be used by some irq controllers implementations for
-> things
-> - * like allocating ranges of numbers for MSIs. The revmaps are left
-> untouched.
-> - */
-> -extern unsigned int irq_alloc_virt(struct irq_host *host,
-> -				   unsigned int count,
-> -				   unsigned int hint);
-> -
-> -/**
-> - * irq_free_virt - Free virtual irq numbers
-> - * @virq: virtual irq number of the first interrupt to free
-> - * @count: number of interrupts to free
-> - *
-> - * This function is the opposite of irq_alloc_virt. It will not clear
-> reverse
-> - * maps, this should be done previously by unmap'ing the interrupt. In
-> fact,
-> - * all interrupts covered by the range being freed should have been
-> unmapped
-> - * prior to calling this.
-> - */
-> -extern void irq_free_virt(unsigned int virq, unsigned int count);
-> -
-> -/**
-> - * irq_early_init - Init irq remapping subsystem
-> - */
-> -extern void irq_early_init(void);
-> -
->  static __inline__ int irq_canonicalize(int irq)
->  {
->  	return irq;
-> @@ -342,5 +74,7 @@ extern int call_handle_irq(int irq, void *p1,
->  			   struct thread_info *tp, void *func);
->  extern void do_IRQ(struct pt_regs *regs);
-> 
-> +#include <linux/virq.h>
-> +
->  #endif /* _ASM_IRQ_H */
->  #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 4a65386..86d8e42 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -523,553 +523,6 @@ void do_softirq(void)
->  }
-> 
-> 
-> -/*
-> - * IRQ controller and virtual interrupts
-> - */
-> -
-> -static LIST_HEAD(irq_hosts);
-> -static DEFINE_RAW_SPINLOCK(irq_big_lock);
-> -static unsigned int revmap_trees_allocated;
-> -static DEFINE_MUTEX(revmap_trees_mutex);
-> -struct irq_map_entry irq_map[NR_IRQS];
-> -static unsigned int irq_virq_count = NR_IRQS;
-> -static struct irq_host *irq_default_host;
-> -
-> -irq_hw_number_t virq_to_hw(unsigned int virq)
-> -{
-> -	return irq_map[virq].hwirq;
-> -}
-> -EXPORT_SYMBOL_GPL(virq_to_hw);
-> -
-> -static int default_irq_host_match(struct irq_host *h, struct
-> device_node *np)
-> -{
-> -	return h->of_node != NULL && h->of_node == np;
-> -}
-> -
-> -struct irq_host *irq_alloc_host(struct device_node *of_node,
-> -				unsigned int revmap_type,
-> -				unsigned int revmap_arg,
-> -				struct irq_host_ops *ops,
-> -				irq_hw_number_t inval_irq)
-> -{
-> -	struct irq_host *host;
-> -	unsigned int size = sizeof(struct irq_host);
-> -	unsigned int i;
-> -	unsigned int *rmap;
-> -	unsigned long flags;
-> -
-> -	/* Allocate structure and revmap table if using linear mapping */
-> -	if (revmap_type == IRQ_HOST_MAP_LINEAR)
-> -		size += revmap_arg * sizeof(unsigned int);
-> -	host = zalloc_maybe_bootmem(size, GFP_KERNEL);
-> -	if (host == NULL)
-> -		return NULL;
-> -
-> -	/* Fill structure */
-> -	host->revmap_type = revmap_type;
-> -	host->inval_irq = inval_irq;
-> -	host->ops = ops;
-> -	host->of_node = of_node_get(of_node);
-> -
-> -	if (host->ops->match == NULL)
-> -		host->ops->match = default_irq_host_match;
-> -
-> -	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> -
-> -	/* If it's a legacy controller, check for duplicates and
-> -	 * mark it as allocated (we use irq 0 host pointer for that
-> -	 */
-> -	if (revmap_type == IRQ_HOST_MAP_LEGACY) {
-> -		if (irq_map[0].host != NULL) {
-> -			raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> -			/* If we are early boot, we can't free the
-structure,
-> -			 * too bad...
-> -			 * this will be fixed once slab is made available
-> early
-> -			 * instead of the current cruft
-> -			 */
-> -			if (mem_init_done)
-> -				kfree(host);
-> -			return NULL;
-> -		}
-> -		irq_map[0].host = host;
-> -	}
-> -
-> -	list_add(&host->link, &irq_hosts);
-> -	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> -
-> -	/* Additional setups per revmap type */
-> -	switch(revmap_type) {
-> -	case IRQ_HOST_MAP_LEGACY:
-> -		/* 0 is always the invalid number for legacy */
-> -		host->inval_irq = 0;
-> -		/* setup us as the host for all legacy interrupts */
-> -		for (i = 1; i < NUM_ISA_INTERRUPTS; i++) {
-> -			irq_map[i].hwirq = i;
-> -			smp_wmb();
-> -			irq_map[i].host = host;
-> -			smp_wmb();
-> -
-> -			/* Clear norequest flags */
-> -			irq_to_desc(i)->status &= ~IRQ_NOREQUEST;
-> -
-> -			/* Legacy flags are left to default at this point,
-> -			 * one can then use irq_create_mapping() to
-> -			 * explicitly change them
-> -			 */
-> -			ops->map(host, i, i);
-> -		}
-> -		break;
-> -	case IRQ_HOST_MAP_LINEAR:
-> -		rmap = (unsigned int *)(host + 1);
-> -		for (i = 0; i < revmap_arg; i++)
-> -			rmap[i] = NO_IRQ;
-> -		host->revmap_data.linear.size = revmap_arg;
-> -		smp_wmb();
-> -		host->revmap_data.linear.revmap = rmap;
-> -		break;
-> -	default:
-> -		break;
-> -	}
-> -
-> -	pr_debug("irq: Allocated host of type %d @0x%p\n", revmap_type,
-> host);
-> -
-> -	return host;
-> -}
-> -
-> -struct irq_host *irq_find_host(struct device_node *node)
-> -{
-> -	struct irq_host *h, *found = NULL;
-> -	unsigned long flags;
-> -
-> -	/* We might want to match the legacy controller last since
-> -	 * it might potentially be set to match all interrupts in
-> -	 * the absence of a device node. This isn't a problem so far
-> -	 * yet though...
-> -	 */
-> -	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> -	list_for_each_entry(h, &irq_hosts, link)
-> -		if (h->ops->match(h, node)) {
-> -			found = h;
-> -			break;
-> -		}
-> -	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> -	return found;
-> -}
-> -EXPORT_SYMBOL_GPL(irq_find_host);
-> -
-> -void irq_set_default_host(struct irq_host *host)
-> -{
-> -	pr_debug("irq: Default host set to @0x%p\n", host);
-> -
-> -	irq_default_host = host;
-> -}
-> -
-> -void irq_set_virq_count(unsigned int count)
-> -{
-> -	pr_debug("irq: Trying to set virq count to %d\n", count);
-> -
-> -	BUG_ON(count < NUM_ISA_INTERRUPTS);
-> -	if (count < NR_IRQS)
-> -		irq_virq_count = count;
-> -}
-> -
-> -static int irq_setup_virq(struct irq_host *host, unsigned int virq,
-> -			    irq_hw_number_t hwirq)
-> -{
-> -	struct irq_desc *desc;
-> -
-> -	desc = irq_to_desc_alloc_node(virq, 0);
-> -	if (!desc) {
-> -		pr_debug("irq: -> allocating desc failed\n");
-> -		goto error;
-> -	}
-> -
-> -	/* Clear IRQ_NOREQUEST flag */
-> -	desc->status &= ~IRQ_NOREQUEST;
-> -
-> -	/* map it */
-> -	smp_wmb();
-> -	irq_map[virq].hwirq = hwirq;
-> -	smp_mb();
-> -
-> -	if (host->ops->map(host, virq, hwirq)) {
-> -		pr_debug("irq: -> mapping failed, freeing\n");
-> -		goto error;
-> -	}
-> -
-> -	return 0;
-> -
-> -error:
-> -	irq_free_virt(virq, 1);
-> -	return -1;
-> -}
-> -
-> -unsigned int irq_create_direct_mapping(struct irq_host *host)
-> -{
-> -	unsigned int virq;
-> -
-> -	if (host == NULL)
-> -		host = irq_default_host;
-> -
-> -	BUG_ON(host == NULL);
-> -	WARN_ON(host->revmap_type != IRQ_HOST_MAP_NOMAP);
-> -
-> -	virq = irq_alloc_virt(host, 1, 0);
-> -	if (virq == NO_IRQ) {
-> -		pr_debug("irq: create_direct virq allocation failed\n");
-> -		return NO_IRQ;
-> -	}
-> -
-> -	pr_debug("irq: create_direct obtained virq %d\n", virq);
-> -
-> -	if (irq_setup_virq(host, virq, virq))
-> -		return NO_IRQ;
-> -
-> -	return virq;
-> -}
-> -
-> -unsigned int irq_create_mapping(struct irq_host *host,
-> -				irq_hw_number_t hwirq)
-> -{
-> -	unsigned int virq, hint;
-> -
-> -	pr_debug("irq: irq_create_mapping(0x%p, 0x%lx)\n", host, hwirq);
-> -
-> -	/* Look for default host if nececssary */
-> -	if (host == NULL)
-> -		host = irq_default_host;
-> -	if (host == NULL) {
-> -		printk(KERN_WARNING "irq_create_mapping called for"
-> -		       " NULL host, hwirq=%lx\n", hwirq);
-> -		WARN_ON(1);
-> -		return NO_IRQ;
-> -	}
-> -	pr_debug("irq: -> using host @%p\n", host);
-> -
-> -	/* Check if mapping already exist, if it does, call
-> -	 * host->ops->map() to update the flags
-> -	 */
-> -	virq = irq_find_mapping(host, hwirq);
-> -	if (virq != NO_IRQ) {
-> -		if (host->ops->remap)
-> -			host->ops->remap(host, virq, hwirq);
-> -		pr_debug("irq: -> existing mapping on virq %d\n", virq);
-> -		return virq;
-> -	}
-> -
-> -	/* Get a virtual interrupt number */
-> -	if (host->revmap_type == IRQ_HOST_MAP_LEGACY) {
-> -		/* Handle legacy */
-> -		virq = (unsigned int)hwirq;
-> -		if (virq == 0 || virq >= NUM_ISA_INTERRUPTS)
-> -			return NO_IRQ;
-> -		return virq;
-> -	} else {
-> -		/* Allocate a virtual interrupt number */
-> -		hint = hwirq % irq_virq_count;
-> -		virq = irq_alloc_virt(host, 1, hint);
-> -		if (virq == NO_IRQ) {
-> -			pr_debug("irq: -> virq allocation failed\n");
-> -			return NO_IRQ;
-> -		}
-> -	}
-> -
-> -	if (irq_setup_virq(host, virq, hwirq))
-> -		return NO_IRQ;
-> -
-> -	printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtual irq
-> %u\n",
-> -		hwirq, host->of_node ? host->of_node->full_name : "null",
-> virq);
-> -
-> -	return virq;
-> -}
-> -EXPORT_SYMBOL_GPL(irq_create_mapping);
-> -
-> -unsigned int irq_create_of_mapping(struct device_node *controller,
-> -				   const u32 *intspec, unsigned int intsize)
-> -{
-> -	struct irq_host *host;
-> -	irq_hw_number_t hwirq;
-> -	unsigned int type = IRQ_TYPE_NONE;
-> -	unsigned int virq;
-> -
-> -	if (controller == NULL)
-> -		host = irq_default_host;
-> -	else
-> -		host = irq_find_host(controller);
-> -	if (host == NULL) {
-> -		printk(KERN_WARNING "irq: no irq host found for %s !\n",
-> -		       controller->full_name);
-> -		return NO_IRQ;
-> -	}
-> -
-> -	/* If host has no translation, then we assume interrupt line */
-> -	if (host->ops->xlate == NULL)
-> -		hwirq = intspec[0];
-> -	else {
-> -		if (host->ops->xlate(host, controller, intspec, intsize,
-> -				     &hwirq, &type))
-> -			return NO_IRQ;
-> -	}
-> -
-> -	/* Create mapping */
-> -	virq = irq_create_mapping(host, hwirq);
-> -	if (virq == NO_IRQ)
-> -		return virq;
-> -
-> -	/* Set type if specified and different than the current one */
-> -	if (type != IRQ_TYPE_NONE &&
-> -	    type != (irq_to_desc(virq)->status & IRQF_TRIGGER_MASK))
-> -		set_irq_type(virq, type);
-> -	return virq;
-> -}
-> -EXPORT_SYMBOL_GPL(irq_create_of_mapping);
-> -
-> -void irq_dispose_mapping(unsigned int virq)
-> -{
-> -	struct irq_host *host;
-> -	irq_hw_number_t hwirq;
-> -
-> -	if (virq == NO_IRQ)
-> -		return;
-> -
-> -	host = irq_map[virq].host;
-> -	WARN_ON (host == NULL);
-> -	if (host == NULL)
-> -		return;
-> -
-> -	/* Never unmap legacy interrupts */
-> -	if (host->revmap_type == IRQ_HOST_MAP_LEGACY)
-> -		return;
-> -
-> -	/* remove chip and handler */
-> -	set_irq_chip_and_handler(virq, NULL, NULL);
-> -
-> -	/* Make sure it's completed */
-> -	synchronize_irq(virq);
-> -
-> -	/* Tell the PIC about it */
-> -	if (host->ops->unmap)
-> -		host->ops->unmap(host, virq);
-> -	smp_mb();
-> -
-> -	/* Clear reverse map */
-> -	hwirq = irq_map[virq].hwirq;
-> -	switch(host->revmap_type) {
-> -	case IRQ_HOST_MAP_LINEAR:
-> -		if (hwirq < host->revmap_data.linear.size)
-> -			host->revmap_data.linear.revmap[hwirq] = NO_IRQ;
-> -		break;
-> -	case IRQ_HOST_MAP_TREE:
-> -		/*
-> -		 * Check if radix tree allocated yet, if not then nothing
-> to
-> -		 * remove.
-> -		 */
-> -		smp_rmb();
-> -		if (revmap_trees_allocated < 1)
-> -			break;
-> -		mutex_lock(&revmap_trees_mutex);
-> -		radix_tree_delete(&host->revmap_data.tree, hwirq);
-> -		mutex_unlock(&revmap_trees_mutex);
-> -		break;
-> -	}
-> -
-> -	/* Destroy map */
-> -	smp_mb();
-> -	irq_map[virq].hwirq = host->inval_irq;
-> -
-> -	/* Set some flags */
-> -	irq_to_desc(virq)->status |= IRQ_NOREQUEST;
-> -
-> -	/* Free it */
-> -	irq_free_virt(virq, 1);
-> -}
-> -EXPORT_SYMBOL_GPL(irq_dispose_mapping);
-> -
-> -unsigned int irq_find_mapping(struct irq_host *host,
-> -			      irq_hw_number_t hwirq)
-> -{
-> -	unsigned int i;
-> -	unsigned int hint = hwirq % irq_virq_count;
-> -
-> -	/* Look for default host if nececssary */
-> -	if (host == NULL)
-> -		host = irq_default_host;
-> -	if (host == NULL)
-> -		return NO_IRQ;
-> -
-> -	/* legacy -> bail early */
-> -	if (host->revmap_type == IRQ_HOST_MAP_LEGACY)
-> -		return hwirq;
-> -
-> -	/* Slow path does a linear search of the map */
-> -	if (hint < NUM_ISA_INTERRUPTS)
-> -		hint = NUM_ISA_INTERRUPTS;
-> -	i = hint;
-> -	do  {
-> -		if (irq_map[i].host == host &&
-> -		    irq_map[i].hwirq == hwirq)
-> -			return i;
-> -		i++;
-> -		if (i >= irq_virq_count)
-> -			i = NUM_ISA_INTERRUPTS;
-> -	} while(i != hint);
-> -	return NO_IRQ;
-> -}
-> -EXPORT_SYMBOL_GPL(irq_find_mapping);
-> -
-> -
-> -unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> -				     irq_hw_number_t hwirq)
-> -{
-> -	struct irq_map_entry *ptr;
-> -	unsigned int virq;
-> -
-> -	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-> -
-> -	/*
-> -	 * Check if the radix tree exists and has bee initialized.
-> -	 * If not, we fallback to slow mode
-> -	 */
-> -	if (revmap_trees_allocated < 2)
-> -		return irq_find_mapping(host, hwirq);
-> -
-> -	/* Now try to resolve */
-> -	/*
-> -	 * No rcu_read_lock(ing) needed, the ptr returned can't go under
-> us
-> -	 * as it's referencing an entry in the static irq_map table.
-> -	 */
-> -	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-> -
-> -	/*
-> -	 * If found in radix tree, then fine.
-> -	 * Else fallback to linear lookup - this should not happen in
-> practice
-> -	 * as it means that we failed to insert the node in the radix
-> tree.
-> -	 */
-> -	if (ptr)
-> -		virq = ptr - irq_map;
-> -	else
-> -		virq = irq_find_mapping(host, hwirq);
-> -
-> -	return virq;
-> -}
-> -
-> -void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
-> -			     irq_hw_number_t hwirq)
-> -{
-> -
-> -	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-> -
-> -	/*
-> -	 * Check if the radix tree exists yet.
-> -	 * If not, then the irq will be inserted into the tree when it
-> gets
-> -	 * initialized.
-> -	 */
-> -	smp_rmb();
-> -	if (revmap_trees_allocated < 1)
-> -		return;
-> -
-> -	if (virq != NO_IRQ) {
-> -		mutex_lock(&revmap_trees_mutex);
-> -		radix_tree_insert(&host->revmap_data.tree, hwirq,
-> -				  &irq_map[virq]);
-> -		mutex_unlock(&revmap_trees_mutex);
-> -	}
-> -}
-> -
-> -unsigned int irq_linear_revmap(struct irq_host *host,
-> -			       irq_hw_number_t hwirq)
-> -{
-> -	unsigned int *revmap;
-> -
-> -	WARN_ON(host->revmap_type != IRQ_HOST_MAP_LINEAR);
-> -
-> -	/* Check revmap bounds */
-> -	if (unlikely(hwirq >= host->revmap_data.linear.size))
-> -		return irq_find_mapping(host, hwirq);
-> -
-> -	/* Check if revmap was allocated */
-> -	revmap = host->revmap_data.linear.revmap;
-> -	if (unlikely(revmap == NULL))
-> -		return irq_find_mapping(host, hwirq);
-> -
-> -	/* Fill up revmap with slow path if no mapping found */
-> -	if (unlikely(revmap[hwirq] == NO_IRQ))
-> -		revmap[hwirq] = irq_find_mapping(host, hwirq);
-> -
-> -	return revmap[hwirq];
-> -}
-> -
-> -unsigned int irq_alloc_virt(struct irq_host *host,
-> -			    unsigned int count,
-> -			    unsigned int hint)
-> -{
-> -	unsigned long flags;
-> -	unsigned int i, j, found = NO_IRQ;
-> -
-> -	if (count == 0 || count > (irq_virq_count - NUM_ISA_INTERRUPTS))
-> -		return NO_IRQ;
-> -
-> -	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> -
-> -	/* Use hint for 1 interrupt if any */
-> -	if (count == 1 && hint >= NUM_ISA_INTERRUPTS &&
-> -	    hint < irq_virq_count && irq_map[hint].host == NULL) {
-> -		found = hint;
-> -		goto hint_found;
-> -	}
-> -
-> -	/* Look for count consecutive numbers in the allocatable
-> -	 * (non-legacy) space
-> -	 */
-> -	for (i = NUM_ISA_INTERRUPTS, j = 0; i < irq_virq_count; i++) {
-> -		if (irq_map[i].host != NULL)
-> -			j = 0;
-> -		else
-> -			j++;
-> -
-> -		if (j == count) {
-> -			found = i - count + 1;
-> -			break;
-> -		}
-> -	}
-> -	if (found == NO_IRQ) {
-> -		raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> -		return NO_IRQ;
-> -	}
-> - hint_found:
-> -	for (i = found; i < (found + count); i++) {
-> -		irq_map[i].hwirq = host->inval_irq;
-> -		smp_wmb();
-> -		irq_map[i].host = host;
-> -	}
-> -	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> -	return found;
-> -}
-> -
-> -void irq_free_virt(unsigned int virq, unsigned int count)
-> -{
-> -	unsigned long flags;
-> -	unsigned int i;
-> -
-> -	WARN_ON (virq < NUM_ISA_INTERRUPTS);
-> -	WARN_ON (count == 0 || (virq + count) > irq_virq_count);
-> -
-> -	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> -	for (i = virq; i < (virq + count); i++) {
-> -		struct irq_host *host;
-> -
-> -		if (i < NUM_ISA_INTERRUPTS ||
-> -		    (virq + count) > irq_virq_count)
-> -			continue;
-> -
-> -		host = irq_map[i].host;
-> -		irq_map[i].hwirq = host->inval_irq;
-> -		smp_wmb();
-> -		irq_map[i].host = NULL;
-> -	}
-> -	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> -}
-> -
->  int arch_early_irq_init(void)
->  {
->  	struct irq_desc *desc;
-> @@ -1090,118 +543,6 @@ int arch_init_chip_data(struct irq_desc *desc,
-> int node)
->  	return 0;
->  }
-> 
-> -/* We need to create the radix trees late */
-> -static int irq_late_init(void)
-> -{
-> -	struct irq_host *h;
-> -	unsigned int i;
-> -
-> -	/*
-> -	 * No mutual exclusion with respect to accessors of the tree is
-> needed
-> -	 * here as the synchronization is done via the state variable
-> -	 * revmap_trees_allocated.
-> -	 */
-> -	list_for_each_entry(h, &irq_hosts, link) {
-> -		if (h->revmap_type == IRQ_HOST_MAP_TREE)
-> -			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_KERNEL);
-> -	}
-> -
-> -	/*
-> -	 * Make sure the radix trees inits are visible before setting
-> -	 * the flag
-> -	 */
-> -	smp_wmb();
-> -	revmap_trees_allocated = 1;
-> -
-> -	/*
-> -	 * Insert the reverse mapping for those interrupts already
-> present
-> -	 * in irq_map[].
-> -	 */
-> -	mutex_lock(&revmap_trees_mutex);
-> -	for (i = 0; i < irq_virq_count; i++) {
-> -		if (irq_map[i].host &&
-> -		    (irq_map[i].host->revmap_type == IRQ_HOST_MAP_TREE))
-> -
-radix_tree_insert(&irq_map[i].host->revmap_data.tree,
-> -					  irq_map[i].hwirq, &irq_map[i]);
-> -	}
-> -	mutex_unlock(&revmap_trees_mutex);
-> -
-> -	/*
-> -	 * Make sure the radix trees insertions are visible before
-> setting
-> -	 * the flag
-> -	 */
-> -	smp_wmb();
-> -	revmap_trees_allocated = 2;
-> -
-> -	return 0;
-> -}
-> -arch_initcall(irq_late_init);
-> -
-> -#ifdef CONFIG_VIRQ_DEBUG
-> -static int virq_debug_show(struct seq_file *m, void *private)
-> -{
-> -	unsigned long flags;
-> -	struct irq_desc *desc;
-> -	const char *p;
-> -	char none[] = "none";
-> -	int i;
-> -
-> -	seq_printf(m, "%-5s  %-7s  %-15s  %s\n", "virq", "hwirq",
-> -		      "chip name", "host name");
-> -
-> -	for (i = 1; i < nr_irqs; i++) {
-> -		desc = irq_to_desc(i);
-> -		if (!desc)
-> -			continue;
-> -
-> -		raw_spin_lock_irqsave(&desc->lock, flags);
-> -
-> -		if (desc->action && desc->action->handler) {
-> -			seq_printf(m, "%5d  ", i);
-> -			seq_printf(m, "0x%05lx  ", virq_to_hw(i));
-> -
-> -			if (desc->chip && desc->chip->name)
-> -				p = desc->chip->name;
-> -			else
-> -				p = none;
-> -			seq_printf(m, "%-15s  ", p);
-> -
-> -			if (irq_map[i].host && irq_map[i].host->of_node)
-> -				p = irq_map[i].host->of_node->full_name;
-> -			else
-> -				p = none;
-> -			seq_printf(m, "%s\n", p);
-> -		}
-> -
-> -		raw_spin_unlock_irqrestore(&desc->lock, flags);
-> -	}
-> -
-> -	return 0;
-> -}
-> -
-> -static int virq_debug_open(struct inode *inode, struct file *file)
-> -{
-> -	return single_open(file, virq_debug_show, inode->i_private);
-> -}
-> -
-> -static const struct file_operations virq_debug_fops = {
-> -	.open = virq_debug_open,
-> -	.read = seq_read,
-> -	.llseek = seq_lseek,
-> -	.release = single_release,
-> -};
-> -
-> -static int __init irq_debugfs_init(void)
-> -{
-> -	if (debugfs_create_file("virq_mapping", S_IRUGO,
-> powerpc_debugfs_root,
-> -				 NULL, &virq_debug_fops) == NULL)
-> -		return -ENOMEM;
-> -
-> -	return 0;
-> -}
-> -__initcall(irq_debugfs_init);
-> -#endif /* CONFIG_VIRQ_DEBUG */
-> -
->  #ifdef CONFIG_PPC64
->  static int __init setup_noirqdistrib(char *str)
->  {
-> diff --git a/include/linux/virq.h b/include/linux/virq.h
-> new file mode 100644
-> index 0000000..06035ef
-> --- /dev/null
-> +++ b/include/linux/virq.h
-> @@ -0,0 +1,302 @@
-> +/*
-> + * Virtual IRQ infrastructure
-> + *
-> + * Virtual IRQs provides support for dynamically allocating ranges of
-> IRQ
-> + * numbers for use by interrupt controllers.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of version 2 of the GNU General Public
-> + * License as published by the Free Software Foundation.
-> + */
-> +
-> +
-> +#ifdef __KERNEL__
-> +#ifndef _LINUX_VIRQ_H
-> +#define _LINUX_VIRQ_H
-> +
-> +#include <asm/irq.h>
-> +
-> +#ifdef CONFIG_VIRQ
-> +
-> +/* Define a way to iterate across irqs. */
-> +#define for_each_irq(i) \
-> +	for ((i) = 0; (i) < NR_IRQS; ++(i))
-> +
-> +/* This type is the placeholder for a hardware interrupt number. It
-> has to
-> + * be big enough to enclose whatever representation is used by a given
-> + * platform.
-> + */
-> +typedef unsigned long irq_hw_number_t;
-> +
-> +/* Interrupt controller "host" data structure. This could be defined
-> as a
-> + * irq domain controller. That is, it handles the mapping between
-> hardware
-> + * and virtual interrupt numbers for a given interrupt domain. The
-> host
-> + * structure is generally created by the PIC code for a given PIC
-> instance
-> + * (though a host can cover more than one PIC if they have a flat
-> number
-> + * model). It's the host callbacks that are responsible for setting
-> the
-> + * irq_chip on a given irq_desc after it's been mapped.
-> + *
-> + * The host code and data structures are fairly agnostic to the fact
-> that
-> + * we use an open firmware device-tree. We do have references to
-> struct
-> + * device_node in two places: in irq_find_host() to find the host
-> matching
-> + * a given interrupt controller node, and of course as an argument to
-> its
-> + * counterpart host->ops->match() callback. However, those are treated
-> as
-> + * generic pointers by the core and the fact that it's actually a
-> device-node
-> + * pointer is purely a convention between callers and implementation.
-> This
-> + * code could thus be used on other architectures by replacing those
-> two
-> + * by some sort of arch-specific void * "token" used to identify
-> interrupt
-> + * controllers.
-> + */
-> +struct irq_host;
-> +struct radix_tree_root;
-> +struct device_node;
-> +
-> +/**
-> + * struct irq_host_ops - operations for managing per-domain hw irq
-> numbers
-> + *
-> + * Functions below are provided by the host and called whenever a new
-> mapping
-> + * is created or an old mapping is disposed. The host can then proceed
-> to
-> + * whatever internal data structures management is required. It also
-> needs
-> + * to setup the irq_desc when returning from map().
-> + */
-> +struct irq_host_ops {
-> +	/* Match an interrupt controller device node to a host, returns
-> +	 * 1 on a match
-> +	 */
-> +	int (*match)(struct irq_host *h, struct device_node *node);
-> +
-> +	/* Create or update a mapping between a virtual irq number and a
-> hw
-> +	 * irq number. This is called only once for a given mapping.
-> +	 */
-> +	int (*map)(struct irq_host *h, unsigned int virq, irq_hw_number_t
-> hw);
-> +
-> +	/* Dispose of such a mapping */
-> +	void (*unmap)(struct irq_host *h, unsigned int virq);
-> +
-> +	/* Update of such a mapping  */
-> +	void (*remap)(struct irq_host *h, unsigned int virq,
-> irq_hw_number_t hw);
-> +
-> +	/* Translate device-tree interrupt specifier from raw format
-> coming
-> +	 * from the firmware to a irq_hw_number_t (interrupt line number)
-> and
-> +	 * type (sense) that can be passed to set_irq_type(). In the
-> absence
-> +	 * of this callback, irq_create_of_mapping() and
-> irq_of_parse_and_map()
-> +	 * will return the hw number in the first cell and IRQ_TYPE_NONE
-> for
-> +	 * the type (which amount to keeping whatever default value the
-> +	 * interrupt controller has for that line)
-> +	 */
-> +	int (*xlate)(struct irq_host *h, struct device_node *ctrler,
-> +		     const u32 *intspec, unsigned int intsize,
-> +		     irq_hw_number_t *out_hwirq, unsigned int *out_type);
-> +};
-> +
-> +/**
-> + * struct irq_host - a single irq domain. maps hw irq numbers to Linux
-> irq.
-> + * @link: entry in global irq_host list
-> + * @revmap_type: Method of reverse mapping hwirq to Linux irq number
-> + * @revmap_data: reverse map data
-> + * @ops: irq domain operations (documented above)
-> + * @host_data: irq controller driver data; core does not touch this
-> pointer
-> + * @inval_irq: hw irq number used for unassigned virqs
-> + * @of_node: Optional pointer to the irq controllers device tree node.
-> + *
-> + * One irq_host is allocated for each range (domain) of Linux irq
-> numbers
-> + * allocated.  Typically, one irq_host is allocated per controller,
-> but it
-> + * is perfectly valid to manage multiple controllers with a single
-> irq_host
-> + * instance if need be.
-> + */
-> +struct irq_host {
-> +	struct list_head	link;
-> +
-> +	/* type of reverse mapping technique */
-> +	unsigned int		revmap_type;
-> +#define IRQ_HOST_MAP_LEGACY     0 /* legacy 8259, gets irqs 1..15 */
-> +#define IRQ_HOST_MAP_NOMAP	1 /* no fast reverse mapping */
-> +#define IRQ_HOST_MAP_LINEAR	2 /* linear map of interrupts */
-> +#define IRQ_HOST_MAP_TREE	3 /* radix tree */
-> +	union {
-> +		struct {
-> +			unsigned int size;
-> +			unsigned int *revmap;
-> +		} linear;
-> +		struct radix_tree_root tree;
-> +	} revmap_data;
-> +	struct irq_host_ops	*ops;
-> +	void			*host_data;
-> +	irq_hw_number_t		inval_irq;
-> +
-> +	/* Optional device node pointer */
-> +	struct device_node	*of_node;
-> +};
-> +
-> +/**
-> + * irq_alloc_host() - Allocate a new irq_host data structure
-> + * @of_node: optional device-tree node of the interrupt controller
-> + * @revmap_type: type of reverse mapping to use
-> + * @revmap_arg: for IRQ_HOST_MAP_LINEAR linear only: size of the map
-> + * @ops: map/unmap host callbacks
-> + * @inval_irq: provide a hw number in that host space that is always
-> invalid
-> + *
-> + * Allocates and initialize and irq_host structure. Note that in the
-> case of
-> + * IRQ_HOST_MAP_LEGACY, the map() callback will be called before this
-> returns
-> + * for all legacy interrupts except 0 (which is always the invalid irq
-> for
-> + * a legacy controller). For a IRQ_HOST_MAP_LINEAR, the map is
-> allocated by
-> + * this call as well. For a IRQ_HOST_MAP_TREE, the radix tree will be
-> allocated
-> + * later during boot automatically (the reverse mapping will use the
-> slow path
-> + * until that happens).
-> + */
-> +extern struct irq_host *irq_alloc_host(struct device_node *of_node,
-> +				       unsigned int revmap_type,
-> +				       unsigned int revmap_arg,
-> +				       struct irq_host_ops *ops,
-> +				       irq_hw_number_t inval_irq);
-> +
-> +/* The main irq map itself is an array of NR_IRQ entries containing
-> the
-> + * associate host and irq number. An entry with a host of NULL is
-> free.
-> + * An entry can be allocated if it's free, the allocator always then
-> sets
-> + * hwirq first to the host's invalid irq number and then fills ops.
-> + */
-> +struct irq_map_entry {
-> +	irq_hw_number_t	hwirq;
-> +	struct irq_host	*host;
-> +};
-> +extern struct irq_map_entry irq_map[NR_IRQS];
-> +
-> +extern irq_hw_number_t virq_to_hw(unsigned int virq);
-> +
-> +/**
-> + * irq_find_host - Locates a host for a given device node
-> + * @node: device-tree node of the interrupt controller
-> + */
-> +extern struct irq_host *irq_find_host(struct device_node *node);
-> +
-> +/**
-> + * irq_set_default_host - Set a "default" host
-> + * @host: default host pointer
-> + *
-> + * For convenience, it's possible to set a "default" host that will be
-> used
-> + * whenever NULL is passed to irq_create_mapping(). It makes life
-> easier for
-> + * platforms that want to manipulate a few hard coded interrupt
-> numbers that
-> + * aren't properly represented in the device-tree.
-> + */
-> +extern void irq_set_default_host(struct irq_host *host);
-> +
-> +/**
-> + * irq_set_virq_count - Set the maximum number of virt irqs
-> + * @count: number of linux virtual irqs, capped with NR_IRQS
-> + *
-> + * This is mainly for use by platforms like iSeries who want to
-> program
-> + * the virtual irq number in the controller to avoid the reverse
-> mapping
-> + */
-> +extern void irq_set_virq_count(unsigned int count);
-> +
-> +/**
-> + * irq_create_mapping - Map a hardware interrupt into linux virq space
-> + * @host: host owning this hardware interrupt or NULL for default host
-> + * @hwirq: hardware irq number in that host space
-> + *
-> + * Only one mapping per hardware interrupt is permitted. Returns a
-> linux
-> + * virq number.
-> + * If the sense/trigger is to be specified, set_irq_type() should be
-> called
-> + * on the number returned from that call.
-> + */
-> +extern unsigned int irq_create_mapping(struct irq_host *host,
-> +				       irq_hw_number_t hwirq);
-> +
-> +/**
-> + * irq_dispose_mapping - Unmap an interrupt
-> + * @virq: linux virq number of the interrupt to unmap
-> + */
-> +extern void irq_dispose_mapping(unsigned int virq);
-> +
-> +/**
-> + * irq_find_mapping - Find a linux virq from an hw irq number.
-> + * @host: host owning this hardware interrupt
-> + * @hwirq: hardware irq number in that host space
-> + *
-> + * This is a slow path, for use by generic code. It's expected that an
-> + * irq controller implementation directly calls the appropriate low
-> level
-> + * mapping function.
-> + */
-> +extern unsigned int irq_find_mapping(struct irq_host *host,
-> +				     irq_hw_number_t hwirq);
-> +
-> +/**
-> + * irq_create_direct_mapping - Allocate a virq for direct mapping
-> + * @host: host to allocate the virq for or NULL for default host
-> + *
-> + * This routine is used for irq controllers which can choose the
-> hardware
-> + * interrupt numbers they generate. In such a case it's simplest to
-> use
-> + * the linux virq as the hardware interrupt number.
-> + */
-> +extern unsigned int irq_create_direct_mapping(struct irq_host *host);
-> +
-> +/**
-> + * irq_radix_revmap_insert - Insert a hw irq to linux virq number
-> mapping.
-> + * @host: host owning this hardware interrupt
-> + * @virq: linux irq number
-> + * @hwirq: hardware irq number in that host space
-> + *
-> + * This is for use by irq controllers that use a radix tree reverse
-> + * mapping for fast lookup.
-> + */
-> +extern void irq_radix_revmap_insert(struct irq_host *host, unsigned
-> int virq,
-> +				    irq_hw_number_t hwirq);
-> +
-> +/**
-> + * irq_radix_revmap_lookup - Find a linux virq from a hw irq number.
-> + * @host: host owning this hardware interrupt
-> + * @hwirq: hardware irq number in that host space
-> + *
-> + * This is a fast path, for use by irq controller code that uses radix
-> tree
-> + * revmaps
-> + */
-> +extern unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> +					    irq_hw_number_t hwirq);
-> +
-> +/**
-> + * irq_linear_revmap - Find a linux virq from a hw irq number.
-> + * @host: host owning this hardware interrupt
-> + * @hwirq: hardware irq number in that host space
-> + *
-> + * This is a fast path, for use by irq controller code that uses
-> linear
-> + * revmaps. It does fallback to the slow path if the revmap doesn't
-> exist
-> + * yet and will create the revmap entry with appropriate locking
-> + */
-> +
-> +extern unsigned int irq_linear_revmap(struct irq_host *host,
-> +				      irq_hw_number_t hwirq);
-> +
-> +
-> +
-> +/**
-> + * irq_alloc_virt - Allocate virtual irq numbers
-> + * @host: host owning these new virtual irqs
-> + * @count: number of consecutive numbers to allocate
-> + * @hint: pass a hint number, the allocator will try to use a 1:1
-> mapping
-> + *
-> + * This is a low level function that is used internally by
-> irq_create_mapping()
-> + * and that can be used by some irq controllers implementations for
-> things
-> + * like allocating ranges of numbers for MSIs. The revmaps are left
-> untouched.
-> + */
-> +extern unsigned int irq_alloc_virt(struct irq_host *host,
-> +				   unsigned int count,
-> +				   unsigned int hint);
-> +
-> +/**
-> + * irq_free_virt - Free virtual irq numbers
-> + * @virq: virtual irq number of the first interrupt to free
-> + * @count: number of interrupts to free
-> + *
-> + * This function is the opposite of irq_alloc_virt. It will not clear
-> reverse
-> + * maps, this should be done previously by unmap'ing the interrupt. In
-> fact,
-> + * all interrupts covered by the range being freed should have been
-> unmapped
-> + * prior to calling this.
-> + */
-> +extern void irq_free_virt(unsigned int virq, unsigned int count);
-> +
-> +
-> +#endif /* CONFIG_VIRQ */
-> +
-> +#endif /* _LINUX_VIRQ_H */
-> +#endif /* __KERNEL__ */
-> +
-> diff --git a/kernel/irq/Makefile b/kernel/irq/Makefile
-> index 7d04780..f5207dc 100644
-> --- a/kernel/irq/Makefile
-> +++ b/kernel/irq/Makefile
-> @@ -1,5 +1,6 @@
-> 
->  obj-y := handle.o manage.o spurious.o resend.o chip.o devres.o
-> +obj-$(CONFIG_VIRQ) += virq.o
->  obj-$(CONFIG_GENERIC_IRQ_PROBE) += autoprobe.o
->  obj-$(CONFIG_PROC_FS) += proc.o
->  obj-$(CONFIG_GENERIC_PENDING_IRQ) += migration.o
-> diff --git a/kernel/irq/virq.c b/kernel/irq/virq.c
-> new file mode 100644
-> index 0000000..b3c0db3
-> --- /dev/null
-> +++ b/kernel/irq/virq.c
-> @@ -0,0 +1,687 @@
-> +/*
-> + * Mapping support from per-controller hw irq numbers to linux irqs
-> + *
-> + *  Derived from arch/i386/kernel/irq.c
-> + *    Copyright (C) 1992 Linus Torvalds
-> + *  Adapted from arch/i386 by Gary Thomas
-> + *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
-> + *  Updated and modified by Cort Dougan <cort@fsmlabs.com>
-> + *    Copyright (C) 1996-2001 Cort Dougan
-> + *  Adapted for Power Macintosh by Paul Mackerras
-> + *    Copyright (C) 1996 Paul Mackerras (paulus@cs.anu.edu.au)
-> + *  Generalized for virtual irq mapping on all platformes by Grant
-> Likely
-> + *    Copyright (C) 2010 Secret Lab Technologies Ltd.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <linux/interrupt.h>
-> +#include <linux/irq.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/slab.h>
-> +#include <linux/radix-tree.h>
-> +#include <linux/virq.h>
-> +#include <linux/of_irq.h>
-> +
-> +/*
-> + * IRQ controller and virtual interrupts
-> + */
-> +static LIST_HEAD(irq_hosts);
-> +static DEFINE_RAW_SPINLOCK(irq_big_lock);
-> +static unsigned int revmap_trees_allocated;
-> +static DEFINE_MUTEX(revmap_trees_mutex);
-> +struct irq_map_entry irq_map[NR_IRQS];
-> +static unsigned int irq_virq_count = NR_IRQS;
-> +static struct irq_host *irq_default_host;
-> +
-> +irq_hw_number_t virq_to_hw(unsigned int virq)
-> +{
-> +	return irq_map[virq].hwirq;
-> +}
-> +EXPORT_SYMBOL_GPL(virq_to_hw);
-> +
-> +static int default_irq_host_match(struct irq_host *h, struct
-> device_node *np)
-> +{
-> +	return h->of_node != NULL && h->of_node == np;
-> +}
-> +
-> +struct irq_host *irq_alloc_host(struct device_node *of_node,
-> +				unsigned int revmap_type,
-> +				unsigned int revmap_arg,
-> +				struct irq_host_ops *ops,
-> +				irq_hw_number_t inval_irq)
-> +{
-> +	struct irq_host *host;
-> +	unsigned int size = sizeof(struct irq_host);
-> +	unsigned int i;
-> +	unsigned int *rmap;
-> +	unsigned long flags;
-> +
-> +	/* Allocate structure and revmap table if using linear mapping */
-> +	if (revmap_type == IRQ_HOST_MAP_LINEAR)
-> +		size += revmap_arg * sizeof(unsigned int);
-> +	host = zalloc_maybe_bootmem(size, GFP_KERNEL);
-> +	if (host == NULL)
-> +		return NULL;
-> +
-> +	/* Fill structure */
-> +	host->revmap_type = revmap_type;
-> +	host->inval_irq = inval_irq;
-> +	host->ops = ops;
-> +	host->of_node = of_node_get(of_node);
-> +
-> +	if (host->ops->match == NULL)
-> +		host->ops->match = default_irq_host_match;
-> +
-> +	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> +
-> +	/* If it's a legacy controller, check for duplicates and
-> +	 * mark it as allocated (we use irq 0 host pointer for that
-> +	 */
-> +	if (revmap_type == IRQ_HOST_MAP_LEGACY) {
-> +		if (irq_map[0].host != NULL) {
-> +			raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> +			/* If we are early boot, we can't free the
-structure,
-> +			 * too bad...
-> +			 * this will be fixed once slab is made available
-> early
-> +			 * instead of the current cruft
-> +			 */
-> +			if (mem_init_done)
-> +				kfree(host);
-> +			return NULL;
-> +		}
-> +		irq_map[0].host = host;
-> +	}
-> +
-> +	list_add(&host->link, &irq_hosts);
-> +	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> +
-> +	/* Additional setups per revmap type */
-> +	switch(revmap_type) {
-> +	case IRQ_HOST_MAP_LEGACY:
-> +		/* 0 is always the invalid number for legacy */
-> +		host->inval_irq = 0;
-> +		/* setup us as the host for all legacy interrupts */
-> +		for (i = 1; i < NUM_ISA_INTERRUPTS; i++) {
-> +			irq_map[i].hwirq = i;
-> +			smp_wmb();
-> +			irq_map[i].host = host;
-> +			smp_wmb();
-> +
-> +			/* Clear norequest flags */
-> +			irq_to_desc(i)->status &= ~IRQ_NOREQUEST;
-> +
-> +			/* Legacy flags are left to default at this point,
-> +			 * one can then use irq_create_mapping() to
-> +			 * explicitly change them
-> +			 */
-> +			ops->map(host, i, i);
-> +		}
-> +		break;
-> +	case IRQ_HOST_MAP_LINEAR:
-> +		rmap = (unsigned int *)(host + 1);
-> +		for (i = 0; i < revmap_arg; i++)
-> +			rmap[i] = NO_IRQ;
-> +		host->revmap_data.linear.size = revmap_arg;
-> +		smp_wmb();
-> +		host->revmap_data.linear.revmap = rmap;
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
-> +	pr_debug("irq: Allocated host of type %d @0x%p\n", revmap_type,
-> host);
-> +
-> +	return host;
-> +}
-> +
-> +struct irq_host *irq_find_host(struct device_node *node)
-> +{
-> +	struct irq_host *h, *found = NULL;
-> +	unsigned long flags;
-> +
-> +	/* We might want to match the legacy controller last since
-> +	 * it might potentially be set to match all interrupts in
-> +	 * the absence of a device node. This isn't a problem so far
-> +	 * yet though...
-> +	 */
-> +	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> +	list_for_each_entry(h, &irq_hosts, link)
-> +		if (h->ops->match(h, node)) {
-> +			found = h;
-> +			break;
-> +		}
-> +	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> +	return found;
-> +}
-> +EXPORT_SYMBOL_GPL(irq_find_host);
-> +
-> +void irq_set_default_host(struct irq_host *host)
-> +{
-> +	pr_debug("irq: Default host set to @0x%p\n", host);
-> +
-> +	irq_default_host = host;
-> +}
-> +
-> +void irq_set_virq_count(unsigned int count)
-> +{
-> +	pr_debug("irq: Trying to set virq count to %d\n", count);
-> +
-> +	BUG_ON(count < NUM_ISA_INTERRUPTS);
-> +	if (count < NR_IRQS)
-> +		irq_virq_count = count;
-> +}
-> +
-> +static int irq_setup_virq(struct irq_host *host, unsigned int virq,
-> +			    irq_hw_number_t hwirq)
-> +{
-> +	struct irq_desc *desc;
-> +
-> +	desc = irq_to_desc_alloc_node(virq, 0);
-> +	if (!desc) {
-> +		pr_debug("irq: -> allocating desc failed\n");
-> +		goto error;
-> +	}
-> +
-> +	/* Clear IRQ_NOREQUEST flag */
-> +	desc->status &= ~IRQ_NOREQUEST;
-> +
-> +	/* map it */
-> +	smp_wmb();
-> +	irq_map[virq].hwirq = hwirq;
-> +	smp_mb();
-> +
-> +	if (host->ops->map(host, virq, hwirq)) {
-> +		pr_debug("irq: -> mapping failed, freeing\n");
-> +		goto error;
-> +	}
-> +
-> +	return 0;
-> +
-> +error:
-> +	irq_free_virt(virq, 1);
-> +	return -1;
-> +}
-> +
-> +unsigned int irq_create_direct_mapping(struct irq_host *host)
-> +{
-> +	unsigned int virq;
-> +
-> +	if (host == NULL)
-> +		host = irq_default_host;
-> +
-> +	BUG_ON(host == NULL);
-> +	WARN_ON(host->revmap_type != IRQ_HOST_MAP_NOMAP);
-> +
-> +	virq = irq_alloc_virt(host, 1, 0);
-> +	if (virq == NO_IRQ) {
-> +		pr_debug("irq: create_direct virq allocation failed\n");
-> +		return NO_IRQ;
-> +	}
-> +
-> +	pr_debug("irq: create_direct obtained virq %d\n", virq);
-> +
-> +	if (irq_setup_virq(host, virq, virq))
-> +		return NO_IRQ;
-> +
-> +	return virq;
-> +}
-> +
-> +unsigned int irq_create_mapping(struct irq_host *host,
-> +				irq_hw_number_t hwirq)
-> +{
-> +	unsigned int virq, hint;
-> +
-> +	pr_debug("irq: irq_create_mapping(0x%p, 0x%lx)\n", host, hwirq);
-> +
-> +	/* Look for default host if nececssary */
-> +	if (host == NULL)
-> +		host = irq_default_host;
-> +	if (host == NULL) {
-> +		printk(KERN_WARNING "irq_create_mapping called for"
-> +		       " NULL host, hwirq=%lx\n", hwirq);
-> +		WARN_ON(1);
-> +		return NO_IRQ;
-> +	}
-> +	pr_debug("irq: -> using host @%p\n", host);
-> +
-> +	/* Check if mapping already exist, if it does, call
-> +	 * host->ops->map() to update the flags
-> +	 */
-> +	virq = irq_find_mapping(host, hwirq);
-> +	if (virq != NO_IRQ) {
-> +		if (host->ops->remap)
-> +			host->ops->remap(host, virq, hwirq);
-> +		pr_debug("irq: -> existing mapping on virq %d\n", virq);
-> +		return virq;
-> +	}
-> +
-> +	/* Get a virtual interrupt number */
-> +	if (host->revmap_type == IRQ_HOST_MAP_LEGACY) {
-> +		/* Handle legacy */
-> +		virq = (unsigned int)hwirq;
-> +		if (virq == 0 || virq >= NUM_ISA_INTERRUPTS)
-> +			return NO_IRQ;
-> +		return virq;
-> +	} else {
-> +		/* Allocate a virtual interrupt number */
-> +		hint = hwirq % irq_virq_count;
-> +		virq = irq_alloc_virt(host, 1, hint);
-> +		if (virq == NO_IRQ) {
-> +			pr_debug("irq: -> virq allocation failed\n");
-> +			return NO_IRQ;
-> +		}
-> +	}
-> +
-> +	if (irq_setup_virq(host, virq, hwirq))
-> +		return NO_IRQ;
-> +
-> +	printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtual irq
-> %u\n",
-> +		hwirq, host->of_node ? host->of_node->full_name : "null",
-> virq);
-> +
-> +	return virq;
-> +}
-> +EXPORT_SYMBOL_GPL(irq_create_mapping);
-> +
-> +unsigned int irq_create_of_mapping(struct device_node *controller,
-> +				   const u32 *intspec, unsigned int intsize)
-> +{
-> +	struct irq_host *host;
-> +	irq_hw_number_t hwirq;
-> +	unsigned int type = IRQ_TYPE_NONE;
-> +	unsigned int virq;
-> +
-> +	if (controller == NULL)
-> +		host = irq_default_host;
-> +	else
-> +		host = irq_find_host(controller);
-> +	if (host == NULL) {
-> +		printk(KERN_WARNING "irq: no irq host found for %s !\n",
-> +		       controller->full_name);
-> +		return NO_IRQ;
-> +	}
-> +
-> +	/* If host has no translation, then we assume interrupt line */
-> +	if (host->ops->xlate == NULL)
-> +		hwirq = intspec[0];
-> +	else {
-> +		if (host->ops->xlate(host, controller, intspec, intsize,
-> +				     &hwirq, &type))
-> +			return NO_IRQ;
-> +	}
-> +
-> +	/* Create mapping */
-> +	virq = irq_create_mapping(host, hwirq);
-> +	if (virq == NO_IRQ)
-> +		return virq;
-> +
-> +	/* Set type if specified and different than the current one */
-> +	if (type != IRQ_TYPE_NONE &&
-> +	    type != (irq_to_desc(virq)->status & IRQF_TRIGGER_MASK))
-> +		set_irq_type(virq, type);
-> +	return virq;
-> +}
-> +EXPORT_SYMBOL_GPL(irq_create_of_mapping);
-> +
-> +void irq_dispose_mapping(unsigned int virq)
-> +{
-> +	struct irq_host *host;
-> +	irq_hw_number_t hwirq;
-> +
-> +	if (virq == NO_IRQ)
-> +		return;
-> +
-> +	host = irq_map[virq].host;
-> +	WARN_ON (host == NULL);
-> +	if (host == NULL)
-> +		return;
-> +
-> +	/* Never unmap legacy interrupts */
-> +	if (host->revmap_type == IRQ_HOST_MAP_LEGACY)
-> +		return;
-> +
-> +	/* remove chip and handler */
-> +	set_irq_chip_and_handler(virq, NULL, NULL);
-> +
-> +	/* Make sure it's completed */
-> +	synchronize_irq(virq);
-> +
-> +	/* Tell the PIC about it */
-> +	if (host->ops->unmap)
-> +		host->ops->unmap(host, virq);
-> +	smp_mb();
-> +
-> +	/* Clear reverse map */
-> +	hwirq = irq_map[virq].hwirq;
-> +	switch(host->revmap_type) {
-> +	case IRQ_HOST_MAP_LINEAR:
-> +		if (hwirq < host->revmap_data.linear.size)
-> +			host->revmap_data.linear.revmap[hwirq] = NO_IRQ;
-> +		break;
-> +	case IRQ_HOST_MAP_TREE:
-> +		/*
-> +		 * Check if radix tree allocated yet, if not then nothing
-> to
-> +		 * remove.
-> +		 */
-> +		smp_rmb();
-> +		if (revmap_trees_allocated < 1)
-> +			break;
-> +		mutex_lock(&revmap_trees_mutex);
-> +		radix_tree_delete(&host->revmap_data.tree, hwirq);
-> +		mutex_unlock(&revmap_trees_mutex);
-> +		break;
-> +	}
-> +
-> +	/* Destroy map */
-> +	smp_mb();
-> +	irq_map[virq].hwirq = host->inval_irq;
-> +
-> +	/* Set some flags */
-> +	irq_to_desc(virq)->status |= IRQ_NOREQUEST;
-> +
-> +	/* Free it */
-> +	irq_free_virt(virq, 1);
-> +}
-> +EXPORT_SYMBOL_GPL(irq_dispose_mapping);
-> +
-> +unsigned int irq_find_mapping(struct irq_host *host,
-> +			      irq_hw_number_t hwirq)
-> +{
-> +	unsigned int i;
-> +	unsigned int hint = hwirq % irq_virq_count;
-> +
-> +	/* Look for default host if nececssary */
-> +	if (host == NULL)
-> +		host = irq_default_host;
-> +	if (host == NULL)
-> +		return NO_IRQ;
-> +
-> +	/* legacy -> bail early */
-> +	if (host->revmap_type == IRQ_HOST_MAP_LEGACY)
-> +		return hwirq;
-> +
-> +	/* Slow path does a linear search of the map */
-> +	if (hint < NUM_ISA_INTERRUPTS)
-> +		hint = NUM_ISA_INTERRUPTS;
-> +	i = hint;
-> +	do  {
-> +		if (irq_map[i].host == host &&
-> +		    irq_map[i].hwirq == hwirq)
-> +			return i;
-> +		i++;
-> +		if (i >= irq_virq_count)
-> +			i = NUM_ISA_INTERRUPTS;
-> +	} while(i != hint);
-> +	return NO_IRQ;
-> +}
-> +EXPORT_SYMBOL_GPL(irq_find_mapping);
-> +
-> +
-> +unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> +				     irq_hw_number_t hwirq)
-> +{
-> +	struct irq_map_entry *ptr;
-> +	unsigned int virq;
-> +
-> +	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-> +
-> +	/*
-> +	 * Check if the radix tree exists and has bee initialized.
-> +	 * If not, we fallback to slow mode
-> +	 */
-> +	if (revmap_trees_allocated < 2)
-> +		return irq_find_mapping(host, hwirq);
-> +
-> +	/* Now try to resolve */
-> +	/*
-> +	 * No rcu_read_lock(ing) needed, the ptr returned can't go under
-> us
-> +	 * as it's referencing an entry in the static irq_map table.
-> +	 */
-> +	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-> +
-> +	/*
-> +	 * If found in radix tree, then fine.
-> +	 * Else fallback to linear lookup - this should not happen in
-> practice
-> +	 * as it means that we failed to insert the node in the radix
-> tree.
-> +	 */
-> +	if (ptr)
-> +		virq = ptr - irq_map;
-> +	else
-> +		virq = irq_find_mapping(host, hwirq);
-> +
-> +	return virq;
-> +}
-> +
-> +void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
-> +			     irq_hw_number_t hwirq)
-> +{
-> +
-> +	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-> +
-> +	/*
-> +	 * Check if the radix tree exists yet.
-> +	 * If not, then the irq will be inserted into the tree when it
-> gets
-> +	 * initialized.
-> +	 */
-> +	smp_rmb();
-> +	if (revmap_trees_allocated < 1)
-> +		return;
-> +
-> +	if (virq != NO_IRQ) {
-> +		mutex_lock(&revmap_trees_mutex);
-> +		radix_tree_insert(&host->revmap_data.tree, hwirq,
-> +				  &irq_map[virq]);
-> +		mutex_unlock(&revmap_trees_mutex);
-> +	}
-> +}
-> +
-> +unsigned int irq_linear_revmap(struct irq_host *host,
-> +			       irq_hw_number_t hwirq)
-> +{
-> +	unsigned int *revmap;
-> +
-> +	WARN_ON(host->revmap_type != IRQ_HOST_MAP_LINEAR);
-> +
-> +	/* Check revmap bounds */
-> +	if (unlikely(hwirq >= host->revmap_data.linear.size))
-> +		return irq_find_mapping(host, hwirq);
-> +
-> +	/* Check if revmap was allocated */
-> +	revmap = host->revmap_data.linear.revmap;
-> +	if (unlikely(revmap == NULL))
-> +		return irq_find_mapping(host, hwirq);
-> +
-> +	/* Fill up revmap with slow path if no mapping found */
-> +	if (unlikely(revmap[hwirq] == NO_IRQ))
-> +		revmap[hwirq] = irq_find_mapping(host, hwirq);
-> +
-> +	return revmap[hwirq];
-> +}
-> +
-> +unsigned int irq_alloc_virt(struct irq_host *host,
-> +			    unsigned int count,
-> +			    unsigned int hint)
-> +{
-> +	unsigned long flags;
-> +	unsigned int i, j, found = NO_IRQ;
-> +
-> +	if (count == 0 || count > (irq_virq_count - NUM_ISA_INTERRUPTS))
-> +		return NO_IRQ;
-> +
-> +	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> +
-> +	/* Use hint for 1 interrupt if any */
-> +	if (count == 1 && hint >= NUM_ISA_INTERRUPTS &&
-> +	    hint < irq_virq_count && irq_map[hint].host == NULL) {
-> +		found = hint;
-> +		goto hint_found;
-> +	}
-> +
-> +	/* Look for count consecutive numbers in the allocatable
-> +	 * (non-legacy) space
-> +	 */
-> +	for (i = NUM_ISA_INTERRUPTS, j = 0; i < irq_virq_count; i++) {
-> +		if (irq_map[i].host != NULL)
-> +			j = 0;
-> +		else
-> +			j++;
-> +
-> +		if (j == count) {
-> +			found = i - count + 1;
-> +			break;
-> +		}
-> +	}
-> +	if (found == NO_IRQ) {
-> +		raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> +		return NO_IRQ;
-> +	}
-> + hint_found:
-> +	for (i = found; i < (found + count); i++) {
-> +		irq_map[i].hwirq = host->inval_irq;
-> +		smp_wmb();
-> +		irq_map[i].host = host;
-> +	}
-> +	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> +	return found;
-> +}
-> +
-> +void irq_free_virt(unsigned int virq, unsigned int count)
-> +{
-> +	unsigned long flags;
-> +	unsigned int i;
-> +
-> +	WARN_ON (virq < NUM_ISA_INTERRUPTS);
-> +	WARN_ON (count == 0 || (virq + count) > irq_virq_count);
-> +
-> +	raw_spin_lock_irqsave(&irq_big_lock, flags);
-> +	for (i = virq; i < (virq + count); i++) {
-> +		struct irq_host *host;
-> +
-> +		if (i < NUM_ISA_INTERRUPTS ||
-> +		    (virq + count) > irq_virq_count)
-> +			continue;
-> +
-> +		host = irq_map[i].host;
-> +		irq_map[i].hwirq = host->inval_irq;
-> +		smp_wmb();
-> +		irq_map[i].host = NULL;
-> +	}
-> +	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-> +}
-> +
-> +/* We need to create the radix trees late */
-> +static int irq_late_init(void)
-> +{
-> +	struct irq_host *h;
-> +	unsigned int i;
-> +
-> +	/*
-> +	 * No mutual exclusion with respect to accessors of the tree is
-> needed
-> +	 * here as the synchronization is done via the state variable
-> +	 * revmap_trees_allocated.
-> +	 */
-> +	list_for_each_entry(h, &irq_hosts, link) {
-> +		if (h->revmap_type == IRQ_HOST_MAP_TREE)
-> +			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_KERNEL);
-> +	}
-> +
-> +	/*
-> +	 * Make sure the radix trees inits are visible before setting
-> +	 * the flag
-> +	 */
-> +	smp_wmb();
-> +	revmap_trees_allocated = 1;
-> +
-> +	/*
-> +	 * Insert the reverse mapping for those interrupts already
-> present
-> +	 * in irq_map[].
-> +	 */
-> +	mutex_lock(&revmap_trees_mutex);
-> +	for (i = 0; i < irq_virq_count; i++) {
-> +		if (irq_map[i].host &&
-> +		    (irq_map[i].host->revmap_type == IRQ_HOST_MAP_TREE))
-> +
-radix_tree_insert(&irq_map[i].host->revmap_data.tree,
-> +					  irq_map[i].hwirq, &irq_map[i]);
-> +	}
-> +	mutex_unlock(&revmap_trees_mutex);
-> +
-> +	/*
-> +	 * Make sure the radix trees insertions are visible before
-> setting
-> +	 * the flag
-> +	 */
-> +	smp_wmb();
-> +	revmap_trees_allocated = 2;
-> +
-> +	return 0;
-> +}
-> +arch_initcall(irq_late_init);
-> +
-> +#ifdef CONFIG_VIRQ_DEBUG
-> +static int virq_debug_show(struct seq_file *m, void *private)
-> +{
-> +	unsigned long flags;
-> +	struct irq_desc *desc;
-> +	const char *p;
-> +	char none[] = "none";
-> +	int i;
-> +
-> +	seq_printf(m, "%-5s  %-7s  %-15s  %s\n", "virq", "hwirq",
-> +		      "chip name", "host name");
-> +
-> +	for (i = 1; i < nr_irqs; i++) {
-> +		desc = irq_to_desc(i);
-> +		if (!desc)
-> +			continue;
-> +
-> +		raw_spin_lock_irqsave(&desc->lock, flags);
-> +
-> +		if (desc->action && desc->action->handler) {
-> +			seq_printf(m, "%5d  ", i);
-> +			seq_printf(m, "0x%05lx  ", virq_to_hw(i));
-> +
-> +			if (desc->chip && desc->chip->name)
-> +				p = desc->chip->name;
-> +			else
-> +				p = none;
-> +			seq_printf(m, "%-15s  ", p);
-> +
-> +			if (irq_map[i].host && irq_map[i].host->of_node)
-> +				p = irq_map[i].host->of_node->full_name;
-> +			else
-> +				p = none;
-> +			seq_printf(m, "%s\n", p);
-> +		}
-> +
-> +		raw_spin_unlock_irqrestore(&desc->lock, flags);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int virq_debug_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, virq_debug_show, inode->i_private);
-> +}
-> +
-> +static const struct file_operations virq_debug_fops = {
-> +	.open = virq_debug_open,
-> +	.read = seq_read,
-> +	.llseek = seq_lseek,
-> +	.release = single_release,
-> +};
-> +
-> +static int __init irq_debugfs_init(void)
-> +{
-> +	if (debugfs_create_file("virq_mapping", S_IRUGO,
-> powerpc_debugfs_root,
-> +				 NULL, &virq_debug_fops) == NULL)
-> +		return -ENOMEM;
-> +
-> +	return 0;
-> +}
-> +__initcall(irq_debugfs_init);
-> +#endif /* CONFIG_VIRQ_DEBUG */
-> +
-> 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
+PCI: Probing PCI hardware
+bio: create slab <bio-0> at 0
+vgaarb: loaded
+Switching to clocksource timebase
+NET: Registered protocol family 2
+IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
+TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
+TCP: Hash tables configured (established 8192 bind 8192)
+TCP reno registered
+UDP hash table entries: 256 (order: 0, 4096 bytes)
+UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)
+NET: Registered protocol family 1
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+RPC: Registered tcp NFSv4.1 backchannel transport module.
+Setting up RapidIO peer-to-peer network /soc8548@e0000000/rapidio@c0000
+fsl-of-rio e00c0000.rapidio: Of-device full name /soc8548@e0000000
+/rapidio@c0000
+fsl-of-rio e00c0000.rapidio: Regs: [mem 0xe00c0000-0xe00dffff]
+fsl-of-rio e00c0000.rapidio: LAW start 0x00000000c0000000, size
+0x0000000020000000.
+fsl-of-rio e00c0000.rapidio: pwirq: 48, bellirq: 50, txirq: 53, rxirq 54
+fsl-of-rio e00c0000.rapidio: DeviceID is 0x1
+fsl-of-rio e00c0000.rapidio: Configured as HOST
+fsl-of-rio e00c0000.rapidio: RapidIO PHY type: serial
+fsl-of-rio e00c0000.rapidio: Hardware port width: 4
+fsl-of-rio e00c0000.rapidio: Training connection status: Four-lane
+fsl-of-rio e00c0000.rapidio: RapidIO Common Transport System size: 256
+RIO: enumerate master port 0, RIO0 mport
+fsl_rio_config_read: index 0 destid 255 hopcount 0 offset 00000068 len 4
+fsl_rio_config_read: Passed IS_ALIGNED.
+fsl_rio_config_read: Passed 'out_be32_1'
+fsl_rio_config_read: Passed 'out_be32_2'
+fsl_rio_config_read: len is 4
+fsl_rio_config_read: about to trigger '__fsl_read_rio_config'
+
+Regards,
+Bastiaan Nijkamp
+
+--0016363b9164b7b15c049195d232
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<meta http-equiv=3D"content-type" content=3D"text/html; charset=3Dutf-8">Hi=
+,<br><br>We are currently evaluating Serial RapidIO on two WindRiver SBC854=
+8 boards that use a Freescale Powerquicc III processor (MPC8548E rev. 2). W=
+e are running U-Boot version 2010.09 as bootloader and are using kernel ver=
+sion 2.6.35.6 stable.=A0<br>
+
+<br>We have consulted multiple resources to collect al the requirements for=
+ a=A0successful=A0RapidIO connection (LAW, TLB, Registers) and we seem to h=
+ave configured everything correctly. However, as soon as the board that is =
+configured as the host starts the enumeration process, the system locks up.=
+ It locks in such a manner that we cannot use a JTAG interface to read any =
+of the registers. =A0We have also added a breakpoint just before the comman=
+d that causes the lock up, to make sure the registers are correctly set at =
+that point, and it seems they are.=A0<br>
+
+<br>We have tripple checked everything that we could possibly think of and =
+everything seems to be configured as required but the system keeps locking-=
+up so there must be something that we are missing. I really hope that someo=
+ne could point us in the right direction. The lock-up occurs when __fsl_rea=
+d_rio_config is called by fsl_rio_config_read in fsl-rio.c.<div>
+
+<br></div><div>The LAW and TLB entries we have added to U-Boot are as follo=
+ws:</div><div><br></div><div><div>#define CONFIG_RIO 1</div><div>#define CO=
+NFIG_SYS_RIO_MEM_VIRT<span class=3D"Apple-tab-span" style=3D"white-space:pr=
+e">	</span>0xc0000000<span class=3D"Apple-tab-span" style=3D"white-space:pr=
+e">	</span>/* base address */</div>
+
+<div>#define CONFIG_SYS_RIO_MEM_BUS<span class=3D"Apple-tab-span" style=3D"=
+white-space:pre">	</span>0xc0000000<span class=3D"Apple-tab-span" style=3D"=
+white-space:pre">	</span>/* base address */</div><div>#define CONFIG_SYS_RI=
+O_MEM_PHYS<span class=3D"Apple-tab-span" style=3D"white-space:pre">	</span>=
+0xc0000000</div>
+
+<div>#define CONFIG_SYS_RIO_MEM_SIZE<span class=3D"Apple-tab-span" style=3D=
+"white-space:pre">	</span>0x20000000<span class=3D"Apple-tab-span" style=3D=
+"white-space:pre">	</span>/* 512M */</div></div><div><br></div><div>SET_LAW=
+(CONFIG_SYS_RIO_MEM_PHYS, LAW_SIZE_512M, LAW_TRGT_IF_RIO),</div>
+
+<div><br></div><div>-------------<br><br>Here is the kernel log:<br><br>Usi=
+ng SBC8548 machine description<br>Memory CAM mapping: 256 Mb, residual: 0Mb=
+<br>Linux version 2.6.35.6 (dl704@lxws006) (gcc version 4.1.2 (Wind River L=
+inux Sourcery G++ 4.1-91)) #7 We<br>
+
+d Sep 29 13:27:18 CEST 2010<br>bootconsole [udbg0] enabled<br>setup_arch: b=
+ootmem<br>sbc8548_setup_arch()<br>arch: exit<br>Zone PFN ranges:<br>=A0DMA =
+=A0 =A0 =A00x00000000 -&gt; 0x00010000<br>=A0Normal =A0 empty<br>Movable zo=
+ne start PFN for each node<br>
+
+early_node_map[1] active PFN ranges<br>=A0 =A00: 0x00000000 -&gt; 0x0001000=
+0<br>MMU: Allocated 1088 bytes of context maps for 255 contexts<br>Built 1 =
+zonelists in Zone order, mobility grouping on. =A0Total pages: 65024<br>Ker=
+nel command line: root=3D/dev/nfs rw nfsroot=3D192.168.100.21:/thales/targe=
+t/rfs/sbc8548_wrlinux4 ip=3D192<br>
+
+.168.100.151:192.168.100.21:192.168.100.21:255.255.255.0:sbc8548_1:eth0:off=
+ console=3DttyS0,115200 riohdid=3D1<br>PID hash table entries: 1024 (order:=
+ 0, 4096 bytes)<br>Dentry cache hash table entries: 32768 (order: 5, 131072=
+ bytes)<br>
+
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)<br>Memory: 25=
+6884k/262144k available (2712k kernel code, 5260k reserved, 112k data, 77k =
+bss, 144k init)<br>Kernel virtual memory layout:<br>=A0* 0xfffdf000..0xffff=
+f000 =A0: fixmap<br>
+
+=A0* 0xfc7f9000..0xfe000000 =A0: early ioremap<br>=A0* 0xd1000000..0xfc7f90=
+00 =A0: vmalloc &amp; ioremap<br>Hierarchical RCU implementation.<br>=A0 =
+=A0 =A0 =A0RCU-based detection of stalled CPUs is disabled.<br>=A0 =A0 =A0 =
+=A0Verbose stalled-CPUs detection is disabled.<br>
+
+NR_IRQS:512 nr_irqs:512<br>mpic: Setting up MPIC &quot; OpenPIC =A0&quot; v=
+ersion 1.2 at e0040000, max 1 CPUs<br>mpic: ISU size: 80, shift: 7, mask: 7=
+f<br>mpic: Initializing for 80 sources<br>clocksource: timebase mult[50cede=
+6] shift[22] registered<br>
+
+pid_max: default: 32768 minimum: 301<br>Mount-cache hash table entries: 512=
+<br>NET: Registered protocol family 16<br>=A0 =A0 =A0 =A0 =A0 =A0=A0<br>PCI=
+: Probing PCI hardware<br>bio: create slab &lt;bio-0&gt; at 0<br>vgaarb: lo=
+aded<br>Switching to clocksource timebase<br>
+
+NET: Registered protocol family 2<br>IP route cache hash table entries: 204=
+8 (order: 1, 8192 bytes)<br>TCP established hash table entries: 8192 (order=
+: 4, 65536 bytes)<br>TCP bind hash table entries: 8192 (order: 3, 32768 byt=
+es)<br>
+
+TCP: Hash tables configured (established 8192 bind 8192)<br>TCP reno regist=
+ered<br>UDP hash table entries: 256 (order: 0, 4096 bytes)<br>UDP-Lite hash=
+ table entries: 256 (order: 0, 4096 bytes)<br>NET: Registered protocol fami=
+ly 1<br>
+
+RPC: Registered udp transport module.<br>RPC: Registered tcp transport modu=
+le.<br>RPC: Registered tcp NFSv4.1 backchannel transport module.<br>Setting=
+ up RapidIO peer-to-peer network /soc8548@e0000000/rapidio@c0000<br>fsl-of-=
+rio e00c0000.rapidio: Of-device full name /soc8548@e0000000/rapidio@c0000<b=
+r>
+
+fsl-of-rio e00c0000.rapidio: Regs: [mem 0xe00c0000-0xe00dffff]<br>fsl-of-ri=
+o e00c0000.rapidio: LAW start 0x00000000c0000000, size 0x0000000020000000.<=
+br>fsl-of-rio e00c0000.rapidio: pwirq: 48, bellirq: 50, txirq: 53, rxirq 54=
+<br>
+
+fsl-of-rio e00c0000.rapidio: DeviceID is 0x1<br>fsl-of-rio e00c0000.rapidio=
+: Configured as HOST<br>fsl-of-rio e00c0000.rapidio: RapidIO PHY type: seri=
+al<br>fsl-of-rio e00c0000.rapidio: Hardware port width: 4<br>fsl-of-rio e00=
+c0000.rapidio: Training connection status: Four-lane<br>
+
+fsl-of-rio e00c0000.rapidio: RapidIO Common Transport System size: 256<br>R=
+IO: enumerate master port 0, RIO0 mport<br>fsl_rio_config_read: index 0 des=
+tid 255 hopcount 0 offset 00000068 len 4<br>fsl_rio_config_read: Passed IS_=
+ALIGNED.<br>
+
+fsl_rio_config_read: Passed &#39;out_be32_1&#39;<br>fsl_rio_config_read: Pa=
+ssed &#39;out_be32_2&#39;<br>fsl_rio_config_read: len is 4<br>fsl_rio_confi=
+g_read:=A0about to trigger &#39;__fsl_read_rio_config&#39;<br><br>Regards,<=
+br>
+
+Bastiaan Nijkamp
+</div>
+
+--0016363b9164b7b15c049195d232--
