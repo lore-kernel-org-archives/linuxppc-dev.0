@@ -1,25 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB063B7135
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Oct 2010 06:52:08 +1000 (EST)
-Subject: Re: Introduce support for little endian PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <BBD78246-343E-4A96-9E55-3E40AD628C0B@kernel.crashing.org>
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
-	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
-	<1285935283.2463.78.camel@pasglop>
-	<BBD78246-343E-4A96-9E55-3E40AD628C0B@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 02 Oct 2010 06:51:55 +1000
-Message-ID: <1285966315.2463.141.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
-	Ian Munsie <imunsie@au1.ibm.com>, linux-kernel@vger.kernel.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 63212B6EEA
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2010 07:13:31 +1000 (EST)
+Message-Id: <201010012112.o91LCtEk020866@imap1.linux-foundation.org>
+Subject: [patch 1/1] powerpc: enable ARCH_DMA_ADDR_T_64BIT with
+	ARCH_PHYS_ADDR_T_64BIT
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Fri, 01 Oct 2010 14:12:54 -0700
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,19 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-01 at 12:59 -0500, Kumar Gala wrote:
-> I'm not against it, and I agree some of the patches seem like good
-> clean up.  I'm concerned about this bit rotting pretty quickly.
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Maybe. Most of it doesn't seem to be that bit-rottable.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-The changes to the asm stuff in misc_32.S for example are functions we
-never ever touch once written (libgcc replacements) so I don't see them
-rotting more with LE support than they did with BE :-)
+ arch/powerpc/Kconfig |    3 +++
+ 1 file changed, 3 insertions(+)
 
-What might rot is that we might introduce new LE breakage, true, and I
-suppose it's going to be to some extent my job to at least every now and
-then shoot that thing on a 44x to see if it still flies.
-
-Cheers,
-Ben.
+diff -puN arch/powerpc/Kconfig~powerpc-enable-arch_dma_addr_t_64bit-with-arch_phys_addr_t_64bit arch/powerpc/Kconfig
+--- a/arch/powerpc/Kconfig~powerpc-enable-arch_dma_addr_t_64bit-with-arch_phys_addr_t_64bit
++++ a/arch/powerpc/Kconfig
+@@ -16,6 +16,9 @@ config WORD_SIZE
+ config ARCH_PHYS_ADDR_T_64BIT
+        def_bool PPC64 || PHYS_64BIT
+ 
++config ARCH_DMA_ADDR_T_64BIT
++	def_bool ARCH_PHYS_ADDR_T_64BIT
++
+ config MMU
+ 	bool
+ 	default y
+_
