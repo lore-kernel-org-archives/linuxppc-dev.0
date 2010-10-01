@@ -2,21 +2,26 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73B59B70EA
+	by ozlabs.org (Postfix) with ESMTPS id 7326AB70FD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 22:21:44 +1000 (EST)
-Subject: Re: Introduce support for little endian PowerPC
+	Fri,  1 Oct 2010 22:22:48 +1000 (EST)
+Subject: Re: [PATCH 01/18] powerpc: Add ability to build little endian kernels
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Josh Boyer <jwboyer@gmail.com>
-In-Reply-To: <AANLkTikHcoccu-WGtSOSdkwU6Tw_An_VFkUcEoY==8=c@mail.gmail.com>
+In-Reply-To: <AANLkTimdV2FTEhcKXcM_+k23PBFTR5KvyjqEGxzzX72Q@mail.gmail.com>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<AANLkTikHcoccu-WGtSOSdkwU6Tw_An_VFkUcEoY==8=c@mail.gmail.com>
+	<1285916771-18033-2-git-send-email-imunsie@au1.ibm.com>
+	<AANLkTimdV2FTEhcKXcM_+k23PBFTR5KvyjqEGxzzX72Q@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Oct 2010 22:21:32 +1000
-Message-ID: <1285935692.2463.84.camel@pasglop>
+Date: Fri, 01 Oct 2010 22:22:22 +1000
+Message-ID: <1285935742.2463.85.camel@pasglop>
 Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
-	Ian Munsie <imunsie@au1.ibm.com>, linux-kernel@vger.kernel.org
+Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-kernel@vger.kernel.org, paulus@samba.org,
+	Ian Munsie <imunsie@au1.ibm.com>, Andreas Schwab <schwab@linux-m68k.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Torez Smith <lnxtorez@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-01 at 07:36 -0400, Josh Boyer wrote:
-> On Fri, Oct 1, 2010 at 3:05 AM, Ian Munsie <imunsie@au1.ibm.com> wrote:
-> > This patch set in combination with a patched GCC, binutils, uClibc and
-> > buildroot has allowed for a full proof of concept little endian environment on
-> > a 440 Taishan board, which was able to successfully run busybox, OpenSSH and a
-> > handful of other userspace programs without problems.
-> 
-> Aside from my general "uh, why?" stance, I'm very very hesitant to
-> integrate anything in the kernel that doesn'.t have released patches
-> on the toolchain side.
+On Fri, 2010-10-01 at 07:40 -0400, Josh Boyer wrote:
+> Have you tested this support with a userspace containing floating
+> point instructions?  I wonder if CONFIG_MATH_EMULATION is going to
+> need work at all, and if the boards with an actual FPU (440EP, 440EPx,
+> 460EX, etc) would have issues. 
 
-We aren't yet talking about merging that as-is, though I beleive at
-least -some- of the patches have merit on their own, such as the proper
-accessors for device-tree properties. At the very least, it would make
-it less painful for archs like ARM to borrow code in that area and will
-make it cleaner for sparse when we generalize endian annotations.
-
-The toolchain work was done as a quick & dirty experiment. Whether some
-"proper" work there will happen remains to be decided.
-
-> Also, which uClibc?  The old and crusty uClibc that uses the horrible
-> linuxthreads, or the somewhat less crusty that just switched to NPTL
-> (which hasn't been verified on normal PowerPC that I recall).  Why not
-> use glibc...
-
-Because this was a proof of concept and as such, it was easier to deal
-with uclibc initially to get busybox going :-)
-
-> > This is not yet complete support for little endian PowerPC, some outstanding
-> > issues that I am aware of are:
-> >  * We only support 32bit PowerPC for now (and indeed, only 44x)
-> >  * The vdso has not been fixed to be endian agnostic - any userspace program
-> >   accessing it will get an unexpected result.
-> >  * I have not touched PCI at all
-> >  * Remaining device tree accesses still need to be examined to ensure they are
-> >   correctly handling the endianess of the device tree.
-> >  * Any other driver that uses the device tree is likely be broken for the same reason.
-> >  * I've included a patch for the alignment handler, however it is as yet
-> >   completely untested due to a property of the hardware I've been using for
-> >   testing.
-> 
-> I'm not meeting to detract here, but the Kconfig should be dependent
-> on && BROKEN until the above is fixed.
-
-Right.
-
-I think Ian wasn't clear enough on the fact that those patches aren't
-meant to be merged in the next merge window :-) I told him to shoot them
-to the list for review, comments and discussions, but if we decide to
-move along with integrating that, there's definitely more work to do.
+That's one of the things on the TODO list. We've tested that on a 44x
+with no FPU so far and made sure we built without math emu.
 
 Cheers,
 Ben.
