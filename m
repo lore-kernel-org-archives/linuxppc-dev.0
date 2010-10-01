@@ -1,20 +1,20 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
-	by ozlabs.org (Postfix) with ESMTP id 7BE77B70F0
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id 7B021B70A3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 22:37:53 +1000 (EST)
-Message-ID: <4CA5D61F.8000102@mlbassoc.com>
-Date: Fri, 01 Oct 2010 06:37:51 -0600
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Sat,  2 Oct 2010 02:30:42 +1000 (EST)
 Subject: Re: Introduce support for little endian PowerPC
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>	
-	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>	
-	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>	
-	<4CA5CC3C.6020006@mlbassoc.com> <1285935329.2463.79.camel@pasglop>
-In-Reply-To: <1285935329.2463.79.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1285935283.2463.78.camel@pasglop>
+References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
+	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
+	<1285935283.2463.78.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 01 Oct 2010 18:20:41 +0200
+Message-ID: <1285950041.15020.272.camel@thor.local>
+Mime-Version: 1.0
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,39 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/01/2010 06:15 AM, Benjamin Herrenschmidt wrote:
-> On Fri, 2010-10-01 at 05:55 -0600, Gary Thomas wrote:
->> On 10/01/2010 05:30 AM, Josh Boyer wrote:
->>> On Fri, Oct 1, 2010 at 5:02 AM, Kumar Gala<galak@kernel.crashing.org>   wrote:
->>>>
->>>> On Oct 1, 2010, at 2:05 AM, Ian Munsie wrote:
->>>>
->>>>> Some PowerPC processors can be run in either big or little endian modes, some
->>>>> others can map selected pages of memory as little endian, which allows the same
->>>>> thing. Until now we have only supported the default big endian mode in Linux.
->>>>> This patch set introduces little endian support for the 44x family of PowerPC
->>>>> processors.
->>>>
->>>>    From a community aspect is anyone actually going to use this?  Is this going to be the equivalent of voyager on x86?  I've got nothing against some of the endian clean ups this introduces.  However the changes to misc_32.S are a bit ugly from a readability point of view.  Just seems like this is likely to bit-rot pretty quickly.
->>>
->>> I'm with Kumar on this one.  Why would we want to support this?  I
->>> can't say I would be very willing to help anyone run in LE mode, let
->>> alone have it randomly selectable.
->>
->> Indeed, I thought we had killed that Windows-NT dog ~15 years ago :-)
->
-> Actually this has more to do with having to deal with code written for
-> ARM LE :-)
+On Fre, 2010-10-01 at 22:14 +1000, Benjamin Herrenschmidt wrote:=20
+>=20
+> Now, the main reasons in practice are anything touching graphics.
+>=20
+> There's quite a few IP cores out there for SoCs that don't have HW
+> swappers, and -tons- of more or less ugly code that can't deal with non
+> native pixel ordering (hell, even Xorg isn't good at it, we really only
+> support cards that have HW swappers today).
 
-The comment was mostly aimed as a remnder of the main reason this was considered
-a long time ago.
+That's not true. Even the radeon driver doesn't really need the HW
+swappers anymore with KMS.
 
-I understand that the world has moved on, and sadly the vast majority
-of hardware is now little endian (although it still baffles me why anyone
-would think that way...)
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+> There's an even bigger pile of application code that deals with graphics
+> without any regard for endianness and is essentially unfixable.
+
+Out of curiosity, what kind of APIs are those apps using? X11 and OpenGL
+have well-defined semantics wrt endianness, allowing the drivers to
+handle any necessary byte swapping internally, and IME the vast majority
+of apps handle this correctly.
+
+
+--=20
+Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
