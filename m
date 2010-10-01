@@ -2,17 +2,15 @@ Return-Path: <imunsie@au1.ibm.com>
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	benh@kernel.crashing.org
-Subject: [PATCH 14/18] powerpc,
-	of_serial: Endianness issues setting up the serial ports
-Date: Fri,  1 Oct 2010 17:06:07 +1000
-Message-Id: <1285916771-18033-15-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 13/18] powerpc 44x: Make DCR endianness agnostic
+Date: Fri,  1 Oct 2010 17:06:06 +1000
+Message-Id: <1285916771-18033-14-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Michal Simek <monstr@monstr.eu>, Jiri Kosina <jkosina@suse.cz>,
-	devicetree-discuss@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	Stefan Weil <weil@mail.berlios.de>, paulus@samba.org,
-	Ian Munsie <imunsie@au1.ibm.com>, Sean MacLennan <smaclennan@pikatech.com>,
-	"David S. Miller" <davem@davemloft.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, devicetree-discuss@lists.ozlabs.org,
+	Ian Munsie <imunsie@au1.ibm.com>, paulus@samba.org,
+	Thomas Gleixner <tglx@linutronix.de>, Stefan Roese <sr@denx.de>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,149 +22,182 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-The speed and clock of the serial ports is retrieved from the device
-tree in both the PowerPC legacy serial code and the Open Firmware serial
-driver, therefore they need to handle the fact that the device tree is
-always big endian, while the CPU may not be.
-
-Also fix other device tree references in the legacy serial code.
+The Device Control Register accesses parse the device tree and therefore
+need to handle the possible differences of endianness between the CPU
+and device tree.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/kernel/legacy_serial.c |   22 +++++++++++-----------
- drivers/serial/of_serial.c          |   12 ++++++------
- 2 files changed, 17 insertions(+), 17 deletions(-)
+ arch/powerpc/sysdev/dcr.c        |   18 +++++++++---------
+ arch/powerpc/sysdev/ppc4xx_soc.c |   16 ++++++++--------
+ arch/powerpc/sysdev/uic.c        |    6 +++---
+ 3 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index c1fd0f9..c834757 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -52,14 +52,14 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
- 				  phys_addr_t taddr, unsigned long irq,
- 				  upf_t flags, int irq_check_parent)
+diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+index bb44aa9..7f91e8a 100644
+--- a/arch/powerpc/sysdev/dcr.c
++++ b/arch/powerpc/sysdev/dcr.c
+@@ -27,7 +27,7 @@
+ static struct device_node *find_dcr_parent(struct device_node *node)
  {
--	const u32 *clk, *spd;
-+	const __be32 *clk, *spd;
- 	u32 clock = BASE_BAUD * 16;
- 	int index;
+ 	struct device_node *par, *tmp;
+-	const u32 *p;
++	const __be32 *p;
  
- 	/* get clock freq. if present */
- 	clk = of_get_property(np, "clock-frequency", NULL);
- 	if (clk && *clk)
--		clock = *clk;
-+		clock = be32_to_cpup(clk);
- 
- 	/* get default speed if present */
- 	spd = of_get_property(np, "current-speed", NULL);
-@@ -109,7 +109,7 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
- 	legacy_serial_infos[index].taddr = taddr;
- 	legacy_serial_infos[index].np = of_node_get(np);
- 	legacy_serial_infos[index].clock = clock;
--	legacy_serial_infos[index].speed = spd ? *spd : 0;
-+	legacy_serial_infos[index].speed = spd ? be32_to_cpup(spd) : 0;
- 	legacy_serial_infos[index].irq_check_parent = irq_check_parent;
- 
- 	printk(KERN_DEBUG "Found legacy serial port %d for %s\n",
-@@ -168,7 +168,7 @@ static int __init add_legacy_soc_port(struct device_node *np,
- static int __init add_legacy_isa_port(struct device_node *np,
- 				      struct device_node *isa_brg)
+ 	for (par = of_node_get(node); par;) {
+ 		if (of_get_property(par, "dcr-controller", NULL))
+@@ -37,7 +37,7 @@ static struct device_node *find_dcr_parent(struct device_node *node)
+ 		if (p == NULL)
+ 			par = of_get_parent(par);
+ 		else
+-			par = of_find_node_by_phandle(*p);
++			par = of_find_node_by_phandle(be32_to_cpup(p));
+ 		of_node_put(tmp);
+ 	}
+ 	return par;
+@@ -128,24 +128,24 @@ unsigned int dcr_resource_start(const struct device_node *np,
+ 				unsigned int index)
  {
--	const u32 *reg;
-+	const __be32 *reg;
- 	const char *typep;
- 	int index = -1;
- 	u64 taddr;
-@@ -181,7 +181,7 @@ static int __init add_legacy_isa_port(struct device_node *np,
- 		return -1;
+ 	unsigned int ds;
+-	const u32 *dr = of_get_property(np, "dcr-reg", &ds);
++	const __be32 *dr = of_get_property(np, "dcr-reg", &ds);
  
- 	/* Verify it's an IO port, we don't support anything else */
--	if (!(reg[0] & 0x00000001))
-+	if (!(be32_to_cpu(reg[0]) & 0x00000001))
- 		return -1;
+ 	if (dr == NULL || ds & 1 || index >= (ds / 8))
+ 		return 0;
  
- 	/* Now look for an "ibm,aix-loc" property that gives us ordering
-@@ -202,7 +202,7 @@ static int __init add_legacy_isa_port(struct device_node *np,
- 		taddr = 0;
- 
- 	/* Add port, irq will be dealt with later */
--	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr,
-+	return add_legacy_port(np, index, UPIO_PORT, be32_to_cpu(reg[1]), taddr,
- 			       NO_IRQ, UPF_BOOT_AUTOCONF, 0);
- 
+-	return dr[index * 2];
++	return be32_to_cpu(dr[index * 2]);
  }
-@@ -251,9 +251,9 @@ static int __init add_legacy_pci_port(struct device_node *np,
- 	 * we get to their "reg" property
- 	 */
- 	if (np != pci_dev) {
--		const u32 *reg = of_get_property(np, "reg", NULL);
--		if (reg && (*reg < 4))
--			index = lindex = *reg;
-+		const __be32 *reg = of_get_property(np, "reg", NULL);
-+		if (reg && (be32_to_cpup(reg) < 4))
-+			index = lindex = be32_to_cpup(reg);
- 	}
+ EXPORT_SYMBOL_GPL(dcr_resource_start);
  
- 	/* Local index means it's the Nth port in the PCI chip. Unfortunately
-@@ -507,7 +507,7 @@ static int __init check_legacy_serial_console(void)
- 	struct device_node *prom_stdout = NULL;
- 	int i, speed = 0, offset = 0;
- 	const char *name;
--	const u32 *spd;
-+	const __be32 *spd;
- 
- 	DBG(" -> check_legacy_serial_console()\n");
- 
-@@ -547,7 +547,7 @@ static int __init check_legacy_serial_console(void)
- 	}
- 	spd = of_get_property(prom_stdout, "current-speed", NULL);
- 	if (spd)
--		speed = *spd;
-+		speed = be32_to_cpup(spd);
- 
- 	if (strcmp(name, "serial") != 0)
- 		goto not_found;
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index 2af8fd1..17849dc 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -31,8 +31,8 @@ static int __devinit of_platform_serial_setup(struct platform_device *ofdev,
+ unsigned int dcr_resource_len(const struct device_node *np, unsigned int index)
  {
- 	struct resource resource;
- 	struct device_node *np = ofdev->dev.of_node;
--	const unsigned int *clk, *spd;
+ 	unsigned int ds;
+-	const u32 *dr = of_get_property(np, "dcr-reg", &ds);
++	const __be32 *dr = of_get_property(np, "dcr-reg", &ds);
+ 
+ 	if (dr == NULL || ds & 1 || index >= (ds / 8))
+ 		return 0;
+ 
+-	return dr[index * 2 + 1];
++	return be32_to_cpu(dr[index * 2 + 1]);
+ }
+ EXPORT_SYMBOL_GPL(dcr_resource_len);
+ 
+@@ -156,7 +156,7 @@ u64 of_translate_dcr_address(struct device_node *dev,
+ 			     unsigned int *out_stride)
+ {
+ 	struct device_node *dp;
+-	const u32 *p;
++	const __be32 *p;
+ 	unsigned int stride;
+ 	u64 ret = OF_BAD_ADDR;
+ 
+@@ -166,7 +166,7 @@ u64 of_translate_dcr_address(struct device_node *dev,
+ 
+ 	/* Stride is not properly defined yet, default to 0x10 for Axon */
+ 	p = of_get_property(dp, "dcr-mmio-stride", NULL);
+-	stride = (p == NULL) ? 0x10 : *p;
++	stride = (p == NULL) ? 0x10 : be32_to_cpup(p);
+ 
+ 	/* XXX FIXME: Which property name is to use of the 2 following ? */
+ 	p = of_get_property(dp, "dcr-mmio-range", NULL);
+@@ -176,7 +176,7 @@ u64 of_translate_dcr_address(struct device_node *dev,
+ 		goto done;
+ 
+ 	/* Maybe could do some better range checking here */
+-	ret = of_translate_address(dp, p);
++	ret = of_translate_address(dp, be32_to_cpup(p));
+ 	if (ret != OF_BAD_ADDR)
+ 		ret += (u64)(stride) * (u64)dcr_n;
+ 	if (out_stride)
+diff --git a/arch/powerpc/sysdev/ppc4xx_soc.c b/arch/powerpc/sysdev/ppc4xx_soc.c
+index d3d6ce3..e5a7554 100644
+--- a/arch/powerpc/sysdev/ppc4xx_soc.c
++++ b/arch/powerpc/sysdev/ppc4xx_soc.c
+@@ -76,10 +76,10 @@ static int __init ppc4xx_l2c_probe(void)
+ 	u32 r;
+ 	unsigned long flags;
+ 	int irq;
+-	const u32 *dcrreg;
++	const __be32 *dcrreg;
+ 	u32 dcrbase_isram;
+ 	int len;
 -	const u32 *prop;
-+	const __be32 *clk, *spd;
 +	const __be32 *prop;
- 	int ret, prop_size;
+ 	u32 l2_size;
  
- 	memset(port, 0, sizeof *port);
-@@ -55,23 +55,23 @@ static int __devinit of_platform_serial_setup(struct platform_device *ofdev,
- 	/* Check for shifted address mapping */
- 	prop = of_get_property(np, "reg-offset", &prop_size);
- 	if (prop && (prop_size == sizeof(u32)))
--		port->mapbase += *prop;
-+		port->mapbase += be32_to_cpup(prop);
+ 	np = of_find_compatible_node(NULL, NULL, "ibm,l2-cache");
+@@ -93,7 +93,7 @@ static int __init ppc4xx_l2c_probe(void)
+ 		of_node_put(np);
+ 		return -ENODEV;
+ 	}
+-	l2_size = prop[0];
++	l2_size = be32_to_cpu(prop[0]);
  
- 	/* Check for registers offset within the devices address range */
- 	prop = of_get_property(np, "reg-shift", &prop_size);
- 	if (prop && (prop_size == sizeof(u32)))
--		port->regshift = *prop;
-+		port->regshift = be32_to_cpup(prop);
+ 	/* Map DCRs */
+ 	dcrreg = of_get_property(np, "dcr-reg", &len);
+@@ -103,8 +103,8 @@ static int __init ppc4xx_l2c_probe(void)
+ 		of_node_put(np);
+ 		return -ENODEV;
+ 	}
+-	dcrbase_isram = dcrreg[0];
+-	dcrbase_l2c = dcrreg[2];
++	dcrbase_isram = be32_to_cpu(dcrreg[0]);
++	dcrbase_l2c = be32_to_cpu(dcrreg[2]);
  
- 	port->irq = irq_of_parse_and_map(np, 0);
- 	port->iotype = UPIO_MEM;
- 	port->type = type;
--	port->uartclk = *clk;
-+	port->uartclk = be32_to_cpup(clk);
- 	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
- 		| UPF_FIXED_PORT | UPF_FIXED_TYPE;
- 	port->dev = &ofdev->dev;
- 	/* If current-speed was set, then try not to change it. */
- 	if (spd)
--		port->custom_divisor = *clk / (16 * (*spd));
-+		port->custom_divisor = be32_to_cpup(clk) / (16 * (be32_to_cpup(spd)));
+ 	/* Get and map irq number from device tree */
+ 	irq = irq_of_parse_and_map(np, 0);
+@@ -198,7 +198,7 @@ void ppc4xx_reset_system(char *cmd)
+ {
+ 	struct device_node *np;
+ 	u32 reset_type = DBCR0_RST_SYSTEM;
+-	const u32 *prop;
++	const __be32 *prop;
  
- 	return 0;
- }
+ 	np = of_find_node_by_type(NULL, "cpu");
+ 	if (np) {
+@@ -210,8 +210,8 @@ void ppc4xx_reset_system(char *cmd)
+ 		 * 2 - PPC4xx chip reset
+ 		 * 3 - PPC4xx system reset (default)
+ 		 */
+-		if ((prop) && ((prop[0] >= 1) && (prop[0] <= 3)))
+-			reset_type = prop[0] << 28;
++		if ((prop) && ((be32_to_cpu(prop[0]) >= 1) && (be32_to_cpu(prop[0]) <= 3)))
++			reset_type = be32_to_cpu(prop[0]) << 28;
+ 	}
+ 
+ 	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | reset_type);
+diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
+index 0038fb7..e2f7de8 100644
+--- a/arch/powerpc/sysdev/uic.c
++++ b/arch/powerpc/sysdev/uic.c
+@@ -253,7 +253,7 @@ uic_irq_ret:
+ static struct uic * __init uic_init_one(struct device_node *node)
+ {
+ 	struct uic *uic;
+-	const u32 *indexp, *dcrreg;
++	const __be32 *indexp, *dcrreg;
+ 	int len;
+ 
+ 	BUG_ON(! of_device_is_compatible(node, "ibm,uic"));
+@@ -269,7 +269,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
+ 		       "cell-index property\n", node->full_name);
+ 		return NULL;
+ 	}
+-	uic->index = *indexp;
++	uic->index = be32_to_cpup(indexp);
+ 
+ 	dcrreg = of_get_property(node, "dcr-reg", &len);
+ 	if (!dcrreg || (len != 2*sizeof(u32))) {
+@@ -277,7 +277,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
+ 		       "dcr-reg property\n", node->full_name);
+ 		return NULL;
+ 	}
+-	uic->dcrbase = *dcrreg;
++	uic->dcrbase = be32_to_cpup(dcrreg);
+ 
+ 	uic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
+ 				      NR_UIC_INTS, &uic_host_ops, -1);
 -- 
 1.7.1
