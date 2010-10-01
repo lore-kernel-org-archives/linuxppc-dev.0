@@ -1,37 +1,21 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CC0BFB70D6
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 67A59B6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 17:19:54 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o917Js7g003856
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:19:54 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o917Jscr1179760
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:19:54 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o917Jr4M003055
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:19:54 +1000
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [PATCH 02/18] powerpc: Add CROSSBE_COMPILE to build big endian
-	boot wrapper
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-In-reply-to: <AANLkTi=VmSXN6XeD__nkQLJAYXzxOh6WEtW6-jjJcC4Q@mail.gmail.com>
+	Fri,  1 Oct 2010 19:02:40 +1000 (EST)
+Subject: Re: Introduce support for little endian PowerPC
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+Date: Fri, 1 Oct 2010 04:02:24 -0500
+Message-Id: <2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<1285916771-18033-3-git-send-email-imunsie@au1.ibm.com>
-	<AANLkTi=VmSXN6XeD__nkQLJAYXzxOh6WEtW6-jjJcC4Q@mail.gmail.com>
-Date: Fri, 01 Oct 2010 17:19:54 +1000
-Message-Id: <1285917531-sup-3488@au1.ibm.com>
-Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-kernel <linux-kernel@vger.kernel.org>, paulus <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Ian Munsie <imunsie@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,13 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Geert Uytterhoeven's message of Fri Oct 01 17:13:19 +1000 2010:
-> Shouldn't the help text added by [PATCH 01/18]:
-....
-> be updated here as well?
 
-Yep, you're right. Thanks for pointing that out, I'll fix it for the next
-revision.
+On Oct 1, 2010, at 2:05 AM, Ian Munsie wrote:
 
-Cheers,
--Ian
+> Some PowerPC processors can be run in either big or little endian =
+modes, some
+> others can map selected pages of memory as little endian, which allows =
+the same
+> thing. Until now we have only supported the default big endian mode in =
+Linux.
+> This patch set introduces little endian support for the 44x family of =
+PowerPC
+> processors.
+
+=46rom a community aspect is anyone actually going to use this?  Is this =
+going to be the equivalent of voyager on x86?  I've got nothing against =
+some of the endian clean ups this introduces.  However the changes to =
+misc_32.S are a bit ugly from a readability point of view.  Just seems =
+like this is likely to bit-rot pretty quickly.
+
+- k
