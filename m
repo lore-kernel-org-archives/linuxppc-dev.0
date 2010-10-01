@@ -1,23 +1,22 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id BC3C9B70E7
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	by ozlabs.org (Postfix) with ESMTP id 72201B70EC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 21:30:56 +1000 (EST)
-Received: by wyb42 with SMTP id 42so2863243wyb.38
+	Fri,  1 Oct 2010 21:36:41 +1000 (EST)
+Received: by wwa36 with SMTP id 36so2774012wwa.14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Oct 2010 04:30:54 -0700 (PDT)
+	Fri, 01 Oct 2010 04:36:39 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
+In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
-Date: Fri, 1 Oct 2010 07:30:54 -0400
-Message-ID: <AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
+Date: Fri, 1 Oct 2010 07:36:35 -0400
+Message-ID: <AANLkTikHcoccu-WGtSOSdkwU6Tw_An_VFkUcEoY==8=c@mail.gmail.com>
 Subject: Re: Introduce support for little endian PowerPC
 From: Josh Boyer <jwboyer@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Ian Munsie <imunsie@au1.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
-	Ian Munsie <imunsie@au1.ibm.com>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 1, 2010 at 5:02 AM, Kumar Gala <galak@kernel.crashing.org> wrot=
-e:
->
-> On Oct 1, 2010, at 2:05 AM, Ian Munsie wrote:
->
->> Some PowerPC processors can be run in either big or little endian modes,=
- some
->> others can map selected pages of memory as little endian, which allows t=
-he same
->> thing. Until now we have only supported the default big endian mode in L=
-inux.
->> This patch set introduces little endian support for the 44x family of Po=
-werPC
->> processors.
->
-> From a community aspect is anyone actually going to use this? =A0Is this =
-going to be the equivalent of voyager on x86? =A0I've got nothing against s=
-ome of the endian clean ups this introduces. =A0However the changes to misc=
-_32.S are a bit ugly from a readability point of view. =A0Just seems like t=
-his is likely to bit-rot pretty quickly.
+On Fri, Oct 1, 2010 at 3:05 AM, Ian Munsie <imunsie@au1.ibm.com> wrote:
+> This patch set in combination with a patched GCC, binutils, uClibc and
+> buildroot has allowed for a full proof of concept little endian environme=
+nt on
+> a 440 Taishan board, which was able to successfully run busybox, OpenSSH =
+and a
+> handful of other userspace programs without problems.
 
-I'm with Kumar on this one.  Why would we want to support this?  I
-can't say I would be very willing to help anyone run in LE mode, let
-alone have it randomly selectable.
+Aside from my general "uh, why?" stance, I'm very very hesitant to
+integrate anything in the kernel that doesn'.t have released patches
+on the toolchain side.
+
+Also, which uClibc?  The old and crusty uClibc that uses the horrible
+linuxthreads, or the somewhat less crusty that just switched to NPTL
+(which hasn't been verified on normal PowerPC that I recall).  Why not
+use glibc...
+
+> This is not yet complete support for little endian PowerPC, some outstand=
+ing
+> issues that I am aware of are:
+> =A0* We only support 32bit PowerPC for now (and indeed, only 44x)
+> =A0* The vdso has not been fixed to be endian agnostic - any userspace pr=
+ogram
+> =A0 accessing it will get an unexpected result.
+> =A0* I have not touched PCI at all
+> =A0* Remaining device tree accesses still need to be examined to ensure t=
+hey are
+> =A0 correctly handling the endianess of the device tree.
+> =A0* Any other driver that uses the device tree is likely be broken for t=
+he same reason.
+> =A0* I've included a patch for the alignment handler, however it is as ye=
+t
+> =A0 completely untested due to a property of the hardware I've been using=
+ for
+> =A0 testing.
+
+I'm not meeting to detract here, but the Kconfig should be dependent
+on && BROKEN until the above is fixed.
 
 josh
