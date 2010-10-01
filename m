@@ -1,24 +1,27 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
-	by ozlabs.org (Postfix) with SMTP id 3E529B6EE8
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id C6D92B6EEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 10:16:33 +1000 (EST)
-Received: by qyk35 with SMTP id 35so2514228qyk.8
+	Fri,  1 Oct 2010 10:57:13 +1000 (EST)
+Received: by wyb42 with SMTP id 42so2519137wyb.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Sep 2010 17:16:30 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
+	Thu, 30 Sep 2010 17:57:11 -0700 (PDT)
+MIME-Version: 1.0
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <dc9b5d064d80ac2af2ccf932e94b2bb9@mail.gmail.com>
 References: <1285865736-32074-1-git-send-email-tmarri@apm.com>
 	<20100930190814.52268D2B48C@gemini.denx.de>
 	<AANLkTi=CJOsayM1YnwE3a22D2S35aM+BTV6_YfXjcjiO@mail.gmail.com>
-In-Reply-To: <AANLkTi=CJOsayM1YnwE3a22D2S35aM+BTV6_YfXjcjiO@mail.gmail.com>
-MIME-Version: 1.0
-Date: Thu, 30 Sep 2010 17:16:30 -0700
-Message-ID: <dc9b5d064d80ac2af2ccf932e94b2bb9@mail.gmail.com>
-Subject: RE: [PATCH] PPC4xx: ADMA separating SoC specific functions
-To: Dan Williams <dan.j.williams@intel.com>, Wolfgang Denk <wd@denx.de>
+	<dc9b5d064d80ac2af2ccf932e94b2bb9@mail.gmail.com>
+Date: Thu, 30 Sep 2010 17:57:10 -0700
+Message-ID: <AANLkTi=JqTU898DfW1=4qcb2WbwHvroY6LqiAX_oBb5L@mail.gmail.com>
+Subject: Re: [PATCH] PPC4xx: ADMA separating SoC specific functions
+From: Dan Williams <dan.j.williams@intel.com>
+To: Tirumala Marri <tmarri@apm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org, yur@emcraft.com
+Cc: Wolfgang Denk <wd@denx.de>, Greg KH <greg@kroah.com>, yur@emcraft.com,
+	linux-raid@vger.kernel.org, linux-crypto@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,87 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Thu, Sep 30, 2010 at 12:08 PM, Wolfgang Denk <wd@denx.de> wrote:
-> [snip other valid review comments]
-> >
-> > This is a header file, yet you add here literally thousands of lines
-> of
-> > code.
->
-> Yes, these functions are entirely too large to be inlined.  It looks
-> like you are trying to borrow too heavily from the iop-adma model.
-> The differences between iop13xx and iop33x from a adma perspective are
-> just in descriptor format and channel capabilities.  If you look at
-> the routines implemented in:
-> arch/arm/include/asm/hardware/iop3xx-adma.h
-> arch/arm/mach-iop13xx/include/mach/adma.h
-> ...they are just simple helpers that abstract the descriptor details.
-> For example:
->
-> iop_adma_prep_dma_xor()
-> {
-> [snip]
->         spin_lock_bh(&iop_chan->lock);
->         slot_cnt =3D iop_chan_xor_slot_count(len, src_cnt,
-> &slots_per_op);
->         sw_desc =3D iop_adma_alloc_slots(iop_chan, slot_cnt,
-> slots_per_op);
->         if (sw_desc) {
->                 grp_start =3D sw_desc->group_head;
->                 iop_desc_init_xor(grp_start, src_cnt, flags);
->                 iop_desc_set_byte_count(grp_start, iop_chan, len);
->                 iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
->                 sw_desc->unmap_src_cnt =3D src_cnt;
->                 sw_desc->unmap_len =3D len;
->                 sw_desc->async_tx.flags =3D flags;
->                 while (src_cnt--)
->                         iop_desc_set_xor_src_addr(grp_start, src_cnt,
->                                                   dma_src[src_cnt]);
->         }
->         spin_unlock_bh(&iop_chan->lock);
->
->         return sw_desc ? &sw_desc->async_tx : NULL;
-> }
->
-> Where  iop_adma_alloc_slots() is implemented differently between
-> iop13xx and iop3xx.  In this case why does ppc440spe-adma.h exist?  If
-> it has code specific to ppe440spe it should just live in the ppe440spe
-> C file.  If it is truly generic it should move to the base adma.c
-> implementation.  If you want to reuse a ppe440spe routine just link to
-> it.
-[Marri]That is how I started changing the code. And I see tons of warnings
-Saying "Used but not defined" or "Defined but not used". How should I
-suppress
-Some functions from adma.c are used in ppc440spe-adma.c and some from
-ppc440spe-adma.c
-Are used in adma.c. So I created intermediate file ppc440spe-adma.h with
-inlined
-Functions. In future this will be converted into ppc4xx_adma.h and move
-existing
-SoC specific stuff to ppc440spe-adma.c file.
+[ adding Greg ]
 
->
-> > Selecting the architecture at build time is bad as it prevents using
-> a
-> > sinlge kernel image across a wide range of boards. =A0You only replied
-> > "We select the architecture at build time." without any explanation
-> if
-> > there is a pressing technical reason to do it this way, or if this
-> was
-> > just a arbitrary decision.
->
-> I agree I have yet to see any indication that this driver needs to
-> have an architecture selected at build time.
->
-> A potential compromise a first step would be to have a common C file
-> that is shared between two driver modules until such point that they
-> can be unified into a common module.
+On Thu, Sep 30, 2010 at 5:16 PM, Tirumala Marri <tmarri@apm.com> wrote:
+>> Where =A0iop_adma_alloc_slots() is implemented differently between
+>> iop13xx and iop3xx. =A0In this case why does ppc440spe-adma.h exist? =A0=
+If
+>> it has code specific to ppe440spe it should just live in the ppe440spe
+>> C file. =A0If it is truly generic it should move to the base adma.c
+>> implementation. =A0If you want to reuse a ppe440spe routine just link to
+>> it.
+> [Marri]That is how I started changing the code. And I see tons of warning=
+s
+> Saying "Used but not defined" or "Defined but not used". How should I
+> suppress
+> Some functions from adma.c are used in ppc440spe-adma.c and some from
+> ppc440spe-adma.c
+> Are used in adma.c.
 
-As I responded to Mr. Wolfgang in previous email, similar SoC DMA engines
-will
-Be resolved at run time. Whereas completely different architectures will
-be
-Resolved at build time.
+This is part of defining a common interface.  Maybe look at the
+linkages of how the common ioat_probe() routine is used to support all
+three versions of its dma hardware.
 
-Regards,
-Marri
+> So I created intermediate file ppc440spe-adma.h with
+> inlined
+> Functions. In future this will be converted into ppc4xx_adma.h and move
+> existing
+> SoC specific stuff to ppc440spe-adma.c file.
+
+You definitely need to be able to resolve "used but not defined" and
+"defined but not used" warnings before tackling a driver conversion
+like this.  In light of this comment I wonder if it would be
+appropriate to submit your original driver, that just duplicated
+routines from the ppc440spe driver, to the -staging tree.  Then it
+would be available for someone familiar with driver conversions to
+take a shot at unifying.
+
+Greg, is this an appropriate use of -staging?
+
+--
+Dan
