@@ -1,29 +1,32 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com",
+	(Client CN "e23smtp03.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9F384B70A5
+	by ozlabs.org (Postfix) with ESMTPS id 7E20BB6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 17:06:19 +1000 (EST)
+	Fri,  1 Oct 2010 17:06:21 +1000 (EST)
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9171Y3Y007004
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:01:34 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9172OxX001638
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:02:24 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
 	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9176HYq1175572
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:18 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9176Hu5024625
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:17 +1000
+	o9176KvO1245356
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:20 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9176KC4005617
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:20 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	benh@kernel.crashing.org
-Subject: Introduce support for little endian PowerPC
-Date: Fri,  1 Oct 2010 17:05:53 +1000
-Message-Id: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-Cc: paulus@samba.org
+Subject: [PATCH 03/18] powerpc: Support parsing a little endian kernel from
+	zImage wrapper
+Date: Fri,  1 Oct 2010 17:05:56 +1000
+Message-Id: <1285916771-18033-4-git-send-email-imunsie@au1.ibm.com>
+In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+Cc: paulus@samba.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +36,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some PowerPC processors can be run in either big or little endian modes, some
-others can map selected pages of memory as little endian, which allows the same
-thing. Until now we have only supported the default big endian mode in Linux.
-This patch set introduces little endian support for the 44x family of PowerPC
-processors.
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-This patch set in combination with a patched GCC, binutils, uClibc and
-buildroot has allowed for a full proof of concept little endian environment on
-a 440 Taishan board, which was able to successfully run busybox, OpenSSH and a
-handful of other userspace programs without problems.
+This patch adds support to the PowerPC zImage wrapper (which always runs
+in big endian mode) to detect if the zImage is little endian and parse
+it's ELF header to enable it's successful extraction.
 
-I am not currently in a position to release my patches for the toolchain, but
-in the meantime I thought I would send my patches on the kernel side for review
-and feedback.
+It also provides some infrastructure for executing a little endian
+kernel - PowerPC platforms that support little endian should fill
+platform_ops.le_kentry with a function pointer to the routine
+responsible for switching the CPU to little endian and executing the
+kernel. This routing takes the same arguments in the same positions as
+kentry to allow them to easily be passed onto the kernel, with the
+kentry pointer itself tacked on as argument 4.
 
-While my toolchain patches are necessary to support the powerpcle-linux target,
-the kernel can still be built with an unpatched toolchain using the
-powerpcle-elf target instead. Userspace programs, however, do require the
-patched toolchain to build.
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ arch/powerpc/boot/elf.h       |    2 +-
+ arch/powerpc/boot/elf_util.c  |   48 +++++++++++++++++++++++++++++++++++++---
+ arch/powerpc/boot/main.c      |   26 +++++++++++++++++-----
+ arch/powerpc/boot/ops.h       |    3 ++
+ arch/powerpc/boot/prpmc2800.c |    5 +++-
+ arch/powerpc/boot/swab.h      |   26 ++++++++++++++++++++++
+ 6 files changed, 98 insertions(+), 12 deletions(-)
+ create mode 100644 arch/powerpc/boot/swab.h
 
-Since the processor still starts as big endian, the boot wrapper must still be
-compiled with a big endian 32bit toolchain. This can be passed into the build
-as CROSSBE_COMPILE in the same manner as the CROSS_COMPILE variable. When the
-boot wrapper is finished it runs some platform specific assembly to switch to
-little endian and execute the kernel.
-
-This is not yet complete support for little endian PowerPC, some outstanding
-issues that I am aware of are:
- * We only support 32bit PowerPC for now (and indeed, only 44x)
- * The vdso has not been fixed to be endian agnostic - any userspace program
-   accessing it will get an unexpected result.
- * I have not touched PCI at all
- * Remaining device tree accesses still need to be examined to ensure they are
-   correctly handling the endianess of the device tree.
- * Any other driver that uses the device tree is likely be broken for the same reason.
- * I've included a patch for the alignment handler, however it is as yet
-   completely untested due to a property of the hardware I've been using for
-   testing.
+diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h
+index 1941bc5..9de8105 100644
+--- a/arch/powerpc/boot/elf.h
++++ b/arch/powerpc/boot/elf.h
+@@ -152,6 +152,6 @@ struct elf_info {
+ 	unsigned long elfoffset;
+ };
+ int parse_elf64(void *hdr, struct elf_info *info);
+-int parse_elf32(void *hdr, struct elf_info *info);
++int parse_elf32(void *hdr, struct elf_info *info, int *little_endian);
+ 
+ #endif				/* _PPC_BOOT_ELF_H_ */
+diff --git a/arch/powerpc/boot/elf_util.c b/arch/powerpc/boot/elf_util.c
+index 1567a0c..67bba80 100644
+--- a/arch/powerpc/boot/elf_util.c
++++ b/arch/powerpc/boot/elf_util.c
+@@ -14,6 +14,7 @@
+ #include "page.h"
+ #include "string.h"
+ #include "stdio.h"
++#include "swab.h"
+ 
+ int parse_elf64(void *hdr, struct elf_info *info)
+ {
+@@ -47,7 +48,35 @@ int parse_elf64(void *hdr, struct elf_info *info)
+ 	return 1;
+ }
+ 
+-int parse_elf32(void *hdr, struct elf_info *info)
++void byteswap_elf32(Elf32_Ehdr *elf32) {
++	Elf32_Phdr *elf32ph;
++
++	swab16s(&elf32->e_type);
++	swab16s(&elf32->e_machine);
++	swab32s(&elf32->e_version);
++	swab32s(&elf32->e_entry);
++	swab32s(&elf32->e_phoff);
++	swab32s(&elf32->e_shoff);
++	swab32s(&elf32->e_flags);
++	swab16s(&elf32->e_ehsize);
++	swab16s(&elf32->e_phentsize);
++	swab16s(&elf32->e_phnum);
++	swab16s(&elf32->e_shentsize);
++	swab16s(&elf32->e_shnum);
++	swab16s(&elf32->e_shstrndx);
++
++	elf32ph = (Elf32_Phdr *) ((unsigned long)elf32 + elf32->e_phoff);
++	swab32s(&elf32ph->p_type);
++	swab32s(&elf32ph->p_offset);
++	swab32s(&elf32ph->p_vaddr);
++	swab32s(&elf32ph->p_paddr);
++	swab32s(&elf32ph->p_filesz);
++	swab32s(&elf32ph->p_memsz);
++	swab32s(&elf32ph->p_flags);
++	swab32s(&elf32ph->p_align);
++}
++
++int parse_elf32(void *hdr, struct elf_info *info, int *little_endian)
+ {
+ 	Elf32_Ehdr *elf32 = hdr;
+ 	Elf32_Phdr *elf32ph;
+@@ -57,9 +86,20 @@ int parse_elf32(void *hdr, struct elf_info *info)
+ 	      elf32->e_ident[EI_MAG1]  == ELFMAG1	&&
+ 	      elf32->e_ident[EI_MAG2]  == ELFMAG2	&&
+ 	      elf32->e_ident[EI_MAG3]  == ELFMAG3	&&
+-	      elf32->e_ident[EI_CLASS] == ELFCLASS32	&&
+-	      elf32->e_ident[EI_DATA]  == ELFDATA2MSB	&&
+-	      (elf32->e_type            == ET_EXEC ||
++	      elf32->e_ident[EI_CLASS] == ELFCLASS32))
++		return 0;
++	switch(elf32->e_ident[EI_DATA]) {
++		case ELFDATA2MSB:
++			*little_endian = 0;
++			break;
++		case ELFDATA2LSB:
++			*little_endian = 1;
++			byteswap_elf32(elf32);
++			break;
++		default:
++			return 0;
++	}
++	if (!((elf32->e_type            == ET_EXEC ||
+ 	       elf32->e_type            == ET_DYN)      &&
+ 	      elf32->e_machine         == EM_PPC))
+ 		return 0;
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index a28f021..36dd2b6 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -27,7 +27,7 @@ struct addr_range {
+ 
+ #undef DEBUG
+ 
+-static struct addr_range prep_kernel(void)
++static struct addr_range prep_kernel(int *little_endian)
+ {
+ 	char elfheader[256];
+ 	void *vmlinuz_addr = _vmlinux_start;
+@@ -40,8 +40,10 @@ static struct addr_range prep_kernel(void)
+ 	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
+ 	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
+ 
+-	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei))
++	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei, little_endian))
+ 		fatal("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
++	if (*little_endian && !platform_ops.le_kentry)
++		fatal("Little Endian kernel unsupported on this platform!");
+ 
+ 	if (platform_ops.image_hdr)
+ 		platform_ops.image_hdr(elfheader);
+@@ -166,8 +168,10 @@ void start(void)
+ {
+ 	struct addr_range vmlinux, initrd;
+ 	kernel_entry_t kentry;
++	le_kernel_entry_t le_kentry;
+ 	unsigned long ft_addr = 0;
+ 	void *chosen;
++	int little_endian = 0;
+ 
+ 	/* Do this first, because malloc() could clobber the loader's
+ 	 * command line.  Only use the loader command line if a
+@@ -189,7 +193,7 @@ void start(void)
+ 	if (!chosen)
+ 		chosen = create_node(NULL, "chosen");
+ 
+-	vmlinux = prep_kernel();
++	vmlinux = prep_kernel(&little_endian);
+ 	initrd = prep_initrd(vmlinux, chosen,
+ 			     loader_info.initrd_addr, loader_info.initrd_size);
+ 	prep_cmdline(chosen);
+@@ -206,11 +210,21 @@ void start(void)
+ 		console_ops.close();
+ 
+ 	kentry = (kernel_entry_t) vmlinux.addr;
++	le_kentry = (le_kernel_entry_t)platform_ops.le_kentry;
+ 	if (ft_addr)
+-		kentry(ft_addr, 0, NULL);
++		if (little_endian)
++			le_kentry(ft_addr, 0, NULL, kentry);
++		else
++			kentry(ft_addr, 0, NULL);
+ 	else
+-		kentry((unsigned long)initrd.addr, initrd.size,
+-		       loader_info.promptr);
++		if (little_endian)
++			le_kentry((unsigned long)initrd.addr, initrd.size,
++			       loader_info.promptr, kentry);
++		else
++			kentry((unsigned long)initrd.addr, initrd.size,
++			       loader_info.promptr);
++
++	kentry(ft_addr, 0, NULL);
+ 
+ 	/* console closed so printf in fatal below may not work */
+ 	fatal("Error: Linux kernel returned to zImage boot wrapper!\n\r");
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index b3218ce..cd6c7bf 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -20,6 +20,8 @@
+ #define	MAX_PROP_LEN		256 /* What should this be? */
+ 
+ typedef void (*kernel_entry_t)(unsigned long r3, unsigned long r4, void *r5);
++typedef void (*le_kernel_entry_t)(unsigned long r3, unsigned long r4, void *r5,
++				  kernel_entry_t kentry);
+ 
+ /* Platform specific operations */
+ struct platform_ops {
+@@ -30,6 +32,7 @@ struct platform_ops {
+ 	void *	(*realloc)(void *ptr, unsigned long size);
+ 	void	(*exit)(void);
+ 	void *	(*vmlinux_alloc)(unsigned long size);
++	le_kernel_entry_t le_kentry;
+ };
+ extern struct platform_ops platform_ops;
+ 
+diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
+index da31d60..6bad899 100644
+--- a/arch/powerpc/boot/prpmc2800.c
++++ b/arch/powerpc/boot/prpmc2800.c
+@@ -519,6 +519,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	void *vmlinuz_addr = _vmlinux_start;
+ 	unsigned long vmlinuz_size = _vmlinux_end - _vmlinux_start;
+ 	char elfheader[256];
++	int little_endian;
+ 
+ 	if (dt_size <= 0) /* No fdt */
+ 		exit();
+@@ -533,7 +534,9 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
+ 	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
+ 
+-	if (!parse_elf32(elfheader, &ei))
++	if (!parse_elf32(elfheader, &ei, &little_endian))
++		exit();
++	if (little_endian)
+ 		exit();
+ 
+ 	heap_start = (char *)(ei.memsize + ei.elfoffset); /* end of kernel*/
+diff --git a/arch/powerpc/boot/swab.h b/arch/powerpc/boot/swab.h
+new file mode 100644
+index 0000000..b122c2d
+--- /dev/null
++++ b/arch/powerpc/boot/swab.h
+@@ -0,0 +1,26 @@
++#ifndef _SWAB_H_
++#define _SWAB_H_
++
++#include "types.h"
++
++static __inline__ void st_le16(volatile u16 *addr, const u16 val)
++{
++	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
++}
++
++static inline void swab16s(u16 *addr)
++{
++	st_le16(addr, *addr);
++}
++
++static __inline__ void st_le32(volatile u32 *addr, const u32 val)
++{
++	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
++}
++
++static inline void swab32s(u32 *addr)
++{
++	st_le32(addr, *addr);
++}
++
++#endif
+-- 
+1.7.1
