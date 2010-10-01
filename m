@@ -1,24 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6391AB70D6
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B2977B70E5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Oct 2010 03:59:57 +1000 (EST)
-Subject: Re: Introduce support for little endian PowerPC
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1285935283.2463.78.camel@pasglop>
-Date: Fri, 1 Oct 2010 12:59:31 -0500
-Message-Id: <BBD78246-343E-4A96-9E55-3E40AD628C0B@kernel.crashing.org>
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
-	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
-	<1285935283.2463.78.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
-	Ian Munsie <imunsie@au1.ibm.com>, linux-kernel@vger.kernel.org
+	Sat,  2 Oct 2010 04:23:08 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o91INJiZ002014
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 14:23:19 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o91IN0mK1986666
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 14:23:00 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o91IMwxS001907
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 15:23:00 -0300
+Message-ID: <4CA62700.7010809@austin.ibm.com>
+Date: Fri, 01 Oct 2010 13:22:56 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/9] v3 De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, Robin Holt <holt@sgi.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,62 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This set of patches decouples the concept that a single memory
+section corresponds to a single directory in 
+/sys/devices/system/memory/.  On systems
+with large amounts of memory (1+ TB) there are performance issues
+related to creating the large number of sysfs directories.  For
+a powerpc machine with 1 TB of memory we are creating 63,000+
+directories.  This is resulting in boot times of around 45-50
+minutes for systems with 1 TB of memory and 8 hours for systems
+with 2 TB of memory.  With this patch set applied I am now seeing
+boot times of 5 minutes or less.
 
-On Oct 1, 2010, at 7:14 AM, Benjamin Herrenschmidt wrote:
+The root of this issue is in sysfs directory creation. Every time
+a directory is created a string compare is done against all sibling
+directories to ensure we do not create duplicates.  The list of
+directory nodes in sysfs is kept as an unsorted list which results
+in this being an exponentially longer operation as the number of
+directories are created.
 
-> On Fri, 2010-10-01 at 07:30 -0400, Josh Boyer wrote:
->>=20
->>> =46rom a community aspect is anyone actually going to use this?  Is
->> this going to be the equivalent of voyager on x86?  I've got nothing
->> against some of the endian clean ups this introduces.  However the
->> changes to misc_32.S are a bit ugly from a readability point of view.
->> Just seems like this is likely to bit-rot pretty quickly.
->>=20
->> I'm with Kumar on this one.  Why would we want to support this?  I
->> can't say I would be very willing to help anyone run in LE mode, let
->> alone have it randomly selectable.=20
->=20
-> There's some good reasons on the field ... sadly.
->=20
-> At this stage this is mostly an experiment, which went pretty well in
-> the sense that it's actually quite easy and a lot of the "fixes" are
-> actually reasonable cleanups to carry.
->=20
-> Now, the main reasons in practice are anything touching graphics.
->=20
-> There's quite a few IP cores out there for SoCs that don't have HW
-> swappers, and -tons- of more or less ugly code that can't deal with =
-non
-> native pixel ordering (hell, even Xorg isn't good at it, we really =
-only
-> support cards that have HW swappers today).
->=20
-> There's an even bigger pile of application code that deals with =
-graphics
-> without any regard for endianness and is essentially unfixable.
->=20
-> So it becomes a matter of potential customers that will take it if it
-> does LE and won't if it doesn't ...
->=20
-> Now, I don't have a problem supporting that as the maintainer, as I
-> said, from a kernel standpoint, it's all quite easy to deal with. Some
-> of the most gory aspects in misc_32.S could probably be done in a way
-> that is slightly more readable, but the approach is actually good, I
-> think, to have macros to represent the high/low parts of register =
-pairs.
->=20
-> So at this stage, I'd say, let's not dismiss it just because we all =
-come
-> from a long education of hating LE for the sake of it :-)
->=20
-> It makes -some- sense, even if it's not necessarily on the markets
-> targeted by FSL today for example. At least from the kernel POV, it
-> doesn't seem to me to be a significant support burden at all.
->=20
-> Cheers,
-> Ben.
+The solution solved by this patch set is to allow a single
+directory in sysfs to span multiple memory sections.  This is
+controlled by an optional architecturally defined function
+memory_block_size_bytes().  The default definition of this
+routine returns a memory block size equal to the memory section
+size. This maintains the current layout of sysfs memory
+directories as it appears to userspace to remain the same as it
+is today.
 
-I'm not against it, and I agree some of the patches seem like good clean =
-up.  I'm concerned about this bit rotting pretty quickly.
+For architectures that define their own version of this routine,
+as is done for powerpc and x86_64 in this patchset, the view in userspace
+would change such that each memoryXXX directory would span
+multiple memory sections.  The number of sections spanned would
+depend on the value reported by memory_block_size_bytes.
 
-- k
+In both cases a new file 'end_phys_index' is created in each
+memoryXXX directory.  This file will contain the physical id
+of the last memory section covered by the sysfs directory.  For
+the default case, the value in 'end_phys_index' will be the same
+as in the existng 'phys_index' file.
+
+Updates for this version of the patch:
+
+- Patches 2 and 3 have been swapped which has alleviated the need for the
+  section count in the memory_block struct to be an atomic.
+
+- The get_memory_block_size and memory_block_size_bytes routines now return
+  an unsigned long instead of a u32.  This affects patches 4, 7, and 8.
+
+- [Patch 5/9] The phys_index member of the memory block struct is changed to
+  start_section_nr and the new end_phys_index is now named end_section_nr.
+
+- [Patch 8/9] A new patch added to the set to define a version of
+  memory_block_size_bytes() for x86_64 when CONFIG_X86_UV is set.
+
+- [Patch 9/9] Correct the updates to hotplug documentation to indicate that
+  4 or 5 files may be seen for each memory directory in sysfs.
+
+-Nathan Fontenot
