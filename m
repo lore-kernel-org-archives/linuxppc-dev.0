@@ -1,17 +1,17 @@
 Return-Path: <holt@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id 76291B70E9
+Received: from relay.sgi.com (relay1.sgi.com [192.48.179.29])
+	by ozlabs.org (Postfix) with ESMTP id 8D5D8B710B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Oct 2010 04:45:40 +1000 (EST)
-Date: Fri, 1 Oct 2010 13:45:38 -0500
+	Sat,  2 Oct 2010 04:46:03 +1000 (EST)
+Date: Fri, 1 Oct 2010 13:40:14 -0500
 From: Robin Holt <holt@sgi.com>
 To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 2/9] v3 Add mutex for adding/removing memory blocks
-Message-ID: <20101001184538.GI14064@sgi.com>
-References: <4CA62700.7010809@austin.ibm.com> <4CA62896.2060307@austin.ibm.com>
+Subject: Re: [PATCH 1/9] v3 Move find_memory_block routine
+Message-ID: <20101001184014.GH14064@sgi.com>
+References: <4CA62700.7010809@austin.ibm.com> <4CA62857.4030803@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4CA62896.2060307@austin.ibm.com>
+In-Reply-To: <4CA62857.4030803@austin.ibm.com>
 Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, linux-kernel@vger.kernel.org,
 	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
 	Robin Holt <holt@sgi.com>, linuxppc-dev@lists.ozlabs.org,
@@ -25,17 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 01, 2010 at 01:29:42PM -0500, Nathan Fontenot wrote:
-> Add a new mutex for use in adding and removing of memory blocks.  This
-> is needed to avoid any race conditions in which the same memory block could
-> be added and removed at the same time.
+On Fri, Oct 01, 2010 at 01:28:39PM -0500, Nathan Fontenot wrote:
+> Move the find_memory_block() routine up to avoid needing a forward
+> declaration in subsequent patches.
 > 
 > Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
 Reviewed-by: Robin Holt <holt@sgi.com>
-
-I am fine with this patch by itself, but its only real function is
-to protect the count introduced by the next patch.  You might want to
-combine the patches, but if not, that is fine as well.
-
-Robin
