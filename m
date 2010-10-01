@@ -2,20 +2,24 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 67A59B6EFF
+	by ozlabs.org (Postfix) with ESMTPS id 39D66B70A8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 19:02:40 +1000 (EST)
-Subject: Re: Introduce support for little endian PowerPC
+	Fri,  1 Oct 2010 19:19:20 +1000 (EST)
+Subject: Re: [PATCH 01/18] powerpc: Add ability to build little endian kernels
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-Date: Fri, 1 Oct 2010 04:02:24 -0500
-Message-Id: <2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
+In-Reply-To: <1285916771-18033-2-git-send-email-imunsie@au1.ibm.com>
+Date: Fri, 1 Oct 2010 04:18:20 -0500
+Message-Id: <F7E7DAE6-A132-458D-ABC3-4CC92A4C7263@kernel.crashing.org>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+	<1285916771-18033-2-git-send-email-imunsie@au1.ibm.com>
 To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	paulus@samba.org
+Cc: Michal Marek <mmarek@suse.cz>, Albert Herranz <albert_herranz@yahoo.es>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	paulus@samba.org, Andreas Schwab <schwab@linux-m68k.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+	Torez Smith <lnxtorez@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +32,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Oct 1, 2010, at 2:05 AM, Ian Munsie wrote:
 
-> Some PowerPC processors can be run in either big or little endian =
-modes, some
-> others can map selected pages of memory as little endian, which allows =
-the same
-> thing. Until now we have only supported the default big endian mode in =
-Linux.
-> This patch set introduces little endian support for the 44x family of =
-PowerPC
-> processors.
+>=20
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype =
+b/arch/powerpc/platforms/Kconfig.cputype
+> index d361f81..074ff12 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -329,3 +329,19 @@ config CHECK_CACHE_COHERENCY
+> 	bool
+>=20
+> endmenu
+> +
+> +config ARCH_SUPPORTS_LITTLE_ENDIAN
+> +	bool
+> +
+> +config CPU_LITTLE_ENDIAN
+> +	bool "Build little endian kernel"
+> +	depends on ARCH_SUPPORTS_LITTLE_ENDIAN && EXPERIMENTAL
+> +	default n
+> +	help
+> +	  This option selects whether a big endian or little endian =
+kernel will
+> +	  be built.
+> +
+> +	  Note that if building a little endian kernel, CROSS_COMPILE =
+must
+> +	  point to a toolchain capable of targetting little endian =
+powerpc,
+> +	  while the toolchain specified by CROSS32_COMPILE must be =
+capable of
+> +	  targetting *BIG* endian PowerPC.
+> --=20
+> 1.7.1
 
-=46rom a community aspect is anyone actually going to use this?  Is this =
-going to be the equivalent of voyager on x86?  I've got nothing against =
-some of the endian clean ups this introduces.  However the changes to =
-misc_32.S are a bit ugly from a readability point of view.  Just seems =
-like this is likely to bit-rot pretty quickly.
+Shouldn't we have something that limits to the sub-arch'es that actually =
+support it?  I doubt I'm ever going to make FSL-Book-e support LE.
 
-- k
+- k=
