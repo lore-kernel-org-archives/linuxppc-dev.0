@@ -1,32 +1,32 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7E20BB6F10
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B1DDDB70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 17:06:21 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9172OxX001638
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:02:24 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9176KvO1245356
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:20 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9176KC4005617
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:20 +1000
+	Fri,  1 Oct 2010 17:06:22 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9176MU0029078
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:22 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9176MZL1536174
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:22 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9176LkB024722
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:21 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	benh@kernel.crashing.org
-Subject: [PATCH 03/18] powerpc: Support parsing a little endian kernel from
-	zImage wrapper
-Date: Fri,  1 Oct 2010 17:05:56 +1000
-Message-Id: <1285916771-18033-4-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 04/18] powerpc: Allow taishan platform to boot a little endian
+	kernel
+Date: Fri,  1 Oct 2010 17:05:57 +1000
+Message-Id: <1285916771-18033-5-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-Cc: paulus@samba.org, Ian Munsie <imunsie@au1.ibm.com>
+Cc: Albert Herranz <albert_herranz@yahoo.es>, paulus@samba.org,
+	Ian Munsie <imunsie@au1.ibm.com>, Torez Smith <lnxtorez@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,259 +38,166 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This patch adds support to the PowerPC zImage wrapper (which always runs
-in big endian mode) to detect if the zImage is little endian and parse
-it's ELF header to enable it's successful extraction.
+This adds code to the boot wrapper to allow 44x CPUs to boot little
+endian kernels. Presumably all 44x PowerPC platforms should also be able
+to use this code unmodified, but this patch only wires up the taishan
+platform as that has been tested.
 
-It also provides some infrastructure for executing a little endian
-kernel - PowerPC platforms that support little endian should fill
-platform_ops.le_kentry with a function pointer to the routine
-responsible for switching the CPU to little endian and executing the
-kernel. This routing takes the same arguments in the same positions as
-kentry to allow them to easily be passed onto the kernel, with the
-kentry pointer itself tacked on as argument 4.
+The boot wrapper is still run in 32bit big endian mode and must set the
+E bit in the TLB entries that the kernel may use initially. Naturally
+the code setting this up can't afford to change the E bit on it's own
+TLB entry while it is executing so it sets up a trampoline in address
+space 1 to affect the change on all address space 0 TLB entries.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/boot/elf.h       |    2 +-
- arch/powerpc/boot/elf_util.c  |   48 +++++++++++++++++++++++++++++++++++++---
- arch/powerpc/boot/main.c      |   26 +++++++++++++++++-----
- arch/powerpc/boot/ops.h       |    3 ++
- arch/powerpc/boot/prpmc2800.c |    5 +++-
- arch/powerpc/boot/swab.h      |   26 ++++++++++++++++++++++
- 6 files changed, 98 insertions(+), 12 deletions(-)
- create mode 100644 arch/powerpc/boot/swab.h
+ arch/powerpc/boot/4xx.h                |    2 +
+ arch/powerpc/boot/Makefile             |    2 +-
+ arch/powerpc/boot/cuboot-taishan.c     |    1 +
+ arch/powerpc/boot/le-44x.S             |   85 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype |    1 +
+ 5 files changed, 90 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/le-44x.S
 
-diff --git a/arch/powerpc/boot/elf.h b/arch/powerpc/boot/elf.h
-index 1941bc5..9de8105 100644
---- a/arch/powerpc/boot/elf.h
-+++ b/arch/powerpc/boot/elf.h
-@@ -152,6 +152,6 @@ struct elf_info {
- 	unsigned long elfoffset;
- };
- int parse_elf64(void *hdr, struct elf_info *info);
--int parse_elf32(void *hdr, struct elf_info *info);
-+int parse_elf32(void *hdr, struct elf_info *info, int *little_endian);
+diff --git a/arch/powerpc/boot/4xx.h b/arch/powerpc/boot/4xx.h
+index 7dc5d45..05bc068 100644
+--- a/arch/powerpc/boot/4xx.h
++++ b/arch/powerpc/boot/4xx.h
+@@ -29,5 +29,7 @@ void ibm440gx_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk,
+ 			   unsigned int tmr_clk);
+ void ibm440spe_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk,
+ 			    unsigned int tmr_clk);
++void ibm44x_le_kentry(unsigned long r3, unsigned long r4, void *r5,
++		      kernel_entry_t kentry);
  
- #endif				/* _PPC_BOOT_ELF_H_ */
-diff --git a/arch/powerpc/boot/elf_util.c b/arch/powerpc/boot/elf_util.c
-index 1567a0c..67bba80 100644
---- a/arch/powerpc/boot/elf_util.c
-+++ b/arch/powerpc/boot/elf_util.c
-@@ -14,6 +14,7 @@
- #include "page.h"
- #include "string.h"
- #include "stdio.h"
-+#include "swab.h"
+ #endif /* _POWERPC_BOOT_4XX_H_ */
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 79d7e69..c4b8616 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -69,7 +69,7 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+ 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
+-		fsl-soc.c mpc8xx.c pq2.c ugecon.c
++		fsl-soc.c mpc8xx.c pq2.c ugecon.c le-44x.S
+ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+diff --git a/arch/powerpc/boot/cuboot-taishan.c b/arch/powerpc/boot/cuboot-taishan.c
+index 9bc906a..7fdd614 100644
+--- a/arch/powerpc/boot/cuboot-taishan.c
++++ b/arch/powerpc/boot/cuboot-taishan.c
+@@ -52,6 +52,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	CUBOOT_INIT();
  
- int parse_elf64(void *hdr, struct elf_info *info)
- {
-@@ -47,7 +48,35 @@ int parse_elf64(void *hdr, struct elf_info *info)
- 	return 1;
+ 	platform_ops.fixups = taishan_fixups;
++	platform_ops.le_kentry = ibm44x_le_kentry;
+ 	fdt_init(_dtb_start);
+ 	serial_console_init();
  }
- 
--int parse_elf32(void *hdr, struct elf_info *info)
-+void byteswap_elf32(Elf32_Ehdr *elf32) {
-+	Elf32_Phdr *elf32ph;
-+
-+	swab16s(&elf32->e_type);
-+	swab16s(&elf32->e_machine);
-+	swab32s(&elf32->e_version);
-+	swab32s(&elf32->e_entry);
-+	swab32s(&elf32->e_phoff);
-+	swab32s(&elf32->e_shoff);
-+	swab32s(&elf32->e_flags);
-+	swab16s(&elf32->e_ehsize);
-+	swab16s(&elf32->e_phentsize);
-+	swab16s(&elf32->e_phnum);
-+	swab16s(&elf32->e_shentsize);
-+	swab16s(&elf32->e_shnum);
-+	swab16s(&elf32->e_shstrndx);
-+
-+	elf32ph = (Elf32_Phdr *) ((unsigned long)elf32 + elf32->e_phoff);
-+	swab32s(&elf32ph->p_type);
-+	swab32s(&elf32ph->p_offset);
-+	swab32s(&elf32ph->p_vaddr);
-+	swab32s(&elf32ph->p_paddr);
-+	swab32s(&elf32ph->p_filesz);
-+	swab32s(&elf32ph->p_memsz);
-+	swab32s(&elf32ph->p_flags);
-+	swab32s(&elf32ph->p_align);
-+}
-+
-+int parse_elf32(void *hdr, struct elf_info *info, int *little_endian)
- {
- 	Elf32_Ehdr *elf32 = hdr;
- 	Elf32_Phdr *elf32ph;
-@@ -57,9 +86,20 @@ int parse_elf32(void *hdr, struct elf_info *info)
- 	      elf32->e_ident[EI_MAG1]  == ELFMAG1	&&
- 	      elf32->e_ident[EI_MAG2]  == ELFMAG2	&&
- 	      elf32->e_ident[EI_MAG3]  == ELFMAG3	&&
--	      elf32->e_ident[EI_CLASS] == ELFCLASS32	&&
--	      elf32->e_ident[EI_DATA]  == ELFDATA2MSB	&&
--	      (elf32->e_type            == ET_EXEC ||
-+	      elf32->e_ident[EI_CLASS] == ELFCLASS32))
-+		return 0;
-+	switch(elf32->e_ident[EI_DATA]) {
-+		case ELFDATA2MSB:
-+			*little_endian = 0;
-+			break;
-+		case ELFDATA2LSB:
-+			*little_endian = 1;
-+			byteswap_elf32(elf32);
-+			break;
-+		default:
-+			return 0;
-+	}
-+	if (!((elf32->e_type            == ET_EXEC ||
- 	       elf32->e_type            == ET_DYN)      &&
- 	      elf32->e_machine         == EM_PPC))
- 		return 0;
-diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
-index a28f021..36dd2b6 100644
---- a/arch/powerpc/boot/main.c
-+++ b/arch/powerpc/boot/main.c
-@@ -27,7 +27,7 @@ struct addr_range {
- 
- #undef DEBUG
- 
--static struct addr_range prep_kernel(void)
-+static struct addr_range prep_kernel(int *little_endian)
- {
- 	char elfheader[256];
- 	void *vmlinuz_addr = _vmlinux_start;
-@@ -40,8 +40,10 @@ static struct addr_range prep_kernel(void)
- 	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
- 	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
- 
--	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei))
-+	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei, little_endian))
- 		fatal("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
-+	if (*little_endian && !platform_ops.le_kentry)
-+		fatal("Little Endian kernel unsupported on this platform!");
- 
- 	if (platform_ops.image_hdr)
- 		platform_ops.image_hdr(elfheader);
-@@ -166,8 +168,10 @@ void start(void)
- {
- 	struct addr_range vmlinux, initrd;
- 	kernel_entry_t kentry;
-+	le_kernel_entry_t le_kentry;
- 	unsigned long ft_addr = 0;
- 	void *chosen;
-+	int little_endian = 0;
- 
- 	/* Do this first, because malloc() could clobber the loader's
- 	 * command line.  Only use the loader command line if a
-@@ -189,7 +193,7 @@ void start(void)
- 	if (!chosen)
- 		chosen = create_node(NULL, "chosen");
- 
--	vmlinux = prep_kernel();
-+	vmlinux = prep_kernel(&little_endian);
- 	initrd = prep_initrd(vmlinux, chosen,
- 			     loader_info.initrd_addr, loader_info.initrd_size);
- 	prep_cmdline(chosen);
-@@ -206,11 +210,21 @@ void start(void)
- 		console_ops.close();
- 
- 	kentry = (kernel_entry_t) vmlinux.addr;
-+	le_kentry = (le_kernel_entry_t)platform_ops.le_kentry;
- 	if (ft_addr)
--		kentry(ft_addr, 0, NULL);
-+		if (little_endian)
-+			le_kentry(ft_addr, 0, NULL, kentry);
-+		else
-+			kentry(ft_addr, 0, NULL);
- 	else
--		kentry((unsigned long)initrd.addr, initrd.size,
--		       loader_info.promptr);
-+		if (little_endian)
-+			le_kentry((unsigned long)initrd.addr, initrd.size,
-+			       loader_info.promptr, kentry);
-+		else
-+			kentry((unsigned long)initrd.addr, initrd.size,
-+			       loader_info.promptr);
-+
-+	kentry(ft_addr, 0, NULL);
- 
- 	/* console closed so printf in fatal below may not work */
- 	fatal("Error: Linux kernel returned to zImage boot wrapper!\n\r");
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index b3218ce..cd6c7bf 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -20,6 +20,8 @@
- #define	MAX_PROP_LEN		256 /* What should this be? */
- 
- typedef void (*kernel_entry_t)(unsigned long r3, unsigned long r4, void *r5);
-+typedef void (*le_kernel_entry_t)(unsigned long r3, unsigned long r4, void *r5,
-+				  kernel_entry_t kentry);
- 
- /* Platform specific operations */
- struct platform_ops {
-@@ -30,6 +32,7 @@ struct platform_ops {
- 	void *	(*realloc)(void *ptr, unsigned long size);
- 	void	(*exit)(void);
- 	void *	(*vmlinux_alloc)(unsigned long size);
-+	le_kernel_entry_t le_kentry;
- };
- extern struct platform_ops platform_ops;
- 
-diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
-index da31d60..6bad899 100644
---- a/arch/powerpc/boot/prpmc2800.c
-+++ b/arch/powerpc/boot/prpmc2800.c
-@@ -519,6 +519,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 	void *vmlinuz_addr = _vmlinux_start;
- 	unsigned long vmlinuz_size = _vmlinux_end - _vmlinux_start;
- 	char elfheader[256];
-+	int little_endian;
- 
- 	if (dt_size <= 0) /* No fdt */
- 		exit();
-@@ -533,7 +534,9 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
- 	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
- 
--	if (!parse_elf32(elfheader, &ei))
-+	if (!parse_elf32(elfheader, &ei, &little_endian))
-+		exit();
-+	if (little_endian)
- 		exit();
- 
- 	heap_start = (char *)(ei.memsize + ei.elfoffset); /* end of kernel*/
-diff --git a/arch/powerpc/boot/swab.h b/arch/powerpc/boot/swab.h
+diff --git a/arch/powerpc/boot/le-44x.S b/arch/powerpc/boot/le-44x.S
 new file mode 100644
-index 0000000..b122c2d
+index 0000000..c8d2ee4
 --- /dev/null
-+++ b/arch/powerpc/boot/swab.h
-@@ -0,0 +1,26 @@
-+#ifndef _SWAB_H_
-+#define _SWAB_H_
++++ b/arch/powerpc/boot/le-44x.S
+@@ -0,0 +1,85 @@
++/*
++ * Copyright © 2010 Ian Munsie, IBM Corporation
++ *
++ * Assembly to begin executing a little endian kernel from a big endian boot
++ * wrapper. Uses a trampoline in address space 1 to update the E bit in each
++ * TLB entry of address space 0 before entering the kernel.
++ */
 +
-+#include "types.h"
++#include "ppc_asm.h"
 +
-+static __inline__ void st_le16(volatile u16 *addr, const u16 val)
-+{
-+	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
-+}
++#define __MASK(X)		(1<<(X))
 +
-+static inline void swab16s(u16 *addr)
-+{
-+	st_le16(addr, *addr);
-+}
++#define SPRN_SRR0		0x01A		/* Save/Restore Register 0 */
++#define SPRN_SRR1		0x01B		/* Save/Restore Register 1 */
 +
-+static __inline__ void st_le32(volatile u32 *addr, const u32 val)
-+{
-+	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
-+}
++#define MSR_IS			__MASK(5)	/* Instruction Space */
++#define MSR_DS			__MASK(4)	/* Data Space */
 +
-+static inline void swab32s(u32 *addr)
-+{
-+	st_le32(addr, *addr);
-+}
++#define	PPC44x_TLB_PAGEID	0
++#define	PPC44x_TLB_XLAT		1
++#define	PPC44x_TLB_ATTRIB	2
 +
-+#endif
++/* Page identification fields */
++#define	PPC44x_TLB_VALID	0x00000200      /* Valid flag */
++#define PPC44x_TLB_TS		0x00000100	/* Translation address space */
++
++/* Storage attribute and access control fields */
++#define PPC44x_TLB_E		0x00000080      /* Memory is little endian */
++
++	.text
++	.global ibm44x_le_kentry
++ibm44x_le_kentry:
++	/* Find an invalid TLB entry we can use */
++	li	r12,0				/* Start searching at TLB 0 */
++1:	tlbre	r10,r12,PPC44x_TLB_PAGEID	/* Read TLB page ID word */
++	andi.	r0,r10,PPC44x_TLB_VALID		/* Test if TLB is valid */
++	beq	2f				/* If not valid we are free to use it */
++	addi	r12,r12,1			/* If valid, increment */
++	cmpwi	r12,64				/* Have we reached the end of the TLBs? */
++	bne	1b				/* If not, continue searching */
++	blr					/* If so, no invalid TLB entries found :( Shouldn't happen AFAIK */
++
++	/* Locate TLB entry containing trampoline */
++2:	lis	r0,le_trampoline@h
++	ori	r0,r0,le_trampoline@l
++	tlbsx	r11,0,r0
++
++	/* Set free TLB to match our TLB, but with TS=1 */
++	tlbre	r10,r11,PPC44x_TLB_XLAT
++	tlbwe	r10,r12,PPC44x_TLB_XLAT
++	tlbre	r10,r11,PPC44x_TLB_ATTRIB
++	tlbwe	r10,r12,PPC44x_TLB_ATTRIB
++	tlbre	r10,r11,PPC44x_TLB_PAGEID
++	ori	r10,r10,PPC44x_TLB_TS
++	tlbwe	r10,r12,PPC44x_TLB_PAGEID
++
++	/* Goto trampoline in address space 1 */
++	mtspr	SPRN_SRR0,r0
++	mfmsr	r0
++	ori	r0,r0,MSR_IS | MSR_DS
++	mtspr	SPRN_SRR1,r0
++	rfi
++
++le_trampoline:
++	/* Set E bit on all valid TLB entries with TS=0 */
++	li	r12,0				/* Start searching at TLB 0 */
++1:	tlbre	r10,r12,PPC44x_TLB_PAGEID	/* Read TLB page ID word */
++	andi.	r0,r10,PPC44x_TLB_VALID		/* Test if TLB is valid */
++	beq	2f				/* If not valid, continue */
++	andi.	r0,r10,PPC44x_TLB_TS		/* If valid, test if TLB is TS=1 */
++	bne	2f				/* If TS=1, continue */
++	tlbre	r10,r12,PPC44x_TLB_ATTRIB	/* If TS=0, read TLB attributes */
++	ori	r10,r10,PPC44x_TLB_E		/* Set little endian bit */
++	tlbwe	r10,r12,PPC44x_TLB_ATTRIB	/* Write attributes back */
++2:	addi	r12,r12,1			/* Increment */
++	cmpwi	r12,64				/* Are we done? */
++	bne	1b				/* If not, continue searching */
++
++	/* Goto kentry in address space 0 */
++	mtspr	SPRN_SRR0,r6			/* arg 4 (kentry) */
++	mfmsr	r11
++	li	r12,MSR_IS | MSR_DS
++	andc	r11,r11,r12
++	mtspr	SPRN_SRR1,r11
++	rfi
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 074ff12..8ba962e 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -49,6 +49,7 @@ config 44x
+ 	select 4xx_SOC
+ 	select PPC_PCI_CHOICE
+ 	select PHYS_64BIT
++	select ARCH_SUPPORTS_LITTLE_ENDIAN
+ 
+ config E200
+ 	bool "Freescale e200"
 -- 
 1.7.1
