@@ -1,27 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id D3BAEB70FD
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id EBB46B70E6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 21:40:51 +1000 (EST)
-Received: by wwa36 with SMTP id 36so2777028wwa.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Oct 2010 04:40:49 -0700 (PDT)
+	Fri,  1 Oct 2010 22:05:26 +1000 (EST)
+Message-ID: <4CA5CC3C.6020006@mlbassoc.com>
+Date: Fri, 01 Oct 2010 05:55:40 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-In-Reply-To: <1285916771-18033-2-git-send-email-imunsie@au1.ibm.com>
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<1285916771-18033-2-git-send-email-imunsie@au1.ibm.com>
-Date: Fri, 1 Oct 2010 07:40:49 -0400
-Message-ID: <AANLkTimdV2FTEhcKXcM_+k23PBFTR5KvyjqEGxzzX72Q@mail.gmail.com>
-Subject: Re: [PATCH 01/18] powerpc: Add ability to build little endian kernels
-From: Josh Boyer <jwboyer@gmail.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-kernel@vger.kernel.org, paulus@samba.org,
-	Andreas Schwab <schwab@linux-m68k.org>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	Torez Smith <lnxtorez@linux.vnet.ibm.com>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: Introduce support for little endian PowerPC
+References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
+	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
+In-Reply-To: <AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 1, 2010 at 3:05 AM, Ian Munsie <imunsie@au1.ibm.com> wrote:
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platfo=
-rms/Kconfig.cputype
-> index d361f81..074ff12 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -329,3 +329,19 @@ config CHECK_CACHE_COHERENCY
-> =A0 =A0 =A0 =A0bool
+On 10/01/2010 05:30 AM, Josh Boyer wrote:
+> On Fri, Oct 1, 2010 at 5:02 AM, Kumar Gala<galak@kernel.crashing.org>  wrote:
+>>
+>> On Oct 1, 2010, at 2:05 AM, Ian Munsie wrote:
+>>
+>>> Some PowerPC processors can be run in either big or little endian modes, some
+>>> others can map selected pages of memory as little endian, which allows the same
+>>> thing. Until now we have only supported the default big endian mode in Linux.
+>>> This patch set introduces little endian support for the 44x family of PowerPC
+>>> processors.
+>>
+>>  From a community aspect is anyone actually going to use this?  Is this going to be the equivalent of voyager on x86?  I've got nothing against some of the endian clean ups this introduces.  However the changes to misc_32.S are a bit ugly from a readability point of view.  Just seems like this is likely to bit-rot pretty quickly.
 >
-> =A0endmenu
-> +
-> +config ARCH_SUPPORTS_LITTLE_ENDIAN
-> + =A0 =A0 =A0 bool
-> +
-> +config CPU_LITTLE_ENDIAN
-> + =A0 =A0 =A0 bool "Build little endian kernel"
-> + =A0 =A0 =A0 depends on ARCH_SUPPORTS_LITTLE_ENDIAN && EXPERIMENTAL
-> + =A0 =A0 =A0 default n
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 This option selects whether a big endian or little endi=
-an kernel will
-> + =A0 =A0 =A0 =A0 be built.
-> +
-> + =A0 =A0 =A0 =A0 Note that if building a little endian kernel, CROSS_COM=
-PILE must
-> + =A0 =A0 =A0 =A0 point to a toolchain capable of targetting little endia=
-n powerpc,
-> + =A0 =A0 =A0 =A0 while the toolchain specified by CROSS32_COMPILE must b=
-e capable of
-> + =A0 =A0 =A0 =A0 targetting *BIG* endian PowerPC.
+> I'm with Kumar on this one.  Why would we want to support this?  I
+> can't say I would be very willing to help anyone run in LE mode, let
+> alone have it randomly selectable.
 
-Have you tested this support with a userspace containing floating
-point instructions?  I wonder if CONFIG_MATH_EMULATION is going to
-need work at all, and if the boards with an actual FPU (440EP, 440EPx,
-460EX, etc) would have issues.
+Indeed, I thought we had killed that Windows-NT dog ~15 years ago :-)
 
-josh
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
