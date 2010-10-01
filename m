@@ -1,33 +1,35 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com",
+	(Client CN "e23smtp02.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E110DB712E
+	by ozlabs.org (Postfix) with ESMTPS id 8794AB7150
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Oct 2010 17:06:25 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9171i4K015865
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:01:44 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9176PCL745608
+	Fri,  1 Oct 2010 17:06:26 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id o91722EA025278
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:02:02 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9176PHE1605820
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:25 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9176Ore027780
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9176Oct018863
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Oct 2010 17:06:25 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	benh@kernel.crashing.org
-Subject: [PATCH 07/18] powerpc: Use generic bitops for little endian bitmap
-	operations
-Date: Fri,  1 Oct 2010 17:06:00 +1000
-Message-Id: <1285916771-18033-8-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 06/18] powerpc 44x: Set E bit in TLBs and PTEs when CPU is in
+	little endian mode
+Date: Fri,  1 Oct 2010 17:05:59 +1000
+Message-Id: <1285916771-18033-7-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
 References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-Cc: paulus@samba.org, Ian Munsie <imunsie@au1.ibm.com>,
-	Anton Blanchard <anton@samba.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Ian Munsie <imunsie@au1.ibm.com>, paulus@samba.org,
+	Torez Smith <lnxtorez@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,79 +41,150 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-With the little endian PowerPC Linux port, the CPU could be in either
-mode. Rather than byte swapping and mapping the little endian bitmap
-operations ourselves on the assumption that we are big endian, map them
-to the generic macros that will automatically byte swap the bit number
-only if we actually are big endian.
+The endianness on the 44x CPUs is controlled by the E bit in the TLB
+entries. If the kernel has been compiled for little endian this patch
+sets this E bit wherever they are set - in the PTE base flags, the early
+debugging, and TLB pinning.
 
-The generic bitops le.h already defines the macros/prototypes for the
-generic_find_next_[zero_]le_bit appropriately for the current endian so
-we can drop those prototypes altogether.
+It defines some _PAGE_CPUENDIAN and ..._TLB_CPUE macros which are set
+if the CPU is little endian or 0 if the CPU is big endian so these can
+be used to easily set the E bit only if the CPU is little endian.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/include/asm/bitops.h |   30 ++++++++++++------------------
- 1 files changed, 12 insertions(+), 18 deletions(-)
+ arch/powerpc/include/asm/mmu-44x.h    |   12 ++++++++++++
+ arch/powerpc/include/asm/pte-44x.h    |    4 ++++
+ arch/powerpc/include/asm/pte-common.h |    9 ++++++---
+ arch/powerpc/kernel/head_44x.S        |    6 +++---
+ arch/powerpc/mm/44x_mmu.c             |    4 ++--
+ 5 files changed, 27 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 30964ae..066b2df 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -54,7 +54,6 @@
+diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
+index bf52d70..e96f5c3 100644
+--- a/arch/powerpc/include/asm/mmu-44x.h
++++ b/arch/powerpc/include/asm/mmu-44x.h
+@@ -42,6 +42,12 @@
+ #define PPC44x_TLB_G		0x00000100      /* Memory is guarded */
+ #define PPC44x_TLB_E		0x00000080      /* Memory is little endian */
  
- #define BITOP_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
- #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
--#define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
- 
- /* Macro for generating the ***_bits() functions */
- #define DEFINE_BITOP(fn, op, prefix, postfix)	\
-@@ -272,34 +271,29 @@ static __inline__ int fls64(__u64 x)
- 
- /* Little-endian versions */
- 
--static __inline__ int test_le_bit(unsigned long nr,
--				  __const__ unsigned long *addr)
--{
--	__const__ unsigned char	*tmp = (__const__ unsigned char *) addr;
--	return (tmp[nr >> 3] >> (nr & 7)) & 1;
--}
-+#include <asm-generic/bitops/le.h>
++#ifdef __LITTLE_ENDIAN__
++#define PPC44x_TLB_CPUE		PPC44x_TLB_E
++#else
++#define PPC44x_TLB_CPUE		0
++#endif
 +
-+#define test_le_bit(nr, addr) \
-+	generic_test_le_bit(nr, addr)
+ #define PPC44x_TLB_PERM_MASK	0x0000003f
+ #define PPC44x_TLB_UX		0x00000020      /* User execution */
+ #define PPC44x_TLB_UW		0x00000010      /* User write */
+@@ -99,6 +105,12 @@
+ #define PPC47x_TLB2_S_RW	(PPC47x_TLB2_SW | PPC47x_TLB2_SR)
+ #define PPC47x_TLB2_IMG		(PPC47x_TLB2_I | PPC47x_TLB2_M | PPC47x_TLB2_G)
  
- #define __set_le_bit(nr, addr) \
--	__set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
-+	generic__set_le_bit(nr, addr)
- #define __clear_le_bit(nr, addr) \
--	__clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
-+	generic__clear_le_bit(nr, addr)
++#ifdef __LITTLE_ENDIAN__
++#define PPC47x_TLB2_CPUE	PPC47x_TLB2_E
++#else
++#define PPC47x_TLB2_CPUE	0
++#endif
++
+ #ifndef __ASSEMBLY__
  
- #define test_and_set_le_bit(nr, addr) \
--	test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
-+	generic_test_and_set_le_bit(nr, addr)
- #define test_and_clear_le_bit(nr, addr) \
--	test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
-+	generic_test_and_clear_le_bit(nr, addr)
+ extern unsigned int tlb_44x_hwater;
+diff --git a/arch/powerpc/include/asm/pte-44x.h b/arch/powerpc/include/asm/pte-44x.h
+index 4192b9b..9c79a85 100644
+--- a/arch/powerpc/include/asm/pte-44x.h
++++ b/arch/powerpc/include/asm/pte-44x.h
+@@ -89,6 +89,10 @@
+ #define _PAGE_NO_CACHE	0x00000400		/* H: I bit */
+ #define _PAGE_WRITETHRU	0x00000800		/* H: W bit */
  
- #define __test_and_set_le_bit(nr, addr) \
--	__test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
-+	generic__test_and_set_le_bit(nr, addr)
- #define __test_and_clear_le_bit(nr, addr) \
--	__test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
-+	generic__test_and_clear_le_bit(nr, addr)
++#ifdef __LITTLE_ENDIAN__
++#define _PAGE_CPUENDIAN	_PAGE_ENDIAN
++#endif
++
+ /* TODO: Add large page lowmem mapping support */
+ #define _PMD_PRESENT	0
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index f2b3701..b69609c 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -19,6 +19,9 @@
+ #ifndef _PAGE_ENDIAN
+ #define _PAGE_ENDIAN	0
+ #endif
++#ifndef _PAGE_CPUENDIAN
++#define _PAGE_CPUENDIAN	0
++#endif
+ #ifndef _PAGE_COHERENT
+ #define _PAGE_COHERENT	0
+ #endif
+@@ -104,11 +107,11 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
+  * pages. We always set _PAGE_COHERENT when SMP is enabled or
+  * the processor might need it for DMA coherency.
+  */
+-#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
++#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE | _PAGE_CPUENDIAN)
+ #if defined(CONFIG_SMP) || defined(CONFIG_PPC_STD_MMU)
+-#define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_COHERENT)
++#define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_COHERENT | _PAGE_CPUENDIAN)
+ #else
+-#define _PAGE_BASE	(_PAGE_BASE_NC)
++#define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_CPUENDIAN)
+ #endif
  
--#define find_first_zero_le_bit(addr, size) generic_find_next_zero_le_bit((addr), (size), 0)
--unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
--				    unsigned long size, unsigned long offset);
-+#define find_first_zero_le_bit(addr, size) \
-+	generic_find_first_zero_le_bit(addr, size)
+ /* Permission masks used to generate the __P and __S table,
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 562305b..6198733 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -813,7 +813,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 	/* attrib fields */
+ 	/* Added guarded bit to protect against speculative loads/stores */
+ 	li	r5,0
+-	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G)
++	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G | PPC44x_TLB_CPUE)
  
--unsigned long generic_find_next_le_bit(const unsigned long *addr,
--				    unsigned long size, unsigned long offset);
- /* Bitmap functions for the ext2 filesystem */
+         li      r0,63                    /* TLB slot 63 */
  
- #define ext2_set_bit(nr,addr) \
+@@ -850,7 +850,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 	ori	r4,r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSHIGH
+ 
+ 	/* attrib fields */
+-	li	r5,(PPC44x_TLB_SW|PPC44x_TLB_SR|PPC44x_TLB_I|PPC44x_TLB_G)
++	li	r5,(PPC44x_TLB_SW|PPC44x_TLB_SR|PPC44x_TLB_I|PPC44x_TLB_G|PPC44x_TLB_CPUE)
+         li      r0,62                    /* TLB slot 0 */
+ 
+ 	tlbwe	r3,r0,PPC44x_TLB_PAGEID
+@@ -1068,7 +1068,7 @@ clear_utlb_entry:
+ 	ori	r4,r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSHIGH
+ 
+ 	/* Word 2 */
+-	li	r5,(PPC47x_TLB2_S_RW | PPC47x_TLB2_IMG)
++	li	r5,(PPC47x_TLB2_S_RW | PPC47x_TLB2_IMG | PPC47x_TLB2_CPUE)
+ 
+ 	/* Bolted in way 0, bolt slot 5, we -hope- we don't hit the same
+ 	 * congruence class as the kernel, we need to make sure of it at
+diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+index d8c6efb..70760e7 100644
+--- a/arch/powerpc/mm/44x_mmu.c
++++ b/arch/powerpc/mm/44x_mmu.c
+@@ -79,7 +79,7 @@ static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
+ #ifdef CONFIG_PPC47x
+ 	: "r" (PPC47x_TLB2_S_RWX),
+ #else
+-	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
++	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G | PPC44x_TLB_CPUE),
+ #endif
+ 	  "r" (phys),
+ 	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
+@@ -163,7 +163,7 @@ static void __cpuinit ppc47x_pin_tlb(unsigned int virt, unsigned int phys)
+ 		"tlbwe	%0,%3,2\n"
+ 		:
+ 		: "r" (PPC47x_TLB2_SW | PPC47x_TLB2_SR |
+-		       PPC47x_TLB2_SX
++		       PPC47x_TLB2_SX |  PPC47x_TLB2_CPUE
+ #ifdef CONFIG_SMP
+ 		       | PPC47x_TLB2_M
+ #endif
 -- 
 1.7.1
