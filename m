@@ -1,32 +1,18 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) by ozlabs.org (Postfix) with ESMTP id 01747B70F8
+Return-Path: <abounine@tundra.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 70FCEB70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Oct 2010 05:29:13 +1000 (EST)
-Received: by bwz13 with SMTP id 13so2672956bwz.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Oct 2010 12:29:10 -0700 (PDT)
-Subject: Re: [PATCH 15/18] mtd: Fix endianness issues from device tree
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
-In-Reply-To: <1285916771-18033-16-git-send-email-imunsie@au1.ibm.com>
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<1285916771-18033-16-git-send-email-imunsie@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Oct 2010 22:29:06 +0300
-Message-ID: <1285961346.32172.10.camel@brekeke>
-Mime-Version: 1.0
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	H Hartley Sweeten <hsweeten@visionengravers.com>,
-	paulus@samba.org, linux-mtd@lists.infradead.org,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Tejun Heo <tj@kernel.org>, Julia Lawall <julia@diku.dk>,
-	Steve Deiters <SteveDeiters@basler.com>,
-	Anatolij Gustschin <agust@denx.de>, David Woodhouse <dwmw2@infradead.org>,
-	"David S. Miller" <davem@davemloft.net>
-Reply-To: dedekind1@gmail.com
+	Sat,  2 Oct 2010 05:58:25 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -mm] RapidIO: fix IDLE2 bits corruption
+Date: Fri,  1 Oct 2010 15:55:23 -0400
+Message-Id: <1285962923-29294-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+	Thomas Moll <thomas.moll@sysgo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,17 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-01 at 17:06 +1000, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> This patch adds the appropriate conversions to correct the endianness
-> issues in the MTD driver whenever it accesses the device tree (which is
-> always big endian).
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+RapidIO spec v.2.1 adds Idle Sequence 2 into LP-Serial Physical
+Layer. The fix ensures that corresponding bits are not corrupted during
+error handling.
 
-Pushed to l2-mtd-2.6.git, thanks!
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Thomas Moll <thomas.moll@sysgo.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Micha Nelissen <micha@neli.hopto.org>
+---
+ drivers/rapidio/rio.c    |    9 ++-------
+ include/linux/rio_regs.h |    3 +--
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index 7f18a65..68cf0c9 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -871,15 +871,10 @@ int rio_inb_pwrite_handler(union rio_pw_msg *pw_msg)
+ 			rdev->em_efptr + RIO_EM_LTL_ERR_DETECT, 0);
+ 	}
+ 
+-	/* Clear remaining error bits */
++	/* Clear remaining error bits and Port-Write Pending bit */
+ 	rio_mport_write_config_32(mport, destid, hopcount,
+ 			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
+-			err_status & RIO_PORT_N_ERR_STS_CLR_MASK);
+-
+-	/* Clear Port-Write Pending bit */
+-	rio_mport_write_config_32(mport, destid, hopcount,
+-			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
+-			RIO_PORT_N_ERR_STS_PW_PEND);
++			err_status);
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/rio_regs.h b/include/linux/rio_regs.h
+index a18b2e2..d63dcba 100644
+--- a/include/linux/rio_regs.h
++++ b/include/linux/rio_regs.h
+@@ -229,7 +229,7 @@
+ #define  RIO_MNT_REQ_CMD_IS		0x04	/* Input-status command */
+ #define RIO_PORT_N_MNT_RSP_CSR(x)	(0x0044 + x*0x20)	/* 0x0002 */
+ #define  RIO_PORT_N_MNT_RSP_RVAL	0x80000000 /* Response Valid */
+-#define  RIO_PORT_N_MNT_RSP_ASTAT	0x000003e0 /* ackID Status */
++#define  RIO_PORT_N_MNT_RSP_ASTAT	0x000007e0 /* ackID Status */
+ #define  RIO_PORT_N_MNT_RSP_LSTAT	0x0000001f /* Link Status */
+ #define RIO_PORT_N_ACK_STS_CSR(x)	(0x0048 + x*0x20)	/* 0x0002 */
+ #define  RIO_PORT_N_ACK_CLEAR		0x80000000
+@@ -243,7 +243,6 @@
+ #define  RIO_PORT_N_ERR_STS_PORT_ERR	0x00000004
+ #define  RIO_PORT_N_ERR_STS_PORT_OK	0x00000002
+ #define  RIO_PORT_N_ERR_STS_PORT_UNINIT	0x00000001
+-#define  RIO_PORT_N_ERR_STS_CLR_MASK	0x07120204
+ #define RIO_PORT_N_CTL_CSR(x)		(0x005c + x*0x20)
+ #define  RIO_PORT_N_CTL_PWIDTH		0xc0000000
+ #define  RIO_PORT_N_CTL_PWIDTH_1	0x00000000
 -- 
-Best Regards,
-Artem Bityutskiy (Битюцкий Артём)
+1.7.3.1
