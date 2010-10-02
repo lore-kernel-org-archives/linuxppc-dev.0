@@ -1,21 +1,22 @@
-Return-Path: <imp@bsdimp.com>
-Date: Fri, 01 Oct 2010 19:44:50 -0600 (MDT)
-Message-Id: <20101001.194450.1113329769525619655.imp@bsdimp.com>
-To: cl@linux.com
-Subject: Re: [PATCH v6 0/8] ptp: IEEE 1588 hardware clock support
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <alpine.DEB.2.00.1009271035110.9258@router.home>
-References: <20100923223417.4ed62e5b@lxorguk.ukuu.org.uk>
-	<4C9BC7CE.8020400@riesch.at>
-	<alpine.DEB.2.00.1009271035110.9258@router.home>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5636B70DF
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2010 13:21:53 +1000 (EST)
+Subject: Re: [patch 1/1] powerpc: enable ARCH_DMA_ADDR_T_64BIT with
+	ARCH_PHYS_ADDR_T_64BIT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <AANLkTikrgu5LrYfveax_EavObThNw2M4ukVB3ka1y0Hj@mail.gmail.com>
+References: <201010012112.o91LCtEk020866@imap1.linux-foundation.org>
+	<AANLkTikrgu5LrYfveax_EavObThNw2M4ukVB3ka1y0Hj@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 02 Oct 2010 13:20:54 +1000
+Message-ID: <1285989654.2463.286.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: richardcochran@gmail.com, alan@lxorguk.ukuu.org.uk, peterz@infradead.org,
-	johnstul@us.ibm.com, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	christian@riesch.at, netdev@vger.kernel.org, tglx@linutronix.de,
-	linux-api@vger.kernel.org, giometti@linux.it,
-	davem@davemloft.net, linux-arm-kernel@lists.infradead.org, khc@pm.waw.pl
+Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message: <alpine.DEB.2.00.1009271035110.9258@router.home>
-            Christoph Lameter <cl@linux.com> writes:
-: On Thu, 23 Sep 2010, Christian Riesch wrote:
-: 
-: > > > It implies clock tuning in userspace for a potential sub microsecond
-: > > > accurate clock. The clock accuracy will be limited by user space
-: > > > latencies and noise. You wont be able to discipline the system clock
-: > > > accurately.
-: > >
-: > > Noise matters, latency doesn't.
-: >
-: > Well put! That's why we need hardware support for PTP timestamping to reduce
-: > the noise, but get along well with the clock servo that is steering the PHC in
-: > user space.
-: 
-: Even if I buy into the catch phrase above: User space is subject to noise
-: that the in kernel code is not. If you do the tuning over long intervals
-: then it hopefully averages out but it still causes jitter effects that
-: affects the degree of accuracy (or sync) that you can reach. And the noise
-: varies with the load on the system.
+On Fri, 2010-10-01 at 21:31 -0400, Josh Boyer wrote:
+> > +config ARCH_DMA_ADDR_T_64BIT
+> > +       def_bool ARCH_PHYS_ADDR_T_64BIT
+> > +
+> 
+> I seemed to have missed what this is about entirely.  Is there some
+> place I can look that describes what that is supposed to do?  The PPC
+> 4xx boards set PHYS_ADDR_T_64BIT because the MMU uses 36 bit
+> addressing, but the CPU is only 32 bits.  I want to make sure this DMA
+> thing isn't going to cause problems. 
 
-Please see the earlier posts in this thread about why this doesn't
-matter as much as you might think.  What matters is the measurements
-(which are done in hardware and the results buffered), not the latency
-in processing those messages through your servo.  This is due to the
-fact that the errors that even long latencies introduce are
-proportional to the change in fractional frequency[*] of the clock being
-steered.  This change is usually on the order of a part per million.
-Even with 10ms of latency would mean that you're introducing on the
-order of sub-nanoseconds of phase error that will be measured in the
-next cycle and steered out.
+Yes, we need to test a bit. Our dma_addr_t has remained 32-bit so far
+because despite the fact that we've had routinely to deal with >32-bit
+physical addresses for MMIO, physical memory support has been
+constrained afaik to 32-bit.
 
-That's why latency doesn't matter.  Do you have other math to show
-that it does?
+We might be better off keeping this as something individual platforms
+can select...
 
-Warner
-
-[*] abs(1 - (clock_freq_old / clock_freq_new)) where clock_freq_old is
-the old estimate of the clock and clock_freq_new is the new frequency
-estimate of the clock.  Second to second, these change on the order of
-a part per million or less...
+Cheers,
+Ben.
+ 
