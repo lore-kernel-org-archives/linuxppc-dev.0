@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D5636B70DF
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2010 13:21:53 +1000 (EST)
-Subject: Re: [patch 1/1] powerpc: enable ARCH_DMA_ADDR_T_64BIT with
-	ARCH_PHYS_ADDR_T_64BIT
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@gmail.com>
-In-Reply-To: <AANLkTikrgu5LrYfveax_EavObThNw2M4ukVB3ka1y0Hj@mail.gmail.com>
-References: <201010012112.o91LCtEk020866@imap1.linux-foundation.org>
-	<AANLkTikrgu5LrYfveax_EavObThNw2M4ukVB3ka1y0Hj@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 02 Oct 2010 13:20:54 +1000
-Message-ID: <1285989654.2463.286.camel@pasglop>
-Mime-Version: 1.0
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org
+Return-Path: <rahul.ruikar@gmail.com>
+Received: from mail-px0-f179.google.com (mail-px0-f179.google.com
+	[209.85.212.179]) by ozlabs.org (Postfix) with ESMTP id A90DBB70E3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  2 Oct 2010 15:42:10 +1000 (EST)
+Received: by pxi1 with SMTP id 1so1286909pxi.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 01 Oct 2010 22:42:08 -0700 (PDT)
+From: Rahul Ruikar <rahul.ruikar@gmail.com>
+To: Li Yang <leoli@freescale.com>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Dinh Nguyen <Dinh.Nguyen@freescale.com>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH] usb: gadget: fsl_udc_core: Fix error path
+Date: Sat,  2 Oct 2010 11:11:36 +0530
+Message-Id: <1285998096-3385-1-git-send-email-rahul.ruikar@gmail.com>
+Cc: Rahul Ruikar <raul.ruikar@gmail.com>, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Rahul Ruikar <rahul.ruikar@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-01 at 21:31 -0400, Josh Boyer wrote:
-> > +config ARCH_DMA_ADDR_T_64BIT
-> > +       def_bool ARCH_PHYS_ADDR_T_64BIT
-> > +
-> 
-> I seemed to have missed what this is about entirely.  Is there some
-> place I can look that describes what that is supposed to do?  The PPC
-> 4xx boards set PHYS_ADDR_T_64BIT because the MMU uses 36 bit
-> addressing, but the CPU is only 32 bits.  I want to make sure this DMA
-> thing isn't going to cause problems. 
+call put_device() when device_register() fails.
 
-Yes, we need to test a bit. Our dma_addr_t has remained 32-bit so far
-because despite the fact that we've had routinely to deal with >32-bit
-physical addresses for MMIO, physical memory support has been
-constrained afaik to 32-bit.
+Signed-off-by: Rahul Ruikar <raul.ruikar@gmail.com>
+---
+ drivers/usb/gadget/fsl_udc_core.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-We might be better off keeping this as something individual platforms
-can select...
-
-Cheers,
-Ben.
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index 08a9a62..491fc7a 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -2340,8 +2340,10 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+ 	udc_controller->gadget.dev.release = fsl_udc_release;
+ 	udc_controller->gadget.dev.parent = &pdev->dev;
+ 	ret = device_register(&udc_controller->gadget.dev);
+-	if (ret < 0)
++	if (ret < 0) {
++		put_device(&udc_controller->gadget.dev);
+ 		goto err_free_irq;
++	}
  
+ 	/* setup QH and epctrl for ep0 */
+ 	ep0_setup(udc_controller);
+-- 
+1.7.2.3
