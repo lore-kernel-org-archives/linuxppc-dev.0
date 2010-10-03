@@ -1,23 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id CA91FB70D0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  3 Oct 2010 15:10:23 +1100 (EST)
-Received: by iwn4 with SMTP id 4so5770392iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 02 Oct 2010 21:10:20 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 2 Oct 2010 22:10:00 -0600
-Message-ID: <AANLkTi=epb2ees2gy2_y=VOe-dBR8h4rGQC1HvUPZxYG@mail.gmail.com>
-Subject: [git pull] MPC5xxx powerpc fixes
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, Akinobu Mita <akinobu.mita@gmail.com>,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>,
-	Julia Lawall <julia@diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B43F9B70D1
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Oct 2010 17:21:22 +1100 (EST)
+Subject: Re: [patch 1/1] powerpc: enable ARCH_DMA_ADDR_T_64BIT with
+	ARCH_PHYS_ADDR_T_64BIT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20101002190634E.fujita.tomonori@lab.ntt.co.jp>
+References: <201010012112.o91LCtEk020866@imap1.linux-foundation.org>
+	<AANLkTikrgu5LrYfveax_EavObThNw2M4ukVB3ka1y0Hj@mail.gmail.com>
+	<1285989654.2463.286.camel@pasglop>
+	<20101002190634E.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 03 Oct 2010 17:20:58 +1100
+Message-ID: <1286086858.2463.289.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben and Linus
 
-Here are some powerpc fixes that I had sitting in my tree and forgot
-about.  They are ready to be merged, and are for the mpc5xxx platform
-that I maintain, but Ben hasn't acked them yet.  Ben, do you want
-Linus to pull this directly, or do you have other powerpc commits that
-you want to merge it with before Linus picks it up?
+> Really?
+> 
+> The current dma_addr_t is:
+> 
+> #if defined(__powerpc64__) || defined(CONFIG_PHYS_64BIT)
+> typedef u64 dma_addr_t;
+> #else
+> typedef u32 dma_addr_t;
+> #endif
+> typedef u64 dma64_addr_t;
 
-Thanks,
-g.
+-EBRAINFAI ... either I wasn't looking when we changed it or I just
+forgot :-) We -used-, I'm pretty sure, to have it always 32-bit :-)
 
-The following changes since commit 899611ee7d373e5eeda08e9a8632684e1ebbbf00:
-  Linus Torvalds (1):
-        Linux 2.6.36-rc6
+Anyways, doesn't matter. Patch looks good. We can always tweak the
+config option if we want to later.
 
-are available in the git repository at:
+Cheers,
+Ben.
 
-  git://git.secretlab.ca/git/linux-2.6 merge-powerpc
-
-Akinobu Mita (1):
-      powerpc/512x: fix clk_get() return value
-
-Eric Millbrandt (1):
-      powerpc/5200: tighten up ac97 reset timing
-
-Julia Lawall (1):
-      powerpc/5200: efika.c: Add of_node_put to avoid memory leak
-
- arch/powerpc/platforms/512x/clock.c          |    2 +-
- arch/powerpc/platforms/52xx/efika.c          |    9 ++++++---
- arch/powerpc/platforms/52xx/mpc52xx_common.c |    8 ++++++--
- 3 files changed, 13 insertions(+), 6 deletions(-)
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> 
+> I think that this patch doesn't change anything. Or I miss something?
+> 
+> @@ -22,6 +22,9 @@ config WORD_SIZE
+>  config ARCH_PHYS_ADDR_T_64BIT
+>         def_bool PPC64 || PHYS_64BIT
+> 
+> +config ARCH_DMA_ADDR_T_64BIT
+> +       def_bool ARCH_PHYS_ADDR_T_64BIT
+> +
+>  config MMU
+>         bool
+>         default y
