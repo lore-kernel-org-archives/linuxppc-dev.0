@@ -1,37 +1,25 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90003B70AE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Oct 2010 05:27:07 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o93IBkBN032577
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Oct 2010 14:11:46 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o93IR4Sg2265148
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Oct 2010 14:27:04 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o93IR3LG026904
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Oct 2010 14:27:03 -0400
-Date: Sun, 3 Oct 2010 23:57:01 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 7/9] v3 Define memory_block_size_bytes for powerpc/pseries
-Message-ID: <20101003182701.GI7896@balbir.in.ibm.com>
-References: <4CA62700.7010809@austin.ibm.com> <4CA62A0A.4050406@austin.ibm.com>
-	<20101003175500.GE7896@balbir.in.ibm.com>
-	<20101003180731.GT14064@sgi.com> <1286129461.9970.1.camel@nimitz>
+Return-Path: <ayman@elkhashab.com>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 1A12BB70AB
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 06:13:09 +1100 (EST)
+Date: Sun, 3 Oct 2010 14:13:05 -0500
+From: Ayman El-Khashab <ayman@elkhashab.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ppc44x - how do i optimize driver for tlb hits
+Message-ID: <20101003191305.GA7345@crust.elkhashab.com>
+References: <20100923151246.GA17015@crust.elkhashab.com>
+	<1285279264.5158.18.camel@pasglop>
+	<20100923223516.GA30033@crust.elkhashab.com>
+	<1285290444.14081.6.camel@pasglop>
+	<20100924025849.GA5619@crust.elkhashab.com>
+	<1285303432.14081.28.camel@pasglop>
+	<20100924103034.GA27958@zod.rchland.ibm.com>
+	<20100924130851.GA14016@crust.elkhashab.com>
+	<1285366264.14081.33.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1286129461.9970.1.camel@nimitz>
-Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, Robin Holt <holt@sgi.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1285366264.14081.33.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,31 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Dave Hansen <dave@linux.vnet.ibm.com> [2010-10-03 11:11:01]:
-
-> On Sun, 2010-10-03 at 13:07 -0500, Robin Holt wrote:
-> > On Sun, Oct 03, 2010 at 11:25:00PM +0530, Balbir Singh wrote:
-> > > * Nathan Fontenot <nfont@austin.ibm.com> [2010-10-01 13:35:54]:
-> > > 
-> > > > Define a version of memory_block_size_bytes() for powerpc/pseries such that
-> > > > a memory block spans an entire lmb.
-> > > 
-> > > I hope I am not missing anything obvious, but why not just call it
-> > > lmb_size, why do we need memblock_size?
-> > > 
-> > > Is lmb_size == memblock_size after your changes true for all
-> > > platforms?
+On Sat, Sep 25, 2010 at 08:11:04AM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2010-09-24 at 08:08 -0500, Ayman El-Khashab wrote:
 > > 
-> > What is an lmb?  I don't recall anything like lmb being referred to in
-> > the rest of the kernel.
+> > I suppose another option is to to use the kernel profiling option I 
+> > always see but have never used.  Is that a viable option to figure out
+> > what is happening here?  
 > 
-> Heh.  It's the OpenFirmware name for a Logical Memory Block.  Basically
-> what we use to determine the SECTION_SIZE on powerpc.  Probably not the
-> best terminology to use elsewhere in the kernel.
+> With perf and stochastic sampling ? If you sample fast enough... but
+> you'll mostly point to your routine I suppose... though it might tell
+> you statistically where in your code, which -might- help.
+> 
 
-Agreed for the kernel, this patch was for powerpc/pseries, hence was
-checking in this context.
+Thanks I didn't end up profiling it b/c we found the biggest culprit. 
+Basically we were mapping this memory in kernel space and as long as we
+did that ONLY everything was ok.  But then we would mmap the physical
+addresses into user space.  Using MAP_SHARED made it extremely slow. 
+Using MAP_PRIVATE made it very fast.  So it works, but why is MAP_SHARED
+that much slower?
 
--- 
-	Three Cheers,
-	Balbir
+The other optimization was a change in the algorithm to take advantage
+of the L2 prefetching.  Since we were operating on many simultaneous
+streams it seems that the cache performance was not good.  
+
+thanks
+ame
