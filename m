@@ -1,28 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4B5DB70AF
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 09:39:02 +1100 (EST)
-Subject: Re: ppc44x - how do i optimize driver for tlb hits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ayman El-Khashab <ayman@elkhashab.com>
-In-Reply-To: <20101003191305.GA7345@crust.elkhashab.com>
-References: <20100923151246.GA17015@crust.elkhashab.com>
-	<1285279264.5158.18.camel@pasglop>
-	<20100923223516.GA30033@crust.elkhashab.com>
-	<1285290444.14081.6.camel@pasglop>
-	<20100924025849.GA5619@crust.elkhashab.com>
-	<1285303432.14081.28.camel@pasglop>
-	<20100924103034.GA27958@zod.rchland.ibm.com>
-	<20100924130851.GA14016@crust.elkhashab.com>
-	<1285366264.14081.33.camel@pasglop>
-	<20101003191305.GA7345@crust.elkhashab.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Oct 2010 09:38:45 +1100
-Message-ID: <1286145525.2463.297.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 32BFCB70AE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  4 Oct 2010 15:25:31 +1100 (EST)
+Message-ID: <63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
+In-Reply-To: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
+References: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
+Date: Mon, 4 Oct 2010 06:25:25 +0200 (CEST)
+Subject: Re: use of BAT before taking over the MMU
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "Albert Cahalan" <acahalan@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-10-03 at 14:13 -0500, Ayman El-Khashab wrote:
-> On Sat, Sep 25, 2010 at 08:11:04AM +1000, Benjamin Herrenschmidt wrote:
-> > On Fri, 2010-09-24 at 08:08 -0500, Ayman El-Khashab wrote:
-> > > 
-> > > I suppose another option is to to use the kernel profiling option I 
-> > > always see but have never used.  Is that a viable option to figure out
-> > > what is happening here?  
-> > 
-> > With perf and stochastic sampling ? If you sample fast enough... but
-> > you'll mostly point to your routine I suppose... though it might tell
-> > you statistically where in your code, which -might- help.
-> > 
-> 
-> Thanks I didn't end up profiling it b/c we found the biggest culprit. 
-> Basically we were mapping this memory in kernel space and as long as we
-> did that ONLY everything was ok.  But then we would mmap the physical
-> addresses into user space.  Using MAP_SHARED made it extremely slow. 
-> Using MAP_PRIVATE made it very fast.  So it works, but why is MAP_SHARED
-> that much slower?
+> On the prom boot path, with the firmware supposed to
+> be managing the MMU, there is a case where:
+>
+> 1. Linux changes some BAT registers.
+> 2. Bits 0x00000070 are/become set in the MSR.
+> 3. Linux takes an MMU fault.
+> 4. The firmware handles it.
+>
+> AFAIK, you can't expect the firmware to leave the BAT alone.
+> If the firmware provides mapping services by using the BAT
+> as a software-filled TLB, Linux's BAT changes may be lost.
+>
+> You also can't expect that your BAT changes will not conflict
+> with mappings that the firmware uses for itself. The firmware
+> might write to your new BAT mapping, relying on those virtual
+> addresses to be something else entirely.
 
-I don't see any reason off hand why this would be the case. Can you
-inspect the content of the TLB with either xmon or whatever HW debugger
-you may have at hand and show me what difference you have between an
-entry for your workload coming from MAP_SHARED vs. one coming from
-MAP_PRIVATE ?
+The PowerPC OF binding requires the firmware to save and restore
+the BATs on entry to / exit from the firmware.
 
-> The other optimization was a change in the algorithm to take advantage
-> of the L2 prefetching.  Since we were operating on many simultaneous
-> streams it seems that the cache performance was not good.  
 
-Cheers,
-Ben.
-
-> thanks
-> ame
+Segher
