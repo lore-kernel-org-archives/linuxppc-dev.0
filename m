@@ -1,18 +1,21 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0F9A5B70CB
+Return-Path: <acahalan@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 3CAA6B70D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 02:49:28 +1100 (EST)
+	Tue,  5 Oct 2010 03:06:06 +1100 (EST)
+Received: by fxm2 with SMTP id 2so3609261fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 04 Oct 2010 09:06:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Re: Serial RapidIO Maintaintance read causes lock up
-Date: Mon, 4 Oct 2010 08:49:20 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: <bastiaan.nijkamp@gmail.com>
+In-Reply-To: <63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
+References: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
+	<63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
+Date: Mon, 4 Oct 2010 12:06:03 -0400
+Message-ID: <AANLkTikt9e5s3UUn1+k=NY7UhqosM5qkgdih=UD+Hd+L@mail.gmail.com>
+Subject: Re: use of BAT before taking over the MMU
+From: Albert Cahalan <acahalan@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,48 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Bastiaan,
+On Mon, Oct 4, 2010 at 12:25 AM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
 
-Are you trying board-to-board connection?
-I am not familiar with WRS SBC8548 board - which type of connector they
-use for SRIO?
+> The PowerPC OF binding requires the firmware to save and restore
+> the BATs on entry to / exit from the firmware.
 
-Assuming that all configuration is correct,
-I would recommend first to try setting up x1 link mode at the lowest
-link speed.
-The x4 mode may present challenges in some cases.
+This sucks, because using the BAT is **much** easier for
+the firmware. In my case, it also means I don't need to worry
+about Linux stomping on anything -- I have nothing in RAM.
 
-For quick test you may just add port width override into fsl_rio.c
-like shown below (ugly but sometimes it helps ;) ):
+(this is an emulator, but I don't want to cheat too much
+because adding special cases affects performance)
 
-@@ -1461,10 +1461,16 @@ int fsl_rio_setup(struct platform_device *dev)
- 	rio_register_mport(port);
-=20
- 	priv->regs_win =3D ioremap(regs.start, regs.end - regs.start + 1);
- 	rio_regs_win =3D priv->regs_win;
-=20
-+dev_info(&dev->dev, "Overriding RIO_PORT setting to single lane 0\n");
-+out_be32(priv->regs_win + 0x15C, in_be32(priv->regs_win + 0x15C) |
-0x800000);
-+out_be32(priv->regs_win + 0x15C, in_be32(priv->regs_win + 0x15C) |
-0x2000000);
-+out_be32(priv->regs_win + 0x15C, in_be32(priv->regs_win + 0x15C) &
-~0x800000);
-+msleep(100);
-+
- 	/* Probe the master port phy type */
- 	ccsr =3D in_be32(priv->regs_win + RIO_CCSR);
- 	port->phy_type =3D (ccsr & 1) ? RIO_PHY_SERIAL : RIO_PHY_PARALLEL;
- 	dev_info(&dev->dev, "RapidIO PHY type: %s\n",
- 			(port->phy_type =3D=3D RIO_PHY_PARALLEL) ?
-"parallel" :
+Page tables would need to go in RAM. If Linux wants to
+use that memory...? It seems that Linux does tend to ask;
+will it panic if I refuse? Are there addresses Linux won't
+ever ask for?
 
-
-Let me know what happens.
-Please keep me in the CC: list next time when posting RapidIO questions
-to the linuxppc-dev or kernel mailing lists.
-
-Regards,
-
-Alex.
-=20
+It also looks like I could just start up Linux w/o the MMU on.
+I'm just making 1:1 mappings anyway.
