@@ -1,33 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 023F5B70CB
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2010 07:38:48 +1100 (EST)
-Received: from mail176-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail176-tx2-R.bigfish.com (Postfix) with ESMTP id C637682049B	for
-	<linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 20:38:44 +0000 (UTC)
-Received: from TX2EHSMHS035.bigfish.com (unknown [10.9.14.242])	by
-	mail176-tx2.bigfish.com (Postfix) with ESMTP id 6E04A17980DF	for
-	<linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 20:37:57 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o94KbslD002719	for <linuxppc-dev@ozlabs.org>;
-	Mon, 4 Oct 2010 13:37:54 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o94KbsjS025799	for <linuxppc-dev@ozlabs.org>;
-	Mon, 4 Oct 2010 15:37:54 -0500 (CDT)
-Date: Mon, 4 Oct 2010 15:37:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Nick Piggin <npiggin@kernel.dk>, <linuxppc-dev@ozlabs.org>
-Subject: Re: in_atomic() check in page_cache_get_speculative()
-Message-ID: <20101004153753.2cda1abf@udp111988uds.am.freescale.net>
-In-Reply-To: <20101004152259.25c56ad2@udp111988uds.am.freescale.net>
-References: <20101004152259.25c56ad2@udp111988uds.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D0A82B70DB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 09:50:57 +1100 (EST)
+Subject: Re: Introduce support for little endian PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+In-Reply-To: <1286188242.15020.349.camel@thor.local>
+References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
+	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
+	<1285935283.2463.78.camel@pasglop>
+	<1285950041.15020.272.camel@thor.local>
+	<1285966204.2463.137.camel@pasglop>
+	<1286188242.15020.349.camel@thor.local>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Oct 2010 09:50:32 +1100
+Message-ID: <1286232632.2463.324.camel@pasglop>
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,29 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Updated with Nick's current address; previous one bounced]
+On Mon, 2010-10-04 at 12:30 +0200, Michel Dänzer wrote:
 
-On Mon, 4 Oct 2010 15:22:59 -0500
-Scott Wood <scottwood@freescale.com> wrote:
-
-> I'm seeing the in_atomic() check in page_cache_get_speculative()
-> (linux/pagemap.h:138) fail when running e500 KVM with .  
-
-Sorry, that should finish as "with CONFIG_DEBUG_VM."
-
-> It's coming
-> from get_user_pages_fast(), from KVM's hva_to_pfn().  This is on kvm.git
-> plus a few local patches that should be completely unrelated, but it
-> looks like this code hasn't changed much in a couple years.
+> > And last I looked X still pukes if you give it a pixmap in non native
+> > byte order but that might have been fixed.
 > 
-> Interrupts are disabled by get_user_pages_fast(), but apparently
-> preemption was not separately disabled.  The comment in
-> page_cache_get_speculative() says that preemption disabling is done by
-> rcu_read_lock(), and that "this function must be called inside the same
-> rcu_read_lock() section as has been used to lookup the page in the
-> pagecache radix-tree (or page table)".
-> 
-> Where is this RCU lock supposed to be acquired?  I don't see any RCU in
-> arch/powerpc/mm/gup.c.  Is it buried in some macro or function call?
-> 
-> -Scott
+> I'm not sure what exactly you mean by that, but I'm not aware of any
+> such issues offhand.
+
+Hrm, I meant on the DDX side. Anyways, doesn't matter. Even if it works
+fine on X side. Fact is, there's tons and tons of existing SW stack and
+drivers on the field that are totally incapable of doing BE and
+essentially unfixable without major work that the customer(s) is(are)
+unwilling to do at this stage.
+
+(Think embedded gfx IP cores mostly, including codecs etc...)
+
+> I didn't say anything about that, just that IME it should be mostly
+> possible to deal with endianness within the driver stack.
+
+To some extent yes. Completely, I'm not sure. Apps manipulating pixels,
+such as video players doing hand-made overlay etc... will potentially
+have issues. It's more than actual pixel byte ordering. It's anything
+that accesses a quantity in memory using different size accessors, ie,
+storing a u32 and then expecting to find the LSB at u8* of the same
+address etc... that sort of stuff happens more often in gfx-oriented
+code than anywhere else in my experience.
+
+> Note that I'm not arguing against these changes, just pointing out some
+> apparent inaccuracies in the reasoning for them.
+
+Right, I possibly made an incorrect statement relative to Xorg (I had
+assumed the fb layer only worked properly in native endian format), but
+that doesn't matter much since the problem here is existing code &
+drivers and goes way beyond X (probably no X on the target setups
+anyways).
+
+Cheers,
+Ben
