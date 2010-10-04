@@ -1,41 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
-	[213.199.154.144])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7BFE2B6EDD
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2010 02:38:37 +1100 (EST)
-Received: from mail4-db3 (localhost.localdomain [127.0.0.1])	by
-	mail4-db3-R.bigfish.com (Postfix) with ESMTP id 90F501A3820C	for
-	<linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 15:38:31 +0000 (UTC)
-Received: from DB3EHSMHS001.bigfish.com (unknown [10.3.81.250])	by
-	mail4-db3.bigfish.com (Postfix) with ESMTP id 4F3E6600046	for
-	<linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 15:38:30 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o94FcGUO029983	for
-	<linuxppc-dev@ozlabs.org>; Mon, 4 Oct 2010 08:38:26 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o94Fr7UN000090	for <linuxppc-dev@ozlabs.org>;
-	Mon, 4 Oct 2010 10:53:07 -0500 (CDT)
-Date: Mon, 4 Oct 2010 10:38:13 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect
-	nand flash partitions
-Message-ID: <20101004103813.14d04956@udp111988uds.am.freescale.net>
-In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A256099@zch01exm23.fsl.freescale.net>
-References: <20100920131907.GA2184@oksana.dev.rtsoft.ru>
-	<3850A844E6A3854C827AC5C0BEC7B60A256099@zch01exm23.fsl.freescale.net>
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0F9A5B70CB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 02:49:28 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
-	Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Re: Serial RapidIO Maintaintance read causes lock up
+Date: Mon, 4 Oct 2010 08:49:20 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: <bastiaan.nijkamp@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,39 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2 Oct 2010 05:36:27 -0700
-"Zang Roy-R61911" <r61911@freescale.com> wrote:
+Hi Bastiaan,
 
-> 
-> 
-> > -----Original Message-----
-> > From: Anton Vorontsov [mailto:cbouatmailru@gmail.com]
-> > Sent: Monday, September 20, 2010 21:19 PM
-> > To: Zang Roy-R61911
-> > Cc: linux-mtd@lists.infradead.org; dwmw2@infradead.org; dedekind1@gmail.com;
-> > akpm@linux-foundation.org; Lan Chunhe-B25806; Wood Scott-B07421; Gala Kumar-
-> > B11780; linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect nand
-> > flash partitions
-> > 
-> > On Fri, Sep 17, 2010 at 03:01:08PM +0800, Roy Zang wrote:
-> > [...]
-> > > +static struct mutex fsl_elbc_nand_mutex;
-> > > +
-> > > +static int __devinit fsl_elbc_nand_probe(struct platform_device *dev)
-> > >  {
-> > > -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> > > +	struct fsl_lbc_regs __iomem *lbc;
-> > >  	struct fsl_elbc_mtd *priv;
-> > >  	struct resource res;
-> > > +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = NULL;
-> > 
-> > No need for = NULL.
-> Any harm? Or just personal habit or style? Can you explain about why?
+Are you trying board-to-board connection?
+I am not familiar with WRS SBC8548 board - which type of connector they
+use for SRIO?
 
-Besides not wanting superfluous code on general principle, it could
-hide a bug if in the future the real initialization is missing on some
-code path.  It would become a runtime NULL dereference rather than a
-compiler warning.
+Assuming that all configuration is correct,
+I would recommend first to try setting up x1 link mode at the lowest
+link speed.
+The x4 mode may present challenges in some cases.
 
--Scott
+For quick test you may just add port width override into fsl_rio.c
+like shown below (ugly but sometimes it helps ;) ):
+
+@@ -1461,10 +1461,16 @@ int fsl_rio_setup(struct platform_device *dev)
+ 	rio_register_mport(port);
+=20
+ 	priv->regs_win =3D ioremap(regs.start, regs.end - regs.start + 1);
+ 	rio_regs_win =3D priv->regs_win;
+=20
++dev_info(&dev->dev, "Overriding RIO_PORT setting to single lane 0\n");
++out_be32(priv->regs_win + 0x15C, in_be32(priv->regs_win + 0x15C) |
+0x800000);
++out_be32(priv->regs_win + 0x15C, in_be32(priv->regs_win + 0x15C) |
+0x2000000);
++out_be32(priv->regs_win + 0x15C, in_be32(priv->regs_win + 0x15C) &
+~0x800000);
++msleep(100);
++
+ 	/* Probe the master port phy type */
+ 	ccsr =3D in_be32(priv->regs_win + RIO_CCSR);
+ 	port->phy_type =3D (ccsr & 1) ? RIO_PHY_SERIAL : RIO_PHY_PARALLEL;
+ 	dev_info(&dev->dev, "RapidIO PHY type: %s\n",
+ 			(port->phy_type =3D=3D RIO_PHY_PARALLEL) ?
+"parallel" :
+
+
+Let me know what happens.
+Please keep me in the CC: list next time when posting RapidIO questions
+to the linuxppc-dev or kernel mailing lists.
+
+Regards,
+
+Alex.
+=20
