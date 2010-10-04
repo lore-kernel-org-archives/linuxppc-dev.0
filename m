@@ -1,37 +1,41 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 75E49B70D0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 01:45:23 +1100 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o94EP4BW025936
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Oct 2010 10:25:04 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o94EjJ4m124468
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Oct 2010 10:45:19 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o94EjI1m013778
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Oct 2010 11:45:19 -0300
-Message-ID: <4CA9E87A.3000807@austin.ibm.com>
-Date: Mon, 04 Oct 2010 09:45:14 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7BFE2B6EDD
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2010 02:38:37 +1100 (EST)
+Received: from mail4-db3 (localhost.localdomain [127.0.0.1])	by
+	mail4-db3-R.bigfish.com (Postfix) with ESMTP id 90F501A3820C	for
+	<linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 15:38:31 +0000 (UTC)
+Received: from DB3EHSMHS001.bigfish.com (unknown [10.3.81.250])	by
+	mail4-db3.bigfish.com (Postfix) with ESMTP id 4F3E6600046	for
+	<linuxppc-dev@ozlabs.org>; Mon,  4 Oct 2010 15:38:30 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o94FcGUO029983	for
+	<linuxppc-dev@ozlabs.org>; Mon, 4 Oct 2010 08:38:26 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o94Fr7UN000090	for <linuxppc-dev@ozlabs.org>;
+	Mon, 4 Oct 2010 10:53:07 -0500 (CDT)
+Date: Mon, 4 Oct 2010 10:38:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect
+	nand flash partitions
+Message-ID: <20101004103813.14d04956@udp111988uds.am.freescale.net>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A256099@zch01exm23.fsl.freescale.net>
+References: <20100920131907.GA2184@oksana.dev.rtsoft.ru>
+	<3850A844E6A3854C827AC5C0BEC7B60A256099@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 7/9] v3 Define memory_block_size_bytes for powerpc/pseries
-References: <4CA62700.7010809@austin.ibm.com> <4CA62A0A.4050406@austin.ibm.com>
-	<20101003175500.GE7896@balbir.in.ibm.com>
-	<20101003180731.GT14064@sgi.com> <1286129461.9970.1.camel@nimitz>
-	<20101003182701.GI7896@balbir.in.ibm.com>
-In-Reply-To: <20101003182701.GI7896@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	Robin Holt <holt@sgi.com>, linuxppc-dev@lists.ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,34 +45,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/03/2010 01:27 PM, Balbir Singh wrote:
-> * Dave Hansen <dave@linux.vnet.ibm.com> [2010-10-03 11:11:01]:
-> 
->> On Sun, 2010-10-03 at 13:07 -0500, Robin Holt wrote:
->>> On Sun, Oct 03, 2010 at 11:25:00PM +0530, Balbir Singh wrote:
->>>> * Nathan Fontenot <nfont@austin.ibm.com> [2010-10-01 13:35:54]:
->>>>
->>>>> Define a version of memory_block_size_bytes() for powerpc/pseries such that
->>>>> a memory block spans an entire lmb.
->>>>
->>>> I hope I am not missing anything obvious, but why not just call it
->>>> lmb_size, why do we need memblock_size?
->>>>
->>>> Is lmb_size == memblock_size after your changes true for all
->>>> platforms?
->>>
->>> What is an lmb?  I don't recall anything like lmb being referred to in
->>> the rest of the kernel.
->>
->> Heh.  It's the OpenFirmware name for a Logical Memory Block.  Basically
->> what we use to determine the SECTION_SIZE on powerpc.  Probably not the
->> best terminology to use elsewhere in the kernel.
-> 
-> Agreed for the kernel, this patch was for powerpc/pseries, hence was
-> checking in this context.
-> 
+On Sat, 2 Oct 2010 05:36:27 -0700
+"Zang Roy-R61911" <r61911@freescale.com> wrote:
 
-I don't really see a reason to name it lmb_size, it seems easier
-to stick with the naming used by the rest of the kernel.
+> 
+> 
+> > -----Original Message-----
+> > From: Anton Vorontsov [mailto:cbouatmailru@gmail.com]
+> > Sent: Monday, September 20, 2010 21:19 PM
+> > To: Zang Roy-R61911
+> > Cc: linux-mtd@lists.infradead.org; dwmw2@infradead.org; dedekind1@gmail.com;
+> > akpm@linux-foundation.org; Lan Chunhe-B25806; Wood Scott-B07421; Gala Kumar-
+> > B11780; linuxppc-dev@ozlabs.org
+> > Subject: Re: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect nand
+> > flash partitions
+> > 
+> > On Fri, Sep 17, 2010 at 03:01:08PM +0800, Roy Zang wrote:
+> > [...]
+> > > +static struct mutex fsl_elbc_nand_mutex;
+> > > +
+> > > +static int __devinit fsl_elbc_nand_probe(struct platform_device *dev)
+> > >  {
+> > > -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+> > > +	struct fsl_lbc_regs __iomem *lbc;
+> > >  	struct fsl_elbc_mtd *priv;
+> > >  	struct resource res;
+> > > +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = NULL;
+> > 
+> > No need for = NULL.
+> Any harm? Or just personal habit or style? Can you explain about why?
 
--Nathan
+Besides not wanting superfluous code on general principle, it could
+hide a bug if in the future the real initialization is missing on some
+code path.  It would become a runtime NULL dereference rather than a
+compiler warning.
+
+-Scott
