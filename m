@@ -1,24 +1,22 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DC939B70D2
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D258FB70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Oct 2010 02:19:15 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Serial RapidIO Maintaintance read causes lock up
-Date: Tue, 5 Oct 2010 08:11:34 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B9AFE@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
-References: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
-	<AANLkTimCiHWRR-kVuT0ift3CH63Xk_XcaXS22qmVh6fr@mail.gmail.com>
-	<4CAB2729.6080402@freescale.com>
-	<AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Bastiaan Nijkamp" <bastiaan.nijkamp@gmail.com>,
-	"John Traill" <john.traill@freescale.com>
+	Wed,  6 Oct 2010 02:27:39 +1100 (EST)
+In-Reply-To: <AANLkTik9KeVzc6T7U=TX1bSA934Wmtbt4cjHrWSgWtLn@mail.gmail.com>
+References: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
+	<63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
+	<1286266201.2463.336.camel@pasglop>
+	<AANLkTik9KeVzc6T7U=TX1bSA934Wmtbt4cjHrWSgWtLn@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B30ADD93-5210-4FFC-A7AA-C6B21A785B09@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: use of BAT before taking over the MMU
+Date: Tue, 5 Oct 2010 17:31:46 +0200
+To: Albert Cahalan <acahalan@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,28 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>>> The PowerPC OF binding requires the firmware to save and restore
+>>> the BATs on entry to / exit from the firmware.
+>
+> That would defeat the purpose of setting them.
+> They are used to provide Linux with mappings.
+
+The initial state the OS has for the BATs is what the firmware
+provides it with, sure.
+
+An OS shouldn't expect to have more than its own program image
+RAM mapped, in general.
+
+> Of course that faults immediately, so I have a handler that
+> loads IBAT0 with a 128 KiB mapping. I treat the BAT like a
+> direct-mapped software-loaded TLB. (like MIPS arch MMU)
+
+Just map the first 256MB and don't worry about anything else?
+Seems a lot simpler to me ;-)
+
+> Note that Linux can fail even with a firmware that doesn't touch
+> the BAT registers. The MMU is on,
+
+You can boot Linux with the MMU off as well.
+
+> and 0xc0000000 may be
+> where the firmware expects to have... MMIO for the console,
+> the client interface entry point, a forth stack, whatever.
+> The BAT takes priority, and thus the firmware splatters stuff
+> right onto the kernel or dies trying to read something it left there.
+
+Like I said, you're supposed to swap OS BATs with firmware BATs
+in your client interface entry and exit.  You have to switch
+a lot of other registers there as well already, so that's no
+big deal.
 
 
-Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com> wrote:=20
-=A0
->A interesting thing that i found out is that when the agent is reset =
-while the host is >locked up (eg. it cannot be stopped nor can i read =
-the registers and memory trough a JTAG >Interface), the host comes back =
-online and just continues booting linux with a RapidIO >error. See the =
-log below.
-... skip ...=A0
->fsl_rio_config_read: going to request to read data at d1080068
->RIO: cfg_read error -14 for ff:0:68
-... skip ...
->RIO: master port 0 device has lost enumeration to a remote host
-
-Looks like during agent reset your SRIO link becomes good and host's =
-requests go ahead.
-After that you get a machine check (response time out): link is OK but =
-agent is not configured.
-
-Can you check/print 0xC_0148 and 0xC_0158 registers of SRIO block before =
-the first maintenance read.
-
-Alex.
-=20
+Segher
