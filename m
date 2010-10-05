@@ -1,25 +1,22 @@
-Return-Path: <JTRAILL@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 34739B6F06
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1AC8EB70B8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Oct 2010 01:45:52 +1100 (EST)
-Message-ID: <4CAB39F4.3030208@freescale.com>
-Date: Tue, 5 Oct 2010 15:45:08 +0100
-From: John Traill <JTRAILL@freescale.com>
-MIME-Version: 1.0
-To: Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com>
-Subject: Re: Serial RapidIO Maintaintance read causes lock up
-References: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
-	<AANLkTimCiHWRR-kVuT0ift3CH63Xk_XcaXS22qmVh6fr@mail.gmail.com>
-	<4CAB2729.6080402@freescale.com>
-	<AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
-In-Reply-To: <AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>,
-	linuxppc-dev@lists.ozlabs.org
+	Wed,  6 Oct 2010 02:18:22 +1100 (EST)
+In-Reply-To: <1286266201.2463.336.camel@pasglop>
+References: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
+	<63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
+	<1286266201.2463.336.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5EE72F00-BC7C-426B-A828-FE21CC868982@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: use of BAT before taking over the MMU
+Date: Tue, 5 Oct 2010 17:22:35 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Albert Cahalan <acahalan@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bastiaan,
+>> The PowerPC OF binding requires the firmware to save and restore
+>> the BATs on entry to / exit from the firmware.
+>
+> I'm not sure he was talking about OF here...
 
-On 05/10/10 15:28, Bastiaan Nijkamp wrote:
-> Hi John,
-> 1. Yes, they are both running the exact same kernel and both are
-> configured in the same way. With the exception that one is set as host
-> and the other as a agent.
-> 2. Accept All is set for both boards.
-> 3. As i understand, the agent cannot send anything before it is
-> enumerated, so it would be safe to first reset the agent and right after
-> that the host. In either case, thats the way i am using. The full kernel
-> log until the discovery times out after 30 seconds is shown below:
-> Using SBC8548 machine description
-<snip>
+Yeah, I thought I was on a different mailing list.  It's still
+sort-of relevant though.
 
-In which case could you check the lawbar initialisation in u-boot for conflicts. 
-Would you post a dump of the lawbar registers from uboot.
+> In any case, we don't muck
+> around with BATs until after we're done with OF anyways.
 
-The TLB's aren't important in this case as linux will reprogram as required.
+"Lower than the lowest common divider", yeah ;-)
 
-Cheers
 
--- 
-John Traill
-Systems Engineer
-Network and Computing Systems Group
-
-Freescale Semiconductor UK LTD
-Colvilles Road
-East Kilbride
-Glasgow G75 0TG, Scotland
-
-Tel: +44 (0) 1355 355494
-Fax: +44 (0) 1355 261790
-
-E-mail: john.traill@freescale.com
-
-Registration Number: SC262720
-VAT Number: GB831329053
-
-[ ] General Business Use
-[ ] Freescale Internal Use Only
-[ ] Freescale Confidential Proprietary
+Segher
