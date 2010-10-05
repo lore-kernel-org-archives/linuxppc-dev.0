@@ -1,44 +1,22 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail9.fujitsu.co.jp (fgwmail9.fujitsu.co.jp [192.51.44.39])
-	by ozlabs.org (Postfix) with ESMTP id A0B0EB6EDD
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4111CB6EEA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 16:30:03 +1100 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
-	by fgwmail9.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o955BUIa025361 for <linuxppc-dev@lists.ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Tue, 5 Oct 2010 14:11:30 +0900
-Received: from m2.gw.fujitsu.co.jp ([10.0.50.72])
-	by fgwmail6.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o955BTkL025510 for <linuxppc-dev@lists.ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Tue, 5 Oct 2010 14:11:29 +0900
-Received: from smail (m2 [127.0.0.1])
-	by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 3DBC745DE55
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 14:11:29 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
-	by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 1E50C45DE51
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 14:11:29 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 06B8F1DB803B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 14:11:29 +0900 (JST)
-Received: from m108.s.css.fujitsu.com (m108.s.css.fujitsu.com [10.249.87.108])
-	by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id B651E1DB803A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 14:11:28 +0900 (JST)
-Date: Tue, 5 Oct 2010 14:06:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 2/9] v3 Add mutex for adding/removing memory blocks
-Message-Id: <20101005140604.6bbd8ae0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4CA62896.2060307@austin.ibm.com>
-References: <4CA62700.7010809@austin.ibm.com> <4CA62896.2060307@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	Robin Holt <holt@sgi.com>, linuxppc-dev@lists.ozlabs.org
+	Tue,  5 Oct 2010 18:52:38 +1100 (EST)
+In-Reply-To: <AANLkTikt9e5s3UUn1+k=NY7UhqosM5qkgdih=UD+Hd+L@mail.gmail.com>
+References: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
+	<63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
+	<AANLkTikt9e5s3UUn1+k=NY7UhqosM5qkgdih=UD+Hd+L@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7C4D5662-14C7-4ACD-8096-3B7649220A12@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: use of BAT before taking over the MMU
+Date: Tue, 5 Oct 2010 09:54:35 +0200
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,13 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 01 Oct 2010 13:29:42 -0500
-Nathan Fontenot <nfont@austin.ibm.com> wrote:
+>> The PowerPC OF binding requires the firmware to save and restore
+>> the BATs on entry to / exit from the firmware.
+>
+> This sucks, because using the BAT is **much** easier for
+> the firmware. In my case, it also means I don't need to worry
+> about Linux stomping on anything -- I have nothing in RAM.
 
-> Add a new mutex for use in adding and removing of memory blocks.  This
-> is needed to avoid any race conditions in which the same memory block could
-> be added and removed at the same time.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-> 
-Reviewed-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+It's easy to save and restore the BATs on firmware entry/exit,
+where do you see a problem?
+
+> Page tables would need to go in RAM. If Linux wants to
+> use that memory...?
+
+Same way as when the client uses *any* memory OF has claimed:
+it has to stop calling OF from then on.
+
+> It seems that Linux does tend to ask;
+> will it panic if I refuse? Are there addresses Linux won't
+> ever ask for?
+
+Linux always "kills" OF pretty early on.
+
+> It also looks like I could just start up Linux w/o the MMU on.
+
+Yes, that's common and works.  You will still need BATs (or
+something else) to do I/O from the firmware though.
+
+
+Segher
