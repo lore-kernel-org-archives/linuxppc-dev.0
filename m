@@ -1,23 +1,16 @@
-Return-Path: <bastiaan.nijkamp@gmail.com>
-Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
-	[209.85.216.172]) by ozlabs.org (Postfix) with ESMTP id 95128B70CB
+Return-Path: <anirban.chakraborty@qlogic.com>
+Received: from avexcashub1.qlogic.com (avexcashub1.qlogic.com [198.70.193.61])
+	by ozlabs.org (Postfix) with ESMTP id 8AB7AB70DD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Oct 2010 01:31:21 +1100 (EST)
-Received: by qyk5 with SMTP id 5so676753qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Oct 2010 07:31:19 -0700 (PDT)
+	Wed,  6 Oct 2010 04:24:30 +1100 (EST)
+From: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 5 Oct 2010 10:18:19 -0700
+Subject: MSI-X vector allocation failure in upstream kernel
+Message-ID: <9101728E-3FFC-457E-AF5B-87B2037FEC32@qlogic.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B9A9D@CORPEXCH1.na.ads.idt.com>
-References: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
-	<AANLkTimCiHWRR-kVuT0ift3CH63Xk_XcaXS22qmVh6fr@mail.gmail.com>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552013B9A9D@CORPEXCH1.na.ads.idt.com>
-From: Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com>
-Date: Tue, 5 Oct 2010 16:30:58 +0200
-Message-ID: <AANLkTikW7FY0Ptw8iuUGgFkOAWLBqn3_H74U5WvEseR7@mail.gmail.com>
-Subject: Re: Serial RapidIO Maintaintance read causes lock up
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Content-Type: multipart/alternative; boundary=00c09f972a7da8a0780491df8388
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Ameen Rahman <ameen.rahman@qlogic.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,73 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00c09f972a7da8a0780491df8388
-Content-Type: text/plain; charset=ISO-8859-1
+Hi All,
 
-Hi Alex,
+I am trying to test qlcnic driver (for 10Gb QLogic network adapter) on a Po=
+wer 6 system=20
+(IBM P 520, System type 8203) with upstream kernel and I do see that the ke=
+rnel is=20
+not able to allocate any MSI-X vectors. The driver requests for 4 vectors i=
+n pci_enable_msix,
+which returns 2. The driver again attempts, this time for 2 vectors but the=
+ kernel can't allocate=20
+and it returns a value of 0xfffffffd. I upgraded the system FW to 01EL350 (=
+from 01EL340)
+ just to make sure if MSI-X is enabled in the system. Is there anything tha=
+t I am missing?=20
 
-Yes, Sorry, that was a typo. The correct address that is printed is
-0xd1080068.
-And i did not disable the error handler, CONFIG_E500 is set at compile time.
+Any pointers will be highly appreciated.
 
-Regards,
-Bastiaan
-2010/10/5 Bounine, Alexandre <Alexandre.Bounine@idt.com>
 
-> Hi Bastiaan,
->
->
-> Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com> wrote:
->
-> >fsl-of-rio e00c0000.rapidio: LAW start 0x00000000c0000000, RIO
-> Maintainance Window Size >0x400000,New Main Start: 0xd1080000
-> >RIO: enumerate master port 0, RIO0 mport
-> >fsl_rio_config_read: index 0 destid 255 hopcount 0 offset 00000068 len
-> 4
-> ... skip ....
-> >fsl_rio_config_read: triggering '__fsl_read_rio_config'
-> >fsl_rio_config_read: going to request to read data at d108006
->
-> An address printed in the last line looks strange - is this typo or real
-> value?
-> I would expect to see d1080068 here if your maintenance window starts at
-> 0xd1080000.
->
-> Alex.
->
-
---00c09f972a7da8a0780491df8388
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div>Hi Alex,</div>
-<div>=A0</div>
-<div>Yes, Sorry, that was a typo. The correct address that is printed is 0x=
-d1080068.</div>
-<div>And i did not disable the error handler, CONFIG_E500 is set at compile=
- time.</div>
-<div>=A0</div>
-<div>Regards,</div>
-<div>Bastiaan<br></div>
-<div class=3D"gmail_quote">2010/10/5 Bounine, Alexandre <span dir=3D"ltr">&=
-lt;<a href=3D"mailto:Alexandre.Bounine@idt.com">Alexandre.Bounine@idt.com</=
-a>&gt;</span><br>
-<blockquote class=3D"gmail_quote" style=3D"PADDING-LEFT: 1ex; MARGIN: 0px 0=
-px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">Hi Bastiaan,<br>
-<div class=3D"im"><br><br>Bastiaan Nijkamp &lt;<a href=3D"mailto:bastiaan.n=
-ijkamp@gmail.com">bastiaan.nijkamp@gmail.com</a>&gt; wrote:<br><br>&gt;fsl-=
-of-rio e00c0000.rapidio: LAW start 0x00000000c0000000, RIO<br>Maintainance =
-Window Size &gt;0x400000,New Main Start: 0xd1080000<br>
-
-&gt;RIO: enumerate master port 0, RIO0 mport<br>&gt;fsl_rio_config_read: in=
-dex 0 destid 255 hopcount 0 offset 00000068 len<br>4<br></div>... skip ....=
-<br>
-<div class=3D"im">&gt;fsl_rio_config_read: triggering &#39;__fsl_read_rio_c=
-onfig&#39;<br>&gt;fsl_rio_config_read: going to request to read data at d10=
-8006<br><br></div>An address printed in the last line looks strange - is th=
-is typo or real<br>
-
-value?<br>I would expect to see d1080068 here if your maintenance window st=
-arts at<br>0xd1080000.<br><br>Alex.<br></blockquote></div><br>
-
---00c09f972a7da8a0780491df8388--
+thanks,
+Anirban Chakraborty=
