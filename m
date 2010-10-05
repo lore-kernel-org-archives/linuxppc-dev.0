@@ -1,27 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0A82B70DB
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id B3606B6EDD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 09:50:57 +1100 (EST)
-Subject: Re: Introduce support for little endian PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-In-Reply-To: <1286188242.15020.349.camel@thor.local>
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
-	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
-	<1285935283.2463.78.camel@pasglop>
-	<1285950041.15020.272.camel@thor.local>
-	<1285966204.2463.137.camel@pasglop>
-	<1286188242.15020.349.camel@thor.local>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 05 Oct 2010 09:50:32 +1100
-Message-ID: <1286232632.2463.324.camel@pasglop>
+	Tue,  5 Oct 2010 16:13:56 +1100 (EST)
+Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
+	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o955Dtmv016041 for <linuxppc-dev@lists.ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Tue, 5 Oct 2010 14:13:55 +0900
+Received: from smail (m6 [127.0.0.1])
+	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id D93CA45DE54
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:13:54 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
+	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id B5A0145DE4F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:13:54 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 9F6451DB8014
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:13:54 +0900 (JST)
+Received: from m106.s.css.fujitsu.com (m106.s.css.fujitsu.com [10.249.87.106])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 535411DB8012
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:13:54 +0900 (JST)
+Date: Tue, 5 Oct 2010 14:08:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 3/9] v3 Add section count to memory_block struct
+Message-Id: <20101005140835.9c80c2e7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4CA628D0.6030508@austin.ibm.com>
+References: <4CA62700.7010809@austin.ibm.com> <4CA628D0.6030508@austin.ibm.com>
 Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	Robin Holt <holt@sgi.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +44,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-10-04 at 12:30 +0200, Michel Dänzer wrote:
+On Fri, 01 Oct 2010 13:30:40 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-> > And last I looked X still pukes if you give it a pixmap in non native
-> > byte order but that might have been fixed.
+> Add a section count property to the memory_block struct to track the number
+> of memory sections that have been added/removed from a memory block. This
+> allows us to know when the last memory section of a memory block has been
+> removed so we can remove the memory block.
 > 
-> I'm not sure what exactly you mean by that, but I'm not aware of any
-> such issues offhand.
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> 
 
-Hrm, I meant on the DDX side. Anyways, doesn't matter. Even if it works
-fine on X side. Fact is, there's tons and tons of existing SW stack and
-drivers on the field that are totally incapable of doing BE and
-essentially unfixable without major work that the customer(s) is(are)
-unwilling to do at this stage.
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-(Think embedded gfx IP cores mostly, including codecs etc...)
+a nitpick,
 
-> I didn't say anything about that, just that IME it should be mostly
-> possible to deal with endianness within the driver stack.
 
-To some extent yes. Completely, I'm not sure. Apps manipulating pixels,
-such as video players doing hand-made overlay etc... will potentially
-have issues. It's more than actual pixel byte ordering. It's anything
-that accesses a quantity in memory using different size accessors, ie,
-storing a u32 and then expecting to find the LSB at u8* of the same
-address etc... that sort of stuff happens more often in gfx-oriented
-code than anywhere else in my experience.
+> Index: linux-next/include/linux/memory.h
+> ===================================================================
+> --- linux-next.orig/include/linux/memory.h	2010-09-29 14:56:29.000000000 -0500
+> +++ linux-next/include/linux/memory.h	2010-09-30 14:13:50.000000000 -0500
+> @@ -23,6 +23,8 @@
+>  struct memory_block {
+>  	unsigned long phys_index;
+>  	unsigned long state;
+> +	int section_count;
 
-> Note that I'm not arguing against these changes, just pointing out some
-> apparent inaccuracies in the reasoning for them.
+I prefer
+	int section_count; /* updated under mutex */
 
-Right, I possibly made an incorrect statement relative to Xorg (I had
-assumed the fb layer only worked properly in native endian format), but
-that doesn't matter much since the problem here is existing code &
-drivers and goes way beyond X (probably no X on the target setups
-anyways).
-
-Cheers,
-Ben
+or some for this kind of non-atomic counters. but nitpick.
