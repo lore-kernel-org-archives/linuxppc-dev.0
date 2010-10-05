@@ -1,22 +1,25 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1AC8EB70B8
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DC939B70D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Oct 2010 02:18:22 +1100 (EST)
-In-Reply-To: <1286266201.2463.336.camel@pasglop>
-References: <AANLkTikPhpvJetY+NDFggYE6Wp6ppyt2BLmzEbsiwHuZ@mail.gmail.com>
-	<63799.84.105.60.153.1286166325.squirrel@gate.crashing.org>
-	<1286266201.2463.336.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5EE72F00-BC7C-426B-A828-FE21CC868982@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: use of BAT before taking over the MMU
-Date: Tue, 5 Oct 2010 17:22:35 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Albert Cahalan <acahalan@gmail.com>, linuxppc-dev@lists.ozlabs.org
+	Wed,  6 Oct 2010 02:19:15 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Serial RapidIO Maintaintance read causes lock up
+Date: Tue, 5 Oct 2010 08:11:34 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B9AFE@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
+References: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
+	<AANLkTimCiHWRR-kVuT0ift3CH63Xk_XcaXS22qmVh6fr@mail.gmail.com>
+	<4CAB2729.6080402@freescale.com>
+	<AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Bastiaan Nijkamp" <bastiaan.nijkamp@gmail.com>,
+	"John Traill" <john.traill@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> The PowerPC OF binding requires the firmware to save and restore
->> the BATs on entry to / exit from the firmware.
->
-> I'm not sure he was talking about OF here...
-
-Yeah, I thought I was on a different mailing list.  It's still
-sort-of relevant though.
-
-> In any case, we don't muck
-> around with BATs until after we're done with OF anyways.
-
-"Lower than the lowest common divider", yeah ;-)
 
 
-Segher
+Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com> wrote:=20
+=A0
+>A interesting thing that i found out is that when the agent is reset =
+while the host is >locked up (eg. it cannot be stopped nor can i read =
+the registers and memory trough a JTAG >Interface), the host comes back =
+online and just continues booting linux with a RapidIO >error. See the =
+log below.
+... skip ...=A0
+>fsl_rio_config_read: going to request to read data at d1080068
+>RIO: cfg_read error -14 for ff:0:68
+... skip ...
+>RIO: master port 0 device has lost enumeration to a remote host
+
+Looks like during agent reset your SRIO link becomes good and host's =
+requests go ahead.
+After that you get a machine check (response time out): link is OK but =
+agent is not configured.
+
+Can you check/print 0xC_0148 and 0xC_0158 registers of SRIO block before =
+the first maintenance read.
+
+Alex.
+=20
