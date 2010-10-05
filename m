@@ -1,20 +1,40 @@
-Return-Path: <jean-mickael.guerin@6wind.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id 0E812B6F06
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id 27C35B70AE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Oct 2010 16:22:28 +1100 (EST)
-Received: by wwa36 with SMTP id 36so5618828wwa.14
+	Tue,  5 Oct 2010 16:24:13 +1100 (EST)
+Received: from m3.gw.fujitsu.co.jp ([10.0.50.73])
+	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o955OC9t020563 for <linuxppc-dev@lists.ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Tue, 5 Oct 2010 14:24:13 +0900
+Received: from smail (m3 [127.0.0.1])
+	by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 440B445DE56
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 04 Oct 2010 22:22:26 -0700 (PDT)
-Message-ID: <4CAAB5F4.9030002@6wind.com>
-Date: Tue, 05 Oct 2010 07:21:56 +0200
-From: Jean-Mickael Guerin <jean-mickael.guerin@6wind.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: advice on reading a call trace
-References: <4CA9B967.9060907@6wind.com>
-In-Reply-To: <4CA9B967.9060907@6wind.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue,  5 Oct 2010 14:24:12 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+	by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2524845DE52
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:24:12 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 076A51DB803F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:24:12 +0900 (JST)
+Received: from m106.s.css.fujitsu.com (m106.s.css.fujitsu.com [10.249.87.106])
+	by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id A9BC41DB803C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Oct 2010 14:24:11 +0900 (JST)
+Date: Tue, 5 Oct 2010 14:18:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 9/9] v3 Update memory hotplug documentation
+Message-Id: <20101005141852.66a6e85a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4CA62A7D.8030905@austin.ibm.com>
+References: <4CA62700.7010809@austin.ibm.com> <4CA62A7D.8030905@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Greg KH <greg@kroah.com>, steiner@sgi.com, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	Robin Holt <holt@sgi.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +44,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SLUB is turned on, and the oops does not seem to happen when SLAB replaces SLUB.
-I just got lucky with SLAB, or does it sound familiar on ppc?
+On Fri, 01 Oct 2010 13:37:49 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-Regards,
-Jean-Mickael
+> Update the memory hotplug documentation to reflect the new behaviors of
+> memory blocks reflected in sysfs.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> 
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On 10/4/2010 1:24 PM, Jean-Mickael Guerin wrote:
-> Hello,
-> I'm stepping into ppc world and I'd like to know how to read this call trace,
-> I enabled debug options but I'm not able to track the origin of this bug, I mean
-> what happens before handle_page_fault():
+Thank you for your patient work!.
+
+
+
+> ---
+>  Documentation/memory-hotplug.txt |   47 +++++++++++++++++++++++++--------------
+>  1 file changed, 31 insertions(+), 16 deletions(-)
 > 
-> Unable to handle kernel paging request for data at address 0x00000008
-> Faulting instruction address: 0xc00abcd8
+> Index: linux-next/Documentation/memory-hotplug.txt
+> ===================================================================
+> --- linux-next.orig/Documentation/memory-hotplug.txt	2010-09-29 14:56:24.000000000 -0500
+> +++ linux-next/Documentation/memory-hotplug.txt	2010-09-30 14:59:47.000000000 -0500
+> @@ -126,36 +126,51 @@
+>  --------------------------------
+>  4 sysfs files for memory hotplug
+>  --------------------------------
+> -All sections have their device information under /sys/devices/system/memory as
+> +All sections have their device information in sysfs.  Each section is part of
+> +a memory block under /sys/devices/system/memory as
+>  
+>  /sys/devices/system/memory/memoryXXX
+> -(XXX is section id.)
+> +(XXX is the section id.)
+>  
+> -Now, XXX is defined as start_address_of_section / section_size.
+> +Now, XXX is defined as (start_address_of_section / section_size) of the first
+> +section contained in the memory block.  The files 'phys_index' and
+> +'end_phys_index' under each directory report the beginning and end section id's
+> +for the memory block covered by the sysfs directory.  It is expected that all
+> +memory sections in this range are present and no memory holes exist in the
+> +range. Currently there is no way to determine if there is a memory hole, but
+> +the existence of one should not affect the hotplug capabilities of the memory
+> +block.
+>  
+>  For example, assume 1GiB section size. A device for a memory starting at
+>  0x100000000 is /sys/device/system/memory/memory4
+>  (0x100000000 / 1Gib = 4)
+>  This device covers address range [0x100000000 ... 0x140000000)
+>  
+> -Under each section, you can see 4 files.
+> +Under each section, you can see 4 or 5 files, the end_phys_index file being
+> +a recent addition and not present on older kernels.
+>  
+> -/sys/devices/system/memory/memoryXXX/phys_index
+> +/sys/devices/system/memory/memoryXXX/start_phys_index
+> +/sys/devices/system/memory/memoryXXX/end_phys_index
+>  /sys/devices/system/memory/memoryXXX/phys_device
+>  /sys/devices/system/memory/memoryXXX/state
+>  /sys/devices/system/memory/memoryXXX/removable
+>  
+> -'phys_index' : read-only and contains section id, same as XXX.
+> -'state'      : read-write
+> -               at read:  contains online/offline state of memory.
+> -               at write: user can specify "online", "offline" command
+> -'phys_device': read-only: designed to show the name of physical memory device.
+> -               This is not well implemented now.
+> -'removable'  : read-only: contains an integer value indicating
+> -               whether the memory section is removable or not
+> -               removable.  A value of 1 indicates that the memory
+> -               section is removable and a value of 0 indicates that
+> -               it is not removable.
+> +'phys_index'      : read-only and contains section id of the first section
+> +		    in the memory block, same as XXX.
+> +'end_phys_index'  : read-only and contains section id of the last section
+> +		    in the memory block.
+> +'state'           : read-write
+> +                    at read:  contains online/offline state of memory.
+> +                    at write: user can specify "online", "offline" command
+> +                    which will be performed on al sections in the block.
+> +'phys_device'     : read-only: designed to show the name of physical memory
+> +                    device.  This is not well implemented now.
+> +'removable'       : read-only: contains an integer value indicating
+> +                    whether the memory block is removable or not
+> +                    removable.  A value of 1 indicates that the memory
+> +                    block is removable and a value of 0 indicates that
+> +                    it is not removable. A memory block is removable only if
+> +                    every section in the block is removable.
+>  
+>  NOTE:
+>    These directories/files appear after physical memory hotplug phase.
 > 
-> [c1d0dd40] [c00ab2e4] swapin_readahead+0x34/0xbc
-> [c1d0dd80] [c009e91c] handle_mm_fault+0x724/0x9b0
-> [c1d0dde0] [c0014e10] do_page_fault+0x2e8/0x55c
-> [c1d0df40] [c000fc8c] handle_page_fault+0xc/0x80
-> Instruction dump:
-> 80010034 7d435378 bb210014 38210030 7c0803a6 4e800020 7d695b78 4bffff00
-> 387a007c 4847616d 38000001 7c00f830 <817b0008> 7d3c0214 7f895840 7f9ee378
-> Kernel panic - not syncing: Fatal exception
 > 
-> Another one:
-> NIP: c00b6980 LR: c00b6978 CTR: 0f9ffb20
-> REGS: d6a9dc60 TRAP: 0300   Not tainted  (2.6.34.6-00392-g31e1857)
-> MSR: 10029002   CR: 24004442  XER: 00000000
-> DEAR: 00000008, ESR: 00000000
-> TASK = da6a7440[4915] 'smrd' THREAD: d6a9c000 CPU: 0
-> GPR00: 00000008 d6a9dd10 da6a7440 c0738340 00000000 00000000 00000000 00000001
-> GPR08: 00000000 00000000 c00b6978 00000000 44004442 10027f04 c077790c d79f94a8
-> GPR16: d6a9dd88 c07a0000 d72301f0 d6a9c000 000001ff 00000000 0f9ffb20 da5c6f78
-> GPR24: d79f9440 c0738340 d6a9dd48 00000000 07832400 00000001 00000003 07832400
-> NIP [c00b6980] valid_swaphandles+0x19c/0x1d0
-> LR [c00b6978] valid_swaphandles+0x194/0x1d0
-> Call Trace:
-> [d6a9dd10] [c00b6978] valid_swaphandles+0x194/0x1d0 (unreliable)
-> [d6a9dd40] [c00b5a10] swapin_readahead+0x34/0xbc
-> [d6a9dd80] [c00a9064] handle_mm_fault+0x7c0/0x868
-> [d6a9dde0] [c00158d8] do_page_fault+0x2fc/0x570
-> [d6a9df40] [c001061c] handle_page_fault+0xc/0x80
-> Instruction dump:
-> 38210030 7c0803a6 4e800020 7d695b78 4bffff04 3d20c074 39298300 3b290040
-> 7f23cb78 484843a9 38000001 7c00f030 <817b0008> 7d3f0214 7f895840 7ffdfb78
-> Kernel panic - not syncing: Fatal exception
-> Call Trace:
-> [d6a9dba0] [c000765c] show_stack+0x40/0x15c (unreliable)
-> [d6a9dbd0] [c053b780] panic+0x94/0x118
-> [d6a9dc20] [c000d630] die+0x15c/0x1bc
-> [d6a9dc40] [c00155a4] bad_page_fault+0x90/0xc8
-> [d6a9dc50] [c001068c] handle_page_fault+0x7c/0x80
-> [d6a9dd10] [c00b6978] valid_swaphandles+0x194/0x1d0
-> [d6a9dd40] [c00b5a10] swapin_readahead+0x34/0xbc
-> [d6a9dd80] [c00a9064] handle_mm_fault+0x7c0/0x868
-> [d6a9dde0] [c00158d8] do_page_fault+0x2fc/0x570
-> [d6a9df40] [c001061c] handle_page_fault+0xc/0x80
-> Rebooting in 5 seconds..
 > 
-> Thanks,
-> Jean-Mickael
