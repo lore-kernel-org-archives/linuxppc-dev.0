@@ -1,23 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 3EDBBB70B8
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Oct 2010 04:30:41 +1100 (EST)
-Received: by iwn37 with SMTP id 37so11775030iwn.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Oct 2010 10:30:40 -0700 (PDT)
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3E604B70D8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  7 Oct 2010 05:37:22 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id o96IbJ3F007246
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:19 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o96IbJj72535428
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:19 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o96IbI7O021417
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:19 +1100
+Subject: [PATCH v5 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Thu, 07 Oct 2010 00:06:49 +0530
+Message-ID: <20101006182948.7006.75088.stgit@drishya.in.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4CAC7EB0.6080502@keymile.com>
-References: <4CA9830A.2030605@denx.de>
-	<AANLkTinSersREjDnvg=8Gvpa6YmLuzgF1H8eEXRyCpW0@mail.gmail.com>
-	<4CAC472F.5070001@denx.de> <4CAC7EB0.6080502@keymile.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 6 Oct 2010 11:30:19 -0600
-Message-ID: <AANLkTinWGw5AR8KSSdCyOWqCaMVL-wZH+2uB7zh404_i@mail.gmail.com>
-Subject: Re: powerpc, fs_enet: scanning PHY after Linux is up
-To: Holger brunck <holger.brunck@keymile.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org, hs@denx.de,
-	Detlev Zundel <dzu@denx.de>, netdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,87 +34,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 6, 2010 at 7:50 AM, Holger brunck <holger.brunck@keymile.com> w=
-rote:
-> Hello Heiko,
->
-> On 10/06/2010 11:53 AM, Heiko Schocher wrote:
->>>> So, the question is, is there a possibility to solve this problem?
->>>>
->>>> If there is no standard option, what would be with adding a
->>>> "scan_phy" file in
->>>>
->>>> /proc/device-tree/soc\@f0000000/cpm\@119c0/mdio\@10d40
->>>> (or better destination?)
->>>>
->>>> which with we could rescan a PHY with
->>>> "echo addr > /proc/device-tree/soc\@f0000000/cpm\@119c0/mdio\@10d40/sc=
-an_phy"
->>>> (so there is no need for using of_find_node_by_path(), as we should
->>>> =A0have the associated device node here, and can step through the chil=
-d
->>>> =A0nodes with "for_each_child_of_node(np, child)" and check if reg =3D=
-=3D addr)
->>>>
->>>> or shouldn;t be at least, if the phy couldn;t be found when opening
->>>> the port, retrigger a scanning, if the phy now is accessible?
->>>
->>> One option would be to still register a phy_device for each phy
->>> described in the device tree, but defer binding a driver to each phy
->>> that doesn't respond. =A0Then at of_phy_find_device() time, if it
->>
->> Maybe I din;t get the trick, but the problem is, that
->> you can;t register a phy_device in drivers/of/of_mdio.c
->> of_mdiobus_register(), if the phy didn;t respond with the
->> phy_id ... and of_phy_find_device() is not (yet) used in fs_enet
->>
->>> matches with a phy_device that isn't bound to a driver yet, then
->>> re-trigger the binding operation. =A0At which point the phy id can be
->>> probed and the correct driver can be chosen. =A0If binding succeeds,
->>> then return the phy_device handle. =A0If not, then fail as it currently
->>> does.
->>
->> Wouldn;t it be good, just if we need a PHY (on calling fs_enet_open)
->> to look if there is one?
->>
->> Something like that (not tested):
->>
->> in drivers/net/fs_enet/fs_enet-main.c in fs_init_phy()
->> called from fs_enet_open():
->>
->> Do first:
->> phydev =3D =A0of_phy_find_device(fep->fpi->phy_node);
->>
->> Look if there is a driver (phy_dev->drv =3D=3D NULL ?)
->>
->> If not, call new function
->> of_mdiobus_register_phy(mii_bus, fep->fpi->phy_node)
->> see below patch for it.
->>
->> If this succeeds, all is OK, and we can use this phy,
->> else ethernet not work.
->>
->> !!just no idea, how to get mii_bus pointer ...
->>
->
-> in my understanding it should be posssible to get this pointer via the pa=
-rent of
-> the device_node you got via the private data of the fs_enet:
-> fep->fpi->phy_node->parent should point you to the device_node for the md=
-io_bus.
+Hi Ben,
 
-Yes, this will give you the mdio bus node pointer.
+The following series adds a new kernel module for powerpc pseries
+platforms in order to export platform energy management capabilities.
 
-> In the next step you should be able to get the pointer of of_device for t=
-he
-> mdio_bus:
-> ofdevice* ofdev =3D to_of_device(fep->fpi->phy_node->parent);
+The module exports data from a new hypervisor call H_BEST_ENERGY.
 
-of_device is just an alias for platform_device now, and not all mdio
-busses will be instantiated by a platform device.  This method won't
-always work.  What is really needed is the pointer to the mii_bus
-structure.  That can be obtained by looping over the members of the
-mdio_bus_class and comparing the mii_bus->device.parent->of_node to
-the parent node from above.
+Comments and suggestions made on the previous iteration of the
+patch related to function naming has been incorporated.
 
-g.
+Changes in v5:
+
+* Renamed cpu_{left,right}most_thread_sibling() to 
+				cpu_{first,last}_thread_sibling()
+
+* Renamed cpu_core_of_thread() to cpu_core_index_of_thread()  
+  (these function work on core index)
+
+* Rebased to 2.6.36-rc6 and tested on a supported platform
+
+Changes in v4:
+
+[4] [PATCH v4 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-July/084217.html
+
+* Added more documentation
+* Added check_for_h_best_energy() to look in ibm,hypertas-functions so
+  that sysfs entries are not created in an unsupported platform
+* Added cleaner error checks and correct of_node_put()
+* Rebased and tested on 2.6.35-rc5
+
+Changed in v3:
+
+[3] [PATCH v3 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-June/083414.html
+
+* Added more documentation in the cleanup patch
+* Removed RFC tag, rebased and tested on 2.6.35-rc3
+* Ready for inclusion in powerpc/next tree for further testing
+
+Changes in v2:
+
+[2] [RFC PATCH v2 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-May/082246.html
+
+* Cleanup cpu/thread/core APIs
+* Export APIs to module instead of threads_per_core
+* Use of_find_node_by_path() instead of of_find_node_by_name()
+* Error checking and whitespace cleanups
+
+First version:
+[1] [RFC] powerpc: add support for new hcall H_BEST_ENERGY
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-March/080796.html
+
+This patch series will apply on 2.6.36-rc6 as well as powerpc/next
+tree.  Please review and include in powerpc/next tree for further
+testing.  
+
+I could incrementally reduce some of the error checks as suggested by
+Michael Neuling as next steps.  This patch series is conservative and
+has more error checking in device tree parsing and drc index matching
+code than what may be required.
+
+Thanks,
+Vaidy
+---
+
+Vaidyanathan Srinivasan (2):
+      powerpc: cleanup APIs for cpu/thread/core mappings
+      powerpc: add support for new hcall H_BEST_ENERGY
+
+
+ arch/powerpc/include/asm/cputhreads.h           |   15 +
+ arch/powerpc/include/asm/hvcall.h               |    3 
+ arch/powerpc/kernel/smp.c                       |   19 +
+ arch/powerpc/mm/mmu_context_nohash.c            |   12 -
+ arch/powerpc/platforms/pseries/Kconfig          |   10 +
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/pseries_energy.c |  326 +++++++++++++++++++++++
+ 7 files changed, 370 insertions(+), 16 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/pseries_energy.c
