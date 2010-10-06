@@ -1,27 +1,30 @@
 Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3E604B70D8
+	(Client CN "e23smtp04.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69B5D1008D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Oct 2010 05:37:22 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id o96IbJ3F007246
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:19 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o96IbJj72535428
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:19 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o96IbI7O021417
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:19 +1100
-Subject: [PATCH v5 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+	Thu,  7 Oct 2010 05:37:29 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id o96IWiJL027509
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:32:44 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o96IbTOf2773058
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:29 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o96IbSG1024635
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 05:37:28 +1100
+Subject: [PATCH v5 1/2] powerpc: cleanup APIs for cpu/thread/core mappings
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 07 Oct 2010 00:06:49 +0530
-Message-ID: <20101006182948.7006.75088.stgit@drishya.in.ibm.com>
+Date: Thu, 07 Oct 2010 00:06:59 +0530
+Message-ID: <20101006183659.7006.76509.stgit@drishya.in.ibm.com>
+In-Reply-To: <20101006182948.7006.75088.stgit@drishya.in.ibm.com>
+References: <20101006182948.7006.75088.stgit@drishya.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
@@ -34,84 +37,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+These APIs take logical cpu number as input
+Change cpu_first_thread_in_core() to cpu_first_thread_sibling()
+Change cpu_last_thread_in_core() to cpu_last_thread_sibling()
 
-The following series adds a new kernel module for powerpc pseries
-platforms in order to export platform energy management capabilities.
+These APIs convert core number (index) to logical cpu/thread numbers
+Add cpu_first_thread_of_core(int core)
+Changed cpu_thread_to_core() to cpu_core_index_of_thread(int cpu)
 
-The module exports data from a new hypervisor call H_BEST_ENERGY.
+The goal is to make 'threads_per_core' accessible to the
+pseries_energy module.  Instead of making an API to read
+threads_per_core, this is a higher level wrapper function to
+convert from logical cpu number to core number.
 
-Comments and suggestions made on the previous iteration of the
-patch related to function naming has been incorporated.
+The current APIs cpu_first_thread_in_core() and
+cpu_last_thread_in_core() returns logical CPU number while
+cpu_thread_to_core() returns core number or index which is
+not a logical CPU number.  The new APIs are now clearly named to
+distinguish 'core number' versus first and last 'logical cpu
+number' in that core.
 
-Changes in v5:
+The new APIs cpu_{first,last}_thread_sibling() work on
+logical cpu numbers.  While cpu_first_thread_of_core() and
+cpu_core_index_of_thread() work on core index.
 
-* Renamed cpu_{left,right}most_thread_sibling() to 
-				cpu_{first,last}_thread_sibling()
+Example usage:  (4 threads per core system)
 
-* Renamed cpu_core_of_thread() to cpu_core_index_of_thread()  
-  (these function work on core index)
+cpu_first_thread_sibling(5) = 4
+cpu_last_thread_sibling(5) = 7
+cpu_core_index_of_thread(5) = 1
+cpu_first_thread_of_core(1) = 4
 
-* Rebased to 2.6.36-rc6 and tested on a supported platform
+cpu_core_index_of_thread() is used in cpu_to_drc_index() in the
+module and cpu_first_thread_of_core() is used in
+drc_index_to_cpu() in the module.
 
-Changes in v4:
+Make API changes to few callers.  Export symbols for use in modules.
 
-[4] [PATCH v4 0/2] powerpc: add support for new hcall H_BEST_ENERGY
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-July/084217.html
-
-* Added more documentation
-* Added check_for_h_best_energy() to look in ibm,hypertas-functions so
-  that sysfs entries are not created in an unsupported platform
-* Added cleaner error checks and correct of_node_put()
-* Rebased and tested on 2.6.35-rc5
-
-Changed in v3:
-
-[3] [PATCH v3 0/2] powerpc: add support for new hcall H_BEST_ENERGY
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-June/083414.html
-
-* Added more documentation in the cleanup patch
-* Removed RFC tag, rebased and tested on 2.6.35-rc3
-* Ready for inclusion in powerpc/next tree for further testing
-
-Changes in v2:
-
-[2] [RFC PATCH v2 0/2] powerpc: add support for new hcall H_BEST_ENERGY
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-May/082246.html
-
-* Cleanup cpu/thread/core APIs
-* Export APIs to module instead of threads_per_core
-* Use of_find_node_by_path() instead of of_find_node_by_name()
-* Error checking and whitespace cleanups
-
-First version:
-[1] [RFC] powerpc: add support for new hcall H_BEST_ENERGY
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-March/080796.html
-
-This patch series will apply on 2.6.36-rc6 as well as powerpc/next
-tree.  Please review and include in powerpc/next tree for further
-testing.  
-
-I could incrementally reduce some of the error checks as suggested by
-Michael Neuling as next steps.  This patch series is conservative and
-has more error checking in device tree parsing and drc index matching
-code than what may be required.
-
-Thanks,
-Vaidy
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/cputhreads.h |   15 +++++++++------
+ arch/powerpc/kernel/smp.c             |   19 ++++++++++++++++---
+ arch/powerpc/mm/mmu_context_nohash.c  |   12 ++++++------
+ 3 files changed, 31 insertions(+), 15 deletions(-)
 
-Vaidyanathan Srinivasan (2):
-      powerpc: cleanup APIs for cpu/thread/core mappings
-      powerpc: add support for new hcall H_BEST_ENERGY
-
-
- arch/powerpc/include/asm/cputhreads.h           |   15 +
- arch/powerpc/include/asm/hvcall.h               |    3 
- arch/powerpc/kernel/smp.c                       |   19 +
- arch/powerpc/mm/mmu_context_nohash.c            |   12 -
- arch/powerpc/platforms/pseries/Kconfig          |   10 +
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/pseries_energy.c |  326 +++++++++++++++++++++++
- 7 files changed, 370 insertions(+), 16 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/pseries_energy.c
+diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
+index a8e1844..f71bb4c 100644
+--- a/arch/powerpc/include/asm/cputhreads.h
++++ b/arch/powerpc/include/asm/cputhreads.h
+@@ -61,22 +61,25 @@ static inline cpumask_t cpu_online_cores_map(void)
+ 	return cpu_thread_mask_to_cores(cpu_online_map);
+ }
+ 
+-static inline int cpu_thread_to_core(int cpu)
+-{
+-	return cpu >> threads_shift;
+-}
++#ifdef CONFIG_SMP
++int cpu_core_index_of_thread(int cpu);
++int cpu_first_thread_of_core(int core);
++#else
++static inline int cpu_core_index_of_thread(int cpu) { return cpu; }
++static inline int cpu_first_thread_of_core(int core) { return core; }
++#endif
+ 
+ static inline int cpu_thread_in_core(int cpu)
+ {
+ 	return cpu & (threads_per_core - 1);
+ }
+ 
+-static inline int cpu_first_thread_in_core(int cpu)
++static inline int cpu_first_thread_sibling(int cpu)
+ {
+ 	return cpu & ~(threads_per_core - 1);
+ }
+ 
+-static inline int cpu_last_thread_in_core(int cpu)
++static inline int cpu_last_thread_sibling(int cpu)
+ {
+ 	return cpu | (threads_per_core - 1);
+ }
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 0008bc5..012d6e2 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -466,7 +466,20 @@ out:
+ 	return id;
+ }
+ 
+-/* Must be called when no change can occur to cpu_present_mask,
++/* Helper routines for cpu to core mapping */
++int cpu_core_index_of_thread(int cpu)
++{
++	return cpu >> threads_shift;
++}
++EXPORT_SYMBOL_GPL(cpu_core_index_of_thread);
++
++int cpu_first_thread_of_core(int core)
++{
++	return core << threads_shift;
++}
++EXPORT_SYMBOL_GPL(cpu_first_thread_of_core);
++
++/* Must be called when no change can occur to cpu_present_map,
+  * i.e. during cpu online or offline.
+  */
+ static struct device_node *cpu_to_l2cache(int cpu)
+@@ -517,7 +530,7 @@ int __devinit start_secondary(void *unused)
+ 	notify_cpu_starting(cpu);
+ 	set_cpu_online(cpu, true);
+ 	/* Update sibling maps */
+-	base = cpu_first_thread_in_core(cpu);
++	base = cpu_first_thread_sibling(cpu);
+ 	for (i = 0; i < threads_per_core; i++) {
+ 		if (cpu_is_offline(base + i))
+ 			continue;
+@@ -596,7 +609,7 @@ int __cpu_disable(void)
+ 		return err;
+ 
+ 	/* Update sibling maps */
+-	base = cpu_first_thread_in_core(cpu);
++	base = cpu_first_thread_sibling(cpu);
+ 	for (i = 0; i < threads_per_core; i++) {
+ 		cpumask_clear_cpu(cpu, cpu_sibling_mask(base + i));
+ 		cpumask_clear_cpu(base + i, cpu_sibling_mask(cpu));
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index ddfd7ad..9aa754c 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -111,8 +111,8 @@ static unsigned int steal_context_smp(unsigned int id)
+ 		 * a core map instead but this will do for now.
+ 		 */
+ 		for_each_cpu(cpu, mm_cpumask(mm)) {
+-			for (i = cpu_first_thread_in_core(cpu);
+-			     i <= cpu_last_thread_in_core(cpu); i++)
++			for (i = cpu_first_thread_sibling(cpu);
++			     i <= cpu_last_thread_sibling(cpu); i++)
+ 				__set_bit(id, stale_map[i]);
+ 			cpu = i - 1;
+ 		}
+@@ -264,14 +264,14 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	 */
+ 	if (test_bit(id, stale_map[cpu])) {
+ 		pr_hardcont(" | stale flush %d [%d..%d]",
+-			    id, cpu_first_thread_in_core(cpu),
+-			    cpu_last_thread_in_core(cpu));
++			    id, cpu_first_thread_sibling(cpu),
++			    cpu_last_thread_sibling(cpu));
+ 
+ 		local_flush_tlb_mm(next);
+ 
+ 		/* XXX This clear should ultimately be part of local_flush_tlb_mm */
+-		for (i = cpu_first_thread_in_core(cpu);
+-		     i <= cpu_last_thread_in_core(cpu); i++) {
++		for (i = cpu_first_thread_sibling(cpu);
++		     i <= cpu_last_thread_sibling(cpu); i++) {
+ 			__clear_bit(id, stale_map[i]);
+ 		}
+ 	}
