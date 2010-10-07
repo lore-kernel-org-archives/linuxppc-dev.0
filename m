@@ -1,32 +1,33 @@
 Return-Path: <kumar.gala@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
-	[213.199.154.207])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5A5D9B70ED
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Oct 2010 17:06:10 +1100 (EST)
-Received: from mail44-am1 (localhost.localdomain [127.0.0.1])	by
-	mail44-am1-R.bigfish.com (Postfix) with ESMTP id 72965102F6	for
-	<linuxppc-dev@ozlabs.org>; Thu,  7 Oct 2010 06:06:06 +0000 (UTC)
-Received: from am1ehsmhs004.bigfish.com (unknown [10.3.201.252])	by
-	mail44-am1.bigfish.com (Postfix) with ESMTP id 6A1101638052	for
-	<linuxppc-dev@ozlabs.org>; Thu,  7 Oct 2010 06:05:28 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o9765Unk013448	for <linuxppc-dev@ozlabs.org>;
-	Wed, 6 Oct 2010 23:05:30 -0700 (MST)
-Subject: Re: [PATCH 4/4] powerpc/85xx: flush dcache before resetting cores
+	by ozlabs.org (Postfix) with ESMTPS id B8857B710A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  7 Oct 2010 17:10:59 +1100 (EST)
+Received: from mail126-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail126-tx2-R.bigfish.com (Postfix) with ESMTP id BD10B8C0201	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 06:10:49 +0000 (UTC)
+Received: from TX2EHSMHS009.bigfish.com (unknown [10.9.14.253])	by
+	mail126-tx2.bigfish.com (Postfix) with ESMTP id 9AD73470052	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 06:10:49 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o976AmCL018191	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 6 Oct 2010 23:10:48 -0700 (MST)
+Subject: Re: [PATCH v2] powerpc/fsl_soc: Search all global-utilities nodes for
+	rstccr
 MIME-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset="us-ascii"
 From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1284677906-23787-4-git-send-email-msm@freescale.com>
-Date: Thu, 7 Oct 2010 01:00:49 -0500
-Message-ID: <16F175D0-38A8-4C04-B1B4-89626CEA54A2@freescale.com>
-References: <1284677906-23787-1-git-send-email-msm@freescale.com>
-	<1284677906-23787-4-git-send-email-msm@freescale.com>
+In-Reply-To: <1283294691-18765-1-git-send-email-msm@freescale.com>
+Date: Thu, 7 Oct 2010 01:10:46 -0500
+Message-ID: <01E62D4F-8FF7-4F14-8634-50457DF65761@freescale.com>
+References: <AANLkTikdm6f6dRDoOXuBx0-viwNqHuez4P+xTum+M+9O@mail.gmail.com>
+	<1283294691-18765-1-git-send-email-msm@freescale.com>
 To: Matthew McClintock <msm@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,17 +38,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sep 16, 2010, at 5:58 PM, Matthew McClintock wrote:
+On Aug 31, 2010, at 5:44 PM, Matthew McClintock wrote:
 
-> When we do an mpic_reset_core we need to make sure the dcache
-> is flushed
->=20
+> The first global-utilities node might not contain the rstcr
+> property, so we should search all the nodes
+> 
 > Signed-off-by: Matthew McClintock <msm@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/smp.c |   50 =
-+++++++++++++++++++++++++++++++++++++
-> 1 files changed, 50 insertions(+), 0 deletions(-)
+> -Changed KERN_EMERG to KERN_ERR
+> -Break if we do not find rstcr mapped
+> -Restore of_put_node that was dropped
+> 
+> arch/powerpc/sysdev/fsl_soc.c |   20 +++++++++++++-------
+> 1 files changed, 13 insertions(+), 7 deletions(-)
 
 applied to next
 
-- k=
+- k
