@@ -1,34 +1,29 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
-	[213.199.154.206])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 429C6B70D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Oct 2010 17:25:40 +1100 (EST)
-Received: from mail29-am1 (localhost.localdomain [127.0.0.1])	by
-	mail29-am1-R.bigfish.com (Postfix) with ESMTP id 8D34810B03B0	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 06:10:26 +0000 (UTC)
-Received: from am1ehsmhs004.bigfish.com (unknown [10.3.201.251])	by
-	mail29-am1.bigfish.com (Postfix) with ESMTP id 58D85D9004E	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 06:10:26 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o976ASaG013889	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 6 Oct 2010 23:10:28 -0700 (MST)
-Subject: Re: [PATCH 2/2] powerpc/fsl_booke: Add support to boot from core
-	other than 0
-MIME-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1283297085-3455-2-git-send-email-msm@freescale.com>
-Date: Thu, 7 Oct 2010 01:10:22 -0500
-Message-ID: <DABFAE6E-41F8-4B32-B76F-ADEB5E3D55F4@freescale.com>
-References: <1283297085-3455-1-git-send-email-msm@freescale.com>
-	<1283297085-3455-2-git-send-email-msm@freescale.com>
-To: Matthew McClintock <msm@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 717F4B70DE
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Oct 2010 17:29:18 +1100 (EST)
+Received: by ewy2 with SMTP id 2so223333ewy.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Oct 2010 23:29:16 -0700 (PDT)
+Date: Thu, 7 Oct 2010 10:29:09 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] edac: mpc85xx: Add support for new MPCxxx/Pxxxx EDAC
+	controllers (fix)
+Message-ID: <20101007062909.GA27110@oksana.dev.rtsoft.ru>
+References: <20100715182507.GA3482@oksana.dev.rtsoft.ru>
+	<20100716151224.21d499a3@schlenkerla.am.freescale.net>
+	<20100721153933.64d02086.akpm@linux-foundation.org>
+	<20100721182108.5a22c822@schlenkerla.am.freescale.net>
+	<20100801105419.GA352@oksana.dev.rtsoft.ru>
+	<5628792F-9A5F-4200-90B3-FB3939F02969@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <5628792F-9A5F-4200-90B3-FB3939F02969@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Dave Jiang <djiang@mvista.com>, Peter Tyser <ptyser@xes-inc.com>,
+	Doug Thompson <dougthompson@xmission.com>,
+	Scott Wood <scottwood@freescale.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +33,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Aug 31, 2010, at 6:24 PM, Matthew McClintock wrote:
-
-> First we check to see if we are the first core booting up. This
-> is accomplished by comparing the boot_cpuid with -1, if it is we
-> assume this is the first core coming up.
+On Thu, Oct 07, 2010 at 01:18:19AM -0500, Kumar Gala wrote:
+[...]
+> > diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+> > index cfa86f7..b178cfa 100644
+> > --- a/drivers/edac/mpc85xx_edac.c
+> > +++ b/drivers/edac/mpc85xx_edac.c
+> > @@ -652,7 +652,6 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
+> > 	{ .compatible = "fsl,p1020-l2-cache-controller", },
+> > 	{ .compatible = "fsl,p1021-l2-cache-controller", },
+> > 	{ .compatible = "fsl,p2020-l2-cache-controller", },
+> > -	{ .compatible = "fsl,p4080-l2-cache-controller", },
+> > 	{},
+> > };
+> > MODULE_DEVICE_TABLE(of, mpc85xx_l2_err_of_match);
+> > -- 
+> > 1.7.0.5
 > 
-> Secondly, we need to update the initial thread info structure
-> to reflect the actual cpu we are running on otherwise
-> smp_processor_id() and related functions will return the default
-> initialization value of the struct or 0.
-> 
-> Signed-off-by: Matthew McClintock <msm@freescale.com>
-> ---
-> arch/powerpc/kernel/head_fsl_booke.S |   10 ++++++++--
-> arch/powerpc/kernel/setup_32.c       |    2 +-
-> 2 files changed, 9 insertions(+), 3 deletions(-)
+> Can you post a new patch as it doesn't look like this got merged by Andrew so we need to clean up after ourselves.
 
-Are we sticking with this or not?
+It's already in Linus' tree.
 
-- k
+Thanks,
+
+- - - -
+commit cd1542c8197fc3c2eb3a8301505d5d9738fab1e4
+Author: Anton Vorontsov <avorontsov@mvista.com>
+Date:   Tue Aug 10 18:03:21 2010 -0700
+
+    edac: mpc85xx: add support for new MPCxxx/Pxxxx EDAC controllers
+    
+    Simply add proper IDs into the device table.
+    
+    Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+    Cc: Scott Wood <scottwood@freescale.com>
+    Cc: Peter Tyser <ptyser@xes-inc.com>
+    Cc: Dave Jiang <djiang@mvista.com>
+    Cc: Doug Thompson <dougthompson@xmission.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index fdbad55..af75e27 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -647,7 +647,10 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
+ 	{ .compatible = "fsl,mpc8555-l2-cache-controller", },
+ 	{ .compatible = "fsl,mpc8560-l2-cache-controller", },
+ 	{ .compatible = "fsl,mpc8568-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8569-l2-cache-controller", },
+ 	{ .compatible = "fsl,mpc8572-l2-cache-controller", },
++	{ .compatible = "fsl,p1020-l2-cache-controller", },
++	{ .compatible = "fsl,p1021-l2-cache-controller", },
+ 	{ .compatible = "fsl,p2020-l2-cache-controller", },
+ 	{},
+ };
+@@ -1125,7 +1128,10 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
+ 	{ .compatible = "fsl,mpc8569-memory-controller", },
+ 	{ .compatible = "fsl,mpc8572-memory-controller", },
+ 	{ .compatible = "fsl,mpc8349-memory-controller", },
++	{ .compatible = "fsl,p1020-memory-controller", },
++	{ .compatible = "fsl,p1021-memory-controller", },
+ 	{ .compatible = "fsl,p2020-memory-controller", },
++	{ .compatible = "fsl,p4080-memory-controller", },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, mpc85xx_mc_err_of_match);
