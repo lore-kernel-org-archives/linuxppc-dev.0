@@ -1,29 +1,34 @@
-Return-Path: <slightlyunconventional@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id 51161B70A3
+Return-Path: <kumar.gala@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+	[213.199.154.206])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3BEC4B6EFE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Oct 2010 03:25:30 +1100 (EST)
-Received: by wwa36 with SMTP id 36so19912wwa.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 07 Oct 2010 09:25:28 -0700 (PDT)
-MIME-Version: 1.0
-Sender: slightlyunconventional@gmail.com
-In-Reply-To: <20101001220343.GA10494@lixom.net>
-References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
-	<2C5357FA-F87F-457E-B5C1-0DCC5A842DE7@kernel.crashing.org>
-	<AANLkTinSDMvBb7rnnfwYMkEVOgDUqRetZg86rh-UmSAg@mail.gmail.com>
-	<1285935283.2463.78.camel@pasglop>
-	<BBD78246-343E-4A96-9E55-3E40AD628C0B@kernel.crashing.org>
-	<1285966315.2463.141.camel@pasglop>
-	<20101001220343.GA10494@lixom.net>
-Date: Thu, 7 Oct 2010 09:25:27 -0700
-Message-ID: <AANLkTim0+SU3EqRe6x5aXR+G-Gczv6gBSrrdinXQavSa@mail.gmail.com>
-Subject: Re: Introduce support for little endian PowerPC
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: Olof Johansson <olof@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
-	Ian Munsie <imunsie@au1.ibm.com>, linux-kernel@vger.kernel.org
+	Fri,  8 Oct 2010 04:19:18 +1100 (EST)
+Received: from mail58-am1 (localhost.localdomain [127.0.0.1])	by
+	mail58-am1-R.bigfish.com (Postfix) with ESMTP id 1A9B210002CF	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 17:19:11 +0000 (UTC)
+Received: from am1ehsmhs005.bigfish.com (unknown [10.3.201.250])	by
+	mail58-am1.bigfish.com (Postfix) with ESMTP id E12F9218058	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 17:19:10 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o97HJ8PB019460	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 7 Oct 2010 10:19:08 -0700 (MST)
+Subject: Re: [PATCH 2/2] powerpc/fsl_booke: Add support to boot from core
+	other than 0
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1283297085-3455-2-git-send-email-msm@freescale.com>
+Date: Thu, 7 Oct 2010 12:19:06 -0500
+Message-ID: <93B7ADD9-8172-4EA5-BCAE-4CEA85B0E472@freescale.com>
+References: <1283297085-3455-1-git-send-email-msm@freescale.com>
+	<1283297085-3455-2-git-send-email-msm@freescale.com>
+To: Matthew McClintock <msm@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 1, 2010 at 3:03 PM, Olof Johansson <olof@lixom.net> wrote:
-> On Sat, Oct 02, 2010 at 06:51:55AM +1000, Benjamin Herrenschmidt wrote:
->> On Fri, 2010-10-01 at 12:59 -0500, Kumar Gala wrote:
->> > I'm not against it, and I agree some of the patches seem like good
->> > clean up. =A0I'm concerned about this bit rotting pretty quickly.
->>
->> Maybe. Most of it doesn't seem to be that bit-rottable.
->>
->> The changes to the asm stuff in misc_32.S for example are functions we
->> never ever touch once written (libgcc replacements) so I don't see them
->> rotting more with LE support than they did with BE :-)
->
-> Does KVM/qemu support running LE guest on BE host? That'd help keeping
-> the bitrot lower. :)
 
-Surprisingly, qemu has very poor support for the concept of
-endianness. The fact that BE PowerPC works on both BE and LE hosts in
-Qemu today is more accidental than anything else (the special curse of
-endianness is that two wrongs make a right). Supporting LE PowerPC
-guests would be a dramatic effort, and I'm pretty sure it would impact
-other qemu architectures as well.
+On Aug 31, 2010, at 6:24 PM, Matthew McClintock wrote:
 
--Hollis
+> First we check to see if we are the first core booting up. This
+> is accomplished by comparing the boot_cpuid with -1, if it is we
+> assume this is the first core coming up.
+> 
+> Secondly, we need to update the initial thread info structure
+> to reflect the actual cpu we are running on otherwise
+> smp_processor_id() and related functions will return the default
+> initialization value of the struct or 0.
+> 
+> Signed-off-by: Matthew McClintock <msm@freescale.com>
+> ---
+> arch/powerpc/kernel/head_fsl_booke.S |   10 ++++++++--
+> arch/powerpc/kernel/setup_32.c       |    2 +-
+> 2 files changed, 9 insertions(+), 3 deletions(-)
+
+applied
+
+- k
