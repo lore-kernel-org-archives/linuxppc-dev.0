@@ -1,33 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E94BB6F11
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 00:22:40 +1100 (EST)
-Subject: Re: [PATCH] edac: mpc85xx: Add support for new MPCxxx/Pxxxx EDAC
-	controllers (fix)
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20101007071226.GA32189@oksana.dev.rtsoft.ru>
-Date: Thu, 7 Oct 2010 08:21:47 -0500
-Message-Id: <1B7E8A0C-6ADB-49A5-B21F-76D19364A96F@kernel.crashing.org>
-References: <20100715182507.GA3482@oksana.dev.rtsoft.ru>
-	<20100716151224.21d499a3@schlenkerla.am.freescale.net>
-	<20100721153933.64d02086.akpm@linux-foundation.org>
-	<20100721182108.5a22c822@schlenkerla.am.freescale.net>
-	<20100801105419.GA352@oksana.dev.rtsoft.ru>
-	<5628792F-9A5F-4200-90B3-FB3939F02969@kernel.crashing.org>
-	<20101007062909.GA27110@oksana.dev.rtsoft.ru>
-	<0778A3B9-E242-4BCC-B318-154BE9ECB2C6@kernel.crashing.org>
-	<4A00FECC-3840-45E1-AB2A-6BDBD0FE09E0@kernel.crashing.org>
-	<20101007071226.GA32189@oksana.dev.rtsoft.ru>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Dave Jiang <djiang@mvista.com>, Peter Tyser <ptyser@xes-inc.com>,
-	Doug Thompson <dougthompson@xmission.com>,
-	Scott Wood <scottwood@freescale.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <fabeisageek@googlemail.com>
+Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
+	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id 68A27B6F11
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 00:45:37 +1100 (EST)
+Received: by bwz5 with SMTP id 5so725450bwz.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 Oct 2010 06:45:34 -0700 (PDT)
+MIME-Version: 1.0
+Date: Thu, 7 Oct 2010 15:45:29 +0200
+Message-ID: <AANLkTikDsENpooCJZe68_WF4sb5qrQpjFN9ZqanUDMRx@mail.gmail.com>
+Subject: P1020RDB PCI-E Interrupt problem
+From: Fabian Bertholm <fabeisageek@googlemail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Oct 7, 2010, at 2:12 AM, Anton Vorontsov wrote:
+I try to run ath9k on a P1020RDB Freescale board.
+I run into the problem similar to the Bug/Patch here:
+http://patchwork.ozlabs.org/patch/52137/
 
-> On Thu, Oct 07, 2010 at 02:00:50AM -0500, Kumar Gala wrote:
->>=20
->> On Oct 7, 2010, at 1:37 AM, Kumar Gala wrote:
->>=20
->>>> @ -1125,7 +1128,10 @@ static struct of_device_id =
-mpc85xx_mc_err_of_match[] =3D {
->>>> 	{ .compatible =3D "fsl,mpc8569-memory-controller", },
->>>> 	{ .compatible =3D "fsl,mpc8572-memory-controller", },
->>>> 	{ .compatible =3D "fsl,mpc8349-memory-controller", },
->>>> +	{ .compatible =3D "fsl,p1020-memory-controller", },
->>>> +	{ .compatible =3D "fsl,p1021-memory-controller", },
->>>> 	{ .compatible =3D "fsl,p2020-memory-controller", },
->>>> +	{ .compatible =3D "fsl,p4080-memory-controller", },
->>>=20
->>> This line should be here ;)
->>=20
->> should NOT be here.
->=20
-> Hm. Are you sure? I thought that only L2 cache controller is
-> not applicable (and based on Scott's comment I removed
-> the l2 cache compatible entry for p4080). But I guess
-> memory-controller is somewhat similar to all other 85xx?
->=20
-> If it's not, I can surely prepare a patch that removes
-> p4080 entry.
->=20
-> Thanks,
+I get irq 16: nobody cared....
 
-Your correct, late night and looking at the wrong line.  It was the L2 =
-that should have been removed.  Ignore me.
+I tried to fix the dts file in the same manner but this does not help.
+Currently I am using 2.6.33.7
 
-- k=
+Any hints? Anybody?
+
+The modified pci section from my dts:
+
+	pci0: pcie@ffe09000 {
+		cell-index = <1>;
+		compatible = "fsl,mpc8548-pcie";
+		device_type = "pci";
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0 0xffe09000 0 0x1000>;
+		bus-range = <0 255>;
+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
+		clock-frequency = <33333333>;
+		interrupt-parent = <&mpic>;
+		interrupts = <16 2>;
+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+		interrupt-map = <
+			/* IDSEL 0x0 */
+			0000 0x0 0x0 0x1 &mpic 0x4 0x2
+			0000 0x0 0x0 0x2 &mpic 0x5 0x2
+			0000 0x0 0x0 0x3 &mpic 0x6 0x2
+			0000 0x0 0x0 0x4 &mpic 0x7 0x2
+			>;
+		pcie@0 {
+			reg = <0x0 0x0 0x0 0x0 0x0>;
+			#size-cells = <2>;
+			#address-cells = <3>;
+			device_type = "pci";
+			ranges = <0x2000000 0x0 0xa0000000
+				  0x2000000 0x0 0xa0000000
+				  0x0 0x20000000
+
+				  0x1000000 0x0 0x0
+				  0x1000000 0x0 0x0
+				  0x0 0x100000>;
+		};
+	};
+
+	pci1: pcie@ffe0a000 {
+		cell-index = <2>;
+		compatible = "fsl,mpc8548-pcie";
+		device_type = "pci";
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0 0xffe0a000 0 0x1000>;
+		bus-range = <0 255>;
+		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
+		clock-frequency = <33333333>;
+		interrupt-parent = <&mpic>;
+		interrupts = <16 2>;
+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+		interrupt-map = <
+			/* IDSEL 0x0 */
+			0000 0x0 0x0 0x1 &mpic 0x0 0x1
+			0000 0x0 0x0 0x2 &mpic 0x1 0x1
+			0000 0x0 0x0 0x3 &mpic 0x2 0x1
+			0000 0x0 0x0 0x4 &mpic 0x3 0x1
+			>;
+
+		pcie@0 {
+			reg = <0x0 0x0 0x0 0x0 0x0>;
+			#size-cells = <2>;
+			#address-cells = <3>;
+			device_type = "pci";
+			ranges = <0x2000000 0x0 0xc0000000
+				  0x2000000 0x0 0xc0000000
+				  0x0 0x20000000
+
+				  0x1000000 0x0 0x0
+				  0x1000000 0x0 0x0
+				  0x0 0x100000>;
+		};
+	};
+
+
+Best Regards,
+Fabian
