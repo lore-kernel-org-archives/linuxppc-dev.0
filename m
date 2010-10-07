@@ -1,29 +1,22 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 48533B70B8
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 09:10:15 +1100 (EST)
-Date: Thu, 7 Oct 2010 15:10:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: Feng Kan <fkan@apm.com>
-Subject: Re: [PATCH 1/2 v1.03] Add support for DWC OTG HCD function.
-Message-ID: <20101007221004.GA23646@suse.de>
-References: <20100726220809.GA9784@suse.de>
-	<AANLkTinbTnrr9DCiSgKngAjaak=U0qDYcCxbNZR4Nm3D@mail.gmail.com>
-	<20100726231616.GA25342@suse.de>
-	<AANLkTikDpxcOj=TgD5697HOzPOanECGd4G6QaXZmoS98@mail.gmail.com>
-	<20100730005045.GB22683@suse.de>
-	<AANLkTikSH8_QXV2qsBR+vxsjvQwNdx2st3vfbRpfsMff@mail.gmail.com>
-	<20100730012650.GB24931@suse.de>
-	<AANLkTimiox6UbUnhSRLgC06S2kfcDOANA08gm3m++TXd@mail.gmail.com>
-	<20100730033632.GB27275@suse.de>
-	<AANLkTinzG_g2--E5SwzEK6qK8NR+ewWJJU0UXsoWveP6@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Thu, 7 Oct 2010 17:23:42 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH 14/18] powerpc, of_serial: Endianness issues setting up
+	the serial ports
+Message-ID: <20101007232342.GB4213@angua.secretlab.ca>
+References: <1285916771-18033-1-git-send-email-imunsie@au1.ibm.com>
+	<1285916771-18033-15-git-send-email-imunsie@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTinzG_g2--E5SwzEK6qK8NR+ewWJJU0UXsoWveP6@mail.gmail.com>
-Cc: linux-usb@vger.kernel.org, David Daney <ddaney@caviumnetworks.com>,
-	Rina Kagan <rkagan@apm.com>, linuxppc-dev@ozlabs.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, Ted Chan <tchan@apm.com>,
-	Fushen Chen <fchen@apm.com>
+In-Reply-To: <1285916771-18033-15-git-send-email-imunsie@au1.ibm.com>
+Cc: Michal Simek <monstr@monstr.eu>, Greg Kroah-Hartman <gregkh@suse.de>,
+	devicetree-discuss@lists.ozlabs.org,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	linux-kernel@vger.kernel.org, Stefan Weil <weil@mail.berlios.de>,
+	paulus@samba.org, Jiri Kosina <jkosina@suse.cz>,
+	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +26,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 07, 2010 at 03:01:33PM -0700, Feng Kan wrote:
-> Hi Greg:
+On Fri, Oct 01, 2010 at 05:06:07PM +1000, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
 > 
-> We have obtained GPL 2 only header from Synopsis. We have also identified all
-> parties that contributed to the code base and contacted them regarding
-> license change.
-> Any party that we could not reach, we will remove the patch from the submission.
-> Let me know if this is sufficient for resubmission.
+> The speed and clock of the serial ports is retrieved from the device
+> tree in both the PowerPC legacy serial code and the Open Firmware serial
+> driver, therefore they need to handle the fact that the device tree is
+> always big endian, while the CPU may not be.
+> 
+> Also fix other device tree references in the legacy serial code.
+> 
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Yes, that sounds fine, thanks for doing that work.
+Applied, thanks.
 
-greg k-h
+I'm picking up this one because it is also needed by Microblaze.
+Michal Simek also posted a patch that does the same thing, but this
+one is better so I'm dropping his in favour of this one.
+
+As for the other patches, they all look good to me (at least for the
+bits that I care about), but I'll leave them for Ben to pick up so the
+series doesn't get too fragmented.
+
+g.
+
+> ---
+>  arch/powerpc/kernel/legacy_serial.c |   22 +++++++++++-----------
+>  drivers/serial/of_serial.c          |   12 ++++++------
+>  2 files changed, 17 insertions(+), 17 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+> index c1fd0f9..c834757 100644
+> --- a/arch/powerpc/kernel/legacy_serial.c
+> +++ b/arch/powerpc/kernel/legacy_serial.c
+> @@ -52,14 +52,14 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+>  				  phys_addr_t taddr, unsigned long irq,
+>  				  upf_t flags, int irq_check_parent)
+>  {
+> -	const u32 *clk, *spd;
+> +	const __be32 *clk, *spd;
+>  	u32 clock = BASE_BAUD * 16;
+>  	int index;
+>  
+>  	/* get clock freq. if present */
+>  	clk = of_get_property(np, "clock-frequency", NULL);
+>  	if (clk && *clk)
+> -		clock = *clk;
+> +		clock = be32_to_cpup(clk);
+>  
+>  	/* get default speed if present */
+>  	spd = of_get_property(np, "current-speed", NULL);
+> @@ -109,7 +109,7 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+>  	legacy_serial_infos[index].taddr = taddr;
+>  	legacy_serial_infos[index].np = of_node_get(np);
+>  	legacy_serial_infos[index].clock = clock;
+> -	legacy_serial_infos[index].speed = spd ? *spd : 0;
+> +	legacy_serial_infos[index].speed = spd ? be32_to_cpup(spd) : 0;
+>  	legacy_serial_infos[index].irq_check_parent = irq_check_parent;
+>  
+>  	printk(KERN_DEBUG "Found legacy serial port %d for %s\n",
+> @@ -168,7 +168,7 @@ static int __init add_legacy_soc_port(struct device_node *np,
+>  static int __init add_legacy_isa_port(struct device_node *np,
+>  				      struct device_node *isa_brg)
+>  {
+> -	const u32 *reg;
+> +	const __be32 *reg;
+>  	const char *typep;
+>  	int index = -1;
+>  	u64 taddr;
+> @@ -181,7 +181,7 @@ static int __init add_legacy_isa_port(struct device_node *np,
+>  		return -1;
+>  
+>  	/* Verify it's an IO port, we don't support anything else */
+> -	if (!(reg[0] & 0x00000001))
+> +	if (!(be32_to_cpu(reg[0]) & 0x00000001))
+>  		return -1;
+>  
+>  	/* Now look for an "ibm,aix-loc" property that gives us ordering
+> @@ -202,7 +202,7 @@ static int __init add_legacy_isa_port(struct device_node *np,
+>  		taddr = 0;
+>  
+>  	/* Add port, irq will be dealt with later */
+> -	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr,
+> +	return add_legacy_port(np, index, UPIO_PORT, be32_to_cpu(reg[1]), taddr,
+>  			       NO_IRQ, UPF_BOOT_AUTOCONF, 0);
+>  
+>  }
+> @@ -251,9 +251,9 @@ static int __init add_legacy_pci_port(struct device_node *np,
+>  	 * we get to their "reg" property
+>  	 */
+>  	if (np != pci_dev) {
+> -		const u32 *reg = of_get_property(np, "reg", NULL);
+> -		if (reg && (*reg < 4))
+> -			index = lindex = *reg;
+> +		const __be32 *reg = of_get_property(np, "reg", NULL);
+> +		if (reg && (be32_to_cpup(reg) < 4))
+> +			index = lindex = be32_to_cpup(reg);
+>  	}
+>  
+>  	/* Local index means it's the Nth port in the PCI chip. Unfortunately
+> @@ -507,7 +507,7 @@ static int __init check_legacy_serial_console(void)
+>  	struct device_node *prom_stdout = NULL;
+>  	int i, speed = 0, offset = 0;
+>  	const char *name;
+> -	const u32 *spd;
+> +	const __be32 *spd;
+>  
+>  	DBG(" -> check_legacy_serial_console()\n");
+>  
+> @@ -547,7 +547,7 @@ static int __init check_legacy_serial_console(void)
+>  	}
+>  	spd = of_get_property(prom_stdout, "current-speed", NULL);
+>  	if (spd)
+> -		speed = *spd;
+> +		speed = be32_to_cpup(spd);
+>  
+>  	if (strcmp(name, "serial") != 0)
+>  		goto not_found;
+> diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+> index 2af8fd1..17849dc 100644
+> --- a/drivers/serial/of_serial.c
+> +++ b/drivers/serial/of_serial.c
+> @@ -31,8 +31,8 @@ static int __devinit of_platform_serial_setup(struct platform_device *ofdev,
+>  {
+>  	struct resource resource;
+>  	struct device_node *np = ofdev->dev.of_node;
+> -	const unsigned int *clk, *spd;
+> -	const u32 *prop;
+> +	const __be32 *clk, *spd;
+> +	const __be32 *prop;
+>  	int ret, prop_size;
+>  
+>  	memset(port, 0, sizeof *port);
+> @@ -55,23 +55,23 @@ static int __devinit of_platform_serial_setup(struct platform_device *ofdev,
+>  	/* Check for shifted address mapping */
+>  	prop = of_get_property(np, "reg-offset", &prop_size);
+>  	if (prop && (prop_size == sizeof(u32)))
+> -		port->mapbase += *prop;
+> +		port->mapbase += be32_to_cpup(prop);
+>  
+>  	/* Check for registers offset within the devices address range */
+>  	prop = of_get_property(np, "reg-shift", &prop_size);
+>  	if (prop && (prop_size == sizeof(u32)))
+> -		port->regshift = *prop;
+> +		port->regshift = be32_to_cpup(prop);
+>  
+>  	port->irq = irq_of_parse_and_map(np, 0);
+>  	port->iotype = UPIO_MEM;
+>  	port->type = type;
+> -	port->uartclk = *clk;
+> +	port->uartclk = be32_to_cpup(clk);
+>  	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+>  		| UPF_FIXED_PORT | UPF_FIXED_TYPE;
+>  	port->dev = &ofdev->dev;
+>  	/* If current-speed was set, then try not to change it. */
+>  	if (spd)
+> -		port->custom_divisor = *clk / (16 * (*spd));
+> +		port->custom_divisor = be32_to_cpup(clk) / (16 * (be32_to_cpup(spd)));
+>  
+>  	return 0;
+>  }
+> -- 
+> 1.7.1
+> 
