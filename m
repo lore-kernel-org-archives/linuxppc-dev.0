@@ -1,18 +1,33 @@
-Return-Path: <liberty@extricom.com>
-Received: from smtp.extricom.com (unknown [212.235.17.194])
-	by ozlabs.org (Postfix) with SMTP id 8F9B1B6F11
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Oct 2010 23:40:35 +1100 (EST)
-Message-ID: <4CADBD7B.3000506@extricom.com>
-Date: Thu, 07 Oct 2010 14:30:51 +0200
-From: Eran Liberty <liberty@extricom.com>
-MIME-Version: 1.0
-To: Xianghua Xiao <x.xiao@freescale.com>, ZHANG WEI <wei.zhang@freescale.com>,
-	Roy Zang <tie-fei.zang@freescale.com>, Tony Li <tony.li@freescale.com>,
-	Linas Vepstas <linas@austin.ibm.com>,
-	linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Freescale P2020 / 85xx PCIe and Advance Error Reporting (AER) service
-	problem
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9E94BB6F11
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 00:22:40 +1100 (EST)
+Subject: Re: [PATCH] edac: mpc85xx: Add support for new MPCxxx/Pxxxx EDAC
+	controllers (fix)
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20101007071226.GA32189@oksana.dev.rtsoft.ru>
+Date: Thu, 7 Oct 2010 08:21:47 -0500
+Message-Id: <1B7E8A0C-6ADB-49A5-B21F-76D19364A96F@kernel.crashing.org>
+References: <20100715182507.GA3482@oksana.dev.rtsoft.ru>
+	<20100716151224.21d499a3@schlenkerla.am.freescale.net>
+	<20100721153933.64d02086.akpm@linux-foundation.org>
+	<20100721182108.5a22c822@schlenkerla.am.freescale.net>
+	<20100801105419.GA352@oksana.dev.rtsoft.ru>
+	<5628792F-9A5F-4200-90B3-FB3939F02969@kernel.crashing.org>
+	<20101007062909.GA27110@oksana.dev.rtsoft.ru>
+	<0778A3B9-E242-4BCC-B318-154BE9ECB2C6@kernel.crashing.org>
+	<4A00FECC-3840-45E1-AB2A-6BDBD0FE09E0@kernel.crashing.org>
+	<20101007071226.GA32189@oksana.dev.rtsoft.ru>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Dave Jiang <djiang@mvista.com>, Peter Tyser <ptyser@xes-inc.com>,
+	Doug Thompson <dougthompson@xmission.com>,
+	Scott Wood <scottwood@freescale.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Penguins,
 
-SHORT:
-There is a BUG in the current code design / Freescale P2020/85xx PCIe design that prevent it from registering to the PCIe AER... or that I have missed something :) ..
+On Oct 7, 2010, at 2:12 AM, Anton Vorontsov wrote:
 
-LESS SHORT:
-I am in the process of a Freescale P2020 based board bring up. P2020 is basically two 85xx processors and their peripherals share most features.
+> On Thu, Oct 07, 2010 at 02:00:50AM -0500, Kumar Gala wrote:
+>>=20
+>> On Oct 7, 2010, at 1:37 AM, Kumar Gala wrote:
+>>=20
+>>>> @ -1125,7 +1128,10 @@ static struct of_device_id =
+mpc85xx_mc_err_of_match[] =3D {
+>>>> 	{ .compatible =3D "fsl,mpc8569-memory-controller", },
+>>>> 	{ .compatible =3D "fsl,mpc8572-memory-controller", },
+>>>> 	{ .compatible =3D "fsl,mpc8349-memory-controller", },
+>>>> +	{ .compatible =3D "fsl,p1020-memory-controller", },
+>>>> +	{ .compatible =3D "fsl,p1021-memory-controller", },
+>>>> 	{ .compatible =3D "fsl,p2020-memory-controller", },
+>>>> +	{ .compatible =3D "fsl,p4080-memory-controller", },
+>>>=20
+>>> This line should be here ;)
+>>=20
+>> should NOT be here.
+>=20
+> Hm. Are you sure? I thought that only L2 cache controller is
+> not applicable (and based on Scott's comment I removed
+> the l2 cache compatible entry for p4080). But I guess
+> memory-controller is somewhat similar to all other 85xx?
+>=20
+> If it's not, I can surely prepare a patch that removes
+> p4080 entry.
+>=20
+> Thanks,
 
-PCIe has a very extensive error reporting section and the Kernel already has a very nice looking Advanced Error Reporting driver.
+Your correct, late night and looking at the wrong line.  It was the L2 =
+that should have been removed.  Ignore me.
 
-I encounter difficulties trying to connect the P2020/85xx PCIe device to this AER service driver.
-
-My technical findings follows:
-
- - pcie_portdrv_probe() will be called for every BRIDGE class PCI device. P2020 PCIe is a PCI-PCI BRIDGE class so no problem here. 
- - The code will continue to check that we have PCI_CAP_ID_EXP capability, which we have and continue to pcie_port_device_register().
- - Now ,the function pcie_port_device_register() will FAIL. It will fail because it will call assign_interrupt_mode(), return with PCIE_PORT_NO_IRQ, and giveup with a reasonable remark in the code
-"/*
-  * Don't use service devices that require interrupts if there is
-  * no way to generate them.
-  */"
-
-So now the question is why calling assign_interrupt_mode() with the P2020 PCIe ROOT device return empty? Well...
- - First assign_interrupt_mode() will test for PCIE_PORT_MSIX_MODE. Freescale PCIe does not support this...
- - Second attampt is made to discover PCIE_PORT_MSI_MODE, which Freescale should support but the PCIe PCI_CAP_ID_MSI capability is published on the device side of the bridge and NOT on the PCIe ROOT device, which is the one probed and thus fails.
- - Last it attempts to look at "dev->pin" in order to set PCIE_PORT_INTx_MODE. On top of being the less recommended way (the old way), The Freescale PCIE ROOT device pin is not set anywhere.
-
-Failing all those the probe fails and the AER service is not activated for the PCIE device.
-
-QUESTION:
-1. What am I missing?
-2. Has anyone enabled the AER PCIe service for P2020/MPC85xx?
-3. Should the PCIe ROOT end report MSI capabilities or should the device end report itself as bridge ???
-
--- Liberty
+- k=
