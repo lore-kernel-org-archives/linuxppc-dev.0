@@ -1,34 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
-	[213.199.154.206])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3BEC4B6EFE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Oct 2010 04:19:18 +1100 (EST)
-Received: from mail58-am1 (localhost.localdomain [127.0.0.1])	by
-	mail58-am1-R.bigfish.com (Postfix) with ESMTP id 1A9B210002CF	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 17:19:11 +0000 (UTC)
-Received: from am1ehsmhs005.bigfish.com (unknown [10.3.201.250])	by
-	mail58-am1.bigfish.com (Postfix) with ESMTP id E12F9218058	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2010 17:19:10 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o97HJ8PB019460	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 7 Oct 2010 10:19:08 -0700 (MST)
-Subject: Re: [PATCH 2/2] powerpc/fsl_booke: Add support to boot from core
-	other than 0
-MIME-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1283297085-3455-2-git-send-email-msm@freescale.com>
-Date: Thu, 7 Oct 2010 12:19:06 -0500
-Message-ID: <93B7ADD9-8172-4EA5-BCAE-4CEA85B0E472@freescale.com>
-References: <1283297085-3455-1-git-send-email-msm@freescale.com>
-	<1283297085-3455-2-git-send-email-msm@freescale.com>
-To: Matthew McClintock <msm@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 03038B6EEC
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 05:34:32 +1100 (EST)
+Received: by gwj15 with SMTP id 15so96167gwj.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 Oct 2010 11:34:30 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1d3f23371002091921m7f47a1fbt1cf7fd2ef0a927fa@mail.gmail.com>
+References: <1d3f23371002091921m7f47a1fbt1cf7fd2ef0a927fa@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 7 Oct 2010 12:34:09 -0600
+Message-ID: <AANLkTi=dU4oYfqrBGYmSCmYf2cRsBX-Pf6A9X9N0YaZA@mail.gmail.com>
+Subject: Re: PPC: Possible bug in prom_parse.c:of_irq_map_raw?
+To: John Williams <john.williams@petalogix.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Michal Simek <michal.simek@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +27,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Reaching way back into the past....
 
-On Aug 31, 2010, at 6:24 PM, Matthew McClintock wrote:
+John, did you ever solve your issue here?  Comments below.
 
-> First we check to see if we are the first core booting up. This
-> is accomplished by comparing the boot_cpuid with -1, if it is we
-> assume this is the first core coming up.
-> 
-> Secondly, we need to update the initial thread info structure
-> to reflect the actual cpu we are running on otherwise
-> smp_processor_id() and related functions will return the default
-> initialization value of the struct or 0.
-> 
-> Signed-off-by: Matthew McClintock <msm@freescale.com>
-> ---
-> arch/powerpc/kernel/head_fsl_booke.S |   10 ++++++++--
-> arch/powerpc/kernel/setup_32.c       |    2 +-
-> 2 files changed, 9 insertions(+), 3 deletions(-)
+On Tue, Feb 9, 2010 at 8:21 PM, John Williams
+<john.williams@petalogix.com> wrote:
+> Hi,
+>
+> Perhaps this is my misunderstanding, but I'm looking at the bit of
+> code in of_irq_map_raw() that iterates the interrupt-map DTS node,
+> which I am seeing to behave strangely when handling the interrupt-map
+> property on a PCI bridge node.
+>
+> Early in the function, we get the #address-cells value from the node -
+> in this case the PCI bridge, and store it in local var addrsize:
+>
+> =A0 =A0 =A0 =A0/* Look for this #address-cells. We have to implement the =
+old linux
+> =A0 =A0 =A0 =A0 * trick of looking for the parent here as some device-tre=
+es rely on it
+> =A0 =A0 =A0 =A0 */
+> =A0 =A0 =A0 =A0old =3D of_node_get(ipar);
+> =A0 =A0 =A0 =A0do {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(old, "#address-cel=
+ls", NULL);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tnode =3D of_get_parent(old);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_node_put(old);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0old =3D tnode;
+> =A0 =A0 =A0 =A0} while(old && tmp =3D=3D NULL);
+> =A0 =A0 =A0 =A0of_node_put(old);
+> =A0 =A0 =A0 =A0old =3D NULL;
+> =A0 =A0 =A0 =A0addrsize =3D (tmp =3D=3D NULL) ? 2 : *tmp;
+>
+> =A0 =A0 =A0 =A0DBG(" -> addrsize=3D%d\n", addrsize);
+>
+>
+> Later, once we've found the interrupt-map and are iterating over it
+> attempting to match on PCI device addresses, there is this little
+> fragment:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Get the interrupt paren=
+t */
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (of_irq_workarounds & O=
+F_IMAP_NO_PHANDLE)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newpar =3D=
+ of_node_get(of_irq_dflt_pic);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0else
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newpar =3D
+> of_find_node_by_phandle((phandle)*imap);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0imap++;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0--imaplen;
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Check if not found */
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (newpar =3D=3D NULL) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DBG(" -> i=
+map parent not found !\n");
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto fail;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Get #interrupt-cells an=
+d #address-cells of new
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * parent
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(ne=
+wpar, "#interrupt-cells", NULL);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (tmp =3D=3D NULL) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DBG(" -> p=
+arent lacks #interrupt-cells !\n");
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto fail;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newintsize =3D *tmp;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(ne=
+wpar, "#address-cells", NULL);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newaddrsize =3D (tmp =3D=
+=3D NULL) ? 0 : *tmp;
+>
+> Finally, later in the loop we update addrsize=3Dnewaddrsize
+>
+> As I read this code, and the behaviour I'm seeing, is that if the
+> interrupt controller parent device doesn't have an #address-cells
+> entry, then this get_property will return fail, therefore setting
+> newaddrsize =A0to zero. =A0This then means that subsequent match attempts
+> when iterating the interrupt-map always fail, because the match length
+> (addrsize) is 0.
 
-applied
+Correct.  The interrupt-map property contains the following fields:
 
-- k
+child-unit-address child-irq irq-controller irq-parent-unit-address parent-=
+irq
+
+In the *vast majority* of cases, the irq-parent-unit-address is a
+zero-length field because #address-cells isn't present on the
+interrupt controller parent.  So effectively interrupt-map becomes:
+
+child-unit-address child-irq irq-controller parent-irq
+
+See epapr 1.0 for a full discussion
+
+>
+> Maybe I'm missing something here, but shouldn't this last bit of code
+> instead be:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(ne=
+wpar, "#address-cells", NULL);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newaddrsize =3D (tmp =3D=
+=3D NULL) ? addrsize : *tmp;
+>
+> =A0^^^^^^^^^
+> ?
+>
+> In other words, if the parent node has an #address-cells value, then
+> use it, otherwise stick to the #address-cells value we picked up for
+> the actual node in question (ie the PCI bridge).
+
+No, because at this point we absolutely do want to know how big the
+parent #address-cells is, and if it is missing, we need to use 0.  If
+the child's addrsize continued to be used, then the interrupt-map
+parsing would get unaligned.
+
+The inner loop is over the entries in interrupt-map.  addrsize and
+intsize are only updated in the case where a match is found in the
+table.  If a match isn't found, then it should bail out to the 'fail'
+label.
+
+> The way this is manifesting itself in the system I'm looking at is
+> that only the PCI device matching the first entry in the PCI bridge
+> interrupt-map property is correctly matching. For PCI devices that
+> require more than one pass through the interrupt-map loop, addrsize
+> goes to zero and no further match is possible.
+
+Something sounds fishy.  If you're still having problems, can you
+enable #define DEBUG in drivers/of/irq.c and post the output?
+
+> I might be able to hack around this in the device-tree by setting
+> #address-cells=3D<3> in the interrupt controller node, but that doesn't
+> smell right either - it's only true for PCI devices for a start,
+> whereas this controller handles interrupts from many sources on the
+> 32-bit PLB bus as well. =A0I looked at the ML510 DTS in boot/dts and
+> it's not doing anything like this.
+
+Yeah, that's not right, and it would mess up the interrupt-map
+parsing.  You'd end up with more hard to debug problems.
+
+g.
