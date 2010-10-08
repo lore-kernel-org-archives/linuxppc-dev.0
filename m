@@ -2,9 +2,9 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E4B5B70F5
+	by ozlabs.org (Postfix) with ESMTPS id B9ED7B70F3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Oct 2010 10:48:04 +1100 (EST)
+	Sat,  9 Oct 2010 10:49:17 +1100 (EST)
 Subject: Re: [RFC PATCH 03/11] ppc: Create ops to choose between direct
 	window and iommu based on device mask
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -13,8 +13,8 @@ In-Reply-To: <1286559192-10898-4-git-send-email-nacc@us.ibm.com>
 References: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
 	<1286559192-10898-4-git-send-email-nacc@us.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 09 Oct 2010 10:43:19 +1100
-Message-ID: <1286581399.2463.425.camel@pasglop>
+Date: Sat, 09 Oct 2010 10:44:53 +1100
+Message-ID: <1286581493.2463.428.camel@pasglop>
 Mime-Version: 1.0
 Cc: Anton Vorontsov <avorontsov@mvista.com>, miltonm@bga.com,
 	linux-kernel@vger.kernel.org,
@@ -41,6 +41,12 @@ not very nice at all.
 
 You may want to look at the patches I posted to the list a while back
 for doing direct DMA on Bimini:
+
+[PATCH 1/2] powerpc/dma: Add optional platform override of dma_set_mask()
+[PATCH 2/2] powerpc/dart_iommu: Support for 64-bit iommu bypass window on PCIe
+
+Cheers,
+Ben.
 
 > Signed-off-by: Milton Miller <miltonm@bga.com>
 > Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
