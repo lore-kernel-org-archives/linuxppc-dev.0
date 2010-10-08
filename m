@@ -2,31 +2,33 @@ Return-Path: <nacc@us.ibm.com>
 Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CD3D1100817
+	by ozlabs.org (Postfix) with ESMTPS id C90BD100816
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat,  9 Oct 2010 04:33:37 +1100 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98HPg6h006066
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:25:42 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98HPhtB006080
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:25:43 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o98HXWrO249962
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:33:32 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o98HXVhs014315
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:33:32 -0600
+	o98HXXTZ231686
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:33:34 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o98HXWvc021823
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:33:33 -0600
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: nacc@us.ibm.com
-Subject: [RFC PATCH 02/11] ppc: allow direct and iommu to coexist
-Date: Fri,  8 Oct 2010 10:33:03 -0700
-Message-Id: <1286559192-10898-3-git-send-email-nacc@us.ibm.com>
+Subject: [RFC PATCH 03/11] ppc: Create ops to choose between direct window and
+	iommu based on device mask
+Date: Fri,  8 Oct 2010 10:33:04 -0700
+Message-Id: <1286559192-10898-4-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
 References: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linux-kernel@vger.kernel.org, miltonm@bga.com,
-	Paul Mackerras <paulus@samba.org>,
+Cc: Anton Vorontsov <avorontsov@mvista.com>, miltonm@bga.com,
+	linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
 	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,94 +39,217 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the union with just the multiple fields, ifdef on CONFIG_PPC64.
-
-Future pseries boxes will allow a 64 bit dma mapping covering all
-memory, coexisting with a smaller iommu window in 32 bit pci space.
-
-The cell fixed mapping would also like both to coexist.
+Also allow the coherent ops to be iommu if only the coherent mask is too
+small, mostly for driver that do not set set the coherent mask but also
+don't use the coherent api.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
-I used the ifdef guard of CONFIG_PPC64 according to the current makefile
-for iommu.c.  One set is burried in the middle of iommu.h.
----
- arch/powerpc/include/asm/device.h      |   14 ++++++--------
- arch/powerpc/include/asm/dma-mapping.h |    4 ++--
- arch/powerpc/include/asm/iommu.h       |    6 ++++--
- 3 files changed, 12 insertions(+), 12 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h |    2 +
+ arch/powerpc/kernel/Makefile           |    2 +-
+ arch/powerpc/kernel/dma-choose64.c     |  167 ++++++++++++++++++++++++++++++++
+ 3 files changed, 170 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/kernel/dma-choose64.c
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 16d25c0..ed883ea 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -19,14 +19,12 @@ struct dev_archdata {
- 	/* DMA operations on that device */
- 	struct dma_map_ops	*dma_ops;
- 
--	/*
--	 * When an iommu is in use, dma_data is used as a ptr to the base of the
--	 * iommu_table.  Otherwise, it is a simple numerical offset.
--	 */
--	union {
--		dma_addr_t	dma_offset;
--		void		*iommu_table_base;
--	} dma_data;
-+	/* dma_offset is used by swiotlb and direct dma ops, but no iommu */
-+	dma_addr_t	dma_offset;
-+
-+#ifdef CONFIG_PPC64
-+	void		*iommu_table_base;
-+#endif
- 
- #ifdef CONFIG_SWIOTLB
- 	dma_addr_t		max_direct_dma_addr;
 diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 8c9c6ad..644103a 100644
+index 644103a..9ffb16a 100644
 --- a/arch/powerpc/include/asm/dma-mapping.h
 +++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -100,7 +100,7 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
- static inline dma_addr_t get_dma_offset(struct device *dev)
- {
- 	if (dev)
--		return dev->archdata.dma_data.dma_offset;
-+		return dev->archdata.dma_offset;
+@@ -68,6 +68,8 @@ static inline unsigned long device_to_mask(struct device *dev)
+  */
+ #ifdef CONFIG_PPC64
+ extern struct dma_map_ops dma_iommu_ops;
++extern struct dma_map_ops dma_choose64_ops;
++extern struct dma_map_ops dma_iommu_coherent_ops;
+ #endif
+ extern struct dma_map_ops dma_direct_ops;
  
- 	return PCI_DRAM_OFFSET;
- }
-@@ -108,7 +108,7 @@ static inline dma_addr_t get_dma_offset(struct device *dev)
- static inline void set_dma_offset(struct device *dev, dma_addr_t off)
- {
- 	if (dev)
--		dev->archdata.dma_data.dma_offset = off;
-+		dev->archdata.dma_offset = off;
- }
- 
- /* this will be removed soon */
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index edfc980..0f605a4 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -70,15 +70,17 @@ struct iommu_table {
- 
- struct scatterlist;
- 
-+#ifdef CONFIG_PPC64
- static inline void set_iommu_table_base(struct device *dev, void *base)
- {
--	dev->archdata.dma_data.iommu_table_base = base;
-+	dev->archdata.iommu_table_base = base;
- }
- 
- static inline void *get_iommu_table_base(struct device *dev)
- {
--	return dev->archdata.dma_data.iommu_table_base;
-+	return dev->archdata.iommu_table_base;
- }
-+#endif
- 
- /* Frees table for an individual device node */
- extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 1dda701..21b8ea1 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -82,7 +82,7 @@ obj-y				+= time.o prom.o traps.o setup-common.o \
+ 				   udbg.o misc.o io.o dma.o \
+ 				   misc_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
+-obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
++obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o dma-choose64.o
+ obj-$(CONFIG_KGDB)		+= kgdb.o
+ obj-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
+ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+diff --git a/arch/powerpc/kernel/dma-choose64.c b/arch/powerpc/kernel/dma-choose64.c
+new file mode 100644
+index 0000000..17c716f
+--- /dev/null
++++ b/arch/powerpc/kernel/dma-choose64.c
+@@ -0,0 +1,167 @@
++/*
++ * Copyright (C) 2006 Benjamin Herrenschmidt, IBM Corporation
++ *
++ * Provide default implementations of the DMA mapping callbacks for
++ * directly mapped busses.
++ */
++
++#include <linux/device.h>
++#include <linux/dma-mapping.h>
++#include <linux/bug.h>
++
++/*
++ * DMA operations that choose between a 64-bit direct mapping and and iommu
++ *
++ * This set of dma ops chooses between directing to a static 1:1 mapping
++ * that may require a 64 bit address and a iommu based on the declared
++ * streaming and coherent masks for the device.  The choice is made on
++ * the first dma map call.
++ */
++
++/* first BUG ops for calls out of sequence */
++
++void *dma_bug_alloc_coherent(struct device *dev, size_t size,
++				dma_addr_t *dma_handle, gfp_t flag)
++{
++	BUG();
++
++	return NULL;
++}
++
++void dma_bug_free_coherent(struct device *dev, size_t size,
++			      void *vaddr, dma_addr_t dma_handle)
++{
++	BUG();
++}
++
++static int dma_bug_dma_supported(struct device *dev, u64 mask)
++{
++	BUG();
++
++	return 0;
++}
++
++static int dma_bug_map_sg(struct device *dev, struct scatterlist *sgl,
++			     int nents, enum dma_data_direction direction,
++			     struct dma_attrs *attrs)
++{
++	BUG();
++
++	return 0;
++}
++
++
++static void dma_bug_unmap_sg(struct device *dev, struct scatterlist *sg,
++				int nents, enum dma_data_direction direction,
++				struct dma_attrs *attrs)
++{
++	BUG();
++}
++
++static dma_addr_t dma_bug_map_page(struct device *dev,
++					     struct page *page,
++					     unsigned long offset,
++					     size_t size,
++					     enum dma_data_direction dir,
++					     struct dma_attrs *attrs)
++{
++	BUG();
++
++	return DMA_ERROR_CODE;
++}
++
++
++static void dma_bug_unmap_page(struct device *dev,
++					 dma_addr_t dma_address,
++					 size_t size,
++					 enum dma_data_direction direction,
++					 struct dma_attrs *attrs)
++{
++	BUG();
++}
++
++
++static struct dma_map_ops *choose(struct device *dev)
++{
++	if (dma_direct_ops.dma_supported(dev, device_to_mask(dev))) {
++		if (dma_direct_ops.dma_supported(dev, dev->coherent_dma_mask))
++			return &dma_direct_ops;
++		return &dma_iommu_coherent_ops;
++	}
++	return &dma_iommu_ops;
++}
++
++void *dma_choose64_alloc_coherent(struct device *dev, size_t size,
++				dma_addr_t *dma_handle, gfp_t flag)
++{
++	struct dma_map_ops *new = choose(dev);
++
++	set_dma_ops(dev, new);
++	return new->alloc_coherent(dev, size, dma_handle, flag);
++}
++
++static int dma_choose64_map_sg(struct device *dev, struct scatterlist *sgl,
++			     int nents, enum dma_data_direction direction,
++			     struct dma_attrs *attrs)
++{
++	struct dma_map_ops *new = choose(dev);
++
++	set_dma_ops(dev, new);
++	return new->map_sg(dev, sgl, nents, direction, attrs);
++}
++
++
++static int dma_choose64_dma_supported(struct device *dev, u64 mask)
++{
++	return dma_direct_ops.dma_supported(dev, mask) ||
++		dma_iommu_ops.dma_supported(dev, mask);
++}
++
++static dma_addr_t dma_choose64_map_page(struct device *dev,
++					     struct page *page,
++					     unsigned long offset,
++					     size_t size,
++					     enum dma_data_direction dir,
++					     struct dma_attrs *attrs)
++{
++	struct dma_map_ops *new = choose(dev);
++
++	set_dma_ops(dev, new);
++	return new->map_page(dev, page, offset, size, dir, attrs);
++}
++
++struct dma_map_ops dma_choose64_ops = {
++	.alloc_coherent	= dma_choose64_alloc_coherent,
++	.free_coherent	= dma_bug_free_coherent,
++	.map_sg		= dma_choose64_map_sg,
++	.unmap_sg	= dma_bug_unmap_sg,
++	.dma_supported	= dma_choose64_dma_supported,
++	.map_page	= dma_choose64_map_page,
++	.unmap_page	= dma_bug_unmap_page,
++};
++EXPORT_SYMBOL(dma_choose64_ops);
++
++/* set these up to BUG() until we initialze them in the arch initcall below */
++struct dma_map_ops dma_iommu_coherent_ops = {
++	.alloc_coherent	= dma_bug_alloc_coherent,
++	.free_coherent	= dma_bug_free_coherent,
++	.map_sg		= dma_bug_map_sg,
++	.unmap_sg	= dma_bug_unmap_sg,
++	.dma_supported	= dma_bug_dma_supported,
++	.map_page	= dma_bug_map_page,
++	.unmap_page	= dma_bug_unmap_page,
++};
++EXPORT_SYMBOL(dma_iommu_coherent_ops);
++
++static int setup_choose64_ops(void)
++{
++	dma_iommu_coherent_ops = dma_direct_ops;
++	dma_iommu_coherent_ops.alloc_coherent = dma_iommu_ops.alloc_coherent;
++	dma_iommu_coherent_ops.free_coherent = dma_iommu_ops.free_coherent;
++
++	/* should we be stricter? */
++	dma_iommu_coherent_ops.dma_supported = dma_choose64_dma_supported;
++
++	return 0;
++}
++arch_initcall(setup_choose64_ops);
 -- 
 1.7.1
