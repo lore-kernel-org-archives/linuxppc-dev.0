@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0054110082F
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2010 06:07:17 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 49B9910091B
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2010 06:07:20 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o98J7D5a005956
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 14:07:14 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o98J7FtT005975
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 14:07:16 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/11] powerpc/fsl-booke: Add p5020 DS board support
-Date: Fri,  8 Oct 2010 14:06:52 -0500
-Message-Id: <1286564813-21209-10-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 11/11] powerpc/fsl-booke: Add e55xx (64-bit) smp defconfig
+Date: Fri,  8 Oct 2010 14:06:53 -0500
+Message-Id: <1286564813-21209-11-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1286564813-21209-10-git-send-email-galak@kernel.crashing.org>
 References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-2-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-3-git-send-email-galak@kernel.crashing.org>
@@ -22,6 +22,7 @@ References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-8-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-10-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,126 +32,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The P5020DS is in the same family of boards as the P4080 DS and thus
-shares the corenet_ds code.
+The p5020 SoC from Freescale is the first 64-bit Book-E processor and
+utilizes the two e5500 cores.  Adding a defconfig that enables basic kernel
+for e5500 based processors.
+
+Also added the p5020 / e5500 support to the ppc64e defconfig.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/platforms/85xx/Kconfig    |   12 ++++++
- arch/powerpc/platforms/85xx/Makefile   |    1 +
- arch/powerpc/platforms/85xx/p5020_ds.c |   69 ++++++++++++++++++++++++++++++++
- 3 files changed, 82 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+ arch/powerpc/configs/e55xx_smp_defconfig |   84 ++++++++++++++++++++++++++++++
+ arch/powerpc/configs/ppc64e_defconfig    |    4 +-
+ 2 files changed, 85 insertions(+), 3 deletions(-)
+ create mode 100644 arch/powerpc/configs/e55xx_smp_defconfig
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index ae25527..0dc7105 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -181,6 +181,18 @@ config P4080_DS
- 
- endif # PPC32
- 
-+config P5020_DS
-+	bool "Freescale P5020 DS"
-+	select DEFAULT_UIMAGE
-+	select PPC_FSL_BOOK3E
-+	select PPC_E5500
-+	select PHYS_64BIT
-+	select SWIOTLB
-+	select MPC8xxx_GPIO
-+	select HAS_RAPIDIO
-+	help
-+	  This option enables support for the P5020 DS board
-+
- endif # FSL_SOC_BOOKE
- 
- config TQM85xx
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index c3ac071..dd70db7 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o
- obj-$(CONFIG_P1022_DS)    += p1022_ds.o
- obj-$(CONFIG_P3041_DS)    += p3041_ds.o corenet_ds.o
- obj-$(CONFIG_P4080_DS)    += p4080_ds.o corenet_ds.o
-+obj-$(CONFIG_P5020_DS)    += p5020_ds.o corenet_ds.o
- obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
- obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
- obj-$(CONFIG_SBC8560)     += sbc8560.o
-diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
+diff --git a/arch/powerpc/configs/e55xx_smp_defconfig b/arch/powerpc/configs/e55xx_smp_defconfig
 new file mode 100644
-index 0000000..7467b71
+index 0000000..94d120e
 --- /dev/null
-+++ b/arch/powerpc/platforms/85xx/p5020_ds.c
-@@ -0,0 +1,69 @@
-+/*
-+ * P5020 DS Setup
-+ *
-+ * Maintained by Kumar Gala (see MAINTAINERS for contact information)
-+ *
-+ * Copyright 2009-2010 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/phy.h>
-+
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+
-+#include <linux/of_platform.h>
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#include "corenet_ds.h"
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init p5020_ds_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,P5020DS");
-+}
-+
-+define_machine(p5020_ds) {
-+	.name			= "P5020 DS",
-+	.probe			= p5020_ds_probe,
-+	.setup_arch		= corenet_ds_setup_arch,
-+	.init_IRQ		= corenet_ds_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
-+#ifdef CONFIG_PPC64
-+	.get_irq		= mpic_get_irq,
-+#else
-+	.get_irq		= mpic_get_coreint_irq,
-+#endif
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
-+
-+machine_device_initcall(p5020_ds, corenet_ds_publish_devices);
-+
-+#ifdef CONFIG_SWIOTLB
-+machine_arch_initcall(p5020_ds, swiotlb_setup_bus_notifier);
-+#endif
++++ b/arch/powerpc/configs/e55xx_smp_defconfig
+@@ -0,0 +1,84 @@
++CONFIG_PPC64=y
++CONFIG_PPC_BOOK3E_64=y
++# CONFIG_VIRT_CPU_ACCOUNTING is not set
++CONFIG_SMP=y
++CONFIG_NR_CPUS=2
++CONFIG_EXPERIMENTAL=y
++CONFIG_SYSVIPC=y
++CONFIG_BSD_PROCESS_ACCT=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_SYSFS_DEPRECATED_V2=y
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_EMBEDDED=y
++CONFIG_KALLSYMS_ALL=y
++CONFIG_KALLSYMS_EXTRA_PASS=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++CONFIG_MODVERSIONS=y
++# CONFIG_BLK_DEV_BSG is not set
++CONFIG_P5020_DS=y
++# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_BINFMT_MISC=m
++CONFIG_SPARSE_IRQ=y
++# CONFIG_PCI is not set
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_PROC_DEVICETREE=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_EEPROM_LEGACY=y
++CONFIG_INPUT_FF_MEMLESS=m
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++CONFIG_SERIO_LIBPS2=y
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_DETECT_IRQ=y
++CONFIG_SERIAL_8250_RSA=y
++CONFIG_I2C=y
++# CONFIG_HWMON is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=y
++# CONFIG_HID_SUPPORT is not set
++# CONFIG_USB_SUPPORT is not set
++CONFIG_DMADEVICES=y
++CONFIG_FSL_DMA=y
++CONFIG_EXT2_FS=y
++CONFIG_EXT3_FS=y
++# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++# CONFIG_MISC_FILESYSTEMS is not set
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
++CONFIG_NLS=y
++CONFIG_NLS_UTF8=m
++CONFIG_CRC_T10DIF=y
++CONFIG_CRC_ITU_T=m
++CONFIG_LIBCRC32C=m
++CONFIG_FRAME_WARN=1024
++CONFIG_DEBUG_FS=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DETECT_HUNG_TASK=y
++# CONFIG_DEBUG_BUGVERBOSE is not set
++CONFIG_DEBUG_INFO=y
++# CONFIG_RCU_CPU_STALL_DETECTOR is not set
++CONFIG_SYSCTL_SYSCALL_CHECK=y
++CONFIG_VIRQ_DEBUG=y
++CONFIG_CRYPTO=y
++CONFIG_CRYPTO_CBC=y
++CONFIG_CRYPTO_PCBC=m
++CONFIG_CRYPTO_HMAC=y
++CONFIG_CRYPTO_MD5=y
++CONFIG_CRYPTO_SHA1=m
++CONFIG_CRYPTO_DES=y
++# CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_CRYPTO_DEV_TALITOS=y
+diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
+index 04ae074..7bd1763 100644
+--- a/arch/powerpc/configs/ppc64e_defconfig
++++ b/arch/powerpc/configs/ppc64e_defconfig
+@@ -18,6 +18,7 @@ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+ CONFIG_MODULE_SRCVERSION_ALL=y
++CONFIG_P5020_DS=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+ CONFIG_CPU_FREQ_GOV_USERSPACE=y
+@@ -256,7 +257,6 @@ CONFIG_HID_ZEROPLUS=y
+ CONFIG_USB=y
+ CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_TT_NEWSCHED=y
+ # CONFIG_USB_EHCI_HCD_PPC_OF is not set
+ CONFIG_USB_OHCI_HCD=y
+ CONFIG_USB_STORAGE=m
+@@ -290,7 +290,6 @@ CONFIG_JFS_POSIX_ACL=y
+ CONFIG_JFS_SECURITY=y
+ CONFIG_XFS_FS=m
+ CONFIG_XFS_POSIX_ACL=y
+-CONFIG_INOTIFY=y
+ CONFIG_AUTOFS4_FS=m
+ CONFIG_ISO9660_FS=y
+ CONFIG_UDF_FS=m
+@@ -384,7 +383,6 @@ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
+ CONFIG_CRYPTO_AES=m
+ CONFIG_CRYPTO_ANUBIS=m
+-CONFIG_CRYPTO_ARC4=m
+ CONFIG_CRYPTO_BLOWFISH=m
+ CONFIG_CRYPTO_CAST6=m
+ CONFIG_CRYPTO_KHAZAD=m
 -- 
 1.7.2.3
