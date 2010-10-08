@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85F9BB73D7
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2010 06:07:13 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id CFB07B70EF
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2010 06:07:15 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o98J791a005913
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 14:07:09 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o98J7BbE005932
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 14:07:12 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/11] powerpc/fsl-booke: Add support for FSL Arch v1.0 MMU in
-	setup_page_sizes
-Date: Fri,  8 Oct 2010 14:06:50 -0500
-Message-Id: <1286564813-21209-8-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 09/11] powerpc/fsl-booke64: Use TLB CAMs to cover linear
+	mapping on FSL 64-bit chips
+Date: Fri,  8 Oct 2010 14:06:51 -0500
+Message-Id: <1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1286564813-21209-8-git-send-email-galak@kernel.crashing.org>
 References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-2-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-3-git-send-email-galak@kernel.crashing.org>
@@ -21,6 +21,7 @@ References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-5-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-6-git-send-email-galak@kernel.crashing.org>
 	<1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-8-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,106 +31,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update setup_page_sizes() to support for a MMU v1.0 FSL style MMU
-implementation.  In such a processor, we don't have TLB0PS or EPTCFG
-registers (and access to these registers may cause exceptions).  We need
-to parse the older format of TLBnCFG for page size support.  Additionaly,
-assume since we are an FSL implementation that we have 2 TLB arrays and
-the second array contains the variable size pages.
+On Freescale parts typically have TLB array for large mappings that we can
+bolt the linear mapping into.  We utilize the code that already exists
+on PPC32 on the 64-bit side to setup the linear mapping to be cover by
+bolted TLB entries.  We utilize a quarter of the variable size TLB array
+for this purpose.
+
+Additionally, we limit the amount of memory to what we can cover via
+bolted entries so we don't get secondary faults in the TLB miss
+handlers.  We should fix this limitation in the future.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/mmu-book3e.h |   15 +++++++++++
- arch/powerpc/mm/tlb_nohash.c          |   42 ++++++++++++++++++++++++++++++--
- 2 files changed, 54 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/asm-offsets.c |    4 ++--
+ arch/powerpc/mm/Makefile          |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c   |   12 +++++++-----
+ arch/powerpc/mm/mmu_decl.h        |    5 ++++-
+ arch/powerpc/mm/tlb_nohash.c      |   14 ++++++++++++++
+ arch/powerpc/mm/tlb_nohash_low.S  |    2 +-
+ 6 files changed, 29 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
-index 87a1d78..8eaed81 100644
---- a/arch/powerpc/include/asm/mmu-book3e.h
-+++ b/arch/powerpc/include/asm/mmu-book3e.h
-@@ -114,6 +114,17 @@
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index c634940..c3e0194 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -61,7 +61,7 @@
+ #endif
+ #endif
  
- #define MAS7_RPN		0xFFFFFFFF
+-#if defined(CONFIG_FSL_BOOKE)
++#if defined(CONFIG_PPC_FSL_BOOK3E)
+ #include "../mm/mmu_decl.h"
+ #endif
  
-+/* Bit definitions for MMUCFG */
-+#define MMUCFG_MAVN	0x00000003	/* MMU Architecture Version Number */
-+#define MMUCFG_MAVN_V1	0x00000000	/* v1.0 */
-+#define MMUCFG_MAVN_V2	0x00000001	/* v2.0 */
-+#define MMUCFG_NTLBS	0x0000000c	/* Number of TLBs */
-+#define MMUCFG_PIDSIZE	0x000007c0	/* PID Reg Size */
-+#define MMUCFG_TWC	0x00008000	/* TLB Write Conditional (v2.0) */
-+#define MMUCFG_LRAT	0x00010000	/* LRAT Supported (v2.0) */
-+#define MMUCFG_RASIZE	0x00fe0000	/* Real Addr Size */
-+#define MMUCFG_LPIDSIZE	0x0f000000	/* LPID Reg Size */
+@@ -470,7 +470,7 @@ int main(void)
+ 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
+ 	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
+ #endif
+-#ifdef CONFIG_FSL_BOOKE
++#ifdef CONFIG_PPC_FSL_BOOK3E
+ 	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
+ 	DEFINE(TLBCAM_MAS0, offsetof(struct tlbcam, MAS0));
+ 	DEFINE(TLBCAM_MAS1, offsetof(struct tlbcam, MAS1));
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index ce68708..d646f16 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -25,7 +25,7 @@ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+ 				   mmu_context_hash$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_40x)		+= 40x_mmu.o
+ obj-$(CONFIG_44x)		+= 44x_mmu.o
+-obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
++obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
+ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
+ obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+ ifeq ($(CONFIG_HUGETLB_PAGE),y)
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index 1b4354d..67bc8a7 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -56,11 +56,6 @@
+ 
+ unsigned int tlbcam_index;
+ 
+-
+-#if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
+-#error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
+-#endif
+-
+ #define NUM_TLBCAMS	(64)
+ struct tlbcam TLBCAM[NUM_TLBCAMS];
+ 
+@@ -185,6 +180,12 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
+ 	return amount_mapped;
+ }
+ 
++#ifdef CONFIG_PPC32
 +
- /* Bit definitions for MMUCSR0 */
- #define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
- #define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
-@@ -133,6 +144,10 @@
- #define TLBnCFG_GTWE		0x00010000	/* Guest can write */
- #define TLBnCFG_IND		0x00020000	/* IND entries supported */
- #define TLBnCFG_PT		0x00040000	/* Can load from page table */
-+#define TLBnCFG_MINSIZE		0x00f00000	/* Minimum Page Size (v1.0) */
-+#define TLBnCFG_MINSIZE_SHIFT	20
-+#define TLBnCFG_MAXSIZE		0x000f0000	/* Maximum Page Size (v1.0) */
-+#define TLBnCFG_MAXSIZE_SHIFT	16
- #define TLBnCFG_ASSOC		0xff000000	/* Associativity */
++#if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
++#error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
++#endif
++
+ unsigned long __init mmu_mapin_ram(unsigned long top)
+ {
+ 	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
+@@ -216,3 +217,4 @@ void __init adjust_total_lowmem(void)
  
- /* TLBnPS encoding */
+ 	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
+ }
++#endif
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 63b84a0..dd0a258 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -140,10 +140,13 @@ extern void wii_memory_fixups(void);
+ extern void MMU_init_hw(void);
+ extern unsigned long mmu_mapin_ram(unsigned long top);
+ 
+-#elif defined(CONFIG_FSL_BOOKE)
++#elif defined(CONFIG_PPC_FSL_BOOK3E)
++extern unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx);
++#ifdef CONFIG_PPC32
+ extern void MMU_init_hw(void);
+ extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void adjust_total_lowmem(void);
++#endif
+ extern void loadcam_entry(unsigned int index);
+ 
+ struct tlbcam {
 diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index fe391e9..6651899 100644
+index 6651899..61fe32a 100644
 --- a/arch/powerpc/mm/tlb_nohash.c
 +++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -349,11 +349,47 @@ void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address)
- 
- static void setup_page_sizes(void)
- {
--	unsigned int tlb0cfg = mfspr(SPRN_TLB0CFG);
--	unsigned int tlb0ps = mfspr(SPRN_TLB0PS);
--	unsigned int eptcfg = mfspr(SPRN_EPTCFG);
-+	unsigned int tlb0cfg;
-+	unsigned int tlb0ps;
-+	unsigned int eptcfg;
- 	int i, psize;
+@@ -541,6 +541,20 @@ static void __early_init_mmu(int boot_cpu)
+ 	 */
+ 	linear_map_top = memblock_end_of_DRAM();
  
 +#ifdef CONFIG_PPC_FSL_BOOK3E
-+	unsigned int mmucfg = mfspr(SPRN_MMUCFG);
++	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
++		unsigned int num_cams;
 +
-+	if (((mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) &&
-+		(mmu_has_feature(MMU_FTR_TYPE_FSL_E))) {
-+		unsigned int tlb1cfg = mfspr(SPRN_TLB1CFG);
-+		unsigned int min_pg, max_pg;
++		/* use a quarter of the TLBCAM for bolted linear map */
++		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
++		linear_map_top = map_mem_in_cams(linear_map_top, num_cams);
 +
-+		min_pg = (tlb1cfg & TLBnCFG_MINSIZE) >> TLBnCFG_MINSIZE_SHIFT;
-+		max_pg = (tlb1cfg & TLBnCFG_MAXSIZE) >> TLBnCFG_MAXSIZE_SHIFT;
-+
-+		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
-+			struct mmu_psize_def *def;
-+			unsigned int shift;
-+
-+			def = &mmu_psize_defs[psize];
-+			shift = def->shift;
-+
-+			if (shift == 0)
-+				continue;
-+
-+			/* adjust to be in terms of 4^shift Kb */
-+			shift = (shift - 10) >> 1;
-+
-+			if ((shift >= min_pg) && (shift <= max_pg))
-+				def->flags |= MMU_PAGE_SIZE_DIRECT;
-+		}
-+
-+		goto no_indirect;
++		/* limit memory so we dont have linear faults */
++		memblock_enforce_memory_limit(linear_map_top);
++		memblock_analyze();
 +	}
 +#endif
 +
-+	tlb0cfg = mfspr(SPRN_TLB0CFG);
-+	tlb0ps = mfspr(SPRN_TLB0PS);
-+	eptcfg = mfspr(SPRN_EPTCFG);
-+
- 	/* Look for supported direct sizes */
- 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 		struct mmu_psize_def *def = &mmu_psize_defs[psize];
+ 	/* A sync won't hurt us after mucking around with
+ 	 * the MMU configuration
+ 	 */
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index b9d9fed..af405ee 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -367,7 +367,7 @@ _GLOBAL(set_context)
+ #error Unsupported processor type !
+ #endif
+ 
+-#if defined(CONFIG_FSL_BOOKE)
++#if defined(CONFIG_PPC_FSL_BOOK3E)
+ /*
+  * extern void loadcam_entry(unsigned int index)
+  *
 -- 
 1.7.2.3
