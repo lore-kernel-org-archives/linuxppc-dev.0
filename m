@@ -1,33 +1,22 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 18C6E100C56
+Return-Path: <vgallardo@apm.com>
+Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
+	by ozlabs.org (Postfix) with SMTP id 299C8100815
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Oct 2010 04:33:52 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98HOEtQ030933
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:24:14 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o98HXcog137448
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:33:39 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o98HXcx5021359
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 11:33:38 -0600
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: nacc@us.ibm.com
-Subject: [RFC PATCH 10/11] ppc/iommu: add routines to pseries iommu to map
-	tces 1-1
-Date: Fri,  8 Oct 2010 10:33:11 -0700
-Message-Id: <1286559192-10898-11-git-send-email-nacc@us.ibm.com>
-In-Reply-To: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
-References: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, miltonm@bga.com,
-	Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+	Sat,  9 Oct 2010 04:37:07 +1100 (EST)
+Received: by qwd6 with SMTP id 6so684165qwd.20
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 08 Oct 2010 10:37:05 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20101008133511.GA10590@zod.rchland.ibm.com>
+References: <1286478436-9942-1-git-send-email-vgallardo@apm.com>
+	<20101008133511.GA10590@zod.rchland.ibm.com>
+Date: Fri, 8 Oct 2010 10:30:10 -0700
+Message-ID: <AANLkTikyLrzoyt20Y7Ek2wrmBggGohbds6DAvhCm_ftS@mail.gmail.com>
+Subject: Re: [PATCH 1/3] Powerpc/4xx: Add suspend and idle support
+From: Victor Gallardo <vgallardo@apm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,120 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
----
- arch/powerpc/platforms/pseries/iommu.c |   98 ++++++++++++++++++++++++++++++++
- 1 files changed, 98 insertions(+), 0 deletions(-)
+Hi Josh,
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 8ec81df..451d2d1 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -270,6 +270,104 @@ static unsigned long tce_get_pSeriesLP(struct iommu_table *tbl, long tcenum)
- 	return tce_ret;
- }
- 
-+/* this is compatable with cells for the device tree property */
-+struct dynamic_dma_window_prop {
-+	__be32	liobn;		/* tce table number */
-+	__be32	dma_base[2];	/* address hi,lo */
-+	__be32	tce_shift;	/* ilog2(tce_page_size) */
-+	__be32	window_shift;	/* ilog2(tce_window_size) */
-+};
-+
-+static int tce_clearrange_multi_pSeriesLP(unsigned long start_pfn,
-+					unsigned long num_pfn, void *arg)
-+{
-+	struct dynamic_dma_window_prop *maprange = arg;
-+	int rc;
-+	u64 tce_size, num_tce, dma_offset;
-+	u32 tce_shift;
-+
-+	tce_shift = be32_to_cpu(maprange->tce_shift);
-+	tce_size = 1ULL << tce_shift;
-+	num_tce = num_pfn << PAGE_SHIFT;
-+	dma_offset = start_pfn << PAGE_SHIFT;
-+
-+	/* round back to the beginning of the tce page size */
-+	num_tce += dma_offset & (tce_size - 1);
-+	dma_offset &= ~(tce_size - 1);
-+
-+	/* covert to number of tces */
-+	num_tce |= tce_size - 1;
-+	num_tce >>= tce_shift;
-+
-+	rc = plpar_tce_stuff(maprange->liobn, dma_offset, 0, num_tce);
-+
-+	return rc;
-+}
-+
-+static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
-+					unsigned long num_pfn, void *arg)
-+{
-+	struct dynamic_dma_window_prop *maprange = arg;
-+	u64 *tcep, tce_size, num_tce, dma_offset, next, proto_tce;
-+	u32 tce_shift;
-+	long rc = 0;
-+	long l, limit;
-+
-+	local_irq_disable();	/* to protect tcep and the page behind it */
-+	tcep = __get_cpu_var(tce_page);
-+
-+	if (!tcep) {
-+		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
-+		if (!tcep) {
-+			local_irq_enable();
-+			return -ENOMEM;
-+		}
-+		__get_cpu_var(tce_page) = tcep;
-+	}
-+
-+	proto_tce = TCE_PCI_READ | TCE_PCI_WRITE;
-+
-+	tce_shift = be32_to_cpu(maprange->tce_shift);
-+	tce_size = 1ULL << tce_shift;
-+	next = start_pfn << PAGE_SHIFT;
-+	num_tce = num_pfn << PAGE_SHIFT;
-+
-+	/* round back to the beginning of the tce page size */
-+	num_tce += next & (tce_size - 1);
-+	next &= ~(tce_size - 1);
-+
-+	/* covert to number of tces */
-+	num_tce |= tce_size - 1;
-+	num_tce >>= maprange->tce_shift;
-+
-+	/* We can map max one pageful of TCEs at a time */
-+	do {
-+		/*
-+		 * Set up the page with TCE data, looping through and setting
-+		 * the values.
-+		 */
-+		limit = min_t(long, num_tce, 4096/TCE_ENTRY_SIZE);
-+		dma_offset = next;
-+
-+		for (l = 0; l < limit; l++) {
-+			tcep[l] = proto_tce | dma_offset;
-+			next += tce_size;
-+		}
-+
-+		rc = plpar_tce_put_indirect((u64)maprange->liobn,
-+					    (u64)dma_offset,
-+					    (u64)virt_to_abs(tcep),
-+					    limit);
-+
-+		num_tce -= limit;
-+	} while (num_tce > 0 && !rc);
-+
-+	/* error cleanup: caller will clear whole range */
-+
-+	local_irq_enable();
-+	return rc;
-+}
-+
- #ifdef CONFIG_PCI
- static void iommu_table_setparms(struct pci_controller *phb,
- 				 struct device_node *dn,
--- 
-1.7.1
+
+On Fri, Oct 8, 2010 at 6:35 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wro=
+te:
+> On Thu, Oct 07, 2010 at 12:07:16PM -0700, Victor Gallardo wrote:
+>>Add suspend/resume support for all 4xx compatible CPUs.
+>>See /sys/power/state for available power states configured in.
+>>
+>>Add two different idle states (idle-wait and idle-doze)
+>>controlled via sysfs. Default is idle-wait.
+>> =A0 =A0 =A0 cat /sys/devices/system/cpu/cpu0/idle
+>> =A0 =A0 =A0 [wait] doze
+>>
+>>To save additional power, use idle-doze.
+>> =A0 =A0 =A0 echo doze > /sys/devices/system/cpu/cpu0/idle
+>> =A0 =A0 =A0 cat /sys/devices/system/cpu/cpu0/idle
+>> =A0 =A0 =A0 wait [doze]
+>>
+>>Signed-off-by: Victor Gallardo <vgallardo@apm.com>
+>>---
+>> Documentation/powerpc/dts-bindings/4xx/cpm.txt | =A0 43 +++
+>> arch/powerpc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ | =A0 13 +-
+>> arch/powerpc/platforms/44x/Makefile =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A05 +-
+>> arch/powerpc/sysdev/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
+=A01 +
+>> arch/powerpc/sysdev/ppc4xx_cpm.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0339 ++=
+++++++++++++++++++++++
+>> 5 files changed, 397 insertions(+), 4 deletions(-)
+>> create mode 100644 Documentation/powerpc/dts-bindings/4xx/cpm.txt
+>> create mode 100644 arch/powerpc/sysdev/ppc4xx_cpm.c
+>>
+>>diff --git a/Documentation/powerpc/dts-bindings/4xx/cpm.txt b/Documentati=
+on/powerpc/dts-bindings/4xx/cpm.txt
+>>new file mode 100644
+>>index 0000000..9635df8
+>>--- /dev/null
+>>+++ b/Documentation/powerpc/dts-bindings/4xx/cpm.txt
+>>@@ -0,0 +1,43 @@
+>>+PPC4xx Clock Power Management (CPM) node
+>>+
+>>+Required properties:
+>>+ =A0 =A0 =A0- compatible =A0 =A0 =A0 =A0 =A0 =A0: compatible list, curre=
+ntly only "ibm,cpm"
+>>+ =A0 =A0 =A0- dcr-access-method =A0 =A0 : "native"
+>>+ =A0 =A0 =A0- dcr-reg =A0 =A0 =A0 =A0 =A0 =A0 =A0 : < DCR register range=
+ >
+>>+
+>>+Optional properties:
+>>+ =A0 =A0 =A0- er-offset =A0 =A0 =A0 =A0 =A0 =A0 : All 4xx SoCs with a CP=
+M controller have
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0one of t=
+wo different order for the CPM
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0register=
+s. Some have the CPM registers
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in the f=
+ollowing order (ER,FR,SR). The
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0others h=
+ave them in the following order
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(SR,ER,F=
+R). For the second case set
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0er-offse=
+t =3D <1>.
+>>+ =A0 =A0 =A0- unused-units =A0 =A0 =A0 =A0 =A0: specifier consist of one=
+ cell. For each
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
+he cell, the corresponding bit
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
+ill be set to turn off unused
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0devices.
+>>+ =A0 =A0 =A0- idle-doze =A0 =A0 =A0 =A0 =A0 =A0 : specifier consist of o=
+ne cell. For each
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
+he cell, the corresponding bit
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
+ill be set to turn off unused
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0devices.=
+ This is usually just CPM[CPU].
+>>+ =A0 =A0 =A0- standby =A0 =A0 =A0 =A0 =A0 =A0 =A0 : specifier consist of=
+ one cell. For each
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
+he cell, the corresponding bit
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
+ill be set on standby and
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0restored=
+ on resume.
+>>+ =A0 =A0 =A0- suspend =A0 =A0 =A0 =A0 =A0 =A0 =A0 : specifier consist of=
+ one cell. For each
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
+he cell, the corresponding bit
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
+ill be set on suspend (mem) and
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0restored=
+ on resume.
+>
+> So the difference, from what I can tell, between standby and suspend is
+> really only what devices are turned off. =A0I don't see any code to put
+> the DRAM into self-refresh mode, etc. =A0If that is the case, perhaps we
+> could add a bit of description as to the different kinds of devices that
+> may be disabled in one mode but not the other.
+
+You are correct for this patch. I will introduce putting DDR in
+self-refresh in a following patch for specific processors.
+>
+>>+
+>>+Example:
+>>+ =A0 =A0 =A0 =A0CPM0: cpm {
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "ibm,cpm";
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dcr-access-method =3D "native";
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dcr-reg =3D <0x160 0x003>;
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0er-offset =3D <0>;
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unused-units =3D <0x00000100>;
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0idle-doze =3D <0x02000000>;
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0standby =3D <0xfeff0000>;
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0standby =3D <0xfeff791d>;
+>
+> One of these two should be illustrating suspend.
+
+Yes,  you are correct. I will fix that.
+
+-Victor Gallardo
