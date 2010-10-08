@@ -1,21 +1,20 @@
-Return-Path: <Holger.Brunck@keymile.com>
-Received: from mail.de.keymile.com (mail.de.keymile.com [195.8.104.1])
-	by ozlabs.org (Postfix) with SMTP id F04E4B70A7
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 19:51:04 +1100 (EST)
-Message-ID: <4CAEDB6A.70600@keymile.com>
-Date: Fri, 08 Oct 2010 10:50:50 +0200
-From: Holger brunck <holger.brunck@keymile.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 20C28B70A3
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 20:08:31 +1100 (EST)
+Message-ID: <4CAEDFFE.10404@windriver.com>
+Date: Fri, 08 Oct 2010 17:10:22 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: powerpc, fs_enet: scanning PHY after Linux is up
-References: <4CA9830A.2030605@denx.de>
-	<AANLkTinSersREjDnvg=8Gvpa6YmLuzgF1H8eEXRyCpW0@mail.gmail.com><4CAC472F.5070001@denx.de>
-	<AANLkTi=GkkD_-Vu-NswNedhgVuPaYePOHWa_2ytQgMf_@mail.gmail.com>
-In-Reply-To: <AANLkTi=GkkD_-Vu-NswNedhgVuPaYePOHWa_2ytQgMf_@mail.gmail.com>
-Content-Type: text/plain;
-	charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org, hs@denx.de,
-	Detlev Zundel <dzu@denx.de>, netdev@vger.kernel.org
+To: Fabian Bertholm <fabeisageek@googlemail.com>
+Subject: Re: P1020RDB PCI-E Interrupt problem
+References: <AANLkTikDsENpooCJZe68_WF4sb5qrQpjFN9ZqanUDMRx@mail.gmail.com>
+In-Reply-To: <AANLkTikDsENpooCJZe68_WF4sb5qrQpjFN9ZqanUDMRx@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,186 +24,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
-
-On 10/06/2010 06:52 PM, Grant Likely wrote:
-> On Wed, Oct 6, 2010 at 3:53 AM, Heiko Schocher <hs@denx.de> wrote:
->>>> So, the question is, is there a possibility to solve this problem?
->>>>
->>>> If there is no standard option, what would be with adding a
->>>> "scan_phy" file in
->>>>
->>>> /proc/device-tree/soc\@f0000000/cpm\@119c0/mdio\@10d40
->>>> (or better destination?)
->>>>
->>>> which with we could rescan a PHY with
->>>> "echo addr > /proc/device-tree/soc\@f0000000/cpm\@119c0/mdio\@10d40/scan_phy"
->>>> (so there is no need for using of_find_node_by_path(), as we should
->>>>  have the associated device node here, and can step through the child
->>>>  nodes with "for_each_child_of_node(np, child)" and check if reg == addr)
->>>>
->>>> or shouldn;t be at least, if the phy couldn;t be found when opening
->>>> the port, retrigger a scanning, if the phy now is accessible?
->>>
->>> One option would be to still register a phy_device for each phy
->>> described in the device tree, but defer binding a driver to each phy
->>> that doesn't respond.  Then at of_phy_find_device() time, if it
->>
->> Maybe I din;t get the trick, but the problem is, that
->> you can;t register a phy_device in drivers/of/of_mdio.c
->> of_mdiobus_register(), if the phy didn;t respond with the
->> phy_id ... and of_phy_find_device() is not (yet) used in fs_enet
+Fabian Bertholm wrote:
+> Hi,
 > 
-> I'm suggesting modifying the phy layer so that it is possible to
-> register a phy_device that doesn't (yet) respond.
+> I try to run ath9k on a P1020RDB Freescale board.
+> I run into the problem similar to the Bug/Patch here:
+> http://patchwork.ozlabs.org/patch/52137/
+> 
+> I get irq 16: nobody cared....
+
+Firstly you should check if 'irq 16' is issue from your PCIe device.
+
+> 
+> I tried to fix the dts file in the same manner but this does not help.
+> Currently I am using 2.6.33.7
+> 
+> Any hints? Anybody?
 > 
 
-yes this sounds reasonable.
+Then if so I think it's unnecessary to add any #interrupt-map on dts since MSI
+is used as interrupt mode on P1020RDB, not legacy interrupt. So please remove
+all #interrupt-map on both pci nodes, then enable CONFIG_PCI_MSI to build/boot
+again.
 
->>> matches with a phy_device that isn't bound to a driver yet, then
->>> re-trigger the binding operation.  At which point the phy id can be
->>> probed and the correct driver can be chosen.  If binding succeeds,
->>> then return the phy_device handle.  If not, then fail as it currently
->>> does.
->>
->> Wouldn;t it be good, just if we need a PHY (on calling fs_enet_open)
->> to look if there is one?
->>
->> Something like that (not tested):
->>
->> in drivers/net/fs_enet/fs_enet-main.c in fs_init_phy()
->> called from fs_enet_open():
->>
->> Do first:
->> phydev =  of_phy_find_device(fep->fpi->phy_node);
->>
->> Look if there is a driver (phy_dev->drv == NULL ?)
->>
->> If not, call new function
->> of_mdiobus_register_phy(mii_bus, fep->fpi->phy_node)
->> see below patch for it.
->>
->> If this succeeds, all is OK, and we can use this phy,
->> else ethernet not work.
+> The modified pci section from my dts:
 > 
-> I don't like this approach because it muddies the concept of which
-> device is actually responsible for managing the phys on the bus.  Is
-> it managed by the mdio bus device or the Ethernet device?  It also has
-> a potential race condition.  Whereas triggering a late driver bind
-> will be safe.
+> 	pci0: pcie@ffe09000 {
+> 		cell-index = <1>;
+> 		compatible = "fsl,mpc8548-pcie";
+> 		device_type = "pci";
+> 		#interrupt-cells = <1>;
+> 		#size-cells = <2>;
+> 		#address-cells = <3>;
+> 		reg = <0 0xffe09000 0 0x1000>;
+> 		bus-range = <0 255>;
+> 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+> 			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
+> 		clock-frequency = <33333333>;
+> 		interrupt-parent = <&mpic>;
+> 		interrupts = <16 2>;
+> 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+> 		interrupt-map = <
+> 			/* IDSEL 0x0 */
+> 			0000 0x0 0x0 0x1 &mpic 0x4 0x2
+> 			0000 0x0 0x0 0x2 &mpic 0x5 0x2
+> 			0000 0x0 0x0 0x3 &mpic 0x6 0x2
+> 			0000 0x0 0x0 0x4 &mpic 0x7 0x2
+
+I don't know how you generate these interrupt-map. So even you really want to
+use legacy interrupt you should make sure your PCIe bus number/device
+number/function number, and actual interrupt number. Especially please check
+interrupt trigger sense. Sometimes incorrect sense will issue your PCIe to
+receive interrupt storm. As a result no interrupt handler deal with this
+spurious interrupt like you saw 'irq 16: nobody cared'.
+
+> 			>;
+> 		pcie@0 {
+> 			reg = <0x0 0x0 0x0 0x0 0x0>;
+> 			#size-cells = <2>;
+> 			#address-cells = <3>;
+> 			device_type = "pci";
+> 			ranges = <0x2000000 0x0 0xa0000000
+> 				  0x2000000 0x0 0xa0000000
+> 				  0x0 0x20000000
 > 
-> Alternately, I'd also be okay with a common method to trigger a
-> reprobe of a particular phy from userspace, but I fear that would be a
-> significantly more complex solution.
+> 				  0x1000000 0x0 0x0
+> 				  0x1000000 0x0 0x0
+> 				  0x0 0x100000>;
+> 		};
+> 	};
 > 
->>
->> !!just no idea, how to get mii_bus pointer ...
+> 	pci1: pcie@ffe0a000 {
+> 		cell-index = <2>;
+> 		compatible = "fsl,mpc8548-pcie";
+> 		device_type = "pci";
+> 		#interrupt-cells = <1>;
+> 		#size-cells = <2>;
+> 		#address-cells = <3>;
+> 		reg = <0 0xffe0a000 0 0x1000>;
+> 		bus-range = <0 255>;
+> 		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+> 			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
+> 		clock-frequency = <33333333>;
+> 		interrupt-parent = <&mpic>;
+> 		interrupts = <16 2>;
+> 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+> 		interrupt-map = <
+> 			/* IDSEL 0x0 */
+> 			0000 0x0 0x0 0x1 &mpic 0x0 0x1
+> 			0000 0x0 0x0 0x2 &mpic 0x1 0x1
+> 			0000 0x0 0x0 0x3 &mpic 0x2 0x1
+> 			0000 0x0 0x0 0x4 &mpic 0x3 0x1
+> 			>;
 > 
-> You'd have to get the parent of the phy node, and then loop over all
-> the registered mdio busses looking for a bus that uses that node.
+
+There are two PCIe controller so you also have to make sure which controller
+your device exist.
+
+-Tiejun
+
+> 		pcie@0 {
+> 			reg = <0x0 0x0 0x0 0x0 0x0>;
+> 			#size-cells = <2>;
+> 			#address-cells = <3>;
+> 			device_type = "pci";
+> 			ranges = <0x2000000 0x0 0xc0000000
+> 				  0x2000000 0x0 0xc0000000
+> 				  0x0 0x20000000
 > 
-
-you say that you don't like the approach to probe the phy again in fs_enet_open,
-but currently I don't understand what would be the alternate trigger point to
-rescan the mdio bus?
-
-I made a first patch to enhance the phy_device structure and rescan the mdio bus
-at time of fs_enet_open (because I didn't see a better trigger point). The
-advantage is that we got the mii_bus pointer and the phy addr stored in the
-already created phy device structure and is therefore easy to use. See the patch
-below for this modifications. Whats currently missing in the patch is to set the
-phy_id if the phy was scanned later after phy_device creation. For the mgcoge
-board it seems to solve our problem, but maybe I miss something important.
-
-Best regards
-Holger Brunck
-
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index ec2f503..6bc117f 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -775,7 +774,8 @@ static int fs_enet_open(struct net_device *dev)
- {
-        struct fs_enet_private *fep = netdev_priv(dev);
-        int r;
--       int err;
-+       int err = 0;
-+       u32 phy_id = 0;
-
-        /* to initialize the fep->cur_rx,... */
-        /* not doing this, will cause a crash in fs_enet_rx_napi */
-@@ -795,13 +795,23 @@ static int fs_enet_open(struct net_device *dev)
-                return -EINVAL;
-        }
-
--       err = fs_init_phy(dev);
--       if (err) {
-+       if (fep->phydev == NULL)
-+               err = fs_init_phy(dev);
-+
-+       if (!err && (fep->phydev->available == false))
-+               r = get_phy_id(fep->phydev->bus, fep->phydev->addr, &phy_id);
-+
-+       if (err || (phy_id == 0xffffffff)) {
-                free_irq(fep->interrupt, dev);
-                if (fep->fpi->use_napi)
-                        napi_disable(&fep->napi);
--               return err;
-+               if (err)
-+                       return err;
-+               else
-+                       return -EINVAL;
-        }
-+       else
-+               fep->phydev->available = true;
-        phy_start(fep->phydev);
-
-        netif_start_queue(dev);
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index adbc0fd..1f443cb 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -173,6 +173,10 @@ struct phy_device* phy_device_create(struct mii_bus *bus,
-int addr, int phy_id)
-        dev->dev.bus = &mdio_bus_type;
-        dev->irq = bus->irq != NULL ? bus->irq[addr] : PHY_POLL;
-        dev_set_name(&dev->dev, PHY_ID_FMT, bus->id, addr);
-+       if (phy_id == 0xffffffff)
-+               dev->available = false;
-+       else
-+               dev->available = true;
-
-        dev->state = PHY_DOWN;
-
-@@ -232,13 +236,11 @@ struct phy_device * get_phy_device(struct mii_bus *bus,
-int addr)
-        int r;
-
-        r = get_phy_id(bus, addr, &phy_id);
--       if (r)
--               return ERR_PTR(r);
-
-        /* If the phy_id is mostly Fs, there is no device there */
--       if ((phy_id & 0x1fffffff) == 0x1fffffff)
--               return NULL;
--
-+       if (((phy_id & 0x1fffffff) == 0x1fffffff) || r)
-+               phy_id = 0xffffffff;
-+       /* create phy even if the phy is currently not available */
-        dev = phy_device_create(bus, addr, phy_id);
-
-        return dev;
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 6a7eb40..12dc3e4 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -303,6 +303,9 @@ struct phy_device {
-
-        int link_timeout;
-
-+       /* Flag to support delayed availability */
-+       bool available;
-+
-        /*
-         * Interrupt number for this PHY
-         * -1 means no interrupt
+> 				  0x1000000 0x0 0x0
+> 				  0x1000000 0x0 0x0
+> 				  0x0 0x100000>;
+> 		};
+> 	};
+> 
+> 
+> Best Regards,
+> Fabian
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
