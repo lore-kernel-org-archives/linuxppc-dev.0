@@ -1,17 +1,17 @@
 Return-Path: <vgallardo@apm.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
-	by ozlabs.org (Postfix) with SMTP id 299C8100815
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
+	by ozlabs.org (Postfix) with SMTP id 94CF6B70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Oct 2010 04:37:07 +1100 (EST)
-Received: by qwd6 with SMTP id 6so684165qwd.20
+	Sat,  9 Oct 2010 04:38:15 +1100 (EST)
+Received: by qwa26 with SMTP id 26so841451qwa.29
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 08 Oct 2010 10:37:05 -0700 (PDT)
+	Fri, 08 Oct 2010 10:38:13 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20101008133511.GA10590@zod.rchland.ibm.com>
+In-Reply-To: <20101008134600.GB10590@zod.rchland.ibm.com>
 References: <1286478436-9942-1-git-send-email-vgallardo@apm.com>
-	<20101008133511.GA10590@zod.rchland.ibm.com>
-Date: Fri, 8 Oct 2010 10:30:10 -0700
-Message-ID: <AANLkTikyLrzoyt20Y7Ek2wrmBggGohbds6DAvhCm_ftS@mail.gmail.com>
+	<20101008134600.GB10590@zod.rchland.ibm.com>
+Date: Fri, 8 Oct 2010 10:32:19 -0700
+Message-ID: <AANLkTi=NoVvC5DmQAVM5Rm-yz-_=hXipKP+x4FRq9Xi+@mail.gmail.com>
 Subject: Re: [PATCH 1/3] Powerpc/4xx: Add suspend and idle support
 From: Victor Gallardo <vgallardo@apm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
@@ -26,125 +26,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Josh,
-
-
-On Fri, Oct 8, 2010 at 6:35 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wro=
+On Fri, Oct 8, 2010 at 6:46 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wro=
 te:
 > On Thu, Oct 07, 2010 at 12:07:16PM -0700, Victor Gallardo wrote:
->>Add suspend/resume support for all 4xx compatible CPUs.
->>See /sys/power/state for available power states configured in.
->>
->>Add two different idle states (idle-wait and idle-doze)
->>controlled via sysfs. Default is idle-wait.
->> =A0 =A0 =A0 cat /sys/devices/system/cpu/cpu0/idle
->> =A0 =A0 =A0 [wait] doze
->>
->>To save additional power, use idle-doze.
->> =A0 =A0 =A0 echo doze > /sys/devices/system/cpu/cpu0/idle
->> =A0 =A0 =A0 cat /sys/devices/system/cpu/cpu0/idle
->> =A0 =A0 =A0 wait [doze]
->>
->>Signed-off-by: Victor Gallardo <vgallardo@apm.com>
->>---
->> Documentation/powerpc/dts-bindings/4xx/cpm.txt | =A0 43 +++
->> arch/powerpc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- | =A0 13 +-
->> arch/powerpc/platforms/44x/Makefile =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A05 +-
->> arch/powerpc/sysdev/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
-=A01 +
->> arch/powerpc/sysdev/ppc4xx_cpm.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0339 ++=
-++++++++++++++++++++++
->> 5 files changed, 397 insertions(+), 4 deletions(-)
->> create mode 100644 Documentation/powerpc/dts-bindings/4xx/cpm.txt
->> create mode 100644 arch/powerpc/sysdev/ppc4xx_cpm.c
->>
->>diff --git a/Documentation/powerpc/dts-bindings/4xx/cpm.txt b/Documentati=
-on/powerpc/dts-bindings/4xx/cpm.txt
->>new file mode 100644
->>index 0000000..9635df8
+>
+> I hit send too soon on my earlier response. =A0My apologies.
+>
 >>--- /dev/null
->>+++ b/Documentation/powerpc/dts-bindings/4xx/cpm.txt
->>@@ -0,0 +1,43 @@
->>+PPC4xx Clock Power Management (CPM) node
+>>+++ b/arch/powerpc/sysdev/ppc4xx_cpm.c
+>>@@ -0,0 +1,339 @@
+>>+/*
+>>+ * PowerPC 4xx Clock and Power Management
+>>+ *
+>>+ * Copyright (C) 2010, Applied Micro Circuits Corporation
+>>+ * Victor Gallardo (vgallardo@apm.com)
+>>+ *
+>>+ * Based on arch/powerpc/platforms/44x/idle.c:
+>>+ * Jerone Young <jyoung5@us.ibm.com>
+>>+ * Copyright 2008 IBM Corp.
+>>+ *
+>>+ * Based on arch/powerpc/sysdev/fsl_pmc.c:
+>>+ * Anton Vorontsov <avorontsov@ru.mvista.com>
+>>+ * Copyright 2009 =A0MontaVista Software, Inc.
+>>+ *
+>>+ * See file CREDITS for list of people who contributed to this
+>>+ * project.
+>>+ *
+>>+ * This program is free software; you can redistribute it and/or
+>>+ * modify it under the terms of the GNU General Public License as
+>>+ * published by the Free Software Foundation; either version 2 of
+>>+ * the License, or (at your option) any later version.
+>>+ *
+>>+ * This program is distributed in the hope that it will be useful,
+>>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>>+ * GNU General Public License for more details.
+>>+ *
+>>+ * You should have received a copy of the GNU General Public License
+>>+ * along with this program; if not, write to the Free Software
+>>+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+>>+ * MA 02111-1307 USA
+>>+ */
 >>+
->>+Required properties:
->>+ =A0 =A0 =A0- compatible =A0 =A0 =A0 =A0 =A0 =A0: compatible list, curre=
-ntly only "ibm,cpm"
->>+ =A0 =A0 =A0- dcr-access-method =A0 =A0 : "native"
->>+ =A0 =A0 =A0- dcr-reg =A0 =A0 =A0 =A0 =A0 =A0 =A0 : < DCR register range=
- >
+>>+#include <linux/kernel.h>
+>>+#include <linux/of_platform.h>
+>>+#include <linux/sysfs.h>
+>>+#include <linux/cpu.h>
+>>+#include <linux/suspend.h>
+>>+#include <asm/dcr.h>
+>>+#include <asm/dcr-native.h>
+>>+#include <asm/machdep.h>
 >>+
->>+Optional properties:
->>+ =A0 =A0 =A0- er-offset =A0 =A0 =A0 =A0 =A0 =A0 : All 4xx SoCs with a CP=
-M controller have
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0one of t=
-wo different order for the CPM
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0register=
-s. Some have the CPM registers
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in the f=
-ollowing order (ER,FR,SR). The
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0others h=
-ave them in the following order
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(SR,ER,F=
-R). For the second case set
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0er-offse=
-t =3D <1>.
->>+ =A0 =A0 =A0- unused-units =A0 =A0 =A0 =A0 =A0: specifier consist of one=
- cell. For each
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
-he cell, the corresponding bit
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
-ill be set to turn off unused
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0devices.
->>+ =A0 =A0 =A0- idle-doze =A0 =A0 =A0 =A0 =A0 =A0 : specifier consist of o=
-ne cell. For each
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
-he cell, the corresponding bit
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
-ill be set to turn off unused
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0devices.=
- This is usually just CPM[CPU].
->>+ =A0 =A0 =A0- standby =A0 =A0 =A0 =A0 =A0 =A0 =A0 : specifier consist of=
- one cell. For each
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
-he cell, the corresponding bit
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
-ill be set on standby and
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0restored=
- on resume.
->>+ =A0 =A0 =A0- suspend =A0 =A0 =A0 =A0 =A0 =A0 =A0 : specifier consist of=
- one cell. For each
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bit in t=
-he cell, the corresponding bit
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in CPM w=
-ill be set on suspend (mem) and
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0restored=
- on resume.
->
-> So the difference, from what I can tell, between standby and suspend is
-> really only what devices are turned off. =A0I don't see any code to put
-> the DRAM into self-refresh mode, etc. =A0If that is the case, perhaps we
-> could add a bit of description as to the different kinds of devices that
-> may be disabled in one mode but not the other.
-
-You are correct for this patch. I will introduce putting DDR in
-self-refresh in a following patch for specific processors.
->
+>>+#define CPM_ER =A0 =A0 =A0 =A00
+>>+#define CPM_FR =A0 =A0 =A0 =A01
+>>+#define CPM_SR =A0 =A0 =A0 =A02
 >>+
->>+Example:
->>+ =A0 =A0 =A0 =A0CPM0: cpm {
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "ibm,cpm";
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dcr-access-method =3D "native";
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dcr-reg =3D <0x160 0x003>;
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0er-offset =3D <0>;
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unused-units =3D <0x00000100>;
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0idle-doze =3D <0x02000000>;
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0standby =3D <0xfeff0000>;
->>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0standby =3D <0xfeff791d>;
+>>+#define CPM_IDLE_WAIT 0
+>>+#define CPM_IDLE_DOZE 1
+>>+
+>>+struct cpm {
+>>+ =A0 =A0 =A0dcr_host_t =A0 =A0 =A0dcr_host;
+>>+ =A0 =A0 =A0unsigned int =A0 =A0dcr_offset[3];
+>>+ =A0 =A0 =A0unsigned int =A0 =A0powersave_off;
+>>+ =A0 =A0 =A0unsigned int =A0 =A0unused;
+>>+ =A0 =A0 =A0unsigned int =A0 =A0idle_doze;
+>>+ =A0 =A0 =A0unsigned int =A0 =A0standby;
+>>+ =A0 =A0 =A0unsigned int =A0 =A0suspend;
+>>+};
+>>+
+>>+static struct cpm cpm;
+>>+
+>>+struct cpm_idle_mode {
+>>+ =A0 =A0 =A0unsigned int enabled;
+>>+ =A0 =A0 =A0const char =A0*name;
+>>+};
+>>+
+>>+static struct cpm_idle_mode idle_mode[] =3D {
+>>+ =A0 =A0 =A0[CPM_IDLE_WAIT] =3D { 1, "wait" }, /* default */
+>>+ =A0 =A0 =A0[CPM_IDLE_DOZE] =3D { 0, "doze" },
+>>+};
+>>+
+>>+static void cpm_set(unsigned int cpm_reg, unsigned int mask)
+>>+{
+>>+ =A0 =A0 =A0unsigned int value;
+>>+
+>>+ =A0 =A0 =A0value =3D dcr_read(cpm.dcr_host, cpm.dcr_offset[cpm_reg]);
+>>+ =A0 =A0 =A0value |=3D mask;
+>>+ =A0 =A0 =A0dcr_write(cpm.dcr_host, cpm.dcr_offset[cpm_reg], value);
+>>+}
 >
-> One of these two should be illustrating suspend.
+> This doesn't seem to do any sort of verification that the class 2 and
+> class 3 devices actually got disabled. =A0Or at least I don't see where w=
+e
+> verify anything in the SR.
+>
+> Maybe in practice it doesn't matter, but we should add a comment that say
+> we just expect them to eventually go off when they can.
+>
+Yes, you are correct. I will add a comment here.
 
-Yes,  you are correct. I will fix that.
+>>+
+>>+static void cpm_idle_wait(void)
+>>+{
+>>+ =A0 =A0 =A0unsigned long msr_save;
+>>+
+>>+ =A0 =A0 =A0/* save off initial state */
+>>+ =A0 =A0 =A0msr_save =3D mfmsr();
+>>+ =A0 =A0 =A0/* sync required when CPM0_ER[CPU] is set */
+>>+ =A0 =A0 =A0mb();
+>>+ =A0 =A0 =A0/* set wait state MSR */
+>>+ =A0 =A0 =A0mtmsr(msr_save|MSR_WE|MSR_EE|MSR_CE|MSR_DE);
+>>+ =A0 =A0 =A0isync();
+>>+ =A0 =A0 =A0/* return to initial state */
+>>+ =A0 =A0 =A0mtmsr(msr_save);
+>>+ =A0 =A0 =A0isync();
+>>+}
+>>+
+>>+static void cpm_idle_sleep(unsigned int mask)
+>>+{
+>>+ =A0 =A0 =A0unsigned int er_save;
+>>+
+>>+ =A0 =A0 =A0/* update CPM_ER state */
+>>+ =A0 =A0 =A0er_save =3D dcr_read(cpm.dcr_host, cpm.dcr_offset[CPM_ER]);
+>>+ =A0 =A0 =A0dcr_write(cpm.dcr_host, cpm.dcr_offset[CPM_ER],
+>>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0er_save | mask);
+>>+
+>>+ =A0 =A0 =A0/* go to wait state */
+>>+ =A0 =A0 =A0cpm_idle_wait();
+>>+
+>>+ =A0 =A0 =A0/* restore CPM_ER state */
+>>+ =A0 =A0 =A0dcr_write(cpm.dcr_host, cpm.dcr_offset[CPM_ER], er_save);
+>>+}
+>
+> For my clarification, the CPU is a class 2 device and we expect that the
+> logic between the CPU and the CPM allows us to do the write to make it
+> sleep, but not actually sleep until we set the idle state?
+>
 
--Victor Gallardo
+Yes, you are correct again. I will add another comment here to a little
+more clear.
+
+> josh
+>
