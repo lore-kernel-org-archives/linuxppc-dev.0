@@ -1,27 +1,32 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id D3F41B6EFE
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C7B3CB70A3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Oct 2010 22:16:17 +1100 (EST)
-Received: by yxs7 with SMTP id 7so356324yxs.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 08 Oct 2010 04:16:15 -0700 (PDT)
-Subject: Re: Parsing a bus fault message?
-From: David Hagood <david.hagood@gmail.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-In-Reply-To: <4CAEE2EC.2020103@windriver.com>
-References: <2bef2051c143a8d6e619519b222016f9.squirrel@localhost>
-	<20100928153153.GA22485@ovro.caltech.edu>
-	<20100928134554.323667e5@udp111988uds.am.freescale.net>
-	<4CA2FDA3.20704@windriver.com>
-	<af75f13d9ed8beb29470dffe56d295f5.squirrel@localhost>
-	<4CAEE2EC.2020103@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Oct 2010 06:16:12 -0500
-Message-ID: <1286536572.2545.16.camel@chumley>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+	Sat,  9 Oct 2010 00:35:16 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98DX58P016817
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:33:05 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o98DZChD064158
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:35:12 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o98DZCsM007744
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:35:12 -0600
+Date: Fri, 8 Oct 2010 09:35:11 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Victor Gallardo <vgallardo@apm.com>
+Subject: Re: [PATCH 1/3] Powerpc/4xx: Add suspend and idle support
+Message-ID: <20101008133511.GA10590@zod.rchland.ibm.com>
+References: <1286478436-9942-1-git-send-email-vgallardo@apm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1286478436-9942-1-git-send-email-vgallardo@apm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +36,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-08 at 17:22 +0800, tiejun.chen wrote:
-> 
-> I think it should be allowed to use two LAWs to map different space for PCIe
-> since I ever saw more one LAWs are created for different RAM space.
-> 
-> Sorry for this delay response.
-> 
-> -Tiejun
+On Thu, Oct 07, 2010 at 12:07:16PM -0700, Victor Gallardo wrote:
+>Add suspend/resume support for all 4xx compatible CPUs.
+>See /sys/power/state for available power states configured in.
+>
+>Add two different idle states (idle-wait and idle-doze)
+>controlled via sysfs. Default is idle-wait.
+>	cat /sys/devices/system/cpu/cpu0/idle
+>	[wait] doze
+>
+>To save additional power, use idle-doze.
+>	echo doze > /sys/devices/system/cpu/cpu0/idle
+>	cat /sys/devices/system/cpu/cpu0/idle
+>	wait [doze]
+>
+>Signed-off-by: Victor Gallardo <vgallardo@apm.com>
+>---
+> Documentation/powerpc/dts-bindings/4xx/cpm.txt |   43 +++
+> arch/powerpc/Kconfig                           |   13 +-
+> arch/powerpc/platforms/44x/Makefile            |    5 +-
+> arch/powerpc/sysdev/Makefile                   |    1 +
+> arch/powerpc/sysdev/ppc4xx_cpm.c               |  339 ++++++++++++++++++++++++
+> 5 files changed, 397 insertions(+), 4 deletions(-)
+> create mode 100644 Documentation/powerpc/dts-bindings/4xx/cpm.txt
+> create mode 100644 arch/powerpc/sysdev/ppc4xx_cpm.c
+>
+>diff --git a/Documentation/powerpc/dts-bindings/4xx/cpm.txt b/Documentation/powerpc/dts-bindings/4xx/cpm.txt
+>new file mode 100644
+>index 0000000..9635df8
+>--- /dev/null
+>+++ b/Documentation/powerpc/dts-bindings/4xx/cpm.txt
+>@@ -0,0 +1,43 @@
+>+PPC4xx Clock Power Management (CPM) node
+>+
+>+Required properties:
+>+	- compatible		: compatible list, currently only "ibm,cpm"
+>+	- dcr-access-method	: "native"
+>+	- dcr-reg		: < DCR register range >
+>+
+>+Optional properties:
+>+	- er-offset		: All 4xx SoCs with a CPM controller have
+>+				  one of two different order for the CPM
+>+				  registers. Some have the CPM registers
+>+				  in the following order (ER,FR,SR). The
+>+				  others have them in the following order
+>+				  (SR,ER,FR). For the second case set
+>+				  er-offset = <1>.
+>+	- unused-units		: specifier consist of one cell. For each
+>+				  bit in the cell, the corresponding bit
+>+				  in CPM will be set to turn off unused
+>+				  devices.
+>+	- idle-doze		: specifier consist of one cell. For each
+>+				  bit in the cell, the corresponding bit
+>+				  in CPM will be set to turn off unused
+>+				  devices. This is usually just CPM[CPU].
+>+	- standby		: specifier consist of one cell. For each
+>+				  bit in the cell, the corresponding bit
+>+				  in CPM will be set on standby and
+>+				  restored on resume.
+>+	- suspend		: specifier consist of one cell. For each
+>+				  bit in the cell, the corresponding bit
+>+				  in CPM will be set on suspend (mem) and
+>+				  restored on resume.
 
-It's my bad, as I'd worked out the problem: the host root complex had to
-be forced to rescan the device and enable bus mastering on that side of
-things. Once that happened, I could access PCI space.
+So the difference, from what I can tell, between standby and suspend is
+really only what devices are turned off.  I don't see any code to put
+the DRAM into self-refresh mode, etc.  If that is the case, perhaps we
+could add a bit of description as to the different kinds of devices that
+may be disabled in one mode but not the other.
 
-I should have posted my success.
+>+
+>+Example:
+>+        CPM0: cpm {
+>+                compatible = "ibm,cpm";
+>+                dcr-access-method = "native";
+>+                dcr-reg = <0x160 0x003>;
+>+		er-offset = <0>;
+>+                unused-units = <0x00000100>;
+>+                idle-doze = <0x02000000>;
+>+                standby = <0xfeff0000>;
+>+                standby = <0xfeff791d>;
+
+One of these two should be illustrating suspend.
+
+josh
