@@ -1,16 +1,41 @@
-Return-Path: <vgallard@amcc.com>
-Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD9F7B70F9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Oct 2010 07:26:19 +1100 (EST)
-From: Victor Gallardo <vgallardo@apm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/3] powerpc/4xx: Add Kilauea suspend and idle support
-Date: Fri,  8 Oct 2010 13:26:13 -0700
-Message-Id: <1286569573-21281-1-git-send-email-vgallardo@apm.com>
-Cc: Victor Gallardo <vgallardo@apm.com>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5F609B6EEA
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2010 07:59:08 +1100 (EST)
+Received: from mail97-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail97-tx2-R.bigfish.com (Postfix) with ESMTP id 51FF35C859B	for
+	<linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 20:59:05 +0000 (UTC)
+Received: from TX2EHSMHS028.bigfish.com (unknown [10.9.14.240])	by
+	mail97-tx2.bigfish.com (Postfix) with ESMTP id 7CF9219C0052	for
+	<linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 20:59:03 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o98Kx2O8015712	for <linuxppc-dev@ozlabs.org>;
+	Fri, 8 Oct 2010 13:59:02 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o98KtHdK027021	for <linuxppc-dev@ozlabs.org>;
+	Fri, 8 Oct 2010 15:55:17 -0500 (CDT)
+Date: Fri, 8 Oct 2010 15:55:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 07/11] powerpc/fsl-booke: Add support for FSL 64-bit
+	e5500 core
+Message-ID: <20101008155516.626967fb@udp111988uds.am.freescale.net>
+In-Reply-To: <1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
+References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-2-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-3-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-4-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-5-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-6-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,61 +45,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- Add Clock Power Management (CPM) node to dts tree
-- Add idle-doze entry in CPM node
-- Add standby entry in CPM node
-- Add PM and SUSPEND support by default in defconfig
-- Add NO_HZ and CONFIG_HIGH_RES_TIMERS support by
-  default in defconfig
+On Fri, 8 Oct 2010 14:06:49 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Signed-off-by: Victor Gallardo <vgallardo@apm.com>
----
- arch/powerpc/boot/dts/kilauea.dts          |    9 +++++++++
- arch/powerpc/configs/40x/kilauea_defconfig |    5 +++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index d361f81..19083b3 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -132,13 +132,18 @@ config PPC_E500MC
+>  	select PPC_FPU
+>  	depends on E500
+>  
+> +config PPC_E5500
+> +	bool
+> +	select PPC_FPU
+> +	select PPC_E500MC if PPC32
 
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-index 083e68e..89edb16 100644
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ b/arch/powerpc/boot/dts/kilauea.dts
-@@ -82,6 +82,15 @@
- 		interrupt-parent = <&UIC0>;
- 	};
- 
-+	CPM0: cpm {
-+		compatible = "ibm,cpm";
-+		dcr-access-method = "native";
-+		dcr-reg = <0x0b0 0x003>;
-+		unused-units = <0x00000000>;
-+		idle-doze = <0x02000000>;
-+		standby = <0xe3e74800>;
-+	};
-+
- 	plb {
- 		compatible = "ibm,plb-405ex", "ibm,plb4";
- 		#address-cells = <1>;
-diff --git a/arch/powerpc/configs/40x/kilauea_defconfig b/arch/powerpc/configs/40x/kilauea_defconfig
-index 4e19ee7..34b8c1a 100644
---- a/arch/powerpc/configs/40x/kilauea_defconfig
-+++ b/arch/powerpc/configs/40x/kilauea_defconfig
-@@ -12,6 +12,8 @@ CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
- # CONFIG_BLK_DEV_BSG is not set
- CONFIG_KILAUEA=y
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
- # CONFIG_WALNUT is not set
- CONFIG_SPARSE_IRQ=y
- CONFIG_PCI=y
-@@ -42,6 +44,9 @@ CONFIG_MTD_PHYSMAP_OF=y
- CONFIG_MTD_NAND=y
- CONFIG_MTD_NAND_NDFC=y
- CONFIG_PROC_DEVICETREE=y
-+CONFIG_PM=y
-+CONFIG_SUSPEND=y
-+CONFIG_PPC4xx_CPM=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=35000
- # CONFIG_MISC_DEVICES is not set
--- 
-1.6.1.rc3
+Currently E500MC implies E500.  With this, E5500 would not imply E500
+-- hence all the ifdefs with E500 || E5500 that this adds.  When would
+we want to ifdef E500 or E500MC but not E5500?
+
+Given how similar e500mc and e5500 are, I think we should just use
+CONFIG_E500MC for it.  Any 32/64-bit distinctions would just check
+CONFIG_PPC64, CONFIG_BOOK3E_64, or similar.
+
+-Scott
