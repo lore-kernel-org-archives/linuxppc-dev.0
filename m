@@ -2,26 +2,30 @@ Return-Path: <nacc@us.ibm.com>
 Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD7C5B6F06
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2010 04:33:26 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98HIWSq011870
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 13:18:32 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o98HXKv81720378
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 13:33:20 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o98HXJuk025469
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2010 13:33:20 -0400
+	by ozlabs.org (Postfix) with ESMTPS id 8A46DB71B9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  9 Oct 2010 04:33:31 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98HIcZP011964
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 13:18:38 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o98HXSCi378106
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 13:33:28 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o98HXQU3032339
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 14:33:27 -0300
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: nacc@us.ibm.com
-Subject: [RFC PATCH 00/11] ppc: enable dynamic dma window support
-Date: Fri,  8 Oct 2010 10:33:01 -0700
-Message-Id: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, miltonm@bga.com
+Subject: [RFC PATCH 01/11] macio: ensure all dma routines get copied over
+Date: Fri,  8 Oct 2010 10:33:02 -0700
+Message-Id: <1286559192-10898-2-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
+References: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, miltonm@bga.com,
+	Andreas Schwab <schwab@linux-m68k.org>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Also add a comment to dev_archdata, indicating that changes there need
+to be verified against the driver code.
 
-The following series, which builds upon the series of cleanups I posted
-on 9/15 as "ppc iommu cleanups", enables the pseries firmware feature
-dynamic dma windows. This feature will allow future devices to have a
-64-bit DMA mapping covering all memory, coexisting with a smaller IOMMU
-window in 32-bit PCI space.
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+---
+ arch/powerpc/include/asm/device.h |    6 ++++++
+ drivers/macintosh/macio_asic.c    |    7 +++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-Comments requested and welcome!
-
-Nishanth Aravamudan (11):
-  macio: ensure all dma routines get copied over
-  ppc: allow direct and iommu to coexist
-  ppc: Create ops to choose between direct window and iommu based on
-    device mask
-  ppc: add memory_hotplug_max
-  ppc: do not search for dma-window property on dlpar remove
-  ppc: checking for pdn->parent is redundant
-  ppc/iommu: do not need to check for dma_window == NULL
-  ppc/iommu: remove unneeded pci_dma_bus_setup_pSeriesLP
-  ppc/iommu: pass phb only to iommu_table_setparms_lpar
-  ppc/iommu: add routines to pseries iommu to map tces 1-1
-  ppc: add dynamic dma window support
-
- arch/powerpc/include/asm/device.h      |   20 +-
- arch/powerpc/include/asm/dma-mapping.h |    6 +-
- arch/powerpc/include/asm/iommu.h       |    6 +-
- arch/powerpc/include/asm/mmzone.h      |    5 +
- arch/powerpc/kernel/Makefile           |    2 +-
- arch/powerpc/kernel/dma-choose64.c     |  167 +++++++++++
- arch/powerpc/mm/numa.c                 |   26 ++
- arch/powerpc/platforms/pseries/iommu.c |  475 +++++++++++++++++++++++++++----
- drivers/macintosh/macio_asic.c         |    7 +-
- 9 files changed, 635 insertions(+), 79 deletions(-)
- create mode 100644 arch/powerpc/kernel/dma-choose64.c
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index a3954e4..16d25c0 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -9,6 +9,12 @@
+ struct dma_map_ops;
+ struct device_node;
+ 
++/*
++ * Arch extensions to struct device.
++ *
++ * When adding fields, consider macio_add_one_device in
++ * drivers/macintosh/macio_asic.c
++ */
+ struct dev_archdata {
+ 	/* DMA operations on that device */
+ 	struct dma_map_ops	*dma_ops;
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index b6e7ddc..18bf7a9 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -387,11 +387,10 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
+ 	/* Set the DMA ops to the ones from the PCI device, this could be
+ 	 * fishy if we didn't know that on PowerMac it's always direct ops
+ 	 * or iommu ops that will work fine
++         *
++         * To get all the fields, copy all archdata
+ 	 */
+-	dev->ofdev.dev.archdata.dma_ops =
+-		chip->lbus.pdev->dev.archdata.dma_ops;
+-	dev->ofdev.dev.archdata.dma_data =
+-		chip->lbus.pdev->dev.archdata.dma_data;
++        dev->ofdev.dev.archdata = chip->lbus.pdev->dev.archdata;
+ #endif /* CONFIG_PCI */
+ 
+ #ifdef DEBUG
+-- 
+1.7.1
