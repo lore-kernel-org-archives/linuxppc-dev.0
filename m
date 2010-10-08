@@ -1,27 +1,26 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C7B3CB70A3
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E5E2AB70B8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Oct 2010 00:35:16 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98DX58P016817
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:33:05 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o98DZChD064158
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:35:12 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o98DZCsM007744
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:35:12 -0600
-Date: Fri, 8 Oct 2010 09:35:11 -0400
+	Sat,  9 Oct 2010 00:46:06 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o98DVDoi020028
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 09:31:13 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o98Dk2oI130344
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 09:46:02 -0400
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o98Dk1Pc008627
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Oct 2010 07:46:02 -0600
+Date: Fri, 8 Oct 2010 09:46:00 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Victor Gallardo <vgallardo@apm.com>
 Subject: Re: [PATCH 1/3] Powerpc/4xx: Add suspend and idle support
-Message-ID: <20101008133511.GA10590@zod.rchland.ibm.com>
+Message-ID: <20101008134600.GB10590@zod.rchland.ibm.com>
 References: <1286478436-9942-1-git-send-email-vgallardo@apm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,86 +36,134 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Oct 07, 2010 at 12:07:16PM -0700, Victor Gallardo wrote:
->Add suspend/resume support for all 4xx compatible CPUs.
->See /sys/power/state for available power states configured in.
->
->Add two different idle states (idle-wait and idle-doze)
->controlled via sysfs. Default is idle-wait.
->	cat /sys/devices/system/cpu/cpu0/idle
->	[wait] doze
->
->To save additional power, use idle-doze.
->	echo doze > /sys/devices/system/cpu/cpu0/idle
->	cat /sys/devices/system/cpu/cpu0/idle
->	wait [doze]
->
->Signed-off-by: Victor Gallardo <vgallardo@apm.com>
->---
-> Documentation/powerpc/dts-bindings/4xx/cpm.txt |   43 +++
-> arch/powerpc/Kconfig                           |   13 +-
-> arch/powerpc/platforms/44x/Makefile            |    5 +-
-> arch/powerpc/sysdev/Makefile                   |    1 +
-> arch/powerpc/sysdev/ppc4xx_cpm.c               |  339 ++++++++++++++++++++++++
-> 5 files changed, 397 insertions(+), 4 deletions(-)
-> create mode 100644 Documentation/powerpc/dts-bindings/4xx/cpm.txt
-> create mode 100644 arch/powerpc/sysdev/ppc4xx_cpm.c
->
->diff --git a/Documentation/powerpc/dts-bindings/4xx/cpm.txt b/Documentation/powerpc/dts-bindings/4xx/cpm.txt
->new file mode 100644
->index 0000000..9635df8
+
+I hit send too soon on my earlier response.  My apologies.
+
 >--- /dev/null
->+++ b/Documentation/powerpc/dts-bindings/4xx/cpm.txt
->@@ -0,0 +1,43 @@
->+PPC4xx Clock Power Management (CPM) node
+>+++ b/arch/powerpc/sysdev/ppc4xx_cpm.c
+>@@ -0,0 +1,339 @@
+>+/*
+>+ * PowerPC 4xx Clock and Power Management
+>+ *
+>+ * Copyright (C) 2010, Applied Micro Circuits Corporation
+>+ * Victor Gallardo (vgallardo@apm.com)
+>+ *
+>+ * Based on arch/powerpc/platforms/44x/idle.c:
+>+ * Jerone Young <jyoung5@us.ibm.com>
+>+ * Copyright 2008 IBM Corp.
+>+ *
+>+ * Based on arch/powerpc/sysdev/fsl_pmc.c:
+>+ * Anton Vorontsov <avorontsov@ru.mvista.com>
+>+ * Copyright 2009  MontaVista Software, Inc.
+>+ *
+>+ * See file CREDITS for list of people who contributed to this
+>+ * project.
+>+ *
+>+ * This program is free software; you can redistribute it and/or
+>+ * modify it under the terms of the GNU General Public License as
+>+ * published by the Free Software Foundation; either version 2 of
+>+ * the License, or (at your option) any later version.
+>+ *
+>+ * This program is distributed in the hope that it will be useful,
+>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>+ * GNU General Public License for more details.
+>+ *
+>+ * You should have received a copy of the GNU General Public License
+>+ * along with this program; if not, write to the Free Software
+>+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+>+ * MA 02111-1307 USA
+>+ */
 >+
->+Required properties:
->+	- compatible		: compatible list, currently only "ibm,cpm"
->+	- dcr-access-method	: "native"
->+	- dcr-reg		: < DCR register range >
+>+#include <linux/kernel.h>
+>+#include <linux/of_platform.h>
+>+#include <linux/sysfs.h>
+>+#include <linux/cpu.h>
+>+#include <linux/suspend.h>
+>+#include <asm/dcr.h>
+>+#include <asm/dcr-native.h>
+>+#include <asm/machdep.h>
 >+
->+Optional properties:
->+	- er-offset		: All 4xx SoCs with a CPM controller have
->+				  one of two different order for the CPM
->+				  registers. Some have the CPM registers
->+				  in the following order (ER,FR,SR). The
->+				  others have them in the following order
->+				  (SR,ER,FR). For the second case set
->+				  er-offset = <1>.
->+	- unused-units		: specifier consist of one cell. For each
->+				  bit in the cell, the corresponding bit
->+				  in CPM will be set to turn off unused
->+				  devices.
->+	- idle-doze		: specifier consist of one cell. For each
->+				  bit in the cell, the corresponding bit
->+				  in CPM will be set to turn off unused
->+				  devices. This is usually just CPM[CPU].
->+	- standby		: specifier consist of one cell. For each
->+				  bit in the cell, the corresponding bit
->+				  in CPM will be set on standby and
->+				  restored on resume.
->+	- suspend		: specifier consist of one cell. For each
->+				  bit in the cell, the corresponding bit
->+				  in CPM will be set on suspend (mem) and
->+				  restored on resume.
+>+#define CPM_ER	0
+>+#define CPM_FR	1
+>+#define CPM_SR	2
+>+
+>+#define CPM_IDLE_WAIT	0
+>+#define CPM_IDLE_DOZE	1
+>+
+>+struct cpm {
+>+	dcr_host_t	dcr_host;
+>+	unsigned int	dcr_offset[3];
+>+	unsigned int	powersave_off;
+>+	unsigned int	unused;
+>+	unsigned int	idle_doze;
+>+	unsigned int	standby;
+>+	unsigned int	suspend;
+>+};
+>+
+>+static struct cpm cpm;
+>+
+>+struct cpm_idle_mode {
+>+	unsigned int enabled;
+>+	const char  *name;
+>+};
+>+
+>+static struct cpm_idle_mode idle_mode[] = {
+>+	[CPM_IDLE_WAIT] = { 1, "wait" }, /* default */
+>+	[CPM_IDLE_DOZE] = { 0, "doze" },
+>+};
+>+
+>+static void cpm_set(unsigned int cpm_reg, unsigned int mask)
+>+{
+>+	unsigned int value;
+>+
+>+	value = dcr_read(cpm.dcr_host, cpm.dcr_offset[cpm_reg]);
+>+	value |= mask;
+>+	dcr_write(cpm.dcr_host, cpm.dcr_offset[cpm_reg], value);
+>+}
 
-So the difference, from what I can tell, between standby and suspend is
-really only what devices are turned off.  I don't see any code to put
-the DRAM into self-refresh mode, etc.  If that is the case, perhaps we
-could add a bit of description as to the different kinds of devices that
-may be disabled in one mode but not the other.
+This doesn't seem to do any sort of verification that the class 2 and
+class 3 devices actually got disabled.  Or at least I don't see where we
+verify anything in the SR.
+
+Maybe in practice it doesn't matter, but we should add a comment that say
+we just expect them to eventually go off when they can.
 
 >+
->+Example:
->+        CPM0: cpm {
->+                compatible = "ibm,cpm";
->+                dcr-access-method = "native";
->+                dcr-reg = <0x160 0x003>;
->+		er-offset = <0>;
->+                unused-units = <0x00000100>;
->+                idle-doze = <0x02000000>;
->+                standby = <0xfeff0000>;
->+                standby = <0xfeff791d>;
+>+static void cpm_idle_wait(void)
+>+{
+>+	unsigned long msr_save;
+>+
+>+	/* save off initial state */
+>+	msr_save = mfmsr();
+>+	/* sync required when CPM0_ER[CPU] is set */
+>+	mb();
+>+	/* set wait state MSR */
+>+	mtmsr(msr_save|MSR_WE|MSR_EE|MSR_CE|MSR_DE);
+>+	isync();
+>+	/* return to initial state */
+>+	mtmsr(msr_save);
+>+	isync();
+>+}
+>+
+>+static void cpm_idle_sleep(unsigned int mask)
+>+{
+>+	unsigned int er_save;
+>+
+>+	/* update CPM_ER state */
+>+	er_save = dcr_read(cpm.dcr_host, cpm.dcr_offset[CPM_ER]);
+>+	dcr_write(cpm.dcr_host, cpm.dcr_offset[CPM_ER],
+>+		  er_save | mask);
+>+
+>+	/* go to wait state */
+>+	cpm_idle_wait();
+>+
+>+	/* restore CPM_ER state */
+>+	dcr_write(cpm.dcr_host, cpm.dcr_offset[CPM_ER], er_save);
+>+}
 
-One of these two should be illustrating suspend.
+For my clarification, the CPU is a class 2 device and we expect that the
+logic between the CPU and the CPM allows us to do the write to make it
+sleep, but not actually sleep until we set the idle state?
 
 josh
