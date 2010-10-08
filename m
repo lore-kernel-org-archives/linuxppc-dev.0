@@ -1,26 +1,26 @@
-Return-Path: <pat@computer-refuge.org>
-Received: from mailhub249.itcs.purdue.edu (mailhub249.itcs.purdue.edu
-	[128.210.5.249])
+Return-Path: <vax@purdue.edu>
+Received: from mailhub247.itcs.purdue.edu (mailhub247.itcs.purdue.edu
+	[128.210.5.247])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.purdue.edu",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2E62B6F06
+	by ozlabs.org (Postfix) with ESMTPS id 26B7DB6F06
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Oct 2010 14:41:00 +1100 (EST)
+	Fri,  8 Oct 2010 14:16:22 +1100 (EST)
 Received: from comet.localnet (173-15-37-149-Illinois.hfc.comcastbusiness.net
 	[173.15.37.149]) (authenticated bits=0)
-	by mailhub249.itcs.purdue.edu (8.14.4/8.14.4/mta1-auth.smtp.purdue.edu)
-	with ESMTP id o983OYUm025627
+	by mailhub247.itcs.purdue.edu (8.14.4/8.14.4/mta1-auth.smtp.purdue.edu)
+	with ESMTP id o982vqof004199
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 23:24:35 -0400
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Oct 2010 22:57:53 -0400
+From: Patrick Finnegan <vax@purdue.edu>
 To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Subject: Problem with Infiniband adapter on IBM p550
-From: Patrick Finnegan <pat@computer-refuge.org>
-Date: Thu, 7 Oct 2010 23:24:32 -0400
+Date: Thu, 7 Oct 2010 22:57:51 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <201010072324.33062.pat@computer-refuge.org>
+  charset="us-ascii"
+Message-Id: <201010072257.51524.vax@purdue.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,5 +60,4 @@ http://ned.rcac.purdue.edu/p550-ib/lspci-v
 
 Pat
 -- 
-Purdue University Research Computing ---  http://www.rcac.purdue.edu/
-The Computer Refuge                  ---  http://computer-refuge.org
+Purdue University ITaP/Research Systems -- http://www.rcac.purdue.edu
