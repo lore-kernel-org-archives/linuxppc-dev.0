@@ -1,20 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D8D4B70D4
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 12:31:19 +1100 (EST)
-Subject: Re: in_atomic() check in page_cache_get_speculative()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20101004153753.2cda1abf@udp111988uds.am.freescale.net>
-References: <20101004152259.25c56ad2@udp111988uds.am.freescale.net>
-	<20101004153753.2cda1abf@udp111988uds.am.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Oct 2010 12:31:04 +1100
-Message-ID: <1286501464.2463.400.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nick Piggin <npiggin@kernel.dk>
+Return-Path: <B21284@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A0DA6B70A6
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 13:28:32 +1100 (EST)
+Received: from mail44-db3 (localhost.localdomain [127.0.0.1])	by
+	mail44-db3-R.bigfish.com (Postfix) with ESMTP id 8D2091BA8155	for
+	<linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 02:13:19 +0000 (UTC)
+Received: from DB3EHSMHS012.bigfish.com (unknown [10.3.81.240])	by
+	mail44-db3.bigfish.com (Postfix) with ESMTP id 26C121840051	for
+	<linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2010 02:13:19 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o982D1Nm013087	for <linuxppc-dev@ozlabs.org>;
+	Thu, 7 Oct 2010 19:13:01 -0700 (MST)
+Received: from zmy16exm20.fsl.freescale.net (zmy16exm20.ap.freescale.net
+	[10.211.3.23])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o982D0QZ004737	for <linuxppc-dev@ozlabs.org>;
+	Thu, 7 Oct 2010 21:13:00 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Subject: RE: [PATCH v3 6/7] mtd: m25p80: add a read function to read page by
+	page
+Date: Fri, 8 Oct 2010 10:13:08 +0800
+Message-ID: <73839B4A0818E747864426270AC332C3057F6134@zmy16exm20.fsl.freescale.net>
+In-Reply-To: <841976.76219.qm@web180306.mail.gq1.yahoo.com>
+References: <841976.76219.qm@web180306.mail.gq1.yahoo.com>
+From: Hu Mingkai-B21284 <B21284@freescale.com>
+To: David Brownell <david-b@pacbell.net>, <linuxppc-dev@ozlabs.org>,
+	<spi-devel-general@lists.sourceforge.net>, <linux-mtd@lists.infradead.org>
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+	Zang Roy-R61911 <R61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-10-04 at 15:37 -0500, Scott Wood wrote:
-> [Updated with Nick's current address; previous one bounced]
-> 
-> On Mon, 4 Oct 2010 15:22:59 -0500
-> Scott Wood <scottwood@freescale.com> wrote:
-> 
-> > I'm seeing the in_atomic() check in page_cache_get_speculative()
-> > (linux/pagemap.h:138) fail when running e500 KVM with .  
-> 
-> Sorry, that should finish as "with CONFIG_DEBUG_VM."
-> 
-> > It's coming
-> > from get_user_pages_fast(), from KVM's hva_to_pfn().  This is on kvm.git
-> > plus a few local patches that should be completely unrelated, but it
-> > looks like this code hasn't changed much in a couple years.
-> > 
-> > Interrupts are disabled by get_user_pages_fast(), but apparently
-> > preemption was not separately disabled.  The comment in
-> > page_cache_get_speculative() says that preemption disabling is done by
-> > rcu_read_lock(), and that "this function must be called inside the same
-> > rcu_read_lock() section as has been used to lookup the page in the
-> > pagecache radix-tree (or page table)".
-> > 
-> > Where is this RCU lock supposed to be acquired?  I don't see any RCU in
-> > arch/powerpc/mm/gup.c.  Is it buried in some macro or function call?
-> > 
 
-Well, we shouldn't need the rcu lock if interrupts are off, at least
-that's my understanding...
 
-Cheers,
-Ben.
+> -----Original Message-----
+> From: David Brownell [mailto:david-b@pacbell.net]
+> Sent: Thursday, September 30, 2010 6:46 PM
+> To: linuxppc-dev@ozlabs.org; spi-devel-general@lists.sourceforge.net; =
+linux-
+> mtd@lists.infradead.org; Hu Mingkai-B21284
+> Cc: Gala Kumar-B11780; Zang Roy-R61911; Hu Mingkai-B21284
+> Subject: Re: [PATCH v3 6/7] mtd: m25p80: add a read function to read =
+page by
+> page
+>=20
+>=20
+> --- On Thu, 9/30/10, Mingkai Hu <Mingkai.hu@freescale.com> wrote:
+>=20
+> > From: Mingkai Hu <Mingkai.hu@freescale.com>
+> > Subject: [PATCH v3 6/7] mtd: m25p80: add a read function to read =
+page
+> > by page
+>=20
+> NAK.
+>=20
+> We went over this before.
+>=20
+> =A0 The bug is in your SPI master controller driver, and the fix there =
+involves
+> mapping large reads  into multiple smaller reads.=A0 (Example, 128K =
+read as two
+> 64K reads instead of one of 128K.
+>=20
+> It's *NEVER* appropriate to commit to patching all upper level drivers =
+in order
+> to work around bugs in lower level ones.=A0 The set of such upper =
+level drivers
+> that may need bugfixing is quite large, most will never be used with =
+your buggy
+> controller driver, and all such patches will need testing (but the =
+test
+> resources are probably not available).
+>=20
+> Whatever SPI controller driver you're working with is clearly buggy =
+... but not
+> unfixably so.
+>=20
+> DO NOT head down the path of requiring every SPI device driver to =
+include
+> workarounds for this odd little SPI master driver bug.
+>=20
+> - Dave
+>=20
+
+Thanks for your comments, the controller driver is the proper place to =
+handle this, I'll fix it.
+
+Thanks,
+Mingkai
