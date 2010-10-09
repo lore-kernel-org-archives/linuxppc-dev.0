@@ -1,26 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B9ED7B70F3
+Return-Path: <david.hagood@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 6D8AAB70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Oct 2010 10:49:17 +1100 (EST)
-Subject: Re: [RFC PATCH 03/11] ppc: Create ops to choose between direct
-	window and iommu based on device mask
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <1286559192-10898-4-git-send-email-nacc@us.ibm.com>
-References: <1286559192-10898-1-git-send-email-nacc@us.ibm.com>
-	<1286559192-10898-4-git-send-email-nacc@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 09 Oct 2010 10:44:53 +1100
-Message-ID: <1286581493.2463.428.camel@pasglop>
-Mime-Version: 1.0
-Cc: Anton Vorontsov <avorontsov@mvista.com>, miltonm@bga.com,
-	linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+	Sun, 10 Oct 2010 02:52:55 +1100 (EST)
+Received: by yxs7 with SMTP id 7so780072yxs.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 09 Oct 2010 08:52:53 -0700 (PDT)
+Message-ID: <adaf806ee1c11621dbb51246bef0acd8.squirrel@localhost>
+In-Reply-To: <20101007152626.4e834d43@udp111988uds.am.freescale.net>
+References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
+	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
+	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
+	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
+	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
+Date: Sat, 9 Oct 2010 10:52:49 -0500
+Subject: Re: Questions on interrupt vector assignment on MPC8641D
+From: david.hagood@gmail.com
+To: "Scott Wood" <scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: david.hagood@gmail.com,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,229 +30,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-08 at 10:33 -0700, Nishanth Aravamudan wrote:
-> Also allow the coherent ops to be iommu if only the coherent mask is too
-> small, mostly for driver that do not set set the coherent mask but also
-> don't use the coherent api.
+First of all - where is all of this documented? There seems to be a great
+deal of "oral tradition" type knowledge here, but is any of it actually
+written down somewhere? (see below for examples)
 
-You are doing the transition at map_sg time which is a hot path, I don't
-like that. Also you add all those "choose" variants of the dma ops...
-not very nice at all.
+> On Thu, 7 Oct 2010 15:12:26 -0500
+> This is asking for the 256th specifier in the interrupts property in
+> the mpic node -- not what you want.
 
-You may want to look at the patches I posted to the list a while back
-for doing direct DMA on Bimini:
+That was from some of the previous emails in this thread.
 
-[PATCH 1/2] powerpc/dma: Add optional platform override of dma_set_mask()
-[PATCH 2/2] powerpc/dart_iommu: Support for 64-bit iommu bypass window on PCIe
+> Ideally you would have a node for your device with an interrupt
+> specifier that you could look up with irq_of_parse_and_map().
 
-Cheers,
-Ben.
+OK, and how do these devices come into being? From what I can tell, they
+are defined by uBoot, and if uBoot doesn't define it, then you are out of
+luck.
 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> ---
->  arch/powerpc/include/asm/dma-mapping.h |    2 +
->  arch/powerpc/kernel/Makefile           |    2 +-
->  arch/powerpc/kernel/dma-choose64.c     |  167 ++++++++++++++++++++++++++++++++
->  3 files changed, 170 insertions(+), 1 deletions(-)
->  create mode 100644 arch/powerpc/kernel/dma-choose64.c
-> 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 644103a..9ffb16a 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -68,6 +68,8 @@ static inline unsigned long device_to_mask(struct device *dev)
->   */
->  #ifdef CONFIG_PPC64
->  extern struct dma_map_ops dma_iommu_ops;
-> +extern struct dma_map_ops dma_choose64_ops;
-> +extern struct dma_map_ops dma_iommu_coherent_ops;
->  #endif
->  extern struct dma_map_ops dma_direct_ops;
->  
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 1dda701..21b8ea1 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -82,7 +82,7 @@ obj-y				+= time.o prom.o traps.o setup-common.o \
->  				   udbg.o misc.o io.o dma.o \
->  				   misc_$(CONFIG_WORD_SIZE).o
->  obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
-> -obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
-> +obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o dma-choose64.o
->  obj-$(CONFIG_KGDB)		+= kgdb.o
->  obj-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
->  obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
-> diff --git a/arch/powerpc/kernel/dma-choose64.c b/arch/powerpc/kernel/dma-choose64.c
-> new file mode 100644
-> index 0000000..17c716f
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/dma-choose64.c
-> @@ -0,0 +1,167 @@
-> +/*
-> + * Copyright (C) 2006 Benjamin Herrenschmidt, IBM Corporation
-> + *
-> + * Provide default implementations of the DMA mapping callbacks for
-> + * directly mapped busses.
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/bug.h>
-> +
-> +/*
-> + * DMA operations that choose between a 64-bit direct mapping and and iommu
-> + *
-> + * This set of dma ops chooses between directing to a static 1:1 mapping
-> + * that may require a 64 bit address and a iommu based on the declared
-> + * streaming and coherent masks for the device.  The choice is made on
-> + * the first dma map call.
-> + */
-> +
-> +/* first BUG ops for calls out of sequence */
-> +
-> +void *dma_bug_alloc_coherent(struct device *dev, size_t size,
-> +				dma_addr_t *dma_handle, gfp_t flag)
-> +{
-> +	BUG();
-> +
-> +	return NULL;
-> +}
-> +
-> +void dma_bug_free_coherent(struct device *dev, size_t size,
-> +			      void *vaddr, dma_addr_t dma_handle)
-> +{
-> +	BUG();
-> +}
-> +
-> +static int dma_bug_dma_supported(struct device *dev, u64 mask)
-> +{
-> +	BUG();
-> +
-> +	return 0;
-> +}
-> +
-> +static int dma_bug_map_sg(struct device *dev, struct scatterlist *sgl,
-> +			     int nents, enum dma_data_direction direction,
-> +			     struct dma_attrs *attrs)
-> +{
-> +	BUG();
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static void dma_bug_unmap_sg(struct device *dev, struct scatterlist *sg,
-> +				int nents, enum dma_data_direction direction,
-> +				struct dma_attrs *attrs)
-> +{
-> +	BUG();
-> +}
-> +
-> +static dma_addr_t dma_bug_map_page(struct device *dev,
-> +					     struct page *page,
-> +					     unsigned long offset,
-> +					     size_t size,
-> +					     enum dma_data_direction dir,
-> +					     struct dma_attrs *attrs)
-> +{
-> +	BUG();
-> +
-> +	return DMA_ERROR_CODE;
-> +}
-> +
-> +
-> +static void dma_bug_unmap_page(struct device *dev,
-> +					 dma_addr_t dma_address,
-> +					 size_t size,
-> +					 enum dma_data_direction direction,
-> +					 struct dma_attrs *attrs)
-> +{
-> +	BUG();
-> +}
-> +
-> +
-> +static struct dma_map_ops *choose(struct device *dev)
-> +{
-> +	if (dma_direct_ops.dma_supported(dev, device_to_mask(dev))) {
-> +		if (dma_direct_ops.dma_supported(dev, dev->coherent_dma_mask))
-> +			return &dma_direct_ops;
-> +		return &dma_iommu_coherent_ops;
-> +	}
-> +	return &dma_iommu_ops;
-> +}
-> +
-> +void *dma_choose64_alloc_coherent(struct device *dev, size_t size,
-> +				dma_addr_t *dma_handle, gfp_t flag)
-> +{
-> +	struct dma_map_ops *new = choose(dev);
-> +
-> +	set_dma_ops(dev, new);
-> +	return new->alloc_coherent(dev, size, dma_handle, flag);
-> +}
-> +
-> +static int dma_choose64_map_sg(struct device *dev, struct scatterlist *sgl,
-> +			     int nents, enum dma_data_direction direction,
-> +			     struct dma_attrs *attrs)
-> +{
-> +	struct dma_map_ops *new = choose(dev);
-> +
-> +	set_dma_ops(dev, new);
-> +	return new->map_sg(dev, sgl, nents, direction, attrs);
-> +}
-> +
-> +
-> +static int dma_choose64_dma_supported(struct device *dev, u64 mask)
-> +{
-> +	return dma_direct_ops.dma_supported(dev, mask) ||
-> +		dma_iommu_ops.dma_supported(dev, mask);
-> +}
-> +
-> +static dma_addr_t dma_choose64_map_page(struct device *dev,
-> +					     struct page *page,
-> +					     unsigned long offset,
-> +					     size_t size,
-> +					     enum dma_data_direction dir,
-> +					     struct dma_attrs *attrs)
-> +{
-> +	struct dma_map_ops *new = choose(dev);
-> +
-> +	set_dma_ops(dev, new);
-> +	return new->map_page(dev, page, offset, size, dir, attrs);
-> +}
-> +
-> +struct dma_map_ops dma_choose64_ops = {
-> +	.alloc_coherent	= dma_choose64_alloc_coherent,
-> +	.free_coherent	= dma_bug_free_coherent,
-> +	.map_sg		= dma_choose64_map_sg,
-> +	.unmap_sg	= dma_bug_unmap_sg,
-> +	.dma_supported	= dma_choose64_dma_supported,
-> +	.map_page	= dma_choose64_map_page,
-> +	.unmap_page	= dma_bug_unmap_page,
-> +};
-> +EXPORT_SYMBOL(dma_choose64_ops);
-> +
-> +/* set these up to BUG() until we initialze them in the arch initcall below */
-> +struct dma_map_ops dma_iommu_coherent_ops = {
-> +	.alloc_coherent	= dma_bug_alloc_coherent,
-> +	.free_coherent	= dma_bug_free_coherent,
-> +	.map_sg		= dma_bug_map_sg,
-> +	.unmap_sg	= dma_bug_unmap_sg,
-> +	.dma_supported	= dma_bug_dma_supported,
-> +	.map_page	= dma_bug_map_page,
-> +	.unmap_page	= dma_bug_unmap_page,
-> +};
-> +EXPORT_SYMBOL(dma_iommu_coherent_ops);
-> +
-> +static int setup_choose64_ops(void)
-> +{
-> +	dma_iommu_coherent_ops = dma_direct_ops;
-> +	dma_iommu_coherent_ops.alloc_coherent = dma_iommu_ops.alloc_coherent;
-> +	dma_iommu_coherent_ops.free_coherent = dma_iommu_ops.free_coherent;
-> +
-> +	/* should we be stricter? */
-> +	dma_iommu_coherent_ops.dma_supported = dma_choose64_dma_supported;
-> +
-> +	return 0;
-> +}
-> +arch_initcall(setup_choose64_ops);
+But even assuming you can define these nodes at run time, as far as I can
+see, you are right back to the question of "and how do I know what the
+mappings are so I can create the node?" You haven't answered the question,
+you've just moved where you are asking it.
+
+
+> The vector/priority register (MSIVPR0) is at offset
+> 0x51c00.  Each interrupt source is 32 bytes.  The first interrupt
+> source is at 0x50000.
+>
+> So the interrupt number is (0x51c00 - 0x50000) / 32 = 224.
+
+OK, so that's how you get the MPIC IRQ number. It's a pity that the key
+piece of information - "MPIC IRQ Numbers are defined by the interrupt
+vector table starting at 0x50000 and incrementing by 0x20 - see table 9.3
+of the MPD8641D manual for details" wasn't spelled out anywhere I could
+find.
+
+Given the data I had: the kernel sources, the MPD8641D manual, and not
+much else, I had three unknowns:
+* a table of config registers, that could map an set of events into an
+arbitrary vector number.
+* The standard kernel "request_irq" API that takes that arbitrary vector
+number
+* A set of APIs (irq_of_parse_and_map(), irq_create_mapping) that were,
+for all intents, undocumented (just "here's the parameters", no
+description of when and how to use them), that took a ???? and returned a
+???? (because, with the documentation I had, that's basically all I could
+say about them).
+
+There was no documentation that said how to compute the MPIC interrupt
+vector, no documentation that said which API to use to convert that to an
+kernel IRQ, nothing.
+
+> BTW, the MSIs are already described in an msi node in the device tree.
+
+As I stated previously - not that I can see. Neither does
+/proc/device_tree contain such a listing, nor does doing a
+"of_find_node_by_name(0,"msi");" nor "of_find_node_by_type(0,"msi");" find
+them.
+
+It may be they are defined in PCI Root Complex mode, but again - I am
+writing code to handle Endpoint mode, which, as far as I can tell from the
+kernel sources, is NOT handled in any standardized way.
+
+
+Again, it would be nice were this sort of thing documented somewhere. If
+it is, I'd love a link - I've tried every combination of search terms I
+can think of to find it to no avail.
+
+If it isn't documented, might I suggest that either a) creating a
+dedicated "Programming PPC Embedded devices and their components under
+Linux" be created, or b) an appropriate chapter or chapters be drafted and
+submitted to the Linux Device Drivers book.
+
+
+Don't take this message the wrong way - I do want to say "THANK YOU FOR
+THE HELP!" - I am just trying to point out why somebody with a fair amount
+of Linux kernel experience and a great deal of general embedded experience
+is having great trouble doing a simple thing.
+
+I'll try creating a mapping, binding to it, and seeing what happens.
