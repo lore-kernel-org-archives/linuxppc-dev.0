@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 97D2CB6EFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Oct 2010 22:35:43 +1100 (EST)
-Subject: Re: Freescale P2020 / 85xx PCIe and Advance Error Reporting (AER)
-	service problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eran Liberty <liberty@extricom.com>
-In-Reply-To: <4CB2E517.8020401@extricom.com>
-References: <4CADBD7B.3000506@extricom.com>
-	<1286756363.2463.517.camel@pasglop>  <4CB2E517.8020401@extricom.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Oct 2010 22:32:01 +1100
-Message-ID: <1286796721.5220.2.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <Holger.Brunck@keymile.com>
+Received: from mail.de.keymile.com (mail.de.keymile.com [195.8.104.1])
+	by ozlabs.org (Postfix) with SMTP id 3EA43B714B
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Oct 2010 22:49:24 +1100 (EST)
+Message-ID: <4CB2F9B7.8080201@keymile.com>
+Date: Mon, 11 Oct 2010 13:49:11 +0200
+From: Holger brunck <holger.brunck@keymile.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: powerpc, fs_enet: scanning PHY after Linux is up
+References: <4CA9830A.2030605@denx.de><AANLkTinSersREjDnvg=8Gvpa6YmLuzgF1H8eEXRyCpW0@mail.gmail.com><4CAC472F.5070001@denx.de><AANLkTi=GkkD_-Vu-NswNedhgVuPaYePOHWa_2ytQgMf_@mail.gmail.com><4CAEDB6A.70600@keymile.com>
+	<20101008170615.GC3863@angua.secretlab.ca>
+In-Reply-To: <20101008170615.GC3863@angua.secretlab.ca>
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org, hs@denx.de,
+	Detlev Zundel <dzu@denx.de>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,94 +24,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Grant,
 
-> BUT if we take into consideration that:
-> 1. Freescale is a serious dude in the hood and on the whole does a good 
-> job with its products and their Linux support.
-
-Sure but that's irrelevant to the technical problem at hand :-)
-
-> 2. The P2020 does state it has an MSI mechanism support (although one is 
-> not present as a PCIe capability header for some reason)
-
-Then it's broken :-(
-
-> 3. Errors in general and AER are major features in PCIe.
-> 4. PCIe has been here quite a while and it is not new to Freescale or 
-> anyone else.
-
-Right but we don't do AER on ppc44x either, I know we should but for
-some reason, AER hasn't been on anybody #1 priority list in embedded
-world so far...
-
-> I am much more inclined to believe that I have missed something by a 
-> mile then that Freescale did. I just don't know what I am missing.
-
-No, I think you haven't and we just need to fix it :-)
-
-Cheers,
-Ben.
-
-> My device tree is a clone of "arch/ powerpc/ boot/ dts/ p2020rdb.dts"
+On 10/08/2010 07:06 PM, Grant Likely wrote:
+> On Fri, Oct 08, 2010 at 10:50:50AM +0200, Holger brunck wrote:
+>>> On Wed, Oct 6, 2010 at 3:53 AM, Heiko Schocher <hs@denx.de> wrote:
+>>
+>>>> Wouldn;t it be good, just if we need a PHY (on calling fs_enet_open)
+>>>> to look if there is one?
+>>>>
+>>>> Something like that (not tested):
+>>>>
+>>>> in drivers/net/fs_enet/fs_enet-main.c in fs_init_phy()
+>>>> called from fs_enet_open():
+>>>>
+>>>> Do first:
+>>>> phydev =  of_phy_find_device(fep->fpi->phy_node);
+>>>>
+>>>> Look if there is a driver (phy_dev->drv == NULL ?)
+>>>>
+>>>> If not, call new function
+>>>> of_mdiobus_register_phy(mii_bus, fep->fpi->phy_node)
+>>>> see below patch for it.
+>>>>
+>>>> If this succeeds, all is OK, and we can use this phy,
+>>>> else ethernet not work.
+>>>
+>>> I don't like this approach because it muddies the concept of which
+>>> device is actually responsible for managing the phys on the bus.  Is
+>>> it managed by the mdio bus device or the Ethernet device?  It also has
+>>> a potential race condition.  Whereas triggering a late driver bind
+>>> will be safe.
+>>>
+>>> Alternately, I'd also be okay with a common method to trigger a
+>>> reprobe of a particular phy from userspace, but I fear that would be a
+>>> significantly more complex solution.
+>>>
+>>>>
+>>>> !!just no idea, how to get mii_bus pointer ...
+>>>
+>>> You'd have to get the parent of the phy node, and then loop over all
+>>> the registered mdio busses looking for a bus that uses that node.
+>>>
+>>
+>> you say that you don't like the approach to probe the phy again in fs_enet_open,
+>> but currently I don't understand what would be the alternate trigger point to
+>> rescan the mdio bus?
 > 
-> It has a PCI node that looks like this:
-> ----------------------------- snip -----------------------------
->     pci0: pcie@ffe09000 {
->         cell-index = <1>;
->         compatible = "fsl,mpc8548-pcie";
->         device_type = "pci";
->         #interrupt-cells = <1>;
->         #size-cells = <2>;
->         #address-cells = <3>;
->         reg = <0 0xffe09000 0 0x1000>;
->         bus-range = <0 255>;
->         ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
->               0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
->         clock-frequency = <33333333>;
->         interrupt-parent = <&mpic>;
->         interrupts = <25 2>;
->         interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
->         interrupt-map = <
->             /* IDSEL 0x0 */
->             0000 0x0 0x0 0x1 &mpic 0x4 0x1
->             0000 0x0 0x0 0x2 &mpic 0x5 0x1
->             0000 0x0 0x0 0x3 &mpic 0x6 0x1
->             0000 0x0 0x0 0x4 &mpic 0x7 0x1
->             >;
->         pcie@0 {
->             reg = <0x0 0x0 0x0 0x0 0x0>;
->             #size-cells = <2>;
->             #address-cells = <3>;
->             device_type = "pci";
->             ranges = <0x2000000 0x0 0xa0000000
->                   0x2000000 0x0 0xa0000000
->                   0x0 0x20000000
+> Same trigger point, but different operation.  At fs_enet_open time,
+> instead of registering the phy_device, the phy layer could sanity
+> check the already registered phy_device, and refuse to connect to it
+> if the phy isn't responding.  If it is responding, then it could
+> re-attempt binding a phy_driver to it (although I just realized that
+> this has other problems, such as correct module loading.  See below)
 > 
->                   0x1000000 0x0 0x0
->                   0x1000000 0x0 0x0
->                   0x0 0x100000>;
->         };
->     };
-> ----------------------------- snap -----------------------------
+
+ok.
+
+>> I made a first patch to enhance the phy_device structure and rescan the mdio bus
+>> at time of fs_enet_open (because I didn't see a better trigger point). The
+>> advantage is that we got the mii_bus pointer and the phy addr stored in the
+>> already created phy device structure and is therefore easy to use. See the patch
+>> below for this modifications. Whats currently missing in the patch is to set the
+>> phy_id if the phy was scanned later after phy_device creation. For the mgcoge
+>> board it seems to solve our problem, but maybe I miss something important.
+>>
+>> Best regards
+>> Holger Brunck
+>>
+>> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+>> index ec2f503..6bc117f 100644
+>> --- a/drivers/net/fs_enet/fs_enet-main.c
+>> +++ b/drivers/net/fs_enet/fs_enet-main.c
+>> @@ -775,7 +774,8 @@ static int fs_enet_open(struct net_device *dev)
+>>  {
+>>         struct fs_enet_private *fep = netdev_priv(dev);
+>>         int r;
+>> -       int err;
+>> +       int err = 0;
+>> +       u32 phy_id = 0;
+>>
+>>         /* to initialize the fep->cur_rx,... */
+>>         /* not doing this, will cause a crash in fs_enet_rx_napi */
+>> @@ -795,13 +795,23 @@ static int fs_enet_open(struct net_device *dev)
+>>                 return -EINVAL;
+>>         }
+>>
+>> -       err = fs_init_phy(dev);
+>> -       if (err) {
+>> +       if (fep->phydev == NULL)
+>> +               err = fs_init_phy(dev);
+>> +
+>> +       if (!err && (fep->phydev->available == false))
+>> +               r = get_phy_id(fep->phydev->bus, fep->phydev->addr, &phy_id);
+>> +
+>> +       if (err || (phy_id == 0xffffffff)) {
+>>                 free_irq(fep->interrupt, dev);
+>>                 if (fep->fpi->use_napi)
+>>                         napi_disable(&fep->napi);
+>> -               return err;
+>> +               if (err)
+>> +                       return err;
+>> +               else
+>> +                       return -EINVAL;
+>>         }
+>> +       else
+>> +               fep->phydev->available = true;
+>>         phy_start(fep->phydev);
+>>
+>>         netif_start_queue(dev);
+>> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+>> index adbc0fd..1f443cb 100644
+>> --- a/drivers/net/phy/phy_device.c
+>> +++ b/drivers/net/phy/phy_device.c
+>> @@ -173,6 +173,10 @@ struct phy_device* phy_device_create(struct mii_bus *bus,
+>> int addr, int phy_id)
+>>         dev->dev.bus = &mdio_bus_type;
+>>         dev->irq = bus->irq != NULL ? bus->irq[addr] : PHY_POLL;
+>>         dev_set_name(&dev->dev, PHY_ID_FMT, bus->id, addr);
+>> +       if (phy_id == 0xffffffff)
+>> +               dev->available = false;
+>> +       else
+>> +               dev->available = true;
 > 
-> and under "soc" it has an MSI node that looks like that:
-> ----------------------------- snip -----------------------------
->         msi@41600 {
->             compatible = "fsl,p2020-msi", "fsl,mpic-msi";
->             reg = <0x41600 0x80>;
->             msi-available-ranges = <0 0x100>;
->             interrupts = <
->                 0xe0 0
->                 0xe1 0
->                 0xe2 0
->                 0xe3 0
->                 0xe4 0
->                 0xe5 0
->                 0xe6 0
->                 0xe7 0>;
->             interrupt-parent = <&mpic>;
->         };
-> ----------------------------- snap -----------------------------
+> This flag shouldn't be necessary.  Just check whether or not
+> phy_device->phy_id is sane at phy_attach_direct() time.  If it is
+> mostly f's, then don't attach.
+>
+
+Yes, indeed it is unneeded. Thanks for pointing out.
+
+>>
+>>         dev->state = PHY_DOWN;
+>>
+>> @@ -232,13 +236,11 @@ struct phy_device * get_phy_device(struct mii_bus *bus,
+>> int addr)
+>>         int r;
+>>
+>>         r = get_phy_id(bus, addr, &phy_id);
+>> -       if (r)
+>> -               return ERR_PTR(r);
+>>
+>>         /* If the phy_id is mostly Fs, there is no device there */
+>> -       if ((phy_id & 0x1fffffff) == 0x1fffffff)
+>> -               return NULL;
+>> -
+>> +       if (((phy_id & 0x1fffffff) == 0x1fffffff) || r)
+>> +               phy_id = 0xffffffff;
+>> +       /* create phy even if the phy is currently not available */
+>>         dev = phy_device_create(bus, addr, phy_id);
 > 
-> -- Liberty
+> Cannot do it this way because many phylib users probe the bus for phys
+> instead of the explicit creation used with the device tree.  There
+> needs to be a method to explicitly skip this test when creating a phy;
+> possibly by having the device tree code call phy_device_create()
+> directly.
 > 
+
+Ah ok, every phy_device_create() call from of_mdiobus_register should skip this
+test, because if a phy is described in the dts it is present (sooner or later)
+and if phy_device_create is called from somewhere else I do this test as usual.
+I adapted my patch accordingly.
+
+> Hmmm.... I see another problem.  Deferred probing of the phy will
+> potentially cause problems with module loading.  If the binding is
+> deferred to phy connect time; then the phy driver may not have time to
+> get loaded before the phy layer decides there is no driver and binds
+> it to the generic one.  Blech.
+> 
+> Okay, so it seems like a method of explicitly triggering a phy_device
+> rebind from userspace is necessary.  This could be done with a
+> per-phy_device sysfs file I suppose.  Just an empty file that when
+> read triggers a re-read of the phy id registers, and retries binding a
+> driver, including the request_module call in phy_device_create().
+> 
+
+Okay I suspected that there is not an easy solution for our problem. Another
+solution comes in my mind. If we defer the call to fs_enet_probe at startup. So
+enhance the dts entry with something like an hotplug indication and then trigger
+via an sysfs entry the call to fs_enet_probe if the phy is up... Other hotplug
+devices should have similar problems...
+
+However for our mgcoge board we can live with the fact that we can't load/unload
+the driver dynamically. So I think we will go with this modified "out of tree"
+patch for our board. Thanks for your support.
+
+Best regards
+Holger Brunck
