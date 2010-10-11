@@ -1,28 +1,21 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id E5B82B6EEC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Oct 2010 22:30:50 +1100 (EST)
-Received: by yws5 with SMTP id 5so879775yws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Oct 2010 04:30:48 -0700 (PDT)
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-From: David Hagood <david.hagood@gmail.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-In-Reply-To: <4CB2DE2B.7040504@windriver.com>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
-	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
-	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
-	<adaf806ee1c11621dbb51246bef0acd8.squirrel@localhost>
-	<4CB2DE2B.7040504@windriver.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 97D2CB6EFF
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Oct 2010 22:35:43 +1100 (EST)
+Subject: Re: Freescale P2020 / 85xx PCIe and Advance Error Reporting (AER)
+	service problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eran Liberty <liberty@extricom.com>
+In-Reply-To: <4CB2E517.8020401@extricom.com>
+References: <4CADBD7B.3000506@extricom.com>
+	<1286756363.2463.517.camel@pasglop>  <4CB2E517.8020401@extricom.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Oct 2010 06:30:44 -0500
-Message-ID: <1286796644.2545.29.camel@chumley>
+Date: Mon, 11 Oct 2010 22:32:01 +1100
+Message-ID: <1286796721.5220.2.camel@pasglop>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,64 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-10-11 at 17:51 +0800, tiejun.chen wrote:
-> 
-> You should define MSI device nodes on your target dts. And you can refer to the
-> file, mpc8572ds.dts.
-> 
-> Often U-Boot dose not generate MSI information and embed that to dtb.
-> 
-> > 
-> > But even assuming you can define these nodes at run time, as far as I can
-> > see, you are right back to the question of "and how do I know what the
-> > mappings are so I can create the node?" You haven't answered the question,
-> > you've just moved where you are asking it.
-> 
-> I think you can check fsl_msi.c to figure out what you want.
-<snip>
 
-> Often most latest classic books/articles always use x86 code as an
-example to
-> clarify Linux. So you have to understand something on PPC via codes.
-But I think
-> you will benefit more information from the codes than documents :)
+> BUT if we take into consideration that:
+> 1. Freescale is a serious dude in the hood and on the whole does a good 
+> job with its products and their Linux support.
+
+Sure but that's irrelevant to the technical problem at hand :-)
+
+> 2. The P2020 does state it has an MSI mechanism support (although one is 
+> not present as a PCIe capability header for some reason)
+
+Then it's broken :-(
+
+> 3. Errors in general and AER are major features in PCIe.
+> 4. PCIe has been here quite a while and it is not new to Freescale or 
+> anyone else.
+
+Right but we don't do AER on ppc44x either, I know we should but for
+some reason, AER hasn't been on anybody #1 priority list in embedded
+world so far...
+
+> I am much more inclined to believe that I have missed something by a 
+> mile then that Freescale did. I just don't know what I am missing.
+
+No, I think you haven't and we just need to fix it :-)
+
+Cheers,
+Ben.
+
+> My device tree is a clone of "arch/ powerpc/ boot/ dts/ p2020rdb.dts"
 > 
-
-RTFS. That wouldn't be bad advice, if the source were actually
-commented. None of these APIS have any meaningful comments in them,
-around them, or anywhere near them. You'd think we were back in the old
-BASIC days, when comments occupied run-time memory. Code can tell me
-WHAT is being done, but not WHY, and not what assumptions are being
-made.
-
-So when you say "You should define MSI device nodes on your target dts."
-we go right back to my comment of "You haven't answered the question,
-you've just moved where you are asking it."
-
+> It has a PCI node that looks like this:
+> ----------------------------- snip -----------------------------
+>     pci0: pcie@ffe09000 {
+>         cell-index = <1>;
+>         compatible = "fsl,mpc8548-pcie";
+>         device_type = "pci";
+>         #interrupt-cells = <1>;
+>         #size-cells = <2>;
+>         #address-cells = <3>;
+>         reg = <0 0xffe09000 0 0x1000>;
+>         bus-range = <0 255>;
+>         ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+>               0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
+>         clock-frequency = <33333333>;
+>         interrupt-parent = <&mpic>;
+>         interrupts = <25 2>;
+>         interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+>         interrupt-map = <
+>             /* IDSEL 0x0 */
+>             0000 0x0 0x0 0x1 &mpic 0x4 0x1
+>             0000 0x0 0x0 0x2 &mpic 0x5 0x1
+>             0000 0x0 0x0 0x3 &mpic 0x6 0x1
+>             0000 0x0 0x0 0x4 &mpic 0x7 0x1
+>             >;
+>         pcie@0 {
+>             reg = <0x0 0x0 0x0 0x0 0x0>;
+>             #size-cells = <2>;
+>             #address-cells = <3>;
+>             device_type = "pci";
+>             ranges = <0x2000000 0x0 0xa0000000
+>                   0x2000000 0x0 0xa0000000
+>                   0x0 0x20000000
 > 
-> Firstly you should use irq_of_parse_and_map()/irq_create_mapping() to map the
-> real hardware irq to virtual irq. Then use request_irq() with the virtual irq to
-> hook your interrupt handler.
-And when I do that, I get a segfault as my follow-on mail reports.
-
+>                   0x1000000 0x0 0x0
+>                   0x1000000 0x0 0x0
+>                   0x0 0x100000>;
+>         };
+>     };
+> ----------------------------- snap -----------------------------
 > 
-> Maybe you can check the file, ppc4xx_pci.c since ppc4xx also can support EP as I
-> previously said. And sounds Scott will do something to support EP for Freescale
-> chip.
-I will look at that file.
-
+> and under "soc" it has an MSI node that looks like that:
+> ----------------------------- snip -----------------------------
+>         msi@41600 {
+>             compatible = "fsl,p2020-msi", "fsl,mpic-msi";
+>             reg = <0x41600 0x80>;
+>             msi-available-ranges = <0 0x100>;
+>             interrupts = <
+>                 0xe0 0
+>                 0xe1 0
+>                 0xe2 0
+>                 0xe3 0
+>                 0xe4 0
+>                 0xe5 0
+>                 0xe6 0
+>                 0xe7 0>;
+>             interrupt-parent = <&mpic>;
+>         };
+> ----------------------------- snap -----------------------------
 > 
-> Looks you want to your host root complex to trigger MSI to mpc8641 EP target? If
-> so I'm a bit confused since MSIs should be delivered to to the Root Complex
-> resided on your host.
-I want the host to be able to interrupt the PPC. Since this is PCIe, the
-only way that will be working is for the root complex to do a write to
-somewhere on the PPC. This is basically the same mechanism as MSI, only
-with the PPC as the target of the write rather than the root complex.
-Obviously, the rest of the PCI devices will be sending interrupts to the
-root complex, some via MSI. That has nothing to do with this discussion.
-
-Since the PPC is in endpoint mode, the MSI hardware on the PPC won't be
-used. The hardware is writable from the root complex via the PPC BAR0,
-so I see no reason not to reuse it to trigger interrupts on the PPC from
-the Root complex.
+> -- Liberty
+> 
