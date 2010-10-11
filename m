@@ -1,16 +1,26 @@
-Return-Path: <error27@gmail.com>
-Date: Mon, 11 Oct 2010 21:13:35 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Geoff Levand <geoff@infradead.org>
-Subject: [patch] ps3disk: passing wrong variable to bvec_kunmap_irq()
-Message-ID: <20101011191335.GH5851@bicker>
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5F881B70AF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Oct 2010 07:32:41 +1100 (EST)
+Date: Mon, 11 Oct 2010 22:32:06 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Tim Pepper <lnxninja@linux.vnet.ibm.com>
+Subject: Re: [RFC] [PATCH] allow low HZ values?
+In-Reply-To: <20101011201121.GA953@tpepper-t61p.dolavim.us>
+Message-ID: <alpine.LFD.2.00.1010112227190.2909@localhost6.localdomain6>
+References: <20101011201121.GA953@tpepper-t61p.dolavim.us>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: cbe-oss-dev@lists.ozlabs.org,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Jens Axboe <jaxboe@fusionio.com>, kernel-janitors@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Marcio Saito <marcio@cyclades.com>, John Stultz <johnstul@us.ibm.com>,
+	Jiri Slaby <jirislaby@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Avantika Mathur <mathur@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This should pass "buf" to bvec_kunmap_irq() instead of "bv".  The api is
-like kmap_atomic() instead of kmap().
+On Mon, 11 Oct 2010, Tim Pepper wrote:
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+> I'm not necessarily wanting to open up the age old question of "what is
+> a good HZ", but we were doing some testing on timer tick overheads for
+> HPC applications and this came up...
 
-diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
-index e9da874..03688c2 100644
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -113,7 +113,7 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
- 			memcpy(buf, dev->bounce_buf+offset, size);
- 		offset += size;
- 		flush_kernel_dcache_page(bvec->bv_page);
--		bvec_kunmap_irq(bvec, &flags);
-+		bvec_kunmap_irq(buf, &flags);
- 		i++;
- 	}
- }
+Yeah. This comes always up when the timer tick overhead on HPC is
+tested. And this patch is again the fundamentally wrong answer.
+
+We have told HPC folks for years that we need a kind of "NOHZ" mode
+for HPC where we can transparently switch off the tick when only one
+user space bound thread is active and switch back to normal once this
+thing terminates or goes into the kernel via a syscall. Sigh, nothing
+happened ever except for repeating the same crap patches over and
+over.
+
+FYI, Frederic is working on that right now. He will talk about it at
+the plumbers RT microconf, so you might catch him there.
+
+Thanks,
+
+	tglx
