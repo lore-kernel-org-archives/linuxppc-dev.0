@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A4704B6EEB
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Oct 2010 11:21:51 +1100 (EST)
-Subject: Re: Freescale P2020 / 85xx PCIe and Advance Error Reporting (AER)
-	service problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eran Liberty <liberty@extricom.com>
-In-Reply-To: <4CADBD7B.3000506@extricom.com>
-References: <4CADBD7B.3000506@extricom.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Oct 2010 11:19:23 +1100
-Message-ID: <1286756363.2463.517.camel@pasglop>
-Mime-Version: 1.0
-Cc: Xianghua Xiao <x.xiao@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-pci@vger.kernel.org, Tony Li <tony.li@freescale.com>,
-	Linas Vepstas <linas@austin.ibm.com>, ZHANG WEI <wei.zhang@freescale.com>
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 96872B6EE8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 11 Oct 2010 20:49:43 +1100 (EST)
+Message-ID: <4CB2DE2B.7040504@windriver.com>
+Date: Mon, 11 Oct 2010 17:51:39 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: david.hagood@gmail.com
+Subject: Re: Questions on interrupt vector assignment on MPC8641D
+References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>	<20100921170700.53a99e56@udp111988uds.am.freescale.net>	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
+	<adaf806ee1c11621dbb51246bef0acd8.squirrel@localhost>
+In-Reply-To: <adaf806ee1c11621dbb51246bef0acd8.squirrel@localhost>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +27,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
->  - pcie_portdrv_probe() will be called for every BRIDGE class PCI device. P2020 PCIe is a PCI-PCI BRIDGE class so no problem here. 
->  - The code will continue to check that we have PCI_CAP_ID_EXP capability, which we have and continue to pcie_port_device_register().
->  - Now ,the function pcie_port_device_register() will FAIL. It will fail because it will call assign_interrupt_mode(), return with PCIE_PORT_NO_IRQ, and giveup with a reasonable remark in the code
-> "/*
->   * Don't use service devices that require interrupts if there is
->   * no way to generate them.
->   */"
+david.hagood@gmail.com wrote:
+> First of all - where is all of this documented? There seems to be a great
+> deal of "oral tradition" type knowledge here, but is any of it actually
+> written down somewhere? (see below for examples)
 > 
-> So now the question is why calling assign_interrupt_mode() with the P2020 PCIe ROOT device return empty? Well...
->  - First assign_interrupt_mode() will test for PCIE_PORT_MSIX_MODE. Freescale PCIe does not support this...
->  - Second attampt is made to discover PCIE_PORT_MSI_MODE, which Freescale should support but the PCIe PCI_CAP_ID_MSI capability is published on the device side of the bridge and NOT on the PCIe ROOT device, which is the one probed and thus fails.
->  - Last it attempts to look at "dev->pin" in order to set PCIE_PORT_INTx_MODE. On top of being the less recommended way (the old way), The Freescale PCIE ROOT device pin is not set anywhere.
+>> On Thu, 7 Oct 2010 15:12:26 -0500
+>> This is asking for the 256th specifier in the interrupts property in
+>> the mpic node -- not what you want.
 > 
-> Failing all those the probe fails and the AER service is not activated for the PCIE device.
+> That was from some of the previous emails in this thread.
+> 
+>> Ideally you would have a node for your device with an interrupt
+>> specifier that you could look up with irq_of_parse_and_map().
+> 
+> OK, and how do these devices come into being? From what I can tell, they
+> are defined by uBoot, and if uBoot doesn't define it, then you are out of
+> luck.
 
-So the question boils down to how does the bridge generate the AER
-interrupts. This should be documented in the FSL docs no ? The MSI in
-the child/device should be unrelated (it's your device MSI) no ? So the
-question is where's the missing interrupt.
+You should define MSI device nodes on your target dts. And you can refer to the
+file, mpc8572ds.dts.
 
-If it's a SoC interrupt, coming from the device-tree, then perhaps the
-generic AER code should be extended to recognize those.
+Often U-Boot dose not generate MSI information and embed that to dtb.
 
-Cheers,
-Ben.
+> 
+> But even assuming you can define these nodes at run time, as far as I can
+> see, you are right back to the question of "and how do I know what the
+> mappings are so I can create the node?" You haven't answered the question,
+> you've just moved where you are asking it.
+
+I think you can check fsl_msi.c to figure out what you want.
+> 
+> 
+>> The vector/priority register (MSIVPR0) is at offset
+>> 0x51c00.  Each interrupt source is 32 bytes.  The first interrupt
+>> source is at 0x50000.
+>>
+>> So the interrupt number is (0x51c00 - 0x50000) / 32 = 224.
+> 
+> OK, so that's how you get the MPIC IRQ number. It's a pity that the key
+> piece of information - "MPIC IRQ Numbers are defined by the interrupt
+> vector table starting at 0x50000 and incrementing by 0x20 - see table 9.3
+> of the MPD8641D manual for details" wasn't spelled out anywhere I could
+> find.
+> 
+> Given the data I had: the kernel sources, the MPD8641D manual, and not
+> much else, I had three unknowns:
+> * a table of config registers, that could map an set of events into an
+> arbitrary vector number.
+> * The standard kernel "request_irq" API that takes that arbitrary vector
+> number
+> * A set of APIs (irq_of_parse_and_map(), irq_create_mapping) that were,
+> for all intents, undocumented (just "here's the parameters", no
+> description of when and how to use them), that took a ???? and returned a
+> ???? (because, with the documentation I had, that's basically all I could
+> say about them).
+
+Firstly you should use irq_of_parse_and_map()/irq_create_mapping() to map the
+real hardware irq to virtual irq. Then use request_irq() with the virtual irq to
+hook your interrupt handler.
+
+> 
+> There was no documentation that said how to compute the MPIC interrupt
+> vector, no documentation that said which API to use to convert that to an
+> kernel IRQ, nothing.
+
+Often most latest classic books/articles always use x86 code as an example to
+clarify Linux. So you have to understand something on PPC via codes. But I think
+you will benefit more information from the codes than documents :)
+
+> 
+>> BTW, the MSIs are already described in an msi node in the device tree.
+> 
+> As I stated previously - not that I can see. Neither does
+> /proc/device_tree contain such a listing, nor does doing a
+> "of_find_node_by_name(0,"msi");" nor "of_find_node_by_type(0,"msi");" find
+> them.
+> 
+> It may be they are defined in PCI Root Complex mode, but again - I am
+> writing code to handle Endpoint mode, which, as far as I can tell from the
+> kernel sources, is NOT handled in any standardized way.
+
+Maybe you can check the file, ppc4xx_pci.c since ppc4xx also can support EP as I
+previously said. And sounds Scott will do something to support EP for Freescale
+chip.
+
+Looks you want to your host root complex to trigger MSI to mpc8641 EP target? If
+so I'm a bit confused since MSIs should be delivered to to the Root Complex
+resided on your host.
+
+Tiejun
+
+> 
+> 
+> Again, it would be nice were this sort of thing documented somewhere. If
+> it is, I'd love a link - I've tried every combination of search terms I
+> can think of to find it to no avail.
+> 
+> If it isn't documented, might I suggest that either a) creating a
+> dedicated "Programming PPC Embedded devices and their components under
+> Linux" be created, or b) an appropriate chapter or chapters be drafted and
+> submitted to the Linux Device Drivers book.
+> 
+> 
+> Don't take this message the wrong way - I do want to say "THANK YOU FOR
+> THE HELP!" - I am just trying to point out why somebody with a fair amount
+> of Linux kernel experience and a great deal of general embedded experience
+> is having great trouble doing a simple thing.
+> 
+> I'll try creating a mapping, binding to it, and seeing what happens.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
