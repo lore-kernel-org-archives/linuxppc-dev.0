@@ -1,26 +1,23 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8EE8B70D1
+Return-Path: <JAxboe@fusionio.com>
+Received: from mx2.fusionio.com (mx2.fusionio.com [64.244.102.31])
+	by ozlabs.org (Postfix) with ESMTP id B3F38B70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Oct 2010 09:33:25 +1100 (EST)
-Date: Tue, 12 Oct 2010 00:33:08 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] [PATCH] allow low HZ values?
-In-Reply-To: <1286836212.5220.19.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.1010120032060.2909@localhost6.localdomain6>
-References: <20101011201121.GA953@tpepper-t61p.dolavim.us>
-	<1286836212.5220.19.camel@pasglop>
+	Tue, 12 Oct 2010 07:00:58 +1100 (EST)
+Message-ID: <4CB3689F.1050601@fusionio.com>
+Date: Mon, 11 Oct 2010 21:42:23 +0200
+From: Jens Axboe <jaxboe@fusionio.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Marcio Saito <marcio@cyclades.com>, Jiri Slaby <jirislaby@gmail.com>,
-	John Stultz <johnstul@us.ibm.com>, x86@kernel.org,
-	linux-kernel@vger.kernel.org, Tim Pepper <lnxninja@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Avantika Mathur <mathur@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+To: Dan Carpenter <error27@gmail.com>
+Subject: Re: [patch] ps3disk: passing wrong variable to bvec_kunmap_irq()
+References: <20101011191335.GH5851@bicker>
+In-Reply-To: <20101011191335.GH5851@bicker>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: "cbe-oss-dev@lists.ozlabs.org" <cbe-oss-dev@lists.ozlabs.org>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Geoff Levand <geoff@infradead.org>,
+	"kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,14 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 Oct 2010, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2010-10-11 at 13:11 -0700, Tim Pepper wrote:
-> > I'm not necessarily wanting to open up the age old question of "what is
-> > a good HZ", but we were doing some testing on timer tick overheads for
-> > HPC applications and this came up...
+On 2010-10-11 21:13, Dan Carpenter wrote:
+> This should pass "buf" to bvec_kunmap_irq() instead of "bv".  The api is
+> like kmap_atomic() instead of kmap().
 > 
-> Note that this is also very useful when working on CPU prototypes
-> implemented in FPGAs and running at something like 12Mhz :-)
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> 
+> diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+> index e9da874..03688c2 100644
+> --- a/drivers/block/ps3disk.c
+> +++ b/drivers/block/ps3disk.c
+> @@ -113,7 +113,7 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
+>  			memcpy(buf, dev->bounce_buf+offset, size);
+>  		offset += size;
+>  		flush_kernel_dcache_page(bvec->bv_page);
+> -		bvec_kunmap_irq(bvec, &flags);
+> +		bvec_kunmap_irq(buf, &flags);
+>  		i++;
+>  	}
+>  }
 
-/me hands benh 0.5$ for a FPGA upgrade
+Thanks applied, that bug is all too common.
+
+-- 
+Jens Axboe
