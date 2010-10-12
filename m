@@ -1,35 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8F06FB70CB
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 04:33:51 +1100 (EST)
-Received: from mail39-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail39-tx2-R.bigfish.com (Postfix) with ESMTP id C62B9302D2	for
-	<linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2010 17:33:47 +0000 (UTC)
-Received: from TX2EHSMHS040.bigfish.com (unknown [10.9.14.247])	by
-	mail39-tx2.bigfish.com (Postfix) with ESMTP id 77D554F0075	for
-	<linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2010 17:33:14 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o9CHXBYd016871	for
-	<linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2010 10:33:11 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o9CHmIF5017585	for <linuxppc-dev@ozlabs.org>;
-	Tue, 12 Oct 2010 12:48:19 -0500 (CDT)
-Date: Tue, 12 Oct 2010 12:33:08 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/fsl-booke: Add support for FSL 64-bit e5500
-	core
-Message-ID: <20101012123308.57a59830@udp111988uds.am.freescale.net>
-In-Reply-To: <1286898653-2266-1-git-send-email-galak@kernel.crashing.org>
-References: <1286898653-2266-1-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] v2 476: Set CCR2[DSTI] to prevent isync from
+	flushing shadow TLB
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <1285624606.17411.31.camel@shaggy-w500>
+References: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1285351297-9999-2-git-send-email-shaggy@linux.vnet.ibm.com>
+	<20100927150434.GA2888@zod.rchland.ibm.com>
+	<1285601205.17411.23.camel@shaggy-w500>	<1285621852.14081.62.camel@pasglop>
+	<1285622128.17411.29.camel@shaggy-w500>
+	<1285624606.17411.31.camel@shaggy-w500>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Tue, 12 Oct 2010 14:40:13 -0500
+Message-ID: <1286912413.3688.33.camel@shaggy-w500>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,21 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 Oct 2010 10:50:52 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+Josh,
+Please pull this patch.  I just found a bone-headed mistake that makes
+the whole patch a no-op.  I'll need to fix it and put it through a bit
+of testing before I can re-submit it.
 
-> The new e5500 core is similar to the e500mc core but adds 64-bit
-> support.  We support running it in 32-bit mode as it is identical to the
-> e500mc.
+The other patch in this series should be okay.
+
+Thanks,
+Shaggy
+
+On Mon, 2010-09-27 at 16:56 -0500, Dave Kleikamp wrote:
+> When the DSTI (Disable Shadow TLB Invalidate) bit is set in the CCR2
+> register, the isync command does not flush the shadow TLB (iTLB & dTLB).
 > 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> However, since the shadow TLB does not contain context information, we
+> want the shadow TLB flushed in situations where we are switching context.
+> In those situations, we explicitly clear the DSTI bit before performing
+> isync, and set it again afterward.  We also need to do the same when we
+> perform isync after explicitly flushing the TLB.
+> 
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 > ---
-> * Updated to remove CONFIG_PPC_E5500 and use E500MC
+>  arch/powerpc/include/asm/reg_booke.h  |    4 ++++
+>  arch/powerpc/kernel/head_44x.S        |   25 +++++++++++++++++++++++++
+>  arch/powerpc/mm/tlb_nohash_low.S      |   14 +++++++++++++-
+>  arch/powerpc/platforms/44x/misc_44x.S |   26 ++++++++++++++++++++++++++
+>  4 files changed, 68 insertions(+), 1 deletions(-)
+> 
 
-It still has E500 || E500MC all over the place...
+   --- snip ---
 
-If E500MC is not going to imply E500 that should be consistent for both
-32 and 64 bit -- though I think it would make more sense that E500MC
-does imply E500.
+> --- a/arch/powerpc/kernel/head_44x.S
+> +++ b/arch/powerpc/kernel/head_44x.S
 
--Scott
+Not only is this in the wrong place (non-47x initialization) but ...
+
+> @@ -861,6 +877,15 @@ skpinv:	addi	r4,r4,1				/* Increment */
+>  	isync
+>  #endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+> 
+> +BEGIN_MMU_FTR_SECTION
+> +	mfspr   r3,SPRN_CCR2_476
+> +	/* With CCR2(DSTI) set, isync does not invalidate the shadow TLB */
+> +	oris	r3,r3,CCR2_476_DSTI@h
+> +	rlwinm	r3,r3,0,~CCR2_476_DSTI
+
+^^^ This instruction doesn't belong at all.  It clears the bit right
+after setting it.  This one was just introduced removing the config
+option, but it was in the wrong place all along.
+
+> +	mtspr   SPRN_CCR2_476,r3
+> +	isync
+> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
+> +
+>  	/* Establish the interrupt vector offsets */
+>  	SET_IVOR(0,  CriticalInput);
+>  	SET_IVOR(1,  MachineCheck);
+
+I wasn't diligent enough checking a year-old patch that I got back to
+work on.  The code is very similar in two places and the patch applied
+to the wrong section.
+
+Thanks,
+Shaggy
+-- 
+Dave Kleikamp
+IBM Linux Technology Center
