@@ -1,23 +1,23 @@
-Return-Path: <john.williams@petalogix.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 270EDB6F11
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2010 14:02:18 +1100 (EST)
-Received: by fxm5 with SMTP id 5so897773fxm.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Oct 2010 20:02:16 -0700 (PDT)
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EFD56B70B8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Oct 2010 14:09:59 +1100 (EST)
+Message-ID: <4CB3D1FF.6070102@windriver.com>
+Date: Tue, 12 Oct 2010 11:11:59 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTi=dU4oYfqrBGYmSCmYf2cRsBX-Pf6A9X9N0YaZA@mail.gmail.com>
-References: <1d3f23371002091921m7f47a1fbt1cf7fd2ef0a927fa@mail.gmail.com>
-	<AANLkTi=dU4oYfqrBGYmSCmYf2cRsBX-Pf6A9X9N0YaZA@mail.gmail.com>
-Date: Tue, 12 Oct 2010 13:02:16 +1000
-Message-ID: <AANLkTimAKXb=iRGOZKDOcELBdNhrDs8pd_yLMt1MD10Y@mail.gmail.com>
-Subject: Re: PPC: Possible bug in prom_parse.c:of_irq_map_raw?
-From: John Williams <john.williams@petalogix.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Michal Simek <michal.simek@petalogix.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Questions on interrupt vector assignment on MPC8641D
+References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>	<20100921170700.53a99e56@udp111988uds.am.freescale.net>	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>	<20101007152626.4e834d43@udp111988uds.am.freescale.net>	<adaf806ee1c11621dbb51246bef0acd8.squirrel@localhost>	<20101011105031.52a5c06a@udp111988uds.am.freescale.net>	<9af5fd3c8f713d261c7acdc1d195fb84.squirrel@localhost>
+	<20101011123006.5b489d19@udp111988uds.am.freescale.net>
+In-Reply-To: <20101011123006.5b489d19@udp111988uds.am.freescale.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: david.hagood@gmail.com,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,156 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
+Scott Wood wrote:
+> On Mon, 11 Oct 2010 12:02:15 -0500
+> <david.hagood@gmail.com> wrote:
+> 
+>> Re-ordering your questions a bit:
+>>
+>>> What board are you using?  What kernel?
+>> One of 2 boards: Either an Embedded Planet or a Performance Tech uTCA
+>> board based on the MPC8641D, running the 2.6.26 as supplied by EP.
+> 
+> That's a very old kernel.  Have you contacted EP support?
+> 
+> You may be better off trying to migrate anything board-specific to the
+> latest kernel, rather than do new development on the vendor kernel,
+> especially if you're looking for community support, and definitely if
+> you're trying to do something that could be merged upstream to help
+> others.
+> 
+> The MPC8641D itself is supported in mainline Linux.
+> 
+>>> On Sat, 9 Oct 2010 10:52:49 -0500
+>>> Documentation/powerpc/dts-bindings/fsl/mpic.txt
+>> Not present in the version I have.
+> 
+> We didn't have a time machine, so we were only able to add things to new
+> releases, not old ones. :-)
+> 
+> Should it have been documented from the start?  Ideally, yes, and we're
+> pickier now than we were then about insisting on bindings being
+> documented before they're used.  But nothing's perfect.
 
-On Fri, Oct 8, 2010 at 4:34 AM, Grant Likely <grant.likely@secretlab.ca> wr=
-ote:
-> Reaching way back into the past....
+On the *latest* tree you can find more than your tree:
+------
+Documentation/powerpc/dts-bindings/fsl/msi-pic.txt
+Documentation/powerpc/booting-without-of.txt
 
-Indeed
+If you want to understand dts in detail you can refer to the file,
+------
+http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf
 
-> John, did you ever solve your issue here? =A0Comments below.
+> 
+>>> If it's not in the dts, add it.  If for whatever reason that's not an
+>>> option, you can use irq_create_mapping() as I mentioned in the previous
+>>> e-mail.
+>> And as I've said previously, I have no good info on HOW to add the nodes,
+>> WHAT to add, or WHERE. You may as well be saying "Bargle the Narbog".
+> 
+> There are no nodes to add with irq_create_mapping().
 
-The fix in our case was to explicitly add child nodes to the PCI
-controller, with interrupt-parent and interrupts properties. The
-product in question had a fixed set of devices on the PCI bus, so this
-was not a problem.
+Sure.
 
-So, it's not really resolved so much as avoided.
+> 
+> Just bargle the narbog.
+> 
+>> And when I try to use irq_create_mapping() it seg faults, which doesn't
+>> exactly help me get my interrupt hooked up.
+> 
+> Well, I didn't know it was going to do that...  Your usage of
+> irq_create_mapping() seems fine, there's just something going wrong.
 
-Other comments below:
+The 'NULL' host would be 'irq_default_host'. For OOPS you can check my another
+email and hope its useful.
 
->> Perhaps this is my misunderstanding, but I'm looking at the bit of
->> code in of_irq_map_raw() that iterates the interrupt-map DTS node,
->> which I am seeing to behave strangely when handling the interrupt-map
->> property on a PCI bridge node.
->>
->> Early in the function, we get the #address-cells value from the node -
->> in this case the PCI bridge, and store it in local var addrsize:
->>
->> =A0 =A0 =A0 =A0/* Look for this #address-cells. We have to implement the=
- old linux
->> =A0 =A0 =A0 =A0 * trick of looking for the parent here as some device-tr=
-ees rely on it
->> =A0 =A0 =A0 =A0 */
->> =A0 =A0 =A0 =A0old =3D of_node_get(ipar);
->> =A0 =A0 =A0 =A0do {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(old, "#address-ce=
-lls", NULL);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tnode =3D of_get_parent(old);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0of_node_put(old);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0old =3D tnode;
->> =A0 =A0 =A0 =A0} while(old && tmp =3D=3D NULL);
->> =A0 =A0 =A0 =A0of_node_put(old);
->> =A0 =A0 =A0 =A0old =3D NULL;
->> =A0 =A0 =A0 =A0addrsize =3D (tmp =3D=3D NULL) ? 2 : *tmp;
->>
->> =A0 =A0 =A0 =A0DBG(" -> addrsize=3D%d\n", addrsize);
->>
->>
->> Later, once we've found the interrupt-map and are iterating over it
->> attempting to match on PCI device addresses, there is this little
->> fragment:
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Get the interrupt pare=
-nt */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (of_irq_workarounds & =
-OF_IMAP_NO_PHANDLE)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newpar =
-=3D of_node_get(of_irq_dflt_pic);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0else
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newpar =
-=3D
->> of_find_node_by_phandle((phandle)*imap);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0imap++;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0--imaplen;
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Check if not found */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (newpar =3D=3D NULL) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DBG(" -> =
-imap parent not found !\n");
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto fail=
-;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Get #interrupt-cells a=
-nd #address-cells of new
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * parent
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(n=
-ewpar, "#interrupt-cells", NULL);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (tmp =3D=3D NULL) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DBG(" -> =
-parent lacks #interrupt-cells !\n");
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto fail=
-;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newintsize =3D *tmp;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(n=
-ewpar, "#address-cells", NULL);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newaddrsize =3D (tmp =3D=
-=3D NULL) ? 0 : *tmp;
->>
->> Finally, later in the loop we update addrsize=3Dnewaddrsize
->>
->> As I read this code, and the behaviour I'm seeing, is that if the
->> interrupt controller parent device doesn't have an #address-cells
->> entry, then this get_property will return fail, therefore setting
->> newaddrsize =A0to zero. =A0This then means that subsequent match attempt=
-s
->> when iterating the interrupt-map always fail, because the match length
->> (addrsize) is 0.
->
-> Correct. =A0The interrupt-map property contains the following fields:
->
-> child-unit-address child-irq irq-controller irq-parent-unit-address paren=
-t-irq
->
-> In the *vast majority* of cases, the irq-parent-unit-address is a
-> zero-length field because #address-cells isn't present on the
-> interrupt controller parent. =A0So effectively interrupt-map becomes:
->
-> child-unit-address child-irq irq-controller parent-irq
->
-> See epapr 1.0 for a full discussion
->
->>
->> Maybe I'm missing something here, but shouldn't this last bit of code
->> instead be:
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0tmp =3D of_get_property(n=
-ewpar, "#address-cells", NULL);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0newaddrsize =3D (tmp =3D=
-=3D NULL) ? addrsize : *tmp;
->>
->> =A0^^^^^^^^^
->> ?
->>
->> In other words, if the parent node has an #address-cells value, then
->> use it, otherwise stick to the #address-cells value we picked up for
->> the actual node in question (ie the PCI bridge).
->
-> No, because at this point we absolutely do want to know how big the
-> parent #address-cells is, and if it is missing, we need to use 0. =A0If
-> the child's addrsize continued to be used, then the interrupt-map
-> parsing would get unaligned.
->
-> The inner loop is over the entries in interrupt-map. =A0addrsize and
-> intsize are only updated in the case where a match is found in the
-> table. =A0If a match isn't found, then it should bail out to the 'fail'
-> label.
->
->> The way this is manifesting itself in the system I'm looking at is
->> that only the PCI device matching the first entry in the PCI bridge
->> interrupt-map property is correctly matching. For PCI devices that
->> require more than one pass through the interrupt-map loop, addrsize
->> goes to zero and no further match is possible.
->
-> Something sounds fishy. =A0If you're still having problems, can you
-> enable #define DEBUG in drivers/of/irq.c and post the output?
+-Tiejun
 
-OK, this may take me a lilttle while as the test system is in storage!
-
-Thanks,
-
-John
+> See my other reply about the number of MPIC interrupts.
