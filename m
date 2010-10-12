@@ -1,19 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 381C3B70A3
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 02:50:58 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o9CFotCO023732
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2010 10:50:56 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc/fsl-booke: Add p5020 DS board support
-Date: Tue, 12 Oct 2010 10:50:53 -0500
-Message-Id: <1286898653-2266-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1286898653-2266-1-git-send-email-galak@kernel.crashing.org>
-References: <1286898653-2266-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <yifei_wang@hotmail.com>
+Received: from bay0-omc4-s1.bay0.hotmail.com (bay0-omc4-s1.bay0.hotmail.com
+	[65.54.190.203]) by ozlabs.org (Postfix) with ESMTP id D5A9BB6F10
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 01:54:48 +1100 (EST)
+Message-ID: <BAY158-ds7DB18D88ED851794F4E19F5540@phx.gbl>
+From: WANG YiFei <yifei_wang@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: ppc405 + MCP23S17
+Date: Tue, 12 Oct 2010 22:49:41 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00C8_01CB6A5F.C22F2CA0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,128 +19,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The P5020DS is in the same family of boards as the P4080 DS and thus
-shares the corenet_ds code.
+------=_NextPart_000_00C8_01CB6A5F.C22F2CA0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Updated based on removal of CONFIG_PPC_E5500
+Hi,
 
- arch/powerpc/platforms/85xx/Kconfig    |   12 ++++++
- arch/powerpc/platforms/85xx/Makefile   |    1 +
- arch/powerpc/platforms/85xx/p5020_ds.c |   69 ++++++++++++++++++++++++++++++++
- 3 files changed, 82 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+ 
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index ae25527..82d7f33 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -181,6 +181,18 @@ config P4080_DS
+I'm a newbie for linux device driver development.
+
+We have a custom ppc405 board which has MCP23S17
+
+(16-Bit I/O Expander with SPI Interface) on it.
+
+I noticed that current kernel has MCP23S08 driver
+
+support, I'd like to know:
+
+1. if passing platform data to MCP23S08 driver, can it make
+
+   MCP23S17 work?
+
+2. Generally, I'd like to know how to pass platform data to
+
+   a particular device driver. In my mind, platform data should
+
+   not be in driver code, right? However, I don't know where is
+
+   the suitable place to pass platform data to driver.
+
+3. How to describe this in dts file?
+
  
- endif # PPC32
- 
-+config P5020_DS
-+	bool "Freescale P5020 DS"
-+	select DEFAULT_UIMAGE
-+	select PPC_FSL_BOOK3E
-+	select PPC_E500MC
-+	select PHYS_64BIT
-+	select SWIOTLB
-+	select MPC8xxx_GPIO
-+	select HAS_RAPIDIO
-+	help
-+	  This option enables support for the P5020 DS board
-+
- endif # FSL_SOC_BOOKE
- 
- config TQM85xx
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index c3ac071..dd70db7 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o
- obj-$(CONFIG_P1022_DS)    += p1022_ds.o
- obj-$(CONFIG_P3041_DS)    += p3041_ds.o corenet_ds.o
- obj-$(CONFIG_P4080_DS)    += p4080_ds.o corenet_ds.o
-+obj-$(CONFIG_P5020_DS)    += p5020_ds.o corenet_ds.o
- obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
- obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
- obj-$(CONFIG_SBC8560)     += sbc8560.o
-diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
-new file mode 100644
-index 0000000..7467b71
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/p5020_ds.c
-@@ -0,0 +1,69 @@
-+/*
-+ * P5020 DS Setup
-+ *
-+ * Maintained by Kumar Gala (see MAINTAINERS for contact information)
-+ *
-+ * Copyright 2009-2010 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/phy.h>
-+
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+
-+#include <linux/of_platform.h>
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#include "corenet_ds.h"
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init p5020_ds_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,P5020DS");
-+}
-+
-+define_machine(p5020_ds) {
-+	.name			= "P5020 DS",
-+	.probe			= p5020_ds_probe,
-+	.setup_arch		= corenet_ds_setup_arch,
-+	.init_IRQ		= corenet_ds_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
-+#ifdef CONFIG_PPC64
-+	.get_irq		= mpic_get_irq,
-+#else
-+	.get_irq		= mpic_get_coreint_irq,
-+#endif
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
-+
-+machine_device_initcall(p5020_ds, corenet_ds_publish_devices);
-+
-+#ifdef CONFIG_SWIOTLB
-+machine_arch_initcall(p5020_ds, swiotlb_setup_bus_notifier);
-+#endif
--- 
-1.7.2.3
+
+Thanks in advance,
+
+YiFei
+
+
+------=_NextPart_000_00C8_01CB6A5F.C22F2CA0
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:\5B8B\4F53;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"\@\5B8B\4F53";
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:Consolas;
+	panose-1:2 11 6 9 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{mso-style-priority:99;
+	mso-style-link:"Plain Text Char";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:10.5pt;
+	font-family:Consolas;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+span.PlainTextChar
+	{mso-style-name:"Plain Text Char";
+	mso-style-priority:99;
+	mso-style-link:"Plain Text";
+	font-family:Consolas;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
+div.WordSection1
+	{page:WordSection1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DWordSection1>
+
+<p class=3DMsoPlainText>Hi,<o:p></o:p></p>
+
+<p class=3DMsoPlainText><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoPlainText>I'm a newbie for linux device driver =
+development.<o:p></o:p></p>
+
+<p class=3DMsoPlainText>We have a custom ppc405 board which has =
+MCP23S17<o:p></o:p></p>
+
+<p class=3DMsoPlainText>(16-Bit I/O Expander with SPI Interface) on =
+it.<o:p></o:p></p>
+
+<p class=3DMsoPlainText>I noticed that current kernel has MCP23S08 =
+driver<o:p></o:p></p>
+
+<p class=3DMsoPlainText>support, I'd like to know:<o:p></o:p></p>
+
+<p class=3DMsoPlainText>1. if passing platform data to MCP23S08 driver, =
+can it
+make<o:p></o:p></p>
+
+<p class=3DMsoPlainText>&nbsp;&nbsp; MCP23S17 work?<o:p></o:p></p>
+
+<p class=3DMsoPlainText>2. Generally, I'd like to know how to pass =
+platform data
+to<o:p></o:p></p>
+
+<p class=3DMsoPlainText>&nbsp;&nbsp; a particular device driver. In my =
+mind,
+platform data should<o:p></o:p></p>
+
+<p class=3DMsoPlainText>&nbsp;&nbsp; not be in driver code, right? =
+However, I
+don't know where is<o:p></o:p></p>
+
+<p class=3DMsoPlainText>&nbsp; &nbsp;the suitable place to pass platform =
+data to
+driver.<o:p></o:p></p>
+
+<p class=3DMsoPlainText>3. How to describe this in dts =
+file?<o:p></o:p></p>
+
+<p class=3DMsoPlainText><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoPlainText>Thanks in advance,<o:p></o:p></p>
+
+<p class=3DMsoNormal>YiFei<o:p></o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_00C8_01CB6A5F.C22F2CA0--
