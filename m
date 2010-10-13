@@ -1,46 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95AC1B70D6
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 6DC9D1007D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 02:28:27 +1100 (EST)
-Received: from mail176-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail176-tx2-R.bigfish.com (Postfix) with ESMTP id 7340E8205EC	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 15:28:21 +0000 (UTC)
-Received: from TX2EHSMHS004.bigfish.com (unknown [10.9.14.244])	by
-	mail176-tx2.bigfish.com (Postfix) with ESMTP id 3DFE21798058	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 15:28:20 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o9DFSHBo009266	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 08:28:17 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o9DFhP2g020580	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Oct 2010 10:43:25 -0500 (CDT)
-Date: Wed, 13 Oct 2010 10:28:15 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-Message-ID: <20101013102815.2959fcb6@udp111988uds.am.freescale.net>
-In-Reply-To: <4CB5088D.4090201@windriver.com>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
-	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
-	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
-	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>
-	<4CB2DEFB.90204@windriver.com>
-	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>
-	<942ea2f3464025464521511c32355782.squirrel@localhost>
-	<20101012162152.5246744a@udp111988uds.am.freescale.net>
-	<4CB5088D.4090201@windriver.com>
+	Thu, 14 Oct 2010 02:34:38 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: david.hagood@gmail.com,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Serial RapidIO Maintaintance read causes lock up
+Date: Wed, 13 Oct 2010 08:34:31 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552013FCCE2@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <AANLkTikV69ZThBQbetT0f=PZGQos3qWKjqjoNJXysH2V@mail.gmail.com>
+References: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com>
+	<AANLkTimCiHWRR-kVuT0ift3CH63Xk_XcaXS22qmVh6fr@mail.gmail.com>
+	<4CAB2729.6080402@freescale.com>
+	<AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com>
+	<4CAB39F4.3030208@freescale.com>
+	<AANLkTimKbibzzNc3+DSJHcLC4gA0H5JiM+EHW2k4znZ-@mail.gmail.com>
+	<AANLkTimk2hRhyX4WufjdviDz-OTj7VRfjA94oyoXL9mM@mail.gmail.com>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552013FCC59@CORPEXCH1.na.ads.idt.com>
+	<AANLkTikV69ZThBQbetT0f=PZGQos3qWKjqjoNJXysH2V@mail.gmail.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Bastiaan Nijkamp" <bastiaan.nijkamp@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,26 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Oct 2010 09:17:01 +0800
-"tiejun.chen" <tiejun.chen@windriver.com> wrote:
+Bastiaan Nijkamp <bastiaan.nijkamp@gmail.com> wrote:
 
-> Scott Wood wrote:
-> > The crash is happening somewhere in mpic_set_irq_type():
-> 
-> Agreed. That is just where I pointed out on my email replied for OOPS. To enable
-> DBG to figure out 'src' and 'mpic->irq_count' from the file,
-> arch/powerpc/sysdev/mpic.c,    .
-> ======
-> int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
-> {
-> 	......
-> 	if (src >= mpic->irq_count)
-> 		return -EINVAL;
-> 			^
-> 			I think this OOPS may be from here.
+>>=A0How the host ID is set on your host board?
+>> Normally rio_enum_host() should increment next_destid in your case.
+>
+> The hostID is set to 0x0 with the riohdid parameter as boot =
+argument.=A0
+>
 
-No, it's after that.  His board code is using the mpic's "isu" remapping
-mechanism, and the MSIs aren't covered, so those registers aren't
-ioremapped.
+In this case I would expect to see ID=3D1 assigned to the endpoint. I =
+will take a look based on your use scenario. Let me know if you find the =
+source of problem before I get back to you about this issue.=20
 
--Scott
+>>=A0Make sure that you have the MASTER bit is set in agent's GCCSR =
+register (0xC_013C).
+>> If your board uses HW config switches to set host/agent mode this bit =
+will be 0 for
+>> agent.
+>> For quick test you may keep both boards in the host mode - the =
+current RIO implementation >> relies on "riohdid=3D" command line =
+parameter instead of HOST bit.
+>
+> This seems to have done the trick :-) However, i wonder, doesn't it =
+make more sense to
+> make the driver check this setting and correcting it or giving an =
+error instead of
+> entering a endless loop?=A0
+
+One of my recent patches handles the MASTER bit. It is in -mm tree now.
+
+In the case that you have seen, the agent does not enter endless loop - =
+it just has request that cannot leave the SRIO controller. As result =
+that request cannot be timed out and hangs the processor (no machine =
+check).
+
+Alex.
+ =20
