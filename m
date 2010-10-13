@@ -1,33 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
-	[213.199.154.142])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 976F01007D3
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 01:45:26 +1100 (EST)
-Received: from mail55-db3 (localhost.localdomain [127.0.0.1])	by
-	mail55-db3-R.bigfish.com (Postfix) with ESMTP id 39DC41A084CA	for
-	<linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 14:45:21 +0000 (UTC)
-Received: from DB3EHSMHS011.bigfish.com (unknown [10.3.81.247])	by
-	mail55-db3.bigfish.com (Postfix) with ESMTP id 2395A11C8051	for
-	<linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 14:44:54 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o9DEio63007973	for <linuxppc-dev@ozlabs.org>;
-	Wed, 13 Oct 2010 07:44:50 -0700 (MST)
-Subject: Re: [PATCH 2/2] [v2] powerpc/85xx: add DIU support to the Freecale
-	P1022DS reference board
-MIME-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1286480203-28227-2-git-send-email-timur@freescale.com>
-Date: Wed, 13 Oct 2010 09:44:49 -0500
-Message-ID: <25BF0934-438C-47D0-8427-55658F44BA99@freescale.com>
-References: <1286480203-28227-1-git-send-email-timur@freescale.com>
-	<1286480203-28227-2-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 50D51100C85
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 01:45:33 +1100 (EST)
+Subject: Re: [PATCH][v2] powerpc/fsl: 85xx: add cache-sram support
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1286971256-22878-1-git-send-email-harninder.rai@freescale.com>
+Date: Wed, 13 Oct 2010 09:45:25 -0500
+Message-Id: <6C7FF889-5FDC-46B4-9B09-584110CE912F@kernel.crashing.org>
+References: <1286971256-22878-1-git-send-email-harninder.rai@freescale.com>
+To: "<harninder.rai@freescale.com>" <harninder.rai@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +25,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 7, 2010, at 2:36 PM, Timur Tabi wrote:
+On Oct 13, 2010, at 7:00 AM, <harninder.rai@freescale.com> =
+<harninder.rai@freescale.com> wrote:
 
-> The Freescale P1022DS has an on-chip video controller called the DIU, =
-and a
-> driver for this device already exists.  Update the platform file for =
-the
-> P1022DS reference board to enable the driver, and update the defconfig =
-for
-> Freescale MPC85xx boards to add the driver.
+> From: Harninder Rai <harninder.rai@freescale.com>
 >=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> It adds cache-sram support in P1/P2 QorIQ platforms as under:
+>=20
+>    * A small abstraction over powerpc's remote heap allocator
+>    * Exports mpc85xx_cache_sram_alloc()/free() APIs
+>    * Supports only one contiguous SRAM window
+>    * Drivers can do the following in Kconfig to use these APIs
+>        "select FSL_85XX_CACHE_SRAM if MPC85xx"
+>    * Required SRAM size and the offset where SRAM should be mapped =
+must be
+>      provided at kernel command line as :-
+>        cache-sram-size=3D<value>
+>        cache-sram-offset=3D<offset>
+>=20
+> Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
 > ---
-> arch/powerpc/configs/mpc85xx_defconfig     |    3 +
-> arch/powerpc/configs/mpc85xx_smp_defconfig |    3 +
-> arch/powerpc/platforms/85xx/p1022_ds.c     |  213 =
-+++++++++++++++++++++++++++-
-> 3 files changed, 217 insertions(+), 2 deletions(-)
+> incorporated review comments from Philipp
+>=20
+> arch/powerpc/include/asm/fsl_85xx_cache_sram.h |   48 +++++
+> arch/powerpc/sysdev/Makefile                   |    1 +
+> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h      |  101 +++++++++++
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c      |  159 ++++++++++++++++
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c          |  231 =
+++++++++++++++++++++++++
+> 5 files changed, 540 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+> create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+> create mode 100644 arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
 
 applied to next
 
