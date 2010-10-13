@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 085C5B6F06
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Oct 2010 16:13:35 +1100 (EST)
-Subject: Re: [PATCH 09/15] ppc/vio: use dma ops helpers
+	by ozlabs.org (Postfix) with ESMTPS id 84153B6F06
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 16:18:08 +1100 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <AANLkTim2Sie0Hop7Akn2CsSgEMPOdq5kDRcfcnAFtghS@mail.gmail.com>
-References: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
-	<1284573958-8397-10-git-send-email-nacc@us.ibm.com>
-	<AANLkTim2Sie0Hop7Akn2CsSgEMPOdq5kDRcfcnAFtghS@mail.gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.1010081102090.19518@localhost.localdomain>
+References: <Pine.LNX.4.64.1010081102090.19518@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Oct 2010 15:56:00 +1100
-Message-ID: <1286945760.2205.0.camel@pasglop>
+Date: Wed, 13 Oct 2010 16:18:01 +1100
+Message-ID: <1286947081.2205.2.camel@pasglop>
 Mime-Version: 1.0
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,72 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-09-15 at 12:33 -0600, Grant Likely wrote:
-> On Wed, Sep 15, 2010 at 12:05 PM, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
-> > Use the set_dma_ops helper. Instead of modifying vio_dma_mapping_ops,
-> > just create a trivial wrapper for dma_supported.
-> >
-> > Signed-off-by: Milton Miller <miltonm@bga.com>
-> > Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+On Fri, 2010-10-08 at 11:04 -0500, Kumar Gala wrote:
+> Ben,
 > 
-> Looks right to me.
+> This isn't critical, but it does fix having the ppc64e_defconfig
+> build cleanly.
 
-I never saw 8/15 btw ... I'm applying up to 7, please resend the rest.
+Doesn't matter, I'm putting it in -next. When is your -next branch btw ?
+It's overdue by 3 or 4 rc's already :-)
 
 Cheers,
 Ben.
 
-> > ---
-> >  arch/powerpc/kernel/vio.c |   11 ++++++++---
-> >  1 files changed, 8 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> > index d692989..3c3083f 100644
-> > --- a/arch/powerpc/kernel/vio.c
-> > +++ b/arch/powerpc/kernel/vio.c
-> > @@ -602,6 +602,11 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
-> >        vio_cmo_dealloc(viodev, alloc_size);
-> >  }
-> >
-> > +static int vio_dma_iommu_dma_supported(struct device *dev, u64 mask)
-> > +{
-> > +        return dma_iommu_ops.dma_supported(dev, mask);
-> > +}
-> > +
-> >  struct dma_map_ops vio_dma_mapping_ops = {
-> >        .alloc_coherent = vio_dma_iommu_alloc_coherent,
-> >        .free_coherent  = vio_dma_iommu_free_coherent,
-> > @@ -609,6 +614,7 @@ struct dma_map_ops vio_dma_mapping_ops = {
-> >        .unmap_sg       = vio_dma_iommu_unmap_sg,
-> >        .map_page       = vio_dma_iommu_map_page,
-> >        .unmap_page     = vio_dma_iommu_unmap_page,
-> > +       .dma_supported  = vio_dma_iommu_dma_supported,
-> >
-> >  };
-> >
-> > @@ -860,8 +866,7 @@ static void vio_cmo_bus_remove(struct vio_dev *viodev)
-> >
-> >  static void vio_cmo_set_dma_ops(struct vio_dev *viodev)
-> >  {
-> > -       vio_dma_mapping_ops.dma_supported = dma_iommu_ops.dma_supported;
-> > -       viodev->dev.archdata.dma_ops = &vio_dma_mapping_ops;
-> > +       set_dma_ops(&viodev->dev, &vio_dma_mapping_ops);
-> >  }
-> >
-> >  /**
-> > @@ -1246,7 +1251,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
-> >        if (firmware_has_feature(FW_FEATURE_CMO))
-> >                vio_cmo_set_dma_ops(viodev);
-> >        else
-> > -               viodev->dev.archdata.dma_ops = &dma_iommu_ops;
-> > +               set_dma_ops(&viodev->dev, &dma_iommu_ops);
-> >        set_iommu_table_base(&viodev->dev, vio_build_iommu_table(viodev));
-> >        set_dev_node(&viodev->dev, of_node_to_nid(of_node));
-> >
-> > --
-> > 1.7.0.4
-> >
-> >
+> - k
 > 
+> The following changes since commit 6b0cd00bc396daf5c2dcf17a8d82055335341f46:
 > 
+>   Merge branch 'hwpoison-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6 (2010-10-07 13:59:32 -0700)
 > 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> 
+> Kumar Gala (1):
+>       powerpc/ppc64e: Fix link problem when building ppc64e_defconfig
+> 
+>  arch/powerpc/platforms/85xx/smp.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
