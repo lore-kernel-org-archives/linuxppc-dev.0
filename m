@@ -1,23 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05007B70CD
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 23:38:36 +1100 (EST)
-Subject: Re: [PATCH v2] powerpc/fsl-booke: Add support for FSL 64-bit e5500
-	core
-Mime-Version: 1.0 (Apple Message framework v1081)
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7A6ADB6EF1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 00:16:18 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9DD5M6k018506
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 07:05:22 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o9DDGABq030294
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 07:16:10 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o9DDG9Gp004919
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 07:16:10 -0600
+Date: Wed, 13 Oct 2010 09:16:08 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: Please pull 'next' branch of 4xx tree
+Message-ID: <20101013131608.GA6154@zod.rchland.ibm.com>
+References: <20100928130941.GA31993@zod.rchland.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20101012151138.62d9e14a@udp111988uds.am.freescale.net>
-Date: Wed, 13 Oct 2010 07:38:26 -0500
-Message-Id: <066CC4C1-80F7-4600-8AFC-37DB289DF31B@kernel.crashing.org>
-References: <1286898653-2266-1-git-send-email-galak@kernel.crashing.org>
-	<20101012123308.57a59830@udp111988uds.am.freescale.net>
-	<18871C00-4776-46FA-8895-DD0BF261011F@kernel.crashing.org>
-	<20101012151138.62d9e14a@udp111988uds.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20100928130941.GA31993@zod.rchland.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +36,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Sep 28, 2010 at 09:09:41AM -0400, Josh Boyer wrote:
+>Hi Ben,
+>
+>A few small updates for the next branch.  A new board/SoC from AMCC, and
+>some 476 changes from Shaggy.  Please pull.
 
-On Oct 12, 2010, at 3:11 PM, Scott Wood wrote:
+OK, below is a fixed up tree that drops the patch Shaggy said was
+broken, and rebases on top of your new -next branch.  Please pull.
 
-> On Tue, 12 Oct 2010 14:55:42 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->=20
->>=20
->> On Oct 12, 2010, at 12:33 PM, Scott Wood wrote:
->>=20
->>> On Tue, 12 Oct 2010 10:50:52 -0500
->>> Kumar Gala <galak@kernel.crashing.org> wrote:
->>>=20
->>>> The new e5500 core is similar to the e500mc core but adds 64-bit
->>>> support.  We support running it in 32-bit mode as it is identical =
-to the
->>>> e500mc.
->>>>=20
->>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>>> ---
->>>> * Updated to remove CONFIG_PPC_E5500 and use E500MC
->>>=20
->>> It still has E500 || E500MC all over the place...
->>>=20
->>> If E500MC is not going to imply E500 that should be consistent for =
-both
->>> 32 and 64 bit -- though I think it would make more sense that E500MC
->>> does imply E500.
->>>=20
->>> -Scott
->>=20
->> I have a problem with Kconfig and getting E500MC option to only exist =
-in the proper cases.
->=20
-> Does having P5020DS (and any future 64-bit-capable board)
-> explicitly select E500 as well as PPC_E500MC avoid the issue?
+josh
 
-it does, kinda ugly but oh well.
+The following changes since commit 4108d9ba9091c55cfb968d42dd7dcae9a098b876:
 
-- k
+  powerpc/Makefiles: Change to new flag variables (2010-10-13 16:19:22 +1100)
+
+are available in the git repository at:
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+
+Dave Kleikamp (1):
+      powerpc/476: lazy flush_tlb_mm for nohash architectures
+
+Josh Boyer (1):
+      powerpc/44x: Update ppc44x_defconfig
+
+Tirumala Marri (1):
+      powerpc/44x: Add support for the AMCC APM821xx SoC
+
+ arch/powerpc/boot/dts/bluestone.dts          |  254 ++++++++++++++++++++++++++
+ arch/powerpc/configs/44x/bluestone_defconfig |   68 +++++++
+ arch/powerpc/configs/ppc44x_defconfig        |    9 +-
+ arch/powerpc/kernel/cpu_setup_44x.S          |    1 +
+ arch/powerpc/kernel/cputable.c               |   15 ++
+ arch/powerpc/mm/mmu_context_nohash.c         |  154 ++++++++++++++--
+ arch/powerpc/mm/mmu_decl.h                   |    8 +
+ arch/powerpc/mm/tlb_nohash.c                 |   28 +++-
+ arch/powerpc/platforms/44x/Kconfig           |   16 ++
+ arch/powerpc/platforms/44x/ppc44x_simple.c   |    1 +
+ 10 files changed, 534 insertions(+), 20 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/bluestone.dts
+ create mode 100644 arch/powerpc/configs/44x/bluestone_defconfig
