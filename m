@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C58E1B70D9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 00:17:17 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o9DDHEPE006520
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 08:17:14 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] powerpc/fsl-booke: Add p5020 DS board support
-Date: Wed, 13 Oct 2010 08:17:12 -0500
-Message-Id: <1286975832-31895-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1286975832-31895-1-git-send-email-galak@kernel.crashing.org>
-References: <1286975832-31895-1-git-send-email-galak@kernel.crashing.org>
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DEC01B70DC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 00:38:58 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Serial RapidIO Maintaintance read causes lock up
+Date: Wed, 13 Oct 2010 06:38:49 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552013FCC59@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <AANLkTimk2hRhyX4WufjdviDz-OTj7VRfjA94oyoXL9mM@mail.gmail.com>
+References: <0CE8B6BE3C4AD74AB97D9D29BD24E552013B97E8@CORPEXCH1.na.ads.idt.com><AANLkTimCiHWRR-kVuT0ift3CH63Xk_XcaXS22qmVh6fr@mail.gmail.com><4CAB2729.6080402@freescale.com><AANLkTik46NsiMhWo=GkHz4UbdDJeBLwFATJzhk-M3hSP@mail.gmail.com><4CAB39F4.3030208@freescale.com><AANLkTimKbibzzNc3+DSJHcLC4gA0H5JiM+EHW2k4znZ-@mail.gmail.com>
+	<AANLkTimk2hRhyX4WufjdviDz-OTj7VRfjA94oyoXL9mM@mail.gmail.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Bastiaan Nijkamp" <bastiaan.nijkamp@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,129 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The P5020DS is in the same family of boards as the P4080 DS and thus
-shares the corenet_ds code.
+Bastiaan Nijkamp wrote:
+=A0
+>Has the driver ever been tested/used without a switch attached? Because =
+when the host >(which has ID 0x0) enumerates the other board it also =
+assigns ID 0x0 to the agent, it seems >that the agent should have=A0been =
+assigned 0x1 as ID.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Updated based on e5500 support patch
+How the host ID is set on your host board?
+Normally rio_enum_host() should increment next_destid in your case.=20
 
- arch/powerpc/platforms/85xx/Kconfig    |   13 ++++++
- arch/powerpc/platforms/85xx/Makefile   |    1 +
- arch/powerpc/platforms/85xx/p5020_ds.c |   69 ++++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+>Another thing is that the agent is now hanging on the discovery =
+process.
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index ae25527..2830e0a 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -181,6 +181,19 @@ config P4080_DS
- 
- endif # PPC32
- 
-+config P5020_DS
-+	bool "Freescale P5020 DS"
-+	select DEFAULT_UIMAGE
-+	select PPC_FSL_BOOK3E
-+	select E500
-+	select PPC_E500MC
-+	select PHYS_64BIT
-+	select SWIOTLB
-+	select MPC8xxx_GPIO
-+	select HAS_RAPIDIO
-+	help
-+	  This option enables support for the P5020 DS board
-+
- endif # FSL_SOC_BOOKE
- 
- config TQM85xx
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index c3ac071..dd70db7 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o
- obj-$(CONFIG_P1022_DS)    += p1022_ds.o
- obj-$(CONFIG_P3041_DS)    += p3041_ds.o corenet_ds.o
- obj-$(CONFIG_P4080_DS)    += p4080_ds.o corenet_ds.o
-+obj-$(CONFIG_P5020_DS)    += p5020_ds.o corenet_ds.o
- obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
- obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
- obj-$(CONFIG_SBC8560)     += sbc8560.o
-diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
-new file mode 100644
-index 0000000..7467b71
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/p5020_ds.c
-@@ -0,0 +1,69 @@
-+/*
-+ * P5020 DS Setup
-+ *
-+ * Maintained by Kumar Gala (see MAINTAINERS for contact information)
-+ *
-+ * Copyright 2009-2010 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/phy.h>
-+
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+
-+#include <linux/of_platform.h>
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#include "corenet_ds.h"
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init p5020_ds_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,P5020DS");
-+}
-+
-+define_machine(p5020_ds) {
-+	.name			= "P5020 DS",
-+	.probe			= p5020_ds_probe,
-+	.setup_arch		= corenet_ds_setup_arch,
-+	.init_IRQ		= corenet_ds_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+/* coreint doesn't play nice with lazy EE, use legacy mpic for now */
-+#ifdef CONFIG_PPC64
-+	.get_irq		= mpic_get_irq,
-+#else
-+	.get_irq		= mpic_get_coreint_irq,
-+#endif
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
-+
-+machine_device_initcall(p5020_ds, corenet_ds_publish_devices);
-+
-+#ifdef CONFIG_SWIOTLB
-+machine_arch_initcall(p5020_ds, swiotlb_setup_bus_notifier);
-+#endif
--- 
-1.7.2.3
+Make sure that you have the MASTER bit is set in agent's GCCSR register =
+(0xC_013C).
+If your board uses HW config switches to set host/agent mode this bit =
+will be 0 for agent.
+For quick test you may keep both boards in the host mode - the current =
+RIO implementation relies on "riohdid=3D" command line parameter instead =
+of HOST bit.
+
+
+Alex.
+=20
+=A0
