@@ -1,18 +1,19 @@
-Return-Path: <pacman@kosh.dhis.org>
-Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
-	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id C3DB0B70F8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 04:52:07 +1100 (EST)
-Message-ID: <20101013175205.21187.qmail@kosh.dhis.org>
-From: pacman@kosh.dhis.org
-Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
-To: mel@csn.ul.ie (Mel Gorman)
-Date: Wed, 13 Oct 2010 12:52:05 -0500 (GMT+5)
-In-Reply-To: <20101013144044.GS30667@csn.ul.ie>
+Return-Path: <timur@freescale.com>
+Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 823F3B6F10
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 06:19:47 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <linuxppc-dev@ozlabs.org>, <kumar.gala@freescale.com>,
+	<linux-watchdog@vger.kernel.org>
+Subject: [PATCH] powerpc: change the Book-E watchdog driver default timeout
+	into a Kconfig option
+Date: Wed, 13 Oct 2010 14:19:36 -0500
+Message-ID: <1286997576-4988-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,79 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mel Gorman writes:
-> 
-> On Mon, Oct 11, 2010 at 02:00:39PM -0700, Andrew Morton wrote:
-> > 
-> > It's corruption of user memory, which is unusual.  I'd be wondering if
-> > there was a pre-existing bug which 6dda9d55bf545013597 has exposed -
-> > previously the corruption was hitting something harmless.  Something
-> > like a missed CPU cache writeback or invalidate operation.
-> > 
-> 
-> This seems somewhat plausible although it's hard to tell for sure. But
-> lets say we had the following situation in memory
-> 
-> [<----MAX_ORDER_NR_PAGES---->][<----MAX_ORDER_NR_PAGES---->]
-> INITRD                        memmap array
+The PowerPC Book-E watchdog driver (booke_wdt.c) defines a default timeout
+value in the code based on whether it's a Freescale Book-E part of not.
+Instead of having hard-coded values in the driver, make it a Kconfig option.
 
-I don't use initrd, so this isn't exactly what happened here. But it could be
-close. Let me throw out some more information and see if it triggers any
-ideas.
+As newer chips gets faster, the current default values become less appropriate,
+since the timeout sometimes occurs before the kernel finishes booting.  Making
+the value a Kconfig option allows BSPs to configure a new value with requiring
+the wdt_period command-line parameter to be set.
 
-First, I tried a new test after seeing the corruption happen:
-# md5sum /sbin/e2fsck ; echo 1 > /proc/sys/vm/drop_caches ; md5sum /sbin/e2fsck
-And got 2 different answers. The second answer was the correct one.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/watchdog/Kconfig     |   17 +++++++++++++++++
+ drivers/watchdog/booke_wdt.c |    8 +-------
+ 2 files changed, 18 insertions(+), 7 deletions(-)
 
-Since applying the suggested patch which changed MAX_ORDER-1 to MAX_ORDER-2,
-I've been trying to isolate exactly when the corruption happens. Since I
-don't know much about kernel code, my main method is stuffing the area full
-of printk's.
-
-First I duplicated the affected function __free_one_page, since it's inlined
-at 2 different places, so I could apply the patch to just one of them. This
-proved that the problem is happening when called from free_one_page.
-
-The patch which fixes (or at least covers up) the bug will only matter when
-order==MAX_ORDER-2, otherwise everything is the same. So I added a lot of
-printk's to show what's happening when order==MAX_ORDER-2. I found that, very
-repeatably, 126 such instances occur during boot, and 61 of them pass the
-page_is_buddy(higher_page, higher_buddy, order + 1) test, causing them to
-call list_add_tail.
-
-Next, since the bug appears when this code decides to call list_add_tail,
-I made my own wrapper for list_add_tail, which allowed me to force some of
-the calls to do list_add instead. Eventually I found that of the 61 calls,
-the last one makes the difference. Allowing the first 60 calls to go through
-to list_add_tail, and switching the last one to list_add, the symptom goes
-away.
-
-dump_stack() for that last call gave me a backtrace like this:
-[c0303e80] [c0008124] show_stack+0x4c/0x144 (unreliable)
-[c0303ec0] [c0068a84] free_one_page+0x28c/0x5b0
-[c0303f20] [c0069588] __free_pages_ok+0xf8/0x120
-[c0303f40] [c02d28c8] free_all_bootmem_core+0xf0/0x1f8
-[c0303f70] [c02d29fc] free_all_bootmem+0x2c/0x6c
-[c0303f90] [c02cc7dc] mem_init+0x70/0x2ac
-[c0303fc0] [c02c66a4] start_kernel+0x150/0x27c
-[c0303ff0] [00003438] 0x3438
-
-And this might be interesting: the PFN of the page being added in that
-critical 61st call is 130048, which exactly matches the number of available
-pages:
-
-  free_area_init_node: node 0, pgdat c02fee6c, node_mem_map c0330000
-    DMA zone: 1024 pages used for memmap
-    DMA zone: 0 pages reserved
-    DMA zone: 130048 pages, LIFO batch:31
-  Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 130048
-
-Suspicious?
-
-If 130048 is added to the head of the order==MAX_ORDER-2 free list, there's
-no symptom. Add it to the tail, and the corruption appears.
-
-That's all I know so far.
-
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 3684144..2fdb45c 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -966,6 +966,23 @@ config BOOKE_WDT
+ 	  Please see Documentation/watchdog/watchdog-api.txt for
+ 	  more information.
+ 
++config BOOKE_WDT_DEFAULT_TIMEOUT
++	int "PowerPC Book-E Watchdog Timer Default Timeout"
++	depends on BOOKE_WDT
++	default 38 if FSL_BOOKE
++	range 0 63 if FSL_BOOKE
++	default 3 if !FSL_BOOKE
++	range 0 3 if !FSL_BOOKE
++	help
++	  Select the default watchdog timer period to be used by the PowerPC
++	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
++	  position represented by this number transitions from zero to one.
++
++	  For Freescale Book-E processors, this is a number between 0 and 63.
++	  For other Book-E processors, this is a number between 0 and 3.
++
++	  The value can be overidden by the wdt_period command-line parameter.
++
+ # PPC64 Architecture
+ 
+ config WATCHDOG_RTAS
+diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+index a989998..d11ffb0 100644
+--- a/drivers/watchdog/booke_wdt.c
++++ b/drivers/watchdog/booke_wdt.c
+@@ -33,14 +33,8 @@
+  * occur, and the final time the board will reset.
+  */
+ 
+-#ifdef	CONFIG_FSL_BOOKE
+-#define WDT_PERIOD_DEFAULT 38	/* Ex. wdt_period=28 bus=333Mhz,reset=~40sec */
+-#else
+-#define WDT_PERIOD_DEFAULT 3	/* Refer to the PPC40x and PPC4xx manuals */
+-#endif				/* for timing information */
+-
+ u32 booke_wdt_enabled;
+-u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
++u32 booke_wdt_period = CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT;
+ 
+ #ifdef	CONFIG_FSL_BOOKE
+ #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
 -- 
-Alan Curry
+1.7.2.3
