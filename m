@@ -1,23 +1,18 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 2EC63B6ED0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Oct 2010 12:15:01 +1100 (EST)
-Message-ID: <4CB5088D.4090201@windriver.com>
-Date: Wed, 13 Oct 2010 09:17:01 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>	<20100921170700.53a99e56@udp111988uds.am.freescale.net>	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>	<20101007152626.4e834d43@udp111988uds.am.freescale.net>	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>	<4CB2DEFB.90204@windriver.com>	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>	<942ea2f3464025464521511c32355782.squirrel@localhost>
-	<20101012162152.5246744a@udp111988uds.am.freescale.net>
-In-Reply-To: <20101012162152.5246744a@udp111988uds.am.freescale.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: david.hagood@gmail.com,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: MSI-X vector allocation failure in upstream kernel
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+In-Reply-To: <9101728E-3FFC-457E-AF5B-87B2037FEC32@qlogic.com>
+References: <9101728E-3FFC-457E-AF5B-87B2037FEC32@qlogic.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-muU6eKtjqtQN/RpZDLdh"
+Date: Wed, 13 Oct 2010 12:51:28 +1100
+Message-ID: <1286934688.24583.12.camel@concordia>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Ameen Rahman <ameen.rahman@qlogic.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Tue, 12 Oct 2010 15:55:28 -0500
-> <david.hagood@gmail.com> wrote:
-> 
->> I wonder about the next lines:
->>
->>
->> 	mpic_assign_isu(mpic1, 0, res.start + 0x10000);
->>
->> 	/* 48 Internal Interrupts */
->> 	mpic_assign_isu(mpic1, 1, res.start + 0x10200);
->> 	mpic_assign_isu(mpic1, 2, res.start + 0x10400);
->> 	mpic_assign_isu(mpic1, 3, res.start + 0x10600);
->>
->> 	/* 16 External interrupts
->> 	 * Moving them from [0 - 15] to [64 - 79]
->> 	 */
->> 	mpic_assign_isu(mpic1, 4, res.start + 0x10000);
-> 
-> No mainline 86xx boards do that, even in 2.6.26.  I suspect you need to
-> either get rid of the isu stuff altogether, or add a mapping for the
-> MSI interrupts.
-> 
->> Looking at the code, and where it appears to be faulting, it looks like
->> its in kernel/irq/chip.c:
->>
->>
->> int set_irq_type(unsigned int irq, unsigned int type)
->> {
->> 	struct irq_desc *desc;
->> 	unsigned long flags;
->> 	int ret = -ENXIO;
->>
->> 	if (irq >= NR_IRQS) {
->> 		printk(KERN_ERR "Trying to set irq type for IRQ%d\n", irq);
->> 		return -ENODEV;
->> 	}
->>
->> 	desc = irq_desc + irq;
->> ------------------------
->> 	if (desc->chip->set_type) {
->> 		spin_lock_irqsave(&desc->lock, flags);
->> 		ret = desc->chip->set_type(irq, type);
->> ------------------------
->>
->>
->> 		spin_unlock_irqrestore(&desc->lock, flags);
->> 	}
->> 	return ret;
->> }
->>
->> My conjecture is that desc->chip isn't set. Is mpic_assign_isu the
->> function that does that?
-> 
-> That happens in set_irq_chip_and_handler(), called from mpic_host_map()
-> -- just a few lines before calling set_irq_type().
-> 
-> The crash is happening somewhere in mpic_set_irq_type():
 
-Agreed. That is just where I pointed out on my email replied for OOPS. To enable
-DBG to figure out 'src' and 'mpic->irq_count' from the file,
-arch/powerpc/sysdev/mpic.c,    .
-======
-int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
-{
-	......
-	if (src >= mpic->irq_count)
-		return -EINVAL;
-			^
-			I think this OOPS may be from here.
+--=-muU6eKtjqtQN/RpZDLdh
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2010-10-05 at 10:18 -0700, Anirban Chakraborty wrote:
+> Hi All,
+>=20
+> I am trying to test qlcnic driver (for 10Gb QLogic network adapter) on a =
+Power 6 system=20
+> (IBM P 520, System type 8203) with upstream kernel and I do see that the =
+kernel is=20
+> not able to allocate any MSI-X vectors. The driver requests for 4 vectors=
+ in pci_enable_msix,
+> which returns 2.
 
-Tiejun
+OK, that's the platform code saying it can only support 2, that seems
+low, but it's possible.
 
->> NIP [c0016540] mpic_set_irq_type+0x188/0x1c4
-> 
-> -Scott
-> 
-> 
+>  The driver again attempts, this time for 2 vectors but the kernel can't =
+allocate=20
+> and it returns a value of 0xfffffffd.=20
+
+OK, that's odd. That is -3, which AFAICS we don't return from the linux
+code. So it must be coming from firmware? In which case it would be
+"parameter error".
+
+> I upgraded the system FW to 01EL350 (from 01EL340) just to make sure
+> if MSI-X is enabled in the system.
+
+Is that the latest FW version?
+
+Adding #define DEBUG at the top of arch/powerpc/platforms/pseries/msi.c
+will give us lots of useful info.
+
+Or you can enable CONFIG_DYNAMIC_DEBUG, and enable it that way.
+
+cheers
+
+--=-muU6eKtjqtQN/RpZDLdh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAky1EKAACgkQdSjSd0sB4dJujQCeItpvro8XGkikJAbMtxsvRUOZ
+EKUAnRDnmsqf3o+LqyInvJXjsyFbNs6x
+=C806
+-----END PGP SIGNATURE-----
+
+--=-muU6eKtjqtQN/RpZDLdh--
