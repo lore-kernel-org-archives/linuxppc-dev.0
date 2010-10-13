@@ -1,20 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50D51100C85
+	by ozlabs.org (Postfix) with ESMTPS id 6B075B70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 01:45:33 +1100 (EST)
-Subject: Re: [PATCH][v2] powerpc/fsl: 85xx: add cache-sram support
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1286971256-22878-1-git-send-email-harninder.rai@freescale.com>
-Date: Wed, 13 Oct 2010 09:45:25 -0500
-Message-Id: <6C7FF889-5FDC-46B4-9B09-584110CE912F@kernel.crashing.org>
-References: <1286971256-22878-1-git-send-email-harninder.rai@freescale.com>
-To: "<harninder.rai@freescale.com>" <harninder.rai@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Vivek Mahajan <vivek.mahajan@freescale.com>
+	Thu, 14 Oct 2010 01:48:32 +1100 (EST)
+Date: Wed, 13 Oct 2010 15:40:44 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
+Message-ID: <20101013144044.GS30667@csn.ul.ie>
+References: <20101009095718.1775.qmail@kosh.dhis.org>
+	<20101011143022.GD30667@csn.ul.ie>
+	<20101011140039.15a2c78d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20101011140039.15a2c78d.akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, pacman@kosh.dhis.org,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Christoph Lameter <cl@linux.com>, Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Oct 11, 2010 at 02:00:39PM -0700, Andrew Morton wrote:
+> (cc linuxppc-dev@lists.ozlabs.org)
+> 
+> On Mon, 11 Oct 2010 15:30:22 +0100
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > On Sat, Oct 09, 2010 at 04:57:18AM -0500, pacman@kosh.dhis.org wrote:
+> > > (What a big Cc: list... scripts/get_maintainer.pl made me do it.)
+> > > 
+> > > This will be a long story with a weak conclusion, sorry about that, but it's
+> > > been a long bug-hunt.
+> > > 
+> > > With recent kernels I've seen a bug that appears to corrupt random 4-byte
+> > > chunks of memory. It's not easy to reproduce. It seems to happen only once
+> > > per boot, pretty quickly after userspace has gotten started, and sometimes it
+> > > doesn't happen at all.
+> > > 
+> > 
+> > A corruption of 4 bytes could be consistent with a pointer value being
+> > written to an incorrect location.
+> 
+> It's corruption of user memory, which is unusual.  I'd be wondering if
+> there was a pre-existing bug which 6dda9d55bf545013597 has exposed -
+> previously the corruption was hitting something harmless.  Something
+> like a missed CPU cache writeback or invalidate operation.
+> 
 
-On Oct 13, 2010, at 7:00 AM, <harninder.rai@freescale.com> =
-<harninder.rai@freescale.com> wrote:
+This seems somewhat plausible although it's hard to tell for sure. But
+lets say we had the following situation in memory
 
-> From: Harninder Rai <harninder.rai@freescale.com>
->=20
-> It adds cache-sram support in P1/P2 QorIQ platforms as under:
->=20
->    * A small abstraction over powerpc's remote heap allocator
->    * Exports mpc85xx_cache_sram_alloc()/free() APIs
->    * Supports only one contiguous SRAM window
->    * Drivers can do the following in Kconfig to use these APIs
->        "select FSL_85XX_CACHE_SRAM if MPC85xx"
->    * Required SRAM size and the offset where SRAM should be mapped =
-must be
->      provided at kernel command line as :-
->        cache-sram-size=3D<value>
->        cache-sram-offset=3D<offset>
->=20
-> Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
-> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
-> ---
-> incorporated review comments from Philipp
->=20
-> arch/powerpc/include/asm/fsl_85xx_cache_sram.h |   48 +++++
-> arch/powerpc/sysdev/Makefile                   |    1 +
-> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h      |  101 +++++++++++
-> arch/powerpc/sysdev/fsl_85xx_cache_sram.c      |  159 ++++++++++++++++
-> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c          |  231 =
-++++++++++++++++++++++++
-> 5 files changed, 540 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/include/asm/fsl_85xx_cache_sram.h
-> create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
-> create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-> create mode 100644 arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+[<----MAX_ORDER_NR_PAGES---->][<----MAX_ORDER_NR_PAGES---->]
+INITRD                        memmap array
 
-applied to next
+initrd gets freed and someone else very early in boot gets allocated in
+there. Lets further guess that the struct pages in the memmap area are
+managing the page frame where the INITRD was because it makes the situation
+slightly easier to trigger. As pages get freed in the memmap array, we could
+reference memory where initrd used to be but the physical memory is mapped
+at two virtual addresses.
 
-- k=
+CPU A							CPU B
+							Reads kernelspace virtual (gets cache line)
+Writes userspace virtual (gets different cache line)
+							IO, writes buffer destined for userspace (via cache line)
+Cache line eviction, writeback to memory
+
+This is somewhat contrived but I can see how it might happen even on one
+CPU particularly if the L1 cache is virtual and is loose about checking
+physical tags.
+
+> How sensitive/vulnerable is PPC32 to such things?
+> 
+
+I can not tell you specifically but if the above scenario is in any way
+plausible, I believe it would depend on what sort of L1 cache the CPU
+has. Maybe this particular version has a virtual cache with no physical
+tagging and is depending on the OS not to make virtual aliasing mistakes.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
