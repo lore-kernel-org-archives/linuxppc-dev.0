@@ -1,16 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D1D181007E9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 09:08:30 +1100 (EST)
-Date: Wed, 13 Oct 2010 17:08:09 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <Pine.LNX.4.64.1010131706440.4711@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTPS id B2EBCB70D6
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 10:57:37 +1100 (EST)
+Subject: Re: [PATCH 09/11] powerpc/fsl-booke64: Use TLB CAMs to cover
+	linear mapping on FSL 64-bit chips
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
+References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-2-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-3-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-4-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-5-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-6-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-8-git-send-email-galak@kernel.crashing.org>
+	<1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Oct 2010 10:57:28 +1100
+Message-ID: <1287014248.2205.14.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,104 +32,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit 4108d9ba9091c55cfb968d42dd7dcae9a098b876:
+On Fri, 2010-10-08 at 14:06 -0500, Kumar Gala wrote:
+> On Freescale parts typically have TLB array for large mappings that we can
+> bolt the linear mapping into.  We utilize the code that already exists
+> on PPC32 on the 64-bit side to setup the linear mapping to be cover by
+> bolted TLB entries.  We utilize a quarter of the variable size TLB array
+> for this purpose.
+> 
+> Additionally, we limit the amount of memory to what we can cover via
+> bolted entries so we don't get secondary faults in the TLB miss
+> handlers.  We should fix this limitation in the future.
 
-  powerpc/Makefiles: Change to new flag variables (2010-10-13 16:19:22 +1100)
+It might be worth investigating then doing simpler TLB miss handlers.
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+Currently, you use my virtually linear scheme which involves a recursion
+to fault in the virtual mappings for the page tables, which means quite
+a bit of code to save/restore state for every TLB miss.
 
-Harninder Rai (1):
-      powerpc/fsl: 85xx: add cache-sram support
+With a bolted linear mapping, if you go for a simple tree walk (which
+wouldn't fault), you can remove all that prolog/epilog etc...
 
-Ilya Yanok (1):
-      powerpc/mpc83xx: Support for MPC8308 P1M board
+It may or may not be faster ... depends. You get less code but more
+loads, so it depends how well they end up being cached.
 
-Kumar Gala (10):
-      powerpc/fsl-pci: Fix MSI support on 83xx platforms
-      powerpc/mpc8xxx_gpio: Add support for 'qoriq-gpio' controllers
-      powerpc/fsl-booke: Add PCI device ids for P2040/P3041/P5010/P5020 QoirQ chips
-      powerpc/fsl-booke: Add p3041 DS board support
-      powerpc: Fix compile error with paca code on ppc64e
-      powerpc/fsl-booke: Add support for FSL 64-bit e5500 core
-      powerpc/fsl-booke: Add support for FSL Arch v1.0 MMU in setup_page_sizes
-      powerpc/fsl-booke64: Use TLB CAMs to cover linear mapping on FSL 64-bit chips
-      powerpc/fsl-booke: Add p5020 DS board support
-      powerpc/fsl-booke: Add e55xx (64-bit) smp defconfig
+Cheers,
+Ben.
 
-Matthew McClintock (6):
-      powerpc/kexec: make masking/disabling interrupts generic
-      powerpc/85xx: Remove call to mpic_teardown_this_cpu in kexec
-      powerpc/85xx: Minor fixups for kexec on 85xx
-      powerpc/85xx: flush dcache before resetting cores
-      powerpc/fsl_soc: Search all global-utilities nodes for rstccr
-      powerpc/fsl_booke: Add support to boot from core other than 0
-
-Paul Gortmaker (1):
-      powerpc: Fix invalid page flags in create TLB CAM path for PTE_64BIT
-
-Scott Wood (1):
-      oprofile/fsl emb: Don't set MSR[PMM] until after clearing the interrupt.
-
-Timur Tabi (4):
-      powerpc: export ppc_proc_freq and ppc_tb_freq as GPL symbols
-      powerpc/watchdog: Allow the Book-E driver to be compiled as a module
-      powerpc/p1022: Add probing for individual DMA channels
-      powerpc/85xx: add ngPIXIS FPGA device tree node to the P1022DS board
-
- arch/powerpc/boot/dts/mpc8308_p1m.dts          |  332 ++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1022ds.dts              |   11 +
- arch/powerpc/configs/e55xx_smp_defconfig       |   84 ++++++
- arch/powerpc/configs/ppc64e_defconfig          |    4 +-
- arch/powerpc/include/asm/fsl_85xx_cache_sram.h |   48 ++++
- arch/powerpc/include/asm/kexec.h               |    1 +
- arch/powerpc/include/asm/mmu-book3e.h          |   15 +
- arch/powerpc/include/asm/pte-common.h          |    7 +
- arch/powerpc/kernel/Makefile                   |    4 +-
- arch/powerpc/kernel/asm-offsets.c              |    4 +-
- arch/powerpc/kernel/cpu_setup_fsl_booke.S      |   15 +
- arch/powerpc/kernel/cputable.c                 |   28 ++-
- arch/powerpc/kernel/crash.c                    |   13 +-
- arch/powerpc/kernel/head_fsl_booke.S           |   10 +-
- arch/powerpc/kernel/machine_kexec.c            |   24 ++
- arch/powerpc/kernel/machine_kexec_32.c         |    4 +
- arch/powerpc/kernel/paca.c                     |    2 +-
- arch/powerpc/kernel/setup_32.c                 |    2 +-
- arch/powerpc/kernel/time.c                     |    3 +-
- arch/powerpc/kernel/traps.c                    |    5 +
- arch/powerpc/mm/Makefile                       |    2 +-
- arch/powerpc/mm/fsl_booke_mmu.c                |   15 +-
- arch/powerpc/mm/mmu_decl.h                     |    5 +-
- arch/powerpc/mm/tlb_nohash.c                   |   56 ++++-
- arch/powerpc/mm/tlb_nohash_low.S               |    2 +-
- arch/powerpc/oprofile/op_model_fsl_emb.c       |   15 +-
- arch/powerpc/platforms/83xx/Kconfig            |    4 +-
- arch/powerpc/platforms/83xx/mpc830x_rdb.c      |    3 +-
- arch/powerpc/platforms/85xx/Kconfig            |   28 ++-
- arch/powerpc/platforms/85xx/Makefile           |    2 +
- arch/powerpc/platforms/85xx/p1022_ds.c         |    2 +
- arch/powerpc/platforms/85xx/p3041_ds.c         |   64 +++++
- arch/powerpc/platforms/85xx/p5020_ds.c         |   69 +++++
- arch/powerpc/platforms/85xx/smp.c              |   76 +++++-
- arch/powerpc/platforms/Kconfig.cputype         |    8 +-
- arch/powerpc/sysdev/Makefile                   |    1 +
- arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h      |  101 +++++++
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c      |  159 +++++++++++
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c          |  231 ++++++++++++++++
- arch/powerpc/sysdev/fsl_msi.c                  |    9 +-
- arch/powerpc/sysdev/fsl_pci.c                  |   51 ++++-
- arch/powerpc/sysdev/fsl_pci.h                  |    1 +
- arch/powerpc/sysdev/fsl_soc.c                  |   20 +-
- arch/powerpc/sysdev/mpc8xxx_gpio.c             |    3 +
- drivers/watchdog/Kconfig                       |    5 +-
- drivers/watchdog/booke_wdt.c                   |   39 +++-
- include/linux/pci_ids.h                        |    8 +
- 47 files changed, 1516 insertions(+), 79 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mpc8308_p1m.dts
- create mode 100644 arch/powerpc/configs/e55xx_smp_defconfig
- create mode 100644 arch/powerpc/include/asm/fsl_85xx_cache_sram.h
- create mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
- create mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
- create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
- create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_sram.c
- create mode 100644 arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  arch/powerpc/kernel/asm-offsets.c |    4 ++--
+>  arch/powerpc/mm/Makefile          |    2 +-
+>  arch/powerpc/mm/fsl_booke_mmu.c   |   12 +++++++-----
+>  arch/powerpc/mm/mmu_decl.h        |    5 ++++-
+>  arch/powerpc/mm/tlb_nohash.c      |   14 ++++++++++++++
+>  arch/powerpc/mm/tlb_nohash_low.S  |    2 +-
+>  6 files changed, 29 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index c634940..c3e0194 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -61,7 +61,7 @@
+>  #endif
+>  #endif
+>  
+> -#if defined(CONFIG_FSL_BOOKE)
+> +#if defined(CONFIG_PPC_FSL_BOOK3E)
+>  #include "../mm/mmu_decl.h"
+>  #endif
+>  
+> @@ -470,7 +470,7 @@ int main(void)
+>  	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
+>  	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
+>  #endif
+> -#ifdef CONFIG_FSL_BOOKE
+> +#ifdef CONFIG_PPC_FSL_BOOK3E
+>  	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
+>  	DEFINE(TLBCAM_MAS0, offsetof(struct tlbcam, MAS0));
+>  	DEFINE(TLBCAM_MAS1, offsetof(struct tlbcam, MAS1));
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index ce68708..d646f16 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -25,7 +25,7 @@ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+>  				   mmu_context_hash$(CONFIG_WORD_SIZE).o
+>  obj-$(CONFIG_40x)		+= 40x_mmu.o
+>  obj-$(CONFIG_44x)		+= 44x_mmu.o
+> -obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
+> +obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
+>  obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
+>  obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+>  ifeq ($(CONFIG_HUGETLB_PAGE),y)
+> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+> index 1b4354d..67bc8a7 100644
+> --- a/arch/powerpc/mm/fsl_booke_mmu.c
+> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
+> @@ -56,11 +56,6 @@
+>  
+>  unsigned int tlbcam_index;
+>  
+> -
+> -#if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
+> -#error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
+> -#endif
+> -
+>  #define NUM_TLBCAMS	(64)
+>  struct tlbcam TLBCAM[NUM_TLBCAMS];
+>  
+> @@ -185,6 +180,12 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
+>  	return amount_mapped;
+>  }
+>  
+> +#ifdef CONFIG_PPC32
+> +
+> +#if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
+> +#error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
+> +#endif
+> +
+>  unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
+> @@ -216,3 +217,4 @@ void __init adjust_total_lowmem(void)
+>  
+>  	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
+>  }
+> +#endif
+> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+> index 63b84a0..dd0a258 100644
+> --- a/arch/powerpc/mm/mmu_decl.h
+> +++ b/arch/powerpc/mm/mmu_decl.h
+> @@ -140,10 +140,13 @@ extern void wii_memory_fixups(void);
+>  extern void MMU_init_hw(void);
+>  extern unsigned long mmu_mapin_ram(unsigned long top);
+>  
+> -#elif defined(CONFIG_FSL_BOOKE)
+> +#elif defined(CONFIG_PPC_FSL_BOOK3E)
+> +extern unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx);
+> +#ifdef CONFIG_PPC32
+>  extern void MMU_init_hw(void);
+>  extern unsigned long mmu_mapin_ram(unsigned long top);
+>  extern void adjust_total_lowmem(void);
+> +#endif
+>  extern void loadcam_entry(unsigned int index);
+>  
+>  struct tlbcam {
+> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+> index 6651899..61fe32a 100644
+> --- a/arch/powerpc/mm/tlb_nohash.c
+> +++ b/arch/powerpc/mm/tlb_nohash.c
+> @@ -541,6 +541,20 @@ static void __early_init_mmu(int boot_cpu)
+>  	 */
+>  	linear_map_top = memblock_end_of_DRAM();
+>  
+> +#ifdef CONFIG_PPC_FSL_BOOK3E
+> +	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+> +		unsigned int num_cams;
+> +
+> +		/* use a quarter of the TLBCAM for bolted linear map */
+> +		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+> +		linear_map_top = map_mem_in_cams(linear_map_top, num_cams);
+> +
+> +		/* limit memory so we dont have linear faults */
+> +		memblock_enforce_memory_limit(linear_map_top);
+> +		memblock_analyze();
+> +	}
+> +#endif
+> +
+>  	/* A sync won't hurt us after mucking around with
+>  	 * the MMU configuration
+>  	 */
+> diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+> index b9d9fed..af405ee 100644
+> --- a/arch/powerpc/mm/tlb_nohash_low.S
+> +++ b/arch/powerpc/mm/tlb_nohash_low.S
+> @@ -367,7 +367,7 @@ _GLOBAL(set_context)
+>  #error Unsupported processor type !
+>  #endif
+>  
+> -#if defined(CONFIG_FSL_BOOKE)
+> +#if defined(CONFIG_PPC_FSL_BOOK3E)
+>  /*
+>   * extern void loadcam_entry(unsigned int index)
+>   *
