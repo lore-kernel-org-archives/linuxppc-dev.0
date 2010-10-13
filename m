@@ -1,18 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: MSI-X vector allocation failure in upstream kernel
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-In-Reply-To: <9101728E-3FFC-457E-AF5B-87B2037FEC32@qlogic.com>
-References: <9101728E-3FFC-457E-AF5B-87B2037FEC32@qlogic.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-muU6eKtjqtQN/RpZDLdh"
-Date: Wed, 13 Oct 2010 12:51:28 +1100
-Message-ID: <1286934688.24583.12.camel@concordia>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Ameen Rahman <ameen.rahman@qlogic.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4F3C5B6F06
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 14:07:01 +1100 (EST)
+Message-ID: <4CB522D1.5090802@windriver.com>
+Date: Wed, 13 Oct 2010 11:09:05 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: WANG YiFei <yifei_wang@hotmail.com>
+Subject: Re: ppc405 + MCP23S17
+References: <BAY158-ds7DB18D88ED851794F4E19F5540@phx.gbl>
+In-Reply-To: <BAY158-ds7DB18D88ED851794F4E19F5540@phx.gbl>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+WANG YiFei wrote:
+> Hi,
+> 
+>  
+> 
+> I'm a newbie for linux device driver development.
+> 
+> We have a custom ppc405 board which has MCP23S17
+> 
+> (16-Bit I/O Expander with SPI Interface) on it.
+> 
+> I noticed that current kernel has MCP23S08 driver
+> 
+> support, I'd like to know:
+> 
+> 1. if passing platform data to MCP23S08 driver, can it make
+> 
+>    MCP23S17 work?
+> 
 
---=-muU6eKtjqtQN/RpZDLdh
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+These chips should be same vendor product so I think 16-bit mcp23s17 may be
+compatible to 8-bit modes. But you have to check the data sheet to confirm this
+and track how to configure that as 8-bit mode. After that it's possible to run
+mcp23s17 with mcp23s08.c.
 
-On Tue, 2010-10-05 at 10:18 -0700, Anirban Chakraborty wrote:
-> Hi All,
->=20
-> I am trying to test qlcnic driver (for 10Gb QLogic network adapter) on a =
-Power 6 system=20
-> (IBM P 520, System type 8203) with upstream kernel and I do see that the =
-kernel is=20
-> not able to allocate any MSI-X vectors. The driver requests for 4 vectors=
- in pci_enable_msix,
-> which returns 2.
+> 2. Generally, I'd like to know how to pass platform data to
+> 
+>    a particular device driver. In my mind, platform data should
+> 
+>    not be in driver code, right? However, I don't know where is
 
-OK, that's the platform code saying it can only support 2, that seems
-low, but it's possible.
+Firstly you should define this on your dts. Then parse that to register
+corresponding of_platform_device or platform_device when you setup your target
+on <your target>.c.
 
->  The driver again attempts, this time for 2 vectors but the kernel can't =
-allocate=20
-> and it returns a value of 0xfffffffd.=20
+When spi_register_driver prober successfully, you can get the platform_data from
+associated spi device.
 
-OK, that's odd. That is -3, which AFAICS we don't return from the linux
-code. So it must be coming from firmware? In which case it would be
-"parameter error".
+> 
+>    the suitable place to pass platform data to driver.
+> 
+> 3. How to describe this in dts file?
+> 
 
-> I upgraded the system FW to 01EL350 (from 01EL340) just to make sure
-> if MSI-X is enabled in the system.
+You can get more from the file, Documentation/powerpc/dts-bindings/spi-bus.txt.
+Or refer to those existed spi nodes on other platform dts.
 
-Is that the latest FW version?
+Tiejun
 
-Adding #define DEBUG at the top of arch/powerpc/platforms/pseries/msi.c
-will give us lots of useful info.
-
-Or you can enable CONFIG_DYNAMIC_DEBUG, and enable it that way.
-
-cheers
-
---=-muU6eKtjqtQN/RpZDLdh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAky1EKAACgkQdSjSd0sB4dJujQCeItpvro8XGkikJAbMtxsvRUOZ
-EKUAnRDnmsqf3o+LqyInvJXjsyFbNs6x
-=C806
------END PGP SIGNATURE-----
-
---=-muU6eKtjqtQN/RpZDLdh--
+>  
+> 
+> Thanks in advance,
+> 
+> YiFei
+> 
+> 
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
