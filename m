@@ -1,15 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CB7A0B70E4
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 00:56:02 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: grant.likely@secretlab.ca
-Subject: [PATCH] spi/fsl_spi: Fix compile errors when building on ppc64
-Date: Thu, 14 Oct 2010 08:55:47 -0500
-Message-Id: <1287064547-8876-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
+Return-Path: <skrishnakar@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id 72D79B70E2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Oct 2010 01:03:38 +1100 (EST)
+Received: by wyb32 with SMTP id 32so4974500wyb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 07:03:35 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <24020.1286940298@neuling.org>
+References: <AANLkTikVdVkej7LNKXjrcNH2t2rJL=O=NhBDnw3j6N1v@mail.gmail.com>
+	<24020.1286940298@neuling.org>
+Date: Thu, 14 Oct 2010 19:33:35 +0530
+Message-ID: <AANLkTi=8rUBg5DK0mz5ci9VbtkUzFMWQXm4rYceSkMmO@mail.gmail.com>
+Subject: Re: RTC rtc-cmos.c : Fix warning on PowerPC
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,37 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We get the following when building on ppc64 due to lack of include of
-<asm/io.h>:
+>From 8435e5876fc3d629406c63b85bff82c25fc4bf75 Mon Sep 17 00:00:00 2001
+From: Srikanth Krishnakar <skrishna@mvista.com>
+Date: Fri, 8 Oct 2010 18:07:06 +0530
+Subject: [PATCH] RTC: rtc-cmos.c: Fix warning on PowerPC
 
-In file included from drivers/spi/spi_fsl_espi.c:25:0:
-drivers/spi/spi_fsl_lib.h: In function 'mpc8xxx_spi_write_reg':
-drivers/spi/spi_fsl_lib.h:88:2: error: implicit declaration of function 'out_be32'
-drivers/spi/spi_fsl_lib.h: In function 'mpc8xxx_spi_read_reg':
-drivers/spi/spi_fsl_lib.h:93:2: error: implicit declaration of function 'in_be32'
-drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_remove':
-drivers/spi/spi_fsl_espi.c:571:2: error: implicit declaration of function 'iounmap'
-drivers/spi/spi_fsl_espi.c: In function 'fsl_espi_probe':
-drivers/spi/spi_fsl_espi.c:602:2: error: implicit declaration of function 'ioremap'
-drivers/spi/spi_fsl_espi.c:602:24: warning: assignment makes pointer from integer without a cast
+The following warning is seen while compilation of PowerPC kernel:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+ CC      drivers/rtc/rtc-cmos.o
+drivers/rtc/rtc-cmos.c:697:2: warning: #warning Assuming 128 bytes
+of RTC+NVRAM address space, not 64 bytes.
+
+Fix it by adding defined(__powerpc__).
+
+Signed-off-by: Srikanth Krishnakar <skrishna@mvista.com>
 ---
- drivers/spi/spi_fsl_lib.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/rtc/rtc-cmos.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/spi/spi_fsl_lib.h b/drivers/spi/spi_fsl_lib.h
-index 15aa6c2..281e060 100644
---- a/drivers/spi/spi_fsl_lib.h
-+++ b/drivers/spi/spi_fsl_lib.h
-@@ -18,6 +18,8 @@
- #ifndef __SPI_FSL_LIB_H__
- #define __SPI_FSL_LIB_H__
- 
-+#include <asm/io.h>
-+
- /* SPI/eSPI Controller driver's private data. */
- struct mpc8xxx_spi {
- 	struct device *dev;
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index 5856167..7e6ce62 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -687,7 +687,8 @@ cmos_do_probe(struct device *dev, struct resource
+*ports, int rtc_irq)
+ #if    defined(CONFIG_ATARI)
+        address_space = 64;
+ #elif defined(__i386__) || defined(__x86_64__) || defined(__arm__) \
+-                       || defined(__sparc__) || defined(__mips__)
++                       || defined(__sparc__) || defined(__mips__) \
++                       || defined(__powerpc__)
+        address_space = 128;
+ #else
+ #warning Assuming 128 bytes of RTC+NVRAM address space, not 64 bytes.
 -- 
-1.7.2.3
+1.6.3.3.333.gdf68
