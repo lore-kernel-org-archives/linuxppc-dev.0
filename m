@@ -1,37 +1,33 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B21989@freescale.com>
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+	[65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1C3161007D2
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 12:40:20 +1100 (EST)
-Received: from mail29-va3 (localhost.localdomain [127.0.0.1])	by
-	mail29-va3-R.bigfish.com (Postfix) with ESMTP id C34CD94020A	for
-	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 01:40:16 +0000 (UTC)
-Received: from VA3EHSMHS017.bigfish.com (unknown [10.7.14.237])	by
-	mail29-va3.bigfish.com (Postfix) with ESMTP id 7C457C9804D	for
-	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 01:40:16 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o9E1eChL025420	for <linuxppc-dev@ozlabs.org>;
-	Wed, 13 Oct 2010 18:40:12 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o9E1eCVF012071	for <linuxppc-dev@ozlabs.org>;
-	Wed, 13 Oct 2010 20:40:12 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 06C071007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 13:32:05 +1100 (EST)
+Received: from mail52-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail52-tx2-R.bigfish.com (Postfix) with ESMTP id A442F5E81EF	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 02:31:59 +0000 (UTC)
+Received: from TX2EHSMHS005.bigfish.com (unknown [10.9.14.251])	by
+	mail52-tx2.bigfish.com (Postfix) with ESMTP id 4FF78518056	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 02:31:59 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o9E2Vu4e003892	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2010 19:31:57 -0700 (MST)
+Received: from zmy16exm20.fsl.freescale.net (zmy16exm20.ap.freescale.net
+	[10.211.3.23])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o9E2l5lr024837	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Oct 2010 21:47:06 -0500 (CDT)
+From: Shaohui Xie <b21989@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/3] fsl_rio: fix non-standard HID1 register access
+Date: Thu, 14 Oct 2010 10:04:26 +0800
+Message-ID: <1287021866-22095-1-git-send-email-b21989@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [PATCH 2/2] [v2] powerpc/85xx: add DIU support to the Freecale
-	P1022DS reference board
-Date: Wed, 13 Oct 2010 18:39:58 -0700
-Message-ID: <5610599F537DD74A8D1F5CC946A75073034793B7@az33exm25.fsl.freescale.net>
-In-Reply-To: <C692EF20-D7BD-4381-93F8-D1AA58BA89C4@freescale.com>
-References: <1286480203-28227-1-git-send-email-timur@freescale.com>
-	<1286480203-28227-2-git-send-email-timur@freescale.com>
-	<C692EF20-D7BD-4381-93F8-D1AA58BA89C4@freescale.com>
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Gala Kumar-B11780 <kumar.gala@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Cc: alexandre.bounine@idt.com, b21989@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,12 +37,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-S3VtYXIgR2FsYSB3cm90ZToNCj4+ID4gIGFyY2gvcG93ZXJwYy9jb25maWdzL21wYzg1eHhfZGVm
-Y29uZmlnICAgICB8ICAgIDMgKw0KPj4gPiAgYXJjaC9wb3dlcnBjL2NvbmZpZ3MvbXBjODV4eF9z
-bXBfZGVmY29uZmlnIHwgICAgMyArDQo+PiA+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgv
-cDEwMjJfZHMuYyAgICAgfCAgMjEzICsrKysrKysrKysrKysrKysrKysrKysrKysrKy0NCj4+ID4g
-IDMgZmlsZXMgY2hhbmdlZCwgMjE3IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IEkg
-ZHJvcHBlZCB0aGlzIGJlY2F1c2Ugb2YgY2hpY2tlbi9lZ2cgaXNzdWUgd2l0aCBndXRzLmgNCg0K
-SWYgeW91IHB1bGwgZnJvbSBhbHNhLW5leHQsIGl0IHNob3VsZCByZXNvbHZlIHRoYXQuDQoNCkVp
-dGhlciB0aGF0LCBvciBhc2sgdGhlIGFsc2EgZ3V5cyB0byBhcHBseSB0aGlzIHBhdGNoIGluc3Rl
-YWQuDQoNCi0tIA0KVGltdXIgVGFiaQ0KTGludXgga2VybmVsIGRldmVsb3Blcg0K
+From: Li Yang <leoli@freescale.com>
+
+The access to HID1 register is only legitimate for e500 v1/v2 cores.
+Also fixes magic number.
+
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Shaohui Xie <b21989@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_rio.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index 4127636..dfff3b7 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -1537,9 +1537,12 @@ int fsl_rio_setup(struct platform_device *dev)
+ #ifdef CONFIG_E500
+ 	saved_mcheck_exception = ppc_md.machine_check_exception;
+ 	ppc_md.machine_check_exception = fsl_rio_mcheck_exception;
+-#endif
+-	/* Ensure that RFXE is set */
+-	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000));
++
++#ifndef CONFIG_PPC_E500MC
++	/* Ensure that RFXE is set on e500 v1/v2 */
++	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | HID1_RFXE));
++#endif /* !PPC_E500MC */
++#endif /* E500 */
+ 
+ 	return 0;
+ err:
+-- 
+1.6.4
