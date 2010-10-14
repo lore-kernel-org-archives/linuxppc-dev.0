@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 251781009E7
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 00:25:14 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o9EDPAcI018517
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 08:25:11 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-booke: Add e500mc smp defconfig
-Date: Thu, 14 Oct 2010 08:25:10 -0500
-Message-Id: <1287062710-8621-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id AC6CBB70E4
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 00:51:32 +1100 (EST)
+Received: by iwn37 with SMTP id 37so7445833iwn.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 06:51:31 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <1287062710-8621-1-git-send-email-galak@kernel.crashing.org>
+References: <1287062710-8621-1-git-send-email-galak@kernel.crashing.org>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 14 Oct 2010 08:51:01 -0500
+Message-ID: <AANLkTinJq78ZQbW_r0mJqA884-Mt+a_m6pJSLn-PAGuT@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fsl-booke: Add e500mc smp defconfig
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,201 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The p4080, p3041, and p5020 (32-bit) SoCs from Freescale use the e500mc
-defconfig.  There are enough minor differences between these SoCs and
-the existing P1xxx/P2xxx and MPC85xx SoCs to warrant a new defconfig.
-The biggest of those is the cachline size being different which we
-handle at compile time.
+On Thu, Oct 14, 2010 at 8:25 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/configs/e500mc_smp_defconfig |  178 +++++++++++++++++++++++++++++
- 1 files changed, 178 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/e500mc_smp_defconfig
+> +CONFIG_MATH_EMULATION=y
 
-diff --git a/arch/powerpc/configs/e500mc_smp_defconfig b/arch/powerpc/configs/e500mc_smp_defconfig
-new file mode 100644
-index 0000000..39b5871
---- /dev/null
-+++ b/arch/powerpc/configs/e500mc_smp_defconfig
-@@ -0,0 +1,178 @@
-+CONFIG_PPC_85xx=y
-+CONFIG_SMP=y
-+CONFIG_NR_CPUS=8
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_SYSVIPC=y
-+CONFIG_POSIX_MQUEUE=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_AUDIT=y
-+CONFIG_RCU_TRACE=y
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_BLK_DEV_INITRD=y
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_EMBEDDED=y
-+CONFIG_KALLSYMS_ALL=y
-+CONFIG_KALLSYMS_EXTRA_PASS=y
-+CONFIG_PERF_EVENTS=y
-+CONFIG_SLAB=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_FORCE_UNLOAD=y
-+CONFIG_MODVERSIONS=y
-+# CONFIG_BLK_DEV_BSG is not set
-+CONFIG_P3041_DS=y
-+CONFIG_P4080_DS=y
-+CONFIG_P5020_DS=y
-+CONFIG_HIGHMEM=y
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_BINFMT_MISC=m
-+CONFIG_MATH_EMULATION=y
-+CONFIG_SPARSE_IRQ=y
-+CONFIG_PCI=y
-+CONFIG_PCIEPORTBUS=y
-+# CONFIG_PCIEASPM is not set
-+CONFIG_NET=y
-+CONFIG_PACKET=y
-+CONFIG_UNIX=y
-+CONFIG_XFRM_USER=y
-+CONFIG_XFRM_SUB_POLICY=y
-+CONFIG_XFRM_STATISTICS=y
-+CONFIG_NET_KEY=y
-+CONFIG_NET_KEY_MIGRATE=y
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+CONFIG_IP_ADVANCED_ROUTER=y
-+CONFIG_IP_MULTIPLE_TABLES=y
-+CONFIG_IP_ROUTE_MULTIPATH=y
-+CONFIG_IP_ROUTE_VERBOSE=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+CONFIG_IP_PNP_RARP=y
-+CONFIG_NET_IPIP=y
-+CONFIG_NET_IPGRE=y
-+CONFIG_NET_IPGRE_BROADCAST=y
-+CONFIG_IP_MROUTE=y
-+CONFIG_IP_PIMSM_V1=y
-+CONFIG_IP_PIMSM_V2=y
-+CONFIG_ARPD=y
-+CONFIG_INET_AH=y
-+CONFIG_INET_ESP=y
-+CONFIG_INET_IPCOMP=y
-+# CONFIG_INET_LRO is not set
-+CONFIG_IPV6=y
-+CONFIG_IP_SCTP=m
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_MTD=y
-+CONFIG_MTD_CONCAT=y
-+CONFIG_MTD_PARTITIONS=y
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_OF_PARTS=y
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLOCK=y
-+CONFIG_MTD_CFI=y
-+CONFIG_MTD_CFI_AMDSTD=y
-+CONFIG_MTD_PHYSMAP_OF=y
-+CONFIG_MTD_M25P80=y
-+CONFIG_PROC_DEVICETREE=y
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_NBD=y
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_SIZE=131072
-+CONFIG_BLK_DEV_SD=y
-+CONFIG_CHR_DEV_ST=y
-+CONFIG_BLK_DEV_SR=y
-+CONFIG_CHR_DEV_SG=y
-+CONFIG_SCSI_MULTI_LUN=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SYM53C8XX_2=y
-+CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
-+CONFIG_SATA_SIL24=y
-+CONFIG_SATA_SIL=y
-+CONFIG_PATA_SIL680=y
-+CONFIG_NETDEVICES=y
-+CONFIG_VITESSE_PHY=y
-+CONFIG_FIXED_PHY=y
-+CONFIG_NET_ETHERNET=y
-+CONFIG_E1000=y
-+CONFIG_E1000E=y
-+CONFIG_FSL_PQ_MDIO=y
-+# CONFIG_INPUT_MOUSEDEV is not set
-+# CONFIG_INPUT_KEYBOARD is not set
-+# CONFIG_INPUT_MOUSE is not set
-+CONFIG_SERIO_LIBPS2=y
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_EXTENDED=y
-+CONFIG_SERIAL_8250_MANY_PORTS=y
-+CONFIG_SERIAL_8250_DETECT_IRQ=y
-+CONFIG_SERIAL_8250_RSA=y
-+# CONFIG_LEGACY_PTYS is not set
-+CONFIG_HW_RANDOM=y
-+CONFIG_NVRAM=y
-+CONFIG_I2C=y
-+CONFIG_I2C_MPC=y
-+CONFIG_SPI=y
-+CONFIG_SPI_GPIO=y
-+# CONFIG_HWMON is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=y
-+CONFIG_USB_HID=m
-+CONFIG_USB=y
-+CONFIG_USB_DEVICEFS=y
-+CONFIG_USB_MON=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_EHCI_FSL=y
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
-+CONFIG_USB_STORAGE=y
-+CONFIG_MMC=y
-+CONFIG_MMC_SDHCI=y
-+CONFIG_MMC_SDHCI_OF=y
-+CONFIG_MMC_SDHCI_OF_ESDHC=y
-+CONFIG_EDAC=y
-+CONFIG_EDAC_MM_EDAC=y
-+CONFIG_EDAC_MPC85XX=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS3232=y
-+CONFIG_RTC_DRV_CMOS=y
-+CONFIG_EXT2_FS=y
-+CONFIG_EXT3_FS=y
-+# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-+CONFIG_ISO9660_FS=m
-+CONFIG_JOLIET=y
-+CONFIG_ZISOFS=y
-+CONFIG_UDF_FS=m
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=y
-+CONFIG_NTFS_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_TMPFS=y
-+CONFIG_JFFS2_FS=y
-+CONFIG_CRAMFS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+CONFIG_NFS_V4=y
-+CONFIG_ROOT_NFS=y
-+CONFIG_NFSD=m
-+CONFIG_PARTITION_ADVANCED=y
-+CONFIG_MAC_PARTITION=y
-+CONFIG_NLS_ISO8859_1=y
-+CONFIG_NLS_UTF8=m
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_DEBUG_KERNEL=y
-+CONFIG_DEBUG_SHIRQ=y
-+CONFIG_DETECT_HUNG_TASK=y
-+CONFIG_DEBUG_INFO=y
-+CONFIG_SYSCTL_SYSCALL_CHECK=y
-+CONFIG_CRYPTO_NULL=y
-+CONFIG_CRYPTO_PCBC=m
-+CONFIG_CRYPTO_MD4=y
-+CONFIG_CRYPTO_SHA256=y
-+CONFIG_CRYPTO_SHA512=y
-+CONFIG_CRYPTO_AES=y
-+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+Don't these chips have hardware FP?
+
+> +CONFIG_E1000=y
+> +CONFIG_E1000E=y
+
+Are you sure you want these on by default?  We may use the E1000 cards
+in-house, but I don't know if our customers do.
+
+> +CONFIG_MSDOS_FS=m
+> +CONFIG_VFAT_FS=y
+> +CONFIG_NTFS_FS=y
+
+These should probably be off as well.
+
 -- 
-1.7.2.3
+Timur Tabi
+Linux kernel developer at Freescale
