@@ -1,35 +1,41 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id 661F8B70CB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 03:22:52 +1100 (EST)
-Received: by yws5 with SMTP id 5so2713312yws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 09:22:50 -0700 (PDT)
-Message-ID: <dccb3790f1fbb04a8df74bd920e57580.squirrel@localhost>
-In-Reply-To: <20101014105126.08da9dd7@udp111988uds.am.freescale.net>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
-	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
-	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
-	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>
-	<4CB2DEFB.90204@windriver.com>
-	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>
-	<942ea2f3464025464521511c32355782.squirrel@localhost>
-	<20101012162152.5246744a@udp111988uds.am.freescale.net>
-	<4CB5088D.4090201@windriver.com>
-	<20101013102815.2959fcb6@udp111988uds.am.freescale.net>
-	<4CB65F6F.1090103@windriver.com> <4CB6788D.60705@windriver.com>
-	<20101014105126.08da9dd7@udp111988uds.am.freescale.net>
-Date: Thu, 14 Oct 2010 11:22:45 -0500
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-From: david.hagood@gmail.com
-To: "Scott Wood" <scottwood@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 00A33B70CB
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 03:24:11 +1100 (EST)
+Received: from mail117-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail117-tx2-R.bigfish.com (Postfix) with ESMTP id 60C4512406E9	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 16:01:27 +0000 (UTC)
+Received: from TX2EHSMHS012.bigfish.com (unknown [10.9.14.251])	by
+	mail117-tx2.bigfish.com (Postfix) with ESMTP id 303A412E8053	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 16:01:25 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o9EG1f8d012679	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 09:01:41 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o9EGGVcP020622	for <linuxppc-dev@ozlabs.org>;
+	Thu, 14 Oct 2010 11:16:31 -0500 (CDT)
+Date: Thu, 14 Oct 2010 11:01:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect
+	nand flash partitions
+Message-ID: <20101014110118.11fabed5@udp111988uds.am.freescale.net>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A2B02B7@zch01exm23.fsl.freescale.net>
+References: <20101004103813.14d04956@udp111988uds.am.freescale.net>
+	<3850A844E6A3854C827AC5C0BEC7B60A2B02B7@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: "tiejun.chen" <tiejun.chen@windriver.com>, david.hagood@gmail.com,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
+	Hu Mingkai-B21284 <B21284@freescale.com>,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,47 +45,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I may have a clue (you might not think so, but...):
+On Wed, 13 Oct 2010 20:09:02 -0700
+"Zang Roy-R61911" <r61911@freescale.com> wrote:
 
-I've configured the init thusly:
-mpic1 = mpic_alloc(np, res.start,
-	MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN ,
-	0, 256,
-	" MPIC     ");
+> > > > > +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = NULL;
+> > > >
+> > > > No need for = NULL.
+> > > Any harm? Or just personal habit or style? Can you explain about
+> why?
+> > 
+> > Besides not wanting superfluous code on general principle, it could
+> > hide a bug if in the future the real initialization is missing on some
+> > code path.  It would become a runtime NULL dereference rather than a
+> > compiler warning.
+> 
+> Not exactly.
+> Per my understand, if the pointer will definitely be assigned in code
+> path,
+> it is not necessary to init it when define. for example,
+> 
+> char c;
+> char b;
+> char *a;
+> if (condition)
+> 	a = &c;
+> else
+> 	a = &b;
+> ...
+> 
+> for other case, if the path will not ensure the pointer assignment, it
+> will be inited
+> when define to avoid warning. for example,
+> 
+> char c;
+> char *a = NULL;
+> if (condition)
+> 	a = &c;
+> ...
 
-Which, as I read the code, should disable the ISU stuff.
+Yes, but this patch looks like the former case, not the
+latter.  Is GCC giving a warning without the initializer?
 
-I've seeing this on boot:
-mpic: Setting up MPIC " MPIC     " version 1.2 at e0040000, max 2 CPUs
-mpic: ISU size: 88, shift: 7, mask: 7f
-mpic: Initializing for 88 sources
-
-Now, since the interrupt number I want is 224, which, last time I checked,
-was > 88, this may be the root cause.
-
-As I read the code:
-        /* Read feature register, calculate num CPUs and, for non-ISU
-	 * MPICs, num sources as well. On ISU MPICs, sources are counted
-	 * as ISUs are added
-	 */
-	greg_feature = mpic_read(mpic->gregs, MPIC_INFO(GREG_FEATURE_0));
-	mpic->num_cpus = ((greg_feature & MPIC_GREG_FEATURE_LAST_CPU_MASK)
-			  >> MPIC_GREG_FEATURE_LAST_CPU_SHIFT) + 1;
-	if (isu_size == 0)
-		mpic->num_sources =
-			((greg_feature & MPIC_GREG_FEATURE_LAST_SRC_MASK)
-			 >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
-So it would seem to me that the "greg_feature" is saying I have 88
-interrupts.
-
-I've tried setting the ISU size to 256:
-mpic1 = mpic_alloc(np, res.start,
-	MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN ,
-	256, 256,
-	" MPIC     ");
-And that kills the kernel as we init the mpic.
-
-SO, I guess the question in, what sets "greg_feature", as it would seem to
-be incorrect.
-
-Or, am I on the wrong trail?
+-Scott
