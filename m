@@ -1,52 +1,35 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <kumar.gala@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 26F151007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 04:50:22 +1100 (EST)
-Received: from mail192-va3 (localhost.localdomain [127.0.0.1])	by
-	mail192-va3-R.bigfish.com (Postfix) with ESMTP id 31D014A8131	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 17:50:17 +0000 (UTC)
-Received: from VA3EHSMHS030.bigfish.com (unknown [10.7.14.244])	by
-	mail192-va3.bigfish.com (Postfix) with ESMTP id 0819D17C804F	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 17:50:17 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o9EHoD89028498	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 10:50:13 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o9EI6RkF012757	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 13:06:27 -0500 (CDT)
-Date: Thu, 14 Oct 2010 12:50:10 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <david.hagood@gmail.com>
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-Message-ID: <20101014125010.5cfb4ee5@udp111988uds.am.freescale.net>
-In-Reply-To: <fac55e564d1f5b7e5398354939ec3b43.squirrel@localhost>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
-	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
-	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
-	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>
-	<4CB2DEFB.90204@windriver.com>
-	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>
-	<942ea2f3464025464521511c32355782.squirrel@localhost>
-	<20101012162152.5246744a@udp111988uds.am.freescale.net>
-	<4CB5088D.4090201@windriver.com>
-	<20101013102815.2959fcb6@udp111988uds.am.freescale.net>
-	<4CB65F6F.1090103@windriver.com> <4CB6788D.60705@windriver.com>
-	<20101014105126.08da9dd7@udp111988uds.am.freescale.net>
-	<dccb3790f1fbb04a8df74bd920e57580.squirrel@localhost>
-	<20101014113230.051b967a@udp111988uds.am.freescale.net>
-	<fac55e564d1f5b7e5398354939ec3b43.squirrel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: "tiejun.chen" <tiejun.chen@windriver.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id E438C1007D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 04:53:05 +1100 (EST)
+Received: from mail40-db3 (localhost.localdomain [127.0.0.1])	by
+	mail40-db3-R.bigfish.com (Postfix) with ESMTP id E01956D0702	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 17:53:00 +0000 (UTC)
+Received: from DB3EHSMHS010.bigfish.com (unknown [10.3.81.240])	by
+	mail40-db3.bigfish.com (Postfix) with ESMTP id DB560CC8051	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 17:52:32 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o9EHqTQf028573	for <linuxppc-dev@ozlabs.org>;
+	Thu, 14 Oct 2010 10:52:29 -0700 (MST)
+Subject: Re: [PATCH 2/2] [v2] powerpc/85xx: add DIU support to the Freecale
+	P1022DS reference board
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <5610599F537DD74A8D1F5CC946A75073034793B7@az33exm25.fsl.freescale.net>
+Date: Thu, 14 Oct 2010 12:52:27 -0500
+Message-ID: <2C1DF8B2-847A-45EF-91EE-C2D418ACA88B@freescale.com>
+References: <1286480203-28227-1-git-send-email-timur@freescale.com>
+	<1286480203-28227-2-git-send-email-timur@freescale.com>
+	<C692EF20-D7BD-4381-93F8-D1AA58BA89C4@freescale.com>
+	<5610599F537DD74A8D1F5CC946A75073034793B7@az33exm25.fsl.freescale.net>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,20 +39,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Oct 2010 12:20:55 -0500
-<david.hagood@gmail.com> wrote:
 
-> > It comes from FRR[NIRQ].  It seems that this chip takes a
-> > less-than-useful interpretation of what that field means -- it gives
-> > the actual number of sources, not the size of the sparsely populated
-> > array.
-> Perhaps you might want to have a talk with your cow-orkers there, Scott,
-> since this is a Freescale part.
+On Oct 13, 2010, at 8:39 PM, Tabi Timur-B04825 wrote:
 
-Well, it was a coworker who added the workaround, so I assume we're
-already aware of the issue.
+> Kumar Gala wrote:
+>>>> arch/powerpc/configs/mpc85xx_defconfig     |    3 +
+>>>> arch/powerpc/configs/mpc85xx_smp_defconfig |    3 +
+>>>> arch/powerpc/platforms/85xx/p1022_ds.c     |  213 =
++++++++++++++++++++++++++++-
+>>>> 3 files changed, 217 insertions(+), 2 deletions(-)
+>> I dropped this because of chicken/egg issue with guts.h
+>=20
+> If you pull from alsa-next, it should resolve that.
+>=20
+> Either that, or ask the alsa guys to apply this patch instead.
 
-The description of NIRQ is vague enough that it's hard to argue that
-Linux's expectations of what it means are justified.
+Can you ask the alsa guys to pick it up.  I'm happy to ack.
 
--Scott
+- k=
