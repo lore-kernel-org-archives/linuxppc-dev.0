@@ -1,42 +1,24 @@
-Return-Path: <R61911@freescale.com>
-Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
-	[213.199.154.209])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B23581007D3
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 15:14:08 +1100 (EST)
-Received: from mail58-am1 (localhost.localdomain [127.0.0.1])	by
-	mail58-am1-R.bigfish.com (Postfix) with ESMTP id B4F3810005DB	for
-	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 04:14:03 +0000 (UTC)
-Received: from am1ehsmhs010.bigfish.com (unknown [10.3.201.249])	by
-	mail58-am1.bigfish.com (Postfix) with ESMTP id 57A09218058	for
-	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 04:14:02 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o9E4DxnW008938	for
-	<linuxppc-dev@ozlabs.org>; Wed, 13 Oct 2010 21:13:59 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o9E4T8T9006128	for <linuxppc-dev@ozlabs.org>;
-	Wed, 13 Oct 2010 23:29:09 -0500 (CDT)
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AA224B6EF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 16:01:09 +1100 (EST)
+Message-ID: <4CB68F14.8070804@windriver.com>
+Date: Thu, 14 Oct 2010 13:03:16 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Subject: RE: [PATCH 2/3 v4] P4080/mtd: Only make elbc nand driver detect nand
-	flash partitions
-Date: Thu, 14 Oct 2010 12:14:12 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A2B02EF@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20100920131907.GA2184@oksana.dev.rtsoft.ru>
-References: <1284706869-12555-1-git-send-email-tie-fei.zang@freescale.com>
-	<1284706869-12555-2-git-send-email-tie-fei.zang@freescale.com>
-	<20100920131907.GA2184@oksana.dev.rtsoft.ru>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
-	Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
+To: WANG YiFei <yifei_wang@hotmail.com>
+Subject: Re: ppc405 + MCP23S17
+References: <BAY158-ds7DB18D88ED851794F4E19F5540@phx.gbl>
+	<4CB522D1.5090802@windriver.com>
+	<BAY158-ds2BEE228C7E27E7CE0C28BF5550@phx.gbl>
+	<4CB56496.7040809@windriver.com>
+	<BAY158-ds774A2E0B753853E1C0CF0F5550@phx.gbl>
+In-Reply-To: <BAY158-ds774A2E0B753853E1C0CF0F5550@phx.gbl>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,38 +28,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW50b24gVm9yb250c292
-IFttYWlsdG86Y2JvdWF0bWFpbHJ1QGdtYWlsLmNvbV0NCj4gU2VudDogTW9uZGF5LCBTZXB0ZW1i
-ZXIgMjAsIDIwMTAgMjE6MTkgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgt
-bXRkQGxpc3RzLmluZnJhZGVhZC5vcmc7IGR3bXcyQGluZnJhZGVhZC5vcmc7IGRlZGVraW5kMUBn
-bWFpbC5jb207DQo+IGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmc7IExhbiBDaHVuaGUtQjI1ODA2
-OyBXb29kIFNjb3R0LUIwNzQyMTsgR2FsYSBLdW1hci0NCj4gQjExNzgwOyBsaW51eHBwYy1kZXZA
-b3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMyB2NF0gUDQwODAvbXRkOiBPbmx5
-IG1ha2UgZWxiYyBuYW5kIGRyaXZlciBkZXRlY3QgbmFuZA0KPiBmbGFzaCBwYXJ0aXRpb25zDQo+
-IA0KPiBPbiBGcmksIFNlcCAxNywgMjAxMCBhdCAwMzowMTowOFBNICswODAwLCBSb3kgWmFuZyB3
-cm90ZToNCj4gWy4uLl0NCj4gPiArc3RhdGljIHN0cnVjdCBtdXRleCBmc2xfZWxiY19uYW5kX211
-dGV4Ow0KPiA+ICsNCj4gPiArc3RhdGljIGludCBfX2RldmluaXQgZnNsX2VsYmNfbmFuZF9wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpDQo+ID4gIHsNCj4gPiAtCXN0cnVjdCBmc2xf
-bGJjX3JlZ3MgX19pb21lbSAqbGJjID0gY3RybC0+cmVnczsNCj4gPiArCXN0cnVjdCBmc2xfbGJj
-X3JlZ3MgX19pb21lbSAqbGJjOw0KPiA+ICAJc3RydWN0IGZzbF9lbGJjX210ZCAqcHJpdjsNCj4g
-PiAgCXN0cnVjdCByZXNvdXJjZSByZXM7DQo+ID4gKwlzdHJ1Y3QgZnNsX2VsYmNfZmNtX2N0cmwg
-KmVsYmNfZmNtX2N0cmwgPSBOVUxMOw0KPiANCj4gTm8gbmVlZCBmb3IgPSBOVUxMLg0KPiANCj4g
-Wy4uLl0NCj4gPiAtCWN0cmwtPmNoaXBzW2JhbmtdID0gcHJpdjsNCj4gPiArCW11dGV4X2luaXQo
-JmZzbF9lbGJjX25hbmRfbXV0ZXgpOw0KPiANCj4gVGhpcyBtYXkgY2F1c2UgYWxsIHNvcnRzIG9m
-IG1pc2JlaGF2aW91cnMsIGUuZy4NCj4gDQo+IEE6IG11dGV4X2luaXQoZm9vKQ0KPiBBOiBtdXRl
-eF9sb2NrKGZvbykNCj4gQjogbXV0ZXhfaW5pdChmb28pICAgPC0gZGVzdHJveWVkICJBIi1jb250
-ZXh0IG11dGV4Lg0KPiBBOiBtdXRleF91bmxvY2soZm9vKSA8LSBvb3BzDQo+IA0KPiBJbnN0ZWFk
-IG9mIGR5bmFtaWNhbGx5IGluaXRpYWxpemluZyB0aGUgbXV0ZXgsIGp1c3QgZGVmaW5lIGl0DQo+
-IHdpdGggREVGSU5FX01VVEVYKCkgYWJvdmUuDQo+IA0KPiAoQnR3LCAjaW5jbHVkZSA8bGludXgv
-bXV0ZXguaD4gaXMgbmVlZGVkLikNCj4gDQo+ID4gKw0KPiA+ICsJbXV0ZXhfbG9jaygmZnNsX2Vs
-YmNfbmFuZF9tdXRleCk7DQo+IFsuLi5dDQo+ID4gLXN0YXRpYyBpbnQgX19kZXZpbml0IGZzbF9l
-bGJjX2N0cmxfaW5pdChzdHJ1Y3QgZnNsX2VsYmNfY3RybCAqY3RybCkNCj4gPiArc3RhdGljIGlu
-dCBmc2xfZWxiY19uYW5kX3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpDQo+IFsu
-Li5dDQo+ID4gKwlzdHJ1Y3QgZnNsX2VsYmNfZmNtX2N0cmwgKmVsYmNfZmNtX2N0cmwgPSBmc2xf
-bGJjX2N0cmxfZGV2LT5uYW5kOw0KPiBbLi4uXQ0KPiA+ICsJCWlmIChlbGJjX2ZjbV9jdHJsLT5j
-aGlwc1tpXSkNCj4gPiArCQkJZnNsX2VsYmNfY2hpcF9yZW1vdmUoZWxiY19mY21fY3RybC0+Y2hp
-cHNbaV0pOw0KPiBbLi4uXQ0KPiA+ICsJZnNsX2xiY19jdHJsX2Rldi0+bmFuZCA9IE5VTEw7DQo+
-ID4gKwlrZnJlZShlbGJjX2ZjbV9jdHJsKTsNCj4gDQo+IFdpbGwgY2F1c2UgTlVMTCBkZXJlZmVy
-ZW5jZSBhbmQvb3IgdXNlLWFmdGVyLWZyZWUgZm9yIG90aGVyDQo+IGVsYmMgbmFuZCBpbnN0YW5j
-ZXMuIFRvIGF2b2lkIHRoYXQsIHJlZmVyZW5jZSBjb3VudGluZyBmb3INCj4gZWxiY19mY21fY3Ry
-bCBpcyByZXF1aXJlZC4NCk1ha2Ugc2Vuc2UuDQp3aWxsIHVwZGF0ZS4NClJveQ0K
+WANG YiFei wrote:
+> Hi TieJun,
+> 
+> I saw you name in \arch\powerpc\boot\cuboot-kilauea.c,
+> I think I found right person for help, since our board
+
+Unfortunately I'm not do anything for SPI resided on Kilauea.
+
+> is based on Kilauea evaluation board, and currently I
+> used 40x/kilauea_defconfig to config kernel. Also I used
+> Kilauea.dts as starting point to modify as shown in my
+> previous email.
+> As you know, Kilauea board doesn't have any spi devices
+> on spi bus, however, our board has an mcp23s17 on it. So
+> far, I didn't add/change kernel/driver code. Looking at
+> mcp23s08.c's probe() routine:
+> 
+> static int mcp23s08_probe(struct spi_device *spi)
+> {
+> 	struct mcp23s08_platform_data	*pdata;
+> 	unsigned			addr;
+> 	unsigned			chips = 0;
+> 	struct mcp23s08_driver_data	*data;
+> 	int				status;
+> 	unsigned			base;
+> 
+> 	pdata = spi->dev.platform_data;
+> 	if (!pdata || !gpio_is_valid(pdata->base)) {
+> 		dev_dbg(&spi->dev, "invalid or missing platform data\n");
+> 		return -EINVAL;
+> 	}
+> ......
+> 
+> Obviously, if I don't pass any platform_data to mcp23s08 device,
+> it will always fail. That means this mcp23s08 driver always needs
+> a platform_data to associate with, I don't know if this is the correct
+> behavior. Anyway, so my question is: is my modified dts files(as in
+> previous email) correct? what info else do I need to add in to support
+
+The dts should be depended what are used for mcp23s07 at last.
+
+Actually I think you can register spi_board_info with some corresponding
+information firstly to begin debugging your driver. When you can run your spi
+driver successfully, then generate the real dts according to those appropriate
+parameters and implement one parsing hook converted dts info to
+spi_board_info/platform_data.
+
+> platform_data in dts file? Or if this dts is correct, then where is the
+
+You should provide one struct mcp23s08_platform_data. But maybe some fields are
+not necessary so you should check what are needed by pdata of your mcp23s08_probe().
+
+> right place(which .c file) to set/pass platform_data to?
+
+You can create the file, arch/powerpc/sysdev/ppc4xx_spi.c, like ppc4xx_gpio.c.
+As I pointed previously you should check the example file, I think you can refer
+to the file, arch/powerpc/platforms/83xx/mpc832x_rdb.c. There is one example to
+show how to parse dts to register spi_board_info.
+
+Tiejun
+
+> 
+> 
+> Regards,
+> YiFei
+> 
+> 
+> -----Original Message-----
+> From: tiejun.chen [mailto:tiejun.chen@windriver.com] 
+> Sent: Wednesday, 13 October, 2010 3:50 PM
+> To: WANG YiFei
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: ppc405 + MCP23S17
+> 
+> WANG YiFei wrote:
+>> Hi TieJun,
+>>
+>> Thanks a lot for your reply.
+>> So far, I can get ppc405 spi to initialize, however
+>> failed at MCP23S17's probe() routine, I checked the
+>> code, it's due to un-initialized platform data. Here
+>> is my part of dts:
+>>
+>> 	spi@ef600600 {
+>> 		device_type = "spi";
+>> 		compatible = "ibm,ppc4xx-spi", "ibm,spi";
+>> 		reg = <0xef600600 0x7>;
+>> 		interrupt-parent = <0x2>;
+>> 		interrupts = <0x8 0x4>;
+>> 		#address-cells = <0x1>;
+>> 		#size-cells = <0x0>;
+>> 		gpios = <0>;    	/* cs */
+>> 		
+>> 		spi_gpio@0 {
+>> 			compatible = "mcp,mcp23s08";
+>> 			spi-max-frequency = <1000000>;
+>> 			reg = <0>;
+>> 		};
+>> 	};
+>>
+>> I don't know how to provide platform data from dts although
+>> I understand the concept from code. Do I only need to modify
+>> dts OR I need to write some code to supply platform data? Do
+>> you have any URL or sample code to show passing of platform
+>> data?
+> 
+> Often you SPI bus driver should call spi_register_master() to register your SPI
+> master controller. Then please go to the following path:
+> ======
+> spi_register_master()
+> 	|
+> 	+ scan_boardinfo()
+> 		|
+> 		+ spi_new_device()
+> 			^
+> 			Here refer to the function,
+> ------
+> struct spi_device *spi_new_device(struct spi_master *master,
+>                                   struct spi_board_info *chip)
+> {
+> 	struct spi_device       *proxy;
+> 	......
+> 	proxy->dev.platform_data = (void *) chip->platform_data;
+> 	......
+> 	status = spi_add_device(proxy);
+> 	......
+> 
+> And as I previously comment 'spi->dev.platform_data' would be passed to your
+> platform_data resided in your probe hook within your spi device driver.
+> 
+> So firstly you should register call spi_register_board_info() to register one
+> given spi_board_info by parsing your device nodes from your dts.
+> 
+> I think you can refer to the file, arch/powerpc/platforms/83xx/mpc832x_rdb.c.
+> 
+>> Anyway, thanks a lot for guiding me.
+> 
+> You're welcome :)
+> 
+> Tiejun
+> 
+>> YiFei
+>>
+>> -----Original Message-----
+>> From: tiejun.chen [mailto:tiejun.chen@windriver.com] 
+>> Sent: Wednesday, October 13, 2010 11:09 AM
+>> To: WANG YiFei
+>> Cc: linuxppc-dev@ozlabs.org
+>> Subject: Re: ppc405 + MCP23S17
+>>
+>> WANG YiFei wrote:
+>>> Hi,
+>>>
+>>>  
+>>>
+>>> I'm a newbie for linux device driver development.
+>>>
+>>> We have a custom ppc405 board which has MCP23S17
+>>>
+>>> (16-Bit I/O Expander with SPI Interface) on it.
+>>>
+>>> I noticed that current kernel has MCP23S08 driver
+>>>
+>>> support, I'd like to know:
+>>>
+>>> 1. if passing platform data to MCP23S08 driver, can it make
+>>>
+>>>    MCP23S17 work?
+>>>
+>> These chips should be same vendor product so I think 16-bit mcp23s17 may be
+>> compatible to 8-bit modes. But you have to check the data sheet to confirm this
+>> and track how to configure that as 8-bit mode. After that it's possible to run
+>> mcp23s17 with mcp23s08.c.
+>>
+>>> 2. Generally, I'd like to know how to pass platform data to
+>>>
+>>>    a particular device driver. In my mind, platform data should
+>>>
+>>>    not be in driver code, right? However, I don't know where is
+>> Firstly you should define this on your dts. Then parse that to register
+>> corresponding of_platform_device or platform_device when you setup your target
+>> on <your target>.c.
+>>
+>> When spi_register_driver prober successfully, you can get the platform_data from
+>> associated spi device.
+>>
+>>>    the suitable place to pass platform data to driver.
+>>>
+>>> 3. How to describe this in dts file?
+>>>
+>> You can get more from the file, Documentation/powerpc/dts-bindings/spi-bus.txt.
+>> Or refer to those existed spi nodes on other platform dts.
+>>
+>> Tiejun
+>>
+>>>  
+>>>
+>>> Thanks in advance,
+>>>
+>>> YiFei
+>>>
+>>>
+>>>
+>>>
+> 
+> 
