@@ -1,24 +1,20 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6CCBD1007D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 07:49:41 +1100 (EST)
-Date: Thu, 14 Oct 2010 21:49:49 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Timur Tabi <timur.tabi@gmail.com>
-Subject: Re: [PATCH 2/2] [v2] powerpc/85xx: add DIU support to the Freecale
-	P1022DS reference board
-Message-ID: <20101014204949.GA14479@opensource.wolfsonmicro.com>
-References: <1286480203-28227-1-git-send-email-timur@freescale.com>
-	<1286480203-28227-2-git-send-email-timur@freescale.com>
-	<AANLkTimWgbJ0oDsQkXxzjQ_pDxm_Vd+PJRhQJzN0BLTc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTimWgbJ0oDsQkXxzjQ_pDxm_Vd+PJRhQJzN0BLTc@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
-	alsa-devel mailing list <alsa-devel@alsa-project.org>
+	by ozlabs.org (Postfix) with ESMTPS id 6DFC8B6F06
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Oct 2010 10:57:20 +1100 (EST)
+Subject: Re: Possible kernel stack overflow due to fast interrupts
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rick Tao <tao_rick@yahoo.com>
+In-Reply-To: <174398.42321.qm@web50405.mail.re2.yahoo.com>
+References: <174398.42321.qm@web50405.mail.re2.yahoo.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Oct 2010 10:57:13 +1100
+Message-ID: <1287100633.2205.80.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 14, 2010 at 01:21:33PM -0500, Timur Tabi wrote:
-> Mark, can you pick up this patch for us?  Because it depends on
-> "powerpc: rename immap_86xx.h to fsl_guts.h, and add 85xx support", it
-> will break the build if we apply to powerpc-next.
-> 
-> You can grab the patch from http://patchwork.ozlabs.org/patch/67095/
+On Thu, 2010-10-14 at 13:45 -0700, Rick Tao wrote:
+> Hi, all,
 
-Done, but I had to fix up what looked like an add/add conflict with
-headers in the file.  Since I was editing that area of the file anyway I
-also dropped the #define DEBUG as it looked like a mistake.  Please send
-followup patch(es) correcting things if I messed up any of that.
+ .../...
+
+> In the context of task A
+> a. NIP would point to the instruction after switch_to(). 
+> b. MSR_EE is enabled in the call trace (finish_task_switch -->finish_lock_switch-->spin_unlock_irq)
+> c. do something that would trigger an interrupt later on (such as timer)
+> d. call schedule() for context switch to task B.
+>    In this step, 
+>      task B's stack is popped INT_FRAME_SIZE size for context restore.  
+>    Note that task B's ksp = X - INT_FRAME_SIZE
+> 
+> In the context of task B again
+> a1. similar to step "a" above
+>
+> b1. similar to step "b" above 
+> c1. interrupt occurs, go to step "1" above, and repeat!!!
+> 
+> As you can see, task B's kernel stack space is reduced by INT_FRAME_SIZE
+> on each loop. It will eventually overflow.
+
+So if I follow you correctly, you are worried that by the time execution
+resumes in B, and before it pops the second frame off, it might get
+another interrupt and re-preempt...
+
+Now unless I missed something, that cannot happen because
+preempt_schedule_irq() does increment the preempt count:
+
+	add_preempt_count(PREEMPT_ACTIVE);
+	local_irq_enable();
+	schedule();
+	local_irq_disable();
+	sub_preempt_count(PREEMPT_ACTIVE);
+
+Which means that it won't preempt again in finish_task_switch, and so
+will eventually come back, turn EE back off, and pop off the stack
+frame.
+
+Or am I missing something ?
+
+Cheers,
+Ben.
