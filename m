@@ -1,33 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D7F3C1007D4
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 528CAB70E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 21:35:16 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9EAIYK1017183
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 06:18:34 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9EAZBiI338066
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 06:35:11 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9EAZBH1009092
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 07:35:11 -0300
-Date: Thu, 14 Oct 2010 06:35:10 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Please pull 'next' branch of 4xx tree
-Message-ID: <20101014103510.GA6227@zod.rchland.ibm.com>
-References: <20100928130941.GA31993@zod.rchland.ibm.com>
-	<20101013131608.GA6154@zod.rchland.ibm.com>
-	<1287017775.2205.49.camel@pasglop>
-MIME-Version: 1.0
+	Thu, 14 Oct 2010 23:58:18 +1100 (EST)
+Subject: Re: [PATCH 2/3] fsl_rio: fix non-standard HID1 register access
+Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1287017775.2205.49.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <F9BD3E0A8083BE4ABAA94D7EDD7E3F633346A7@zch01exm26.fsl.freescale.net>
+Date: Thu, 14 Oct 2010 07:57:45 -0500
+Message-Id: <10467EAB-4CF3-4AFC-84D0-0A26AFAE20C2@kernel.crashing.org>
+References: <1287021866-22095-1-git-send-email-b21989@freescale.com>
+	<7F0756F8-8297-43A6-913A-6DA2634E18E5@kernel.crashing.org>
+	<F9BD3E0A8083BE4ABAA94D7EDD7E3F633346A7@zch01exm26.fsl.freescale.net>
+To: Li Yang-R58472 <r58472@freescale.com>
+Cc: alexandre.bounine@idt.com, linuxppc-dev@lists.ozlabs.org,
+	Xie Shaohui-B21989 <B21989@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 14, 2010 at 11:56:15AM +1100, Benjamin Herrenschmidt wrote:
->On Wed, 2010-10-13 at 09:16 -0400, Josh Boyer wrote:
->> On Tue, Sep 28, 2010 at 09:09:41AM -0400, Josh Boyer wrote:
->> >Hi Ben,
->> >
->> >A few small updates for the next branch.  A new board/SoC from AMCC, and
->> >some 476 changes from Shaggy.  Please pull.
->> 
->> OK, below is a fixed up tree that drops the patch Shaggy said was
->> broken, and rebases on top of your new -next branch.  Please pull.
->
->please, rebase again without Shaggy's lazy flush patch. I'll handle that
->one separately, I think it needs a little bit more massaging.
 
-The following changes since commit 4108d9ba9091c55cfb968d42dd7dcae9a098b876:
+On Oct 14, 2010, at 2:10 AM, Li Yang-R58472 wrote:
 
-  powerpc/Makefiles: Change to new flag variables (2010-10-13 16:19:22 +1100)
+>> Subject: Re: [PATCH 2/3] fsl_rio: fix non-standard HID1 register =
+access
+>>=20
+>>=20
+>> On Oct 13, 2010, at 9:04 PM, Shaohui Xie wrote:
+>>=20
+>>> From: Li Yang <leoli@freescale.com>
+>>>=20
+>>> The access to HID1 register is only legitimate for e500 v1/v2 cores.
+>>> Also fixes magic number.
+>>>=20
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> Signed-off-by: Shaohui Xie <b21989@freescale.com>
+>>> ---
+>>> arch/powerpc/sysdev/fsl_rio.c |    9 ++++++---
+>>> 1 files changed, 6 insertions(+), 3 deletions(-)
+>>>=20
+>>> diff --git a/arch/powerpc/sysdev/fsl_rio.c
+>>> b/arch/powerpc/sysdev/fsl_rio.c index 4127636..dfff3b7 100644
+>>> --- a/arch/powerpc/sysdev/fsl_rio.c
+>>> +++ b/arch/powerpc/sysdev/fsl_rio.c
+>>> @@ -1537,9 +1537,12 @@ int fsl_rio_setup(struct platform_device =
+*dev)
+>>> #ifdef CONFIG_E500
+>>> 	saved_mcheck_exception =3D ppc_md.machine_check_exception;
+>>> 	ppc_md.machine_check_exception =3D fsl_rio_mcheck_exception; =
+-#endif
+>>> -	/* Ensure that RFXE is set */
+>>> -	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000));
+>>> +
+>>> +#ifndef CONFIG_PPC_E500MC
+>>> +	/* Ensure that RFXE is set on e500 v1/v2 */
+>>> +	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | HID1_RFXE)); #endif /*
+>>> +!PPC_E500MC */ #endif /* E500 */
+>>=20
+>> I've never really been happy with this code.  We really should set
+>> HID1_RFXE in cpu_setup_fsl_booke.S instead.
+>=20
+> But this bit is not recommended to be set unless necessary.  And it is =
+only required by SRIO for now.
 
-are available in the git repository at:
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+Than wrap it in a CONFIG_RAPIDIO in cpu_setup_fsl_booke.S
 
-Josh Boyer (1):
-      powerpc/44x: Update ppc44x_defconfig
-
-Tirumala Marri (1):
-      powerpc/44x: Add support for the AMCC APM821xx SoC
-
- arch/powerpc/boot/dts/bluestone.dts          |  254 ++++++++++++++++++++++++++
- arch/powerpc/configs/44x/bluestone_defconfig |   68 +++++++
- arch/powerpc/configs/ppc44x_defconfig        |    9 +-
- arch/powerpc/kernel/cpu_setup_44x.S          |    1 +
- arch/powerpc/kernel/cputable.c               |   15 ++
- arch/powerpc/platforms/44x/Kconfig           |   16 ++
- arch/powerpc/platforms/44x/ppc44x_simple.c   |    1 +
- 7 files changed, 360 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/bluestone.dts
- create mode 100644 arch/powerpc/configs/44x/bluestone_defconfig
+- k
