@@ -1,37 +1,30 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id 9ED40B70DF
+Return-Path: <nacc@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E82391007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 04:21:01 +1100 (EST)
-Received: by yws5 with SMTP id 5so2756064yws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 10:20:58 -0700 (PDT)
-Message-ID: <fac55e564d1f5b7e5398354939ec3b43.squirrel@localhost>
-In-Reply-To: <20101014113230.051b967a@udp111988uds.am.freescale.net>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
-	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
-	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
-	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>
-	<4CB2DEFB.90204@windriver.com>
-	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>
-	<942ea2f3464025464521511c32355782.squirrel@localhost>
-	<20101012162152.5246744a@udp111988uds.am.freescale.net>
-	<4CB5088D.4090201@windriver.com>
-	<20101013102815.2959fcb6@udp111988uds.am.freescale.net>
-	<4CB65F6F.1090103@windriver.com> <4CB6788D.60705@windriver.com>
-	<20101014105126.08da9dd7@udp111988uds.am.freescale.net>
-	<dccb3790f1fbb04a8df74bd920e57580.squirrel@localhost>
-	<20101014113230.051b967a@udp111988uds.am.freescale.net>
-Date: Thu, 14 Oct 2010 12:20:55 -0500
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-From: david.hagood@gmail.com
-To: "Scott Wood" <scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: "tiejun.chen" <tiejun.chen@windriver.com>, david.hagood@gmail.com,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	Fri, 15 Oct 2010 04:48:36 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9EHmvjY026217
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 13:48:57 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9EHmS8q128374
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 13:48:28 -0400
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o9EHmQTK015032
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 11:48:27 -0600
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: nacc@us.ibm.com
+Subject: [RFC PATCH] ppc: don't override CONFIG_PPC_PSERIES_DEBUG
+Date: Thu, 14 Oct 2010 10:48:14 -0700
+Message-Id: <1287078495-11722-1-git-send-email-nacc@us.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Frans Pop <elendil@planet.nl>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Linas Vepstas <linasvepstas@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,31 +34,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hallelujah and Huzzah! I finally got my vector!
+These files undef DEBUG, but I think they were added before the ability
+to control this from Kconfig. It's really annoying to only get some of
+the debug messages!
 
-I back-ported the MPIC_BROKEN_FRR_NIRQS flag and code to our kernel, and
-the kernel is now letting me have my vector! Now I can actually see if the
-dang thing works!
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-THANK YOU EVERYBODY for putting up with me on this!
+---
+Because the lpar and pci_dlpar code is pretty low-level & verbose,
+perhaps it makes sense to add another Kconfig variable for really
+low-level stuff? But it's annoying to have DEBUG *somewhat* effective,
+especially in the EEH area when doing PCI stuff.
+---
+ arch/powerpc/platforms/pseries/eeh.c       |    2 --
+ arch/powerpc/platforms/pseries/lpar.c      |    3 ---
+ arch/powerpc/platforms/pseries/pci_dlpar.c |    2 --
+ 3 files changed, 0 insertions(+), 7 deletions(-)
 
-> It comes from FRR[NIRQ].  It seems that this chip takes a
-> less-than-useful interpretation of what that field means -- it gives
-> the actual number of sources, not the size of the sparsely populated
-> array.
-Perhaps you might want to have a talk with your cow-orkers there, Scott,
-since this is a Freescale part.
-
-> It's not very clear to me what distinction the MPIC code is
-> trying to make between irq_count and num_sources in the first place,
-> though.
-/me looks at Scott's email again.
-
-If you, working FOR Freescale, and following the Linux development
-(presumably for some time) are confused, imagine what I've been going
-through!
-
-Hot damn, and time for a quick version control commit, a hot lunch, and
-really testing the code.
-
-Thanks again!
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 34b7dc1..17a11c8 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -21,8 +21,6 @@
+  * Please address comments and feedback to Linas Vepstas <linas@austin.ibm.com>
+  */
+ 
+-#undef DEBUG
+-
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/list.h>
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index cf79b46..4b31a66 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -19,9 +19,6 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
+ 
+-/* Enables debugging of low-level hash table routines - careful! */
+-#undef DEBUG
+-
+ #include <linux/kernel.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/console.h>
+diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+index 4b7a062..5fcc92a 100644
+--- a/arch/powerpc/platforms/pseries/pci_dlpar.c
++++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+@@ -25,8 +25,6 @@
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+-#undef DEBUG
+-
+ #include <linux/pci.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/ppc-pci.h>
+-- 
+1.7.1
