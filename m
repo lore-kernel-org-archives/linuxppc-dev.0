@@ -1,33 +1,19 @@
-Return-Path: <m.johansen@no.parkairsystems.com>
-Received: from mail1.parkairsystems.no (mail1.parkairsystems.no
-	[195.204.13.200])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 58CCCB6EF0
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 51DE4B70DE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 01:50:09 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail1.parkairsystems.no (Postfix) with ESMTP id BD8EDB34B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 16:41:45 +0200 (CEST)
-Received: from mail1.parkairsystems.no ([127.0.0.1])
-	by localhost (mail1.parkairsystems.no [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with ESMTP id Pk+YJjD--XmL for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 16:41:43 +0200 (CEST)
-Received: from Exchange.parkairsystems.net (exchange.parkairsystems.net
-	[172.20.0.63])
-	by mail1.parkairsystems.no (Postfix) with ESMTP id 1F495B347
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 16:41:43 +0200 (CEST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: eSDHC controller driver on MPC8308rdb
-Date: Thu, 14 Oct 2010 16:42:20 +0200
-Message-ID: <DF61B4AD1C20A54EADF5C05E1F1110DE08D449@Exchange.parkairsystems.net>
-From: "Maria Johansen" <m.johansen@no.parkairsystems.com>
-To: <linuxppc-dev@lists.ozlabs.org>
+	Fri, 15 Oct 2010 01:55:52 +1100 (EST)
+Date: Thu, 14 Oct 2010 16:55:49 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/5121: pdm360ng: fix touch irq if 8xxx gpio
+	driver is enabled
+Message-ID: <20101014165549.473d71ab@wker>
+In-Reply-To: <1284581577-2217-1-git-send-email-agust@denx.de>
+References: <1284581577-2217-1-git-send-email-agust@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,62 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8sDQooYXBvbG9naWVzIGZvciB3cml0aW5nIHN1Y2ggYSBsb25nIGUtbWFpbCwgaG9wZSB5
-b3UgY2FuIGJvdGhlciB0byByZWFkIGl0IGFsbCDimLogKQ0KSSBoYXZlIHNvbWUgZGlmZmljdWx0
-aWVzIHdpdGggdGhlIGVTREhDIGNvbnRyb2xsZXIgZHJpdmVyIHVzZWQgb24gYSBNUEM4MzA4IGV2
-YWx1YXRpb24gYm9hcmQgd2l0aCBrZXJuZWwgMi42LjM2LXJjNywgYW5kIGhvcGUgdGhhdCBzb21l
-IG9mIHlvdSBtYXkgYmUgYWJsZSB0byBoZWxwIG1lIHdpdGggdGhlIGRlYnVnZ2luZy4gDQoNClRo
-ZSBkcml2ZXIgaXMgbG9hZGVkIHByb3Blcmx5LCBhbmQgYmluZHMgdG8gdGhlIGVTREhDIGNvbnRy
-b2xsZXIgd2l0aG91dCBwcm9ibGVtcy4gV2hlbiBpbnNlcnRpbmcgYSBzZC1jYXJkIGl0IGlzIGJv
-dW5kIHRvIHRoZSAgbW1jYmxrLWRyaXZlciwgc28gbm8gcHJvYmxlbXMgdGhlcmUgZWl0aGVyLiAg
-DQoNCkhvd2V2ZXIsIEkgYW0gbm90IGFibGUgdG8gcmVhZCBub3Igd3JpdGUgdG8gdGhlIGNhcmQs
-IEkgaGF2ZSBhdHRhY2hlZCBvdXRwdXQgd2l0aCBlcnJvciBtZXNzYWdlcyBiZWxvdzoNCg0KKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg0K
-bW1jMDogbmV3IFNESEMgY2FyZCBhdCBhZGRyZXNzIDkxNTUNCm1tY2JsazA6IG1tYzA6OTE1NSBT
-RDA0RyAzLjY5IEdpQg0KbW1jMDogVG9vIGxhcmdlIHRpbWVvdXQgcmVxdWVzdGVkIQ0KbW1jYmxr
-MDogcmV0cnlpbmcgdXNpbmcgc2luZ2xlIGJsb2NrIHJlYWQNCm1tYzA6IFRvbyBsYXJnZSB0aW1l
-b3V0IHJlcXVlc3RlZCENCm1tY2JsazA6IGVycm9yIC04NCBzZW5kaW5nIHN0YXR1cyBjb21hbmQN
-Cm1tY2JsazA6IGVycm9yIC0xMTAgc2VuZGluZyByZWFkL3dyaXRlIGNvbW1hbmQsIHJlc3BvbnNl
-IDB4MCwgY2FyZCBzdGF0dXMgMHgwDQplbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgbW1jYmxr
-MCwgc2VjdG9yIDANCm1tYzA6IFRvbyBsYXJnZSB0aW1lb3V0IHJlcXVlc3RlZCENCm1tY2JsazA6
-IGVycm9yIC04NCBzZW5kaW5nIHN0YXR1cyBjb21hbmQNCm1tY2JsazA6IGVycm9yIC0xMTAgc2Vu
-ZGluZyByZWFkL3dyaXRlIGNvbW1hbmQsIHJlc3BvbnNlIDB4MCwgY2FyZCBzdGF0dXMgMHgwDQpl
-bmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgbW1jYmxrMCwgc2VjdG9yIDENCuKApi4uPHRoaXMg
-Y29udGludWVzIHVwIHRvIHNlY3RvciA3IGJlZm9yZSBzdGFydGluZyBhbmV3Pg0KDQpEZWJ1ZyBv
-dXRwdXQgd2l0aCBubyBTRC1jYXJkOg0KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKg0KbW1jMDogY2xvY2sgMEh6IGJ1c21vZGUgMSBwb3dl
-cm1vZGUgMSBjcyAwIFZkZCAyMCB3aWR0aCAwIHRpbWluZyAwDQptbWMwOiBjbG9jayA0MDAwMDBI
-eiBidXNtb2RlIDEgcG93ZXJtb2RlIDIgY3MgMCBWZGQgMjAgd2lkdGggMCB0aW1pbmcgMA0Kb2Y6
-c2RoY2ktb2YgZTAwMmUwMDAuc2RoY2k6IGRlc2lyZWQgU0QgY2xvY2s6IDQwMDAwMCwgYWN0dWFs
-OiAwDQptbWMwOiBzdGFydGluZyBDTUQ1MiBhcmcgMDAwMDBjMDAgZmxhZ3MgMDAwMDAxOTUNCnNk
-aGNpIFtzZGhjaV9pcnEoKV06ICoqKiBtbWMwIGdvdCBpbnRlcnJ1cHQ6IDB4MDAwMTAwMDENCm1t
-YzA6IHJlcSBkb25lIChDTUQ1Mik6IC0xMTA6IDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwIDAw
-MDAwMDAwDQptbWMwOiBzdGFydGluZyBDTUQ1MiBhcmcgODAwMDBjMDggZmxhZ3MgMDAwMDAxOTUN
-CnNkaGNpIFtzZGhjaV9pcnEoKV06ICoqKiBtbWMwIGdvdCBpbnRlcnJ1cHQ6IDB4MDAwMTAwMDEN
-Cm1tYzA6IHJlcSBkb25lIChDTUQ1Mik6IC0xMTA6IDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAw
-IDAwMDAwMDAwDQptbWMwOiBjbG9jayA0MDAwMDBIeiBidXNtb2RlIDEgcG93ZXJtb2RlIDIgY3Mg
-MSBWZGQgMjAgd2lkdGggMCB0aW1pbmcgMA0KbW1jMDogc3RhcnRpbmcgQ01EMCBhcmcgMDAwMDAw
-MDAgZmxhZ3MgMDAwMDAwYzANCnNkaGNpIFtzZGhjaV9pcnEoKV06ICoqKiBtbWMwIGdvdCBpbnRl
-cnJ1cHQ6IDB4MDAwMDAwMDENCm1tYzA6IHJlcSBkb25lIChDTUQwKTogMDogMDAwMDAwMDAgMDAw
-MDAwMDAgMDAwMDAwMDAgMDAwMDAwMDANCm1tYzA6IGNsb2NrIDQwMDAwMEh6IGJ1c21vZGUgMSBw
-b3dlcm1vZGUgMiBjcyAwIFZkZCAyMCB3aWR0aCAwIHRpbWluZyAwDQptbWMwOiBzdGFydGluZyBD
-TUQ4IGFyZyAwMDAwMDFhYSBmbGFncyAwMDAwMDJmNQ0Kc2RoY2kgW3NkaGNpX2lycSgpXTogKioq
-IG1tYzAgZ290IGludGVycnVwdDogMHgwMDAxMDAwMQ0KbW1jMDogcmVxIGRvbmUgKENNRDgpOiAt
-MTEwOiAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0KbW1jMDogc3RhcnRpbmcg
-Q01ENSBhcmcgMDAwMDAwMDAgZmxhZ3MgMDAwMDAyZTENCnNkaGNpIFtzZGhjaV9pcnEoKV06ICoq
-KiBtbWMwIGdvdCBpbnRlcnJ1cHQ6IDB4MDAwMTAwMDENCm1tYzA6IHJlcSBmYWlsZWQgKENNRDUp
-OiAtMTEwLCByZXRyeWluZy4uLg0Kc2RoY2kgW3NkaGNpX2lycSgpXTogKioqIG1tYzAgZ290IGlu
-dGVycnVwdDogMHgwMDAxMDAwMQ0KbW1jMDogcmVxIGZhaWxlZCAoQ01ENSk6IC0xMTAsIHJldHJ5
-aW5nLi4uDQpzZGhjaSBbc2RoY2lfaXJxKCldOiAqKiogbW1jMCBnb3QgaW50ZXJydXB0OiAweDAw
-MDEwMDAxDQptbWMwOiByZXEgZmFpbGVkIChDTUQ1KTogLTExMCwgcmV0cnlpbmcuLi4NCuKApg0K
-DQpJIGhhdmUgdGhlIGZvbGxvd2luZyBpbiBteSBkdHM6DQogICAgICAgc2RoY2lAMmUwMDAgew0K
-CQljb21wYXRpYmxlID0gImZzbCxtcGM4MzA4LWVzZGhjIiwgImZzbCxlc2RoYyI7DQoJCXJlZyA9
-IDwweDJlMDAwIDB4MTAwMD47DQoJCWludGVycnVwdHMgPSA8NDIgMHg4PjsNCgkJaW50ZXJydXB0
-LXBhcmVudCA9IDwmaXBpYz47DQoJCWNsb2NrLWZyZXF1ZW5jeSA9IDwwPjsNCgl9Ow0KDQoNCkNv
-dWxkIHRoaXMgYmUgYSBwcm9ibGVtIHJlbGF0ZWQgdGhlIGVTREhDIGNvbnRyb2xsZXIgKG9yIHRo
-ZSBkcml2ZXIpLCBvciBpcyBpdCB0aGUgbWVtb3J5IGNhcmQ/IChhIDRHQiBTYW5EaXNrIEV4dHJl
-bWUgU0RIQyBjYXJkLCB3aGljaCB1bmZvcnR1bmF0ZWx5IGlzIHRoZSBvbmx5IGNhcmQgSSBoYXZl
-IGF2YWlsYWJsZSBhdCB0aGUgbW9tZW50LikNCkkgd2lsbCBrZWVwIGRpZ2dpbmcgaW50byBkcml2
-ZXJzL21tYy9ob3N0L3NkaGNpLmMgaW4gc2VhcmNoIG9mIGEgc29sdXRpb24sIGFuZCBhbnkgdGlw
-cyB0byBob3cgSSBzaG91bGQgcHJvY2VlZCB3b3VsZCBiZSBncmVhdGx5IGFwcHJlY2lhdGVkIQ0K
-DQotLQ0KTWFyaWEgDQo=
+Hi Grant,
+
+On Wed, 15 Sep 2010 22:12:57 +0200
+Anatolij Gustschin <agust@denx.de> wrote:
+
+> Enabling the MPC8xxx GPIO driver with MPC512x GPIO extension
+> breaks touch screen support on this board since the GPIO
+> interrupt will be mapped to 8xxx GPIO irq host resulting in
+> a not requestable interrupt in the touch screen driver. Fix
+> it by mapping the touch interrupt on 8xxx GPIO irq host.
+> 
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> ---
+>  arch/powerpc/platforms/512x/pdm360ng.c |   26 ++++++++++++++++++++++----
+>  1 files changed, 22 insertions(+), 4 deletions(-)
+
+Can this patch go in for 2.6.37 ?
+
+Thanks,
+Anatolij
