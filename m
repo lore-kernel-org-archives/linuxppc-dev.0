@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E0FC91007D3
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 12:02:20 +1100 (EST)
-Subject: Re: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.1010131706440.4711@localhost.localdomain>
-References: <Pine.LNX.4.64.1010131706440.4711@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Oct 2010 12:02:11 +1100
-Message-ID: <1287018131.2205.50.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BC33E1007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 12:37:57 +1100 (EST)
+Message-ID: <4CB65F6F.1090103@windriver.com>
+Date: Thu, 14 Oct 2010 09:39:59 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Questions on interrupt vector assignment on MPC8641D
+References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>	<20100921170700.53a99e56@udp111988uds.am.freescale.net>	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>	<20101007152626.4e834d43@udp111988uds.am.freescale.net>	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>	<4CB2DEFB.90204@windriver.com>	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>	<942ea2f3464025464521511c32355782.squirrel@localhost>	<20101012162152.5246744a@udp111988uds.am.freescale.net>	<4CB5088D.4090201@windriver.com>
+	<20101013102815.2959fcb6@udp111988uds.am.freescale.net>
+In-Reply-To: <20101013102815.2959fcb6@udp111988uds.am.freescale.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: david.hagood@gmail.com,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,115 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-10-13 at 17:08 -0500, Kumar Gala wrote:
-> The following changes since commit 4108d9ba9091c55cfb968d42dd7dcae9a098b876:
+Scott Wood wrote:
+> On Wed, 13 Oct 2010 09:17:01 +0800
+> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
 > 
->   powerpc/Makefiles: Change to new flag variables (2010-10-13 16:19:22 +1100)
+>> Scott Wood wrote:
+>>> The crash is happening somewhere in mpic_set_irq_type():
+>> Agreed. That is just where I pointed out on my email replied for OOPS. To enable
+>> DBG to figure out 'src' and 'mpic->irq_count' from the file,
+>> arch/powerpc/sysdev/mpic.c,    .
+>> ======
+>> int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
+>> {
+>> 	......
+>> 	if (src >= mpic->irq_count)
+>> 		return -EINVAL;
+>> 			^
+>> 			I think this OOPS may be from here.
 > 
-> are available in the git repository at:
->   git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+> No, it's after that.  His board code is using the mpic's "isu" remapping
 
-Fail :-)
+I means OOPS is *from* here. According to David's call trace,
+mpic_set_irq_type() is the last issued function. And that corresponding return
+value, R3, is '0xffffffea', -22, and also '-EINVAL'. If everything is OK, I
+think we should not be failed with returning '-EINVAL' here. Right? So I think
+we should dump 'src' (mpic_irq_to_hw(virq)) and 'mpic->irq_count'. Then figure
+out why 'src' >= 'mpic->irq_count'. I think this can make our debug life easier.
 
-/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_pci.c:494: error: redefinition of 'fsl_pci_immrbar_base'
-/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_pci.c:313: note: previous definition of 'fsl_pci_immrbar_base' was here
-make[2]: *** [arch/powerpc/sysdev/fsl_pci.o] Error 1
-make[2]: *** Waiting for unfinished jobs....
+Tiejun
 
-Cheers,
-Ben.
-
-> Harninder Rai (1):
->       powerpc/fsl: 85xx: add cache-sram support
+> mechanism, and the MSIs aren't covered, so those registers aren't
+> ioremapped.
 > 
-> Ilya Yanok (1):
->       powerpc/mpc83xx: Support for MPC8308 P1M board
+> -Scott
 > 
-> Kumar Gala (10):
->       powerpc/fsl-pci: Fix MSI support on 83xx platforms
->       powerpc/mpc8xxx_gpio: Add support for 'qoriq-gpio' controllers
->       powerpc/fsl-booke: Add PCI device ids for P2040/P3041/P5010/P5020 QoirQ chips
->       powerpc/fsl-booke: Add p3041 DS board support
->       powerpc: Fix compile error with paca code on ppc64e
->       powerpc/fsl-booke: Add support for FSL 64-bit e5500 core
->       powerpc/fsl-booke: Add support for FSL Arch v1.0 MMU in setup_page_sizes
->       powerpc/fsl-booke64: Use TLB CAMs to cover linear mapping on FSL 64-bit chips
->       powerpc/fsl-booke: Add p5020 DS board support
->       powerpc/fsl-booke: Add e55xx (64-bit) smp defconfig
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
-> Matthew McClintock (6):
->       powerpc/kexec: make masking/disabling interrupts generic
->       powerpc/85xx: Remove call to mpic_teardown_this_cpu in kexec
->       powerpc/85xx: Minor fixups for kexec on 85xx
->       powerpc/85xx: flush dcache before resetting cores
->       powerpc/fsl_soc: Search all global-utilities nodes for rstccr
->       powerpc/fsl_booke: Add support to boot from core other than 0
-> 
-> Paul Gortmaker (1):
->       powerpc: Fix invalid page flags in create TLB CAM path for PTE_64BIT
-> 
-> Scott Wood (1):
->       oprofile/fsl emb: Don't set MSR[PMM] until after clearing the interrupt.
-> 
-> Timur Tabi (4):
->       powerpc: export ppc_proc_freq and ppc_tb_freq as GPL symbols
->       powerpc/watchdog: Allow the Book-E driver to be compiled as a module
->       powerpc/p1022: Add probing for individual DMA channels
->       powerpc/85xx: add ngPIXIS FPGA device tree node to the P1022DS board
-> 
->  arch/powerpc/boot/dts/mpc8308_p1m.dts          |  332 ++++++++++++++++++++++++
->  arch/powerpc/boot/dts/p1022ds.dts              |   11 +
->  arch/powerpc/configs/e55xx_smp_defconfig       |   84 ++++++
->  arch/powerpc/configs/ppc64e_defconfig          |    4 +-
->  arch/powerpc/include/asm/fsl_85xx_cache_sram.h |   48 ++++
->  arch/powerpc/include/asm/kexec.h               |    1 +
->  arch/powerpc/include/asm/mmu-book3e.h          |   15 +
->  arch/powerpc/include/asm/pte-common.h          |    7 +
->  arch/powerpc/kernel/Makefile                   |    4 +-
->  arch/powerpc/kernel/asm-offsets.c              |    4 +-
->  arch/powerpc/kernel/cpu_setup_fsl_booke.S      |   15 +
->  arch/powerpc/kernel/cputable.c                 |   28 ++-
->  arch/powerpc/kernel/crash.c                    |   13 +-
->  arch/powerpc/kernel/head_fsl_booke.S           |   10 +-
->  arch/powerpc/kernel/machine_kexec.c            |   24 ++
->  arch/powerpc/kernel/machine_kexec_32.c         |    4 +
->  arch/powerpc/kernel/paca.c                     |    2 +-
->  arch/powerpc/kernel/setup_32.c                 |    2 +-
->  arch/powerpc/kernel/time.c                     |    3 +-
->  arch/powerpc/kernel/traps.c                    |    5 +
->  arch/powerpc/mm/Makefile                       |    2 +-
->  arch/powerpc/mm/fsl_booke_mmu.c                |   15 +-
->  arch/powerpc/mm/mmu_decl.h                     |    5 +-
->  arch/powerpc/mm/tlb_nohash.c                   |   56 ++++-
->  arch/powerpc/mm/tlb_nohash_low.S               |    2 +-
->  arch/powerpc/oprofile/op_model_fsl_emb.c       |   15 +-
->  arch/powerpc/platforms/83xx/Kconfig            |    4 +-
->  arch/powerpc/platforms/83xx/mpc830x_rdb.c      |    3 +-
->  arch/powerpc/platforms/85xx/Kconfig            |   28 ++-
->  arch/powerpc/platforms/85xx/Makefile           |    2 +
->  arch/powerpc/platforms/85xx/p1022_ds.c         |    2 +
->  arch/powerpc/platforms/85xx/p3041_ds.c         |   64 +++++
->  arch/powerpc/platforms/85xx/p5020_ds.c         |   69 +++++
->  arch/powerpc/platforms/85xx/smp.c              |   76 +++++-
->  arch/powerpc/platforms/Kconfig.cputype         |    8 +-
->  arch/powerpc/sysdev/Makefile                   |    1 +
->  arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h      |  101 +++++++
->  arch/powerpc/sysdev/fsl_85xx_cache_sram.c      |  159 +++++++++++
->  arch/powerpc/sysdev/fsl_85xx_l2ctlr.c          |  231 ++++++++++++++++
->  arch/powerpc/sysdev/fsl_msi.c                  |    9 +-
->  arch/powerpc/sysdev/fsl_pci.c                  |   51 ++++-
->  arch/powerpc/sysdev/fsl_pci.h                  |    1 +
->  arch/powerpc/sysdev/fsl_soc.c                  |   20 +-
->  arch/powerpc/sysdev/mpc8xxx_gpio.c             |    3 +
->  drivers/watchdog/Kconfig                       |    5 +-
->  drivers/watchdog/booke_wdt.c                   |   39 +++-
->  include/linux/pci_ids.h                        |    8 +
->  47 files changed, 1516 insertions(+), 79 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/mpc8308_p1m.dts
->  create mode 100644 arch/powerpc/configs/e55xx_smp_defconfig
->  create mode 100644 arch/powerpc/include/asm/fsl_85xx_cache_sram.h
->  create mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
->  create mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
->  create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
->  create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_sram.c
->  create mode 100644 arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
