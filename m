@@ -1,39 +1,28 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 7FC8C1007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 05:44:23 +1100 (EST)
-Received: by iwn4 with SMTP id 4so295199iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Oct 2010 11:44:21 -0700 (PDT)
-Message-ID: <b7e849f04892d41d865b6b38a92cc322.squirrel@localhost>
-In-Reply-To: <20101014125010.5cfb4ee5@udp111988uds.am.freescale.net>
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>
-	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>
-	<20100921170700.53a99e56@udp111988uds.am.freescale.net>
-	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>
-	<20101007152626.4e834d43@udp111988uds.am.freescale.net>
-	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>
-	<4CB2DEFB.90204@windriver.com>
-	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>
-	<942ea2f3464025464521511c32355782.squirrel@localhost>
-	<20101012162152.5246744a@udp111988uds.am.freescale.net>
-	<4CB5088D.4090201@windriver.com>
-	<20101013102815.2959fcb6@udp111988uds.am.freescale.net>
-	<4CB65F6F.1090103@windriver.com> <4CB6788D.60705@windriver.com>
-	<20101014105126.08da9dd7@udp111988uds.am.freescale.net>
-	<dccb3790f1fbb04a8df74bd920e57580.squirrel@localhost>
-	<20101014113230.051b967a@udp111988uds.am.freescale.net>
-	<fac55e564d1f5b7e5398354939ec3b43.squirrel@localhost>
-	<20101014125010.5cfb4ee5@udp111988uds.am.freescale.net>
-Date: Thu, 14 Oct 2010 13:44:14 -0500
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-From: david.hagood@gmail.com
-To: "Scott Wood" <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 478C7B70AF
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 07:15:40 +1100 (EST)
+Received: from mail21-am1 (localhost.localdomain [127.0.0.1])	by
+	mail21-am1-R.bigfish.com (Postfix) with ESMTP id C7DE69A85A9	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 20:15:35 +0000 (UTC)
+Received: from am1ehsmhs010.bigfish.com (unknown [10.3.201.243])	by
+	mail21-am1.bigfish.com (Postfix) with ESMTP id 91F956B8053	for
+	<linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 20:15:34 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o9EKFVaB003721	for <linuxppc-dev@ozlabs.org>;
+	Thu, 14 Oct 2010 13:15:32 -0700 (MST)
+From: Timur Tabi <timur@freescale.com>
+To: <linuxppc-dev@ozlabs.org>, <kumar.gala@freescale.com>
+Subject: [PATCH] powerpc: fix warning when compiling immap_qe.h
+Date: Thu, 14 Oct 2010 15:15:30 -0500
+Message-ID: <1287087330-11172-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: "tiejun.chen" <tiejun.chen@windriver.com>, david.hagood@gmail.com,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,20 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fix the warnings genereted by arch/powerpc/include/asm/immap_qe.h when
+CONFIG_PHYS_ADDR_T_64BIT is defined:
 
-> Well, it was a coworker who added the workaround, so I assume we're
-> already aware of the issue.
->
-> The description of NIRQ is vague enough that it's hard to argue that
-> Linux's expectations of what it means are justified.
->
-Well, I now can actually interrupt the PPC from my host processor!
+immap_qe.h: In function 'immrbar_virt_to_phys':
+immap_qe.h:472:8: warning: cast from pointer to integer of different size
+immap_qe.h:472:24: warning: cast from pointer to integer of different size
+immap_qe.h:473:5: warning: cast from pointer to integer of different size
+immap_qe.h:473:21: warning: cast from pointer to integer of different size
+immap_qe.h:474:36: warning: cast from pointer to integer of different size
 
-(well, it segfaulted, but's my fault for not actually initializing my work
-queue structure. But I can get the interrupt into the part!)
+Note that the QE does not support 36-bit physical addresses, so even when
+CONFIG_PHYS_ADDR_T_64BIT is defined, the QE MURAM must be located below the
+4GB boundary.
 
-So thanks to all.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/include/asm/immap_qe.h |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
 
-I hope to get my code working, get past my delivery deadline on it, clean
-it up so it matches The One True Way Of Laying Out Kernel Code, and post
-it here for everybody to point and laugh at. Maybe around Christmas.
+diff --git a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/immap_qe.h
+index 4e10f50..0edb684 100644
+--- a/arch/powerpc/include/asm/immap_qe.h
++++ b/arch/powerpc/include/asm/immap_qe.h
+@@ -467,13 +467,22 @@ struct qe_immap {
+ extern struct qe_immap __iomem *qe_immr;
+ extern phys_addr_t get_qe_base(void);
+ 
+-static inline unsigned long immrbar_virt_to_phys(void *address)
++/*
++ * Returns the offset within the QE address space of the given pointer.
++ *
++ * Note that the QE does not support 36-bit physical addresses, so if
++ * get_qe_base() returns a number above 4GB, the caller will probably fail.
++ */
++static inline phys_addr_t immrbar_virt_to_phys(void *address)
+ {
+-	if ( ((u32)address >= (u32)qe_immr) &&
+-			((u32)address < ((u32)qe_immr + QE_IMMAP_SIZE)) )
+-		return (unsigned long)(address - (u32)qe_immr +
+-				(u32)get_qe_base());
+-	return (unsigned long)virt_to_phys(address);
++	void *q = (void *)qe_immr;
++
++	/* Is it a MURAM address? */
++	if ((address >= q) && (address < (q + QE_IMMAP_SIZE)))
++		return get_qe_base() + (address - q);
++
++	/* It's an address returned by kmalloc */
++	return virt_to_phys(address);
+ }
+ 
+ #endif /* __KERNEL__ */
+-- 
+1.7.2.3
