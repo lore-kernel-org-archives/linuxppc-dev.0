@@ -1,28 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B2EBCB70D6
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 10:57:37 +1100 (EST)
-Subject: Re: [PATCH 09/11] powerpc/fsl-booke64: Use TLB CAMs to cover
-	linear mapping on FSL 64-bit chips
+Subject: Re: [PATCH 2/2] ppc: lazy flush_tlb_mm for nohash architectures
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
-References: <1286564813-21209-1-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-2-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-3-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-4-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-5-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-6-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-7-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-8-git-send-email-galak@kernel.crashing.org>
-	<1286564813-21209-9-git-send-email-galak@kernel.crashing.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+In-Reply-To: <1285351297-9999-3-git-send-email-shaggy@linux.vnet.ibm.com>
+References: <1285351297-9999-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1285351297-9999-3-git-send-email-shaggy@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Oct 2010 10:57:28 +1100
-Message-ID: <1287014248.2205.14.camel@pasglop>
+Date: Thu, 14 Oct 2010 11:52:19 +1100
+Message-ID: <1287017539.2205.48.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,165 +19,316 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-10-08 at 14:06 -0500, Kumar Gala wrote:
-> On Freescale parts typically have TLB array for large mappings that we can
-> bolt the linear mapping into.  We utilize the code that already exists
-> on PPC32 on the 64-bit side to setup the linear mapping to be cover by
-> bolted TLB entries.  We utilize a quarter of the variable size TLB array
-> for this purpose.
+On Fri, 2010-09-24 at 13:01 -0500, Dave Kleikamp wrote:
+> On PPC_MMU_NOHASH processors that support a large number of contexts,
+> implement a lazy flush_tlb_mm() that switches to a free context, marking
+> the old one stale.  The tlb is only flushed when no free contexts are
+> available.
 > 
-> Additionally, we limit the amount of memory to what we can cover via
-> bolted entries so we don't get secondary faults in the TLB miss
-> handlers.  We should fix this limitation in the future.
+> The lazy tlb flushing is controlled by the global variable tlb_lazy_flush
+> which is set during init, dependent upon MMU_FTR_TYPE_47x.
 
-It might be worth investigating then doing simpler TLB miss handlers.
+Unless I'm mistaken, there are some issues with that patch... sorry for
+the late review, I've been away for a couple of weeks.
 
-Currently, you use my virtually linear scheme which involves a recursion
-to fault in the virtual mappings for the page tables, which means quite
-a bit of code to save/restore state for every TLB miss.
+> +int tlb_lazy_flush;
+> +static int tlb_needs_flush[NR_CPUS];
+> +static unsigned long *context_available_map;
+> +static unsigned int nr_stale_contexts;
 
-With a bolted linear mapping, if you go for a simple tree walk (which
-wouldn't fault), you can remove all that prolog/epilog etc...
+Now I understand what you're doing here, but wouldn't it have been
+possible to re-use the existing stale map concept or do you reckon it
+would have been too messy ?
 
-It may or may not be faster ... depends. You get less code but more
-loads, so it depends how well they end up being cached.
+At the very least, the "old style" stale map code and "new style" stale
+TLB code should be more in sync, you may end up flushing the TLB
+twice...
+
+>  #define CTX_MAP_SIZE	\
+>  	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
+>  
+> +/*
+> + * if another cpu recycled the stale contexts, we need to flush
+> + * the local TLB, so that we may re-use those contexts
+> + */
+> +void flush_recycled_contexts(int cpu)
+> +{
+> +	int i;
+> +
+> +	if (tlb_needs_flush[cpu]) {
+> +		pr_hard("[%d] flushing tlb\n", cpu);
+> +		_tlbil_all();
+> +		for (i = cpu_first_thread_in_core(cpu);
+> +		     i <= cpu_last_thread_in_core(cpu); i++) {
+> +			tlb_needs_flush[i] = 0;
+> +		}
+> +	}
+> +}
+
+So far so good :-)
+
+>  /* Steal a context from a task that has one at the moment.
+>   *
+> @@ -147,7 +167,7 @@ static unsigned int steal_context_up(unsigned int id)
+>  	pr_hardcont(" | steal %d from 0x%p", id, mm);
+>  
+>  	/* Flush the TLB for that context */
+> -	local_flush_tlb_mm(mm);
+> +	__local_flush_tlb_mm(mm);
+>  
+>  	/* Mark this mm has having no context anymore */
+>  	mm->context.id = MMU_NO_CONTEXT;
+
+Ok.
+
+> @@ -161,13 +181,19 @@ static unsigned int steal_context_up(unsigned int id)
+>  #ifdef DEBUG_MAP_CONSISTENCY
+>  static void context_check_map(void)
+>  {
+> -	unsigned int id, nrf, nact;
+> +	unsigned int id, nrf, nact, nstale;
+>  
+> -	nrf = nact = 0;
+> +	nrf = nact = nstale = 0;
+>  	for (id = first_context; id <= last_context; id++) {
+>  		int used = test_bit(id, context_map);
+> -		if (!used)
+> -			nrf++;
+> +		int allocated = tlb_lazy_flush &&
+> +				test_bit(id, context_available_map);
+> +		if (!used) {
+> +			if (allocated)
+> +				nstale++;
+> +			else
+> +				nrf++;
+> +		}
+>  		if (used != (context_mm[id] != NULL))
+>  			pr_err("MMU: Context %d is %s and MM is %p !\n",
+>  			       id, used ? "used" : "free", context_mm[id]);
+> @@ -179,6 +205,11 @@ static void context_check_map(void)
+>  		       nr_free_contexts, nrf);
+>  		nr_free_contexts = nrf;
+>  	}
+> +	if (nstale != nr_stale_contexts) {
+> +		pr_err("MMU: Stale context count out of sync ! (%d vs %d)\n",
+> +		       nr_stale_contexts, nstale);
+> +		nr_stale_contexts = nstale;
+> +	}
+>  	if (nact > num_online_cpus())
+>  		pr_err("MMU: More active contexts than CPUs ! (%d vs %d)\n",
+>  		       nact, num_online_cpus());
+
+Cursory glance on the above looks ok.
+
+> @@ -189,6 +220,38 @@ static void context_check_map(void)
+>  static void context_check_map(void) { }
+>  #endif
+>  
+> +/*
+> + * On architectures that support a large number of contexts, the tlb
+> + * can be flushed lazily by picking a new context and making the stale
+> + * context unusable until a lazy tlb flush has been issued.
+> + *
+> + * context_available_map keeps track of both active and stale contexts,
+> + * while context_map continues to track only active contexts.  When the
+> + * lazy tlb flush is triggered, context_map is copied to
+> + * context_available_map, making the once-stale contexts available again
+> + */
+> +static void recycle_stale_contexts(void)
+> +{
+> +	if (nr_free_contexts == 0 && nr_stale_contexts > 0) {
+
+Do an early return and avoid the indentation instead ?
+
+> +		unsigned int cpu = smp_processor_id();
+> +		unsigned int i;
+> +
+> +		pr_hard("[%d] recycling stale contexts\n", cpu);
+> +		/* Time to flush the TLB's */
+> +		memcpy(context_available_map, context_map, CTX_MAP_SIZE);
+> +		nr_free_contexts = nr_stale_contexts;
+> +		nr_stale_contexts = 0;
+> +		for_each_online_cpu(i) {
+> +			if ((i < cpu_first_thread_in_core(cpu)) ||
+> +			    (i > cpu_last_thread_in_core(cpu)))
+> +				tlb_needs_flush[i] = 1;
+> +			else
+> +				tlb_needs_flush[i] = 0;	/* This core */
+> +		}
+> +		_tlbil_all();
+> +	}
+> +}
+> +
+>  void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+>  {
+>  	unsigned int i, id, cpu = smp_processor_id();
+> @@ -197,6 +260,8 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+>  	/* No lockless fast path .. yet */
+>  	raw_spin_lock(&context_lock);
+>  
+> +	flush_recycled_contexts(cpu);
+> +
+
+Ok so here's the nasty one I think. You need to make sure that whenever
+you pick something off the context_available_map, you've done the above
+first within the same context_lock section right ? At least before you
+actually -use- said context.
+
+So far so good ... but steal_context can drop the lock iirc. So you may
+need to re-flush there. Not sure that can happen in practice but better
+safe than sorry. I would have preferred seeing that flush near the end
+of the function to avoid such problem.
+
+Then, you can end up in cases where you flush the TLB, but your context
+is marked stale due to stealing, and flush again. That's one of the
+reason I wonder if we can consolidate a bit the two orthogonal
+"staleness" concepts we have now.
+
+Granted, stealing on 47x is unlikely, but I have reasons to think that
+this lazy flushing will benefit 440 too.
+
+>  	pr_hard("[%d] activating context for mm @%p, active=%d, id=%d",
+>  		cpu, next, next->context.active, next->context.id);
+>  
+> @@ -227,7 +292,12 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+>  	id = next_context;
+>  	if (id > last_context)
+>  		id = first_context;
+> -	map = context_map;
+> +
+> +	if (tlb_lazy_flush) {
+> +		recycle_stale_contexts();
+> +		map = context_available_map;
+> +	} else
+> +		map = context_map;
+>  
+>  	/* No more free contexts, let's try to steal one */
+>  	if (nr_free_contexts == 0) {
+> @@ -250,6 +320,13 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+>  		if (id > last_context)
+>  			id = first_context;
+>  	}
+> +	if (tlb_lazy_flush)
+> +		/*
+> +		 * In the while loop above, we set the bit in
+> +		 * context_available_map, it also needs to be set in
+> +		 * context_map
+> +		 */
+> +		__set_bit(id, context_map);
+>   stolen:
+>  	next_context = id + 1;
+>  	context_mm[id] = next;
+> @@ -267,7 +344,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+>  			    id, cpu_first_thread_in_core(cpu),
+>  			    cpu_last_thread_in_core(cpu));
+>  
+> -		local_flush_tlb_mm(next);
+> +		__local_flush_tlb_mm(next);
+>  
+>  		/* XXX This clear should ultimately be part of local_flush_tlb_mm */
+>  		for (i = cpu_first_thread_in_core(cpu);
+> @@ -317,11 +394,61 @@ void destroy_context(struct mm_struct *mm)
+>  		mm->context.active = 0;
+>  #endif
+>  		context_mm[id] = NULL;
+> -		nr_free_contexts++;
+> +
+> +		if (tlb_lazy_flush)
+> +			nr_stale_contexts++;
+> +		else
+> +			nr_free_contexts++;
+>  	}
+>  	raw_spin_unlock_irqrestore(&context_lock, flags);
+>  }
+
+Now...
+
+> +/*
+> + * This is called from flush_tlb_mm().  Mark the current context as stale
+> + * and grab an available one.  The tlb will be flushed when no more
+> + * contexts are available
+> + */
+> +void lazy_flush_context(struct mm_struct *mm)
+> +{
+> +	unsigned int id;
+> +	unsigned long flags;
+> +	unsigned long *map;
+> +
+> +	raw_spin_lock_irqsave(&context_lock, flags);
+> +
+> +	id = mm->context.id;
+> +	if (unlikely(id == MMU_NO_CONTEXT))
+> +		goto no_context;
+
+First thing is ... you reproduce quite a bit of logic from
+switch_mmu_context() here. Shouldn't it be abstracted in a separate
+function ?
+
+The other thing here is that another CPU might have done a
+recycle_stale_contexts() before you get here. IE. Your TLB may be stale.
+Shouln't you do a flush here ? Since you are picking up a new PID from
+the context_available_map, it can potentially be stale if your tlb needs
+flushing due to another CPU having just done a recycle.
+
+> +	/*
+> +	 * Make the existing context stale.  It remains in
+> +	 * context_available_map as long as nr_free_contexts remains non-zero
+> +	 */
+> +	 __clear_bit(id, context_map);
+> +	 context_mm[id] = NULL;
+> +	 nr_stale_contexts++;
+> +
+> +	recycle_stale_contexts();
+> +	BUG_ON(nr_free_contexts == 0);
+> +
+> +	nr_free_contexts--;
+> +	id = last_context;
+> +	map = context_available_map;
+> +	while (__test_and_set_bit(id, map)) {
+> +		id = find_next_zero_bit(map, last_context+1, id);
+> +		if (id > last_context)
+> +			id = first_context;
+> +	}
+> +	set_bit(id, context_map);
+> +	next_context = id + 1;
+> +	context_mm[id] = mm;
+> +	mm->context.id = id;
+> +	if (current->active_mm == mm)
+> +		set_context(id, mm->pgd);
+> +no_context:
+> +	raw_spin_unlock_irqrestore(&context_lock, flags);
+> +}
+> +
+>  #ifdef CONFIG_SMP
+>  
+>  static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+> @@ -407,6 +534,7 @@ void __init mmu_context_init(void)
+>  	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
+>  		first_context = 1;
+>  		last_context = 65535;
+> +		tlb_lazy_flush = 1;
+>  	} else {
+>  		first_context = 1;
+>  		last_context = 255;
+
+Somebody should measure on 440, might actually improve perfs. Something
+like a kernel compile sounds like a good test here.
+
+> @@ -419,6 +547,8 @@ void __init mmu_context_init(void)
+>  	 * Allocate the maps used by context management
+>  	 */
+>  	context_map = alloc_bootmem(CTX_MAP_SIZE);
+> +	if (tlb_lazy_flush)
+> +		context_available_map = alloc_bootmem(CTX_MAP_SIZE);
+>  	context_mm = alloc_bootmem(sizeof(void *) * (last_context + 1));
+>  	stale_map[0] = alloc_bootmem(CTX_MAP_SIZE);
+>  
+> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+> index 63b84a0..64240f1 100644
+> --- a/arch/powerpc/mm/mmu_decl.h
+> +++ b/arch/powerpc/mm/mmu_decl.h
+> @@ -25,6 +25,14 @@
+>  #ifdef CONFIG_PPC_MMU_NOHASH
 
 Cheers,
 Ben.
-
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  arch/powerpc/kernel/asm-offsets.c |    4 ++--
->  arch/powerpc/mm/Makefile          |    2 +-
->  arch/powerpc/mm/fsl_booke_mmu.c   |   12 +++++++-----
->  arch/powerpc/mm/mmu_decl.h        |    5 ++++-
->  arch/powerpc/mm/tlb_nohash.c      |   14 ++++++++++++++
->  arch/powerpc/mm/tlb_nohash_low.S  |    2 +-
->  6 files changed, 29 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index c634940..c3e0194 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -61,7 +61,7 @@
->  #endif
->  #endif
->  
-> -#if defined(CONFIG_FSL_BOOKE)
-> +#if defined(CONFIG_PPC_FSL_BOOK3E)
->  #include "../mm/mmu_decl.h"
->  #endif
->  
-> @@ -470,7 +470,7 @@ int main(void)
->  	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
->  	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
->  #endif
-> -#ifdef CONFIG_FSL_BOOKE
-> +#ifdef CONFIG_PPC_FSL_BOOK3E
->  	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
->  	DEFINE(TLBCAM_MAS0, offsetof(struct tlbcam, MAS0));
->  	DEFINE(TLBCAM_MAS1, offsetof(struct tlbcam, MAS1));
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index ce68708..d646f16 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -25,7 +25,7 @@ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
->  				   mmu_context_hash$(CONFIG_WORD_SIZE).o
->  obj-$(CONFIG_40x)		+= 40x_mmu.o
->  obj-$(CONFIG_44x)		+= 44x_mmu.o
-> -obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
-> +obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
->  obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
->  obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
->  ifeq ($(CONFIG_HUGETLB_PAGE),y)
-> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-> index 1b4354d..67bc8a7 100644
-> --- a/arch/powerpc/mm/fsl_booke_mmu.c
-> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
-> @@ -56,11 +56,6 @@
->  
->  unsigned int tlbcam_index;
->  
-> -
-> -#if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
-> -#error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
-> -#endif
-> -
->  #define NUM_TLBCAMS	(64)
->  struct tlbcam TLBCAM[NUM_TLBCAMS];
->  
-> @@ -185,6 +180,12 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
->  	return amount_mapped;
->  }
->  
-> +#ifdef CONFIG_PPC32
-> +
-> +#if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
-> +#error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
-> +#endif
-> +
->  unsigned long __init mmu_mapin_ram(unsigned long top)
->  {
->  	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
-> @@ -216,3 +217,4 @@ void __init adjust_total_lowmem(void)
->  
->  	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
->  }
-> +#endif
-> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-> index 63b84a0..dd0a258 100644
-> --- a/arch/powerpc/mm/mmu_decl.h
-> +++ b/arch/powerpc/mm/mmu_decl.h
-> @@ -140,10 +140,13 @@ extern void wii_memory_fixups(void);
->  extern void MMU_init_hw(void);
->  extern unsigned long mmu_mapin_ram(unsigned long top);
->  
-> -#elif defined(CONFIG_FSL_BOOKE)
-> +#elif defined(CONFIG_PPC_FSL_BOOK3E)
-> +extern unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx);
-> +#ifdef CONFIG_PPC32
->  extern void MMU_init_hw(void);
->  extern unsigned long mmu_mapin_ram(unsigned long top);
->  extern void adjust_total_lowmem(void);
-> +#endif
->  extern void loadcam_entry(unsigned int index);
->  
->  struct tlbcam {
-> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-> index 6651899..61fe32a 100644
-> --- a/arch/powerpc/mm/tlb_nohash.c
-> +++ b/arch/powerpc/mm/tlb_nohash.c
-> @@ -541,6 +541,20 @@ static void __early_init_mmu(int boot_cpu)
->  	 */
->  	linear_map_top = memblock_end_of_DRAM();
->  
-> +#ifdef CONFIG_PPC_FSL_BOOK3E
-> +	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
-> +		unsigned int num_cams;
-> +
-> +		/* use a quarter of the TLBCAM for bolted linear map */
-> +		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
-> +		linear_map_top = map_mem_in_cams(linear_map_top, num_cams);
-> +
-> +		/* limit memory so we dont have linear faults */
-> +		memblock_enforce_memory_limit(linear_map_top);
-> +		memblock_analyze();
-> +	}
-> +#endif
-> +
->  	/* A sync won't hurt us after mucking around with
->  	 * the MMU configuration
->  	 */
-> diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
-> index b9d9fed..af405ee 100644
-> --- a/arch/powerpc/mm/tlb_nohash_low.S
-> +++ b/arch/powerpc/mm/tlb_nohash_low.S
-> @@ -367,7 +367,7 @@ _GLOBAL(set_context)
->  #error Unsupported processor type !
->  #endif
->  
-> -#if defined(CONFIG_FSL_BOOKE)
-> +#if defined(CONFIG_PPC_FSL_BOOK3E)
->  /*
->   * extern void loadcam_entry(unsigned int index)
->   *
