@@ -1,18 +1,13 @@
-Return-Path: <eric@eukrea.com>
-Received: from 68.mail-out.ovh.net (68.mail-out.ovh.net [91.121.185.69])
-	by ozlabs.org (Postfix) with SMTP id 3C2D1B70E5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 23:37:41 +1100 (EST)
-From: =?UTF-8?q?Eric=20B=C3=A9nard?= <eric@eukrea.com>
-To: linux-usb@vger.kernel.org
-Subject: [PATCH] mxc_udc: add workaround for ENGcm09152 for i.MX35
-Date: Fri, 15 Oct 2010 14:30:58 +0200
-Message-Id: <1287145858-10239-1-git-send-email-eric@eukrea.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: dbrownell@users.sourceforge.net, Dinh.Nguyen@freescale.com, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [RFC PATCH v3] 476: Set CCR2[DSTI] to prevent isync from flushing
+	shadow TLB
+Date: Fri, 15 Oct 2010 12:33:36 -0500
+Message-Id: <1287164016-5184-1-git-send-email-shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,83 +17,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-this patch gives the possibility to workaround bug ENGcm09152
-on i.MX35 when the hardware workaround is also implemented on
-the board.
-It covers the workaround described on page 25 of the following Errata :
-http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf 
+ Josh, don't pick this up yet.  It needs a bit more testing, but I think I
+ got it right this time.
 
-Signed-off-by: Eric Bénard <eric@eukrea.com>
+When the DSTI (Disable Shadow TLB Invalidate) bit is set in the CCR2
+register, the isync command does not flush the shadow TLB (iTLB & dTLB).
+
+However, since the shadow TLB does not contain context information, we
+want the shadow TLB flushed in situations where we are switching context.
+In those situations, we explicitly clear the DSTI bit before performing
+isync, and set it again afterward.  We also need to do the same when we
+perform isync after explicitly flushing the TLB.
+
+The 476 requires an isync following a write to certain SPRs in order for
+their changes to be effective.  Such is the case with the DSTI bit, so
+the first isync may not be affected by an immediate change to CCR2, but
+a second isync instruction will repect the setting.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
- arch/arm/mach-mx3/mach-cpuimx35.c |    1 +
- drivers/usb/gadget/fsl_mxc_udc.c  |   15 +++++++++++++++
- include/linux/fsl_devices.h       |    3 +++
- 3 files changed, 19 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/reg_booke.h  |    4 ++++
+ arch/powerpc/kernel/head_44x.S        |   28 ++++++++++++++++++++++++++++
+ arch/powerpc/mm/tlb_nohash_low.S      |   24 +++++++++++++++++++++++-
+ arch/powerpc/platforms/44x/misc_44x.S |   28 ++++++++++++++++++++++++++++
+ 4 files changed, 83 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-mx3/mach-cpuimx35.c b/arch/arm/mach-mx3/mach-cpuimx35.c
-index 6024bb9..a95ff79 100644
---- a/arch/arm/mach-mx3/mach-cpuimx35.c
-+++ b/arch/arm/mach-mx3/mach-cpuimx35.c
-@@ -132,6 +132,7 @@ static struct mxc_usbh_platform_data __maybe_unused usbh1_pdata = {
- static struct fsl_usb2_platform_data otg_device_pdata = {
- 	.operating_mode	= FSL_USB2_DR_DEVICE,
- 	.phy_mode	= FSL_USB2_PHY_UTMI,
-+	.workaround	= FLS_USB2_WORKAROUND_ENGCM09152,
- };
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 667a498..a7ecbfe 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -120,6 +120,7 @@
+ #define SPRN_TLB3CFG	0x2B3	/* TLB 3 Config Register */
+ #define SPRN_EPR	0x2BE	/* External Proxy Register */
+ #define SPRN_CCR1	0x378	/* Core Configuration Register 1 */
++#define SPRN_CCR2_476	0x379	/* Core Configuration Register 2 (476)*/
+ #define SPRN_ZPR	0x3B0	/* Zone Protection Register (40x) */
+ #define SPRN_MAS7	0x3B0	/* MMU Assist Register 7 */
+ #define SPRN_MMUCR	0x3B2	/* MMU Control Register */
+@@ -188,6 +189,9 @@
+ #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity checking */
+ #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
  
- static int otg_mode_host;
-diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mxc_udc.c
-index eafa6d2..5bdbfe6 100644
---- a/drivers/usb/gadget/fsl_mxc_udc.c
-+++ b/drivers/usb/gadget/fsl_mxc_udc.c
-@@ -22,6 +22,10 @@
- static struct clk *mxc_ahb_clk;
- static struct clk *mxc_usb_clk;
- 
-+/* workaround ENGcm09152 for i.MX35 */
-+#define USBPHYCTRL_OTGBASE_OFFSET	0x608
-+#define USBPHYCTRL_EVDO			(1 << 23)
++/* Bit definitions for CCR2. */
++#define CCR2_476_DSTI	0x08000000 /* Disable Shadow TLB Invalidate */
 +
- int fsl_udc_clk_init(struct platform_device *pdev)
- {
- 	struct fsl_usb2_platform_data *pdata;
-@@ -84,6 +88,17 @@ eenahb:
- void fsl_udc_clk_finalize(struct platform_device *pdev)
- {
- 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-+#if defined(CONFIG_ARCH_MX35)
-+	unsigned int v;
+ /* Bit definitions for the MCSR. */
+ #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+ #define MCSR_IB		0x40000000 /* Instruction PLB Error */
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 562305b..df1ef80 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -38,6 +38,7 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/synch.h>
++#include <asm/bug.h>
+ #include "head_booke.h"
+ 
+ 
+@@ -703,8 +704,29 @@ _GLOBAL(set_context)
+ 	stw	r4, 0x4(r5)
+ #endif
+ 	mtspr	SPRN_PID,r3
++BEGIN_MMU_FTR_SECTION
++	b	1f
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
+ 	isync			/* Force context change */
+ 	blr
++1:
++#ifdef CONFIG_PPC_47x
++	mfspr	r10,SPRN_CCR2_476
++	rlwinm	r11,r10,0,~CCR2_476_DSTI
++	mtspr	SPRN_CCR2_476,r11
++	/*
++	 * The first isync may not respect the change to CCR2, but its
++	 * completion will ensure that the second isync does.
++	 */
++	isync
++	isync			/* Force context change */
++	mtspr	SPRN_CCR2_476,r10
++	isync
++#else /* CONFIG_PPC_47x */
++2:	trap
++	EMIT_BUG_ENTRY 2b,__FILE__,__LINE__,0;
++#endif /* CONFIG_PPC_47x */
++	blr
+ 
+ /*
+  * Init CPU state. This is called at boot time or for secondary CPUs
+@@ -1083,6 +1105,12 @@ clear_utlb_entry:
+ 	isync
+ #endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+ 
++	mfspr   r3,SPRN_CCR2_476
++	/* With CCR2(DSTI) set, isync does not invalidate the shadow TLB */
++	oris	r3,r3,CCR2_476_DSTI@h
++	mtspr   SPRN_CCR2_476,r3
++	isync
 +
-+	/* workaround ENGcm09152 for i.MX35 */
-+	if (pdata->workaround & FLS_USB2_WORKAROUND_ENGCM09152) {
-+		v = readl(MX35_IO_ADDRESS(MX35_OTG_BASE_ADDR +
-+				USBPHYCTRL_OTGBASE_OFFSET));
-+		writel(v | USBPHYCTRL_EVDO, MX35_IO_ADDRESS(MX35_OTG_BASE_ADDR +
-+				USBPHYCTRL_OTGBASE_OFFSET));
-+	}
-+#endif
+ 	/* Establish the interrupt vector offsets */
+ 	SET_IVOR(0,  CriticalInput);
+ 	SET_IVOR(1,  MachineCheckA);
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index b9d9fed..8e318ed 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -112,6 +112,16 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
+ 	clrrwi	r4,r3,12	/* get an EPN for the hashing with V = 0 */
+ 	ori	r4,r4,PPC47x_TLBE_SIZE
+ 	tlbwe   r4,r7,0		/* write it */
++	mfspr	r8,SPRN_CCR2_476
++	rlwinm	r9,r8,0,~CCR2_476_DSTI
++	mtspr	SPRN_CCR2_476,r9
++	/*
++	 * The first isync may not respect the change to CCR2, but its
++	 * completion will ensure that the second isync does.
++	 */
++	isync
++	isync
++	mtspr	SPRN_CCR2_476,r8
+ 	isync
+ 	wrtee	r10
+ 	blr
+@@ -180,7 +190,13 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
+ 	lwz	r8,0(r10)	/* Load boltmap entry */
+ 	addi	r10,r10,4	/* Next word */
+ 	b	1b		/* Then loop */
+-1:	isync			/* Sync shadows */
++1:	mfspr	r9,SPRN_CCR2_476
++	rlwinm	r10,r9,0,~CCR2_476_DSTI
++	mtspr	SPRN_CCR2_476,r10
++	isync
++	isync			/* Sync shadows */
++	mtspr	SPRN_CCR2_476,r9
++	isync
+ 	wrtee	r11
+ #else /* CONFIG_PPC_47x */
+ 1:	trap
+@@ -203,6 +219,12 @@ _GLOBAL(_tlbivax_bcast)
+ 	isync
+ /*	tlbivax	0,r3 - use .long to avoid binutils deps */
+ 	.long 0x7c000624 | (r3 << 11)
++	mfspr	r8,SPRN_CCR2_476
++	rlwinm	r9,r8,0,~CCR2_476_DSTI
++	mtspr	SPRN_CCR2_476,r9
++	isync
++	isync
++	mtspr	SPRN_CCR2_476,r8
+ 	isync
+ 	eieio
+ 	tlbsync
+diff --git a/arch/powerpc/platforms/44x/misc_44x.S b/arch/powerpc/platforms/44x/misc_44x.S
+index dc12b80..2422dd3 100644
+--- a/arch/powerpc/platforms/44x/misc_44x.S
++++ b/arch/powerpc/platforms/44x/misc_44x.S
+@@ -9,15 +9,40 @@
+  *
+  */
  
- 	/* ULPI transceivers don't need usbpll */
- 	if (pdata->phy_mode == FSL_USB2_PHY_ULPI) {
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 28e33fe..01a23fa 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -63,12 +63,15 @@ struct fsl_usb2_platform_data {
- 	enum fsl_usb2_operating_modes	operating_mode;
- 	enum fsl_usb2_phy_modes		phy_mode;
- 	unsigned int			port_enables;
-+	unsigned int			workaround;
- };
++#include <asm/mmu.h>
+ #include <asm/reg.h>
+ #include <asm/ppc_asm.h>
  
- /* Flags in fsl_usb2_mph_platform_data */
- #define FSL_USB2_PORT0_ENABLED	0x00000001
- #define FSL_USB2_PORT1_ENABLED	0x00000002
+ 	.text
  
-+#define FLS_USB2_WORKAROUND_ENGCM09152	(1 << 0)
++#ifdef CONFIG_PPC_47x
 +
- struct spi_device;
++#define LOAD_CLEAR_CCR2_DSTI(REG1, REG2)	\
++BEGIN_MMU_FTR_SECTION				\
++	mfspr REG1,SPRN_CCR2_476;		\
++	rlwinm	REG2,REG1,0,~CCR2_476_DSTI;	\
++	mtspr	SPRN_CCR2_476,REG2;		\
++	isync;					\
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
++
++#define RESTORE_CCR2_DSTI(REG)			\
++BEGIN_MMU_FTR_SECTION				\
++	mtspr	SPRN_CCR2_476,REG;		\
++	isync;					\
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
++
++#else	/* CONFIG_PPC_47x */
++
++#define LOAD_CLEAR_CCR2_DSTI(REG1, REG2)
++#define RESTORE_CCR2_DSTI(REG)
++
++#endif	/* CONFIG_PPC_47x */
++
+ /*
+  * Do an IO access in AS1
+  */
+ _GLOBAL(as1_readb)
++	LOAD_CLEAR_CCR2_DSTI(r8, r9)
+ 	mfmsr	r7
+ 	ori	r0,r7,MSR_DS
+ 	sync
+@@ -29,9 +54,11 @@ _GLOBAL(as1_readb)
+ 	mtmsr	r7
+ 	sync
+ 	isync
++	RESTORE_CCR2_DSTI(r8)
+ 	blr
  
- struct fsl_spi_platform_data {
+ _GLOBAL(as1_writeb)
++	LOAD_CLEAR_CCR2_DSTI(r8, r9)
+ 	mfmsr	r7
+ 	ori	r0,r7,MSR_DS
+ 	sync
+@@ -43,4 +70,5 @@ _GLOBAL(as1_writeb)
+ 	mtmsr	r7
+ 	sync
+ 	isync
++	RESTORE_CCR2_DSTI(r8)
+ 	blr
 -- 
-1.7.0.4
+1.7.2.2
