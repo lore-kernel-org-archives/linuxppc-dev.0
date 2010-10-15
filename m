@@ -1,17 +1,23 @@
-Return-Path: <tao_rick@yahoo.com>
-Received: from nm26.bullet.mail.ac4.yahoo.com (nm26.bullet.mail.ac4.yahoo.com
-	[98.139.52.223]) by ozlabs.org (Postfix) with SMTP id 070CEB70E1
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4E112B70E9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Oct 2010 06:13:17 +1100 (EST)
-Message-ID: <872288.6462.qm@web50407.mail.re2.yahoo.com>
-Date: Fri, 15 Oct 2010 12:13:14 -0700 (PDT)
-From: Rick Tao <tao_rick@yahoo.com>
-Subject: Re: Possible kernel stack overflow due to fast interrupts
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1287100633.2205.80.camel@pasglop>
+	Sat, 16 Oct 2010 06:18:10 +1100 (EST)
+Date: Fri, 15 Oct 2010 12:10:05 -0700
+From: Greg KH <greg@kroah.com>
+To: Eric =?iso-8859-1?Q?B=E9nard?= <eric@eukrea.com>
+Subject: Re: [PATCH] mxc_udc: add workaround for ENGcm09152 for i.MX35
+Message-ID: <20101015191005.GB8098@kroah.com>
+References: <1287145858-10239-1-git-send-email-eric@eukrea.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1287145858-10239-1-git-send-email-eric@eukrea.com>
+Cc: dbrownell@users.sourceforge.net, Dinh.Nguyen@freescale.com,
+	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, gregkh@suse.de,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,35 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-You are exactly right! Ensuring interrupts would not cause more preemptions=
-. =0AThanks for pointing it out.=0ARick=0A=0A--- On Thu, 10/14/10, Benjamin=
- Herrenschmidt <benh@kernel.crashing.org> wrote:=0A=0A> From: Benjamin Herr=
-enschmidt <benh@kernel.crashing.org>=0A> Subject: Re: Possible kernel stack=
- overflow due to fast interrupts=0A> To: "Rick Tao" <tao_rick@yahoo.com>=0A=
-> Cc: linuxppc-dev@lists.ozlabs.org=0A> Date: Thursday, October 14, 2010, 4=
-:57 PM=0A> On Thu, 2010-10-14 at 13:45 -0700,=0A> Rick Tao wrote:=0A> > Hi,=
- all,=0A> =0A>  .../...=0A> =0A> > In the context of task A=0A> > a. NIP wo=
-uld point to the instruction after=0A> switch_to(). =0A> > b. MSR_EE is ena=
-bled in the call trace=0A> (finish_task_switch=0A> -->finish_lock_switch-->=
-spin_unlock_irq)=0A> > c. do something that would trigger an interrupt late=
-r=0A> on (such as timer)=0A> > d. call schedule() for context switch to tas=
-k B.=0A> >=A0 =A0 In this step, =0A> >=A0 =A0 =A0 task B's stack is popped=
-=0A> INT_FRAME_SIZE size for context restore.=A0 =0A> >=A0 =A0 Note that ta=
-sk B's ksp =3D X -=0A> INT_FRAME_SIZE=0A> > =0A> > In the context of task B=
- again=0A> > a1. similar to step "a" above=0A> >=0A> > b1. similar to step =
-"b" above =0A> > c1. interrupt occurs, go to step "1" above, and=0A> repeat=
-!!!=0A> > =0A> > As you can see, task B's kernel stack space is reduced=0A>=
- by INT_FRAME_SIZE=0A> > on each loop. It will eventually overflow.=0A> =0A=
-> So if I follow you correctly, you are worried that by the=0A> time execut=
-ion=0A> resumes in B, and before it pops the second frame off, it=0A> might=
- get=0A> another interrupt and re-preempt...=0A> =0A> Now unless I missed s=
-omething, that cannot happen because=0A> preempt_schedule_irq() does increm=
-ent the preempt count:=0A> =0A> =A0=A0=A0 add_preempt_count(PREEMPT_ACTIVE)=
-;=0A> =A0=A0=A0 local_irq_enable();=0A> =A0=A0=A0 schedule();=0A> =A0=A0=A0=
- local_irq_disable();=0A> =A0=A0=A0 sub_preempt_count(PREEMPT_ACTIVE);=0A> =
-=0A> Which means that it won't preempt again in=0A> finish_task_switch, and=
- so=0A> will eventually come back, turn EE back off, and pop off=0A> the st=
-ack=0A> frame.=0A> =0A> Or am I missing something ?=0A> =0A> Cheers,=0A> Be=
-n.=0A> =0A> =0A> _______________________________________________=0A> Linuxp=
-pc-dev mailing list=0A> Linuxppc-dev@lists.ozlabs.org=0A> https://lists.ozl=
-abs.org/listinfo/linuxppc-dev=0A> =0A=0A=0A      
+On Fri, Oct 15, 2010 at 02:30:58PM +0200, Eric Bénard wrote:
+> this patch gives the possibility to workaround bug ENGcm09152
+> on i.MX35 when the hardware workaround is also implemented on
+> the board.
+> It covers the workaround described on page 25 of the following Errata :
+> http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf 
+> 
+> Signed-off-by: Eric Bénard <eric@eukrea.com>
+> ---
+>  arch/arm/mach-mx3/mach-cpuimx35.c |    1 +
+>  drivers/usb/gadget/fsl_mxc_udc.c  |   15 +++++++++++++++
+>  include/linux/fsl_devices.h       |    3 +++
+>  3 files changed, 19 insertions(+), 0 deletions(-)
+
+Do you want me to take this through my usb tree, or will it go through
+some other developer's tree?
+
+Either is fine with me.
+
+thanks,
+
+greg k-h
