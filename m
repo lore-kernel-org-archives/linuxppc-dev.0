@@ -1,21 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC PATCH] ppc: don't override CONFIG_PPC_PSERIES_DEBUG
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <20101015002300.GB7522@us.ibm.com>
-References: <1287078495-11722-1-git-send-email-nacc@us.ibm.com>
-	<1287101663.4194.5.camel@concordia> <20101015002300.GB7522@us.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-tSfPy+9328y+2YgHwZ1Q"
-Date: Fri, 15 Oct 2010 11:29:59 +1100
-Message-ID: <1287102599.4194.19.camel@concordia>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, Frans Pop <elendil@planet.nl>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Linas Vepstas <linasvepstas@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
-Reply-To: michael@ellerman.id.au
+Return-Path: <nacc@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2235CB6F06
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Oct 2010 11:49:03 +1100 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9F0frsT022218
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 20:41:53 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9F0n0D4291464
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 20:49:00 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9F0mxB6030940
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2010 21:49:00 -0300
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: nacc@us.ibm.com
+Subject: [PATCH v2] pseries: don't override CONFIG_PPC_PSERIES_DEBUG
+Date: Thu, 14 Oct 2010 17:48:52 -0700
+Message-Id: <1287103733-7121-1-git-send-email-nacc@us.ibm.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Linas Vepstas <linasvepstas@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+eeh and pci_dlpar #undef DEBUG, but I think they were added before the
+ability to control this from Kconfig. It's really annoying to only get
+some of the debug messages from these files. Leave the lpar.c #undef
+alone as it produces so much output as to make the kernel unusable.
+Update the Kconfig text to indicate this particular quirk :)
 
---=-tSfPy+9328y+2YgHwZ1Q
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+---
+ arch/powerpc/platforms/pseries/Kconfig     |    6 ++++++
+ arch/powerpc/platforms/pseries/eeh.c       |    2 --
+ arch/powerpc/platforms/pseries/pci_dlpar.c |    2 --
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-On Thu, 2010-10-14 at 17:23 -0700, Nishanth Aravamudan wrote:
-> On 15.10.2010 [11:14:23 +1100], Michael Ellerman wrote:
-> > On Thu, 2010-10-14 at 10:48 -0700, Nishanth Aravamudan wrote:
-> > > Because the lpar and pci_dlpar code is pretty low-level & verbose,
-> > > perhaps it makes sense to add another Kconfig variable for really
-> > > low-level stuff? But it's annoying to have DEBUG *somewhat* effective=
-,
-> > > especially in the EEH area when doing PCI stuff.
-> >=20
-> > I really don't think you want to enable the lpar debug by default.
-> > Have you tried it? It can make for a pretty unusable system, just
-> > because of the console spam.
->=20
-> Yeah, you're right. After enabling it, I had to kill my boot and start
-> over w/o the lpar DEBUG on.=20
-
-:)
-
-> I assume dlpar_pci is similar?
-
-That should be OK to enable I think. Suck it and see I guess.
-
-> I dunno, would a patch to a least remove the EEH one be ok? Seems like
-> it isn't super-verbose, and does have some handy output.
-
-Yeah definitely. That undef was merged as part of a cleanup/fix patch
-but shouldn't have been.
-
-cheers
-
-
-
---=-tSfPy+9328y+2YgHwZ1Q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAky3oIcACgkQdSjSd0sB4dKfFQCeLnSxqXlvtumQg3VnB6/1eFk0
-6FEAn0bxW+zpGzjjTgBJfw1Wn/2Dn3Bd
-=zsJD
------END PGP SIGNATURE-----
-
---=-tSfPy+9328y+2YgHwZ1Q--
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index c667f0f..3139814 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -47,6 +47,12 @@ config LPARCFG
+ config PPC_PSERIES_DEBUG
+ 	depends on PPC_PSERIES && PPC_EARLY_DEBUG
+ 	bool "Enable extra debug logging in platforms/pseries"
++        help
++	  Say Y here if you want the pseries core to produce a bunch of
++	  debug messages to the system log. Select this if you are having a
++	  problem with the pseries core and want to see more of what is
++	  going on. This does not enable debugging in lpar.c, which must
++	  be manually done due to its verbosity.
+ 	default y
+ 
+ config PPC_SMLPAR
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 34b7dc1..17a11c8 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -21,8 +21,6 @@
+  * Please address comments and feedback to Linas Vepstas <linas@austin.ibm.com>
+  */
+ 
+-#undef DEBUG
+-
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/list.h>
+diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+index 4b7a062..5fcc92a 100644
+--- a/arch/powerpc/platforms/pseries/pci_dlpar.c
++++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+@@ -25,8 +25,6 @@
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+-#undef DEBUG
+-
+ #include <linux/pci.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/ppc-pci.h>
+-- 
+1.7.1
