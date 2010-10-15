@@ -1,40 +1,18 @@
-Return-Path: <R61911@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe005.messaging.microsoft.com
-	[65.55.88.15]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7202E1007D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 16:03:54 +1100 (EST)
-Received: from mail37-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail37-tx2-R.bigfish.com (Postfix) with ESMTP id 0C66CA00194	for
-	<linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 05:03:51 +0000 (UTC)
-Received: from TX2EHSMHS027.bigfish.com (unknown [10.9.14.243])	by
-	mail37-tx2.bigfish.com (Postfix) with ESMTP id 248BDEB80EF	for
-	<linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 05:03:23 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o9F53KJ4022441	for <linuxppc-dev@ozlabs.org>;
-	Thu, 14 Oct 2010 22:03:21 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o9F53J4w015142	for <linuxppc-dev@ozlabs.org>;
-	Fri, 15 Oct 2010 00:03:19 -0500 (CDT)
+Return-Path: <eric@eukrea.com>
+Received: from 68.mail-out.ovh.net (68.mail-out.ovh.net [91.121.185.69])
+	by ozlabs.org (Postfix) with SMTP id 3C2D1B70E5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Oct 2010 23:37:41 +1100 (EST)
+From: =?UTF-8?q?Eric=20B=C3=A9nard?= <eric@eukrea.com>
+To: linux-usb@vger.kernel.org
+Subject: [PATCH] mxc_udc: add workaround for ENGcm09152 for i.MX35
+Date: Fri, 15 Oct 2010 14:30:58 +0200
+Message-Id: <1287145858-10239-1-git-send-email-eric@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH 1/3 v4] P4080/eLBC: Make Freescale elbc interrupt common
-	to elbc devices
-Date: Fri, 15 Oct 2010 13:03:14 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A2B049B@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20101014110239.466072be@udp111988uds.am.freescale.net>
-References: <20100920153718.GA4411@oksana.dev.rtsoft.ru><3850A844E6A3854C827AC5C0BEC7B60A2B0329@zch01exm23.fsl.freescale.net>
-	<20101014110239.466072be@udp111988uds.am.freescale.net>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Anton Vorontsov
-	<cbouatmailru@gmail.com>
-Cc: dedekind1@gmail.com, Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: dbrownell@users.sourceforge.net, Dinh.Nguyen@freescale.com, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,39 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+this patch gives the possibility to workaround bug ENGcm09152
+on i.MX35 when the hardware workaround is also implemented on
+the board.
+It covers the workaround described on page 25 of the following Errata :
+http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf 
 
+Signed-off-by: Eric Bénard <eric@eukrea.com>
+---
+ arch/arm/mach-mx3/mach-cpuimx35.c |    1 +
+ drivers/usb/gadget/fsl_mxc_udc.c  |   15 +++++++++++++++
+ include/linux/fsl_devices.h       |    3 +++
+ 3 files changed, 19 insertions(+), 0 deletions(-)
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, October 15, 2010 0:03 AM
-> To: Zang Roy-R61911
-> Cc: Anton Vorontsov; linux-mtd@lists.infradead.org;
-dwmw2@infradead.org;
-> dedekind1@gmail.com; akpm@linux-foundation.org; Lan Chunhe-B25806;
-Wood Scott-
-> B07421; Gala Kumar-B11780; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH 1/3 v4] P4080/eLBC: Make Freescale elbc interrupt
-common
-> to elbc devices
->=20
-> On Wed, 13 Oct 2010 23:43:38 -0700
-> "Zang Roy-R61911" <r61911@freescale.com> wrote:
->=20
-> > > Plus, I think the patch is not runtime bisectable (i.e. you
-> > > now do request_irq() here, but not removing it from the nand
-> > > driver, so nand will fail to probe).
-> > Nand driver does not need to request irq. It will use the irq
-requested by
-> lbc.
-> > remember, other lbc device may also need to use this registered irq.
-> > It should not be removed in nand driver.
->=20
-> The point is that you need to make both changes in the same patch.
-
-But according to previous discussion, if lbc driver is registered
-successful, it will not be removed. (.remove function is dropped in the
-patch). that is not bisectable?
-nand driver will not touch the irq. all irq status process is in the lbc
-driver.
-Thanks.
-Roy
+diff --git a/arch/arm/mach-mx3/mach-cpuimx35.c b/arch/arm/mach-mx3/mach-cpuimx35.c
+index 6024bb9..a95ff79 100644
+--- a/arch/arm/mach-mx3/mach-cpuimx35.c
++++ b/arch/arm/mach-mx3/mach-cpuimx35.c
+@@ -132,6 +132,7 @@ static struct mxc_usbh_platform_data __maybe_unused usbh1_pdata = {
+ static struct fsl_usb2_platform_data otg_device_pdata = {
+ 	.operating_mode	= FSL_USB2_DR_DEVICE,
+ 	.phy_mode	= FSL_USB2_PHY_UTMI,
++	.workaround	= FLS_USB2_WORKAROUND_ENGCM09152,
+ };
+ 
+ static int otg_mode_host;
+diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mxc_udc.c
+index eafa6d2..5bdbfe6 100644
+--- a/drivers/usb/gadget/fsl_mxc_udc.c
++++ b/drivers/usb/gadget/fsl_mxc_udc.c
+@@ -22,6 +22,10 @@
+ static struct clk *mxc_ahb_clk;
+ static struct clk *mxc_usb_clk;
+ 
++/* workaround ENGcm09152 for i.MX35 */
++#define USBPHYCTRL_OTGBASE_OFFSET	0x608
++#define USBPHYCTRL_EVDO			(1 << 23)
++
+ int fsl_udc_clk_init(struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata;
+@@ -84,6 +88,17 @@ eenahb:
+ void fsl_udc_clk_finalize(struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
++#if defined(CONFIG_ARCH_MX35)
++	unsigned int v;
++
++	/* workaround ENGcm09152 for i.MX35 */
++	if (pdata->workaround & FLS_USB2_WORKAROUND_ENGCM09152) {
++		v = readl(MX35_IO_ADDRESS(MX35_OTG_BASE_ADDR +
++				USBPHYCTRL_OTGBASE_OFFSET));
++		writel(v | USBPHYCTRL_EVDO, MX35_IO_ADDRESS(MX35_OTG_BASE_ADDR +
++				USBPHYCTRL_OTGBASE_OFFSET));
++	}
++#endif
+ 
+ 	/* ULPI transceivers don't need usbpll */
+ 	if (pdata->phy_mode == FSL_USB2_PHY_ULPI) {
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 28e33fe..01a23fa 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -63,12 +63,15 @@ struct fsl_usb2_platform_data {
+ 	enum fsl_usb2_operating_modes	operating_mode;
+ 	enum fsl_usb2_phy_modes		phy_mode;
+ 	unsigned int			port_enables;
++	unsigned int			workaround;
+ };
+ 
+ /* Flags in fsl_usb2_mph_platform_data */
+ #define FSL_USB2_PORT0_ENABLED	0x00000001
+ #define FSL_USB2_PORT1_ENABLED	0x00000002
+ 
++#define FLS_USB2_WORKAROUND_ENGCM09152	(1 << 0)
++
+ struct spi_device;
+ 
+ struct fsl_spi_platform_data {
+-- 
+1.7.0.4
