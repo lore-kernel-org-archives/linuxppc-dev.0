@@ -1,24 +1,25 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9D627B6F11
+Return-Path: <linasvepstas@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 5A6611007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Oct 2010 12:26:44 +1100 (EST)
-Message-ID: <4CB7AE50.3020600@windriver.com>
-Date: Fri, 15 Oct 2010 09:28:48 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+	Fri, 15 Oct 2010 12:47:24 +1100 (EST)
+Received: by vws17 with SMTP id 17so173431vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Oct 2010 18:47:21 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Questions on interrupt vector assignment on MPC8641D
-References: <6e7b840fa55e4fba421e1b1cea2716ec.squirrel@localhost>	<1682399277683944B902B3657D2FCE21654570D791@CAREXCLUSTER03.ATL.CW.LOCAL>	<20100921170700.53a99e56@udp111988uds.am.freescale.net>	<fe4c3e4086132d746b79670f236302f1.squirrel@localhost>	<20101007152626.4e834d43@udp111988uds.am.freescale.net>	<8636b70ea34330679bebdaad187ccd68.squirrel@localhost>	<4CB2DEFB.90204@windriver.com>	<20101011121745.2e471fc0@udp111988uds.am.freescale.net>	<942ea2f3464025464521511c32355782.squirrel@localhost>	<20101012162152.5246744a@udp111988uds.am.freescale.net>	<4CB5088D.4090201@windriver.com>	<20101013102815.2959fcb6@udp111988uds.am.freescale.net>	<4CB65F6F.1090103@windriver.com>
-	<4CB6788D.60705@windriver.com>
-	<20101014105126.08da9dd7@udp111988uds.am.freescale.net>
-In-Reply-To: <20101014105126.08da9dd7@udp111988uds.am.freescale.net>
+In-Reply-To: <1287078495-11722-1-git-send-email-nacc@us.ibm.com>
+References: <1287078495-11722-1-git-send-email-nacc@us.ibm.com>
+From: Linas Vepstas <linasvepstas@gmail.com>
+Date: Thu, 14 Oct 2010 20:47:01 -0500
+Message-ID: <AANLkTi=9OBaAj8QkwjwbgmUj8_XK7NFwOA9dv73Tk=hD@mail.gmail.com>
+Subject: Re: [RFC PATCH] ppc: don't override CONFIG_PPC_PSERIES_DEBUG
+To: Nishanth Aravamudan <nacc@us.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: david.hagood@gmail.com,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>, Frans Pop <elendil@planet.nl>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Thu, 14 Oct 2010 11:27:09 +0800
-> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
-> 
->> tiejun.chen wrote:
->>> Scott Wood wrote:
->>>> On Wed, 13 Oct 2010 09:17:01 +0800
->>>> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
->>>>
->>>>> Scott Wood wrote:
->>>>>> The crash is happening somewhere in mpic_set_irq_type():
->>>>> Agreed. That is just where I pointed out on my email replied for OOPS. To enable
->>>>> DBG to figure out 'src' and 'mpic->irq_count' from the file,
->>>>> arch/powerpc/sysdev/mpic.c,    .
->>>>> ======
->>>>> int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
->>>>> {
->>>>> 	......
->>>>> 	if (src >= mpic->irq_count)
->>>>> 		return -EINVAL;
->>>>> 			^
->>>>> 			I think this OOPS may be from here.
->>>> No, it's after that.  His board code is using the mpic's "isu" remapping
->>> I means OOPS is *from* here. According to David's call trace,
->>> mpic_set_irq_type() is the last issued function. And that corresponding return
->>> value, R3, is '0xffffffea', -22, and also '-EINVAL'.
-> 
-> Just because that value is in r3 doesn't mean that src >=
-> mpic->irq_count.
-> 
-> Consider something like:
-> 
-> cmplw	r4, r5
-> li	r3, -EINVAL
-> bgelr
+On 14 October 2010 12:48, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
+> These files undef DEBUG, but I think they were added before the ability
+> to control this from Kconfig.
 
-Right absolutely and got it.
+Right.
 
-Thanks again
-Tiejun
+> It's really annoying to only get some of
+> the debug messages!
 
-> ...
-> 
-> 
-> -Scott
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+I don't get the big picture.  Will there be some CONFIG_DEBUG_EEH in Kconfig?
+or just some option to turn on DEBUG for all powerpc-related files?
+
+Or maybe I am demonstrating my utter ignorance of some new whiz-bang
+Kconfig technology?
+
+Anyway, I see no harm in the EEH portion of the patch.
+
+--linas
