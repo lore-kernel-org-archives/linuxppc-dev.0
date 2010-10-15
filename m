@@ -1,22 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] pseries: don't override CONFIG_PPC_PSERIES_DEBUG
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linasvepstas@gmail.com
-In-Reply-To: <AANLkTinEzRpREFzDVhPS5ynqjYydHOs9iW5NM6W9Tf9A@mail.gmail.com>
-References: <1287103733-7121-1-git-send-email-nacc@us.ibm.com>
-	<AANLkTinEzRpREFzDVhPS5ynqjYydHOs9iW5NM6W9Tf9A@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-vYaJGuEvRic0IbmPneyK"
-Date: Fri, 15 Oct 2010 15:01:44 +1100
-Message-ID: <1287115304.5278.3.camel@concordia>
+Return-Path: <thlin@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3EFFEB70D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Oct 2010 15:41:07 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9F4UFKj016955
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 22:30:15 -0600
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id o9F4f4w9124520
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 22:41:04 -0600
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o9F4f4d7011214
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Oct 2010 22:41:04 -0600
+Subject: Re: [PATCH] add icswx support v2
+From: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <16640.1286931161@neuling.org>
+References: <1286855108.14049.8.camel@flin.austin.ibm.com>
+	<16640.1286931161@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Oct 2010 23:41:03 -0500
+Message-ID: <1287117663.14049.10.camel@flin.austin.ibm.com>
 Mime-Version: 1.0
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Nishanth Aravamudan <nacc@us.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,74 +36,351 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2010-10-13 at 11:52 +1100, Michael Neuling wrote:
+> In message <1286855108.14049.8.camel@flin.austin.ibm.com> you wrote:
+> > icswx is a PowerPC co-processor instruction to send data to a
+> > co-processor. On Book-S processors the LPAR_ID and process ID (PID) of
+> > the owning process are registered in the window context of the
+> > co-processor at initial time. When the icswx instruction is executed,
+> > the L2 generates a cop-reg transaction on PowerBus. The transaction has
+> > no address and the processor does not perform an MMU access to
+> > authenticate the transaction. The coprocessor compares the LPAR_ID and
+> > the PID included in the transaction and the LPAR_ID and PID held in the
+> > window context to determine if the process is authorized to generate the
+> > transaction.
+> > 
+> > This patch adds icswx co-processor instruction support.
+> 
+> Can you describe the ABI a bit?  
+> 
+> How has this changed from version 1?
+> 
 
---=-vYaJGuEvRic0IbmPneyK
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+The icswx instruction itself does nothing but generating a cop-req
+transaction on PowerBus. The cop-req transaction causes 1 cache
+line of data (128 bytes) sent to the co-processor. This provides
+a low latency mechanism for sending small amount of data without
+the co-processor becoming a master on the PowerBus.
 
-On Thu, 2010-10-14 at 20:54 -0500, Linas Vepstas wrote:
-> On 14 October 2010 19:48, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
-> > eeh and pci_dlpar #undef DEBUG, but I think they were added before the
-> > ability to control this from Kconfig. It's really annoying to only get
-> > some of the debug messages from these files. Leave the lpar.c #undef
-> > alone as it produces so much output as to make the kernel unusable.
-> > Update the Kconfig text to indicate this particular quirk :)
-> >
-> > Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
->=20
-> OK, ignore my last email.
->=20
-> Acked by: Linas Vepstas <linasvepstas@gmail.com>
+Since the transaction has no address and the processor does not
+perform an MMU access to authenticate the transaction, the
+co-processor relys on the the LPAR_ID and PID to determine if
+the process is authorized to generate the transaction.
 
-I guess I'll ack it too seeing I added PPC_PSERIES_DEBUG:
+The OS needs to assign a 16-bit PID for the process. This
+cop-PID needs needs to be updated during context switch. The
+cop-PID needs to be destroied when the context is destroied.
 
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
+Change log from v1:
+- Change 2'nd parameter of use_cop() from struct task_struct *task
+  to struct mm_struct *mm.
+- Check for mm == current->active_mm before calling mtspr().
+- Add a lock to guard acop related operations.
+- Check for POWER7 CPU.
+- Move the definition of SPRN_PID from reg_booke.h to avoid
+  defining SPRN_PID in two different files.
+- Rename pid to acop_pid.
+- Change function name disuse_cop() to drop_cop().
+- Add a comment to describe the two new fields in mm_context_t.
+- Moving CONFIG_ICSWX from arch/powerpc/platforms/pseries/Kconfig
+  to arch/powerpc/platforms/Kconfig.cputype
 
-> > --- a/arch/powerpc/platforms/pseries/Kconfig
-> > +++ b/arch/powerpc/platforms/pseries/Kconfig
-> > @@ -47,6 +47,12 @@ config LPARCFG
-> >  config PPC_PSERIES_DEBUG
-> >        depends on PPC_PSERIES && PPC_EARLY_DEBUG
-> >        bool "Enable extra debug logging in platforms/pseries"
-> > +        help
-> > +         Say Y here if you want the pseries core to produce a bunch of
-> > +         debug messages to the system log. Select this if you are havi=
-ng a
-> > +         problem with the pseries core and want to see more of what is
-> > +         going on. This does not enable debugging in lpar.c, which mus=
-t
-> > +         be manually done due to its verbosity.
-> >        default y
->=20
-> Umm, I see "default y" and you are not changing this but ... default y
-> ?? Really?
+All other comments will be addressed in a new patch.
 
-Yes, default y if early debug is enabled. Unlike DEBUG_KERNEL,
-PPC_EARLY_DEBUG is a pretty good indication that you are doing some
-kernel development - because you have to choose exactly which platform
-you're working on.
-
-> Also, I am guessing that the lpar spam is due only to a handful of printk=
-'s,
-> while most of the rest will be infrequent.  Just knock out the
-> high-frequency ones...
-
-No they're all related to the HPTE code, so you basically don't want any
-of them enabled unless you're debugging that, and most people aren't.
-
-cheers
-
-
---=-vYaJGuEvRic0IbmPneyK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAky30iUACgkQdSjSd0sB4dL+DgCfR+HAWiu5JX9bj+MmeI6209Wc
-OT4AoMnuNyDQkgC+tfHskbr0cbwBiHyn
-=fKtT
------END PGP SIGNATURE-----
-
---=-vYaJGuEvRic0IbmPneyK--
+> Patch has been whitespace munged aswell.
+> 
+> More comments below...
+> 
+> > 
+> > Signed-off-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
+> > Signed-off-by: Tseng-Hui (Frank) Lin <thlin@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/mmu-hash64.h  |    5 ++
+> >  arch/powerpc/include/asm/mmu_context.h |    6 ++
+> >  arch/powerpc/include/asm/reg.h         |   12 ++++
+> >  arch/powerpc/include/asm/reg_booke.h   |    3 -
+> >  arch/powerpc/mm/mmu_context_hash64.c   |  105
+> > ++++++++++++++++++++++++++++++++
+> >  arch/powerpc/platforms/Kconfig.cputype |   16 +++++
+> >  6 files changed, 144 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/mmu-hash64.h
+> > b/arch/powerpc/include/asm/mmu-hash64.h
+> > index acac35d..6c1ab90 100644
+> > --- a/arch/powerpc/include/asm/mmu-hash64.h
+> > +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> > @@ -423,6 +423,11 @@ typedef struct {
+> >  #ifdef CONFIG_PPC_SUBPAGE_PROT
+> >  	struct subpage_prot_table spt;
+> >  #endif /* CONFIG_PPC_SUBPAGE_PROT */
+> > +#ifdef CONFIG_ICSWX
+> > +	unsigned long acop;	/* mask of enabled coprocessor types */
+> > +#define HASH64_MAX_PID (0xFFFF)
+> > +	unsigned int acop_pid;	/* pid value used with coprocessors */
+> > +#endif /* CONFIG_ICSWX */
+> >  } mm_context_t;
+> >  
+> >  
+> > diff --git a/arch/powerpc/include/asm/mmu_context.h
+> > b/arch/powerpc/include/asm/mmu_context.h
+> > index 81fb412..88118de 100644
+> > --- a/arch/powerpc/include/asm/mmu_context.h
+> > +++ b/arch/powerpc/include/asm/mmu_context.h
+> > @@ -80,6 +80,12 @@ static inline void switch_mm(struct mm_struct *prev,
+> > struct mm_struct *next,
+> >  
+> >  #define deactivate_mm(tsk,mm)	do { } while (0)
+> >  
+> > +#ifdef CONFIG_ICSWX
+> > +extern void switch_cop(struct mm_struct *next);
+> > +extern int use_cop(unsigned long acop, struct mm_struct *mm);
+> > +extern void drop_cop(unsigned long acop, struct mm_struct *mm);
+> > +#endif /* CONFIG_ICSWX */
+> > +
+> >  /*
+> >   * After we have set current->mm to a new value, this activates
+> >   * the context for the new mm so we see the new mappings.
+> > diff --git a/arch/powerpc/include/asm/reg.h
+> > b/arch/powerpc/include/asm/reg.h
+> > index ff0005eec..9bbf178 100644
+> > --- a/arch/powerpc/include/asm/reg.h
+> > +++ b/arch/powerpc/include/asm/reg.h
+> > @@ -170,8 +170,19 @@
+> >  #define SPEFSCR_FRMC 	0x00000003	/* Embedded FP rounding mode co
+> ntrol
+> > */
+> >  
+> >  /* Special Purpose Registers (SPRNs)*/
+> > +
+> > +#ifdef CONFIG_40x
+> > +#define SPRN_PID	0x3B1	/* Process ID */
+> > +#else
+> > +#define	SPRN_PID	0x030	/* Process ID */
+> > +#ifdef CONFIG_BOOKE
+> > +#define	SPRN_PID0	SPRN_PID/* Process ID Register 0 */
+> > +#endif
+> > +#endif
+> > +
+> 
+> Why are you moving these definitions?
+> 
+> >  #define SPRN_CTR	0x009	/* Count Register */
+> >  #define SPRN_DSCR	0x11
+> > +#define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
+> >  #define SPRN_CTRLF	0x088
+> >  #define SPRN_CTRLT	0x098
+> >  #define   CTRL_CT	0xc0000000	/* current thread */
+> > @@ -879,6 +890,7 @@
+> >  #define PV_POWER5	0x003A
+> >  #define PV_POWER5p	0x003B
+> >  #define PV_970FX	0x003C
+> > +#define PV_POWER7	0x003F
+> >  #define PV_630		0x0040
+> >  #define PV_630p	0x0041
+> >  #define PV_970MP	0x0044
+> > diff --git a/arch/powerpc/include/asm/reg_booke.h
+> > b/arch/powerpc/include/asm/reg_booke.h
+> > index 667a498..5b0c781 100644
+> > --- a/arch/powerpc/include/asm/reg_booke.h
+> > +++ b/arch/powerpc/include/asm/reg_booke.h
+> > @@ -150,8 +150,6 @@
+> >   * or IBM 40x.
+> >   */
+> >  #ifdef CONFIG_BOOKE
+> > -#define SPRN_PID	0x030	/* Process ID */
+> > -#define SPRN_PID0	SPRN_PID/* Process ID Register 0 */
+> >  #define SPRN_CSRR0	0x03A	/* Critical Save and Restore Register 0 */
+> >  #define SPRN_CSRR1	0x03B	/* Critical Save and Restore Register 1 */
+> >  #define SPRN_DEAR	0x03D	/* Data Error Address Register */
+> > @@ -168,7 +166,6 @@
+> >  #define SPRN_TCR	0x154	/* Timer Control Register */
+> >  #endif /* Book E */
+> >  #ifdef CONFIG_40x
+> > -#define SPRN_PID	0x3B1	/* Process ID */
+> >  #define SPRN_DBCR1	0x3BD	/* Debug Control Register 1 */		
+> >  #define SPRN_ESR	0x3D4	/* Exception Syndrome Register */
+> >  #define SPRN_DEAR	0x3D5	/* Data Error Address Register */
+> > diff --git a/arch/powerpc/mm/mmu_context_hash64.c
+> > b/arch/powerpc/mm/mmu_context_hash64.c
+> > index 2535828..8f432b6 100644
+> > --- a/arch/powerpc/mm/mmu_context_hash64.c
+> > +++ b/arch/powerpc/mm/mmu_context_hash64.c
+> > @@ -18,6 +18,7 @@
+> >  #include <linux/mm.h>
+> >  #include <linux/spinlock.h>
+> >  #include <linux/idr.h>
+> > +#include <linux/percpu.h>
+> >  #include <linux/module.h>
+> >  #include <linux/gfp.h>
+> >  
+> > @@ -26,6 +27,103 @@
+> >  static DEFINE_SPINLOCK(mmu_context_lock);
+> >  static DEFINE_IDA(mmu_context_ida);
+> >  
+> > +#ifdef CONFIG_ICSWX
+> > +static DEFINE_SPINLOCK(mmu_context_acop_lock);
+> > +static DEFINE_IDA(cop_ida);
+> > +
+> > +/* Lazy switch the ACOP register */
+> > +static DEFINE_PER_CPU(unsigned long, acop_reg);
+> > +
+> > +void switch_cop(struct mm_struct *next)
+> > +{
+> > +	if (!__is_processor(PV_POWER7))
+> > +		return;
+> > +
+> > +	mtspr(SPRN_PID, next->context.acop_pid);
+> > +	if (next->context.acop_pid &&
+> > +	    __get_cpu_var(acop_reg) != next->context.acop) {
+> > +		mtspr(SPRN_ACOP, next->context.acop);
+> > +		__get_cpu_var(acop_reg) = next->context.acop;
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(switch_cop);
+> > +
+> > +int use_cop(unsigned long acop, struct mm_struct *mm)
+> > +{
+> > +	int acop_pid;
+> > +	int err;
+> > +
+> > +	if (!__is_processor(PV_POWER7))
+> > +		return -ENOSYS;
+> 
+> This should be a CPU feature.
+> 
+> > +
+> > +	if (!mm)
+> > +		return -EINVAL;
+> > +
+> > +	if (!mm->context.acop_pid) {
+> > +		if (!ida_pre_get(&cop_ida, GFP_KERNEL))
+> > +			return -ENOMEM;
+> > +again:
+> > +		spin_lock(&mmu_context_acop_lock);
+> > +		err = ida_get_new_above(&cop_ida, 1, &acop_pid);
+> > +		spin_unlock(&mmu_context_acop_lock);
+> > +
+> > +		if (err == -EAGAIN)
+> > +			goto again;
+> 
+> Make this a do while loop.  Please don't create your own loop
+> prematives.
+> 
+> > +		else if (err)
+> > +			return err;
+> > +
+> > +		if (acop_pid > HASH64_MAX_PID) {
+> > +			spin_lock(&mmu_context_acop_lock);
+> > +			ida_remove(&cop_ida, acop_pid);
+> > +			spin_unlock(&mmu_context_acop_lock);
+> > +			return -EBUSY;
+> > +		}
+> > +		mm->context.acop_pid = acop_pid;
+> > +		if (mm == current->active_mm)
+> > +			mtspr(SPRN_PID,  mm->context.acop_pid);
+> > +	}
+> > +	spin_lock(&mmu_context_acop_lock);
+> > +	mm->context.acop |= acop;
+> > +	spin_unlock(&mmu_context_acop_lock);
+> > +
+> > +	get_cpu_var(acop_reg) = mm->context.acop;
+> > +	if (mm == current->active_mm)
+> > +		mtspr(SPRN_ACOP, mm->context.acop);
+> > +	put_cpu_var(acop_reg);
+> > +
+> > +	return mm->context.acop_pid;
+> > +}
+> > +EXPORT_SYMBOL(use_cop);
+> > +
+> > +void drop_cop(unsigned long acop, struct mm_struct *mm)
+> > +{
+> > +	if (!__is_processor(PV_POWER7))
+> > +		return;
+> > +
+> > +	if (WARN_ON(!mm))
+> > +		return;
+> > +
+> > +	spin_lock(&mmu_context_acop_lock);
+> > +	mm->context.acop &= ~acop;
+> > +	spin_unlock(&mmu_context_acop_lock);
+> > +	if (!mm->context.acop) {
+> > +		spin_lock(&mmu_context_acop_lock);
+> > +		ida_remove(&cop_ida, mm->context.acop_pid);
+> > +		spin_unlock(&mmu_context_acop_lock);
+> > +		mm->context.acop_pid = 0;
+> > +		if (mm == current->active_mm)
+> > +			mtspr(SPRN_PID, mm->context.acop_pid);
+> > +	} else {
+> > +		get_cpu_var(acop_reg) = mm->context.acop;
+> > +		if (mm == current->active_mm)
+> > +			mtspr(SPRN_ACOP, mm->context.acop);
+> > +		put_cpu_var(acop_reg);
+> > +	}
+> > +	mmput(mm);
+> > +}
+> > +EXPORT_SYMBOL(drop_cop);
+> > +#endif /* CONFIG_ICSWX */
+> > +
+> >  /*
+> >   * The proto-VSID space has 2^35 - 1 segments available for user
+> > mappings.
+> >   * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
+> > @@ -93,6 +191,13 @@ EXPORT_SYMBOL_GPL(__destroy_context);
+> >  
+> >  void destroy_context(struct mm_struct *mm)
+> >  {
+> > +#ifdef CONFIG_ICSWX
+> > +	if (mm->context.acop_pid) {
+> > +		spin_lock(&mmu_context_acop_lock);
+> > +		ida_remove(&cop_ida, mm->context.acop_pid);
+> > +		spin_unlock(&mmu_context_acop_lock);
+> > +	}
+> > +#endif /* CONFIG_ICSWX */
+> 
+> Can you put this in a destroy_context_acop() and #define that funtion
+> based CONFIG_ICSWX.  Cleans up the #ifdefs here
+> 
+> 
+> >  	__destroy_context(mm->context.id);
+> >  	subpage_prot_free(mm);
+> >  	mm->context.id = NO_CONTEXT;
+> > diff --git a/arch/powerpc/platforms/Kconfig.cputype
+> > b/arch/powerpc/platforms/Kconfig.cputype
+> > index d361f81..9674703 100644
+> > --- a/arch/powerpc/platforms/Kconfig.cputype
+> > +++ b/arch/powerpc/platforms/Kconfig.cputype
+> > @@ -220,6 +220,22 @@ config VSX
+> >  
+> >  	  If in doubt, say Y here.
+> >  
+> > +config ICSWX
+> > +	bool "Support for PowerPC icswx co-processor instruction"
+> > +	depends on POWER4
+> > +	default n
+> > +	---help---
+> > +
+> > +	  Enabling this option to turn on the PowerPC icswx co-processor
+> > +	  instruction support for POWER7 processors.
+> > +	  This option is only useful if you have a processor that supports
+> > +	  icswx co-processor instruction. It does not have any affect on
+> > +	  processors without icswx co-processor instruction.
+> > +
+> > +	  This support slightly increases kernel memory usage.
+> > +
+> > +	  Say N if you do not have a POWER7 processor and a PowerPC
+> > co-processor.
+> > +
+> >  config SPE
+> >  	bool "SPE Support"
+> >  	depends on E200 || (E500 && !PPC_E500MC)
+> > 
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
