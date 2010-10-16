@@ -1,16 +1,18 @@
-Return-Path: <nab@linux-iscsi.org>
-Received: from smtp126.sbc.mail.sp1.yahoo.com (smtp126.sbc.mail.sp1.yahoo.com
-	[69.147.65.185]) by ozlabs.org (Postfix) with SMTP id B42D9B70DC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Oct 2010 19:08:43 +1100 (EST)
-Subject: 64K PAGE_SIZE and arch/powerpc/kernel/vdso.c
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 16 Oct 2010 01:03:59 -0700
-Message-Id: <1287216239.9909.234.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-Cc: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <yifei_wang@hotmail.com>
+Received: from bay0-omc4-s21.bay0.hotmail.com (bay0-omc4-s21.bay0.hotmail.com
+	[65.54.190.223]) by ozlabs.org (Postfix) with ESMTP id 2B0D1B70EE
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Oct 2010 21:35:07 +1100 (EST)
+Message-ID: <BAY158-ds45852D1FE75BC452A052FF5580@phx.gbl>
+From: WANG YiFei <yifei_wang@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+References: <BAY158-ds7DB18D88ED851794F4E19F5540@phx.gbl>
+	<4CB522D1.5090802@windriver.com>
+	<BAY158-ds2BEE228C7E27E7CE0C28BF5550@phx.gbl>
+In-Reply-To: <BAY158-ds2BEE228C7E27E7CE0C28BF5550@phx.gbl>
+Subject: Help about chip select on SPI slave devices
+Date: Sat, 16 Oct 2010 18:35:10 +0800
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greetings Linux-ppc64 folks,
+Hi,
 
-While trying to compile v2.6.36-rc8 with PAGE_SIZE=65536 I run into the
-following compile failure w/ strict checking on a RHEL5.4 / gcc (GCC)
-4.1.2 20080704 (Red Hat 4.1.2-46) system:
+We have a board which has 1 SPI master controller and 4 SPI slave =
+devices, and we'd like to use 2 GPIOs to demux to chip select these =
+slave devices.
+Can anyone tell me if current powerpc dts support demuxer for chip =
+select for spi slave devices? So far as I know, in dts, SPI master can =
+only use 1 to 1 GPIO to CS(then needs 4 GPIOs).
 
-cc1: warnings being treated as errors
-arch/powerpc/kernel/vdso.c:81: warning: alignment of ‘vdso_data_store’
-is greater than maximum object file alignment.  Using 32768
-  CC      arch/powerpc/sysdev/msi_bitmap.o
-make[1]: *** [arch/powerpc/kernel/vdso.o] Error 1
-make[1]: *** Waiting for unfinished jobs....
 
-Any ideas folks..?
-
-TIA,
-
---nab
+Thanks in advance,
+YiFei
