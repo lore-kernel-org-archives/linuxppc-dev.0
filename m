@@ -1,22 +1,24 @@
-Return-Path: <eric@eukrea.com>
-Received: from 63.mail-out.ovh.net (63.mail-out.ovh.net [91.121.185.56])
-	by ozlabs.org (Postfix) with SMTP id 6D869B70E6
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 2FA9FB70E7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Oct 2010 06:24:55 +1100 (EST)
-Message-ID: <4CB8AA76.2020309@eukrea.com>
-Date: Fri, 15 Oct 2010 21:24:38 +0200
-From: =?ISO-8859-1?Q?Eric_B=E9nard?= <eric@eukrea.com>
+	Sat, 16 Oct 2010 14:52:30 +1100 (EST)
+Received: by pwj2 with SMTP id 2so531242pwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Oct 2010 20:52:29 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Fri, 15 Oct 2010 21:52:26 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] powerpc/5121: pdm360ng: fix touch irq if 8xxx gpio
+	driver is enabled
+Message-ID: <20101016035226.GE21170@angua.secretlab.ca>
+References: <1284581577-2217-1-git-send-email-agust@denx.de>
+	<20101014165549.473d71ab@wker>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] mxc_udc: add workaround for ENGcm09152 for i.MX35
-References: <1287145858-10239-1-git-send-email-eric@eukrea.com>
-	<20101015191005.GB8098@kroah.com>
-In-Reply-To: <20101015191005.GB8098@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: dbrownell@users.sourceforge.net, Dinh.Nguyen@freescale.com,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, gregkh@suse.de,
-	linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20101014165549.473d71ab@wker>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Greg,
+On Thu, Oct 14, 2010 at 04:55:49PM +0200, Anatolij Gustschin wrote:
+> Hi Grant,
+> 
+> On Wed, 15 Sep 2010 22:12:57 +0200
+> Anatolij Gustschin <agust@denx.de> wrote:
+> 
+> > Enabling the MPC8xxx GPIO driver with MPC512x GPIO extension
+> > breaks touch screen support on this board since the GPIO
+> > interrupt will be mapped to 8xxx GPIO irq host resulting in
+> > a not requestable interrupt in the touch screen driver. Fix
+> > it by mapping the touch interrupt on 8xxx GPIO irq host.
+> > 
+> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> > ---
+> >  arch/powerpc/platforms/512x/pdm360ng.c |   26 ++++++++++++++++++++++----
+> >  1 files changed, 22 insertions(+), 4 deletions(-)
+> 
+> Can this patch go in for 2.6.37 ?
 
-Le 15/10/2010 21:10, Greg KH a écrit :
-> On Fri, Oct 15, 2010 at 02:30:58PM +0200, Eric Bénard wrote:
->> this patch gives the possibility to workaround bug ENGcm09152
->> on i.MX35 when the hardware workaround is also implemented on
->> the board.
->> It covers the workaround described on page 25 of the following Errata :
->> http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf
->>
->> Signed-off-by: Eric Bénard<eric@eukrea.com>
->> ---
->>   arch/arm/mach-mx3/mach-cpuimx35.c |    1 +
->>   drivers/usb/gadget/fsl_mxc_udc.c  |   15 +++++++++++++++
->>   include/linux/fsl_devices.h       |    3 +++
->>   3 files changed, 19 insertions(+), 0 deletions(-)
->
-> Do you want me to take this through my usb tree, or will it go through
-> some other developer's tree?
->
-as most of the changes are in drivers/usb that would be great if you can take it.
+I hope so, but I haven't looked at it properly yet and I'm trying to
+dig myself out of a patch backlog.
 
-Thanks
-Eric
+g.
