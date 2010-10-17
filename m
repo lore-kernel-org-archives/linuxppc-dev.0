@@ -1,30 +1,25 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id BB497B70CB
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Oct 2010 18:47:56 +1100 (EST)
-Received: by bwz17 with SMTP id 17so4442333bwz.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Oct 2010 00:47:54 -0700 (PDT)
-Subject: Re: [PATCH v4 5/5] mtd: m25p80: add support to parse the
-	partitions by OF node
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <AANLkTimr03KAKnz5sfwm19=KzB-ik95WM_qQO0YP9qVs@mail.gmail.com>
-References: <1286878714-13090-1-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-2-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-3-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-4-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-5-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-6-git-send-email-Mingkai.hu@freescale.com>
-	<1287256647.1781.34.camel@brekeke>
-	<AANLkTimr03KAKnz5sfwm19=KzB-ik95WM_qQO0YP9qVs@mail.gmail.com>
+Return-Path: <JAxboe@fusionio.com>
+Received: from mx1.fusionio.com (mx1.fusionio.com [64.244.102.30])
+	by ozlabs.org (Postfix) with ESMTP id 8B7EFB70F3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 17 Oct 2010 17:49:40 +1100 (EST)
+Message-ID: <4CBA9C79.7050908@fusionio.com>
+Date: Sun, 17 Oct 2010 08:49:29 +0200
+From: Jens Axboe <jaxboe@fusionio.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [patch] ps3disk: passing wrong variable to bvec_kunmap_irq()
+References: <20101011191335.GH5851@bicker>	<4CB3689F.1050601@fusionio.com>
+	<AANLkTi=wQDgAHC0Zm+psdP2g+B7JZJ8ot1NPCE+AAqU0@mail.gmail.com>
+In-Reply-To: <AANLkTi=wQDgAHC0Zm+psdP2g+B7JZJ8ot1NPCE+AAqU0@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 17 Oct 2010 10:44:50 +0300
-Message-ID: <1287301490.1951.0.camel@localhost>
-Mime-Version: 1.0
-Cc: kumar.gala@freescale.com, david-b@pacbell.net, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, spi-devel-general@lists.sourceforge.net,
-	Mingkai Hu <Mingkai.hu@freescale.com>
-Reply-To: dedekind1@gmail.com
+Cc: "cbe-oss-dev@lists.ozlabs.org" <cbe-oss-dev@lists.ozlabs.org>,
+	Dan Carpenter <error27@gmail.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Geoff Levand <geoff@infradead.org>,
+	"kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,24 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-10-16 at 19:05 -0600, Grant Likely wrote:
-> On Sat, Oct 16, 2010 at 1:17 PM, Artem Bityutskiy <dedekind1@gmail.com> wrote:
-> > On Tue, 2010-10-12 at 18:18 +0800, Mingkai Hu wrote:
-> >> Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
-> >> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> >> ---
-> >> v4:
-> >>  - Updated to latest kernel base(Linux 2.6.36-rc7).
-> >>  - Made changes according to Grant's comments.
-> >
-> > Looks good to me, pushed to l2-mtd-2.6.git, thanks.
+On 2010-10-16 21:39, Geert Uytterhoeven wrote:
+> On Mon, Oct 11, 2010 at 21:42, Jens Axboe <jaxboe@fusionio.com> wrote:
+>> On 2010-10-11 21:13, Dan Carpenter wrote:
+>>> This should pass "buf" to bvec_kunmap_irq() instead of "bv".  The api is
+>>> like kmap_atomic() instead of kmap().
+>>>
+>>> Signed-off-by: Dan Carpenter <error27@gmail.com>
+>>>
+>>> diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+>>> index e9da874..03688c2 100644
+>>> --- a/drivers/block/ps3disk.c
+>>> +++ b/drivers/block/ps3disk.c
+>>> @@ -113,7 +113,7 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
+>>>                       memcpy(buf, dev->bounce_buf+offset, size);
+>>>               offset += size;
+>>>               flush_kernel_dcache_page(bvec->bv_page);
+>>> -             bvec_kunmap_irq(bvec, &flags);
+>>> +             bvec_kunmap_irq(buf, &flags);
+>>>               i++;
+>>>       }
+>>>  }
+>>
+>> Thanks applied, that bug is all too common.
 > 
-> Wait!  It will break whenever CONFIG_OF is not set.  I broke
-> linux-next with this patch.  It can be solved by wrapping the block
-> with #ifdef CONFIG_OF, but I'd like to find a better solution.
+> Because  bvec_kunmap_irq() is a macro if !CONFIG_HIGHMEM, and thus there's no
+> argument type checking on e.g. pp64, which doesn't support HIGHMEM?
 
-OK, removed.
+It's a generic problem, not isolated to this case. The problem is that
+the API isn't symmetric, and the unmap parts take a void * pointer.
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Jens Axboe
