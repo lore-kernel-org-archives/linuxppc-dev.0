@@ -1,19 +1,15 @@
-Return-Path: <liberty@extricom.com>
-Received: from smtp.extricom.com (unknown [212.235.17.194])
-	by ozlabs.org (Postfix) with SMTP id EC73AB70F3
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 06:28:57 +1100 (EST)
-Message-ID: <4CBB4D80.3030007@extricom.com>
-Date: Sun, 17 Oct 2010 21:24:48 +0200
-From: Eran Liberty <liberty@extricom.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: 64K PAGE_SIZE and arch/powerpc/kernel/vdso.c
+In-reply-to: <1287216239.9909.234.camel@haakon2.linux-iscsi.org>
+References: <1287216239.9909.234.camel@haakon2.linux-iscsi.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Freescale P2020 CPU Freeze over PCIe abort signal
-References: <4CADBD7B.3000506@extricom.com>	
-	<1286756363.2463.517.camel@pasglop> <4CB2E517.8020401@extricom.com>
-	<1286796721.5220.2.camel@pasglop>
-In-Reply-To: <1286796721.5220.2.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 18 Oct 2010 10:44:12 +1100
+Message-ID: <7015.1287359052@neuling.org>
+Cc: Brian King <brking@linux.vnet.ibm.com>, Tim Abbott <tabbott@ksplice.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This should probably go to the Freescale support, as it feels like a 
-hardware issue yet the end result is a very frozen Linux kernel so I 
-post here first...
+> Greetings Linux-ppc64 folks,
+>=20
+> While trying to compile v2.6.36-rc8 with PAGE_SIZE=3D65536 I run into the
+> following compile failure w/ strict checking on a RHEL5.4 / gcc (GCC)
+> 4.1.2 20080704 (Red Hat 4.1.2-46) system:
+>=20
+> cc1: warnings being treated as errors
+> arch/powerpc/kernel/vdso.c:81: warning: alignment of =E2=80=98vdso_data_s=
+tore=E2=80=99
+> is greater than maximum object file alignment.  Using 32768
+>   CC      arch/powerpc/sysdev/msi_bitmap.o
+> make[1]: *** [arch/powerpc/kernel/vdso.o] Error 1
+> make[1]: *** Waiting for unfinished jobs....
+>=20
+> Any ideas folks..?
 
-I have a programmable FPGA PCIe device connected to a Freescale's P2020 
-PCIe port. As part of the bring-up tests, we are testing two faulty 
-scenarios:
-1. The FPGA totally ignores the PCIe transaction.
-2. The FPGA return a transaction abort.
+It seems this broke it:
 
-Both are plausible PCIe behavior and their should be outcome is 
-documented in the PCIe spec. The first should be terminated by the 
-transaction requestor timeout mechanism and raise an error, the second 
-should abort the transaction and raise and error.
+commit abe1ee3a221d53778c3e58747bbec6e518e5471b
+Author: Tim Abbott <tabbott@ksplice.com>
+Date:   Sun Sep 20 18:14:15 2009 -0400
 
-In P2020 if I do any of those the CPU is left hung over the transaction.
+    Use macros for .data.page_aligned section.
+=20=20=20=20
+    This patch changes the remaining direct references to
+    .data.page_aligned in C and assembly code to use the macros in
+    include/linux/linkage.h.
 
-something like:
-in_le32(addr)
+Backing out just that part of the change (see below) fixes it.
 
-is turned into:
-7c 00 04 ac     sync   
-7c 00 4c 2c     lwbrx   r0,0,r9
-0c 00 00 00     twi     0,r0,0
-4c 00 01 2c     isync
+FYI the error only occurs on gcc 4.1 and 4.2.  4.3 and greater is fine.=20=
+=20
 
-assembly code, where in r9 (in this example) hold an address which is 
-physically mapped into the PCIe resource space.
+Mikey
 
-The CPU will hang over the load instruction.
-
-Just for the fun of it, I have wrote my own assembly function omitting 
-everything but the load instruction; still freeze.
-Replace "lwbrx" with a simple "lwz"; still freeze.
-
-It looks like the CPU snoozes till the PCIe transaction is done with no 
-timeouts, ignoring any abort signal.
-
-I am going to:
-A. Try to reach the Freescale support.
-B. Asked the FPGA designed to give me a new behavior that will stall the 
-PCIe transaction replay for 10 sec, but after those return ok.
-C. report back here with either A or B.
-
-If you have any ideas I would love to hear them.
-
--- Liberty
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 13002fe..c140fce 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -78,7 +78,7 @@ static int vdso_ready;
+ static union {
+ 	struct vdso_data	data;
+ 	u8			page[PAGE_SIZE];
+-} vdso_data_store __page_aligned_data;
++} vdso_data_store __attribute__((__section__(".data.page_aligned")));
+ struct vdso_data *vdso_data =3D &vdso_data_store.data;
+=20
+ /* Format of the patch table */
