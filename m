@@ -1,23 +1,40 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 810F7B70F3
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 19:54:21 +1100 (EST)
-Message-ID: <4CBC0B95.9010300@windriver.com>
-Date: Mon, 18 Oct 2010 16:55:49 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <R61911@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DED16B7043
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 20:30:53 +1100 (EST)
+Received: from mail36-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail36-tx2-R.bigfish.com (Postfix) with ESMTP id 54675E9824F	for
+	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 09:30:50 +0000 (UTC)
+Received: from TX2EHSMHS012.bigfish.com (unknown [10.9.14.242])	by
+	mail36-tx2.bigfish.com (Postfix) with ESMTP id 18EFC14D0055	for
+	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 09:30:49 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o9I9UmvL026303	for <linuxppc-dev@ozlabs.org>;
+	Mon, 18 Oct 2010 02:30:48 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP
+	id o9I9UkPR003698	for <linuxppc-dev@ozlabs.org>;
+	Mon, 18 Oct 2010 04:30:47 -0500 (CDT)
 MIME-Version: 1.0
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common
-	to elbc	devices
+Content-Type: text/plain; charset="utf-8"
+Subject: RE: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common to
+	elbc	devices
+Date: Mon, 18 Oct 2010 17:30:41 +0800
+Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A2B0708@zch01exm23.fsl.freescale.net>
+In-Reply-To: <4CBC0B95.9010300@windriver.com>
 References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
-In-Reply-To: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
+	<4CBC0B95.9010300@windriver.com>
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: tiejun.chen <tiejun.chen@windriver.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
 	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,1419 +44,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roy Zang wrote:
-> Move Freescale elbc interrupt from nand dirver to elbc driver.
-> Then all elbc devices can use the interrupt instead of ONLY nand.
-> 
-> For former nand driver, it had the two functions:
-> 
-> 1. detecting nand flash partitions;
-> 2. registering elbc interrupt.
-> 
-> Now, second function is removed to fsl_lbc.c.
-> 
-> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
-> Cc: Wood Scott-B07421 <B07421@freescale.com>
-> ---
-> 
-> These two patches are based on the following commits:
-> 1.	http://lists.infradead.org/pipermail/linux-mtd/2010-September/032112.html
-> 2.	http://lists.infradead.org/pipermail/linux-mtd/2010-September/032110.html
-> 3.	http://lists.infradead.org/pipermail/linux-mtd/2010-September/032111.html
-> According to Anton's comment, I merge 1 & 2 together and start a new thread.
-> Comparing the provided link:
-> 1.	Merge 1 & 2 together.
-> 2.	Some code style updates
-> 3.	Add counter protect for elbc driver remove 
-> 4.	Rebase to 2.6.36-rc7
-> 
-> Other histories from the links:
-> V2: Comparing with v1, according to the feedback, add some decorations.
-> 
-> V3: Comparing with v2:
-> 1.	according to the feedback, add some decorations.
-> 2.	change of_platform_driver to platform_driver
-> 3.	rebase to 2.6.36-rc4
-> 
-> V4: Comparing with v3
-> 1.	minor fix from type unsigned int to u32
-> 2.	fix platform_driver issue.
-> 3.	add mutex for nand probe
-> 
->  arch/powerpc/Kconfig               |    7 +-
->  arch/powerpc/include/asm/fsl_lbc.h |   33 +++-
->  arch/powerpc/sysdev/fsl_lbc.c      |  229 ++++++++++++++---
->  drivers/mtd/nand/Kconfig           |    1 +
->  drivers/mtd/nand/fsl_elbc_nand.c   |  482 +++++++++++++++---------------------
->  5 files changed, 425 insertions(+), 327 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 631e5a0..44df1ba 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -687,9 +687,12 @@ config 4xx_SOC
->  	bool
->  
->  config FSL_LBC
-> -	bool
-> +	bool "Freescale Local Bus support"
-> +	depends on FSL_SOC
->  	help
-> -	  Freescale Localbus support
-> +	  Enables reporting of errors from the Freescale local bus
-> +	  controller.  Also contains some common code used by
-> +	  drivers for specific local bus peripherals.
->  
->  config FSL_GTM
->  	bool
-> diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
-> index 1b5a210..0c40c05 100644
-> --- a/arch/powerpc/include/asm/fsl_lbc.h
-> +++ b/arch/powerpc/include/asm/fsl_lbc.h
-> @@ -1,9 +1,10 @@
->  /* Freescale Local Bus Controller
->   *
-> - * Copyright (c) 2006-2007 Freescale Semiconductor
-> + * Copyright (c) 2006-2007, 2010 Freescale Semiconductor
->   *
->   * Authors: Nick Spence <nick.spence@freescale.com>,
->   *          Scott Wood <scottwood@freescale.com>
-> + *          Jack Lan <jack.lan@freescale.com>
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License as published by
-> @@ -26,6 +27,8 @@
->  #include <linux/compiler.h>
->  #include <linux/types.h>
->  #include <linux/io.h>
-> +#include <linux/device.h>
-> +#include <linux/spinlock.h>
->  
->  struct fsl_lbc_bank {
->  	__be32 br;             /**< Base Register  */
-> @@ -125,13 +128,23 @@ struct fsl_lbc_regs {
->  #define LTESR_ATMW 0x00800000
->  #define LTESR_ATMR 0x00400000
->  #define LTESR_CS   0x00080000
-> +#define LTESR_UPM  0x00000002
->  #define LTESR_CC   0x00000001
->  #define LTESR_NAND_MASK (LTESR_FCT | LTESR_PAR | LTESR_CC)
-> +#define LTESR_MASK      (LTESR_BM | LTESR_FCT | LTESR_PAR | LTESR_WP \
-> +			 | LTESR_ATMW | LTESR_ATMR | LTESR_CS | LTESR_UPM \
-> +			 | LTESR_CC)
-> +#define LTESR_CLEAR	0xFFFFFFFF
-> +#define LTECCR_CLEAR	0xFFFFFFFF
-> +#define LTESR_STATUS	LTESR_MASK
-> +#define LTEIR_ENABLE	LTESR_MASK
-> +#define LTEDR_ENABLE	0x00000000
->  	__be32 ltedr;           /**< Transfer Error Disable Register */
->  	__be32 lteir;           /**< Transfer Error Interrupt Register */
->  	__be32 lteatr;          /**< Transfer Error Attributes Register */
->  	__be32 ltear;           /**< Transfer Error Address Register */
-> -	u8 res6[0xC];
-> +	__be32 lteccr;          /**< Transfer Error ECC Register */
-> +	u8 res6[0x8];
->  	__be32 lbcr;            /**< Configuration Register */
->  #define LBCR_LDIS  0x80000000
->  #define LBCR_LDIS_SHIFT    31
-> @@ -265,7 +278,23 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
->  		cpu_relax();
->  }
->  
-> +/* overview of the fsl lbc controller */
-> +
-> +struct fsl_lbc_ctrl {
-> +	/* device info */
-> +	struct device			*dev;
-> +	struct fsl_lbc_regs __iomem	*regs;
-> +	int				irq;
-> +	wait_queue_head_t		irq_wait;
-> +	spinlock_t			lock;
-> +	void				*nand;
-> +
-> +	/* status read from LTESR by irq handler */
-> +	unsigned int			irq_status;
-> +};
-> +
->  extern int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base,
->  			       u32 mar);
-> +extern struct fsl_lbc_ctrl *fsl_lbc_ctrl_dev;
->  
->  #endif /* __ASM_FSL_LBC_H */
-> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-> index dceb8d1..4bb0336 100644
-> --- a/arch/powerpc/sysdev/fsl_lbc.c
-> +++ b/arch/powerpc/sysdev/fsl_lbc.c
-> @@ -2,8 +2,11 @@
->   * Freescale LBC and UPM routines.
->   *
->   * Copyright (c) 2007-2008  MontaVista Software, Inc.
-> + * Copyright (c) 2010 Freescale Semiconductor
->   *
->   * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-> + * Author: Jack Lan <Jack.Lan@freescale.com>
-> + * Author: Roy Zang <tie-fei.zang@freescale.com>
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License as published by
-> @@ -19,39 +22,16 @@
->  #include <linux/types.h>
->  #include <linux/io.h>
->  #include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/mod_devicetable.h>
->  #include <asm/prom.h>
->  #include <asm/fsl_lbc.h>
->  
->  static spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-> -static struct fsl_lbc_regs __iomem *fsl_lbc_regs;
-> -
-> -static char __initdata *compat_lbc[] = {
-> -	"fsl,pq2-localbus",
-> -	"fsl,pq2pro-localbus",
-> -	"fsl,pq3-localbus",
-> -	"fsl,elbc",
-> -};
-> -
-> -static int __init fsl_lbc_init(void)
-> -{
-> -	struct device_node *lbus;
-> -	int i;
-> -
-> -	for (i = 0; i < ARRAY_SIZE(compat_lbc); i++) {
-> -		lbus = of_find_compatible_node(NULL, NULL, compat_lbc[i]);
-> -		if (lbus)
-> -			goto found;
-> -	}
-> -	return -ENODEV;
-> -
-> -found:
-> -	fsl_lbc_regs = of_iomap(lbus, 0);
-> -	of_node_put(lbus);
-> -	if (!fsl_lbc_regs)
-> -		return -ENOMEM;
-> -	return 0;
-> -}
-> -arch_initcall(fsl_lbc_init);
-> +struct fsl_lbc_ctrl *fsl_lbc_ctrl_dev;
-> +EXPORT_SYMBOL(fsl_lbc_ctrl_dev);
->  
->  /**
->   * fsl_lbc_find - find Localbus bank
-> @@ -65,13 +45,15 @@ arch_initcall(fsl_lbc_init);
->  int fsl_lbc_find(phys_addr_t addr_base)
->  {
->  	int i;
-> +	struct fsl_lbc_regs __iomem *lbc;
->  
-> -	if (!fsl_lbc_regs)
-> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
->  		return -ENODEV;
->  
-> -	for (i = 0; i < ARRAY_SIZE(fsl_lbc_regs->bank); i++) {
-> -		__be32 br = in_be32(&fsl_lbc_regs->bank[i].br);
-> -		__be32 or = in_be32(&fsl_lbc_regs->bank[i].or);
-> +	lbc = fsl_lbc_ctrl_dev->regs;
-> +	for (i = 0; i < ARRAY_SIZE(lbc->bank); i++) {
-> +		__be32 br = in_be32(&lbc->bank[i].br);
-> +		__be32 or = in_be32(&lbc->bank[i].or);
->  
->  		if (br & BR_V && (br & or & BR_BA) == addr_base)
->  			return i;
-> @@ -94,22 +76,27 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
->  {
->  	int bank;
->  	__be32 br;
-> +	struct fsl_lbc_regs __iomem *lbc;
->  
->  	bank = fsl_lbc_find(addr_base);
->  	if (bank < 0)
->  		return bank;
->  
-> -	br = in_be32(&fsl_lbc_regs->bank[bank].br);
-> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
-> +		return -ENODEV;
-> +
-> +	lbc = fsl_lbc_ctrl_dev->regs;
-> +	br = in_be32(&lbc->bank[bank].br);
->  
->  	switch (br & BR_MSEL) {
->  	case BR_MS_UPMA:
-> -		upm->mxmr = &fsl_lbc_regs->mamr;
-> +		upm->mxmr = &lbc->mamr;
->  		break;
->  	case BR_MS_UPMB:
-> -		upm->mxmr = &fsl_lbc_regs->mbmr;
-> +		upm->mxmr = &lbc->mbmr;
->  		break;
->  	case BR_MS_UPMC:
-> -		upm->mxmr = &fsl_lbc_regs->mcmr;
-> +		upm->mxmr = &lbc->mcmr;
->  		break;
->  	default:
->  		return -EINVAL;
-> @@ -148,9 +135,12 @@ int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
->  	int ret = 0;
->  	unsigned long flags;
->  
-> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
-> +		return -ENODEV;
-> +
->  	spin_lock_irqsave(&fsl_lbc_lock, flags);
->  
-> -	out_be32(&fsl_lbc_regs->mar, mar);
-> +	out_be32(&fsl_lbc_ctrl_dev->regs->mar, mar);
->  
->  	switch (upm->width) {
->  	case 8:
-> @@ -172,3 +162,166 @@ int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
->  	return ret;
->  }
->  EXPORT_SYMBOL(fsl_upm_run_pattern);
-> +
-> +static int __devinit fsl_lbc_ctrl_init(struct fsl_lbc_ctrl *ctrl)
-> +{
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> +
-> +	/* clear event registers */
-> +	setbits32(&lbc->ltesr, LTESR_CLEAR);
-> +	out_be32(&lbc->lteatr, 0);
-> +	out_be32(&lbc->ltear, 0);
-> +	out_be32(&lbc->lteccr, LTECCR_CLEAR);
-> +	out_be32(&lbc->ltedr, LTEDR_ENABLE);
-> +
-> +	/* Enable interrupts for any detected events */
-> +	out_be32(&lbc->lteir, LTEIR_ENABLE);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * NOTE: This interrupt is used to report localbus events of various kinds,
-> + * such as transaction errors on the chipselects.
-> + */
-> +
-> +static irqreturn_t fsl_lbc_ctrl_irq(int irqno, void *data)
-> +{
-> +	struct fsl_lbc_ctrl *ctrl = data;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> +	u32 status;
-> +
-> +	status = in_be32(&lbc->ltesr);
-> +	if (!status)
-> +		return IRQ_NONE;
-> +
-> +	out_be32(&lbc->ltesr, LTESR_CLEAR);
-> +	out_be32(&lbc->lteatr, 0);
-> +	out_be32(&lbc->ltear, 0);
-> +	ctrl->irq_status = status;
-> +
-> +	if (status & LTESR_BM)
-> +		dev_err(ctrl->dev, "Local bus monitor time-out: "
-> +			"LTESR 0x%08X\n", status);
-> +	if (status & LTESR_WP)
-> +		dev_err(ctrl->dev, "Write protect error: "
-> +			"LTESR 0x%08X\n", status);
-> +	if (status & LTESR_ATMW)
-> +		dev_err(ctrl->dev, "Atomic write error: "
-> +			"LTESR 0x%08X\n", status);
-> +	if (status & LTESR_ATMR)
-> +		dev_err(ctrl->dev, "Atomic read error: "
-> +			"LTESR 0x%08X\n", status);
-> +	if (status & LTESR_CS)
-> +		dev_err(ctrl->dev, "Chip select error: "
-> +			"LTESR 0x%08X\n", status);
-> +	if (status & LTESR_UPM)
-> +		;
-> +	if (status & LTESR_FCT) {
-> +		dev_err(ctrl->dev, "FCM command time-out: "
-> +			"LTESR 0x%08X\n", status);
-> +		smp_wmb();
-> +		wake_up(&ctrl->irq_wait);
-> +	}
-> +	if (status & LTESR_PAR) {
-> +		dev_err(ctrl->dev, "Parity or Uncorrectable ECC error: "
-> +			"LTESR 0x%08X\n", status);
-> +		smp_wmb();
-> +		wake_up(&ctrl->irq_wait);
-> +	}
-> +	if (status & LTESR_CC) {
-> +		smp_wmb();
-> +		wake_up(&ctrl->irq_wait);
-> +	}
-> +	if (status & ~LTESR_MASK)
-> +		dev_err(ctrl->dev, "Unknown error: "
-> +			"LTESR 0x%08X\n", status);
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +/*
-> + * fsl_lbc_ctrl_probe
-> + *
-> + * called by device layer when it finds a device matching
-> + * one our driver can handled. This code allocates all of
-> + * the resources needed for the controller only.  The
-> + * resources for the NAND banks themselves are allocated
-> + * in the chip probe function.
-> +*/
-> +
-> +static int __devinit fsl_lbc_ctrl_probe(struct platform_device *dev)
-> +{
-> +	int ret;
-> +
-> +	if (!dev->dev.of_node) {
-> +		dev_err(&dev->dev, "Device OF-Node is NULL");
-> +		return -EFAULT;
-> +	}
-> +
-> +	fsl_lbc_ctrl_dev = kzalloc(sizeof(*fsl_lbc_ctrl_dev), GFP_KERNEL);
-> +	if (!fsl_lbc_ctrl_dev)
-> +		return -ENOMEM;
-> +
-> +	dev_set_drvdata(&dev->dev, fsl_lbc_ctrl_dev);
-> +
-> +	spin_lock_init(&fsl_lbc_ctrl_dev->lock);
-> +	init_waitqueue_head(&fsl_lbc_ctrl_dev->irq_wait);
-> +
-> +	fsl_lbc_ctrl_dev->regs = of_iomap(dev->dev.of_node, 0);
-> +	if (!fsl_lbc_ctrl_dev->regs) {
-> +		dev_err(&dev->dev, "failed to get memory region\n");
-> +		ret = -ENODEV;
-> +		goto err;
-
-Looks you always iounmap(fsl_lbc_ctrl_dev->regs) on position 'err' but here
-of_iomap() is already failed you should skip iounmap() fsl_lbc_ctrl_dev->regs
-again. So you should improve that as the following on 'err', or layout 'err' in
-gain.
-------
-	if(fsl_lbc_ctrl_dev->regs)
-		iounmap(fsl_lbc_ctrl_dev->regs);
-
-Tiejun
-
-> +	}
-> +
-> +	fsl_lbc_ctrl_dev->irq = irq_of_parse_and_map(dev->dev.of_node, 0);
-> +	if (fsl_lbc_ctrl_dev->irq == NO_IRQ) {
-> +		dev_err(&dev->dev, "failed to get irq resource\n");
-> +		ret = -ENODEV;
-> +		goto err;
-> +	}
-> +
-> +	fsl_lbc_ctrl_dev->dev = &dev->dev;
-> +
-> +	ret = fsl_lbc_ctrl_init(fsl_lbc_ctrl_dev);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	ret = request_irq(fsl_lbc_ctrl_dev->irq, fsl_lbc_ctrl_irq, 0,
-> +				"fsl-lbc", fsl_lbc_ctrl_dev);
-> +	if (ret != 0) {
-> +		dev_err(&dev->dev, "failed to install irq (%d)\n",
-> +			fsl_lbc_ctrl_dev->irq);
-> +		ret = fsl_lbc_ctrl_dev->irq;
-> +		goto err;
-> +	}
-> +
-> +	return 0;
-> +
-> +err:
-> +	iounmap(fsl_lbc_ctrl_dev->regs);
-> +	kfree(fsl_lbc_ctrl_dev);
-> +	return ret;
-> +}
-> +
-> +static const struct of_device_id fsl_lbc_match[] = {
-> +	{ .compatible = "fsl,elbc", },
-> +	{ .compatible = "fsl,pq3-localbus", },
-> +	{ .compatible = "fsl,pq2-localbus", },
-> +	{ .compatible = "fsl,pq2pro-localbus", },
-> +	{},
-> +};
-> +
-> +static struct platform_driver fsl_lbc_ctrl_driver = {
-> +	.driver = {
-> +		.name = "fsl-lbc",
-> +		.of_match_table = fsl_lbc_match,
-> +	},
-> +	.probe = fsl_lbc_ctrl_probe,
-> +};
-> +
-> +static int __init fsl_lbc_init(void)
-> +{
-> +	return platform_driver_register(&fsl_lbc_ctrl_driver);
-> +}
-> +module_init(fsl_lbc_init);
-> diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-> index 8b4b67c..4132c46 100644
-> --- a/drivers/mtd/nand/Kconfig
-> +++ b/drivers/mtd/nand/Kconfig
-> @@ -458,6 +458,7 @@ config MTD_NAND_ORION
->  config MTD_NAND_FSL_ELBC
->  	tristate "NAND support for Freescale eLBC controllers"
->  	depends on PPC_OF
-> +	select FSL_LBC
->  	help
->  	  Various Freescale chips, including the 8313, include a NAND Flash
->  	  Controller Module with built-in hardware ECC capabilities.
-> diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-> index 80de0bf..400f01f 100644
-> --- a/drivers/mtd/nand/fsl_elbc_nand.c
-> +++ b/drivers/mtd/nand/fsl_elbc_nand.c
-> @@ -1,9 +1,11 @@
->  /* Freescale Enhanced Local Bus Controller NAND driver
->   *
-> - * Copyright (c) 2006-2007 Freescale Semiconductor
-> + * Copyright (c) 2006-2007, 2010 Freescale Semiconductor
->   *
->   * Authors: Nick Spence <nick.spence@freescale.com>,
->   *          Scott Wood <scottwood@freescale.com>
-> + *          Jack Lan <jack.lan@freescale.com>
-> + *          Roy Zang <tie-fei.zang@freescale.com>
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License as published by
-> @@ -27,6 +29,7 @@
->  #include <linux/string.h>
->  #include <linux/ioport.h>
->  #include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
->  #include <linux/slab.h>
->  #include <linux/interrupt.h>
->  
-> @@ -42,14 +45,12 @@
->  #define ERR_BYTE 0xFF /* Value returned for read bytes when read failed */
->  #define FCM_TIMEOUT_MSECS 500 /* Maximum number of mSecs to wait for FCM */
->  
-> -struct fsl_elbc_ctrl;
-> -
->  /* mtd information per set */
->  
->  struct fsl_elbc_mtd {
->  	struct mtd_info mtd;
->  	struct nand_chip chip;
-> -	struct fsl_elbc_ctrl *ctrl;
-> +	struct fsl_lbc_ctrl *ctrl;
->  
->  	struct device *dev;
->  	int bank;               /* Chip select bank number           */
-> @@ -58,18 +59,12 @@ struct fsl_elbc_mtd {
->  	unsigned int fmr;       /* FCM Flash Mode Register value     */
->  };
->  
-> -/* overview of the fsl elbc controller */
-> +/* Freescale eLBC FCM controller infomation */
->  
-> -struct fsl_elbc_ctrl {
-> +struct fsl_elbc_fcm_ctrl {
->  	struct nand_hw_control controller;
->  	struct fsl_elbc_mtd *chips[MAX_BANKS];
->  
-> -	/* device info */
-> -	struct device *dev;
-> -	struct fsl_lbc_regs __iomem *regs;
-> -	int irq;
-> -	wait_queue_head_t irq_wait;
-> -	unsigned int irq_status; /* status read from LTESR by irq handler */
->  	u8 __iomem *addr;        /* Address of assigned FCM buffer        */
->  	unsigned int page;       /* Last page written to / read from      */
->  	unsigned int read_bytes; /* Number of bytes read during command   */
-> @@ -79,6 +74,7 @@ struct fsl_elbc_ctrl {
->  	unsigned int mdr;        /* UPM/FCM Data Register value           */
->  	unsigned int use_mdr;    /* Non zero if the MDR is to be set      */
->  	unsigned int oob;        /* Non zero if operating on OOB data     */
-> +	unsigned int counter;	 /* counter for the initializations	  */
->  	char *oob_poi;           /* Place to write ECC after read back    */
->  };
->  
-> @@ -164,11 +160,12 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
->  	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
->  	int buf_num;
->  
-> -	ctrl->page = page_addr;
-> +	elbc_fcm_ctrl->page = page_addr;
->  
->  	out_be32(&lbc->fbar,
->  	         page_addr >> (chip->phys_erase_shift - chip->page_shift));
-> @@ -185,16 +182,18 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
->  		buf_num = page_addr & 7;
->  	}
->  
-> -	ctrl->addr = priv->vbase + buf_num * 1024;
-> -	ctrl->index = column;
-> +	elbc_fcm_ctrl->addr = priv->vbase + buf_num * 1024;
-> +	elbc_fcm_ctrl->index = column;
->  
->  	/* for OOB data point to the second half of the buffer */
->  	if (oob)
-> -		ctrl->index += priv->page_size ? 2048 : 512;
-> +		elbc_fcm_ctrl->index += priv->page_size ? 2048 : 512;
->  
-> -	dev_vdbg(ctrl->dev, "set_addr: bank=%d, ctrl->addr=0x%p (0x%p), "
-> +	dev_vdbg(priv->dev, "set_addr: bank=%d, "
-> +			    "elbc_fcm_ctrl->addr=0x%p (0x%p), "
->  	                    "index %x, pes %d ps %d\n",
-> -	         buf_num, ctrl->addr, priv->vbase, ctrl->index,
-> +		 buf_num, elbc_fcm_ctrl->addr, priv->vbase,
-> +		 elbc_fcm_ctrl->index,
->  	         chip->phys_erase_shift, chip->page_shift);
->  }
->  
-> @@ -205,18 +204,19 @@ static int fsl_elbc_run_command(struct mtd_info *mtd)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
->  	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->  
->  	/* Setup the FMR[OP] to execute without write protection */
->  	out_be32(&lbc->fmr, priv->fmr | 3);
-> -	if (ctrl->use_mdr)
-> -		out_be32(&lbc->mdr, ctrl->mdr);
-> +	if (elbc_fcm_ctrl->use_mdr)
-> +		out_be32(&lbc->mdr, elbc_fcm_ctrl->mdr);
->  
-> -	dev_vdbg(ctrl->dev,
-> +	dev_vdbg(priv->dev,
->  	         "fsl_elbc_run_command: fmr=%08x fir=%08x fcr=%08x\n",
->  	         in_be32(&lbc->fmr), in_be32(&lbc->fir), in_be32(&lbc->fcr));
-> -	dev_vdbg(ctrl->dev,
-> +	dev_vdbg(priv->dev,
->  	         "fsl_elbc_run_command: fbar=%08x fpar=%08x "
->  	         "fbcr=%08x bank=%d\n",
->  	         in_be32(&lbc->fbar), in_be32(&lbc->fpar),
-> @@ -229,19 +229,18 @@ static int fsl_elbc_run_command(struct mtd_info *mtd)
->  	/* wait for FCM complete flag or timeout */
->  	wait_event_timeout(ctrl->irq_wait, ctrl->irq_status,
->  	                   FCM_TIMEOUT_MSECS * HZ/1000);
-> -	ctrl->status = ctrl->irq_status;
-> -
-> +	elbc_fcm_ctrl->status = ctrl->irq_status;
->  	/* store mdr value in case it was needed */
-> -	if (ctrl->use_mdr)
-> -		ctrl->mdr = in_be32(&lbc->mdr);
-> +	if (elbc_fcm_ctrl->use_mdr)
-> +		elbc_fcm_ctrl->mdr = in_be32(&lbc->mdr);
->  
-> -	ctrl->use_mdr = 0;
-> +	elbc_fcm_ctrl->use_mdr = 0;
->  
-> -	if (ctrl->status != LTESR_CC) {
-> -		dev_info(ctrl->dev,
-> +	if (elbc_fcm_ctrl->status != LTESR_CC) {
-> +		dev_info(priv->dev,
->  		         "command failed: fir %x fcr %x status %x mdr %x\n",
->  		         in_be32(&lbc->fir), in_be32(&lbc->fcr),
-> -		         ctrl->status, ctrl->mdr);
-> +			 elbc_fcm_ctrl->status, elbc_fcm_ctrl->mdr);
->  		return -EIO;
->  	}
->  
-> @@ -251,7 +250,7 @@ static int fsl_elbc_run_command(struct mtd_info *mtd)
->  static void fsl_elbc_do_read(struct nand_chip *chip, int oob)
->  {
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
->  	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->  
->  	if (priv->page_size) {
-> @@ -284,15 +283,16 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
->  	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->  
-> -	ctrl->use_mdr = 0;
-> +	elbc_fcm_ctrl->use_mdr = 0;
->  
->  	/* clear the read buffer */
-> -	ctrl->read_bytes = 0;
-> +	elbc_fcm_ctrl->read_bytes = 0;
->  	if (command != NAND_CMD_PAGEPROG)
-> -		ctrl->index = 0;
-> +		elbc_fcm_ctrl->index = 0;
->  
->  	switch (command) {
->  	/* READ0 and READ1 read the entire buffer to use hardware ECC. */
-> @@ -301,7 +301,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  
->  	/* fall-through */
->  	case NAND_CMD_READ0:
-> -		dev_dbg(ctrl->dev,
-> +		dev_dbg(priv->dev,
->  		        "fsl_elbc_cmdfunc: NAND_CMD_READ0, page_addr:"
->  		        " 0x%x, column: 0x%x.\n", page_addr, column);
->  
-> @@ -309,8 +309,8 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  		out_be32(&lbc->fbcr, 0); /* read entire page to enable ECC */
->  		set_addr(mtd, 0, page_addr, 0);
->  
-> -		ctrl->read_bytes = mtd->writesize + mtd->oobsize;
-> -		ctrl->index += column;
-> +		elbc_fcm_ctrl->read_bytes = mtd->writesize + mtd->oobsize;
-> +		elbc_fcm_ctrl->index += column;
->  
->  		fsl_elbc_do_read(chip, 0);
->  		fsl_elbc_run_command(mtd);
-> @@ -318,14 +318,14 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  
->  	/* READOOB reads only the OOB because no ECC is performed. */
->  	case NAND_CMD_READOOB:
-> -		dev_vdbg(ctrl->dev,
-> +		dev_vdbg(priv->dev,
->  		         "fsl_elbc_cmdfunc: NAND_CMD_READOOB, page_addr:"
->  			 " 0x%x, column: 0x%x.\n", page_addr, column);
->  
->  		out_be32(&lbc->fbcr, mtd->oobsize - column);
->  		set_addr(mtd, column, page_addr, 1);
->  
-> -		ctrl->read_bytes = mtd->writesize + mtd->oobsize;
-> +		elbc_fcm_ctrl->read_bytes = mtd->writesize + mtd->oobsize;
->  
->  		fsl_elbc_do_read(chip, 1);
->  		fsl_elbc_run_command(mtd);
-> @@ -333,7 +333,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  
->  	/* READID must read all 5 possible bytes while CEB is active */
->  	case NAND_CMD_READID:
-> -		dev_vdbg(ctrl->dev, "fsl_elbc_cmdfunc: NAND_CMD_READID.\n");
-> +		dev_vdbg(priv->dev, "fsl_elbc_cmdfunc: NAND_CMD_READID.\n");
->  
->  		out_be32(&lbc->fir, (FIR_OP_CM0 << FIR_OP0_SHIFT) |
->  		                    (FIR_OP_UA  << FIR_OP1_SHIFT) |
-> @@ -341,9 +341,9 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  		out_be32(&lbc->fcr, NAND_CMD_READID << FCR_CMD0_SHIFT);
->  		/* 5 bytes for manuf, device and exts */
->  		out_be32(&lbc->fbcr, 5);
-> -		ctrl->read_bytes = 5;
-> -		ctrl->use_mdr = 1;
-> -		ctrl->mdr = 0;
-> +		elbc_fcm_ctrl->read_bytes = 5;
-> +		elbc_fcm_ctrl->use_mdr = 1;
-> +		elbc_fcm_ctrl->mdr = 0;
->  
->  		set_addr(mtd, 0, 0, 0);
->  		fsl_elbc_run_command(mtd);
-> @@ -351,7 +351,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  
->  	/* ERASE1 stores the block and page address */
->  	case NAND_CMD_ERASE1:
-> -		dev_vdbg(ctrl->dev,
-> +		dev_vdbg(priv->dev,
->  		         "fsl_elbc_cmdfunc: NAND_CMD_ERASE1, "
->  		         "page_addr: 0x%x.\n", page_addr);
->  		set_addr(mtd, 0, page_addr, 0);
-> @@ -359,7 +359,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  
->  	/* ERASE2 uses the block and page address from ERASE1 */
->  	case NAND_CMD_ERASE2:
-> -		dev_vdbg(ctrl->dev, "fsl_elbc_cmdfunc: NAND_CMD_ERASE2.\n");
-> +		dev_vdbg(priv->dev, "fsl_elbc_cmdfunc: NAND_CMD_ERASE2.\n");
->  
->  		out_be32(&lbc->fir,
->  		         (FIR_OP_CM0 << FIR_OP0_SHIFT) |
-> @@ -374,8 +374,8 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  		         (NAND_CMD_ERASE2 << FCR_CMD2_SHIFT));
->  
->  		out_be32(&lbc->fbcr, 0);
-> -		ctrl->read_bytes = 0;
-> -		ctrl->use_mdr = 1;
-> +		elbc_fcm_ctrl->read_bytes = 0;
-> +		elbc_fcm_ctrl->use_mdr = 1;
->  
->  		fsl_elbc_run_command(mtd);
->  		return;
-> @@ -383,14 +383,12 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  	/* SEQIN sets up the addr buffer and all registers except the length */
->  	case NAND_CMD_SEQIN: {
->  		__be32 fcr;
-> -		dev_vdbg(ctrl->dev,
-> -		         "fsl_elbc_cmdfunc: NAND_CMD_SEQIN/PAGE_PROG, "
-> +		dev_vdbg(priv->dev,
-> +			 "fsl_elbc_cmdfunc: NAND_CMD_SEQIN/PAGE_PROG, "
->  		         "page_addr: 0x%x, column: 0x%x.\n",
->  		         page_addr, column);
->  
-> -		ctrl->column = column;
-> -		ctrl->oob = 0;
-> -		ctrl->use_mdr = 1;
-> +		elbc_fcm_ctrl->use_mdr = 1;
->  
->  		fcr = (NAND_CMD_STATUS   << FCR_CMD1_SHIFT) |
->  		      (NAND_CMD_SEQIN    << FCR_CMD2_SHIFT) |
-> @@ -420,7 +418,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  				/* OOB area --> READOOB */
->  				column -= mtd->writesize;
->  				fcr |= NAND_CMD_READOOB << FCR_CMD0_SHIFT;
-> -				ctrl->oob = 1;
-> +				elbc_fcm_ctrl->oob = 1;
->  			} else {
->  				WARN_ON(column != 0);
->  				/* First 256 bytes --> READ0 */
-> @@ -429,24 +427,24 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  		}
->  
->  		out_be32(&lbc->fcr, fcr);
-> -		set_addr(mtd, column, page_addr, ctrl->oob);
-> +		set_addr(mtd, column, page_addr, elbc_fcm_ctrl->oob);
->  		return;
->  	}
->  
->  	/* PAGEPROG reuses all of the setup from SEQIN and adds the length */
->  	case NAND_CMD_PAGEPROG: {
->  		int full_page;
-> -		dev_vdbg(ctrl->dev,
-> +		dev_vdbg(priv->dev,
->  		         "fsl_elbc_cmdfunc: NAND_CMD_PAGEPROG "
-> -		         "writing %d bytes.\n", ctrl->index);
-> +			 "writing %d bytes.\n", elbc_fcm_ctrl->index);
->  
->  		/* if the write did not start at 0 or is not a full page
->  		 * then set the exact length, otherwise use a full page
->  		 * write so the HW generates the ECC.
->  		 */
-> -		if (ctrl->oob || ctrl->column != 0 ||
-> -		    ctrl->index != mtd->writesize + mtd->oobsize) {
-> -			out_be32(&lbc->fbcr, ctrl->index);
-> +		if (elbc_fcm_ctrl->oob || elbc_fcm_ctrl->column != 0 ||
-> +		    elbc_fcm_ctrl->index != mtd->writesize + mtd->oobsize) {
-> +			out_be32(&lbc->fbcr, elbc_fcm_ctrl->index);
->  			full_page = 0;
->  		} else {
->  			out_be32(&lbc->fbcr, 0);
-> @@ -458,21 +456,21 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  		/* Read back the page in order to fill in the ECC for the
->  		 * caller.  Is this really needed?
->  		 */
-> -		if (full_page && ctrl->oob_poi) {
-> +		if (full_page && elbc_fcm_ctrl->oob_poi) {
->  			out_be32(&lbc->fbcr, 3);
->  			set_addr(mtd, 6, page_addr, 1);
->  
-> -			ctrl->read_bytes = mtd->writesize + 9;
-> +			elbc_fcm_ctrl->read_bytes = mtd->writesize + 9;
->  
->  			fsl_elbc_do_read(chip, 1);
->  			fsl_elbc_run_command(mtd);
->  
-> -			memcpy_fromio(ctrl->oob_poi + 6,
-> -			              &ctrl->addr[ctrl->index], 3);
-> -			ctrl->index += 3;
-> +			memcpy_fromio(elbc_fcm_ctrl->oob_poi + 6,
-> +				&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index], 3);
-> +			elbc_fcm_ctrl->index += 3;
->  		}
->  
-> -		ctrl->oob_poi = NULL;
-> +		elbc_fcm_ctrl->oob_poi = NULL;
->  		return;
->  	}
->  
-> @@ -485,26 +483,26 @@ static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
->  		out_be32(&lbc->fcr, NAND_CMD_STATUS << FCR_CMD0_SHIFT);
->  		out_be32(&lbc->fbcr, 1);
->  		set_addr(mtd, 0, 0, 0);
-> -		ctrl->read_bytes = 1;
-> +		elbc_fcm_ctrl->read_bytes = 1;
->  
->  		fsl_elbc_run_command(mtd);
->  
->  		/* The chip always seems to report that it is
->  		 * write-protected, even when it is not.
->  		 */
-> -		setbits8(ctrl->addr, NAND_STATUS_WP);
-> +		setbits8(elbc_fcm_ctrl->addr, NAND_STATUS_WP);
->  		return;
->  
->  	/* RESET without waiting for the ready line */
->  	case NAND_CMD_RESET:
-> -		dev_dbg(ctrl->dev, "fsl_elbc_cmdfunc: NAND_CMD_RESET.\n");
-> +		dev_dbg(priv->dev, "fsl_elbc_cmdfunc: NAND_CMD_RESET.\n");
->  		out_be32(&lbc->fir, FIR_OP_CM0 << FIR_OP0_SHIFT);
->  		out_be32(&lbc->fcr, NAND_CMD_RESET << FCR_CMD0_SHIFT);
->  		fsl_elbc_run_command(mtd);
->  		return;
->  
->  	default:
-> -		dev_err(ctrl->dev,
-> +		dev_err(priv->dev,
->  		        "fsl_elbc_cmdfunc: error, unsupported command 0x%x.\n",
->  		        command);
->  	}
-> @@ -524,24 +522,24 @@ static void fsl_elbc_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  	unsigned int bufsize = mtd->writesize + mtd->oobsize;
->  
->  	if (len <= 0) {
-> -		dev_err(ctrl->dev, "write_buf of %d bytes", len);
-> -		ctrl->status = 0;
-> +		dev_err(priv->dev, "write_buf of %d bytes", len);
-> +		elbc_fcm_ctrl->status = 0;
->  		return;
->  	}
->  
-> -	if ((unsigned int)len > bufsize - ctrl->index) {
-> -		dev_err(ctrl->dev,
-> +	if ((unsigned int)len > bufsize - elbc_fcm_ctrl->index) {
-> +		dev_err(priv->dev,
->  		        "write_buf beyond end of buffer "
->  		        "(%d requested, %u available)\n",
-> -		        len, bufsize - ctrl->index);
-> -		len = bufsize - ctrl->index;
-> +			len, bufsize - elbc_fcm_ctrl->index);
-> +		len = bufsize - elbc_fcm_ctrl->index;
->  	}
->  
-> -	memcpy_toio(&ctrl->addr[ctrl->index], buf, len);
-> +	memcpy_toio(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index], buf, len);
->  	/*
->  	 * This is workaround for the weird elbc hangs during nand write,
->  	 * Scott Wood says: "...perhaps difference in how long it takes a
-> @@ -549,9 +547,9 @@ static void fsl_elbc_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
->  	 * is causing problems, and sync isn't helping for some reason."
->  	 * Reading back the last byte helps though.
->  	 */
-> -	in_8(&ctrl->addr[ctrl->index] + len - 1);
-> +	in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index] + len - 1);
->  
-> -	ctrl->index += len;
-> +	elbc_fcm_ctrl->index += len;
->  }
->  
->  /*
-> @@ -562,13 +560,13 @@ static u8 fsl_elbc_read_byte(struct mtd_info *mtd)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  
->  	/* If there are still bytes in the FCM, then use the next byte. */
-> -	if (ctrl->index < ctrl->read_bytes)
-> -		return in_8(&ctrl->addr[ctrl->index++]);
-> +	if (elbc_fcm_ctrl->index < elbc_fcm_ctrl->read_bytes)
-> +		return in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index++]);
->  
-> -	dev_err(ctrl->dev, "read_byte beyond end of buffer\n");
-> +	dev_err(priv->dev, "read_byte beyond end of buffer\n");
->  	return ERR_BYTE;
->  }
->  
-> @@ -579,18 +577,19 @@ static void fsl_elbc_read_buf(struct mtd_info *mtd, u8 *buf, int len)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  	int avail;
->  
->  	if (len < 0)
->  		return;
->  
-> -	avail = min((unsigned int)len, ctrl->read_bytes - ctrl->index);
-> -	memcpy_fromio(buf, &ctrl->addr[ctrl->index], avail);
-> -	ctrl->index += avail;
-> +	avail = min((unsigned int)len,
-> +			elbc_fcm_ctrl->read_bytes - elbc_fcm_ctrl->index);
-> +	memcpy_fromio(buf, &elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index], avail);
-> +	elbc_fcm_ctrl->index += avail;
->  
->  	if (len > avail)
-> -		dev_err(ctrl->dev,
-> +		dev_err(priv->dev,
->  		        "read_buf beyond end of buffer "
->  		        "(%d requested, %d available)\n",
->  		        len, avail);
-> @@ -603,30 +602,32 @@ static int fsl_elbc_verify_buf(struct mtd_info *mtd, const u_char *buf, int len)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  	int i;
->  
->  	if (len < 0) {
-> -		dev_err(ctrl->dev, "write_buf of %d bytes", len);
-> +		dev_err(priv->dev, "write_buf of %d bytes", len);
->  		return -EINVAL;
->  	}
->  
-> -	if ((unsigned int)len > ctrl->read_bytes - ctrl->index) {
-> -		dev_err(ctrl->dev,
-> -		        "verify_buf beyond end of buffer "
-> -		        "(%d requested, %u available)\n",
-> -		        len, ctrl->read_bytes - ctrl->index);
-> +	if ((unsigned int)len >
-> +			elbc_fcm_ctrl->read_bytes - elbc_fcm_ctrl->index) {
-> +		dev_err(priv->dev,
-> +			"verify_buf beyond end of buffer "
-> +			"(%d requested, %u available)\n",
-> +			len, elbc_fcm_ctrl->read_bytes - elbc_fcm_ctrl->index);
->  
-> -		ctrl->index = ctrl->read_bytes;
-> +		elbc_fcm_ctrl->index = elbc_fcm_ctrl->read_bytes;
->  		return -EINVAL;
->  	}
->  
->  	for (i = 0; i < len; i++)
-> -		if (in_8(&ctrl->addr[ctrl->index + i]) != buf[i])
-> +		if (in_8(&elbc_fcm_ctrl->addr[elbc_fcm_ctrl->index + i])
-> +				!= buf[i])
->  			break;
->  
-> -	ctrl->index += len;
-> -	return i == len && ctrl->status == LTESR_CC ? 0 : -EIO;
-> +	elbc_fcm_ctrl->index += len;
-> +	return i == len && elbc_fcm_ctrl->status == LTESR_CC ? 0 : -EIO;
->  }
->  
->  /* This function is called after Program and Erase Operations to
-> @@ -635,22 +636,22 @@ static int fsl_elbc_verify_buf(struct mtd_info *mtd, const u_char *buf, int len)
->  static int fsl_elbc_wait(struct mtd_info *mtd, struct nand_chip *chip)
->  {
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  
-> -	if (ctrl->status != LTESR_CC)
-> +	if (elbc_fcm_ctrl->status != LTESR_CC)
->  		return NAND_STATUS_FAIL;
->  
->  	/* The chip always seems to report that it is
->  	 * write-protected, even when it is not.
->  	 */
-> -	return (ctrl->mdr & 0xff) | NAND_STATUS_WP;
-> +	return (elbc_fcm_ctrl->mdr & 0xff) | NAND_STATUS_WP;
->  }
->  
->  static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
->  {
->  	struct nand_chip *chip = mtd->priv;
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
->  	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->  	unsigned int al;
->  
-> @@ -665,41 +666,41 @@ static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
->  	priv->fmr |= (12 << FMR_CWTO_SHIFT) |  /* Timeout > 12 ms */
->  	             (al << FMR_AL_SHIFT);
->  
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->numchips = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->numchips = %d\n",
->  	        chip->numchips);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->chipsize = %lld\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->chipsize = %lld\n",
->  	        chip->chipsize);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->pagemask = %8x\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->pagemask = %8x\n",
->  	        chip->pagemask);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->chip_delay = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->chip_delay = %d\n",
->  	        chip->chip_delay);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->badblockpos = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->badblockpos = %d\n",
->  	        chip->badblockpos);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->chip_shift = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->chip_shift = %d\n",
->  	        chip->chip_shift);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->page_shift = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->page_shift = %d\n",
->  	        chip->page_shift);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->phys_erase_shift = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->phys_erase_shift = %d\n",
->  	        chip->phys_erase_shift);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->ecclayout = %p\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->ecclayout = %p\n",
->  	        chip->ecclayout);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->ecc.mode = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->ecc.mode = %d\n",
->  	        chip->ecc.mode);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->ecc.steps = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->ecc.steps = %d\n",
->  	        chip->ecc.steps);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->ecc.bytes = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->ecc.bytes = %d\n",
->  	        chip->ecc.bytes);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->ecc.total = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->ecc.total = %d\n",
->  	        chip->ecc.total);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: nand->ecc.layout = %p\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: nand->ecc.layout = %p\n",
->  	        chip->ecc.layout);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: mtd->flags = %08x\n", mtd->flags);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: mtd->size = %lld\n", mtd->size);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: mtd->erasesize = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: mtd->flags = %08x\n", mtd->flags);
-> +	dev_dbg(priv->dev, "fsl_elbc_init: mtd->size = %lld\n", mtd->size);
-> +	dev_dbg(priv->dev, "fsl_elbc_init: mtd->erasesize = %d\n",
->  	        mtd->erasesize);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: mtd->writesize = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: mtd->writesize = %d\n",
->  	        mtd->writesize);
-> -	dev_dbg(ctrl->dev, "fsl_elbc_init: mtd->oobsize = %d\n",
-> +	dev_dbg(priv->dev, "fsl_elbc_init: mtd->oobsize = %d\n",
->  	        mtd->oobsize);
->  
->  	/* adjust Option Register and ECC to match Flash page size */
-> @@ -719,7 +720,7 @@ static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
->  			chip->badblock_pattern = &largepage_memorybased;
->  		}
->  	} else {
-> -		dev_err(ctrl->dev,
-> +		dev_err(priv->dev,
->  		        "fsl_elbc_init: page size %d is not supported\n",
->  		        mtd->writesize);
->  		return -1;
-> @@ -750,18 +751,19 @@ static void fsl_elbc_write_page(struct mtd_info *mtd,
->                                  const uint8_t *buf)
->  {
->  	struct fsl_elbc_mtd *priv = chip->priv;
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  
->  	fsl_elbc_write_buf(mtd, buf, mtd->writesize);
->  	fsl_elbc_write_buf(mtd, chip->oob_poi, mtd->oobsize);
->  
-> -	ctrl->oob_poi = chip->oob_poi;
-> +	elbc_fcm_ctrl->oob_poi = chip->oob_poi;
->  }
->  
->  static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
->  {
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> +	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
->  	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
->  	struct nand_chip *chip = &priv->chip;
->  
->  	dev_dbg(priv->dev, "eLBC Set Information for bank %d\n", priv->bank);
-> @@ -790,7 +792,7 @@ static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
->  	chip->options = NAND_NO_READRDY | NAND_NO_AUTOINCR |
->  			NAND_USE_FLASH_BBT;
->  
-> -	chip->controller = &ctrl->controller;
-> +	chip->controller = &elbc_fcm_ctrl->controller;
->  	chip->priv = priv;
->  
->  	chip->ecc.read_page = fsl_elbc_read_page;
-> @@ -815,8 +817,7 @@ static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
->  
->  static int fsl_elbc_chip_remove(struct fsl_elbc_mtd *priv)
->  {
-> -	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
->  	nand_release(&priv->mtd);
->  
->  	kfree(priv->mtd.name);
-> @@ -824,18 +825,21 @@ static int fsl_elbc_chip_remove(struct fsl_elbc_mtd *priv)
->  	if (priv->vbase)
->  		iounmap(priv->vbase);
->  
-> -	ctrl->chips[priv->bank] = NULL;
-> +	elbc_fcm_ctrl->chips[priv->bank] = NULL;
->  	kfree(priv);
-> -
-> +	kfree(elbc_fcm_ctrl);
->  	return 0;
->  }
->  
-> -static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
-> -					 struct device_node *node)
-> +static DEFINE_MUTEX(fsl_elbc_nand_mutex);
-> +
-> +static int __devinit fsl_elbc_nand_probe(struct platform_device *pdev)
->  {
-> -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc;
->  	struct fsl_elbc_mtd *priv;
->  	struct resource res;
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl;
-> +
->  #ifdef CONFIG_MTD_PARTITIONS
->  	static const char *part_probe_types[]
->  		= { "cmdlinepart", "RedBoot", NULL };
-> @@ -843,11 +847,18 @@ static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
->  #endif
->  	int ret;
->  	int bank;
-> +	struct device *dev;
-> +	struct device_node *node = pdev->dev.of_node;
-> +
-> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
-> +		return -ENODEV;
-> +	lbc = fsl_lbc_ctrl_dev->regs;
-> +	dev = fsl_lbc_ctrl_dev->dev;
->  
->  	/* get, allocate and map the memory resource */
->  	ret = of_address_to_resource(node, 0, &res);
->  	if (ret) {
-> -		dev_err(ctrl->dev, "failed to get resource\n");
-> +		dev_err(dev, "failed to get resource\n");
->  		return ret;
->  	}
->  
-> @@ -861,7 +872,7 @@ static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
->  			break;
->  
->  	if (bank >= MAX_BANKS) {
-> -		dev_err(ctrl->dev, "address did not match any chip selects\n");
-> +		dev_err(dev, "address did not match any chip selects\n");
->  		return -ENODEV;
->  	}
->  
-> @@ -869,14 +880,33 @@ static int __devinit fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
->  	if (!priv)
->  		return -ENOMEM;
->  
-> -	ctrl->chips[bank] = priv;
-> +	mutex_lock(&fsl_elbc_nand_mutex);
-> +	if (!fsl_lbc_ctrl_dev->nand) {
-> +		elbc_fcm_ctrl = kzalloc(sizeof(*elbc_fcm_ctrl), GFP_KERNEL);
-> +		if (!elbc_fcm_ctrl) {
-> +			dev_err(dev, "failed to allocate memory\n");
-> +			mutex_unlock(&fsl_elbc_nand_mutex);
-> +			ret = -ENOMEM;
-> +			goto err;
-> +		}
-> +		elbc_fcm_ctrl->counter++;
-> +
-> +		spin_lock_init(&elbc_fcm_ctrl->controller.lock);
-> +		init_waitqueue_head(&elbc_fcm_ctrl->controller.wq);
-> +		fsl_lbc_ctrl_dev->nand = elbc_fcm_ctrl;
-> +	} else {
-> +		elbc_fcm_ctrl = fsl_lbc_ctrl_dev->nand;
-> +	}
-> +	mutex_unlock(&fsl_elbc_nand_mutex);
-> +
-> +	elbc_fcm_ctrl->chips[bank] = priv;
->  	priv->bank = bank;
-> -	priv->ctrl = ctrl;
-> -	priv->dev = ctrl->dev;
-> +	priv->ctrl = fsl_lbc_ctrl_dev;
-> +	priv->dev = dev;
->  
->  	priv->vbase = ioremap(res.start, resource_size(&res));
->  	if (!priv->vbase) {
-> -		dev_err(ctrl->dev, "failed to map chip region\n");
-> +		dev_err(dev, "failed to map chip region\n");
->  		ret = -ENOMEM;
->  		goto err;
->  	}
-> @@ -933,171 +963,53 @@ err:
->  	return ret;
->  }
->  
-> -static int __devinit fsl_elbc_ctrl_init(struct fsl_elbc_ctrl *ctrl)
-> +static int fsl_elbc_nand_remove(struct platform_device *pdev)
->  {
-> -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> -
-> -	/*
-> -	 * NAND transactions can tie up the bus for a long time, so set the
-> -	 * bus timeout to max by clearing LBCR[BMT] (highest base counter
-> -	 * value) and setting LBCR[BMTPS] to the highest prescaler value.
-> -	 */
-> -	clrsetbits_be32(&lbc->lbcr, LBCR_BMT, 15);
-> -
-> -	/* clear event registers */
-> -	setbits32(&lbc->ltesr, LTESR_NAND_MASK);
-> -	out_be32(&lbc->lteatr, 0);
-> -
-> -	/* Enable interrupts for any detected events */
-> -	out_be32(&lbc->lteir, LTESR_NAND_MASK);
-> -
-> -	ctrl->read_bytes = 0;
-> -	ctrl->index = 0;
-> -	ctrl->addr = NULL;
-> -
-> -	return 0;
-> -}
-> -
-> -static int fsl_elbc_ctrl_remove(struct platform_device *ofdev)
-> -{
-> -	struct fsl_elbc_ctrl *ctrl = dev_get_drvdata(&ofdev->dev);
->  	int i;
-> -
-> +	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = fsl_lbc_ctrl_dev->nand;
->  	for (i = 0; i < MAX_BANKS; i++)
-> -		if (ctrl->chips[i])
-> -			fsl_elbc_chip_remove(ctrl->chips[i]);
-> -
-> -	if (ctrl->irq)
-> -		free_irq(ctrl->irq, ctrl);
-> -
-> -	if (ctrl->regs)
-> -		iounmap(ctrl->regs);
-> -
-> -	dev_set_drvdata(&ofdev->dev, NULL);
-> -	kfree(ctrl);
-> -	return 0;
-> -}
-> -
-> -/* NOTE: This interrupt is also used to report other localbus events,
-> - * such as transaction errors on other chipselects.  If we want to
-> - * capture those, we'll need to move the IRQ code into a shared
-> - * LBC driver.
-> - */
-> -
-> -static irqreturn_t fsl_elbc_ctrl_irq(int irqno, void *data)
-> -{
-> -	struct fsl_elbc_ctrl *ctrl = data;
-> -	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> -	__be32 status = in_be32(&lbc->ltesr) & LTESR_NAND_MASK;
-> -
-> -	if (status) {
-> -		out_be32(&lbc->ltesr, status);
-> -		out_be32(&lbc->lteatr, 0);
-> -
-> -		ctrl->irq_status = status;
-> -		smp_wmb();
-> -		wake_up(&ctrl->irq_wait);
-> -
-> -		return IRQ_HANDLED;
-> +		if (elbc_fcm_ctrl->chips[i])
-> +			fsl_elbc_chip_remove(elbc_fcm_ctrl->chips[i]);
-> +
-> +	mutex_lock(&fsl_elbc_nand_mutex);
-> +	elbc_fcm_ctrl->counter--;
-> +	if (!elbc_fcm_ctrl->counter) {
-> +		fsl_lbc_ctrl_dev->nand = NULL;
-> +		kfree(elbc_fcm_ctrl);
->  	}
-> -
-> -	return IRQ_NONE;
-> -}
-> -
-> -/* fsl_elbc_ctrl_probe
-> - *
-> - * called by device layer when it finds a device matching
-> - * one our driver can handled. This code allocates all of
-> - * the resources needed for the controller only.  The
-> - * resources for the NAND banks themselves are allocated
-> - * in the chip probe function.
-> -*/
-> -
-> -static int __devinit fsl_elbc_ctrl_probe(struct platform_device *ofdev,
-> -                                         const struct of_device_id *match)
-> -{
-> -	struct device_node *child;
-> -	struct fsl_elbc_ctrl *ctrl;
-> -	int ret;
-> -
-> -	ctrl = kzalloc(sizeof(*ctrl), GFP_KERNEL);
-> -	if (!ctrl)
-> -		return -ENOMEM;
-> -
-> -	dev_set_drvdata(&ofdev->dev, ctrl);
-> -
-> -	spin_lock_init(&ctrl->controller.lock);
-> -	init_waitqueue_head(&ctrl->controller.wq);
-> -	init_waitqueue_head(&ctrl->irq_wait);
-> -
-> -	ctrl->regs = of_iomap(ofdev->dev.of_node, 0);
-> -	if (!ctrl->regs) {
-> -		dev_err(&ofdev->dev, "failed to get memory region\n");
-> -		ret = -ENODEV;
-> -		goto err;
-> -	}
-> -
-> -	ctrl->irq = of_irq_to_resource(ofdev->dev.of_node, 0, NULL);
-> -	if (ctrl->irq == NO_IRQ) {
-> -		dev_err(&ofdev->dev, "failed to get irq resource\n");
-> -		ret = -ENODEV;
-> -		goto err;
-> -	}
-> -
-> -	ctrl->dev = &ofdev->dev;
-> -
-> -	ret = fsl_elbc_ctrl_init(ctrl);
-> -	if (ret < 0)
-> -		goto err;
-> -
-> -	ret = request_irq(ctrl->irq, fsl_elbc_ctrl_irq, 0, "fsl-elbc", ctrl);
-> -	if (ret != 0) {
-> -		dev_err(&ofdev->dev, "failed to install irq (%d)\n",
-> -		        ctrl->irq);
-> -		ret = ctrl->irq;
-> -		goto err;
-> -	}
-> -
-> -	for_each_child_of_node(ofdev->dev.of_node, child)
-> -		if (of_device_is_compatible(child, "fsl,elbc-fcm-nand"))
-> -			fsl_elbc_chip_probe(ctrl, child);
-> +	mutex_unlock(&fsl_elbc_nand_mutex);
->  
->  	return 0;
->  
-> -err:
-> -	fsl_elbc_ctrl_remove(ofdev);
-> -	return ret;
->  }
->  
-> -static const struct of_device_id fsl_elbc_match[] = {
-> -	{
-> -		.compatible = "fsl,elbc",
-> -	},
-> +static const struct of_device_id fsl_elbc_nand_match[] = {
-> +	{ .compatible = "fsl,elbc-fcm-nand", },
->  	{}
->  };
->  
-> -static struct of_platform_driver fsl_elbc_ctrl_driver = {
-> +static struct platform_driver fsl_elbc_nand_driver = {
->  	.driver = {
-> -		.name = "fsl-elbc",
-> +		.name = "fsl,elbc-fcm-nand",
->  		.owner = THIS_MODULE,
-> -		.of_match_table = fsl_elbc_match,
-> +		.of_match_table = fsl_elbc_nand_match,
->  	},
-> -	.probe = fsl_elbc_ctrl_probe,
-> -	.remove = fsl_elbc_ctrl_remove,
-> +	.probe = fsl_elbc_nand_probe,
-> +	.remove = fsl_elbc_nand_remove,
->  };
->  
-> -static int __init fsl_elbc_init(void)
-> +static int __init fsl_elbc_nand_init(void)
->  {
-> -	return of_register_platform_driver(&fsl_elbc_ctrl_driver);
-> +	return platform_driver_register(&fsl_elbc_nand_driver);
->  }
->  
-> -static void __exit fsl_elbc_exit(void)
-> +static void __exit fsl_elbc_nand_exit(void)
->  {
-> -	of_unregister_platform_driver(&fsl_elbc_ctrl_driver);
-> +	platform_driver_unregister(&fsl_elbc_nand_driver);
->  }
->  
-> -module_init(fsl_elbc_init);
-> -module_exit(fsl_elbc_exit);
-> +module_init(fsl_elbc_nand_init);
-> +module_exit(fsl_elbc_nand_exit);
->  
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Freescale");
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
+aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBNb25kYXksIE9jdG9iZXIg
+MTgsIDIwMTAgMTY6NTYgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgtbXRk
+QGxpc3RzLmluZnJhZGVhZC5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxOyBkZWRla2luZDFAZ21haWwu
+Y29tOyBMYW4NCj4gQ2h1bmhlLUIyNTgwNjsgbGludXhwcGMtZGV2QG96bGFicy5vcmc7IGFrcG1A
+bGludXgtZm91bmRhdGlvbi5vcmc7DQo+IGR3bXcyQGluZnJhZGVhZC5vcmc7IEdhbGEgS3VtYXIt
+QjExNzgwDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBQNDA4MC9lTEJDOiBNYWtlIEZyZWVz
+Y2FsZSBlbGJjIGludGVycnVwdCBjb21tb24gdG8NCj4gZWxiYyBkZXZpY2VzDQo+IA0KPiBSb3kg
+WmFuZyB3cm90ZToNCj4gPiBNb3ZlIEZyZWVzY2FsZSBlbGJjIGludGVycnVwdCBmcm9tIG5hbmQg
+ZGlydmVyIHRvIGVsYmMgZHJpdmVyLg0KPiA+IFRoZW4gYWxsIGVsYmMgZGV2aWNlcyBjYW4gdXNl
+IHRoZSBpbnRlcnJ1cHQgaW5zdGVhZCBvZiBPTkxZIG5hbmQuDQo+ID4NCj4gPiBGb3IgZm9ybWVy
+IG5hbmQgZHJpdmVyLCBpdCBoYWQgdGhlIHR3byBmdW5jdGlvbnM6DQo+ID4NCj4gPiAxLiBkZXRl
+Y3RpbmcgbmFuZCBmbGFzaCBwYXJ0aXRpb25zOw0KPiA+IDIuIHJlZ2lzdGVyaW5nIGVsYmMgaW50
+ZXJydXB0Lg0KPiA+DQo+ID4gTm93LCBzZWNvbmQgZnVuY3Rpb24gaXMgcmVtb3ZlZCB0byBmc2xf
+bGJjLmMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMYW4gQ2h1bmhlLUIyNTgwNiA8YjI1ODA2
+QGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogUm95IFphbmcgPHRpZS1mZWkuemFu
+Z0BmcmVlc2NhbGUuY29tPg0KPiA+IFJldmlld2VkLWJ5OiBBbnRvbiBWb3JvbnRzb3YgPGNib3Vh
+dG1haWxydUBnbWFpbC5jb20+DQo+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxIDxCMDc0MjFAZnJl
+ZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPg0KPiA+IFRoZXNlIHR3byBwYXRjaGVzIGFyZSBiYXNl
+ZCBvbiB0aGUgZm9sbG93aW5nIGNvbW1pdHM6DQo+ID4gMS4JaHR0cDovL2xpc3RzLmluZnJhZGVh
+ZC5vcmcvcGlwZXJtYWlsL2xpbnV4LW10ZC8yMDEwLQ0KPiBTZXB0ZW1iZXIvMDMyMTEyLmh0bWwN
+Cj4gPiAyLglodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGludXgtbXRkLzIw
+MTAtDQo+IFNlcHRlbWJlci8wMzIxMTAuaHRtbA0KPiA+IDMuCWh0dHA6Ly9saXN0cy5pbmZyYWRl
+YWQub3JnL3BpcGVybWFpbC9saW51eC1tdGQvMjAxMC0NCj4gU2VwdGVtYmVyLzAzMjExMS5odG1s
+DQo+ID4gQWNjb3JkaW5nIHRvIEFudG9uJ3MgY29tbWVudCwgSSBtZXJnZSAxICYgMiB0b2dldGhl
+ciBhbmQgc3RhcnQgYSBuZXcgdGhyZWFkLg0KPiA+IENvbXBhcmluZyB0aGUgcHJvdmlkZWQgbGlu
+azoNCj4gPiAxLglNZXJnZSAxICYgMiB0b2dldGhlci4NCj4gPiAyLglTb21lIGNvZGUgc3R5bGUg
+dXBkYXRlcw0KPiA+IDMuCUFkZCBjb3VudGVyIHByb3RlY3QgZm9yIGVsYmMgZHJpdmVyIHJlbW92
+ZQ0KPiA+IDQuCVJlYmFzZSB0byAyLjYuMzYtcmM3DQo+ID4NCj4gPiBPdGhlciBoaXN0b3JpZXMg
+ZnJvbSB0aGUgbGlua3M6DQo+ID4gVjI6IENvbXBhcmluZyB3aXRoIHYxLCBhY2NvcmRpbmcgdG8g
+dGhlIGZlZWRiYWNrLCBhZGQgc29tZSBkZWNvcmF0aW9ucy4NCj4gPg0KPiA+IFYzOiBDb21wYXJp
+bmcgd2l0aCB2MjoNCj4gPiAxLglhY2NvcmRpbmcgdG8gdGhlIGZlZWRiYWNrLCBhZGQgc29tZSBk
+ZWNvcmF0aW9ucy4NCj4gPiAyLgljaGFuZ2Ugb2ZfcGxhdGZvcm1fZHJpdmVyIHRvIHBsYXRmb3Jt
+X2RyaXZlcg0KPiA+IDMuCXJlYmFzZSB0byAyLjYuMzYtcmM0DQo+ID4NCj4gPiBWNDogQ29tcGFy
+aW5nIHdpdGggdjMNCj4gPiAxLgltaW5vciBmaXggZnJvbSB0eXBlIHVuc2lnbmVkIGludCB0byB1
+MzINCj4gPiAyLglmaXggcGxhdGZvcm1fZHJpdmVyIGlzc3VlLg0KPiA+IDMuCWFkZCBtdXRleCBm
+b3IgbmFuZCBwcm9iZQ0KPiA+DQo+ID4gIGFyY2gvcG93ZXJwYy9LY29uZmlnICAgICAgICAgICAg
+ICAgfCAgICA3ICstDQo+ID4gIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfbGJjLmggfCAg
+IDMzICsrKy0NCj4gPiAgYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMgICAgICB8ICAyMjkg
+KysrKysrKysrKysrKystLS0NCj4gPiAgZHJpdmVycy9tdGQvbmFuZC9LY29uZmlnICAgICAgICAg
+ICB8ICAgIDEgKw0KPiA+ICBkcml2ZXJzL210ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYyAgIHwgIDQ4
+MiArKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0NCj4gLS0tDQo+ID4gIDUgZmlsZXMg
+Y2hhbmdlZCwgNDI1IGluc2VydGlvbnMoKyksIDMyNyBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRp
+ZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvS2NvbmZpZyBiL2FyY2gvcG93ZXJwYy9LY29uZmlnDQo+
+ID4gaW5kZXggNjMxZTVhMC4uNDRkZjFiYSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMv
+S2NvbmZpZw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9LY29uZmlnDQo+ID4gQEAgLTY4Nyw5ICs2
+ODcsMTIgQEAgY29uZmlnIDR4eF9TT0MNCj4gPiAgCWJvb2wNCj4gPg0KPiA+ICBjb25maWcgRlNM
+X0xCQw0KPiA+IC0JYm9vbA0KPiA+ICsJYm9vbCAiRnJlZXNjYWxlIExvY2FsIEJ1cyBzdXBwb3J0
+Ig0KPiA+ICsJZGVwZW5kcyBvbiBGU0xfU09DDQo+ID4gIAloZWxwDQo+ID4gLQkgIEZyZWVzY2Fs
+ZSBMb2NhbGJ1cyBzdXBwb3J0DQo+ID4gKwkgIEVuYWJsZXMgcmVwb3J0aW5nIG9mIGVycm9ycyBm
+cm9tIHRoZSBGcmVlc2NhbGUgbG9jYWwgYnVzDQo+ID4gKwkgIGNvbnRyb2xsZXIuICBBbHNvIGNv
+bnRhaW5zIHNvbWUgY29tbW9uIGNvZGUgdXNlZCBieQ0KPiA+ICsJICBkcml2ZXJzIGZvciBzcGVj
+aWZpYyBsb2NhbCBidXMgcGVyaXBoZXJhbHMuDQo+ID4NCj4gPiAgY29uZmlnIEZTTF9HVE0NCj4g
+PiAgCWJvb2wNCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2ZzbF9s
+YmMuaA0KPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfbGJjLmgNCj4gPiBpbmRleCAx
+YjVhMjEwLi4wYzQwYzA1IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2Fz
+bS9mc2xfbGJjLmgNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vZnNsX2xiYy5o
+DQo+ID4gQEAgLTEsOSArMSwxMCBAQA0KPiA+ICAvKiBGcmVlc2NhbGUgTG9jYWwgQnVzIENvbnRy
+b2xsZXINCj4gPiAgICoNCj4gPiAtICogQ29weXJpZ2h0IChjKSAyMDA2LTIwMDcgRnJlZXNjYWxl
+IFNlbWljb25kdWN0b3INCj4gPiArICogQ29weXJpZ2h0IChjKSAyMDA2LTIwMDcsIDIwMTAgRnJl
+ZXNjYWxlIFNlbWljb25kdWN0b3INCj4gPiAgICoNCj4gPiAgICogQXV0aG9yczogTmljayBTcGVu
+Y2UgPG5pY2suc3BlbmNlQGZyZWVzY2FsZS5jb20+LA0KPiA+ICAgKiAgICAgICAgICBTY290dCBX
+b29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4NCj4gPiArICogICAgICAgICAgSmFjayBMYW4g
+PGphY2subGFuQGZyZWVzY2FsZS5jb20+DQo+ID4gICAqDQo+ID4gICAqIFRoaXMgcHJvZ3JhbSBp
+cyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5DQo+
+ID4gICAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vu
+c2UgYXMgcHVibGlzaGVkIGJ5DQo+ID4gQEAgLTI2LDYgKzI3LDggQEANCj4gPiAgI2luY2x1ZGUg
+PGxpbnV4L2NvbXBpbGVyLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC90eXBlcy5oPg0KPiA+ICAj
+aW5jbHVkZSA8bGludXgvaW8uaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPg0KPiA+
+ICsjaW5jbHVkZSA8bGludXgvc3BpbmxvY2suaD4NCj4gPg0KPiA+ICBzdHJ1Y3QgZnNsX2xiY19i
+YW5rIHsNCj4gPiAgCV9fYmUzMiBicjsgICAgICAgICAgICAgLyoqPCBCYXNlIFJlZ2lzdGVyICAq
+Lw0KPiA+IEBAIC0xMjUsMTMgKzEyOCwyMyBAQCBzdHJ1Y3QgZnNsX2xiY19yZWdzIHsNCj4gPiAg
+I2RlZmluZSBMVEVTUl9BVE1XIDB4MDA4MDAwMDANCj4gPiAgI2RlZmluZSBMVEVTUl9BVE1SIDB4
+MDA0MDAwMDANCj4gPiAgI2RlZmluZSBMVEVTUl9DUyAgIDB4MDAwODAwMDANCj4gPiArI2RlZmlu
+ZSBMVEVTUl9VUE0gIDB4MDAwMDAwMDINCj4gPiAgI2RlZmluZSBMVEVTUl9DQyAgIDB4MDAwMDAw
+MDENCj4gPiAgI2RlZmluZSBMVEVTUl9OQU5EX01BU0sgKExURVNSX0ZDVCB8IExURVNSX1BBUiB8
+IExURVNSX0NDKQ0KPiA+ICsjZGVmaW5lIExURVNSX01BU0sgICAgICAoTFRFU1JfQk0gfCBMVEVT
+Ul9GQ1QgfCBMVEVTUl9QQVIgfCBMVEVTUl9XUCBcDQo+ID4gKwkJCSB8IExURVNSX0FUTVcgfCBM
+VEVTUl9BVE1SIHwgTFRFU1JfQ1MgfCBMVEVTUl9VUE0gXA0KPiA+ICsJCQkgfCBMVEVTUl9DQykN
+Cj4gPiArI2RlZmluZSBMVEVTUl9DTEVBUgkweEZGRkZGRkZGDQo+ID4gKyNkZWZpbmUgTFRFQ0NS
+X0NMRUFSCTB4RkZGRkZGRkYNCj4gPiArI2RlZmluZSBMVEVTUl9TVEFUVVMJTFRFU1JfTUFTSw0K
+PiA+ICsjZGVmaW5lIExURUlSX0VOQUJMRQlMVEVTUl9NQVNLDQo+ID4gKyNkZWZpbmUgTFRFRFJf
+RU5BQkxFCTB4MDAwMDAwMDANCj4gPiAgCV9fYmUzMiBsdGVkcjsgICAgICAgICAgIC8qKjwgVHJh
+bnNmZXIgRXJyb3IgRGlzYWJsZSBSZWdpc3RlciAqLw0KPiA+ICAJX19iZTMyIGx0ZWlyOyAgICAg
+ICAgICAgLyoqPCBUcmFuc2ZlciBFcnJvciBJbnRlcnJ1cHQgUmVnaXN0ZXIgKi8NCj4gPiAgCV9f
+YmUzMiBsdGVhdHI7ICAgICAgICAgIC8qKjwgVHJhbnNmZXIgRXJyb3IgQXR0cmlidXRlcyBSZWdp
+c3RlciAqLw0KPiA+ICAJX19iZTMyIGx0ZWFyOyAgICAgICAgICAgLyoqPCBUcmFuc2ZlciBFcnJv
+ciBBZGRyZXNzIFJlZ2lzdGVyICovDQo+ID4gLQl1OCByZXM2WzB4Q107DQo+ID4gKwlfX2JlMzIg
+bHRlY2NyOyAgICAgICAgICAvKio8IFRyYW5zZmVyIEVycm9yIEVDQyBSZWdpc3RlciAqLw0KPiA+
+ICsJdTggcmVzNlsweDhdOw0KPiA+ICAJX19iZTMyIGxiY3I7ICAgICAgICAgICAgLyoqPCBDb25m
+aWd1cmF0aW9uIFJlZ2lzdGVyICovDQo+ID4gICNkZWZpbmUgTEJDUl9MRElTICAweDgwMDAwMDAw
+DQo+ID4gICNkZWZpbmUgTEJDUl9MRElTX1NISUZUICAgIDMxDQo+ID4gQEAgLTI2NSw3ICsyNzgs
+MjMgQEAgc3RhdGljIGlubGluZSB2b2lkIGZzbF91cG1fZW5kX3BhdHRlcm4oc3RydWN0IGZzbF91
+cG0NCj4gKnVwbSkNCj4gPiAgCQljcHVfcmVsYXgoKTsNCj4gPiAgfQ0KPiA+DQo+ID4gKy8qIG92
+ZXJ2aWV3IG9mIHRoZSBmc2wgbGJjIGNvbnRyb2xsZXIgKi8NCj4gPiArDQo+ID4gK3N0cnVjdCBm
+c2xfbGJjX2N0cmwgew0KPiA+ICsJLyogZGV2aWNlIGluZm8gKi8NCj4gPiArCXN0cnVjdCBkZXZp
+Y2UJCQkqZGV2Ow0KPiA+ICsJc3RydWN0IGZzbF9sYmNfcmVncyBfX2lvbWVtCSpyZWdzOw0KPiA+
+ICsJaW50CQkJCWlycTsNCj4gPiArCXdhaXRfcXVldWVfaGVhZF90CQlpcnFfd2FpdDsNCj4gPiAr
+CXNwaW5sb2NrX3QJCQlsb2NrOw0KPiA+ICsJdm9pZAkJCQkqbmFuZDsNCj4gPiArDQo+ID4gKwkv
+KiBzdGF0dXMgcmVhZCBmcm9tIExURVNSIGJ5IGlycSBoYW5kbGVyICovDQo+ID4gKwl1bnNpZ25l
+ZCBpbnQJCQlpcnFfc3RhdHVzOw0KPiA+ICt9Ow0KPiA+ICsNCj4gPiAgZXh0ZXJuIGludCBmc2xf
+dXBtX3J1bl9wYXR0ZXJuKHN0cnVjdCBmc2xfdXBtICp1cG0sIHZvaWQgX19pb21lbSAqaW9fYmFz
+ZSwNCj4gPiAgCQkJICAgICAgIHUzMiBtYXIpOw0KPiA+ICtleHRlcm4gc3RydWN0IGZzbF9sYmNf
+Y3RybCAqZnNsX2xiY19jdHJsX2RldjsNCj4gPg0KPiA+ICAjZW5kaWYgLyogX19BU01fRlNMX0xC
+Q19IICovDQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX2xiYy5jIGIv
+YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMNCj4gPiBpbmRleCBkY2ViOGQxLi40YmIwMzM2
+IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX2xiYy5jDQo+ID4gKysr
+IGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMNCj4gPiBAQCAtMiw4ICsyLDExIEBADQo+
+ID4gICAqIEZyZWVzY2FsZSBMQkMgYW5kIFVQTSByb3V0aW5lcy4NCj4gPiAgICoNCj4gPiAgICog
+Q29weXJpZ2h0IChjKSAyMDA3LTIwMDggIE1vbnRhVmlzdGEgU29mdHdhcmUsIEluYy4NCj4gPiAr
+ICogQ29weXJpZ2h0IChjKSAyMDEwIEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yDQo+ID4gICAqDQo+
+ID4gICAqIEF1dGhvcjogQW50b24gVm9yb250c292IDxhdm9yb250c292QHJ1Lm12aXN0YS5jb20+
+DQo+ID4gKyAqIEF1dGhvcjogSmFjayBMYW4gPEphY2suTGFuQGZyZWVzY2FsZS5jb20+DQo+ID4g
+KyAqIEF1dGhvcjogUm95IFphbmcgPHRpZS1mZWkuemFuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ICAg
+Kg0KPiA+ICAgKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3Ry
+aWJ1dGUgaXQgYW5kL29yIG1vZGlmeQ0KPiA+ICAgKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhl
+IEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZCBieQ0KPiA+IEBAIC0xOSwz
+OSArMjIsMTYgQEANCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3R5cGVzLmg+DQo+ID4gICNpbmNsdWRl
+IDxsaW51eC9pby5oPg0KPiA+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPiArI2luY2x1ZGUg
+PGxpbnV4L3NsYWIuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPg0K
+PiA+ICsjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9t
+b2RfZGV2aWNldGFibGUuaD4NCj4gPiAgI2luY2x1ZGUgPGFzbS9wcm9tLmg+DQo+ID4gICNpbmNs
+dWRlIDxhc20vZnNsX2xiYy5oPg0KPiA+DQo+ID4gIHN0YXRpYyBzcGlubG9ja190IGZzbF9sYmNf
+bG9jayA9IF9fU1BJTl9MT0NLX1VOTE9DS0VEKGZzbF9sYmNfbG9jayk7DQo+ID4gLXN0YXRpYyBz
+dHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmZzbF9sYmNfcmVnczsNCj4gPiAtDQo+ID4gLXN0
+YXRpYyBjaGFyIF9faW5pdGRhdGEgKmNvbXBhdF9sYmNbXSA9IHsNCj4gPiAtCSJmc2wscHEyLWxv
+Y2FsYnVzIiwNCj4gPiAtCSJmc2wscHEycHJvLWxvY2FsYnVzIiwNCj4gPiAtCSJmc2wscHEzLWxv
+Y2FsYnVzIiwNCj4gPiAtCSJmc2wsZWxiYyIsDQo+ID4gLX07DQo+ID4gLQ0KPiA+IC1zdGF0aWMg
+aW50IF9faW5pdCBmc2xfbGJjX2luaXQodm9pZCkNCj4gPiAtew0KPiA+IC0Jc3RydWN0IGRldmlj
+ZV9ub2RlICpsYnVzOw0KPiA+IC0JaW50IGk7DQo+ID4gLQ0KPiA+IC0JZm9yIChpID0gMDsgaSA8
+IEFSUkFZX1NJWkUoY29tcGF0X2xiYyk7IGkrKykgew0KPiA+IC0JCWxidXMgPSBvZl9maW5kX2Nv
+bXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCBjb21wYXRfbGJjW2ldKTsNCj4gPiAtCQlpZiAobGJ1
+cykNCj4gPiAtCQkJZ290byBmb3VuZDsNCj4gPiAtCX0NCj4gPiAtCXJldHVybiAtRU5PREVWOw0K
+PiA+IC0NCj4gPiAtZm91bmQ6DQo+ID4gLQlmc2xfbGJjX3JlZ3MgPSBvZl9pb21hcChsYnVzLCAw
+KTsNCj4gPiAtCW9mX25vZGVfcHV0KGxidXMpOw0KPiA+IC0JaWYgKCFmc2xfbGJjX3JlZ3MpDQo+
+ID4gLQkJcmV0dXJuIC1FTk9NRU07DQo+ID4gLQlyZXR1cm4gMDsNCj4gPiAtfQ0KPiA+IC1hcmNo
+X2luaXRjYWxsKGZzbF9sYmNfaW5pdCk7DQo+ID4gK3N0cnVjdCBmc2xfbGJjX2N0cmwgKmZzbF9s
+YmNfY3RybF9kZXY7DQo+ID4gK0VYUE9SVF9TWU1CT0woZnNsX2xiY19jdHJsX2Rldik7DQo+ID4N
+Cj4gPiAgLyoqDQo+ID4gICAqIGZzbF9sYmNfZmluZCAtIGZpbmQgTG9jYWxidXMgYmFuaw0KPiA+
+IEBAIC02NSwxMyArNDUsMTUgQEAgYXJjaF9pbml0Y2FsbChmc2xfbGJjX2luaXQpOw0KPiA+ICBp
+bnQgZnNsX2xiY19maW5kKHBoeXNfYWRkcl90IGFkZHJfYmFzZSkNCj4gPiAgew0KPiA+ICAJaW50
+IGk7DQo+ID4gKwlzdHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmxiYzsNCj4gPg0KPiA+IC0J
+aWYgKCFmc2xfbGJjX3JlZ3MpDQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYgfHwgIWZzbF9s
+YmNfY3RybF9kZXYtPnJlZ3MpDQo+ID4gIAkJcmV0dXJuIC1FTk9ERVY7DQo+ID4NCj4gPiAtCWZv
+ciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKGZzbF9sYmNfcmVncy0+YmFuayk7IGkrKykgew0KPiA+
+IC0JCV9fYmUzMiBiciA9IGluX2JlMzIoJmZzbF9sYmNfcmVncy0+YmFua1tpXS5icik7DQo+ID4g
+LQkJX19iZTMyIG9yID0gaW5fYmUzMigmZnNsX2xiY19yZWdzLT5iYW5rW2ldLm9yKTsNCj4gPiAr
+CWxiYyA9IGZzbF9sYmNfY3RybF9kZXYtPnJlZ3M7DQo+ID4gKwlmb3IgKGkgPSAwOyBpIDwgQVJS
+QVlfU0laRShsYmMtPmJhbmspOyBpKyspIHsNCj4gPiArCQlfX2JlMzIgYnIgPSBpbl9iZTMyKCZs
+YmMtPmJhbmtbaV0uYnIpOw0KPiA+ICsJCV9fYmUzMiBvciA9IGluX2JlMzIoJmxiYy0+YmFua1tp
+XS5vcik7DQo+ID4NCj4gPiAgCQlpZiAoYnIgJiBCUl9WICYmIChiciAmIG9yICYgQlJfQkEpID09
+IGFkZHJfYmFzZSkNCj4gPiAgCQkJcmV0dXJuIGk7DQo+ID4gQEAgLTk0LDIyICs3NiwyNyBAQCBp
+bnQgZnNsX3VwbV9maW5kKHBoeXNfYWRkcl90IGFkZHJfYmFzZSwgc3RydWN0IGZzbF91cG0NCj4g
+KnVwbSkNCj4gPiAgew0KPiA+ICAJaW50IGJhbms7DQo+ID4gIAlfX2JlMzIgYnI7DQo+ID4gKwlz
+dHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmxiYzsNCj4gPg0KPiA+ICAJYmFuayA9IGZzbF9s
+YmNfZmluZChhZGRyX2Jhc2UpOw0KPiA+ICAJaWYgKGJhbmsgPCAwKQ0KPiA+ICAJCXJldHVybiBi
+YW5rOw0KPiA+DQo+ID4gLQliciA9IGluX2JlMzIoJmZzbF9sYmNfcmVncy0+YmFua1tiYW5rXS5i
+cik7DQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYgfHwgIWZzbF9sYmNfY3RybF9kZXYtPnJl
+Z3MpDQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4gKw0KPiA+ICsJbGJjID0gZnNsX2xiY19j
+dHJsX2Rldi0+cmVnczsNCj4gPiArCWJyID0gaW5fYmUzMigmbGJjLT5iYW5rW2JhbmtdLmJyKTsN
+Cj4gPg0KPiA+ICAJc3dpdGNoIChiciAmIEJSX01TRUwpIHsNCj4gPiAgCWNhc2UgQlJfTVNfVVBN
+QToNCj4gPiAtCQl1cG0tPm14bXIgPSAmZnNsX2xiY19yZWdzLT5tYW1yOw0KPiA+ICsJCXVwbS0+
+bXhtciA9ICZsYmMtPm1hbXI7DQo+ID4gIAkJYnJlYWs7DQo+ID4gIAljYXNlIEJSX01TX1VQTUI6
+DQo+ID4gLQkJdXBtLT5teG1yID0gJmZzbF9sYmNfcmVncy0+bWJtcjsNCj4gPiArCQl1cG0tPm14
+bXIgPSAmbGJjLT5tYm1yOw0KPiA+ICAJCWJyZWFrOw0KPiA+ICAJY2FzZSBCUl9NU19VUE1DOg0K
+PiA+IC0JCXVwbS0+bXhtciA9ICZmc2xfbGJjX3JlZ3MtPm1jbXI7DQo+ID4gKwkJdXBtLT5teG1y
+ID0gJmxiYy0+bWNtcjsNCj4gPiAgCQlicmVhazsNCj4gPiAgCWRlZmF1bHQ6DQo+ID4gIAkJcmV0
+dXJuIC1FSU5WQUw7DQo+ID4gQEAgLTE0OCw5ICsxMzUsMTIgQEAgaW50IGZzbF91cG1fcnVuX3Bh
+dHRlcm4oc3RydWN0IGZzbF91cG0gKnVwbSwgdm9pZA0KPiBfX2lvbWVtICppb19iYXNlLCB1MzIg
+bWFyKQ0KPiA+ICAJaW50IHJldCA9IDA7DQo+ID4gIAl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+
+DQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYgfHwgIWZzbF9sYmNfY3RybF9kZXYtPnJlZ3Mp
+DQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4gKw0KPiA+ICAJc3Bpbl9sb2NrX2lycXNhdmUo
+JmZzbF9sYmNfbG9jaywgZmxhZ3MpOw0KPiA+DQo+ID4gLQlvdXRfYmUzMigmZnNsX2xiY19yZWdz
+LT5tYXIsIG1hcik7DQo+ID4gKwlvdXRfYmUzMigmZnNsX2xiY19jdHJsX2Rldi0+cmVncy0+bWFy
+LCBtYXIpOw0KPiA+DQo+ID4gIAlzd2l0Y2ggKHVwbS0+d2lkdGgpIHsNCj4gPiAgCWNhc2UgODoN
+Cj4gPiBAQCAtMTcyLDMgKzE2MiwxNjYgQEAgaW50IGZzbF91cG1fcnVuX3BhdHRlcm4oc3RydWN0
+IGZzbF91cG0gKnVwbSwgdm9pZA0KPiBfX2lvbWVtICppb19iYXNlLCB1MzIgbWFyKQ0KPiA+ICAJ
+cmV0dXJuIHJldDsNCj4gPiAgfQ0KPiA+ICBFWFBPUlRfU1lNQk9MKGZzbF91cG1fcnVuX3BhdHRl
+cm4pOw0KPiA+ICsNCj4gPiArc3RhdGljIGludCBfX2RldmluaXQgZnNsX2xiY19jdHJsX2luaXQo
+c3RydWN0IGZzbF9sYmNfY3RybCAqY3RybCkNCj4gPiArew0KPiA+ICsJc3RydWN0IGZzbF9sYmNf
+cmVncyBfX2lvbWVtICpsYmMgPSBjdHJsLT5yZWdzOw0KPiA+ICsNCj4gPiArCS8qIGNsZWFyIGV2
+ZW50IHJlZ2lzdGVycyAqLw0KPiA+ICsJc2V0Yml0czMyKCZsYmMtPmx0ZXNyLCBMVEVTUl9DTEVB
+Uik7DQo+ID4gKwlvdXRfYmUzMigmbGJjLT5sdGVhdHIsIDApOw0KPiA+ICsJb3V0X2JlMzIoJmxi
+Yy0+bHRlYXIsIDApOw0KPiA+ICsJb3V0X2JlMzIoJmxiYy0+bHRlY2NyLCBMVEVDQ1JfQ0xFQVIp
+Ow0KPiA+ICsJb3V0X2JlMzIoJmxiYy0+bHRlZHIsIExURURSX0VOQUJMRSk7DQo+ID4gKw0KPiA+
+ICsJLyogRW5hYmxlIGludGVycnVwdHMgZm9yIGFueSBkZXRlY3RlZCBldmVudHMgKi8NCj4gPiAr
+CW91dF9iZTMyKCZsYmMtPmx0ZWlyLCBMVEVJUl9FTkFCTEUpOw0KPiA+ICsNCj4gPiArCXJldHVy
+biAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICsvKg0KPiA+ICsgKiBOT1RFOiBUaGlzIGludGVycnVw
+dCBpcyB1c2VkIHRvIHJlcG9ydCBsb2NhbGJ1cyBldmVudHMgb2YgdmFyaW91cyBraW5kcywNCj4g
+PiArICogc3VjaCBhcyB0cmFuc2FjdGlvbiBlcnJvcnMgb24gdGhlIGNoaXBzZWxlY3RzLg0KPiA+
+ICsgKi8NCj4gPiArDQo+ID4gK3N0YXRpYyBpcnFyZXR1cm5fdCBmc2xfbGJjX2N0cmxfaXJxKGlu
+dCBpcnFubywgdm9pZCAqZGF0YSkNCj4gPiArew0KPiA+ICsJc3RydWN0IGZzbF9sYmNfY3RybCAq
+Y3RybCA9IGRhdGE7DQo+ID4gKwlzdHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmxiYyA9IGN0
+cmwtPnJlZ3M7DQo+ID4gKwl1MzIgc3RhdHVzOw0KPiA+ICsNCj4gPiArCXN0YXR1cyA9IGluX2Jl
+MzIoJmxiYy0+bHRlc3IpOw0KPiA+ICsJaWYgKCFzdGF0dXMpDQo+ID4gKwkJcmV0dXJuIElSUV9O
+T05FOw0KPiA+ICsNCj4gPiArCW91dF9iZTMyKCZsYmMtPmx0ZXNyLCBMVEVTUl9DTEVBUik7DQo+
+ID4gKwlvdXRfYmUzMigmbGJjLT5sdGVhdHIsIDApOw0KPiA+ICsJb3V0X2JlMzIoJmxiYy0+bHRl
+YXIsIDApOw0KPiA+ICsJY3RybC0+aXJxX3N0YXR1cyA9IHN0YXR1czsNCj4gPiArDQo+ID4gKwlp
+ZiAoc3RhdHVzICYgTFRFU1JfQk0pDQo+ID4gKwkJZGV2X2VycihjdHJsLT5kZXYsICJMb2NhbCBi
+dXMgbW9uaXRvciB0aW1lLW91dDogIg0KPiA+ICsJCQkiTFRFU1IgMHglMDhYXG4iLCBzdGF0dXMp
+Ow0KPiA+ICsJaWYgKHN0YXR1cyAmIExURVNSX1dQKQ0KPiA+ICsJCWRldl9lcnIoY3RybC0+ZGV2
+LCAiV3JpdGUgcHJvdGVjdCBlcnJvcjogIg0KPiA+ICsJCQkiTFRFU1IgMHglMDhYXG4iLCBzdGF0
+dXMpOw0KPiA+ICsJaWYgKHN0YXR1cyAmIExURVNSX0FUTVcpDQo+ID4gKwkJZGV2X2VycihjdHJs
+LT5kZXYsICJBdG9taWMgd3JpdGUgZXJyb3I6ICINCj4gPiArCQkJIkxURVNSIDB4JTA4WFxuIiwg
+c3RhdHVzKTsNCj4gPiArCWlmIChzdGF0dXMgJiBMVEVTUl9BVE1SKQ0KPiA+ICsJCWRldl9lcnIo
+Y3RybC0+ZGV2LCAiQXRvbWljIHJlYWQgZXJyb3I6ICINCj4gPiArCQkJIkxURVNSIDB4JTA4WFxu
+Iiwgc3RhdHVzKTsNCj4gPiArCWlmIChzdGF0dXMgJiBMVEVTUl9DUykNCj4gPiArCQlkZXZfZXJy
+KGN0cmwtPmRldiwgIkNoaXAgc2VsZWN0IGVycm9yOiAiDQo+ID4gKwkJCSJMVEVTUiAweCUwOFhc
+biIsIHN0YXR1cyk7DQo+ID4gKwlpZiAoc3RhdHVzICYgTFRFU1JfVVBNKQ0KPiA+ICsJCTsNCj4g
+PiArCWlmIChzdGF0dXMgJiBMVEVTUl9GQ1QpIHsNCj4gPiArCQlkZXZfZXJyKGN0cmwtPmRldiwg
+IkZDTSBjb21tYW5kIHRpbWUtb3V0OiAiDQo+ID4gKwkJCSJMVEVTUiAweCUwOFhcbiIsIHN0YXR1
+cyk7DQo+ID4gKwkJc21wX3dtYigpOw0KPiA+ICsJCXdha2VfdXAoJmN0cmwtPmlycV93YWl0KTsN
+Cj4gPiArCX0NCj4gPiArCWlmIChzdGF0dXMgJiBMVEVTUl9QQVIpIHsNCj4gPiArCQlkZXZfZXJy
+KGN0cmwtPmRldiwgIlBhcml0eSBvciBVbmNvcnJlY3RhYmxlIEVDQyBlcnJvcjogIg0KPiA+ICsJ
+CQkiTFRFU1IgMHglMDhYXG4iLCBzdGF0dXMpOw0KPiA+ICsJCXNtcF93bWIoKTsNCj4gPiArCQl3
+YWtlX3VwKCZjdHJsLT5pcnFfd2FpdCk7DQo+ID4gKwl9DQo+ID4gKwlpZiAoc3RhdHVzICYgTFRF
+U1JfQ0MpIHsNCj4gPiArCQlzbXBfd21iKCk7DQo+ID4gKwkJd2FrZV91cCgmY3RybC0+aXJxX3dh
+aXQpOw0KPiA+ICsJfQ0KPiA+ICsJaWYgKHN0YXR1cyAmIH5MVEVTUl9NQVNLKQ0KPiA+ICsJCWRl
+dl9lcnIoY3RybC0+ZGV2LCAiVW5rbm93biBlcnJvcjogIg0KPiA+ICsJCQkiTFRFU1IgMHglMDhY
+XG4iLCBzdGF0dXMpOw0KPiA+ICsJcmV0dXJuIElSUV9IQU5ETEVEOw0KPiA+ICt9DQo+ID4gKw0K
+PiA+ICsvKg0KPiA+ICsgKiBmc2xfbGJjX2N0cmxfcHJvYmUNCj4gPiArICoNCj4gPiArICogY2Fs
+bGVkIGJ5IGRldmljZSBsYXllciB3aGVuIGl0IGZpbmRzIGEgZGV2aWNlIG1hdGNoaW5nDQo+ID4g
+KyAqIG9uZSBvdXIgZHJpdmVyIGNhbiBoYW5kbGVkLiBUaGlzIGNvZGUgYWxsb2NhdGVzIGFsbCBv
+Zg0KPiA+ICsgKiB0aGUgcmVzb3VyY2VzIG5lZWRlZCBmb3IgdGhlIGNvbnRyb2xsZXIgb25seS4g
+IFRoZQ0KPiA+ICsgKiByZXNvdXJjZXMgZm9yIHRoZSBOQU5EIGJhbmtzIHRoZW1zZWx2ZXMgYXJl
+IGFsbG9jYXRlZA0KPiA+ICsgKiBpbiB0aGUgY2hpcCBwcm9iZSBmdW5jdGlvbi4NCj4gPiArKi8N
+Cj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgX19kZXZpbml0IGZzbF9sYmNfY3RybF9wcm9iZShzdHJ1
+Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpDQo+ID4gK3sNCj4gPiArCWludCByZXQ7DQo+ID4gKw0K
+PiA+ICsJaWYgKCFkZXYtPmRldi5vZl9ub2RlKSB7DQo+ID4gKwkJZGV2X2VycigmZGV2LT5kZXYs
+ICJEZXZpY2UgT0YtTm9kZSBpcyBOVUxMIik7DQo+ID4gKwkJcmV0dXJuIC1FRkFVTFQ7DQo+ID4g
+Kwl9DQo+ID4gKw0KPiA+ICsJZnNsX2xiY19jdHJsX2RldiA9IGt6YWxsb2Moc2l6ZW9mKCpmc2xf
+bGJjX2N0cmxfZGV2KSwgR0ZQX0tFUk5FTCk7DQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYp
+DQo+ID4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsJZGV2X3NldF9kcnZkYXRhKCZk
+ZXYtPmRldiwgZnNsX2xiY19jdHJsX2Rldik7DQo+ID4gKw0KPiA+ICsJc3Bpbl9sb2NrX2luaXQo
+JmZzbF9sYmNfY3RybF9kZXYtPmxvY2spOw0KPiA+ICsJaW5pdF93YWl0cXVldWVfaGVhZCgmZnNs
+X2xiY19jdHJsX2Rldi0+aXJxX3dhaXQpOw0KPiA+ICsNCj4gPiArCWZzbF9sYmNfY3RybF9kZXYt
+PnJlZ3MgPSBvZl9pb21hcChkZXYtPmRldi5vZl9ub2RlLCAwKTsNCj4gPiArCWlmICghZnNsX2xi
+Y19jdHJsX2Rldi0+cmVncykgew0KPiA+ICsJCWRldl9lcnIoJmRldi0+ZGV2LCAiZmFpbGVkIHRv
+IGdldCBtZW1vcnkgcmVnaW9uXG4iKTsNCj4gPiArCQlyZXQgPSAtRU5PREVWOw0KPiA+ICsJCWdv
+dG8gZXJyOw0KPiANCj4gTG9va3MgeW91IGFsd2F5cyBpb3VubWFwKGZzbF9sYmNfY3RybF9kZXYt
+PnJlZ3MpIG9uIHBvc2l0aW9uICdlcnInIGJ1dCBoZXJlDQo+IG9mX2lvbWFwKCkgaXMgYWxyZWFk
+eSBmYWlsZWQgeW91IHNob3VsZCBza2lwIGlvdW5tYXAoKSBmc2xfbGJjX2N0cmxfZGV2LT5yZWdz
+DQo+IGFnYWluLiBTbyB5b3Ugc2hvdWxkIGltcHJvdmUgdGhhdCBhcyB0aGUgZm9sbG93aW5nIG9u
+ICdlcnInLCBvciBsYXlvdXQgJ2VycicNCj4gaW4NCj4gZ2Fpbi4NCj4gLS0tLS0tDQo+IAlpZihm
+c2xfbGJjX2N0cmxfZGV2LT5yZWdzKQ0KPiAJCWlvdW5tYXAoZnNsX2xiY19jdHJsX2Rldi0+cmVn
+cyk7DQo+IA0KPiBUaWVqdW4NCg0KWW91IGFyZSByaWdodCENCkhvdyBhYm91dA0KIA0KICAgICAg
+ICBpZiAoIWZzbF9sYmNfY3RybF9kZXYtPnJlZ3MpIHsNCiAgICAgICAgICAgICAgICBkZXZfZXJy
+KCZkZXYtPmRldiwgImZhaWxlZCB0byBnZXQgbWVtb3J5IHJlZ2lvblxuIik7DQogICAgICAgICAg
+ICAgICAga2ZyZWUoZnNsX2xiY19jdHJsX2Rldik7DQogICAgICAgICAgICAgICAgcmV0dXJuIC1F
+Tk9NRU07DQogICAgICAgIH0NCg0KLi4uDQoNClRoYW5rcy4NClJveQ0K
