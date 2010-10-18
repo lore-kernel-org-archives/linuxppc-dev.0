@@ -1,22 +1,23 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 53526B70DF
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 20:50:15 +1100 (EST)
-Message-ID: <4CBC18D8.5060804@windriver.com>
-Date: Mon, 18 Oct 2010 17:52:24 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Eran Liberty <liberty@extricom.com>
-Subject: Re: Freescale P2020 CPU Freeze over PCIe abort signal
-References: <4CADBD7B.3000506@extricom.com>		<1286756363.2463.517.camel@pasglop>
-	<4CB2E517.8020401@extricom.com>	<1286796721.5220.2.camel@pasglop>
-	<4CBB4D80.3030007@extricom.com>
-In-Reply-To: <4CBB4D80.3030007@extricom.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 83EA9B70EA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 18 Oct 2010 21:03:52 +1100 (EST)
+Subject: Re: 64K PAGE_SIZE and arch/powerpc/kernel/vdso.c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <7015.1287359052@neuling.org>
+References: <1287216239.9909.234.camel@haakon2.linux-iscsi.org>
+	<7015.1287359052@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Oct 2010 21:03:36 +1100
+Message-ID: <1287396216.2341.4.camel@pasglop>
+Mime-Version: 1.0
+Cc: Brian King <brking@linux.vnet.ibm.com>, Tim Abbott <tabbott@ksplice.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	"Nicholas A. Bellinger" <nab@linux-iscsi.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Eran Liberty wrote:
-> This should probably go to the Freescale support, as it feels like a
-> hardware issue yet the end result is a very frozen Linux kernel so I
-> post here first...
+On Mon, 2010-10-18 at 10:44 +1100, Michael Neuling wrote:
+> > Greetings Linux-ppc64 folks,
+> > 
+> > While trying to compile v2.6.36-rc8 with PAGE_SIZE=65536 I run into the
+> > following compile failure w/ strict checking on a RHEL5.4 / gcc (GCC)
+> > 4.1.2 20080704 (Red Hat 4.1.2-46) system:
+> > 
+> > cc1: warnings being treated as errors
+> > arch/powerpc/kernel/vdso.c:81: warning: alignment of ‘vdso_data_store’
+> > is greater than maximum object file alignment.  Using 32768
+> >   CC      arch/powerpc/sysdev/msi_bitmap.o
+> > make[1]: *** [arch/powerpc/kernel/vdso.o] Error 1
+> > make[1]: *** Waiting for unfinished jobs....
+> > 
+> > Any ideas folks..?
 > 
-> I have a programmable FPGA PCIe device connected to a Freescale's P2020
-> PCIe port. As part of the bring-up tests, we are testing two faulty
-> scenarios:
-> 1. The FPGA totally ignores the PCIe transaction.
-> 2. The FPGA return a transaction abort.
-> 
-> Both are plausible PCIe behavior and their should be outcome is
-> documented in the PCIe spec. The first should be terminated by the
-> transaction requestor timeout mechanism and raise an error, the second
-> should abort the transaction and raise and error.
-> 
-> In P2020 if I do any of those the CPU is left hung over the transaction.
-> 
-> something like:
-> in_le32(addr)
-> 
-> is turned into:
-> 7c 00 04 ac     sync   7c 00 4c 2c     lwbrx   r0,0,r9
-> 0c 00 00 00     twi     0,r0,0
-> 4c 00 01 2c     isync
-> 
-> assembly code, where in r9 (in this example) hold an address which is
-> physically mapped into the PCIe resource space.
-> 
-> The CPU will hang over the load instruction.
-> 
-> Just for the fun of it, I have wrote my own assembly function omitting
-> everything but the load instruction; still freeze.
-> Replace "lwbrx" with a simple "lwz"; still freeze.
-> 
-> It looks like the CPU snoozes till the PCIe transaction is done with no
-> timeouts, ignoring any abort signal.
-> 
+> It seems this broke it:
 
-AFAIK we can set one bit on PEX_ERR_DISR to detect PCI Express completion
-time-out. If so one interrupt should be issued. But I'm not sure if this can fix
-your issue.
+Yes, this is a known (old) issue. You can apply the workaround locally
+if you really want to build with that old toolchain, but the risk is
+that if an object whose size is not a multiple of PAGE_SIZE is put in
+the .data.page_aligned section, your vdso data page might end up not
+being aligned properly. Fortunately that doesn't generally happen but
+it's worth double checking your System.map...
 
-Tiejun
+This is the reason I decided to leave it alone in the kernel and
+encourage people to update their toolchain (and binutils).
 
-> I am going to:
-> A. Try to reach the Freescale support.
-> B. Asked the FPGA designed to give me a new behavior that will stall the
-> PCIe transaction replay for 10 sec, but after those return ok.
-> C. report back here with either A or B.
+Cheers,
+Ben.
+
+> commit abe1ee3a221d53778c3e58747bbec6e518e5471b
+> Author: Tim Abbott <tabbott@ksplice.com>
+> Date:   Sun Sep 20 18:14:15 2009 -0400
 > 
-> If you have any ideas I would love to hear them.
+>     Use macros for .data.page_aligned section.
+>     
+>     This patch changes the remaining direct references to
+>     .data.page_aligned in C and assembly code to use the macros in
+>     include/linux/linkage.h.
 > 
-> -- Liberty
+> Backing out just that part of the change (see below) fixes it.
+> 
+> FYI the error only occurs on gcc 4.1 and 4.2.  4.3 and greater is fine.  
+> 
+> Mikey
+> 
+> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+> index 13002fe..c140fce 100644
+> --- a/arch/powerpc/kernel/vdso.c
+> +++ b/arch/powerpc/kernel/vdso.c
+> @@ -78,7 +78,7 @@ static int vdso_ready;
+>  static union {
+>  	struct vdso_data	data;
+>  	u8			page[PAGE_SIZE];
+> -} vdso_data_store __page_aligned_data;
+> +} vdso_data_store __attribute__((__section__(".data.page_aligned")));
+>  struct vdso_data *vdso_data = &vdso_data_store.data;
+>  
+>  /* Format of the patch table */
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@lists.ozlabs.org
 > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
