@@ -1,22 +1,15 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
-	by ozlabs.org (Postfix) with SMTP id D5586B7103
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Oct 2010 05:07:48 +1100 (EST)
-Received: by qwe5 with SMTP id 5so850658qwe.20
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Oct 2010 11:07:45 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <6cfa2d1c7ecd946ea4acbd3077defa92@mail.gmail.com>
-	<1287102354.4194.15.camel@concordia>
-In-Reply-To: <1287102354.4194.15.camel@concordia>
-MIME-Version: 1.0
-Date: Mon, 18 Oct 2010 11:04:46 -0700
-Message-ID: <34601e6c4411f49f4107413b69a25db3@mail.gmail.com>
-Subject: RE: msi_bitmap.c question
-To: michael@ellerman.id.au
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <nacc@us.ibm.com>
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: nacc@us.ibm.com
+Subject: [PATCH 4/7] ppc/cell: beat dma ops cleanup
+Date: Mon, 18 Oct 2010 10:27:01 -0700
+Message-Id: <1287422825-14999-5-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1287422825-14999-1-git-send-email-nacc@us.ibm.com>
+References: <1287422825-14999-1-git-send-email-nacc@us.ibm.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linux-kernel@vger.kernel.org, miltonm@bga.com,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >
-> > I am trying to resubmit a patch for MSI support for ppc4xx devices.
-> > One of the review feedback was not to use the bit map as it is only
-> > for the devices which don=92t have hard wired mapping between interrupt
-> > controller interrupts and MSI number. For example intr-ctrl0
-> interrupt
-> > 20 goes to MSI-0, interrupt 21 goes to MSI-1 ..etc. But when I
-> checked
-> > freescale SoCs and cell SoCs they have interrupts hard wired to MSI
-> > interrupts.
-> >
-> >
-> >
-> > Why do they have to use the bitmap and create irqhost, even though
-> > they are one-to-one mapped between interrupt controller numbers and
-> > MSI ?
->
-> I'm not quite sure I understand your question.
->
-> The MSI bitmap and the irq_host are two different things.
->
-> The MSI bitmap is basically an allocator for hardware numbers that can
-> be used for MSI. On some interrupt controllers that might be any
-> interrupt that's not used, on others there are restrictions on which
-> numbers can be used for MSI, it depends. So it's possible you don't
-> need to use that code, but I don't know how your hardware works.
->
-> The irq_host is the struct that controls mapping hardware irq numbers
-> into linux irq numbers. The cell MSI code has no restrictions on what
-> the MSI value is, so it just uses the Linux irq number directly using
-> irq_create_direct_mapping().
->
+direct_dma_ops is the default pci dma ops.
 
-Mike, thanks. Could please you clarify your statement
-" The cell MSI code has no restrictions on what  the MSI value is ".
-If MSIs are one to one mapped to system interrupt controller
-Interrupts, why do we need to create new irq_host? Isn't passing
-Interrupt controllers irq_host instance not enough ?
+No need to call a function to get the pci dma ops, we know they are the
+dma_direct_ops.
 
-Also when is cascade is needed?
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/cell/beat_iommu.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Regards,
-Marri
+diff --git a/arch/powerpc/platforms/cell/beat_iommu.c b/arch/powerpc/platforms/cell/beat_iommu.c
+index beec405..3ce6855 100644
+--- a/arch/powerpc/platforms/cell/beat_iommu.c
++++ b/arch/powerpc/platforms/cell/beat_iommu.c
+@@ -76,7 +76,7 @@ static void __init celleb_init_direct_mapping(void)
+ 
+ static void celleb_dma_dev_setup(struct device *dev)
+ {
+-	dev->archdata.dma_ops = get_pci_dma_ops();
++	set_dma_ops(dev, &dma_direct_ops);
+ 	set_dma_offset(dev, celleb_dma_direct_offset);
+ }
+ 
+@@ -106,7 +106,6 @@ static struct notifier_block celleb_of_bus_notifier = {
+ static int __init celleb_init_iommu(void)
+ {
+ 	celleb_init_direct_mapping();
+-	set_pci_dma_ops(&dma_direct_ops);
+ 	ppc_md.pci_dma_dev_setup = celleb_pci_dma_dev_setup;
+ 	bus_register_notifier(&platform_bus_type, &celleb_of_bus_notifier);
+ 
+-- 
+1.7.1
