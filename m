@@ -1,35 +1,21 @@
-Return-Path: <R61911@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DED16B7043
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 20:30:53 +1100 (EST)
-Received: from mail36-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail36-tx2-R.bigfish.com (Postfix) with ESMTP id 54675E9824F	for
-	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 09:30:50 +0000 (UTC)
-Received: from TX2EHSMHS012.bigfish.com (unknown [10.9.14.242])	by
-	mail36-tx2.bigfish.com (Postfix) with ESMTP id 18EFC14D0055	for
-	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 09:30:49 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o9I9UmvL026303	for <linuxppc-dev@ozlabs.org>;
-	Mon, 18 Oct 2010 02:30:48 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o9I9UkPR003698	for <linuxppc-dev@ozlabs.org>;
-	Mon, 18 Oct 2010 04:30:47 -0500 (CDT)
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (unknown [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2C05CB70DD
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 20:42:54 +1100 (EST)
+Message-ID: <4CBC16FD.6030507@windriver.com>
+Date: Mon, 18 Oct 2010 17:44:29 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Subject: RE: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common to
-	elbc	devices
-Date: Mon, 18 Oct 2010 17:30:41 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A2B0708@zch01exm23.fsl.freescale.net>
-In-Reply-To: <4CBC0B95.9010300@windriver.com>
-References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
-	<4CBC0B95.9010300@windriver.com>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common
+	to	elbc	devices
+References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>	<4CBC0B95.9010300@windriver.com>
+	<3850A844E6A3854C827AC5C0BEC7B60A2B0708@zch01exm23.fsl.freescale.net>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60A2B0708@zch01exm23.fsl.freescale.net>
+Content-Type: text/plain; charset=UTF-8
 Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
 	Lan Chunhe-B25806 <B25806@freescale.com>,
 	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
@@ -44,253 +30,438 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogdGllanVuLmNoZW4gW21h
-aWx0bzp0aWVqdW4uY2hlbkB3aW5kcml2ZXIuY29tXQ0KPiBTZW50OiBNb25kYXksIE9jdG9iZXIg
-MTgsIDIwMTAgMTY6NTYgUE0NCj4gVG86IFphbmcgUm95LVI2MTkxMQ0KPiBDYzogbGludXgtbXRk
-QGxpc3RzLmluZnJhZGVhZC5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxOyBkZWRla2luZDFAZ21haWwu
-Y29tOyBMYW4NCj4gQ2h1bmhlLUIyNTgwNjsgbGludXhwcGMtZGV2QG96bGFicy5vcmc7IGFrcG1A
-bGludXgtZm91bmRhdGlvbi5vcmc7DQo+IGR3bXcyQGluZnJhZGVhZC5vcmc7IEdhbGEgS3VtYXIt
-QjExNzgwDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBQNDA4MC9lTEJDOiBNYWtlIEZyZWVz
-Y2FsZSBlbGJjIGludGVycnVwdCBjb21tb24gdG8NCj4gZWxiYyBkZXZpY2VzDQo+IA0KPiBSb3kg
-WmFuZyB3cm90ZToNCj4gPiBNb3ZlIEZyZWVzY2FsZSBlbGJjIGludGVycnVwdCBmcm9tIG5hbmQg
-ZGlydmVyIHRvIGVsYmMgZHJpdmVyLg0KPiA+IFRoZW4gYWxsIGVsYmMgZGV2aWNlcyBjYW4gdXNl
-IHRoZSBpbnRlcnJ1cHQgaW5zdGVhZCBvZiBPTkxZIG5hbmQuDQo+ID4NCj4gPiBGb3IgZm9ybWVy
-IG5hbmQgZHJpdmVyLCBpdCBoYWQgdGhlIHR3byBmdW5jdGlvbnM6DQo+ID4NCj4gPiAxLiBkZXRl
-Y3RpbmcgbmFuZCBmbGFzaCBwYXJ0aXRpb25zOw0KPiA+IDIuIHJlZ2lzdGVyaW5nIGVsYmMgaW50
-ZXJydXB0Lg0KPiA+DQo+ID4gTm93LCBzZWNvbmQgZnVuY3Rpb24gaXMgcmVtb3ZlZCB0byBmc2xf
-bGJjLmMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMYW4gQ2h1bmhlLUIyNTgwNiA8YjI1ODA2
-QGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogUm95IFphbmcgPHRpZS1mZWkuemFu
-Z0BmcmVlc2NhbGUuY29tPg0KPiA+IFJldmlld2VkLWJ5OiBBbnRvbiBWb3JvbnRzb3YgPGNib3Vh
-dG1haWxydUBnbWFpbC5jb20+DQo+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxIDxCMDc0MjFAZnJl
-ZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPg0KPiA+IFRoZXNlIHR3byBwYXRjaGVzIGFyZSBiYXNl
-ZCBvbiB0aGUgZm9sbG93aW5nIGNvbW1pdHM6DQo+ID4gMS4JaHR0cDovL2xpc3RzLmluZnJhZGVh
-ZC5vcmcvcGlwZXJtYWlsL2xpbnV4LW10ZC8yMDEwLQ0KPiBTZXB0ZW1iZXIvMDMyMTEyLmh0bWwN
-Cj4gPiAyLglodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGludXgtbXRkLzIw
-MTAtDQo+IFNlcHRlbWJlci8wMzIxMTAuaHRtbA0KPiA+IDMuCWh0dHA6Ly9saXN0cy5pbmZyYWRl
-YWQub3JnL3BpcGVybWFpbC9saW51eC1tdGQvMjAxMC0NCj4gU2VwdGVtYmVyLzAzMjExMS5odG1s
-DQo+ID4gQWNjb3JkaW5nIHRvIEFudG9uJ3MgY29tbWVudCwgSSBtZXJnZSAxICYgMiB0b2dldGhl
-ciBhbmQgc3RhcnQgYSBuZXcgdGhyZWFkLg0KPiA+IENvbXBhcmluZyB0aGUgcHJvdmlkZWQgbGlu
-azoNCj4gPiAxLglNZXJnZSAxICYgMiB0b2dldGhlci4NCj4gPiAyLglTb21lIGNvZGUgc3R5bGUg
-dXBkYXRlcw0KPiA+IDMuCUFkZCBjb3VudGVyIHByb3RlY3QgZm9yIGVsYmMgZHJpdmVyIHJlbW92
-ZQ0KPiA+IDQuCVJlYmFzZSB0byAyLjYuMzYtcmM3DQo+ID4NCj4gPiBPdGhlciBoaXN0b3JpZXMg
-ZnJvbSB0aGUgbGlua3M6DQo+ID4gVjI6IENvbXBhcmluZyB3aXRoIHYxLCBhY2NvcmRpbmcgdG8g
-dGhlIGZlZWRiYWNrLCBhZGQgc29tZSBkZWNvcmF0aW9ucy4NCj4gPg0KPiA+IFYzOiBDb21wYXJp
-bmcgd2l0aCB2MjoNCj4gPiAxLglhY2NvcmRpbmcgdG8gdGhlIGZlZWRiYWNrLCBhZGQgc29tZSBk
-ZWNvcmF0aW9ucy4NCj4gPiAyLgljaGFuZ2Ugb2ZfcGxhdGZvcm1fZHJpdmVyIHRvIHBsYXRmb3Jt
-X2RyaXZlcg0KPiA+IDMuCXJlYmFzZSB0byAyLjYuMzYtcmM0DQo+ID4NCj4gPiBWNDogQ29tcGFy
-aW5nIHdpdGggdjMNCj4gPiAxLgltaW5vciBmaXggZnJvbSB0eXBlIHVuc2lnbmVkIGludCB0byB1
-MzINCj4gPiAyLglmaXggcGxhdGZvcm1fZHJpdmVyIGlzc3VlLg0KPiA+IDMuCWFkZCBtdXRleCBm
-b3IgbmFuZCBwcm9iZQ0KPiA+DQo+ID4gIGFyY2gvcG93ZXJwYy9LY29uZmlnICAgICAgICAgICAg
-ICAgfCAgICA3ICstDQo+ID4gIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfbGJjLmggfCAg
-IDMzICsrKy0NCj4gPiAgYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMgICAgICB8ICAyMjkg
-KysrKysrKysrKysrKystLS0NCj4gPiAgZHJpdmVycy9tdGQvbmFuZC9LY29uZmlnICAgICAgICAg
-ICB8ICAgIDEgKw0KPiA+ICBkcml2ZXJzL210ZC9uYW5kL2ZzbF9lbGJjX25hbmQuYyAgIHwgIDQ4
-MiArKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0NCj4gLS0tDQo+ID4gIDUgZmlsZXMg
-Y2hhbmdlZCwgNDI1IGluc2VydGlvbnMoKyksIDMyNyBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRp
-ZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvS2NvbmZpZyBiL2FyY2gvcG93ZXJwYy9LY29uZmlnDQo+
-ID4gaW5kZXggNjMxZTVhMC4uNDRkZjFiYSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMv
-S2NvbmZpZw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9LY29uZmlnDQo+ID4gQEAgLTY4Nyw5ICs2
-ODcsMTIgQEAgY29uZmlnIDR4eF9TT0MNCj4gPiAgCWJvb2wNCj4gPg0KPiA+ICBjb25maWcgRlNM
-X0xCQw0KPiA+IC0JYm9vbA0KPiA+ICsJYm9vbCAiRnJlZXNjYWxlIExvY2FsIEJ1cyBzdXBwb3J0
-Ig0KPiA+ICsJZGVwZW5kcyBvbiBGU0xfU09DDQo+ID4gIAloZWxwDQo+ID4gLQkgIEZyZWVzY2Fs
-ZSBMb2NhbGJ1cyBzdXBwb3J0DQo+ID4gKwkgIEVuYWJsZXMgcmVwb3J0aW5nIG9mIGVycm9ycyBm
-cm9tIHRoZSBGcmVlc2NhbGUgbG9jYWwgYnVzDQo+ID4gKwkgIGNvbnRyb2xsZXIuICBBbHNvIGNv
-bnRhaW5zIHNvbWUgY29tbW9uIGNvZGUgdXNlZCBieQ0KPiA+ICsJICBkcml2ZXJzIGZvciBzcGVj
-aWZpYyBsb2NhbCBidXMgcGVyaXBoZXJhbHMuDQo+ID4NCj4gPiAgY29uZmlnIEZTTF9HVE0NCj4g
-PiAgCWJvb2wNCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2ZzbF9s
-YmMuaA0KPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfbGJjLmgNCj4gPiBpbmRleCAx
-YjVhMjEwLi4wYzQwYzA1IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2Fz
-bS9mc2xfbGJjLmgNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vZnNsX2xiYy5o
-DQo+ID4gQEAgLTEsOSArMSwxMCBAQA0KPiA+ICAvKiBGcmVlc2NhbGUgTG9jYWwgQnVzIENvbnRy
-b2xsZXINCj4gPiAgICoNCj4gPiAtICogQ29weXJpZ2h0IChjKSAyMDA2LTIwMDcgRnJlZXNjYWxl
-IFNlbWljb25kdWN0b3INCj4gPiArICogQ29weXJpZ2h0IChjKSAyMDA2LTIwMDcsIDIwMTAgRnJl
-ZXNjYWxlIFNlbWljb25kdWN0b3INCj4gPiAgICoNCj4gPiAgICogQXV0aG9yczogTmljayBTcGVu
-Y2UgPG5pY2suc3BlbmNlQGZyZWVzY2FsZS5jb20+LA0KPiA+ICAgKiAgICAgICAgICBTY290dCBX
-b29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4NCj4gPiArICogICAgICAgICAgSmFjayBMYW4g
-PGphY2subGFuQGZyZWVzY2FsZS5jb20+DQo+ID4gICAqDQo+ID4gICAqIFRoaXMgcHJvZ3JhbSBp
-cyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5DQo+
-ID4gICAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vu
-c2UgYXMgcHVibGlzaGVkIGJ5DQo+ID4gQEAgLTI2LDYgKzI3LDggQEANCj4gPiAgI2luY2x1ZGUg
-PGxpbnV4L2NvbXBpbGVyLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC90eXBlcy5oPg0KPiA+ICAj
-aW5jbHVkZSA8bGludXgvaW8uaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPg0KPiA+
-ICsjaW5jbHVkZSA8bGludXgvc3BpbmxvY2suaD4NCj4gPg0KPiA+ICBzdHJ1Y3QgZnNsX2xiY19i
-YW5rIHsNCj4gPiAgCV9fYmUzMiBicjsgICAgICAgICAgICAgLyoqPCBCYXNlIFJlZ2lzdGVyICAq
-Lw0KPiA+IEBAIC0xMjUsMTMgKzEyOCwyMyBAQCBzdHJ1Y3QgZnNsX2xiY19yZWdzIHsNCj4gPiAg
-I2RlZmluZSBMVEVTUl9BVE1XIDB4MDA4MDAwMDANCj4gPiAgI2RlZmluZSBMVEVTUl9BVE1SIDB4
-MDA0MDAwMDANCj4gPiAgI2RlZmluZSBMVEVTUl9DUyAgIDB4MDAwODAwMDANCj4gPiArI2RlZmlu
-ZSBMVEVTUl9VUE0gIDB4MDAwMDAwMDINCj4gPiAgI2RlZmluZSBMVEVTUl9DQyAgIDB4MDAwMDAw
-MDENCj4gPiAgI2RlZmluZSBMVEVTUl9OQU5EX01BU0sgKExURVNSX0ZDVCB8IExURVNSX1BBUiB8
-IExURVNSX0NDKQ0KPiA+ICsjZGVmaW5lIExURVNSX01BU0sgICAgICAoTFRFU1JfQk0gfCBMVEVT
-Ul9GQ1QgfCBMVEVTUl9QQVIgfCBMVEVTUl9XUCBcDQo+ID4gKwkJCSB8IExURVNSX0FUTVcgfCBM
-VEVTUl9BVE1SIHwgTFRFU1JfQ1MgfCBMVEVTUl9VUE0gXA0KPiA+ICsJCQkgfCBMVEVTUl9DQykN
-Cj4gPiArI2RlZmluZSBMVEVTUl9DTEVBUgkweEZGRkZGRkZGDQo+ID4gKyNkZWZpbmUgTFRFQ0NS
-X0NMRUFSCTB4RkZGRkZGRkYNCj4gPiArI2RlZmluZSBMVEVTUl9TVEFUVVMJTFRFU1JfTUFTSw0K
-PiA+ICsjZGVmaW5lIExURUlSX0VOQUJMRQlMVEVTUl9NQVNLDQo+ID4gKyNkZWZpbmUgTFRFRFJf
-RU5BQkxFCTB4MDAwMDAwMDANCj4gPiAgCV9fYmUzMiBsdGVkcjsgICAgICAgICAgIC8qKjwgVHJh
-bnNmZXIgRXJyb3IgRGlzYWJsZSBSZWdpc3RlciAqLw0KPiA+ICAJX19iZTMyIGx0ZWlyOyAgICAg
-ICAgICAgLyoqPCBUcmFuc2ZlciBFcnJvciBJbnRlcnJ1cHQgUmVnaXN0ZXIgKi8NCj4gPiAgCV9f
-YmUzMiBsdGVhdHI7ICAgICAgICAgIC8qKjwgVHJhbnNmZXIgRXJyb3IgQXR0cmlidXRlcyBSZWdp
-c3RlciAqLw0KPiA+ICAJX19iZTMyIGx0ZWFyOyAgICAgICAgICAgLyoqPCBUcmFuc2ZlciBFcnJv
-ciBBZGRyZXNzIFJlZ2lzdGVyICovDQo+ID4gLQl1OCByZXM2WzB4Q107DQo+ID4gKwlfX2JlMzIg
-bHRlY2NyOyAgICAgICAgICAvKio8IFRyYW5zZmVyIEVycm9yIEVDQyBSZWdpc3RlciAqLw0KPiA+
-ICsJdTggcmVzNlsweDhdOw0KPiA+ICAJX19iZTMyIGxiY3I7ICAgICAgICAgICAgLyoqPCBDb25m
-aWd1cmF0aW9uIFJlZ2lzdGVyICovDQo+ID4gICNkZWZpbmUgTEJDUl9MRElTICAweDgwMDAwMDAw
-DQo+ID4gICNkZWZpbmUgTEJDUl9MRElTX1NISUZUICAgIDMxDQo+ID4gQEAgLTI2NSw3ICsyNzgs
-MjMgQEAgc3RhdGljIGlubGluZSB2b2lkIGZzbF91cG1fZW5kX3BhdHRlcm4oc3RydWN0IGZzbF91
-cG0NCj4gKnVwbSkNCj4gPiAgCQljcHVfcmVsYXgoKTsNCj4gPiAgfQ0KPiA+DQo+ID4gKy8qIG92
-ZXJ2aWV3IG9mIHRoZSBmc2wgbGJjIGNvbnRyb2xsZXIgKi8NCj4gPiArDQo+ID4gK3N0cnVjdCBm
-c2xfbGJjX2N0cmwgew0KPiA+ICsJLyogZGV2aWNlIGluZm8gKi8NCj4gPiArCXN0cnVjdCBkZXZp
-Y2UJCQkqZGV2Ow0KPiA+ICsJc3RydWN0IGZzbF9sYmNfcmVncyBfX2lvbWVtCSpyZWdzOw0KPiA+
-ICsJaW50CQkJCWlycTsNCj4gPiArCXdhaXRfcXVldWVfaGVhZF90CQlpcnFfd2FpdDsNCj4gPiAr
-CXNwaW5sb2NrX3QJCQlsb2NrOw0KPiA+ICsJdm9pZAkJCQkqbmFuZDsNCj4gPiArDQo+ID4gKwkv
-KiBzdGF0dXMgcmVhZCBmcm9tIExURVNSIGJ5IGlycSBoYW5kbGVyICovDQo+ID4gKwl1bnNpZ25l
-ZCBpbnQJCQlpcnFfc3RhdHVzOw0KPiA+ICt9Ow0KPiA+ICsNCj4gPiAgZXh0ZXJuIGludCBmc2xf
-dXBtX3J1bl9wYXR0ZXJuKHN0cnVjdCBmc2xfdXBtICp1cG0sIHZvaWQgX19pb21lbSAqaW9fYmFz
-ZSwNCj4gPiAgCQkJICAgICAgIHUzMiBtYXIpOw0KPiA+ICtleHRlcm4gc3RydWN0IGZzbF9sYmNf
-Y3RybCAqZnNsX2xiY19jdHJsX2RldjsNCj4gPg0KPiA+ICAjZW5kaWYgLyogX19BU01fRlNMX0xC
-Q19IICovDQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX2xiYy5jIGIv
-YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMNCj4gPiBpbmRleCBkY2ViOGQxLi40YmIwMzM2
-IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX2xiYy5jDQo+ID4gKysr
-IGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbGJjLmMNCj4gPiBAQCAtMiw4ICsyLDExIEBADQo+
-ID4gICAqIEZyZWVzY2FsZSBMQkMgYW5kIFVQTSByb3V0aW5lcy4NCj4gPiAgICoNCj4gPiAgICog
-Q29weXJpZ2h0IChjKSAyMDA3LTIwMDggIE1vbnRhVmlzdGEgU29mdHdhcmUsIEluYy4NCj4gPiAr
-ICogQ29weXJpZ2h0IChjKSAyMDEwIEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yDQo+ID4gICAqDQo+
-ID4gICAqIEF1dGhvcjogQW50b24gVm9yb250c292IDxhdm9yb250c292QHJ1Lm12aXN0YS5jb20+
-DQo+ID4gKyAqIEF1dGhvcjogSmFjayBMYW4gPEphY2suTGFuQGZyZWVzY2FsZS5jb20+DQo+ID4g
-KyAqIEF1dGhvcjogUm95IFphbmcgPHRpZS1mZWkuemFuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ICAg
-Kg0KPiA+ICAgKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3Ry
-aWJ1dGUgaXQgYW5kL29yIG1vZGlmeQ0KPiA+ICAgKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhl
-IEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZCBieQ0KPiA+IEBAIC0xOSwz
-OSArMjIsMTYgQEANCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3R5cGVzLmg+DQo+ID4gICNpbmNsdWRl
-IDxsaW51eC9pby5oPg0KPiA+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPiArI2luY2x1ZGUg
-PGxpbnV4L3NsYWIuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPg0K
-PiA+ICsjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9t
-b2RfZGV2aWNldGFibGUuaD4NCj4gPiAgI2luY2x1ZGUgPGFzbS9wcm9tLmg+DQo+ID4gICNpbmNs
-dWRlIDxhc20vZnNsX2xiYy5oPg0KPiA+DQo+ID4gIHN0YXRpYyBzcGlubG9ja190IGZzbF9sYmNf
-bG9jayA9IF9fU1BJTl9MT0NLX1VOTE9DS0VEKGZzbF9sYmNfbG9jayk7DQo+ID4gLXN0YXRpYyBz
-dHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmZzbF9sYmNfcmVnczsNCj4gPiAtDQo+ID4gLXN0
-YXRpYyBjaGFyIF9faW5pdGRhdGEgKmNvbXBhdF9sYmNbXSA9IHsNCj4gPiAtCSJmc2wscHEyLWxv
-Y2FsYnVzIiwNCj4gPiAtCSJmc2wscHEycHJvLWxvY2FsYnVzIiwNCj4gPiAtCSJmc2wscHEzLWxv
-Y2FsYnVzIiwNCj4gPiAtCSJmc2wsZWxiYyIsDQo+ID4gLX07DQo+ID4gLQ0KPiA+IC1zdGF0aWMg
-aW50IF9faW5pdCBmc2xfbGJjX2luaXQodm9pZCkNCj4gPiAtew0KPiA+IC0Jc3RydWN0IGRldmlj
-ZV9ub2RlICpsYnVzOw0KPiA+IC0JaW50IGk7DQo+ID4gLQ0KPiA+IC0JZm9yIChpID0gMDsgaSA8
-IEFSUkFZX1NJWkUoY29tcGF0X2xiYyk7IGkrKykgew0KPiA+IC0JCWxidXMgPSBvZl9maW5kX2Nv
-bXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCBjb21wYXRfbGJjW2ldKTsNCj4gPiAtCQlpZiAobGJ1
-cykNCj4gPiAtCQkJZ290byBmb3VuZDsNCj4gPiAtCX0NCj4gPiAtCXJldHVybiAtRU5PREVWOw0K
-PiA+IC0NCj4gPiAtZm91bmQ6DQo+ID4gLQlmc2xfbGJjX3JlZ3MgPSBvZl9pb21hcChsYnVzLCAw
-KTsNCj4gPiAtCW9mX25vZGVfcHV0KGxidXMpOw0KPiA+IC0JaWYgKCFmc2xfbGJjX3JlZ3MpDQo+
-ID4gLQkJcmV0dXJuIC1FTk9NRU07DQo+ID4gLQlyZXR1cm4gMDsNCj4gPiAtfQ0KPiA+IC1hcmNo
-X2luaXRjYWxsKGZzbF9sYmNfaW5pdCk7DQo+ID4gK3N0cnVjdCBmc2xfbGJjX2N0cmwgKmZzbF9s
-YmNfY3RybF9kZXY7DQo+ID4gK0VYUE9SVF9TWU1CT0woZnNsX2xiY19jdHJsX2Rldik7DQo+ID4N
-Cj4gPiAgLyoqDQo+ID4gICAqIGZzbF9sYmNfZmluZCAtIGZpbmQgTG9jYWxidXMgYmFuaw0KPiA+
-IEBAIC02NSwxMyArNDUsMTUgQEAgYXJjaF9pbml0Y2FsbChmc2xfbGJjX2luaXQpOw0KPiA+ICBp
-bnQgZnNsX2xiY19maW5kKHBoeXNfYWRkcl90IGFkZHJfYmFzZSkNCj4gPiAgew0KPiA+ICAJaW50
-IGk7DQo+ID4gKwlzdHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmxiYzsNCj4gPg0KPiA+IC0J
-aWYgKCFmc2xfbGJjX3JlZ3MpDQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYgfHwgIWZzbF9s
-YmNfY3RybF9kZXYtPnJlZ3MpDQo+ID4gIAkJcmV0dXJuIC1FTk9ERVY7DQo+ID4NCj4gPiAtCWZv
-ciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKGZzbF9sYmNfcmVncy0+YmFuayk7IGkrKykgew0KPiA+
-IC0JCV9fYmUzMiBiciA9IGluX2JlMzIoJmZzbF9sYmNfcmVncy0+YmFua1tpXS5icik7DQo+ID4g
-LQkJX19iZTMyIG9yID0gaW5fYmUzMigmZnNsX2xiY19yZWdzLT5iYW5rW2ldLm9yKTsNCj4gPiAr
-CWxiYyA9IGZzbF9sYmNfY3RybF9kZXYtPnJlZ3M7DQo+ID4gKwlmb3IgKGkgPSAwOyBpIDwgQVJS
-QVlfU0laRShsYmMtPmJhbmspOyBpKyspIHsNCj4gPiArCQlfX2JlMzIgYnIgPSBpbl9iZTMyKCZs
-YmMtPmJhbmtbaV0uYnIpOw0KPiA+ICsJCV9fYmUzMiBvciA9IGluX2JlMzIoJmxiYy0+YmFua1tp
-XS5vcik7DQo+ID4NCj4gPiAgCQlpZiAoYnIgJiBCUl9WICYmIChiciAmIG9yICYgQlJfQkEpID09
-IGFkZHJfYmFzZSkNCj4gPiAgCQkJcmV0dXJuIGk7DQo+ID4gQEAgLTk0LDIyICs3NiwyNyBAQCBp
-bnQgZnNsX3VwbV9maW5kKHBoeXNfYWRkcl90IGFkZHJfYmFzZSwgc3RydWN0IGZzbF91cG0NCj4g
-KnVwbSkNCj4gPiAgew0KPiA+ICAJaW50IGJhbms7DQo+ID4gIAlfX2JlMzIgYnI7DQo+ID4gKwlz
-dHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmxiYzsNCj4gPg0KPiA+ICAJYmFuayA9IGZzbF9s
-YmNfZmluZChhZGRyX2Jhc2UpOw0KPiA+ICAJaWYgKGJhbmsgPCAwKQ0KPiA+ICAJCXJldHVybiBi
-YW5rOw0KPiA+DQo+ID4gLQliciA9IGluX2JlMzIoJmZzbF9sYmNfcmVncy0+YmFua1tiYW5rXS5i
-cik7DQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYgfHwgIWZzbF9sYmNfY3RybF9kZXYtPnJl
-Z3MpDQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4gKw0KPiA+ICsJbGJjID0gZnNsX2xiY19j
-dHJsX2Rldi0+cmVnczsNCj4gPiArCWJyID0gaW5fYmUzMigmbGJjLT5iYW5rW2JhbmtdLmJyKTsN
-Cj4gPg0KPiA+ICAJc3dpdGNoIChiciAmIEJSX01TRUwpIHsNCj4gPiAgCWNhc2UgQlJfTVNfVVBN
-QToNCj4gPiAtCQl1cG0tPm14bXIgPSAmZnNsX2xiY19yZWdzLT5tYW1yOw0KPiA+ICsJCXVwbS0+
-bXhtciA9ICZsYmMtPm1hbXI7DQo+ID4gIAkJYnJlYWs7DQo+ID4gIAljYXNlIEJSX01TX1VQTUI6
-DQo+ID4gLQkJdXBtLT5teG1yID0gJmZzbF9sYmNfcmVncy0+bWJtcjsNCj4gPiArCQl1cG0tPm14
-bXIgPSAmbGJjLT5tYm1yOw0KPiA+ICAJCWJyZWFrOw0KPiA+ICAJY2FzZSBCUl9NU19VUE1DOg0K
-PiA+IC0JCXVwbS0+bXhtciA9ICZmc2xfbGJjX3JlZ3MtPm1jbXI7DQo+ID4gKwkJdXBtLT5teG1y
-ID0gJmxiYy0+bWNtcjsNCj4gPiAgCQlicmVhazsNCj4gPiAgCWRlZmF1bHQ6DQo+ID4gIAkJcmV0
-dXJuIC1FSU5WQUw7DQo+ID4gQEAgLTE0OCw5ICsxMzUsMTIgQEAgaW50IGZzbF91cG1fcnVuX3Bh
-dHRlcm4oc3RydWN0IGZzbF91cG0gKnVwbSwgdm9pZA0KPiBfX2lvbWVtICppb19iYXNlLCB1MzIg
-bWFyKQ0KPiA+ICAJaW50IHJldCA9IDA7DQo+ID4gIAl1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+
-DQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYgfHwgIWZzbF9sYmNfY3RybF9kZXYtPnJlZ3Mp
-DQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4gKw0KPiA+ICAJc3Bpbl9sb2NrX2lycXNhdmUo
-JmZzbF9sYmNfbG9jaywgZmxhZ3MpOw0KPiA+DQo+ID4gLQlvdXRfYmUzMigmZnNsX2xiY19yZWdz
-LT5tYXIsIG1hcik7DQo+ID4gKwlvdXRfYmUzMigmZnNsX2xiY19jdHJsX2Rldi0+cmVncy0+bWFy
-LCBtYXIpOw0KPiA+DQo+ID4gIAlzd2l0Y2ggKHVwbS0+d2lkdGgpIHsNCj4gPiAgCWNhc2UgODoN
-Cj4gPiBAQCAtMTcyLDMgKzE2MiwxNjYgQEAgaW50IGZzbF91cG1fcnVuX3BhdHRlcm4oc3RydWN0
-IGZzbF91cG0gKnVwbSwgdm9pZA0KPiBfX2lvbWVtICppb19iYXNlLCB1MzIgbWFyKQ0KPiA+ICAJ
-cmV0dXJuIHJldDsNCj4gPiAgfQ0KPiA+ICBFWFBPUlRfU1lNQk9MKGZzbF91cG1fcnVuX3BhdHRl
-cm4pOw0KPiA+ICsNCj4gPiArc3RhdGljIGludCBfX2RldmluaXQgZnNsX2xiY19jdHJsX2luaXQo
-c3RydWN0IGZzbF9sYmNfY3RybCAqY3RybCkNCj4gPiArew0KPiA+ICsJc3RydWN0IGZzbF9sYmNf
-cmVncyBfX2lvbWVtICpsYmMgPSBjdHJsLT5yZWdzOw0KPiA+ICsNCj4gPiArCS8qIGNsZWFyIGV2
-ZW50IHJlZ2lzdGVycyAqLw0KPiA+ICsJc2V0Yml0czMyKCZsYmMtPmx0ZXNyLCBMVEVTUl9DTEVB
-Uik7DQo+ID4gKwlvdXRfYmUzMigmbGJjLT5sdGVhdHIsIDApOw0KPiA+ICsJb3V0X2JlMzIoJmxi
-Yy0+bHRlYXIsIDApOw0KPiA+ICsJb3V0X2JlMzIoJmxiYy0+bHRlY2NyLCBMVEVDQ1JfQ0xFQVIp
-Ow0KPiA+ICsJb3V0X2JlMzIoJmxiYy0+bHRlZHIsIExURURSX0VOQUJMRSk7DQo+ID4gKw0KPiA+
-ICsJLyogRW5hYmxlIGludGVycnVwdHMgZm9yIGFueSBkZXRlY3RlZCBldmVudHMgKi8NCj4gPiAr
-CW91dF9iZTMyKCZsYmMtPmx0ZWlyLCBMVEVJUl9FTkFCTEUpOw0KPiA+ICsNCj4gPiArCXJldHVy
-biAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICsvKg0KPiA+ICsgKiBOT1RFOiBUaGlzIGludGVycnVw
-dCBpcyB1c2VkIHRvIHJlcG9ydCBsb2NhbGJ1cyBldmVudHMgb2YgdmFyaW91cyBraW5kcywNCj4g
-PiArICogc3VjaCBhcyB0cmFuc2FjdGlvbiBlcnJvcnMgb24gdGhlIGNoaXBzZWxlY3RzLg0KPiA+
-ICsgKi8NCj4gPiArDQo+ID4gK3N0YXRpYyBpcnFyZXR1cm5fdCBmc2xfbGJjX2N0cmxfaXJxKGlu
-dCBpcnFubywgdm9pZCAqZGF0YSkNCj4gPiArew0KPiA+ICsJc3RydWN0IGZzbF9sYmNfY3RybCAq
-Y3RybCA9IGRhdGE7DQo+ID4gKwlzdHJ1Y3QgZnNsX2xiY19yZWdzIF9faW9tZW0gKmxiYyA9IGN0
-cmwtPnJlZ3M7DQo+ID4gKwl1MzIgc3RhdHVzOw0KPiA+ICsNCj4gPiArCXN0YXR1cyA9IGluX2Jl
-MzIoJmxiYy0+bHRlc3IpOw0KPiA+ICsJaWYgKCFzdGF0dXMpDQo+ID4gKwkJcmV0dXJuIElSUV9O
-T05FOw0KPiA+ICsNCj4gPiArCW91dF9iZTMyKCZsYmMtPmx0ZXNyLCBMVEVTUl9DTEVBUik7DQo+
-ID4gKwlvdXRfYmUzMigmbGJjLT5sdGVhdHIsIDApOw0KPiA+ICsJb3V0X2JlMzIoJmxiYy0+bHRl
-YXIsIDApOw0KPiA+ICsJY3RybC0+aXJxX3N0YXR1cyA9IHN0YXR1czsNCj4gPiArDQo+ID4gKwlp
-ZiAoc3RhdHVzICYgTFRFU1JfQk0pDQo+ID4gKwkJZGV2X2VycihjdHJsLT5kZXYsICJMb2NhbCBi
-dXMgbW9uaXRvciB0aW1lLW91dDogIg0KPiA+ICsJCQkiTFRFU1IgMHglMDhYXG4iLCBzdGF0dXMp
-Ow0KPiA+ICsJaWYgKHN0YXR1cyAmIExURVNSX1dQKQ0KPiA+ICsJCWRldl9lcnIoY3RybC0+ZGV2
-LCAiV3JpdGUgcHJvdGVjdCBlcnJvcjogIg0KPiA+ICsJCQkiTFRFU1IgMHglMDhYXG4iLCBzdGF0
-dXMpOw0KPiA+ICsJaWYgKHN0YXR1cyAmIExURVNSX0FUTVcpDQo+ID4gKwkJZGV2X2VycihjdHJs
-LT5kZXYsICJBdG9taWMgd3JpdGUgZXJyb3I6ICINCj4gPiArCQkJIkxURVNSIDB4JTA4WFxuIiwg
-c3RhdHVzKTsNCj4gPiArCWlmIChzdGF0dXMgJiBMVEVTUl9BVE1SKQ0KPiA+ICsJCWRldl9lcnIo
-Y3RybC0+ZGV2LCAiQXRvbWljIHJlYWQgZXJyb3I6ICINCj4gPiArCQkJIkxURVNSIDB4JTA4WFxu
-Iiwgc3RhdHVzKTsNCj4gPiArCWlmIChzdGF0dXMgJiBMVEVTUl9DUykNCj4gPiArCQlkZXZfZXJy
-KGN0cmwtPmRldiwgIkNoaXAgc2VsZWN0IGVycm9yOiAiDQo+ID4gKwkJCSJMVEVTUiAweCUwOFhc
-biIsIHN0YXR1cyk7DQo+ID4gKwlpZiAoc3RhdHVzICYgTFRFU1JfVVBNKQ0KPiA+ICsJCTsNCj4g
-PiArCWlmIChzdGF0dXMgJiBMVEVTUl9GQ1QpIHsNCj4gPiArCQlkZXZfZXJyKGN0cmwtPmRldiwg
-IkZDTSBjb21tYW5kIHRpbWUtb3V0OiAiDQo+ID4gKwkJCSJMVEVTUiAweCUwOFhcbiIsIHN0YXR1
-cyk7DQo+ID4gKwkJc21wX3dtYigpOw0KPiA+ICsJCXdha2VfdXAoJmN0cmwtPmlycV93YWl0KTsN
-Cj4gPiArCX0NCj4gPiArCWlmIChzdGF0dXMgJiBMVEVTUl9QQVIpIHsNCj4gPiArCQlkZXZfZXJy
-KGN0cmwtPmRldiwgIlBhcml0eSBvciBVbmNvcnJlY3RhYmxlIEVDQyBlcnJvcjogIg0KPiA+ICsJ
-CQkiTFRFU1IgMHglMDhYXG4iLCBzdGF0dXMpOw0KPiA+ICsJCXNtcF93bWIoKTsNCj4gPiArCQl3
-YWtlX3VwKCZjdHJsLT5pcnFfd2FpdCk7DQo+ID4gKwl9DQo+ID4gKwlpZiAoc3RhdHVzICYgTFRF
-U1JfQ0MpIHsNCj4gPiArCQlzbXBfd21iKCk7DQo+ID4gKwkJd2FrZV91cCgmY3RybC0+aXJxX3dh
-aXQpOw0KPiA+ICsJfQ0KPiA+ICsJaWYgKHN0YXR1cyAmIH5MVEVTUl9NQVNLKQ0KPiA+ICsJCWRl
-dl9lcnIoY3RybC0+ZGV2LCAiVW5rbm93biBlcnJvcjogIg0KPiA+ICsJCQkiTFRFU1IgMHglMDhY
-XG4iLCBzdGF0dXMpOw0KPiA+ICsJcmV0dXJuIElSUV9IQU5ETEVEOw0KPiA+ICt9DQo+ID4gKw0K
-PiA+ICsvKg0KPiA+ICsgKiBmc2xfbGJjX2N0cmxfcHJvYmUNCj4gPiArICoNCj4gPiArICogY2Fs
-bGVkIGJ5IGRldmljZSBsYXllciB3aGVuIGl0IGZpbmRzIGEgZGV2aWNlIG1hdGNoaW5nDQo+ID4g
-KyAqIG9uZSBvdXIgZHJpdmVyIGNhbiBoYW5kbGVkLiBUaGlzIGNvZGUgYWxsb2NhdGVzIGFsbCBv
-Zg0KPiA+ICsgKiB0aGUgcmVzb3VyY2VzIG5lZWRlZCBmb3IgdGhlIGNvbnRyb2xsZXIgb25seS4g
-IFRoZQ0KPiA+ICsgKiByZXNvdXJjZXMgZm9yIHRoZSBOQU5EIGJhbmtzIHRoZW1zZWx2ZXMgYXJl
-IGFsbG9jYXRlZA0KPiA+ICsgKiBpbiB0aGUgY2hpcCBwcm9iZSBmdW5jdGlvbi4NCj4gPiArKi8N
-Cj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgX19kZXZpbml0IGZzbF9sYmNfY3RybF9wcm9iZShzdHJ1
-Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpDQo+ID4gK3sNCj4gPiArCWludCByZXQ7DQo+ID4gKw0K
-PiA+ICsJaWYgKCFkZXYtPmRldi5vZl9ub2RlKSB7DQo+ID4gKwkJZGV2X2VycigmZGV2LT5kZXYs
-ICJEZXZpY2UgT0YtTm9kZSBpcyBOVUxMIik7DQo+ID4gKwkJcmV0dXJuIC1FRkFVTFQ7DQo+ID4g
-Kwl9DQo+ID4gKw0KPiA+ICsJZnNsX2xiY19jdHJsX2RldiA9IGt6YWxsb2Moc2l6ZW9mKCpmc2xf
-bGJjX2N0cmxfZGV2KSwgR0ZQX0tFUk5FTCk7DQo+ID4gKwlpZiAoIWZzbF9sYmNfY3RybF9kZXYp
-DQo+ID4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsJZGV2X3NldF9kcnZkYXRhKCZk
-ZXYtPmRldiwgZnNsX2xiY19jdHJsX2Rldik7DQo+ID4gKw0KPiA+ICsJc3Bpbl9sb2NrX2luaXQo
-JmZzbF9sYmNfY3RybF9kZXYtPmxvY2spOw0KPiA+ICsJaW5pdF93YWl0cXVldWVfaGVhZCgmZnNs
-X2xiY19jdHJsX2Rldi0+aXJxX3dhaXQpOw0KPiA+ICsNCj4gPiArCWZzbF9sYmNfY3RybF9kZXYt
-PnJlZ3MgPSBvZl9pb21hcChkZXYtPmRldi5vZl9ub2RlLCAwKTsNCj4gPiArCWlmICghZnNsX2xi
-Y19jdHJsX2Rldi0+cmVncykgew0KPiA+ICsJCWRldl9lcnIoJmRldi0+ZGV2LCAiZmFpbGVkIHRv
-IGdldCBtZW1vcnkgcmVnaW9uXG4iKTsNCj4gPiArCQlyZXQgPSAtRU5PREVWOw0KPiA+ICsJCWdv
-dG8gZXJyOw0KPiANCj4gTG9va3MgeW91IGFsd2F5cyBpb3VubWFwKGZzbF9sYmNfY3RybF9kZXYt
-PnJlZ3MpIG9uIHBvc2l0aW9uICdlcnInIGJ1dCBoZXJlDQo+IG9mX2lvbWFwKCkgaXMgYWxyZWFk
-eSBmYWlsZWQgeW91IHNob3VsZCBza2lwIGlvdW5tYXAoKSBmc2xfbGJjX2N0cmxfZGV2LT5yZWdz
-DQo+IGFnYWluLiBTbyB5b3Ugc2hvdWxkIGltcHJvdmUgdGhhdCBhcyB0aGUgZm9sbG93aW5nIG9u
-ICdlcnInLCBvciBsYXlvdXQgJ2VycicNCj4gaW4NCj4gZ2Fpbi4NCj4gLS0tLS0tDQo+IAlpZihm
-c2xfbGJjX2N0cmxfZGV2LT5yZWdzKQ0KPiAJCWlvdW5tYXAoZnNsX2xiY19jdHJsX2Rldi0+cmVn
-cyk7DQo+IA0KPiBUaWVqdW4NCg0KWW91IGFyZSByaWdodCENCkhvdyBhYm91dA0KIA0KICAgICAg
-ICBpZiAoIWZzbF9sYmNfY3RybF9kZXYtPnJlZ3MpIHsNCiAgICAgICAgICAgICAgICBkZXZfZXJy
-KCZkZXYtPmRldiwgImZhaWxlZCB0byBnZXQgbWVtb3J5IHJlZ2lvblxuIik7DQogICAgICAgICAg
-ICAgICAga2ZyZWUoZnNsX2xiY19jdHJsX2Rldik7DQogICAgICAgICAgICAgICAgcmV0dXJuIC1F
-Tk9NRU07DQogICAgICAgIH0NCg0KLi4uDQoNClRoYW5rcy4NClJveQ0K
+Zang Roy-R61911 wrote:
+> 
+>> -----Original Message-----
+>> From: tiejun.chen [mailto:tiejun.chen@windriver.com]
+>> Sent: Monday, October 18, 2010 16:56 PM
+>> To: Zang Roy-R61911
+>> Cc: linux-mtd@lists.infradead.org; Wood Scott-B07421; dedekind1@gmail.com; Lan
+>> Chunhe-B25806; linuxppc-dev@ozlabs.org; akpm@linux-foundation.org;
+>> dwmw2@infradead.org; Gala Kumar-B11780
+>> Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common to
+>> elbc devices
+>>
+>> Roy Zang wrote:
+>>> Move Freescale elbc interrupt from nand dirver to elbc driver.
+>>> Then all elbc devices can use the interrupt instead of ONLY nand.
+>>>
+>>> For former nand driver, it had the two functions:
+>>>
+>>> 1. detecting nand flash partitions;
+>>> 2. registering elbc interrupt.
+>>>
+>>> Now, second function is removed to fsl_lbc.c.
+>>>
+>>> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+>>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+>>> Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
+>>> Cc: Wood Scott-B07421 <B07421@freescale.com>
+>>> ---
+>>>
+>>> These two patches are based on the following commits:
+>>> 1.	http://lists.infradead.org/pipermail/linux-mtd/2010-
+>> September/032112.html
+>>> 2.	http://lists.infradead.org/pipermail/linux-mtd/2010-
+>> September/032110.html
+>>> 3.	http://lists.infradead.org/pipermail/linux-mtd/2010-
+>> September/032111.html
+>>> According to Anton's comment, I merge 1 & 2 together and start a new thread.
+>>> Comparing the provided link:
+>>> 1.	Merge 1 & 2 together.
+>>> 2.	Some code style updates
+>>> 3.	Add counter protect for elbc driver remove
+>>> 4.	Rebase to 2.6.36-rc7
+>>>
+>>> Other histories from the links:
+>>> V2: Comparing with v1, according to the feedback, add some decorations.
+>>>
+>>> V3: Comparing with v2:
+>>> 1.	according to the feedback, add some decorations.
+>>> 2.	change of_platform_driver to platform_driver
+>>> 3.	rebase to 2.6.36-rc4
+>>>
+>>> V4: Comparing with v3
+>>> 1.	minor fix from type unsigned int to u32
+>>> 2.	fix platform_driver issue.
+>>> 3.	add mutex for nand probe
+>>>
+>>>  arch/powerpc/Kconfig               |    7 +-
+>>>  arch/powerpc/include/asm/fsl_lbc.h |   33 +++-
+>>>  arch/powerpc/sysdev/fsl_lbc.c      |  229 ++++++++++++++---
+>>>  drivers/mtd/nand/Kconfig           |    1 +
+>>>  drivers/mtd/nand/fsl_elbc_nand.c   |  482 +++++++++++++++------------------
+>> ---
+>>>  5 files changed, 425 insertions(+), 327 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index 631e5a0..44df1ba 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -687,9 +687,12 @@ config 4xx_SOC
+>>>  	bool
+>>>
+>>>  config FSL_LBC
+>>> -	bool
+>>> +	bool "Freescale Local Bus support"
+>>> +	depends on FSL_SOC
+>>>  	help
+>>> -	  Freescale Localbus support
+>>> +	  Enables reporting of errors from the Freescale local bus
+>>> +	  controller.  Also contains some common code used by
+>>> +	  drivers for specific local bus peripherals.
+>>>
+>>>  config FSL_GTM
+>>>  	bool
+>>> diff --git a/arch/powerpc/include/asm/fsl_lbc.h
+>> b/arch/powerpc/include/asm/fsl_lbc.h
+>>> index 1b5a210..0c40c05 100644
+>>> --- a/arch/powerpc/include/asm/fsl_lbc.h
+>>> +++ b/arch/powerpc/include/asm/fsl_lbc.h
+>>> @@ -1,9 +1,10 @@
+>>>  /* Freescale Local Bus Controller
+>>>   *
+>>> - * Copyright (c) 2006-2007 Freescale Semiconductor
+>>> + * Copyright (c) 2006-2007, 2010 Freescale Semiconductor
+>>>   *
+>>>   * Authors: Nick Spence <nick.spence@freescale.com>,
+>>>   *          Scott Wood <scottwood@freescale.com>
+>>> + *          Jack Lan <jack.lan@freescale.com>
+>>>   *
+>>>   * This program is free software; you can redistribute it and/or modify
+>>>   * it under the terms of the GNU General Public License as published by
+>>> @@ -26,6 +27,8 @@
+>>>  #include <linux/compiler.h>
+>>>  #include <linux/types.h>
+>>>  #include <linux/io.h>
+>>> +#include <linux/device.h>
+>>> +#include <linux/spinlock.h>
+>>>
+>>>  struct fsl_lbc_bank {
+>>>  	__be32 br;             /**< Base Register  */
+>>> @@ -125,13 +128,23 @@ struct fsl_lbc_regs {
+>>>  #define LTESR_ATMW 0x00800000
+>>>  #define LTESR_ATMR 0x00400000
+>>>  #define LTESR_CS   0x00080000
+>>> +#define LTESR_UPM  0x00000002
+>>>  #define LTESR_CC   0x00000001
+>>>  #define LTESR_NAND_MASK (LTESR_FCT | LTESR_PAR | LTESR_CC)
+>>> +#define LTESR_MASK      (LTESR_BM | LTESR_FCT | LTESR_PAR | LTESR_WP \
+>>> +			 | LTESR_ATMW | LTESR_ATMR | LTESR_CS | LTESR_UPM \
+>>> +			 | LTESR_CC)
+>>> +#define LTESR_CLEAR	0xFFFFFFFF
+>>> +#define LTECCR_CLEAR	0xFFFFFFFF
+>>> +#define LTESR_STATUS	LTESR_MASK
+>>> +#define LTEIR_ENABLE	LTESR_MASK
+>>> +#define LTEDR_ENABLE	0x00000000
+>>>  	__be32 ltedr;           /**< Transfer Error Disable Register */
+>>>  	__be32 lteir;           /**< Transfer Error Interrupt Register */
+>>>  	__be32 lteatr;          /**< Transfer Error Attributes Register */
+>>>  	__be32 ltear;           /**< Transfer Error Address Register */
+>>> -	u8 res6[0xC];
+>>> +	__be32 lteccr;          /**< Transfer Error ECC Register */
+>>> +	u8 res6[0x8];
+>>>  	__be32 lbcr;            /**< Configuration Register */
+>>>  #define LBCR_LDIS  0x80000000
+>>>  #define LBCR_LDIS_SHIFT    31
+>>> @@ -265,7 +278,23 @@ static inline void fsl_upm_end_pattern(struct fsl_upm
+>> *upm)
+>>>  		cpu_relax();
+>>>  }
+>>>
+>>> +/* overview of the fsl lbc controller */
+>>> +
+>>> +struct fsl_lbc_ctrl {
+>>> +	/* device info */
+>>> +	struct device			*dev;
+>>> +	struct fsl_lbc_regs __iomem	*regs;
+>>> +	int				irq;
+>>> +	wait_queue_head_t		irq_wait;
+>>> +	spinlock_t			lock;
+>>> +	void				*nand;
+>>> +
+>>> +	/* status read from LTESR by irq handler */
+>>> +	unsigned int			irq_status;
+>>> +};
+>>> +
+>>>  extern int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base,
+>>>  			       u32 mar);
+>>> +extern struct fsl_lbc_ctrl *fsl_lbc_ctrl_dev;
+>>>
+>>>  #endif /* __ASM_FSL_LBC_H */
+>>> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+>>> index dceb8d1..4bb0336 100644
+>>> --- a/arch/powerpc/sysdev/fsl_lbc.c
+>>> +++ b/arch/powerpc/sysdev/fsl_lbc.c
+>>> @@ -2,8 +2,11 @@
+>>>   * Freescale LBC and UPM routines.
+>>>   *
+>>>   * Copyright (c) 2007-2008  MontaVista Software, Inc.
+>>> + * Copyright (c) 2010 Freescale Semiconductor
+>>>   *
+>>>   * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> + * Author: Jack Lan <Jack.Lan@freescale.com>
+>>> + * Author: Roy Zang <tie-fei.zang@freescale.com>
+>>>   *
+>>>   * This program is free software; you can redistribute it and/or modify
+>>>   * it under the terms of the GNU General Public License as published by
+>>> @@ -19,39 +22,16 @@
+>>>  #include <linux/types.h>
+>>>  #include <linux/io.h>
+>>>  #include <linux/of.h>
+>>> +#include <linux/slab.h>
+>>> +#include <linux/platform_device.h>
+>>> +#include <linux/interrupt.h>
+>>> +#include <linux/mod_devicetable.h>
+>>>  #include <asm/prom.h>
+>>>  #include <asm/fsl_lbc.h>
+>>>
+>>>  static spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+>>> -static struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+>>> -
+>>> -static char __initdata *compat_lbc[] = {
+>>> -	"fsl,pq2-localbus",
+>>> -	"fsl,pq2pro-localbus",
+>>> -	"fsl,pq3-localbus",
+>>> -	"fsl,elbc",
+>>> -};
+>>> -
+>>> -static int __init fsl_lbc_init(void)
+>>> -{
+>>> -	struct device_node *lbus;
+>>> -	int i;
+>>> -
+>>> -	for (i = 0; i < ARRAY_SIZE(compat_lbc); i++) {
+>>> -		lbus = of_find_compatible_node(NULL, NULL, compat_lbc[i]);
+>>> -		if (lbus)
+>>> -			goto found;
+>>> -	}
+>>> -	return -ENODEV;
+>>> -
+>>> -found:
+>>> -	fsl_lbc_regs = of_iomap(lbus, 0);
+>>> -	of_node_put(lbus);
+>>> -	if (!fsl_lbc_regs)
+>>> -		return -ENOMEM;
+>>> -	return 0;
+>>> -}
+>>> -arch_initcall(fsl_lbc_init);
+>>> +struct fsl_lbc_ctrl *fsl_lbc_ctrl_dev;
+>>> +EXPORT_SYMBOL(fsl_lbc_ctrl_dev);
+>>>
+>>>  /**
+>>>   * fsl_lbc_find - find Localbus bank
+>>> @@ -65,13 +45,15 @@ arch_initcall(fsl_lbc_init);
+>>>  int fsl_lbc_find(phys_addr_t addr_base)
+>>>  {
+>>>  	int i;
+>>> +	struct fsl_lbc_regs __iomem *lbc;
+>>>
+>>> -	if (!fsl_lbc_regs)
+>>> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
+>>>  		return -ENODEV;
+>>>
+>>> -	for (i = 0; i < ARRAY_SIZE(fsl_lbc_regs->bank); i++) {
+>>> -		__be32 br = in_be32(&fsl_lbc_regs->bank[i].br);
+>>> -		__be32 or = in_be32(&fsl_lbc_regs->bank[i].or);
+>>> +	lbc = fsl_lbc_ctrl_dev->regs;
+>>> +	for (i = 0; i < ARRAY_SIZE(lbc->bank); i++) {
+>>> +		__be32 br = in_be32(&lbc->bank[i].br);
+>>> +		__be32 or = in_be32(&lbc->bank[i].or);
+>>>
+>>>  		if (br & BR_V && (br & or & BR_BA) == addr_base)
+>>>  			return i;
+>>> @@ -94,22 +76,27 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm
+>> *upm)
+>>>  {
+>>>  	int bank;
+>>>  	__be32 br;
+>>> +	struct fsl_lbc_regs __iomem *lbc;
+>>>
+>>>  	bank = fsl_lbc_find(addr_base);
+>>>  	if (bank < 0)
+>>>  		return bank;
+>>>
+>>> -	br = in_be32(&fsl_lbc_regs->bank[bank].br);
+>>> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
+>>> +		return -ENODEV;
+>>> +
+>>> +	lbc = fsl_lbc_ctrl_dev->regs;
+>>> +	br = in_be32(&lbc->bank[bank].br);
+>>>
+>>>  	switch (br & BR_MSEL) {
+>>>  	case BR_MS_UPMA:
+>>> -		upm->mxmr = &fsl_lbc_regs->mamr;
+>>> +		upm->mxmr = &lbc->mamr;
+>>>  		break;
+>>>  	case BR_MS_UPMB:
+>>> -		upm->mxmr = &fsl_lbc_regs->mbmr;
+>>> +		upm->mxmr = &lbc->mbmr;
+>>>  		break;
+>>>  	case BR_MS_UPMC:
+>>> -		upm->mxmr = &fsl_lbc_regs->mcmr;
+>>> +		upm->mxmr = &lbc->mcmr;
+>>>  		break;
+>>>  	default:
+>>>  		return -EINVAL;
+>>> @@ -148,9 +135,12 @@ int fsl_upm_run_pattern(struct fsl_upm *upm, void
+>> __iomem *io_base, u32 mar)
+>>>  	int ret = 0;
+>>>  	unsigned long flags;
+>>>
+>>> +	if (!fsl_lbc_ctrl_dev || !fsl_lbc_ctrl_dev->regs)
+>>> +		return -ENODEV;
+>>> +
+>>>  	spin_lock_irqsave(&fsl_lbc_lock, flags);
+>>>
+>>> -	out_be32(&fsl_lbc_regs->mar, mar);
+>>> +	out_be32(&fsl_lbc_ctrl_dev->regs->mar, mar);
+>>>
+>>>  	switch (upm->width) {
+>>>  	case 8:
+>>> @@ -172,3 +162,166 @@ int fsl_upm_run_pattern(struct fsl_upm *upm, void
+>> __iomem *io_base, u32 mar)
+>>>  	return ret;
+>>>  }
+>>>  EXPORT_SYMBOL(fsl_upm_run_pattern);
+>>> +
+>>> +static int __devinit fsl_lbc_ctrl_init(struct fsl_lbc_ctrl *ctrl)
+>>> +{
+>>> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+>>> +
+>>> +	/* clear event registers */
+>>> +	setbits32(&lbc->ltesr, LTESR_CLEAR);
+>>> +	out_be32(&lbc->lteatr, 0);
+>>> +	out_be32(&lbc->ltear, 0);
+>>> +	out_be32(&lbc->lteccr, LTECCR_CLEAR);
+>>> +	out_be32(&lbc->ltedr, LTEDR_ENABLE);
+>>> +
+>>> +	/* Enable interrupts for any detected events */
+>>> +	out_be32(&lbc->lteir, LTEIR_ENABLE);
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +/*
+>>> + * NOTE: This interrupt is used to report localbus events of various kinds,
+>>> + * such as transaction errors on the chipselects.
+>>> + */
+>>> +
+>>> +static irqreturn_t fsl_lbc_ctrl_irq(int irqno, void *data)
+>>> +{
+>>> +	struct fsl_lbc_ctrl *ctrl = data;
+>>> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+>>> +	u32 status;
+>>> +
+>>> +	status = in_be32(&lbc->ltesr);
+>>> +	if (!status)
+>>> +		return IRQ_NONE;
+>>> +
+>>> +	out_be32(&lbc->ltesr, LTESR_CLEAR);
+>>> +	out_be32(&lbc->lteatr, 0);
+>>> +	out_be32(&lbc->ltear, 0);
+>>> +	ctrl->irq_status = status;
+>>> +
+>>> +	if (status & LTESR_BM)
+>>> +		dev_err(ctrl->dev, "Local bus monitor time-out: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +	if (status & LTESR_WP)
+>>> +		dev_err(ctrl->dev, "Write protect error: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +	if (status & LTESR_ATMW)
+>>> +		dev_err(ctrl->dev, "Atomic write error: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +	if (status & LTESR_ATMR)
+>>> +		dev_err(ctrl->dev, "Atomic read error: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +	if (status & LTESR_CS)
+>>> +		dev_err(ctrl->dev, "Chip select error: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +	if (status & LTESR_UPM)
+>>> +		;
+>>> +	if (status & LTESR_FCT) {
+>>> +		dev_err(ctrl->dev, "FCM command time-out: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +		smp_wmb();
+>>> +		wake_up(&ctrl->irq_wait);
+>>> +	}
+>>> +	if (status & LTESR_PAR) {
+>>> +		dev_err(ctrl->dev, "Parity or Uncorrectable ECC error: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +		smp_wmb();
+>>> +		wake_up(&ctrl->irq_wait);
+>>> +	}
+>>> +	if (status & LTESR_CC) {
+>>> +		smp_wmb();
+>>> +		wake_up(&ctrl->irq_wait);
+>>> +	}
+>>> +	if (status & ~LTESR_MASK)
+>>> +		dev_err(ctrl->dev, "Unknown error: "
+>>> +			"LTESR 0x%08X\n", status);
+>>> +	return IRQ_HANDLED;
+>>> +}
+>>> +
+>>> +/*
+>>> + * fsl_lbc_ctrl_probe
+>>> + *
+>>> + * called by device layer when it finds a device matching
+>>> + * one our driver can handled. This code allocates all of
+>>> + * the resources needed for the controller only.  The
+>>> + * resources for the NAND banks themselves are allocated
+>>> + * in the chip probe function.
+>>> +*/
+>>> +
+>>> +static int __devinit fsl_lbc_ctrl_probe(struct platform_device *dev)
+>>> +{
+>>> +	int ret;
+>>> +
+>>> +	if (!dev->dev.of_node) {
+>>> +		dev_err(&dev->dev, "Device OF-Node is NULL");
+>>> +		return -EFAULT;
+>>> +	}
+>>> +
+>>> +	fsl_lbc_ctrl_dev = kzalloc(sizeof(*fsl_lbc_ctrl_dev), GFP_KERNEL);
+>>> +	if (!fsl_lbc_ctrl_dev)
+>>> +		return -ENOMEM;
+>>> +
+>>> +	dev_set_drvdata(&dev->dev, fsl_lbc_ctrl_dev);
+>>> +
+>>> +	spin_lock_init(&fsl_lbc_ctrl_dev->lock);
+>>> +	init_waitqueue_head(&fsl_lbc_ctrl_dev->irq_wait);
+>>> +
+>>> +	fsl_lbc_ctrl_dev->regs = of_iomap(dev->dev.of_node, 0);
+>>> +	if (!fsl_lbc_ctrl_dev->regs) {
+>>> +		dev_err(&dev->dev, "failed to get memory region\n");
+>>> +		ret = -ENODEV;
+>>> +		goto err;
+>> Looks you always iounmap(fsl_lbc_ctrl_dev->regs) on position 'err' but here
+>> of_iomap() is already failed you should skip iounmap() fsl_lbc_ctrl_dev->regs
+>> again. So you should improve that as the following on 'err', or layout 'err'
+>> in
+>> gain.
+>> ------
+>> 	if(fsl_lbc_ctrl_dev->regs)
+>> 		iounmap(fsl_lbc_ctrl_dev->regs);
+>>
+>> Tiejun
+> 
+> You are right!
+> How about
+>  
+>         if (!fsl_lbc_ctrl_dev->regs) {
+>                 dev_err(&dev->dev, "failed to get memory region\n");
+>                 kfree(fsl_lbc_ctrl_dev);
+>                 return -ENOMEM;
+>         }
+
+Although this is a big problem, I prefer to return 'ENXIO' :)
+
+Others are fine to me.
+
+Tiejun
+
+> 
+> ...
+> 
+> Thanks.
+> Roy
