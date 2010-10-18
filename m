@@ -1,33 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 641DFB7112
+Return-Path: <ivo.schenk@delphin.de>
+Received: from smtp.delphin.de (smtp.delphin.de [194.25.251.243])
+	by ozlabs.org (Postfix) with ESMTP id 30D6DB70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Oct 2010 01:31:16 +1100 (EST)
-Received: from hrndva-omtalb.mail.rr.com ([10.128.143.51])
-	by hrndva-qmta04.mail.rr.com with ESMTP
-	id <20101018142614024.ZFSR23474@hrndva-qmta04.mail.rr.com>
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2010 14:26:14 +0000
-Subject: Re: BUG: dead loop in PowerPC hcall tracepoint (Was: [LTP] [PATCH
-	v2] Add ftrace-stress-test to LTP)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-In-Reply-To: <4CBBBCB0.8070406@cn.fujitsu.com>
-References: <4C85A88D.10700@cn.fujitsu.com>
-	<1285689961.11429.12.camel@subratamodak.linux.ibm.com>
-	<1286954486.4893.15.camel@subratamodak.linux.ibm.com>
-	<4CB55FE6.6000604@cn.fujitsu.com> <4CB5615C.4070406@cn.fujitsu.com>
-	<4CB59825.7060504@cn.fujitsu.com>
-	<1286995066.4893.17.camel@subratamodak.linux.ibm.com>
-	<4CBBBCB0.8070406@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 18 Oct 2010 10:25:03 -0400
-Message-ID: <1287411903.16971.275.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: ltp-list@lists.sourceforge.net, Peter Zijlstra <peterz@infradead.org>,
-	linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	subrata@linux.vnet.ibm.com
+	Tue, 19 Oct 2010 02:39:58 +1100 (EST)
+From: "Ivo Schenk" <ivo.schenk@delphin.de>
+To: <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 18 Oct 2010 17:22:39 +0200
+Subject: RE: Parsing DTS file
+Message-ID: <633E34A20E0A3F44B9BF69425312C56B131EDA3CBD@exchangesrv1.aeolus.local>
+References: <201010181413.58302.dargaud@lpsc.in2p3.fr>
+In-Reply-To: <201010181413.58302.dargaud@lpsc.in2p3.fr>
+Content-Type: text/plain;
+	charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,78 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-10-18 at 11:19 +0800, Li Zefan wrote:
+>Hello all,
+>I'm sure there's a standard way of doing this: I'd like to access some =
+info=20
+>from the DTS file from a usermode program (things like address of =
+device,=20
+>etc...)
+>What is the best way to do this ? Write a parser ? Or query the running =
+kernel=20
+>somehow ?
 
-> This is a dead loop:
-> 
-> trace_hcall_entry() -> trace_clock_global() -> trace_hcall_entry() ..
-> 
-> And this is a PPC specific bug. Hope some ppc guys will fix it?
-> Or we kill trace_clock_global() if no one actually uses it..
+Compile your kernel with CONFIG_PROC_DEVICETREE, then you can access all =
+entries via filesystem:
 
-trace_clock_global() is used by many. I use it (and recommend using it)
-on boxes where the TSC is horribly out of sync, and the trace needs
-synchronization between CPUs.
+[root@t:~] # ll /proc/device-tree/
 
-The trace_hcall_entry and exit has wrappers already. Just add recursion
-protection there.
+-r--r--r--  1 root root  4 Oct 18 17:17 #address-cells
+-r--r--r--  1 root root  4 Oct 18 17:17 #size-cells
+dr-xr-xr-x  2 root root  0 Oct 18 17:17 chosen
+-r--r--r--  1 root root 13 Oct 18 17:17 compatible
+dr-xr-xr-x  3 root root  0 Oct 18 17:17 cpus
+-r--r--r--  1 root root 13 Oct 18 17:17 dtb-revision
+-r--r--r--  1 root root  4 Oct 18 17:17 interrupt-parent
+dr-xr-xr-x  8 root root  0 Oct 18 17:17 localbus
+dr-xr-xr-x  2 root root  0 Oct 18 17:17 memory
+-r--r--r--  1 root root  5 Oct 18 17:17 model
+-r--r--r--  1 root root  1 Oct 18 17:17 name
+dr-xr-xr-x  2 root root  0 Oct 18 17:17 pci@f0000d00
+-r--r--r--  1 root root  9 Oct 18 17:17 serialno
+dr-xr-xr-x 32 root root  0 Oct 18 17:17 soc5200@f0000000
 
-Perhaps something like this:
+--=20
+Ivo Schenk
+http://www.delphin.de/
 
-(Not compiled nor ran)
-
-+static DEFINE_PER_CPU(hcall_trace_disable);
-+
- void hcall_tracepoint_regfunc(void)
- {
- 	hcall_tracepoint_refcount++;
- }
-
- void hcall_tracepoint_unregfunc(void)
- {
- 	hcall_tracepoint_refcount--;
- }
-
-+int __trace_disable_check(void)
-+{
-+	if (!hcall_tracepoint_refcount)
-+		return 1;
-+
-+	if (get_cpu_var(hcall_trace_disable)) {
-+		put_cpu_var(hcall_trace_disable);
-+		return 1;
-+	}
-+
-+	__get_cpu_var(hcall_trace_disable)++;
-+
-+	return 0;
-+}
-+
-+void __trace_disable_put(void)
-+{
-+	__get_cpu_var(hcall_trace_disable)--;
-+	put_cpu_var(hcall_trace_disable);
-+}
-+
- void __trace_hcall_entry(unsigned long opcode, unsigned long *args)
- {
-+	int trace_disable;
-+
-+	if (__trace_disable_check())
-+		return;
-+
- 	trace_hcall_entry(opcode, args);
-+	__trace_disable_put();
- }
-
- void __trace_hcall_exit(long opcode, unsigned long retval,
- 			unsigned long *retbuf)
- {
-+	if (__trace_disable_check())
-+		return;
-+
- 	trace_hcall_exit(opcode, retval, retbuf);
-+	__trace_disable_put();
- }
-
--- Steve
+Delphin Technology AG
+Sitz der Gesellschaft: Bergisch Gladbach
+Registergericht: Amtsgericht Koeln, HRB 47544
+Vorstand: Ursula Renner (Vorsitzende), Frank Ringsdorf
+Vorsitzender des Aufsichtsrats: Peter Renner
