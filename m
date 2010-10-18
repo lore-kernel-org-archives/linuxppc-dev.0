@@ -1,35 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9AC67B70D0
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Oct 2010 03:42:22 +1100 (EST)
-Received: from mail47-va3 (localhost.localdomain [127.0.0.1])	by
-	mail47-va3-R.bigfish.com (Postfix) with ESMTP id 2E60A1318212	for
-	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 16:42:18 +0000 (UTC)
-Received: from VA3EHSMHS031.bigfish.com (unknown [10.7.14.252])	by
-	mail47-va3.bigfish.com (Postfix) with ESMTP id CEC0919B805A	for
-	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 16:42:17 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o9IGgFEQ014316	for <linuxppc-dev@ozlabs.org>;
-	Mon, 18 Oct 2010 09:42:15 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o9IGgFKY011281	for <linuxppc-dev@ozlabs.org>;
-	Mon, 18 Oct 2010 11:42:15 -0500 (CDT)
-Date: Mon, 18 Oct 2010 11:42:14 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: tiejun.chen <tiejun.chen@windriver.com>
-Subject: Re: CONFIG_FEC is not good for mpc8xx ethernet?
-Message-ID: <20101018114214.2e72a616@udp111988uds.am.freescale.net>
-In-Reply-To: <4CBC080A.7030005@windriver.com>
-References: <AANLkTikNZ+LD-FZ_vK-R3Rfu7RzRSAL_zT4xbWgYL=8R@mail.gmail.com>
-	<4CBC080A.7030005@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <nacc@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7EE8AB70E6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Oct 2010 04:27:35 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e32.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9IHIJ40020281
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2010 11:18:19 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9IHRFlO145522
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2010 11:27:15 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o9IHREc0006826
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2010 11:27:15 -0600
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: nacc@us.ibm.com
+Subject: [PATCH 3/7] ppc/pasemi: clean up pasemi iommu table initializations
+Date: Mon, 18 Oct 2010 10:27:00 -0700
+Message-Id: <1287422825-14999-4-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1287422825-14999-1-git-send-email-nacc@us.ibm.com>
+References: <1287422825-14999-1-git-send-email-nacc@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, miltonm@bga.com,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Olof Johansson <olof@lixom.net>, Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +36,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 18 Oct 2010 16:40:42 +0800
-"tiejun.chen" <tiejun.chen@windriver.com> wrote:
+No need for empty helpers with iommu off, the ppc_md hooks are optional.
 
-> Shawn Jin wrote:
-> > Hi,
-> > 
-> > My target is a mpc875 based board and has FEC ethernet. The phy is
-> > AM79C874. I have the following configuration for the network support.
-> > 
-> > CONFIG_PHYLIB=y
-> > CONFIG_NET_ETHERNET=y
-> > CONFIG_MII=y
-> > CONFIG_FS_ENET=y
-> > CONFIG_FS_ENET_HAS_FEC=y
-> > CONFIG_FS_ENET_MDIO_FEC=y
-> > 
-> > However I found that the phy support (AM79C874) is actually in
-> > drivers/net/fec.c which is compiled only when CONFIG_FEC=y. However
-> 
-> The phy driver should not be embedded into the NIC driver in theory.
+The direct_dma_ops are the default pci_dma_ops, so no need to set in the
+them iommu off case.
 
-Right, those are handled by drivers/net/phy/.
+No need to set the device tree device_node pci node iommu pointer, its
+only used for dlpar remove.
 
-> I think you should include the phy driver, mdio-bitbang.c, which should be
-> support AMD79C874.
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Acked-by: Olof Johansson <olof@lixom.net>
+---
+ arch/powerpc/platforms/pasemi/iommu.c |   19 +------------------
+ 1 files changed, 1 insertions(+), 18 deletions(-)
 
-On MPC8xx you want drivers/net/fs_enet/mii-fec.c.  This is just the
-MDIO driver; it doesn't handle any particular PHY.  I don't know if
-there is a driver specifically for AM79C874, though the generic PHY
-support may be good enough.
-
--Scott
+diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
+index 1f9fb2c..14943ef 100644
+--- a/arch/powerpc/platforms/pasemi/iommu.c
++++ b/arch/powerpc/platforms/pasemi/iommu.c
+@@ -156,20 +156,12 @@ static void iommu_table_iobmap_setup(void)
+ 
+ static void pci_dma_bus_setup_pasemi(struct pci_bus *bus)
+ {
+-	struct device_node *dn;
+-
+ 	pr_debug("pci_dma_bus_setup, bus %p, bus->self %p\n", bus, bus->self);
+ 
+ 	if (!iommu_table_iobmap_inited) {
+ 		iommu_table_iobmap_inited = 1;
+ 		iommu_table_iobmap_setup();
+ 	}
+-
+-	dn = pci_bus_to_OF_node(bus);
+-
+-	if (dn)
+-		PCI_DN(dn)->iommu_table = &iommu_table_iobmap;
+-
+ }
+ 
+ 
+@@ -192,9 +184,6 @@ static void pci_dma_dev_setup_pasemi(struct pci_dev *dev)
+ 	set_iommu_table_base(&dev->dev, &iommu_table_iobmap);
+ }
+ 
+-static void pci_dma_bus_setup_null(struct pci_bus *b) { }
+-static void pci_dma_dev_setup_null(struct pci_dev *d) { }
+-
+ int __init iob_init(struct device_node *dn)
+ {
+ 	unsigned long tmp;
+@@ -251,14 +240,8 @@ void __init iommu_init_early_pasemi(void)
+ 	iommu_off = of_chosen &&
+ 			of_get_property(of_chosen, "linux,iommu-off", NULL);
+ #endif
+-	if (iommu_off) {
+-		/* Direct I/O, IOMMU off */
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_null;
+-		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_null;
+-		set_pci_dma_ops(&dma_direct_ops);
+-
++	if (iommu_off)
+ 		return;
+-	}
+ 
+ 	iob_init(NULL);
+ 
+-- 
+1.7.1
