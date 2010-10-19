@@ -1,19 +1,22 @@
-Return-Path: <pacman@kosh.dhis.org>
-Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
-	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id A2F3C1007D2
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00E07B6EEE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Oct 2010 05:10:23 +1100 (EST)
-Message-ID: <20101019181021.22456.qmail@kosh.dhis.org>
-From: pacman@kosh.dhis.org
+	Wed, 20 Oct 2010 07:48:27 +1100 (EST)
+Message-ID: <56111.84.105.60.153.1287521237.squirrel@gate.crashing.org>
+In-Reply-To: <20101019181021.22456.qmail@kosh.dhis.org>
+References: <20101019181021.22456.qmail@kosh.dhis.org>
+Date: Tue, 19 Oct 2010 22:47:17 +0200 (CEST)
 Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
-To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
-Date: Tue, 19 Oct 2010 13:10:21 -0500 (GMT+5)
-In-Reply-To: <1287483410.2341.66.camel@pasglop>
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: pacman@kosh.dhis.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;charset=iso-8859-1
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
-> > 
-> > I thought of that, but as far as I can tell, this CPU doesn't have DABR.
-> 
-> AFAIK, the 7447 is just a derivative of the 7450 design which -does-
-> have a DABR ... Unless it's broken :-)
+> I made a new discovery.
 
-Hmm. gdb resorts to single-stepping when I set a watchpoint while debugging
-some userspace program, which I assumed was caused by lack of hardware
-watchpoint support. But that's not important right now.
+And this nails it :-)
 
-I made a new discovery. During a test boot while looking at the usual symptom
-of a corrupted page cache, I run md5sum /sbin/e2fsck twice and got 2
-different results, neither one of them correct. The third time, yet another
-different result. A few dozen more times, a few dozen more unique results. I
-had somehow managed to get a usable interactive shell while corruption was
-ongoing.
+> So then I ran
+>   dd if=/dev/mem bs=4 count=1 skip=$((0xfc5c080/4)) | od -t x4
+> a few times very fast, plucking the first affected word directly out of
+> memory by its physical address. The result:
+>
+> The low 16 bits are always zero as before. The high 16 bits are a counter,
+> being incremented at about 1000Hz (as close as I could measure with a
+> crude
+> shell script. 1024Hz would also be within the margin of error). And it's
+> little-endian.
 
-So then I ran
-  dd if=/dev/mem bs=4 count=1 skip=$((0xfc5c080/4)) | od -t x4
-a few times very fast, plucking the first affected word directly out of
-memory by its physical address. The result:
+> So what type of driver, firmware, or hardware bug puts a 16-bit 1000Hz
+> timer
+> in memory, and does it in little-endian instead of the CPU's native byte
+> order? And why does it stop doing it some time during the early init
+> scripts,
+> shortly after the root filesystem fsck?
 
-The low 16 bits are always zero as before. The high 16 bits are a counter,
-being incremented at about 1000Hz (as close as I could measure with a crude
-shell script. 1024Hz would also be within the margin of error). And it's
-little-endian.
+It looks like it is the frame counter in an USB OHCI HCCA.
+16-bit, 1kHz update, offset x'80 in a page.
 
-While I was watching this happen, there were only 5 or 6 userspace processes
-running, and 3 of them were shells. So I doubt that anything in userspace was
-doing it. It went on for a few minutes before I exited the interactive shell
-and allowed the boot to continue, while keeping an extra shell running on
-tty2 to continue making observations. It stopped incrementing almost
-immediately.
+So either the kernel forgot to call quiesce on it, or the firmware
+doesn't implement that, or the firmware messed up some other way.
 
-So what type of driver, firmware, or hardware bug puts a 16-bit 1000Hz timer
-in memory, and does it in little-endian instead of the CPU's native byte
-order? And why does it stop doing it some time during the early init scripts,
-shortly after the root filesystem fsck?
 
-I have not yet attempted to repeat the experiment. If it is repeatable, I'll
-probe more deeply into those init scripts later. I'm looking hard at
-/etc/rcS.d/S11hwclock.sh
-
--- 
-Alan Curry
+Segher
