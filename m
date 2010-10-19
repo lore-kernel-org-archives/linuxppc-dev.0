@@ -1,20 +1,40 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 57ADDB70AF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Oct 2010 15:56:46 +1100 (EST)
-Date: Tue, 19 Oct 2010 15:56:44 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: linux-next: manual merge of the tip tree with the powerpc tree
-Message-Id: <20101019155644.ebd2d802.sfr@canb.auug.org.au>
-In-Reply-To: <20101019154849.126a736a.sfr@canb.auug.org.au>
-References: <20101019154849.126a736a.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <R61911@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9E146B70D5
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Oct 2010 17:38:06 +1100 (EST)
+Received: from mail134-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail134-tx2-R.bigfish.com (Postfix) with ESMTP id B19334801C6	for
+	<linuxppc-dev@ozlabs.org>; Tue, 19 Oct 2010 06:37:48 +0000 (UTC)
+Received: from TX2EHSMHS046.bigfish.com (unknown [10.9.14.244])	by
+	mail134-tx2.bigfish.com (Postfix) with ESMTP id 8E50EA78046	for
+	<linuxppc-dev@ozlabs.org>; Tue, 19 Oct 2010 06:37:48 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o9J6bk6J020255	for
+	<linuxppc-dev@ozlabs.org>; Mon, 18 Oct 2010 23:37:46 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP
+	id o9J6r5MO029827	for <linuxppc-dev@ozlabs.org>;
+	Tue, 19 Oct 2010 01:53:06 -0500 (CDT)
+Subject: RE: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common to
+	elbc	devices
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 19 Oct 2010 14:37:56 +0800
+Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A2B07BC@zch01exm23.fsl.freescale.net>
+In-Reply-To: <20101018110631.22d6f081@udp111988uds.am.freescale.net>
+References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com><4CBC0B95.9010300@windriver.com>
+	<20101018110631.22d6f081@udp111988uds.am.freescale.net>
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, tiejun.chen
+	<tiejun.chen@windriver.com>
+Cc: dedekind1@gmail.com, Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +44,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi again,
 
-On Tue, 19 Oct 2010 15:48:49 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> Today's linux-next merge of the tip tree got a conflict in
-> arch/powerpc/kernel/time.c between commit
-> cf9efce0ce3136fa076f53e53154e98455229514 ("powerpc: Account time using
-> timebase rather than PURR") from the powerpc tree and commit
-> e360adbe29241a0194e10e20595360dd7b98a2b3 ("irq_work: Add generic hardirq
-> context callbacks") from the tip tree.
-> 
-> Just context changes.  I fixed it up and can carry the fix as necessary.
-
-I forgot the merge diff, sorry:
-
-diff --cc arch/powerpc/kernel/time.c
-index 644f918,54888eb..0000000
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@@ -578,9 -585,11 +578,9 @@@ void timer_interrupt(struct pt_regs * r
-  	old_regs = set_irq_regs(regs);
-  	irq_enter();
-  
-- 	if (test_perf_event_pending()) {
-- 		clear_perf_event_pending();
-- 		perf_event_do_pending();
- -	calculate_steal_time();
- -
-+ 	if (test_irq_work_pending()) {
-+ 		clear_irq_work_pending();
-+ 		irq_work_run();
-  	}
-  
-  #ifdef CONFIG_PPC_ISERIES
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Tuesday, October 19, 2010 0:07 AM
+> To: tiejun.chen
+> Cc: Zang Roy-R61911; linux-mtd@lists.infradead.org; Wood Scott-B07421;
+> dedekind1@gmail.com; Lan Chunhe-B25806; linuxppc-dev@ozlabs.org;
+akpm@linux-
+> foundation.org; dwmw2@infradead.org; Gala Kumar-B11780
+> Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt
+common to
+> elbc devices
+>=20
+> On Mon, 18 Oct 2010 16:55:49 +0800
+> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
+>=20
+> > Looks you always iounmap(fsl_lbc_ctrl_dev->regs) on position 'err'
+but here
+> > of_iomap() is already failed you should skip iounmap()
+fsl_lbc_ctrl_dev-
+> >regs
+> > again. So you should improve that as the following on 'err', or
+layout 'err'
+> in
+> > gain.
+> > ------
+> > 	if(fsl_lbc_ctrl_dev->regs)
+> > 		iounmap(fsl_lbc_ctrl_dev->regs);
+> >
+>=20
+> It looks like iounmap(NULL) is a no-op, just like kfree(NULL).
+Thanks for the reminder. I will keep original post, if there is no more
+comment.
+Roy
