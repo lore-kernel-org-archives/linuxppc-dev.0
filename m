@@ -1,21 +1,18 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E3284B70DD
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Oct 2010 13:00:52 +1100 (EST)
-Message-ID: <4CBCFC5D.3010403@windriver.com>
-Date: Tue, 19 Oct 2010 10:03:09 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: CONFIG_FEC is not good for mpc8xx ethernet?
-References: <AANLkTikNZ+LD-FZ_vK-R3Rfu7RzRSAL_zT4xbWgYL=8R@mail.gmail.com>	<4CBC080A.7030005@windriver.com>
-	<20101018114214.2e72a616@udp111988uds.am.freescale.net>
-In-Reply-To: <20101018114214.2e72a616@udp111988uds.am.freescale.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7EC49B70DC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Oct 2010 15:48:51 +1100 (EST)
+Date: Tue, 19 Oct 2010 15:48:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: manual merge of the tip tree with the powerpc tree
+Message-Id: <20101019154849.126a736a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Mon, 18 Oct 2010 16:40:42 +0800
-> "tiejun.chen" <tiejun.chen@windriver.com> wrote:
-> 
->> Shawn Jin wrote:
->>> Hi,
->>>
->>> My target is a mpc875 based board and has FEC ethernet. The phy is
->>> AM79C874. I have the following configuration for the network support.
->>>
->>> CONFIG_PHYLIB=y
->>> CONFIG_NET_ETHERNET=y
->>> CONFIG_MII=y
->>> CONFIG_FS_ENET=y
->>> CONFIG_FS_ENET_HAS_FEC=y
->>> CONFIG_FS_ENET_MDIO_FEC=y
->>>
->>> However I found that the phy support (AM79C874) is actually in
->>> drivers/net/fec.c which is compiled only when CONFIG_FEC=y. However
->> The phy driver should not be embedded into the NIC driver in theory.
-> 
-> Right, those are handled by drivers/net/phy/.
-> 
->> I think you should include the phy driver, mdio-bitbang.c, which should be
->> support AMD79C874.
-> 
-> On MPC8xx you want drivers/net/fs_enet/mii-fec.c.  This is just the
-> MDIO driver; it doesn't handle any particular PHY.  I don't know if
-> there is a driver specifically for AM79C874, though the generic PHY
-> support may be good enough.
+Hi all,
 
-Maybe.
+Today's linux-next merge of the tip tree got a conflict in
+arch/powerpc/kernel/time.c between commit
+cf9efce0ce3136fa076f53e53154e98455229514 ("powerpc: Account time using
+timebase rather than PURR") from the powerpc tree and commit
+e360adbe29241a0194e10e20595360dd7b98a2b3 ("irq_work: Add generic hardirq
+context callbacks") from the tip tree.
 
-I can found one related patch for supporting PHY AM79C874 on 2.6.15,
-------
-http://lists.ozlabs.org/pipermail/linuxppc-embedded/2005-November/021043.html
-
-But I don't see that on the latest kernel, and also I don't know the history
-completely for that. Maybe its already merged into one generic PHY driver but
-I'm not sure.
-
-Tiejun
-
-> 
-> -Scott
-> 
-> 
+Just context changes.  I fixed it up and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
