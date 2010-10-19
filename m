@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3EBB0B70D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Oct 2010 21:17:32 +1100 (EST)
-Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: pacman@kosh.dhis.org
-In-Reply-To: <20101018213348.10281.qmail@kosh.dhis.org>
-References: <20101018213348.10281.qmail@kosh.dhis.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Oct 2010 21:16:50 +1100
-Message-ID: <1287483410.2341.66.camel@pasglop>
-Mime-Version: 1.0
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id B1276B70D2
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2010 00:19:21 +1100 (EST)
+Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common to
+	elbc devices
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
+Date: Tue, 19 Oct 2010 08:18:30 -0500
+Message-Id: <2D2A6B88-DA17-467D-BB43-919C1CAAB894@kernel.crashing.org>
+References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Cc: B07421@freescale.com, dedekind1@gmail.com, B25806@freescale.com,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org, B11780@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +27,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> > >From there, you might be able to close onto the culprit a bit more, for
-> > example, try using the DABR register to set data access breakpoints
-> > shortly before the corruption spot. AFAIK, On those old 32-bit CPUs, you
-> > can set whether you want it to break on a real or a virtual address.
-> 
-> I thought of that, but as far as I can tell, this CPU doesn't have DABR.
-> /proc/cpuinfo
-> processor	: 0
-> cpu		: 7447/7457
-> clock		: 999.999990MHz
-> revision	: 1.1 (pvr 8002 0101)
-> bogomips	: 66.66
-> timebase	: 33333333
-> platform	: CHRP
-> model		: Pegasos2
-> machine		: CHRP Pegasos2
-> Memory		: 512 MB
+On Oct 18, 2010, at 2:22 AM, Roy Zang wrote:
 
-AFAIK, the 7447 is just a derivative of the 7450 design which -does-
-have a DABR ... Unless it's broken :-)
+> Move Freescale elbc interrupt from nand dirver to elbc driver.
+> Then all elbc devices can use the interrupt instead of ONLY nand.
+>=20
+> For former nand driver, it had the two functions:
+>=20
+> 1. detecting nand flash partitions;
+> 2. registering elbc interrupt.
+>=20
+> Now, second function is removed to fsl_lbc.c.
+>=20
+> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> Cc: Wood Scott-B07421 <B07421@freescale.com>
+> ---
 
-> My next thought was: right after the correct value appears in memory, unmap
-> the page from the kernel and let it Oops when it tries to write there. Then I
-> found out that the kernel is using BATs instead of page tables for its own
-> view of memory. Booting with "nobats" completely changes the memory usage
-> pattern (probably because it's allocating a lot of pages to hold PTEs that it
-> didn't need before)
+Roy, this is a nit, but are these really p4080 specific?  just wondering =
+why the subject is P4080/eLBC:...
 
-Right. And that hides the problem I suppose ?
-
-> > You can also sprinkle tests for the page content through the code if
-> > that doesn't work to try to "close in" on the culprit (for example if
-> > it's a case of stray DMA, like a network driver bug or such).
-> 
-> No network drivers are loaded when this happens.
-
-Ok.
-
-Cheers,
-Ben.
+- k=
