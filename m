@@ -2,21 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 52919B70DE
+	by ozlabs.org (Postfix) with ESMTPS id DD441B70D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Oct 2010 07:59:19 +1100 (EST)
+	Wed, 20 Oct 2010 08:03:57 +1100 (EST)
 Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: pacman@kosh.dhis.org
-In-Reply-To: <20101019181021.22456.qmail@kosh.dhis.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <56111.84.105.60.153.1287521237.squirrel@gate.crashing.org>
 References: <20101019181021.22456.qmail@kosh.dhis.org>
+	<56111.84.105.60.153.1287521237.squirrel@gate.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Oct 2010 07:58:43 +1100
-Message-ID: <1287521923.2198.2.camel@pasglop>
+Date: Wed, 20 Oct 2010 08:02:48 +1100
+Message-ID: <1287522168.2198.5.camel@pasglop>
 Mime-Version: 1.0
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, pacman@kosh.dhis.org,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-10-19 at 13:10 -0500, pacman@kosh.dhis.org wrote:
+On Tue, 2010-10-19 at 22:47 +0200, Segher Boessenkool wrote:
 > 
-> So what type of driver, firmware, or hardware bug puts a 16-bit 1000Hz
-> timer
-> in memory, and does it in little-endian instead of the CPU's native
-> byte
-> order? And why does it stop doing it some time during the early init
-> scripts,
-> shortly after the root filesystem fsck?
+> It looks like it is the frame counter in an USB OHCI HCCA.
+> 16-bit, 1kHz update, offset x'80 in a page.
 > 
-> I have not yet attempted to repeat the experiment. If it is
-> repeatable, I'll
-> probe more deeply into those init scripts later. I'm looking hard at
-> /etc/rcS.d/S11hwclock.sh 
+> So either the kernel forgot to call quiesce on it, or the firmware
+> doesn't implement that, or the firmware messed up some other way.
 
-Stinks of USB...
+I vote for the FW being on crack. Wouldn't be the first time with
+Pegasos.
 
+It's an OHCI or an UHCI in there ?
+
+Can you try in prom_init.c changing the prom_close_stdin() function to
+also close "stdout" ? 
+
+         if (prom_getprop(_prom->chosen, "stdin", &val, sizeof(val)) > 0)
+                 call_prom("close", 1, 0, val);
++        if (prom_getprop(_prom->chosen, "stdout", &val, sizeof(val)) > 0)
++               call_prom("close", 1, 0, val);
+
+See if that makes a difference ?
+
+Last option would be to manually turn the thing off with MMIO in yet-another
+pegasos workaround in prom_init.c.
+
+Cheers,
 Ben.
