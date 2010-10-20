@@ -1,21 +1,17 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler1.mail.xerox.com",
-	Issuer "AAA Certificate Services" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5FFA8B70CB
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 00:07:12 +1100 (EST)
+Return-Path: <pacman@kosh.dhis.org>
+Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
+	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id CAC4CB70DC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 21 Oct 2010 05:33:38 +1100 (EST)
+Message-ID: <20101020183336.1714.qmail@kosh.dhis.org>
+From: pacman@kosh.dhis.org
+Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
+To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
+Date: Wed, 20 Oct 2010 13:33:36 -0500 (GMT+5)
+In-Reply-To: <1287570736.2198.19.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Freescale P2020/ 85xx PCIe: DMA low throughtput
-Date: Wed, 20 Oct 2010 13:49:19 +0100
-Message-ID: <929D3CED81F34E43887A393170D66FB90355C3CA@GBRSUN01MS002.eu.xerox.net>
-In-Reply-To: <4CBEC62E.30900@extricom.com>
-References: <4CBEC62E.30900@extricom.com>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Natalie Shapira" <natalie@extricom.com>, <galak@kernel.crashing.org>,
-	<linuxppc-dev@ozlabs.org>, <leoli@freescale.com>, <zw@zh-kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Hi,=20
->=20
-> I'm working on bring up for a new board based on Freescales p2020.
-> I have a programmable FPGA as a PCIe device with a buffer I can
-> write to and from.
-> I want to test  performence for the PCIe bus.=20
-> I encountered a problem while doing a DMA between the FPGA & DDR.=20
-> The whole buffer  moves  to and from  the device  with out
-> mismatches but with low throughtput.=20
-> The thing is that the buffer divided to many transactions of byte
-> size instead of transferring it in a burst.=20
-> I must mention that even a buffer of word size, divided in to byte
-> transactions by the DMA (the core can read a word so it seems like
-> the DMA fault.
-> I tried to change the latency timer, max latency, min latency and
-> cache line in the configuration space of both sides of the pcie
-> bus. It didn't help.
-> Do you have an idea what can it be?=20
->=20
-> Thanks,
-> Natalie.=20
+Benjamin Herrenschmidt writes:
+> 
+> On Tue, 2010-10-19 at 22:23 -0500, pacman@kosh.dhis.org wrote:
+> > The diff fragment above applied inside prom_close_stdin, but there are
+> > some
+> > prom_printf calls after prom_close_stdin. Calling prom_printf after
+> > closing
+> > stdout sounds like it could be bad. If I moved it down below all the
+> > prom_printf's, it would be after the "quiesce" call. Would that be
+> > acceptable
+> > (or even interesting as an experiment)? Does a close need a quiesce
+> > after it?
+> 
+> Just try :-) "quiesce" is something that afaik only apple ever
+> implemented anyways. It uses hooks inside their OF to shut down all
+> drivers that do bus master (among other HW sanitization tasks).
 
-Assuming the P2020 has the usual 85xx-style DMA engine, you may have
-the Band Width Control cleared to 0. This 4-bit field (BWC) restricts
-the transfer size to 2^BWC bytes, for BWC=3D0,1,..0xa. 0xb-0xe are
-reserved. 0xf disables bandwidth sharing to allow uninterrupted
-transfers from each channel, so if you are using several channels
-one channel can completely lock out other channels. BWC=3D0x8 at reset
-(2^8 =3D 256 bytes). See the P2020 manual for more details.
+I booted a version with a prom_close_stdout after the last prom_debug. It
+didn't have any effect. That 1000Hz clock was still ticking.
 
-BWC is the field with mask 0x0f000000 in the MR (Master Reset)
-register for the channel (0, 1, 2, 3), at offset 0x100, 0x180, 0x200,
-0x280 relative to the base of the DMA controller.
-
-Clive
+-- 
+Alan Curry
