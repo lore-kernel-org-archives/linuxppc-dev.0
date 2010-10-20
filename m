@@ -1,21 +1,42 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EFA41B70E2
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2010 18:44:06 +1100 (EST)
-Message-ID: <4CBE9E50.7010007@windriver.com>
-Date: Wed, 20 Oct 2010 15:46:24 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <R61911@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 08AA1B70A6
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2010 19:33:37 +1100 (EST)
+Received: from mail147-va3 (localhost.localdomain [127.0.0.1])	by
+	mail147-va3-R.bigfish.com (Postfix) with ESMTP id 84F5F199017E	for
+	<linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2010 08:33:32 +0000 (UTC)
+Received: from VA3EHSMHS016.bigfish.com (unknown [10.7.14.247])	by
+	mail147-va3.bigfish.com (Postfix) with ESMTP id 1D98E6004C	for
+	<linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2010 08:33:32 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o9K8Xu3X006351	for <linuxppc-dev@ozlabs.org>;
+	Wed, 20 Oct 2010 01:33:56 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP
+	id o9K8XPBs021099	for <linuxppc-dev@ozlabs.org>;
+	Wed, 20 Oct 2010 03:33:25 -0500 (CDT)
 MIME-Version: 1.0
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: CONFIG_FEC is not good for mpc8xx ethernet?
-References: <AANLkTikNZ+LD-FZ_vK-R3Rfu7RzRSAL_zT4xbWgYL=8R@mail.gmail.com>	<4CBC080A.7030005@windriver.com>	<20101018114214.2e72a616@udp111988uds.am.freescale.net>	<4CBCFC5D.3010403@windriver.com>
-	<AANLkTinN-xOecVynPYxmLoT9HJKFs0iPo3pLXF05Tudv@mail.gmail.com>
-In-Reply-To: <AANLkTinN-xOecVynPYxmLoT9HJKFs0iPo3pLXF05Tudv@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common to
+	elbc devices
+Date: Wed, 20 Oct 2010 16:33:23 +0800
+Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A2B090E@zch01exm23.fsl.freescale.net>
+In-Reply-To: <707F7370-D01B-462F-B896-D7F677AED8EB@kernel.crashing.org>
+References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
+	<2D2A6B88-DA17-467D-BB43-919C1CAAB894@kernel.crashing.org>
+	<3850A844E6A3854C827AC5C0BEC7B60A2B08A5@zch01exm23.fsl.freescale.net>
+	<707F7370-D01B-462F-B896-D7F677AED8EB@kernel.crashing.org>
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
+	Lan Chunhe-B25806 <B25806@freescale.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	akpm@linux-foundation.org, dwmw2@infradead.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +46,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shawn Jin wrote:
->>> On MPC8xx you want drivers/net/fs_enet/mii-fec.c. �This is just the
->>> MDIO driver; it doesn't handle any particular PHY. �I don't know if
->>> there is a driver specifically for AM79C874, though the generic PHY
->>> support may be good enough.
->> Maybe.
->>
->> I can found one related patch for supporting PHY AM79C874 on 2.6.15,
->> ------
->> http://lists.ozlabs.org/pipermail/linuxppc-embedded/2005-November/021043.html
->>
->> But I don't see that on the latest kernel, and also I don't know the history
->> completely for that. Maybe its already merged into one generic PHY driver but
->> I'm not sure.
-> 
-> Thank Scott & Tiejun for valuable information.
-> 
-> The problem for me is that the PHY failed to be probed. The related
-> error messages are shown below. I even tried the patch Tiejun pointed
-> out. But that doesn't help. The phy ID read from the bus was all Fs.
-> 
-> FEC MII Bus: probed
-> mdio_bus fa200e00: error probing PHY at address 0
 
-Is this is all log related to PHY? And are you sure your PHY Address is zero?
 
-Often there are at most 32 PHY devices resided one MDIO bus. So you can dump PHY
-ID to check if there is a PHY firstly. A ID value of 0xffff indicates that the
-address is invalid if I recalled properly.
-
-But I think PHY driver already do the above process on Linux.
-
-So looks MDIO driver cannot compatible for your platform. I recommend you try
-debug mdio driver to access valid PHY ID firstly. Especially where/why this stop
-at address '0'? When you can get a valid PHY ID you can go phy driver.
-
-> 
-> I don't know if AM79C874 requires any special handling. But from the
-> comment in mdiobb_cmd() there seems to be something special.
->         /*
->          * Send a 32 bit preamble ('1's) with an extra '1' bit for good
->          * measure.  The IEEE spec says this is a PHY optional
->          * requirement.  The AMD 79C874 requires one after power up and
->          * one after a MII communications error.  This means that we are
->          * doing more preambles than we need, but it is safer and will be
->          * much more robust.
->          */
-> 
-> If there is any network action in u-boot, e.g., tftp or ping, the PHY
-> can be successfully probed after that. Any hints what went wrong with
-
-On bootstrap the driver should reset MDIO bus/PHY before probing PHY again.
-
-Tiejun
-
-> the PHY?
-> 
-> Thanks,
-> -Shawn.
-> 
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Wednesday, October 20, 2010 14:55 PM
+> To: Zang Roy-R61911
+> Cc: linux-mtd@lists.infradead.org; Wood Scott-B07421;
+dedekind1@gmail.com; Lan
+> Chunhe-B25806; linuxppc-dev@ozlabs.org; akpm@linux-foundation.org;
+> dwmw2@infradead.org; Gala Kumar-B11780
+> Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt
+common to
+> elbc devices
+>=20
+>=20
+> On Oct 20, 2010, at 12:12 AM, Zang Roy-R61911 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Tuesday, October 19, 2010 21:19 PM
+> >> To: Zang Roy-R61911
+> >> Cc: linux-mtd@lists.infradead.org; Wood Scott-B07421;
+> > dedekind1@gmail.com; Lan
+> >> Chunhe-B25806; linuxppc-dev@ozlabs.org; akpm@linux-foundation.org;
+> >> dwmw2@infradead.org; Gala Kumar-B11780
+> >> Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt
+> > common to
+> >> elbc devices
+> >>
+> >>
+> >> On Oct 18, 2010, at 2:22 AM, Roy Zang wrote:
+> >>
+> >>> Move Freescale elbc interrupt from nand dirver to elbc driver.
+> >>> Then all elbc devices can use the interrupt instead of ONLY nand.
+> >>>
+> >>> For former nand driver, it had the two functions:
+> >>>
+> >>> 1. detecting nand flash partitions;
+> >>> 2. registering elbc interrupt.
+> >>>
+> >>> Now, second function is removed to fsl_lbc.c.
+> >>>
+> >>> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+> >>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> >>> Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> >>> Cc: Wood Scott-B07421 <B07421@freescale.com>
+> >>> ---
+> >>
+> >> Roy, this is a nit, but are these really p4080 specific?  just
+> > wondering why
+> >> the subject is P4080/eLBC:...
+> > We start these code in P4080 project. Some customer want to track
+eLBC
+> > error on P4080, but some of the code is limited in nand driver only
+...
+> > That is why P4080/eLBC ...
+> > Roy
+>=20
+> sure, but is anything about these patches p4080 specific?
+No.
+Should I update the subject by a new version.
+Thanks.
+Roy
