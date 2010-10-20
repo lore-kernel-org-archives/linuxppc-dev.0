@@ -1,22 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A6163B70A6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Oct 2010 21:36:33 +1100 (EST)
-Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: pacman@kosh.dhis.org
-In-Reply-To: <20101020032345.5240.qmail@kosh.dhis.org>
-References: <20101020032345.5240.qmail@kosh.dhis.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Oct 2010 21:32:16 +1100
-Message-ID: <1287570736.2198.19.camel@pasglop>
-Mime-Version: 1.0
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <natalie@extricom.com>
+Received: from smtp.extricom.com (smtp.extricom.com [192.114.46.18])
+	by ozlabs.org (Postfix) with SMTP id 3935AB70CB
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2010 21:45:24 +1100 (EST)
+Message-ID: <4CBEC62E.30900@extricom.com>
+Date: Wed, 20 Oct 2010 12:36:30 +0200
+From: Natalie Shapira <natalie@extricom.com>
+MIME-Version: 1.0
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+	leoli@freescale.com, zw@zh-kernel.org
+Subject: Freescale P2020/ 85xx PCIe: DMA low throughtput
+Content-Type: multipart/alternative;
+	boundary="------------030008030101080305010702"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +20,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-10-19 at 22:23 -0500, pacman@kosh.dhis.org wrote:
-> The diff fragment above applied inside prom_close_stdin, but there are
-> some
-> prom_printf calls after prom_close_stdin. Calling prom_printf after
-> closing
-> stdout sounds like it could be bad. If I moved it down below all the
-> prom_printf's, it would be after the "quiesce" call. Would that be
-> acceptable
-> (or even interesting as an experiment)? Does a close need a quiesce
-> after it?
+This is a multi-part message in MIME format.
+--------------030008030101080305010702
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Just try :-) "quiesce" is something that afaik only apple ever
-implemented anyways. It uses hooks inside their OF to shut down all
-drivers that do bus master (among other HW sanitization tasks).
+Hi,
 
-Cheers,
-Ben.
+I'm working on bring up for a new board based on Freescales p2020. I 
+have a programmable FPGA as a PCIe device with a buffer I can write to 
+and from.
+I want to test  performence for the PCIe bus.
+I encountered a problem while doing a DMA between the FPGA & DDR.
+The whole buffer  moves  to and from  the device  with out mismatches 
+but with low throughtput.
+The thing is that the buffer divided to many transactions of byte size 
+instead of transferring it in a burst.
+I must mention that even a buffer of word size, divided in to byte 
+transactions by the DMA (the core can read a word so it seems like the 
+DMA fault.
+I tried to change the latency timer, max latency, min latency and cache 
+line in the configuration space of both sides of the pcie bus. It didn't 
+help.
+Do you have an idea what can it be?
+
+Thanks,
+Natalie.
+
+--------------030008030101080305010702
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Hi, <br>
+<br>
+I'm working on bring up for a new board based on Freescales p2020. I
+have a programmable FPGA
+as a PCIe device with a buffer I can write to and from.<br>
+I want
+to test&nbsp; performence for the PCIe bus. <br>
+I encountered a problem while doing a DMA between the FPGA &amp; DDR. <br>
+The whole buffer&nbsp; moves&nbsp; to and from&nbsp; the device&nbsp; with out mismatches
+but with low <font color="#000000">throughtput.</font> <br>
+The thing is that the buffer divided to many transactions of byte size
+instead of transferring it in a burst. <br>
+I must mention that even a buffer of word size, divided in to byte
+transactions by the DMA (the core can read a word so it seems like the
+DMA fault.<br>
+I tried to change the latency timer, max latency, min latency and cache
+line in the configuration space of both sides of the pcie bus. It
+didn't help.<br>
+Do you have an idea what can it be? <br>
+<br>
+Thanks,<br>
+Natalie.
+</body>
+</html>
+
+--------------030008030101080305010702--
