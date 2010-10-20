@@ -1,17 +1,23 @@
-Return-Path: <pacman@kosh.dhis.org>
-Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
-	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id CAC4CB70DC
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id DCB3BB70B8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Oct 2010 05:33:38 +1100 (EST)
-Message-ID: <20101020183336.1714.qmail@kosh.dhis.org>
-From: pacman@kosh.dhis.org
-Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
-To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
-Date: Wed, 20 Oct 2010 13:33:36 -0500 (GMT+5)
-In-Reply-To: <1287570736.2198.19.camel@pasglop>
+	Thu, 21 Oct 2010 06:45:46 +1100 (EST)
+Received: by yws5 with SMTP id 5so2686531yws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 20 Oct 2010 12:45:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Sender: timur.tabi@gmail.com
+In-Reply-To: <2E0C184B35151B4690232FF6CFE53FE501569473@VIECLEX02.frequentis.frq>
+References: <ActvZb6Wjf+X+L1bSaeyxpan+cSXVQ==>
+	<2E0C184B35151B4690232FF6CFE53FE501569473@VIECLEX02.frequentis.frq>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 20 Oct 2010 14:45:11 -0500
+Message-ID: <AANLkTin7UQQRjQazAVdcjiTyEmwUW5GsZ1Qkv9UOp4cZ@mail.gmail.com>
+Subject: Re: [QUESTION] MPC8343 'internal only' DMA support
+To: KRONSTORFER Horst <Horst.KRONSTORFER@frequentis.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
-> 
-> On Tue, 2010-10-19 at 22:23 -0500, pacman@kosh.dhis.org wrote:
-> > The diff fragment above applied inside prom_close_stdin, but there are
-> > some
-> > prom_printf calls after prom_close_stdin. Calling prom_printf after
-> > closing
-> > stdout sounds like it could be bad. If I moved it down below all the
-> > prom_printf's, it would be after the "quiesce" call. Would that be
-> > acceptable
-> > (or even interesting as an experiment)? Does a close need a quiesce
-> > after it?
-> 
-> Just try :-) "quiesce" is something that afaik only apple ever
-> implemented anyways. It uses hooks inside their OF to shut down all
-> drivers that do bus master (among other HW sanitization tasks).
+On Tue, Oct 19, 2010 at 3:15 AM, KRONSTORFER Horst
+<Horst.KRONSTORFER@frequentis.com> wrote:
+> i assume the mpc8343 dma controllers ability to do internally controlled
+> operations (csb/csb)
+> is _not_ affected by deactivating externally controlled operations via
+> pinmultiplexing in sicrl.
+>
+> am I correct?
 
-I booted a version with a prom_close_stdout after the last prom_debug. It
-didn't have any effect. That 1000Hz clock was still ticking.
+Hmmm... maybe.  In general, if you want an external master for the DMA
+controller, I think you need to enable that via various registers.  So
+if you don't enable external master, you won't have one.
+
+Does that answer your question?
 
 -- 
-Alan Curry
+Timur Tabi
+Linux kernel developer at Freescale
