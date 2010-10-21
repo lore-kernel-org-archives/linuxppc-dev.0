@@ -1,19 +1,35 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id 94013B70DA
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [194.196.100.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BE7E0B70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Oct 2010 08:16:07 +1100 (EST)
-Message-ID: <4CC0AD74.8070800@neli.hopto.org>
-Date: Thu, 21 Oct 2010 23:15:32 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+	Fri, 22 Oct 2010 11:39:37 +1100 (EST)
+Received: from d06nrmr1806.portsmouth.uk.ibm.com
+	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
+	by mtagate3.uk.ibm.com (8.13.1/8.13.1) with ESMTP id o9LLUoMr002808
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2010 21:30:50 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+	[9.149.37.229])
+	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id o9LLUpgm3637484
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2010 22:30:51 +0100
+Received: from d06av05.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av05.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
+	ESMTP id o9LLUoNp017224
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2010 15:30:50 -0600
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+	[9.149.104.171])
+	by d06av05.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with
+	ESMTP id o9LLUoPH017215
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2010 15:30:50 -0600
+Subject: AUTO: Michael Barry is out of the office (returning 01/11/2010)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF8881CEA1.3A60B966-ON802577C3.007620EB-802577C3.007620EB@ie.ibm.com>
+Date: Thu, 21 Oct 2010 22:30:16 +0100
 MIME-Version: 1.0
-To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
-References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +39,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexandre Bounine wrote:
-> 1. Using one storage location common for switches and endpoints eliminates
-> unnecessary device type checks during maintenance access operations.
-> While destination IDs and hop counts have different meaning for endpoints and
-> switches, this does not prevent us from storing them in the primary RIO device
-> structure (rio_dev) for both types.
 
-How can you say this? The two variables have different meanings, this 
-logically implies you can't merge them. So how do you say 'this does not 
-prevent us from ...' without providing a reason?
+I am out of the office until 01/11/2010.
 
-> 2. Convert RIO switch device structures (rio_dev + rio_switch) into single
-> allocation unit. This change is based on the fact that RIO switches are using
-> common RIO device objects anyway. Allocating RIO switch objects as RIO devices
-> with added space for switch information simplifies handling of RIO switch device
-> objects.
 
-I still don't think that's a good idea because the rdev->rswitch pointer 
-can be defined to point to the switch that a given rio_dev is connected 
-to. This is useful for quick lookups. How else can to know to which 
-switch a given device is connected?
 
-Micha
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 74, Issue 107" sent on 21/10/10 20:18:24.
+
+This is the only notification you will receive while this person is away.
