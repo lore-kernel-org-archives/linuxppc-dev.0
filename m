@@ -1,14 +1,25 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B52DFB7125
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 12:07:16 +1100 (EST)
-Date: Wed, 20 Oct 2010 21:00:32 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: NFS boot problems
-Message-ID: <20101020210032.19925617@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <balbi@ti.com>
+Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mailhost.ti.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B8522B70E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 17:22:43 +1100 (EST)
+Date: Thu, 21 Oct 2010 09:10:42 +0300
+From: Felipe Balbi <balbi@ti.com>
+To: Fushen Chen <fchen@apm.com>
+Subject: Re: [PATCH V5 1/9] Add Synopsys DesignWare HS USB OTG Control and
+	Status Register (CSR).
+Message-ID: <20101021061042.GN3958@legolas.emea.dhcp.ti.com>
+References: <12876217721253-git-send-email-fchen@apm.com>
+	<1287621773567-git-send-email-fchen@apm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1287621773567-git-send-email-fchen@apm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+	Mark Miesfeld <mmiesfeld@apm.com>, "gregkh@suse.de" <gregkh@suse.de>
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,38 +29,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anybody else seeing this with 2.6.36?
+Hi,
 
-[  431.260895] Unable to handle kernel paging request for data at address 0x24002082
-[  431.268407] Faulting instruction address: 0xc000f6c0
-[  431.273321] Oops: Kernel access of bad area, sig: 11 [#1]
-[  431.278670] Warp
-[  431.280494] last sysfs file:
-[  431.283447] Modules linked in:
-[  431.286486] NIP: c000f6c0 LR: c02d2338 CTR: 00000000
-[  431.291436] REGS: cf831ea0 TRAP: 0300   Not tainted  (2.6.36-pika+)
-[  431.297680] MSR: 00029000 <EE,ME,CE>  CR: 24084048  XER: 00000000
-[  431.303758] DEAR: 24002082, ESR: 00000000
-[  431.307753] TASK = cf82c000[1] 'swapper' THREAD: cf830000
-[  431.312958] GPR00: 00000000 cf831f50 cf82c000 24002082 363a2f74 24002081 cf81f128 00000120
-[  431.321291] GPR08: 00029000 c03e0000 cf8001a0 c03e1f30 15e6a17f 00000000 0ffa9700 007fff97
-[  431.329624] GPR16: 00400450 00800000 007fff00 0ffa9d3c 00000000 ffffffff c0000020 00000001
-[  431.337957] GPR24: 00000000 c03f0000 00000000 c03bcd8c c03e2390 c03e1ef4 c03e1ee8 c03e2390
-[  431.346487] NIP [c000f6c0] strcmp+0x8/0x24
-[  431.350558] LR [c02d2338] svc_reg_xprt_class+0x50/0xd0
-[  431.355665] Call Trace:
-[  431.358115] [cf831f50] [c00ecbd8] proc_create_data+0x6c/0xcc (unreliable)
-[  431.364883] [cf831f70] [c02c6ce8] svc_init_xprt_sock+0x24/0x34
-[  431.370702] [cf831f80] [c03bce20] init_sunrpc+0x94/0xb0
-[  431.375899] [cf831f90] [c00015d8] do_one_initcall+0x15c/0x1a0
-[  431.381635] [cf831fd0] [c03a0874] kernel_init+0xd8/0x178
-[  431.386921] [cf831ff0] [c000c31c] kernel_thread+0x50/0x6c
-[  431.392296] Instruction dump:
-[  431.395248] 3884ffff 8c050001 2c000000 4082fff8 38a5ffff 8c040001 2c000000 9c050001
-[  431.402973] 4082fff4 4e800020 38a3ffff 3884ffff <8c650001> 2c830000 8c040001 7c601851
-[  431.411405] ---[ end trace 5e5d343531be722e ]---
+On Wed, Oct 20, 2010 at 07:42:44PM -0500, Fushen Chen wrote:
+>Control and Status Register (CSR) are classified as follows:
+> - Core Global Registers
+> - Device Mode Registers
+> - Device Global Registers
+> - Device Endpoint Specific Registers
+> - Host Mode Registers
+> - Host Global Registers
+> - Host Port CSRs
+> - Host Channel Specific Registers
+>
+>Signed-off-by: Fushen Chen <fchen@apm.com>
+>Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+>---
+> drivers/usb/dwc_otg/dwc_otg_regs.h | 3269 ++++++++++++++++++++++++++++++++++++
+> 1 files changed, 3269 insertions(+), 0 deletions(-)
+> create mode 100644 drivers/usb/dwc_otg/dwc_otg_regs.h
+>
+>diff --git a/drivers/usb/dwc_otg/dwc_otg_regs.h b/drivers/usb/dwc_otg/dwc_otg_regs.h
+>new file mode 100644
+>index 0000000..fdc40f9
+>--- /dev/null
+>+++ b/drivers/usb/dwc_otg/dwc_otg_regs.h
+>@@ -0,0 +1,3269 @@
+>+/*
+>+ * DesignWare HS OTG controller driver
+>+ * Copyright (C) 2006 Synopsys, Inc.
+>+ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
+>+ *
+>+ * This program is free software: you can redistribute it and/or
+>+ * modify it under the terms of the GNU General Public License
+>+ * version 2 as published by the Free Software Foundation.
+>+ *
+>+ * This program is distributed in the hope that it will be useful
+>+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>+ * GNU General Public License version 2 for more details.
+>+ *
+>+ * You should have received a copy of the GNU General Public License
+>+ * along with this program; if not, see http://www.gnu.org/licenses
+>+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
+>+ * Suite 500, Boston, MA 02110-1335 USA.
+>+ *
+>+ * Based on Synopsys driver version 2.60a
+>+ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
+>+ *
+>+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+>+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
+>+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+>+ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
+>+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
+>+ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+>+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+>+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
+>+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+>+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+>+ *
+>+ */
+>+
+>+#ifndef __DWC_OTG_REGS_H__
+>+#define __DWC_OTG_REGS_H__
+>+
+>+#include <linux/types.h>
+>+
+>+/*
+>+ * This file contains the data structures for accessing the DWC_otg core
+>+ * registers.
+>+ *
+>+ * The application interfaces with the HS OTG core by reading from and
+>+ * writing to the Control and Status Register (CSR) space through the
+>+ * AHB Slave interface. These registers are 32 bits wide, and the
+>+ * addresses are 32-bit-block aligned.
+>+ * CSRs are classified as follows:
+>+ * - Core Global Registers
+>+ * - Device Mode Registers
+>+ * - Device Global Registers
+>+ * - Device Endpoint Specific Registers
+>+ * - Host Mode Registers
+>+ * - Host Global Registers
+>+ * - Host Port CSRs
+>+ * - Host Channel Specific Registers
+>+ *
+>+ * Only the Core Global registers can be accessed in both Device and
+>+ * Host modes. When the HS OTG core is operating in one mode, either
+>+ * Device or Host, the application must not access registers from the
+>+ * other mode. When the core switches from one mode to another, the
+>+ * registers in the new mode of operation must be reprogrammed as they
+>+ * would be after a power-on reset.
+>+ */
+>+
+>+/*
+>+ * DWC_otg Core registers.  The core_global_regs structure defines the
+>+ * size and relative field offsets for the Core Global registers.
+>+ */
+>+struct core_global_regs {
+>+       /* OTG Control and Status Register.             Offset: 000h */
+>+       u32 gotgctl;
 
-It looks like both xcl->xcl_name and cl->xcl_name are bogus addresses.
+generally we use defines for the register space:
 
-Cheers,
-   Sean
+#define DWC_OTG_CTL		0x0000
+#define DWC_OTG_INT		0x0004
+
+and so on.
+
+>+#if defined(CONFIG_DWC_OTG_REG_LE)
+>+/*
+>+ * This union represents the bit fields of the Core OTG Controland Status
+>+ * Register (GOTGCTL).  Set the bits using the bit fields then write the d32
+>+ * value to the register.
+>+ */
+>+union gotgctl_data {                           /* CONFIG_DWC_OTG_REG_LE */
+>+       u32 d32;
+>+       struct {
+>+               unsigned reserved31_21:11;
+>+               unsigned currmod:1;
+>+               unsigned bsesvld:1;
+>+               unsigned asesvld:1;
+>+               unsigned reserved17:1;
+>+               unsigned conidsts:1;
+>+               unsigned reserved1_12:4;
+>+               unsigned devhnpen:1;
+>+               unsigned hstsethnpen:1;
+>+               unsigned hnpreq:1;
+>+               unsigned hstnegscs:1;
+>+               unsigned reserved07_02:6;
+>+               unsigned sesreq:1;
+>+               unsigned sesreqscs:1;
+>+       } b;
+>+};
+
+these would be defines too:
+
+#define DWC_OTG_CTL_SESREQSCS	(1 << 0)
+#define DWC_OTG_CTL_SESEQ	(1 << 1)
+
+and so on.
+
+-- 
+balbi
