@@ -1,15 +1,19 @@
-Return-Path: <fchen@apm.com>
-Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C28D4B7111
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 12:06:37 +1100 (EST)
-From: Fushen Chen <fchen@apm.com>
-To: linux-usb@vger.kernel.org
-Subject: [PATCH V5 0/9] Add Synopsys DesignWare HS USB OTG driver
-Date: Wed, 20 Oct 2010 18:06:34 -0700
-Message-Id: <12876231942694-git-send-email-fchen@apm.com>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, Fushen Chen <fchen@apm.com>
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D9C80B70FC
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 15:04:05 +1100 (EST)
+Date: Wed, 20 Oct 2010 21:03:00 -0700
+From: Greg KH <greg@kroah.com>
+To: Fushen Chen <fchen@apm.com>
+Subject: Re: [PATCH V5 0/9] Add Synopsys DesignWare HS USB OTG driver
+Message-ID: <20101021040300.GA18448@kroah.com>
+References: <12876231942694-git-send-email-fchen@apm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <12876231942694-git-send-email-fchen@apm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org, gregkh@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,65 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series add Synopsys DesignWare HS USB OTG driver support.
+On Wed, Oct 20, 2010 at 06:06:34PM -0700, Fushen Chen wrote:
+> This patch series add Synopsys DesignWare HS USB OTG driver support.
 
-"PATCH V5" has a new license header from Synopsys and APM 
-Previous versions:
-  1. Addressed comment from Wolfgang Denk to sync with
-     git://git.denx.de/linux-2.6-denx.git.
-  2. Added bug fixes and features from Stefan Roese and Chuck Meade.
-  3. Removed dts file from this pathch per Sergei Shtylyov suggestion.
-     We'll submit a separate patch to PowerPC tree.
-  4. Modified driver to use generic USB OTG enumeration state.
-  5. Move Makefiles to the last patch per David Daney suggestion.
+Unfortunatly this is right at the start of the merge window for me,
+which means it is past the window for anything new to go into .37.  Can
+you resend this after .37-rc1 comes out and I can review it at that
+point in time?
 
-Fushen Chen (9):
-  Add Synopsys DesignWare HS USB OTG Control and Status Register (CSR).
-  Add Synopsys DesignWare HS USB OTG driver framework.
-  Add Synopsys DesignWare HS USB OTG Core Interface Layer (CIL).
-  Add Synopsys DesignWare HS USB OTG HCD function.
-  Add Synopsys DesignWare HS USB OTG HCD interrupt function.
-  Add Synopsys DesignWare HS USB OTG HCD queue function.
-  Add Synopsys DesignWare HS USB OTG PCD function.
-  Add Synopsys DesignWare HS USB OTG PCD interrupt function.
-  Add Synopsys DesignWare HS USB OTG driver kernel configuration and
-    Makefile.
+thanks,
 
- drivers/Makefile                        |    1 +
- drivers/usb/Kconfig                     |    2 +
- drivers/usb/dwc_otg/Kconfig             |   99 +
- drivers/usb/dwc_otg/Makefile            |   19 +
- drivers/usb/dwc_otg/dwc_otg_apmppc.c    |  394 ++++
- drivers/usb/dwc_otg/dwc_otg_cil.c       |  892 +++++++++
- drivers/usb/dwc_otg/dwc_otg_cil.h       | 1181 +++++++++++
- drivers/usb/dwc_otg/dwc_otg_cil_intr.c  |  618 ++++++
- drivers/usb/dwc_otg/dwc_otg_driver.h    |   78 +
- drivers/usb/dwc_otg/dwc_otg_hcd.c       | 2400 +++++++++++++++++++++++
- drivers/usb/dwc_otg/dwc_otg_hcd.h       |  413 ++++
- drivers/usb/dwc_otg/dwc_otg_hcd_intr.c  | 1465 ++++++++++++++
- drivers/usb/dwc_otg/dwc_otg_hcd_queue.c |  697 +++++++
- drivers/usb/dwc_otg/dwc_otg_param.c     |  730 +++++++
- drivers/usb/dwc_otg/dwc_otg_pcd.c       | 1733 ++++++++++++++++
- drivers/usb/dwc_otg/dwc_otg_pcd.h       |  137 ++
- drivers/usb/dwc_otg/dwc_otg_pcd_intr.c  | 2262 +++++++++++++++++++++
- drivers/usb/dwc_otg/dwc_otg_regs.h      | 3269 +++++++++++++++++++++++++++++++
- 18 files changed, 16390 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/dwc_otg/Kconfig
- create mode 100644 drivers/usb/dwc_otg/Makefile
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_apmppc.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil.h
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil_intr.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_driver.h
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd.h
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_queue.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_param.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd.h
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd_intr.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_regs.h
-
--- 
-1.7.3
+greg k-h
