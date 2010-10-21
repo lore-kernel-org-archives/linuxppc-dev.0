@@ -1,21 +1,15 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <fchen@apm.com>
+Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1D59E1007D4
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 09:56:30 +1100 (EST)
-Message-Id: <201010202256.o9KMuPg5009418@imap1.linux-foundation.org>
-Subject: [patch 1/1] powerpc: enable ARCH_DMA_ADDR_T_64BIT with
-	ARCH_PHYS_ADDR_T_64BIT
-To: benh@kernel.crashing.org
-From: akpm@linux-foundation.org
-Date: Wed, 20 Oct 2010 15:56:24 -0700
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2084DB7108
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 11:59:33 +1100 (EST)
+From: Fushen Chen <fchen@apm.com>
+To: linux-usb@vger.kernel.org
+Subject: [PATCH V5 0/9] *** Add Synopsys DesignWare HS USB OTG driver ***
+Date: Wed, 20 Oct 2010 17:42:43 -0700
+Message-Id: <12876217721253-git-send-email-fchen@apm.com>
+Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+This patch series add Synopsys DesignWare HS USB OTG driver support.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+"PATCH V5" has a new license header from Synopsys and APM 
+Previous versions:
+  1. Addressed comment from Wolfgang Denk to sync with
+     git://git.denx.de/linux-2.6-denx.git.
+  2. Added bug fixes and features from Stefan Roese and Chuck Meade.
+  3. Removed dts file from this pathch per Sergei Shtylyov suggestion.
+     We'll submit a separate patch to PowerPC tree.
+  4. Modified driver to use generic USB OTG enumeration state.
+  5. Move Makefiles to the last patch per David Daney suggestion.
 
- arch/powerpc/Kconfig |    3 +++
- 1 file changed, 3 insertions(+)
+Fushen Chen (9):
+  Add Synopsys DesignWare HS USB OTG Control and Status Register (CSR).
+  Add Synopsys DesignWare HS USB OTG driver framework.
+  Add Synopsys DesignWare HS USB OTG Core Interface Layer (CIL).
+  Add Synopsys DesignWare HS USB OTG HCD function.
+  Add Synopsys DesignWare HS USB OTG HCD interrupt function.
+  Add Synopsys DesignWare HS USB OTG HCD queue function.
+  Add Synopsys DesignWare HS USB OTG PCD function.
+  Add Synopsys DesignWare HS USB OTG PCD interrupt function.
+  Add Synopsys DesignWare HS USB OTG driver kernel configuration and
+    Makefile.
 
-diff -puN arch/powerpc/Kconfig~powerpc-enable-arch_dma_addr_t_64bit-with-arch_phys_addr_t_64bit arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig~powerpc-enable-arch_dma_addr_t_64bit-with-arch_phys_addr_t_64bit
-+++ a/arch/powerpc/Kconfig
-@@ -16,6 +16,9 @@ config WORD_SIZE
- config ARCH_PHYS_ADDR_T_64BIT
-        def_bool PPC64 || PHYS_64BIT
- 
-+config ARCH_DMA_ADDR_T_64BIT
-+	def_bool ARCH_PHYS_ADDR_T_64BIT
-+
- config MMU
- 	bool
- 	default y
-_
+ drivers/Makefile                        |    1 +
+ drivers/usb/Kconfig                     |    2 +
+ drivers/usb/dwc_otg/Kconfig             |   99 +
+ drivers/usb/dwc_otg/Makefile            |   19 +
+ drivers/usb/dwc_otg/dwc_otg_apmppc.c    |  394 ++++
+ drivers/usb/dwc_otg/dwc_otg_cil.c       |  892 +++++++++
+ drivers/usb/dwc_otg/dwc_otg_cil.h       | 1181 +++++++++++
+ drivers/usb/dwc_otg/dwc_otg_cil_intr.c  |  618 ++++++
+ drivers/usb/dwc_otg/dwc_otg_driver.h    |   78 +
+ drivers/usb/dwc_otg/dwc_otg_hcd.c       | 2400 +++++++++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_hcd.h       |  413 ++++
+ drivers/usb/dwc_otg/dwc_otg_hcd_intr.c  | 1465 ++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_hcd_queue.c |  697 +++++++
+ drivers/usb/dwc_otg/dwc_otg_param.c     |  730 +++++++
+ drivers/usb/dwc_otg/dwc_otg_pcd.c       | 1733 ++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_pcd.h       |  137 ++
+ drivers/usb/dwc_otg/dwc_otg_pcd_intr.c  | 2262 +++++++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_regs.h      | 3269 +++++++++++++++++++++++++++++++
+ 18 files changed, 16390 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/dwc_otg/Kconfig
+ create mode 100644 drivers/usb/dwc_otg/Makefile
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_apmppc.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil_intr.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_driver.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_queue.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_param.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd_intr.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_regs.h
+
+-- 
+1.7.3
