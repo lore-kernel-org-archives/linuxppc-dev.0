@@ -1,27 +1,18 @@
-Return-Path: <David.Daney@caviumnetworks.com>
-Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
-	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id 96C61B70E9
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 05:04:31 +1100 (EST)
-Message-ID: <4CC07D19.9000404@caviumnetworks.com>
-Date: Thu, 21 Oct 2010 10:49:13 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-MIME-Version: 1.0
-To: Fushen Chen <fchen@apm.com>, linux-usb@vger.kernel.org
-Subject: Re: [PATCH V5 9/9] Add Synopsys DesignWare HS USB OTG driver kernel
-	configuration and Makefile.
-References: <12876217721253-git-send-email-fchen@apm.com>
-	<1287621773567-git-send-email-fchen@apm.com>
-	<1287621774425-git-send-email-fchen@apm.com>
-	<12876217742179-git-send-email-fchen@apm.com>
-	<1287621774191-git-send-email-fchen@apm.com>
-	<12876217753881-git-send-email-fchen@apm.com>
-	<12876217751349-git-send-email-fchen@apm.com>
-	<12876217752399-git-send-email-fchen@apm.com>
-	<1287621776919-git-send-email-fchen@apm.com>
-	<1287621776656-git-send-email-fchen@apm.com>
-In-Reply-To: <1287621776656-git-send-email-fchen@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, Mark Miesfeld <mmiesfeld@apm.com>
+Return-Path: <abounine@tundra.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 43CB6B70E6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Oct 2010 06:18:17 +1100 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
+Date: Thu, 21 Oct 2010 15:10:48 -0400
+Message-Id: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+	Thomas Moll <thomas.moll@sysgo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,185 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/20/2010 05:42 PM, Fushen Chen wrote:
-> Signed-off-by: Fushen Chen<fchen@apm.com>
-> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
-> ---
->   drivers/Makefile             |    1 +
->   drivers/usb/Kconfig          |    2 +
->   drivers/usb/dwc_otg/Kconfig  |   99 ++++++++++++++++++++++++++++++++++++++++++
->   drivers/usb/dwc_otg/Makefile |   19 ++++++++
->   4 files changed, 121 insertions(+), 0 deletions(-)
->   create mode 100644 drivers/usb/dwc_otg/Kconfig
->   create mode 100644 drivers/usb/dwc_otg/Makefile
->
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index a2aea53..36cb201 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -67,6 +67,7 @@ obj-$(CONFIG_UWB)		+= uwb/
->   obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
->   obj-$(CONFIG_USB)		+= usb/
->   obj-$(CONFIG_USB_MUSB_HDRC)	+= usb/musb/
-> +obj-$(CONFIG_USB_DWC_OTG)	+= usb/dwc_otg/
->   obj-$(CONFIG_PCI)		+= usb/
->   obj-$(CONFIG_USB_GADGET)	+= usb/gadget/
->   obj-$(CONFIG_SERIO)		+= input/serio/
-> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-> index 4aa00e6..bbb8b2c 100644
-> --- a/drivers/usb/Kconfig
-> +++ b/drivers/usb/Kconfig
-> @@ -114,6 +114,8 @@ source "drivers/usb/host/Kconfig"
->
->   source "drivers/usb/musb/Kconfig"
->
-> +source "drivers/usb/dwc_otg/Kconfig"
-> +
->   source "drivers/usb/class/Kconfig"
->
->   source "drivers/usb/storage/Kconfig"
-> diff --git a/drivers/usb/dwc_otg/Kconfig b/drivers/usb/dwc_otg/Kconfig
-> new file mode 100644
-> index 0000000..174141d
-> --- /dev/null
-> +++ b/drivers/usb/dwc_otg/Kconfig
-> @@ -0,0 +1,99 @@
-> +#
-> +# USB Dual Role (OTG-ready) Controller Drivers
-> +# for silicon based on Synopsys DesignWare IP
-> +#
-> +
-> +comment "Enable Host or Gadget support for DesignWare OTG controller"
-> +	depends on !USB&&  USB_GADGET=n
-> +
-> +config USB_DWC_OTG
-> +	depends on (USB || USB_GADGET)
-> +	depends on 405EZ || 405EX || 460EX
+The following two patches are produced as result of the discussion
+referenced below:
 
-How about 'depends on HAS_USB_DWC_OTG' then select HAS_USB_DWC_OTG in 
-the Kconfig of the chips that have this device.
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-September/085829.html
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086226.html
 
-That way all the information about a given device is concentrated in its 
-own Kconfig file and this line doesn't grow without limit as new devices 
-add support for this driver.  I know for a fact that there are several 
-other processors supported by the kernel that have this device and they 
-will want to add support once the driver is merged.
+Switches in RapidIO subsystem are presented the same way as endpoints - by
+using rio_dev structure plus an additional switch-specific extension allocated
+separately. This separation between two objects describing a RIO switch device
+also is reflected in the way how RIO address is stored for endpoints and
+switches. Proposed patches are attempt to address issues brought by differences
+in endpoint and switch handling in RapidIO subsystem.  
 
-There are a lot of chip specific config variables below as well. 
-Perhaps they could be rearranged in a similar manner.
+1. Using one storage location common for switches and endpoints eliminates
+unnecessary device type checks during maintenance access operations.
+While destination IDs and hop counts have different meaning for endpoints and
+switches, this does not prevent us from storing them in the primary RIO device
+structure (rio_dev) for both types.
+The logic that assigns destination IDs to RIO devices stays unchanged - as
+before, switches use an associated destination ID because they do not have
+their own physical ID. The hop_count is set to 0xff for endpoints and to the
+actual value for switches. 
 
-David Daney
+2. Convert RIO switch device structures (rio_dev + rio_switch) into single
+allocation unit. This change is based on the fact that RIO switches are using
+common RIO device objects anyway. Allocating RIO switch objects as RIO devices
+with added space for switch information simplifies handling of RIO switch device
+objects.
 
-> +	select NOP_USB_XCEIV
-> +	select USB_OTG_UTILS
-> +	tristate "Synopsys DWC OTG Controller"
-> +	default USB_GADGET
-> +	help
-> +	  This driver provides USB Device Controller support for the
-> +	  Synopsys DesignWare USB OTG Core used on the AppliedMicro PowerPC SoC.
-> +
-> +config DWC_DEBUG
-> +	bool "Enable DWC Debugging"
-> +	depends on USB_DWC_OTG
-> +	default n
-> +	help
-> +	  Enable DWC driver debugging
-> +
-> +choice
-> +	prompt "DWC Mode Selection"
-> +	depends on USB_DWC_OTG
-> +	default DWC_HOST_ONLY
-> +	help
-> +	  Select the DWC Core in OTG, Host only, or Device only mode.
-> +
-> +config DWC_HOST_ONLY
-> +	bool "DWC Host Only Mode" if 405EX || 460EX
-> +
-> +config DWC_OTG_MODE
-> +	bool "DWC OTG Mode" if 405EX || 460EX
-> +	select USB_GADGET_SELECTED
-> +
-> +config DWC_DEVICE_ONLY
-> +	bool "DWC Device Only Mode"
-> +	select USB_GADGET_SELECTED
-> +
-> +endchoice
-> +
-> +# enable peripheral support (including with OTG)
-> +config USB_GADGET_DWC_HDRC
-> +	bool
-> +	depends on USB_DWC_OTG&&  (DWC_DEVICE_ONLY || USB_DWC_OTG)
-> +
-> +choice
-> +	prompt "DWC DMA/SlaveMode Selection"
-> +	depends on USB_DWC_OTG
-> +	default DWC_DMA_MODE
-> +	help
-> +	  Select the DWC DMA or Slave Mode.
-> +	  DMA mode uses the DWC core internal DMA engines.
-> +	  Slave mode uses the processor PIO to tranfer data.
-> +	  In Slave mode, processor's DMA channels can be used if available.
-> +
-> +config DWC_SLAVE
-> +	bool "DWC Slave Mode" if 405EX || 460EX
-> +
-> +config DWC_DMA_MODE
-> +	bool "DWC DMA Mode" if 405EX || (460EX&&  \
-> +		(!USB_EHCI_HCD  || !USB_OHCI_HCD))
-> +
-> +endchoice
-> +
-> +config USB_OTG_WHITELIST
-> +	bool "Rely on OTG Targeted Peripherals List"
-> +	depends on !USB_SUSPEND&&  USB_DWC_OTG
-> +	default n
-> +	help
-> +	  This is the same flag as in ../core/Kconfig.
-> +	  It is here for easy deselect.
-> +
-> +config DWC_OTG_REG_LE
-> +	depends on USB_DWC_OTG
-> +	bool "DWC Little Endian Register" if 405EX || 460EX
-> +	default y
-> +	help
-> +	  OTG core register access is Little-Endian.
-> +
-> +config DWC_OTG_FIFO_LE
-> +	depends on USB_DWC_OTG
-> +	bool "DWC FIFO Little Endian" if 405EZ
-> +	default n
-> +	help
-> +	  OTG core FIFO access is Little-Endian.
-> +
-> +config DWC_LIMITED_XFER_SIZE
-> +	depends on USB_GADGET_DWC_HDRC
-> +	bool "DWC Endpoint Limited Xfer Size" if 405EZ || 405EX || 460EX
-> +	default n if 460EX || 405EX
-> +	default y if 405EZ
-> +	help
-> +	  Bit fields in the Device EP Transfer Size Register is 11 bits.
-> diff --git a/drivers/usb/dwc_otg/Makefile b/drivers/usb/dwc_otg/Makefile
-> new file mode 100644
-> index 0000000..31dd5e8
-> --- /dev/null
-> +++ b/drivers/usb/dwc_otg/Makefile
-> @@ -0,0 +1,19 @@
-> +#
-> +# OTG infrastructure and transceiver drivers
-> +#
-> +obj-$(CONFIG_USB_DWC_OTG)	+= dwc_otg.o
-> +
-> +dwc_otg-objs := dwc_otg_cil.o dwc_otg_cil_intr.o dwc_otg_param.o
-> +
-> +ifeq ($(CONFIG_4xx_SOC),y)
-> +dwc_otg-objs += dwc_otg_apmppc.o
-> +endif
-> +
-> +ifneq ($(CONFIG_DWC_DEVICE_ONLY),y)
-> +dwc_otg-objs += dwc_otg_hcd.o dwc_otg_hcd_intr.o \
-> +		dwc_otg_hcd_queue.o
-> +endif
-> +
-> +ifneq ($(CONFIG_DWC_HOST_ONLY),y)
-> +dwc_otg-objs += dwc_otg_pcd.o dwc_otg_pcd_intr.o
-> +endif
+
+Alexandre Bounine (2):
+  RapidIO: Use common destid storage for endpoints and switches
+  RapidIO: Integrate rio_switch into rio_dev
+
+ drivers/rapidio/rio-scan.c          |  139 ++++++++++++++++++-----------------
+ drivers/rapidio/rio-sysfs.c         |    4 +-
+ drivers/rapidio/rio.c               |   74 ++++++-------------
+ drivers/rapidio/switches/idt_gen2.c |   93 ++++++++---------------
+ drivers/rapidio/switches/idtcps.c   |    6 +-
+ drivers/rapidio/switches/tsi568.c   |   13 +--
+ drivers/rapidio/switches/tsi57x.c   |   56 ++++++--------
+ include/linux/rio.h                 |   90 +++++++++++------------
+ include/linux/rio_drv.h             |   72 +++---------------
+ 9 files changed, 214 insertions(+), 333 deletions(-)
+
+-- 
+1.7.3.1
