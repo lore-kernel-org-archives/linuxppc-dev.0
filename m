@@ -2,16 +2,20 @@ Return-Path: <fchen@apm.com>
 Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A15310089D
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 11:59:39 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 0294F1007EE
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2010 11:59:41 +1100 (EST)
 From: Fushen Chen <fchen@apm.com>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH V5 2/9] Add Synopsys DesignWare HS USB OTG driver framework.
-Date: Wed, 20 Oct 2010 17:42:45 -0700
-Message-Id: <1287621774425-git-send-email-fchen@apm.com>
-In-Reply-To: <1287621773567-git-send-email-fchen@apm.com>
+Subject: [PATCH V5 5/9] Add Synopsys DesignWare HS USB OTG HCD interrupt
+	function.
+Date: Wed, 20 Oct 2010 17:42:48 -0700
+Message-Id: <12876217753881-git-send-email-fchen@apm.com>
+In-Reply-To: <1287621774191-git-send-email-fchen@apm.com>
 References: <12876217721253-git-send-email-fchen@apm.com>
 	<1287621773567-git-send-email-fchen@apm.com>
+	<1287621774425-git-send-email-fchen@apm.com>
+	<12876217742179-git-send-email-fchen@apm.com>
+	<1287621774191-git-send-email-fchen@apm.com>
 Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,26 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Platform probing is in dwc_otg_apmppc.c.
-Driver parameter and parameter checking are in dwc_otg_param.c.
+Implements DWC OTG USB HCD interrupt service routine.
 
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/usb/dwc_otg/dwc_otg_apmppc.c |  394 ++++++++++++++++++
- drivers/usb/dwc_otg/dwc_otg_driver.h |   78 ++++
- drivers/usb/dwc_otg/dwc_otg_param.c  |  730 ++++++++++++++++++++++++++++++++++
- 3 files changed, 1202 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_apmppc.c
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_driver.h
- create mode 100644 drivers/usb/dwc_otg/dwc_otg_param.c
+ drivers/usb/dwc_otg/dwc_otg_hcd_intr.c | 1465 ++++++++++++++++++++++++++++++++
+ 1 files changed, 1465 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
 
-diff --git a/drivers/usb/dwc_otg/dwc_otg_apmppc.c b/drivers/usb/dwc_otg/dwc_otg_apmppc.c
+diff --git a/drivers/usb/dwc_otg/dwc_otg_hcd_intr.c b/drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
 new file mode 100644
-index 0000000..a5c75c4
+index 0000000..c4c8e10
 --- /dev/null
-+++ b/drivers/usb/dwc_otg/dwc_otg_apmppc.c
-@@ -0,0 +1,394 @@
++++ b/drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
+@@ -0,0 +1,1465 @@
 +/*
 + * DesignWare HS OTG controller driver
 + * Copyright (C) 2006 Synopsys, Inc.
@@ -65,6 +64,7 @@ index 0000000..a5c75c4
 + * Based on Synopsys driver version 2.60a
 + * Modified by Mark Miesfeld <mmiesfeld@apm.com>
 + * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
++ * Modified by Chuck Meade <chuck@theptrgroup.com>
 + *
 + * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 + * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
@@ -79,1183 +79,1433 @@ index 0000000..a5c75c4
 + *
 + */
 +
-+/*
-+ * The dwc_otg module provides the initialization and cleanup entry
-+ * points for the dwcotg driver. This module will be dynamically installed
-+ * after Linux is booted using the insmod command. When the module is
-+ * installed, the dwc_otg_driver_init function is called. When the module is
-+ * removed (using rmmod), the dwc_otg_driver_cleanup function is called.
-+ *
-+ * This module also defines a data structure for the dwc_otg driver, which is
-+ * used in conjunction with the standard device structure. These
-+ * structures allow the OTG driver to comply with the standard Linux driver
-+ * model in which devices and drivers are registered with a bus driver. This
-+ * has the benefit that Linux can expose attributes of the driver and device
-+ * in its special sysfs file system. Users can then read or write files in
-+ * this file system to perform diagnostics on the driver components or the
-+ * device.
-+ */
++#include "dwc_otg_hcd.h"
 +
-+#include <linux/of_platform.h>
-+
-+#include "dwc_otg_driver.h"
-+
-+#define DWC_DRIVER_VERSION		"1.05"
-+#define DWC_DRIVER_DESC			"HS OTG USB Controller driver"
-+static const char dwc_driver_name[] = "dwc_otg";
++/* This file contains the implementation of the HCD Interrupt handlers.	*/
++static const int erratum_usb09_patched;
++static const int deferral_on = 1;
++static const int nak_deferral_delay = 8;
++static const int nyet_deferral_delay = 1;
 +
 +/**
-+ * This function is the top level interrupt handler for the Common
-+ * (Device and host modes) interrupts.
++ * Handles the start-of-frame interrupt in host mode. Non-periodic
++ * transactions may be queued to the DWC_otg controller for the current
++ * (micro)frame. Periodic transactions may be queued to the controller for the
++ * next (micro)frame.
 + */
-+static irqreturn_t dwc_otg_common_irq(int _irq, void *dev)
++static int dwc_otg_hcd_handle_sof_intr(struct dwc_hcd *hcd)
 +{
-+	struct dwc_otg_device *dwc_dev = dev;
-+	int retval = IRQ_NONE;
++	union hfnum_data hfnum;
++	struct list_head *qh_entry;
++	struct dwc_qh *qh;
++	enum dwc_transaction_type tr_type;
++	union gintsts_data gintsts = {.d32 = 0};
 +
-+	retval = dwc_otg_handle_common_intr(dwc_dev->core_if);
-+	return IRQ_RETVAL(retval);
-+}
++	hfnum.d32 =
++		dwc_read_reg32(&hcd->core_if->host_if->host_global_regs->hfnum);
 +
-+/**
-+ * This function is the interrupt handler for the OverCurrent condition
-+ * from the external charge pump (if enabled)
-+ */
-+static irqreturn_t dwc_otg_externalchgpump_irq(int _irq, void *dev)
-+{
-+	struct dwc_otg_device *dwc_dev = dev;
++	hcd->frame_number = hfnum.b.frnum;
 +
-+	if (dwc_otg_is_host_mode(dwc_dev->core_if)) {
-+		struct dwc_hcd *dwc_hcd;
-+		union hprt0_data hprt0 = {.d32 = 0};
++	/* Determine whether any periodic QHs should be executed. */
++	qh_entry = hcd->periodic_sched_inactive.next;
++	while (qh_entry != &hcd->periodic_sched_inactive) {
++		qh = list_entry(qh_entry, struct dwc_qh, qh_list_entry);
++		qh_entry = qh_entry->next;
 +
-+		dwc_hcd = dwc_dev->hcd;
-+		spin_lock(&dwc_hcd->lock);
-+		dwc_hcd->flags.b.port_over_current_change = 1;
-+
-+		hprt0.b.prtpwr = 0;
-+		dwc_write_reg32(dwc_dev->core_if->host_if->hprt0,
-+				hprt0.d32);
-+		spin_unlock(&dwc_hcd->lock);
-+	} else {
-+		/* Device mode - This int is n/a for device mode */
-+		printk(KERN_ERR "DeviceMode: OTG OverCurrent Detected\n");
++		/*
++		 * If needed, move QH to the ready list to be executed next
++		 * (micro)frame.
++		 */
++		if (dwc_frame_num_le(qh->sched_frame, hcd->frame_number))
++			list_move(&qh->qh_list_entry,
++				&hcd->periodic_sched_ready);
 +	}
 +
-+	return IRQ_HANDLED;
++	tr_type = dwc_otg_hcd_select_transactions(hcd);
++	if (tr_type != DWC_OTG_TRANSACTION_NONE)
++		dwc_otg_hcd_queue_transactions(hcd, tr_type);
++
++	/* Clear interrupt */
++	gintsts.b.sofintr = 1;
++	dwc_write_reg32(gintsts_reg(hcd), gintsts.d32);
++	return 1;
 +}
 +
 +/**
-+ * This function is called when a device is unregistered with the
-+ * dwc_otg_driver. This happens, for example, when the rmmod command is
-+ * executed. The device may or may not be electrically present. If it is
-+ * present, the driver stops device processing. Any resources used on behalf
-+ * of this device are freed.
++ * Handles the Rx Status Queue Level Interrupt, which indicates that there is at
++ * least one packet in the Rx FIFO.  The packets are moved from the FIFO to
++ * memory if the DWC_otg controller is operating in Slave mode.
 + */
-+static int __devexit dwc_otg_driver_remove(struct platform_device *ofdev)
++static int dwc_otg_hcd_handle_rx_status_q_level_intr(struct dwc_hcd *hcd)
 +{
-+	struct device *dev = &ofdev->dev;
-+	struct dwc_otg_device *dwc_dev = dev_get_drvdata(dev);
++	union host_grxsts_data grxsts;
++	struct dwc_hc *hc = NULL;
 +
-+	/* Memory allocation for dwc_otg_device may have failed. */
-+	if (!dwc_dev)
-+		return 0;
++	grxsts.d32 = dwc_read_reg32(&hcd->core_if->core_global_regs->grxstsp);
++	hc = hcd->hc_ptr_array[grxsts.b.chnum];
 +
-+	usb_nop_xceiv_unregister();
-+
-+	/* Free the IRQ	*/
-+	if (dwc_dev->common_irq_installed)
-+		free_irq(dwc_dev->irq, dwc_dev);
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY))
-+		if (dwc_dev->hcd)
-+			dwc_otg_hcd_remove(dev);
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY))
-+		if (dwc_dev->pcd)
-+			dwc_otg_pcd_remove(dev);
-+
-+	if (dwc_dev->core_if)
-+		dwc_otg_cil_remove(dwc_dev->core_if);
-+
-+	/* Return the memory. */
-+	if (dwc_dev->base)
-+		iounmap(dwc_dev->base);
-+	if (dwc_dev->phys_addr)
-+		release_mem_region(dwc_dev->phys_addr, dwc_dev->base_len);
-+	kfree(dwc_dev);
-+
-+	/* Clear the drvdata pointer. */
-+	dev_set_drvdata(dev, 0);
-+	return 0;
++	/* Packet Status */
++	switch (grxsts.b.pktsts) {
++	case DWC_GRXSTS_PKTSTS_IN:
++		/* Read the data into the host buffer. */
++		if (grxsts.b.bcnt > 0) {
++			dwc_otg_read_packet(hcd->core_if, hc->xfer_buff,
++						grxsts.b.bcnt);
++			/* Update the HC fields for the next packet received. */
++			hc->xfer_count += grxsts.b.bcnt;
++			hc->xfer_buff += grxsts.b.bcnt;
++		}
++	case DWC_GRXSTS_PKTSTS_IN_XFER_COMP:
++	case DWC_GRXSTS_PKTSTS_DATA_TOGGLE_ERR:
++	case DWC_GRXSTS_PKTSTS_CH_HALTED:
++		/* Handled in interrupt, just ignore data */
++		break;
++	default:
++		printk(KERN_ERR "RX_STS_Q Interrupt: Unknown status %d\n",
++					grxsts.b.pktsts);
++		break;
++	}
++	return 1;
 +}
 +
 +/**
-+ * This function is called when an device is bound to a
-+ * dwc_otg_driver. It creates the driver components required to
-+ * control the device (CIL, HCD, and PCD) and it initializes the
-+ * device. The driver components are stored in a dwc_otg_device
-+ * structure. A reference to the dwc_otg_device is saved in the
-+ * device. This allows the driver to access the dwc_otg_device
-+ * structure on subsequent calls to driver methods for this device.
++ * This interrupt occurs when the non-periodic Tx FIFO is half-empty. More
++ * data packets may be written to the FIFO for OUT transfers. More requests
++ * may be written to the non-periodic request queue for IN transfers. This
++ * interrupt is enabled only in Slave mode.
 + */
-+static int __devinit dwc_otg_driver_probe(struct platform_device *ofdev,
-+		const struct of_device_id *match)
++static int dwc_otg_hcd_handle_np_tx_fifo_empty_intr(struct dwc_hcd *hcd)
++{
++	dwc_otg_hcd_queue_transactions(hcd, DWC_OTG_TRANSACTION_NON_PERIODIC);
++	return 1;
++}
++
++/**
++ * This interrupt occurs when the periodic Tx FIFO is half-empty. More data
++ * packets may be written to the FIFO for OUT transfers. More requests may be
++ * written to the periodic request queue for IN transfers. This interrupt is
++ * enabled only in Slave mode.
++ */
++static int dwc_otg_hcd_handle_perio_tx_fifo_empty_intr(struct dwc_hcd *hcd)
++{
++	dwc_otg_hcd_queue_transactions(hcd, DWC_OTG_TRANSACTION_PERIODIC);
++	return 1;
++}
++
++/**
++ * When the port changes to enabled it may be necessary to adjust the phy clock
++ * speed.
++ */
++static int adjusted_phy_clock_speed(struct dwc_hcd *hcd, union hprt0_data hprt0)
++{
++	int adjusted = 0;
++	union gusbcfg_data usbcfg;
++	struct core_params *params = hcd->core_if->core_params;
++	struct core_global_regs *g_regs = hcd->core_if->core_global_regs;
++	struct host_global_regs *h_regs =
++		hcd->core_if->host_if->host_global_regs;
++
++	usbcfg.d32 = dwc_read_reg32(&g_regs->gusbcfg);
++
++	if (hprt0.b.prtspd == DWC_HPRT0_PRTSPD_LOW_SPEED ||
++		hprt0.b.prtspd == DWC_HPRT0_PRTSPD_FULL_SPEED) {
++		/* Low power */
++		union hcfg_data hcfg;
++
++		if (usbcfg.b.phylpwrclksel == 0) {
++			/* Set PHY low power clock select for FS/LS devices */
++			usbcfg.b.phylpwrclksel = 1;
++			dwc_write_reg32(&g_regs->gusbcfg, usbcfg.d32);
++			adjusted = 1;
++		}
++
++		hcfg.d32 = dwc_read_reg32(&h_regs->hcfg);
++		if (hprt0.b.prtspd == DWC_HPRT0_PRTSPD_LOW_SPEED &&
++				params->host_ls_low_power_phy_clk ==
++				DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_6MHZ) {
++			/* 6 MHZ, check for 6 MHZ clock select */
++			if (hcfg.b.fslspclksel != DWC_HCFG_6_MHZ) {
++				hcfg.b.fslspclksel = DWC_HCFG_6_MHZ;
++				dwc_write_reg32(&h_regs->hcfg, hcfg.d32);
++				adjusted = 1;
++			}
++		} else if (hcfg.b.fslspclksel != DWC_HCFG_48_MHZ) {
++			/* 48 MHZ and clock select is not 48 MHZ */
++			hcfg.b.fslspclksel = DWC_HCFG_48_MHZ;
++			dwc_write_reg32(&h_regs->hcfg, hcfg.d32);
++			adjusted = 1;
++		}
++	} else if (usbcfg.b.phylpwrclksel == 1) {
++		usbcfg.b.phylpwrclksel = 0;
++		dwc_write_reg32(&g_regs->gusbcfg, usbcfg.d32);
++		adjusted = 1;
++	}
++	if (adjusted)
++		schedule_work(&hcd->usb_port_reset);
++
++	return adjusted;
++}
++
++/**
++ * Helper function to handle the port enable changed interrupt when the port
++ * becomes enabled.  Checks if we need to adjust the PHY clock speed for low
++ * power and  adjusts it if needed.
++ */
++static void port_enabled(struct dwc_hcd *hcd, union hprt0_data hprt0)
++{
++	if (hcd->core_if->core_params->host_support_fs_ls_low_power)
++		if (!adjusted_phy_clock_speed(hcd, hprt0))
++			hcd->flags.b.port_reset_change = 1;
++}
++
++/**
++ * There are multiple conditions that can cause a port interrupt. This function
++ * determines which interrupt conditions have occurred and handles them
++ * appropriately.
++ */
++static int dwc_otg_hcd_handle_port_intr(struct dwc_hcd *hcd)
 +{
 +	int retval = 0;
-+	struct dwc_otg_device *dwc_dev;
-+	struct device *dev = &ofdev->dev;
-+	struct resource res;
-+	u32 *gusbcfg_addr;
-+	union gusbcfg_data usbcfg = {.d32 = 0};
-+	u32 cp_irq;
++	union hprt0_data hprt0;
++	union hprt0_data hprt0_modify;
 +
-+	dev_dbg(dev, "dwc_otg_driver_probe(%p)\n", dev);
-+
-+	dwc_dev = kzalloc(sizeof(*dwc_dev), GFP_KERNEL);
-+	if (!dwc_dev) {
-+		dev_err(dev, "kmalloc of dwc_otg_device failed\n");
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+
-+	/* Retrieve the memory and IRQ resources. */
-+	dwc_dev->irq = irq_of_parse_and_map(ofdev->dev.of_node, 0);
-+	if (dwc_dev->irq == NO_IRQ) {
-+		dev_err(dev, "no device irq\n");
-+		retval = -ENODEV;
-+		goto fail;
-+	}
-+	dev_dbg(dev, "OTG - device irq: %d\n", dwc_dev->irq);
-+
-+	if (of_address_to_resource(ofdev->dev.of_node, 0, &res)) {
-+		printk(KERN_ERR "%s: Can't get USB-OTG register address\n",
-+			__func__);
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	dev_dbg(dev, "OTG - ioresource_mem start0x%08x: end:0x%08x\n",
-+			(u32)res.start, (u32)res.end);
-+
-+	dwc_dev->phys_addr = res.start;
-+	dwc_dev->base_len = res.end - res.start + 1;
-+	if (!request_mem_region(dwc_dev->phys_addr,
-+					dwc_dev->base_len,
-+					dwc_driver_name)) {
-+		dev_err(dev, "request_mem_region failed\n");
-+		retval = -EBUSY;
-+		goto fail;
-+	}
-+
-+	/* Map the DWC_otg Core memory into virtual address space. */
-+	dwc_dev->base = ioremap(dwc_dev->phys_addr,
-+					dwc_dev->base_len);
-+	if (!dwc_dev->base) {
-+		dev_err(dev, "ioremap() failed\n");
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	dev_dbg(dev, "mapped base=0x%08x\n", (unsigned)dwc_dev->base);
++	hprt0.d32 = dwc_read_reg32(hcd->core_if->host_if->hprt0);
++	hprt0_modify.d32 = dwc_read_reg32(hcd->core_if->host_if->hprt0);
 +
 +	/*
-+	 * Initialize driver data to point to the global DWC_otg
-+	 * Device structure.
++	 * Clear appropriate bits in HPRT0 to clear the interrupt bit in
++	 * GINTSTS
 +	 */
-+	dev_set_drvdata(dev, dwc_dev);
++	hprt0_modify.b.prtena = 0;
++	hprt0_modify.b.prtconndet = 0;
++	hprt0_modify.b.prtenchng = 0;
++	hprt0_modify.b.prtovrcurrchng = 0;
 +
-+	dev_dbg(dev, "dwc_dev=0x%p\n", dwc_dev);
-+	dwc_dev->core_if =
-+		dwc_otg_cil_init(dwc_dev->base, &dwc_otg_module_params);
-+	if (!dwc_dev->core_if) {
-+		dev_err(dev, "CIL initialization failed!\n");
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	usb_nop_xceiv_register();
-+	dwc_dev->core_if->xceiv = otg_get_transceiver();
-+	if (!dwc_dev->core_if->xceiv) {
-+		retval = -ENODEV;
-+		goto fail;
-+	}
-+	dwc_set_feature(dwc_dev->core_if);
++	/* Port connect detected interrupt */
++	if (hprt0.b.prtconndet) {
++		/* Set the status flags and clear interrupt*/
++		hcd->flags.b.port_connect_status_change = 1;
++		hcd->flags.b.port_connect_status = 1;
++		hprt0_modify.b.prtconndet = 1;
 +
-+	gusbcfg_addr = &dwc_dev->core_if->core_global_regs->gusbcfg;
++		/* B-Device has connected, Delete the connection timer. */
++		del_timer_sync(&hcd->conn_timer);
 +
-+	/*
-+	 * Validate parameter values.
-+	 */
-+	if (check_parameters(dwc_dev->core_if)) {
-+		retval = -EINVAL;
-+		goto fail;
++		/*
++		 * The Hub driver asserts a reset when it sees port connect
++		 * status change flag
++		 */
++		retval |= 1;
 +	}
 +
-+	/* Added for PLB DMA phys virt mapping */
-+	dwc_dev->core_if->phys_addr = dwc_dev->phys_addr;
++	/* Port enable changed interrupt */
++	if (hprt0.b.prtenchng) {
++		/* Set the internal flag if the port was disabled */
++		if (hprt0.b.prtena)
++			port_enabled(hcd, hprt0);
++		else
++			hcd->flags.b.port_enable_change = 1;
 +
-+	/*
-+	 * Disable the global interrupt until all the interrupt
-+	 * handlers are installed.
-+	 */
-+	dwc_otg_disable_global_interrupts(dwc_dev->core_if);
-+
-+	/*
-+	 * Install the interrupt handler for the common interrupts before
-+	 * enabling common interrupts in core_init below.
-+	 */
-+	retval = request_irq(dwc_dev->irq, dwc_otg_common_irq,
-+			IRQF_SHARED, "dwc_otg", dwc_dev);
-+	if (retval) {
-+		printk(KERN_ERR "request of irq%d failed retval: %d\n",
-+				dwc_dev->irq, retval);
-+		retval = -EBUSY;
-+		goto fail;
-+	} else {
-+		dwc_dev->common_irq_installed = 1;
++		/* Clear the interrupt */
++		hprt0_modify.b.prtenchng = 1;
++		retval |= 1;
 +	}
 +
-+	/* Initialize the DWC_otg core.	*/
-+	dwc_otg_core_init(dwc_dev->core_if);
++	/* Overcurrent change interrupt	*/
++	if (hprt0.b.prtovrcurrchng) {
++		hcd->flags.b.port_over_current_change = 1;
++		hprt0_modify.b.prtovrcurrchng = 1;
++		retval |= 1;
++	}
 +
-+	/* configure chargepump interrupt */
-+	cp_irq = irq_of_parse_and_map(ofdev->dev.of_node, 3);
-+	if (cp_irq) {
-+		retval = request_irq(cp_irq, dwc_otg_externalchgpump_irq,
-+				IRQF_SHARED, "dwc_otg_ext_chg_pump", dwc_dev);
-+		if (retval) {
-+			printk(KERN_ERR "request of irq failed retval: %d\n",
-+				retval);
-+			retval = -EBUSY;
-+			goto fail;
++	/* Clear the port interrupts */
++	dwc_write_reg32(hcd->core_if->host_if->hprt0, hprt0_modify.d32);
++	return retval;
++}
++
++/**
++ * Gets the actual length of a transfer after the transfer halts. halt_status
++ * holds the reason for the halt.
++ *
++ * For IN transfers where halt_status is DWC_OTG_HC_XFER_COMPLETE, _short_read
++ * is set to 1 upon return if less than the requested number of bytes were
++ * transferred. Otherwise, _short_read is set to 0 upon return. _short_read may
++ * also be NULL on entry, in which case it remains unchanged.
++ */
++static u32 get_actual_xfer_length(struct dwc_hc *hc, struct dwc_hc_regs *regs,
++			struct dwc_qtd *qtd, enum dwc_halt_status halt_status,
++			int *_short_read)
++{
++	union hctsiz_data hctsiz;
++	u32 length;
++
++	if (_short_read)
++		*_short_read = 0;
++
++	hctsiz.d32 = dwc_read_reg32(&regs->hctsiz);
++	if (halt_status == DWC_OTG_HC_XFER_COMPLETE) {
++		if (hc->ep_is_in) {
++			length = hc->xfer_len - hctsiz.b.xfersize;
++			if (_short_read)
++				*_short_read = (hctsiz.b.xfersize != 0);
++		} else if (hc->qh->do_split) {
++			length = qtd->ssplit_out_xfer_count;
 +		} else {
-+			printk(KERN_INFO "%s: ExtChgPump Detection "
-+					"IRQ registered\n", dwc_driver_name);
++			length = hc->xfer_len;
 +		}
++	} else {
++		/*
++		 * Must use the hctsiz.pktcnt field to determine how much data
++		 * has been transferred. This field reflects the number of
++		 * packets that have been transferred via the USB. This is
++		 * always an integral number of packets if the transfer was
++		 * halted before its normal completion. (Can't use the
++		 * hctsiz.xfersize field because that reflects the number of
++		 * bytes transferred via the AHB, not the USB).
++		 */
++		length = (hc->start_pkt_count - hctsiz.b.pktcnt) *
++				hc->max_packet;
++	}
++	return length;
++}
++
++/**
++ * Updates the state of the URB after a Transfer Complete interrupt on the
++ * host channel. Updates the actual_length field of the URB based on the
++ * number of bytes transferred via the host channel. Sets the URB status
++ * if the data transfer is finished.
++ */
++static int update_urb_state_xfer_comp(struct dwc_hc *hc,
++			struct dwc_hc_regs *regs, struct urb *urb,
++			struct dwc_qtd *qtd, int *status)
++{
++	int xfer_done = 0;
++	int short_read = 0;
++
++	urb->actual_length += get_actual_xfer_length(hc, regs, qtd,
++			DWC_OTG_HC_XFER_COMPLETE, &short_read);
++
++	if (short_read || urb->actual_length == urb->transfer_buffer_length) {
++		xfer_done = 1;
++		if (short_read && (urb->transfer_flags & URB_SHORT_NOT_OK))
++			*status = -EREMOTEIO;
++		else
++			*status = 0;
++	}
++	return xfer_done;
++}
++
++/*
++ * Save the starting data toggle for the next transfer. The data toggle is
++ * saved in the QH for non-control transfers and it's saved in the QTD for
++ * control transfers.
++ */
++static void save_data_toggle(struct dwc_hc *hc, struct dwc_hc_regs *regs,
++				struct dwc_qtd *qtd)
++{
++	union hctsiz_data hctsiz;
++	hctsiz.d32 = dwc_read_reg32(&regs->hctsiz);
++
++	if (hc->ep_type != DWC_OTG_EP_TYPE_CONTROL) {
++		struct dwc_qh *qh = hc->qh;
++		if (hctsiz.b.pid == DWC_HCTSIZ_DATA0)
++			qh->data_toggle = DWC_OTG_HC_PID_DATA0;
++		else
++			qh->data_toggle = DWC_OTG_HC_PID_DATA1;
++	} else {
++		if (hctsiz.b.pid == DWC_HCTSIZ_DATA0)
++			qtd->data_toggle = DWC_OTG_HC_PID_DATA0;
++		else
++			qtd->data_toggle = DWC_OTG_HC_PID_DATA1;
++	}
++}
++
++/**
++ * Frees the first QTD in the QH's list if free_qtd is 1. For non-periodic
++ * QHs, removes the QH from the active non-periodic schedule. If any QTDs are
++ * still linked to the QH, the QH is added to the end of the inactive
++ * non-periodic schedule. For periodic QHs, removes the QH from the periodic
++ * schedule if no more QTDs are linked to the QH.
++ */
++static void deactivate_qh(struct dwc_hcd *hcd, struct dwc_qh *qh, int free_qtd)
++{
++	int continue_split = 0;
++	struct dwc_qtd *qtd;
++
++	qtd = list_entry(qh->qtd_list.next, struct dwc_qtd, qtd_list_entry);
++	if (qtd->complete_split)
++		continue_split = 1;
++	else if (qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_MID ||
++			qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_END)
++		continue_split = 1;
++
++	if (free_qtd) {
++		dwc_otg_hcd_qtd_remove(qtd);
++		continue_split = 0;
 +	}
 +
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
-+		/* Initialize the PCD */
-+		retval = dwc_otg_pcd_init(dev);
-+		if (retval) {
-+			printk(KERN_ERR "dwc_otg_pcd_init failed\n");
-+			dwc_dev->pcd = NULL;
-+			goto fail;
-+		}
++	qh->channel = NULL;
++	qh->qtd_in_process = NULL;
++	dwc_otg_hcd_qh_deactivate(hcd, qh, continue_split);
++}
++
++/**
++ * Updates the state of an Isochronous URB when the transfer is stopped for
++ * any reason. The fields of the current entry in the frame descriptor array
++ * are set based on the transfer state and the input status. Completes the
++ * Isochronous URB if all the URB frames have been completed.
++ */
++static enum dwc_halt_status update_isoc_urb_state(struct dwc_hcd *hcd,
++		struct dwc_hc *hc, struct dwc_hc_regs *regs,
++		struct dwc_qtd *qtd, enum dwc_halt_status status)
++{
++	struct urb *urb = qtd->urb;
++	enum dwc_halt_status ret_val = status;
++	struct usb_iso_packet_descriptor *frame_desc;
++	frame_desc = &urb->iso_frame_desc[qtd->isoc_frame_index];
++
++	switch (status) {
++	case DWC_OTG_HC_XFER_COMPLETE:
++		frame_desc->status = 0;
++		frame_desc->actual_length =
++			get_actual_xfer_length(hc, regs, qtd, status, NULL);
++		break;
++	case DWC_OTG_HC_XFER_FRAME_OVERRUN:
++		urb->error_count++;
++		if (hc->ep_is_in)
++			frame_desc->status = -ENOSR;
++		else
++			frame_desc->status = -ECOMM;
++
++		frame_desc->actual_length = 0;
++		break;
++	case DWC_OTG_HC_XFER_BABBLE_ERR:
++		/* Don't need to update actual_length in this case. */
++		urb->error_count++;
++		frame_desc->status = -EOVERFLOW;
++		break;
++	case DWC_OTG_HC_XFER_XACT_ERR:
++		urb->error_count++;
++		frame_desc->status = -EPROTO;
++		frame_desc->actual_length =
++			get_actual_xfer_length(hc, regs, qtd, status, NULL);
++	default:
++		printk(KERN_ERR "%s: Unhandled halt_status (%d)\n", __func__,
++				status);
++		BUG();
++		break;
 +	}
 +
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
-+		/* Initialize the HCD and force_host_mode */
-+		usbcfg.d32 = dwc_read_reg32(gusbcfg_addr);
-+		usbcfg.b.force_host_mode = 1;
-+		dwc_write_reg32(gusbcfg_addr, usbcfg.d32);
-+
-+		retval = dwc_otg_hcd_init(dev, dwc_dev);
-+		if (retval) {
-+			printk(KERN_ERR "dwc_otg_hcd_init failed\n");
-+			dwc_dev->hcd = NULL;
-+			goto fail;
-+		}
++	if (++qtd->isoc_frame_index == urb->number_of_packets) {
++		/*
++		 * urb->status is not used for isoc transfers.
++		 * The individual frame_desc statuses are used instead.
++		 */
++		dwc_otg_hcd_complete_urb(hcd, urb, 0);
++		ret_val = DWC_OTG_HC_XFER_URB_COMPLETE;
++	} else {
++		ret_val = DWC_OTG_HC_XFER_COMPLETE;
 +	}
++	return ret_val;
++}
++
++/**
++ * Releases a host channel for use by other transfers. Attempts to select and
++ * queue more transactions since at least one host channel is available.
++ */
++static void release_channel(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			struct dwc_qtd *qtd, enum dwc_halt_status halt_status,
++			int *must_free)
++{
++	enum dwc_transaction_type tr_type;
++	int free_qtd;
++	int deact = 1;
++	struct dwc_qh *qh;
++	int retry_delay = 1;
++
++	switch (halt_status) {
++	case DWC_OTG_HC_XFER_NYET:
++	case DWC_OTG_HC_XFER_NAK:
++		if (halt_status == DWC_OTG_HC_XFER_NYET)
++			retry_delay = nyet_deferral_delay;
++		else
++			retry_delay = nak_deferral_delay;
++		free_qtd = 0;
++		if (deferral_on && hc->do_split) {
++			qh = hc->qh;
++			if (qh)
++				deact = dwc_otg_hcd_qh_deferr(hcd, qh,
++						retry_delay);
++		}
++		break;
++	case DWC_OTG_HC_XFER_URB_COMPLETE:
++		free_qtd = 1;
++		break;
++	case DWC_OTG_HC_XFER_AHB_ERR:
++	case DWC_OTG_HC_XFER_STALL:
++	case DWC_OTG_HC_XFER_BABBLE_ERR:
++		free_qtd = 1;
++		break;
++	case DWC_OTG_HC_XFER_XACT_ERR:
++		if (qtd->error_count >= 3) {
++			free_qtd = 1;
++			dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPROTO);
++		} else {
++			free_qtd = 0;
++		}
++		break;
++	case DWC_OTG_HC_XFER_URB_DEQUEUE:
++		/*
++		 * The QTD has already been removed and the QH has been
++		 * deactivated. Don't want to do anything except release the
++		 * host channel and try to queue more transfers.
++		 */
++		goto cleanup;
++	case DWC_OTG_HC_XFER_NO_HALT_STATUS:
++		printk(KERN_ERR "%s: No halt_status, channel %d\n", __func__,
++				hc->hc_num);
++		free_qtd = 0;
++		break;
++	default:
++		free_qtd = 0;
++		break;
++	}
++	if (free_qtd)
++		/* must_free pre-initialized to zero */
++		*must_free = 1;
++	if (deact)
++		deactivate_qh(hcd, hc->qh, free_qtd);
++
++cleanup:
 +	/*
-+	 * Enable the global interrupt after all the interrupt
-+	 * handlers are installed.
++	 * Release the host channel for use by other transfers. The cleanup
++	 * function clears the channel interrupt enables and conditions, so
++	 * there's no need to clear the Channel Halted interrupt separately.
 +	 */
-+	dwc_otg_enable_global_interrupts(dwc_dev->core_if);
-+
-+	usbcfg.d32 = dwc_read_reg32(gusbcfg_addr);
-+	usbcfg.b.force_host_mode = 0;
-+	dwc_write_reg32(gusbcfg_addr, usbcfg.d32);
-+
-+	return 0;
-+
-+fail:
-+	dwc_otg_driver_remove(ofdev);
-+	return retval;
++	dwc_otg_hc_cleanup(hcd->core_if, hc);
++	list_add_tail(&hc->hc_list_entry, &hcd->free_hc_list);
++	hcd->available_host_channels++;
++	/* Try to queue more transfers now that there's a free channel. */
++	if (!erratum_usb09_patched) {
++		tr_type = dwc_otg_hcd_select_transactions(hcd);
++		if (tr_type != DWC_OTG_TRANSACTION_NONE)
++			dwc_otg_hcd_queue_transactions(hcd, tr_type);
++	}
 +}
-+
-+/*
-+ * This structure defines the methods to be called by a bus driver
-+ * during the lifecycle of a device on that bus. Both drivers and
-+ * devices are registered with a bus driver. The bus driver matches
-+ * devices to drivers based on information in the device and driver
-+ * structures.
-+ *
-+ * The probe function is called when the bus driver matches a device
-+ * to this driver. The remove function is called when a device is
-+ * unregistered with the bus driver.
-+ */
-+static const struct of_device_id dwc_otg_match[] = {
-+	{ .compatible = "amcc,dwc-otg", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, dwc_otg_match);
-+
-+static struct of_platform_driver dwc_otg_driver = {
-+	.probe = dwc_otg_driver_probe,
-+	.remove = __devexit_p(dwc_otg_driver_remove),
-+	.driver = {
-+		.name = "dwc_otg",
-+		.owner = THIS_MODULE,
-+		.of_match_table = dwc_otg_match,
-+	},
-+};
 +
 +/**
-+ * This function is called when the dwc_otg_driver is installed with the
-+ * insmod command. It registers the dwc_otg_driver structure with the
-+ * appropriate bus driver. This will cause the dwc_otg_driver_probe function
-+ * to be called. In addition, the bus driver will automatically expose
-+ * attributes defined for the device and driver in the special sysfs file
-+ * system.
++ * Halts a host channel. If the channel cannot be halted immediately because
++ * the request queue is full, this function ensures that the FIFO empty
++ * interrupt for the appropriate queue is enabled so that the halt request can
++ * be queued when there is space in the request queue.
++ *
++ * This function may also be called in DMA mode. In that case, the channel is
++ * simply released since the core always halts the channel automatically in
++ * DMA mode.
 + */
-+static int  __init dwc_otg_driver_init(void)
++static void halt_channel(struct dwc_hcd *hcd, struct dwc_hc *hc,
++	 struct dwc_qtd *qtd, enum dwc_halt_status halt_status, int *must_free)
 +{
-+	int retval = 0;
++	if (hcd->core_if->dma_enable) {
++		release_channel(hcd, hc, qtd, halt_status, must_free);
++		return;
++	}
 +
-+	printk(KERN_INFO "%s: version %s\n", dwc_driver_name,
-+			DWC_DRIVER_VERSION);
-+	retval = of_register_platform_driver(&dwc_otg_driver);
-+	if (retval < 0)
-+		printk(KERN_ERR "%s registration failed. retval=%d\n",
-+				dwc_driver_name, retval);
-+	return retval;
++	/* Slave mode processing... */
++	dwc_otg_hc_halt(hcd->core_if, hc, halt_status);
++	if (hc->halt_on_queue) {
++		union gintmsk_data gintmsk = {.d32 = 0};
++
++		if (hc->ep_type == DWC_OTG_EP_TYPE_CONTROL ||
++				hc->ep_type == DWC_OTG_EP_TYPE_BULK) {
++			/*
++			 * Make sure the Non-periodic Tx FIFO empty interrupt
++			 * is enabled so that the non-periodic schedule will
++			 * be processed.
++			 */
++			gintmsk.b.nptxfempty = 1;
++			dwc_modify_reg32(gintmsk_reg(hcd), 0, gintmsk.d32);
++		} else {
++			/*
++			 * Move the QH from the periodic queued schedule to
++			 * the periodic assigned schedule. This allows the
++			 * halt to be queued when the periodic schedule is
++			 * processed.
++			 */
++			list_move(&hc->qh->qh_list_entry,
++				&hcd->periodic_sched_assigned);
++
++			/*
++			 * Make sure the Periodic Tx FIFO Empty interrupt is
++			 * enabled so that the periodic schedule will be
++			 * processed.
++			 */
++			gintmsk.b.ptxfempty = 1;
++			dwc_modify_reg32(gintmsk_reg(hcd), 0, gintmsk.d32);
++		}
++	}
 +}
-+module_init(dwc_otg_driver_init);
 +
 +/**
-+ * This function is called when the driver is removed from the kernel
-+ * with the rmmod command. The driver unregisters itself with its bus
-+ * driver.
-+ *
++ * Performs common cleanup for non-periodic transfers after a Transfer
++ * Complete interrupt. This function should be called after any endpoint type
++ * specific handling is finished to release the host channel.
 + */
-+static void __exit dwc_otg_driver_cleanup(void)
++static void complete_non_periodic_xfer(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			struct dwc_hc_regs *regs, struct dwc_qtd *qtd,
++			enum dwc_halt_status halt_status, int *must_free)
 +{
-+	of_unregister_platform_driver(&dwc_otg_driver);
-+	printk(KERN_INFO "%s module removed\n", dwc_driver_name);
-+}
-+module_exit(dwc_otg_driver_cleanup);
++	union hcint_data hcint;
 +
-+MODULE_DESCRIPTION(DWC_DRIVER_DESC);
-+MODULE_AUTHOR("Mark Miesfeld <mmiesfeld@apm.com");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/usb/dwc_otg/dwc_otg_driver.h b/drivers/usb/dwc_otg/dwc_otg_driver.h
-new file mode 100644
-index 0000000..b38f613
---- /dev/null
-+++ b/drivers/usb/dwc_otg/dwc_otg_driver.h
-@@ -0,0 +1,78 @@
-+/*
-+ * DesignWare HS OTG controller driver
-+ * Copyright (C) 2006 Synopsys, Inc.
-+ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
-+ *
-+ * This program is free software: you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License version 2 for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see http://www.gnu.org/licenses
-+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
-+ * Suite 500, Boston, MA 02110-1335 USA.
-+ *
-+ * Based on Synopsys driver version 2.60a
-+ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
++	qtd->error_count = 0;
++	hcint.d32 = dwc_read_reg32(&regs->hcint);
++	if (hcint.b.nyet) {
++		union hcint_data hcint_clear = { .d32 = 0};
 +
-+#if !defined(__DWC_OTG_DRIVER_H__)
-+#define __DWC_OTG_DRIVER_H__
-+
-+/*
-+ * This file contains the interface to the Linux driver.
-+ */
-+#include "dwc_otg_cil.h"
-+
-+/*
-+ * This structure is a wrapper that encapsulates the driver components used to
-+ * manage a single DWC_otg controller.
-+ */
-+struct dwc_otg_device {
-+	/* Base address returned from ioremap() */
-+	void *base;
-+
-+	/* Pointer to the core interface structure. */
-+	struct core_if *core_if;
-+
-+	/* Pointer to the PCD structure. */
-+	struct dwc_pcd *pcd;
-+
-+	/* Pointer to the HCD structure. */
-+	struct dwc_hcd *hcd;
-+
-+	/* Flag to indicate whether the common IRQ handler is installed. */
-+	u8 common_irq_installed;
-+
-+	/* Interrupt request number. */
-+	unsigned int irq;
++		hcint_clear.b.nyet = 1;
++		/*
++		 * Got a NYET on the last transaction of the transfer. This
++		 * means that the endpoint should be in the PING state at the
++		 * beginning of the next transfer.
++		 */
++		hc->qh->ping_state = 1;
++		dwc_write_reg32(&(regs->hcint), hcint_clear.d32);
++	}
 +
 +	/*
-+	 * Physical address of Control and Status registers, used by
-+	 * release_mem_region().
++	 * Always halt and release the host channel to make it available for
++	 * more transfers. There may still be more phases for a control
++	 * transfer or more data packets for a bulk transfer at this point,
++	 * but the host channel is still halted. A channel will be reassigned
++	 * to the transfer when the non-periodic schedule is processed after
++	 * the channel is released. This allows transactions to be queued
++	 * properly via dwc_otg_hcd_queue_transactions, which also enables the
++	 * Tx FIFO Empty interrupt if necessary.
++	 *
++	 * IN transfers in Slave mode require an explicit disable to
++	 * halt the channel. (In DMA mode, this call simply releases
++	 * the channel.)
++	 *
++	 * The channel is automatically disabled by the core for OUT
++	 * transfers in Slave mode.
 +	 */
-+	resource_size_t phys_addr;
-+
-+	/* Length of memory region, used by release_mem_region(). */
-+	unsigned long base_len;
-+};
-+extern struct core_params dwc_otg_module_params;
-+extern int __devinit check_parameters(struct core_if *core_if);
-+#endif
-diff --git a/drivers/usb/dwc_otg/dwc_otg_param.c b/drivers/usb/dwc_otg/dwc_otg_param.c
-new file mode 100644
-index 0000000..ee67d87a
---- /dev/null
-+++ b/drivers/usb/dwc_otg/dwc_otg_param.c
-@@ -0,0 +1,730 @@
-+/*
-+ * DesignWare HS OTG controller driver
-+ * Copyright (C) 2006 Synopsys, Inc.
-+ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
-+ *
-+ * This program is free software: you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License version 2 for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see http://www.gnu.org/licenses
-+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
-+ * Suite 500, Boston, MA 02110-1335 USA.
-+ *
-+ * Based on Synopsys driver version 2.60a
-+ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
-+
-+/*
-+ * This file provides dwc_otg driver parameter and parameter checking.
-+ */
-+
-+#include "dwc_otg_cil.h"
-+
-+/* Global Debug Level Mask. */
-+static u32 g_dbg_lvl = 0x0;	/* OFF */
-+
-+/*
-+ * Encapsulate the module parameter settings
-+ */
-+struct core_params dwc_otg_module_params = {
-+	.opt = -1,
-+	.otg_cap = -1,
-+	.dma_enable = -1,
-+	.dma_burst_size = -1,
-+	.speed = -1,
-+	.host_support_fs_ls_low_power = -1,
-+	.host_ls_low_power_phy_clk = -1,
-+	.enable_dynamic_fifo = -1,
-+	.data_fifo_size = -1,
-+	.dev_rx_fifo_size = -1,
-+	.dev_nperio_tx_fifo_size = -1,
-+	.dev_perio_tx_fifo_size = {
-+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-+	}, /* 15 */
-+	.host_rx_fifo_size = -1,
-+	.host_nperio_tx_fifo_size = -1,
-+	.host_perio_tx_fifo_size = -1,
-+	.max_transfer_size = -1,
-+	.max_packet_count = -1,
-+	.host_channels = -1,
-+	.dev_endpoints = -1,
-+	.phy_type = -1,
-+	.phy_utmi_width = -1,
-+	.phy_ulpi_ddr = -1,
-+	.phy_ulpi_ext_vbus = -1,
-+	.i2c_enable = -1,
-+	.ulpi_fs_ls = -1,
-+	.ts_dline = -1,
-+	.en_multiple_tx_fifo = -1,
-+	.dev_tx_fifo_size = {
-+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-+	}, /* 15 */
-+	.thr_ctl = -1,
-+	.tx_thr_length = -1,
-+	.rx_thr_length = -1,
-+};
-+
-+/**
-+ * Determines if the OTG capability parameter is valid under the current
-+ * hardware configuration.
-+ */
-+static int is_valid_otg_cap(struct core_if *core_if)
-+{
-+	int valid = 1;
-+
-+	switch (dwc_otg_module_params.otg_cap) {
-+	case DWC_OTG_CAP_PARAM_HNP_SRP_CAPABLE:
-+		if (core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG)
-+			valid = 0;
-+		break;
-+	case DWC_OTG_CAP_PARAM_SRP_ONLY_CAPABLE:
-+		if (core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG &&
-+				core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG &&
-+				core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE &&
-+				core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST)
-+			valid = 0;
-+		break;
-+	case DWC_OTG_CAP_PARAM_NO_HNP_SRP_CAPABLE:
-+		/* always valid */
-+		break;
-+	}
-+	return valid;
-+}
-+
-+/**
-+ * Returns a valid OTG capability setting for the current hardware
-+ * configuration.
-+ */
-+static int get_valid_otg_cap(struct core_if *core_if)
-+{
-+	if (core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG ||
-+			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG ||
-+			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE ||
-+			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST)
-+		return DWC_OTG_CAP_PARAM_SRP_ONLY_CAPABLE;
++	if (hc->ep_is_in)
++		halt_channel(hcd, hc, qtd, halt_status, must_free);
 +	else
-+		return DWC_OTG_CAP_PARAM_NO_HNP_SRP_CAPABLE;
++		release_channel(hcd, hc, qtd, halt_status, must_free);
 +}
 +
 +/**
-+ * Checks that, if the user set a periodic Tx FIFO size parameter, the size is
-+ * within the valid range.  If not, the parameter is set to the default.
++ * Performs common cleanup for periodic transfers after a Transfer Complete
++ * interrupt. This function should be called after any endpoint type specific
++ * handling is finished to release the host channel.
 + */
-+static int chk_param_perio_tx_fifo_sizes(int retval)
++static void complete_periodic_xfer(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd,
++		enum dwc_halt_status halt_status, int *must_free)
 +{
-+	u32 *s = &dwc_otg_module_params.dev_perio_tx_fifo_size[0];
-+	u32 i;
++	union hctsiz_data hctsiz;
 +
-+	for (i = 0; i < MAX_PERIO_FIFOS; i++, s++) {
-+		if (*s != -1 && (*s < 4 || *s > 768)) {
-+			printk(KERN_ERR "`%d' invalid for parameter "
-+				"`dev_perio_tx_fifo_size_%d'\n", *s, i);
++	hctsiz.d32 = dwc_read_reg32(&regs->hctsiz);
++	qtd->error_count = 0;
 +
-+			*s = dwc_param_dev_perio_tx_fifo_size_default;
-+			retval++;
++	/*
++	 * For OUT transfers and 0 packet count, the Core halts the channel,
++	 * otherwise, Flush any outstanding requests from the Tx queue.
++	 */
++	if (!hc->ep_is_in || hctsiz.b.pktcnt == 0)
++		release_channel(hcd, hc, qtd, halt_status, must_free);
++	else
++		halt_channel(hcd, hc, qtd, halt_status, must_free);
++}
++
++/**
++ * Handles a host channel Transfer Complete interrupt. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_xfercomp_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int  *must_free)
++{
++	int urb_xfer_done;
++	enum dwc_halt_status halt_status = DWC_OTG_HC_XFER_COMPLETE;
++	struct urb *urb = qtd->urb;
++	int pipe_type = usb_pipetype(urb->pipe);
++	int status = -EINPROGRESS;
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	/* Handle xfer complete on CSPLIT. */
++	if (hc->qh->do_split)
++		qtd->complete_split = 0;
++
++	/* Update the QTD and URB states. */
++	switch (pipe_type) {
++	case PIPE_CONTROL:
++		switch (qtd->control_phase) {
++		case DWC_OTG_CONTROL_SETUP:
++			if (urb->transfer_buffer_length > 0)
++				qtd->control_phase = DWC_OTG_CONTROL_DATA;
++			else
++				qtd->control_phase = DWC_OTG_CONTROL_STATUS;
++			halt_status = DWC_OTG_HC_XFER_COMPLETE;
++			break;
++		case DWC_OTG_CONTROL_DATA:
++			urb_xfer_done = update_urb_state_xfer_comp(hc, regs,
++							urb, qtd, &status);
++			if (urb_xfer_done)
++				qtd->control_phase = DWC_OTG_CONTROL_STATUS;
++			else
++				save_data_toggle(hc, regs, qtd);
++			halt_status = DWC_OTG_HC_XFER_COMPLETE;
++			break;
++		case DWC_OTG_CONTROL_STATUS:
++			if (status == -EINPROGRESS)
++				status = 0;
++			dwc_otg_hcd_complete_urb(hcd, urb, status);
++			halt_status = DWC_OTG_HC_XFER_URB_COMPLETE;
++			break;
++		}
++		complete_non_periodic_xfer(hcd, hc, regs, qtd,
++			halt_status, must_free);
++		break;
++	case PIPE_BULK:
++		urb_xfer_done = update_urb_state_xfer_comp(hc, regs, urb, qtd,
++								&status);
++		if (urb_xfer_done) {
++			dwc_otg_hcd_complete_urb(hcd, urb, status);
++			halt_status = DWC_OTG_HC_XFER_URB_COMPLETE;
++		} else {
++			halt_status = DWC_OTG_HC_XFER_COMPLETE;
++		}
++
++		save_data_toggle(hc, regs, qtd);
++		complete_non_periodic_xfer(hcd, hc, regs, qtd,
++			halt_status, must_free);
++		break;
++	case PIPE_INTERRUPT:
++		update_urb_state_xfer_comp(hc, regs, urb, qtd, &status);
++		/*
++		 * Interrupt URB is done on the first transfer complete
++		 * interrupt.
++		 */
++		dwc_otg_hcd_complete_urb(hcd, urb, status);
++		save_data_toggle(hc, regs, qtd);
++		complete_periodic_xfer(hcd, hc, regs, qtd,
++			DWC_OTG_HC_XFER_URB_COMPLETE, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		if (qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_ALL) {
++			halt_status = update_isoc_urb_state(hcd, hc, regs, qtd,
++					DWC_OTG_HC_XFER_COMPLETE);
++		}
++		complete_periodic_xfer(hcd, hc, regs, qtd,
++			halt_status, must_free);
++		break;
++	}
++
++	/* disable xfercompl */
++	hcintmsk.b.xfercompl = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel STALL interrupt. This handler may be called in
++ * either DMA mode or Slave mode.
++ */
++static int handle_hc_stall_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
++{
++	struct urb *urb = qtd->urb;
++	int pipe_type = usb_pipetype(urb->pipe);
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	if (pipe_type == PIPE_CONTROL)
++		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPIPE);
++
++	if (pipe_type == PIPE_BULK || pipe_type == PIPE_INTERRUPT) {
++		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPIPE);
++		/*
++		 * USB protocol requires resetting the data toggle for bulk
++		 * and interrupt endpoints when a CLEAR_FEATURE(ENDPOINT_HALT)
++		 * setup command is issued to the endpoint. Anticipate the
++		 * CLEAR_FEATURE command since a STALL has occurred and reset
++		 * the data toggle now.
++		 */
++		hc->qh->data_toggle = 0;
++	}
++
++	halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_STALL, must_free);
++	/* disable stall */
++	hcintmsk.b.stall = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Updates the state of the URB when a transfer has been stopped due to an
++ * abnormal condition before the transfer completes. Modifies the
++ * actual_length field of the URB to reflect the number of bytes that have
++ * actually been transferred via the host channel.
++ */
++static void update_urb_state_xfer_intr(struct dwc_hc *hc,
++		 struct dwc_hc_regs *regs, struct urb *urb, struct dwc_qtd *qtd,
++		enum dwc_halt_status sts)
++{
++	u32 xfr_len = get_actual_xfer_length(hc, regs, qtd, sts, NULL);
++	urb->actual_length += xfr_len;
++}
++
++/**
++ * Handles a host channel NAK interrupt. This handler may be called in either
++ * DMA mode or Slave mode.
++ */
++static int handle_hc_nak_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
++{
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	/*
++	 * Handle NAK for IN/OUT SSPLIT/CSPLIT transfers, bulk, control, and
++	 * interrupt.  Re-start the SSPLIT transfer.
++	 */
++	if (hc->do_split) {
++		if (hc->complete_split)
++			qtd->error_count = 0;
++
++		qtd->complete_split = 0;
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
++		goto handle_nak_done;
++	}
++	switch (usb_pipetype(qtd->urb->pipe)) {
++	case PIPE_CONTROL:
++	case PIPE_BULK:
++		if (hcd->core_if->dma_enable && hc->ep_is_in) {
++			/*
++			 * NAK interrupts are enabled on bulk/control IN
++			 * transfers in DMA mode for the sole purpose of
++			 * resetting the error count after a transaction error
++			 * occurs. The core will continue transferring data.
++			 */
++			qtd->error_count = 0;
++			goto handle_nak_done;
++		}
++
++		/*
++		 * NAK interrupts normally occur during OUT transfers in DMA
++		 * or Slave mode. For IN transfers, more requests will be
++		 * queued as request queue space is available.
++		 */
++		qtd->error_count = 0;
++		if (!hc->qh->ping_state) {
++			update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
++							DWC_OTG_HC_XFER_NAK);
++
++			save_data_toggle(hc, regs, qtd);
++			if (qtd->urb->dev->speed == USB_SPEED_HIGH)
++				hc->qh->ping_state = 1;
++		}
++
++		/*
++		 * Halt the channel so the transfer can be re-started from
++		 * the appropriate point or the PING protocol will
++		 * start/continue.
++		 */
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
++		break;
++	case PIPE_INTERRUPT:
++		qtd->error_count = 0;
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		/* Should never get called for isochronous transfers. */
++		BUG();
++		break;
++	}
++
++handle_nak_done:
++	/* disable nak */
++	hcintmsk.b.nak = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Helper function for handle_hc_ack_intr().  Sets the split values for an ACK
++ * on SSPLIT for ISOC OUT.
++ */
++static void set_isoc_out_vals(struct dwc_hc *hc, struct dwc_qtd *qtd)
++{
++	struct usb_iso_packet_descriptor *frame_desc;
++
++	switch (hc->xact_pos) {
++	case DWC_HCSPLIT_XACTPOS_ALL:
++		break;
++	case DWC_HCSPLIT_XACTPOS_END:
++		qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_ALL;
++		qtd->isoc_split_offset = 0;
++		break;
++	case DWC_HCSPLIT_XACTPOS_BEGIN:
++	case DWC_HCSPLIT_XACTPOS_MID:
++		/*
++		 * For BEGIN or MID, calculate the length for the next
++		 * microframe to determine the correct SSPLIT token, either MID
++		 * or END.
++		 */
++		frame_desc = &qtd->urb->iso_frame_desc[qtd->isoc_frame_index];
++		qtd->isoc_split_offset += 188;
++
++		if ((frame_desc->length - qtd->isoc_split_offset) <= 188)
++			qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_END;
++		else
++			qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_MID;
++
++		break;
++	}
++}
++
++/**
++ * Handles a host channel ACK interrupt. This interrupt is enabled when
++ * performing the PING protocol in Slave mode, when errors occur during
++ * either Slave mode or DMA mode, and during Start Split transactions.
++ */
++static int handle_hc_ack_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			struct dwc_hc_regs *regs, struct dwc_qtd *qtd,
++			int *must_free)
++{
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	if (hc->do_split) {
++		/* Handle ACK on SSPLIT. ACK should not occur in CSPLIT. */
++		if (!hc->ep_is_in && hc->data_pid_start != DWC_OTG_HC_PID_SETUP)
++			qtd->ssplit_out_xfer_count = hc->xfer_len;
++
++		/* Don't need complete for isochronous out transfers. */
++		if (!(hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in))
++			qtd->complete_split = 1;
++
++		if (hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in)
++			set_isoc_out_vals(hc, qtd);
++		else
++			halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_ACK,
++				must_free);
++	} else {
++		qtd->error_count = 0;
++		if (hc->qh->ping_state) {
++			hc->qh->ping_state = 0;
++
++			/*
++			 * Halt the channel so the transfer can be re-started
++			 * from the appropriate point. This only happens in
++			 * Slave mode. In DMA mode, the ping_state is cleared
++			 * when the transfer is started because the core
++			 * automatically executes the PING, then the transfer.
++			 */
++			halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_ACK,
++				must_free);
 +		}
 +	}
-+	return retval;
++
++	/*
++	 * If the ACK occurred when _not_ in the PING state, let the channel
++	 * continue transferring data after clearing the error count.
++	 */
++	/* disable ack */
++	hcintmsk.b.ack = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
 +}
 +
 +/**
-+ * Checks that, if the user set a Tx FIFO size parameter, the size is within the
-+ * valid range.  If not, the parameter is set to the default.
++ * Handles a host channel NYET interrupt. This interrupt should only occur on
++ * Bulk and Control OUT endpoints and for complete split transactions. If a
++ * NYET occurs at the same time as a Transfer Complete interrupt, it is
++ * handled in the xfercomp interrupt handler, not here. This handler may be
++ * called in either DMA mode or Slave mode.
 + */
-+static int chk_param_tx_fifo_sizes(int retval)
++static int handle_hc_nyet_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
 +{
-+	u32 *s = &dwc_otg_module_params.dev_tx_fifo_size[0];
-+	u32 i;
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++	union hcint_data hcint_clear = {.d32 = 0};
 +
-+	for (i = 0; i < MAX_TX_FIFOS; i++, s++) {
-+		if (*s != -1 && (*s < 4 || *s > 768)) {
-+			printk(KERN_ERR "`%d' invalid for parameter "
-+				"`dev_perio_tx_fifo_size_%d'\n", *s, i);
-+
-+			*s = dwc_param_dev_tx_fifo_size_default;
-+			retval++;
-+		}
-+	}
-+	return retval;
-+}
-+
-+/**
-+ * Checks that parameter settings for the periodic Tx FIFO sizes are correct
-+ * according to the hardware configuration. Sets the size to the hardware
-+ * configuration if an incorrect size is detected.
-+ */
-+static int chk_valid_perio_tx_fifo_sizes(struct core_if *core_if, int retval)
-+{
-+	struct core_global_regs *regs = core_if->core_global_regs;
-+	u32 *param_size = &dwc_otg_module_params.dev_perio_tx_fifo_size[0];
-+	u32 i;
-+
-+	for (i = 0; i < MAX_PERIO_FIFOS; i++, param_size++) {
-+		int changed = 1;
-+		int error = 0;
-+		u32 size;
-+
-+		if (*param_size == -1) {
-+			changed = 0;
-+			*param_size = dwc_param_dev_perio_tx_fifo_size_default;
-+		}
-+
-+		size = dwc_read_reg32(&regs->dptxfsiz_dieptxf[i]);
-+		if (*param_size > size) {
-+			if (changed) {
-+				printk(KERN_ERR "%d' invalid for parameter "
-+					"`dev_perio_tx_fifo_size_%d'. Check HW "
-+					"configuration.\n", *param_size, i);
-+				error = 1;
++	/*
++	 * NYET on CSPLIT
++	 * re-do the CSPLIT immediately on non-periodic
++	 */
++	if (hc->do_split && hc->complete_split) {
++		if (hc->ep_type == DWC_OTG_EP_TYPE_INTR ||
++				hc->ep_type == DWC_OTG_EP_TYPE_ISOC) {
++			int frnum = dwc_otg_hcd_get_frame_number(
++					dwc_otg_hcd_to_hcd(hcd));
++			if (dwc_full_frame_num(frnum) !=
++				dwc_full_frame_num(hc->qh->sched_frame)) {
++				qtd->complete_split = 0;
++				halt_channel(hcd, hc, qtd,
++					DWC_OTG_HC_XFER_XACT_ERR, must_free);
++				goto handle_nyet_done;
 +			}
-+			*param_size = size;
 +		}
-+		retval += error;
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NYET, must_free);
++		goto handle_nyet_done;
 +	}
-+	return retval;
++	hc->qh->ping_state = 1;
++	qtd->error_count = 0;
++	update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
++				DWC_OTG_HC_XFER_NYET);
++	save_data_toggle(hc, regs, qtd);
++	/*
++	 * Halt the channel and re-start the transfer so the PING
++	 * protocol will start.
++	 */
++	halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NYET, must_free);
++
++handle_nyet_done:
++	/* disable nyet */
++	hcintmsk.b.nyet = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++	/* clear nyet */
++	hcint_clear.b.nyet = 1;
++	dwc_write_reg32(&(regs->hcint), hcint_clear.d32);
++	return 1;
 +}
 +
 +/**
-+ * Checks that parameter settings for the Tx FIFO sizes are correct according to
-+ * the hardware configuration.  Sets the size to the hardware configuration if
-+ * an incorrect size is detected.
++ * Handles a host channel babble interrupt. This handler may be called in
++ * either DMA mode or Slave mode.
 + */
-+static int chk_valid_tx_fifo_sizes(struct core_if *core_if, int retval)
++static int handle_hc_babble_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
 +{
-+	struct core_global_regs *regs = core_if->core_global_regs;
-+	u32 *param_size = &dwc_otg_module_params.dev_tx_fifo_size[0];
-+	u32 i;
++	union hcintmsk_data hcintmsk = {.d32 = 0};
 +
-+	for (i = 0; i < MAX_TX_FIFOS; i++, param_size) {
-+		int changed = 1;
-+		int error = 0;
-+		u32 size;
-+
-+		if (*param_size == -1) {
-+			changed = 0;
-+			*param_size = dwc_param_dev_tx_fifo_size_default;
-+		}
-+
-+		size = dwc_read_reg32(&regs->dptxfsiz_dieptxf[i]);
-+		if (*param_size > size) {
-+			if (changed) {
-+				printk(KERN_ERR "%d' invalid for parameter "
-+					"`dev_tx_fifo_size_%d'. Check HW "
-+					"configuration.\n", *param_size, i);
-+				error = 1;
-+			}
-+			*param_size = size;
-+		}
-+		retval += error;
++	if (hc->ep_type != DWC_OTG_EP_TYPE_ISOC) {
++		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EOVERFLOW);
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_BABBLE_ERR,
++			must_free);
++	} else {
++		enum dwc_halt_status halt_status;
++		halt_status = update_isoc_urb_state(hcd, hc, regs, qtd,
++				DWC_OTG_HC_XFER_BABBLE_ERR);
++		halt_channel(hcd, hc, qtd, halt_status, must_free);
 +	}
-+	return retval;
++	/* disable bblerr */
++	hcintmsk.b.bblerr = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++	return 1;
 +}
 +
 +/**
-+ * This function is called during module intialization to verify that
-+ * the module parameters are in a valid state.
++ * Handles a host channel AHB error interrupt. This handler is only called in
++ * DMA mode.
 + */
-+int __devinit check_parameters(struct core_if *core_if)
++static int handle_hc_ahberr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			struct dwc_hc_regs *regs, struct dwc_qtd *qtd)
 +{
++	union hcchar_data hcchar;
++	union hcsplt_data hcsplt;
++	union hctsiz_data hctsiz;
++	u32 hcdma;
++	struct urb *urb = qtd->urb;
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	hcchar.d32 = dwc_read_reg32(&regs->hcchar);
++	hcsplt.d32 = dwc_read_reg32(&regs->hcsplt);
++	hctsiz.d32 = dwc_read_reg32(&regs->hctsiz);
++	hcdma = dwc_read_reg32(&regs->hcdma);
++
++	printk(KERN_ERR "AHB ERROR, Channel %d\n", hc->hc_num);
++	printk(KERN_ERR "  hcchar 0x%08x, hcsplt 0x%08x\n", hcchar.d32,
++				hcsplt.d32);
++	printk(KERN_ERR "  hctsiz 0x%08x, hcdma 0x%08x\n", hctsiz.d32, hcdma);
++
++	printk(KERN_ERR "  Device address: %d\n", usb_pipedevice(urb->pipe));
++	printk(KERN_ERR "  Endpoint: %d, %s\n", usb_pipeendpoint(urb->pipe),
++			(usb_pipein(urb->pipe) ? "IN" : "OUT"));
++
++	printk(KERN_ERR "  Endpoint type: %s\n", pipetype_str(urb->pipe));
++	printk(KERN_ERR "  Speed: %s\n", dev_speed_str(urb->dev->speed));
++	printk(KERN_ERR "  Max packet size: %d\n",
++		usb_maxpacket(urb->dev, urb->pipe, usb_pipeout(urb->pipe)));
++	printk(KERN_ERR "  Data buffer length: %d\n",
++		urb->transfer_buffer_length);
++	printk(KERN_ERR "  Transfer buffer: %p, Transfer DMA: %p\n",
++		urb->transfer_buffer, (void *) (u32) urb->transfer_dma);
++	printk(KERN_ERR "  Setup buffer: %p, Setup DMA: %p\n",
++		urb->setup_packet, (void *) (u32) urb->setup_dma);
++	printk(KERN_ERR "  Interval: %d\n", urb->interval);
++
++	dwc_otg_hcd_complete_urb(hcd, urb, -EIO);
++
++	/*
++	 * Force a channel halt. Don't call halt_channel because that won't
++	 * write to the HCCHARn register in DMA mode to force the halt.
++	 */
++	dwc_otg_hc_halt(hcd->core_if, hc, DWC_OTG_HC_XFER_AHB_ERR);
++	/* disable ahberr */
++	hcintmsk.b.ahberr = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel transaction error interrupt. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_xacterr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
++{
++	enum dwc_halt_status status = DWC_OTG_HC_XFER_XACT_ERR;
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	switch (usb_pipetype(qtd->urb->pipe)) {
++	case PIPE_CONTROL:
++	case PIPE_BULK:
++		qtd->error_count++;
++		if (!hc->qh->ping_state) {
++			update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
++							status);
++			save_data_toggle(hc, regs, qtd);
++
++			if (!hc->ep_is_in && qtd->urb->dev->speed ==
++					USB_SPEED_HIGH)
++				hc->qh->ping_state = 1;
++		}
++		/*
++		 * Halt the channel so the transfer can be re-started from
++		 * the appropriate point or the PING protocol will start.
++		 */
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	case PIPE_INTERRUPT:
++		qtd->error_count++;
++		if (hc->do_split && hc->complete_split)
++			qtd->complete_split = 0;
++
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		status = update_isoc_urb_state(hcd, hc, regs, qtd, status);
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	}
++	/* Disable xacterr */
++	hcintmsk.b.xacterr = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel frame overrun interrupt. This handler may be called
++ * in either DMA mode or Slave mode.
++ */
++static int handle_hc_frmovrun_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
++{
++	enum dwc_halt_status status = DWC_OTG_HC_XFER_FRAME_OVERRUN;
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	switch (usb_pipetype(qtd->urb->pipe)) {
++	case PIPE_CONTROL:
++	case PIPE_BULK:
++		break;
++	case PIPE_INTERRUPT:
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		status = update_isoc_urb_state(hcd, hc, regs, qtd, status);
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	}
++	/* Disable frmovrun */
++	hcintmsk.b.frmovrun = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel data toggle error interrupt. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_datatglerr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			struct dwc_hc_regs *regs, struct dwc_qtd *qtd)
++{
++	union hcintmsk_data hcintmsk = {.d32 = 0};
++
++	if (hc->ep_is_in)
++		qtd->error_count = 0;
++	else
++		printk(KERN_ERR "Data Toggle Error on OUT transfer, channel "
++				"%d\n", hc->hc_num);
++
++	/* disable datatglerr */
++	hcintmsk.b.datatglerr = 1;
++	dwc_modify_reg32(&regs->hcintmsk, hcintmsk.d32, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host Channel Halted interrupt in DMA mode. This handler
++ * determines the reason the channel halted and proceeds accordingly.
++ */
++static void handle_hc_chhltd_intr_dma(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
++{
++	union hcint_data hcint;
++	union hcintmsk_data hcintmsk;
++
++	if (hc->halt_status == DWC_OTG_HC_XFER_URB_DEQUEUE ||
++			hc->halt_status == DWC_OTG_HC_XFER_AHB_ERR) {
++		/*
++		 * Just release the channel. A dequeue can happen on a
++		 * transfer timeout. In the case of an AHB Error, the channel
++		 * was forced to halt because there's no way to gracefully
++		 * recover.
++		 */
++		release_channel(hcd, hc, qtd, hc->halt_status, must_free);
++		return;
++	}
++
++	/* Read the HCINTn register to determine the cause for the halt. */
++	hcint.d32 = dwc_read_reg32(&regs->hcint);
++	hcintmsk.d32 = dwc_read_reg32(&regs->hcintmsk);
++	if (hcint.b.xfercomp) {
++		/*
++		 * This is here because of a possible hardware bug.  Spec
++		 * says that on SPLIT-ISOC OUT transfers in DMA mode that a HALT
++		 * interrupt w/ACK bit set should occur, but I only see the
++		 * XFERCOMP bit, even with it masked out.  This is a workaround
++		 * for that behavior.  Should fix this when hardware is fixed.
++		 */
++		if (hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in)
++			handle_hc_ack_intr(hcd, hc, regs, qtd, must_free);
++
++		handle_hc_xfercomp_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.stall) {
++		handle_hc_stall_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.xacterr) {
++		/*
++		 * Must handle xacterr before nak or ack. Could get a xacterr
++		 * at the same time as either of these on a BULK/CONTROL OUT
++		 * that started with a PING. The xacterr takes precedence.
++		 */
++		handle_hc_xacterr_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.nyet) {
++		/*
++		 * Must handle nyet before nak or ack. Could get a nyet at the
++		 * same time as either of those on a BULK/CONTROL OUT that
++		 * started with a PING. The nyet takes precedence.
++		 */
++		handle_hc_nyet_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.bblerr) {
++		handle_hc_babble_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.frmovrun) {
++		handle_hc_frmovrun_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.datatglerr) {
++		handle_hc_datatglerr_intr(hcd, hc, regs, qtd);
++		hc->qh->data_toggle = 0;
++		halt_channel(hcd, hc, qtd, hc->halt_status, must_free);
++	} else if (hcint.b.nak && !hcintmsk.b.nak) {
++		/*
++		 * If nak is not masked, it's because a non-split IN transfer
++		 * is in an error state. In that case, the nak is handled by
++		 * the nak interrupt handler, not here. Handle nak here for
++		 * BULK/CONTROL OUT transfers, which halt on a NAK to allow
++		 * rewinding the buffer pointer.
++		 */
++		handle_hc_nak_intr(hcd, hc, regs, qtd, must_free);
++	} else if (hcint.b.ack && !hcintmsk.b.ack) {
++		/*
++		 * If ack is not masked, it's because a non-split IN transfer
++		 * is in an error state. In that case, the ack is handled by
++		 * the ack interrupt handler, not here. Handle ack here for
++		 * split transfers. Start splits halt on ACK.
++		 */
++		handle_hc_ack_intr(hcd, hc, regs, qtd, must_free);
++	} else {
++		if (hc->ep_type == DWC_OTG_EP_TYPE_INTR ||
++				hc->ep_type == DWC_OTG_EP_TYPE_ISOC) {
++			/*
++			 * A periodic transfer halted with no other channel
++			 * interrupts set. Assume it was halted by the core
++			 * because it could not be completed in its scheduled
++			 * (micro)frame.
++			 */
++			halt_channel(hcd, hc, qtd,
++				DWC_OTG_HC_XFER_PERIODIC_INCOMPLETE,
++				must_free);
++		} else {
++			printk(KERN_ERR "%s: Channel %d, DMA Mode -- ChHltd "
++				"set, but reason for halting is unknown, "
++				"hcint 0x%08x, intsts 0x%08x\n",
++				__func__, hc->hc_num, hcint.d32,
++				dwc_read_reg32(gintsts_reg(hcd)));
++		}
++	}
++}
++
++/**
++ * Handles a host channel Channel Halted interrupt.
++ *
++ * In slave mode, this handler is called only when the driver specifically
++ * requests a halt. This occurs during handling other host channel interrupts
++ * (e.g. nak, xacterr, stall, nyet, etc.).
++ *
++ * In DMA mode, this is the interrupt that occurs when the core has finished
++ * processing a transfer on a channel. Other host channel interrupts (except
++ * ahberr) are disabled in DMA mode.
++ */
++static int handle_hc_chhltd_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++		struct dwc_hc_regs *regs, struct dwc_qtd *qtd, int *must_free)
++{
++	if (hcd->core_if->dma_enable)
++		handle_hc_chhltd_intr_dma(hcd, hc, regs, qtd, must_free);
++	else
++		release_channel(hcd, hc, qtd, hc->halt_status, must_free);
++
++	return 1;
++}
++
++/* Handles interrupt for a specific Host Channel */
++static int dwc_otg_hcd_handle_hc_n_intr(struct dwc_hcd *hcd, u32 num)
++{
++	int must_free = 0;
 +	int retval = 0;
++	union hcint_data hcint;
++	union hcintmsk_data hcintmsk;
++	struct dwc_hc *hc;
++	struct dwc_hc_regs *hc_regs;
++	struct dwc_qtd *qtd;
 +
-+	/* Checks if the parameter is outside of its valid range of values */
-+#define DWC_OTG_PARAM_TEST(_param_, _low_, _high_) \
-+	((dwc_otg_module_params._param_ < (_low_)) || \
-+	 (dwc_otg_module_params._param_ > (_high_)))
++	hc = hcd->hc_ptr_array[num];
++	hc_regs = hcd->core_if->host_if->hc_regs[num];
++	qtd = list_entry(hc->qh->qtd_list.next, struct dwc_qtd, qtd_list_entry);
 +
-+	/*
-+	 * If the parameter has been set by the user, check that the parameter
-+	 * value is within the value range of values.  If not, report a module
-+	 * error.
-+	 */
-+#define DWC_OTG_PARAM_ERR(_param_, _low_, _high_, _string_) \
-+	do { \
-+		if (dwc_otg_module_params._param_ != -1) { \
-+			if (DWC_OTG_PARAM_TEST(_param_, (_low_), (_high_))) { \
-+				printk(KERN_ERR "`%d' invalid for parameter " \
-+						"`%s'\n", \
-+						dwc_otg_module_params._param_, \
-+						_string_); \
-+				dwc_otg_module_params._param_ = \
-+					dwc_param_##_param_##_default; \
-+				retval++; \
-+			} \
-+		} \
-+	} while (0)
++	hcint.d32 = dwc_read_reg32(&hc_regs->hcint);
++	hcintmsk.d32 = dwc_read_reg32(&hc_regs->hcintmsk);
 +
-+	DWC_OTG_PARAM_ERR(opt, 0, 1, "opt");
-+	DWC_OTG_PARAM_ERR(otg_cap, 0, 2, "otg_cap");
-+	DWC_OTG_PARAM_ERR(dma_enable, 0, 1, "dma_enable");
-+	DWC_OTG_PARAM_ERR(speed, 0, 1, "speed");
++	hcint.d32 = hcint.d32 & hcintmsk.d32;
++	if (!hcd->core_if->dma_enable && hcint.b.chhltd && hcint.d32 != 0x2)
++		hcint.b.chhltd = 0;
 +
-+	DWC_OTG_PARAM_ERR(host_support_fs_ls_low_power, 0, 1,
-+				"host_support_fs_ls_low_power");
-+	DWC_OTG_PARAM_ERR(host_ls_low_power_phy_clk, 0, 1,
-+				"host_ls_low_power_phy_clk");
-+
-+	DWC_OTG_PARAM_ERR(enable_dynamic_fifo, 0, 1, "enable_dynamic_fifo");
-+	DWC_OTG_PARAM_ERR(data_fifo_size, 32, 32768, "data_fifo_size");
-+	DWC_OTG_PARAM_ERR(dev_rx_fifo_size, 16, 32768, "dev_rx_fifo_size");
-+	DWC_OTG_PARAM_ERR(dev_nperio_tx_fifo_size, 16, 32768,
-+				"dev_nperio_tx_fifo_size");
-+	DWC_OTG_PARAM_ERR(host_rx_fifo_size, 16, 32768, "host_rx_fifo_size");
-+	DWC_OTG_PARAM_ERR(host_nperio_tx_fifo_size, 16, 32768,
-+				"host_nperio_tx_fifo_size");
-+	DWC_OTG_PARAM_ERR(host_perio_tx_fifo_size, 16, 32768,
-+				"host_perio_tx_fifo_size");
-+
-+	DWC_OTG_PARAM_ERR(max_transfer_size, 2047, 524288,
-+				"max_transfer_size");
-+	DWC_OTG_PARAM_ERR(max_packet_count, 15, 511, "max_packet_count");
-+
-+	DWC_OTG_PARAM_ERR(host_channels, 1, 16, "host_channels");
-+	DWC_OTG_PARAM_ERR(dev_endpoints, 1, 15, "dev_endpoints");
-+
-+	DWC_OTG_PARAM_ERR(phy_type, 0, 2, "phy_type");
-+	DWC_OTG_PARAM_ERR(phy_ulpi_ddr, 0, 1, "phy_ulpi_ddr");
-+	DWC_OTG_PARAM_ERR(phy_ulpi_ext_vbus, 0, 1, "phy_ulpi_ext_vbus");
-+	DWC_OTG_PARAM_ERR(i2c_enable, 0, 1, "i2c_enable");
-+	DWC_OTG_PARAM_ERR(ulpi_fs_ls, 0, 1, "ulpi_fs_ls");
-+	DWC_OTG_PARAM_ERR(ts_dline, 0, 1, "ts_dline");
-+
-+	if (dwc_otg_module_params.dma_burst_size != -1) {
-+		if (DWC_OTG_PARAM_TEST(dma_burst_size, 1, 1) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 4, 4) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 8, 8) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 16, 16) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 32, 32) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 64, 64) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 128, 128) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 256, 256)) {
-+			printk(KERN_ERR "`%d' invalid for parameter "
-+					"`dma_burst_size'\n",
-+					dwc_otg_module_params.dma_burst_size);
-+			dwc_otg_module_params.dma_burst_size = 32;
-+			retval++;
-+		}
++	if (hcint.b.xfercomp) {
++		retval |= handle_hc_xfercomp_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++		/*
++		 * If NYET occurred at same time as Xfer Complete, the NYET is
++		 * handled by the Xfer Complete interrupt handler. Don't want
++		 * to call the NYET interrupt handler in this case.
++		 */
++		hcint.b.nyet = 0;
 +	}
 +
-+	if (dwc_otg_module_params.phy_utmi_width != -1) {
-+		if (DWC_OTG_PARAM_TEST(phy_utmi_width, 8, 8) &&
-+				DWC_OTG_PARAM_TEST(phy_utmi_width, 16, 16)) {
-+			printk(KERN_ERR "`%d'invalid for parameter "
-+					"`phy_utmi_width'\n",
-+					dwc_otg_module_params.phy_utmi_width);
-+			dwc_otg_module_params.phy_utmi_width = 8;
-+			retval++;
-+		}
-+	}
++	if (hcint.b.chhltd)
++		retval |= handle_hc_chhltd_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.ahberr)
++		retval |= handle_hc_ahberr_intr(hcd, hc, hc_regs, qtd);
++	if (hcint.b.stall)
++		retval |= handle_hc_stall_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.nak)
++		retval |= handle_hc_nak_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.ack)
++		retval |= handle_hc_ack_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.nyet)
++		retval |= handle_hc_nyet_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.xacterr)
++		retval |= handle_hc_xacterr_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.bblerr)
++		retval |= handle_hc_babble_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.frmovrun)
++		retval |= handle_hc_frmovrun_intr(hcd, hc, hc_regs,
++			qtd, &must_free);
++	if (hcint.b.datatglerr)
++		retval |= handle_hc_datatglerr_intr(hcd, hc, hc_regs, qtd);
 +
-+	DWC_OTG_PARAM_ERR(en_multiple_tx_fifo, 0, 1, "en_multiple_tx_fifo");
-+	retval += chk_param_perio_tx_fifo_sizes(retval);
-+	retval += chk_param_tx_fifo_sizes(retval);
++	if (must_free)
++		/* Free the qtd here now that we are done using it. */
++		dwc_otg_hcd_qtd_free(qtd);
++	return retval;
++}
 +
-+	DWC_OTG_PARAM_ERR(thr_ctl, 0, 7, "thr_ctl");
-+	DWC_OTG_PARAM_ERR(tx_thr_length, 8, 128, "tx_thr_length");
-+	DWC_OTG_PARAM_ERR(rx_thr_length, 8, 128, "rx_thr_length");
++/**
++ * This function returns the Host All Channel Interrupt register
++ */
++static inline u32 dwc_otg_read_host_all_channels_intr(struct core_if
++						*core_if)
++{
++	return dwc_read_reg32(&core_if->host_if->host_global_regs->haint);
++}
++
++/**
++ * This interrupt indicates that one or more host channels has a pending
++ * interrupt. There are multiple conditions that can cause each host channel
++ * interrupt. This function determines which conditions have occurred for each
++ * host channel interrupt and handles them appropriately.
++ */
++static int dwc_otg_hcd_handle_hc_intr(struct dwc_hcd *hcd)
++{
++	u32 i;
++	int retval = 0;
++	union haint_data haint;
 +
 +	/*
-+	 * At this point, all module parameters that have been set by the user
-+	 * are valid, and those that have not are left unset.  Now set their
-+	 * default values and/or check the parameters against the hardware
-+	 * configurations of the OTG core.
++	 * Clear appropriate bits in HCINTn to clear the interrupt bit in
++	 *  GINTSTS
 +	 */
-+
-+	/*
-+	 * This sets the parameter to the default value if it has not been set
-+	 * by the user
-+	 */
-+#define DWC_OTG_PARAM_SET_DEFAULT(_param_) ({ \
-+		int changed = 1; \
-+		if (dwc_otg_module_params._param_ == -1) { \
-+			changed = 0; \
-+			dwc_otg_module_params._param_ = \
-+				dwc_param_##_param_##_default; \
-+		} \
-+		changed; \
-+	 })
-+
-+	/*
-+	 * This checks the macro against the hardware configuration to see if it
-+	 * is valid.  It is possible that the default value could be invalid.
-+	 * In this case, it will report a module error if the user touched the
-+	 * parameter. Otherwise it will adjust the value without any error.
-+	 */
-+#define DWC_OTG_PARAM_CHECK_VALID(_param_, _str_, _is_valid_ , _set_valid_) ({ \
-+		int changed = DWC_OTG_PARAM_SET_DEFAULT(_param_); \
-+		int error = 0; \
-+		if (!(_is_valid_)) { \
-+			if (changed) { \
-+				printk(KERN_ERR "`%d' invalid for parameter " \
-+					"`%s' Check HW configuration.\n", \
-+					dwc_otg_module_params._param_, \
-+					_str_); \
-+				error = 1; \
-+			} \
-+			dwc_otg_module_params._param_ = (_set_valid_); \
-+		} \
-+		error; \
-+	})
-+
-+	/* OTG Cap */
-+	retval += DWC_OTG_PARAM_CHECK_VALID(otg_cap, "otg_cap",
-+			is_valid_otg_cap(core_if), get_valid_otg_cap(core_if));
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dma_enable, "dma_enable",
-+			((dwc_otg_module_params.dma_enable == 1) &&
-+			 (core_if->hwcfg2.b.architecture == 0)) ? 0 : 1, 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(opt, "opt", 1, 0);
-+	DWC_OTG_PARAM_SET_DEFAULT(dma_burst_size);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_support_fs_ls_low_power,
-+			"host_support_fs_ls_low_power", 1, 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(enable_dynamic_fifo,
-+			"enable_dynamic_fifo",
-+			((dwc_otg_module_params.enable_dynamic_fifo == 0) ||
-+			 (core_if->hwcfg2.b.dynamic_fifo == 1)), 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(data_fifo_size, "data_fifo_size",
-+			(dwc_otg_module_params.data_fifo_size <=
-+			 core_if->hwcfg3.b.dfifo_depth),
-+			core_if->hwcfg3.b.dfifo_depth);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dev_rx_fifo_size,
-+			"dev_rx_fifo_size",
-+			(dwc_otg_module_params.dev_rx_fifo_size <=
-+			 dwc_read_reg32(&core_if->core_global_regs->grxfsiz)),
-+			dwc_read_reg32(&core_if->core_global_regs->grxfsiz));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dev_nperio_tx_fifo_size,
-+			"dev_nperio_tx_fifo_size",
-+			(dwc_otg_module_params.dev_nperio_tx_fifo_size <=
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+				>> 16)),
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+				>> 16));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_rx_fifo_size,
-+			"host_rx_fifo_size",
-+			(dwc_otg_module_params.host_rx_fifo_size <=
-+			dwc_read_reg32(&core_if->core_global_regs->grxfsiz)),
-+			dwc_read_reg32(&core_if->core_global_regs->grxfsiz));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_nperio_tx_fifo_size,
-+			"host_nperio_tx_fifo_size",
-+			(dwc_otg_module_params.host_nperio_tx_fifo_size <=
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+					>> 16)),
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+					>> 16));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_perio_tx_fifo_size,
-+			"host_perio_tx_fifo_size",
-+			(dwc_otg_module_params.host_perio_tx_fifo_size <=
-+			((dwc_read_reg32(&core_if->core_global_regs->hptxfsiz)
-+					>> 16))),
-+			((dwc_read_reg32(&core_if->core_global_regs->hptxfsiz)
-+					>> 16)));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(max_transfer_size,
-+			"max_transfer_size",
-+			(dwc_otg_module_params.max_transfer_size <
-+			(1 << (core_if->hwcfg3.b.xfer_size_cntr_width + 11))),
-+			((1 << (core_if->hwcfg3.b.xfer_size_cntr_width + 11))
-+					- 1));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(max_packet_count,
-+			"max_packet_count",
-+			(dwc_otg_module_params.max_packet_count <
-+			(1 << (core_if->hwcfg3.b.packet_size_cntr_width + 4))),
-+			((1 << (core_if->hwcfg3.b.packet_size_cntr_width + 4))
-+					- 1));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_channels, "host_channels",
-+			(dwc_otg_module_params.host_channels <=
-+			(core_if->hwcfg2.b.num_host_chan + 1)),
-+			(core_if->hwcfg2.b.num_host_chan + 1));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dev_endpoints, "dev_endpoints",
-+			(dwc_otg_module_params.dev_endpoints <=
-+			(core_if->hwcfg2.b.num_dev_ep)),
-+			core_if->hwcfg2.b.num_dev_ep);
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(phy_type, "phy_type", 1, 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(speed, "speed",
-+			(dwc_otg_module_params.speed == 0) &&
-+			(dwc_otg_module_params.phy_type ==
-+			 DWC_PHY_TYPE_PARAM_FS) ? 0 : 1,
-+			dwc_otg_module_params.phy_type ==
-+			DWC_PHY_TYPE_PARAM_FS ? 1 : 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_ls_low_power_phy_clk,
-+			"host_ls_low_power_phy_clk",
-+			((dwc_otg_module_params.host_ls_low_power_phy_clk ==
-+			DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_48MHZ) &&
-+			(dwc_otg_module_params.phy_type ==
-+				DWC_PHY_TYPE_PARAM_FS) ? 0 : 1),
-+			((dwc_otg_module_params.phy_type ==
-+				DWC_PHY_TYPE_PARAM_FS) ?
-+				DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_6MHZ :
-+				DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_48MHZ));
-+
-+	DWC_OTG_PARAM_SET_DEFAULT(phy_ulpi_ddr);
-+	DWC_OTG_PARAM_SET_DEFAULT(phy_ulpi_ext_vbus);
-+	DWC_OTG_PARAM_SET_DEFAULT(phy_utmi_width);
-+	DWC_OTG_PARAM_SET_DEFAULT(ulpi_fs_ls);
-+	DWC_OTG_PARAM_SET_DEFAULT(ts_dline);
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(i2c_enable, "i2c_enable", 1, 0);
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(en_multiple_tx_fifo,
-+			"en_multiple_tx_fifo",
-+			((dwc_otg_module_params.en_multiple_tx_fifo == 1) &&
-+			(core_if->hwcfg4.b.ded_fifo_en == 0)) ? 0 : 1, 0);
-+
-+	retval += chk_valid_perio_tx_fifo_sizes(core_if, retval);
-+	retval += chk_valid_tx_fifo_sizes(core_if, retval);
-+
-+	DWC_OTG_PARAM_SET_DEFAULT(thr_ctl);
-+	DWC_OTG_PARAM_SET_DEFAULT(tx_thr_length);
-+	DWC_OTG_PARAM_SET_DEFAULT(rx_thr_length);
++	haint.d32 = dwc_otg_read_host_all_channels_intr(hcd->core_if);
++	for (i = 0; i < hcd->core_if->core_params->host_channels; i++)
++		if (haint.b2.chint & (1 << i))
++			retval |= dwc_otg_hcd_handle_hc_n_intr(hcd, i);
 +
 +	return retval;
 +}
 +
-+module_param_named(otg_cap, dwc_otg_module_params.otg_cap, int, 0444);
-+MODULE_PARM_DESC(otg_cap, "OTG Capabilities 0=HNP&SRP 1=SRP Only 2=None");
-+module_param_named(opt, dwc_otg_module_params.opt, int, 0444);
-+MODULE_PARM_DESC(opt, "OPT Mode");
-+module_param_named(dma_enable, dwc_otg_module_params.dma_enable, int, 0444);
-+MODULE_PARM_DESC(dma_enable, "DMA Mode 0=Slave 1=DMA enabled");
-+module_param_named(dma_burst_size, dwc_otg_module_params.dma_burst_size,
-+			int, 0444);
-+MODULE_PARM_DESC(dma_burst_size, "DMA Burst Size 1, 4, 8, 16, 32, 64, "
-+				"128, 256");
-+module_param_named(speed, dwc_otg_module_params.speed, int, 0444);
-+MODULE_PARM_DESC(speed, "Speed 0=High Speed 1=Full Speed");
-+module_param_named(host_support_fs_ls_low_power,
-+			dwc_otg_module_params.host_support_fs_ls_low_power,
-+			int, 0444);
-+MODULE_PARM_DESC(host_support_fs_ls_low_power, "Support Low Power w/FS or LS "
-+				"0=Support 1=Don't Support");
-+module_param_named(host_ls_low_power_phy_clk,
-+			dwc_otg_module_params.host_ls_low_power_phy_clk,
-+			int, 0444);
-+MODULE_PARM_DESC(host_ls_low_power_phy_clk, "Low Speed Low Power Clock "
-+				"0=48Mhz 1=6Mhz");
-+module_param_named(enable_dynamic_fifo,
-+			dwc_otg_module_params.enable_dynamic_fifo, int, 0444);
-+MODULE_PARM_DESC(enable_dynamic_fifo, "0=cC Setting 1=Allow Dynamic Sizing");
-+module_param_named(data_fifo_size,
-+			dwc_otg_module_params.data_fifo_size, int, 0444);
-+MODULE_PARM_DESC(data_fifo_size, "Total number of words in the data FIFO "
-+				"memory 32-32768");
-+module_param_named(dev_rx_fifo_size, dwc_otg_module_params.dev_rx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(dev_rx_fifo_size, "Number of words in the Rx FIFO 16-32768");
-+module_param_named(dev_nperio_tx_fifo_size,
-+			dwc_otg_module_params.dev_nperio_tx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(dev_nperio_tx_fifo_size, "Number of words in the non-periodic "
-+				"Tx FIFO 16-32768");
-+module_param_named(dev_perio_tx_fifo_size_1,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[0],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_1, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_2,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[1],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_2, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_3,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[2],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_3, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_4,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[3],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_4, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_5,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[4],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_5, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_6,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[5],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_6, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_7,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[6],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_7, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_8,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[7],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_8, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_9,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[8],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_9, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_10,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[9],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_10, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_11,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[10],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_11, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_12,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[11],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_12, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_13,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[12],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_13, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_14,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[13],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_14, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_15,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[14],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_15, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(host_rx_fifo_size, dwc_otg_module_params.host_rx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(host_rx_fifo_size, "Number of words in the Rx FIFO 16-32768");
-+module_param_named(host_nperio_tx_fifo_size,
-+			dwc_otg_module_params.host_nperio_tx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(host_nperio_tx_fifo_size, "Number of words in the "
-+			"non-periodic Tx FIFO 16-32768");
-+module_param_named(host_perio_tx_fifo_size,
-+			dwc_otg_module_params.host_perio_tx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(host_perio_tx_fifo_size, "Number of words in the host "
-+			"periodic Tx FIFO 16-32768");
-+module_param_named(max_transfer_size, dwc_otg_module_params.max_transfer_size,
-+			int, 0444);
++/* This function handles interrupts for the HCD.*/
++int dwc_otg_hcd_handle_intr(struct dwc_hcd *hcd)
++{
++	int ret = 0;
++	struct core_if *core_if = hcd->core_if;
++	union gintsts_data gintsts;
 +
-+MODULE_PARM_DESC(max_transfer_size, "The maximum transfer size supported in "
-+			"bytes 2047-65535");
-+module_param_named(max_packet_count, dwc_otg_module_params.max_packet_count,
-+			int, 0444);
-+MODULE_PARM_DESC(max_packet_count, "The maximum number of packets in a "
-+			"transfer 15-511");
-+module_param_named(host_channels, dwc_otg_module_params.host_channels,
-+			int, 0444);
-+MODULE_PARM_DESC(host_channels,	"The number of host channel registers to "
-+			"use 1-16");
-+module_param_named(dev_endpoints, dwc_otg_module_params.dev_endpoints,
-+			int, 0444);
-+MODULE_PARM_DESC(dev_endpoints,	"The number of endpoints in addition to EP0 "
-+			"available for device mode 1-15");
-+module_param_named(phy_type, dwc_otg_module_params.phy_type, int, 0444);
-+MODULE_PARM_DESC(phy_type, "0=Reserved 1=UTMI+ 2=ULPI");
-+module_param_named(phy_utmi_width, dwc_otg_module_params.phy_utmi_width,
-+			int, 0444);
-+MODULE_PARM_DESC(phy_utmi_width, "Specifies the UTMI+ Data Width 8 or 16 bits");
-+module_param_named(phy_ulpi_ddr, dwc_otg_module_params.phy_ulpi_ddr,
-+			int, 0444);
-+MODULE_PARM_DESC(phy_ulpi_ddr, "0");
-+module_param_named(phy_ulpi_ext_vbus, dwc_otg_module_params.phy_ulpi_ext_vbus,
-+			int, 0444);
-+MODULE_PARM_DESC(phy_ulpi_ext_vbus,
-+		  "ULPI PHY using internal or external vbus 0=Internal");
-+module_param_named(i2c_enable, dwc_otg_module_params.i2c_enable, int, 0444);
-+MODULE_PARM_DESC(i2c_enable, "FS PHY Interface");
-+module_param_named(ulpi_fs_ls, dwc_otg_module_params.ulpi_fs_ls, int, 0444);
-+MODULE_PARM_DESC(ulpi_fs_ls, "ULPI PHY FS/LS mode only");
-+module_param_named(ts_dline, dwc_otg_module_params.ts_dline, int, 0444);
-+MODULE_PARM_DESC(ts_dline, "Term select Dline pulsing for all PHYs");
-+module_param_named(debug, g_dbg_lvl, int, 0444);
-+MODULE_PARM_DESC(debug, "0");
-+module_param_named(en_multiple_tx_fifo,
-+			dwc_otg_module_params.en_multiple_tx_fifo, int, 0444);
-+MODULE_PARM_DESC(en_multiple_tx_fifo, "Dedicated Non Periodic Tx FIFOs "
-+			"0=disabled 1=enabled");
-+module_param_named(dev_tx_fifo_size_1,
-+		    dwc_otg_module_params.dev_tx_fifo_size[0], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_1, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_2,
-+			dwc_otg_module_params.dev_tx_fifo_size[1], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_2, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_3,
-+			dwc_otg_module_params.dev_tx_fifo_size[2], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_3, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_4,
-+			dwc_otg_module_params.dev_tx_fifo_size[3], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_4, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_5,
-+			dwc_otg_module_params.dev_tx_fifo_size[4], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_5, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_6,
-+			dwc_otg_module_params.dev_tx_fifo_size[5], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_6, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_7,
-+			dwc_otg_module_params.dev_tx_fifo_size[6], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_7, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_8,
-+			dwc_otg_module_params.dev_tx_fifo_size[7], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_8, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_9,
-+			dwc_otg_module_params.dev_tx_fifo_size[8], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_9, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_10,
-+			dwc_otg_module_params.dev_tx_fifo_size[9], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_10, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_11,
-+			dwc_otg_module_params.dev_tx_fifo_size[10], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_11, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_12,
-+			dwc_otg_module_params.dev_tx_fifo_size[11], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_12, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_13,
-+			dwc_otg_module_params.dev_tx_fifo_size[12], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_13, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_14,
-+			dwc_otg_module_params.dev_tx_fifo_size[13], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_14, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_15,
-+			dwc_otg_module_params.dev_tx_fifo_size[14], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_15, "Number of words in the Tx FIFO 4-768");
-+module_param_named(thr_ctl, dwc_otg_module_params.thr_ctl, int, 0444);
-+MODULE_PARM_DESC(thr_ctl, "Thresholding enable flag bit 0 - non ISO Tx thr., "
-+			"1 - ISO Tx thr., 2 - Rx thr.- bit "
-+			"0=disabled 1=enabled");
-+module_param_named(tx_thr_length, dwc_otg_module_params.tx_thr_length,
-+			int, 0444);
-+MODULE_PARM_DESC(tx_thr_length, "Tx Threshold length in 32 bit DWORDs");
-+module_param_named(rx_thr_length, dwc_otg_module_params.rx_thr_length,
-+			int, 0444);
-+MODULE_PARM_DESC(rx_thr_length, "Rx Threshold length in 32 bit DWORDs");
++	/* Check if HOST Mode */
++	if (dwc_otg_is_host_mode(core_if)) {
++		spin_lock(&hcd->lock);
++		gintsts.d32 = dwc_otg_read_core_intr(core_if);
++		if (!gintsts.d32) {
++			spin_unlock(&hcd->lock);
++			return IRQ_NONE;
++		}
++
++		if (gintsts.b.sofintr)
++			ret |= dwc_otg_hcd_handle_sof_intr(hcd);
++		if (gintsts.b.rxstsqlvl)
++			ret |= dwc_otg_hcd_handle_rx_status_q_level_intr(hcd);
++		if (gintsts.b.nptxfempty)
++			ret |= dwc_otg_hcd_handle_np_tx_fifo_empty_intr(hcd);
++		if (gintsts.b.portintr)
++			ret |= dwc_otg_hcd_handle_port_intr(hcd);
++		if (gintsts.b.hcintr)
++			ret |= dwc_otg_hcd_handle_hc_intr(hcd);
++		if (gintsts.b.ptxfempty)
++			ret |= dwc_otg_hcd_handle_perio_tx_fifo_empty_intr(hcd);
++
++		spin_unlock(&hcd->lock);
++	}
++	return ret;
++}
 -- 
 1.7.3
