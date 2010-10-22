@@ -1,32 +1,28 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 104ECB6EF1
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 17:01:20 +1100 (EST)
-Subject: Re: [PATCH v4 5/5] mtd: m25p80: add support to parse the partitions
-	by OF node
-MIME-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1287301490.1951.0.camel@localhost>
-Date: Fri, 22 Oct 2010 01:01:12 -0500
-Message-ID: <3AE1F37D-F328-40EF-8B35-F94CC074D384@freescale.com>
-References: <1286878714-13090-1-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-2-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-3-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-4-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-5-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-6-git-send-email-Mingkai.hu@freescale.com>
-	<1287256647.1781.34.camel@brekeke>
-	<AANLkTimr03KAKnz5sfwm19=KzB-ik95WM_qQO0YP9qVs@mail.gmail.com>
-	<1287301490.1951.0.camel@localhost>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: dedekind1@gmail.com, David Brownell <david-b@pacbell.net>,
-	Linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
-	spi-devel-general@lists.sourceforge.net,
-	Mingkai Hu <Mingkai.hu@freescale.com>
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F3D65B6EF1
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:20:16 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9M5KdOW017162
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 16:20:39 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9M7KFMB1085442
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:20:15 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9M7KFT6025542
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:20:15 +1100
+Message-ID: <4CC13B2C.7090908@linux.vnet.ibm.com>
+Date: Fri, 22 Oct 2010 12:50:12 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
+	linuxppc-dev@ozlabs.org
+Subject: BUG with the kernel version 2.6.36-rc1 on power machine
+Content-Type: multipart/mixed; boundary="------------090502060101080704060508"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,29 +32,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------090502060101080704060508
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Oct 17, 2010, at 2:44 AM, Artem Bityutskiy wrote:
+Hi ,
 
-> On Sat, 2010-10-16 at 19:05 -0600, Grant Likely wrote:
->> On Sat, Oct 16, 2010 at 1:17 PM, Artem Bityutskiy =
-<dedekind1@gmail.com> wrote:
->>> On Tue, 2010-10-12 at 18:18 +0800, Mingkai Hu wrote:
->>>> Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
->>>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
->>>> ---
->>>> v4:
->>>> - Updated to latest kernel base(Linux 2.6.36-rc7).
->>>> - Made changes according to Grant's comments.
->>>=20
->>> Looks good to me, pushed to l2-mtd-2.6.git, thanks.
->>=20
->> Wait!  It will break whenever CONFIG_OF is not set.  I broke
->> linux-next with this patch.  It can be solved by wrapping the block
->> with #ifdef CONFIG_OF, but I'd like to find a better solution.
->=20
-> OK, removed.
+With the latest version of kernel 2.6.36-rc1 running on the power machine, came across the following call trace
 
-Grant, poke.  Would like to see this either resolved or have this patch =
-go in for .37 w/CONFIG_OF and fix properly for .38.
+BUG: looking up invalid subclass: 31
+turning off the locking correctness validator.
+Call Trace:
+[c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c (unreliable)
+[c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map+0x194/0x630
+[c00000000e0bfcf0] [c0000000005524f8] .mousedev_create+0xcc/0x234
+[c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
+[c00000000e0bfe30] [c0000000000097e4] .do_one_initcall+0xd8/0x1c8
+[c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
+[c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
 
-- k=
+The config file used for make oldconfig is being attached
+
+Thanks
+Divya
+
+
+
+
+
+--------------090502060101080704060508
+Content-Type: text/plain;
+ name="config_ppc_slub"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="config_ppc_slub"
+
+CONFIG_ALTIVEC=y
+# CONFIG_WIRELESS is not set
+CONFIG_VSX=y
+CONFIG_TASKSTATS=y
+CONFIG_TASK_DELAY_ACCT=y
+CONFIG_TASK_XACCT=y
+CONFIG_TASK_IO_ACCOUNTING=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_TREE_RCU=y
+CONFIG_RCU_FANOUT=64
+CONFIG_CGROUP_SCHED=y
+CONFIG_CGROUPS=y
+CONFIG_CGROUP_NS=y
+CONFIG_CGROUP_FREEZER=y
+CONFIG_CGROUP_DEVICE=y
+CONFIG_CPUSETS=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_CGROUP_CPUACCT=y
+CONFIG_RESOURCE_COUNTERS=y
+CONFIG_CGROUP_MEM_RES_CTLR=y
+CONFIG_CGROUP_MEM_RES_CTLR_SWAP=y
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+CONFIG_IPC_NS=y
+CONFIG_USER_NS=y
+CONFIG_PID_NS=y
+CONFIG_NET_NS=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_KPROBES=y
+CONFIG_CMM=y
+CONFIG_PPC_HAS_HASH_64K=y
+CONFIG_PPC_64K_PAGES=y
+CONFIG_FORCE_MAX_ZONEORDER=9
+CONFIG_PPC_SUBPAGE_PROT=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_ARCH_HAS_WALK_MEMORY=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+CONFIG_KEXEC=y
+CONFIG_MEMORY_HOTPLUG=y
+CONFIG_MEMORY_HOTPLUG_SPARSE=y
+CONFIG_MEMORY_HOTREMOVE=y
+CONFIG_IBMEBUS=y
+CONFIG_EHEA=y
+CONFIG_SCSI_IBMVSCSI=y
+CONFIG_SCSI_IBMVFC=m
+CONFIG_SCSI_IPR=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_DETECT_HUNG_TASK=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+CONFIG_KPROBES_SANITY_TEST=y
+CONFIG_LATENCYTOP=y
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+CONFIG_DEBUG_PAGEALLOC=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_RING_BUFFER=y
+CONFIG_TRACING=y
+CONFIG_TRACING_SUPPORT=y
+ONFIG_BLK_DEV_IO_TRACE=y
+CONFIG_FTRACE_SELFTEST=y
+CONFIG_FTRACE_STARTUP_TEST=y
+CONFIG_KEYS=y
+CONFIG_KEYS_DEBUG_PROC_KEYS=y
+CONFIG_SECURITY=y
+CONFIG_SECURITYFS=y
+CONFIG_SECURITY_NETWORK=y
+CONFIG_RCU_CPU_STALL_DETECTOR=y
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+CONFIG_EXT2_FS_SECURITY=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+CONFIG_EXT4_FS=y
+CONFIG_EXT4DEV_COMPAT=y
+CONFIG_EXT4_FS_XATTR=y
+CONFIG_EXT4_FS_POSIX_ACL=y
+CONFIG_EXT4_FS_SECURITY=y
+CONFIG_JBD=y
+CONFIG_JBD2=y
+CONFIG_REISERFS_PROC_INFO=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+CONFIG_REISERFS_FS_SECURITY=y
+CONFIG_JFS_FS=m
+CONFIG_JFS_POSIX_ACL=y
+CONFIG_JFS_SECURITY=y
+CONFIG_JFS_STATISTICS=y
+CONFIG_FS_POSIX_ACL=y
+CONFIG_FILE_LOCKING=y
+CONFIG_XFS_FS=m
+CONFIG_XFS_QUOTA=y
+CONFIG_XFS_POSIX_ACL=y
+CONFIG_XFS_RT=y
+CONFIG_GFS2_FS=m
+CONFIG_GFS2_FS_LOCKING_DLM=m
+CONFIG_OCFS2_FS=m
+CONFIG_OCFS2_FS_O2CB=m
+CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
+CONFIG_OCFS2_FS_STATS=y
+CONFIG_BTRFS_FS=y
+CONFIG_BTRFS_FS_POSIX_ACL=y
+CONFIG_LOCALVERSION_AUTO=n
+CONFIG_LOCALVERSION=""
+CONFIG_SLUB_DEBUG=y
+CONFIG_SLUB=y
+CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
+CONFIG_HAVE_PERF_COUNTERS=y
+CONFIG_PERF_COUNTERS=y
+CONFIG_DEFAULT_MMAP_MIN_ADDR=65536
+CONFIG_FSNOTIFY=y
+CONFIG_RCU_TORTURE_TEST=y
+CONFIG_RCU_TORTURE_TEST_RUNNABLE=y
+CONFIG_RCU_CPU_STALL_DETECTOR=y
+CONFIG_PERF_EVENTS=y
+CONFIG_PPC_OF_BOOT_TRAMPOLINE=y
+CONFIG_BLOCK=y
+CONFIG_BLK_DEV_BSG=y
+CONFIG_BLK_DEV_INTEGRITY=y
+CONFIG_BLK_CGROUP=y
+CONFIG_DEBUG_BLK_CGROUP=y
+CONFIG_BLOCK_COMPAT=y
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_CFQ_GROUP_IOSCHED=y
+CONFIG_DEBUG_CFQ_IOSCHED=y
+CONFIG_DEFAULT_CFQ=y
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_VIRTUALIZATION=y
+CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_BALLOON=y
+CONFIG_NR_IRQS=512
+CONFIG_MIGRATION=y
+CONFIG_KSM=y
+CONFIG_PM=y
+CONFIG_SUSPEND=y
+CONFIG_SUSPEND_FREEZER=y
+CONFIG_HIBERNATION=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_LOCK_STAT=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_LOCKDEP=y
+CONFIG_IXGBE_DCB=y
+CONFIG_DCB=y
+
+
+--------------090502060101080704060508--
