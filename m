@@ -1,15 +1,14 @@
 Return-Path: <joe@perches.com>
 From: Joe Perches <joe@perches.com>
 To: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH 3/9] drivers/net: typo fix of faild to failed
-Date: Thu, 21 Oct 2010 22:17:14 -0700
-Message-Id: <246fa5db6273b9f79c3bb27ab2abb22e85fe7b38.1287724261.git.joe@perches.com>
-In-Reply-To: <cover.1287724261.git.joe@perches.com>
-References: <cover.1287724261.git.joe@perches.com>
-Cc: cbe-oss-dev@lists.ozlabs.org, Grant Grundler <grundler@parisc-linux.org>,
-	Geoff Levand <geoff@infradead.org>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/9] Typo fixes of faild to failed
+Date: Thu, 21 Oct 2010 22:17:11 -0700
+Message-Id: <cover.1287724261.git.joe@perches.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, jfs-discussion@lists.sourceforge.net,
+	rtc-linux@googlegroups.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-ide@vger.kernel.org, osd-dev@open-osd.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,46 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/net/ps3_gelic_net.c |    4 ++--
- drivers/net/tulip/pnic2.c   |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Joe Perches (9):
+  drivers/ata: typo fix of faild to failed
+  drivers/gpu: typo fix of faild to failed
+  drivers/net: typo fix of faild to failed
+  drivers/rtc: typo fix of faild to failed
+  drivers/video: typo fix of faild to failed
+  fs/exofs: typo fix of faild to failed
+  fs/jfs: typo fix of faild to failed
+  kernel/trace: typo fix of faild to failed
+  net/wanrouter: typo fix of faild to failed
 
-diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
-index 87d6b8f..49f6700 100644
---- a/drivers/net/ps3_gelic_net.c
-+++ b/drivers/net/ps3_gelic_net.c
-@@ -642,7 +642,7 @@ static inline void gelic_card_disable_rxdmac(struct gelic_card *card)
- 	status = lv1_net_stop_rx_dma(bus_id(card), dev_id(card), 0);
- 	if (status)
- 		dev_err(ctodev(card),
--			"lv1_net_stop_rx_dma faild, %d\n", status);
-+			"lv1_net_stop_rx_dma failed, %d\n", status);
- }
- 
- /**
-@@ -660,7 +660,7 @@ static inline void gelic_card_disable_txdmac(struct gelic_card *card)
- 	status = lv1_net_stop_tx_dma(bus_id(card), dev_id(card), 0);
- 	if (status)
- 		dev_err(ctodev(card),
--			"lv1_net_stop_tx_dma faild, status=%d\n", status);
-+			"lv1_net_stop_tx_dma failed, status=%d\n", status);
- }
- 
- /**
-diff --git a/drivers/net/tulip/pnic2.c b/drivers/net/tulip/pnic2.c
-index b819766..186d725 100644
---- a/drivers/net/tulip/pnic2.c
-+++ b/drivers/net/tulip/pnic2.c
-@@ -59,7 +59,7 @@
-  * Bit 14:12 - autonegotiation state (write 001 to start autonegotiate)
-  * Bit 3     - Autopolarity state
-  * Bit 2     - LS10B - link state of 10baseT 0 - good, 1 - failed
-- * Bit 1     - LS100B - link state of 100baseT 0 - good, 1- faild
-+ * Bit 1     - LS100B - link state of 100baseT 0 - good, 1- failed
-  *
-  *
-  * Data Port Selection Info
+ drivers/ata/pata_bf54x.c           |    2 +-
+ drivers/gpu/drm/radeon/radeon_cs.c |    2 +-
+ drivers/net/ps3_gelic_net.c        |    4 ++--
+ drivers/net/tulip/pnic2.c          |    2 +-
+ drivers/rtc/rtc-nuc900.c           |    2 +-
+ drivers/video/bf54x-lq043fb.c      |    6 +++---
+ drivers/video/bfin-t350mcqb-fb.c   |    2 +-
+ fs/exofs/dir.c                     |    4 ++--
+ fs/exofs/inode.c                   |   14 +++++++-------
+ fs/exofs/ios.c                     |   10 +++++-----
+ fs/jfs/jfs_mount.c                 |    4 ++--
+ kernel/trace/trace_kprobe.c        |    2 +-
+ net/wanrouter/wanmain.c            |    4 ++--
+ 13 files changed, 29 insertions(+), 29 deletions(-)
+
 -- 
 1.7.3.1.g432b3.dirty
