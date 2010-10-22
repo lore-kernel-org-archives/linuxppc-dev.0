@@ -1,24 +1,21 @@
-Return-Path: <napohybelskurwysynom2010@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 2D66BB70CB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Oct 2010 05:25:11 +1100 (EST)
-Received: by gyg8 with SMTP id 8so1025823gyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Oct 2010 11:25:10 -0700 (PDT)
-Message-ID: <4CC1D700.7030007@gmail.com>
-Date: Fri, 22 Oct 2010 20:25:04 +0200
-From: "N.P.S." <napohybelskurwysynom2010@gmail.com>
+Return-Path: <tosubrata@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 00310B70CD
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Oct 2010 06:05:00 +1100 (EST)
+Received: by wyb35 with SMTP id 35so1711788wyb.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 12:04:58 -0700 (PDT)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC][PATCH 7/8] Removal of dead code from
-	arch/powerpc/mm/tlb_low_64e.S
-	and arch/powerpc/include/asm/exception-64e.h
-References: <4CC1D2D5.9050009@gmail.com>
-In-Reply-To: <4CC1D2D5.9050009@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4CC13FFF.7040200@linux.vnet.ibm.com>
+References: <4CC13B2C.7090908@linux.vnet.ibm.com>
+	<4CC13FFF.7040200@linux.vnet.ibm.com>
+Date: Sat, 23 Oct 2010 00:34:58 +0530
+Message-ID: <AANLkTim7ep+xdp-rwExf_ZjZ97z-8sN0-nx4sxmZ7wVF@mail.gmail.com>
+Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
+From: Subrata Modak <tosubrata@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0cdff81e9a0c400493395177
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	divya <dipraksh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,99 +25,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit bca5655fdfd3ad0a4891914bd88b28f78e5cec16
-Author: N.P.S <napohybelskurwysynom2010@gmail.com>
-Date:   Thu Oct 21 23:26:48 2010 +0200
+--000e0cdff81e9a0c400493395177
+Content-Type: text/plain; charset=UTF-8
 
-    Removal of dead code from
-    arch/powerpc/mm/tlb_low_64e.S
-    arch/powerpc/include/asm/exception-64e.h
-    
-    Signed-off-by: Zimny Lech <napohybelskurwysynom2010@gmail.com>
-    CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    CC: Paul Mackerras <paulus@samba.org>
-    CC: <linuxppc-dev@lists.ozlabs.org>
-    CC: <linux-kernel@vger.kernel.org>
+This is seen equally on Power6 & Power7 systems.
 
-diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
-index 6d53f31..db74814 100644
---- a/arch/powerpc/include/asm/exception-64e.h
-+++ b/arch/powerpc/include/asm/exception-64e.h
-@@ -65,14 +65,7 @@
- #define EX_TLB_MMUCR0	(12 * 8) /* Level 0 */
- #define EX_TLB_MAS1	(12 * 8) /* Level 0 */
- #define EX_TLB_MAS2	(13 * 8) /* Level 0 */
--#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
--#define EX_TLB_R8	(14 * 8)
--#define EX_TLB_R9	(15 * 8)
--#define EX_TLB_LR	(16 * 8)
--#define EX_TLB_SIZE	(17 * 8)
--#else
- #define EX_TLB_SIZE	(14 * 8)
--#endif
- 
- #define	START_EXCEPTION(label)						\
- 	.globl exc_##label##_book3e;					\
-@@ -157,36 +150,6 @@ exc_##label##_book3e:
- 	addi	r11,r13,PACA_EXTLB;					    \
- 	TLB_MISS_RESTORE(r11)
- 
--#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
--#define TLB_MISS_PROLOG_STATS						    \
--	mflr	r10;							    \
--	std	r8,EX_TLB_R8(r12);					    \
--	std	r9,EX_TLB_R9(r12);					    \
--	std	r10,EX_TLB_LR(r12);
--#define TLB_MISS_RESTORE_STATS					            \
--	ld	r16,EX_TLB_LR(r12);					    \
--	ld	r9,EX_TLB_R9(r12);					    \
--	ld	r8,EX_TLB_R8(r12);					    \
--	mtlr	r16;
--#define TLB_MISS_STATS_D(name)						    \
--	addi	r9,r13,MMSTAT_DSTATS+name;				    \
--	bl	.tlb_stat_inc;
--#define TLB_MISS_STATS_I(name)						    \
--	addi	r9,r13,MMSTAT_ISTATS+name;				    \
--	bl	.tlb_stat_inc;
--#define TLB_MISS_STATS_X(name)						    \
--	ld	r8,PACA_EXTLB+EX_TLB_ESR(r13);				    \
--	cmpdi	cr2,r8,-1;						    \
--	beq	cr2,61f;						    \
--	addi	r9,r13,MMSTAT_DSTATS+name;				    \
--	b	62f;							    \
--61:	addi	r9,r13,MMSTAT_ISTATS+name;				    \
--62:	bl	.tlb_stat_inc;
--#define TLB_MISS_STATS_SAVE_INFO					    \
--	std	r14,EX_TLB_ESR(r12);	/* save ESR */			    \
--
--
--#else
- #define TLB_MISS_PROLOG_STATS
- #define TLB_MISS_RESTORE_STATS
- #define TLB_MISS_STATS_D(name)
-@@ -194,7 +157,6 @@ exc_##label##_book3e:
- #define TLB_MISS_STATS_X(name)
- #define TLB_MISS_STATS_Y(name)
- #define TLB_MISS_STATS_SAVE_INFO
--#endif
- 
- #define SET_IVOR(vector_number, vector_offset)	\
- 	li	r3,vector_offset@l; 		\
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 8b04c54..fc87217 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -757,13 +757,3 @@ tlb_load_linear_fault:
- 	b	exc_data_storage_book3e
- 1:	TLB_MISS_EPILOG_ERROR_SPECIAL
- 	b	exc_instruction_storage_book3e
--
--
--#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
--.tlb_stat_inc:
--1:	ldarx	r8,0,r9
--	addi	r8,r8,1
--	stdcx.	r8,0,r9
--	bne-	1b
--	blr
--#endif
+Regards--
+Subrata
+
+On Fri, Oct 22, 2010 at 1:10 PM, divya <dipraksh@linux.vnet.ibm.com> wrote:
+
+> On Friday 22 October 2010 12:50 PM, divya wrote:
+>
+>> Hi ,
+>>
+>> With the latest version of kernel 2.6.36-rc1 running on the power machine,
+>> came across the following call trace
+>>
+>> BUG: looking up invalid subclass: 31
+>> turning off the locking correctness validator.
+>> Call Trace:
+>> [c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c (unreliable)
+>> [c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map+0x194/0x630
+>> [c00000000e0bfcf0] [c0000000005524f8] .mousedev_create+0xcc/0x234
+>> [c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
+>> [c00000000e0bfe30] [c0000000000097e4] .do_one_initcall+0xd8/0x1c8
+>> [c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
+>> [c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
+>>
+>> The config file used for make oldconfig is being attached
+>>
+>> Thanks
+>> Divya
+>>
+>>
+>>
+>>
+>>  I meant 2.6.36-git1(b5153163ed580e) , and not 2.6.36-rc1.
+> Sorry for the confusion.
+>
+> Thanks
+> Divya
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+-- 
+Regards & Thanks--
+Subrata
+
+--000e0cdff81e9a0c400493395177
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+This is seen equally on Power6 &amp; Power7 systems.<br><br>Regards--<br>Su=
+brata<br><br><div class=3D"gmail_quote">On Fri, Oct 22, 2010 at 1:10 PM, di=
+vya <span dir=3D"ltr">&lt;<a href=3D"mailto:dipraksh@linux.vnet.ibm.com">di=
+praksh@linux.vnet.ibm.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div><div></div><=
+div class=3D"h5">On Friday 22 October 2010 12:50 PM, divya wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hi ,<br>
+<br>
+With the latest version of kernel 2.6.36-rc1 running on the power machine, =
+came across the following call trace<br>
+<br>
+BUG: looking up invalid subclass: 31<br>
+turning off the locking correctness validator.<br>
+Call Trace:<br>
+[c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c (unreliable)<b=
+r>
+[c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map+0x194/0x630<br>
+[c00000000e0bfcf0] [c0000000005524f8] .mousedev_create+0xcc/0x234<br>
+[c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0<br>
+[c00000000e0bfe30] [c0000000000097e4] .do_one_initcall+0xd8/0x1c8<br>
+[c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8<br>
+[c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70<br>
+<br>
+The config file used for make oldconfig is being attached<br>
+<br>
+Thanks<br>
+Divya<br>
+<br>
+<br>
+<br>
+<br>
+</blockquote></div></div>
+I meant 2.6.36-git1(b5153163ed580e) , and not 2.6.36-rc1.<br>
+Sorry for the confusion.<br>
+<br>
+Thanks<br>
+Divya<br><font color=3D"#888888">
+<br>
+--<br>
+To unsubscribe from this list: send the line &quot;unsubscribe linux-kernel=
+&quot; in<br>
+the body of a message to <a href=3D"mailto:majordomo@vger.kernel.org" targe=
+t=3D"_blank">majordomo@vger.kernel.org</a><br>
+More majordomo info at =C2=A0<a href=3D"http://vger.kernel.org/majordomo-in=
+fo.html" target=3D"_blank">http://vger.kernel.org/majordomo-info.html</a><b=
+r>
+Please read the FAQ at =C2=A0<a href=3D"http://www.tux.org/lkml/" target=3D=
+"_blank">http://www.tux.org/lkml/</a><br>
+</font></blockquote></div><br><br clear=3D"all"><br>-- <br>Regards &amp; Th=
+anks--<br>Subrata<br>
+
+--000e0cdff81e9a0c400493395177--
