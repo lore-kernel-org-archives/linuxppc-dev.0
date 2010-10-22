@@ -1,33 +1,31 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
-	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 6F031B6EEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:39:48 +1100 (EST)
-Received: by pxi10 with SMTP id 10so179641pxi.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 00:39:47 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Fri, 22 Oct 2010 01:39:44 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: [PATCH v4 5/5] mtd: m25p80: add support to parse the
-	partitions by OF node
-Message-ID: <20101022073944.GE8205@angua.secretlab.ca>
-References: <1286878714-13090-1-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-2-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-3-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-4-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-5-git-send-email-Mingkai.hu@freescale.com>
-	<1286878714-13090-6-git-send-email-Mingkai.hu@freescale.com>
-	<1287256647.1781.34.camel@brekeke>
-	<AANLkTimr03KAKnz5sfwm19=KzB-ik95WM_qQO0YP9qVs@mail.gmail.com>
-	<1287301490.1951.0.camel@localhost>
-	<3AE1F37D-F328-40EF-8B35-F94CC074D384@freescale.com>
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp03.in.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 77315B70D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:40:54 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id o9M7emO0002944
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 13:10:48 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9M7empZ4182032
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 13:10:48 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9M7emXE008608
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:40:48 +1100
+Message-ID: <4CC13FFF.7040200@linux.vnet.ibm.com>
+Date: Fri, 22 Oct 2010 13:10:47 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3AE1F37D-F328-40EF-8B35-F94CC074D384@freescale.com>
-Cc: dedekind1@gmail.com, David Brownell <david-b@pacbell.net>,
-	Linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
-	spi-devel-general@lists.sourceforge.net,
-	Mingkai Hu <Mingkai.hu@freescale.com>
+To: LKML <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
+	linuxppc-dev@ozlabs.org
+Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
+References: <4CC13B2C.7090908@linux.vnet.ibm.com>
+In-Reply-To: <4CC13B2C.7090908@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 22, 2010 at 01:01:12AM -0500, Kumar Gala wrote:
-> 
-> On Oct 17, 2010, at 2:44 AM, Artem Bityutskiy wrote:
-> 
-> > On Sat, 2010-10-16 at 19:05 -0600, Grant Likely wrote:
-> >> On Sat, Oct 16, 2010 at 1:17 PM, Artem Bityutskiy <dedekind1@gmail.com> wrote:
-> >>> On Tue, 2010-10-12 at 18:18 +0800, Mingkai Hu wrote:
-> >>>> Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
-> >>>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> >>>> ---
-> >>>> v4:
-> >>>> - Updated to latest kernel base(Linux 2.6.36-rc7).
-> >>>> - Made changes according to Grant's comments.
-> >>> 
-> >>> Looks good to me, pushed to l2-mtd-2.6.git, thanks.
-> >> 
-> >> Wait!  It will break whenever CONFIG_OF is not set.  I broke
-> >> linux-next with this patch.  It can be solved by wrapping the block
-> >> with #ifdef CONFIG_OF, but I'd like to find a better solution.
-> > 
-> > OK, removed.
-> 
-> Grant, poke.  Would like to see this either resolved or have this patch go in for .37 w/CONFIG_OF and fix properly for .38.
-> 
+On Friday 22 October 2010 12:50 PM, divya wrote:
+> Hi ,
+>
+> With the latest version of kernel 2.6.36-rc1 running on the power 
+> machine, came across the following call trace
+>
+> BUG: looking up invalid subclass: 31
+> turning off the locking correctness validator.
+> Call Trace:
+> [c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c (unreliable)
+> [c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map+0x194/0x630
+> [c00000000e0bfcf0] [c0000000005524f8] .mousedev_create+0xcc/0x234
+> [c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
+> [c00000000e0bfe30] [c0000000000097e4] .do_one_initcall+0xd8/0x1c8
+> [c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
+> [c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
+>
+> The config file used for make oldconfig is being attached
+>
+> Thanks
+> Divya
+>
+>
+>
+>
+I meant 2.6.36-git1(b5153163ed580e) , and not 2.6.36-rc1.
+Sorry for the confusion.
 
-Okay, I've added it to my devicetree/next branch with the fix.
-Assuming no last minute linux-next problems, I'll be asking Linus to
-pull that branch early next week.
-
-g.
+Thanks
+Divya
