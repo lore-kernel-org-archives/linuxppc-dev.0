@@ -1,28 +1,22 @@
-Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3D65B6EF1
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:20:16 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id o9M5KdOW017162
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 16:20:39 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9M7KFMB1085442
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:20:15 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9M7KFT6025542
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:20:15 +1100
-Message-ID: <4CC13B2C.7090908@linux.vnet.ibm.com>
-Date: Fri, 22 Oct 2010 12:50:12 +0530
-From: divya <dipraksh@linux.vnet.ibm.com>
+Return-Path: <lizf@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+	by ozlabs.org (Postfix) with ESMTP id 09A49B70A9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Oct 2010 18:21:45 +1100 (EST)
+Message-ID: <4CC13BB8.7090003@cn.fujitsu.com>
+Date: Fri, 22 Oct 2010 15:22:32 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Subject: BUG with the kernel version 2.6.36-rc1 on power machine
-Content-Type: multipart/mixed; boundary="------------090502060101080704060508"
+To: Anton Blanchard <anton@samba.org>, subrata@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc: Fix hcall tracepoint recursion
+References: <4C85A88D.10700@cn.fujitsu.com>	<1285689961.11429.12.camel@subratamodak.linux.ibm.com>	<1286954486.4893.15.camel@subratamodak.linux.ibm.com>	<4CB55FE6.6000604@cn.fujitsu.com>	<4CB5615C.4070406@cn.fujitsu.com>	<4CB59825.7060504@cn.fujitsu.com>	<1286995066.4893.17.camel@subratamodak.linux.ibm.com>	<4CBBBCB0.8070406@cn.fujitsu.com>
+	<20101021215212.4a982c85@kryten>
+In-Reply-To: <20101021215212.4a982c85@kryten>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ltp-list@lists.sourceforge.net, Peter Zijlstra <peterz@infradead.org>,
+	LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,197 +26,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090502060101080704060508
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Anton Blanchard wrote:
+> Hi,
+> 
+>> This is a dead loop:
+>>
+>> trace_hcall_entry() -> trace_clock_global() -> trace_hcall_entry() ..
+>>
+>> And this is a PPC specific bug. Hope some ppc guys will fix it?
+>> Or we kill trace_clock_global() if no one actually uses it..
+> 
+> Nasty! How does the patch below look? I had to disable irqs otherwise
+> we would sometimes drop valid events (if we take an interrupt anywhere
+> in the region where depth is elevated, then the entire interrupt will
+> be blocked from calling hcall tracepoints.
+> 
 
-Hi ,
+Thanks!
 
-With the latest version of kernel 2.6.36-rc1 running on the power machine, came across the following call trace
+Subrata, could you test the patch below?
 
-BUG: looking up invalid subclass: 31
-turning off the locking correctness validator.
-Call Trace:
-[c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c (unreliable)
-[c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map+0x194/0x630
-[c00000000e0bfcf0] [c0000000005524f8] .mousedev_create+0xcc/0x234
-[c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
-[c00000000e0bfe30] [c0000000000097e4] .do_one_initcall+0xd8/0x1c8
-[c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
-[c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
-
-The config file used for make oldconfig is being attached
-
-Thanks
-Divya
-
-
-
-
-
---------------090502060101080704060508
-Content-Type: text/plain;
- name="config_ppc_slub"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="config_ppc_slub"
-
-CONFIG_ALTIVEC=y
-# CONFIG_WIRELESS is not set
-CONFIG_VSX=y
-CONFIG_TASKSTATS=y
-CONFIG_TASK_DELAY_ACCT=y
-CONFIG_TASK_XACCT=y
-CONFIG_TASK_IO_ACCOUNTING=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_HAVE_KRETPROBES=y
-CONFIG_TREE_RCU=y
-CONFIG_RCU_FANOUT=64
-CONFIG_CGROUP_SCHED=y
-CONFIG_CGROUPS=y
-CONFIG_CGROUP_NS=y
-CONFIG_CGROUP_FREEZER=y
-CONFIG_CGROUP_DEVICE=y
-CONFIG_CPUSETS=y
-CONFIG_PROC_PID_CPUSET=y
-CONFIG_CGROUP_CPUACCT=y
-CONFIG_RESOURCE_COUNTERS=y
-CONFIG_CGROUP_MEM_RES_CTLR=y
-CONFIG_CGROUP_MEM_RES_CTLR_SWAP=y
-CONFIG_NAMESPACES=y
-CONFIG_UTS_NS=y
-CONFIG_IPC_NS=y
-CONFIG_USER_NS=y
-CONFIG_PID_NS=y
-CONFIG_NET_NS=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_KPROBES=y
-CONFIG_CMM=y
-CONFIG_PPC_HAS_HASH_64K=y
-CONFIG_PPC_64K_PAGES=y
-CONFIG_FORCE_MAX_ZONEORDER=9
-CONFIG_PPC_SUBPAGE_PROT=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_ARCH_HAS_WALK_MEMORY=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
-CONFIG_KEXEC=y
-CONFIG_MEMORY_HOTPLUG=y
-CONFIG_MEMORY_HOTPLUG_SPARSE=y
-CONFIG_MEMORY_HOTREMOVE=y
-CONFIG_IBMEBUS=y
-CONFIG_EHEA=y
-CONFIG_SCSI_IBMVSCSI=y
-CONFIG_SCSI_IBMVFC=m
-CONFIG_SCSI_IPR=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_DETECT_HUNG_TASK=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-CONFIG_KPROBES_SANITY_TEST=y
-CONFIG_LATENCYTOP=y
-CONFIG_SYSCTL_SYSCALL_CHECK=y
-CONFIG_DEBUG_PAGEALLOC=y
-CONFIG_NOP_TRACER=y
-CONFIG_HAVE_FUNCTION_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-CONFIG_RING_BUFFER=y
-CONFIG_TRACING=y
-CONFIG_TRACING_SUPPORT=y
-ONFIG_BLK_DEV_IO_TRACE=y
-CONFIG_FTRACE_SELFTEST=y
-CONFIG_FTRACE_STARTUP_TEST=y
-CONFIG_KEYS=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
-CONFIG_SECURITY=y
-CONFIG_SECURITYFS=y
-CONFIG_SECURITY_NETWORK=y
-CONFIG_RCU_CPU_STALL_DETECTOR=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-CONFIG_EXT2_FS_SECURITY=y
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-CONFIG_EXT3_FS_SECURITY=y
-CONFIG_EXT4_FS=y
-CONFIG_EXT4DEV_COMPAT=y
-CONFIG_EXT4_FS_XATTR=y
-CONFIG_EXT4_FS_POSIX_ACL=y
-CONFIG_EXT4_FS_SECURITY=y
-CONFIG_JBD=y
-CONFIG_JBD2=y
-CONFIG_REISERFS_PROC_INFO=y
-CONFIG_REISERFS_FS_XATTR=y
-CONFIG_REISERFS_FS_POSIX_ACL=y
-CONFIG_REISERFS_FS_SECURITY=y
-CONFIG_JFS_FS=m
-CONFIG_JFS_POSIX_ACL=y
-CONFIG_JFS_SECURITY=y
-CONFIG_JFS_STATISTICS=y
-CONFIG_FS_POSIX_ACL=y
-CONFIG_FILE_LOCKING=y
-CONFIG_XFS_FS=m
-CONFIG_XFS_QUOTA=y
-CONFIG_XFS_POSIX_ACL=y
-CONFIG_XFS_RT=y
-CONFIG_GFS2_FS=m
-CONFIG_GFS2_FS_LOCKING_DLM=m
-CONFIG_OCFS2_FS=m
-CONFIG_OCFS2_FS_O2CB=m
-CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
-CONFIG_OCFS2_FS_STATS=y
-CONFIG_BTRFS_FS=y
-CONFIG_BTRFS_FS_POSIX_ACL=y
-CONFIG_LOCALVERSION_AUTO=n
-CONFIG_LOCALVERSION=""
-CONFIG_SLUB_DEBUG=y
-CONFIG_SLUB=y
-CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
-CONFIG_HAVE_PERF_COUNTERS=y
-CONFIG_PERF_COUNTERS=y
-CONFIG_DEFAULT_MMAP_MIN_ADDR=65536
-CONFIG_FSNOTIFY=y
-CONFIG_RCU_TORTURE_TEST=y
-CONFIG_RCU_TORTURE_TEST_RUNNABLE=y
-CONFIG_RCU_CPU_STALL_DETECTOR=y
-CONFIG_PERF_EVENTS=y
-CONFIG_PPC_OF_BOOT_TRAMPOLINE=y
-CONFIG_BLOCK=y
-CONFIG_BLK_DEV_BSG=y
-CONFIG_BLK_DEV_INTEGRITY=y
-CONFIG_BLK_CGROUP=y
-CONFIG_DEBUG_BLK_CGROUP=y
-CONFIG_BLOCK_COMPAT=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_CFQ_GROUP_IOSCHED=y
-CONFIG_DEBUG_CFQ_IOSCHED=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_VIRTUALIZATION=y
-CONFIG_VIRTIO_PCI=y
-CONFIG_VIRTIO_BALLOON=y
-CONFIG_NR_IRQS=512
-CONFIG_MIGRATION=y
-CONFIG_KSM=y
-CONFIG_PM=y
-CONFIG_SUSPEND=y
-CONFIG_SUSPEND_FREEZER=y
-CONFIG_HIBERNATION=y
-CONFIG_SYSFS_DEPRECATED_V2=y
-CONFIG_LOCK_STAT=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_LOCKDEP=y
-CONFIG_IXGBE_DCB=y
-CONFIG_DCB=y
-
-
---------------090502060101080704060508--
+> Anton
+> --
+> 
+> Subject: [PATCH] powerpc: Fix hcall tracepoint recursion
+> 
+> Spinlocks on shared processor partitions use H_YIELD to notify the
+> hypervisor we are waiting on another virtual CPU. Unfortunately this means
+> the hcall tracepoints can recurse.
+> 
+> The patch below adds a percpu depth and checks it on both the entry and
+> exit hcall tracepoints.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: powerpc.git/arch/powerpc/platforms/pseries/lpar.c
+> ===================================================================
+> --- powerpc.git.orig/arch/powerpc/platforms/pseries/lpar.c	2010-10-21 17:32:00.980003644 +1100
+> +++ powerpc.git/arch/powerpc/platforms/pseries/lpar.c	2010-10-21 17:34:54.942681273 +1100
+> @@ -701,6 +701,13 @@ EXPORT_SYMBOL(arch_free_page);
+>  /* NB: reg/unreg are called while guarded with the tracepoints_mutex */
+>  extern long hcall_tracepoint_refcount;
+>  
+> +/* 
+> + * Since the tracing code might execute hcalls we need to guard against
+> + * recursion. One example of this are spinlocks calling H_YIELD on
+> + * shared processor partitions.
+> + */
+> +static DEFINE_PER_CPU(unsigned int, hcall_trace_depth);
+> +
+>  void hcall_tracepoint_regfunc(void)
+>  {
+>  	hcall_tracepoint_refcount++;
+> @@ -713,12 +720,42 @@ void hcall_tracepoint_unregfunc(void)
+>  
+>  void __trace_hcall_entry(unsigned long opcode, unsigned long *args)
+>  {
+> +	unsigned long flags;
+> +	unsigned int *depth;
+> +
+> +	local_irq_save(flags);
+> +
+> +	depth = &__get_cpu_var(hcall_trace_depth);
+> +
+> +	if (*depth)
+> +		goto out;
+> +
+> +	(*depth)++;
+>  	trace_hcall_entry(opcode, args);
+> +	(*depth)--;
+> +
+> +out:
+> +	local_irq_restore(flags);
+>  }
+>  
+>  void __trace_hcall_exit(long opcode, unsigned long retval,
+>  			unsigned long *retbuf)
+>  {
+> +	unsigned long flags;
+> +	unsigned int *depth;
+> +
+> +	local_irq_save(flags);
+> +
+> +	depth = &__get_cpu_var(hcall_trace_depth);
+> +
+> +	if (*depth)
+> +		goto out;
+> +
+> +	(*depth)++;
+>  	trace_hcall_exit(opcode, retval, retbuf);
+> +	(*depth)--;
+> +
+> +out:
+> +	local_irq_restore(flags);
+>  }
+>  #endif
+> 
+> 
