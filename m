@@ -1,17 +1,21 @@
-Return-Path: <pacman@kosh.dhis.org>
-Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
-	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id 7D2E8B70AA
+Return-Path: <kerstin.jonsson@ericsson.com>
+Received: from mailgw10.se.ericsson.net (mailgw10.se.ericsson.net
+	[193.180.251.61])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B666AB70A8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Oct 2010 20:15:21 +1100 (EST)
-Message-ID: <20101022091519.1924.qmail@kosh.dhis.org>
-From: pacman@kosh.dhis.org
-Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
-To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
-Date: Fri, 22 Oct 2010 04:15:19 -0500 (GMT+5)
-In-Reply-To: <1287608215.2198.23.camel@pasglop>
+	Fri, 22 Oct 2010 21:33:29 +1100 (EST)
+From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+	linux-mmc@vger.kernel.org
+Subject: [PATCH 1/1] powerpc: Fix initramfs size in PPC32 build
+Date: Fri, 22 Oct 2010 12:17:55 +0200
+Message-ID: <1287742675-7614-1-git-send-email-kerstin.jonsson@ericsson.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
-> 
-> On Wed, 2010-10-20 at 13:33 -0500, pacman@kosh.dhis.org wrote:
-> > > Just try :-) "quiesce" is something that afaik only apple ever
-> > > implemented anyways. It uses hooks inside their OF to shut down all
-> > > drivers that do bus master (among other HW sanitization tasks).
-> > 
-> > I booted a version with a prom_close_stdout after the last prom_debug. It
-> > didn't have any effect. That 1000Hz clock was still ticking. 
-> 
-> Ok so you'll have to make up a "workaround" in prom_init that looks for
-> OHCI's in the device-tree and disable them.
+commit ffe8018c3424892c9590048fc36caa6c3e0c8a76 of the -mm tree
+fixes the initramfs size calculation for e.g. s390 but breaks it
+for 32bit architectures which do not define CONFIG_32BIT.
 
-I'm a long way from understanding how to do that.
+This patch fix the problem for PPC32 which will elsewise end up
+with a __initramfs_size of 0.
 
-> 
-> Check if the OHCI node has some existing f-code words you can use for
-> that with "dev /path-to-ohci words" in OF for example. If not, you may
+Signed-off-by: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
+Cc: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/Kconfig |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Nothing there but open close decode-unit encode-unit
-
-> need to use the low level register accessors. Use OF client interface
-> "interpret" to run forth code from C.
-
-Here are the major problems:
-
-1. How do I locate all usb nodes in the device tree?
-
-2. How do I know if a particular usb node is OHCI?
-
-3. Knowing that a node is OHCI, how do I know where its control registers
-are? I'm sure this is calculated from the "reg" property but I don't see how.
-
-4. Knowing where the control registers are, how do I access them? Do I need
-to request a virt-to-phys mapping or can I assume that it's already mapped,
-or that the "rl!" command will do the right thing with a physical address?
-
-5. Which control register should I use to tell the OHCI to be quiet? Just do
-a general reset, or is there something that specifically turns off the
-counter that's been causing the trouble?
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 50cc5d9..d536fe4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -4,6 +4,10 @@ config PPC32
+ 	bool
+ 	default y if !PPC64
+ 
++config 32BIT
++	bool
++	default y if PPC32
++
+ config 64BIT
+ 	bool
+ 	default y if PPC64
 -- 
-Alan Curry
+1.7.1
