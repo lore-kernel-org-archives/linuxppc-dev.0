@@ -1,20 +1,23 @@
-Return-Path: <nikai@nikai.net>
-Received: from webhosting01.bon.m2soft.com (webhosting01.bon.m2soft.com
-	[195.38.20.32])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B8DBDB7043
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AC57CB6F11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Oct 2010 01:08:21 +1100 (EST)
-Date: Fri, 22 Oct 2010 14:58:53 +0200
-From: Nicolas Kaiser <nikai@nikai.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/mv64x60: suspected typo in assignment
-Message-ID: <20101022145853.7216c41f@absol.kitzblitz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+	Sat, 23 Oct 2010 03:51:46 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
+Date: Fri, 22 Oct 2010 09:47:46 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201445906@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <4CC0AD74.8070800@neli.hopto.org>
+References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
+	<4CC0AD74.8070800@neli.hopto.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Micha Nelissen" <micha@neli.hopto.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Untested, but looks like an obvious typo to me.
+Micha Nelissen <micha@neli.hopto.org> wrote:
+>=20
+> Alexandre Bounine wrote:
+> > 1. Using one storage location common for switches and endpoints
+eliminates
+> > unnecessary device type checks during maintenance access operations.
+> > While destination IDs and hop counts have different meaning for
+endpoints and
+> > switches, this does not prevent us from storing them in the primary
+RIO device
+> > structure (rio_dev) for both types.
+>=20
+> How can you say this? The two variables have different meanings, this
+> logically implies you can't merge them. So how do you say 'this does
+not
+> prevent us from ...' without providing a reason?
 
-Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
----
- arch/powerpc/sysdev/mv64x60_dev.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Looks like I formulated it bad - better would be: they have different
+interpretation by hardware but logically in RapidIO they have single
+role - destid/hopcount are a device coordinates in the RIO network used
+to access that device.
 
-diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 1398bc4..a2c4999 100644
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -345,7 +345,7 @@ static int __init mv64x60_i2c_device_setup(struct device_node *np, int id)
- 	if (prop)
- 		pdata.freq_m = *prop;
- 
--	pdata.freq_m = 3;	/* default */
-+	pdata.freq_n = 3;	/* default */
- 	prop = of_get_property(np, "freq_n", NULL);
- 	if (prop)
- 		pdata.freq_n = *prop;
--- 
-1.7.2.2
+> > 2. Convert RIO switch device structures (rio_dev + rio_switch) into
+single
+> > allocation unit. This change is based on the fact that RIO switches
+are using
+> > common RIO device objects anyway. Allocating RIO switch objects as
+RIO devices
+> > with added space for switch information simplifies handling of RIO
+switch device
+> > objects.
+>=20
+> I still don't think that's a good idea because the rdev->rswitch
+pointer
+> can be defined to point to the switch that a given rio_dev is
+connected
+> to. This is useful for quick lookups. How else can to know to which
+> switch a given device is connected?
+
+rdev->rswitch is not a pointer to the entire switch device object - it
+is a pointer to the switch specific extension associated with given
+rio_dev (if applicable). There is no other role for rdev->rswitch.
+
+Why would you keep a pointer to device data extension instead of the
+pointer to attached device object itself?
+
+BTW, I have back and forward links added in previous patches and only
+one link that may be added later is a forward link from mport to the
+attached rio_dev (ptr to rio_switch will not work here because it can be
+switchless connection). But this reference has to be added into
+rio_mport.
+=20
+Alex.
