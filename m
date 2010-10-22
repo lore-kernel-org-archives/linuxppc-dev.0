@@ -1,31 +1,17 @@
-Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 77315B70D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:40:54 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id o9M7emO0002944
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 13:10:48 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9M7empZ4182032
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 13:10:48 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9M7emXE008608
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2010 18:40:48 +1100
-Message-ID: <4CC13FFF.7040200@linux.vnet.ibm.com>
-Date: Fri, 22 Oct 2010 13:10:47 +0530
-From: divya <dipraksh@linux.vnet.ibm.com>
+Return-Path: <pacman@kosh.dhis.org>
+Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
+	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id 7D2E8B70AA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Oct 2010 20:15:21 +1100 (EST)
+Message-ID: <20101022091519.1924.qmail@kosh.dhis.org>
+From: pacman@kosh.dhis.org
+Subject: Re: PROBLEM: memory corrupting bug, bisected to 6dda9d55
+To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
+Date: Fri, 22 Oct 2010 04:15:19 -0500 (GMT+5)
+In-Reply-To: <1287608215.2198.23.camel@pasglop>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
-References: <4CC13B2C.7090908@linux.vnet.ibm.com>
-In-Reply-To: <4CC13B2C.7090908@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,33 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 22 October 2010 12:50 PM, divya wrote:
-> Hi ,
->
-> With the latest version of kernel 2.6.36-rc1 running on the power 
-> machine, came across the following call trace
->
-> BUG: looking up invalid subclass: 31
-> turning off the locking correctness validator.
-> Call Trace:
-> [c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c (unreliable)
-> [c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map+0x194/0x630
-> [c00000000e0bfcf0] [c0000000005524f8] .mousedev_create+0xcc/0x234
-> [c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
-> [c00000000e0bfe30] [c0000000000097e4] .do_one_initcall+0xd8/0x1c8
-> [c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
-> [c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
->
-> The config file used for make oldconfig is being attached
->
-> Thanks
-> Divya
->
->
->
->
-I meant 2.6.36-git1(b5153163ed580e) , and not 2.6.36-rc1.
-Sorry for the confusion.
+Benjamin Herrenschmidt writes:
+> 
+> On Wed, 2010-10-20 at 13:33 -0500, pacman@kosh.dhis.org wrote:
+> > > Just try :-) "quiesce" is something that afaik only apple ever
+> > > implemented anyways. It uses hooks inside their OF to shut down all
+> > > drivers that do bus master (among other HW sanitization tasks).
+> > 
+> > I booted a version with a prom_close_stdout after the last prom_debug. It
+> > didn't have any effect. That 1000Hz clock was still ticking. 
+> 
+> Ok so you'll have to make up a "workaround" in prom_init that looks for
+> OHCI's in the device-tree and disable them.
 
-Thanks
-Divya
+I'm a long way from understanding how to do that.
+
+> 
+> Check if the OHCI node has some existing f-code words you can use for
+> that with "dev /path-to-ohci words" in OF for example. If not, you may
+
+Nothing there but open close decode-unit encode-unit
+
+> need to use the low level register accessors. Use OF client interface
+> "interpret" to run forth code from C.
+
+Here are the major problems:
+
+1. How do I locate all usb nodes in the device tree?
+
+2. How do I know if a particular usb node is OHCI?
+
+3. Knowing that a node is OHCI, how do I know where its control registers
+are? I'm sure this is calculated from the "reg" property but I don't see how.
+
+4. Knowing where the control registers are, how do I access them? Do I need
+to request a virt-to-phys mapping or can I assume that it's already mapped,
+or that the "rl!" command will do the right thing with a physical address?
+
+5. Which control register should I use to tell the OHCI to be quiet? Just do
+a general reset, or is there something that specifically turns off the
+counter that's been causing the trouble?
+
+-- 
+Alan Curry
