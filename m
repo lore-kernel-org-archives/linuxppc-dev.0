@@ -1,23 +1,20 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id A649BB70CC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Oct 2010 08:59:06 +1100 (EST)
-Message-ID: <4CC20923.8050400@neli.hopto.org>
-Date: Fri, 22 Oct 2010 23:58:59 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+Return-Path: <yong.zhang0@gmail.com>
+Date: Sat, 23 Oct 2010 17:36:30 +0800
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: Subrata Modak <subrata@linux.vnet.ibm.com>
+Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
+Message-ID: <20101023093630.GA3036@zhy>
+References: <4CC13B2C.7090908@linux.vnet.ibm.com>
+	<4CC13FFF.7040200@linux.vnet.ibm.com>
+	<AANLkTikmpohofzO_dV_Dv8EfcEMsyy4cdhGMUD-PAFO3@mail.gmail.com>
+	<1287774802.19497.1.camel@subratamodak.linux.ibm.com>
 MIME-Version: 1.0
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
-References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
-	<4CC0AD74.8070800@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445906@CORPEXCH1.na.ads.idt.com>
-	<4CC1D7DE.7060405@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445A6B@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55201445A6B@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1287774802.19497.1.camel@subratamodak.linux.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, divya <dipraksh@linux.vnet.ibm.com>
+Reply-To: Yong Zhang <yong.zhang0@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +24,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bounine, Alexandre wrote:
-> Micha Nelissen <micha@neli.hopto.org> wrote:
->> rswitch->rdev->destid should be the id associated with a given switch,
->> so that every (processor) device can agree what id some switch has.
+On Sat, Oct 23, 2010 at 12:43:21AM +0530, Subrata Modak wrote:
+> This is equally seen for both Power6 and Power7 machines.
+
+Seems resolved by part of http://lkml.org/lkml/2010/10/13/67
+
+Thanks,
+Yong
+
 > 
-> If we will need to identify the same physical switch by different
-> processors we may use the component tag which now is unique for every
-> device.
-
-Yes, identification is the point. I think it might be confusing to have 
-a destid *and* a component tag id which are slightly different. The 
-destid is unambiguous (if you know whether the device is a switch or 
-endpoint) so I think it makes sense to use that if possible.
-
-> This actually gives me another idea: instead of using global
-> next_switchid counter make rswitch->switchid = component_tag and
-> switches in sysfs will look identical for every processor (or just get
-> rid of rswitch->switchid and use component_tag directly for switches).
-
-I still prefer the destid as the single identification id.
-
-Micha
+> Regards--
+> Subrata
+> 
+> On Sat, 2010-10-23 at 00:37 +0530, Subrata Modak wrote:
+> > 
+> > 
+> > ---------- Forwarded message ----------
+> > From: divya <dipraksh@linux.vnet.ibm.com>
+> > Date: Fri, Oct 22, 2010 at 1:10 PM
+> > Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
+> > To: LKML <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
+> > linuxppc-dev@ozlabs.org
+> > 
+> > 
+> > 
+> > On Friday 22 October 2010 12:50 PM, divya wrote:
+> >         Hi ,
+> >         
+> >         With the latest version of kernel 2.6.36-rc1 running on the
+> >         power machine, came across the following call trace
+> >         
+> >         BUG: looking up invalid subclass: 31
+> >         turning off the locking correctness validator.
+> >         Call Trace:
+> >         [c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c
+> >         (unreliable)
+> >         [c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map
+> >         +0x194/0x630
+> >         [c00000000e0bfcf0] [c0000000005524f8] .mousedev_create
+> >         +0xcc/0x234
+> >         [c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
+> >         [c00000000e0bfe30] [c0000000000097e4] .do_one_initcall
+> >         +0xd8/0x1c8
+> >         [c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
+> >         [c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
+> >         
+> >         The config file used for make oldconfig is being attached
+> >         
+> >         Thanks
+> >         Divya
+> >         
+> >         
+> >         
+> >         
+> > I meant 2.6.36-git1(b5153163ed580e) , and not 2.6.36-rc1.
+> > Sorry for the confusion.
+> > 
+> > Thanks
+> > Divya
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> > 
+> > 
+> > 
+> > -- 
+> > Regards & Thanks--
+> > Subrata
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
