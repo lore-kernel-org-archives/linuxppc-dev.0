@@ -1,21 +1,12 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5B451B70A9
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 19:19:18 +1100 (EST)
-Message-ID: <4CC53E18.3050204@windriver.com>
-Date: Mon, 25 Oct 2010 16:21:44 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <b32167@ld1090.zin33.ap.freescale.net>
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH][v0] RTC driver(Linux) for PT7C4338 chip.
+Date: Mon, 25 Oct 2010 13:38:58 +0530
+Message-ID: <1287994138-31771-1-git-send-email-Priyanka.Jain@freescale.com>
 MIME-Version: 1.0
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: CONFIG_FEC is not good for mpc8xx ethernet?
-References: <AANLkTikNZ+LD-FZ_vK-R3Rfu7RzRSAL_zT4xbWgYL=8R@mail.gmail.com>	<4CBC080A.7030005@windriver.com>	<20101018114214.2e72a616@udp111988uds.am.freescale.net>	<4CBCFC5D.3010403@windriver.com>	<AANLkTinN-xOecVynPYxmLoT9HJKFs0iPo3pLXF05Tudv@mail.gmail.com>
-	<AANLkTimW1_Hc3kQ2Wbn6zDMUSJvRCxn0XdGw4wB-mm0D@mail.gmail.com>
-In-Reply-To: <AANLkTimW1_Hc3kQ2Wbn6zDMUSJvRCxn0XdGw4wB-mm0D@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,75 +16,275 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shawn Jin wrote:
->> The problem for me is that the PHY failed to be probed. The related
->> error messages are shown below. I even tried the patch Tiejun pointed
->> out. But that doesn't help. The phy ID read from the bus was all Fs.
->>
->> FEC MII Bus: probed
->> mdio_bus fa200e00: error probing PHY at address 0
-> 
-> I think I figured out the probing failure. My board uses PortD bit8 as
-> an input pin from phy's MDC. I didn't set up this pin assignment.
-> 
-> When probing the PHY the fs_enet_fec_mii_read() is called to get phy
-> id. The correct phy id was returned. However when I tried to set up
-> the ip address using the command "ifconfig eth0 192.168.0.4". The same
-> function was called again. But this time the fecp->fec_r_cntrl
-> mysteriously became 0 so the kernel reported bug for that.
+PT7C4338 chip is manufactured by Pericom Technology Inc.
+It is a serial real-time clock which provides:
+1)Low-power clock/calendar.
+2)Programmable square-wave output.
+It has 56 bytes of nonvolatile RAM.
 
-Sorry for this delay response since I'm a bit busying recently:)
+Freescale P1010RDB uses PT7C4338 as RTC.
 
-If you're sure that work well at the first time it may be issued from PIN. Are
-the PINs used to MDIO bus multiplexed? Maybe you miss something to re-configure
-PIN with the appropriate mode, OUT direction and some GPIO REGs to bind your PHY
-PINs. I means maybe other drivers also use same PINs and re-configure them, so
-they don't work properly as the first time. So you can try adding some codes to
-re-initial PINs as PHY expect on here to check this again.
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+---
+ Based of unified git(next branch) for P1010 RDB.
+ drivers/rtc/Kconfig        |    9 ++
+ drivers/rtc/Makefile       |    1 +
+ drivers/rtc/rtc-pt7c4338.c |  215 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 225 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-pt7c4338.c
 
-Tiejun
-
-> 
-> # ifconfig eth0 192.168.0.4
-> ------------[ cut here ]------------
-> kernel BUG at drivers/net/fs_enet/mii-fec.c:58!
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> MyMPC870
-> NIP: c012b79c LR: c012963c CTR: c012b77c
-> REGS: c7457c60 TRAP: 0700   Not tainted  (2.6.33.5)
-> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24020042  XER: 20000000
-> TASK = c7840000[236] 'ifconfig' THREAD: c7456000
-> GPR00: 00000001 c7457d10 c7840000 c7845400 00000000 00000001 ffffffff 00000000
-> GPR08: c77c44fc c906ce00 c784806c 00000b9f 84020042 100b986c 10096042 1009604f
-> GPR16: 1009603b 10096030 10096001 100b188e c7457e18 ffff8914 c742430c c740b000
-> GPR24: c7424300 c78443c0 00000001 00000000 c7845428 c7845400 c7845600 c7845600
-> NIP [c012b79c] fs_enet_fec_mii_read+0x20/0x90
-> LR [c012963c] mdiobus_read+0x50/0x74
-> Call Trace:
-> [c7457d10] [c0115744] driver_bound+0x60/0xa0 (unreliable)
-> [c7457d30] [c0129094] genphy_config_init+0x24/0xd4
-> [c7457d40] [c0128920] phy_init_hw+0x4c/0x78
-> [c7457d50] [c0128a40] phy_connect_direct+0x24/0x88
-> [c7457d70] [c0133e50] of_phy_connect+0x48/0x6c
-> [c7457d90] [c012ae10] fs_enet_open+0xf0/0x2cc
-> [c7457db0] [c0148a54] dev_open+0x100/0x138
-> [c7457dd0] [c0146ca0] dev_change_flags+0x80/0x1a8
-> [c7457df0] [c018e104] devinet_ioctl+0x630/0x750
-> [c7457e60] [c018eb5c] inet_ioctl+0xcc/0xf8
-> [c7457e70] [c01370d8] sock_ioctl+0x60/0x28c
-> [c7457e90] [c007dbcc] vfs_ioctl+0x38/0x9c
-> [c7457ea0] [c007ddf0] do_vfs_ioctl+0x84/0x708
-> [c7457f10] [c007e4b4] sys_ioctl+0x40/0x74
-> [c7457f40] [c000de60] ret_from_syscall+0x0/0x38
-> Instruction dump:
-> 80010014 7c0803a6 38210010 4e800020 81230018 81290000 7c0004ac 80090144
-> 0c000000 4c00012c 68000004 5400f7fe <0f000000> 5484b810 64846002 54a5925a
-> ---[ end trace 41bf95259a68372e ]---
-> Trace/breakpoint trap
-> 
-> I cannot find where the fec_r_cntrl would be reset to 0 after
-> fs_enet_mdio_probe() sets it to FEC_RCNTRL_MII_MODE. Odd?
-> 
-> Thanks,
-> -Shawn.
-> 
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 10ba12c..6ff0901 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -324,6 +324,15 @@ config RTC_DRV_RX8025
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-rx8025.
+ 
++config RTC_DRV_PT7C4338
++	tristate "Pericom Technology Inc. PT7C4338 RTC"
++	help
++	  If you say yes here you get support for the Pericom Technology
++	  Inc. PT7C4338 RTC chip.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-pt7c4338.
++
+ endif # I2C
+ 
+ comment "SPI RTC drivers"
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 5adbba7..4014607 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -70,6 +70,7 @@ obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
+ obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
+ obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
+ obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
++obj-$(CONFIG_RTC_DRV_PT7C4338)	+= rtc-pt7c4338.o
+ obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
+ obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
+ obj-$(CONFIG_RTC_DRV_RP5C01)	+= rtc-rp5c01.o
+diff --git a/drivers/rtc/rtc-pt7c4338.c b/drivers/rtc/rtc-pt7c4338.c
+new file mode 100644
+index 0000000..fca52cd
+--- /dev/null
++++ b/drivers/rtc/rtc-pt7c4338.c
+@@ -0,0 +1,215 @@
++/*
++ * Copyright 2010 Freescale Semiconductor, Inc.
++ *
++ * Author:	Priyanka Jain <Priyanka.Jain@freescale.com>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++/*
++ * This file provides Date & Time support (no alarms) for PT7C4338 chip.
++ *
++ * This file is based on drivers/rtc/rtc-ds1307.c
++ *
++ * PT7C4338 chip is manufactured by Pericom Technology Inc.
++ * It is a serial real-time clock which provides
++ * 1)Low-power clock/calendar.
++ * 2)Programmable square-wave output.
++ * It has 56 bytes of nonvolatile RAM.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/i2c.h>
++#include <linux/rtc.h>
++#include <linux/bcd.h>
++
++/* RTC register addresses */
++#define PT7C4338_REG_SECONDS          0x00
++#define PT7C4338_REG_MINUTES          0x01
++#define PT7C4338_REG_HOURS            0x02
++#define PT7C4338_REG_AMPM             0x02
++#define PT7C4338_REG_DAY              0x03
++#define PT7C4338_REG_DATE             0x04
++#define PT7C4338_REG_MONTH            0x05
++#define PT7C4338_REG_YEAR             0x06
++#define PT7C4338_REG_CTRL_STAT        0x07
++
++/* RTC second register address bit */
++#define PT7C4338_SEC_BIT_CH           0x80	/*Clock Halt (in Register 0)*/
++
++/* RTC control and status register bits */
++#define PT7C4338_CTRL_STAT_BIT_RS0    0x1	/*Rate select 0*/
++#define PT7C4338_CTRL_STAT_BIT_RS1    0x2	/*Rate select 1*/
++#define PT7C4338_CTRL_STAT_BIT_SQWE   0x10	/*Square Wave Enable*/
++#define PT7C4338_CTRL_STAT_BIT_OSF    0x20	/*Oscillator Stop Flag*/
++#define PT7C4338_CTRL_STAT_BIT_OUT    0x80	/*Output Level Control*/
++
++static const struct i2c_device_id pt7c4338_id[] = {
++	{ "pt7c4338", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, pt7c4338_id);
++
++struct pt7c4338{
++	struct i2c_client *client;
++	struct rtc_device *rtc;
++};
++
++static int pt7c4338_read_time(struct device *dev, struct rtc_time *time)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	int ret;
++	u8 buf[7];
++	u8 year, month, day, hour, minute, second;
++	u8 week, twelve_hr, am_pm;
++
++	ret = i2c_smbus_read_i2c_block_data(client,
++			PT7C4338_REG_SECONDS, 7, buf);
++	if (ret < 0)
++		return ret;
++	if (ret < 7)
++		return -EIO;
++
++	second = buf[0];
++	minute = buf[1];
++	hour = buf[2];
++	week = buf[3];
++	day = buf[4];
++	month = buf[5];
++	year = buf[6];
++
++	/* Extract additional information for AM/PM */
++	twelve_hr = hour & 0x40;
++	am_pm = hour & 0x20;
++
++	/* Write to rtc_time structure */
++	time->tm_sec = bcd2bin(second & 0x7f);
++	time->tm_min = bcd2bin(minute & 0x7f);
++	if (twelve_hr) {
++		/* Convert to 24 hr */
++		if (am_pm)
++			time->tm_hour = bcd2bin(hour & 0x10) + 12;
++		else
++			time->tm_hour = bcd2bin(hour & 0xBF);
++	} else {
++		time->tm_hour = bcd2bin(hour);
++	}
++
++	time->tm_wday = bcd2bin(week & 0x07) - 1;
++	time->tm_mday = bcd2bin(day & 0x3f);
++	time->tm_mon = bcd2bin(month & 0x1F) - 1;
++	/* assume 20YY not 19YY */
++	time->tm_year = bcd2bin(year) + 100;
++
++	return 0;
++}
++
++static int pt7c4338_set_time(struct device *dev, struct rtc_time *time)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	u8 buf[7];
++
++	/* Extract time from rtc_time and load into pt7c4338*/
++	buf[0] = bin2bcd(time->tm_sec);
++	buf[1] = bin2bcd(time->tm_min);
++	buf[2] = bin2bcd(time->tm_hour);
++	buf[3] = bin2bcd(time->tm_wday + 1); /* Day of the week */
++	buf[4] = bin2bcd(time->tm_mday); /* Date */
++	buf[5] = bin2bcd(time->tm_mon + 1);
++
++	/* assume 20YY not 19YY */
++	if (time->tm_year >= 100)
++		buf[6] = bin2bcd(time->tm_year - 100);
++	else
++		buf[6] = bin2bcd(time->tm_year);
++
++	return i2c_smbus_write_i2c_block_data(client,
++					PT7C4338_REG_SECONDS, 7, buf);
++}
++
++static const struct rtc_class_ops pt7c4338_rtc_ops = {
++	.read_time = pt7c4338_read_time,
++	.set_time = pt7c4338_set_time,
++};
++
++static int pt7c4338_probe(struct i2c_client *client,
++		const struct i2c_device_id *id)
++{
++	struct pt7c4338 *pt7c4338;
++	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
++	int ret;
++
++	pt7c4338 = kzalloc(sizeof(struct pt7c4338), GFP_KERNEL);
++	if (!pt7c4338)
++		return -ENOMEM;
++
++	pt7c4338->client = client;
++	i2c_set_clientdata(client, pt7c4338);
++	pt7c4338->rtc = rtc_device_register(client->name, &client->dev,
++					&pt7c4338_rtc_ops, THIS_MODULE);
++	if (IS_ERR(pt7c4338->rtc)) {
++		ret = PTR_ERR(pt7c4338->rtc);
++		dev_err(&client->dev, "unable to register the class device\n");
++		goto out_free;
++	}
++
++	return 0;
++out_free:
++	i2c_set_clientdata(client, NULL);
++	kfree(pt7c4338);
++	return ret;
++}
++
++static int __devexit pt7c4338_remove(struct i2c_client *client)
++{
++	struct pt7c4338 *pt7c4338 = i2c_get_clientdata(client);
++
++	rtc_device_unregister(pt7c4338->rtc);
++	i2c_set_clientdata(client, NULL);
++	kfree(pt7c4338);
++	return 0;
++}
++
++static struct i2c_driver pt7c4338_driver = {
++	.driver = {
++		.name = "rtc-pt7c4338",
++		.owner = THIS_MODULE,
++	},
++	.probe = pt7c4338_probe,
++	.remove = __devexit_p(pt7c4338_remove),
++	.id_table = pt7c4338_id,
++};
++
++static int __init pt7c4338_init(void)
++{
++	return i2c_add_driver(&pt7c4338_driver);
++}
++
++static void __exit pt7c4338_exit(void)
++{
++	i2c_del_driver(&pt7c4338_driver);
++}
++
++module_init(pt7c4338_init);
++module_exit(pt7c4338_exit);
++
++MODULE_AUTHOR("Priyanka Jain <Priyanka.Jain@freescale.com>");
++MODULE_DESCRIPTION("pericom Technology Inc. PT7C4338 RTC Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.6.5.6
