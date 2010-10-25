@@ -1,24 +1,21 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1669DB6F11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 25 Oct 2010 18:28:46 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[10.96.97.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 12D11D2FC6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 25 Oct 2010 09:22:00 +0200 (CEST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mpc5200: MPC5200 ATA driver requires BMDMA to be
-	configured
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5B451B70A9
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 19:19:18 +1100 (EST)
+Message-ID: <4CC53E18.3050204@windriver.com>
+Date: Mon, 25 Oct 2010 16:21:44 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Message-ID: <201010250921.59640.roman.fietze@telemotive.de>
-Date: Mon, 25 Oct 2010 09:21:59 +0200
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Shawn Jin <shawnxjin@gmail.com>
+Subject: Re: CONFIG_FEC is not good for mpc8xx ethernet?
+References: <AANLkTikNZ+LD-FZ_vK-R3Rfu7RzRSAL_zT4xbWgYL=8R@mail.gmail.com>	<4CBC080A.7030005@windriver.com>	<20101018114214.2e72a616@udp111988uds.am.freescale.net>	<4CBCFC5D.3010403@windriver.com>	<AANLkTinN-xOecVynPYxmLoT9HJKFs0iPo3pLXF05Tudv@mail.gmail.com>
+	<AANLkTimW1_Hc3kQ2Wbn6zDMUSJvRCxn0XdGw4wB-mm0D@mail.gmail.com>
+In-Reply-To: <AANLkTimW1_Hc3kQ2Wbn6zDMUSJvRCxn0XdGw4wB-mm0D@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <scottwood@freescale.com>, ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,77 +25,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello List Members,
+Shawn Jin wrote:
+>> The problem for me is that the PHY failed to be probed. The related
+>> error messages are shown below. I even tried the patch Tiejun pointed
+>> out. But that doesn't help. The phy ID read from the bus was all Fs.
+>>
+>> FEC MII Bus: probed
+>> mdio_bus fa200e00: error probing PHY at address 0
+> 
+> I think I figured out the probing failure. My board uses PortD bit8 as
+> an input pin from phy's MDC. I didn't set up this pin assignment.
+> 
+> When probing the PHY the fs_enet_fec_mii_read() is called to get phy
+> id. The correct phy id was returned. However when I tried to set up
+> the ip address using the command "ifconfig eth0 192.168.0.4". The same
+> function was called again. But this time the fecp->fec_r_cntrl
+> mysteriously became 0 so the kernel reported bug for that.
 
-I updated to v2.6.34 from torvalds/master.
+Sorry for this delay response since I'm a bit busying recently:)
 
-While playing around with ATA settings (I have problems with MWDMA2 on
-a Lite5200B compatible board, the problems are not related to this
-patch here), I also turned off BMDMA, which caused compile errors on
-pata_mpc52xx. So my question is, is the patch below correct? Should we
-only offer the pata_mpc52xx if BMDMA is configured?
+If you're sure that work well at the first time it may be issued from PIN. Are
+the PINs used to MDIO bus multiplexed? Maybe you miss something to re-configure
+PIN with the appropriate mode, OUT direction and some GPIO REGs to bind your PHY
+PINs. I means maybe other drivers also use same PINs and re-configure them, so
+they don't work properly as the first time. So you can try adding some codes to
+re-initial PINs as PHY expect on here to check this again.
 
+Tiejun
 
-Subject: [PATCH] powerpc/mpc5200: MPC5200 ATA driver requires BMDMA to be 
-configured
-
-The driver uses e.g. bmdma_setup which is only available with
-ATA_BMDMA beeing configured.
-
-Move the configuration of the driver pata_mpc52xx down in Kconfig to
-the section "PATA SFF controllers with BMDMA".
-
-Signed-off-by: Roman Fietze <roman.fietze@telemotive.de>
----
- drivers/ata/Kconfig |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 11ec911..85756b8 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -128,16 +128,6 @@ config PDC_ADMA
- 
- 	  If unsure, say N.
- 
--config PATA_MPC52xx
--	tristate "Freescale MPC52xx SoC internal IDE"
--	depends on PPC_MPC52xx && PPC_BESTCOMM
--	select PPC_BESTCOMM_ATA
--	help
--	  This option enables support for integrated IDE controller
--	  of the Freescale MPC52xx SoC.
--
--	  If unsure, say N.
--
- config PATA_OCTEON_CF
- 	tristate "OCTEON Boot Bus Compact Flash support"
- 	depends on CPU_CAVIUM_OCTEON
-@@ -491,6 +481,16 @@ config PATA_MARVELL
- 
- 	  If unsure, say N.
- 
-+config PATA_MPC52xx
-+	tristate "Freescale MPC52xx SoC internal IDE"
-+	depends on PPC_MPC52xx && PPC_BESTCOMM
-+	select PPC_BESTCOMM_ATA
-+	help
-+	  This option enables support for integrated IDE controller
-+	  of the Freescale MPC52xx SoC.
-+
-+	  If unsure, say N.
-+
- config PATA_NETCELL
- 	tristate "NETCELL Revolution RAID support"
- 	depends on PCI
--- 
-1.7.3.1
-
-
-
-Roman
-
--- 
-Roman Fietze              Telemotive AG Buero Muehlhausen
-Breitwiesen                             73347 Muehlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+> 
+> # ifconfig eth0 192.168.0.4
+> ------------[ cut here ]------------
+> kernel BUG at drivers/net/fs_enet/mii-fec.c:58!
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> MyMPC870
+> NIP: c012b79c LR: c012963c CTR: c012b77c
+> REGS: c7457c60 TRAP: 0700   Not tainted  (2.6.33.5)
+> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24020042  XER: 20000000
+> TASK = c7840000[236] 'ifconfig' THREAD: c7456000
+> GPR00: 00000001 c7457d10 c7840000 c7845400 00000000 00000001 ffffffff 00000000
+> GPR08: c77c44fc c906ce00 c784806c 00000b9f 84020042 100b986c 10096042 1009604f
+> GPR16: 1009603b 10096030 10096001 100b188e c7457e18 ffff8914 c742430c c740b000
+> GPR24: c7424300 c78443c0 00000001 00000000 c7845428 c7845400 c7845600 c7845600
+> NIP [c012b79c] fs_enet_fec_mii_read+0x20/0x90
+> LR [c012963c] mdiobus_read+0x50/0x74
+> Call Trace:
+> [c7457d10] [c0115744] driver_bound+0x60/0xa0 (unreliable)
+> [c7457d30] [c0129094] genphy_config_init+0x24/0xd4
+> [c7457d40] [c0128920] phy_init_hw+0x4c/0x78
+> [c7457d50] [c0128a40] phy_connect_direct+0x24/0x88
+> [c7457d70] [c0133e50] of_phy_connect+0x48/0x6c
+> [c7457d90] [c012ae10] fs_enet_open+0xf0/0x2cc
+> [c7457db0] [c0148a54] dev_open+0x100/0x138
+> [c7457dd0] [c0146ca0] dev_change_flags+0x80/0x1a8
+> [c7457df0] [c018e104] devinet_ioctl+0x630/0x750
+> [c7457e60] [c018eb5c] inet_ioctl+0xcc/0xf8
+> [c7457e70] [c01370d8] sock_ioctl+0x60/0x28c
+> [c7457e90] [c007dbcc] vfs_ioctl+0x38/0x9c
+> [c7457ea0] [c007ddf0] do_vfs_ioctl+0x84/0x708
+> [c7457f10] [c007e4b4] sys_ioctl+0x40/0x74
+> [c7457f40] [c000de60] ret_from_syscall+0x0/0x38
+> Instruction dump:
+> 80010014 7c0803a6 38210010 4e800020 81230018 81290000 7c0004ac 80090144
+> 0c000000 4c00012c 68000004 5400f7fe <0f000000> 5484b810 64846002 54a5925a
+> ---[ end trace 41bf95259a68372e ]---
+> Trace/breakpoint trap
+> 
+> I cannot find where the fec_r_cntrl would be reset to 0 after
+> fs_enet_mdio_probe() sets it to FEC_RCNTRL_MII_MODE. Odd?
+> 
+> Thanks,
+> -Shawn.
+> 
