@@ -1,27 +1,25 @@
-Return-Path: <BATV+0c91a423bf0bc08960f9+2619+infradead.org+dwmw2@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 068ABB70D1
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Oct 2010 01:15:40 +1100 (EST)
-Subject: Re: [PATCH 1/2] P4080/eLBC: Make Freescale elbc interrupt common
-	to elbc	devices
-From: David Woodhouse <dwmw2@infradead.org>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-In-Reply-To: <4CBC1775.6000706@windriver.com>
-References: <1287386552-10647-1-git-send-email-tie-fei.zang@freescale.com>
-	<4CBC0B95.9010300@windriver.com>
-	<3850A844E6A3854C827AC5C0BEC7B60A2B0708@zch01exm23.fsl.freescale.net>
-	<4CBC16FD.6030507@windriver.com>  <4CBC1775.6000706@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 25 Oct 2010 15:15:27 +0100
-Message-ID: <1288016127.5674.45.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>, dedekind1@gmail.com,
-	Zang Roy-R61911 <r61911@freescale.com>,
-	Lan Chunhe-B25806 <B25806@freescale.com>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <micha@neli.hopto.org>
+Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
+	by ozlabs.org (Postfix) with ESMTP id 46E5FB70B8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 26 Oct 2010 03:13:35 +1100 (EST)
+Message-ID: <4CC5ACAB.7070309@neli.hopto.org>
+Date: Mon, 25 Oct 2010 18:13:31 +0200
+From: Micha Nelissen <micha@neli.hopto.org>
+MIME-Version: 1.0
+To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+Subject: Re: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
+References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
+	<4CC0AD74.8070800@neli.hopto.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445906@CORPEXCH1.na.ads.idt.com>
+	<4CC1D7DE.7060405@neli.hopto.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445A6B@CORPEXCH1.na.ads.idt.com>
+	<4CC20923.8050400@neli.hopto.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445BA4@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55201445BA4@CORPEXCH1.na.ads.idt.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-10-18 at 17:46 +0800, tiejun.chen wrote:
+Bounine, Alexandre wrote:
+> Micha Nelissen <micha@neli.hopto.org> wrote:
+>>> rid of rswitch->switchid and use component_tag directly for
+> switches).
+>> I still prefer the destid as the single identification id.
 > 
-> >>> Looks you always iounmap(fsl_lbc_ctrl_dev->regs) on position 'err' but here
-> >>> of_iomap() is already failed you should skip iounmap() fsl_lbc_ctrl_dev->regs
-> >>> again. So you should improve that as the following on 'err', or layout 'err'
-> >>> in
-> >>> gain.
-> >>> ------
-> >>>     if(fsl_lbc_ctrl_dev->regs)
-> >>>             iounmap(fsl_lbc_ctrl_dev->regs);
-> >>>
-> >>> Tiejun
-> >> You are right!
-> >> How about
-> >>  
-> >>         if (!fsl_lbc_ctrl_dev->regs) {
-> >>                 dev_err(&dev->dev, "failed to get memory region\n");
-> >>                 kfree(fsl_lbc_ctrl_dev);
-> >>                 return -ENOMEM;
-> >>         }
-> > 
-> > Although this is a big problem, I prefer to return 'ENXIO' :)
->                 ^
->                 Typo: is not a ...... 
+> In your patch you allocate individual destid for switches. This method
+> has two problems:
+> 1. The destid for the switch needs an additional mechanism to share it
+> among processors in the RIO network,
 
-My God! Why did you *both* repeat over 400 lines of patch, over and over
-again, just for this?
+? See comment for 2)
 
-Please, make sure you quote *only* what you actually need to quote for
-context. Don't make me implement a filter for the list which rejects
-messages that are more than 90% quotation.
+> 2. It takes ID value away from the pool of available IDs, what will
 
--- 
-dwmw2
+It does not take an ID away, it shares it with a connected endpoint to 
+that switch. The tag uses one extra bit to identify the device as a 
+switch instead of an endpoint. This provides the information to 
+unambiguously identify a switch from an endpoint.
+
+Micha
