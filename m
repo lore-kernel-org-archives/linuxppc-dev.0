@@ -1,31 +1,21 @@
 Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B5D75B70AA
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 21:19:42 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp08.in.ibm.com (8.14.4/8.13.1) with ESMTP id o9P9p4Bl008022
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 15:21:04 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9PAJUZM3612686
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 15:49:30 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9PAJT20001050
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 15:49:29 +0530
-Message-ID: <4CC559B1.5050003@linux.vnet.ibm.com>
-Date: Mon, 25 Oct 2010 15:49:29 +0530
+Message-ID: <4CC563A9.3020308@linux.vnet.ibm.com>
+Date: Mon, 25 Oct 2010 16:32:01 +0530
 From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Oops while running systemtap on the p6 machine against the kernel
-	version 2.6.36-rc7-git3
-References: <4CB704AC.4070203@linux.vnet.ibm.com> <y0mmxqgec4e.fsf@fche.csb>
-In-Reply-To: <y0mmxqgec4e.fsf@fche.csb>
-Content-Type: multipart/mixed; boundary="------------020202060809000603010008"
-Cc: linuxppc-dev@ozlabs.org, systemtap@sources.redhat.com
+To: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
+References: <4CC13B2C.7090908@linux.vnet.ibm.com>
+	<4CC13FFF.7040200@linux.vnet.ibm.com>
+	<AANLkTikmpohofzO_dV_Dv8EfcEMsyy4cdhGMUD-PAFO3@mail.gmail.com>
+	<1287774802.19497.1.camel@subratamodak.linux.ibm.com>
+	<20101023093630.GA3036@zhy>
+In-Reply-To: <20101023093630.GA3036@zhy>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>,
+	Subrata Modak <subrata@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,226 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020202060809000603010008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On Friday 15 October 2010 02:16 AM, Frank Ch. Eigler wrote:
-> divya<dipraksh@linux.vnet.ibm.com>  writes:
->
+On Saturday 23 October 2010 03:06 PM, Yong Zhang wrote:
+> On Sat, Oct 23, 2010 at 12:43:21AM +0530, Subrata Modak wrote:
 >    
->> While running systemtap tests on the p6 machine , against the kernel
->> version 2.6.36-rc7-git3 Oops occured , here are the call trace
+>> This is equally seen for both Power6 and Power7 machines.
 >>      
-> Did the oops happen during a systemtap module startup vs. operation
-> vs. shutdown?  stap -V version string?
+> Seems resolved by part of http://lkml.org/lkml/2010/10/13/67
+>
+> Thanks,
+> Yong
 >
 >    
->>   BUG: spinlock bad magic on CPU#6, stapio/20398
->> -- 0:conmux-control -- time-stamp -- Oct/13/10  2:49:18 --res
->>   lock: c000000000fcfa18, .magic: 00000000, .owner:<none>/-1, .owner_cpu: 0
->> Call Trace:
->> [c0000001effbfab0] [c000000000011934] .show_stack+0x6c/0x16c (unreliable)
->> [c0000001effbfb60] [c0000000002c9274] .spin_bug+0xb0/0xd4
->> [c0000001effbfbf0] [c0000000002c953c] .do_raw_spin_lock+0x48/0x184
->> [c0000001effbfc90] [c00000000054af78] ._raw_spin_lock+0x10/0x24
->> [c0000001effbfd00] [d000000003015908] .__stp_time_timer_callback+0x94/0x13c [stap_75ce6f84d34f8665c9a6b8e27fb9ea95_818798]
->> [...]
->> kernel BUG at kernel/timer.c:681!
->> Oops: Exception in kernel mode, sig: 5 [#1]
->> SMP NR_CPUS=1024 NUMA pSeries
->> [...]
->> [c0000001effbfc50] [c0000001effbfd00] 0xc0000001effbfd00 (unreliable)
->> [c0000001effbfd00] [d00000000301597c] .__stp_time_timer_callback+0x108/0x13c [stap_75ce6f84d34f8665c9a6b8e27fb9ea95_818798]
->> [c0000001effbfdc0] [c00000000009c2f8] .run_timer_softirq+0x1d8/0x2a8
+>> Regards--
+>> Subrata
+>>
+>> On Sat, 2010-10-23 at 00:37 +0530, Subrata Modak wrote:
 >>      
->
-> We have had occasional problems in the past with something like this:
-> http://sourceware.org/PR10651, but it never was tracked down to a
-> systemtap bug per se, as opposed to suspicions that the kernel was not
-> satisfying one of its guarantees w.r.t. del_timer_sync().
->
-> - FChE
->    
-Sorry Frank for the late reply
-The Oops occured during the execution of systemtap tests.
+>>>
+>>> ---------- Forwarded message ----------
+>>> From: divya<dipraksh@linux.vnet.ibm.com>
+>>> Date: Fri, Oct 22, 2010 at 1:10 PM
+>>> Subject: Re: BUG with the kernel version 2.6.36-rc1 on power machine
+>>> To: LKML<linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
+>>> linuxppc-dev@ozlabs.org
+>>>
+>>>
+>>>
+>>> On Friday 22 October 2010 12:50 PM, divya wrote:
+>>>          Hi ,
+>>>
+>>>          With the latest version of kernel 2.6.36-rc1 running on the
+>>>          power machine, came across the following call trace
+>>>
+>>>          BUG: looking up invalid subclass: 31
+>>>          turning off the locking correctness validator.
+>>>          Call Trace:
+>>>          [c00000000e0bfb60] [c0000000000119a0] .show_stack+0x6c/0x16c
+>>>          (unreliable)
+>>>          [c00000000e0bfc10] [c0000000000c39b8] .lockdep_init_map
+>>>          +0x194/0x630
+>>>          [c00000000e0bfcf0] [c0000000005524f8] .mousedev_create
+>>>          +0xcc/0x234
+>>>          [c00000000e0bfda0] [c00000000093fb58] .mousedev_init+0x38/0xa0
+>>>          [c00000000e0bfe30] [c0000000000097e4] .do_one_initcall
+>>>          +0xd8/0x1c8
+>>>          [c00000000e0bfee0] [c0000000009004ac] .kernel_init+0x23c/0x2f8
+>>>          [c00000000e0bff90] [c00000000002ad30] .kernel_thread+0x54/0x70
+>>>
+>>>          The config file used for make oldconfig is being attached
+>>>
+>>>          Thanks
+>>>          Divya
+>>>
+>>>
+>>>
+>>>
+>>> I meant 2.6.36-git1(b5153163ed580e) , and not 2.6.36-rc1.
+>>> Sorry for the confusion.
+>>>
+>>> Thanks
+>>> Divya
+>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe
+>>> linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>
+>>>
+>>>
+>>>
+>>> -- 
+>>> Regards&  Thanks--
+>>> Subrata
+>>>        
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>      
+The patch at
+http://lkml.org/lkml/2010/10/13/67 resolves the issue.
 
-stap version being :
-  Snapshot: 89e2abb
-
-Attached are the systemtap test execution logs
+But this is not a part of 2.6.36-git6 , when will it be pulled into the upstream?
 
 Thanks
 Divya
-
-
-
-
---------------020202060809000603010008
-Content-Type: text/plain;
- name="systemtap.DEBUG"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="systemtap.DEBUG"
-
-10/13 15:06:44 DEBUG|     utils:0053| Running 'which gcc'
-10/13 15:06:44 DEBUG|     utils:0085| /usr/bin/gcc
-10/13 15:06:44 INFO |      test:0256| Test started. Number of iterations: 1
-10/13 15:06:44 INFO |      test:0259| Executing iteration 1 of 1
-10/13 15:06:44 DEBUG|     utils:0053| Running 'PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/bin:/usr/local/autobench/autotest/deps/dejagnu/dejagnu/bin:$PATH make installcheck'
-10/13 15:06:44 DEBUG|     utils:0085| make  check-DEJAGNU RUNTESTFLAGS=" --tool_opts \'install \'"
-10/13 15:06:44 DEBUG|     utils:0085| make[1]: Entering directory `/usr/local/autobench/autotest/tests/systemtap/test'
-10/13 15:06:44 DEBUG|     utils:0085| srcdir=`CDPATH="${ZSH_VERSION+.}:" && cd /usr/local/autobench/autotest/tests/systemtap/src/testsuite && pwd`; export srcdir; \
-10/13 15:06:44 DEBUG|     utils:0085| 	EXPECT=expect; export EXPECT; \
-10/13 15:06:44 DEBUG|     utils:0085| 	runtest="env SYSTEMTAP_TESTAPPS= SYSTEMTAP_RUNTIME=/usr/local/autobench/autotest/deps/systemtap/systemtap/share/systemtap/runtime SYSTEMTAP_TAPSET=/usr/local/autobench/autotest/deps/systemtap/systemtap/share/systemtap/tapset LD_LIBRARY_PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/lib/systemtap CRASH_LIBDIR=/usr/local/autobench/autotest/deps/systemtap/systemtap/lib/systemtap PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/bin:$PATH SYSTEMTAP_PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/bin SYSTEMTAP_INCLUDES=/usr/local/autobench/autotest/deps/systemtap/systemtap/include  PKGLIBDIR=/usr/local/autobench/autotest/deps/systemtap/systemtap/libexec/systemtap /usr/local/autobench/autotest/tests/systemtap/src/testsuite/execrc runtest"; \
-10/13 15:06:44 DEBUG|     utils:0085| 	if /bin/sh -c "$runtest --version" > /dev/null 2>&1; then \
-10/13 15:06:44 DEBUG|     utils:0085| 	  exit_status=0; l='systemtap'; for tool in $l; do \
-10/13 15:06:44 DEBUG|     utils:0085| 	    if $runtest  --tool $tool --tool_opts \'\' --srcdir $srcdir --tool_opts \'install \'; \
-10/13 15:06:44 DEBUG|     utils:0085| 	    then :; else exit_status=1; fi; \
-10/13 15:06:44 DEBUG|     utils:0085| 	  done; \
-10/13 15:06:44 DEBUG|     utils:0085| 	else echo "WARNING: could not find \`runtest'" 1>&2; :;\
-10/13 15:06:44 DEBUG|     utils:0085| 	fi; \
-10/13 15:06:44 DEBUG|     utils:0085| 	exit $exit_status
-10/13 15:06:45 ERROR|     utils:0085| WARNING: Couldn't find the global config file.
-10/13 15:06:45 DEBUG|     utils:0085| kernel location: 
-10/13 15:06:45 DEBUG|     utils:0085| kernel version: 2.6.36-rc7-git3-autotest
-10/13 15:06:45 DEBUG|     utils:0085| systemtap location: /usr/local/autobench/autotest/deps/systemtap/systemtap/bin/stap
-10/13 15:06:45 DEBUG|     utils:0085| systemtap version: version 1.4/0.148 non-git sources
-10/13 15:06:45 DEBUG|     utils:0085| gcc location: /usr/bin/gcc
-10/13 15:06:45 DEBUG|     utils:0085| gcc version: gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]
-10/13 15:06:46 DEBUG|     utils:0085| Test Run By root on Wed Oct 13 15:06:46 2010
-10/13 15:06:46 DEBUG|     utils:0085| Native configuration is powerpc64-unknown-linux-gnu
-10/13 15:06:46 DEBUG|     utils:0085| 
-10/13 15:06:46 DEBUG|     utils:0085| 		=== systemtap tests ===
-10/13 15:06:46 DEBUG|     utils:0085| 
-10/13 15:06:46 DEBUG|     utils:0085| Schedule of variations:
-10/13 15:06:46 DEBUG|     utils:0085|     unix
-10/13 15:06:46 DEBUG|     utils:0085| 
-10/13 15:06:46 DEBUG|     utils:0085| Running target unix
-10/13 15:06:46 DEBUG|     utils:0085| Using /usr/local/autobench/autotest/deps/dejagnu/dejagnu/share/dejagnu/baseboards/unix.exp as board description file for target.
-10/13 15:06:46 DEBUG|     utils:0085| Using /usr/local/autobench/autotest/deps/dejagnu/dejagnu/share/dejagnu/config/unix.exp as generic interface file for target.
-10/13 15:06:46 DEBUG|     utils:0085| Using /usr/local/autobench/autotest/tests/systemtap/src/testsuite/config/unix.exp as tool-and-target-specific interface file.
-10/13 15:06:46 DEBUG|     utils:0085| 
-10/13 15:06:46 DEBUG|     utils:0085| Host: Linux p55alp2 2.6.36-rc7-git3-autotest #1 SMP Wed Oct 13 14:46:58 IST 2010 ppc64 ppc64 ppc64 GNU/Linux
-10/13 15:06:46 DEBUG|     utils:0085| Snapshot: 89e2abb
-10/13 15:06:46 DEBUG|     utils:0085| GCC: 4.3.2 [gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]]
-10/13 15:06:46 DEBUG|     utils:0085| Distro: SUSE Linux Enterprise Server 11 (ppc64)
-10/13 15:06:46 DEBUG|     utils:0085| 
-10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap/notest.exp ...
-10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/mysql.exp ...
-10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/postgres.exp ...
-10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/tcl.exp ...
-10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/xulrunner.exp ...
-10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/add.exp ...
-10/13 15:06:58 DEBUG|     utils:0085| FAIL: systemtap.base/add.stp startup (eof)
-10/13 15:06:58 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/alias-condition.exp ...
-10/13 15:07:06 DEBUG|     utils:0085| FAIL: systemtap.base/alias-condition.stp startup (eof)
-10/13 15:07:06 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/alias_tapset.exp ...
-10/13 15:07:10 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/alternatives.exp ...
-10/13 15:07:13 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/arith.exp ...
-10/13 15:07:21 DEBUG|     utils:0085| FAIL: arith
-10/13 15:07:21 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/arith_limits.exp ...
-10/13 15:07:30 DEBUG|     utils:0085| FAIL: arith_limits
-10/13 15:07:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/array_size.exp ...
-10/13 15:07:43 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/array_string.exp ...
-10/13 15:07:49 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/atomic.exp ...
-10/13 15:08:32 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/backtrace.exp ...
-10/13 15:09:03 DEBUG|     utils:0085| FAIL: backtrace (0 0)
-10/13 15:09:27 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/badkprobe.exp ...
-10/13 15:10:23 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/be_order.exp ...
-10/13 15:10:29 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/beginenderror.exp ...
-10/13 15:10:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bench.exp ...
-10/13 15:10:38 DEBUG|     utils:0085| FAIL: bench (0)
-10/13 15:10:38 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bitfield.exp ...
-10/13 15:10:47 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bz10078.exp ...
-10/13 15:10:48 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bz5274.exp ...
-10/13 15:10:48 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bz6850.exp ...
-10/13 15:10:49 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cache.exp ...
-10/13 15:12:14 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cast.exp ...
-10/13 15:12:23 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cmd_parse.exp ...
-10/13 15:12:40 DEBUG|     utils:0085| FAIL: cmd_parse9 eof
-10/13 15:12:42 DEBUG|     utils:0085| FAIL: cmd_parse10 eof
-10/13 15:12:44 DEBUG|     utils:0085| FAIL: cmd_parse11 eof
-10/13 15:12:46 DEBUG|     utils:0085| FAIL: cmd_parse12 eof
-10/13 15:13:05 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/const_value.exp ...
-10/13 15:13:06 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/control_limits.exp ...
-10/13 15:13:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/crash.exp ...
-10/13 15:13:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/ctime.exp ...
-10/13 15:13:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cu-decl.exp ...
-10/13 15:13:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cxxclass.exp ...
-10/13 15:13:37 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/debugpath.exp ...
-10/13 15:13:40 DEBUG|     utils:0085| FAIL: debugpath-good (eof)
-10/13 15:13:40 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/deref.exp ...
-10/13 15:13:47 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/deref2.exp ...
-10/13 15:13:47 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/div0.exp ...
-10/13 15:13:49 DEBUG|     utils:0085| FAIL: systemtap.base/div0.stp startup (eof)
-10/13 15:13:49 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/dtrace.exp ...
-10/13 15:13:51 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/equal.exp ...
-10/13 15:13:56 DEBUG|     utils:0085| FAIL: systemtap.base/equal.stp startup (eof)
-10/13 15:13:56 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/error_fn.exp ...
-10/13 15:14:02 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/externalvar.exp ...
-10/13 15:14:02 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/finloop2.exp ...
-10/13 15:14:08 DEBUG|     utils:0085| FAIL: systemtap.base/finloop2.stp startup (eof)
-10/13 15:14:08 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec1.exp ...
-10/13 15:14:13 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec2.exp ...
-10/13 15:14:26 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec3.exp ...
-10/13 15:14:45 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec4.exp ...
-10/13 15:14:54 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec5.exp ...
-10/13 15:15:09 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/foreach_value.exp ...
-10/13 15:15:16 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/func_alias.exp ...
-10/13 15:15:18 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_end.exp ...
-10/13 15:15:34 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_init.exp ...
-10/13 15:15:36 DEBUG|     utils:0085| FAIL: systemtap.base/global_init.stp startup (eof)
-10/13 15:15:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_opt.exp ...
-10/13 15:15:38 DEBUG|     utils:0085| FAIL: global_opt: unexpected EOF
-10/13 15:15:38 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_stat.exp ...
-10/13 15:15:44 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_vars.exp ...
-10/13 15:15:46 DEBUG|     utils:0085| FAIL: systemtap.base/global_vars.stp startup (eof)
-10/13 15:15:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/gtod.exp ...
-10/13 15:16:06 DEBUG|     utils:0085| FAIL: gtod (0)
-10/13 15:16:06 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/if.exp ...
-10/13 15:16:11 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/inc.exp ...
-10/13 15:16:13 DEBUG|     utils:0085| FAIL: systemtap.base/inc.stp startup (eof)
-10/13 15:16:13 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/inlinedvars.exp ...
-10/13 15:16:15 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/itrace.exp ...
-10/13 15:16:16 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kfunct.exp ...
-10/13 15:16:21 DEBUG|     utils:0085| FAIL: systemtap.base/kfunct.stp startup (eof)
-10/13 15:16:21 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kmodule.exp ...
-10/13 15:16:25 DEBUG|     utils:0085| FAIL: systemtap.base/kmodule.stp startup (eof)
-10/13 15:16:25 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kprobes.exp ...
-10/13 15:16:31 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kretprobe-vars.exp ...
-10/13 15:16:37 DEBUG|     utils:0085| FAIL: systemtap.base/kretprobe-vars.stp startup (eof)
-10/13 15:16:37 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/labels.exp ...
-10/13 15:16:37 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/limits.exp ...
-10/13 15:16:43 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/logical_and.exp ...
-10/13 15:16:44 DEBUG|     utils:0085| FAIL: systemtap.base/logical_and.stp startup (eof)
-10/13 15:16:44 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/marker.exp ...
-10/13 15:16:45 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/maxactive.exp ...
-10/13 15:16:50 DEBUG|     utils:0085| FAIL: MAXACTIVE01 startup (eof)
-10/13 15:16:55 DEBUG|     utils:0085| FAIL: MAXACTIVE02 startup (eof)
-10/13 15:16:55 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/maxmemory.exp ...
-10/13 15:17:14 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/modargs.exp ...
-10/13 15:17:16 DEBUG|     utils:0085| FAIL: modargs compilation: /tmp/stapbqFK0D/stap_b3c6d56a1ee2d88b4eee11c3a17a03c8_1022.c:594: error: 'param_ops_int64_t' undeclared here (not in a function)
-10/13 15:17:16 DEBUG|     utils:0085| make[3]: *** [/tmp/stapbqFK0D/stap_b3c6d56a1ee2d88b4eee11c3a17a03c8_1022.o] Error 1
-10/13 15:17:16 DEBUG|     utils:0085| make[2]: *** [_module_/tmp/stapbqFK0D] Error 2
-10/13 15:17:16 DEBUG|     utils:0085| Pass 4: compilation failed.  Try again with another '--vp 0001' option.
-10/13 15:17:16 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/not.exp ...
-10/13 15:17:18 DEBUG|     utils:0085| FAIL: systemtap.base/not.stp startup (eof)
-10/13 15:17:18 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/onoffprobe.exp ...
-10/13 15:17:24 DEBUG|     utils:0085| FAIL: conditional probes (0)
-10/13 15:17:24 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optim.exp ...
-10/13 15:17:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optim_arridx.exp ...
-10/13 15:17:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optim_voidstmt.exp ...
-10/13 15:17:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optionalprobe.exp ...
-10/13 15:17:40 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/overcatcher.exp ...
-10/13 15:17:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/overflow_error.exp ...
-10/13 15:17:48 DEBUG|     utils:0085| FAIL: overflow_error (0)
-10/13 15:17:48 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/overload.exp ...
-10/13 15:18:09 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/pointer_array.exp ...
-10/13 15:18:20 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/poll_map.exp ...
-10/13 15:18:28 DEBUG|     utils:0085| FAIL: poll_map (0)
-10/13 15:18:28 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/pp.exp ...
-10/13 15:18:50 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/pr10854.exp ...
-
---------------020202060809000603010008--
