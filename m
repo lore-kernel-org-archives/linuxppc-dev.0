@@ -1,12 +1,31 @@
-Return-Path: <b32167@ld1090.zin33.ap.freescale.net>
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH][v0] RTC driver(Linux) for PT7C4338 chip.
-Date: Mon, 25 Oct 2010 13:38:58 +0530
-Message-ID: <1287994138-31771-1-git-send-email-Priyanka.Jain@freescale.com>
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B5D75B70AA
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 21:19:42 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp08.in.ibm.com (8.14.4/8.13.1) with ESMTP id o9P9p4Bl008022
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 15:21:04 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9PAJUZM3612686
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 15:49:30 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9PAJT20001050
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 15:49:29 +0530
+Message-ID: <4CC559B1.5050003@linux.vnet.ibm.com>
+Date: Mon, 25 Oct 2010 15:49:29 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: Oops while running systemtap on the p6 machine against the kernel
+	version 2.6.36-rc7-git3
+References: <4CB704AC.4070203@linux.vnet.ibm.com> <y0mmxqgec4e.fsf@fche.csb>
+In-Reply-To: <y0mmxqgec4e.fsf@fche.csb>
+Content-Type: multipart/mixed; boundary="------------020202060809000603010008"
+Cc: linuxppc-dev@ozlabs.org, systemtap@sources.redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,275 +35,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PT7C4338 chip is manufactured by Pericom Technology Inc.
-It is a serial real-time clock which provides:
-1)Low-power clock/calendar.
-2)Programmable square-wave output.
-It has 56 bytes of nonvolatile RAM.
+This is a multi-part message in MIME format.
+--------------020202060809000603010008
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Freescale P1010RDB uses PT7C4338 as RTC.
+On Friday 15 October 2010 02:16 AM, Frank Ch. Eigler wrote:
+> divya<dipraksh@linux.vnet.ibm.com>  writes:
+>
+>    
+>> While running systemtap tests on the p6 machine , against the kernel
+>> version 2.6.36-rc7-git3 Oops occured , here are the call trace
+>>      
+> Did the oops happen during a systemtap module startup vs. operation
+> vs. shutdown?  stap -V version string?
+>
+>    
+>>   BUG: spinlock bad magic on CPU#6, stapio/20398
+>> -- 0:conmux-control -- time-stamp -- Oct/13/10  2:49:18 --res
+>>   lock: c000000000fcfa18, .magic: 00000000, .owner:<none>/-1, .owner_cpu: 0
+>> Call Trace:
+>> [c0000001effbfab0] [c000000000011934] .show_stack+0x6c/0x16c (unreliable)
+>> [c0000001effbfb60] [c0000000002c9274] .spin_bug+0xb0/0xd4
+>> [c0000001effbfbf0] [c0000000002c953c] .do_raw_spin_lock+0x48/0x184
+>> [c0000001effbfc90] [c00000000054af78] ._raw_spin_lock+0x10/0x24
+>> [c0000001effbfd00] [d000000003015908] .__stp_time_timer_callback+0x94/0x13c [stap_75ce6f84d34f8665c9a6b8e27fb9ea95_818798]
+>> [...]
+>> kernel BUG at kernel/timer.c:681!
+>> Oops: Exception in kernel mode, sig: 5 [#1]
+>> SMP NR_CPUS=1024 NUMA pSeries
+>> [...]
+>> [c0000001effbfc50] [c0000001effbfd00] 0xc0000001effbfd00 (unreliable)
+>> [c0000001effbfd00] [d00000000301597c] .__stp_time_timer_callback+0x108/0x13c [stap_75ce6f84d34f8665c9a6b8e27fb9ea95_818798]
+>> [c0000001effbfdc0] [c00000000009c2f8] .run_timer_softirq+0x1d8/0x2a8
+>>      
+>
+> We have had occasional problems in the past with something like this:
+> http://sourceware.org/PR10651, but it never was tracked down to a
+> systemtap bug per se, as opposed to suspicions that the kernel was not
+> satisfying one of its guarantees w.r.t. del_timer_sync().
+>
+> - FChE
+>    
+Sorry Frank for the late reply
+The Oops occured during the execution of systemtap tests.
 
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
----
- Based of unified git(next branch) for P1010 RDB.
- drivers/rtc/Kconfig        |    9 ++
- drivers/rtc/Makefile       |    1 +
- drivers/rtc/rtc-pt7c4338.c |  215 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 225 insertions(+), 0 deletions(-)
- create mode 100644 drivers/rtc/rtc-pt7c4338.c
+stap version being :
+  Snapshot: 89e2abb
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 10ba12c..6ff0901 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -324,6 +324,15 @@ config RTC_DRV_RX8025
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-rx8025.
- 
-+config RTC_DRV_PT7C4338
-+	tristate "Pericom Technology Inc. PT7C4338 RTC"
-+	help
-+	  If you say yes here you get support for the Pericom Technology
-+	  Inc. PT7C4338 RTC chip.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called rtc-pt7c4338.
-+
- endif # I2C
- 
- comment "SPI RTC drivers"
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 5adbba7..4014607 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -70,6 +70,7 @@ obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
- obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
- obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
- obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
-+obj-$(CONFIG_RTC_DRV_PT7C4338)	+= rtc-pt7c4338.o
- obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
- obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
- obj-$(CONFIG_RTC_DRV_RP5C01)	+= rtc-rp5c01.o
-diff --git a/drivers/rtc/rtc-pt7c4338.c b/drivers/rtc/rtc-pt7c4338.c
-new file mode 100644
-index 0000000..fca52cd
---- /dev/null
-+++ b/drivers/rtc/rtc-pt7c4338.c
-@@ -0,0 +1,215 @@
-+/*
-+ * Copyright 2010 Freescale Semiconductor, Inc.
-+ *
-+ * Author:	Priyanka Jain <Priyanka.Jain@freescale.com>
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
-+
-+/*
-+ * This file provides Date & Time support (no alarms) for PT7C4338 chip.
-+ *
-+ * This file is based on drivers/rtc/rtc-ds1307.c
-+ *
-+ * PT7C4338 chip is manufactured by Pericom Technology Inc.
-+ * It is a serial real-time clock which provides
-+ * 1)Low-power clock/calendar.
-+ * 2)Programmable square-wave output.
-+ * It has 56 bytes of nonvolatile RAM.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/i2c.h>
-+#include <linux/rtc.h>
-+#include <linux/bcd.h>
-+
-+/* RTC register addresses */
-+#define PT7C4338_REG_SECONDS          0x00
-+#define PT7C4338_REG_MINUTES          0x01
-+#define PT7C4338_REG_HOURS            0x02
-+#define PT7C4338_REG_AMPM             0x02
-+#define PT7C4338_REG_DAY              0x03
-+#define PT7C4338_REG_DATE             0x04
-+#define PT7C4338_REG_MONTH            0x05
-+#define PT7C4338_REG_YEAR             0x06
-+#define PT7C4338_REG_CTRL_STAT        0x07
-+
-+/* RTC second register address bit */
-+#define PT7C4338_SEC_BIT_CH           0x80	/*Clock Halt (in Register 0)*/
-+
-+/* RTC control and status register bits */
-+#define PT7C4338_CTRL_STAT_BIT_RS0    0x1	/*Rate select 0*/
-+#define PT7C4338_CTRL_STAT_BIT_RS1    0x2	/*Rate select 1*/
-+#define PT7C4338_CTRL_STAT_BIT_SQWE   0x10	/*Square Wave Enable*/
-+#define PT7C4338_CTRL_STAT_BIT_OSF    0x20	/*Oscillator Stop Flag*/
-+#define PT7C4338_CTRL_STAT_BIT_OUT    0x80	/*Output Level Control*/
-+
-+static const struct i2c_device_id pt7c4338_id[] = {
-+	{ "pt7c4338", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, pt7c4338_id);
-+
-+struct pt7c4338{
-+	struct i2c_client *client;
-+	struct rtc_device *rtc;
-+};
-+
-+static int pt7c4338_read_time(struct device *dev, struct rtc_time *time)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	int ret;
-+	u8 buf[7];
-+	u8 year, month, day, hour, minute, second;
-+	u8 week, twelve_hr, am_pm;
-+
-+	ret = i2c_smbus_read_i2c_block_data(client,
-+			PT7C4338_REG_SECONDS, 7, buf);
-+	if (ret < 0)
-+		return ret;
-+	if (ret < 7)
-+		return -EIO;
-+
-+	second = buf[0];
-+	minute = buf[1];
-+	hour = buf[2];
-+	week = buf[3];
-+	day = buf[4];
-+	month = buf[5];
-+	year = buf[6];
-+
-+	/* Extract additional information for AM/PM */
-+	twelve_hr = hour & 0x40;
-+	am_pm = hour & 0x20;
-+
-+	/* Write to rtc_time structure */
-+	time->tm_sec = bcd2bin(second & 0x7f);
-+	time->tm_min = bcd2bin(minute & 0x7f);
-+	if (twelve_hr) {
-+		/* Convert to 24 hr */
-+		if (am_pm)
-+			time->tm_hour = bcd2bin(hour & 0x10) + 12;
-+		else
-+			time->tm_hour = bcd2bin(hour & 0xBF);
-+	} else {
-+		time->tm_hour = bcd2bin(hour);
-+	}
-+
-+	time->tm_wday = bcd2bin(week & 0x07) - 1;
-+	time->tm_mday = bcd2bin(day & 0x3f);
-+	time->tm_mon = bcd2bin(month & 0x1F) - 1;
-+	/* assume 20YY not 19YY */
-+	time->tm_year = bcd2bin(year) + 100;
-+
-+	return 0;
-+}
-+
-+static int pt7c4338_set_time(struct device *dev, struct rtc_time *time)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	u8 buf[7];
-+
-+	/* Extract time from rtc_time and load into pt7c4338*/
-+	buf[0] = bin2bcd(time->tm_sec);
-+	buf[1] = bin2bcd(time->tm_min);
-+	buf[2] = bin2bcd(time->tm_hour);
-+	buf[3] = bin2bcd(time->tm_wday + 1); /* Day of the week */
-+	buf[4] = bin2bcd(time->tm_mday); /* Date */
-+	buf[5] = bin2bcd(time->tm_mon + 1);
-+
-+	/* assume 20YY not 19YY */
-+	if (time->tm_year >= 100)
-+		buf[6] = bin2bcd(time->tm_year - 100);
-+	else
-+		buf[6] = bin2bcd(time->tm_year);
-+
-+	return i2c_smbus_write_i2c_block_data(client,
-+					PT7C4338_REG_SECONDS, 7, buf);
-+}
-+
-+static const struct rtc_class_ops pt7c4338_rtc_ops = {
-+	.read_time = pt7c4338_read_time,
-+	.set_time = pt7c4338_set_time,
-+};
-+
-+static int pt7c4338_probe(struct i2c_client *client,
-+		const struct i2c_device_id *id)
-+{
-+	struct pt7c4338 *pt7c4338;
-+	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-+	int ret;
-+
-+	pt7c4338 = kzalloc(sizeof(struct pt7c4338), GFP_KERNEL);
-+	if (!pt7c4338)
-+		return -ENOMEM;
-+
-+	pt7c4338->client = client;
-+	i2c_set_clientdata(client, pt7c4338);
-+	pt7c4338->rtc = rtc_device_register(client->name, &client->dev,
-+					&pt7c4338_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(pt7c4338->rtc)) {
-+		ret = PTR_ERR(pt7c4338->rtc);
-+		dev_err(&client->dev, "unable to register the class device\n");
-+		goto out_free;
-+	}
-+
-+	return 0;
-+out_free:
-+	i2c_set_clientdata(client, NULL);
-+	kfree(pt7c4338);
-+	return ret;
-+}
-+
-+static int __devexit pt7c4338_remove(struct i2c_client *client)
-+{
-+	struct pt7c4338 *pt7c4338 = i2c_get_clientdata(client);
-+
-+	rtc_device_unregister(pt7c4338->rtc);
-+	i2c_set_clientdata(client, NULL);
-+	kfree(pt7c4338);
-+	return 0;
-+}
-+
-+static struct i2c_driver pt7c4338_driver = {
-+	.driver = {
-+		.name = "rtc-pt7c4338",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = pt7c4338_probe,
-+	.remove = __devexit_p(pt7c4338_remove),
-+	.id_table = pt7c4338_id,
-+};
-+
-+static int __init pt7c4338_init(void)
-+{
-+	return i2c_add_driver(&pt7c4338_driver);
-+}
-+
-+static void __exit pt7c4338_exit(void)
-+{
-+	i2c_del_driver(&pt7c4338_driver);
-+}
-+
-+module_init(pt7c4338_init);
-+module_exit(pt7c4338_exit);
-+
-+MODULE_AUTHOR("Priyanka Jain <Priyanka.Jain@freescale.com>");
-+MODULE_DESCRIPTION("pericom Technology Inc. PT7C4338 RTC Driver");
-+MODULE_LICENSE("GPL");
--- 
-1.6.5.6
+Attached are the systemtap test execution logs
+
+Thanks
+Divya
+
+
+
+
+--------------020202060809000603010008
+Content-Type: text/plain;
+ name="systemtap.DEBUG"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="systemtap.DEBUG"
+
+10/13 15:06:44 DEBUG|     utils:0053| Running 'which gcc'
+10/13 15:06:44 DEBUG|     utils:0085| /usr/bin/gcc
+10/13 15:06:44 INFO |      test:0256| Test started. Number of iterations: 1
+10/13 15:06:44 INFO |      test:0259| Executing iteration 1 of 1
+10/13 15:06:44 DEBUG|     utils:0053| Running 'PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/bin:/usr/local/autobench/autotest/deps/dejagnu/dejagnu/bin:$PATH make installcheck'
+10/13 15:06:44 DEBUG|     utils:0085| make  check-DEJAGNU RUNTESTFLAGS=" --tool_opts \'install \'"
+10/13 15:06:44 DEBUG|     utils:0085| make[1]: Entering directory `/usr/local/autobench/autotest/tests/systemtap/test'
+10/13 15:06:44 DEBUG|     utils:0085| srcdir=`CDPATH="${ZSH_VERSION+.}:" && cd /usr/local/autobench/autotest/tests/systemtap/src/testsuite && pwd`; export srcdir; \
+10/13 15:06:44 DEBUG|     utils:0085| 	EXPECT=expect; export EXPECT; \
+10/13 15:06:44 DEBUG|     utils:0085| 	runtest="env SYSTEMTAP_TESTAPPS= SYSTEMTAP_RUNTIME=/usr/local/autobench/autotest/deps/systemtap/systemtap/share/systemtap/runtime SYSTEMTAP_TAPSET=/usr/local/autobench/autotest/deps/systemtap/systemtap/share/systemtap/tapset LD_LIBRARY_PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/lib/systemtap CRASH_LIBDIR=/usr/local/autobench/autotest/deps/systemtap/systemtap/lib/systemtap PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/bin:$PATH SYSTEMTAP_PATH=/usr/local/autobench/autotest/deps/systemtap/systemtap/bin SYSTEMTAP_INCLUDES=/usr/local/autobench/autotest/deps/systemtap/systemtap/include  PKGLIBDIR=/usr/local/autobench/autotest/deps/systemtap/systemtap/libexec/systemtap /usr/local/autobench/autotest/tests/systemtap/src/testsuite/execrc runtest"; \
+10/13 15:06:44 DEBUG|     utils:0085| 	if /bin/sh -c "$runtest --version" > /dev/null 2>&1; then \
+10/13 15:06:44 DEBUG|     utils:0085| 	  exit_status=0; l='systemtap'; for tool in $l; do \
+10/13 15:06:44 DEBUG|     utils:0085| 	    if $runtest  --tool $tool --tool_opts \'\' --srcdir $srcdir --tool_opts \'install \'; \
+10/13 15:06:44 DEBUG|     utils:0085| 	    then :; else exit_status=1; fi; \
+10/13 15:06:44 DEBUG|     utils:0085| 	  done; \
+10/13 15:06:44 DEBUG|     utils:0085| 	else echo "WARNING: could not find \`runtest'" 1>&2; :;\
+10/13 15:06:44 DEBUG|     utils:0085| 	fi; \
+10/13 15:06:44 DEBUG|     utils:0085| 	exit $exit_status
+10/13 15:06:45 ERROR|     utils:0085| WARNING: Couldn't find the global config file.
+10/13 15:06:45 DEBUG|     utils:0085| kernel location: 
+10/13 15:06:45 DEBUG|     utils:0085| kernel version: 2.6.36-rc7-git3-autotest
+10/13 15:06:45 DEBUG|     utils:0085| systemtap location: /usr/local/autobench/autotest/deps/systemtap/systemtap/bin/stap
+10/13 15:06:45 DEBUG|     utils:0085| systemtap version: version 1.4/0.148 non-git sources
+10/13 15:06:45 DEBUG|     utils:0085| gcc location: /usr/bin/gcc
+10/13 15:06:45 DEBUG|     utils:0085| gcc version: gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]
+10/13 15:06:46 DEBUG|     utils:0085| Test Run By root on Wed Oct 13 15:06:46 2010
+10/13 15:06:46 DEBUG|     utils:0085| Native configuration is powerpc64-unknown-linux-gnu
+10/13 15:06:46 DEBUG|     utils:0085| 
+10/13 15:06:46 DEBUG|     utils:0085| 		=== systemtap tests ===
+10/13 15:06:46 DEBUG|     utils:0085| 
+10/13 15:06:46 DEBUG|     utils:0085| Schedule of variations:
+10/13 15:06:46 DEBUG|     utils:0085|     unix
+10/13 15:06:46 DEBUG|     utils:0085| 
+10/13 15:06:46 DEBUG|     utils:0085| Running target unix
+10/13 15:06:46 DEBUG|     utils:0085| Using /usr/local/autobench/autotest/deps/dejagnu/dejagnu/share/dejagnu/baseboards/unix.exp as board description file for target.
+10/13 15:06:46 DEBUG|     utils:0085| Using /usr/local/autobench/autotest/deps/dejagnu/dejagnu/share/dejagnu/config/unix.exp as generic interface file for target.
+10/13 15:06:46 DEBUG|     utils:0085| Using /usr/local/autobench/autotest/tests/systemtap/src/testsuite/config/unix.exp as tool-and-target-specific interface file.
+10/13 15:06:46 DEBUG|     utils:0085| 
+10/13 15:06:46 DEBUG|     utils:0085| Host: Linux p55alp2 2.6.36-rc7-git3-autotest #1 SMP Wed Oct 13 14:46:58 IST 2010 ppc64 ppc64 ppc64 GNU/Linux
+10/13 15:06:46 DEBUG|     utils:0085| Snapshot: 89e2abb
+10/13 15:06:46 DEBUG|     utils:0085| GCC: 4.3.2 [gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]]
+10/13 15:06:46 DEBUG|     utils:0085| Distro: SUSE Linux Enterprise Server 11 (ppc64)
+10/13 15:06:46 DEBUG|     utils:0085| 
+10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap/notest.exp ...
+10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/mysql.exp ...
+10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/postgres.exp ...
+10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/tcl.exp ...
+10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.apps/xulrunner.exp ...
+10/13 15:06:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/add.exp ...
+10/13 15:06:58 DEBUG|     utils:0085| FAIL: systemtap.base/add.stp startup (eof)
+10/13 15:06:58 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/alias-condition.exp ...
+10/13 15:07:06 DEBUG|     utils:0085| FAIL: systemtap.base/alias-condition.stp startup (eof)
+10/13 15:07:06 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/alias_tapset.exp ...
+10/13 15:07:10 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/alternatives.exp ...
+10/13 15:07:13 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/arith.exp ...
+10/13 15:07:21 DEBUG|     utils:0085| FAIL: arith
+10/13 15:07:21 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/arith_limits.exp ...
+10/13 15:07:30 DEBUG|     utils:0085| FAIL: arith_limits
+10/13 15:07:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/array_size.exp ...
+10/13 15:07:43 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/array_string.exp ...
+10/13 15:07:49 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/atomic.exp ...
+10/13 15:08:32 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/backtrace.exp ...
+10/13 15:09:03 DEBUG|     utils:0085| FAIL: backtrace (0 0)
+10/13 15:09:27 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/badkprobe.exp ...
+10/13 15:10:23 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/be_order.exp ...
+10/13 15:10:29 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/beginenderror.exp ...
+10/13 15:10:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bench.exp ...
+10/13 15:10:38 DEBUG|     utils:0085| FAIL: bench (0)
+10/13 15:10:38 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bitfield.exp ...
+10/13 15:10:47 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bz10078.exp ...
+10/13 15:10:48 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bz5274.exp ...
+10/13 15:10:48 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/bz6850.exp ...
+10/13 15:10:49 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cache.exp ...
+10/13 15:12:14 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cast.exp ...
+10/13 15:12:23 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cmd_parse.exp ...
+10/13 15:12:40 DEBUG|     utils:0085| FAIL: cmd_parse9 eof
+10/13 15:12:42 DEBUG|     utils:0085| FAIL: cmd_parse10 eof
+10/13 15:12:44 DEBUG|     utils:0085| FAIL: cmd_parse11 eof
+10/13 15:12:46 DEBUG|     utils:0085| FAIL: cmd_parse12 eof
+10/13 15:13:05 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/const_value.exp ...
+10/13 15:13:06 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/control_limits.exp ...
+10/13 15:13:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/crash.exp ...
+10/13 15:13:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/ctime.exp ...
+10/13 15:13:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cu-decl.exp ...
+10/13 15:13:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/cxxclass.exp ...
+10/13 15:13:37 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/debugpath.exp ...
+10/13 15:13:40 DEBUG|     utils:0085| FAIL: debugpath-good (eof)
+10/13 15:13:40 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/deref.exp ...
+10/13 15:13:47 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/deref2.exp ...
+10/13 15:13:47 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/div0.exp ...
+10/13 15:13:49 DEBUG|     utils:0085| FAIL: systemtap.base/div0.stp startup (eof)
+10/13 15:13:49 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/dtrace.exp ...
+10/13 15:13:51 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/equal.exp ...
+10/13 15:13:56 DEBUG|     utils:0085| FAIL: systemtap.base/equal.stp startup (eof)
+10/13 15:13:56 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/error_fn.exp ...
+10/13 15:14:02 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/externalvar.exp ...
+10/13 15:14:02 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/finloop2.exp ...
+10/13 15:14:08 DEBUG|     utils:0085| FAIL: systemtap.base/finloop2.stp startup (eof)
+10/13 15:14:08 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec1.exp ...
+10/13 15:14:13 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec2.exp ...
+10/13 15:14:26 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec3.exp ...
+10/13 15:14:45 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec4.exp ...
+10/13 15:14:54 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/flightrec5.exp ...
+10/13 15:15:09 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/foreach_value.exp ...
+10/13 15:15:16 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/func_alias.exp ...
+10/13 15:15:18 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_end.exp ...
+10/13 15:15:34 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_init.exp ...
+10/13 15:15:36 DEBUG|     utils:0085| FAIL: systemtap.base/global_init.stp startup (eof)
+10/13 15:15:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_opt.exp ...
+10/13 15:15:38 DEBUG|     utils:0085| FAIL: global_opt: unexpected EOF
+10/13 15:15:38 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_stat.exp ...
+10/13 15:15:44 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/global_vars.exp ...
+10/13 15:15:46 DEBUG|     utils:0085| FAIL: systemtap.base/global_vars.stp startup (eof)
+10/13 15:15:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/gtod.exp ...
+10/13 15:16:06 DEBUG|     utils:0085| FAIL: gtod (0)
+10/13 15:16:06 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/if.exp ...
+10/13 15:16:11 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/inc.exp ...
+10/13 15:16:13 DEBUG|     utils:0085| FAIL: systemtap.base/inc.stp startup (eof)
+10/13 15:16:13 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/inlinedvars.exp ...
+10/13 15:16:15 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/itrace.exp ...
+10/13 15:16:16 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kfunct.exp ...
+10/13 15:16:21 DEBUG|     utils:0085| FAIL: systemtap.base/kfunct.stp startup (eof)
+10/13 15:16:21 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kmodule.exp ...
+10/13 15:16:25 DEBUG|     utils:0085| FAIL: systemtap.base/kmodule.stp startup (eof)
+10/13 15:16:25 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kprobes.exp ...
+10/13 15:16:31 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/kretprobe-vars.exp ...
+10/13 15:16:37 DEBUG|     utils:0085| FAIL: systemtap.base/kretprobe-vars.stp startup (eof)
+10/13 15:16:37 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/labels.exp ...
+10/13 15:16:37 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/limits.exp ...
+10/13 15:16:43 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/logical_and.exp ...
+10/13 15:16:44 DEBUG|     utils:0085| FAIL: systemtap.base/logical_and.stp startup (eof)
+10/13 15:16:44 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/marker.exp ...
+10/13 15:16:45 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/maxactive.exp ...
+10/13 15:16:50 DEBUG|     utils:0085| FAIL: MAXACTIVE01 startup (eof)
+10/13 15:16:55 DEBUG|     utils:0085| FAIL: MAXACTIVE02 startup (eof)
+10/13 15:16:55 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/maxmemory.exp ...
+10/13 15:17:14 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/modargs.exp ...
+10/13 15:17:16 DEBUG|     utils:0085| FAIL: modargs compilation: /tmp/stapbqFK0D/stap_b3c6d56a1ee2d88b4eee11c3a17a03c8_1022.c:594: error: 'param_ops_int64_t' undeclared here (not in a function)
+10/13 15:17:16 DEBUG|     utils:0085| make[3]: *** [/tmp/stapbqFK0D/stap_b3c6d56a1ee2d88b4eee11c3a17a03c8_1022.o] Error 1
+10/13 15:17:16 DEBUG|     utils:0085| make[2]: *** [_module_/tmp/stapbqFK0D] Error 2
+10/13 15:17:16 DEBUG|     utils:0085| Pass 4: compilation failed.  Try again with another '--vp 0001' option.
+10/13 15:17:16 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/not.exp ...
+10/13 15:17:18 DEBUG|     utils:0085| FAIL: systemtap.base/not.stp startup (eof)
+10/13 15:17:18 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/onoffprobe.exp ...
+10/13 15:17:24 DEBUG|     utils:0085| FAIL: conditional probes (0)
+10/13 15:17:24 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optim.exp ...
+10/13 15:17:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optim_arridx.exp ...
+10/13 15:17:30 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optim_voidstmt.exp ...
+10/13 15:17:36 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/optionalprobe.exp ...
+10/13 15:17:40 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/overcatcher.exp ...
+10/13 15:17:46 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/overflow_error.exp ...
+10/13 15:17:48 DEBUG|     utils:0085| FAIL: overflow_error (0)
+10/13 15:17:48 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/overload.exp ...
+10/13 15:18:09 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/pointer_array.exp ...
+10/13 15:18:20 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/poll_map.exp ...
+10/13 15:18:28 DEBUG|     utils:0085| FAIL: poll_map (0)
+10/13 15:18:28 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/pp.exp ...
+10/13 15:18:50 DEBUG|     utils:0085| Running /usr/local/autobench/autotest/tests/systemtap/src/testsuite/systemtap.base/pr10854.exp ...
+
+--------------020202060809000603010008--
