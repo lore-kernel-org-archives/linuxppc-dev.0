@@ -1,27 +1,25 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id E5772B70CC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Oct 2010 07:07:02 +1100 (EST)
-Message-ID: <4CC5E354.80009@neli.hopto.org>
-Date: Mon, 25 Oct 2010 22:06:44 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id BA259B70AA
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Oct 2010 12:01:00 +1100 (EST)
+Received: by eyf18 with SMTP id 18so2765488eyf.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2010 18:00:58 -0700 (PDT)
 MIME-Version: 1.0
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
-References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
-	<4CC0AD74.8070800@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445906@CORPEXCH1.na.ads.idt.com>
-	<4CC1D7DE.7060405@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445A6B@CORPEXCH1.na.ads.idt.com>
-	<4CC20923.8050400@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445BA4@CORPEXCH1.na.ads.idt.com>
-	<4CC5ACAB.7070309@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E5520147D5C2@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E5520147D5C2@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4CC53E18.3050204@windriver.com>
+References: <AANLkTikNZ+LD-FZ_vK-R3Rfu7RzRSAL_zT4xbWgYL=8R@mail.gmail.com>
+	<4CBC080A.7030005@windriver.com>
+	<20101018114214.2e72a616@udp111988uds.am.freescale.net>
+	<4CBCFC5D.3010403@windriver.com>
+	<AANLkTinN-xOecVynPYxmLoT9HJKFs0iPo3pLXF05Tudv@mail.gmail.com>
+	<AANLkTimW1_Hc3kQ2Wbn6zDMUSJvRCxn0XdGw4wB-mm0D@mail.gmail.com>
+	<4CC53E18.3050204@windriver.com>
+Date: Mon, 25 Oct 2010 18:00:57 -0700
+Message-ID: <AANLkTi=yKy=XaTkK9nooP0VZs9rhEF-bWeyD+NL-tqeE@mail.gmail.com>
+Subject: Re: CONFIG_FEC is not good for mpc8xx ethernet?
+From: Shawn Jin <shawnxjin@gmail.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bounine, Alexandre wrote:
-> Micha Nelissen <micha@neli.hopto.org> wrote:
->> that switch. The tag uses one extra bit to identify the device as a
->> switch instead of an endpoint. This provides the information to
->> unambiguously identify a switch from an endpoint.
-> 
-> OK taking away #2. But do not see how it justifies storing two values of
-> destid.
+> Sorry for this delay response since I'm a bit busying recently:)
 
-I look at it this way: it prevents the need for another layer of 
-indirection: translating component tag to a destid.
+No. Don't feel sorry about it. You're not obligated to answer any
+questions here. I believe it is the free and willing to help spirit
+that drive the open source community (linux particularly) to be such a
+success. We all benefit from and contribute to this. :)
 
-> And you have just confirmed using CT for unique identification. 
+> If you're sure that work well at the first time it may be issued from PIN. Are
+> the PINs used to MDIO bus multiplexed? Maybe you miss something to re-configure
+> PIN with the appropriate mode, OUT direction and some GPIO REGs to bind your PHY
+> PINs. I means maybe other drivers also use same PINs and re-configure them, so
+> they don't work properly as the first time. So you can try adding some codes to
+> re-initial PINs as PHY expect on here to check this again.
 
-That's correct, but I never said (intended to say) I didn't.
+After the PIN assignment issue, the cause was simply an unnecessary
+reset in fs_init_phy() that was added in the beginning. And I forgot
+it. :-P
 
-> We
-> simply have differences in interpretation of CT: you are using component
-> tag to pass unique identification and I am using CT as a unique
-> identification. I prefer not to assume any relationship between routing
-> information and the component tag.
+Tiejun, Scott, many thanks to your kind help.
 
-Why no relation? My experience is that during debugging it's useful to 
-have the destid directly at hand, it's just very practical. (Otherwise 
-any drawing of a random network would need two "identification" numbers 
-per drawn node: the component tag (true identification), and destid 
-since that's what everyone uses to identify a device, what needs to 
-programmed into the LUTs of a switch, identification in sysfs, etc.).
-
-Micha
+-Shawn.
