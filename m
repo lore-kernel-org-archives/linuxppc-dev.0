@@ -1,14 +1,17 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id 2AE25B70CD
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0A492B6EF1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 01:22:55 +1100 (EST)
-Message-ID: <4CC6E43C.8010104@neli.hopto.org>
-Date: Tue, 26 Oct 2010 16:22:52 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+	Wed, 27 Oct 2010 04:18:18 +1100 (EST)
 MIME-Version: 1.0
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH -mm 0/2] RapidIO: Changes to handling of RIO switches
+Date: Tue, 26 Oct 2010 10:17:50 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520147D9BA@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <4CC6E43C.8010104@neli.hopto.org>
 References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
 	<4CC0AD74.8070800@neli.hopto.org>
 	<0CE8B6BE3C4AD74AB97D9D29BD24E55201445906@CORPEXCH1.na.ads.idt.com>
@@ -20,8 +23,9 @@ References: <1287688250-14226-1-git-send-email-alexandre.bounine@idt.com>
 	<0CE8B6BE3C4AD74AB97D9D29BD24E5520147D5C2@CORPEXCH1.na.ads.idt.com>
 	<4CC5E354.80009@neli.hopto.org>
 	<0CE8B6BE3C4AD74AB97D9D29BD24E5520147D879@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E5520147D879@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<4CC6E43C.8010104@neli.hopto.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Micha Nelissen" <micha@neli.hopto.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
 	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,61 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bounine, Alexandre wrote:
-> Micha Nelissen <micha@neli.hopto.org> wrote:
->> I look at it this way: it prevents the need for another layer of
->> indirection: translating component tag to a destid.
-> 
-> The destid alone is not enough. You will need an entire rio_dev object
-> for that device anyway.
+Micha Nelissen <micha@neli.hopto.org> wrote:
+>=20
+> In various parts of the enumeration and routing algorithm, it would
+need
+> to lookup the tag to find the destid, if the destid is in the tag then
+> this lookup is not needed.
 
-?? I did not say a rio_dev object is not needed; on the contrary, I do 
-have it.
+Let's keep this discussion within limits of the current implementation.
+Existing method of forming CT may be replaced when that change is
+justified by use.
+Any method that may be implemented later is good if it ensures unique
+identification of RIO devices. At this moment, we just need to define CT
+format now to avoid future conflicts of enumeration methods.
 
-In various parts of the enumeration and routing algorithm, it would need 
-to lookup the tag to find the destid, if the destid is in the tag then 
-this lookup is not needed.
+> Well, we both know "the current mainline implementation" is easily
+> improved to unique identification I proposed. Therefore this statement
+> is misleading.
 
-> I think we are mixing two things together here. I understand your idea
-> but do not see how it prevents me from having one common set of access
-> coordinates for RIO devices (the starting point of our discussion). 
+Your improvement will require assigning separate destID to any switch
+that has no endpoints attached. I prefer to keep changes to enumeration
+for later patches.
 
-I'm trying to argue we do not want redundant identification in the first 
-  place unless absolutely necessary.
-
-> Regardless of an implementation, having a way that ensures unified
-> identification of switches by all processor boards is better than the
-> current mainline implementation. 
-
-Well, we both know "the current mainline implementation" is easily 
-improved to unique identification I proposed. Therefore this statement 
-is misleading.
-
-> Methods of forming a component tag may
-> differ but still serve the same purpose. Personally I prefer to avoid
-> any link of device identification to the destid because it may not be as
-> intuitive as it seems for large systems with hot-plug. I will discuss
-> this with some of RIO TWG guys to get their opinion on the best
-> approach.
-
-Please do, please elaborate: "may not be as intuitive" ... to what? for 
-implementation of ...?
-
-> I will make a patch that defines fields of component tag, probably just
-> one for now - identification field. This will ensure that any method
-> used to assign component tag (id part of it) will be compatible with RIO
-> spec part 8 error management.
-
-Again slightly misleading information. Any unique identification 
-satisfies this requirement.
-
-To prove my point: are you going to recycle the component tags as well 
-in case of hot-swaps, just like the destids?
-
-> As for switch identification, at this moment I still prefer replacing
-> rswitch->switchid with ID portion of the component tag because it is
-> very simple and does not require changes to enumeration algorithm.   
-
-Yes, I agree switchid = tag, that's what I use also.
-
-Micha
+Alex.
