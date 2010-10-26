@@ -1,13 +1,13 @@
 Return-Path: <yanok@emcraft.com>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5D007B70DA
+	by ozlabs.org (Postfix) with ESMTP id 64848B70DC
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 27 Oct 2010 10:53:13 +1100 (EST)
 From: Ilya Yanok <yanok@emcraft.com>
 To: linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de, vlad@emcraft.com
-Subject: [PATCH 6/6] mpc8308_p1m: add DMA controller device-tree node
-Date: Wed, 27 Oct 2010 01:53:00 +0200
-Message-Id: <1288137180-3220-7-git-send-email-yanok@emcraft.com>
+Subject: [PATCH 5/6] MPC8308RDB: add DMA controller device-tree node
+Date: Wed, 27 Oct 2010 01:52:59 +0200
+Message-Id: <1288137180-3220-6-git-send-email-yanok@emcraft.com>
 In-Reply-To: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
 References: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
 Cc: Ilya Yanok <yanok@emcraft.com>
@@ -21,19 +21,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 MPC8308 has DMA controller compatible with mpc512x_dma driver. This
-patch adds device-tree node to support DMA controller on MPC8308 P1M
+patch adds device-tree node to support DMA controller on MPC8308RDB
 board.
 
 Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 ---
- arch/powerpc/boot/dts/mpc8308_p1m.dts |    8 ++++++++
+ arch/powerpc/boot/dts/mpc8308rdb.dts |    8 ++++++++
  1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-index 05a76cc..697b3f6 100644
---- a/arch/powerpc/boot/dts/mpc8308_p1m.dts
-+++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-@@ -297,6 +297,14 @@
+diff --git a/arch/powerpc/boot/dts/mpc8308rdb.dts b/arch/powerpc/boot/dts/mpc8308rdb.dts
+index 1e2b888..a0bd188 100644
+--- a/arch/powerpc/boot/dts/mpc8308rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8308rdb.dts
+@@ -265,6 +265,14 @@
  			interrupt-parent = < &ipic >;
  		};
  
