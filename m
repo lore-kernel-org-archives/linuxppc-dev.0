@@ -1,26 +1,27 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EF0C4B7119
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0C6BCB7126
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 27 Oct 2010 14:36:01 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9R3Ik3G015167
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:18:46 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9R3Zh2D311520
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:35:43 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o9R3Zh9f003246
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:35:43 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9R3JfCi009819
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:19:41 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9R3Zk7D2052120
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:35:46 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9R3Zj5d001965
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2010 01:35:45 -0200
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: nacc@us.ibm.com
-Subject: [RFC PATCH 4/7 v2] ppc: checking for pdn->parent is redundant
-Date: Tue, 26 Oct 2010 20:35:14 -0700
-Message-Id: <1288150518-4026-5-git-send-email-nacc@us.ibm.com>
+Subject: [RFC PATCH 6/7 v2] ppc/iommu: pass phb only to
+	iommu_table_setparms_lpar
+Date: Tue, 26 Oct 2010 20:35:16 -0700
+Message-Id: <1288150518-4026-7-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
 References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
 Cc: sonnyrao@us.ibm.com, miltonm@bga.com, Paul Mackerras <paulus@samba.org>,
@@ -34,32 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The device tree root is never a pci bus, and will not have a
-PCI_DN(pdn), so the check for PCI_DN added in
-650f7b3b2f0ead0673e90452cf3dedde97c537ba makes the check for pdn->parent
-redundant and it can be removed.
+iommu_table_setparms_lpar needs either the phb or the subbusnumber
+(not both), pass the phb to make it similar to iommu_table_setparms.
+
+Note: In cases where a caller was passing bus->number previously to
+iommu_table_setparms_lpar() rather than phb->bus->number, this can lead
+to a different value in tbl->it_busno. The only example of this was the
+removed pci_dma_dev_setup_pSeriesLP(), removed in "ppc/iommu: remove
+unneeded pci_dma_dev_setup_pSeriesLP".
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/platforms/pseries/iommu.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 8ab32da..0ae5a60 100644
+index 9d564b9..45c6865 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -530,10 +530,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 	}
- 	pr_debug("  parent is %s\n", pdn->full_name);
+@@ -323,14 +323,13 @@ static void iommu_table_setparms(struct pci_controller *phb,
+ static void iommu_table_setparms_lpar(struct pci_controller *phb,
+ 				      struct device_node *dn,
+ 				      struct iommu_table *tbl,
+-				      const void *dma_window,
+-				      int bussubno)
++				      const void *dma_window)
+ {
+ 	unsigned long offset, size;
  
--	/* Check for parent == NULL so we don't try to setup the empty EADS
--	 * slots on POWER4 machines.
--	 */
--	if (dma_window == NULL || pdn->parent == NULL) {
-+	if (dma_window == NULL) {
- 		pr_debug("  no dma window for device, linking to parent\n");
- 		set_iommu_table_base(&dev->dev, PCI_DN(pdn)->iommu_table);
- 		return;
+-	tbl->it_busno  = bussubno;
+ 	of_parse_dma_window(dn, dma_window, &tbl->it_index, &offset, &size);
+ 
++	tbl->it_busno = phb->bus->number;
+ 	tbl->it_base   = 0;
+ 	tbl->it_blocksize  = 16;
+ 	tbl->it_type = TCE_PCI;
+@@ -534,8 +533,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 	if (!pci->iommu_table) {
+ 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   pci->phb->node);
+-		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window,
+-			pci->phb->bus->number);
++		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+ 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ 		pr_debug("  created table: %p\n", pci->iommu_table);
+ 	} else {
 -- 
 1.7.1
