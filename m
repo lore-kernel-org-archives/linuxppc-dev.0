@@ -1,22 +1,23 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.162])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6847B70DC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 21:25:54 +1100 (EST)
-Date: Wed, 27 Oct 2010 12:13:51 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: pacman@kosh.dhis.org
-Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
-	bisected to 6dda9d55)
-Message-ID: <20101027101351.GA28218@aepfle.de>
-References: <1287608215.2198.23.camel@pasglop>
-	<20101027085738.1837.qmail@kosh.dhis.org>
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from wbmler1.mail.xerox.com (wbmler1.mail.xerox.com [13.13.138.216])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wbmler1.mail.xerox.com",
+	Issuer "USERTrust Legacy Secure Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5F748B70D6
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Oct 2010 22:44:04 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20101027085738.1837.qmail@kosh.dhis.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Freescale P2020/ 85xx PCIe: DMA low throughtput
+Date: Wed, 27 Oct 2010 12:28:21 +0100
+Message-ID: <929D3CED81F34E43887A393170D66FB9035E3A4F@GBRSUN01MS002.eu.xerox.net>
+In-Reply-To: <4CC7EFFC.10405@extricom.com>
+References: <4CBEC62E.30900@extricom.com>
+	<929D3CED81F34E43887A393170D66FB90355C3CA@GBRSUN01MS002.eu.xerox.net>
+	<4CC7EFFC.10405@extricom.com>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "Natalie Shapira" <natalie@extricom.com>
+Cc: linuxppc-dev@ozlabs.org, zw@zh-kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 27, pacman@kosh.dhis.org wrote:
+>		Hi,=20
+>	=09
+>		I'm working on bring up for a new board based on
+Freescales p2020.
+>		I have a programmable FPGA as a PCIe device with a
+buffer I can
+>		write to and from.
+>		I want to test  performence for the PCIe bus.=20
+>		I encountered a problem while doing a DMA between the
+FPGA & DDR.=20
+>		The whole buffer  moves  to and from  the device  with
+out
+>		mismatches but with low throughtput.=20
+>		The thing is that the buffer divided to many
+transactions of byte
+>		size instead of transferring it in a burst.=20
+>		I must mention that even a buffer of word size, divided
+in to byte
+>		transactions by the DMA (the core can read a word so it
+seems like
+>		the DMA fault.
+>		I tried to change the latency timer, max latency, min
+latency and
+>		cache line in the configuration space of both sides of
+the pcie
+>		bus. It didn't help.
+>		Do you have an idea what can it be?=20
+>	=09
+>		Thanks,
+>		Natalie.=20
+>		   =20
+>
+>=09
+>	Assuming the P2020 has the usual 85xx-style DMA engine, you may
+have
+>	the Band Width Control cleared to 0. This 4-bit field (BWC)
+restricts
+>	the transfer size to 2^BWC bytes, for BWC=3D0,1,..0xa. 0xb-0xe are
+>	reserved. 0xf disables bandwidth sharing to allow uninterrupted
+>	transfers from each channel, so if you are using several
+channels
+>	one channel can completely lock out other channels. BWC=3D0x8 at
+reset
+>	(2^8 =3D 256 bytes). See the P2020 manual for more details.
+>=09
+>	BWC is the field with mask 0x0f000000 in the MR (Master Reset)
+>	register for the channel (0, 1, 2, 3), at offset 0x100, 0x180,
+0x200,
+>	0x280 relative to the base of the DMA controller.
+>=09
+>	Clive
+>=09
+>=09
+>	 =20
+>
+> Hi, Thanks.
+> I changed the BWC but  the transactions are still in a byte size
+instead
+> of burst. Do you have another idea?
+>
+> Natalie.
 
-> |1. How do I locate all usb nodes in the device tree?
-> |
-> |2. How do I know if a particular usb node is OHCI?
+Sorry, no.
 
-In the installed system, run 'lspci | grep -i usb', this gives the pci
-bus numbers.  Then run 'find /sys -name devspec', and look or the bus
-numbers from the lspci output.  Each devspec file contains the firmware
-path.  The ohci node may have subdirectories. Run 'words' in each of
-them at the firmware prompt. Perhaps there is one to shutdown the
-controller?
+Are you sure you have modified the FSL-DMA driver in the kernel so it
+does not
+write zero to BWC?
 
-I just noticed older firmware did not have a node for ohci, newer ones
-my have a /pci@80000000/usb@5 node.
-
-Good luck.
-
-Olaf
+Clive
