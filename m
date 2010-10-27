@@ -1,17 +1,17 @@
 Return-Path: <yanok@emcraft.com>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2ED57B71D0
+	by ozlabs.org (Postfix) with ESMTP id 678EDB70D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 10:53:16 +1100 (EST)
+	Wed, 27 Oct 2010 11:02:48 +1100 (EST)
 From: Ilya Yanok <yanok@emcraft.com>
-To: linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de, vlad@emcraft.com
-Subject: [PATCH 4/6] mpc512x_dma: try to free descriptors in case of
-	allocation failure
-Date: Wed, 27 Oct 2010 01:52:58 +0200
-Message-Id: <1288137180-3220-5-git-send-email-yanok@emcraft.com>
-In-Reply-To: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
-References: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
-Cc: Piotr Ziecik <kosmo@semihalf.com>, Ilya Yanok <yanok@emcraft.com>
+To: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org,
+	kim.phillips@freescale.com, wd@denx.de, dzu@denx.de, vlad@emcraft.com
+Subject: [REPOST][PATCH] mpc8308: fix USB DR controller initialization
+Date: Wed, 27 Oct 2010 02:02:36 +0200
+Message-Id: <1288137756-3389-1-git-send-email-yanok@emcraft.com>
+In-Reply-To: <1282906641-25351-1-git-send-email-yanok@emcraft.com>
+References: <1282906641-25351-1-git-send-email-yanok@emcraft.com>
+Cc: Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,131 +21,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently completed descriptors are processed in the tasklet. This can
-lead to dead lock in case of CONFIG_NET_DMA enabled (new requests are
-submitted from softirq context and dma_memcpy_to_iovec() busy loops until
-the requests is submitted). To prevent this we should process completed
-descriptors from the allocation failure path in prepare_memcpy too.
+MPC8308 has ULPI pin muxing settings in SICRH register, bits 17-18
+which is different from both MPC8313 and MPC8315.
+Also MPC8308 doesn't have REFSEL, UTMI_PHY_EN and OTG_PORT fields
+in the USB DR controller CONTROL register.
 
 Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-Cc: Piotr Ziecik <kosmo@semihalf.com>
 ---
- drivers/dma/mpc512x_dma.c |   79 +++++++++++++++++++++++++-------------------
- 1 files changed, 45 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 97b92ec..59c2701 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -328,19 +328,55 @@ static irqreturn_t mpc_dma_irq(int irq, void *data)
- 	return IRQ_HANDLED;
- }
+Kim, Kumar,
+
+Please consider including this patch. Without it USB initialization code
+writes to the wrong bits on the MPC8308RDB.
+
+Regards, Ilya.
+
+ arch/powerpc/boot/dts/mpc8308rdb.dts  |    2 +-
+ arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
+ arch/powerpc/platforms/83xx/usb.c     |   21 ++++++++++++++++-----
+ 3 files changed, 19 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8308rdb.dts b/arch/powerpc/boot/dts/mpc8308rdb.dts
+index a97eb2d..1e2b888 100644
+--- a/arch/powerpc/boot/dts/mpc8308rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8308rdb.dts
+@@ -109,7 +109,7 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+-		compatible = "fsl,mpc8315-immr", "simple-bus";
++		compatible = "fsl,mpc8308-immr", "simple-bus";
+ 		ranges = <0 0xe0000000 0x00100000>;
+ 		reg = <0xe0000000 0x00000200>;
+ 		bus-frequency = <0>;
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 0fea881..82a4345 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -35,6 +35,8 @@
  
--/* DMA Tasklet */
--static void mpc_dma_tasklet(unsigned long data)
-+/* proccess completed descriptors */
-+static void mpc_dma_process_completed(struct mpc_dma *mdma)
- {
--	struct mpc_dma *mdma = (void *)data;
- 	dma_cookie_t last_cookie = 0;
- 	struct mpc_dma_chan *mchan;
- 	struct mpc_dma_desc *mdesc;
- 	struct dma_async_tx_descriptor *desc;
- 	unsigned long flags;
- 	LIST_HEAD(list);
--	uint es;
- 	int i;
+ /* system i/o configuration register high */
+ #define MPC83XX_SICRH_OFFS         0x118
++#define MPC8308_SICRH_USB_MASK     0x000c0000
++#define MPC8308_SICRH_USB_ULPI     0x00040000
+ #define MPC834X_SICRH_USB_UTMI     0x00020000
+ #define MPC831X_SICRH_USB_MASK     0x000000e0
+ #define MPC831X_SICRH_USB_ULPI     0x000000a0
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index 3ba4bb7..2c64164 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -127,7 +127,8 @@ int mpc831x_usb_cfg(void)
  
-+	for (i = 0; i < mdma->dma.chancnt; i++) {
-+		mchan = &mdma->channels[i];
+ 	/* Configure clock */
+ 	immr_node = of_get_parent(np);
+-	if (immr_node && of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
++	if (immr_node && (of_device_is_compatible(immr_node, "fsl,mpc8315-immr") ||
++			of_device_is_compatible(immr_node, "fsl,mpc8308-immr")))
+ 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
+ 		                MPC8315_SCCR_USB_MASK,
+ 		                MPC8315_SCCR_USB_DRCM_01);
+@@ -138,7 +139,11 @@ int mpc831x_usb_cfg(void)
+ 
+ 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
+ 	if (prop && !strcmp(prop, "ulpi")) {
+-		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr")) {
++		if (of_device_is_compatible(immr_node, "fsl,mpc8308-immr")) {
++			clrsetbits_be32(immap + MPC83XX_SICRH_OFFS,
++					MPC8308_SICRH_USB_MASK,
++					MPC8308_SICRH_USB_ULPI);
++		} else if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr")) {
+ 			clrsetbits_be32(immap + MPC83XX_SICRL_OFFS,
+ 					MPC8315_SICRL_USB_MASK,
+ 					MPC8315_SICRL_USB_ULPI);
+@@ -173,6 +178,9 @@ int mpc831x_usb_cfg(void)
+ 		     !strcmp(prop, "utmi"))) {
+ 		u32 refsel;
+ 
++		if (of_device_is_compatible(immr_node, "fsl,mpc8308-immr"))
++			goto out;
 +
-+		/* Get all completed descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		if (!list_empty(&mchan->completed))
-+			list_splice_tail_init(&mchan->completed, &list);
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+		if (list_empty(&list))
-+			continue;
-+
-+		/* Execute callbacks and run dependencies */
-+		list_for_each_entry(mdesc, &list, node) {
-+			desc = &mdesc->desc;
-+
-+			if (desc->callback)
-+				desc->callback(desc->callback_param);
-+
-+			last_cookie = desc->cookie;
-+			dma_run_dependencies(desc);
+ 		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
+ 			refsel = CONTROL_REFSEL_24MHZ;
+ 		else
+@@ -186,9 +194,11 @@ int mpc831x_usb_cfg(void)
+ 		temp = CONTROL_PHY_CLK_SEL_ULPI;
+ #ifdef CONFIG_USB_OTG
+ 		/* Set OTG_PORT */
+-		dr_mode = of_get_property(np, "dr_mode", NULL);
+-		if (dr_mode && !strcmp(dr_mode, "otg"))
+-			temp |= CONTROL_OTG_PORT;
++		if (!of_device_is_compatible(immr_node, "fsl,mpc8308-immr")) {
++			dr_mode = of_get_property(np, "dr_mode", NULL);
++			if (dr_mode && !strcmp(dr_mode, "otg"))
++				temp |= CONTROL_OTG_PORT;
 +		}
-+
-+		/* Free descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		list_splice_tail_init(&list, &mchan->free);
-+		mchan->completed_cookie = last_cookie;
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+	}
-+}
-+
-+/* DMA Tasklet */
-+static void mpc_dma_tasklet(unsigned long data)
-+{
-+	struct mpc_dma *mdma = (void *)data;
-+	unsigned long flags;
-+	uint es;
-+
- 	spin_lock_irqsave(&mdma->error_status_lock, flags);
- 	es = mdma->error_status;
- 	mdma->error_status = 0;
-@@ -379,35 +415,7 @@ static void mpc_dma_tasklet(unsigned long data)
- 			dev_err(mdma->dma.dev, "- Destination Bus Error\n");
+ #endif /* CONFIG_USB_OTG */
+ 		out_be32(usb_regs + FSL_USB2_CONTROL_OFFS, temp);
+ 	} else {
+@@ -196,6 +206,7 @@ int mpc831x_usb_cfg(void)
+ 		ret = -EINVAL;
  	}
  
--	for (i = 0; i < mdma->dma.chancnt; i++) {
--		mchan = &mdma->channels[i];
--
--		/* Get all completed descriptors */
--		spin_lock_irqsave(&mchan->lock, flags);
--		if (!list_empty(&mchan->completed))
--			list_splice_tail_init(&mchan->completed, &list);
--		spin_unlock_irqrestore(&mchan->lock, flags);
--
--		if (list_empty(&list))
--			continue;
--
--		/* Execute callbacks and run dependencies */
--		list_for_each_entry(mdesc, &list, node) {
--			desc = &mdesc->desc;
--
--			if (desc->callback)
--				desc->callback(desc->callback_param);
--
--			last_cookie = desc->cookie;
--			dma_run_dependencies(desc);
--		}
--
--		/* Free descriptors */
--		spin_lock_irqsave(&mchan->lock, flags);
--		list_splice_tail_init(&list, &mchan->free);
--		mchan->completed_cookie = last_cookie;
--		spin_unlock_irqrestore(&mchan->lock, flags);
--	}
-+	mpc_dma_process_completed(mdma);
- }
- 
- /* Submit descriptor to hardware */
-@@ -587,8 +595,11 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
- 	}
- 	spin_unlock_irqrestore(&mchan->lock, iflags);
- 
--	if (!mdesc)
-+	if (!mdesc) {
-+		/* try to free completed descriptors */
-+		mpc_dma_process_completed(mdma);
- 		return NULL;
-+	}
- 
- 	mdesc->error = 0;
- 	tcd = mdesc->tcd;
++out:
+ 	iounmap(usb_regs);
+ 	of_node_put(np);
+ 	return ret;
 -- 
 1.7.2.3
