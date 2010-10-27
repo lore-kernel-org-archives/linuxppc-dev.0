@@ -1,23 +1,21 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wbmler1.mail.xerox.com (wbmler1.mail.xerox.com [13.13.138.216])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wbmler1.mail.xerox.com",
-	Issuer "USERTrust Legacy Secure Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5F748B70D6
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Oct 2010 22:44:04 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Freescale P2020/ 85xx PCIe: DMA low throughtput
-Date: Wed, 27 Oct 2010 12:28:21 +0100
-Message-ID: <929D3CED81F34E43887A393170D66FB9035E3A4F@GBRSUN01MS002.eu.xerox.net>
-In-Reply-To: <4CC7EFFC.10405@extricom.com>
-References: <4CBEC62E.30900@extricom.com>
-	<929D3CED81F34E43887A393170D66FB90355C3CA@GBRSUN01MS002.eu.xerox.net>
-	<4CC7EFFC.10405@extricom.com>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Natalie Shapira" <natalie@extricom.com>
-Cc: linuxppc-dev@ozlabs.org, zw@zh-kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2FF55B70D5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 28 Oct 2010 00:27:39 +1100 (EST)
+Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
+	bisected to 6dda9d55)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: pacman@kosh.dhis.org
+In-Reply-To: <20101027085738.1837.qmail@kosh.dhis.org>
+References: <20101027085738.1837.qmail@kosh.dhis.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 28 Oct 2010 00:27:24 +1100
+Message-ID: <1288186044.2236.25.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,72 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->		Hi,=20
->	=09
->		I'm working on bring up for a new board based on
-Freescales p2020.
->		I have a programmable FPGA as a PCIe device with a
-buffer I can
->		write to and from.
->		I want to test  performence for the PCIe bus.=20
->		I encountered a problem while doing a DMA between the
-FPGA & DDR.=20
->		The whole buffer  moves  to and from  the device  with
-out
->		mismatches but with low throughtput.=20
->		The thing is that the buffer divided to many
-transactions of byte
->		size instead of transferring it in a burst.=20
->		I must mention that even a buffer of word size, divided
-in to byte
->		transactions by the DMA (the core can read a word so it
-seems like
->		the DMA fault.
->		I tried to change the latency timer, max latency, min
-latency and
->		cache line in the configuration space of both sides of
-the pcie
->		bus. It didn't help.
->		Do you have an idea what can it be?=20
->	=09
->		Thanks,
->		Natalie.=20
->		   =20
->
->=09
->	Assuming the P2020 has the usual 85xx-style DMA engine, you may
-have
->	the Band Width Control cleared to 0. This 4-bit field (BWC)
-restricts
->	the transfer size to 2^BWC bytes, for BWC=3D0,1,..0xa. 0xb-0xe are
->	reserved. 0xf disables bandwidth sharing to allow uninterrupted
->	transfers from each channel, so if you are using several
-channels
->	one channel can completely lock out other channels. BWC=3D0x8 at
-reset
->	(2^8 =3D 256 bytes). See the P2020 manual for more details.
->=09
->	BWC is the field with mask 0x0f000000 in the MR (Master Reset)
->	register for the channel (0, 1, 2, 3), at offset 0x100, 0x180,
-0x200,
->	0x280 relative to the base of the DMA controller.
->=09
->	Clive
->=09
->=09
->	 =20
->
-> Hi, Thanks.
-> I changed the BWC but  the transactions are still in a byte size
-instead
-> of burst. Do you have another idea?
->
-> Natalie.
 
-Sorry, no.
+> Since then, the silence has been deafening.
+> 
+> My assumption now is that this is not ever getting fixed. I'm certainly not
+> able to fix it. I'm not a even kernel programmer! I got far enough to
+> diagnose the cause just with the "add more printk's and boot it again"
+> technique. Hundreds of reboots trying to figure it out. I was a conscientious
+> bug-reporter, I thought.
 
-Are you sure you have modified the FSL-DMA driver in the kernel so it
-does not
-write zero to BWC?
+I'm happy to help you fix it but I'm travelling at the moment and won't
+have much time for a couple of weeks.
 
-Clive
+Cheers,
+Ben.
+
+> I could pull the PCI card and be done with it. I never used those USB ports
+> anyway. But after all the suffering I went through to find this bug... the
+> crashing e2fsck's and consequent filesystem corruption... I hate the idea of
+> surrendering to it. There are possibly other affected users who I'd be
+> abandoning to suffer similarly in the future.
+> 
+> For the last week I've studied OpenFirmware as hard as I can. I read the spec
+> cover to cover. And the USB annex, and the PCI annex. But I'm still lost in
+> all the different address formats.
+> 
+> I took my best guess on how to handle this problem, and ran with it, ending
+> up with a 97-line Forth script, and that was just to get a virtual address,
+> not to actually do anything with it, and it used a hardcoded device path. But
+> it didn't work, all I got was an "invalid pointer" error. I made another
+> guess at something that wasn't documented anywhere (the fact that this stuff
+> is insufficiently documented is the one thing I can state with complete
+> confidence!) and out came a successful translation to a virtual address: 0.
+> 
+> If I'm the only one fighting this bug, the bug wins.
+> 
