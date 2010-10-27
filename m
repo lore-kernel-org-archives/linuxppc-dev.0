@@ -1,33 +1,31 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E90CB6EF0
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF4A0B7105
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 14:35:59 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9R3MqSa032006
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:22:52 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9R3ZhxE136586
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:35:44 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o9R3ZhMu019575
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:35:43 -0600
+	Wed, 27 Oct 2010 14:36:01 +1100 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9R3K4VT032538
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:20:04 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9R3Zj5b167548
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:35:45 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9R3ZjvU003285
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 23:35:45 -0400
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: nacc@us.ibm.com
-Subject: [RFC PATCH 2/7 v2] ppc: add memory_hotplug_max
-Date: Tue, 26 Oct 2010 20:35:12 -0700
-Message-Id: <1288150518-4026-3-git-send-email-nacc@us.ibm.com>
+Subject: [RFC PATCH 5/7 v2] ppc/iommu: do not need to check for dma_window ==
+	NULL
+Date: Tue, 26 Oct 2010 20:35:15 -0700
+Message-Id: <1288150518-4026-6-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
 References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
-Cc: sonnyrao@us.ibm.com, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com,
-	H Hartley Sweeten <hsweeten@visionengravers.com>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	"H. Peter Anvin" <hpa@linux.intel.com>, Yinghai Lu <yinghai@kernel.org>
+Cc: sonnyrao@us.ibm.com, miltonm@bga.com, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,76 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a function to get the maximum address that can be hotplug added.
-This is needed to calculate the size of the tce table needed to cover
-all memory in 1:1 mode.
+The block in pci_dma_dev_setup_pSeriesLP for dma_window == NULL can be
+removed because we will only teminate the loop if we had already allocated
+a iommu table for that node or we found a window.  While there may be
+no window for the device, the intresting part is if we are reusing a
+table or creating it for the first device under it.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
-Comments on where to export?
----
- arch/powerpc/include/asm/mmzone.h |    5 +++++
- arch/powerpc/mm/numa.c            |   26 ++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index aac87cb..fd3fd58 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -33,6 +33,9 @@ extern int numa_cpu_lookup_table[];
- extern cpumask_var_t node_to_cpumask_map[];
- #ifdef CONFIG_MEMORY_HOTPLUG
- extern unsigned long max_pfn;
-+u64 memory_hotplug_max(void);
-+#else
-+#define memory_hotplug_max() memblock_end_of_DRAM()
- #endif
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 0ae5a60..9d564b9 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -530,12 +530,6 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 	}
+ 	pr_debug("  parent is %s\n", pdn->full_name);
  
- /*
-@@ -42,6 +45,8 @@ extern unsigned long max_pfn;
- #define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)
- #define node_end_pfn(nid)	(NODE_DATA(nid)->node_end_pfn)
- 
-+#else
-+#define memory_hotplug_max() memblock_end_of_DRAM()
- #endif /* CONFIG_NEED_MULTIPLE_NODES */
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 74505b2..8c0944c 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1247,4 +1247,30 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
- 	return nid;
- }
- 
-+static u64 hot_add_drconf_memory_max(void)
-+{
-+        struct device_node *memory = NULL;
-+        unsigned int drconf_cell_cnt = 0;
-+        u64 lmb_size = 0;
-+        const u32 *dm = 0;
-+
-+        memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+        if (memory) {
-+                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
-+                lmb_size = of_get_lmb_size(memory);
-+                of_node_put(memory);
-+        }
-+        return lmb_size * drconf_cell_cnt;
-+}
-+
-+/*
-+ * memory_hotplug_max - return max address of memory that may be added
-+ *
-+ * This is currently only used on systems that support drconfig memory
-+ * hotplug.
-+ */
-+u64 memory_hotplug_max(void)
-+{
-+        return max(hot_add_drconf_memory_max(), memblock_end_of_DRAM());
-+}
- #endif /* CONFIG_MEMORY_HOTPLUG */
+-	if (dma_window == NULL) {
+-		pr_debug("  no dma window for device, linking to parent\n");
+-		set_iommu_table_base(&dev->dev, PCI_DN(pdn)->iommu_table);
+-		return;
+-	}
+-
+ 	pci = PCI_DN(pdn);
+ 	if (!pci->iommu_table) {
+ 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
 -- 
 1.7.1
