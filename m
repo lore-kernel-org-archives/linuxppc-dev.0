@@ -1,18 +1,19 @@
-Return-Path: <pacman@kosh.dhis.org>
-Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
-	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id 4BBC3B70D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 19:57:41 +1100 (EST)
-Message-ID: <20101027085738.1837.qmail@kosh.dhis.org>
-From: pacman@kosh.dhis.org
-Subject: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
-	bisected to 6dda9d55)
-To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
-Date: Wed, 27 Oct 2010 03:57:38 -0500 (GMT+5)
-In-Reply-To: <1287608215.2198.23.camel@pasglop>
+Return-Path: <natalie@extricom.com>
+Received: from smtp.extricom.com (smtp.extricom.com [192.114.46.18])
+	by ozlabs.org (Postfix) with SMTP id 722A8B70AA
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Oct 2010 20:27:18 +1100 (EST)
+Message-ID: <4CC7EFFC.10405@extricom.com>
+Date: Wed, 27 Oct 2010 11:25:16 +0200
+From: Natalie Shapira <natalie@extricom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+Subject: Re: Freescale P2020/ 85xx PCIe: DMA low throughtput
+References: <4CBEC62E.30900@extricom.com>
+	<929D3CED81F34E43887A393170D66FB90355C3CA@GBRSUN01MS002.eu.xerox.net>
+In-Reply-To: <929D3CED81F34E43887A393170D66FB90355C3CA@GBRSUN01MS002.eu.xerox.net>
+Content-Type: multipart/alternative;
+	boundary="------------060300080805060605030409"
+Cc: linuxppc-dev@ozlabs.org, zw@zh-kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +23,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
-> 
-> Ok so you'll have to make up a "workaround" in prom_init that looks for
-> OHCI's in the device-tree and disable them.
-> 
-> Check if the OHCI node has some existing f-code words you can use for
-> that with "dev /path-to-ohci words" in OF for example. If not, you may
-> need to use the low level register accessors. Use OF client interface
-> "interpret" to run forth code from C.
+This is a multi-part message in MIME format.
+--------------060300080805060605030409
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I responded with a long list of reasons that I'm not qualified to do that
-work myself:
-|Here are the major problems:
-|
-|1. How do I locate all usb nodes in the device tree?
-|
-|2. How do I know if a particular usb node is OHCI?
-|
-|3. Knowing that a node is OHCI, how do I know where its control registers
-|are? I'm sure this is calculated from the "reg" property but I don't see how.
-|
-|4. Knowing where the control registers are, how do I access them? Do I need
-|to request a virt-to-phys mapping or can I assume that it's already mapped,
-|or that the "rl!" command will do the right thing with a physical address?
-|
-|5. Which control register should I use to tell the OHCI to be quiet? Just do
-|a general reset, or is there something that specifically turns off the
-|counter that's been causing the trouble?
+Jenkins, Clive wrote:
+>> Hi, 
+>>
+>> I'm working on bring up for a new board based on Freescales p2020.
+>> I have a programmable FPGA as a PCIe device with a buffer I can
+>> write to and from.
+>> I want to test  performence for the PCIe bus. 
+>> I encountered a problem while doing a DMA between the FPGA & DDR. 
+>> The whole buffer  moves  to and from  the device  with out
+>> mismatches but with low throughtput. 
+>> The thing is that the buffer divided to many transactions of byte
+>> size instead of transferring it in a burst. 
+>> I must mention that even a buffer of word size, divided in to byte
+>> transactions by the DMA (the core can read a word so it seems like
+>> the DMA fault.
+>> I tried to change the latency timer, max latency, min latency and
+>> cache line in the configuration space of both sides of the pcie
+>> bus. It didn't help.
+>> Do you have an idea what can it be? 
+>>
+>> Thanks,
+>> Natalie. 
+>>     
+>
+> Assuming the P2020 has the usual 85xx-style DMA engine, you may have
+> the Band Width Control cleared to 0. This 4-bit field (BWC) restricts
+> the transfer size to 2^BWC bytes, for BWC=0,1,..0xa. 0xb-0xe are
+> reserved. 0xf disables bandwidth sharing to allow uninterrupted
+> transfers from each channel, so if you are using several channels
+> one channel can completely lock out other channels. BWC=0x8 at reset
+> (2^8 = 256 bytes). See the P2020 manual for more details.
+>
+> BWC is the field with mask 0x0f000000 in the MR (Master Reset)
+> register for the channel (0, 1, 2, 3), at offset 0x100, 0x180, 0x200,
+> 0x280 relative to the base of the DMA controller.
+>
+> Clive
+>
+>
+>   
+Hi, Thanks.
+I changed the BWC but the transactions are still in a byte size instead 
+of burst.
+Do you have another idea?
 
-Since then, the silence has been deafening.
+Natalie.
 
-My assumption now is that this is not ever getting fixed. I'm certainly not
-able to fix it. I'm not a even kernel programmer! I got far enough to
-diagnose the cause just with the "add more printk's and boot it again"
-technique. Hundreds of reboots trying to figure it out. I was a conscientious
-bug-reporter, I thought.
+--------------060300080805060605030409
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I could pull the PCI card and be done with it. I never used those USB ports
-anyway. But after all the suffering I went through to find this bug... the
-crashing e2fsck's and consequent filesystem corruption... I hate the idea of
-surrendering to it. There are possibly other affected users who I'd be
-abandoning to suffer similarly in the future.
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=us-ascii" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Jenkins, Clive wrote:
+<blockquote
+ cite="mid:929D3CED81F34E43887A393170D66FB90355C3CA@GBRSUN01MS002.eu.xerox.net"
+ type="cite">
+  <blockquote type="cite">
+    <pre wrap="">Hi, 
 
-For the last week I've studied OpenFirmware as hard as I can. I read the spec
-cover to cover. And the USB annex, and the PCI annex. But I'm still lost in
-all the different address formats.
+I'm working on bring up for a new board based on Freescales p2020.
+I have a programmable FPGA as a PCIe device with a buffer I can
+write to and from.
+I want to test  performence for the PCIe bus. 
+I encountered a problem while doing a DMA between the FPGA &amp; DDR. 
+The whole buffer  moves  to and from  the device  with out
+mismatches but with low throughtput. 
+The thing is that the buffer divided to many transactions of byte
+size instead of transferring it in a burst. 
+I must mention that even a buffer of word size, divided in to byte
+transactions by the DMA (the core can read a word so it seems like
+the DMA fault.
+I tried to change the latency timer, max latency, min latency and
+cache line in the configuration space of both sides of the pcie
+bus. It didn't help.
+Do you have an idea what can it be? 
 
-I took my best guess on how to handle this problem, and ran with it, ending
-up with a 97-line Forth script, and that was just to get a virtual address,
-not to actually do anything with it, and it used a hardcoded device path. But
-it didn't work, all I got was an "invalid pointer" error. I made another
-guess at something that wasn't documented anywhere (the fact that this stuff
-is insufficiently documented is the one thing I can state with complete
-confidence!) and out came a successful translation to a virtual address: 0.
+Thanks,
+Natalie. 
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Assuming the P2020 has the usual 85xx-style DMA engine, you may have
+the Band Width Control cleared to 0. This 4-bit field (BWC) restricts
+the transfer size to 2^BWC bytes, for BWC=0,1,..0xa. 0xb-0xe are
+reserved. 0xf disables bandwidth sharing to allow uninterrupted
+transfers from each channel, so if you are using several channels
+one channel can completely lock out other channels. BWC=0x8 at reset
+(2^8 = 256 bytes). See the P2020 manual for more details.
 
-If I'm the only one fighting this bug, the bug wins.
+BWC is the field with mask 0x0f000000 in the MR (Master Reset)
+register for the channel (0, 1, 2, 3), at offset 0x100, 0x180, 0x200,
+0x280 relative to the base of the DMA controller.
 
--- 
-Alan Curry
+Clive
+
+
+  </pre>
+</blockquote>
+Hi, Thanks.<br>
+I changed the BWC but&nbsp; the transactions are still in a byte size
+instead of burst.<br>
+Do you have another idea?<br>
+<br>
+Natalie. <br>
+</body>
+</html>
+
+--------------060300080805060605030409--
