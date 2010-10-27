@@ -1,31 +1,33 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8D1EDB70D5
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0E90CB6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 27 Oct 2010 14:35:59 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9R3XX0b003465
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:33:33 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9R3Zh6D196086
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:35:43 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o9R3Zh2o032350
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9R3MqSa032006
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:22:52 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9R3ZhxE136586
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:35:44 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o9R3ZhMu019575
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2010 21:35:43 -0600
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: nacc@us.ibm.com
-Subject: [RFC PATCH 1/7 v2] macio: ensure all dma routines get copied over
-Date: Tue, 26 Oct 2010 20:35:11 -0700
-Message-Id: <1288150518-4026-2-git-send-email-nacc@us.ibm.com>
+Subject: [RFC PATCH 2/7 v2] ppc: add memory_hotplug_max
+Date: Tue, 26 Oct 2010 20:35:12 -0700
+Message-Id: <1288150518-4026-3-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
 References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
-Cc: sonnyrao@us.ibm.com, miltonm@bga.com, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: sonnyrao@us.ibm.com, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com,
+	H Hartley Sweeten <hsweeten@visionengravers.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	"H. Peter Anvin" <hpa@linux.intel.com>, Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,51 +37,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also add a comment to dev_archdata, indicating that changes there need
-to be verified against the driver code.
+Add a function to get the maximum address that can be hotplug added.
+This is needed to calculate the size of the tce table needed to cover
+all memory in 1:1 mode.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/include/asm/device.h |    6 ++++++
- drivers/macintosh/macio_asic.c    |    7 +++----
- 2 files changed, 9 insertions(+), 4 deletions(-)
+Comments on where to export?
+---
+ arch/powerpc/include/asm/mmzone.h |    5 +++++
+ arch/powerpc/mm/numa.c            |   26 ++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index a3954e4..16d25c0 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -9,6 +9,12 @@
- struct dma_map_ops;
- struct device_node;
+diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+index aac87cb..fd3fd58 100644
+--- a/arch/powerpc/include/asm/mmzone.h
++++ b/arch/powerpc/include/asm/mmzone.h
+@@ -33,6 +33,9 @@ extern int numa_cpu_lookup_table[];
+ extern cpumask_var_t node_to_cpumask_map[];
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ extern unsigned long max_pfn;
++u64 memory_hotplug_max(void);
++#else
++#define memory_hotplug_max() memblock_end_of_DRAM()
+ #endif
  
+ /*
+@@ -42,6 +45,8 @@ extern unsigned long max_pfn;
+ #define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)
+ #define node_end_pfn(nid)	(NODE_DATA(nid)->node_end_pfn)
+ 
++#else
++#define memory_hotplug_max() memblock_end_of_DRAM()
+ #endif /* CONFIG_NEED_MULTIPLE_NODES */
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 74505b2..8c0944c 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1247,4 +1247,30 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ 	return nid;
+ }
+ 
++static u64 hot_add_drconf_memory_max(void)
++{
++        struct device_node *memory = NULL;
++        unsigned int drconf_cell_cnt = 0;
++        u64 lmb_size = 0;
++        const u32 *dm = 0;
++
++        memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++        if (memory) {
++                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
++                lmb_size = of_get_lmb_size(memory);
++                of_node_put(memory);
++        }
++        return lmb_size * drconf_cell_cnt;
++}
++
 +/*
-+ * Arch extensions to struct device.
++ * memory_hotplug_max - return max address of memory that may be added
 + *
-+ * When adding fields, consider macio_add_one_device in
-+ * drivers/macintosh/macio_asic.c
++ * This is currently only used on systems that support drconfig memory
++ * hotplug.
 + */
- struct dev_archdata {
- 	/* DMA operations on that device */
- 	struct dma_map_ops	*dma_ops;
-diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
-index b6e7ddc..4daf9e5 100644
---- a/drivers/macintosh/macio_asic.c
-+++ b/drivers/macintosh/macio_asic.c
-@@ -387,11 +387,10 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- 	/* Set the DMA ops to the ones from the PCI device, this could be
- 	 * fishy if we didn't know that on PowerMac it's always direct ops
- 	 * or iommu ops that will work fine
-+	 *
-+	 * To get all the fields, copy all archdata
- 	 */
--	dev->ofdev.dev.archdata.dma_ops =
--		chip->lbus.pdev->dev.archdata.dma_ops;
--	dev->ofdev.dev.archdata.dma_data =
--		chip->lbus.pdev->dev.archdata.dma_data;
-+	dev->ofdev.dev.archdata = chip->lbus.pdev->dev.archdata;
- #endif /* CONFIG_PCI */
- 
- #ifdef DEBUG
++u64 memory_hotplug_max(void)
++{
++        return max(hot_add_drconf_memory_max(), memblock_end_of_DRAM());
++}
+ #endif /* CONFIG_MEMORY_HOTPLUG */
 -- 
 1.7.1
