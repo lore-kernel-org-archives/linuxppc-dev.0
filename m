@@ -1,21 +1,18 @@
-Return-Path: <kosmo@semihalf.com>
-Received: from smtp.semihalf.com (smtp.semihalf.com [213.17.239.109])
-	by ozlabs.org (Postfix) with ESMTP id 0EEECB70D6
+Return-Path: <pacman@kosh.dhis.org>
+Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
+	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id 4BBC3B70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 18:32:16 +1100 (EST)
-From: Piotr =?iso-8859-2?q?Zi=EAcik?= <kosmo@semihalf.com>
-To: Ilya Yanok <yanok@emcraft.com>
-Subject: Re: [REPOST] [PATCH 0/6] fixes and MPC8308 support for the
-	mpc512x_dma driver
-Date: Wed, 27 Oct 2010 09:24:28 +0200
-References: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
-	<1288137180-3220-1-git-send-email-yanok@emcraft.com>
-In-Reply-To: <1288137180-3220-1-git-send-email-yanok@emcraft.com>
+	Wed, 27 Oct 2010 19:57:41 +1100 (EST)
+Message-ID: <20101027085738.1837.qmail@kosh.dhis.org>
+From: pacman@kosh.dhis.org
+Subject: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
+	bisected to 6dda9d55)
+To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
+Date: Wed, 27 Oct 2010 03:57:38 -0500 (GMT+5)
+In-Reply-To: <1287608215.2198.23.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Message-Id: <201010270924.28854.kosmo@semihalf.com>
-Cc: vlad@emcraft.com, linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 27 October 2010 01:52:54 Ilya Yanok wrote:
-> Hello everybody,
+Benjamin Herrenschmidt writes:
 > 
-> meanwhile I've fixed one more issue in mpc512x_dma driver.
+> Ok so you'll have to make up a "workaround" in prom_init that looks for
+> OHCI's in the device-tree and disable them.
 > 
-> Any comments? Anybody interrested in this driver? Piotr?
-> 
-> Still unsure how to deal with bitfield structures in IO space...
-> 
+> Check if the OHCI node has some existing f-code words you can use for
+> that with "dev /path-to-ohci words" in OF for example. If not, you may
+> need to use the low level register accessors. Use OF client interface
+> "interpret" to run forth code from C.
 
-Currently I am not able to deal with this as I am much involved in other development.
+I responded with a long list of reasons that I'm not qualified to do that
+work myself:
+|Here are the major problems:
+|
+|1. How do I locate all usb nodes in the device tree?
+|
+|2. How do I know if a particular usb node is OHCI?
+|
+|3. Knowing that a node is OHCI, how do I know where its control registers
+|are? I'm sure this is calculated from the "reg" property but I don't see how.
+|
+|4. Knowing where the control registers are, how do I access them? Do I need
+|to request a virt-to-phys mapping or can I assume that it's already mapped,
+|or that the "rl!" command will do the right thing with a physical address?
+|
+|5. Which control register should I use to tell the OHCI to be quiet? Just do
+|a general reset, or is there something that specifically turns off the
+|counter that's been causing the trouble?
+
+Since then, the silence has been deafening.
+
+My assumption now is that this is not ever getting fixed. I'm certainly not
+able to fix it. I'm not a even kernel programmer! I got far enough to
+diagnose the cause just with the "add more printk's and boot it again"
+technique. Hundreds of reboots trying to figure it out. I was a conscientious
+bug-reporter, I thought.
+
+I could pull the PCI card and be done with it. I never used those USB ports
+anyway. But after all the suffering I went through to find this bug... the
+crashing e2fsck's and consequent filesystem corruption... I hate the idea of
+surrendering to it. There are possibly other affected users who I'd be
+abandoning to suffer similarly in the future.
+
+For the last week I've studied OpenFirmware as hard as I can. I read the spec
+cover to cover. And the USB annex, and the PCI annex. But I'm still lost in
+all the different address formats.
+
+I took my best guess on how to handle this problem, and ran with it, ending
+up with a 97-line Forth script, and that was just to get a virtual address,
+not to actually do anything with it, and it used a hardcoded device path. But
+it didn't work, all I got was an "invalid pointer" error. I made another
+guess at something that wasn't documented anywhere (the fact that this stuff
+is insufficiently documented is the one thing I can state with complete
+confidence!) and out came a successful translation to a virtual address: 0.
+
+If I'm the only one fighting this bug, the bug wins.
 
 -- 
-Best Regards,
-Piotr Ziêcik.
+Alan Curry
