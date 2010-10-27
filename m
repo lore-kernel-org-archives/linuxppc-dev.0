@@ -1,21 +1,16 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from USMAMAIL.TILERA.COM (usmamail.tilera.com [72.1.168.231])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "usmamail.tilera.com",
-	Issuer "Go Daddy Secure Certification Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 10D99B70A8
+Return-Path: <pacman@kosh.dhis.org>
+Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
+	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id 2AF83B6ED0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 06:46:35 +1100 (EST)
-Message-ID: <4CC88193.8020607@tilera.com>
-Date: Wed, 27 Oct 2010 15:46:27 -0400
-From: Chris Metcalf <cmetcalf@tilera.com>
+	Thu, 28 Oct 2010 08:04:59 +1100 (EST)
+Message-ID: <20101027210457.23673.qmail@kosh.dhis.org>
+From: pacman@kosh.dhis.org
+Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
+To: olaf@aepfle.de (Olaf Hering)
+Date: Wed, 27 Oct 2010 16:04:57 -0500 (GMT+5)
+In-Reply-To: <20101027101351.GA28218@aepfle.de>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] drivers/char/hvc_console.c: reduce max idle timeout
-References: <201010271659.o9RGxrMc009847@farm-0002.internal.tilera.com>
-	<20101027202101.226085c1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20101027202101.226085c1@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,17 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/27/2010 3:21 PM, Alan Cox wrote:
-> On Wed, 27 Oct 2010 12:54:27 -0400 Chris Metcalf <cmetcalf@tilera.com> wrote:
->> The tile architecture uses this framework for our serial console,
-> That may be a mistake unless your console is genuinely only capable of
-> polled input.
+Olaf Hering writes:
+> 
+> On Wed, Oct 27, pacman@kosh.dhis.org wrote:
+> 
+> > |1. How do I locate all usb nodes in the device tree?
+> > |
+> > |2. How do I know if a particular usb node is OHCI?
+> 
+> In the installed system, run 'lspci | grep -i usb', this gives the pci
+> bus numbers.  Then run 'find /sys -name devspec', and look or the bus
 
-The console is in fact interrupt-driven within the hypervisor, and data is
-buffered there.  However, the current hypervisor console API is only
-"write" and "read".  We have a bugzilla to add console interrupts to the
-hypervisor API and use them from Linux, but we haven't done it yet.
+Once the system is running, I have no problem figuring it out. What I meant
+was how do I write some code to identify OHCI devices correctly, from within
+the limited environment of the Forth interpreter, which will work in the
+general case.
+
+I already know that /pci@80000000/usb@5 and /pci@80000000/usb@5,1 are the
+problem nodes on my machine. And I've learned enough about OF to do a full
+recursive device tree search to find the USB nodes, so the first question is
+answered.
+
+But the UHCI and OHCI nodes look very much alike in the OF properties. "name"
+is just "usb" and there's no "compatible".
+
+The big question that I'm still stumbling over is how to access the device
+registers. The "reg" property looks like this:
+             phys                 size
+ -------------------------- -----------------
+ 00002800 00000000 00000000 00000000 00000000
+ 02002810 00000000 00000000 00000000 00001000
+so I take the second group of 5 words, which should be the device registers,
+and try to map it to a virtual address. The members are unpacked on the stack
+like this:
+  00000000 00000000 02002810 00000000 00001000
+which looks like this stack diagram from OF spec:
+  map-in ( phys.lo ... phys.hi size -- virt )
+and the method call goes like this:
+  " map-in" $call-parent
+The result: "invalid pointer". But I notice it only popped 4 items. I think
+maybe the "size" for map-in is not the same as the "size" found in the reg
+property. Maybe #size-cells applies in one place but not the other. Thanks
+for not documenting that! Try again:
+  00000000 00000000 02002810 00001000 " map-in" $call-parent
+This one doesn't complain, but leaves me a 0 on the stack as its answer. The
+OHCI registers have been mapped to virtual address 0? Doesn't seem likely.
 
 -- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
+Alan Curry
