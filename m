@@ -1,19 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC389B70CD
+Return-Path: <pacman@kosh.dhis.org>
+Received: from kosh.dhis.org (c-67-162-90-113.hsd1.in.comcast.net
+	[67.162.90.113]) by ozlabs.org (Postfix) with SMTP id DE4B2B70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 09:05:35 +1100 (EST)
-Message-ID: <50654.84.105.60.153.1288217125.squirrel@gate.crashing.org>
-In-Reply-To: <20101027210457.23673.qmail@kosh.dhis.org>
-References: <20101027210457.23673.qmail@kosh.dhis.org>
-Date: Thu, 28 Oct 2010 00:05:25 +0200 (CEST)
+	Thu, 28 Oct 2010 09:58:56 +1100 (EST)
+Message-ID: <20101027225855.25345.qmail@kosh.dhis.org>
+From: pacman@kosh.dhis.org
 Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
-From: "Segher Boessenkool" <segher@kernel.crashing.org>
-To: pacman@kosh.dhis.org
+To: segher@kernel.crashing.org (Segher Boessenkool)
+Date: Wed, 27 Oct 2010 17:58:55 -0500 (GMT+5)
+In-Reply-To: <50654.84.105.60.153.1288217125.squirrel@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Cc: Olaf Hering <olaf@aepfle.de>, linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,30 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> > |1. How do I locate all usb nodes in the device tree?
->> > |
->> > |2. How do I know if a particular usb node is OHCI?
+Segher Boessenkool writes:
+> 
+> >> > |1. How do I locate all usb nodes in the device tree?
+> >> > |
+> >> > |2. How do I know if a particular usb node is OHCI?
+> 
+> You look for compatible "usb-ohci".
 
-You look for compatible "usb-ohci".
+There is no "compatible" there. I can probably use class-code since the
+parent is a PCI bus.
 
-But this doesn't help you.  You do not know yet if the
-problem happens for all usb-ohci; for example, it could be
-that you have the console output device on usb; or as another
-example, it could be that this firmware leaves all pci devices
-in some active state.
+> 
+> But this doesn't help you.  You do not know yet if the
+> problem happens for all usb-ohci; for example, it could be
+> that you have the console output device on usb; or as another
+> example, it could be that this firmware leaves all pci devices
+> in some active state.
+> 
+> So as I see it you have only two options:
+> 
+> 1) Figure out what exactly is going on;
 
-So as I see it you have only two options:
+I thought we were past that. The startup sequence leaves the device in a bad
+state (writing 1000 times per second to memory that the kernel believes is
+not in use), so it needs to be given a reset command before the kernel tries
+to use that memory.
 
-1) Figure out what exactly is going on;
-or 2) make the kernel shut down all pci devices early (either
-in actual kernel code, or in an OF boot script).
+> > The big question that I'm still stumbling over is how to access the device
+> > registers. The "reg" property looks like this:
+> 
+> You should look at "assigned-addresses", not "reg".  Well,
+> you first need to look at "reg" to figure out what entry
+> in "assigned-addresses" to use.
 
-> The big question that I'm still stumbling over is how to access the device
-> registers. The "reg" property looks like this:
+The properties look like this:
 
-You should look at "assigned-addresses", not "reg".  Well,
-you first need to look at "reg" to figure out what entry
-in "assigned-addresses" to use.
+/pci@80000000/usb@5/assigned-addresses
+ 02002810 00000000 80000000 00000000 00001000
+/pci@80000000/usb@5/reg
+ 00002800 00000000 00000000 00000000 00000000
+ 02002810 00000000 00000000 00000000 00001000
 
+I'm not sure how I'm supposed to know which entry from "reg" is the right
+one. I've been guessing that it's the second one, since that one matches the
+only entry in "assigned-addresses". It's supposed to go the other direction?
 
-Segher
+-- 
+Alan Curry
