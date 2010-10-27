@@ -1,25 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-ww0-f41.google.com (mail-ww0-f41.google.com [74.125.82.41])
-	by ozlabs.org (Postfix) with ESMTP id 78783B7043
+Return-Path: <cmetcalf@tilera.com>
+Received: from king.tilera.com (king.tilera.com [72.1.168.226])
+	by ozlabs.org (Postfix) with ESMTP id BE25DB70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 00:40:46 +1100 (EST)
-Received: by wwb17 with SMTP id 17so2614025wwb.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 06:40:44 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 27 Oct 2010 14:40:34 +0100
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] powerpc/5121: pdm360ng: fix touch irq if 8xxx gpio
-	driver is enabled
-Message-ID: <20101027134034.GA9556@angua.secretlab.ca>
-References: <1284581577-2217-1-git-send-email-agust@denx.de>
-	<20100916023823.GB7049@angua.secretlab.ca>
-	<20100925222244.2fad5ff6@wker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100925222244.2fad5ff6@wker>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu, 28 Oct 2010 04:12:10 +1100 (EST)
+Message-Id: <201010271659.o9RGxrMc009847@farm-0002.internal.tilera.com>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Date: Wed, 27 Oct 2010 12:54:27 -0400
+Subject: [PATCH] drivers/char/hvc_console.c: reduce max idle timeout
+To: linux-kernel@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 25, 2010 at 10:22:44PM +0200, Anatolij Gustschin wrote:
-> On Wed, 15 Sep 2010 20:38:23 -0600
-> Grant Likely <grant.likely@secretlab.ca> wrote:
-> 
-> > On Wed, Sep 15, 2010 at 10:12:57PM +0200, Anatolij Gustschin wrote:
-> > > Enabling the MPC8xxx GPIO driver with MPC512x GPIO extension
-> > > breaks touch screen support on this board since the GPIO
-> > > interrupt will be mapped to 8xxx GPIO irq host resulting in
-> > > a not requestable interrupt in the touch screen driver. Fix
-> > > it by mapping the touch interrupt on 8xxx GPIO irq host.
-> > 
-> > This looks wrong to me.  The touchscreen code should not go mucking
-> > about in the GPIO controller registers; that is the job of the gpio
-> > driver.
-> 
-> But if there is no GPIO driver (as it was the case before adding
-> mpc512x support in the 8xxx gpio driver) or if the driver is not
-> enabled in the kernel configuration? Then the platform specific
-> callback (called from touchscreen driver) returns the pin state
-> and acknowlegdes the interrupt.
+The tile architecture uses this framework for our serial console,
+and our users complain that the delay of up to two seconds feels like
+the machine has gone non-responsive and is disturbing.  By contrast,
+a delay of up to half a second feels like just the normal sort of
+delay caused by swapping, network lag, etc. and is not noticeable.
+The overhead is obviously not much greater.
 
-So, basically the touchscreen device node has an interrupts property
-which does not use the gpio controller as the interrupt controller,
-but instead points directly and the interrupt controller that the gpio
-controller is cascaded from.
+Signed-off-by: Chris Metcalf <cmetcalf@tilera.com>
+---
 
-Really it sounds like the device tree data is broken.  The preferred
-solution is be to fix the device tree to declare the gpio node as
-an interrupt controller.
+I'm happy to push this via the tile tree if the linuxppc-dev folks
+want to give me an acked-by, or you can take it into your tree.  Thanks!
 
-> 
-> >  What is the reason that the touch interrupt isn't
-> > requestable?
-> 
-> The 8xxx gpio driver sets up gpio irq host and installs
-> the chained irq handler for GPIO interrupt 78 using
-> set_irq_chained_handler() which sets the status field of
-> the irq_desc structure to IRQ_NOREQUEST | IRQ_NOPROBE.
-> Other drivers can't request this GPIO interrupt any more,
-> request_threaded_irq() checks the IRQ_NOREQUEST status
-> flag and returns -EINVAL if it is set. The gpio interrupts
-> for each gpio pin are now handled by the
-> mpc8xxx_gpio_irq_cascade() handler as they should.
-> 
-> >  It looks like the 8xxx gpio driver is designed to hand
-> > out a separate virq number for each gpio pin (I've not had time to dig
-> > into details, so you'll need to educate me on the problem details)
-> 
-> Yes, exactly. This patch adds code to request the
-> board's pen_down gpio pin and to use it's virq number in
-> the touchscreen driver. The touchscreen driver can
-> request this virq interrupt and it is now properly handled
-> by the chained handler in the gpio driver.
+ drivers/char/hvc_console.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-...but it does so by hard coding the irq number (via the GPIO number)
-into the board code; a situation which I've tried very hard to avoid.
-This is what I'm not okay with.
-
-Another solution is to modify the 8xxx gpio driver to cascade off the
-normal request_irq() path instead of via set_irq_chained_handler(),
-but that *might* have unacceptable performance impact for other users.
-
-Unfortunately, I've been slow on this patch, so I cannot get anything
-into 2.6.37 (sorry).  However, I've not asked Linus to pull the 8xxx
-gpio driver changes either so nothing in mainline will get broken.
-
-g.
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 3afd62e..1df5431 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -565,11 +565,11 @@ static int hvc_chars_in_buffer(struct tty_struct *tty)
+  * and during console activity we will use a default MIN_TIMEOUT of 10.  When
+  * the console is idle, we increase the timeout value on each pass through
+  * msleep until we reach the max.  This may be noticeable as a brief (average
+- * one second) delay on the console before the console responds to input when
++ * 0.25 second) delay on the console before the console responds to input when
+  * there has been no input for some time.
+  */
+ #define MIN_TIMEOUT		(10)
+-#define MAX_TIMEOUT		(2000)
++#define MAX_TIMEOUT		(500)
+ static u32 timeout = MIN_TIMEOUT;
+ 
+ #define HVC_POLL_READ	0x00000001
+-- 
+1.6.5.2
