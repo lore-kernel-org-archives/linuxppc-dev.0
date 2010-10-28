@@ -1,16 +1,18 @@
-Return-Path: <ppc.addon@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 0187AB70CB
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 9A652B70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Oct 2010 02:18:22 +1100 (EST)
-Received: by yxs7 with SMTP id 7so1499947yxs.38
+	Fri, 29 Oct 2010 06:40:36 +1100 (EST)
+Received: by eyg24 with SMTP id 24so1482181eyg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 08:18:20 -0700 (PDT)
+	Thu, 28 Oct 2010 12:40:33 -0700 (PDT)
 MIME-Version: 1.0
-Date: Thu, 28 Oct 2010 17:18:20 +0200
-Message-ID: <AANLkTikf=ztL+wL7WvaUW4-4uvfeJUUaqMJWqdjwSzQK@mail.gmail.com>
-Subject: mpc52xx_gpt breaks on linux-2.6.26
-From: nello martuscielli <ppc.addon@gmail.com>
+In-Reply-To: <AANLkTinaYPUwX+YOJh1pCKmSWS_JmG8+eHQ3QvJgG3KA@mail.gmail.com>
+References: <AANLkTinaYPUwX+YOJh1pCKmSWS_JmG8+eHQ3QvJgG3KA@mail.gmail.com>
+Date: Thu, 28 Oct 2010 14:40:32 -0500
+Message-ID: <AANLkTinggQU_4Oo0VkiK3u1bZ9Sg1As59PXEDMFDOQoJ@mail.gmail.com>
+Subject: Re: PowerMac G5 config
+From: kevin diggs <diggskevin38@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,100 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If i try to enable watchdog  it breaks linux kernel build when enabled.
-I'm using an Efika MPC5200B with CRUX PPC 2.6 32bit.
+Hi,
 
-CONFIG_WATCHDOG=y
-CONFIG_MPC5200_WDT=y
+Apparently, for some reason, you can't use -depth in your  find
+command when rebuilding your initrd???
 
-That's compiling linux-2.6.36:
+Machine is now running 2.6.36. Glad to be rid of that awful cpufreq driver ...
 
+kevin
 
-[..]
-  LD      arch/powerpc/lib/built-in.o
-  CC      arch/powerpc/sysdev/simple_gpio.o
-  CC      arch/powerpc/sysdev/bestcomm/ata.o
-  CC      arch/powerpc/sysdev/bestcomm/bcom_ata_task.o
-  CC      arch/powerpc/sysdev/bestcomm/bestcomm.o
-  CC      arch/powerpc/sysdev/bestcomm/sram.o
-  LD      arch/powerpc/sysdev/bestcomm/bestcomm-core.o
-  LD      arch/powerpc/sysdev/bestcomm/bestcomm-ata.o
-  LD      arch/powerpc/sysdev/bestcomm/built-in.o
-  CC [M]  arch/powerpc/sysdev/bestcomm/fec.o
-  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.o
-  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.o
-  CC [M]  arch/powerpc/sysdev/bestcomm/gen_bd.o
-  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.o
-  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.o
-  LD [M]  arch/powerpc/sysdev/bestcomm/bestcomm-fec.o
-  LD [M]  arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.o
-  CC      arch/powerpc/sysdev/mpc5xxx_clocks.o
-  AS      arch/powerpc/sysdev/6xx-suspend.o
-  LD      arch/powerpc/sysdev/built-in.o
-  CC      arch/powerpc/platforms/52xx/mpc52xx_pic.o
-  CC      arch/powerpc/platforms/52xx/mpc52xx_common.o
-  CC      arch/powerpc/platforms/52xx/mpc52xx_gpt.o
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_write':
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:549: error: dereferencing
-pointer to incomplete type
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_ioctl':
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:562: error: dereferencing
-pointer to incomplete type
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_open':
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:635: error: dereferencing
-pointer to incomplete type
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:636: error: implicit
-declaration of function 'nonseekable_open'
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_release':
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:643: error: dereferencing
-pointer to incomplete type
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c: At top level:
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:657: error: variable
-'mpc52xx_wdt_fops' has initializer but incomplete type
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:658: error: unknown field
-'owner' specified in initializer
-cc1: warnings being treated as errors
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:658: error: excess elements
-in struct initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:658: error: (near
-initialization for 'mpc52xx_wdt_fops')
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:659: error: unknown field
-'llseek' specified in initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:659: error: 'no_llseek'
-undeclared here (not in a function)
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:659: error: excess elements
-in struct initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:659: error: (near
-initialization for 'mpc52xx_wdt_fops')
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:660: error: unknown field
-'write' specified in initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:660: error: excess elements
-in struct initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:660: error: (near
-initialization for 'mpc52xx_wdt_fops')
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:661: error: unknown field
-'unlocked_ioctl' specified in initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:661: error: excess elements
-in struct initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:661: error: (near
-initialization for 'mpc52xx_wdt_fops')
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:662: error: unknown field
-'open' specified in initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:662: error: excess elements
-in struct initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:662: error: (near
-initialization for 'mpc52xx_wdt_fops')
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:663: error: unknown field
-'release' specified in initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:663: error: excess elements
-in struct initializer
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:663: error: (near
-initialization for 'mpc52xx_wdt_fops')
-make[2]: *** [arch/powerpc/platforms/52xx/mpc52xx_gpt.o] Error 1
-make[1]: *** [arch/powerpc/platforms/52xx] Error 2
-make: *** [arch/powerpc/platforms] Error 2
-
-
-
-thanks for any advice.
-Nello Martuscielli
+On Mon, Oct 25, 2010 at 1:45 PM, kevin diggs <diggskevin38@gmail.com> wrote:
+> Hi,
+>
+> I have a G5 (dual 970FX, june 2004?) running YDL 6.0. After fighting
+> to get a compiler that will build 2.6.29+ (4.2.1 -> 4.2.2) I can't get
+> it to boot. It spits out a bunch of message about devices (I think the
+> last ones are USB related) and then says:
+>
+> Restarting System
+>
+> and then reboots. I've attached a diff of the 2.6.28 config that will boot.
+>
+> Any suggestions would be greatly appreciated. Thanks!
+>
+> kevin
+>
