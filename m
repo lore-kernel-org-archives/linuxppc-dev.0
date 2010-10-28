@@ -1,16 +1,14 @@
 Return-Path: <ppc.addon@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id 99E54B70A8
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 0187AB70CB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Oct 2010 03:21:45 +1100 (EST)
-Received: by yws5 with SMTP id 5so1582139yws.38
+	Fri, 29 Oct 2010 02:18:22 +1100 (EST)
+Received: by yxs7 with SMTP id 7so1499947yxs.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 09:21:43 -0700 (PDT)
+	Thu, 28 Oct 2010 08:18:20 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <AANLkTikf=ztL+wL7WvaUW4-4uvfeJUUaqMJWqdjwSzQK@mail.gmail.com>
-References: <AANLkTikf=ztL+wL7WvaUW4-4uvfeJUUaqMJWqdjwSzQK@mail.gmail.com>
-Date: Thu, 28 Oct 2010 18:21:42 +0200
-Message-ID: <AANLkTinJjqvR9iM0zbRNnEtg4X4Fhjgt7d973eWQzkbk@mail.gmail.com>
+Date: Thu, 28 Oct 2010 17:18:20 +0200
+Message-ID: <AANLkTikf=ztL+wL7WvaUW4-4uvfeJUUaqMJWqdjwSzQK@mail.gmail.com>
 Subject: mpc52xx_gpt breaks on linux-2.6.26
 From: nello martuscielli <ppc.addon@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
@@ -24,39 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If i try to enable watchdog =A0it breaks linux kernel build when enabled.
+If i try to enable watchdog  it breaks linux kernel build when enabled.
 I'm using an Efika MPC5200B with CRUX PPC 2.6 32bit.
 
-CONFIG_WATCHDOG=3Dy
-CONFIG_MPC5200_WDT=3Dy
+CONFIG_WATCHDOG=y
+CONFIG_MPC5200_WDT=y
 
 That's compiling linux-2.6.36:
 
 
 [..]
-=A0LD =A0 =A0 =A0arch/powerpc/lib/built-in.o
-=A0CC =A0 =A0 =A0arch/powerpc/sysdev/simple_gpio.o
-=A0CC =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/ata.o
-=A0CC =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/bcom_ata_task.o
-=A0CC =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/bestcomm.o
-=A0CC =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/sram.o
-=A0LD =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/bestcomm-core.o
-=A0LD =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/bestcomm-ata.o
-=A0LD =A0 =A0 =A0arch/powerpc/sysdev/bestcomm/built-in.o
-=A0CC [M] =A0arch/powerpc/sysdev/bestcomm/fec.o
-=A0CC [M] =A0arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.o
-=A0CC [M] =A0arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.o
-=A0CC [M] =A0arch/powerpc/sysdev/bestcomm/gen_bd.o
-=A0CC [M] =A0arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.o
-=A0CC [M] =A0arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.o
-=A0LD [M] =A0arch/powerpc/sysdev/bestcomm/bestcomm-fec.o
-=A0LD [M] =A0arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.o
-=A0CC =A0 =A0 =A0arch/powerpc/sysdev/mpc5xxx_clocks.o
-=A0AS =A0 =A0 =A0arch/powerpc/sysdev/6xx-suspend.o
-=A0LD =A0 =A0 =A0arch/powerpc/sysdev/built-in.o
-=A0CC =A0 =A0 =A0arch/powerpc/platforms/52xx/mpc52xx_pic.o
-=A0CC =A0 =A0 =A0arch/powerpc/platforms/52xx/mpc52xx_common.o
-=A0CC =A0 =A0 =A0arch/powerpc/platforms/52xx/mpc52xx_gpt.o
+  LD      arch/powerpc/lib/built-in.o
+  CC      arch/powerpc/sysdev/simple_gpio.o
+  CC      arch/powerpc/sysdev/bestcomm/ata.o
+  CC      arch/powerpc/sysdev/bestcomm/bcom_ata_task.o
+  CC      arch/powerpc/sysdev/bestcomm/bestcomm.o
+  CC      arch/powerpc/sysdev/bestcomm/sram.o
+  LD      arch/powerpc/sysdev/bestcomm/bestcomm-core.o
+  LD      arch/powerpc/sysdev/bestcomm/bestcomm-ata.o
+  LD      arch/powerpc/sysdev/bestcomm/built-in.o
+  CC [M]  arch/powerpc/sysdev/bestcomm/fec.o
+  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.o
+  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.o
+  CC [M]  arch/powerpc/sysdev/bestcomm/gen_bd.o
+  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_gen_bd_rx_task.o
+  CC [M]  arch/powerpc/sysdev/bestcomm/bcom_gen_bd_tx_task.o
+  LD [M]  arch/powerpc/sysdev/bestcomm/bestcomm-fec.o
+  LD [M]  arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.o
+  CC      arch/powerpc/sysdev/mpc5xxx_clocks.o
+  AS      arch/powerpc/sysdev/6xx-suspend.o
+  LD      arch/powerpc/sysdev/built-in.o
+  CC      arch/powerpc/platforms/52xx/mpc52xx_pic.o
+  CC      arch/powerpc/platforms/52xx/mpc52xx_common.o
+  CC      arch/powerpc/platforms/52xx/mpc52xx_gpt.o
 arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_write':
 arch/powerpc/platforms/52xx/mpc52xx_gpt.c:549: error: dereferencing
 pointer to incomplete type
@@ -68,8 +66,7 @@ arch/powerpc/platforms/52xx/mpc52xx_gpt.c:635: error: dereferencing
 pointer to incomplete type
 arch/powerpc/platforms/52xx/mpc52xx_gpt.c:636: error: implicit
 declaration of function 'nonseekable_open'
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_release=
-':
+arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_wdt_release':
 arch/powerpc/platforms/52xx/mpc52xx_gpt.c:643: error: dereferencing
 pointer to incomplete type
 arch/powerpc/platforms/52xx/mpc52xx_gpt.c: At top level:
