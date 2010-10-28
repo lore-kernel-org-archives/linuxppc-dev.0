@@ -1,20 +1,20 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 9A652B70CC
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E9DDB70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Oct 2010 06:40:36 +1100 (EST)
-Received: by eyg24 with SMTP id 24so1482181eyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 12:40:33 -0700 (PDT)
+	Fri, 29 Oct 2010 06:50:23 +1100 (EST)
+Message-ID: <52441.84.105.60.153.1288295412.squirrel@gate.crashing.org>
+In-Reply-To: <20101028011147.26254.qmail@kosh.dhis.org>
+References: <20101028011147.26254.qmail@kosh.dhis.org>
+Date: Thu, 28 Oct 2010 21:50:12 +0200 (CEST)
+Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: pacman@kosh.dhis.org
 MIME-Version: 1.0
-In-Reply-To: <AANLkTinaYPUwX+YOJh1pCKmSWS_JmG8+eHQ3QvJgG3KA@mail.gmail.com>
-References: <AANLkTinaYPUwX+YOJh1pCKmSWS_JmG8+eHQ3QvJgG3KA@mail.gmail.com>
-Date: Thu, 28 Oct 2010 14:40:32 -0500
-Message-ID: <AANLkTinggQU_4Oo0VkiK3u1bZ9Sg1As59PXEDMFDOQoJ@mail.gmail.com>
-Subject: Re: PowerMac G5 config
-From: kevin diggs <diggskevin38@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +24,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+> So is it wrong to leave the host controller enabled when the OS is booted?
 
-Apparently, for some reason, you can't use -depth in your  find
-command when rebuilding your initrd???
+Yes.  Or, rather, there should be some way for the client to turn off
+all dma and interrupt activity; if the client closes the ihandles in
+"/chosen", and perhaps calls "quiesce", that should be enough.
 
-Machine is now running 2.6.36. Glad to be rid of that awful cpufreq driver ...
 
-kevin
 
-On Mon, Oct 25, 2010 at 1:45 PM, kevin diggs <diggskevin38@gmail.com> wrote:
-> Hi,
+> If
+> not, then the error must be in the communication of which memory addresses
+> are in use by OF. I've got a node /memory@0 whose "available" property
+> looks
+> like this:
+>  00000000 00400000
+>  00584000 0007c000
+>  0092a1d8 00004e28
+>  00a2f000 005d1000
+>  01800000 0e3fd000
+>  0fbffab4 0000054c
+>>From that list, it looks to me like OF is telling the kernel that it
+>> should
+> not attempt to use any address above 0xfbffab4+0x54c == 0xfc00000.
+
+The client is allowed to "take over" all memory, if it doesn't call OF
+after doing so.  This won't work if some device scribbles on it, as
+you have seen.
+
+> Later, when the kernel decides it's done using OF, what's supposed to
+> happen?
+> It closes stdin, but that doesn't help here since the offending device is
+> a
+> bus node, not an input node. It looks to me like the kernel makes the
+> assumption that all devices other than stdin and stdout will have been
+> deactivated already when the kernel starts, and that this assumption has
+> been violated. Who is wrong, from the perspective of the OF standard, the
+> assumer or the violator?
+
+The violator.
+
+>> Lovely, incorrect data (it should start with 82002810, i.e.,
+>> not relocatable -- it is already an assigned address!).
 >
-> I have a G5 (dual 970FX, june 2004?) running YDL 6.0. After fighting
-> to get a compiler that will build 2.6.29+ (4.2.1 -> 4.2.2) I can't get
-> it to boot. It spits out a bunch of message about devices (I think the
-> last ones are USB related) and then says:
+> Now you see how I have trouble relating the docs to the reality...
+
+Yeah :-(
+
+>> This means: 32-bit MMIO address space for bus 0 dev 5 fn 0,
+>> first BAR; assigned to address 80000000; size is 1000.
 >
-> Restarting System
+> But "address 80000000" is a physical address (I think), so do I need to do
+> a
+> map-in on it before using it?
+
+Yes.
+
+>> You could try a boot script like this:
+>>
+>>
+>> dev /pci
+>> 0 ffff04 DO 0 i config-w! -100 +LOOP
+>> device-end
+>>
+>>
+>> which should disable all PCI devices on all busses, on that
 >
-> and then reboots. I've attached a diff of the 2.6.28 config that will boot.
->
-> Any suggestions would be greatly appreciated. Thanks!
->
-> kevin
->
+> Almost all of my devices are under that PCI node. What will I prove by
+> disabling them?
+
+You should put it after "load", and before "go".
+
+It should give you a working system; it's a sledgehammer workaround.
+
+
+Segher
