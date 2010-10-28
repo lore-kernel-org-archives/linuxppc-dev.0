@@ -1,19 +1,19 @@
-Return-Path: <baringforge@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id DB6F0B6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Oct 2010 12:25:15 +1100 (EST)
-Received: by fxm1 with SMTP id 1so1373422fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Oct 2010 18:25:12 -0700 (PDT)
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 25FB4B70D6
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Oct 2010 20:20:14 +1100 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Add Freescale CodeWarrior debug support for kernel
+Date: Thu, 28 Oct 2010 16:50:03 +0800
+Message-ID: <1288255803-10948-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-Sender: baringforge@gmail.com
-From: Thomas Taranowski <tom@baringforge.com>
-Date: Wed, 27 Oct 2010 18:24:52 -0700
-Message-ID: <AANLkTimS-sfqONuSJNPJy7OxO_U81qtDHe2JeioLDNVs@mail.gmail.com>
-Subject: RapidIO: MC Exception when enumerating peer to peer connection
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
+Cc: adrian.bogdan@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,76 +23,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+CodeWarrior is popular embedded tools to support debugging Powerpc.
+This patch adds Freescale CodeWarrior debug support for Linux kernel on
+85xx/QorIQ platform.
 
-I'm trying to bring up a RapidIO on my p2020 on v2.6.36-rc7.  I'm
-running into an issue when the host tries to enumerate the agent
-devices, and fails miserably.  The rio driver does a
-fsl_rio_config_read with a destid of 255, after which it hangs, until
-I get a timeout exception (Handled now, thanks!).  The port connection
-get's trained, and everything looks good, but I get no response.  Any
-ideas on what to look at to debug this?
+Signed-off-by: Bogdan Adrin <drian.bogdan@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/Kconfig.debug                    |    8 ++++++++
+ arch/powerpc/Makefile                         |    5 +++++
+ arch/powerpc/include/asm/reg_booke.h          |    4 ++++
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S |    3 +++
+ arch/powerpc/kernel/head_fsl_booke.S          |   11 +++++++++--
+ arch/powerpc/kernel/idle.c                    |    5 ++++-
+ 6 files changed, 33 insertions(+), 3 deletions(-)
 
-Also, after the timeout, the driver seems to hang after that,
-presumably because the port is in an error-stop state, because when I
-use my trusty jtag to issue a Port Link Maintenance Request and
-request status, I get back unrecoverable ackID error for port 1, and
-error-stopped port_status for port 2.
-
-0_ffec0140 : 00000004 80000050 02000202 00000000  .......P........
-0_ffec0150 : 00000000 00000000 00120002 42600001  ............B`..
-0_ffec0160 : 00000004 00000005 00000000 00000000  ................
-
-
-Reference information below:
-
-
-U-Boot LAW configuration:
-========================
-Local Access Window Configuration
-        LAWBAR1 : 0x000a0000, LAWAR1 : 0x80c00017 /* SRIO Port 1 */
-        LAWBAR2 : 0x000a1000, LAWAR2 : 0x80d00017 /8 SRIO Port 2 */
-
-
-Excerpt from linux boot:
-====================
-Setting up RapidIO peer-to-peer network /rapidio@ffec0000
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~ fsl_rio_setup ~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-of:fsl-of-rio ffec0000.rapidio: Of-device full name /rapidio@ffec0000
-of:fsl-of-rio ffec0000.rapidio: Regs: [mem 0xffec0000-0xffedffff]
-of:fsl-of-rio ffec0000.rapidio: LAW start 0x00000000a0000000,
- size 0x0000000001000000.
-of:fsl-of-rio ffec0000.rapidio: pwirq: 48, bellirq: 50, txirq: 53, rxirq 54
-of:fsl-of-rio ffec0000.rapidio: Overriding RIO_PORT setting to single lane 0
-of:fsl-of-rio ffec0000.rapidio: RapidIO PHY type: serial
-of:fsl-of-rio ffec0000.rapidio: Hardware port width: 4
-of:fsl-of-rio ffec0000.rapidio: Training connection status: Single-lane 0
-of:fsl-of-rio ffec0000.rapidio: RapidIO Common Transport System size: 256
-EIPWQBAR: 0x00000000 IPWQBAR: 0x1f107000
-IPWMR: 0x00100120 IPWSR: 0x00000000
-RIO: enumerate master port 0, RIO0 mport
-rio_enum_host: port `RIO0 mport`
-fsl_local_config_write: index 0 offset 00000068 data 00000000
-fsl_local_config_read: index 0 offset 00000068
-fsl_local_config_write: index 0 offset 00000060 data 00000000
-master port device id set to 0 (next=0)
-fsl_local_config_read: index 0 offset 0000000c
-fsl_local_config_read: index 0 offset 00000100
-fsl_local_config_read: index 0 offset 00000158
-RIO: Rio network device created
-rio_enable_rx_tx_port(local = 1, destid = 0, hopcount = 0, port_num = 0)
-fsl_local_config_read: index 0 offset 0000000c
-fsl_local_config_read: index 0 offset 00000100
-fsl_local_config_read: index 0 offset 0000015c
-fsl_local_config_write: index 0 offset 0000015c data 42600001
-Enumerating rionet.
-RIO: acquiring  device lock...
-fsl_rio_config_read: index 0 destid 255 hopcount 0 offset 00000068 len 4
-RIO: fsl_rio_mcheck_exception - MC Exception handled. reason=0x80000000
-RIO: cfg_read error -14 for ff:0:68
-RIO_LTLEDCSR = 0x0
-
-
-Thanks!
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 2d38a50..eedd2ac 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -153,6 +153,14 @@ config BDI_SWITCH
+ 	  Unless you are intending to debug the kernel with one of these
+ 	  machines, say N here.
+ 
++config DEBUG_CODEWARRIOR
++	bool "Include CodeWarrior kernel debugging"
++	depends on DEBUG_KERNEL && PPC32
++	help
++	  Say Y here to include CodeWarrior kernel debugging option
++	  Unless you are intending to debug the kernel with one of these
++	  machines, say N here.
++
+ config BOOTX_TEXT
+ 	bool "Support for early boot text console (BootX or OpenFirmware only)"
+ 	depends on PPC_OF && PPC_BOOK3S
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index b7212b6..d3050e6 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -121,6 +121,11 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
+ # often slow when they are implemented at all
+ KBUILD_CFLAGS		+= -mno-string
+ 
++ifeq ($(CONFIG_DEBUG_CODEWARRIOR),y)
++CFLAGS += -g2 -gdwarf-2
++AFLAGS_KERNEL += -Wa,-gdwarf2
++endif
++
+ ifeq ($(CONFIG_6xx),y)
+ KBUILD_CFLAGS		+= -mcpu=powerpc
+ endif
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 667a498..ac65fcd 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -35,7 +35,11 @@
+ #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
+ #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
+ #else
++#if defined(CONFIG_DEBUG_CODEWARRIOR)
++#define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_CE|MSR_DE)
++#else
+ #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_CE)
++#endif
+ #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index a92c79b..9102aa7 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -116,6 +116,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 
+ 	xori	r6,r4,1
+ 	slwi	r6,r6,5		/* setup new context with other address space */
++#if defined(CONFIG_DEBUG_CODEWARRIOR)
++	ori	r6, r6, 0x200	/* enable DE bit for MSR */
++#endif
+ 	bl	1f		/* Find our address */
+ 1:	mflr	r9
+ 	rlwimi	r7,r9,0,20,31
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 529b817..9962d09 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -21,7 +21,7 @@
+  *		debbie_chu@mvista.com
+  *    Copyright 2002-2004 MontaVista Software, Inc.
+  *	PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
+- *    Copyright 2004 Freescale Semiconductor, Inc
++ *    Copyright 2004,2010 Freescale Semiconductor, Inc
+  *	PowerPC e500 modifications, Kumar Gala <galak@kernel.crashing.org>
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+@@ -135,7 +135,7 @@ _ENTRY(__early_start)
+ 	mtspr	SPRN_HID0, r2
+ #endif
+ 
+-#if !defined(CONFIG_BDI_SWITCH)
++#if !defined(CONFIG_BDI_SWITCH) && !defined(CONFIG_DEBUG_CODEWARRIOR)
+ 	/*
+ 	 * The Abatron BDI JTAG debugger does not tolerate others
+ 	 * mucking with the debug registers.
+@@ -197,6 +197,13 @@ _ENTRY(__early_start)
+ /*
+  * Decide what sort of machine this is and initialize the MMU.
+  */
++#if defined(CONFIG_DEBUG_CODEWARRIOR)
++	lis	r10, 0x1008 /* clear the V bit from the L2MMU_CAM8 register */
++	mtspr	SPRN_MAS0, r10
++	lis	r10, 0x0
++	mtspr	SPRN_MAS1, r10
++	tlbwe
++#endif
+ 	mr	r3,r31
+ 	mr	r4,r30
+ 	mr	r5,r29
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index 39a2baa..83fb019 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -73,8 +73,11 @@ void cpu_idle(void)
+ 				stop_critical_timings();
+ 
+ 				/* check again after disabling irqs */
+-				if (!need_resched() && !cpu_should_die())
++				if (!need_resched() && !cpu_should_die()) {
++#if !defined(CONFIG_DEBUG_CODEWARRIOR)
+ 					ppc_md.power_save();
++#endif
++				}
+ 
+ 				start_critical_timings();
+ 
+-- 
+1.5.6.5
