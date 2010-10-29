@@ -1,20 +1,30 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8520B70DF
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E922BB70E0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Oct 2010 11:16:42 +1100 (EST)
-Message-ID: <53195.84.105.60.153.1288311394.squirrel@gate.crashing.org>
-In-Reply-To: <20101028210753.22240.qmail@kosh.dhis.org>
-References: <20101028210753.22240.qmail@kosh.dhis.org>
-Date: Fri, 29 Oct 2010 02:16:34 +0200 (CEST)
-Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
-From: "Segher Boessenkool" <segher@kernel.crashing.org>
-To: pacman@kosh.dhis.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Fri, 29 Oct 2010 11:27:29 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9T0S7KQ015047
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 20:28:07 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9T0ROrG475510
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 20:27:24 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o9T0RN4h024550
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 18:27:24 -0600
+Date: Thu, 28 Oct 2010 18:27:21 -0600
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-Id: <20101029002628.17835.37125.sendpatchset@manic8ball.ltc.austin.ibm.com>
+Subject: [PATCH 0/3][RFC][REPOST] Add Support for Virtual Processor Home Node
+	(VPHN)
+Cc: markn@au1.ibm.com, pmac@au1.ibm.com, tbreeds@au1.ibm.com,
+	lkessler@us.ibm.com, Jesse Larrew <jlarrew@linux.vnet.ibm.com>,
+	mjwolf@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +34,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> > Almost all of my devices are under that PCI node. What will I prove by
->> > disabling them?
->>
->> You should put it after "load", and before "go".
->>
->> It should give you a working system; it's a sledgehammer workaround.
->
-> I can do it a little more gracefully than that. This works to deactivate
-> the
-> problem devices manually:
->
->   1 lbflip 80000000 8 + rl!
->   1 lbflip 80001000 8 + rl!
->
-> where 80000000 and 80001000 have been obtained from
-> /pci@80000000/usb@5/assigned-addresses and
-> /pci@80000000/usb@5,1/assigned-addresses; 8 is the offset of the
-> HcCommandStatus register; and the 1 bit is HostControllerReset (HCR).
->
-> Now I'm just trying to find the more correct way of doing it, without
-> hardcoded addresses. That'll be something like this:
->
->   search the device tree for OHCI nodes
->   for each OHCI node
->     get assigned-addresses
->     map-in
->     set HCR
->     wait for acknowledgement
->     map-out
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 
-As you noted, your firmware does not show which usb host controllers
-are OHCI and which are not.  It has a lot of other problems as well.
-Also, it's a lot of code to do things this way.  Which is why I suggested
-the "heavy handed" workaround: it is simple and should work on even the
-most broken OF implementations.
+The SPLPAR option allows the platform to dispatch virtual processors on
+physical processors that, due to the variable nature of work loads, are
+temporarily free, thus improving the utilization of computing resources.
+However, SPLPAR implies inconsistent mapping of virtual to physical
+processors, thus defeating resource allocation software that attempts to
+optimize performance on platforms that implement the NUMA option.
 
-To figure out which host controllers are OHCI, you'll need to look
-at the PCI class code (0c0310 for OHCI), since your OF doesn't want
-to tell you.
+To bridge the gap between these two options, the VPHN option maintains a
+substantially consistent mapping of a given virtual processor to a physical
+processor or set of processors within a given associativity domain. When
+allocating computing resources, the kernel can take advantage of this
+statistically consistent mapping to improve processing performance.
 
-> Sound good?
+VPHN mappings are substantially consistent but not static. For any given
+dispatch cycle, a best effort is made by the hypervisor to dispatch the
+virtual processor on a physical processor within a targeted associativity
+domain (the virtual processor's home node). However, if processing capacity
+within the home node is not available, some other physical processor is
+assigned to meet the processing capacity entitlement. From time to time,
+to optimize the total platform performance, it may be necessary for the
+platform to change the home node of a given virtual processor.
 
-Sounds like it should work, yes.
+The Virtual Processor Home Node feature addresses this by adding the
+H_HOME_NODE_ASSOCIATIVITY hcall to retrieve the current associativity
+domain information directly from the hypervisor for a given virtual
+processor's home node. It also exposes a set of associativity change
+counters in the Virtual Processor Area (VPA) of each processor to indicate
+when associativity changes occur.
 
+This patch set sets a timer during boot that will periodically poll the
+associativity change counters. When a change in associativity is detected,
+it retrieves the new associativity domain information via the
+H_HOME_NODE_ASSOCIATIVITY hcall and updates the NUMA node maps and sysfs
+entries accordingly. The polling mechanism is also tied into the
+ibm,suspend-me rtas call to stop/restart polling before/after a suspend,
+hibernate, migrate, or checkpoint restart operation.
 
-Segher
+This patch set applies to v2.6.36 and includes the following:
+
+[PATCH 1/3] powerpc: Add VPHN firmware feature
+[PATCH 2/3] powerpc: Poll VPA for topology changes and update NUMA maps
+[PATCH 3/3] powerpc: Disable VPHN polling during a suspend operation
+
+Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/firmware.h       |    3 +-
+ arch/powerpc/include/asm/hvcall.h         |    3 +-
+ arch/powerpc/include/asm/lppaca.h         |    5 +-
+ arch/powerpc/include/asm/topology.h       |    6 +-
+ arch/powerpc/kernel/rtas.c                |   15 ++
+ arch/powerpc/mm/numa.c                    |  274 +++++++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/firmware.c |    1 +
+ 7 files changed, 293 insertions(+), 14 deletions(-)
