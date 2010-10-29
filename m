@@ -1,30 +1,28 @@
 Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 87E0BB70EF
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E0030B70E9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Oct 2010 11:29:19 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e32.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9T0KEk7007382
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 18:20:14 -0600
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o9T0TGF3160728
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 18:29:16 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o9T0XDCs022902
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 18:33:13 -0600
-Date: Thu, 28 Oct 2010 18:33:10 -0600
+	Fri, 29 Oct 2010 11:30:26 +1100 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o9T0E8Aj021844
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 20:14:08 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o9T0ULs41781954
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 20:30:22 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o9T0UKh8011666
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2010 20:30:21 -0400
+Date: Thu, 28 Oct 2010 20:30:17 -0400
 From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Message-Id: <20101029002825.17835.86166.sendpatchset@manic8ball.ltc.austin.ibm.com>
+Message-Id: <20101029002921.17835.88560.sendpatchset@manic8ball.ltc.austin.ibm.com>
 In-Reply-To: <20101029002628.17835.37125.sendpatchset@manic8ball.ltc.austin.ibm.com>
 References: <20101029002628.17835.37125.sendpatchset@manic8ball.ltc.austin.ibm.com>
-Subject: [PATCH 2/3] powerpc: Poll VPA for topology changes and update NUMA
-	maps
+Subject: [PATCH 3/3] powerpc: Disable VPHN polling during a suspend operation
 Cc: markn@au1.ibm.com, pmac@au1.ibm.com, tbreeds@au1.ibm.com,
 	lkessler@us.ibm.com, Jesse Larrew <jlarrew@linux.vnet.ibm.com>,
 	mjwolf@us.ibm.com
@@ -39,351 +37,95 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 
-This patch sets a timer during boot that will periodically poll the
-associativity change counters in the VPA. When a change in 
-associativity is detected, it retrieves the new associativity domain 
-information via the H_HOME_NODE_ASSOCIATIVITY hcall and updates the 
-NUMA node maps and sysfs entries accordingly. Note that since the 
-ibm,associativity device tree property does not exist on configurations 
-with both NUMA and SPLPAR enabled, no device tree updates are necessary.
+Tie the polling mechanism into the ibm,suspend-me rtas call to
+stop/restart polling before/after a suspend, hibernate, migrate,
+or checkpoint restart operation. This ensures that the system has a
+chance to disable the polling if the partition is migrated to a system
+that does not support VPHN (and vice versa).
 
 Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/lppaca.h |    5 +-
- arch/powerpc/mm/numa.c            |  274 +++++++++++++++++++++++++++++++++++--
- 2 files changed, 268 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/topology.h |    6 +++++-
+ arch/powerpc/kernel/rtas.c          |   15 +++++++++++++++
+ 2 files changed, 20 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-index 7f5e0fe..380d48b 100644
---- a/arch/powerpc/include/asm/lppaca.h
-+++ b/arch/powerpc/include/asm/lppaca.h
-@@ -62,7 +62,10 @@ struct lppaca {
- 	volatile u32 dyn_pir;		// Dynamic ProcIdReg value	x20-x23
- 	u32	dsei_data;           	// DSEI data                  	x24-x27
- 	u64	sprg3;               	// SPRG3 value                	x28-x2F
--	u8	reserved3[80];		// Reserved			x30-x7F
-+	u8	reserved3[40];		// Reserved			x30-x57
-+	volatile u8 vphn_assoc_counts[8]; // Virtual processor home node
-+					// associativity change counters x58-x5F
-+	u8	reserved4[32];		// Reserved			x60-x7F
- 
- //=============================================================================
- // CACHE_LINE_2 0x0080 - 0x00FF Contains local read-write data
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 74505b2..3150c32 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -20,10 +20,14 @@
- #include <linux/memblock.h>
- #include <linux/of.h>
- #include <linux/pfn.h>
-+#include <linux/cpuset.h>
-+#include <linux/node.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/system.h>
- #include <asm/smp.h>
-+#include <asm/firmware.h>
-+#include <asm/paca.h>
- 
- static int numa_enabled = 1;
- 
-@@ -246,32 +250,41 @@ static void initialize_distance_lookup_table(int nid,
- /* Returns nid in the range [0..MAX_NUMNODES-1], or -1 if no useful numa
-  * info is found.
-  */
--static int of_node_to_nid_single(struct device_node *device)
-+static int associativity_to_nid(const unsigned int *associativity)
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index afe4aaa..1747d27 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -49,7 +49,7 @@ static inline int pcibus_to_node(struct pci_bus *bus)
  {
- 	int nid = -1;
--	const unsigned int *tmp;
+ 	return -1;
+ }
+-#endif
++#endif /* CONFIG_PCI */
  
- 	if (min_common_depth == -1)
- 		goto out;
+ #define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
+ 				 cpu_all_mask :				\
+@@ -93,6 +93,8 @@ extern void __init dump_numa_cpu_topology(void);
+ extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
  
--	tmp = of_get_associativity(device);
--	if (!tmp)
--		goto out;
--
--	if (tmp[0] >= min_common_depth)
--		nid = tmp[min_common_depth];
-+	if (associativity[0] >= min_common_depth)
-+		nid = associativity[min_common_depth];
++extern int __init init_topology_update(void);
++extern int stop_topology_update(void);
+ #else
  
- 	/* POWER4 LPAR uses 0xffff as invalid node */
- 	if (nid == 0xffff || nid >= MAX_NUMNODES)
- 		nid = -1;
- 
--	if (nid > 0 && tmp[0] >= distance_ref_points_depth)
--		initialize_distance_lookup_table(nid, tmp);
-+	if (nid > 0 && associativity[0] >= distance_ref_points_depth)
-+		initialize_distance_lookup_table(nid, associativity);
- 
- out:
- 	return nid;
+ static inline void dump_numa_cpu_topology(void) {}
+@@ -107,6 +109,8 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
+ {
  }
  
-+/* Returns the nid associated with the given device tree node,
-+ * or -1 if not found.
-+ */
-+static int of_node_to_nid_single(struct device_node *device)
-+{
-+	int nid = -1;
-+	const unsigned int *tmp;
-+
-+	tmp = of_get_associativity(device);
-+	if (tmp)
-+		nid = associativity_to_nid(tmp);
-+	return nid;
-+}
-+
- /* Walk the device tree upwards, looking for an associativity id */
- int of_node_to_nid(struct device_node *device)
- {
-@@ -1248,3 +1261,244 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
- }
++static int __init init_topology_update(void) {}
++static int stop_topology_update(void) {}
+ #endif /* CONFIG_NUMA */
  
- #endif /* CONFIG_MEMORY_HOTPLUG */
-+
-+/* Vrtual Processor Home Node (VPHN) support */
-+#define VPHN_NR_CHANGE_CTRS (8)
-+static u8 vphn_cpu_change_counts[NR_CPUS][VPHN_NR_CHANGE_CTRS];
-+static cpumask_t cpu_associativity_changes_mask;
-+static void topology_work_fn(struct work_struct *work);
-+static DECLARE_WORK(topology_work, topology_work_fn);
-+static void topology_timer_fn(unsigned long ignored);
-+static struct timer_list topology_timer =
-+	TIMER_INITIALIZER(topology_timer_fn, 0, 0);
-+
-+static void set_topology_timer(void);
-+int stop_topology_update(void);
-+
-+/*
-+ * Store the current values of the associativity change counters in the
-+ * hypervisor.
-+ */
-+static void setup_cpu_associativity_change_counters(void)
+ #include <asm-generic/topology.h>
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 8fe8bc6..317ff2f 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -41,6 +41,7 @@
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+ #include <asm/mmu.h>
++#include <asm/topology.h>
+ 
+ struct rtas_t rtas = {
+ 	.lock = __ARCH_SPIN_LOCK_UNLOCKED
+@@ -706,6 +707,18 @@ void rtas_os_term(char *str)
+ 
+ static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
+ #ifdef CONFIG_PPC_PSERIES
++static void pre_suspend_work(void)
 +{
-+	int cpu = 0;
-+
-+	for_each_possible_cpu(cpu) {
-+		int i = 0;
-+		u8 *counts = vphn_cpu_change_counts[cpu];
-+		volatile u8 *hypervisor_counts = lppaca[cpu].vphn_assoc_counts;
-+
-+		for (i = 0; i < VPHN_NR_CHANGE_CTRS; i++) {
-+			counts[i] = hypervisor_counts[i];
-+		}
-+	}
-+
++	stop_topology_update();
 +	return;
 +}
 +
-+/*
-+ * The hypervisor maintains a set of 8 associativity change counters in
-+ * the VPA of each cpu that correspond to the associativity levels in the
-+ * ibm,associativity-reference-points property. When an associativity
-+ * level changes, the corresponding counter is incremented.
-+ *
-+ * Set a bit in cpu_associativity_changes_mask for each cpu whose home
-+ * node associativity levels have changed.
-+ */
-+static void update_cpu_associativity_changes_mask(void)
++static void post_suspend_work(void)
 +{
-+	int cpu = 0;
-+	cpumask_t *changes = &cpu_associativity_changes_mask;
-+
-+	cpumask_clear(changes);
-+
-+	for_each_possible_cpu(cpu) {
-+		int i;
-+		u8 *counts = vphn_cpu_change_counts[cpu];
-+		volatile u8 *hypervisor_counts = lppaca[cpu].vphn_assoc_counts;
-+
-+		for (i = 0; i < VPHN_NR_CHANGE_CTRS; i++) {
-+			if (hypervisor_counts[i] > counts[i]) {
-+				counts[i] = hypervisor_counts[i];
-+
-+				if (!(cpumask_test_cpu(cpu, changes)))
-+					cpumask_set_cpu(cpu, changes);
-+			}
-+		}
-+	}
-+
++	init_topology_update();
 +	return;
 +}
 +
-+/* 6 64-bit registers unpacked into 12 32-bit associativity values */
-+#define VPHN_ASSOC_BUFSIZE (6*sizeof(u64)/sizeof(u32))
-+
-+/*
-+ * Convert the associativity domain numbers returned from the hypervisor
-+ * to the sequence they would appear in the ibm,associativity property.
-+ */
-+static int vphn_unpack_associativity(const long *packed, unsigned int *unpacked)
-+{
-+	int i = 0;
-+	int nr_assoc_doms = 0;
-+	const u16 *field = (const u16*) packed;
-+
-+#define VPHN_FIELD_UNUSED	(0xffff)
-+#define VPHN_FIELD_MSB		(0x8000)
-+#define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
-+
-+	for (i = 0; i < VPHN_ASSOC_BUFSIZE; i++) {
-+		if (*field == VPHN_FIELD_UNUSED) {
-+			/* All significant fields processed, and remaining
-+			 * fields contain the reserved value of all 1's.
-+			 * Just store them.
-+			 */
-+			unpacked[i] = *((u32*)field);
-+			field += 2;
-+		}
-+		else if (*field & VPHN_FIELD_MSB) {
-+			/* Data is in the lower 15 bits of this field */
-+			unpacked[i] = *field & VPHN_FIELD_MASK;
-+			field++;
-+			nr_assoc_doms++;
-+		}
-+		else {
-+			/* Data is in the lower 15 bits of this field
-+			 * concatenated with the next 16 bit field
-+			 */
-+			unpacked[i] = *((u32*)field);
-+			field += 2;
-+			nr_assoc_doms++;
-+		}
-+	}
-+
-+	return nr_assoc_doms;
-+}
-+
-+/*
-+ * Retrieve the new associativity information for a virtual processor's
-+ * home node.
-+ */
-+static long hcall_vphn(unsigned long cpu, unsigned int *associativity)
-+{
-+	long rc = 0;
-+	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
-+	u64 flags = 1;
-+	int hwcpu = get_hard_smp_processor_id(cpu);
-+
-+	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
-+	vphn_unpack_associativity(retbuf, associativity);
-+
-+	return rc;
-+}
-+
-+static long
-+vphn_get_associativity(unsigned long cpu, unsigned int *associativity)
-+{
-+	long rc = 0;
-+
-+	rc = hcall_vphn(cpu, associativity);
-+
-+	switch (rc) {
-+	case H_FUNCTION:
-+		printk(KERN_INFO
-+			"VPHN is not supported. Disabling polling...\n");
-+		stop_topology_update();
-+		break;
-+	case H_HARDWARE:
-+		printk(KERN_ERR
-+			"hcall_vphn() experienced a hardware fault "
-+			"preventing VPHN. Disabling polling...\n");
-+		stop_topology_update();
-+	}
-+
-+	return rc;
-+}
-+
-+/*
-+ * Update the node maps and sysfs entries for each cpu whose home node
-+ * has changed.
-+ */
-+int arch_update_cpu_topology(void)
-+{
-+	int cpu = 0, nid = 0, old_nid = 0;
-+	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
-+	struct sys_device *sysdev = NULL;
-+
-+	for_each_cpu_mask(cpu, cpu_associativity_changes_mask) {
-+		vphn_get_associativity(cpu, associativity);
-+		nid = associativity_to_nid(associativity);
-+
-+		if (nid < 0 || !node_online(nid))
-+			nid = first_online_node;
-+
-+		old_nid = numa_cpu_lookup_table[cpu];
-+
-+		/* Disable hotplug while we update the cpu
-+		 * masks and sysfs.
-+		 */
-+		get_online_cpus();
-+		unregister_cpu_under_node(cpu, old_nid);
-+		unmap_cpu_from_node(cpu);
-+		map_cpu_to_node(cpu, nid);
-+		register_cpu_under_node(cpu, nid);
-+		put_online_cpus();
-+
-+		sysdev = get_cpu_sysdev(cpu);
-+		if (sysdev)
-+			kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
-+	}
-+
-+	return 1;
-+}
-+
-+static void topology_work_fn(struct work_struct *work)
-+{
-+	rebuild_sched_domains();
-+}
-+
-+void topology_schedule_update(void)
-+{
-+	schedule_work(&topology_work);
-+}
-+
-+static void topology_timer_fn(unsigned long ignored)
-+{
-+	update_cpu_associativity_changes_mask();
-+	if (!cpumask_empty(&cpu_associativity_changes_mask))
-+		topology_schedule_update();
-+	set_topology_timer();
-+}
-+
-+static void set_topology_timer(void)
-+{
-+	topology_timer.data = 0;
-+	topology_timer.expires = jiffies + 60 * HZ;
-+	add_timer(&topology_timer);
-+}
-+
-+/*
-+ * Start polling for VPHN associativity changes.
-+ */
-+int __init init_topology_update(void)
-+{
-+	int rc = 0;
-+
-+	if (firmware_has_feature(FW_FEATURE_VPHN)) {
-+		setup_cpu_associativity_change_counters();
-+		init_timer_deferrable(&topology_timer);
-+		set_topology_timer();
-+		rc = 1;
-+	}
-+
-+	return rc;
-+}
-+__initcall(init_topology_update);
-+
-+/*
-+ * Disable polling for VPHN associativity changes.
-+ */
-+int stop_topology_update(void)
-+{
-+	return del_timer(&topology_timer);
-+}
+ static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_when_done)
+ {
+ 	u16 slb_size = mmu_slb_size;
+@@ -713,6 +726,7 @@ static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_w
+ 	int cpu;
+ 
+ 	slb_set_size(SLB_MIN_SIZE);
++	pre_suspend_work();
+ 	printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n", smp_processor_id());
+ 
+ 	while (rc == H_MULTI_THREADS_ACTIVE && !atomic_read(&data->done) &&
+@@ -728,6 +742,7 @@ static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_w
+ 		rc = atomic_read(&data->error);
+ 
+ 	atomic_set(&data->error, rc);
++	post_suspend_work();
+ 
+ 	if (wake_when_done) {
+ 		atomic_set(&data->done, 1);
 -- 
 1.7.2.3
