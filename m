@@ -1,20 +1,42 @@
-Return-Path: <segooon@gmail.com>
-Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
-	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id 36BD6B70A8
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
+	by ozlabs.org (Postfix) with ESMTP id 10586B70D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 20:04:32 +1100 (EST)
-Received: by ewy22 with SMTP id 22so2162266ewy.38
+	Sat, 30 Oct 2010 23:30:16 +1100 (EST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+	by localhost (Postfix) with ESMTP id 1A4BD1CABF6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 02:04:29 -0700 (PDT)
-From: Vasiliy Kulikov <segooon@gmail.com>
-To: kernel-janitors@vger.kernel.org
-Subject: [PATCH] powerpc: kvm: fix information leak to userland
-Date: Sat, 30 Oct 2010 13:04:24 +0400
-Message-Id: <1288429464-21763-1-git-send-email-segooon@gmail.com>
-Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
-	Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
+	Sat, 30 Oct 2010 13:52:20 +0200 (CEST)
+Received: from mailhub1.si.c-s.fr ([192.168.12.234])
+	by localhost (mailhub1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id s8E5YUme8cFJ for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Oct 2010 13:52:20 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 0516E1CABA8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Oct 2010 13:52:20 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E7535C7392
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Oct 2010 13:52:19 +0200 (CEST)
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new,
+	port 10023)
+	with ESMTP id AQ1uf0E2qAw3 for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Oct 2010 13:52:19 +0200 (CEST)
+Received: from [127.0.0.1] (unknown [192.168.4.167])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B0239C7391
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Oct 2010 13:52:19 +0200 (CEST)
+Message-ID: <4CCC06F8.3020506@c-s.fr>
+Date: Sat, 30 Oct 2010 13:52:24 +0200
+From: LEROY christophe <christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [MPC8xx] Initial MMU too low
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +46,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Structure kvm_ppc_pvinfo is copied to userland with flags and
-pad fields unitialized.  It leads to leaking of contents of
-kernel stack memory.
+Hello,
 
-Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
----
- I cannot compile this driver, so it is not tested at all.
+When I build a kernel with DEBUG_LOCK_ALLOC set, I get a kernel which 
+has __bss_stop above the C0800000 limit, and then I get a bad page 
+exception during the zeroize of the __bss at startup, because the 
+initial MMU only maps the first 8Mbytes.
 
- arch/powerpc/kvm/powerpc.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+What can I do to fix that ?
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 2f87a16..38f756f 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -617,6 +617,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 	switch (ioctl) {
- 	case KVM_PPC_GET_PVINFO: {
- 		struct kvm_ppc_pvinfo pvinfo;
-+		memset(&pvinfo, 0, sizeof(pvinfo));
- 		r = kvm_vm_ioctl_get_pvinfo(&pvinfo);
- 		if (copy_to_user(argp, &pvinfo, sizeof(pvinfo))) {
- 			r = -EFAULT;
--- 
-1.7.0.4
+Regards
+C. Leroy
