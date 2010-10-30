@@ -1,17 +1,18 @@
 Return-Path: <jj@chaosbits.net>
 Received: from swampdragon.chaosbits.net (swampdragon.chaosbits.net
-	[90.184.90.115]) by ozlabs.org (Postfix) with ESMTP id 386C6B70D1
+	[90.184.90.115]) by ozlabs.org (Postfix) with ESMTP id 02BF1B70D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 31 Oct 2010 04:38:14 +1100 (EST)
-Date: Sat, 30 Oct 2010 19:20:51 +0200 (CEST)
+	Sun, 31 Oct 2010 05:20:59 +1100 (EST)
+Date: Sat, 30 Oct 2010 20:10:41 +0200 (CEST)
 From: Jesper Juhl <jj@chaosbits.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] iSeries: Don't leak if allocations fail in
- mf_getSrcHistory
-Message-ID: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] PowerPC/Cell: use vzalloc rather than vmalloc and memset in
+	spu_alloc_lscsa_std
+Message-ID: <alpine.LNX.2.00.1010302004290.1572@swampdragon.chaosbits.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Cc: cbe-oss-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +24,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi,
 
-If memory is tight and a dynamic allocation fails there's no reason to 
-make a bad situation worse by leaking memory.
+We can get rid of a memset in 
+arch/powerpc/platforms/cell/spufs/lscsa_alloc.c::spu_alloc_lscsa_std() by 
+using vzalloc() rather than vmalloc()+memset().
 
-mf_getSrcHistory potentially leaks pages[0-3]. I believe the right thing 
-to do is to free that memory again before returning -ENOMEM - which is 
-what this patch does.
-
-I realize that the function is under '#if 0' so this probably doesn't 
-matter much, but I assume that the function is still there for a reason 
-(but I could be wrong, I don't know the powerpc code).
-Anyway, I suggest we remove the leak.
-
-Please keep me on CC when replying.
+Completely untested patch below since I have no hardware nor tools to 
+compile this.
 
 
 Signed-off-by: Jesper Juhl <jj@chaosbits.net>
 ---
- mf.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ lscsa_alloc.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/mf.c b/arch/powerpc/platforms/iseries/mf.c
-index 42d0a88..f67522a 100644
---- a/arch/powerpc/platforms/iseries/mf.c
-+++ b/arch/powerpc/platforms/iseries/mf.c
-@@ -1058,8 +1058,13 @@ static void mf_getSrcHistory(char *buffer, int size)
- 	pages[2] = kmalloc(4096, GFP_ATOMIC);
- 	pages[3] = kmalloc(4096, GFP_ATOMIC);
- 	if ((ev == NULL) || (pages[0] == NULL) || (pages[1] == NULL)
--			 || (pages[2] == NULL) || (pages[3] == NULL))
-+			 || (pages[2] == NULL) || (pages[3] == NULL)) {
-+		kfree(pages[3]);
-+		kfree(pages[2]);
-+		kfree(pages[1]);
-+		kfree(pages[0]);
- 		return -ENOMEM;
-+	}
+diff --git a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
+index a101abf..3b894f5 100644
+--- a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
++++ b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
+@@ -36,10 +36,9 @@ static int spu_alloc_lscsa_std(struct spu_state *csa)
+ 	struct spu_lscsa *lscsa;
+ 	unsigned char *p;
  
- 	return_stuff.xType = 0;
- 	return_stuff.xRc = 0;
+-	lscsa = vmalloc(sizeof(struct spu_lscsa));
++	lscsa = vzalloc(sizeof(struct spu_lscsa));
+ 	if (!lscsa)
+ 		return -ENOMEM;
+-	memset(lscsa, 0, sizeof(struct spu_lscsa));
+ 	csa->lscsa = lscsa;
+ 
+ 	/* Set LS pages reserved to allow for user-space mapping. */
 
 
 -- 
