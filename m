@@ -1,19 +1,20 @@
-Return-Path: <baringforge@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 29B36B70A7
+Return-Path: <segooon@gmail.com>
+Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
+	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id 36BD6B70A8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 10:10:21 +1100 (EST)
-Received: by fxm1 with SMTP id 1so3587367fxm.38
+	Sat, 30 Oct 2010 20:04:32 +1100 (EST)
+Received: by ewy22 with SMTP id 22so2162266ewy.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Oct 2010 16:10:18 -0700 (PDT)
-MIME-Version: 1.0
-Sender: baringforge@gmail.com
-From: Thomas Taranowski <tom@baringforge.com>
-Date: Fri, 29 Oct 2010 16:09:58 -0700
-Message-ID: <AANLkTin7OeSgUgqUEnYxUnZQ0vgckg7e43gudms8NqeG@mail.gmail.com>
-Subject: Support for multiple port's
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 30 Oct 2010 02:04:29 -0700 (PDT)
+From: Vasiliy Kulikov <segooon@gmail.com>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH] powerpc: kvm: fix information leak to userland
+Date: Sat, 30 Oct 2010 13:04:24 +0400
+Message-Id: <1288429464-21763-1-git-send-email-segooon@gmail.com>
+Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+	Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Going through the code, it looks like the rapidio driver assumes
-there's only going to be a single Port implemented.
+Structure kvm_ppc_pvinfo is copied to userland with flags and
+pad fields unitialized.  It leads to leaking of contents of
+kernel stack memory.
 
-Snapshot of code assumes a single port atmu configuration block, which
-is wrong for the p2020, and probably other QorIQ processors.
+Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
+---
+ I cannot compile this driver, so it is not tested at all.
 
-<snip>
-priv->atmu_regs = (struct rio_atmu_regs *)(priv->regs_win
-					+ RIO_ATMU_REGS_OFFSET);
-priv->maint_atmu_regs = priv->atmu_regs + 1;
-priv->dbell_atmu_regs = priv->atmu_regs + 2;
-priv->msg_regs = (struct rio_msg_regs *)(priv->regs_win +
-			((port->phy_type == RIO_PHY_SERIAL) ?
-			RIO_S_MSG_REGS_OFFSET : RIO_P_MSG_REGS_OFFSET));
-<snip>
+ arch/powerpc/kvm/powerpc.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-On the newer QorIQ P2020 processors there are 2 sets of port
-registers, so the current code lays the dbell_atmu_regs structure on
-top of the second set of atmu_regs.  There are probably other issues
-as well.
-
-Are there any patch sets available that support the newer processors,
-and multi-port ( multi-homed? ) RapidIO configurations?
-
-Thanks!
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2f87a16..38f756f 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -617,6 +617,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 	switch (ioctl) {
+ 	case KVM_PPC_GET_PVINFO: {
+ 		struct kvm_ppc_pvinfo pvinfo;
++		memset(&pvinfo, 0, sizeof(pvinfo));
+ 		r = kvm_vm_ioctl_get_pvinfo(&pvinfo);
+ 		if (copy_to_user(argp, &pvinfo, sizeof(pvinfo))) {
+ 			r = -EFAULT;
+-- 
+1.7.0.4
