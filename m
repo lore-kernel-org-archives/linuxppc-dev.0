@@ -1,42 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
-	by ozlabs.org (Postfix) with ESMTP id 10586B70D1
+Return-Path: <segooon@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 3F894B70D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 23:30:16 +1100 (EST)
-Received: from localhost (mailhub1-int [192.168.12.234])
-	by localhost (Postfix) with ESMTP id 1A4BD1CABF6
+	Sun, 31 Oct 2010 05:55:28 +1100 (EST)
+Received: by eyg24 with SMTP id 24so2470057eyg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 13:52:20 +0200 (CEST)
-Received: from mailhub1.si.c-s.fr ([192.168.12.234])
-	by localhost (mailhub1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id s8E5YUme8cFJ for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 13:52:20 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 0516E1CABA8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 13:52:20 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E7535C7392
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 13:52:19 +0200 (CEST)
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new,
-	port 10023)
-	with ESMTP id AQ1uf0E2qAw3 for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 13:52:19 +0200 (CEST)
-Received: from [127.0.0.1] (unknown [192.168.4.167])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B0239C7391
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Oct 2010 13:52:19 +0200 (CEST)
-Message-ID: <4CCC06F8.3020506@c-s.fr>
-Date: Sat, 30 Oct 2010 13:52:24 +0200
-From: LEROY christophe <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [MPC8xx] Initial MMU too low
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 30 Oct 2010 11:55:26 -0700 (PDT)
+From: Vasiliy Kulikov <segooon@gmail.com>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH v2] powerpc: kvm: powerpc: fix information leak to userland
+Date: Sat, 30 Oct 2010 22:55:22 +0400
+Message-Id: <1288464922-8812-1-git-send-email-segooon@gmail.com>
+Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+	Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,14 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Structure kvm_ppc_pvinfo is copied to userland with "flags" and "pad"
+fields unitialized.  It leads to leaking of contents of kernel stack
+memory.  We have to initialize them to zero.
 
-When I build a kernel with DEBUG_LOCK_ALLOC set, I get a kernel which 
-has __bss_stop above the C0800000 limit, and then I get a bad page 
-exception during the zeroize of the __bss at startup, because the 
-initial MMU only maps the first 8Mbytes.
+In patch v1 Jan Kiszka suggested to fill reserved fields with zeros
+instead of memset'ting the whole struct.  It makes sense as these
+fields are explicitly marked as padding.  No more fields need zeroing.
 
-What can I do to fix that ?
+Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
+---
+ arch/powerpc/kvm/powerpc.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Regards
-C. Leroy
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2f87a16..5962336 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -604,6 +604,8 @@ static int kvm_vm_ioctl_get_pvinfo(struct kvm_ppc_pvinfo *pvinfo)
+ 	pvinfo->hcall[1] = inst_ori | (KVM_SC_MAGIC_R0 & inst_imm_mask);
+ 	pvinfo->hcall[2] = inst_sc;
+ 	pvinfo->hcall[3] = inst_nop;
++	pvinfo->flags = 0;
++	memset(&pvinfo->pad, 0, sizeof(pvinfo->pad));
+ 
+ 	return 0;
+ }
+-- 
+1.7.0.4
