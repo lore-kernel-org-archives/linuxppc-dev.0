@@ -1,17 +1,18 @@
-Return-Path: <joe@perches.com>
-Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 48F21B7145
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 31 Oct 2010 08:09:24 +1100 (EST)
-From: Joe Perches <joe@perches.com>
-To: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH 04/39] arch/powerpc: Update WARN uses
-Date: Sat, 30 Oct 2010 14:08:21 -0700
-Message-Id: <c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
-In-Reply-To: <cover.1288471897.git.joe@perches.com>
-References: <cover.1288471897.git.joe@perches.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: cbe-oss-dev@lists.ozlabs.org
+Subject: Re: [Cbe-oss-dev] [PATCH] PowerPC/Cell: use vzalloc rather than
+	vmalloc and memset in spu_alloc_lscsa_std
+Date: Sat, 30 Oct 2010 17:25:32 -0400
+References: <alpine.LNX.2.00.1010302004290.1572@swampdragon.chaosbits.net>
+In-Reply-To: <alpine.LNX.2.00.1010302004290.1572@swampdragon.chaosbits.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201010301725.32559.jk@ozlabs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+	Jesper Juhl <jj@chaosbits.net>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Coalesce long formats.
-Align arguments.
-Add missing newlines.
+Jesper,
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- arch/powerpc/kernel/hw_breakpoint.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> We can get rid of a memset in
+> arch/powerpc/platforms/cell/spufs/lscsa_alloc.c::spu_alloc_lscsa_std() by
+> using vzalloc() rather than vmalloc()+memset().
 
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index 5ecd040..d7343a7 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -270,8 +270,8 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
- 	 * message to let the user know about it.
- 	 */
- 	if (!stepped) {
--		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at "
--			"0x%lx will be disabled.", info->address);
-+		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at 0x%lx will be disabled.\n",
-+		     info->address);
- 		perf_event_disable(bp);
- 		goto out;
- 	}
--- 
-1.7.3.1.g432b3.dirty
+Looks good to me.
+
+Acked-By: Jeremy Kerr <jk@ozlabs.org>
+
+Ben, could you apply this to the powerpc tree?
+
+Cheers,
+
+
+Jeremy
