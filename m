@@ -1,17 +1,18 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jesper Juhl <jj@chaosbits.net>
-Subject: Re: [PATCH] PowerPC/Cell: use vzalloc rather than vmalloc and memset
-	in spu_alloc_lscsa_std
-Date: Sat, 30 Oct 2010 23:41:22 +0200
-References: <alpine.LNX.2.00.1010302004290.1572@swampdragon.chaosbits.net>
-In-Reply-To: <alpine.LNX.2.00.1010302004290.1572@swampdragon.chaosbits.net>
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 0CE93B70E2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 31 Oct 2010 14:48:55 +1100 (EST)
+Received: by iwn2 with SMTP id 2so4696724iwn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Oct 2010 20:48:53 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201010302341.22738.arnd@arndb.de>
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Date: Sat, 30 Oct 2010 22:48:53 -0500
+Message-ID: <AANLkTi=+kF+c=RC09_4V2wqw61xFhFHnvqYHAKbA0TpQ@mail.gmail.com>
+Subject: PowerMac G4 RAM
+From: kevin diggs <diggskevin38@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 30 October 2010, Jesper Juhl wrote:
-> We can get rid of a memset in 
-> arch/powerpc/platforms/cell/spufs/lscsa_alloc.c::spu_alloc_lscsa_std() by 
-> using vzalloc() rather than vmalloc()+memset().
-> 
-> Completely untested patch below since I have no hardware nor tools to 
-> compile this.
-> 
-> 
-> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+Hi,
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+I have a G4 that has 1.25 G of ram. Under Linux I only get 768M?
+Anyone know why? It is a GiGE with a dual 7455 PowerLogix cpu upgrade.
+Kernel is 2.6.28.
+
+Thanks!
+
+kevin
