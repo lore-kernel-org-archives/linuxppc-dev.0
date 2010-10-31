@@ -1,20 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 802FB1007D2
+Return-Path: <hans-christian.egtvedt@atmel.com>
+Received: from relay.atmel.no (relay.atmel.no [194.19.124.36])
+	by ozlabs.org (Postfix) with ESMTP id 4DB47B70E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 31 Oct 2010 22:28:30 +1100 (EST)
-Subject: Re: PowerMac G4 RAM
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kevin diggs <diggskevin38@gmail.com>
-In-Reply-To: <AANLkTi=+kF+c=RC09_4V2wqw61xFhFHnvqYHAKbA0TpQ@mail.gmail.com>
-References: <AANLkTi=+kF+c=RC09_4V2wqw61xFhFHnvqYHAKbA0TpQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 31 Oct 2010 22:28:24 +1100
-Message-ID: <1288524504.7329.12.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon,  1 Nov 2010 01:14:33 +1100 (EST)
+Date: Sun, 31 Oct 2010 15:02:44 +0100
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [PATCH v2 02/22] bitops: rename generic little-endian bitops
+	functions
+Message-ID: <20101031140244.GA2269@ssg-0.norway.atmel.com>
+References: <1287672077-5797-1-git-send-email-akinobu.mita@gmail.com>
+	<1287672077-5797-3-git-send-email-akinobu.mita@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1287672077-5797-3-git-send-email-akinobu.mita@gmail.com>
+Cc: linux-arch@vger.kernel.org, linux-m68k@vger.kernel.org, kvm@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>,
+	Marcelo Tosatti <mtosatti@redhat.com>,
+	linux-kernel@vger.kernel.org, rds-devel@oss.oracle.com,
+	Christoph Hellwig <hch@infradead.org>,
+	Andy Grover <andy.grover@oracle.com>, netdev@vger.kernel.org,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Avi Kivity <avi@redhat.com>, Greg Ungerer <gerg@uclinux.org>,
+	Andreas Schwab <schwab@linux-m68k.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-10-30 at 22:48 -0500, kevin diggs wrote:
-> Hi,
+Around Thu 21 Oct 2010 23:40:57 +0900 or thereabout, Akinobu Mita wrote:
+> As a preparation for providing little-endian bitops for all architectures,
+> This removes generic_ prefix from little-endian bitops function names
+> in asm-generic/bitops/le.h.
 > 
-> I have a G4 that has 1.25 G of ram. Under Linux I only get 768M?
-> Anyone know why? It is a GiGE with a dual 7455 PowerLogix cpu upgrade.
-> Kernel is 2.6.28.
+> s/generic_find_next_le_bit/find_next_le_bit/
+> s/generic_find_next_zero_le_bit/find_next_zero_le_bit/
+> s/generic_find_first_zero_le_bit/find_first_zero_le_bit/
+> s/generic___test_and_set_le_bit/__test_and_set_le_bit/
+> s/generic___test_and_clear_le_bit/__test_and_clear_le_bit/
+> s/generic_test_le_bit/test_le_bit/
+> s/generic___set_le_bit/__set_le_bit/
+> s/generic___clear_le_bit/__clear_le_bit/
+> s/generic_test_and_set_le_bit/test_and_set_le_bit/
+> s/generic_test_and_clear_le_bit/test_and_clear_le_bit/
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Roman Zippel <zippel@linux-m68k.org>
+> Cc: Andreas Schwab <schwab@linux-m68k.org>
+> Cc: linux-m68k@lists.linux-m68k.org
+> Cc: Greg Ungerer <gerg@uclinux.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Andy Grover <andy.grover@oracle.com>
+> Cc: rds-devel@oss.oracle.com
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: netdev@vger.kernel.org
+> Cc: Avi Kivity <avi@redhat.com>
+> Cc: Marcelo Tosatti <mtosatti@redhat.com>
+> Cc: kvm@vger.kernel.org
+> ---
+> No change from previous submission
+> 
+>  arch/avr32/kernel/avr32_ksyms.c              |    4 ++--
+>  arch/avr32/lib/findbit.S                     |    4 ++--
 
-Tried enabling CONFIG_HIGHMEM ?
+For the AVR32 changes.
 
-Cheers,
-Ben.
+Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+
+<snipp patch>
+
+-- 
+Best regards, Hans-Christian Egtvedt
