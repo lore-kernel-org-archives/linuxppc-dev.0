@@ -1,29 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Mon, 1 Nov 2010 01:17:34 -0400
-From: Grant Likely <grant.likely@secretlab.ca>
-To: David Daney <ddaney@caviumnetworks.com>
-Subject: Re: [PATCH] OF device tree: Move of_get_mac_address() to a common
-	source file.
-Message-ID: <20101101051734.GB17587@angua.secretlab.ca>
-References: <1288130833-16421-1-git-send-email-ddaney@caviumnetworks.com>
+Return-Path: <monstr@monstr.eu>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 37AD7B6F11
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Nov 2010 17:29:54 +1100 (EST)
+Received: by fxm1 with SMTP id 1so4674253fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 31 Oct 2010 23:29:51 -0700 (PDT)
+Message-ID: <4CCE5E2C.6050305@monstr.eu>
+Date: Mon, 01 Nov 2010 07:29:00 +0100
+From: Michal Simek <monstr@monstr.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1288130833-16421-1-git-send-email-ddaney@caviumnetworks.com>
-Cc: linux-mips@linux-mips.org, Corey Minyard <cminyard@mvista.com>,
-	Anton Vorontsov <avorontsov@mvista.com>, Paul Mackerras <paulus@samba.org>,
-	Sadanand Mutyala <Sadanand.Mutyala@xilinx.com>,
-	Sergey Matyukevich <geomatsi@gmail.com>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Wolfgang Denk <wd@denx.de>, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, Andres Salomon <dilinger@queued.net>,
-	Michal Simek <monstr@monstr.eu>, Anatolij Gustschin <agust@denx.de>,
-	Eric Dumazet <eric.dumazet@gmail.com>,
-	Jiri Pirko <jpirko@redhat.com>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
-	Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>
+To: microblaze-uclinux@itee.uq.edu.au
+Subject: Re: 
+References: <1287422825-14999-1-git-send-email-nacc@us.ibm.com>
+	<1287422825-14999-2-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1287422825-14999-2-git-send-email-nacc@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: nacc@us.ibm.com, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 26, 2010 at 03:07:13PM -0700, David Daney wrote:
-> There are two identical implementations of of_get_mac_address(), one
-> each in arch/powerpc/kernel/prom_parse.c and
-> arch/microblaze/kernel/prom_parse.c.  Move this function to a new
-> common file of_net.{c,h} and adjust all the callers to include the new
-> header.
+Hi,
 
-Applied, thanks; but made some changes to protect this code because it
-does not work on little endian (it can be fixed in a separate patch)
-
-Also...
-
+Nishanth Aravamudan wrote:
+> Use set_dma_ops and remove now used-once oddly named temp pointer sd.
 > 
-> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Corey Minyard <cminyard@mvista.com>
-> Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-> Cc: Vitaly Bordug <vbordug@ru.mvista.com>
-> Cc: Anatolij Gustschin <agust@denx.de>
-> Cc: John Rigby <jcrigby@gmail.com>
-> Cc: Wolfgang Denk <wd@denx.de>
-> Cc: Anton Vorontsov <avorontsov@mvista.com>
-> Cc: Sandeep Gopalpet <Sandeep.Kumar@freescale.com>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Li Yang <leoli@freescale.com>
-> Cc: Sergey Matyukevich <geomatsi@gmail.com>
-> Cc: Jiri Pirko <jpirko@redhat.com>
-> Cc: Eric Dumazet <eric.dumazet@gmail.com>
-> Cc: Sean MacLennan <smaclennan@pikatech.com>
-> Cc: Sadanand Mutyala <Sadanand.Mutyala@xilinx.com>
-> Cc: Andres Salomon <dilinger@queued.net>
-> Cc: microblaze-uclinux@itee.uq.edu.au
-> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> Cc: benh@kernel.crashing.org
 > Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: netdev@vger.kernel.org
-> Cc: devicetree-discuss@lists.ozlabs.org
+> ---
+>  arch/microblaze/pci/pci-common.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
 
-You don't need to believe everything that get_maintainers is telling
-you.  When you get a large list like this, don't Cc everyone, but
-apply some educated guesses.  You can guess that the PowerPC and
-Microblaze maintainers care because it touches their trees, and you
-can guess that I care because I'm the dt maintainer. David Miller
-isn't a bad guess because of networking.  But 22 people is excessive.
+Is there any reason why you are sending me this patch again and again?
+Please STOP doing this!
+This patch was added to the mainline last week.
 
-g.
+Regards,
+Michal
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
