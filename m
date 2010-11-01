@@ -1,21 +1,32 @@
-Return-Path: <timur.tabi@gmail.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53D43B6F11
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Nov 2010 00:18:24 +1100 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oA1DDkpQ023908
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Nov 2010 07:13:46 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oA1DI0XG181070
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Nov 2010 07:18:02 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id oA1DLwO3025716
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Nov 2010 07:21:58 -0600
+Date: Mon, 1 Nov 2010 09:17:04 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Oliver Kowalke <oliver.kowalke@gmx.de>
+Subject: Re: eabi supported
+Message-ID: <20101101131704.GA5343@zod.rchland.ibm.com>
+References: <4CCDBB78.7000600@gmx.de>
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <20101101051734.GB17587@angua.secretlab.ca>
-References: <1288130833-16421-1-git-send-email-ddaney@caviumnetworks.com>
-	<20101101051734.GB17587@angua.secretlab.ca>
-From: Timur Tabi <timur@freescale.com>
-Date: Mon, 1 Nov 2010 07:04:17 -0500
-Message-ID: <AANLkTinTuizm6pij_GWkCqDDH0qRFS6j5ZRzTUJFF_7O@mail.gmail.com>
-Subject: Re: [PATCH] OF device tree: Move of_get_mac_address() to a common
-	source file.
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	David Daney <ddaney@caviumnetworks.com>,
-	linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4CCDBB78.7000600@gmx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 1, 2010 at 12:17 AM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-
->> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
->> Cc: Michal Simek <monstr@monstr.eu>
->> Cc: Grant Likely <grant.likely@secretlab.ca>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Wolfram Sang <w.sang@pengutronix.de>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: "David S. Miller" <davem@davemloft.net>
->> Cc: Corey Minyard <cminyard@mvista.com>
->> Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
->> Cc: Vitaly Bordug <vbordug@ru.mvista.com>
->> Cc: Anatolij Gustschin <agust@denx.de>
->> Cc: John Rigby <jcrigby@gmail.com>
->> Cc: Wolfgang Denk <wd@denx.de>
->> Cc: Anton Vorontsov <avorontsov@mvista.com>
->> Cc: Sandeep Gopalpet <Sandeep.Kumar@freescale.com>
->> Cc: Kumar Gala <galak@kernel.crashing.org>
->> Cc: Li Yang <leoli@freescale.com>
->> Cc: Sergey Matyukevich <geomatsi@gmail.com>
->> Cc: Jiri Pirko <jpirko@redhat.com>
->> Cc: Eric Dumazet <eric.dumazet@gmail.com>
->> Cc: Sean MacLennan <smaclennan@pikatech.com>
->> Cc: Sadanand Mutyala <Sadanand.Mutyala@xilinx.com>
->> Cc: Andres Salomon <dilinger@queued.net>
->> Cc: microblaze-uclinux@itee.uq.edu.au
->> Cc: linux-kernel@vger.kernel.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Cc: netdev@vger.kernel.org
->> Cc: devicetree-discuss@lists.ozlabs.org
+On Sun, Oct 31, 2010 at 07:54:48PM +0100, Oliver Kowalke wrote:
+>Hi,
 >
-> You don't need to believe everything that get_maintainers is telling
-> you. =A0When you get a large list like this, don't Cc everyone, but
-> apply some educated guesses. =A0You can guess that the PowerPC and
-> Microblaze maintainers care because it touches their trees, and you
-> can guess that I care because I'm the dt maintainer. David Miller
-> isn't a bad guess because of networking. =A0But 22 people is excessive.
+>could you tell me which Linux distribution does support powerpc with
+>eabi (embedded abi)?
+>
+>I tried 'T2 Project' but it doesn't offer ABI selection in its config
+>script.
 
-And ironically, he left out the person who wrote the function -- me.
+eabi isn't really used all that much on powerpc.  I don't know of a
+community distro that supports powerpc in general, much less with eabi.
+You might be able to get it from one of the embedded linux vendors, but
+you'd have to contact them.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+josh
