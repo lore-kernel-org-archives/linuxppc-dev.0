@@ -1,23 +1,19 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 37AD7B6F11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Nov 2010 17:29:54 +1100 (EST)
-Received: by fxm1 with SMTP id 1so4674253fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 31 Oct 2010 23:29:51 -0700 (PDT)
-Message-ID: <4CCE5E2C.6050305@monstr.eu>
-Date: Mon, 01 Nov 2010 07:29:00 +0100
-From: Michal Simek <monstr@monstr.eu>
-MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-Subject: Re: 
-References: <1287422825-14999-1-git-send-email-nacc@us.ibm.com>
-	<1287422825-14999-2-git-send-email-nacc@us.ibm.com>
-In-Reply-To: <1287422825-14999-2-git-send-email-nacc@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: nacc@us.ibm.com, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
-Reply-To: monstr@monstr.eu
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 04/39] arch/powerpc: Update WARN uses
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Joe Perches <joe@perches.com>
+In-Reply-To: <c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
+References: <cover.1288471897.git.joe@perches.com>
+	<c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-4TyIFmVimvKgZvEMEDAo"
+Date: Mon, 01 Nov 2010 22:02:14 +1100
+Message-ID: <1288609334.10671.4.camel@concordia>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-Nishanth Aravamudan wrote:
-> Use set_dma_ops and remove now used-once oddly named temp pointer sd.
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> Cc: benh@kernel.crashing.org
-> Cc: linuxppc-dev@lists.ozlabs.org
+--=-4TyIFmVimvKgZvEMEDAo
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, 2010-10-30 at 14:08 -0700, Joe Perches wrote:
+> Coalesce long formats.
+> Align arguments.
+> Add missing newlines.
+>=20
+> Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  arch/microblaze/pci/pci-common.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
+>  arch/powerpc/kernel/hw_breakpoint.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw=
+_breakpoint.c
+> index 5ecd040..d7343a7 100644
+> --- a/arch/powerpc/kernel/hw_breakpoint.c
+> +++ b/arch/powerpc/kernel/hw_breakpoint.c
+> @@ -270,8 +270,8 @@ int __kprobes hw_breakpoint_handler(struct die_args *=
+args)
+>  	 * message to let the user know about it.
+>  	 */
+>  	if (!stepped) {
+> -		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at "
+> -			"0x%lx will be disabled.", info->address);
+> +		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at 0x%lx wil=
+l be disabled.\n",
+> +		     info->address);
 
-Is there any reason why you are sending me this patch again and again?
-Please STOP doing this!
-This patch was added to the mainline last week.
+That appears to have done nothing other than turn a short line into one
+that is now > 80 columns. Is that the latest fad?
 
-Regards,
-Michal
+cheers
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+
+--=-4TyIFmVimvKgZvEMEDAo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkzOnjIACgkQdSjSd0sB4dKulgCdHKE+hDkBjgvP2mZLkdZOVnaR
+RjoAmgNIdZErUBbPyMid+YEJKwOBXc+P
+=fQET
+-----END PGP SIGNATURE-----
+
+--=-4TyIFmVimvKgZvEMEDAo--
