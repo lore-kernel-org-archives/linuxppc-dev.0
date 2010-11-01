@@ -1,18 +1,18 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 04/39] arch/powerpc: Update WARN uses
+Subject: Re: [PATCH] iSeries: Don't leak if allocations fail in
+	mf_getSrcHistory
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Joe Perches <joe@perches.com>
-In-Reply-To: <c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
-References: <cover.1288471897.git.joe@perches.com>
-	<c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
+To: Jesper Juhl <jj@chaosbits.net>
+In-Reply-To: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
+References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-4TyIFmVimvKgZvEMEDAo"
-Date: Mon, 01 Nov 2010 22:02:14 +1100
-Message-ID: <1288609334.10671.4.camel@concordia>
+	boundary="=-gBTVMiECxDTmalQzWme3"
+Date: Mon, 01 Nov 2010 22:10:42 +1100
+Message-ID: <1288609842.10671.7.camel@concordia>
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@pcug.org.au>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,52 +24,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-4TyIFmVimvKgZvEMEDAo
+--=-gBTVMiECxDTmalQzWme3
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2010-10-30 at 14:08 -0700, Joe Perches wrote:
-> Coalesce long formats.
-> Align arguments.
-> Add missing newlines.
+On Sat, 2010-10-30 at 19:20 +0200, Jesper Juhl wrote:
+> Hi,
 >=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/powerpc/kernel/hw_breakpoint.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> If memory is tight and a dynamic allocation fails there's no reason to=
+=20
+> make a bad situation worse by leaking memory.
 >=20
-> diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw=
-_breakpoint.c
-> index 5ecd040..d7343a7 100644
-> --- a/arch/powerpc/kernel/hw_breakpoint.c
-> +++ b/arch/powerpc/kernel/hw_breakpoint.c
-> @@ -270,8 +270,8 @@ int __kprobes hw_breakpoint_handler(struct die_args *=
-args)
->  	 * message to let the user know about it.
->  	 */
->  	if (!stepped) {
-> -		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at "
-> -			"0x%lx will be disabled.", info->address);
-> +		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at 0x%lx wil=
-l be disabled.\n",
-> +		     info->address);
+> mf_getSrcHistory potentially leaks pages[0-3]. I believe the right thing=
+=20
+> to do is to free that memory again before returning -ENOMEM - which is=
+=20
+> what this patch does.
+>=20
+> I realize that the function is under '#if 0' so this probably doesn't=20
+> matter much, but I assume that the function is still there for a reason=
+=20
+> (but I could be wrong, I don't know the powerpc code).
+> Anyway, I suggest we remove the leak.
 
-That appears to have done nothing other than turn a short line into one
-that is now > 80 columns. Is that the latest fad?
+Stephen is the iSeries maintainer, and I think he #if 0'ed the code. But
+I don't think it will ever be un-ifdef'ed, so should probably just be
+removed.
 
 cheers
 
 
---=-4TyIFmVimvKgZvEMEDAo
+--=-gBTVMiECxDTmalQzWme3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkzOnjIACgkQdSjSd0sB4dKulgCdHKE+hDkBjgvP2mZLkdZOVnaR
-RjoAmgNIdZErUBbPyMid+YEJKwOBXc+P
-=fQET
+iEYEABECAAYFAkzOoDIACgkQdSjSd0sB4dL0dACgqcRspxXeU01uHOVG9ZaBdwkd
+1Q8AmgKshK1tiCp7tMAWNiZAeESMBdZn
+=UUKN
 -----END PGP SIGNATURE-----
 
---=-4TyIFmVimvKgZvEMEDAo--
+--=-gBTVMiECxDTmalQzWme3--
