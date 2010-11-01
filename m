@@ -1,24 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id B80061007D2
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id DADEAB6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 02:05:55 +1100 (EST)
-Received: by wye20 with SMTP id 20so5704379wye.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 01 Nov 2010 08:05:53 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <AANLkTikWWGpAM8+_z9fnngYuYSpT3NWgM7xeGkOzZ3jg@mail.gmail.com>
+	Tue,  2 Nov 2010 02:37:00 +1100 (EST)
+Date: Tue, 2 Nov 2010 02:36:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: All Applied micro boards are failing with current mainline kernel
+Message-Id: <20101102023650.bc553e74.sfr@canb.auug.org.au>
+In-Reply-To: <AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
 References: <6631e123845856ac20423c25e07844c8@mail.gmail.com>
 	<AANLkTikWWGpAM8+_z9fnngYuYSpT3NWgM7xeGkOzZ3jg@mail.gmail.com>
-Date: Mon, 1 Nov 2010 11:05:53 -0400
-Message-ID: <AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
-Subject: Re: All Applied micro boards are failing with current mainline kernel
-From: Josh Boyer <jwboyer@gmail.com>
-To: Rupjyoti Sarmah <rsarmah@apm.com>, Tom Herbert <therbert@google.com>,
-	Eric Dumazet <eric.dumazet@gmail.com>,
-	"David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+	<AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl"
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Rupjyoti Sarmah <rsarmah@apm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"David S. Miller" <davem@davemloft.net>, Tom Herbert <therbert@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,74 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 1, 2010 at 9:22 AM, Josh Boyer <jwboyer@gmail.com> wrote:
-> On Fri, Oct 29, 2010 at 11:06 PM, Rupjyoti Sarmah <rsarmah@apm.com> wrote=
-:
->> Hi ,
->>
->> APM boards Canyonlands/Kilauea/Glacier/Katmai/Sequoia are all failing
->> during booting.
+--Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Josh,
+
+On Mon, 1 Nov 2010 11:05:53 -0400 Josh Boyer <jwboyer@gmail.com> wrote:
 >
-> What kernel version? =A0What config? =A0Have you tried a git bisect to se=
-e
-> when it broke? =A0Etc, etc.
->>
->> Call trace is same for all
->>
->>
->> Call Trace:
->>
->> [df835d70] [c02d27cc] emac_probe+0xf28/0x12a8 (unreliable)
->>
->> [df835e50] [c023c7cc] platform_driver_probe_shim+0x40/0x54
->>
->> [df835e60] [c01bf354] platform_drv_probe+0x20/0x30
->>
->> [df835e70] [c01bde68] driver_probe_device+0x148/0x1ac
->>
->> [df835e90] [c01be17c] __driver_attach+0xa4/0xa8
->>
->> [df835eb0] [c01bcfa4] bus_for_each_dev+0x60/0x9c
->>
->> [df835ee0] [c01bdbbc] driver_attach+0x24/0x34
->>
->> [df835ef0] [c01bd94c] bus_add_driver+0x1b8/0x274
->>
->> [df835f20] [c01be3d8] driver_register+0x6c/0x160
->>
->> [df835f40] [c01bf6c4] platform_driver_register+0x68/0x78
->>
->> [df835f50] [c023c998] of_register_platform_driver+0xa8/0xc4
->>
->> [df835f60] [c0393e88] emac_init+0x1ac/0x1dc
->>
->> [df835fa0] [c0001574] do_one_initcall+0x160/0x1a8
->>
->> [df835fd0] [c037a1e8] kernel_init+0xcc/0x174
->>
->> [df835ff0] [c000c5b0] kernel_thread+0x4c/0x68
->>
->> Instruction dump:
->>
->> 419e016c 2f800007 419e0164 38130774 901a00d0 381306b0 901a00d4 7f43d378
->>
->> 4bf91d89 817a01a0 39200001 380b0008 <7d400028> 7d4a4b78 7d40012d 40a2fff=
-4
->>
->> ---[ end trace dac0cf4779f83901 ]---
+> A few hints would be appreciated.
 
-A git bisect between 2.6.36 (working) and Linus tip (traceback) points to:
+Remove the call to netif_stop_queue() from emac_probe().  Apparently,
+calling this before register_netdev() is now wrong (maybe always was).
 
-e6484930d7c73d324bccda7d43d131088da697b9 net: allocate tx queues in
-register_netdevice
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-as causing this.  I'm not entirely sure why yet, but the commit
-message seems slightly off to me.  It claims to make TX queue
-allocation identical to RX, but from what I can tell, most of the RX
-queue logic is hidden behind CONFIG_RPS, which is not set in my config
-at all (and can't be due to a dep on CONFIG_SMP).  This change doesn't
-guard anything behind that.
+--Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl
+Content-Type: application/pgp-signature
 
-A few hints would be appreciated.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-josh
+iQEcBAEBAgAGBQJMzt6SAAoJEDMEi1NhKgbsj2EIAI8Yt9zCze2B0cT+qNFd+nci
+YME4qQPBWLAeUVCe+KQMOBEbJjgKyUXgf42h44AAHepm2IwP6U+6tVdMsi3L6S5B
+Ak4w2o6J+tM4iuy48pI0nyVEFrOUO3ZwFl0hYXz94zoNaKaxU2nzPRwYnGpYBhIb
+2a3v7S9QV/4rbBX4/8WA3rZ8R4l/ZE8KaR/pa1cYh4WUfONDO3xT0pPSj5BrZDT1
+cx4sKgdNtr6fpkm9sclBbuCT3BOW2ilv6i2+r7yo/2DRJVrXbGDu7AGHBokvvHhx
+NiyYvlSKRqPSTTFQWDfvGDVv8OyaBWgBF8kSPB18P980dUKS+G9l+RWtvz0QeK4=
+=lYu3
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl--
