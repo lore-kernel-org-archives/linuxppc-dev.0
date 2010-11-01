@@ -1,23 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 98A1AB7100
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 02:51:03 +1100 (EST)
-Date: Mon, 01 Nov 2010 08:51:26 -0700 (PDT)
-Message-Id: <20101101.085126.71102684.davem@davemloft.net>
-To: jwboyer@gmail.com
-Subject: Re: All Applied micro boards are failing with current mainline kernel
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <AANLkTin3nsb6FfNtXfqjZCuV66mwKVOsKgmZpTABFDUJ@mail.gmail.com>
-References: <AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
-	<20101102023650.bc553e74.sfr@canb.auug.org.au>
-	<AANLkTin3nsb6FfNtXfqjZCuV66mwKVOsKgmZpTABFDUJ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: sfr@canb.auug.org.au, eric.dumazet@gmail.com, rsarmah@apm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	therbert@google.com
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <AANLkTimp-AFN5T3z9o6X9qM-GQXSU5vinf+Lqu_jUmJj@mail.gmail.com>
+References: <1288130833-16421-1-git-send-email-ddaney@caviumnetworks.com>
+	<20101101051734.GB17587@angua.secretlab.ca>
+	<AANLkTimp-AFN5T3z9o6X9qM-GQXSU5vinf+Lqu_jUmJj@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 1 Nov 2010 11:51:06 -0400
+Message-ID: <AANLkTimWO1yJkOPDQ28gv-bPPKADGepeVk03eHq3fdAS@mail.gmail.com>
+Subject: Re: [PATCH] OF device tree: Move of_get_mac_address() to a common
+	source file.
+To: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Josh Boyer <jwboyer@gmail.com>
-Date: Mon, 1 Nov 2010 11:39:47 -0400
+On Mon, Nov 1, 2010 at 11:46 AM, Timur Tabi <timur@freescale.com> wrote:
+> On Mon, Nov 1, 2010 at 12:17 AM, Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+>> Applied, thanks; but made some changes to protect this code because it
+>> does not work on little endian (it can be fixed in a separate patch)
+>
+> I'm confused. =A0How does of_get_mac_address() not work on little-endian?
 
-> On Mon, Nov 1, 2010 at 11:36 AM, Stephen Rothwell <sfr@canb.auug.org.=
-au> wrote:
->> Hi Josh,
->>
->> On Mon, 1 Nov 2010 11:05:53 -0400 Josh Boyer <jwboyer@gmail.com> wro=
-te:
->>>
->>> A few hints would be appreciated.
->>
->> Remove the call to netif_stop_queue() from emac_probe(). =A0Apparent=
-ly,
->> calling this before register_netdev() is now wrong (maybe always was=
-).
-> =
+Hmmm, right.  I got confused here.  It should be just fine on
+little-endian.  I'll revert my change.  Thanks.
 
-> Yeah, I just discovered that myself.  I'm wondering
-> =
-
-> 1) why we do that in that function?
-
-Because likely it was blindly copied from some other driver.
-
-> 2) If it needs to be removed entirely, or moved to after the
-> register_netdev call
-
-Removed entirely.
-
-> 3) If the call to netif_carrier_off also needs similar attention.
-
-Not really.
-
-> I can whip up a patch to remove those calls or move them after the
-> register, but I don't want to do that without knowing which one is
-> "right".
-
-I've already taken care of this.
+g.
