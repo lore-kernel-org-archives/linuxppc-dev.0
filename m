@@ -1,22 +1,21 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id EF982B70CC
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (mail.perches.com [173.55.12.10])
+	by ozlabs.org (Postfix) with ESMTP id 60C19B70E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 00:22:49 +1100 (EST)
-Received: by wye20 with SMTP id 20so5588374wye.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 01 Nov 2010 06:22:46 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <6631e123845856ac20423c25e07844c8@mail.gmail.com>
-References: <Act3331keWjsN/sHTZGScnUum3AwDw==>
-	<6631e123845856ac20423c25e07844c8@mail.gmail.com>
-Date: Mon, 1 Nov 2010 09:22:45 -0400
-Message-ID: <AANLkTikWWGpAM8+_z9fnngYuYSpT3NWgM7xeGkOzZ3jg@mail.gmail.com>
-Subject: Re: All Applied micro boards are failing with current mainline kernel
-From: Josh Boyer <jwboyer@gmail.com>
-To: Rupjyoti Sarmah <rsarmah@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+	Tue,  2 Nov 2010 01:41:53 +1100 (EST)
+Subject: Re: [PATCH 04/39] arch/powerpc: Update WARN uses
+From: Joe Perches <joe@perches.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1288609334.10671.4.camel@concordia>
+References: <cover.1288471897.git.joe@perches.com>
+	<c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
+	<1288609334.10671.4.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Nov 2010 07:41:49 -0700
+Message-ID: <1288622509.366.237.camel@Joe-Laptop>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 29, 2010 at 11:06 PM, Rupjyoti Sarmah <rsarmah@apm.com> wrote:
-> Hi ,
->
-> APM boards Canyonlands/Kilauea/Glacier/Katmai/Sequoia are all failing
-> during booting.
+On Mon, 2010-11-01 at 22:02 +1100, Michael Ellerman wrote:
+> On Sat, 2010-10-30 at 14:08 -0700, Joe Perches wrote:
+> > Coalesce long formats.
+> > Align arguments.
+> > Add missing newlines.
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > ---
+> >  arch/powerpc/kernel/hw_breakpoint.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+> > index 5ecd040..d7343a7 100644
+> > --- a/arch/powerpc/kernel/hw_breakpoint.c
+> > +++ b/arch/powerpc/kernel/hw_breakpoint.c
+> > @@ -270,8 +270,8 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
+> >  	 * message to let the user know about it.
+> >  	 */
+> >  	if (!stepped) {
+> > -		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at "
+> > -			"0x%lx will be disabled.", info->address);
+> > +		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at 0x%lx will be disabled.\n",
+> > +		     info->address);
+> 
+> That appears to have done nothing other than turn a short line into one
+> that is now > 80 columns.
 
-What kernel version?  What config?  Have you tried a git bisect to see
-when it broke?  Etc, etc.
+Added '\n'.
 
-Also, CC'ing linuxppc-dev would have been a good idea.  Not many on
-lkml are even going to know what you're talking about with such sparse
-details.
+The series was done for a few reasons:
 
-josh
+o to add missing newlines at the end of messages as was done here
+o to convert a couple of misuses of WARN(msg) to WARN(1, msg)
+o to remove KERN_ prefixes from WARN(test, KERN_<level> msg)
 
->
-> Call trace is same for all
->
->
-> Call Trace:
->
-> [df835d70] [c02d27cc] emac_probe+0xf28/0x12a8 (unreliable)
->
-> [df835e50] [c023c7cc] platform_driver_probe_shim+0x40/0x54
->
-> [df835e60] [c01bf354] platform_drv_probe+0x20/0x30
->
-> [df835e70] [c01bde68] driver_probe_device+0x148/0x1ac
->
-> [df835e90] [c01be17c] __driver_attach+0xa4/0xa8
->
-> [df835eb0] [c01bcfa4] bus_for_each_dev+0x60/0x9c
->
-> [df835ee0] [c01bdbbc] driver_attach+0x24/0x34
->
-> [df835ef0] [c01bd94c] bus_add_driver+0x1b8/0x274
->
-> [df835f20] [c01be3d8] driver_register+0x6c/0x160
->
-> [df835f40] [c01bf6c4] platform_driver_register+0x68/0x78
->
-> [df835f50] [c023c998] of_register_platform_driver+0xa8/0xc4
->
-> [df835f60] [c0393e88] emac_init+0x1ac/0x1dc
->
-> [df835fa0] [c0001574] do_one_initcall+0x160/0x1a8
->
-> [df835fd0] [c037a1e8] kernel_init+0xcc/0x174
->
-> [df835ff0] [c000c5b0] kernel_thread+0x4c/0x68
->
-> Instruction dump:
->
-> 419e016c 2f800007 419e0164 38130774 901a00d0 381306b0 901a00d4 7f43d378
->
-> 4bf91d89 817a01a0 39200001 380b0008 <7d400028> 7d4a4b78 7d40012d 40a2fff4
->
-> ---[ end trace dac0cf4779f83901 ]---
->
->
-> Regards,
-> Rup
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
+>  Is that the latest fad?
+
+Pretty much.  Format coalescing is generally preferred for grep.
+Some consider it churn.
+
+cheers, Joe
