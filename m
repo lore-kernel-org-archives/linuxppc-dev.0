@@ -1,23 +1,21 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id A01241007D8
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id AC4E21007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 02:58:23 +1100 (EST)
+	Tue,  2 Nov 2010 03:05:59 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 07130-07 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Nov 2010 15:59:13 +0000 (GMT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: RapidIO: MC Exception when enumerating peer to peer connection
-Date: Mon, 1 Nov 2010 08:58:08 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552014B9D48@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <AANLkTikhcOMexRBVthK8Xr8VTNvDmiUDvWG+QbyzWc38@mail.gmail.com>
-References: <AANLkTimS-sfqONuSJNPJy7OxO_U81qtDHe2JeioLDNVs@mail.gmail.com><4CCA9207.8050506@neli.hopto.org>
-	<AANLkTikhcOMexRBVthK8Xr8VTNvDmiUDvWG+QbyzWc38@mail.gmail.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Thomas Taranowski" <tom@baringforge.com>,
-	"Micha Nelissen" <micha@neli.hopto.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: PowerQUICC II PCIe dma
+Date: Mon, 1 Nov 2010 15:58:37 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AB8C@saturn3.aculab.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Taranowski wrote:
-> Yes, I tried pretty much all combinations of boot order, but I believe
-> the preferred approach is to boot the agents first, then the host
-> according to my freescale documentation.  My problem was that all
-> three devices had the same device id.  Once I programmed them with
-> different device id's via the alternate device id register I could
-> finally get doorbell messages across with the jtag.
-=20
-In the current fsl_rio implementation initialization enables ACCEPT_ALL
-mode for the port therefore you should not have problems caused by
-initial destID value. Based on your post about multiport support I think
-you are close to find a source of the problem.
+I'm trying to get a ppc 831x to do PCIe dma transfers, PIO transfers
+work ok but are somewhat lethargic (partially due to the slave).
 
-Are you using any switches in your setup or this is pure board-to-board
-configuration?
+I've done the following:
+- All reads/writes (including the dma descriptors) are byteswapped.
+- Enabled the dma in PEX_CSB_CTRL (value 0x3f)
+- Used the kernel physical addresses for all addresses.
+  For memory from virt_to_phys(), pci from pci_resource_start().
+  (virt_to_phys() gives invalid values for the pci area).
+- I'm setting both 'snoop' bits to 1 (as per the device errata)
+  So the descriptor 'ctrl' has value (len >> 2) << 12 | 0xff9,
+  and the dma 'ctrl' 0x401.
+- I've put a 'sync' instruction (iosync()) just before the
+  write to start the dma.
 
-Alex.
+On the first request after hard reset, the dma status register
+REX_RDMA_STAT gets set to 4. On subsequent requests it stays zero.
+Nothing else appears to happen at all (except the 'start' bit
+always reads back zero).
+The 'CSB status register' at 0x81c stays zero - so I don't think
+it is stuck waiting for the PCIe slave.
+
+I'm not at all sure of the word ordering for the dma descriptor!
+Page 14-113 doesn't say! However I've written the values so that
+it doesn't matter - once I get a status written back I'll know...
+
+I've probably forgotten something very silly!
+Anyone who has got this working any ideas ??
+
+	David
