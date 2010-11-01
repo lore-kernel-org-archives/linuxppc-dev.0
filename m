@@ -1,20 +1,21 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id 668611007DB
+Return-Path: <mtosatti@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 75DD21007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 03:24:35 +1100 (EST)
-Message-ID: <4CCEE9C1.8000108@neli.hopto.org>
-Date: Mon, 01 Nov 2010 17:24:33 +0100
-From: Micha Nelissen <micha@neli.hopto.org>
+	Tue,  2 Nov 2010 04:42:04 +1100 (EST)
+Date: Mon, 1 Nov 2010 15:19:49 -0200
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Vasiliy Kulikov <segooon@gmail.com>
+Subject: Re: [PATCH] powerpc: kvm: fix information leak to userland
+Message-ID: <20101101171949.GB4484@amt.cnet>
+References: <1288429464-21763-1-git-send-email-segooon@gmail.com>
 MIME-Version: 1.0
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: RapidIO: MC Exception when enumerating peer to peer connection
-References: <AANLkTimS-sfqONuSJNPJy7OxO_U81qtDHe2JeioLDNVs@mail.gmail.com><4CCA9207.8050506@neli.hopto.org>
-	<AANLkTikhcOMexRBVthK8Xr8VTNvDmiUDvWG+QbyzWc38@mail.gmail.com>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552014B9D48@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552014B9D48@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Thomas Taranowski <tom@baringforge.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1288429464-21763-1-git-send-email-segooon@gmail.com>
+Cc: kvm@vger.kernel.org, kernel-janitors@vger.kernel.org,
+	Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Avi Kivity <avi@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bounine, Alexandre wrote:
-> In the current fsl_rio implementation initialization enables ACCEPT_ALL
-> mode for the port therefore you should not have problems caused by
-> initial destID value. Based on your post about multiport support I think
+On Sat, Oct 30, 2010 at 01:04:24PM +0400, Vasiliy Kulikov wrote:
+> Structure kvm_ppc_pvinfo is copied to userland with flags and
+> pad fields unitialized.  It leads to leaking of contents of
+> kernel stack memory.
+> 
+> Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
+> ---
+>  I cannot compile this driver, so it is not tested at all.
+> 
+>  arch/powerpc/kvm/powerpc.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 
-Btw, best is to use 0xFF (or 0xFFFF in 16-bit environment) as 
-initial/hardware strapped destid, and not change it in any bootloader. 
-This makes for much stabler kernel enumeration: the host can talk to all 
-agents with 0xFF initially.
-
-Micha
+Applied, thanks.
