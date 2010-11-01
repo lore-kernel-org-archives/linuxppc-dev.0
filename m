@@ -1,34 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3C29B1007D3
+Return-Path: <baringforge@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 9E57C1007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 04:58:53 +1100 (EST)
-Received: from mail175-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail175-tx2-R.bigfish.com (Postfix) with ESMTP id 6CD2B7F80FD	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon,  1 Nov 2010 17:58:49 +0000 (UTC)
-Received: from TX2EHSMHS038.bigfish.com (unknown [10.9.14.247])	by
-	mail175-tx2.bigfish.com (Postfix) with ESMTP id 5611D988056	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon,  1 Nov 2010 17:58:49 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id oA1HwU3T008534	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 1 Nov 2010 10:58:30 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oA1HwUhg026659	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 1 Nov 2010 12:58:30 -0500 (CDT)
-Date: Mon, 1 Nov 2010 12:58:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: LEROY christophe <christophe.leroy@c-s.fr>
-Subject: Re: [MPC8xx] Initial MMU too low
-Message-ID: <20101101125828.62e833c2@udp111988uds.am.freescale.net>
-In-Reply-To: <4CCC06F8.3020506@c-s.fr>
-References: <4CCC06F8.3020506@c-s.fr>
+	Tue,  2 Nov 2010 06:47:56 +1100 (EST)
+Received: by fxm1 with SMTP id 1so5276056fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 01 Nov 2010 12:47:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Sender: baringforge@gmail.com
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552014B9D48@CORPEXCH1.na.ads.idt.com>
+References: <AANLkTimS-sfqONuSJNPJy7OxO_U81qtDHe2JeioLDNVs@mail.gmail.com>
+	<4CCA9207.8050506@neli.hopto.org>
+	<AANLkTikhcOMexRBVthK8Xr8VTNvDmiUDvWG+QbyzWc38@mail.gmail.com>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552014B9D48@CORPEXCH1.na.ads.idt.com>
+From: Thomas Taranowski <tom@baringforge.com>
+Date: Mon, 1 Nov 2010 12:47:32 -0700
+Message-ID: <AANLkTikJfbLBsDtp+LTF0x8s+Cu8c_Z_EoWYLjhQvJmk@mail.gmail.com>
+Subject: Re: RapidIO: MC Exception when enumerating peer to peer connection
+To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,19 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 30 Oct 2010 13:52:24 +0200
-LEROY christophe <christophe.leroy@c-s.fr> wrote:
+Alex,
 
-> Hello,
-> 
-> When I build a kernel with DEBUG_LOCK_ALLOC set, I get a kernel which 
-> has __bss_stop above the C0800000 limit, and then I get a bad page 
-> exception during the zeroize of the __bss at startup, because the 
-> initial MMU only maps the first 8Mbytes.
-> 
-> What can I do to fix that ?
+Thanks for responses all.  This is a pure board-to-board setup.  After
+further investigation, it's pretty clear now that the issue is due to
+my use of multiple ports ( See my other posting conveniently titled
+"Support for multiple ports" :) ).  Unfortunately, the freescale linux
+patchset for the p2020 do nothing to resolve this issue.
 
-Under "Advanced setup", select "Pinned Kernel TLBs".  Ignore the "860
-ONLY", it applies to all 8xx.
 
--Scott
+On Mon, Nov 1, 2010 at 8:58 AM, Bounine, Alexandre
+<Alexandre.Bounine@idt.com> wrote:
+> Thomas Taranowski wrote:
+>> Yes, I tried pretty much all combinations of boot order, but I believe
+>> the preferred approach is to boot the agents first, then the host
+>> according to my freescale documentation. =A0My problem was that all
+>> three devices had the same device id. =A0Once I programmed them with
+>> different device id's via the alternate device id register I could
+>> finally get doorbell messages across with the jtag.
+>
+> In the current fsl_rio implementation initialization enables ACCEPT_ALL
+> mode for the port therefore you should not have problems caused by
+> initial destID value. Based on your post about multiport support I think
+> you are close to find a source of the problem.
+>
+> Are you using any switches in your setup or this is pure board-to-board
+> configuration?
+>
+> Alex.
+>
+>
