@@ -1,20 +1,23 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8A5E2B7144
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 98A1AB7100
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 02:50:10 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Support for multiple port's
-Date: Mon, 1 Nov 2010 08:49:58 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552014B9D3A@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <AANLkTin7OeSgUgqUEnYxUnZQ0vgckg7e43gudms8NqeG@mail.gmail.com>
-References: <AANLkTin7OeSgUgqUEnYxUnZQ0vgckg7e43gudms8NqeG@mail.gmail.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Thomas Taranowski" <tom@baringforge.com>, <linuxppc-dev@lists.ozlabs.org>
+	Tue,  2 Nov 2010 02:51:03 +1100 (EST)
+Date: Mon, 01 Nov 2010 08:51:26 -0700 (PDT)
+Message-Id: <20101101.085126.71102684.davem@davemloft.net>
+To: jwboyer@gmail.com
+Subject: Re: All Applied micro boards are failing with current mainline kernel
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <AANLkTin3nsb6FfNtXfqjZCuV66mwKVOsKgmZpTABFDUJ@mail.gmail.com>
+References: <AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
+	<20101102023650.bc553e74.sfr@canb.auug.org.au>
+	<AANLkTin3nsb6FfNtXfqjZCuV66mwKVOsKgmZpTABFDUJ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Cc: sfr@canb.auug.org.au, eric.dumazet@gmail.com, rsarmah@apm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	therbert@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Taranowski wrote:
-> Going through the code, it looks like the rapidio driver assumes
-> there's only going to be a single Port implemented.
+From: Josh Boyer <jwboyer@gmail.com>
+Date: Mon, 1 Nov 2010 11:39:47 -0400
 
-Yes, this is true for the current implementation.
+> On Mon, Nov 1, 2010 at 11:36 AM, Stephen Rothwell <sfr@canb.auug.org.=
+au> wrote:
+>> Hi Josh,
+>>
+>> On Mon, 1 Nov 2010 11:05:53 -0400 Josh Boyer <jwboyer@gmail.com> wro=
+te:
+>>>
+>>> A few hints would be appreciated.
+>>
+>> Remove the call to netif_stop_queue() from emac_probe(). =A0Apparent=
+ly,
+>> calling this before register_netdev() is now wrong (maybe always was=
+).
+> =
 
-> On the newer QorIQ P2020 processors there are 2 sets of port
-> registers, so the current code lays the dbell_atmu_regs structure on
-> top of the second set of atmu_regs.  There are probably other issues
-> as well.
+> Yeah, I just discovered that myself.  I'm wondering
+> =
 
-There are issues with multiport support in RIO subsystem code as well .
+> 1) why we do that in that function?
 
->=20
-> Are there any patch sets available that support the newer processors,
-> and multi-port ( multi-homed? ) RapidIO configurations?
+Because likely it was blindly copied from some other driver.
 
-I am planning a patch for RIO subsystem - this will not address issues
-with FSL mport driver.
+> 2) If it needs to be removed entirely, or moved to after the
+> register_netdev call
 
->=20
-> Thanks!
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Removed entirely.
+
+> 3) If the call to netif_carrier_off also needs similar attention.
+
+Not really.
+
+> I can whip up a patch to remove those calls or move them after the
+> register, but I don't want to do that without knowing which one is
+> "right".
+
+I've already taken care of this.
