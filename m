@@ -1,21 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DADEAB6F10
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id D2ABAB6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Nov 2010 02:37:00 +1100 (EST)
-Date: Tue, 2 Nov 2010 02:36:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: All Applied micro boards are failing with current mainline kernel
-Message-Id: <20101102023650.bc553e74.sfr@canb.auug.org.au>
-In-Reply-To: <AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
+	Tue,  2 Nov 2010 02:39:49 +1100 (EST)
+Received: by wye20 with SMTP id 20so5737244wye.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 01 Nov 2010 08:39:47 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20101102023650.bc553e74.sfr@canb.auug.org.au>
 References: <6631e123845856ac20423c25e07844c8@mail.gmail.com>
 	<AANLkTikWWGpAM8+_z9fnngYuYSpT3NWgM7xeGkOzZ3jg@mail.gmail.com>
 	<AANLkTikQuUcAMZKqZ3Rz5HVzOs+63-Y4VYUo5-3EM30H@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl"
+	<20101102023650.bc553e74.sfr@canb.auug.org.au>
+Date: Mon, 1 Nov 2010 11:39:47 -0400
+Message-ID: <AANLkTin3nsb6FfNtXfqjZCuV66mwKVOsKgmZpTABFDUJ@mail.gmail.com>
+Subject: Re: All Applied micro boards are failing with current mainline kernel
+From: Josh Boyer <jwboyer@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Eric Dumazet <eric.dumazet@gmail.com>, Rupjyoti Sarmah <rsarmah@apm.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	"David S. Miller" <davem@davemloft.net>, Tom Herbert <therbert@google.com>
@@ -28,38 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Josh,
-
-On Mon, 1 Nov 2010 11:05:53 -0400 Josh Boyer <jwboyer@gmail.com> wrote:
+On Mon, Nov 1, 2010 at 11:36 AM, Stephen Rothwell <sfr@canb.auug.org.au> wr=
+ote:
+> Hi Josh,
 >
-> A few hints would be appreciated.
+> On Mon, 1 Nov 2010 11:05:53 -0400 Josh Boyer <jwboyer@gmail.com> wrote:
+>>
+>> A few hints would be appreciated.
+>
+> Remove the call to netif_stop_queue() from emac_probe(). =A0Apparently,
+> calling this before register_netdev() is now wrong (maybe always was).
 
-Remove the call to netif_stop_queue() from emac_probe().  Apparently,
-calling this before register_netdev() is now wrong (maybe always was).
+Yeah, I just discovered that myself.  I'm wondering
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+1) why we do that in that function?
+2) If it needs to be removed entirely, or moved to after the
+register_netdev call
+3) If the call to netif_carrier_off also needs similar attention.
 
---Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl
-Content-Type: application/pgp-signature
+I can whip up a patch to remove those calls or move them after the
+register, but I don't want to do that without knowing which one is
+"right".
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMzt6SAAoJEDMEi1NhKgbsj2EIAI8Yt9zCze2B0cT+qNFd+nci
-YME4qQPBWLAeUVCe+KQMOBEbJjgKyUXgf42h44AAHepm2IwP6U+6tVdMsi3L6S5B
-Ak4w2o6J+tM4iuy48pI0nyVEFrOUO3ZwFl0hYXz94zoNaKaxU2nzPRwYnGpYBhIb
-2a3v7S9QV/4rbBX4/8WA3rZ8R4l/ZE8KaR/pa1cYh4WUfONDO3xT0pPSj5BrZDT1
-cx4sKgdNtr6fpkm9sclBbuCT3BOW2ilv6i2+r7yo/2DRJVrXbGDu7AGHBokvvHhx
-NiyYvlSKRqPSTTFQWDfvGDVv8OyaBWgBF8kSPB18P980dUKS+G9l+RWtvz0QeK4=
-=lYu3
------END PGP SIGNATURE-----
-
---Signature=_Tue__2_Nov_2010_02_36_50_+1100_cUqEyzYYxkUuuGjl--
+josh
