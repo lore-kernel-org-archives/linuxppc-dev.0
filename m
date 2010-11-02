@@ -1,21 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] iSeries: Remove unused mf_getSrcHistory function.
+Subject: Re: [PATCH 04/39] arch/powerpc: Update WARN uses
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Jesper Juhl <jj@chaosbits.net>
-In-Reply-To: <alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
-References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
-	<1288609842.10671.7.camel@concordia>
-	<20101102071025.2fe5e6ca.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1011012104050.12889@swampdragon.chaosbits.net>
-	<20101102082634.65342ce6.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
+To: Joe Perches <joe@perches.com>
+In-Reply-To: <1288622509.366.237.camel@Joe-Laptop>
+References: <cover.1288471897.git.joe@perches.com>
+	<c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
+	<1288609334.10671.4.camel@concordia>
+	<1288622509.366.237.camel@Joe-Laptop>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-eOCPNPdZIoaSyHjGARJV"
-Date: Tue, 02 Nov 2010 11:20:50 +1100
-Message-ID: <1288657250.16790.4.camel@concordia>
+	boundary="=-sIFNLzaSNVoEuZiTvuSW"
+Date: Tue, 02 Nov 2010 11:26:00 +1100
+Message-ID: <1288657560.16790.8.camel@concordia>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+Cc: Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,49 +26,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-eOCPNPdZIoaSyHjGARJV
+--=-sIFNLzaSNVoEuZiTvuSW
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2010-11-01 at 22:20 +0100, Jesper Juhl wrote:
-> Hi Stephen,
->=20
-> On Tue, 2 Nov 2010, Stephen Rothwell wrote:
->=20
-> > On Mon, 1 Nov 2010 21:06:23 +0100 (CET) Jesper Juhl <jj@chaosbits.net> =
-wrote:
-> > >
-> > > Remove unused function 'mf_getSrcHistory' (that will never be used ev=
-er=20
-> > > according to Stephen Rothwell).
+On Mon, 2010-11-01 at 07:41 -0700, Joe Perches wrote:
+> On Mon, 2010-11-01 at 22:02 +1100, Michael Ellerman wrote:
+> > On Sat, 2010-10-30 at 14:08 -0700, Joe Perches wrote:
+> > > Coalesce long formats.
+> > > Align arguments.
+> > > Add missing newlines.
 > > >=20
-> > > Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+> > > Signed-off-by: Joe Perches <joe@perches.com>
+> > > ---
+> > >  arch/powerpc/kernel/hw_breakpoint.c |    4 ++--
+> > >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > >=20
+> > > diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kerne=
+l/hw_breakpoint.c
+> > > index 5ecd040..d7343a7 100644
+> > > --- a/arch/powerpc/kernel/hw_breakpoint.c
+> > > +++ b/arch/powerpc/kernel/hw_breakpoint.c
+> > > @@ -270,8 +270,8 @@ int __kprobes hw_breakpoint_handler(struct die_ar=
+gs *args)
+> > >  	 * message to let the user know about it.
+> > >  	 */
+> > >  	if (!stepped) {
+> > > -		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at "
+> > > -			"0x%lx will be disabled.", info->address);
+> > > +		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at 0x%lx=
+ will be disabled.\n",
+> > > +		     info->address);
 > >=20
-> > Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> >=20
+> > That appears to have done nothing other than turn a short line into one
+> > that is now > 80 columns.
 >=20
-> Ok, so if you are the (unofficial) iSeries maintainer and you don't merge=
-=20
-> the patch somewhere that'll eventually go up-stream, but just ACK it=20
-> (thank you for that btw), then where do I send it to get it merged?
+> Added '\n'.
 
-Here. ie. linuxppc-dev.
+Right.
 
-But, while you're removing it you should remove the #if 0'ed callsite as
-well, see mf_src_proc_show() in that file. :)
+> The series was done for a few reasons:
+>=20
+> o to add missing newlines at the end of messages as was done here
+> o to convert a couple of misuses of WARN(msg) to WARN(1, msg)
+> o to remove KERN_ prefixes from WARN(test, KERN_<level> msg)
+
+All fair enough.
+
+> >  Is that the latest fad?
+>=20
+> Pretty much.  Format coalescing is generally preferred for grep.
+
+Really? Grep doesn't work anyway because you have format specifiers, and
+although you can try and guess them .. good luck, 0x%lx, or 0x%llx, or
+%#lx or ..
 
 cheers
 
---=-eOCPNPdZIoaSyHjGARJV
+
+
+--=-sIFNLzaSNVoEuZiTvuSW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkzPWV8ACgkQdSjSd0sB4dI0NwCfTXSXao1Giw2lp56QfPOY6Q9J
-jR8AoJYnOXUTU4jBSlCFRJ9V6CMeIT5B
-=732g
+iEYEABECAAYFAkzPWpgACgkQdSjSd0sB4dJHNACgmeX6sZNCJlAmn/k61tOZJ/vQ
+uz0AoIh3vUaXs8/PATS6DpYUsQ2hTMAC
+=SOtd
 -----END PGP SIGNATURE-----
 
---=-eOCPNPdZIoaSyHjGARJV--
+--=-sIFNLzaSNVoEuZiTvuSW--
