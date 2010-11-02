@@ -1,15 +1,17 @@
-Return-Path: <mikey@neuling.org>
-Received: from localhost.localdomain (localhost [127.0.0.1])
-	by ozlabs.org (Postfix) with ESMTP id 536F7B70E6
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Nov 2010 11:27:31 +1100 (EST)
-To: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] add icswx support
-In-reply-to: <1287547340.14049.25.camel@flin.austin.ibm.com>
-References: <1287547340.14049.25.camel@flin.austin.ibm.com>
-From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 02 Nov 2010 11:27:31 +1100
-Message-ID: <2390.1288657651@neuling.org>
-Cc: tsenglin@us.ibm.com, linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] drivers/char/hvc_console.c: reduce max idle timeout
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Chris Metcalf <cmetcalf@tilera.com>
+In-Reply-To: <201010271659.o9RGxrMc009847@farm-0002.internal.tilera.com>
+References: <201010271659.o9RGxrMc009847@farm-0002.internal.tilera.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-4k4D+9f+1rOX9vb6Ps6h"
+Date: Tue, 02 Nov 2010 11:35:08 +1100
+Message-ID: <1288658108.16790.13.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<snip>
-> +
-> +#ifdef CONFIG_40x
-> +#define SPRN_PID	0x3B1	/* Process ID */
-> +#else
-> +#define SPRN_PID	0x030	/* Process ID */
-> +#ifdef CONFIG_BOOKE
-> +#define SPRN_PID0	SPRN_PID/* Process ID Register 0 */
-> +#endif
-> +#endif
-> +
->  #define SPRN_CTR	0x009	/* Count Register */
->  #define SPRN_DSCR	0x11
-> +#define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
->  #define SPRN_CTRLF	0x088
->  #define SPRN_CTRLT	0x098
->  #define   CTRL_CT	0xc0000000	/* current thread */
-> diff --git a/arch/powerpc/include/asm/reg_booke.h
-> b/arch/powerpc/include/asm/reg_booke.h
-> index 667a498..5b0c781 100644
-> --- a/arch/powerpc/include/asm/reg_booke.h
-> +++ b/arch/powerpc/include/asm/reg_booke.h
-> @@ -150,8 +150,6 @@
->   * or IBM 40x.
->   */
->  #ifdef CONFIG_BOOKE
-> -#define SPRN_PID	0x030	/* Process ID */
-> -#define SPRN_PID0	SPRN_PID/* Process ID Register 0 */
->  #define SPRN_CSRR0	0x03A	/* Critical Save and Restore Register 0 */
->  #define SPRN_CSRR1	0x03B	/* Critical Save and Restore Register 1 */
->  #define SPRN_DEAR	0x03D	/* Data Error Address Register */
-> @@ -168,7 +166,6 @@
->  #define SPRN_TCR	0x154	/* Timer Control Register */
->  #endif /* Book E */
->  #ifdef CONFIG_40x
-> -#define SPRN_PID	0x3B1	/* Process ID */
->  #define SPRN_DBCR1	0x3BD	/* Debug Control Register 1 */		
->  #define SPRN_ESR	0x3D4	/* Exception Syndrome Register */
->  #define SPRN_DEAR	0x3D5	/* Data Error Address Register */
+
+--=-4k4D+9f+1rOX9vb6Ps6h
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2010-10-27 at 12:54 -0400, Chris Metcalf wrote:
+> The tile architecture uses this framework for our serial console,
+> and our users complain that the delay of up to two seconds feels like
+> the machine has gone non-responsive and is disturbing.  By contrast,
+> a delay of up to half a second feels like just the normal sort of
+> delay caused by swapping, network lag, etc. and is not noticeable.
+> The overhead is obviously not much greater.
+
+It's 4 times greater.
+
+We picked 2 seconds because it gave a reasonable trade off between
+responsiveness and load. I'm not convinced that half a second is a
+better number.
+
+cheers
 
 
-These PID changes should be in a separate patch.  They should be just a
-cleanup that this patch can depend on.
+--=-4k4D+9f+1rOX9vb6Ps6h
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Mikey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkzPXLwACgkQdSjSd0sB4dIPfwCdEiPhA3IsXqmoqmHBE/xKE7+3
+YhwAoJC4YPrHS49jyJVGY4EmgyF5GCyG
+=Fa+n
+-----END PGP SIGNATURE-----
+
+--=-4k4D+9f+1rOX9vb6Ps6h--
