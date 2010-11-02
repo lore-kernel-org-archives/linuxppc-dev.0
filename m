@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0DF1B70A9
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Nov 2010 09:32:16 +1100 (EST)
-Subject: Re: [PATCH v3] add icswx support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <28760.1288650181@neuling.org>
-References: <1287547340.14049.25.camel@flin.austin.ibm.com>
-	<28760.1288650181@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Nov 2010 09:31:58 +1100
-Message-ID: <1288650718.2147.20.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] iSeries: Remove unused mf_getSrcHistory function.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jesper Juhl <jj@chaosbits.net>
+In-Reply-To: <alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
+References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
+	<1288609842.10671.7.camel@concordia>
+	<20101102071025.2fe5e6ca.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1011012104050.12889@swampdragon.chaosbits.net>
+	<20101102082634.65342ce6.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-eOCPNPdZIoaSyHjGARJV"
+Date: Tue, 02 Nov 2010 11:20:50 +1100
+Message-ID: <1288657250.16790.4.camel@concordia>
 Mime-Version: 1.0
-Cc: tsenglin@us.ibm.com, linuxppc-dev@ozlabs.org,
-	"Tseng-Hui \(Frank\) Lin" <thlin@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-11-02 at 09:23 +1100, Michael Neuling wrote:
-> +EXPORT_SYMBOL(switch_cop);
-> +EXPORT_SYMBOL(use_cop);
-> +EXPORT_SYMBOL(drop_cop);
-> 
-> Please document how to use these. 
 
-Also, should these be _GPL ?
+--=-eOCPNPdZIoaSyHjGARJV
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Mon, 2010-11-01 at 22:20 +0100, Jesper Juhl wrote:
+> Hi Stephen,
+>=20
+> On Tue, 2 Nov 2010, Stephen Rothwell wrote:
+>=20
+> > On Mon, 1 Nov 2010 21:06:23 +0100 (CET) Jesper Juhl <jj@chaosbits.net> =
+wrote:
+> > >
+> > > Remove unused function 'mf_getSrcHistory' (that will never be used ev=
+er=20
+> > > according to Stephen Rothwell).
+> > >=20
+> > > Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+> >=20
+> > Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> >=20
+>=20
+> Ok, so if you are the (unofficial) iSeries maintainer and you don't merge=
+=20
+> the patch somewhere that'll eventually go up-stream, but just ACK it=20
+> (thank you for that btw), then where do I send it to get it merged?
+
+Here. ie. linuxppc-dev.
+
+But, while you're removing it you should remove the #if 0'ed callsite as
+well, see mf_src_proc_show() in that file. :)
+
+cheers
+
+--=-eOCPNPdZIoaSyHjGARJV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkzPWV8ACgkQdSjSd0sB4dI0NwCfTXSXao1Giw2lp56QfPOY6Q9J
+jR8AoJYnOXUTU4jBSlCFRJ9V6CMeIT5B
+=732g
+-----END PGP SIGNATURE-----
+
+--=-eOCPNPdZIoaSyHjGARJV--
