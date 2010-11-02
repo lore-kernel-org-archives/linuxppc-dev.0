@@ -1,21 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 04/39] arch/powerpc: Update WARN uses
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Joe Perches <joe@perches.com>
-In-Reply-To: <1288622509.366.237.camel@Joe-Laptop>
-References: <cover.1288471897.git.joe@perches.com>
-	<c6c46b5924e1cc9720d3ad76e6c11e982bd661e5.1288471898.git.joe@perches.com>
-	<1288609334.10671.4.camel@concordia>
-	<1288622509.366.237.camel@Joe-Laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-sIFNLzaSNVoEuZiTvuSW"
-Date: Tue, 02 Nov 2010 11:26:00 +1100
-Message-ID: <1288657560.16790.8.camel@concordia>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <mikey@neuling.org>
+Received: from localhost.localdomain (localhost [127.0.0.1])
+	by ozlabs.org (Postfix) with ESMTP id 536F7B70E6
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Nov 2010 11:27:31 +1100 (EST)
+To: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] add icswx support
+In-reply-to: <1287547340.14049.25.camel@flin.austin.ibm.com>
+References: <1287547340.14049.25.camel@flin.austin.ibm.com>
+From: Michael Neuling <mikey@neuling.org>
+Date: Tue, 02 Nov 2010 11:27:31 +1100
+Message-ID: <2390.1288657651@neuling.org>
+Cc: tsenglin@us.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---=-sIFNLzaSNVoEuZiTvuSW
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2010-11-01 at 07:41 -0700, Joe Perches wrote:
-> On Mon, 2010-11-01 at 22:02 +1100, Michael Ellerman wrote:
-> > On Sat, 2010-10-30 at 14:08 -0700, Joe Perches wrote:
-> > > Coalesce long formats.
-> > > Align arguments.
-> > > Add missing newlines.
-> > >=20
-> > > Signed-off-by: Joe Perches <joe@perches.com>
-> > > ---
-> > >  arch/powerpc/kernel/hw_breakpoint.c |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > >=20
-> > > diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kerne=
-l/hw_breakpoint.c
-> > > index 5ecd040..d7343a7 100644
-> > > --- a/arch/powerpc/kernel/hw_breakpoint.c
-> > > +++ b/arch/powerpc/kernel/hw_breakpoint.c
-> > > @@ -270,8 +270,8 @@ int __kprobes hw_breakpoint_handler(struct die_ar=
-gs *args)
-> > >  	 * message to let the user know about it.
-> > >  	 */
-> > >  	if (!stepped) {
-> > > -		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at "
-> > > -			"0x%lx will be disabled.", info->address);
-> > > +		WARN(1, "Unable to handle hardware breakpoint. Breakpoint at 0x%lx=
- will be disabled.\n",
-> > > +		     info->address);
-> >=20
-> > That appears to have done nothing other than turn a short line into one
-> > that is now > 80 columns.
->=20
-> Added '\n'.
-
-Right.
-
-> The series was done for a few reasons:
->=20
-> o to add missing newlines at the end of messages as was done here
-> o to convert a couple of misuses of WARN(msg) to WARN(1, msg)
-> o to remove KERN_ prefixes from WARN(test, KERN_<level> msg)
-
-All fair enough.
-
-> >  Is that the latest fad?
->=20
-> Pretty much.  Format coalescing is generally preferred for grep.
-
-Really? Grep doesn't work anyway because you have format specifiers, and
-although you can try and guess them .. good luck, 0x%lx, or 0x%llx, or
-%#lx or ..
-
-cheers
+<snip>
+> +
+> +#ifdef CONFIG_40x
+> +#define SPRN_PID	0x3B1	/* Process ID */
+> +#else
+> +#define SPRN_PID	0x030	/* Process ID */
+> +#ifdef CONFIG_BOOKE
+> +#define SPRN_PID0	SPRN_PID/* Process ID Register 0 */
+> +#endif
+> +#endif
+> +
+>  #define SPRN_CTR	0x009	/* Count Register */
+>  #define SPRN_DSCR	0x11
+> +#define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
+>  #define SPRN_CTRLF	0x088
+>  #define SPRN_CTRLT	0x098
+>  #define   CTRL_CT	0xc0000000	/* current thread */
+> diff --git a/arch/powerpc/include/asm/reg_booke.h
+> b/arch/powerpc/include/asm/reg_booke.h
+> index 667a498..5b0c781 100644
+> --- a/arch/powerpc/include/asm/reg_booke.h
+> +++ b/arch/powerpc/include/asm/reg_booke.h
+> @@ -150,8 +150,6 @@
+>   * or IBM 40x.
+>   */
+>  #ifdef CONFIG_BOOKE
+> -#define SPRN_PID	0x030	/* Process ID */
+> -#define SPRN_PID0	SPRN_PID/* Process ID Register 0 */
+>  #define SPRN_CSRR0	0x03A	/* Critical Save and Restore Register 0 */
+>  #define SPRN_CSRR1	0x03B	/* Critical Save and Restore Register 1 */
+>  #define SPRN_DEAR	0x03D	/* Data Error Address Register */
+> @@ -168,7 +166,6 @@
+>  #define SPRN_TCR	0x154	/* Timer Control Register */
+>  #endif /* Book E */
+>  #ifdef CONFIG_40x
+> -#define SPRN_PID	0x3B1	/* Process ID */
+>  #define SPRN_DBCR1	0x3BD	/* Debug Control Register 1 */		
+>  #define SPRN_ESR	0x3D4	/* Exception Syndrome Register */
+>  #define SPRN_DEAR	0x3D5	/* Data Error Address Register */
 
 
+These PID changes should be in a separate patch.  They should be just a
+cleanup that this patch can depend on.
 
---=-sIFNLzaSNVoEuZiTvuSW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkzPWpgACgkQdSjSd0sB4dJHNACgmeX6sZNCJlAmn/k61tOZJ/vQ
-uz0AoIh3vUaXs8/PATS6DpYUsQ2hTMAC
-=SOtd
------END PGP SIGNATURE-----
-
---=-sIFNLzaSNVoEuZiTvuSW--
+Mikey
