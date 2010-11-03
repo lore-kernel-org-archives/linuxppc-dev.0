@@ -1,20 +1,18 @@
-Return-Path: <fche@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 4143AB70E7
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Nov 2010 23:49:43 +1100 (EST)
-To: divya <dipraksh@linux.vnet.ibm.com>
-Subject: Re: Oops while running systemtap on the p6 machine against the kernel
-	version 2.6.36-rc7-git3
-References: <4CB704AC.4070203@linux.vnet.ibm.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Wed, 03 Nov 2010 08:49:39 -0400
-In-Reply-To: <4CB704AC.4070203@linux.vnet.ibm.com>
-	(dipraksh@linux.vnet.ibm.com's message of "Thu,
-	14 Oct 2010 18:55:00 +0530")
-Message-ID: <y0m8w1ah8rg.fsf@fche.csb>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, systemtap@sources.redhat.com
+Return-Path: <anton@samba.org>
+Date: Thu, 4 Nov 2010 00:34:44 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Patrick Finnegan <pat@computer-refuge.org>
+Subject: Re: Problem with Infiniband adapter on IBM p550
+Message-ID: <20101104003444.5fff5935@kryten>
+In-Reply-To: <201011022315.04291.pat@computer-refuge.org>
+References: <201010072324.33062.pat@computer-refuge.org>
+	<1286516470.2463.403.camel@pasglop>
+	<1286516749.2463.408.camel@pasglop>
+	<201011022315.04291.pat@computer-refuge.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +23,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-divya <dipraksh@linux.vnet.ibm.com> writes:
+Hi,
 
-> While running systemtap tests on the p6 machine , against the kernel version 2.6.36-rc7-git3
-> Oops occured , here are the call trace
->
->  BUG: spinlock bad magic on CPU#6, stapio/20398
-> -- 0:conmux-control -- time-stamp -- Oct/13/10  2:49:18 --res
->  lock: c000000000fcfa18, .magic: 00000000, .owner:<none>/-1, .owner_cpu: 0
-> [...]
+> > Now, I think this is the problem.
+> > 
+> > The "assigned-addresses" property seems to indicate that the
+> > firmware only assigned BAR 4 and didn't assign anything to the
+> > other ones.
+> > 
+> > I don't know why, but it definitely looks like a firmware bug to me.
+> > On those machines, PCI resource assignment is under hypervisor
+> > control and so Linux cannot re-assign missing resources itself.
+> > 
+> > I'll see if I can find a FW person to shed some light on this.
+> > 
+> > Can you provide me (privately maybe) with the FW version on the
+> > machine ?
+> 
+> Ben,
+> 
+> Have you found out anything more on this (firmware) bug?
 
-jistone committed some timing-related changes last night.  Would you
-mind trying a new build on your ppc box?
+Firmware has the concept of "super slots" which allow larger memory
+windows and TCE tables. Section 3.4.3 explains it:
 
-It seems as through there is a concurrency problem with the timer
-shutdown process.  If the problem still occurs, we might need to
-instrument that part of the kernel and/or runtime code to figure it
-out.
+http://www.redbooks.ibm.com/redpapers/pdfs/redp4095.pdf
 
-- FChE
+Anton
