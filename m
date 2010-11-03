@@ -3,8 +3,8 @@ Subject: Debugging kernel on mpc7448
 From: Cajus Pollmeier <cajus@naasa.net>
 To: Linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Nov 2010 16:03:36 +0100
-Message-ID: <1288796616.3609.50.camel@frost>
+Date: Wed, 03 Nov 2010 16:02:28 +0100
+Message-ID: <1288796548.3609.49.camel@frost>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
