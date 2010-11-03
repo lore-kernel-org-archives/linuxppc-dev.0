@@ -1,10 +1,18 @@
-Return-Path: <cajus@naasa.net>
+Return-Path: <pollmeier@gonicus.de>
+Received: from mail-1.ar.gonicus.de (mail-1.ar.gonicus.de [212.8.1.3])
+	by ozlabs.org (Postfix) with ESMTP id 8E2B81007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  4 Nov 2010 02:07:51 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail-1.ar.gonicus.de (Postfix) with ESMTP id 23AB7144622
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  3 Nov 2010 16:01:11 +0100 (CET)
 Subject: Debugging kernel on mpc7448
-From: Cajus Pollmeier <cajus@naasa.net>
+From: Cajus Pollmeier <pollmeier@gonicus.de>
 To: Linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Nov 2010 16:02:28 +0100
-Message-ID: <1288796548.3609.49.camel@frost>
+Date: Wed, 03 Nov 2010 16:01:07 +0100
+Message-ID: <1288796467.3609.46.camel@frost>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,7 +37,7 @@ offers a prompt
 
 The systems then hangs until the watchdog resets the board. In this
 early stage, I've no output to the serial console - which is the only
-way to see what's going on there without having a development board with
+way to see what's going on without having a development board with
 single step capabilities.
 
 To track it until early_init, I tried to place a stupid "blr" in
@@ -46,4 +54,4 @@ just returning 0U immediately. Hmm.
 Any pointers to help debugging would be really appreciated ;-)
 
 Cheers,
-Cajus 
+Cajus
