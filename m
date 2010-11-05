@@ -1,26 +1,14 @@
-Return-Path: <jj@chaosbits.net>
-Received: from swampdragon.chaosbits.net (swampdragon.chaosbits.net
-	[90.184.90.115]) by ozlabs.org (Postfix) with ESMTP id 8136AB70D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  5 Nov 2010 10:40:38 +1100 (EST)
-Date: Fri, 5 Nov 2010 00:29:40 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH v2] iSeries: Remove unused mf_getSrcHistory function and
-	caller.
-In-Reply-To: <1288657250.16790.4.camel@concordia>
-Message-ID: <alpine.LNX.2.00.1011050026220.16015@swampdragon.chaosbits.net>
-References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
-	<1288609842.10671.7.camel@concordia>
-	<20101102071025.2fe5e6ca.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1011012104050.12889@swampdragon.chaosbits.net>
-	<20101102082634.65342ce6.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
-	<1288657250.16790.4.camel@concordia>
+Return-Path: <Tiejun.Chen@windriver.com>
+Message-ID: <4CD36B01.3060602@windriver.com>
+Date: Fri, 05 Nov 2010 10:25:05 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Cajus Pollmeier <cajus@naasa.net>
+Subject: Re: Debugging kernel on mpc7448
+References: <1288796616.3609.50.camel@frost>
+In-Reply-To: <1288796616.3609.50.camel@frost>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,125 +18,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2 Nov 2010, Michael Ellerman wrote:
-
-> On Mon, 2010-11-01 at 22:20 +0100, Jesper Juhl wrote:
-> > Hi Stephen,
-> > 
-> > On Tue, 2 Nov 2010, Stephen Rothwell wrote:
-> > 
-> > > On Mon, 1 Nov 2010 21:06:23 +0100 (CET) Jesper Juhl <jj@chaosbits.net> wrote:
-> > > >
-> > > > Remove unused function 'mf_getSrcHistory' (that will never be used ever 
-> > > > according to Stephen Rothwell).
-> > > > 
-> > > > Signed-off-by: Jesper Juhl <jj@chaosbits.net>
-> > > 
-> > > Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > > 
-> > 
-> > Ok, so if you are the (unofficial) iSeries maintainer and you don't merge 
-> > the patch somewhere that'll eventually go up-stream, but just ACK it 
-> > (thank you for that btw), then where do I send it to get it merged?
+Cajus Pollmeier wrote:
+> Hello there,
 > 
-> Here. ie. linuxppc-dev.
+> I'm currently trying to get a kernel upgrade from 2.6.11 to 2.6.31
+> working with u-boot/cuImage.c2k on a custom marvell discovery 3 board.
+
+Are you sure if all device nodes information of c2k.dts are matched your actual
+board hardware? If no I think you have to add some fixup() to correct those
+'incorrect' device on the file, cuboot-c2k.c.
+
+> In the moment, the following steps work:
 > 
-> But, while you're removing it you should remove the #if 0'ed callsite as
-> well, see mf_src_proc_show() in that file. :)
+> * u-boot (1.1.4, not changeable in the moment) runs from flash and
+> offers a prompt
+> * loading cuImage.c2k
+> * running the code of wrapper.c until calling vmlinux.addr
+
+Did you see those message with uncompressing zImage? Maybe its convenient to
+help you for other guys if you can attach all boot log.
+
+> * entering __start in head_32.S and running until early_init gets called
 > 
-Done. See patch below.
+> The systems then hangs until the watchdog resets the board. In this
 
+Often the watchdog should be invoked when its associated driver initialization.
+So I wonder when the watchdog live.
 
-Remove unused function 'mf_getSrcHistory' (that will never be used 
-ever according to Stephen Rothwell) and also remove most of (under 'if 
-0') code from mf_src_proc_show() where the function was called.
+> early stage, I've no output to the serial console - which is the only
+> way to see what's going on there without having a development board with
+> single step capabilities.
+> 
+> To track it until early_init, I tried to place a stupid "blr" in
+> head_32.S, in order to get back to wrapper.c - which writes out a
+> message to the serial console in case the kernel "accidently" gets back
+> to it.
 
-Signed-off-by: Jesper Juhl <jj@chaosbits.net>
----
- mf.c |   62 
---------------------------------------------------------------
- 1 file changed, 62 deletions(-)
+Firstly I think you can lighten one LED to mask a flag for single step if there
+is one LED existed on your target :) That's a ugly way but also make the life
+easy sometimes.
 
-diff --git a/arch/powerpc/platforms/iseries/mf.c b/arch/powerpc/platforms/iseries/mf.c
-index 42d0a88..b5e026b 100644
---- a/arch/powerpc/platforms/iseries/mf.c
-+++ b/arch/powerpc/platforms/iseries/mf.c
-@@ -1045,71 +1045,9 @@ static const struct file_operations mf_side_proc_fops = {
- 	.write		= mf_side_proc_write,
- };
- 
--#if 0
--static void mf_getSrcHistory(char *buffer, int size)
--{
--	struct IplTypeReturnStuff return_stuff;
--	struct pending_event *ev = new_pending_event();
--	int rc = 0;
--	char *pages[4];
--
--	pages[0] = kmalloc(4096, GFP_ATOMIC);
--	pages[1] = kmalloc(4096, GFP_ATOMIC);
--	pages[2] = kmalloc(4096, GFP_ATOMIC);
--	pages[3] = kmalloc(4096, GFP_ATOMIC);
--	if ((ev == NULL) || (pages[0] == NULL) || (pages[1] == NULL)
--			 || (pages[2] == NULL) || (pages[3] == NULL))
--		return -ENOMEM;
--
--	return_stuff.xType = 0;
--	return_stuff.xRc = 0;
--	return_stuff.xDone = 0;
--	ev->event.hp_lp_event.xSubtype = 6;
--	ev->event.hp_lp_event.x.xSubtypeData =
--		subtype_data('M', 'F', 'V', 'I');
--	ev->event.data.vsp_cmd.xEvent = &return_stuff;
--	ev->event.data.vsp_cmd.cmd = 4;
--	ev->event.data.vsp_cmd.lp_index = HvLpConfig_getLpIndex();
--	ev->event.data.vsp_cmd.result_code = 0xFF;
--	ev->event.data.vsp_cmd.reserved = 0;
--	ev->event.data.vsp_cmd.sub_data.page[0] = iseries_hv_addr(pages[0]);
--	ev->event.data.vsp_cmd.sub_data.page[1] = iseries_hv_addr(pages[1]);
--	ev->event.data.vsp_cmd.sub_data.page[2] = iseries_hv_addr(pages[2]);
--	ev->event.data.vsp_cmd.sub_data.page[3] = iseries_hv_addr(pages[3]);
--	mb();
--	if (signal_event(ev) != 0)
--		return;
--
-- 	while (return_stuff.xDone != 1)
-- 		udelay(10);
-- 	if (return_stuff.xRc == 0)
-- 		memcpy(buffer, pages[0], size);
--	kfree(pages[0]);
--	kfree(pages[1]);
--	kfree(pages[2]);
--	kfree(pages[3]);
--}
--#endif
--
- static int mf_src_proc_show(struct seq_file *m, void *v)
- {
--#if 0
--	int len;
--
--	mf_getSrcHistory(page, count);
--	len = count;
--	len -= off;
--	if (len < count) {
--		*eof = 1;
--		if (len <= 0)
--			return 0;
--	} else
--		len = count;
--	*start = page + off;
--	return len;
--#else
- 	return 0;
--#endif
- }
- 
- static int mf_src_proc_open(struct inode *inode, struct file *file)
+And actually bootloader already initial UART so you can write some simple thing
+directly into that corresponding UART data register to hint where the kernel
+run. Note you can get this UART base address from bootloader, or the cuboot
+early stage.
 
+Tiejun
 
-
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+> 
+>>From now on, I'm not sure if early_init is properly called. The blr
+> after the call is either not reached or there's something going on which
+> is beyond my limited knowledge of ppc assembler. Maybe u-boot gets
+> overwritten, but the blr isn't even reached if I change early_init by
+> just returning 0U immediately. Hmm.
+> 
+> Any pointers to help debugging would be really appreciated ;-)
+> 
+> Cheers,
+> Cajus 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
