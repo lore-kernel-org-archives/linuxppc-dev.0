@@ -1,14 +1,19 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Message-ID: <4CD36B01.3060602@windriver.com>
-Date: Fri, 05 Nov 2010 10:25:05 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Cajus Pollmeier <cajus@naasa.net>
-Subject: Re: Debugging kernel on mpc7448
-References: <1288796616.3609.50.camel@frost>
-In-Reply-To: <1288796616.3609.50.camel@frost>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linuxppc-dev@lists.ozlabs.org
+Return-Path: <joe@perches.com>
+From: Joe Perches <joe@perches.com>
+To: Jiri Kosina <trivial@kernel.org>
+Subject: [PATCH 03/49] arch/powerpc: Use vzalloc
+Date: Thu,  4 Nov 2010 20:07:27 -0700
+Message-Id: <5da00d7f95b5c7a96fbfa8420f5e3a8ef33e01e6.1288925424.git.joe@perches.com>
+In-Reply-To: <alpine.DEB.2.00.1011031108260.11625@router.home>
+References: <alpine.DEB.2.00.1011031108260.11625@router.home>
+In-Reply-To: <cover.1288925424.git.joe@perches.com>
+References: <cover.1288925424.git.joe@perches.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>, Marcelo Tosatti <mtosatti@redhat.com>,
+	Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+	Avi Kivity <avi@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,68 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cajus Pollmeier wrote:
-> Hello there,
-> 
-> I'm currently trying to get a kernel upgrade from 2.6.11 to 2.6.31
-> working with u-boot/cuImage.c2k on a custom marvell discovery 3 board.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/powerpc/kvm/book3s.c                       |    6 ++----
+ arch/powerpc/platforms/cell/spufs/lscsa_alloc.c |    3 +--
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-Are you sure if all device nodes information of c2k.dts are matched your actual
-board hardware? If no I think you have to add some fixup() to correct those
-'incorrect' device on the file, cuboot-c2k.c.
-
-> In the moment, the following steps work:
-> 
-> * u-boot (1.1.4, not changeable in the moment) runs from flash and
-> offers a prompt
-> * loading cuImage.c2k
-> * running the code of wrapper.c until calling vmlinux.addr
-
-Did you see those message with uncompressing zImage? Maybe its convenient to
-help you for other guys if you can attach all boot log.
-
-> * entering __start in head_32.S and running until early_init gets called
-> 
-> The systems then hangs until the watchdog resets the board. In this
-
-Often the watchdog should be invoked when its associated driver initialization.
-So I wonder when the watchdog live.
-
-> early stage, I've no output to the serial console - which is the only
-> way to see what's going on there without having a development board with
-> single step capabilities.
-> 
-> To track it until early_init, I tried to place a stupid "blr" in
-> head_32.S, in order to get back to wrapper.c - which writes out a
-> message to the serial console in case the kernel "accidently" gets back
-> to it.
-
-Firstly I think you can lighten one LED to mask a flag for single step if there
-is one LED existed on your target :) That's a ugly way but also make the life
-easy sometimes.
-
-And actually bootloader already initial UART so you can write some simple thing
-directly into that corresponding UART data register to hint where the kernel
-run. Note you can get this UART base address from bootloader, or the cuboot
-early stage.
-
-Tiejun
-
-> 
->>From now on, I'm not sure if early_init is properly called. The blr
-> after the call is either not reached or there's something going on which
-> is beyond my limited knowledge of ppc assembler. Maybe u-boot gets
-> overwritten, but the blr isn't even reached if I change early_init by
-> just returning 0U immediately. Hmm.
-> 
-> Any pointers to help debugging would be really appreciated ;-)
-> 
-> Cheers,
-> Cajus 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index e316847..4275463 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -1307,13 +1307,11 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	int err = -ENOMEM;
+ 	unsigned long p;
+ 
+-	vcpu_book3s = vmalloc(sizeof(struct kvmppc_vcpu_book3s));
++	vcpu_book3s = vzalloc(sizeof(struct kvmppc_vcpu_book3s));
+ 	if (!vcpu_book3s)
+ 		goto out;
+ 
+-	memset(vcpu_book3s, 0, sizeof(struct kvmppc_vcpu_book3s));
+-
+-	vcpu_book3s->shadow_vcpu = (struct kvmppc_book3s_shadow_vcpu *)
++	vcpu_book3s->shadow_vcpu =
+ 		kzalloc(sizeof(*vcpu_book3s->shadow_vcpu), GFP_KERNEL);
+ 	if (!vcpu_book3s->shadow_vcpu)
+ 		goto free_vcpu;
+diff --git a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
+index a101abf..3b894f5 100644
+--- a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
++++ b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
+@@ -36,10 +36,9 @@ static int spu_alloc_lscsa_std(struct spu_state *csa)
+ 	struct spu_lscsa *lscsa;
+ 	unsigned char *p;
+ 
+-	lscsa = vmalloc(sizeof(struct spu_lscsa));
++	lscsa = vzalloc(sizeof(struct spu_lscsa));
+ 	if (!lscsa)
+ 		return -ENOMEM;
+-	memset(lscsa, 0, sizeof(struct spu_lscsa));
+ 	csa->lscsa = lscsa;
+ 
+ 	/* Set LS pages reserved to allow for user-space mapping. */
+-- 
+1.7.3.1.g432b3.dirty
