@@ -1,11 +1,21 @@
-Return-Path: <diggskevin38@gmail.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0A34FB6F07
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Nov 2010 04:33:11 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id 87AAF2597BE
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Nov 2010 18:33:07 +0100 (CET)
+In-Reply-To: <OF385C74E5.E81887CB-ONC12577D5.00527686-C12577D5.0052E6B5@transmode.se>
+References: <OF385C74E5.E81887CB-ONC12577D5.00527686-C12577D5.0052E6B5@transmode.se>
+Subject: Re: INFO: task snmpd:398 blocked for more than 120 seconds.
+Message-ID: <OF5A1033A2.48B05F1F-ONC12577D5.00605774-C12577D5.00606A22@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 8 Nov 2010 18:33:06 +0100
 MIME-Version: 1.0
-Date: Mon, 8 Nov 2010 10:43:19 -0600
-Message-ID: <AANLkTiksY8x7XOifU3FAAPpCa_h4oEBmqu_a0vjRE5h5@mail.gmail.com>
-Subject: PowerMac8600 help ...
-From: kevin diggs <diggskevin38@gmail.com>
-To: Linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,49 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-Sorry for the noise but I am having trouble getting the latest kernel
-built for a PowerMac8600 with a 750GX processor card. If this is not
-an appropriate topic for the list please tell me (and hopefully point
-me in the correct direction).
 
-I have narrowed the problem down to the compiler. YDL 4.0 is installed
-on the machine. The stock compiler is 3.3.3. That version can NOT
-build past 2.6.28. I built 3.4.6, (the latest 3 series I could find).
-It can NOT build later kernel versions either. It can build Firefox
-2.0.0.15pre, including powerpc thin lock support. Running it now.
+linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org wrote on 2010/11/08 16:05:30:
 
-I then tried 4.3.5. This will build the kernel. But the resulting
-kernel will NOT run. A firefox built with 4.3.5 also will not run. Or
-if it runs it crashes often (http://abcnews.com).
+> From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+> To: linuxppc-dev@ozlabs.org
+> Date: 2010/11/08 16:12
+> Subject: INFO: task snmpd:398 blocked for more than 120 seconds.
+> Sent by: linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org
+>
+>
+> I can't make out what is causing this hang every now an then:
+>
+> INFO: task snmpd:398 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> snmpd         D 0fad1760     0   398      1 0x00000000
+> Call Trace:
+> [c7b5fc70] [c7a49a80] 0xc7a49a80 (unreliable)
+> [c7b5fd30] [c0008608] __switch_to+0x4c/0x6c
+> [c7b5fd40] [c028fed4] schedule+0x184/0x310
+> [c7b5fd70] [c0290e5c] __mutex_lock_slowpath+0xa4/0x150
+> [c7b5fdb0] [c0290c50] mutex_lock+0x44/0x48
+> [c7b5fdc0] [c01eb5b0] rtnl_lock+0x18/0x28
+> [c7b5fdd0] [c01df6c4] dev_ioctl+0x2b4/0x764
+> [c7b5fe60] [c01cafc8] sock_ioctl+0x18c/0x2a0
+> [c7b5fe80] [c009a16c] vfs_ioctl+0xcc/0xe0
+> [c7b5fea0] [c009a998] do_vfs_ioctl+0xc4/0x79c
+> [c7b5ff10] [c009b0b0] sys_ioctl+0x40/0x74
+> [c7b5ff40] [c00117c4] ret_from_syscall+0x0/0x38
+>
+> The dev_ioctl is in SIOCGIFCONF:
+> int dev_ioctl(struct net *net, unsigned int cmd, void __user *arg)
+> {
+>    struct ifreq ifr;
+>    int ret;
+>    char *colon;
+>
+>    /* One special case: SIOCGIFCONF takes ifconf argument
+>       and requires shared lock, because it sleeps writing
+>       to user space.
+>     */
+>
+>    if (cmd == SIOCGIFCONF) {
+>       rtnl_lock();
+>       ret = dev_ifconf(net, (char __user *) arg);
+>       rtnl_unlock();
+>       return ret;
+>    }
+>
+> Any ideas? Kernel is 2.6.35
 
-What really puzzles me is I used the same basic compiler boot
-strapping (3.3.3 to build 3.4.6, 3.4.6 to build 4.3.5) on a GiGE. That
-machine is now running 2.6.36.
+I tried PROVE_LOCKING but now my kernel doesn't boot at all :)
 
-The CFLAGS used were:  "-O2 -mcpu=7450 -mmultiple -mstring" for the
-GiGE (dual 7455s). Substitute 750 for the 8600.
+Something goes very wrong in arch/powerpc/kernel/prom.c:694
+694		memblock_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
 
-Any suggestions would be appreciated.
+(gdb) print klimit
+$8 = 0xc08c9000
 
-Thanks!
+What is klimit and can I do something about it?
 
-kevin
-
-P.S.:  Why does this program work:
-
-int main(int argc, char *argv[])
-{
-unsigned int pvr;
-
-//      asm("mfspr %0,22\n"
-        asm("mfspr %0,287\n"
-                :"=r" (pvr)
-        );
-
-        printf("pvr is 0x%x\n",pvr);
-}
-
->From what I have read, access to the pvr is restricted? strace does
-not show an illegal instruction trap for SPRN_PVR.
+kernel 2.6.35 on a mpc8321
