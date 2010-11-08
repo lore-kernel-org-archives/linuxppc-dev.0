@@ -1,18 +1,23 @@
-Return-Path: <nst@gersys.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 2D6B1B7105
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Nov 2010 00:25:50 +1100 (EST)
-Message-ID: <4CD7FA5A.6020709@gersys.de>
-Date: Mon, 08 Nov 2010 14:25:46 +0100
-From: Stefan Strobl <nst@gersys.de>
-MIME-Version: 1.0
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Subject: Re: Problem Ethernet Initialization MPC5200 +  LXT971A
-References: <4CD431B4.7060405@gersys.de> <4CD7C802.8020908@windriver.com>
-In-Reply-To: <4CD7C802.8020908@windriver.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 0C35CB70F4
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Nov 2010 01:24:38 +1100 (EST)
+Received: from hrndva-omtalb.mail.rr.com ([10.128.143.52])
+	by hrndva-qmta01.mail.rr.com with ESMTP
+	id <20101108141945848.EXNX7732@hrndva-qmta01.mail.rr.com>
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Nov 2010 14:19:45 +0000
+Subject: Re: [PATCH] powerpc: Add jump label support
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <45fbc3cd7f6ce404d1e25bf01695fb629d86189d.1289189560.git.michael@ellerman.id.au>
+References: <45fbc3cd7f6ce404d1e25bf01695fb629d86189d.1289189560.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Mon, 08 Nov 2010 09:18:35 -0500
+Message-ID: <1289225915.12418.2.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Kumar Gala <kumar.gala@freescale.com>, linux-kernel@vger.kernel.org, "David
+	S.Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Anton Blanchard <anton@samba.org>, jbaron@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tiejun
+On Mon, 2010-11-08 at 15:12 +1100, Michael Ellerman wrote:
+> This patch adds support for the new "jump label" feature.
 
-tiejun.chen wrote:
-> Stefan Strobl wrote:
->> To workaround I could make u-boot run eth_init() always but that doesn't
->> seem the right approach to this.
+Darn it! I wanted to port this!!!
+
+;-)
+
 > 
-> Yes. Often we shouldn't depend the bootloader do this when we use NIC. But its
-> worth tracking eth_init in detail to check what are missed for Linux. I guest
-> those should be dedicated to the hardware. For example, configuring
-> multiplex-pin, or reset PHY before the real operation action and so on.
+> Built for 64 & 32 bit, tested on 64 bit. Survives a kernel build under
+> perf with all tracepoints enabled, and manual inspection of the patched
+> code looks right. But still, lightly tested, YMMV.
 > 
+> Unlike x86 and sparc we just merrily patch the code with no locks etc,
+> as far as I know this is safe, but I'm not really sure what the x86/sparc
+> code is protecting against so maybe it's not.
 
-You're right! It was a wrong Port Multiplex Configuration.
+Thanks, I'll give it a test on my electra as soon as I get a gcc 4.5.1
+cross compiler working.
 
-I think it's fair to expect the bootloader to do that bit of setup,
-since it's very hardware dependent. All I did was to adapt my
-CONFIG_SYS_GPS_PORT_CONFIG in u-boot.
-
-Many thanks
-Stefan.
+-- Steve
