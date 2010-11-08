@@ -1,21 +1,16 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7B36DB70F4
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 596ACB70FF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Nov 2010 20:47:37 +1100 (EST)
-Message-ID: <4CD7C802.8020908@windriver.com>
-Date: Mon, 08 Nov 2010 17:50:58 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Stefan Strobl <nst@gersys.de>
-Subject: Re: Problem Ethernet Initialization MPC5200 +  LXT971A
-References: <4CD431B4.7060405@gersys.de>
-In-Reply-To: <4CD431B4.7060405@gersys.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon,  8 Nov 2010 21:32:31 +1100 (EST)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+	Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH] ucc_geth: Fix hung tasks.
+Date: Mon, 8 Nov 2010 11:23:39 +0100
+Message-Id: <1289211819-21746-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,60 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stefan Strobl wrote:
-> Hi
-> 
-> I'm having a Problem with the Initialization of my Ethernet PHY
-> (FEC_MPC5200 + LXT971A Phy). I'm using latest U-Boot and Linux 2.6.37
-> from Denx.
-> 
-> Once in Linux I can ping my own IP-Address but not any other device in
-> my network. The Link LED is on when connected to the network but when
-> pinging some other device nothing is being transmitted (Traffic LED is
-> off).
-> 
-> If - before booting - I'm using any network command under U-Boot (which
-> is calling eth_init()), the interface works fine after that under Linux
-> also!
-> In that case the kernel prints the line:
->      PHY: f003000:00 - Link is Up - 100/Full
+We noticed a few hangs like this:
 
-Can you probe PHY successfully when failed?
+INFO: task ifconfig:572 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ifconfig      D 0ff65760     0   572    369 0x00000000
+Call Trace:
+[c6157be0] [c6008460] 0xc6008460 (unreliable)
+[c6157ca0] [c0008608] __switch_to+0x4c/0x6c
+[c6157cb0] [c028fecc] schedule+0x184/0x310
+[c6157ce0] [c0290e54] __mutex_lock_slowpath+0xa4/0x150
+[c6157d20] [c0290c48] mutex_lock+0x44/0x48
+[c6157d30] [c01aba74] phy_stop+0x20/0x70
+[c6157d40] [c01aef40] ucc_geth_stop+0x30/0x98
+[c6157d60] [c01b18fc] ucc_geth_close+0x9c/0xdc
+[c6157d80] [c01db0cc] __dev_close+0xa0/0xd0
+[c6157d90] [c01deddc] __dev_change_flags+0x8c/0x148
+[c6157db0] [c01def54] dev_change_flags+0x1c/0x64
+[c6157dd0] [c0237ac8] devinet_ioctl+0x678/0x784
+[c6157e50] [c0239a58] inet_ioctl+0xb0/0xbc
+[c6157e60] [c01cafa8] sock_ioctl+0x174/0x2a0
+[c6157e80] [c009a16c] vfs_ioctl+0xcc/0xe0
+[c6157ea0] [c009a998] do_vfs_ioctl+0xc4/0x79c
+[c6157f10] [c009b0b0] sys_ioctl+0x40/0x74
+[c6157f40] [c00117c4] ret_from_syscall+0x0/0x38
 
-> 
-> So I'm not sure whether the Linux driver does not initialize the PHY
-> correctly or whether I should be running a command under Linux that
-> makes the interface work. I've played around with ifconfig but that
-> didn't get me any further.
-> 
-> Under sysfs I can see that the MAC address is assigned correctly but:
-> carrier = 0    (should be 1)
-> duplex = half    (should be full)
-> operstate = down
-> speed = 10    (should be 100)
-> 
+I THINK this is due to a missing cancel_work_sync in the driver
+although we cannot be sure. I found this by comparing
+ucc_geth with gianfar.
 
-Can you use 'ethtool' utility to access/control that? If no please check how you
-access PHY by MII bus? I doubts some multiplex PIN should be configured when you
-operate PHY.
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+---
+ drivers/net/ucc_geth.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> To workaround I could make u-boot run eth_init() always but that doesn't
-> seem the right approach to this.
-
-Yes. Often we shouldn't depend the bootloader do this when we use NIC. But its
-worth tracking eth_init in detail to check what are missed for Linux. I guest
-those should be dedicated to the hardware. For example, configuring
-multiplex-pin, or reset PHY before the real operation action and so on.
-
-Tiejun
-
-> 
-> Any ideas?
-> 
-> Many Thanks,
-> Stefan.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 97f9f7d..6647ed7 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3556,6 +3556,7 @@ static int ucc_geth_close(struct net_device *dev)
+ 
+ 	napi_disable(&ugeth->napi);
+ 
++	cancel_work_sync(&ugeth->timeout_work);
+ 	ucc_geth_stop(ugeth);
+ 
+ 	free_irq(ugeth->ug_info->uf_info.irq, ugeth->ndev);
+-- 
+1.7.2.2
