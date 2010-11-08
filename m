@@ -1,22 +1,33 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <nacc@us.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D6D94B7108
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Nov 2010 05:22:27 +1100 (EST)
-Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
-	by gw1.transmode.se (Postfix) with ESMTP id 10A4A2597BE
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Nov 2010 19:22:24 +0100 (CET)
-In-Reply-To: <OF5A1033A2.48B05F1F-ONC12577D5.00605774-C12577D5.00606A22@transmode.se>
-References: <OF385C74E5.E81887CB-ONC12577D5.00527686-C12577D5.0052E6B5@transmode.se>
-	<OF5A1033A2.48B05F1F-ONC12577D5.00605774-C12577D5.00606A22@transmode.se>
-Subject: Re: INFO: task snmpd:398 blocked for more than 120 seconds.
-Message-ID: <OF842B4241.74D0E305-ONC12577D5.00649397-C12577D5.0064ED20@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 8 Nov 2010 19:22:23 +0100
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DD56DB710A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  9 Nov 2010 06:43:04 +1100 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oA8JQTew016875
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Nov 2010 14:26:29 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oA8JgxvX324272
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Nov 2010 14:42:59 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oA8Jgw4U002108
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Nov 2010 14:42:59 -0500
+Date: Mon, 8 Nov 2010 11:42:55 -0800
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: sonnyrao@us.ibm.com, miltonm@bga.com,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 0/7 v2] ppc: enable dynamic dma window support
+Message-ID: <20101108194255.GA3113@us.ibm.com>
+References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
-> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org wrote on 2010/11/08 16:05:30:
->
-> > From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-> > To: linuxppc-dev@ozlabs.org
-> > Date: 2010/11/08 16:12
-> > Subject: INFO: task snmpd:398 blocked for more than 120 seconds.
-> > Sent by: linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org
-> >
-> >
-> > I can't make out what is causing this hang every now an then:
-> >
-> > INFO: task snmpd:398 blocked for more than 120 seconds.
-> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > snmpd         D 0fad1760     0   398      1 0x00000000
-> > Call Trace:
-> > [c7b5fc70] [c7a49a80] 0xc7a49a80 (unreliable)
-> > [c7b5fd30] [c0008608] __switch_to+0x4c/0x6c
-> > [c7b5fd40] [c028fed4] schedule+0x184/0x310
-> > [c7b5fd70] [c0290e5c] __mutex_lock_slowpath+0xa4/0x150
-> > [c7b5fdb0] [c0290c50] mutex_lock+0x44/0x48
-> > [c7b5fdc0] [c01eb5b0] rtnl_lock+0x18/0x28
-> > [c7b5fdd0] [c01df6c4] dev_ioctl+0x2b4/0x764
-> > [c7b5fe60] [c01cafc8] sock_ioctl+0x18c/0x2a0
-> > [c7b5fe80] [c009a16c] vfs_ioctl+0xcc/0xe0
-> > [c7b5fea0] [c009a998] do_vfs_ioctl+0xc4/0x79c
-> > [c7b5ff10] [c009b0b0] sys_ioctl+0x40/0x74
-> > [c7b5ff40] [c00117c4] ret_from_syscall+0x0/0x38
-> >
-> > The dev_ioctl is in SIOCGIFCONF:
-> > int dev_ioctl(struct net *net, unsigned int cmd, void __user *arg)
-> > {
-> >    struct ifreq ifr;
-> >    int ret;
-> >    char *colon;
-> >
-> >    /* One special case: SIOCGIFCONF takes ifconf argument
-> >       and requires shared lock, because it sleeps writing
-> >       to user space.
-> >     */
-> >
-> >    if (cmd == SIOCGIFCONF) {
-> >       rtnl_lock();
-> >       ret = dev_ifconf(net, (char __user *) arg);
-> >       rtnl_unlock();
-> >       return ret;
-> >    }
-> >
-> > Any ideas? Kernel is 2.6.35
->
-> I tried PROVE_LOCKING but now my kernel doesn't boot at all :)
->
-> Something goes very wrong in arch/powerpc/kernel/prom.c:694
-> 694      memblock_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
->
-> (gdb) print klimit
-> $8 = 0xc08c9000
->
-> What is klimit and can I do something about it?
->
-> kernel 2.6.35 on a mpc8321
+Hi all,
 
-That was not quite right, turns out that early_init_devtree(*params)
-points to a memory that has been zeroed:
-print initial_boot_params
-$3 = (struct boot_param_header *) 0xc07fa000
+On 26.10.2010 [20:35:10 -0700], Nishanth Aravamudan wrote:
+> The following series, which builds upon the series of cleanups I posted
+> on 9/15 and 10/18 as "ppc iommu cleanups", enables the pseries firmware
+> feature dynamic dma windows. This feature will allow future devices to
+> have a 64-bit DMA mapping covering all memory, coexisting with a smaller
+> IOMMU window in 32-bit PCI space
 
-Above matches what u-boot writes:
-Booting kernel from Legacy Image at 00200000 ...
-   Image Name:   oskernel02a:p1a:99
-   Created:      2010-11-08  18:09:28 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1898430 Bytes =  1.8 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## Flattened Device Tree blob at 07fdebb0
-   Booting using the fdt blob at 0x7fdebb0
-   Uncompressing Kernel Image ... OK
-   Loading Device Tree to 007fa000, end 007ff327 ... OK
+Was ping'ing on this changeset. If there are no objections, I will
+repost it without the RFC tag asking Ben to merge it.
 
-(gdb) print *initial_boot_params
-$4 = {magic = 0x0, totalsize = 0x0, off_dt_struct = 0x0, off_dt_strings = 0x0,
-  off_mem_rsvmap = 0x0, version = 0x0, last_comp_version = 0x0,
-  boot_cpuid_phys = 0x0, dt_strings_size = 0x0, dt_struct_size = 0x0}
+Thanks,
+Nish
 
- Jocke
+> Changes from v1 to v2:
+> 
+> Fixed numerous bugs/issues found in testing.
+> Reworked to be based off platform hook dma_set_mask().
+> 
+> Nishanth Aravamudan (7):
+>   macio: ensure all dma routines get copied over
+>   ppc: add memory_hotplug_max
+>   ppc: do not search for dma-window property on dlpar remove
+>   ppc: checking for pdn->parent is redundant
+>   ppc/iommu: do not need to check for dma_window == NULL
+>   ppc/iommu: pass phb only to iommu_table_setparms_lpar
+>   ppc: add dynamic dma window support
+> 
+>  arch/powerpc/include/asm/device.h      |    6 +
+>  arch/powerpc/include/asm/mmzone.h      |    5 +
+>  arch/powerpc/mm/numa.c                 |   26 ++
+>  arch/powerpc/platforms/pseries/iommu.c |  600 ++++++++++++++++++++++++++++++--
+>  drivers/macintosh/macio_asic.c         |    7 +-
+>  5 files changed, 619 insertions(+), 25 deletions(-)
+> 
+> 
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
