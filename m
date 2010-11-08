@@ -1,12 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <45fbc3cd7f6ce404d1e25bf01695fb629d86189d.1289189560.git.michael@ellerman.id.au>
+Message-Id: <5d62a2e5418155ab3108dec454e36ec4a5b14bfb.1289190144.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Add jump label support
-Date: Mon,  8 Nov 2010 15:12:46 +1100 (EST)
-Cc: jbaron@redhat.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	"David S. Miller" <davem@davemloft.net>, Anton Blanchard <anton@samba.org>,
-	Kumar Gala <kumar.gala@freescale.com>
+Subject: [PATCH] powerpc: Ensure the else case of feature sections will fit
+Date: Mon,  8 Nov 2010 15:22:29 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,131 +13,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for the new "jump label" feature.
+When we create an alternative feature section, the else case must be the
+same size or smaller than the body. This is because when we patch the
+else case in we just overwrite the body, so there must be room.
 
-Built for 64 & 32 bit, tested on 64 bit. Survives a kernel build under
-perf with all tracepoints enabled, and manual inspection of the patched
-code looks right. But still, lightly tested, YMMV.
+Up to now we just did this by inspection, but it's quite easy to enforce
+it in the assembler, so we should.
 
-Unlike x86 and sparc we just merrily patch the code with no locks etc,
-as far as I know this is safe, but I'm not really sure what the x86/sparc
-code is protecting against so maybe it's not.
+The only change is to add the ifgt block, but that effects the alignment
+of the tabs and so the whole macro is modified.
 
-I also don't see any reason for us to implement the poke_early() routine,
-even though sparc does.
+Also add a test, but #if 0 it because we don't want to break the build.
+Anyone who's modifying the feature macros should enable the test.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/Kconfig                  |    1 +
- arch/powerpc/include/asm/jump_label.h |   46 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/Makefile          |    1 +
- arch/powerpc/kernel/jump_label.c      |   23 ++++++++++++++++
- 4 files changed, 71 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/feature-fixups.h |   27 +++++++++++++++------------
+ arch/powerpc/lib/feature-fixups-test.S    |   19 +++++++++++++++++++
+ 2 files changed, 34 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b644719..301c5b7 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -136,6 +136,7 @@ config PPC
- 	select HAVE_PERF_EVENTS
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
-+	select HAVE_ARCH_JUMP_LABEL
+diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
+index 96a7d06..921a847 100644
+--- a/arch/powerpc/include/asm/feature-fixups.h
++++ b/arch/powerpc/include/asm/feature-fixups.h
+@@ -37,18 +37,21 @@ label##2:						\
+ 	.align 2;					\
+ label##3:
  
- config EARLY_PRINTK
- 	bool
-diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
-new file mode 100644
-index 0000000..feffb86
---- /dev/null
-+++ b/arch/powerpc/include/asm/jump_label.h
-@@ -0,0 +1,46 @@
-+#ifndef _ASM_POWERPC_JUMP_LABEL_H
-+#define _ASM_POWERPC_JUMP_LABEL_H
-+
-+/*
-+ * Copyright 2010 Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
+-#define MAKE_FTR_SECTION_ENTRY(msk, val, label, sect)	\
+-label##4:						\
+-	.popsection;					\
+-	.pushsection sect,"a";				\
+-	.align 3;					\
+-label##5:					       	\
+-	FTR_ENTRY_LONG msk;				\
+-	FTR_ENTRY_LONG val;				\
+-	FTR_ENTRY_OFFSET label##1b-label##5b;		\
+-	FTR_ENTRY_OFFSET label##2b-label##5b;	 	\
+-	FTR_ENTRY_OFFSET label##3b-label##5b;		\
+-	FTR_ENTRY_OFFSET label##4b-label##5b;	 	\
++#define MAKE_FTR_SECTION_ENTRY(msk, val, label, sect)		\
++label##4:							\
++	.popsection;						\
++	.pushsection sect,"a";					\
++	.align 3;						\
++label##5:							\
++	FTR_ENTRY_LONG msk;					\
++	FTR_ENTRY_LONG val;					\
++	FTR_ENTRY_OFFSET label##1b-label##5b;			\
++	FTR_ENTRY_OFFSET label##2b-label##5b;			\
++	FTR_ENTRY_OFFSET label##3b-label##5b;			\
++	FTR_ENTRY_OFFSET label##4b-label##5b;			\
++	.ifgt (label##4b-label##3b)-(label##2b-label##1b);	\
++	.error "Feature section else case larger than body";	\
++	.endif;							\
+ 	.popsection;
+ 
+ 
+diff --git a/arch/powerpc/lib/feature-fixups-test.S b/arch/powerpc/lib/feature-fixups-test.S
+index cb73748..f461311 100644
+--- a/arch/powerpc/lib/feature-fixups-test.S
++++ b/arch/powerpc/lib/feature-fixups-test.S
+@@ -172,6 +172,25 @@ globl(ftr_fixup_test6_expected)
+ 3:	or	3,3,3
+ 
+ 
++#if 0
++/* Test that if we have a larger else case the assembler spots it and
++ * reports an error. #if 0'ed so as not to break the build normally.
 + */
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/types.h>
-+#include <asm/feature-fixups.h>
-+
-+#define JUMP_ENTRY_TYPE	stringify_in_c(FTR_ENTRY_LONG)
-+
-+#define JUMP_LABEL_NOP_SIZE 4
-+
-+#define JUMP_LABEL(key, label)					\
-+do {								\
-+	asm goto("1:\n\t"					\
-+		 "nop\n\t"					\
-+		 ".pushsection __jump_table,  \"a\"\n\t"	\
-+		 JUMP_ENTRY_TYPE "1b, %l[" #label "], %c0\n\t"	\
-+		 ".popsection \n\t"				\
-+		 : :  "i" (key) :  : label);			\
-+} while (0)
-+
-+#ifdef CONFIG_PPC64
-+typedef u64 jump_label_t;
-+#else
-+typedef u32 jump_label_t;
++ftr_fixup_test7:
++	or	1,1,1
++BEGIN_FTR_SECTION
++	or	2,2,2
++	or	2,2,2
++	or	2,2,2
++FTR_SECTION_ELSE
++	or	3,3,3
++	or	3,3,3
++	or	3,3,3
++	or	3,3,3
++ALT_FTR_SECTION_END(0, 1)
++	or	1,1,1
 +#endif
 +
-+struct jump_entry {
-+	jump_label_t code;
-+	jump_label_t target;
-+	jump_label_t key;
-+};
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_POWERPC_JUMP_LABEL_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 36c30f3..315e933 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -71,6 +71,7 @@ obj-$(CONFIG_MODULES)		+= module.o module_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_44x)		+= cpu_setup_44x.o
- obj-$(CONFIG_PPC_FSL_BOOK3E)	+= cpu_setup_fsl_booke.o dbell.o
- obj-$(CONFIG_PPC_BOOK3E_64)	+= dbell.o
-+obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
- 
- extra-y				:= head_$(CONFIG_WORD_SIZE).o
- extra-$(CONFIG_PPC_BOOK3E_32)	:= head_new_booke.o
-diff --git a/arch/powerpc/kernel/jump_label.c b/arch/powerpc/kernel/jump_label.c
-new file mode 100644
-index 0000000..368d158
---- /dev/null
-+++ b/arch/powerpc/kernel/jump_label.c
-@@ -0,0 +1,23 @@
-+/*
-+ * Copyright 2010 Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/jump_label.h>
-+#include <asm/code-patching.h>
-+
-+void arch_jump_label_transform(struct jump_entry *entry,
-+			       enum jump_label_type type)
-+{
-+	u32 *addr = (u32 *)(unsigned long)entry->code;
-+
-+	if (type == JUMP_LABEL_ENABLE)
-+		patch_branch(addr, entry->target, 0);
-+	else
-+		patch_instruction(addr, PPC_INST_NOP);
-+}
+ #define	MAKE_MACRO_TEST(TYPE)						\
+ globl(ftr_fixup_test_ ##TYPE##_macros)					\
+ 	or	1,1,1;							\
 -- 
 1.7.1
