@@ -1,23 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add jump label support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1289274119.12418.79.camel@gandalf.stny.rr.com>
-References: <45fbc3cd7f6ce404d1e25bf01695fb629d86189d.1289189560.git.michael@ellerman.id.au>
-	<20101109133517.b6be28bf.sfr@canb.auug.org.au>
-	<1289273608.21111.194.camel@concordia>
-	<1289274119.12418.79.camel@gandalf.stny.rr.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-IkgJDMo06ESIiYhjjcHt"
-Date: Tue, 09 Nov 2010 15:02:56 +1100
-Message-ID: <1289275376.21111.227.camel@concordia>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Kumar Gala <kumar.gala@freescale.com>, jbaron@redhat.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Anton Blanchard <anton@samba.org>, "David S. Miller" <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from mika.eatserver.nl (mika.eatserver.nl [195.20.9.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85CCFB7124
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Nov 2010 21:23:43 +1100 (EST)
+Message-ID: <4CD918C2.4090400@aimvalley.nl>
+Date: Tue, 09 Nov 2010 10:47:46 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+MIME-Version: 1.0
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: INFO: task snmpd:398 blocked for more than 120 seconds.
+References: <OF385C74E5.E81887CB-ONC12577D5.00527686-C12577D5.0052E6B5@transmode.se>	<AE90C24D6B3A694183C094C60CF0A2F6D8AB9A@saturn3.aculab.com>
+	<OF068D03E2.B4929626-ONC12577D5.0056CBDF-C12577D5.00571CBD@transmode.se>
+In-Reply-To: <OF068D03E2.B4929626-ONC12577D5.0056CBDF-C12577D5.00571CBD@transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, David Laight <David.Laight@ACULAB.COM>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Joakim Tjernlund wrote:
+>>> I can't make out what is causing this hang every now an then:
+>>>
+>>> INFO: task snmpd:398 blocked for more than 120 seconds.
+>> My problem with that 'error' message is that there is no way
+>> for a driver to disable it on a per-process basis.
+>> We have some processes whose 'normal state' is to sleep
+>> uninterruptibly in the kernel. Shutdown is handled by
+>> an explicit request (not by sending a signal).
+>> The processes could be kernel worker threads (except that
+>> is is ~impossible to handle them exiting from a loadble
+>> kernel module) so are actually children of a daemon sat
+>> inside an ioctl() request that never terminates!
+>>
+>> However, on the face of it, your case does look as though
+>> the mutex is fubar'ed.
+>>
+>> Might be worth (somehow) dumping the mutex state.
+> 
+> ehh, it is locked, isn't it? How to find who locked it
+> and forgot to release it?
+> 
 
---=-IkgJDMo06ESIiYhjjcHt
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+You could add show_state to check_hung_task
 
-On Mon, 2010-11-08 at 22:41 -0500, Steven Rostedt wrote:
-> On Tue, 2010-11-09 at 14:33 +1100, Michael Ellerman wrote:
->=20
-> > > You don't need this protection in a file that is not exported to user
-> > > space.
-> >=20
-> > Ah true. I'll respin after I've heard if anyone has tested it :)
->=20
-> Don't wait for me. I'm stuck debugging some other crap. Getting a 4.5
-> PPC compiler working is very low on my priority list, unfortunately. :-(
+It worked for me while solving some (application) task hangups.
 
-No worries, testing is for sissies anyway.
-
-There are 4.5.0 crosses on kernel.org, I think they're the same as the
-ones I'm using, which seem to work on powerpc at least.
-
-http://kernel.org/pub/tools/crosstool/files/bin/x86_64/4.5.0/
-
-cheers
-
-
---=-IkgJDMo06ESIiYhjjcHt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkzYx/AACgkQdSjSd0sB4dIEkgCeL3KbuRYU2OJi8Jw4QVgootyF
-gIQAnA1tyXLKJWYDzCo03E3gYEhZk+rd
-=/Dt7
------END PGP SIGNATURE-----
-
---=-IkgJDMo06ESIiYhjjcHt--
+---
+N. van Bolhuis.
