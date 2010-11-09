@@ -1,9 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <6220310e3ffbd421c2764408f58aa6215c9e3f52.1289273473.git.michael@ellerman.id.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Add jump label support
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Consolidate obj-y assignments
-Date: Tue,  9 Nov 2010 14:31:36 +1100 (EST)
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1289225915.12418.2.camel@gandalf.stny.rr.com>
+References: <45fbc3cd7f6ce404d1e25bf01695fb629d86189d.1289189560.git.michael@ellerman.id.au>
+	<1289225915.12418.2.camel@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-w3D+0pu8VLtSMSPL4b+4"
+Date: Tue, 09 Nov 2010 14:33:00 +1100
+Message-ID: <1289273580.21111.193.camel@concordia>
+Mime-Version: 1.0
+Cc: Kumar Gala <kumar.gala@freescale.com>, linux-kernel@vger.kernel.org, "David
+	S.Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Anton Blanchard <anton@samba.org>, jbaron@redhat.com
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,39 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-No need to have three of them.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/Makefile |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+--=-w3D+0pu8VLtSMSPL4b+4
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 36c30f3..3bb2a3e 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -29,8 +29,10 @@ endif
- obj-y				:= cputable.o ptrace.o syscalls.o \
- 				   irq.o align.o signal_32.o pmc.o vdso.o \
- 				   init_task.o process.o systbl.o idle.o \
--				   signal.o sysfs.o cacheinfo.o
--obj-y				+= vdso32/
-+				   signal.o sysfs.o cacheinfo.o time.o \
-+				   prom.o traps.o setup-common.o \
-+				   udbg.o misc.o io.o dma.o \
-+				   misc_$(CONFIG_WORD_SIZE).o vdso32/
- obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
- 				   paca.o nvram_64.o firmware.o
-@@ -80,9 +82,6 @@ extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_booke.o
- extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
- 
--obj-y				+= time.o prom.o traps.o setup-common.o \
--				   udbg.o misc.o io.o dma.o \
--				   misc_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
- obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
- obj-$(CONFIG_KGDB)		+= kgdb.o
--- 
-1.7.1
+On Mon, 2010-11-08 at 09:18 -0500, Steven Rostedt wrote:
+> On Mon, 2010-11-08 at 15:12 +1100, Michael Ellerman wrote:
+> > This patch adds support for the new "jump label" feature.
+>=20
+> Darn it! I wanted to port this!!!
+>=20
+> ;-)
+
+Sorry! I've been locked in a dark room for ages and this was a nice
+chance to work on some upstream code for a change :)
+
+> > Built for 64 & 32 bit, tested on 64 bit. Survives a kernel build under
+> > perf with all tracepoints enabled, and manual inspection of the patched
+> > code looks right. But still, lightly tested, YMMV.
+> >=20
+> > Unlike x86 and sparc we just merrily patch the code with no locks etc,
+> > as far as I know this is safe, but I'm not really sure what the x86/spa=
+rc
+> > code is protecting against so maybe it's not.
+>=20
+> Thanks, I'll give it a test on my electra as soon as I get a gcc 4.5.1
+> cross compiler working.
+
+Thanks.
+
+cheers
+
+
+
+--=-w3D+0pu8VLtSMSPL4b+4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkzYwOwACgkQdSjSd0sB4dIvgQCgpN+7/z9m/ALqbxEBCzJjwx0h
+Cx8AmgKd1c5SmvuY8GraTVP9KUxAdrMf
+=a/t3
+-----END PGP SIGNATURE-----
+
+--=-w3D+0pu8VLtSMSPL4b+4--
