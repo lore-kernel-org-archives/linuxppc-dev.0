@@ -1,14 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E3231B70E4
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2010 09:29:54 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/mm: Fix build error in setup_initial_memory_limit
-Date: Wed, 10 Nov 2010 16:29:49 -0600
-Message-Id: <1289428189-27258-1-git-send-email-galak@kernel.crashing.org>
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id E14A1B7117
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Nov 2010 09:55:37 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 3/4][v2] fsl_rio: move machine_check handler into
+	machine_check_e500 & machine_check_e500mc
+Date: Wed, 10 Nov 2010 14:54:38 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201538B08@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1288777018-24259-1-git-send-email-b21989@freescale.com>
+References: <1288777018-24259-1-git-send-email-b21989@freescale.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Shaohui Xie" <b21989@freescale.com>, <akpm@linux-foundation.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,41 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/mm/tlb_nohash.c: In function 'setup_initial_memory_limit':
-arch/powerpc/mm/tlb_nohash.c:588:29: error: 'ppc64_memblock_base' undeclared (first use in this function)
-arch/powerpc/mm/tlb_nohash.c:588:29: note: each undeclared identifier is reported only once for each function it appears in
+Shaohui Xie <b21989@freescale.com> wrote:
+>=20
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index a45a63c..2a5fb9d 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -55,6 +55,7 @@
+>  #endif
+>  #include <asm/kexec.h>
+>  #include <asm/ppc-opcode.h>
+> +#include <linux/rio.h>
+>=20
+>  #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+>  int (*__debugger)(struct pt_regs *regs) __read_mostly;
+> @@ -500,6 +501,13 @@ int machine_check_e500mc(struct pt_regs *regs)
+>  		       reason & MCSR_MEA ? "Effective" : "Physical",
+addr);
+>  	}
+>=20
+> +	if (reason & MCSR_BUS_RBERR) {
+> +		printk("Bus - Read Data Bus Error\n");
+> +#ifdef CONFIG_RAPIDIO
+> +		recoverable =3D fsl_rio_mcheck_exception(regs);
+> +#endif
+> +	}
+> +
+>  	mtspr(SPRN_MCSR, mcsr);
+>  	return mfspr(SPRN_MCSR) =3D=3D 0 && recoverable;
+>  }
+> @@ -527,8 +535,12 @@ int machine_check_e500(struct pt_regs *regs)
+>  		printk("Bus - Write Address Error\n");
+>  	if (reason & MCSR_BUS_IBERR)
+>  		printk("Bus - Instruction Data Error\n");
+> -	if (reason & MCSR_BUS_RBERR)
+> +	if (reason & MCSR_BUS_RBERR) {
+>  		printk("Bus - Read Data Bus Error\n");
+> +#ifdef CONFIG_RAPIDIO
+> +		fsl_rio_mcheck_exception(regs);
+> +#endif
+> +	}
+>  	if (reason & MCSR_BUS_WBERR)
+>  		printk("Bus - Read Data Bus Error\n");
+>  	if (reason & MCSR_BUS_IPERR)
 
-Due to a copy/paste typo with the following commit:
+This implementation breaks an intended use of
+fsl_rio_mcheck_exception():=20
+1. for e500 it does not check the return value of the rio handler and
+crashes the system even after RIO Mchk was serviced. Looks like e500mc
+version handles it better but I have no HW to test it.
+2. the RIO Mchk is expected to be handled quietly but here it has many
+printk's. May be it is better to call the fsl_rio_mcheck_exception()
+handler in very beginning and simply exit if it returns 1.
 
-	commit cd3db0c4ca3d237e7ad20f7107216e575705d2b0
-	Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-	Date:   Tue Jul 6 15:39:02 2010 -0700
-
-	    memblock: Remove rmo_size, burry it in arch/powerpc where it belongs
-
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-
-Ben,
-
-I think this is correct, but haven't really looked at all the code.
-
-- k
-
- arch/powerpc/mm/tlb_nohash.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 36c0c44..2a030d8 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -585,6 +585,6 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
- 
- 	/* Finally limit subsequent allocations */
--	memblock_set_current_limit(ppc64_memblock_base + ppc64_rma_size);
-+	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
- }
- #endif /* CONFIG_PPC64 */
--- 
-1.7.2.3
+Alex.
+=20
+ =20
