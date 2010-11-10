@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 54E37B70EC
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2010 02:23:20 +1100 (EST)
-Subject: RE: [PATCH] ppc44x:PHY fixup for USB on canyonlands board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rupjyoti Sarmah <rsarmah@apm.com>
-In-Reply-To: <59d17e399e4efb295e802572f16cc395@mail.gmail.com>
-References: <201011101137.oAABbFoc015547@amcc.com>
-	<20101110141914.GC26193@zod.rchland.ibm.com>
-	<59d17e399e4efb295e802572f16cc395@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Nov 2010 02:22:55 +1100
-Message-ID: <1289402575.2147.1399.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id E6DA1B70EF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Nov 2010 03:41:26 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 30908-09 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Nov 2010 16:41:11 +0000 (GMT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: PowerQUICC II PCIe dma
+Date: Wed, 10 Nov 2010 16:40:23 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ABA2@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AB8C@saturn3.aculab.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-11-10 at 20:13 +0530, Rupjyoti Sarmah wrote:
-> >Is this just for canyonlands?  If so, it's probably better off in a
-> >caynonlands specific file, or a function that gets called in the common
-> >platform file if the model matches canyonlands.  It seems a bit overkill
-> >to introduce an entire new file and Kconfig option for this.
-> 
-> 
-> We want to have a file that will have fixup codes for all the ppc44x
-> specific boards. Within this ppc44x_fixup.c file we would like to place
-> any fixup code that
-> might come later for any of the ppc44x based boards. Although I released
-> it only with Canyonlands code, it would be ppc44x specific file.
-> 
-> Do let me know if that is ok.
+=20
+> I'm trying to get a ppc 831x to do PCIe dma transfers, PIO transfers
+> work ok but are somewhat lethargic (partially due to the slave).
 
-No. You should have a file per board that needs fixup. Take them out of
-ppc4xx_simple.c and create a board file.
+After much soul searching I've finally got it to work!
+For the benefit of anyone else...
 
-Cheers,
-Ben.
+- The lowest address of the dma descriptor contains the 'command' bits.
+- Set 'Next descriptor valid' with a zero pointer to get the chain to
+complete.
+- Set the dma descriptor status word to zero (might just need 'done'
+clear).
+- Set the 'snoop for CSB' bit in the descriptor command (errata).
+
+My big problem was that I'd set the descriptor status to 0xdeadbeef in
+order to detect writes :-(
+
+I also used the st_le32() and ld_le32() defines from
+arch/powerpc/include/asm/swab.h with explicit iosync() requests
+rather than the out_le32() and in_le32() from io.h.
+The latter (especially in_le32()) contain unwanted slow instructions.
+
+Getting the correct swab.h included was a problem in itself!
+
+	David
