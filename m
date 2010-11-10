@@ -1,20 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH V2 3/3] powerpc: Disable VPHN polling during a suspend
-	operation
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-In-Reply-To: <20101109232514.17098.84090.sendpatchset@manic8ball.ltc.austin.ibm.com>
-References: <20101109232436.17098.20055.sendpatchset@manic8ball.ltc.austin.ibm.com>
-	<20101109232514.17098.84090.sendpatchset@manic8ball.ltc.austin.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-CtCqJvaw45U/efKAXx07"
-Date: Wed, 10 Nov 2010 11:58:44 +1100
-Message-ID: <1289350724.22787.12.camel@concordia>
-Mime-Version: 1.0
-Cc: markn@au1.ibm.com, pmac@au1.ibm.com, tbreeds@au1.ibm.com,
-	lkessler@us.ibm.com, mjwolf@us.ibm.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <rsarmah@amcc.com>
+Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CFD7AB6F07
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Nov 2010 23:18:17 +1100 (EST)
+Date: Wed, 10 Nov 2010 17:07:15 +0530
+From: Rupjyoti  Sarmah <rsarmah@amcc.com>
+Message-Id: <201011101137.oAABbFoc015547@amcc.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ppc44x:PHY fixup for USB on canyonlands board
+Cc: rsarmah@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +19,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This fix is a reset for USB PHY that requires some amount of time for power to be stable on Canyonlands.
 
---=-CtCqJvaw45U/efKAXx07
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
+---
+ arch/powerpc/boot/dts/canyonlands.dts     |   11 ++++
+ arch/powerpc/platforms/44x/44x.h          |    5 ++
+ arch/powerpc/platforms/44x/Kconfig        |    7 ++
+ arch/powerpc/platforms/44x/Makefile       |    1 +
+ arch/powerpc/platforms/44x/ppc44x_fixup.c |   90 +++++++++++++++++++++++++++++
+ 5 files changed, 114 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/44x/ppc44x_fixup.c
 
-On Tue, 2010-11-09 at 16:25 -0700, Jesse Larrew wrote:
-> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
->=20
-> Tie the polling mechanism into the ibm,suspend-me rtas call to
-> stop/restart polling before/after a suspend, hibernate, migrate,
-> or checkpoint restart operation. This ensures that the system has a
-> chance to disable the polling if the partition is migrated to a system
-> that does not support VPHN (and vice versa).
-
-I never got round to replying to you about my comments did I. This looks
-good, in particular you're right about the error path in
-__rtas_suspend_last_cpu(), I was getting muddled trying to read the code
-while mentally adding the diff.
-
-cheers
-
---=-CtCqJvaw45U/efKAXx07
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkzZ7kQACgkQdSjSd0sB4dIb6wCeKEsrQ1O4X7skH7lZAO6tUzSo
-xLEAn0Q9EDGM7Umto4rnUMg7zvvir53h
-=vQHi
------END PGP SIGNATURE-----
-
---=-CtCqJvaw45U/efKAXx07--
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index a303703..d6e9ba2 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -171,6 +171,11 @@
+ 				      0x5 0x4>;     /* AHBDMA */
+ 		};
+ 
++		CPLD: cpld@e1000000 {
++			compatible = "apm, ppc460ex-bcsr";
++			reg = <4 0xe1000000 0x9>;
++		};
++
+ 		POB0: opb {
+ 			compatible = "ibm,opb-460ex", "ibm,opb";
+ 			#address-cells = <1>;
+@@ -320,6 +325,12 @@
+ 				interrupts = <0x3 0x4>;
+ 			};
+ 
++			GPIO0: gpio@ef600b00 {
++				compatible = "apm,ppc44x-gpio-base";
++				reg = <0xef600b00 0x00000048>;
++				gpio-controller;
++			};
++
+ 			ZMII0: emac-zmii@ef600d00 {
+ 				compatible = "ibm,zmii-460ex", "ibm,zmii";
+ 				reg = <0xef600d00 0x0000000c>;
+diff --git a/arch/powerpc/platforms/44x/44x.h b/arch/powerpc/platforms/44x/44x.h
+index dbc4d2b..bc2ab7a 100644
+--- a/arch/powerpc/platforms/44x/44x.h
++++ b/arch/powerpc/platforms/44x/44x.h
+@@ -4,4 +4,9 @@
+ extern u8 as1_readb(volatile u8 __iomem  *addr);
+ extern void as1_writeb(u8 data, volatile u8 __iomem *addr);
+ 
++#define BCSR_USB_EN	0x11
++#define GPIO0_OSRH	0xC
++#define GPIO0_TSRH	0x14
++#define GPIO0_ISR1H	0x34
++
+ #endif /* __POWERPC_PLATFORMS_44X_44X_H */
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 0f979c5..9ca4aaa 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -117,12 +117,19 @@ config CANYONLANDS
+ 	default n
+ 	select PPC44x_SIMPLE
+ 	select 460EX
++	select 44X_FIXUP
+ 	select PCI
+ 	select PPC4xx_PCI_EXPRESS
+ 	select IBM_NEW_EMAC_RGMII
+ 	select IBM_NEW_EMAC_ZMII
+ 	help
+ 	  This option enables support for the AMCC PPC460EX evaluation board.
++config 44X_FIXUP
++	bool "4xx_fixup"
++	depends on 44x
++	default n
++	help
++	  This option enables supporting APM PPC4XX based evaluation board fixups.
+ 
+ config GLACIER
+ 	bool "Glacier"
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+index 82ff326..d4bfb97 100644
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -1,6 +1,7 @@
+ obj-$(CONFIG_44x)	:= misc_44x.o idle.o
+ obj-$(CONFIG_PPC44x_SIMPLE) += ppc44x_simple.o
+ obj-$(CONFIG_EBONY)	+= ebony.o
++obj-$(CONFIG_44X_FIXUP) += ppc44x_fixup.o
+ obj-$(CONFIG_SAM440EP) 	+= sam440ep.o
+ obj-$(CONFIG_WARP)	+= warp.o
+ obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
+diff --git a/arch/powerpc/platforms/44x/ppc44x_fixup.c b/arch/powerpc/platforms/44x/ppc44x_fixup.c
+new file mode 100644
+index 0000000..4e254eb
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/ppc44x_fixup.c
+@@ -0,0 +1,90 @@
++/*
++ * This contain fixup code for Applied Micro ppc44x series of processors.
++ *
++ * Copyright (c) 2010, Applied Micro Circuits Corporation
++ * Author: Rupjyoti Sarmah <rsarmah@apm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include "44x.h"
++
++/* PHY fixup code on Canyonlands kit. */
++
++static int __init ppc460ex_canyonlands_fixup(void)
++{
++	u8 __iomem *bcsr ;
++	void __iomem  *vaddr;
++	struct device_node *np;
++	u32 val ;
++
++	np = of_find_compatible_node(NULL, NULL, "apm, ppc460ex-bcsr");
++	if (!np) {
++		printk(KERN_ERR "failed did not find apm, ppc460ex bcsr node\n");
++		return -ENODEV;
++		}
++
++	bcsr = of_iomap(np, 0);
++	of_node_put(np);
++
++	if (!bcsr) {
++		printk(KERN_CRIT "Could not remap bcsr\n");
++		return -ENODEV;
++	}
++
++	clrbits8(&bcsr[7], BCSR_USB_EN);
++	udelay(100000);
++
++	setbits8(&bcsr[7], BCSR_USB_EN);
++	udelay(100000);
++
++	clrbits8(&bcsr[7], BCSR_USB_EN);
++	udelay(100000);
++
++	np = of_find_compatible_node(NULL, NULL, "apm,ppc44x-gpio-base");
++
++	/* configure multiplexed gpio16 and gpio19 */
++
++	vaddr = of_iomap(np, 0);
++	if (!vaddr) {
++		printk(KERN_CRIT "Could not get gpio node address\n");
++		return -ENODEV;
++	}
++
++	/* configure gpio16 and gpio19 as alternate1 */
++
++	/* GPIO0_ISR1H for alternate 1 settings */
++	val = in_be32(vaddr + GPIO0_ISR1H);
++	out_be32((vaddr + GPIO0_ISR1H), val | 0x4200000);
++
++	/* GPIO0_OSRH for alternate 1 settings */
++	val = in_be32(vaddr + GPIO0_OSRH);
++	out_be32((vaddr + GPIO0_OSRH), val | 0x42000000);
++
++	/* GPIO0_TSRH for alternate 1 settings */
++	val = in_be32(vaddr + GPIO0_TSRH);
++	out_be32((vaddr + GPIO0_TSRH), val | 0x42000000);
++	of_node_put(np);
++	return 0;
++
++}
++arch_initcall(ppc460ex_canyonlands_fixup);
++
+-- 
+1.5.6.3
