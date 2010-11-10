@@ -1,22 +1,21 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2162AB70E4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 01:50:57 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] ppc44x:PHY fixup for USB on canyonlands board
-Date: Wed, 10 Nov 2010 15:50:15 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 54E37B70EC
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2010 02:23:20 +1100 (EST)
+Subject: RE: [PATCH] ppc44x:PHY fixup for USB on canyonlands board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rupjyoti Sarmah <rsarmah@apm.com>
+In-Reply-To: <59d17e399e4efb295e802572f16cc395@mail.gmail.com>
 References: <201011101137.oAABbFoc015547@amcc.com>
-In-Reply-To: <201011101137.oAABbFoc015547@amcc.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201011101550.16093.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
-	rsarmah@apm.com, linux-kernel@vger.kernel.org
+	<20101110141914.GC26193@zod.rchland.ibm.com>
+	<59d17e399e4efb295e802572f16cc395@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Nov 2010 02:22:55 +1100
+Message-ID: <1289402575.2147.1399.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 10 November 2010 12:37:15 Rupjyoti Sarmah wrote:
-> This fix is a reset for USB PHY that requires some amount of time for power
-> to be stable on Canyonlands.
+On Wed, 2010-11-10 at 20:13 +0530, Rupjyoti Sarmah wrote:
+> >Is this just for canyonlands?  If so, it's probably better off in a
+> >caynonlands specific file, or a function that gets called in the common
+> >platform file if the model matches canyonlands.  It seems a bit overkill
+> >to introduce an entire new file and Kconfig option for this.
 > 
-> Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
-> ---
->  arch/powerpc/boot/dts/canyonlands.dts     |   11 ++++
->  arch/powerpc/platforms/44x/44x.h          |    5 ++
->  arch/powerpc/platforms/44x/Kconfig        |    7 ++
->  arch/powerpc/platforms/44x/Makefile       |    1 +
->  arch/powerpc/platforms/44x/ppc44x_fixup.c |   90
-> +++++++++++++++++++++++++++++ 5 files changed, 114 insertions(+), 0
-> deletions(-)
->  create mode 100644 arch/powerpc/platforms/44x/ppc44x_fixup.c
 > 
-> diff --git a/arch/powerpc/boot/dts/canyonlands.dts
-> b/arch/powerpc/boot/dts/canyonlands.dts index a303703..d6e9ba2 100644
-> --- a/arch/powerpc/boot/dts/canyonlands.dts
-> +++ b/arch/powerpc/boot/dts/canyonlands.dts
-> @@ -171,6 +171,11 @@
->  				      0x5 0x4>;     /* AHBDMA */
->  		};
+> We want to have a file that will have fixup codes for all the ppc44x
+> specific boards. Within this ppc44x_fixup.c file we would like to place
+> any fixup code that
+> might come later for any of the ppc44x based boards. Although I released
+> it only with Canyonlands code, it would be ppc44x specific file.
 > 
-> +		CPLD: cpld@e1000000 {
-> +			compatible = "apm, ppc460ex-bcsr";
-> +			reg = <4 0xe1000000 0x9>;
-> +		};
+> Do let me know if that is ok.
 
-This node should be moved to the EBC section. It would look something like 
-this then (note the reg property change here):
-
-				CPLD: cpld@2,0 {
-					...
-					reg = <2 0x0 0x9>;
-				};
+No. You should have a file per board that needs fixup. Take them out of
+ppc4xx_simple.c and create a board file.
 
 Cheers,
-Stefan
+Ben.
