@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 18636B70E8
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2010 01:39:22 +1100 (EST)
-Subject: Re: [PATCH] ppc44x:PHY fixup for USB on canyonlands board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20101110141914.GC26193@zod.rchland.ibm.com>
+Return-Path: <rsarmah@apm.com>
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
+	by ozlabs.org (Postfix) with SMTP id C238BB70EE
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2010 01:50:36 +1100 (EST)
+Received: by mail-ww0-f44.google.com with SMTP id 39so823334wwb.1
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Nov 2010 06:50:34 -0800 (PST)
+From: Rupjyoti Sarmah <rsarmah@apm.com>
 References: <201011101137.oAABbFoc015547@amcc.com>
 	<20101110141914.GC26193@zod.rchland.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Nov 2010 01:38:51 +1100
-Message-ID: <1289399931.2147.1392.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
-	rsarmah@apm.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20101110141914.GC26193@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Date: Wed, 10 Nov 2010 20:13:04 +0530
+Message-ID: <59d17e399e4efb295e802572f16cc395@mail.gmail.com>
+Subject: RE: [PATCH] ppc44x:PHY fixup for USB on canyonlands board
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-11-10 at 09:19 -0500, Josh Boyer wrote:
-> With this being an arch_initcall, it will get called for every kind of
-> platform in a multi-board kernel.  Another reason to only call it from
-> a
-> board specific probe function if it really is canyonlands specific. 
+>Is this just for canyonlands?  If so, it's probably better off in a
+>caynonlands specific file, or a function that gets called in the common
+>platform file if the model matches canyonlands.  It seems a bit overkill
+>to introduce an entire new file and Kconfig option for this.
 
-Right. Time to take canyonlands out of ppc4xx_simple and have its own
-board file again. Do the fixups there.
 
-Cheers,
-Ben.
+We want to have a file that will have fixup codes for all the ppc44x
+specific boards. Within this ppc44x_fixup.c file we would like to place
+any fixup code that
+might come later for any of the ppc44x based boards. Although I released
+it only with Canyonlands code, it would be ppc44x specific file.
+
+Do let me know if that is ok.
+
+Regards,
+Rup
