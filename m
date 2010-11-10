@@ -1,33 +1,20 @@
-Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CEFCEB72F7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Nov 2010 10:25:28 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oA9NDnqT008330
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Nov 2010 16:13:49 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oA9NPHnr163898
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Nov 2010 16:25:17 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id oA9NPG7P028194
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Nov 2010 16:25:17 -0700
-Date: Tue, 9 Nov 2010 16:25:14 -0700
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-Id: <20101109232514.17098.84090.sendpatchset@manic8ball.ltc.austin.ibm.com>
-In-Reply-To: <20101109232436.17098.20055.sendpatchset@manic8ball.ltc.austin.ibm.com>
-References: <20101109232436.17098.20055.sendpatchset@manic8ball.ltc.austin.ibm.com>
-Subject: [PATCH V2 3/3] powerpc: Disable VPHN polling during a suspend
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH V2 3/3] powerpc: Disable VPHN polling during a suspend
 	operation
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+In-Reply-To: <20101109232514.17098.84090.sendpatchset@manic8ball.ltc.austin.ibm.com>
+References: <20101109232436.17098.20055.sendpatchset@manic8ball.ltc.austin.ibm.com>
+	<20101109232514.17098.84090.sendpatchset@manic8ball.ltc.austin.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-CtCqJvaw45U/efKAXx07"
+Date: Wed, 10 Nov 2010 11:58:44 +1100
+Message-ID: <1289350724.22787.12.camel@concordia>
+Mime-Version: 1.0
 Cc: markn@au1.ibm.com, pmac@au1.ibm.com, tbreeds@au1.ibm.com,
-	lkessler@us.ibm.com, Jesse Larrew <jlarrew@linux.vnet.ibm.com>,
-	mjwolf@us.ibm.com
+	lkessler@us.ibm.com, mjwolf@us.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,75 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 
-Tie the polling mechanism into the ibm,suspend-me rtas call to
-stop/restart polling before/after a suspend, hibernate, migrate,
-or checkpoint restart operation. This ensures that the system has a
-chance to disable the polling if the partition is migrated to a system
-that does not support VPHN (and vice versa).
+--=-CtCqJvaw45U/efKAXx07
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/topology.h |   10 ++++++++++
- arch/powerpc/kernel/rtas.c          |    3 +++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+On Tue, 2010-11-09 at 16:25 -0700, Jesse Larrew wrote:
+> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+>=20
+> Tie the polling mechanism into the ibm,suspend-me rtas call to
+> stop/restart polling before/after a suspend, hibernate, migrate,
+> or checkpoint restart operation. This ensures that the system has a
+> chance to disable the polling if the partition is migrated to a system
+> that does not support VPHN (and vice versa).
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index afe4aaa..aed188b 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -93,6 +93,8 @@ extern void __init dump_numa_cpu_topology(void);
- extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
- extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
- 
-+extern int start_topology_update(void);
-+extern int stop_topology_update(void);
- #else
- 
- static inline void dump_numa_cpu_topology(void) {}
-@@ -107,6 +109,14 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
- {
- }
- 
-+static inline int start_topology_update(void)
-+{
-+	return 0;
-+}
-+static inline int stop_topology_update(void)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_NUMA */
- 
- #include <asm-generic/topology.h>
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 8fe8bc6..2097f2b 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -41,6 +41,7 @@
- #include <asm/atomic.h>
- #include <asm/time.h>
- #include <asm/mmu.h>
-+#include <asm/topology.h>
- 
- struct rtas_t rtas = {
- 	.lock = __ARCH_SPIN_LOCK_UNLOCKED
-@@ -713,6 +714,7 @@ static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_w
- 	int cpu;
- 
- 	slb_set_size(SLB_MIN_SIZE);
-+	stop_topology_update();
- 	printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n", smp_processor_id());
- 
- 	while (rc == H_MULTI_THREADS_ACTIVE && !atomic_read(&data->done) &&
-@@ -728,6 +730,7 @@ static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_w
- 		rc = atomic_read(&data->error);
- 
- 	atomic_set(&data->error, rc);
-+	start_topology_update();
- 
- 	if (wake_when_done) {
- 		atomic_set(&data->done, 1);
--- 
-1.7.2.3
+I never got round to replying to you about my comments did I. This looks
+good, in particular you're right about the error path in
+__rtas_suspend_last_cpu(), I was getting muddled trying to read the code
+while mentally adding the diff.
+
+cheers
+
+--=-CtCqJvaw45U/efKAXx07
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkzZ7kQACgkQdSjSd0sB4dIb6wCeKEsrQ1O4X7skH7lZAO6tUzSo
+xLEAn0Q9EDGM7Umto4rnUMg7zvvir53h
+=vQHi
+-----END PGP SIGNATURE-----
+
+--=-CtCqJvaw45U/efKAXx07--
