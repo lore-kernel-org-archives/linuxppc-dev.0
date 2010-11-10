@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26D45B70E4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 09:07:15 +1100 (EST)
-Subject: Re: Can't boot benh/powerpc.git kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jim Keniston <jkenisto@linux.vnet.ibm.com>
-In-Reply-To: <1289418856.2983.23.camel@localhost>
-References: <1289418856.2983.23.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Nov 2010 09:06:57 +1100
-Message-ID: <1289426817.2147.1403.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id E3231B70E4
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2010 09:29:54 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: Fix build error in setup_initial_memory_limit
+Date: Wed, 10 Nov 2010 16:29:49 -0600
+Message-Id: <1289428189-27258-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-11-10 at 11:54 -0800, Jim Keniston wrote:
-> I got Ben's linux/kernel/git/benh/powerpc.git source and built it
-> (.config file attached*).  It hangs on boot.  When I boot it with
-> loglevel=8, its last words are:
+arch/powerpc/mm/tlb_nohash.c: In function 'setup_initial_memory_limit':
+arch/powerpc/mm/tlb_nohash.c:588:29: error: 'ppc64_memblock_base' undeclared (first use in this function)
+arch/powerpc/mm/tlb_nohash.c:588:29: note: each undeclared identifier is reported only once for each function it appears in
 
-First, please try with Linus upstream. The "master" branch in my git
-tree is quite stale, and my next and merge branch are too at the moment
-as I'm still travelling. All our current stuff was merged during the
-last merge window so there's nothing "new" for you to pickup in my tree
-at the moment :-)
+Due to a copy/paste typo with the following commit:
 
-If the problem still occurs, I'll have a look next week.
+	commit cd3db0c4ca3d237e7ad20f7107216e575705d2b0
+	Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Date:   Tue Jul 6 15:39:02 2010 -0700
 
-Cheers,
-Ben.
+	    memblock: Remove rmo_size, burry it in arch/powerpc where it belongs
 
-> ...
-> Security Framework initialized
-> SELinux:  Disabled at boot.
-> Dentry cache hash table entries: 262144 (order: 5, 2097152 bytes)
-> Inode-cache hash table entries: 131072 (order: 4, 1048576 bytes)
-> Mount-cache hash table entries: 4096
-> Initializing cgroup subsys ns
-> Initializing cgroup subsys cpuacct
-> Initializing cgroup subsys memory
-> Initializing cgroup subsys devices
-> Initializing cgroup subsys freezer
-> irq: irq 2 on host null mapped to virtual irq 16
-> 
-> ... and then it hangs.
-> 
-> The whole console log is attached.
-> 
-> Any suggestions?
-> 
-> This is on a Power 5 system -- model = IBM,9111-520.
-> 
-> *I earlier tried booting it with the following options enabled, with the
-> same result before and after I backed them off.
-> CONFIG_PREEMPT
-> CONFIG_DEBUG_PREEMPT
-> CONFIG_DEBUG_SLAB
-> CONFIG_DEBUG_PAGEALLOC
-> CONFIG_DEBUG_MUTEXES
-> CONFIG_DEBUG_SPINLOCK
-> CONFIG_DEBUG_SPINLOCK_SLEEP
-> 
-> Thanks.
-> Jim Keniston
-> LTC - Beaverton, OR
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+Ben,
+
+I think this is correct, but haven't really looked at all the code.
+
+- k
+
+ arch/powerpc/mm/tlb_nohash.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 36c0c44..2a030d8 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -585,6 +585,6 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
+ 
+ 	/* Finally limit subsequent allocations */
+-	memblock_set_current_limit(ppc64_memblock_base + ppc64_rma_size);
++	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
+ }
+ #endif /* CONFIG_PPC64 */
+-- 
+1.7.2.3
