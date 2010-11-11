@@ -1,19 +1,19 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
+Return-Path: <akpm@linux-foundation.org>
+Date: Wed, 10 Nov 2010 23:00:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: subrata@linux.vnet.ibm.com
 Subject: Re: [Call Trace: 2.6.37-rc1-git7 & 2.6.37-rc1-git8, Powerpc] LTP
 	msgctl11 test case
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Message-Id: <20101110230016.40e4875e.akpm@linux-foundation.org>
 In-Reply-To: <1289457219.5622.15.camel@subratamodak.linux.ibm.com>
 References: <1289457219.5622.15.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 11 Nov 2010 12:08:01 +0530
-Message-Id: <1289457481.5622.16.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+Content-Type: text/plain; charset=US-ASCII
+Cc: Peter Zijlstra <peterz@infradead.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
 	DIVYA PRAKASH <dipraksh@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kindly note that the same thing was not observed till git6 on the same
-machine.
+On Thu, 11 Nov 2010 12:03:39 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
 
-Regards--
-Subrata
-
-On Thu, 2010-11-11 at 12:03 +0530, Subrata Modak wrote:
 > Hi Peter/Ingo,
 > 
-> LTPś msgctl11 test case creates Call trace and Exception for kernels
+> LTP__ msgctl11 test case creates Call trace and Exception for kernels
 > 2.6.37-rc1-git7 & 2.6.37-rc1-git8. Please see the dmesg below:
 > 
 > ================================================
@@ -82,67 +77,6 @@ On Thu, 2010-11-11 at 12:03 +0530, Subrata Modak wrote:
 > [c0000000a0993a90] [c00000000017eef0] .handle_mm_fault+0x670/0xb50
 > [c0000000a0993b80] [c0000000006feea4] .do_page_fault+0x344/0x780
 > [c0000000a0993e30] [c00000000000522c] handle_page_fault+0x20/0x74
-> Mem-Info:
-> Node 0 DMA per-cpu:
-> CPU    0: hi:    6, btch:   1 usd:   4
-> CPU    1: hi:    6, btch:   1 usd:   5
-> CPU    2: hi:    6, btch:   1 usd:   0
-> CPU    3: hi:    6, btch:   1 usd:   0
-> CPU    4: hi:    6, btch:   1 usd:   0
-> CPU    5: hi:    6, btch:   1 usd:   0
-> CPU    6: hi:    6, btch:   1 usd:   4
-> CPU    7: hi:    6, btch:   1 usd:   0
-> CPU    8: hi:    6, btch:   1 usd:   2
-> CPU    9: hi:    6, btch:   1 usd:   0
-> CPU   10: hi:    6, btch:   1 usd:   0
-> CPU   11: hi:    6, btch:   1 usd:   0
-> CPU   12: hi:    6, btch:   1 usd:   0
-> CPU   13: hi:    6, btch:   1 usd:   0
-> CPU   14: hi:    6, btch:   1 usd:   0
-> CPU   15: hi:    6, btch:   1 usd:   0
-> CPU   16: hi:    6, btch:   1 usd:   0
-> CPU   17: hi:    6, btch:   1 usd:   2
-> CPU   18: hi:    6, btch:   1 usd:   2
-> CPU   19: hi:    6, btch:   1 usd:   0
-> CPU   20: hi:    6, btch:   1 usd:   3
-> CPU   21: hi:    6, btch:   1 usd:   1
-> CPU   22: hi:    6, btch:   1 usd:   1
-> CPU   23: hi:    6, btch:   1 usd:   0
-> active_anon:17322 inactive_anon:4230 isolated_anon:2650
->  active_file:7 inactive_file:29 isolated_file:46
->  unevictable:0 dirty:0 writeback:343 unstable:0
->  free:57 slab_reclaimable:426 slab_unreclaimable:22103
->  mapped:19 shmem:0 pagetables:16551 bounce:0
-> Node 0 DMA free:832kB min:8128kB low:10112kB high:12160kB active_anon:1108608kB inactive_anon:270720kB active_file:448kB inactive_file:1856kB unevictable:0kB isolated(anon):169600kB isolated(file):2944kB present:4190720kB mlocked:0kB dirty:0kB writeback:21952kB mapped:1216kB shmem:0kB slab_reclaimable:27264kB slab_unreclaimable:1414592kB kernel_stack:156336kB pagetables:1059264kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:69 all_unreclaimable? no
-> lowmem_reserve[]: 0 0 0
-> Node 0 DMA: 7*64kB 3*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB = 832kB
-> 5188 total pagecache pages
-> 4932 pages in swap cache
-> Swap cache stats: add 37086, delete 32154, find 29567/36415
-> Free swap  = 3652416kB
-> Total swap = 4095936kB
-> 65536 pages RAM
-> 1557 pages reserved
-> 31189 pages shared
-> 59735 pages non-shared
-> SLUB: Unable to allocate memory on node -1 (gfp=0x20)
->   cache: kmalloc-128, object size: 128, buffer size: 128, default order: 0, min order: 0
->   node 0: slabs: 92, objs: 47104, free: 0
-> ================================================
-> 
-> Ways to reproduce the problem:
-> 1) Fetch, build and install LTP:
->         git clone git://ltp.git.sourceforge.net/gitroot/ltp/ltp
->         cd ltp
->         ./configure
->         make
->         make install
-> 2) Execute
->         cd /opt/ltp
->         ./runltp -s msgctl11 -k DMESG_LOG_DIR
-> 
-> Verify the results under /opt/ltp/results and /opt/ltp/output directory
-> 
-> Regards--
-> Subrata
-> 
+
+That trace is impressively hard to understand.  Who called
+do_raw_spin_unlock?
