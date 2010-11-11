@@ -1,19 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9E0AAB712C
+Return-Path: <kumar.gala@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D9A3BB7145
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 23:19:00 +1100 (EST)
-To: Ilya Yanok <yanok@emcraft.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [REPOST][PATCH] mpc8308: fix USB DR controller initialization
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1288137756-3389-1-git-send-email-yanok@emcraft.com>
-References: <1282906641-25351-1-git-send-email-yanok@emcraft.com>
-	<1288137756-3389-1-git-send-email-yanok@emcraft.com>
-Date: Thu, 11 Nov 2010 13:18:55 +0100
-Message-Id: <20101111121855.C35751522C0@gemini.denx.de>
-Cc: vlad@emcraft.com, linuxppc-dev@lists.ozlabs.org, dzu@denx.de
+	Thu, 11 Nov 2010 23:20:12 +1100 (EST)
+Subject: Re: [PATCH 1/4][v2] powerpc: add e500 HID1 bit definition
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1288776931-20689-1-git-send-email-b21989@freescale.com>
+Date: Thu, 11 Nov 2010 06:20:00 -0600
+Message-ID: <8215A0B4-135B-47B1-9D01-D0E5DD3243BD@freescale.com>
+References: <1288776931-20689-1-git-send-email-b21989@freescale.com>
+To: Shaohui Xie <b21989@freescale.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Ilya Yanok,
 
-In message <1288137756-3389-1-git-send-email-yanok@emcraft.com> you wrote:
-> MPC8308 has ULPI pin muxing settings in SICRH register, bits 17-18
-> which is different from both MPC8313 and MPC8315.
-> Also MPC8308 doesn't have REFSEL, UTMI_PHY_EN and OTG_PORT fields
-> in the USB DR controller CONTROL register.
+On Nov 3, 2010, at 4:35 AM, Shaohui Xie wrote:
+
+> From: Li Yang <leoli@freescale.com>
 > 
-> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+> Also make 74xx HID1 definition conditional.
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Shaohui Xie <b21989@freescale.com>
+> Cc: Li Yang <leoli@freescale.com>
+> Cc: Kumar Gala <kumar.gala@freescale.com>
+> Cc: Roy Zang <tie-fei.zang@freescale.com>
+> Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+> ---
+> These patches have been send for almost one week, and has no feedback.
+> 
+> arch/powerpc/include/asm/reg.h       |    2 ++
+> arch/powerpc/include/asm/reg_booke.h |   14 ++++++++++++++
+> 2 files changed, 16 insertions(+), 0 deletions(-)
 
-Tested-by: Wolfgang Denk <wd@denx.de>
-Acked-by: Wolfgang Denk <wd@denx.de>
+applied to next
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If you think the problem is bad now, just wait until we've solved it.
-                                                        Epstein's Law
+- k
