@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29661B7138
+Return-Path: <kumar.gala@freescale.com>
+Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
+	[216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B9425B714F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 23:33:45 +1100 (EST)
-Subject: Re: [REPOST][PATCH] mpc8308: fix USB DR controller initialization
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1288137756-3389-1-git-send-email-yanok@emcraft.com>
-Date: Thu, 11 Nov 2010 06:33:24 -0600
-Message-Id: <3325808B-945F-4D33-9472-C50EEFDB464D@kernel.crashing.org>
-References: <1282906641-25351-1-git-send-email-yanok@emcraft.com>
-	<1288137756-3389-1-git-send-email-yanok@emcraft.com>
-To: Ilya Yanok <yanok@emcraft.com>
-Cc: vlad@emcraft.com, linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de
+	Thu, 11 Nov 2010 23:35:26 +1100 (EST)
+Subject: Re: [PATCH 2/4][v2] fsl_rio: fix non-standard HID1 register access
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1288776997-23562-1-git-send-email-b21989@freescale.com>
+Date: Thu, 11 Nov 2010 06:20:02 -0600
+Message-ID: <BD0B9175-F78C-49FB-8938-697ECA659B82@freescale.com>
+References: <1288776997-23562-1-git-send-email-b21989@freescale.com>
+To: Shaohui Xie <b21989@freescale.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +27,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 26, 2010, at 7:02 PM, Ilya Yanok wrote:
+On Nov 3, 2010, at 4:36 AM, Shaohui Xie wrote:
 
-> MPC8308 has ULPI pin muxing settings in SICRH register, bits 17-18
-> which is different from both MPC8313 and MPC8315.
-> Also MPC8308 doesn't have REFSEL, UTMI_PHY_EN and OTG_PORT fields
-> in the USB DR controller CONTROL register.
-> 
-> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+> Signed-off-by: Shaohui Xie <b21989@freescale.com>
+> Cc: Li Yang <leoli@freescale.com>
+> Cc: Kumar Gala <kumar.gala@freescale.com>
+> Cc: Roy Zang <tie-fei.zang@freescale.com>
+> Cc: Alexandre Bounine <alexandre.bounine@idt.com>
 > ---
-> 
-> Kim, Kumar,
-> 
-> Please consider including this patch. Without it USB initialization code
-> writes to the wrong bits on the MPC8308RDB.
-> 
-> Regards, Ilya.
-> 
-> arch/powerpc/boot/dts/mpc8308rdb.dts  |    2 +-
-> arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
-> arch/powerpc/platforms/83xx/usb.c     |   21 ++++++++++++++++-----
-> 3 files changed, 19 insertions(+), 6 deletions(-)
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S |    6 ++++++
+> arch/powerpc/sysdev/fsl_rio.c             |    2 --
+> 2 files changed, 6 insertions(+), 2 deletions(-)
 
 applied to next
 
