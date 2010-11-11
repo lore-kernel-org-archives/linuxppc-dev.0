@@ -1,25 +1,26 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3585EB7122
+Return-Path: <ash@shisha.kicks-ass.net>
+Received: from filtteri1.pp.htv.fi (filtteri1.pp.htv.fi [213.243.153.184])
+	by ozlabs.org (Postfix) with ESMTP id D98B3B7144
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Nov 2010 01:29:45 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 3/4][v2] fsl_rio: move machine_check handler into
-	machine_check_e500 & machine_check_e500mc
-Date: Thu, 11 Nov 2010 06:29:01 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201538C58@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0B482EBF-AF82-4C61-A35E-D9619246D259@freescale.com>
-References: <1288777018-24259-1-git-send-email-b21989@freescale.com>
-	<0B482EBF-AF82-4C61-A35E-D9619246D259@freescale.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>,
-	"Shaohui Xie" <b21989@freescale.com>
-Cc: akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+	Fri, 12 Nov 2010 06:40:06 +1100 (EST)
+From: Alexander Shishkin <virtuoso@slind.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCHv6 6/7] wire up sys_time_change_notify() on powerpc
+Date: Thu, 11 Nov 2010 21:30:01 +0200
+Message-Id: <1289503802-22444-7-git-send-email-virtuoso@slind.org>
+In-Reply-To: <1289503802-22444-1-git-send-email-virtuoso@slind.org>
+References: <1289503802-22444-1-git-send-email-virtuoso@slind.org>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Greg KH <gregkh@suse.de>,
+	Chris Friesen <chris.friesen@genband.com>,
+	John Stultz <johnstul@us.ibm.com>, Andreas Schwab <schwab@linux-m68k.org>,
+	Kay Sievers <kay.sievers@vrfy.org>,
+	linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+	Alexander Shishkin <virtuoso@slind.org>, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Kirill A. Shutemov" <kirill@shutemov.name>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala <kumar.gala@freescale.com> wrote:
-> > @@ -527,8 +535,12 @@ int machine_check_e500(struct pt_regs *regs)
->=20
-> To deal w/Alex's comment do:
->=20
-> machine_check_e500(...) {
->=20
-> 	int ret =3D 0;
->=20
->=20
-> > 		printk("Bus - Write Address Error\n");
-> > 	if (reason & MCSR_BUS_IBERR)
-> > 		printk("Bus - Instruction Data Error\n");
-> > -	if (reason & MCSR_BUS_RBERR)
-> > +	if (reason & MCSR_BUS_RBERR) {
-> > 		printk("Bus - Read Data Bus Error\n");
-> > +#ifdef CONFIG_RAPIDIO
-> > +		fsl_rio_mcheck_exception(regs);
-> > +#endif
->=20
-> make this like 'ret =3D fsl_rio...
->=20
+Signed-off-by: Alexander Shishkin <virtuoso@slind.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Andreas Schwab <schwab@linux-m68k.org>
+CC: Alexander Shishkin <virtuoso@slind.org>
+CC: Christoph Hellwig <hch@lst.de>
+CC: Jesper Nilsson <jesper.nilsson@axis.com>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+---
+ arch/powerpc/include/asm/systbl.h |    1 +
+ arch/powerpc/include/asm/unistd.h |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-Please, place it in the beginning of the machine_check_e500[mc](...) as
-well to avoid any 'printk' if RIO exception was handled properly.
-
-Alex.=20
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index aa0f1eb..a57cc82 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -348,3 +348,4 @@ COMPAT_SYS_SPU(sendmsg)
+ COMPAT_SYS_SPU(recvmsg)
+ COMPAT_SYS_SPU(recvmmsg)
+ SYSCALL_SPU(accept4)
++SYSCALL(time_change_notify)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 6151937..bea2c9e 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -367,10 +367,11 @@
+ #define __NR_recvmsg		342
+ #define __NR_recvmmsg		343
+ #define __NR_accept4		344
++#define __NR_time_change_notify 345
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		345
++#define __NR_syscalls		346
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.7.2.1.45.gb66c2
