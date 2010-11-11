@@ -1,19 +1,44 @@
-Return-Path: <akpm@linux-foundation.org>
-Date: Wed, 10 Nov 2010 23:00:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: subrata@linux.vnet.ibm.com
-Subject: Re: [Call Trace: 2.6.37-rc1-git7 & 2.6.37-rc1-git8, Powerpc] LTP
-	msgctl11 test case
-Message-Id: <20101110230016.40e4875e.akpm@linux-foundation.org>
-In-Reply-To: <1289457219.5622.15.camel@subratamodak.linux.ibm.com>
-References: <1289457219.5622.15.camel@subratamodak.linux.ibm.com>
+Return-Path: <subrata@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C5E25B7119
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 11 Nov 2010 18:57:48 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAB7nQre014120
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 00:49:26 -0700
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id oAB7vaSs119962
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 00:57:36 -0700
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id oAB7vZEE012392
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 00:57:36 -0700
+Subject: Re: [PATCH] powerpc: Fix hcall tracepoint recursion
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+In-Reply-To: <4CC13BB8.7090003@cn.fujitsu.com>
+References: <4C85A88D.10700@cn.fujitsu.com>
+	<1285689961.11429.12.camel@subratamodak.linux.ibm.com>
+	<1286954486.4893.15.camel@subratamodak.linux.ibm.com>
+	<4CB55FE6.6000604@cn.fujitsu.com>	<4CB5615C.4070406@cn.fujitsu.com>
+	<4CB59825.7060504@cn.fujitsu.com>
+	<1286995066.4893.17.camel@subratamodak.linux.ibm.com>
+	<4CBBBCB0.8070406@cn.fujitsu.com> <20101021215212.4a982c85@kryten>
+	<4CC13BB8.7090003@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 11 Nov 2010 13:27:16 +0530
+Message-Id: <1289462236.5622.43.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
-	DIVYA PRAKASH <dipraksh@linux.vnet.ibm.com>
+Cc: ltp-list@lists.sourceforge.net, Peter Zijlstra <peterz@infradead.org>,
+	LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,60 +48,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 11 Nov 2010 12:03:39 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+I tested and reported back the results. The patch works fine. Can you
+please find out if it has been committed to Linus tree and if yes, then
+the commit id please ?
 
-> Hi Peter/Ingo,
-> 
-> LTP__ msgctl11 test case creates Call trace and Exception for kernels
-> 2.6.37-rc1-git7 & 2.6.37-rc1-git8. Please see the dmesg below:
-> 
-> ================================================
-> msgctl11: page allocation failure. order:0, mode:0x20
-> Call Trace:
-> [c0000000fffcef30] [c000000000014c74] .show_stack+0x74/0x1c0 (unreliable)
-> [c0000000fffcefe0] [c00000000015e938] .__alloc_pages_nodemask+0x6d8/0x950
-> [c0000000fffcf160] [c0000000001a0c60] .alloc_pages_current+0xa0/0x160
-> [c0000000fffcf200] [c0000000001abfd8] .new_slab+0x358/0x370
-> [c0000000fffcf2b0] [c0000000001ac1cc] .__slab_alloc+0x1dc/0x500
-> [c0000000fffcf390] [c0000000001ad808] .kmem_cache_alloc+0x1a8/0x1b0
-> [c0000000fffcf440] [c0000000004eec88] .scsi_pool_alloc_command+0x58/0xa0
-> [c0000000fffcf4d0] [c0000000004eed60] .scsi_host_alloc_command+0x30/0xb0
-> [c0000000fffcf560] [c0000000004eee00] .__scsi_get_command+0x20/0xd0
-> [c0000000fffcf5f0] [c0000000004ef158] .scsi_get_command+0x58/0xf0
-> [c0000000fffcf690] [c0000000004f7948] .scsi_setup_fs_cmnd+0x108/0x120
-> [c0000000fffcf720] [d000000001484ad8] .sd_prep_fn+0x2b8/0xc70 [sd_mod]
-> [c0000000fffcf800] [c0000000003ea92c] .blk_peek_request+0x14c/0x310
-> [c0000000fffcf8b0] [c0000000004f6b14] .scsi_request_fn+0x94/0x560
-> [c0000000fffcf980] [c0000000003eba00] .__blk_run_queue+0x90/0x1b0
-> [c0000000fffcfa00] [c0000000003ebc20] .blk_run_queue+0x30/0x60
-> [c0000000fffcfa90] [c0000000004f5d84] .scsi_run_queue+0x104/0x3c0
-> [c0000000fffcfb60] [c0000000004f7228] .scsi_next_command+0x48/0x70
-> [c0000000fffcfbf0] [c0000000004f8280] .scsi_io_completion+0x3e0/0x580
-> [c0000000fffcfcd0] [c0000000004ee0a8] .scsi_finish_command+0x128/0x180
-> [c0000000fffcfd70] [c0000000004f8548] .scsi_softirq_done+0x118/0x1e0
-> [c0000000fffcfe10] [c0000000003f2410] .blk_done_softirq+0xb0/0xe0
-> [c0000000fffcfea0] [c0000000000943c8] .__do_softirq+0x118/0x290
-> [c0000000fffcff90] [c000000000031f58] .call_do_softirq+0x14/0x24
-> [c0000000a0992a20] [c00000000000f554] .do_softirq+0xf4/0x120
-> [c0000000a0992ac0] [c0000000000941d4] .irq_exit+0xb4/0xc0
-> [c0000000a0992b40] [c00000000000f7e0] .do_IRQ+0x160/0x2c0
-> [c0000000a0992c00] [c000000000004898] hardware_interrupt_entry+0x18/0x80
-> --- Exception: 501 at .do_raw_spin_unlock+0x80/0xe0
->     LR = ._raw_spin_unlock+0x30/0x50
-> [c0000000a0992f70] [c00000000018943c] .__page_check_address+0x16c/0x1a0
-> [c0000000a0993010] [c00000000018a5b4] .page_referenced_one+0x54/0x200
-> [c0000000a09930d0] [c00000000018ab4c] .page_referenced+0x3ec/0x490
-> [c0000000a0993200] [c000000000168bbc] .shrink_page_list+0x2bc/0x6d0
-> [c0000000a0993350] [c00000000016942c] .shrink_inactive_list+0x15c/0x580
-> [c0000000a0993460] [c000000000169f10] .shrink_zone+0x2e0/0x4b0
-> [c0000000a0993580] [c00000000016b3c0] .do_try_to_free_pages+0x110/0x510
-> [c0000000a0993670] [c00000000016bb3c] .try_to_free_pages+0xbc/0x1a0
-> [c0000000a0993780] [c00000000015e7a0] .__alloc_pages_nodemask+0x540/0x950
-> [c0000000a0993900] [c0000000001a0db8] .alloc_page_vma+0x98/0x1d0
-> [c0000000a09939a0] [c00000000017c7f4] .do_wp_page+0x144/0xb60
-> [c0000000a0993a90] [c00000000017eef0] .handle_mm_fault+0x670/0xb50
-> [c0000000a0993b80] [c0000000006feea4] .do_page_fault+0x344/0x780
-> [c0000000a0993e30] [c00000000000522c] handle_page_fault+0x20/0x74
+Regards--
+Subrata
 
-That trace is impressively hard to understand.  Who called
-do_raw_spin_unlock?
+On Fri, 2010-10-22 at 15:22 +0800, Li Zefan wrote: 
+> Anton Blanchard wrote:
+> > Hi,
+> > 
+> >> This is a dead loop:
+> >>
+> >> trace_hcall_entry() -> trace_clock_global() -> trace_hcall_entry() ..
+> >>
+> >> And this is a PPC specific bug. Hope some ppc guys will fix it?
+> >> Or we kill trace_clock_global() if no one actually uses it..
+> > 
+> > Nasty! How does the patch below look? I had to disable irqs otherwise
+> > we would sometimes drop valid events (if we take an interrupt anywhere
+> > in the region where depth is elevated, then the entire interrupt will
+> > be blocked from calling hcall tracepoints.
+> > 
+> 
+> Thanks!
+> 
+> Subrata, could you test the patch below?
+> 
+> > Anton
+> > --
+> > 
+> > Subject: [PATCH] powerpc: Fix hcall tracepoint recursion
+> > 
+> > Spinlocks on shared processor partitions use H_YIELD to notify the
+> > hypervisor we are waiting on another virtual CPU. Unfortunately this means
+> > the hcall tracepoints can recurse.
+> > 
+> > The patch below adds a percpu depth and checks it on both the entry and
+> > exit hcall tracepoints.
+> > 
+> > Signed-off-by: Anton Blanchard <anton@samba.org>
+> > ---
+> > 
+> > Index: powerpc.git/arch/powerpc/platforms/pseries/lpar.c
+> > ===================================================================
+> > --- powerpc.git.orig/arch/powerpc/platforms/pseries/lpar.c	2010-10-21 17:32:00.980003644 +1100
+> > +++ powerpc.git/arch/powerpc/platforms/pseries/lpar.c	2010-10-21 17:34:54.942681273 +1100
+> > @@ -701,6 +701,13 @@ EXPORT_SYMBOL(arch_free_page);
+> >  /* NB: reg/unreg are called while guarded with the tracepoints_mutex */
+> >  extern long hcall_tracepoint_refcount;
+> >  
+> > +/* 
+> > + * Since the tracing code might execute hcalls we need to guard against
+> > + * recursion. One example of this are spinlocks calling H_YIELD on
+> > + * shared processor partitions.
+> > + */
+> > +static DEFINE_PER_CPU(unsigned int, hcall_trace_depth);
+> > +
+> >  void hcall_tracepoint_regfunc(void)
+> >  {
+> >  	hcall_tracepoint_refcount++;
+> > @@ -713,12 +720,42 @@ void hcall_tracepoint_unregfunc(void)
+> >  
+> >  void __trace_hcall_entry(unsigned long opcode, unsigned long *args)
+> >  {
+> > +	unsigned long flags;
+> > +	unsigned int *depth;
+> > +
+> > +	local_irq_save(flags);
+> > +
+> > +	depth = &__get_cpu_var(hcall_trace_depth);
+> > +
+> > +	if (*depth)
+> > +		goto out;
+> > +
+> > +	(*depth)++;
+> >  	trace_hcall_entry(opcode, args);
+> > +	(*depth)--;
+> > +
+> > +out:
+> > +	local_irq_restore(flags);
+> >  }
+> >  
+> >  void __trace_hcall_exit(long opcode, unsigned long retval,
+> >  			unsigned long *retbuf)
+> >  {
+> > +	unsigned long flags;
+> > +	unsigned int *depth;
+> > +
+> > +	local_irq_save(flags);
+> > +
+> > +	depth = &__get_cpu_var(hcall_trace_depth);
+> > +
+> > +	if (*depth)
+> > +		goto out;
+> > +
+> > +	(*depth)++;
+> >  	trace_hcall_exit(opcode, retval, retbuf);
+> > +	(*depth)--;
+> > +
+> > +out:
+> > +	local_irq_restore(flags);
+> >  }
+> >  #endif
+> > 
+> > 
