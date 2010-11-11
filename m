@@ -2,20 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 52D61B7121
+	by ozlabs.org (Postfix) with ESMTPS id 7D2CEB7128
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 22:56:41 +1100 (EST)
-Subject: Re: [PATCH v2] fsldma: add support to 36-bit physical address
+	Thu, 11 Nov 2010 22:59:23 +1100 (EST)
+Subject: Re: [PATCH 3/3] powerpc/85xx: Update of_platform_bus_probe list to
+	include PCI controller
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1289477789-10651-1-git-send-email-leoli@freescale.com>
-Date: Thu, 11 Nov 2010 05:56:01 -0600
-Message-Id: <54AAF9B7-9533-45B8-9C49-A964203AF707@kernel.crashing.org>
-References: <1289477789-10651-1-git-send-email-leoli@freescale.com>
-To: Li Yang <leoli@freescale.com>
-Cc: dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <1288934910-3202-1-git-send-email-b25806@freescale.com>
+Date: Thu, 11 Nov 2010 05:59:10 -0600
+Message-Id: <90A4C584-325F-4E5D-8D3C-1B5797F4CAC0@kernel.crashing.org>
+References: <1288934910-3202-1-git-send-email-b25806@freescale.com>
+To: Lan Chunhe <b25806@freescale.com>
+Cc: "Kai.Jiang" <Kai.Jiang@freescale.com>, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, dougthompson@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +27,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 11, 2010, at 6:16 AM, Li Yang wrote:
+On Nov 5, 2010, at 12:28 AM, Lan Chunhe wrote:
 
-> Expand the dma_mask of fsldma device to 36-bit, indicating that the
-> DMA engine can deal with 36-bit physical address and does not need
-> the SWIOTLB to create bounce buffer for it when doing dma_map_*().
+> We need to get the pci controller created as an of platform device to
+> allow the EDAC driver to bind to it on P4080DS.
 >=20
-> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Kai.Jiang <Kai.Jiang@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Lan Chunhe <b25806@freescale.com>
 > ---
-> Add more detailed commit message
+> arch/powerpc/platforms/85xx/corenet_ds.c |    3 +++
+> 1 files changed, 3 insertions(+), 0 deletions(-)
 >=20
-> drivers/dma/fsldma.c |    4 +++-
-> 1 files changed, 3 insertions(+), 1 deletions(-)
+> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c =
+b/arch/powerpc/platforms/85xx/corenet_ds.c
+> index 2ab338c..bf9b9e5 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+> @@ -116,6 +116,9 @@ static const struct of_device_id of_device_ids[] =
+__devinitconst =3D {
+> 	{
+> 		.compatible	=3D "fsl,rapidio-delta",
+> 	},
+> +	{
+> +		.compatible	=3D "fsl,p4080-pcie",
+> +	},
+> 	{}
+> };
 >=20
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index cea08be..8c79b37 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1,7 +1,7 @@
-> /*
->  * Freescale MPC85xx, MPC83xx DMA Engine support
->  *
-> - * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights =
-reserved.
-> + * Copyright (C) 2007-2010 Freescale Semiconductor, Inc. All rights =
-reserved.
->  *
->  * Author:
->  *   Zhang Wei <wei.zhang@freescale.com>, Jul 2007
-> @@ -1338,6 +1338,8 @@ static int __devinit fsldma_of_probe(struct =
-platform_device *op,
-> 	fdev->common.device_control =3D fsl_dma_device_control;
-> 	fdev->common.dev =3D &op->dev;
->=20
-> +	dma_set_mask(&(op->dev), DMA_BIT_MASK(36));
-> +
 
-Is there any reason we shouldn't set DMA_BIT_MASK(64) since the DMA =
-block programming model allows the address to be 64-bits?
+We've talked about doing an explicit add of a new node instead of doing =
+this everywhere.  I'd like to see that done instead.
 
-> 	dev_set_drvdata(&op->dev, fdev);
->=20
-> 	/*
+- k
 > --=20
-> 1.6.6-rc1.GIT
+> 1.5.4.5
 >=20
