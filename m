@@ -1,15 +1,21 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B46B3B7123
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Nov 2010 06:04:14 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-serial@vger.kernel.org
-Subject: [PATCH] serial: mpc52xx: make printout for type more generic
-Date: Fri, 12 Nov 2010 19:47:47 +0100
-Message-Id: <1289587667-7341-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2D24EB712D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 13 Nov 2010 07:24:32 +1100 (EST)
+Date: Fri, 12 Nov 2010 12:24:54 -0800 (PST)
+Message-Id: <20101112.122454.48521600.davem@davemloft.net>
+To: cbouatmailru@gmail.com
+Subject: Re: [PATCH 1/2] ucc_geth: Do not bring the whole IF down when TX
+	failure.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20101112140515.GA28223@oksana.dev.rtsoft.ru>
+References: <1289570109-8160-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20101112140515.GA28223@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,49 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The printout for the type should be just "5xxx", so 512x users won't
-wonder why they have a mpc52xx-type UART.
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+Date: Fri, 12 Nov 2010 17:05:15 +0300
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
----
+> On Fri, Nov 12, 2010 at 02:55:08PM +0100, Joakim Tjernlund wrote:
+>> ucc_geth_close lacks a cancel_work_sync(&ugeth->timeout_work)
+>> to stop any outstanding processing of TX fail. However, one
+>> can not call cancel_work_sync without fixing the timeout function
+>> otherwise it will deadlock. This patch brings ucc_geth in line with
+>> gianfar:
+>> 
+>> Don't bring the interface down and up, just reinit controller HW
+>> and PHY.
+>> 
+>> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> 
+> Looks sane, thanks!
+> 
+> Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-At least I got confused and thought the wrong type was detected.
-
- drivers/serial/mpc52xx_uart.c |    6 +++++-
- include/linux/serial_core.h   |    2 +-
- 2 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index c4399e2..126ec7f 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -838,7 +838,11 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
- static const char *
- mpc52xx_uart_type(struct uart_port *port)
- {
--	return port->type == PORT_MPC52xx ? "MPC52xx PSC" : NULL;
-+	/*
-+	 * We keep using PORT_MPC52xx for historic reasons although it applies
-+	 * for MPC512x, too, but print "MPC5xxx" to not irritate users
-+	 */
-+	return port->type == PORT_MPC52xx ? "MPC5xxx PSC" : NULL;
- }
- 
- static void
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 212eb4c..3b354bf 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -95,7 +95,7 @@
- /* PPC CPM type number */
- #define PORT_CPM        58
- 
--/* MPC52xx type numbers */
-+/* MPC52xx (and MPC512x) type numbers */
- #define PORT_MPC52xx	59
- 
- /* IBM icom */
--- 
-1.7.2.3
+Applied.
