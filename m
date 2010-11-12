@@ -1,22 +1,22 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
-	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id 6C6B1B713A
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 74A76B7121
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Nov 2010 01:09:54 +1100 (EST)
-Received: by ewy26 with SMTP id 26so1749464ewy.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Nov 2010 06:09:52 -0800 (PST)
-Date: Fri, 12 Nov 2010 17:09:47 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 2/2] ucc_geth: Fix deadlock
-Message-ID: <20101112140947.GB28223@oksana.dev.rtsoft.ru>
-References: <1289570109-8160-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1289570109-8160-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	Sat, 13 Nov 2010 03:30:54 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1289570109-8160-2-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH][v3] fsl_rio: move machine_check handler into
+	machine_check_e500 & machine_check_e500mc
+Date: Fri, 12 Nov 2010 08:30:06 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201539084@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <1289548520-24110-1-git-send-email-b21989@freescale.com>
+References: <1289548520-24110-1-git-send-email-b21989@freescale.com>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Shaohui Xie" <b21989@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Cc: akpm@linux-foundation.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 12, 2010 at 02:55:09PM +0100, Joakim Tjernlund wrote:
-> This script:
->  while [ 1==1 ] ; do ifconfig eth0 up; usleep 1950000 ;ifconfig eth0 down; dmesg -c ;done
-> causes in just a second or two:
-> INFO: task ifconfig:572 blocked for more than 120 seconds.
-[...]
-> The reason appears to be ucc_geth_stop meets adjust_link as the
-> PHY reports PHY changes. I belive adjust_link hangs somewhere,
-> holding the PHY lock, because ucc_geth_stop disabled the
-> controller HW.
-> Fix is to stop the PHY before disabling the controller.
-> 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-
-It's unclear where exactly adjust_link() hangs, but the patch
-looks as the right thing overall.
-
-Thanks!
-
-Reviewed-by: Anton Vorontsov <cbouatmailru@gmail.com>
-
-> ---
->  drivers/net/ucc_geth.c |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index 6c254ed..06a5db3 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -2050,12 +2050,16 @@ static void ucc_geth_stop(struct ucc_geth_private *ugeth)
->  
->  	ugeth_vdbg("%s: IN", __func__);
->  
-> +	/*
-> +	 * Tell the kernel the link is down.
-> +	 * Must be done before disabling the controller
-> +	 * or deadlock may happen.
-> +	 */
-> +	phy_stop(phydev);
+Shaohui Xie <b21989@freescale.com> wrote:
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index a45a63c..9ab7b97 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -55,6 +55,7 @@
+>  #endif
+>  #include <asm/kexec.h>
+>  #include <asm/ppc-opcode.h>
+> +#include <asm/rio.h>
+>=20
+>  #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+>  int (*__debugger)(struct pt_regs *regs) __read_mostly;
+> @@ -425,6 +426,12 @@ int machine_check_e500mc(struct pt_regs *regs)
+>  	unsigned long reason =3D mcsr;
+>  	int recoverable =3D 1;
+>=20
+> +	if (reason & MCSR_BUS_RBERR) {
+> +		recoverable =3D fsl_rio_mcheck_exception(regs);
+> +		if (recoverable =3D=3D 1)
+> +			goto silent_out;
+> +	}
 > +
->  	/* Disable the controller */
->  	ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
->  
-> -	/* Tell the kernel the link is down */
-> -	phy_stop(phydev);
-> -
->  	/* Mask all interrupts */
->  	out_be32(ugeth->uccf->p_uccm, 0x00000000);
+>  	printk("Machine check in kernel mode.\n");
+>  	printk("Caused by (from MCSR=3D%lx): ", reason);
+>=20
+> @@ -500,6 +507,7 @@ int machine_check_e500mc(struct pt_regs *regs)
+>  		       reason & MCSR_MEA ? "Effective" : "Physical",
+addr);
+>  	}
+>=20
+> +silent_out:
+>  	mtspr(SPRN_MCSR, mcsr);
+>  	return mfspr(SPRN_MCSR) =3D=3D 0 && recoverable;
+>  }
+> @@ -507,6 +515,13 @@ int machine_check_e500mc(struct pt_regs *regs)
+>  int machine_check_e500(struct pt_regs *regs)
+>  {
+>  	unsigned long reason =3D get_mc_reason(regs);
+> +	int ret =3D 0;
+> +
+> +	if (reason & MCSR_BUS_RBERR) {
+> +		ret =3D fsl_rio_mcheck_exception(regs);
+> +		if (ret =3D=3D 1)
+> +			return ret;
+> +	}
+
+Do we really need 'ret' variable here?
+There is no further use of it by the rest of the code.
+Maybe just return 1 here if fsl_rio_mcheck_exception() returns 1 ?
+
+>=20
+>  	printk("Machine check in kernel mode.\n");
+>  	printk("Caused by (from MCSR=3D%lx): ", reason);
+> @@ -536,7 +551,7 @@ int machine_check_e500(struct pt_regs *regs)
+>  	if (reason & MCSR_BUS_RPERR)
+>  		printk("Bus - Read Parity Error\n");
+>=20
+> -	return 0;
+> +	return ret;
+>  }
+>  #elif defined(CONFIG_E200)
+>  int machine_check_e200(struct pt_regs *regs)
+
+Works for RapidIO as expected now.
+
+Thank you,
+
+Alex.
