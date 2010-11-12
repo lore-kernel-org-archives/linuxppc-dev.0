@@ -1,18 +1,19 @@
 Return-Path: <joe@perches.com>
 Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 34568B7135
+	by ozlabs.org (Postfix) with ESMTP id A6369B712E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Nov 2010 08:38:12 +1100 (EST)
+	Sat, 13 Nov 2010 08:38:16 +1100 (EST)
 From: Joe Perches <joe@perches.com>
 To: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH 00/14] Use printf extension %pR for struct resource
-Date: Fri, 12 Nov 2010 13:37:50 -0800
-Message-Id: <cover.1289597644.git.joe@perches.com>
-Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org,
-	linux-parisc@vger.kernel.org, linux-rdma@vger.kernel.org,
-	netdev@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, socketcan-core@lists.berlios.de,
-	linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 08/14] drivers/mtd/nand: Use printf extension %pR for struct
+	resource
+Date: Fri, 12 Nov 2010 13:37:58 -0800
+Message-Id: <7b7e68efb016f0b0d53bb3119208dd937c79d53c.1289597644.git.joe@perches.com>
+In-Reply-To: <cover.1289597644.git.joe@perches.com>
+References: <cover.1289597644.git.joe@perches.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
+	David Woodhouse <dwmw2@infradead.org>,
+	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,46 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yet more trivia...
+Using %pR standardizes the struct resource output.
 
-Joe Perches (14):
-  arch/frv: Use printf extension %pR for struct resource
-  arch/mips: Use printf extension %pR for struct resource
-  arch/powerpc: Use printf extension %pR for struct resource
-  drivers/dma/ppc4xx: Use printf extension %pR for struct resource
-  drivers/infiniband: Use printf extension %pR for struct resource
-  drivers/mfd: Use printf extension %pR for struct resource
-  drivers/mtd/maps: Use printf extension %pR for struct resource
-  drivers/mtd/nand: Use printf extension %pR for struct resource
-  drivers/net/can/sja1000: Use printf extension %pR for struct resource
-  drivers/parisc: Use printf extension %pR for struct resource
-  drivers/rapidio: Use printf extension %pR for struct resource
-  drivers/uwb: Use printf extension %pR for struct resource
-  drivers/video: Use printf extension %pR for struct resource
-  sound/ppc: Use printf extension %pR for struct resource
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/mtd/nand/pasemi_nand.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- arch/frv/mb93090-mb00/pci-vdk.c               |    8 ++------
- arch/mips/txx9/generic/pci.c                  |    7 ++-----
- arch/powerpc/kernel/pci_64.c                  |    3 +--
- arch/powerpc/sysdev/tsi108_dev.c              |    8 ++++----
- drivers/dma/ppc4xx/adma.c                     |    5 ++---
- drivers/infiniband/hw/ipath/ipath_driver.c    |    5 ++---
- drivers/mfd/sm501.c                           |    7 ++-----
- drivers/mtd/maps/amd76xrom.c                  |    7 ++-----
- drivers/mtd/maps/ck804xrom.c                  |    7 ++-----
- drivers/mtd/maps/esb2rom.c                    |    9 +++------
- drivers/mtd/maps/ichxrom.c                    |    9 +++------
- drivers/mtd/maps/physmap_of.c                 |    4 +---
- drivers/mtd/maps/scx200_docflash.c            |    5 ++---
- drivers/mtd/nand/pasemi_nand.c                |    2 +-
- drivers/net/can/sja1000/sja1000_of_platform.c |    8 ++------
- drivers/parisc/dino.c                         |   13 +++++--------
- drivers/parisc/hppb.c                         |    6 ++----
- drivers/rapidio/rio.c                         |    4 ++--
- drivers/uwb/umc-dev.c                         |    7 ++-----
- drivers/video/platinumfb.c                    |    8 ++------
- sound/ppc/pmac.c                              |   12 ++++--------
- 21 files changed, 48 insertions(+), 96 deletions(-)
-
+diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
+index 6ddb246..bb277a5 100644
+--- a/drivers/mtd/nand/pasemi_nand.c
++++ b/drivers/mtd/nand/pasemi_nand.c
+@@ -107,7 +107,7 @@ static int __devinit pasemi_nand_probe(struct platform_device *ofdev,
+ 	if (pasemi_nand_mtd)
+ 		return -ENODEV;
+ 
+-	pr_debug("pasemi_nand at %llx-%llx\n", res.start, res.end);
++	pr_debug("pasemi_nand at %pR\n", &res);
+ 
+ 	/* Allocate memory for MTD device structure and private data */
+ 	pasemi_nand_mtd = kzalloc(sizeof(struct mtd_info) +
 -- 
 1.7.3.1.g432b3.dirty
