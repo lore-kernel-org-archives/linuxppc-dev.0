@@ -1,38 +1,32 @@
-Return-Path: <R58472@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
-	[213.199.154.206])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5960DB7148
+Return-Path: <jkenisto@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A0171B70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Nov 2010 14:16:08 +1100 (EST)
-Received: from mail32-am1 (localhost.localdomain [127.0.0.1])	by
-	mail32-am1-R.bigfish.com (Postfix) with ESMTP id 63C77BA8319	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 12 Nov 2010 03:16:02 +0000 (UTC)
-Received: from AM1EHSMHS009.bigfish.com (unknown [10.3.201.242])	by
-	mail32-am1.bigfish.com (Postfix) with ESMTP id 15243E8804E	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 12 Nov 2010 03:16:02 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id oAC3FwHr009419	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 20:15:58 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP
-	id oAC3FvAU015265	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Nov 2010 21:15:58 -0600 (CST)
+	Fri, 12 Nov 2010 15:54:21 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAC4sj0j031807
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 23:54:45 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oAC4rnuX360342
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 23:53:49 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oAC4rmYv009905
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 23:53:48 -0500
+Received: from localhost.localdomain (w-jimk.beaverton.ibm.com [9.47.28.66])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	oAC4rmIb009896
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2010 23:53:48 -0500
+From: Jim Keniston <jkenisto@us.ibm.com>
+Subject: [PATCH 0/4] More ppc64 nvram code cleanup
+To: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 11 Nov 2010 20:53:48 -0800
+Message-ID: <20101112045346.4290.43739.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Subject: RE: [PATCH v2] fsldma: add support to 36-bit physical address
-Date: Fri, 12 Nov 2010 11:16:46 +0800
-Message-ID: <F9BD3E0A8083BE4ABAA94D7EDD7E3F6339D5ED@zch01exm26.fsl.freescale.net>
-In-Reply-To: <54AAF9B7-9533-45B8-9C49-A964203AF707@kernel.crashing.org>
-References: <1289477789-10651-1-git-send-email-leoli@freescale.com>
-	<54AAF9B7-9533-45B8-9C49-A964203AF707@kernel.crashing.org>
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,54 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: Re: [PATCH v2] fsldma: add support to 36-bit physical address
->
->
->On Nov 11, 2010, at 6:16 AM, Li Yang wrote:
->
->> Expand the dma_mask of fsldma device to 36-bit, indicating that the
->> DMA engine can deal with 36-bit physical address and does not need =
-the
->> SWIOTLB to create bounce buffer for it when doing dma_map_*().
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->> Add more detailed commit message
->>
->> drivers/dma/fsldma.c |    4 +++-
->> 1 files changed, 3 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index
->> cea08be..8c79b37 100644
->> --- a/drivers/dma/fsldma.c
->> +++ b/drivers/dma/fsldma.c
->> @@ -1,7 +1,7 @@
->> /*
->>  * Freescale MPC85xx, MPC83xx DMA Engine support
->>  *
->> - * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights =
-reserved.
->> + * Copyright (C) 2007-2010 Freescale Semiconductor, Inc. All rights
->reserved.
->>  *
->>  * Author:
->>  *   Zhang Wei <wei.zhang@freescale.com>, Jul 2007
->> @@ -1338,6 +1338,8 @@ static int __devinit fsldma_of_probe(struct
->platform_device *op,
->> 	fdev->common.device_control =3D fsl_dma_device_control;
->> 	fdev->common.dev =3D &op->dev;
->>
->> +	dma_set_mask(&(op->dev), DMA_BIT_MASK(36));
->> +
->
->Is there any reason we shouldn't set DMA_BIT_MASK(64) since the DMA =
-block
->programming model allows the address to be 64-bits?
+This series contains some fixups to Ben Herrenschmidt's Aug. 2 patch
+set, "[RFC] Clean up ppc64 nvram code" --
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-August/084601.html
 
-The current code is only verified on chips with 36-bit physical address. =
- I'm not sure if the driver can work without any change on the 64-bit =
-chip, although the register model suggests it can work well with 64-bit. =
- If you can confirm that it's compatible with the block on 64-bit chip, =
-then we can change it to 64 bit dma mask.
+These patches apply atop Ben's 11-patch series.
+---
 
-- Leo
+Jim Keniston (4):
+      Handle partition names >= 12 chars
+      Fix NVRAM partition list setup
+      Fix nvram_create_partition() arg order
+      Fix powerpc nvram init order
+
+
+ arch/powerpc/kernel/nvram_64.c         |   31 +++++++++++--------------------
+ arch/powerpc/platforms/pseries/nvram.c |    8 ++++----
+ 2 files changed, 15 insertions(+), 24 deletions(-)
+
+--
+Jim Keniston
+IBM Linux Technology Center
+Beaverton, OR
