@@ -1,22 +1,15 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 74A76B7121
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Nov 2010 03:30:54 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH][v3] fsl_rio: move machine_check handler into
-	machine_check_e500 & machine_check_e500mc
-Date: Fri, 12 Nov 2010 08:30:06 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201539084@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <1289548520-24110-1-git-send-email-b21989@freescale.com>
-References: <1289548520-24110-1-git-send-email-b21989@freescale.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Shaohui Xie" <b21989@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Cc: akpm@linux-foundation.org, Kumar Gala <kumar.gala@freescale.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B46B3B7123
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Nov 2010 06:04:14 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-serial@vger.kernel.org
+Subject: [PATCH] serial: mpc52xx: make printout for type more generic
+Date: Fri, 12 Nov 2010 19:47:47 +0100
+Message-Id: <1289587667-7341-1-git-send-email-w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shaohui Xie <b21989@freescale.com> wrote:
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index a45a63c..9ab7b97 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -55,6 +55,7 @@
->  #endif
->  #include <asm/kexec.h>
->  #include <asm/ppc-opcode.h>
-> +#include <asm/rio.h>
->=20
->  #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
->  int (*__debugger)(struct pt_regs *regs) __read_mostly;
-> @@ -425,6 +426,12 @@ int machine_check_e500mc(struct pt_regs *regs)
->  	unsigned long reason =3D mcsr;
->  	int recoverable =3D 1;
->=20
-> +	if (reason & MCSR_BUS_RBERR) {
-> +		recoverable =3D fsl_rio_mcheck_exception(regs);
-> +		if (recoverable =3D=3D 1)
-> +			goto silent_out;
-> +	}
-> +
->  	printk("Machine check in kernel mode.\n");
->  	printk("Caused by (from MCSR=3D%lx): ", reason);
->=20
-> @@ -500,6 +507,7 @@ int machine_check_e500mc(struct pt_regs *regs)
->  		       reason & MCSR_MEA ? "Effective" : "Physical",
-addr);
->  	}
->=20
-> +silent_out:
->  	mtspr(SPRN_MCSR, mcsr);
->  	return mfspr(SPRN_MCSR) =3D=3D 0 && recoverable;
->  }
-> @@ -507,6 +515,13 @@ int machine_check_e500mc(struct pt_regs *regs)
->  int machine_check_e500(struct pt_regs *regs)
->  {
->  	unsigned long reason =3D get_mc_reason(regs);
-> +	int ret =3D 0;
-> +
-> +	if (reason & MCSR_BUS_RBERR) {
-> +		ret =3D fsl_rio_mcheck_exception(regs);
-> +		if (ret =3D=3D 1)
-> +			return ret;
-> +	}
+The printout for the type should be just "5xxx", so 512x users won't
+wonder why they have a mpc52xx-type UART.
 
-Do we really need 'ret' variable here?
-There is no further use of it by the rest of the code.
-Maybe just return 1 here if fsl_rio_mcheck_exception() returns 1 ?
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
 
->=20
->  	printk("Machine check in kernel mode.\n");
->  	printk("Caused by (from MCSR=3D%lx): ", reason);
-> @@ -536,7 +551,7 @@ int machine_check_e500(struct pt_regs *regs)
->  	if (reason & MCSR_BUS_RPERR)
->  		printk("Bus - Read Parity Error\n");
->=20
-> -	return 0;
-> +	return ret;
->  }
->  #elif defined(CONFIG_E200)
->  int machine_check_e200(struct pt_regs *regs)
+At least I got confused and thought the wrong type was detected.
 
-Works for RapidIO as expected now.
+ drivers/serial/mpc52xx_uart.c |    6 +++++-
+ include/linux/serial_core.h   |    2 +-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-Thank you,
-
-Alex.
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index c4399e2..126ec7f 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -838,7 +838,11 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
+ static const char *
+ mpc52xx_uart_type(struct uart_port *port)
+ {
+-	return port->type == PORT_MPC52xx ? "MPC52xx PSC" : NULL;
++	/*
++	 * We keep using PORT_MPC52xx for historic reasons although it applies
++	 * for MPC512x, too, but print "MPC5xxx" to not irritate users
++	 */
++	return port->type == PORT_MPC52xx ? "MPC5xxx PSC" : NULL;
+ }
+ 
+ static void
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 212eb4c..3b354bf 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -95,7 +95,7 @@
+ /* PPC CPM type number */
+ #define PORT_CPM        58
+ 
+-/* MPC52xx type numbers */
++/* MPC52xx (and MPC512x) type numbers */
+ #define PORT_MPC52xx	59
+ 
+ /* IBM icom */
+-- 
+1.7.2.3
