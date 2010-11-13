@@ -1,22 +1,23 @@
-Return-Path: <joe@perches.com>
-Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 25CFAB713D
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 681EA1007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Nov 2010 11:49:22 +1100 (EST)
-Subject: [PATCH 03/14 V2] arch/powerpc: Use printf extension %pR for struct
-	resource
-From: Joe Perches <joe@perches.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20101113114228.e87c6902.sfr@canb.auug.org.au>
-References: <cover.1289597644.git.joe@perches.com>
-	<7654162f86bedd7d4cd5ccc883916157af6a2369.1289597644.git.joe@perches.com>
-	<20101113114228.e87c6902.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Nov 2010 16:49:19 -0800
-Message-ID: <1289609359.6519.160.camel@Joe-Laptop>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Sun, 14 Nov 2010 09:44:03 +1100 (EST)
+Received: by iwn2 with SMTP id 2so5368113iwn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 13 Nov 2010 14:44:01 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <54AAF9B7-9533-45B8-9C49-A964203AF707@kernel.crashing.org>
+References: <1289477789-10651-1-git-send-email-leoli@freescale.com>
+	<54AAF9B7-9533-45B8-9C49-A964203AF707@kernel.crashing.org>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Sat, 13 Nov 2010 16:43:30 -0600
+Message-ID: <AANLkTi=1nutREorMFY2VJyUYQD0SHfiSeskw-u22P+R-@mail.gmail.com>
+Subject: Re: [PATCH v2] fsldma: add support to 36-bit physical address
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using %pR standardizes the struct resource output.
+On Thu, Nov 11, 2010 at 5:56 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
-On Sat, 2010-11-13 at 11:42 +1100, Stephen Rothwell wrote:
-> Shouldn't this be just &hose->io_resource?
+> Is there any reason we shouldn't set DMA_BIT_MASK(64) since the DMA block programming model allows the address to be 64-bits?
 
-V2: Fix stupid editing mistake
+Can you explain that?  The DMA registers only have room for 36 bits
+for the physical address.
 
- arch/powerpc/kernel/pci_64.c     |    3 +--
- arch/powerpc/sysdev/tsi108_dev.c |    8 ++++----
- 2 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index d43fc65..2ecb1de 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -193,8 +193,7 @@ int __devinit pcibios_map_io_space(struct pci_bus *bus)
- 	hose->io_resource.start += io_virt_offset;
- 	hose->io_resource.end += io_virt_offset;
- 
--	pr_debug("  hose->io_resource=0x%016llx...0x%016llx\n",
--		 hose->io_resource.start, hose->io_resource.end);
-+	pr_debug("  hose->io_resource=%pR\n", &hose->io_resource);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/sysdev/tsi108_dev.c b/arch/powerpc/sysdev/tsi108_dev.c
-index d4d15aa..5e249a8 100644
---- a/arch/powerpc/sysdev/tsi108_dev.c
-+++ b/arch/powerpc/sysdev/tsi108_dev.c
-@@ -83,8 +83,8 @@ static int __init tsi108_eth_of_init(void)
- 		memset(&tsi_eth_data, 0, sizeof(tsi_eth_data));
- 
- 		ret = of_address_to_resource(np, 0, &r[0]);
--		DBG("%s: name:start->end = %s:0x%lx-> 0x%lx\n",
--			__func__,r[0].name, r[0].start, r[0].end);
-+		DBG("%s: name:start->end = %s:%pR\n",
-+		    __func__, r[0].name, &r[0]);
- 		if (ret)
- 			goto err;
- 
-@@ -92,8 +92,8 @@ static int __init tsi108_eth_of_init(void)
- 		r[1].start = irq_of_parse_and_map(np, 0);
- 		r[1].end = irq_of_parse_and_map(np, 0);
- 		r[1].flags = IORESOURCE_IRQ;
--		DBG("%s: name:start->end = %s:0x%lx-> 0x%lx\n",
--			__func__,r[1].name, r[1].start, r[1].end);
-+		DBG("%s: name:start->end = %s:%pR\n",
-+			__func__, r[1].name, &r[1]);
- 
- 		tsi_eth_dev =
- 		    platform_device_register_simple("tsi-ethernet", i++, &r[0],
 -- 
-1.7.3.1.g432b3.dirty
+Timur Tabi
+Linux kernel developer at Freescale
