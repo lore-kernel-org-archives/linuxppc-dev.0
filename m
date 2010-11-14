@@ -1,30 +1,32 @@
 Return-Path: <jkenisto@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7489EB710D
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AAA50B73A8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 14 Nov 2010 15:15:46 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAE3rn00027706
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Nov 2010 22:53:49 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oAE4FG8L344250
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Nov 2010 23:15:16 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oAE4FGZl001855
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Nov 2010 02:15:16 -0200
+	Sun, 14 Nov 2010 15:15:52 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAE440L5025137
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Nov 2010 21:04:00 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oAE4FYcw220146
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Nov 2010 21:15:36 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id oAE4FYmP025219
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Nov 2010 21:15:34 -0700
 Received: from localhost.localdomain (w-jimk.beaverton.ibm.com [9.47.28.66])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	oAE4FGBa001849
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Nov 2010 02:15:16 -0200
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	oAE4FXSG025207
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Nov 2010 21:15:33 -0700
 From: Jim Keniston <jkenisto@us.ibm.com>
-Subject: [PATCH 1/6] nvram: Generalize code for OS partitions in NVRAM
+Subject: [PATCH 4/6] nvram: Add compression to fit more printk output into
+	NVRAM
 To: linuxppc-dev@lists.ozlabs.org
-Date: Sat, 13 Nov 2010 20:15:16 -0800
-Message-ID: <20101114041516.9457.2462.stgit@localhost.localdomain>
+Date: Sat, 13 Nov 2010 20:15:33 -0800
+Message-ID: <20101114041533.9457.1431.stgit@localhost.localdomain>
 In-Reply-To: <20101114041510.9457.92921.stgit@localhost.localdomain>
 References: <20101114041510.9457.92921.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -38,335 +40,269 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adapt the functions used to create and write to the RTAS-log partition
-to work with any OS-type partition.
+Capture more than twice as much text from the printk buffer, and
+compress it to fit it in the ibm,oops-log NVRAM partition.
 
 Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
 ---
 
- arch/powerpc/include/asm/nvram.h       |    3 -
- arch/powerpc/kernel/nvram_64.c         |   31 ++++++-
- arch/powerpc/platforms/pseries/nvram.c |  138 +++++++++++++++++++-------------
- 3 files changed, 110 insertions(+), 62 deletions(-)
+ arch/powerpc/include/asm/rtas.h        |    6 +
+ arch/powerpc/platforms/pseries/nvram.c |  195 ++++++++++++++++++++++++++++----
+ 2 files changed, 177 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nvram.h b/arch/powerpc/include/asm/nvram.h
-index 457a1a5..3cd90fd 100644
---- a/arch/powerpc/include/asm/nvram.h
-+++ b/arch/powerpc/include/asm/nvram.h
-@@ -50,7 +50,8 @@ static inline int mmio_nvram_init(void)
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 3d35f8a..6e0f4b5 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -205,10 +205,12 @@ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+ #define ERR_FLAG_ALREADY_LOGGED	0x0
+ #define ERR_FLAG_BOOT		0x1 	/* log was pulled from NVRAM on boot */
+ #define ERR_TYPE_RTAS_LOG	0x2	/* from rtas event-scan */
+-#define ERR_TYPE_KERNEL_PANIC	0x4	/* from panic() */
++#define ERR_TYPE_KERNEL_PANIC	0x4	/* from die()/panic() */
++#define ERR_TYPE_KERNEL_PANIC_GZ 0x8	/* ditto, compressed */
  
- extern loff_t nvram_create_partition(const char *name, int sig,
- 				     int req_size, int min_size);
--extern int nvram_remove_partition(const char *name, int sig);
-+extern int nvram_remove_partition(const char *name, int sig,
-+					const char *exceptions[]);
- extern int nvram_get_partition_size(loff_t data_index);
- extern loff_t nvram_find_partition(const char *name, int sig, int *out_size);
+ /* All the types and not flags */
+-#define ERR_TYPE_MASK	(ERR_TYPE_RTAS_LOG | ERR_TYPE_KERNEL_PANIC)
++#define ERR_TYPE_MASK \
++	(ERR_TYPE_RTAS_LOG | ERR_TYPE_KERNEL_PANIC | ERR_TYPE_KERNEL_PANIC_GZ)
  
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index cda7c3f..3de46cd 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -237,22 +237,45 @@ static unsigned char __init nvram_checksum(struct nvram_header *p)
- 	return c_sum;
- }
- 
-+/*
-+ * Per the criteria passed via nvram_remove_partition(), should this
-+ * partition be removed?  1=remove, 0=keep
-+ */
-+static int nvram_condemn_partition(struct nvram_partition *part,
-+		const char *name, int sig, const char *exceptions[])
-+{
-+	if (part->header.signature != sig)
-+		return 0;
-+	if (name) {
-+		if (strncmp(name, part->header.name, 12))
-+			return 0;
-+	} else if (exceptions) {
-+		const char **except;
-+		for (except = exceptions; *except; except++) {
-+			if (!strncmp(*except, part->header.name, 12))
-+				return 0;
-+		}
-+	}
-+	return 1;
-+}
-+
- /**
-  * nvram_remove_partition - Remove one or more partitions in nvram
-  * @name: name of the partition to remove, or NULL for a
-  *        signature only match
-  * @sig: signature of the partition(s) to remove
-+ * @exceptions: When removing all partitions with a matching signature,
-+ *        leave these alone.
-  */
- 
--int __init nvram_remove_partition(const char *name, int sig)
-+int __init nvram_remove_partition(const char *name, int sig,
-+						const char *exceptions[])
- {
- 	struct nvram_partition *part, *prev, *tmp;
- 	int rc;
- 
- 	list_for_each_entry(part, &nvram_partitions, partition) {
--		if (part->header.signature != sig)
--			continue;
--		if (name && strncmp(name, part->header.name, 12))
-+		if (!nvram_condemn_partition(part, name, sig, exceptions))
- 			continue;
- 
- 		/* Make partition a free partition */
+ #define RTAS_DEBUG KERN_DEBUG "RTAS: "
+  
 diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index 4b705dc..43d5c52 100644
+index e1bc1a4..8e5ed74 100644
 --- a/arch/powerpc/platforms/pseries/nvram.c
 +++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -30,17 +30,30 @@ static int nvram_fetch, nvram_store;
- static char nvram_buf[NVRW_CNT];	/* assume this is in the first 4GB */
- static DEFINE_SPINLOCK(nvram_lock);
- 
--static long nvram_error_log_index = -1;
--static long nvram_error_log_size = 0;
--
- struct err_log_info {
- 	int error_type;
- 	unsigned int seq_num;
+@@ -17,7 +17,10 @@
+ #include <linux/init.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/ctype.h>
+ #include <linux/kmsg_dump.h>
++#include <linux/zlib.h>
+ #include <asm/uaccess.h>
+ #include <asm/nvram.h>
+ #include <asm/rtas.h>
+@@ -74,9 +77,24 @@ static struct kmsg_dumper nvram_kmsg_dumper = {
+ 	.dump = oops_to_nvram
  };
--#define NVRAM_MAX_REQ		2079
--#define NVRAM_MIN_REQ		1055
  
--#define NVRAM_LOG_PART_NAME	"ibm,rtas-log"
-+struct os_partition {
-+	const char *name;
-+	int req_size;	/* desired size, in bytes */
-+	int min_size;	/* minimum acceptable size (0 means req_size) */
-+	long size;	/* size of data portion of partition */
-+	long index;	/* offset of data portion of partition */
-+};
+-/* We preallocate oops_buf during init to avoid kmalloc during oops/panic. */
+-static size_t oops_buf_sz;
+-static char *oops_buf;
++/*
++ * big_oops_buf[] holds the uncompressed text we're capturing.  little_oops_buf
++ * holds the compressed text, plus its length.  little_oops_buf gets written
++ * to NVRAM.
++ *
++ * We preallocate these buffers during init to avoid kmalloc during oops/panic.
++ */
++static size_t big_oops_buf_sz, little_oops_buf_sz;
++static char *big_oops_buf;
 +
-+static struct os_partition rtas_log_partition = {
-+	.name = "ibm,rtas-log",
-+	.req_size = 2079,
-+	.min_size = 1055,
-+	.index = -1
-+};
++static struct oops_parition_data {
++#define OOPS_PTN_PREFIX_SZ sizeof(unsigned short)
++	unsigned short length;
++	char buf[0];
++} *little_oops_buf;
 +
-+static const char *valid_os_partitions[] = {
-+	"ibm,rtas-log",
-+	NULL
-+};
++#define COMPR_LEVEL 6
++static struct z_stream_s stream;
  
  static ssize_t pSeries_nvram_read(char *buf, size_t count, loff_t *index)
  {
-@@ -134,7 +147,7 @@ static ssize_t pSeries_nvram_get_size(void)
+@@ -374,13 +392,42 @@ static void __init nvram_init_oops_partition(int rtas_partition_exists)
+ 		memcpy(&oops_log_partition, &rtas_log_partition,
+ 						sizeof(rtas_log_partition));
+ 	}
+-	oops_buf_sz = oops_log_partition.size - sizeof(struct err_log_info);
+-	oops_buf = kmalloc(oops_buf_sz, GFP_KERNEL);
++
++	little_oops_buf_sz = oops_log_partition.size - OOPS_PTN_PREFIX_SZ;
++	little_oops_buf = kmalloc(oops_log_partition.size, GFP_KERNEL);
++	if (!little_oops_buf) {
++		pr_err("nvram: No memory for %s partition\n",
++						oops_log_partition.name);
++		return;
++	}
++	/*
++	 * Figure compression (preceded by elimination of each line's <n>
++	 * severity prefix) will reduce the oops/panic report to at most
++	 * 45% of its original size.
++	 */
++	big_oops_buf_sz = (little_oops_buf_sz * 100) / 45;
++	big_oops_buf = kmalloc(big_oops_buf_sz, GFP_KERNEL);
++	if (big_oops_buf) {
++		stream.workspace = vmalloc(zlib_deflate_workspacesize());
++		if (!stream.workspace) {
++			pr_err("nvram: No memory for compression workspace; "
++				"skipping compression of %s partition data\n",
++				oops_log_partition.name);
++			kfree(big_oops_buf);
++			big_oops_buf = NULL;
++		}
++	} else {
++		pr_err("No memory for uncompressed %s data; "
++			"skipping compression\n", oops_log_partition.name);
++		stream.workspace = NULL;
++	}
++
+ 	rc = kmsg_dump_register(&nvram_kmsg_dumper);
+ 	if (rc != 0) {
+ 		pr_err("nvram: kmsg_dump_register() failed; returned %d\n", rc);
+-		kfree(oops_buf);
+-		return;
++		kfree(little_oops_buf);
++		kfree(big_oops_buf);
++		vfree(stream.workspace);
+ 	}
  }
  
- 
--/* nvram_write_error_log
-+/* nvram_write_os_partition, nvram_write_error_log
-  *
-  * We need to buffer the error logs into nvram to ensure that we have
-  * the failure information to decode.  If we have a severe error there
-@@ -156,48 +169,55 @@ static ssize_t pSeries_nvram_get_size(void)
-  * The 'data' section would look like (in bytes):
-  * +--------------+------------+-----------------------------------+
-  * | event_logged | sequence # | error log                         |
-- * |0            3|4          7|8            nvram_error_log_size-1|
-+ * |0            3|4          7|8                  error_log_size-1|
-  * +--------------+------------+-----------------------------------+
-  *
-  * event_logged: 0 if event has not been logged to syslog, 1 if it has
-  * sequence #: The unique sequence # for each event. (until it wraps)
-  * error log: The error log from event_scan
-  */
--int nvram_write_error_log(char * buff, int length,
-+int nvram_write_os_partition(struct os_partition *part, char * buff, int length,
-                           unsigned int err_type, unsigned int error_log_cnt)
- {
- 	int rc;
- 	loff_t tmp_index;
- 	struct err_log_info info;
- 	
--	if (nvram_error_log_index == -1) {
-+	if (part->index == -1) {
- 		return -ESPIPE;
- 	}
- 
--	if (length > nvram_error_log_size) {
--		length = nvram_error_log_size;
-+	if (length > part->size) {
-+		length = part->size;
- 	}
- 
- 	info.error_type = err_type;
- 	info.seq_num = error_log_cnt;
- 
--	tmp_index = nvram_error_log_index;
-+	tmp_index = part->index;
- 
- 	rc = ppc_md.nvram_write((char *)&info, sizeof(struct err_log_info), &tmp_index);
- 	if (rc <= 0) {
--		printk(KERN_ERR "nvram_write_error_log: Failed nvram_write (%d)\n", rc);
-+		printk(KERN_ERR "nvram_write_os_partition: Failed nvram_write (%d)\n", rc);
- 		return rc;
- 	}
- 
- 	rc = ppc_md.nvram_write(buff, length, &tmp_index);
- 	if (rc <= 0) {
--		printk(KERN_ERR "nvram_write_error_log: Failed nvram_write (%d)\n", rc);
-+		printk(KERN_ERR "nvram_write_os_partition: Failed nvram_write (%d)\n", rc);
- 		return rc;
- 	}
- 	
- 	return 0;
+@@ -527,7 +574,105 @@ static size_t capture_oops(const char *old_msgs, size_t old_len,
+ 	return nc1 + nc2;
  }
  
-+int nvram_write_error_log(char * buff, int length,
-+                          unsigned int err_type, unsigned int error_log_cnt)
+-/* our kmsg_dump callback */
++/*
++ * For a panic, capture the last capture_len chars of the printk buffer.
++ * For an oops, ensure that we have the start of the oops report, and the
++ * message(s) leading up to it.
++ */
++static size_t capture_msgs(enum kmsg_dump_reason reason,
++				const char *old_msgs, size_t old_len,
++				const char *new_msgs, size_t new_len,
++				char *captured, size_t capture_len)
 +{
-+	return nvram_write_os_partition(&rtas_log_partition, buff, length,
-+						err_type, error_log_cnt);
++	size_t text_len;
++
++	text_len = capture_last_msgs(old_msgs, old_len, new_msgs, new_len,
++						captured, capture_len);
++	if (reason == KMSG_DUMP_OOPS) {
++		const char *poops = strnrstr(captured, OOPS_TAG, capture_len);
++		if (!poops || poops < captured + PREAMBLE_CHARS)
++			text_len = capture_oops(old_msgs, old_len, new_msgs,
++				new_len, captured, capture_len, text_len);
++	}
++	return text_len;
 +}
 +
- /* nvram_read_error_log
-  *
-  * Reads nvram for error log for at most 'length'
-@@ -209,13 +229,13 @@ int nvram_read_error_log(char * buff, int length,
- 	loff_t tmp_index;
- 	struct err_log_info info;
- 	
--	if (nvram_error_log_index == -1)
-+	if (rtas_log_partition.index == -1)
- 		return -1;
- 
--	if (length > nvram_error_log_size)
--		length = nvram_error_log_size;
-+	if (length > rtas_log_partition.size)
-+		length = rtas_log_partition.size;
- 
--	tmp_index = nvram_error_log_index;
-+	tmp_index = rtas_log_partition.index;
- 
- 	rc = ppc_md.nvram_read((char *)&info, sizeof(struct err_log_info), &tmp_index);
- 	if (rc <= 0) {
-@@ -244,10 +264,10 @@ int nvram_clear_error_log(void)
- 	int clear_word = ERR_FLAG_ALREADY_LOGGED;
- 	int rc;
- 
--	if (nvram_error_log_index == -1)
-+	if (rtas_log_partition.index == -1)
- 		return -1;
- 
--	tmp_index = nvram_error_log_index;
-+	tmp_index = rtas_log_partition.index;
- 	
- 	rc = ppc_md.nvram_write((char *)&clear_word, sizeof(int), &tmp_index);
- 	if (rc <= 0) {
-@@ -258,67 +278,71 @@ int nvram_clear_error_log(void)
- 	return 0;
- }
- 
--/* pseries_nvram_init_log_partition
-+/* pseries_nvram_init_os_partition
-  *
-- * This will setup the partition we need for buffering the
-- * error logs and cleanup partitions if needed.
-+ * This set up a partition with an "OS" signature.
-  *
-  * The general strategy is the following:
-- * 1.) If there is log partition large enough then use it.
-- * 2.) If there is none large enough, search
-- * for a free partition that is large enough.
-- * 3.) If there is not a free partition large enough remove 
-- * _all_ OS partitions and consolidate the space.
-- * 4.) Will first try getting a chunk that will satisfy the maximum
-- * error log size (NVRAM_MAX_REQ).
-- * 5.) If the max chunk cannot be allocated then try finding a chunk
-- * that will satisfy the minum needed (NVRAM_MIN_REQ).
-+ * 1.) If a partition with the indicated name already exists...
-+ *	- If it's large enough, use it.
-+ *	- Otherwise, recycle it and keep going.
-+ * 2.) Search for a free partition that is large enough.
-+ * 3.) If there's not a free partition large enough, recycle any obsolete
-+ * OS partitions and try again.
-+ * 4.) Will first try getting a chunk that will satisfy the requested size.
-+ * 5.) If a chunk of the requested size cannot be allocated, then try finding
-+ * a chunk that will satisfy the minum needed.
-+ *
-+ * Returns 0 on success, else -1.
-  */
--static int __init pseries_nvram_init_log_partition(void)
-+static int __init pseries_nvram_init_os_partition(struct os_partition *part)
- {
- 	loff_t p;
- 	int size;
- 
--	p = nvram_find_partition(NVRAM_LOG_PART_NAME, NVRAM_SIG_OS, &size);
-+	p = nvram_find_partition(part->name, NVRAM_SIG_OS, &size);
- 
- 	/* Found one but too small, remove it */
--	if (p && size < NVRAM_MIN_REQ) {
--		pr_info("nvram: Found too small "NVRAM_LOG_PART_NAME" partition"
--			",removing it...");
--		nvram_remove_partition(NVRAM_LOG_PART_NAME, NVRAM_SIG_OS);
-+	if (p && size < part->min_size) {
-+		pr_info("nvram: Found too small %s partition,"
-+					" removing it...\n", part->name);
-+		nvram_remove_partition(part->name, NVRAM_SIG_OS, NULL);
- 		p = 0;
- 	}
- 
- 	/* Create one if we didn't find */
- 	if (!p) {
--		p = nvram_create_partition(NVRAM_LOG_PART_NAME, NVRAM_SIG_OS,
--					   NVRAM_MAX_REQ, NVRAM_MIN_REQ);
--		/* No room for it, try to get rid of any OS partition
--		 * and try again
--		 */
-+		p = nvram_create_partition(part->name, NVRAM_SIG_OS,
-+					part->req_size, part->min_size);
- 		if (p == -ENOSPC) {
--			pr_info("nvram: No room to create "NVRAM_LOG_PART_NAME
--				" partition, deleting all OS partitions...");
--			nvram_remove_partition(NULL, NVRAM_SIG_OS);
--			p = nvram_create_partition(NVRAM_LOG_PART_NAME,
--						   NVRAM_SIG_OS, NVRAM_MAX_REQ,
--						   NVRAM_MIN_REQ);
-+			pr_info("nvram: No room to create %s partition, "
-+				"deleting any obsolete OS partitions...\n",
-+				part->name);
-+			nvram_remove_partition(NULL, NVRAM_SIG_OS,
-+						valid_os_partitions);
-+			p = nvram_create_partition(part->name, NVRAM_SIG_OS,
-+					part->req_size, part->min_size);
- 		}
- 	}
- 
- 	if (p <= 0) {
--		pr_err("nvram: Failed to find or create "NVRAM_LOG_PART_NAME
--		       " partition, err %d\n", (int)p);
--		return 0;
-+		pr_err("nvram: Failed to find or create %s"
-+		       " partition, err %d\n", part->name, (int)p);
-+		return -1;
- 	}
- 
--	nvram_error_log_index = p;
--	nvram_error_log_size = nvram_get_partition_size(p) -
--		sizeof(struct err_log_info);
-+	part->index = p;
-+	part->size = nvram_get_partition_size(p) - sizeof(struct err_log_info);
- 	
- 	return 0;
- }
--machine_late_initcall(pseries, pseries_nvram_init_log_partition);
-+
-+static int __init pseries_nvram_init_log_partitions(void)
++/* Squeeze out each line's <n> severity prefix. */
++static size_t elide_severities(char *buf, size_t len)
 +{
-+	(void) pseries_nvram_init_os_partition(&rtas_log_partition);
++	char *in, *out, *buf_end = buf + len;
++	/* Assume a <n> at the very beginning marks the start of a line. */
++	int newline = 1;
++
++	in = out = buf;
++	while (in < buf_end) {
++		if (newline && in+3 <= buf_end &&
++				*in == '<' && isdigit(in[1]) && in[2] == '>') {
++			in += 3;
++			newline = 0;
++		} else {
++			newline = (*in == '\n');
++			*out++ = *in++;
++		}
++	}
++	return out - buf;
++}
++
++/* Derived from logfs_compress() */
++static int nvram_compress(const void *in, void *out, size_t inlen,
++							size_t outlen)
++{
++	int err, ret;
++
++	ret = -EIO;
++	err = zlib_deflateInit(&stream, COMPR_LEVEL);
++	if (err != Z_OK)
++		goto error;
++
++	stream.next_in = in;
++	stream.avail_in = inlen;
++	stream.total_in = 0;
++	stream.next_out = out;
++	stream.avail_out = outlen;
++	stream.total_out = 0;
++
++	err = zlib_deflate(&stream, Z_FINISH);
++	if (err != Z_STREAM_END)
++		goto error;
++
++	err = zlib_deflateEnd(&stream);
++	if (err != Z_OK)
++		goto error;
++
++	if (stream.total_out >= stream.total_in)
++		goto error;
++
++	ret = stream.total_out;
++error:
++	return ret;
++}
++
++/* Compress the text from big_oops_buf into little_oops_buf. */
++static int zip_oops(size_t text_len)
++{
++	int zipped_len = nvram_compress(big_oops_buf, little_oops_buf->buf,
++					text_len, little_oops_buf_sz);
++	if (zipped_len < 0) {
++		pr_err("nvram: compression failed; returned %d\n", zipped_len);
++		pr_err("nvram: logging uncompressed oops/panic report\n");
++		return -1;
++	}
++	little_oops_buf->length = (unsigned short) zipped_len;
 +	return 0;
 +}
-+machine_late_initcall(pseries, pseries_nvram_init_log_partitions);
- 
- int __init pSeries_nvram_init(void)
++
++/*
++ * This is our kmsg_dump callback, called after an oops or panic report
++ * has been written to the printk buffer.  We want to capture as much
++ * of the printk buffer as possible.  First, capture as much as we can
++ * that we think will compress sufficiently to fit in the ibm,oops-log
++ * partition.  If that's too much, go back and capture uncompressed text.
++ */
+ static void oops_to_nvram(struct kmsg_dumper *dumper,
+ 		enum kmsg_dump_reason reason,
+ 		const char *old_msgs, unsigned long old_len,
+@@ -535,19 +680,25 @@ static void oops_to_nvram(struct kmsg_dumper *dumper,
  {
+ 	static unsigned int oops_count = 0;
+ 	size_t text_len;
+-
+-	text_len = capture_last_msgs(old_msgs, old_len, new_msgs, new_len,
+-						oops_buf, oops_buf_sz);
+-	if (reason == KMSG_DUMP_OOPS) {
+-		/*
+-		 * Ensure that we have the start of the oops report,
+-		 * and the message(s) leading up to it.
+-		 */
+-		const char *poops = strnrstr(oops_buf, OOPS_TAG, oops_buf_sz);
+-		if (!poops || poops < oops_buf + PREAMBLE_CHARS)
+-			text_len = capture_oops(old_msgs, old_len, new_msgs,
+-				new_len, oops_buf, oops_buf_sz, text_len);
++	unsigned int err_type = ERR_TYPE_KERNEL_PANIC_GZ;
++	int rc = -1;
++
++	if (big_oops_buf) {
++		text_len = capture_msgs(reason, old_msgs, old_len,
++			new_msgs, new_len, big_oops_buf, big_oops_buf_sz);
++		text_len = elide_severities(big_oops_buf, text_len);
++		rc = zip_oops(text_len);
+ 	}
+-	(void) nvram_write_os_partition(&oops_log_partition, oops_buf,
+-		(int) text_len, ERR_TYPE_KERNEL_PANIC, ++oops_count);
++	if (rc != 0) {
++		text_len = capture_msgs(reason, old_msgs, old_len,
++				new_msgs, new_len, little_oops_buf->buf,
++				little_oops_buf_sz);
++		err_type = ERR_TYPE_KERNEL_PANIC;
++		little_oops_buf->length = (unsigned short) text_len;
++	}
++
++	(void) nvram_write_os_partition(&oops_log_partition,
++		(char*) little_oops_buf,
++		(int) (OOPS_PTN_PREFIX_SZ + little_oops_buf->length),
++		err_type, ++oops_count);
+ }
