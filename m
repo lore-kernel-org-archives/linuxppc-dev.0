@@ -1,41 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 17E03B7112
+Return-Path: <tmarri@amcc.com>
+Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2D61DB711C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Nov 2010 04:53:27 +1100 (EST)
-Received: from mail125-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail125-tx2-R.bigfish.com (Postfix) with ESMTP id 00A35940124	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 15 Nov 2010 17:53:16 +0000 (UTC)
-Received: from TX2EHSMHS027.bigfish.com (unknown [10.9.14.248])	by
-	mail125-tx2.bigfish.com (Postfix) with ESMTP id A74725E8053	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 15 Nov 2010 17:53:15 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id oAFHrD7D026546	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Nov 2010 10:53:13 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oAFHrDSo004486	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Nov 2010 11:53:13 -0600 (CST)
-Date: Mon, 15 Nov 2010 11:53:11 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] fsldma: add support to 36-bit physical address
-Message-ID: <20101115115311.72429aa9@udp111988uds.am.freescale.net>
-In-Reply-To: <72D46FED-AFC8-4599-ADB0-2A2B634CCE48@kernel.crashing.org>
-References: <1289477789-10651-1-git-send-email-leoli@freescale.com>
-	<54AAF9B7-9533-45B8-9C49-A964203AF707@kernel.crashing.org>
-	<AANLkTi=1nutREorMFY2VJyUYQD0SHfiSeskw-u22P+R-@mail.gmail.com>
-	<3B38AD35-39A2-4A54-8109-65D6DE436227@kernel.crashing.org>
-	<AANLkTin8+13mr-tV-2iCG+zGRfF6xZ23cN+=44dsaQor@mail.gmail.com>
-	<72D46FED-AFC8-4599-ADB0-2A2B634CCE48@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Timur Tabi <timur.tabi@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	dan.j.williams@intel.com, linux-kernel@vger.kernel.org
+	Tue, 16 Nov 2010 07:15:37 +1100 (EST)
+From: tmarri@apm.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] PPC4xx: Adding PCI(E) MSI support
+Date: Mon, 15 Nov 2010 12:15:06 -0800
+Message-Id: <1289852106-17577-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,28 +20,567 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 15 Nov 2010 11:43:12 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
+From: Tirumala Marri <tmarri@apm.com>
 
-> 
-> On Nov 15, 2010, at 10:13 AM, Timur Tabi wrote:
-> 
-> > On Mon, Nov 15, 2010 at 9:16 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> > 
-> >> The programming model (if you look at the free-space in the registers and data structures) supports a 64-bit address.  I'm trying to avoid changing the driver in the future if we have >36-bit.  However this is such a minor worry that I'll stop and just ack the patch as is.
-> > 
-> > I must still be missing something.  I'm looking at the description of
-> > the SATR register in the MPC8572 RM, and it shows this:
-> > 
-> > 0 - 3 |   4 - 5   |     6     |   7  |   8 - 11  |   12 - 15  | 16-21 | 22-31
-> > ---  | STFLOWLVL | SPCIORDER | SSME | STRANSINT | SREADTTYPE |  ---  |  ESAD
-> > 
-> > The most that we can extend ESAD to is 16 bits, for a total of a
-> > 48-bit physical address.  Where are the other 16 bits supposed to go?
-> 
-> I was looking at the link addresses.  I stand corrected so our max is 48-bits.
+This patch adds MSI support for 440SPe, 460Ex, 460Sx and 405Ex.
 
-Looks like 42 bits -- just because bits 16-21 could be used to extend
-ESAD doesn't mean that they have been.
+Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+---
+v1:
+  * Get rid of bitmap functions.
+  * Remove irq mapping as each MSI is tied to UIC.
+  * Cleaning up of prints.
 
--Scott
+v2:
+  * Remove or add blank lines at appropriate places.
+  * Added BITMAP as it is easy to request and free the MSIs
+  * Removed UPPER_4BITS_OF36BIT & LOWER_32BITS_OF36BIT;
+  * Remove unused feature variable.
+  * Remove initialization of "virq".
+  * remove static int_no varaible and replace with bitmap.
+  * Eliminated reading count from DTS tree and added a macro.
+  * Remove printK.
+  * Remove else in setup_irqs.
+  * Free interrupts in teardown_msi_interrupts().
+  * Print contraints in check_device().
+  * Replace ioremap with of_iomap().
+  * Use msi_data in setup_pcieh_hw().
+  * Don't unmap in the setup_pcieh_hw().
+  * don't use WARN_ON.
+  * Remove ppc4xx_msi_ids[].
+---
+ arch/powerpc/boot/dts/canyonlands.dts |   18 ++
+ arch/powerpc/boot/dts/katmai.dts      |   18 ++
+ arch/powerpc/boot/dts/kilauea.dts     |   28 +++
+ arch/powerpc/boot/dts/redwood.dts     |   20 ++
+ arch/powerpc/platforms/40x/Kconfig    |    2 +
+ arch/powerpc/platforms/44x/Kconfig    |    6 +
+ arch/powerpc/sysdev/Kconfig           |    7 +
+ arch/powerpc/sysdev/Makefile          |    1 +
+ arch/powerpc/sysdev/ppc4xx_msi.c      |  311 +++++++++++++++++++++++++++++++++
+ 9 files changed, 411 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/ppc4xx_msi.c
+
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index a303703..5a8e04e 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -519,5 +519,23 @@
+ 				0x0 0x0 0x0 0x3 &UIC3 0x12 0x4 /* swizzled int C */
+ 				0x0 0x0 0x0 0x4 &UIC3 0x13 0x4 /* swizzled int D */>;
+ 		};
++
++		MSI: ppc4xx-msi@C10000000 {
++			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
++			reg = < 0xC 0x10000000 0x100>;
++			sdr-base = <0x36C>;
++			msi-data = <0x00000000>;
++			msi-mask = <0x44440000>;
++			interrupt-count = <3>;
++			interrupts = <0 1 2 3>;
++			interrupt-parent = <&UIC3>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = <0 &UIC3 0x18 1
++					1 &UIC3 0x19 1
++					2 &UIC3 0x1A 1
++					3 &UIC3 0x1B 1>;
++		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index 7c3be5e..f913dbe 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -442,6 +442,24 @@
+ 				0x0 0x0 0x0 0x4 &UIC3 0xb 0x4 /* swizzled int D */>;
+ 		};
+ 
++		MSI: ppc4xx-msi@400300000 {
++				compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
++				reg = < 0x4 0x00300000 0x100>;
++				sdr-base = <0x3B0>;
++				msi-data = <0x00000000>;
++				msi-mask = <0x44440000>;
++				interrupt-count = <3>;
++				interrupts =<0 1 2 3>;
++				interrupt-parent = <&UIC0>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = <0 &UIC0 0xC 1
++					1 &UIC0 0x0D 1
++					2 &UIC0 0x0E 1
++					3 &UIC0 0x0F 1>;
++		};
++
+ 		I2O: i2o@400100000 {
+ 			compatible = "ibm,i2o-440spe";
+ 			reg = <0x00000004 0x00100000 0x100>;
+diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+index 083e68e..21e88f5 100644
+--- a/arch/powerpc/boot/dts/kilauea.dts
++++ b/arch/powerpc/boot/dts/kilauea.dts
+@@ -394,5 +394,33 @@
+ 				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
+ 				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
+ 		};
++
++		MSI: ppc4xx-msi@C10000000 {
++			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
++			reg = < 0x0 0xEF620000 0x100>;
++			sdr-base = <0x4B0>;
++			msi-data = <0x00000000>;
++			msi-mask = <0x44440000>;
++			interrupt-count = <12>;
++			interrupts = <0 1 2 3 4 5 6 7 8 9 0xA 0xB 0xC 0xD>;
++			interrupt-parent = <&UIC2>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = <0 &UIC2 0x10 1
++					1 &UIC2 0x11 1
++					2 &UIC2 0x12 1
++					2 &UIC2 0x13 1
++					2 &UIC2 0x14 1
++					2 &UIC2 0x15 1
++					2 &UIC2 0x16 1
++					2 &UIC2 0x17 1
++					2 &UIC2 0x18 1
++					2 &UIC2 0x19 1
++					2 &UIC2 0x1A 1
++					2 &UIC2 0x1B 1
++					2 &UIC2 0x1C 1
++					3 &UIC2 0x1D 1>;
++		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/redwood.dts b/arch/powerpc/boot/dts/redwood.dts
+index 81636c0..d86a3a4 100644
+--- a/arch/powerpc/boot/dts/redwood.dts
++++ b/arch/powerpc/boot/dts/redwood.dts
+@@ -358,8 +358,28 @@
+ 				0x0 0x0 0x0 0x4 &UIC3 0xb 0x4 /* swizzled int D */>;
+ 		};
+ 
++		MSI: ppc4xx-msi@400300000 {
++				compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
++				reg = < 0x4 0x00300000 0x100
++					0x4 0x00300000 0x100>;
++				sdr-base = <0x3B0>;
++				msi-data = <0x00000000>;
++				msi-mask = <0x44440000>;
++				interrupt-count = <3>;
++				interrupts =<0 1 2 3>;
++				interrupt-parent = <&UIC0>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = <0 &UIC0 0xC 1
++					1 &UIC0 0x0D 1
++					2 &UIC0 0x0E 1
++					3 &UIC0 0x0F 1>;
++		};
++
+ 	};
+ 
++
+ 	chosen {
+ 		linux,stdout-path = "/plb/opb/serial@ef600200";
+ 	};
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index b721764..92aeee6 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -57,6 +57,8 @@ config KILAUEA
+ 	select 405EX
+ 	select PPC40x_SIMPLE
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI_MSI
++	select 4xx_MSI
+ 	help
+ 	  This option enables support for the AMCC PPC405EX evaluation board.
+ 
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 0f979c5..3836353 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -74,6 +74,8 @@ config KATMAI
+ 	select 440SPe
+ 	select PCI
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI_MSI
++	select 4xx_MSI
+ 	help
+ 	  This option enables support for the AMCC PPC440SPe evaluation board.
+ 
+@@ -119,6 +121,8 @@ config CANYONLANDS
+ 	select 460EX
+ 	select PCI
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI_MSI
++	select 4xx_MSI
+ 	select IBM_NEW_EMAC_RGMII
+ 	select IBM_NEW_EMAC_ZMII
+ 	help
+@@ -145,6 +149,8 @@ config REDWOOD
+ 	select 460SX
+ 	select PCI
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI_MSI
++	select 4xx_MSI
+ 	help
+ 	  This option enables support for the AMCC PPC460SX Redwood board.
+ 
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index 3965828..32f5a40 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -7,8 +7,15 @@ config PPC4xx_PCI_EXPRESS
+ 	depends on PCI && 4xx
+ 	default n
+ 
++config 4xx_MSI
++	bool
++	depends on PCI_MSI
++	depends on PCI && 4xx
++	default n
++
+ config PPC_MSI_BITMAP
+ 	bool
+ 	depends on PCI_MSI
+ 	default y if MPIC
+ 	default y if FSL_PCI
++	default y if 4xx_MSI
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 0bef9da..df859a6 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -41,6 +41,7 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
+ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
+ endif
++obj-$(CONFIG_4xx_MSI)		+= ppc4xx_msi.o
+ obj-$(CONFIG_PPC4xx_GPIO)	+= ppc4xx_gpio.o
+ 
+ obj-$(CONFIG_CPM)		+= cpm_common.o
+diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4xx_msi.c
+new file mode 100644
+index 0000000..9ed559f
+--- /dev/null
++++ b/arch/powerpc/sysdev/ppc4xx_msi.c
+@@ -0,0 +1,311 @@
++/*
++ * Adding PCI-E MSI support for PPC4XX SoCs.
++ *
++ * Copyright (c) 2010, Applied Micro Circuits Corporation
++ * Authors: 	Tirumala R Marri <tmarri@apm.com>
++ * 		Feng Kan <fkan@apm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <linux/irq.h>
++#include <linux/bootmem.h>
++#include <linux/pci.h>
++#include <linux/msi.h>
++#include <linux/of_platform.h>
++#include <linux/interrupt.h>
++#include <asm/prom.h>
++#include <asm/hw_irq.h>
++#include <asm/ppc-pci.h>
++#include <boot/dcr.h>
++#include <asm/dcr-regs.h>
++#include <asm/msi_bitmap.h>
++
++#define PEIH_TERMADH	0x00
++#define PEIH_TERMADL	0x08
++#define PEIH_MSIED	0x10
++#define PEIH_MSIMK	0x18
++#define PEIH_MSIASS	0x20
++#define PEIH_FLUSH0	0x30
++#define PEIH_FLUSH1	0x38
++#define PEIH_CNTRST	0x48
++#define NR_MSI_IRQS	4
++
++LIST_HEAD(msi_head);
++struct ppc4xx_msi {
++	u32 msi_addr_lo;
++	u32 msi_addr_hi;
++	void __iomem *msi_regs;
++	int msi_virqs[NR_MSI_IRQS];
++	struct msi_bitmap bitmap;
++	struct list_head list;
++};
++
++struct ppc4xx_msi_feature {
++	u32 ppc4xx_pic_ip;
++	u32 msiir_offset;
++};
++
++static int ppc4xx_msi_init_allocator(struct platform_device *dev,
++		struct ppc4xx_msi *msi_data)
++{
++	int err;
++
++	err = msi_bitmap_alloc(&msi_data->bitmap, NR_MSI_IRQS,
++			      dev->dev.of_node);
++	if (err)
++		return err;
++
++	err = msi_bitmap_reserve_dt_hwirqs(&msi_data->bitmap);
++	if (err < 0) {
++		msi_bitmap_free(&msi_data->bitmap);
++		return err;
++	}
++
++	return 0;
++}
++
++static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++{
++	int err = 0;
++	int int_no = -ENOMEM;
++	unsigned int virq;
++	struct msi_msg msg;
++	struct msi_desc *entry;
++	struct device_node *msi_dev = NULL;
++	struct ppc4xx_msi *msi_data = dev->dev.platform_data;
++
++	msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
++	if (msi_dev) {
++		err = -ENODEV;
++		goto out_free;
++	}
++
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		list_for_each_entry(msi_data, &msi_head, list) {
++			int_no = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
++			if(int_no >= 0)
++				break;
++		}
++		if(int_no < 0) {
++
++			err = int_no;
++			pr_debug("%s: fail allocating msi interrupt\n",
++					__func__);
++		}
++		virq = irq_of_parse_and_map(msi_dev, int_no);
++		if (virq == NO_IRQ) {
++			dev_err(&dev->dev, "%s: fail mapping irq\n", __func__);
++			msi_bitmap_free_hwirqs(&msi_data->bitmap, int_no, 1);
++			err = -ENOSPC;
++			goto out_free;
++		}
++		msi_data->msi_virqs[int_no] = virq;
++		set_irq_data(virq, (void *)int_no);
++		dev_dbg(&dev->dev, "%s: virq = %d \n", __func__, virq);
++
++		/* Setup msi address space */
++		msg.address_hi = msi_data->msi_addr_hi;
++		msg.address_lo = msi_data->msi_addr_lo;
++
++		set_irq_msi(virq, entry);
++		msg.data = int_no;
++		write_msi_msg(virq, &msg);
++	}
++	of_node_put(msi_dev);
++	return err;
++
++out_free:
++	of_node_put(msi_dev);
++	return err;
++}
++
++void ppc4xx_teardown_msi_irqs(struct pci_dev *dev)
++{
++	struct msi_desc *entry;
++	struct ppc4xx_msi *msi_data = dev->dev.platform_data;
++
++	dev_dbg(&dev->dev, "PCIE-MSI: tearing down msi irqs\n");
++
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++		set_irq_msi(entry->irq, NULL);
++		msi_bitmap_free_hwirqs(&msi_data->bitmap,
++				virq_to_hw(entry->irq), 1);
++		irq_dispose_mapping(entry->irq);
++	}
++
++	return;
++}
++
++static int ppc4xx_msi_check_device(struct pci_dev *pdev, int nvec, int type)
++{
++	dev_dbg(&pdev->dev, "PCIE-MSI:%s called. vec %x type %d\n",
++		__func__, nvec, type);
++	if (type == PCI_CAP_ID_MSIX)
++		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
++
++	return 0;
++}
++
++static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
++				 struct resource res, struct ppc4xx_msi *msi)
++{
++	const u32 *msi_data;
++	const u32 *msi_mask;
++	const u32 *sdr_addr;
++	int err = 0;
++	dma_addr_t msi_phys;
++	void *msi_virt;
++	struct device_node *msi_dev = NULL;
++
++	sdr_addr = of_get_property(dev->dev.of_node, "sdr-base", NULL);
++	if (!sdr_addr)
++		return -1;
++
++	SDR0_WRITE(sdr_addr, (u64)res.start >> 32);	 /*HIGH addr */
++	SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
++
++
++	msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
++	if (msi_dev) {
++		err = -ENODEV;
++		goto error_out;
++	}
++	msi->msi_regs = of_iomap(msi_dev, 0);
++	if (!msi->msi_regs) {
++		dev_err(&dev->dev, "ioremap problem failed\n");
++		return -ENOMEM;
++	}
++	of_node_put(msi_dev);
++	dev_dbg(&dev->dev, "PCIE-MSI: msi register mapped 0x%x 0x%x\n",
++		(u32) (msi->msi_regs + PEIH_TERMADH), (u32) (msi->msi_regs));
++
++	msi_virt = dma_alloc_coherent(&dev->dev, 64, &msi_phys, GFP_KERNEL);
++	msi->msi_addr_hi = 0x0;
++	msi->msi_addr_lo = (u32) msi_phys;
++	dev_dbg(&dev->dev, "PCIE-MSI: msi address 0x%x \n", msi->msi_addr_lo);
++
++	/* Progam the Interrupt handler Termination addr registers */
++	out_be32(msi->msi_regs + PEIH_TERMADH, msi->msi_addr_hi);
++	out_be32(msi->msi_regs + PEIH_TERMADL, msi->msi_addr_lo);
++
++	msi_data = of_get_property(dev->dev.of_node, "msi-data", NULL);
++	if (!msi_data) {
++		err = -1;
++		goto error_out;
++	}
++
++	msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
++	if (!msi_mask) {
++		err = -1;
++		goto error_out;
++	}
++
++	/* Program MSI Expected data and Mask bits */
++	out_be32(msi->msi_regs + PEIH_MSIED, *msi_data);
++	out_be32(msi->msi_regs + PEIH_MSIMK, *msi_mask);
++
++	return err;
++error_out:
++	return err;
++}
++
++static int ppc4xx_of_msi_remove(struct platform_device *dev)
++{
++	struct ppc4xx_msi *msi = dev->dev.platform_data;
++	int i;
++	int virq;
++
++	for(i = 0; i < NR_MSI_IRQS; i++) {
++		virq = msi->msi_virqs[i];
++		if (virq != NO_IRQ)
++			irq_dispose_mapping(virq);
++	}
++
++	if (msi->list.prev != NULL)
++		list_del(&msi->list);
++
++	if (msi->bitmap.bitmap)
++		msi_bitmap_free(&msi->bitmap);
++	iounmap(msi->msi_regs);
++	kfree(msi);
++
++	return 0;
++}
++
++static int __devinit ppc4xx_msi_probe(struct platform_device *dev,
++				      const struct of_device_id *match)
++{
++	struct ppc4xx_msi *msi;
++	struct resource res;
++	int err = 0;
++
++	dev_dbg(&dev->dev, "PCIE-MSI: Setting up MSI support...\n");
++
++	msi = kzalloc(sizeof(struct ppc4xx_msi), GFP_KERNEL);
++	if (!msi) {
++		dev_err(&dev->dev, "No memory for MSI structure\n");
++		err = -ENOMEM;
++		goto error_out;
++	}
++	dev->dev.platform_data = msi;
++
++	/* Get MSI ranges */
++	err = of_address_to_resource(dev->dev.of_node, 0, &res);
++	if (err) {
++		dev_err(&dev->dev, "%s resource error!\n",
++			dev->dev.of_node->full_name);
++		goto error_out;
++	}
++
++	if (ppc4xx_setup_pcieh_hw(dev, res, msi))
++		goto error_out;
++
++	err = ppc4xx_msi_init_allocator(dev, msi);
++	if (err) {
++		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
++		goto error_out;
++	}
++
++	list_add_tail(&msi->list, &msi_head);
++
++	ppc_md.setup_msi_irqs = ppc4xx_setup_msi_irqs;
++	ppc_md.teardown_msi_irqs = ppc4xx_teardown_msi_irqs;
++	ppc_md.msi_check_device = ppc4xx_msi_check_device;
++	return err;
++
++error_out:
++	ppc4xx_of_msi_remove(dev);
++	return err;
++}
++
++static struct of_platform_driver ppc4xx_msi_driver = {
++	.driver = {
++		   .name = "ppc4xx-msi",
++		   .owner = THIS_MODULE,
++		   },
++	.probe = ppc4xx_msi_probe,
++	.remove = ppc4xx_of_msi_remove,
++};
++
++static __init int ppc4xx_msi_init(void)
++{
++	return of_register_platform_driver(&ppc4xx_msi_driver);
++}
++
++subsys_initcall(ppc4xx_msi_init);
+-- 
+1.6.1.rc3
