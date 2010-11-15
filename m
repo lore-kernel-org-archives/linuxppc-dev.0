@@ -1,15 +1,21 @@
-Return-Path: <cbouatmailru@gmail.com>
-Date: Mon, 15 Nov 2010 20:32:50 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH 2/2] powerpc: pcm030/032: add pagesize to dts
-Message-ID: <20101115173250.GA22104@oksana.dev.rtsoft.ru>
-References: <1289841916-3825-1-git-send-email-w.sang@pengutronix.de>
-	<1289841916-3825-2-git-send-email-w.sang@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1289841916-3825-2-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 798E7B7113
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 16 Nov 2010 04:36:25 +1100 (EST)
+Subject: Re: [PATCH v2] fsldma: add support to 36-bit physical address
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1289477789-10651-1-git-send-email-leoli@freescale.com>
+Date: Mon, 15 Nov 2010 09:17:18 -0600
+Message-Id: <DCEA5DA7-D0DC-498C-831D-4EF212DE6421@kernel.crashing.org>
+References: <1289477789-10651-1-git-send-email-leoli@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Cc: dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,30 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 15, 2010 at 06:25:16PM +0100, Wolfram Sang wrote:
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> ---
->  arch/powerpc/boot/dts/pcm030.dts |    1 +
->  arch/powerpc/boot/dts/pcm032.dts |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletions(-)
+
+On Nov 11, 2010, at 6:16 AM, Li Yang wrote:
+
+> Expand the dma_mask of fsldma device to 36-bit, indicating that the
+> DMA engine can deal with 36-bit physical address and does not need
+> the SWIOTLB to create bounce buffer for it when doing dma_map_*().
 > 
-> diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
-> index 8a4ec30..e7c36bc 100644
-> --- a/arch/powerpc/boot/dts/pcm030.dts
-> +++ b/arch/powerpc/boot/dts/pcm030.dts
-> @@ -259,6 +259,7 @@
->  			eeprom@52 {
->  				compatible = "catalyst,24c32";
->  				reg = <0x52>;
-> +				pagesize = <32>;
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Add more detailed commit message
+> 
+> drivers/dma/fsldma.c |    4 +++-
+> 1 files changed, 3 insertions(+), 1 deletions(-)
 
-I think you'd better drop the pagesize property altogether, and
-instead make the compatible string more specific (if needed at
-all. are there any 'catalyst,24c32' chips with pagesize != 32?)
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
