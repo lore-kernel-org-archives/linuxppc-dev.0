@@ -1,24 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C5844B70E9
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 8ABB6B7131
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Nov 2010 19:33:38 +1100 (EST)
-Date: Tue, 16 Nov 2010 08:59:32 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Move ams driver to macintosh
-Message-ID: <20101116085932.5621cc20@endymion.delvare>
-In-Reply-To: <1289882005.2147.1489.camel@pasglop>
-References: <20101005121043.08771994@endymion.delvare>
-	<1289882005.2147.1489.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Michael Hanselmann <linux-kernel@hansmi.ch>,
-	LM Sensors <lm-sensors@lm-sensors.org>,
-	Stelian Pop <stelian@popies.net>, linuxppc-dev@lists.ozlabs.org,
-	Guenter Roeck <guenter.roeck@ericsson.com>
+	Tue, 16 Nov 2010 21:17:37 +1100 (EST)
+Subject: Re: Corrected data type mismatch
+From: Milton Miller <miltonm@bga.com>
+Message-Id: <mdm-kgbd-badfix@mdm.bga.com>
+In-Reply-To: <1289700419-11072-2-git-send-email-shan.hai@windriver.com>
+References: <1289700419-11072-2-git-send-email-shan.hai@windriver.com>
+To: Hai Shan <shan.hai@windriver.com>
+Date: Tue, 16 Nov 2010 04:17:25 -0600
+Cc: kgdb-bugreport@lists.sourceforge.net,
+	Dongdong Deng <dongdong.deng@windriver.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Jason Wessel <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin,
+[added cc's based on from ff10b88b5a05c8f1646dd15fb9f6093c1384ff6d,
+which added the patched line ]
 
-On Tue, 16 Nov 2010 15:33:25 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2010-10-05 at 12:10 +0200, Jean Delvare wrote:
-> > The ams driver isn't a hardware monitoring driver, so it shouldn't
-> > live under driver/hwmon. drivers/macintosh seems much more
-> > appropriate, as the driver is only useful on PowerBooks and iBooks.
-> 
-> Going through backlog... Do you want me to carry this in powerpc or
-> you'll deal with it directly ?
-> 
-> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > Cc: Guenter Roeck <guenter.roeck@ericsson.com>
-> > Cc: Stelian Pop <stelian@popies.net>
-> > Cc: Michael Hanselmann <linux-kernel@hansmi.ch>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+https://patchwork.kernel.org/patch/323022/
 
-I'm glad you like this patch, as it has already been applied to Linus'
-tree ;)
+On Sun, 14 Nov 2010 around 02:06:59 -0000, Hai Shan wrote:
+> 
+> Corrected data type mismatch
+> 
+This merely hides the type mismatch by force casting it.
 
--- 
-Jean Delvare
+Looking at the context I believe the intent is to copy the the value to
+or from the register content slot, not take the previous value of the
+register and use that as an address to copy to or from.
+
+milton
+> Signed-off-by: Hai Shan <shan.hai@windriver.com>
+> 
+> ---
+> arch/powerpc/kernel/kgdb.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+> index 7a9db64..c5ce65f 100644
+> --- a/arch/powerpc/kernel/kgdb.c
+> +++ b/arch/powerpc/kernel/kgdb.c
+> @@ -337,7 +337,7 @@ char *dbg_get_reg(int regno, void *mem, struct pt_regs *regs)
+>  		/* FP registers 32 -> 63 */
+>  #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
+>  		if (current)
+> -			memcpy(mem, current->thread.evr[regno-32],
+> +			memcpy(mem, (void *)current->thread.evr[regno-32],
+>  					dbg_reg_def[regno].size);
+>  #else
+>  		/* fp registers not used by kernel, leave zero */
+> @@ -362,7 +362,7 @@ int dbg_set_reg(int regno, void *mem, struct pt_regs *regs)
+>  	if (regno >= 32 && regno < 64) {
+>  		/* FP registers 32 -> 63 */
+>  #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
+> -		memcpy(current->thread.evr[regno-32], mem,
+> +		memcpy((void *)current->thread.evr[regno-32], mem,
+>  				dbg_reg_def[regno].size);
+>  #else
+>  		/* fp registers not used by kernel, leave zero */
