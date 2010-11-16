@@ -1,9 +1,10 @@
 Return-Path: <dirk.brandewie@gmail.com>
 From: dirk.brandewie@gmail.com
 To: devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH 1/5] of: Add support for linking device tree blobs into vmlinux
-Date: Tue, 16 Nov 2010 14:41:36 -0800
-Message-Id: <9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
+Subject: [PATCH 2/5] of/fdt: add kernel command line option for dtb_compat
+	string
+Date: Tue, 16 Nov 2010 14:41:37 -0800
+Message-Id: <348d48851a244bbd60bbfc4d60bee330e5c91eae.1289943240.git.dirk.brandewie@gmail.com>
 In-Reply-To: <cover.1289943240.git.dirk.brandewie@gmail.com>
 References: <cover.1289943240.git.dirk.brandewie@gmail.com>
 Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
@@ -21,101 +22,130 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-This patch adds support for linking device tree blobs into
-vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
-.dtb.init.rodata sections into the .init.data section of the vmlinux
-image. Modifies scripts/Makefile.lib to add a kbuild command to
-compile DTS files to device tree blobs and a rule to create objects to
-wrap the blobs for linking.
+Adds a kernel command line option "dtb_compat=<string>" and functions
+for architecture/platform specific code to retrieve the command line
+string and locate the compatible DTB linked into the kernel
 
-The DTB's are placed on 32 byte boundries to allow parsing the blob
-with driver/of/fdt.c during early boot without having to copy the blob
-to get the structure alignment GCC expects.
+of_flat_dt_get_dtb_compatible_string() returns a pointer string passed
+from the command line or a pointer to an empty string.
 
-A DTB is linked in by adding the DTB object to the list of objects to
-be linked into vmlinux in the archtecture specific Makefile using
-   obj-y += foo.dtb.o
+of_flat_dt_find_compatible_dtb() returns a pointer to a DTB that is
+compatible with the "compatible" string or a NULL pointer if no
+matching DTB is present.
 
 Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 ---
- include/asm-generic/vmlinux.lds.h |   19 +++++++++++++++++--
- scripts/Makefile.lib              |   20 ++++++++++++++++++++
- 2 files changed, 37 insertions(+), 2 deletions(-)
+ Documentation/kernel-parameters.txt |    7 +++++
+ drivers/of/fdt.c                    |   52 +++++++++++++++++++++++++++++++++++
+ include/linux/of_fdt.h              |    4 +++
+ 3 files changed, 63 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index bd69d79..ea671e7 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -67,7 +67,14 @@
-  * Align to a 32 byte boundary equal to the
-  * alignment gcc 4.5 uses for a struct
-  */
--#define STRUCT_ALIGN() . = ALIGN(32)
-+#define STRUCT_ALIGNMENT 32
-+#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
-+
-+/* Device tree blobs linked into the kernel need to have proper
-+ * structure alignment to be parsed by the flat device tree library
-+ * used in early boot
-+*/
-+#define DTB_ALIGNMENT STRUCT_ALIGNMENT
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index ed45e98..f9b77fa 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -655,6 +655,13 @@ and is between 256 and 4096 characters. It is defined in the file
  
- /* The actual configuration determine if the init/exit sections
-  * are handled as text/data or they can be discarded (which
-@@ -146,6 +153,13 @@
- #define TRACE_SYSCALLS()
- #endif
+ 	dscc4.setup=	[NET]
  
++	dtb_compat=	[KNL]
++			Specify the "compatible" string for the device
++			tree blob present in the kernel image.  This
++			string will be used to select the first device
++			tree blob whose compatible property matches
++			the string passed on the kernel commandline.
 +
-+#define KERNEL_DTB()							\
-+	. = ALIGN(DTB_ALIGNMENT);					\
-+	VMLINUX_SYMBOL(__dtb_start) = .;				\
-+	*(.dtb.init.rodata)						\
-+	VMLINUX_SYMBOL(__dtb_end) = .;
+ 	dynamic_printk	Enables pr_debug()/dev_dbg() calls if
+ 			CONFIG_DYNAMIC_PRINTK_DEBUG has been enabled.
+ 			These can also be switched on/off via
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index c1360e0..c0858ce 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -15,6 +15,8 @@
+ #include <linux/of_fdt.h>
+ #include <linux/string.h>
+ #include <linux/errno.h>
++#include <asm-generic/vmlinux.lds.h>
 +
- /* .data section */
- #define DATA_DATA							\
- 	*(.data)							\
-@@ -468,7 +482,8 @@
- 	MCOUNT_REC()							\
- 	DEV_DISCARD(init.rodata)					\
- 	CPU_DISCARD(init.rodata)					\
--	MEM_DISCARD(init.rodata)
-+	MEM_DISCARD(init.rodata)					\
-+	KERNEL_DTB()
  
- #define INIT_TEXT							\
- 	*(.init.text)							\
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 4c72c11..29db062 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -200,6 +200,26 @@ quiet_cmd_gzip = GZIP    $@
- cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
- 	(rm -f $@ ; false)
+ #ifdef CONFIG_PPC
+ #include <asm/machdep.h>
+@@ -604,3 +606,53 @@ void __init unflatten_device_tree(void)
  
-+# DTC
-+#  ---------------------------------------------------------------------------
-+$(obj)/%.dtb.S: $(obj)/%.dtb FORCE
-+	@echo '#include <asm-generic/vmlinux.lds.h>' > $@
-+	@echo '.section .dtb.init.rodata,"a"' >> $@
-+	@echo '.balign DTB_ALIGNMENT' >> $@
-+	@echo '.global __dtb_$(*F)_begin' >> $@
-+	@echo '__dtb_$(*F)_begin:' >> $@
-+	@echo '.incbin "$<" ' >> $@
-+	@echo '__dtb_$(*F)_end:' >> $@
-+	@echo '.global __dtb_$(*F)_end' >> $@
-+	@echo '.balign DTB_ALIGNMENT' >> $@
+ 	pr_debug(" <- unflatten_device_tree()\n");
+ }
 +
-+DTC = $(objtree)/scripts/dtc/dtc
++#define MAX_DTB_COMPAT_STR 64
++char dtb_compat_name[MAX_DTB_COMPAT_STR] = "";
 +
-+quiet_cmd_dtc = DTC	$@
-+      cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(src)/dts/$*.dts
++char __init *of_flat_dt_get_dtb_compatible_string(void)
++{
++	return dtb_compat_name;
++}
 +
-+$(obj)/%.dtb: $(src)/dts/%.dts
-+	$(call if_changed,dtc)
++
++extern uint8_t __dtb_start[];
++extern uint8_t __dtb_end[];
++void __init *of_flat_dt_find_compatible_dtb(char *name)
++{
++	void *rc = NULL;
++	unsigned long root, size;
++	struct boot_param_header  *orig_initial_boot_params;
++	uint8_t *blob;
++
++	orig_initial_boot_params = initial_boot_params;
++	blob = __dtb_start;
++	initial_boot_params = (struct boot_param_header *)blob;
++
++	while (blob < __dtb_end &&
++		(be32_to_cpu(initial_boot_params->magic) == OF_DT_HEADER)) {
++		root = of_get_flat_dt_root();
++		if (of_flat_dt_is_compatible(root, name) > 0) {
++			rc = blob;
++			break;
++		}
++
++		size =  be32_to_cpu(initial_boot_params->totalsize);
++		blob =  PTR_ALIGN(blob + size, DTB_ALIGNMENT);
++		initial_boot_params = (struct boot_param_header *)blob;
++	}
++
++	if (rc == NULL)
++		initial_boot_params = orig_initial_boot_params;
++	return rc;
++}
++
++
++static int __init of_flat_dtb_compat_setup(char *line)
++{
++	strncpy(dtb_compat_name, line, MAX_DTB_COMPAT_STR);
++	return 1;
++}
++
++early_param("dtb_compat", of_flat_dtb_compat_setup);
++
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 7bbf5b3..29561f4 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -58,6 +58,7 @@ struct boot_param_header {
+ };
  
- # Bzip2
- # ---------------------------------------------------------------------------
+ #if defined(CONFIG_OF_FLATTREE)
++
+ /* TBD: Temporary export of fdt globals - remove when code fully merged */
+ extern int __initdata dt_root_addr_cells;
+ extern int __initdata dt_root_size_cells;
+@@ -82,6 +83,9 @@ extern void early_init_dt_add_memory_arch(u64 base, u64 size);
+ extern u64 early_init_dt_alloc_memory_arch(u64 size, u64 align);
+ extern u64 dt_mem_next_cell(int s, __be32 **cellp);
+ 
++extern char *of_flat_dt_get_dtb_compatible_string(void);
++extern void *of_flat_dt_find_compatible_dtb(char *name);
++
+ /*
+  * If BLK_DEV_INITRD, the fdt early init code will call this function,
+  * to be provided by the arch code. start and end are specified as
 -- 
 1.7.2.3
