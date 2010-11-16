@@ -1,24 +1,27 @@
-Return-Path: <haishan.bai@gmail.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 514AFB7114
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 59738B7125
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Nov 2010 00:16:51 +1100 (EST)
-Received: by gxk3 with SMTP id 3so330351gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Nov 2010 05:16:49 -0800 (PST)
-Subject: Re: Corrected data type mismatch
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: bhs <haishan.bai@gmail.com>
-In-Reply-To: <4CE27404.7020307@windriver.com>
-Date: Tue, 16 Nov 2010 21:16:36 +0800
-Message-Id: <029A97EE-F051-4E8A-93E9-C259D2A7622E@gmail.com>
-References: <1289700419-11072-2-git-send-email-shan.hai@windriver.com>
-	<mdm-kgbd-badfix@mdm.bga.com> <4CE27404.7020307@windriver.com>
-To: DDD <dongdong.deng@windriver.com>
-Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, Hai Shan <shan.hai@windriver.com>,
-	Jason Wessel <jason.wessel@windriver.com>, linuxppc-dev@lists.ozlabs.org
+	Wed, 17 Nov 2010 00:52:31 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH][v3] fsl_rio: move machine_check handler into
+	machine_check_e500 & machine_check_e500mc
+Date: Tue, 16 Nov 2010 05:47:16 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552015397D6@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <267A3B246C22C34A8E574051858E0770E957@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1289548520-24110-1-git-send-email-b21989@freescale.com>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E55201539084@CORPEXCH1.na.ads.idt.com>
+	<267A3B246C22C34A8E574051858E0770E957@039-SN1MPN1-003.039d.mgd.msft.net>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Xie Shaohui-B21989" <B21989@freescale.com>,
+	<linuxppc-dev@lists.ozlabs.org>
+Cc: akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>,
+	Li Yang-R58472 <r58472@freescale.com>,
+	Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,75 +31,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> From: Xie Shaohui-B21989 [mailto:B21989@freescale.com]
+>=20
+> Ok, I'll remove the ret, do you have any comment for the error handler
+> patch?
+> http://patchwork.ozlabs.org/patch/69962/
+>=20
+>=20
+I will reply to the original patch message.
 
-On Nov 16, 2010, at 8:07 PM, DDD wrote:
-
-> Milton Miller wrote:
->> [added cc's based on from ff10b88b5a05c8f1646dd15fb9f6093c1384ff6d,
->> which added the patched line ]
->> https://patchwork.kernel.org/patch/323022/
->> On Sun, 14 Nov 2010 around 02:06:59 -0000, Hai Shan wrote:
->>> Corrected data type mismatch
->>>=20
->> This merely hides the type mismatch by force casting it.
->> Looking at the context I believe the intent is to copy the the value =
-to
->> or from the register content slot, not take the previous value of the
->> register and use that as an address to copy to or from.
->=20
->=20
-> OOPS! It is wrong here, The right one should be as following:
->=20
-> -   memcpy(mem, current->thread.evr[regno-32],
-> +   memcpy(mem, (void*)&current->thread.evr[regno-32], =
-dbg_reg_def[regno].size);
->=20
-> Thanks milton & Shan.Hai, I will send out the fix to Jason ASAP.
->=20
-
-
-Sorry for my crude fix :)
-
-
-> Dongdong
->=20
->=20
->> milton
->>> Signed-off-by: Hai Shan <shan.hai@windriver.com>
->>>=20
->>> ---
->>> arch/powerpc/kernel/kgdb.c |    4 ++--
->>> 1 files changed, 2 insertions(+), 2 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
->>> index 7a9db64..c5ce65f 100644
->>> --- a/arch/powerpc/kernel/kgdb.c
->>> +++ b/arch/powerpc/kernel/kgdb.c
->>> @@ -337,7 +337,7 @@ char *dbg_get_reg(int regno, void *mem, struct =
-pt_regs *regs)
->>> 		/* FP registers 32 -> 63 */
->>> #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
->>> 		if (current)
->>> -			memcpy(mem, current->thread.evr[regno-32],
->>> +			memcpy(mem, (void =
-*)current->thread.evr[regno-32],
->>> 					dbg_reg_def[regno].size);
->>> #else
->>> 		/* fp registers not used by kernel, leave zero */
->>> @@ -362,7 +362,7 @@ int dbg_set_reg(int regno, void *mem, struct =
-pt_regs *regs)
->>> 	if (regno >=3D 32 && regno < 64) {
->>> 		/* FP registers 32 -> 63 */
->>> #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
->>> -		memcpy(current->thread.evr[regno-32], mem,
->>> +		memcpy((void *)current->thread.evr[regno-32], mem,
->>> 				dbg_reg_def[regno].size);
->>> #else
->>> 		/* fp registers not used by kernel, leave zero */
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe =
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Alex.
