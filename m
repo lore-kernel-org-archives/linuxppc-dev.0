@@ -1,23 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id AD33DB712F
+Return-Path: <Dongdong.Deng@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4C978B711C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Nov 2010 22:33:27 +1100 (EST)
-Received: by wwb24 with SMTP id 24so99961wwb.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Nov 2010 03:33:25 -0800 (PST)
+	Tue, 16 Nov 2010 23:06:44 +1100 (EST)
+Message-ID: <4CE27404.7020307@windriver.com>
+Date: Tue, 16 Nov 2010 20:07:32 +0800
+From: DDD <dongdong.deng@windriver.com>
 MIME-Version: 1.0
-In-Reply-To: <1289809300-4038-1-git-send-email-abogani@texware.it>
-References: <1289809300-4038-1-git-send-email-abogani@texware.it>
-Date: Tue, 16 Nov 2010 06:33:24 -0500
-Message-ID: <AANLkTim15YqYThqBw7=GLGbthXdQ836BdWamA4ncSP30@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Update a comment
-From: Josh Boyer <jwboyer@gmail.com>
-To: Alessio Igor Bogani <abogani@texware.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Tim Bird <tim.bird@am.sony.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: Corrected data type mismatch
+References: <1289700419-11072-2-git-send-email-shan.hai@windriver.com>
+	<mdm-kgbd-badfix@mdm.bga.com>
+In-Reply-To: <mdm-kgbd-badfix@mdm.bga.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kgdb-bugreport@lists.sourceforge.net, Hai Shan <shan.hai@windriver.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Jason Wessel <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 15, 2010 at 3:21 AM, Alessio Igor Bogani <abogani@texware.it> w=
-rote:
-> The commit 5e3d20a remove bkl from startup code so setup_arch() it isn't =
-called
-> with bkl held anymore. Update the comment on top of that function.
->
-> This work was supported by a hardware donation from the CE Linux Forum.
+Milton Miller wrote:
+> [added cc's based on from ff10b88b5a05c8f1646dd15fb9f6093c1384ff6d,
+> which added the patched line ]
+> 
+> https://patchwork.kernel.org/patch/323022/
+> 
+> On Sun, 14 Nov 2010 around 02:06:59 -0000, Hai Shan wrote:
+>> Corrected data type mismatch
+>>
+> This merely hides the type mismatch by force casting it.
+> 
+> Looking at the context I believe the intent is to copy the the value to
+> or from the register content slot, not take the previous value of the
+> register and use that as an address to copy to or from.
 
-You should make sure to send powerpc patches to linuxppc-dev.
 
->
-> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
-> ---
-> =A0arch/powerpc/kernel/setup_64.c | =A0 =A05 ++---
-> =A01 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_6=
-4.c
-> index 2a178b0..71f44e5 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -497,9 +497,8 @@ static void __init emergency_stack_init(void)
-> =A0}
->
-> =A0/*
-> - * Called into from start_kernel, after lock_kernel has been called.
-> - * Initializes bootmem, which is unsed to manage page allocation until
-> - * mem_init is called.
-> + * Called into from start_kernel this initializes bootmem, which is unse=
-d
-> + * to manage page allocation until mem_init is called.
+OOPS! It is wrong here, The right one should be as following:
 
-You might as well fix the typo while you're there.  unsed->used
+-   memcpy(mem, current->thread.evr[regno-32],
++   memcpy(mem, (void*)&current->thread.evr[regno-32], 
+dbg_reg_def[regno].size);
 
-josh
+Thanks milton & Shan.Hai, I will send out the fix to Jason ASAP.
+
+Dongdong
+
+
+> 
+> milton
+>> Signed-off-by: Hai Shan <shan.hai@windriver.com>
+>>
+>> ---
+>> arch/powerpc/kernel/kgdb.c |    4 ++--
+>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+>> index 7a9db64..c5ce65f 100644
+>> --- a/arch/powerpc/kernel/kgdb.c
+>> +++ b/arch/powerpc/kernel/kgdb.c
+>> @@ -337,7 +337,7 @@ char *dbg_get_reg(int regno, void *mem, struct pt_regs *regs)
+>>  		/* FP registers 32 -> 63 */
+>>  #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
+>>  		if (current)
+>> -			memcpy(mem, current->thread.evr[regno-32],
+>> +			memcpy(mem, (void *)current->thread.evr[regno-32],
+>>  					dbg_reg_def[regno].size);
+>>  #else
+>>  		/* fp registers not used by kernel, leave zero */
+>> @@ -362,7 +362,7 @@ int dbg_set_reg(int regno, void *mem, struct pt_regs *regs)
+>>  	if (regno >= 32 && regno < 64) {
+>>  		/* FP registers 32 -> 63 */
+>>  #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
+>> -		memcpy(current->thread.evr[regno-32], mem,
+>> +		memcpy((void *)current->thread.evr[regno-32], mem,
+>>  				dbg_reg_def[regno].size);
+>>  #else
+>>  		/* fp registers not used by kernel, leave zero */
+> 
