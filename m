@@ -1,25 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5CA22B7142
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Nov 2010 07:35:28 +1100 (EST)
-Subject: Re: [PATCH] Move ams driver to macintosh
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20101116085932.5621cc20@endymion.delvare>
-References: <20101005121043.08771994@endymion.delvare>
-	<1289882005.2147.1489.camel@pasglop>
-	<20101116085932.5621cc20@endymion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Nov 2010 07:35:01 +1100
-Message-ID: <1289939701.2147.1498.camel@pasglop>
-Mime-Version: 1.0
-Cc: Michael Hanselmann <linux-kernel@hansmi.ch>,
-	LM Sensors <lm-sensors@lm-sensors.org>,
-	Stelian Pop <stelian@popies.net>, linuxppc-dev@lists.ozlabs.org,
-	Guenter Roeck <guenter.roeck@ericsson.com>
+Return-Path: <bones@secretlab.ca>
+Subject: [PATCH 0/5] Series short description
+To: linux-kernel@vger.kernel.org
+From: John Bonesio <bones@secretlab.ca>
+Date: Tue, 16 Nov 2010 12:49:43 -0800
+Message-ID: <20101116204917.12146.39851.stgit@riker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: glikely@secretlab.ca, jdl@jdl.com, linuxppc-dev@lists.ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,21 +17,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-11-16 at 08:59 +0100, Jean Delvare wrote:
-> > Going through backlog... Do you want me to carry this in powerpc or
-> > you'll deal with it directly ?
-> > 
-> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > > Cc: Guenter Roeck <guenter.roeck@ericsson.com>
-> > > Cc: Stelian Pop <stelian@popies.net>
-> > > Cc: Michael Hanselmann <linux-kernel@hansmi.ch>
-> > 
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> I'm glad you like this patch, as it has already been applied to Linus'
-> tree ;) 
+The following series implements a set of changes to refactor dts (device tree
+source) files for systems using the mpc5200b SoC.
 
-Hah, you guys are too quick :-)
+The dtc changes allow a base dts to be defined in a common dts file included
+with '/include/ <filename>'. This base dts can then be updated and modified
+by merging in a second device tree defined in the system specific dts file.
 
-Cheers,
-Ben.
+The rest of the changes are the refactoring of the mpc5200b dts files.
+
+---
+
+John Bonesio (5):
+      scripts: dtc: Merge in changes from the dtc repository
+      powerpc/5200: dts: rename nodes to prepare for refactoring dts files
+      powerpc/5200: dts: remove unused properties
+      powerpc/5200: dts: Remove incorrect combatible strings
+      powerpc/5200: dts: refactor dts files
+
+
+ arch/powerpc/boot/dts/cm5200.dts    |  198 +++----------------------
+ arch/powerpc/boot/dts/digsy_mtc.dts |  179 +++--------------------
+ arch/powerpc/boot/dts/lite5200b.dts |  210 ++-------------------------
+ arch/powerpc/boot/dts/media5200.dts |  216 +++------------------------
+ arch/powerpc/boot/dts/motionpro.dts |  198 +++----------------------
+ arch/powerpc/boot/dts/mpc5200b.dtsi |  276 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mucmc52.dts   |  176 ++++++----------------
+ arch/powerpc/boot/dts/pcm030.dts    |  201 ++-----------------------
+ arch/powerpc/boot/dts/pcm032.dts    |  205 ++------------------------
+ arch/powerpc/boot/dts/uc101.dts     |  162 ++++-----------------
+ 10 files changed, 499 insertions(+), 1522 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc5200b.dtsi
+
+-- 
+Signature
