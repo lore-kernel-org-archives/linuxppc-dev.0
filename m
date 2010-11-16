@@ -1,25 +1,24 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AF8E6B713E
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Nov 2010 08:45:41 +1100 (EST)
-Date: Tue, 16 Nov 2010 22:45:37 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc: pcm030/032: add pagesize to dts
-Message-ID: <20101116214537.GD19893@pengutronix.de>
-References: <1289841916-3825-1-git-send-email-w.sang@pengutronix.de>
-	<1289841916-3825-2-git-send-email-w.sang@pengutronix.de>
-	<20101115173250.GA22104@oksana.dev.rtsoft.ru>
-	<4CE1A0E4.5030505@firmworks.com>
-	<20101115212432.GA17754@oksana.dev.rtsoft.ru>
-	<20101115221156.GA25167@pengutronix.de>
+Return-Path: <jason.wessel@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7A52EB715A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 17 Nov 2010 09:02:08 +1100 (EST)
+Message-ID: <4CE2FF5A.402@windriver.com>
+Date: Tue, 16 Nov 2010 16:02:02 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NtwzykIc2mflq5ck"
-In-Reply-To: <20101115221156.GA25167@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+To: Dongdong Deng <dongdong.deng@windriver.com>
+Subject: Re: [PATCH] kgdb,
+	ppc: Corrected the address using of current->thread.evr register
+References: <1289912316-4580-1-git-send-email-dongdong.deng@windriver.com>
+In-Reply-To: <1289912316-4580-1-git-send-email-dongdong.deng@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kgdb-bugreport@lists.sourceforge.net, "Hai, Shan" <shan.hai@windriver.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Sergei Shtylyov <sshtylyov@mvista.com>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11/16/2010 06:58 AM, Dongdong Deng wrote:
+> Passing the address of current->thread.evr register to memcpy function.
+>
+>   
 
---NtwzykIc2mflq5ck
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It turns out that out of all of my test configs and targets I did not
+have any that defined both CONFIG_FSL_BOOKE and CONFIG_SPE else this
+would have been caught in testing because will definitely crash
+dereferencing the contents of the evr registers.
+
+> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+> CC: Hai Shan <shan.hai@windriver.com>
+> CC: Milton Miller <miltonm@bga.com>
+> CC: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/kgdb.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+> index 7a9db64..781acff 100644
+> --- a/arch/powerpc/kernel/kgdb.c
+> +++ b/arch/powerpc/kernel/kgdb.c
+> @@ -337,7 +337,7 @@ char *dbg_get_reg(int regno, void *mem, struct pt_regs *regs)
+>  		/* FP registers 32 -> 63 */
+>  #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
+>  		if (current)
+> -			memcpy(mem, current->thread.evr[regno-32],
+> +			memcpy(mem, (void *)&current->thread.evr[regno-32],
+>  					dbg_reg_def[regno].size);
+>   
+
+As Sergei already pointed out, the (void *) casts should not be needed here.
+
+This would have been fixed correctly had I seen the compile warnings
+from the CONFIG_SPE at the test phase.   Namely at the compile phase
+doesn't even complete:
+
+arch/powerpc/kernel/kgdb.c: In function 'dbg_get_reg':
+arch/powerpc/kernel/kgdb.c:341: error: passing argument 2 of 'memcpy'
+makes pointer from integer without a cast
+arch/powerpc/include/asm/string.h:25: note: expected 'const void *' but
+argument is of type 'long unsigned int'
+arch/powerpc/kernel/kgdb.c: In function 'dbg_set_reg':
+arch/powerpc/kernel/kgdb.c:366: error: passing argument 1 of 'memcpy'
+makes pointer from integer without a cast
+arch/powerpc/include/asm/string.h:25: note: expected 'void *' but
+argument is of type 'long unsigned int'
 
 
-> Even worse, I seem to recall that I had once seen a manufacturer increasi=
-ng the
-> page-size from one charge to the next without changing the part-number, s=
-o I
-> got this feeling "you can't map pagesize to manufacturer/type" which I st=
-ill
-> have. Sadly, this was long ago, so I can't proof it right now. Will try t=
-o dig
-> up some datasheets when in the office tomorrow.
+Moral of the story... I now have a board and config with the SPE turned
+on, and after boot testing confirmed the evr registers are working.
 
-Had a look, couldn't find anything :( And now?
+I plan to have a pull request out to Linus with this fix and several
+other accumulated regression fixes sometime in the next 48 hours.
 
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---NtwzykIc2mflq5ck
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkzi+4EACgkQD27XaX1/VRuXMACgi5OsaEhC/8mG76jCb8XuUgMz
-ZLAAoKzxF5e/s//xdyiououfF45L92Sr
-=EaNY
------END PGP SIGNATURE-----
-
---NtwzykIc2mflq5ck--
+Thanks,
+Jason.
