@@ -1,22 +1,25 @@
-Return-Path: <alessioigorbogani@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id AA479B7141
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5CA22B7142
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Nov 2010 04:55:36 +1100 (EST)
-Received: by eyg24 with SMTP id 24so474149eyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Nov 2010 09:55:33 -0800 (PST)
-Sender: Alessio Igor Bogani <alessioigorbogani@gmail.com>
-From: Alessio Igor Bogani <abogani@texware.it>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Update a comment
-Date: Tue, 16 Nov 2010 18:55:16 +0100
-Message-Id: <1289930116-5702-1-git-send-email-abogani@texware.it>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	Tim Bird <tim.bird@am.sony.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Alessio Igor Bogani <abogani@texware.it>
+	Wed, 17 Nov 2010 07:35:28 +1100 (EST)
+Subject: Re: [PATCH] Move ams driver to macintosh
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20101116085932.5621cc20@endymion.delvare>
+References: <20101005121043.08771994@endymion.delvare>
+	<1289882005.2147.1489.camel@pasglop>
+	<20101116085932.5621cc20@endymion.delvare>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Nov 2010 07:35:01 +1100
+Message-ID: <1289939701.2147.1498.camel@pasglop>
+Mime-Version: 1.0
+Cc: Michael Hanselmann <linux-kernel@hansmi.ch>,
+	LM Sensors <lm-sensors@lm-sensors.org>,
+	Stelian Pop <stelian@popies.net>, linuxppc-dev@lists.ozlabs.org,
+	Guenter Roeck <guenter.roeck@ericsson.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The commit 5e3d20a remove bkl from startup code so setup_arch() it isn't called
-with bkl held anymore. Update the comment on top of that function.
-Fix also a typo.
+On Tue, 2010-11-16 at 08:59 +0100, Jean Delvare wrote:
+> > Going through backlog... Do you want me to carry this in powerpc or
+> > you'll deal with it directly ?
+> > 
+> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > > Cc: Guenter Roeck <guenter.roeck@ericsson.com>
+> > > Cc: Stelian Pop <stelian@popies.net>
+> > > Cc: Michael Hanselmann <linux-kernel@hansmi.ch>
+> > 
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> I'm glad you like this patch, as it has already been applied to Linus'
+> tree ;) 
 
-This work was supported by a hardware donation from the CE Linux Forum.
+Hah, you guys are too quick :-)
 
-Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
----
- arch/powerpc/kernel/setup_64.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2a178b0..ce6f61c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -497,9 +497,8 @@ static void __init emergency_stack_init(void)
- }
- 
- /*
-- * Called into from start_kernel, after lock_kernel has been called.
-- * Initializes bootmem, which is unsed to manage page allocation until
-- * mem_init is called.
-+ * Called into from start_kernel this initializes bootmem, which is used
-+ * to manage page allocation until mem_init is called.
-  */
- void __init setup_arch(char **cmdline_p)
- {
--- 
-1.7.0.4
+Cheers,
+Ben.
