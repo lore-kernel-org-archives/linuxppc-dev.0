@@ -1,20 +1,13 @@
-Return-Path: <cbouatmailru@gmail.com>
-Date: Wed, 17 Nov 2010 01:03:31 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH 2/2] powerpc: pcm030/032: add pagesize to dts
-Message-ID: <20101116220331.GA29681@oksana.dev.rtsoft.ru>
-References: <1289841916-3825-1-git-send-email-w.sang@pengutronix.de>
-	<1289841916-3825-2-git-send-email-w.sang@pengutronix.de>
-	<20101115173250.GA22104@oksana.dev.rtsoft.ru>
-	<4CE1A0E4.5030505@firmworks.com>
-	<20101115212432.GA17754@oksana.dev.rtsoft.ru>
-	<20101115221156.GA25167@pengutronix.de>
-	<20101116214537.GD19893@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20101116214537.GD19893@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <dirk.brandewie@gmail.com>
+From: dirk.brandewie@gmail.com
+To: devicetree-discuss@lists.ozlabs.org
+Subject: [PATCH 0/5] Add the ability to link device blobs into vmlinux
+Date: Tue, 16 Nov 2010 14:41:35 -0800
+Message-Id: <cover.1289943240.git.dirk.brandewie@gmail.com>
+Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	sodaville@linutronix.de, microblaze-uclinux@itee.uq.edu.au,
+	dirk.brandewie@gmail.com, arjan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +17,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 16, 2010 at 10:45:37PM +0100, Wolfram Sang wrote:
-> 
-> > Even worse, I seem to recall that I had once seen a manufacturer increasing the
-> > page-size from one charge to the next without changing the part-number, so I
-> > got this feeling "you can't map pagesize to manufacturer/type" which I still
-> > have. Sadly, this was long ago, so I can't proof it right now. Will try to dig
-> > up some datasheets when in the office tomorrow.
-> 
-> Had a look, couldn't find anything :( And now?
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Well, it seems that there are enough people in "pagesize" camp
-anyway, I'd say just go ahead with the current approach. :-)
+This patch set adds the ability to link device tree blob(s)
+directly into the vmlinux image and specify the blob to be used via a
+kernel command line option.
 
-It's an additional information, so won't do any harm anyway...
+Patch 1 implements the changes to include/asm-generic/vmlinux.lds.h,
+add generic rules for building and linking the DTB's into vmlinux.
 
-Thanks,
+Patch 2 adds the command line option, the functions for the
+platform code to retrieve the value passed in and locate the matching
+blob in the image.  This patch has been tested on x86.
+
+Patch 3-5 show using the generic dts->dtb rule in x86, microblaze and
+powerpc. The microblaze and powerpc patches have only been compile
+tested.
+
+Dirk Brandewie (5):
+  of: Add support for linking device tree blobs into vmlinux
+  of/fdt: add kernel command line option for dtb_compat string
+  x86/of:  Add building device tree blob(s) into image.
+  of/powerpc: Move build to use generic dts->dtb rule
+  of/microblaze: Move build to use generic dts->dtb rule
+
+ Documentation/kernel-parameters.txt |    7 +++++
+ arch/microblaze/boot/Makefile       |   13 +--------
+ arch/powerpc/boot/Makefile          |    7 -----
+ arch/x86/Kconfig                    |    6 +++-
+ arch/x86/kernel/Makefile            |    6 ++++
+ arch/x86/kernel/dts/Kconfig         |    7 +++++
+ drivers/of/fdt.c                    |   52 +++++++++++++++++++++++++++++++++++
+ include/asm-generic/vmlinux.lds.h   |   19 +++++++++++-
+ include/linux/of_fdt.h              |    4 +++
+ scripts/Makefile.lib                |   20 +++++++++++++
+ 10 files changed, 119 insertions(+), 22 deletions(-)
+ create mode 100644 arch/x86/kernel/dts/Kconfig
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.7.2.3
