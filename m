@@ -1,19 +1,15 @@
-Return-Path: <sam@ravnborg.org>
-Date: Wed, 17 Nov 2010 10:27:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: dirk.brandewie@gmail.com, Michal Marek <mmarek@suse.cz>
-Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
-	vmlinux
-Message-ID: <20101117092751.GA19781@merkur.ravnborg.org>
-References: <cover.1289943240.git.dirk.brandewie@gmail.com>
-	<9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
-Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
-	microblaze-uclinux@itee.uq.edu.au, arjan@linux.intel.com
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8FC52B718C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Nov 2010 23:01:27 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: devicetree-discuss@ozlabs.org
+Subject: [PATCH V2 0/3] at24: parse OF-data
+Date: Wed, 17 Nov 2010 13:00:47 +0100
+Message-Id: <1289995250-17927-1-git-send-email-w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,103 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 16, 2010 at 02:41:36PM -0800, dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.brandewie@gmail.com>
-> 
-> This patch adds support for linking device tree blobs into
-> vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
-> .dtb.init.rodata sections into the .init.data section of the vmlinux
-> image. Modifies scripts/Makefile.lib to add a kbuild command to
-> compile DTS files to device tree blobs and a rule to create objects to
-> wrap the blobs for linking.
-> 
-> The DTB's are placed on 32 byte boundries to allow parsing the blob
-> with driver/of/fdt.c during early boot without having to copy the blob
-> to get the structure alignment GCC expects.
-> 
-> A DTB is linked in by adding the DTB object to the list of objects to
-> be linked into vmlinux in the archtecture specific Makefile using
->    obj-y += foo.dtb.o
-> 
-> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
-> ---
->  include/asm-generic/vmlinux.lds.h |   19 +++++++++++++++++--
->  scripts/Makefile.lib              |   20 ++++++++++++++++++++
->  2 files changed, 37 insertions(+), 2 deletions(-)
+Here is the second round of this series:
 
-When you touch Makefiles in scripts/* it is always a good idea to cc:
-kbuild maintainer on the patch - I have added Michal.
+* 1/3 now uses __be32 instead of u32.
+* 2/3 is new and adds some more sanity checks
+* 3/3 is unchanged
 
-Support functionality in Makefile.lib is documented in
-Documentation/kbuild/* - please add documentation there.
+Grant, I hope you can pick 2/3 as well. Should make things easier and it is
+just a misc-driver (which I maintain) :)
 
-> 
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index bd69d79..ea671e7 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -67,7 +67,14 @@
->   * Align to a 32 byte boundary equal to the
->   * alignment gcc 4.5 uses for a struct
->   */
-> -#define STRUCT_ALIGN() . = ALIGN(32)
-> +#define STRUCT_ALIGNMENT 32
-> +#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
-> +
-> +/* Device tree blobs linked into the kernel need to have proper
-> + * structure alignment to be parsed by the flat device tree library
-> + * used in early boot
-> +*/
-> +#define DTB_ALIGNMENT STRUCT_ALIGNMENT
+Wolfram Sang (3):
+  misc: at24: parse OF-data, too
+  misc: at24: add more sanity checks for parameters
+  powerpc: pcm030/032: add pagesize to dts
 
-It has been discussed in another thread some time ago to move
-to a general 32 byte alignment for everything in vmlinux.lds.h
-So there is not much need for the specific DTB alignment.
+ Documentation/powerpc/dts-bindings/eeprom.txt |   28 ++++++++++++++++
+ arch/powerpc/boot/dts/pcm030.dts              |    1 +
+ arch/powerpc/boot/dts/pcm032.dts              |    3 +-
+ drivers/misc/eeprom/at24.c                    |   43 +++++++++++++++++++++---
+ 4 files changed, 68 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/eeprom.txt
 
-> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-> index 4c72c11..29db062 100644
-> --- a/scripts/Makefile.lib
-> +++ b/scripts/Makefile.lib
-> @@ -200,6 +200,26 @@ quiet_cmd_gzip = GZIP    $@
->  cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
->  	(rm -f $@ ; false)
->  
-> +# DTC
-> +#  ---------------------------------------------------------------------------
-> +$(obj)/%.dtb.S: $(obj)/%.dtb FORCE
-> +	@echo '#include <asm-generic/vmlinux.lds.h>' > $@
-> +	@echo '.section .dtb.init.rodata,"a"' >> $@
-> +	@echo '.balign DTB_ALIGNMENT' >> $@
-> +	@echo '.global __dtb_$(*F)_begin' >> $@
-> +	@echo '__dtb_$(*F)_begin:' >> $@
-> +	@echo '.incbin "$<" ' >> $@
-> +	@echo '__dtb_$(*F)_end:' >> $@
-> +	@echo '.global __dtb_$(*F)_end' >> $@
-> +	@echo '.balign DTB_ALIGNMENT' >> $@
-
-
-This will be noisy during build. Please use proper macors to supress output.
-
-
-> +
-> +DTC = $(objtree)/scripts/dtc/dtc
-> +
-> +quiet_cmd_dtc = DTC	$@
-Please avoid tabs in the output - all other uses spaces. (There is a tab between DTC and $@)
-
-> +      cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(src)/dts/$*.dts
-
-Looks strange. How about:
-      cmd_dtc = $(DTC) -O dtb -o $@ -b 0 $(DTS_FLAGS) $<
-
-Then you avoid the hardcoded path in the rule too.
-
-
-> +
-> +$(obj)/%.dtb: $(src)/dts/%.dts
-> +	$(call if_changed,dtc)
-
-This snippet belong in the file that uses this.
-This is how we do for other rules like bzip etc.
-
-	Sam
+-- 
+1.7.2.3
