@@ -1,21 +1,23 @@
-Return-Path: <David.Daney@caviumnetworks.com>
-Message-ID: <4CE416C6.5090701@caviumnetworks.com>
-Date: Wed, 17 Nov 2010 09:54:14 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-MIME-Version: 1.0
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Wed, 17 Nov 2010 11:07:23 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Sam Ravnborg <sam@ravnborg.org>
 Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
 	vmlinux
+Message-ID: <20101117180723.GA7550@angua.secretlab.ca>
 References: <cover.1289943240.git.dirk.brandewie@gmail.com>
 	<9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
-	<4CE32453.2090403@caviumnetworks.com> <4CE33C14.9030503@gmail.com>
-	<AANLkTi=T_bqEswe32dTAfL4++WAitc7+VHnyjqP2sQfi@mail.gmail.com>
-	<4CE372A9.2050704@gmail.com>
-In-Reply-To: <4CE372A9.2050704@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	<20101117092751.GA19781@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20101117092751.GA19781@merkur.ravnborg.org>
+Cc: Michal Marek <mmarek@suse.cz>, linux-arch@vger.kernel.org,
+	linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
-	microblaze-uclinux@itee.uq.edu.au, arjan@linux.intel.com
+	microblaze-uclinux@itee.uq.edu.au, dirk.brandewie@gmail.com,
+	arjan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,75 +27,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2010 10:14 PM, Dirk Brandewie wrote:
-> On 11/16/2010 06:58 PM, Grant Likely wrote:
->> On Tue, Nov 16, 2010 at 7:21 PM, Dirk Brandewie
->> <dirk.brandewie@gmail.com> wrote:
->>>
->>> On 11/16/2010 04:39 PM, David Daney wrote:
->>>>
->>>> Thanks for doing this. However I have a few comments...
->>>>
->>>> On 11/16/2010 02:41 PM, dirk.brandewie@gmail.com wrote:
->>>>>
->>>>> From: Dirk Brandewie<dirk.brandewie@gmail.com>
->>>>>
->>>>> /* .data section */
->>>>> #define DATA_DATA \
->>>>> *(.data) \
->>>>> @@ -468,7 +482,8 @@
->>>>> MCOUNT_REC() \
->>>>> DEV_DISCARD(init.rodata) \
->>>>> CPU_DISCARD(init.rodata) \
->>>>> - MEM_DISCARD(init.rodata)
->>>>> + MEM_DISCARD(init.rodata) \
->>>>> + KERNEL_DTB()
->>>>>
->>>>
->>>> I thought the init.rodata was only for data used by __init things.
->>>> Although the
->>>> current linker scripts do not put it in the section that gets
->>>> recycled as
->>>> usable
->>>> memory.
->>>>
->>>> IIRC the unflattened version of the device tree has pointers to the
->>>> flattened
->>>> data. Since the device tree nodes are live for the entire kernel
->>>> lifecycle,
->>>> shouldn't the device tree blobs be in non-init memory?
->>>>
->>>
->>> The contents of the blob get copied to allocated memory during
->>> unflatten_device_tree() so the blob that is linked in is no longer
->>> needed
->>> after init.
->>
->> Have you written a patch to add this behaviour? The current code
->> doesn't. :-)
->>
->
-> I misspoke, my blob gets copied to allocated memory during
-> unflatten_device_tree.
-> my early_init_dt_alloc_memory_arch() returns the physical address of a
-> kmalloc'd
-> buffer.
->
+On Wed, Nov 17, 2010 at 10:27:51AM +0100, Sam Ravnborg wrote:
+> On Tue, Nov 16, 2010 at 02:41:36PM -0800, dirk.brandewie@gmail.com wrote:
+> > From: Dirk Brandewie <dirk.brandewie@gmail.com>
+> > 
+> > This patch adds support for linking device tree blobs into
+> > vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
+> > .dtb.init.rodata sections into the .init.data section of the vmlinux
+> > image. Modifies scripts/Makefile.lib to add a kbuild command to
+> > compile DTS files to device tree blobs and a rule to create objects to
+> > wrap the blobs for linking.
+> > 
+> > The DTB's are placed on 32 byte boundries to allow parsing the blob
+> > with driver/of/fdt.c during early boot without having to copy the blob
+> > to get the structure alignment GCC expects.
+> > 
+> > A DTB is linked in by adding the DTB object to the list of objects to
+> > be linked into vmlinux in the archtecture specific Makefile using
+> >    obj-y += foo.dtb.o
+> > 
+> > Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+> > ---
+> >  include/asm-generic/vmlinux.lds.h |   19 +++++++++++++++++--
+> >  scripts/Makefile.lib              |   20 ++++++++++++++++++++
+> >  2 files changed, 37 insertions(+), 2 deletions(-)
+> 
+> When you touch Makefiles in scripts/* it is always a good idea to cc:
+> kbuild maintainer on the patch - I have added Michal.
+> 
+> Support functionality in Makefile.lib is documented in
+> Documentation/kbuild/* - please add documentation there.
+> 
+> > 
+> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> > index bd69d79..ea671e7 100644
+> > --- a/include/asm-generic/vmlinux.lds.h
+> > +++ b/include/asm-generic/vmlinux.lds.h
+> > @@ -67,7 +67,14 @@
+> >   * Align to a 32 byte boundary equal to the
+> >   * alignment gcc 4.5 uses for a struct
+> >   */
+> > -#define STRUCT_ALIGN() . = ALIGN(32)
+> > +#define STRUCT_ALIGNMENT 32
+> > +#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
+> > +
+> > +/* Device tree blobs linked into the kernel need to have proper
+> > + * structure alignment to be parsed by the flat device tree library
+> > + * used in early boot
+> > +*/
+> > +#define DTB_ALIGNMENT STRUCT_ALIGNMENT
+> 
+> It has been discussed in another thread some time ago to move
+> to a general 32 byte alignment for everything in vmlinux.lds.h
+> So there is not much need for the specific DTB alignment.
+> 
+> > diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+> > index 4c72c11..29db062 100644
+> > --- a/scripts/Makefile.lib
+> > +++ b/scripts/Makefile.lib
+> > @@ -200,6 +200,26 @@ quiet_cmd_gzip = GZIP    $@
+> >  cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
+> >  	(rm -f $@ ; false)
+> >  
+> > +# DTC
+> > +#  ---------------------------------------------------------------------------
+> > +$(obj)/%.dtb.S: $(obj)/%.dtb FORCE
+> > +	@echo '#include <asm-generic/vmlinux.lds.h>' > $@
+> > +	@echo '.section .dtb.init.rodata,"a"' >> $@
+> > +	@echo '.balign DTB_ALIGNMENT' >> $@
+> > +	@echo '.global __dtb_$(*F)_begin' >> $@
+> > +	@echo '__dtb_$(*F)_begin:' >> $@
+> > +	@echo '.incbin "$<" ' >> $@
+> > +	@echo '__dtb_$(*F)_end:' >> $@
+> > +	@echo '.global __dtb_$(*F)_end' >> $@
+> > +	@echo '.balign DTB_ALIGNMENT' >> $@
+> 
+> 
+> This will be noisy during build. Please use proper macors to supress output.
+> 
+> 
+> > +
+> > +DTC = $(objtree)/scripts/dtc/dtc
+> > +
+> > +quiet_cmd_dtc = DTC	$@
+> Please avoid tabs in the output - all other uses spaces. (There is a tab between DTC and $@)
+> 
+> > +      cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(src)/dts/$*.dts
+> 
+> Looks strange. How about:
+>       cmd_dtc = $(DTC) -O dtb -o $@ -b 0 $(DTS_FLAGS) $<
+> 
+> Then you avoid the hardcoded path in the rule too.
+> 
+> 
+> > +
+> > +$(obj)/%.dtb: $(src)/dts/%.dts
+> > +	$(call if_changed,dtc)
 
-Perhaps you should take a look at unflatten_dt_node(), especially the 
-part where property names and values are assigned.  I could be mistaken, 
-but it appears to me that the memory allocated by 
-early_init_dt_alloc_memory_arch() is not used to hold the name and value 
-strings.  It is possible that they might be referred to in their 
-original location in the flattened blob.
+The rule should be generic (not depend on the presence of a dts
+subdirectory.  Basically, the .dtb really should be generated in the
+same directory as the .dts file.  There is no reason for this rule to
+have special behaviour.
 
+> 
+> This snippet belong in the file that uses this.
+> This is how we do for other rules like bzip etc.
 
-> You would want copy the dtb that your platform is going to use to
-> non-init memory.
->
+This rule is intended to be generic and usable anywhere in the tree.
 
-... or you might want to locate the dtb somewhere where it would be 
-unlikely to get clobbered if someone were to arrange for the init.rodata 
-to be freed for reuse.
-
-David Daney
+g.
