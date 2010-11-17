@@ -1,27 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C198BB7156
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Nov 2010 04:52:58 +1100 (EST)
-Subject: Re: [PATCH] kgdb,
-	ppc: Corrected the address using of current->thread.evr register
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4CE40F00.7010407@windriver.com>
-Date: Wed, 17 Nov 2010 11:52:51 -0600
-Message-Id: <4C5CCBFF-4768-4A9A-A805-F47A19D2D539@kernel.crashing.org>
-References: <1289912316-4580-1-git-send-email-dongdong.deng@windriver.com>
-	<4CE2FF5A.402@windriver.com>
-	<983540C0-C0E6-44DB-9264-4A5B1E058043@kernel.crashing.org>
-	<4CE40F00.7010407@windriver.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: "Deng, Dongdong" <dongdong.deng@windriver.com>,
-	Sergei Shtylyov <sshtylyov@mvista.com>,
-	kgdb-bugreport@lists.sourceforge.net, miltonm@bga.com, "Hai,
-	Shan" <shan.hai@windriver.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <David.Daney@caviumnetworks.com>
+Message-ID: <4CE416C6.5090701@caviumnetworks.com>
+Date: Wed, 17 Nov 2010 09:54:14 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+MIME-Version: 1.0
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
+	vmlinux
+References: <cover.1289943240.git.dirk.brandewie@gmail.com>
+	<9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
+	<4CE32453.2090403@caviumnetworks.com> <4CE33C14.9030503@gmail.com>
+	<AANLkTi=T_bqEswe32dTAfL4++WAitc7+VHnyjqP2sQfi@mail.gmail.com>
+	<4CE372A9.2050704@gmail.com>
+In-Reply-To: <4CE372A9.2050704@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
+	microblaze-uclinux@itee.uq.edu.au, arjan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,31 +25,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11/16/2010 10:14 PM, Dirk Brandewie wrote:
+> On 11/16/2010 06:58 PM, Grant Likely wrote:
+>> On Tue, Nov 16, 2010 at 7:21 PM, Dirk Brandewie
+>> <dirk.brandewie@gmail.com> wrote:
+>>>
+>>> On 11/16/2010 04:39 PM, David Daney wrote:
+>>>>
+>>>> Thanks for doing this. However I have a few comments...
+>>>>
+>>>> On 11/16/2010 02:41 PM, dirk.brandewie@gmail.com wrote:
+>>>>>
+>>>>> From: Dirk Brandewie<dirk.brandewie@gmail.com>
+>>>>>
+>>>>> /* .data section */
+>>>>> #define DATA_DATA \
+>>>>> *(.data) \
+>>>>> @@ -468,7 +482,8 @@
+>>>>> MCOUNT_REC() \
+>>>>> DEV_DISCARD(init.rodata) \
+>>>>> CPU_DISCARD(init.rodata) \
+>>>>> - MEM_DISCARD(init.rodata)
+>>>>> + MEM_DISCARD(init.rodata) \
+>>>>> + KERNEL_DTB()
+>>>>>
+>>>>
+>>>> I thought the init.rodata was only for data used by __init things.
+>>>> Although the
+>>>> current linker scripts do not put it in the section that gets
+>>>> recycled as
+>>>> usable
+>>>> memory.
+>>>>
+>>>> IIRC the unflattened version of the device tree has pointers to the
+>>>> flattened
+>>>> data. Since the device tree nodes are live for the entire kernel
+>>>> lifecycle,
+>>>> shouldn't the device tree blobs be in non-init memory?
+>>>>
+>>>
+>>> The contents of the blob get copied to allocated memory during
+>>> unflatten_device_tree() so the blob that is linked in is no longer
+>>> needed
+>>> after init.
+>>
+>> Have you written a patch to add this behaviour? The current code
+>> doesn't. :-)
+>>
+>
+> I misspoke, my blob gets copied to allocated memory during
+> unflatten_device_tree.
+> my early_init_dt_alloc_memory_arch() returns the physical address of a
+> kmalloc'd
+> buffer.
+>
 
-On Nov 17, 2010, at 11:21 AM, Jason Wessel wrote:
+Perhaps you should take a look at unflatten_dt_node(), especially the 
+part where property names and values are assigned.  I could be mistaken, 
+but it appears to me that the memory allocated by 
+early_init_dt_alloc_memory_arch() is not used to hold the name and value 
+strings.  It is possible that they might be referred to in their 
+original location in the flattened blob.
 
-> On 11/17/2010 11:16 AM, Kumar Gala wrote:
->=20
->>> Thanks,
->>> Jason.
->>=20
->> Repost a version with the casts and I'll pick it up.
->>=20
->> - k
->=20
-> I have the final version ready for a pull request that I was going to
-> make in the next hour or two that is fully regression tested.
->=20
-> If you would prefer to these changes in the PPC, let me know, or if
-> you want to ack the patch, I'll add that before submitting the pull
-> request.
->=20
-> Thanks,
-> Jason.
->=20
-> --
 
-If they'll get pulled in via another path that is fine.  I'm happy to =
-ack a proper patch.
+> You would want copy the dtb that your platform is going to use to
+> non-init memory.
+>
 
-- k=
+... or you might want to locate the dtb somewhere where it would be 
+unlikely to get clobbered if someone were to arrange for the init.rodata 
+to be freed for reuse.
+
+David Daney
