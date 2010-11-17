@@ -1,17 +1,23 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B1B5BB718C
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Nov 2010 23:01:28 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: devicetree-discuss@ozlabs.org
-Subject: [PATCH 3/3] powerpc: pcm030/032: add pagesize to dts
-Date: Wed, 17 Nov 2010 13:00:50 +0100
-Message-Id: <1289995250-17927-4-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1289995250-17927-1-git-send-email-w.sang@pengutronix.de>
-References: <1289995250-17927-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id ED3E8B7191
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Nov 2010 03:25:32 +1100 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/5] scripts: dtc: Merge in changes from the dtc
+	repository
+In-reply-to: <20101117045935.GA12084@angua.secretlab.ca> 
+References: <20101116204917.12146.39851.stgit@riker>
+	<20101116204951.12146.21084.stgit@riker>
+	<20101117045935.GA12084@angua.secretlab.ca>
+Date: Wed, 17 Nov 2010 09:47:55 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1PIkEl-0006Zt-W7@jdl.com>
+Cc: glikely@secretlab.ca, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, John Bonesio <bones@secretlab.ca>,
+	linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,38 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
- arch/powerpc/boot/dts/pcm030.dts |    1 +
- arch/powerpc/boot/dts/pcm032.dts |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletions(-)
+> On Tue, Nov 16, 2010 at 12:49:51PM -0800, John Bonesio wrote:
+> > Pull in recent changes from the main dtc repository. These changes primarily
+> > allow multiple device trees to be declared which are merged by dtc. This
+> > feature allows us to include a basic dts file and then provide more informatio
+> n
+> > for the specific system through the merging functionality.
+> > 
+> > Signed-off-by: John Bonesio <bones@secretlab.ca>
+> 
+> Jon & David, I'll need your input on whether or not this is the best
+> way to handle updating the dtc copy in the kernel tree.
+> 
+> g.
 
-diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
-index 8a4ec30..e7c36bc 100644
---- a/arch/powerpc/boot/dts/pcm030.dts
-+++ b/arch/powerpc/boot/dts/pcm030.dts
-@@ -259,6 +259,7 @@
- 			eeprom@52 {
- 				compatible = "catalyst,24c32";
- 				reg = <0x52>;
-+				pagesize = <32>;
- 			};
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
-index 85d857a..e175e2c 100644
---- a/arch/powerpc/boot/dts/pcm032.dts
-+++ b/arch/powerpc/boot/dts/pcm032.dts
-@@ -257,8 +257,9 @@
- 				reg = <0x51>;
- 			};
- 			eeprom@52 {
--				compatible = "at24,24c32";
-+				compatible = "catalyst,24c32";
- 				reg = <0x52>;
-+				pagesize = <32>;
- 			};
- 		};
- 
--- 
-1.7.2.3
+Grant,
+
+Yeah, I wondered too. :-)  David added it and updated
+in the kernel last round, so he may have some good notion
+of what would be best there.
+
+jdl
