@@ -1,21 +1,22 @@
-Return-Path: <dirk.brandewie@gmail.com>
-Message-ID: <4CE33C14.9030503@gmail.com>
-Date: Tue, 16 Nov 2010 18:21:08 -0800
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-To: David Daney <ddaney@caviumnetworks.com>
-Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
-	vmlinux
+Sender: glikely@secretlab.ca
+In-Reply-To: <4CE33C14.9030503@gmail.com>
 References: <cover.1289943240.git.dirk.brandewie@gmail.com>
 	<9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
-	<4CE32453.2090403@caviumnetworks.com>
-In-Reply-To: <4CE32453.2090403@caviumnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<4CE32453.2090403@caviumnetworks.com> <4CE33C14.9030503@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 16 Nov 2010 19:58:54 -0700
+Message-ID: <AANLkTi=T_bqEswe32dTAfL4++WAitc7+VHnyjqP2sQfi@mail.gmail.com>
+Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
+	vmlinux
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	arjan@linux.intel.com, devicetree-discuss@lists.ozlabs.org,
+	David Daney <ddaney@caviumnetworks.com>,
 	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
-	microblaze-uclinux@itee.uq.edu.au, dirk.brandewie@gmail.com,
-	arjan@linux.intel.com
+	microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 11/16/2010 04:39 PM, David Daney wrote:
-> Thanks for doing this. However I have a few comments...
+On Tue, Nov 16, 2010 at 7:21 PM, Dirk Brandewie
+<dirk.brandewie@gmail.com> wrote:
 >
-> On 11/16/2010 02:41 PM, dirk.brandewie@gmail.com wrote:
->> From: Dirk Brandewie<dirk.brandewie@gmail.com>
+> On 11/16/2010 04:39 PM, David Daney wrote:
 >>
->> /* .data section */
->> #define DATA_DATA \
->> *(.data) \
->> @@ -468,7 +482,8 @@
->> MCOUNT_REC() \
->> DEV_DISCARD(init.rodata) \
->> CPU_DISCARD(init.rodata) \
->> - MEM_DISCARD(init.rodata)
->> + MEM_DISCARD(init.rodata) \
->> + KERNEL_DTB()
+>> Thanks for doing this. However I have a few comments...
 >>
->
-> I thought the init.rodata was only for data used by __init things. Although the
-> current linker scripts do not put it in the section that gets recycled as usable
-> memory.
->
-> IIRC the unflattened version of the device tree has pointers to the flattened
-> data. Since the device tree nodes are live for the entire kernel lifecycle,
-> shouldn't the device tree blobs be in non-init memory?
->
-
-The contents of the blob get copied to allocated memory during 
-unflatten_device_tree() so the blob that is linked in is no longer needed after 
-init.
-
->
->> #define INIT_TEXT \
->> *(.init.text) \
->> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
->> index 4c72c11..29db062 100644
->> --- a/scripts/Makefile.lib
->> +++ b/scripts/Makefile.lib
->> @@ -200,6 +200,26 @@ quiet_cmd_gzip = GZIP $@
->> cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9> $@) || \
->> (rm -f $@ ; false)
+>> On 11/16/2010 02:41 PM, dirk.brandewie@gmail.com wrote:
+>>>
+>>> From: Dirk Brandewie<dirk.brandewie@gmail.com>
+>>>
+>>> /* .data section */
+>>> #define DATA_DATA \
+>>> *(.data) \
+>>> @@ -468,7 +482,8 @@
+>>> MCOUNT_REC() \
+>>> DEV_DISCARD(init.rodata) \
+>>> CPU_DISCARD(init.rodata) \
+>>> - MEM_DISCARD(init.rodata)
+>>> + MEM_DISCARD(init.rodata) \
+>>> + KERNEL_DTB()
+>>>
 >>
->> +# DTC
->> +# ---------------------------------------------------------------------------
->> +$(obj)/%.dtb.S: $(obj)/%.dtb FORCE
->
-> Why FORCE?
-Crud left over from debugging I will remove.
->
->
->> + @echo '#include<asm-generic/vmlinux.lds.h>'> $@
->> + @echo '.section .dtb.init.rodata,"a"'>> $@
->> + @echo '.balign DTB_ALIGNMENT'>> $@
->> + @echo '.global __dtb_$(*F)_begin'>> $@
->> + @echo '__dtb_$(*F)_begin:'>> $@
->> + @echo '.incbin "$<" '>> $@
->> + @echo '__dtb_$(*F)_end:'>> $@
->> + @echo '.global __dtb_$(*F)_end'>> $@
->> + @echo '.balign DTB_ALIGNMENT'>> $@
->> +
->> +DTC = $(objtree)/scripts/dtc/dtc
->> +
->> +quiet_cmd_dtc = DTC $@
->> + cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(src)/dts/$*.dts
->> +
->> +$(obj)/%.dtb: $(src)/dts/%.dts
->> + $(call if_changed,dtc)
+>> I thought the init.rodata was only for data used by __init things.
+>> Although the
+>> current linker scripts do not put it in the section that gets recycled as
+>> usable
+>> memory.
+>>
+>> IIRC the unflattened version of the device tree has pointers to the
+>> flattened
+>> data. Since the device tree nodes are live for the entire kernel
+>> lifecycle,
+>> shouldn't the device tree blobs be in non-init memory?
 >>
 >
-> Do all the generated files get cleaned up?
->
-> I will try it tomorrow to see for sure.
->
-Looks like I need to add the generated .S files to clean-files
+> The contents of the blob get copied to allocated memory during
+> unflatten_device_tree() so the blob that is linked in is no longer needed
+> after init.
 
->
-> Thanks,
-> David Daney
+Have you written a patch to add this behaviour?  The current code doesn't.  :-)
+
+g.
