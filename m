@@ -1,15 +1,15 @@
 Return-Path: <glikely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Tue, 16 Nov 2010 23:02:27 -0700
+Date: Tue, 16 Nov 2010 23:06:53 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
 To: dirk.brandewie@gmail.com
-Subject: Re: [PATCH 3/5] x86/of:  Add building device tree blob(s) into image.
-Message-ID: <20101117060227.GH12813@angua.secretlab.ca>
+Subject: Re: [PATCH 4/5] of/powerpc: Move build to use generic dts->dtb rule
+Message-ID: <20101117060653.GI12813@angua.secretlab.ca>
 References: <cover.1289943240.git.dirk.brandewie@gmail.com>
-	<35263573f57fd7e780dede628cf489212bfa1400.1289943240.git.dirk.brandewie@gmail.com>
+	<dae91d8292876db96f96896b79076c32cd2bf467.1289943240.git.dirk.brandewie@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <35263573f57fd7e780dede628cf489212bfa1400.1289943240.git.dirk.brandewie@gmail.com>
+In-Reply-To: <dae91d8292876db96f96896b79076c32cd2bf467.1289943240.git.dirk.brandewie@gmail.com>
 Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
@@ -23,85 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 16, 2010 at 02:41:38PM -0800, dirk.brandewie@gmail.com wrote:
+On Tue, Nov 16, 2010 at 02:41:39PM -0800, dirk.brandewie@gmail.com wrote:
 > From: Dirk Brandewie <dirk.brandewie@gmail.com>
 > 
-> This patch adds linking device tree blobs into vmlinux. DTB's are
-> added by adding the blob object name to list of objects to be linked
-> into the image.
-> e.g:
->   obj-$(CONFIG_TEST_DTB) += test.dtb.o
-> 
-> The set of DTB linked into the image is controlled the Kconfig file
-> in arch/x86/kernel/dts/Kconfig
+> This patch changes arch/powerpc/boot/Makefile to use the generic
+> rule build the device tree blobs in scripts/Makefile.lib
 > 
 > Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 > ---
->  arch/x86/Kconfig            |    6 +++++-
->  arch/x86/kernel/Makefile    |    6 ++++++
->  arch/x86/kernel/dts/Kconfig |    7 +++++++
->  3 files changed, 18 insertions(+), 1 deletions(-)
->  create mode 100644 arch/x86/kernel/dts/Kconfig
+>  arch/powerpc/boot/Makefile |    7 -------
+>  1 files changed, 0 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 5904f38..f2f516a 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -299,13 +299,17 @@ config X86_BIGSMP
->  	---help---
->  	  This option is needed for the systems that have more than 8 CPUs
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index fae8192..d90c674 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -147,8 +147,6 @@ targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
+>  extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+>  		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
 >  
-> -config X86_OF
-> +menuconfig X86_OF
->  	bool "Support for device tree"
->  	select OF
->  	select OF_FLATTREE
->  	---help---
->  	  Device tree support on X86.
+> -dtstree		:= $(srctree)/$(src)/dts
+> -
+>  wrapper		:=$(srctree)/$(src)/wrapper
+>  wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
+>  			$(wrapper) FORCE
+> @@ -331,11 +329,6 @@ $(obj)/treeImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>  $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>  	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
 >  
-> +if X86_OF
-> +source arch/x86/kernel/dts/Kconfig
-> +endif
-> +
->  if X86_32
->  config X86_EXTENDED_PLATFORM
->  	bool "Support for extended (non-PC) x86 platforms"
-> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-> index 586df14..49e017d 100644
-> --- a/arch/x86/kernel/Makefile
-> +++ b/arch/x86/kernel/Makefile
-> @@ -114,6 +114,12 @@ obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb.o
->  obj-$(CONFIG_X86_OF)			+= prom.o
->  
->  ###
-> +# device tree blobs
-> +obj-$(CONFIG_CE4100_DTB) += ce4100.dtb.o
-> +obj-$(CONFIG_TEST_DTB) += test.dtb.o
-> +
-> +
-> +###
->  # 64 bit specific files
->  ifeq ($(CONFIG_X86_64),y)
->  	obj-$(CONFIG_AUDIT)		+= audit_64.o
-> diff --git a/arch/x86/kernel/dts/Kconfig b/arch/x86/kernel/dts/Kconfig
-> new file mode 100644
-> index 0000000..d3e5cd4
-> --- /dev/null
-> +++ b/arch/x86/kernel/dts/Kconfig
-> @@ -0,0 +1,7 @@
-> +config CE4100_DTB
-> +       bool "Intel CE4100"
-> +
-> +config TEST_DTB
-> +       bool "Test DTS"
-> +
-> +
+> -# Rule to build device tree blobs
+> -DTC = $(objtree)/scripts/dtc/dtc
+> -
+> -$(obj)/%.dtb: $(dtstree)/%.dts
+> -	$(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(dtstree)/$*.dts
 
-As previously mentioned, this isn't going to scale.  Need to look at
-allowing the user to specify a list of .dtbs that will be linked in.
+This patch needs to modify the rules that have %.dtb dependencies to
+go looking in arch/powerpc/boot/dts instead of arch/powerpc/boot
+because the rule change will change where .dtb files get generated.
+
+Also, this patch and patch 5 need to be merged with patch 1 so that
+the series remains bisectable.
 
 g.
 
+>  
+>  # If there isn't a platform selected then just strip the vmlinux.
+>  ifeq (,$(image-y))
 > -- 
 > 1.7.2.3
 > 
