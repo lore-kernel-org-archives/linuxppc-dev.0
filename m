@@ -2,24 +2,14 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 48D8EB71A1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Nov 2010 04:17:01 +1100 (EST)
-Subject: Re: [PATCH] kgdb,
-	ppc: Corrected the address using of current->thread.evr register
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTPS id 5E6E8B7190
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Nov 2010 04:20:48 +1100 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4CE2FF5A.402@windriver.com>
-Date: Wed, 17 Nov 2010 11:16:46 -0600
-Message-Id: <983540C0-C0E6-44DB-9264-4A5B1E058043@kernel.crashing.org>
-References: <1289912316-4580-1-git-send-email-dongdong.deng@windriver.com>
-	<4CE2FF5A.402@windriver.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Dongdong Deng <dongdong.deng@windriver.com>,
-	Sergei Shtylyov <sshtylyov@mvista.com>,
-	kgdb-bugreport@lists.sourceforge.net, miltonm@bga.com, "Hai,
-	Shan" <shan.hai@windriver.com>, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: Fix module instruction tlb fault handling on
+	Book-E 64
+Date: Wed, 17 Nov 2010 11:20:32 -0600
+Message-Id: <1290014432-21957-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,73 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We were seeing oops like the following when we did an rmmod on a module:
 
-On Nov 16, 2010, at 4:02 PM, Jason Wessel wrote:
+Unable to handle kernel paging request for instruction fetch
+Faulting instruction address: 0x8000000000008010
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2 P5020 DS
+last sysfs file: /sys/devices/qman-portals.2/qman-pool.9/uevent
+Modules linked in: qman_tester(-)
+NIP: 8000000000008010 LR: c000000000074858 CTR: 8000000000008010
+REGS: c00000002e29bab0 TRAP: 0400   Not tainted
+(2.6.34.6-00744-g2d21f14)
+MSR: 0000000080029000 <EE,ME,CE>  CR: 24000448  XER: 00000000
+TASK = c00000007a8be600[4987] 'rmmod' THREAD: c00000002e298000 CPU: 1
+GPR00: 8000000000008010 c00000002e29bd30 8000000000012798 c00000000035fb28
+GPR04: 0000000000000002 0000000000000002 0000000024022428 c000000000009108
+GPR08: fffffffffffffffe 800000000000a618 c0000000003c13c8 0000000000000000
+GPR12: 0000000022000444 c00000000fffed00 0000000000000000 0000000000000000
+GPR16: 00000000100c0000 0000000000000000 00000000100dabc8 0000000010099688
+GPR20: 0000000000000000 00000000100cfc28 0000000000000000 0000000010011a44
+GPR24: 00000000100017b2 0000000000000000 0000000000000000 0000000000000880
+GPR28: c00000000035fb28 800000000000a7b8 c000000000376d80 c0000000003cce50
+NIP [8000000000008010] .test_exit+0x0/0x10 [qman_tester]
+LR [c000000000074858] .SyS_delete_module+0x1f8/0x2f0
+Call Trace:
+[c00000002e29bd30] [c0000000000748b4] .SyS_delete_module+0x254/0x2f0 (unreliable)
+[c00000002e29be30] [c000000000000580] syscall_exit+0x0/0x2c
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+38600000 4e800020 60000000 60000000 <4e800020> 60000000 60000000 60000000
+---[ end trace 4f57124939a84dc8 ]---
 
-> On 11/16/2010 06:58 AM, Dongdong Deng wrote:
->> Passing the address of current->thread.evr register to memcpy =
-function.
->>=20
->>=20
->=20
-> It turns out that out of all of my test configs and targets I did not
-> have any that defined both CONFIG_FSL_BOOKE and CONFIG_SPE else this
-> would have been caught in testing because will definitely crash
-> dereferencing the contents of the evr registers.
->=20
->> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
->> CC: Hai Shan <shan.hai@windriver.com>
->> CC: Milton Miller <miltonm@bga.com>
->> CC: linuxppc-dev@lists.ozlabs.org
->> ---
->> arch/powerpc/kernel/kgdb.c |    4 ++--
->> 1 files changed, 2 insertions(+), 2 deletions(-)
->>=20
->> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
->> index 7a9db64..781acff 100644
->> --- a/arch/powerpc/kernel/kgdb.c
->> +++ b/arch/powerpc/kernel/kgdb.c
->> @@ -337,7 +337,7 @@ char *dbg_get_reg(int regno, void *mem, struct =
-pt_regs *regs)
->> 		/* FP registers 32 -> 63 */
->> #if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_SPE)
->> 		if (current)
->> -			memcpy(mem, current->thread.evr[regno-32],
->> +			memcpy(mem, (void =
-*)&current->thread.evr[regno-32],
->> 					dbg_reg_def[regno].size);
->>=20
->=20
-> As Sergei already pointed out, the (void *) casts should not be needed =
-here.
->=20
-> This would have been fixed correctly had I seen the compile warnings
-> from the CONFIG_SPE at the test phase.   Namely at the compile phase
-> doesn't even complete:
->=20
-> arch/powerpc/kernel/kgdb.c: In function 'dbg_get_reg':
-> arch/powerpc/kernel/kgdb.c:341: error: passing argument 2 of 'memcpy'
-> makes pointer from integer without a cast
-> arch/powerpc/include/asm/string.h:25: note: expected 'const void *' =
-but
-> argument is of type 'long unsigned int'
-> arch/powerpc/kernel/kgdb.c: In function 'dbg_set_reg':
-> arch/powerpc/kernel/kgdb.c:366: error: passing argument 1 of 'memcpy'
-> makes pointer from integer without a cast
-> arch/powerpc/include/asm/string.h:25: note: expected 'void *' but
-> argument is of type 'long unsigned int'
->=20
->=20
-> Moral of the story... I now have a board and config with the SPE =
-turned
-> on, and after boot testing confirmed the evr registers are working.
->=20
-> I plan to have a pull request out to Linus with this fix and several
-> other accumulated regression fixes sometime in the next 48 hours.
->=20
-> Thanks,
-> Jason.
+This appears to be due to checking the wrong permission bits in the
+instruction_tlb_miss handling if the address that faulted was in vmalloc
+space.  We need to look at the supervisor execute (_PAGE_BAP_SX) bit and
+not the user bit (_PAGE_BAP_UX/_PAGE_EXEC).
 
-Repost a version with the casts and I'll pick it up.
+Also removed a branch level since it did not appear to be used.
 
-- k=
+Reported-by: Jeffrey Ladouceur <Jeffrey.Ladouceur@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/mm/tlb_low_64e.S |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+index 8b04c54..8526bd9 100644
+--- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -138,8 +138,11 @@
+ 	cmpldi	cr0,r15,0			/* Check for user region */
+ 	std	r14,EX_TLB_ESR(r12)		/* write crazy -1 to frame */
+ 	beq	normal_tlb_miss
++
++	li	r11,_PAGE_PRESENT|_PAGE_BAP_SX	/* Base perm */
++	oris	r11,r11,_PAGE_ACCESSED@h
+ 	/* XXX replace the RMW cycles with immediate loads + writes */
+-1:	mfspr	r10,SPRN_MAS1
++	mfspr	r10,SPRN_MAS1
+ 	cmpldi	cr0,r15,8			/* Check for vmalloc region */
+ 	rlwinm	r10,r10,0,16,1			/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+-- 
+1.7.2.3
