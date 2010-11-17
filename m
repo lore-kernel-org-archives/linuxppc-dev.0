@@ -1,15 +1,20 @@
-Return-Path: <dirk.brandewie@gmail.com>
-From: dirk.brandewie@gmail.com
-To: devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH 5/5] of/microblaze: Move build to use generic dts->dtb rule
-Date: Tue, 16 Nov 2010 14:41:40 -0800
-Message-Id: <7828dfd67fafcc2bb41e5bde40ac2ed7ef429142.1289943240.git.dirk.brandewie@gmail.com>
-In-Reply-To: <cover.1289943240.git.dirk.brandewie@gmail.com>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <348d48851a244bbd60bbfc4d60bee330e5c91eae.1289943240.git.dirk.brandewie@gmail.com>
 References: <cover.1289943240.git.dirk.brandewie@gmail.com>
+	<348d48851a244bbd60bbfc4d60bee330e5c91eae.1289943240.git.dirk.brandewie@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 16 Nov 2010 17:16:14 -0700
+Message-ID: <AANLkTik2TP_DUWstn_qmq1oz4HaPHqkoGkN5f1oUiHQa@mail.gmail.com>
+Subject: Re: [PATCH 2/5] of/fdt: add kernel command line option for dtb_compat
+	string
+To: dirk.brandewie@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	sodaville@linutronix.de, microblaze-uclinux@itee.uq.edu.au,
-	dirk.brandewie@gmail.com, arjan@linux.intel.com
+	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
+	arjan@linux.intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,45 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+On Tue, Nov 16, 2010 at 3:41 PM,  <dirk.brandewie@gmail.com> wrote:
+> From: Dirk Brandewie <dirk.brandewie@gmail.com>
+>
+> Adds a kernel command line option "dtb_compat=3D<string>" and functions
+> for architecture/platform specific code to retrieve the command line
+> string and locate the compatible DTB linked into the kernel
+>
+> of_flat_dt_get_dtb_compatible_string() returns a pointer string passed
+> from the command line or a pointer to an empty string.
+>
+> of_flat_dt_find_compatible_dtb() returns a pointer to a DTB that is
+> compatible with the "compatible" string or a NULL pointer if no
+> matching DTB is present.
+>
+> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+> ---
+[...]
+> +void __init *of_flat_dt_find_compatible_dtb(char *name)
+> +{
+> + =A0 =A0 =A0 void *rc =3D NULL;
+> + =A0 =A0 =A0 unsigned long root, size;
+> + =A0 =A0 =A0 struct boot_param_header =A0*orig_initial_boot_params;
+> + =A0 =A0 =A0 uint8_t *blob;
+> +
+> + =A0 =A0 =A0 orig_initial_boot_params =3D initial_boot_params;
+> + =A0 =A0 =A0 blob =3D __dtb_start;
+> + =A0 =A0 =A0 initial_boot_params =3D (struct boot_param_header *)blob;
+> +
+> + =A0 =A0 =A0 while (blob < __dtb_end &&
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 (be32_to_cpu(initial_boot_params->magic) =
+=3D=3D OF_DT_HEADER)) {
 
-This patch changes arch/microblaze/boot/Makefile to use the generic
-rule build the device tree blobs in scripts/Makefile.lib
+The kernel needs to complain *loudly* if this occurs because it
+represents a bug.  I'm tempted to say use BUG, but that would halt the
+kernel and prevent any possibility of kernel log output.  WARN_ON() is
+probably best.
 
-Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
----
- arch/microblaze/boot/Makefile |   13 +------------
- 1 files changed, 1 insertions(+), 12 deletions(-)
-
-diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
-index be01d78..4fda765 100644
---- a/arch/microblaze/boot/Makefile
-+++ b/arch/microblaze/boot/Makefile
-@@ -10,9 +10,6 @@ targets := linux.bin linux.bin.gz simpleImage.%
- 
- OBJCOPYFLAGS := -O binary
- 
--# Where the DTS files live
--dtstree         := $(srctree)/$(src)/dts
--
- # Ensure system.dtb exists
- $(obj)/linked_dtb.o: $(obj)/system.dtb
- 
-@@ -51,14 +48,6 @@ $(obj)/simpleImage.%: vmlinux FORCE
- 	$(call if_changed,strip)
- 	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
- 
--# Rule to build device tree blobs
--DTC = $(objtree)/scripts/dtc/dtc
--
--# Rule to build device tree blobs
--quiet_cmd_dtc = DTC     $@
--	cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 -p 1024 $(dtstree)/$*.dts
--
--$(obj)/%.dtb: $(dtstree)/%.dts FORCE
--	$(call if_changed,dtc)
-+DTS_FLAGS := -p 1024
- 
- clean-files += *.dtb simpleImage.*.unstrip linux.bin.ub
--- 
-1.7.2.3
+g.
