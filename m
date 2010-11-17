@@ -1,15 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Jim Keniston <jkenisto@linux.vnet.ibm.com>
-Subject: Re: Can't boot benh/powerpc.git kernel
-In-reply-to: <1289958663.3028.175.camel@localhost>
-References: <1289418856.2983.23.camel@localhost>
-	<1289426817.2147.1403.camel@pasglop>
-	<1289520464.4752.12.camel@localhost> <17075.1289877977@neuling.org>
-	<1289958663.3028.175.camel@localhost>
-Date: Wed, 17 Nov 2010 13:03:55 +1100
-Message-ID: <27638.1289959435@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <dirk.brandewie@gmail.com>
+Message-ID: <4CE33C14.9030503@gmail.com>
+Date: Tue, 16 Nov 2010 18:21:08 -0800
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+MIME-Version: 1.0
+To: David Daney <ddaney@caviumnetworks.com>
+Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
+	vmlinux
+References: <cover.1289943240.git.dirk.brandewie@gmail.com>
+	<9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
+	<4CE32453.2090403@caviumnetworks.com>
+In-Reply-To: <4CE32453.2090403@caviumnetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
+	microblaze-uclinux@itee.uq.edu.au, dirk.brandewie@gmail.com,
+	arjan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,73 +26,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On 11/16/2010 04:39 PM, David Daney wrote:
+> Thanks for doing this. However I have a few comments...
+>
+> On 11/16/2010 02:41 PM, dirk.brandewie@gmail.com wrote:
+>> From: Dirk Brandewie<dirk.brandewie@gmail.com>
+>>
+>> /* .data section */
+>> #define DATA_DATA \
+>> *(.data) \
+>> @@ -468,7 +482,8 @@
+>> MCOUNT_REC() \
+>> DEV_DISCARD(init.rodata) \
+>> CPU_DISCARD(init.rodata) \
+>> - MEM_DISCARD(init.rodata)
+>> + MEM_DISCARD(init.rodata) \
+>> + KERNEL_DTB()
+>>
+>
+> I thought the init.rodata was only for data used by __init things. Although the
+> current linker scripts do not put it in the section that gets recycled as usable
+> memory.
+>
+> IIRC the unflattened version of the device tree has pointers to the flattened
+> data. Since the device tree nodes are live for the entire kernel lifecycle,
+> shouldn't the device tree blobs be in non-init memory?
+>
 
-In message <1289958663.3028.175.camel@localhost> you wrote:
-> On Tue, 2010-11-16 at 14:26 +1100, Michael Neuling wrote:
-> > In message <1289520464.4752.12.camel@localhost> you wrote:
-> > > On Thu, 2010-11-11 at 09:06 +1100, Benjamin Herrenschmidt wrote:
-> > > > On Wed, 2010-11-10 at 11:54 -0800, Jim Keniston wrote:
-> > > > > I got Ben's linux/kernel/git/benh/powerpc.git source and built it
-> > > > > (.config file attached*).  It hangs on boot.  When I boot it with
-> > > > > loglevel=8, its last words are:
-> > > > 
-> > > > First, please try with Linus upstream. The "master" branch in my git
-> > > > tree is quite stale, and my next and merge branch are too at the moment
-> > > > as I'm still travelling. All our current stuff was merged during the
-> > > > last merge window so there's nothing "new" for you to pickup in my tree
-> > > > at the moment :-)
-> > > > 
-> > > > If the problem still occurs, I'll have a look next week.
-> > > > 
-> > > > Cheers,
-> > > > Ben.
-> > > 
-> > > I built from Linus's git tree, and that kernel doesn't boot, either.
-> > > (It doesn't hang, but rather panics during boot.  I can provide a
-> > > console log if you like.)
-> > 
-> > Yes please.  
-> > 
-> > Linus' tree with pseries_defconfig boots fine for me on my POWER5 box.
-> > 
-> > > v2.6.36 and v2.6.37-rc1 boot fine for me.  I'll post my nvram-related
-> > > patches against v2.6.37-rc1.
-> > 
-> > So it's broken between 37-rc1 and whereever you grabbed Linus tree.
-> > That's a fairly small window.  Can you bisect it?
-> 
-> I was apparently comparing apples to oranges.  Given the fatal
-> configuration options (DEBUG_SLAB and/or DEBUG_PAGEALLOC) 2.6.37-rc1
-> fails the same as a more recent snapshot of Linus's tree.  I updated my
-> view today, and it still fails to boot with DEBUG_SLAB and/or
-> DEBUG_PAGEALLOC, and boots OK without them.
+The contents of the blob get copied to allocated memory during 
+unflatten_device_tree() so the blob that is linked in is no longer needed after 
+init.
 
-I can't reproduce any of these.
+>
+>> #define INIT_TEXT \
+>> *(.init.text) \
+>> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+>> index 4c72c11..29db062 100644
+>> --- a/scripts/Makefile.lib
+>> +++ b/scripts/Makefile.lib
+>> @@ -200,6 +200,26 @@ quiet_cmd_gzip = GZIP $@
+>> cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9> $@) || \
+>> (rm -f $@ ; false)
+>>
+>> +# DTC
+>> +# ---------------------------------------------------------------------------
+>> +$(obj)/%.dtb.S: $(obj)/%.dtb FORCE
+>
+> Why FORCE?
+Crud left over from debugging I will remove.
+>
+>
+>> + @echo '#include<asm-generic/vmlinux.lds.h>'> $@
+>> + @echo '.section .dtb.init.rodata,"a"'>> $@
+>> + @echo '.balign DTB_ALIGNMENT'>> $@
+>> + @echo '.global __dtb_$(*F)_begin'>> $@
+>> + @echo '__dtb_$(*F)_begin:'>> $@
+>> + @echo '.incbin "$<" '>> $@
+>> + @echo '__dtb_$(*F)_end:'>> $@
+>> + @echo '.global __dtb_$(*F)_end'>> $@
+>> + @echo '.balign DTB_ALIGNMENT'>> $@
+>> +
+>> +DTC = $(objtree)/scripts/dtc/dtc
+>> +
+>> +quiet_cmd_dtc = DTC $@
+>> + cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(src)/dts/$*.dts
+>> +
+>> +$(obj)/%.dtb: $(src)/dts/%.dts
+>> + $(call if_changed,dtc)
+>>
+>
+> Do all the generated files get cleaned up?
+>
+> I will try it tomorrow to see for sure.
+>
+Looks like I need to add the generated .S files to clean-files
 
-I modified pseries_defconfig to enable DEBUG_SLAB and it still works for
-me on my POWER5 here
-
-% grep SLAB .config
-CONFIG_SLAB=y
-CONFIG_SLABINFO=y
-CONFIG_DEBUG_SLAB=y
-# CONFIG_DEBUG_SLAB_LEAK is not set
-
-I also can't reproduce with DEBUG_PAGEALLOC enabeled either.
-
-> It also fails to boot with SLUB and SLUB_DEBUG enabled, even with
-> SLUB_DEBUG_ON disabled.
-
-pseries_defconfig uses this configuration and boots for me.
-
-% grep SLUB .config
-CONFIG_SLUB_DEBUG=y
-CONFIG_SLUB=y
-# CONFIG_SLUB_DEBUG_ON is not set
-# CONFIG_SLUB_STATS is not set
-
-> Ben has access to my system, and will look at it in a few days.
-
-Can you please try pseries_defconfig?
-
-Mikey
+>
+> Thanks,
+> David Daney
