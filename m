@@ -2,13 +2,13 @@ Return-Path: <w.sang@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
 	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AF259B718F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Nov 2010 23:01:27 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 05545B71B6
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Nov 2010 23:01:30 +1100 (EST)
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: devicetree-discuss@ozlabs.org
-Subject: [PATCH 1/3] misc: at24: parse OF-data, too
-Date: Wed, 17 Nov 2010 13:00:48 +0100
-Message-Id: <1289995250-17927-2-git-send-email-w.sang@pengutronix.de>
+Subject: [PATCH 2/3] misc: at24: add more sanity checks for parameters
+Date: Wed, 17 Nov 2010 13:00:49 +0100
+Message-Id: <1289995250-17927-3-git-send-email-w.sang@pengutronix.de>
 In-Reply-To: <1289995250-17927-1-git-send-email-w.sang@pengutronix.de>
 References: <1289995250-17927-1-git-send-email-w.sang@pengutronix.de>
 Cc: linuxppc-dev@ozlabs.org
@@ -21,128 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Information about the pagesize and read-only-status may also come from
-the devicetree. Parse this data, too, and act accordingly. While we are
-here, change the initialization printout a bit. write_max is useful to
-know to detect performance bottlenecks, the rest is superfluous.
+Side-effects happen when passing 0 to either io_limit or page_size. Give
+an error in case of this misconfiguration.
 
 Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 ---
+ drivers/misc/eeprom/at24.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Changes since last version:
-
-- use __be32 instead of u32
-
- Documentation/powerpc/dts-bindings/eeprom.txt |   28 +++++++++++++++++++++
- drivers/misc/eeprom/at24.c                    |   33 ++++++++++++++++++++----
- 2 files changed, 55 insertions(+), 6 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/eeprom.txt
-
-diff --git a/Documentation/powerpc/dts-bindings/eeprom.txt b/Documentation/powerpc/dts-bindings/eeprom.txt
-new file mode 100644
-index 0000000..4342c10
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/eeprom.txt
-@@ -0,0 +1,28 @@
-+EEPROMs (I2C)
-+
-+Required properties:
-+
-+  - compatible : should be "<manufacturer>,<type>"
-+		 If there is no specific driver for <manufacturer>, a generic
-+		 driver based on <type> is selected. Possible types are:
-+		 24c00, 24c01, 24c02, 24c04, 24c08, 24c16, 24c32, 24c64,
-+		 24c128, 24c256, 24c512, 24c1024, spd
-+
-+  - reg : the I2C address of the EEPROM
-+
-+Optional properties:
-+
-+  - pagesize : the length of the pagesize for writing. Please consult the
-+               manual of your device, that value varies a lot. A wrong value
-+	       may result in data loss! If not specified, a safety value of
-+	       '1' is used which will be very slow.
-+
-+  - read-only: this parameterless property disables writes to the eeprom
-+
-+Example:
-+
-+eeprom@52 {
-+	compatible = "atmel,24c32";
-+	reg = <0x52>;
-+	pagesize = <32>;
-+};
 diff --git a/drivers/misc/eeprom/at24.c b/drivers/misc/eeprom/at24.c
-index 559b0b3..3a53efc 100644
+index 3a53efc..ab1ad41 100644
 --- a/drivers/misc/eeprom/at24.c
 +++ b/drivers/misc/eeprom/at24.c
-@@ -20,6 +20,7 @@
- #include <linux/log2.h>
- #include <linux/bitops.h>
- #include <linux/jiffies.h>
-+#include <linux/of.h>
- #include <linux/i2c.h>
- #include <linux/i2c/at24.h>
- 
-@@ -457,6 +458,27 @@ static ssize_t at24_macc_write(struct memory_accessor *macc, const char *buf,
- 
- /*-------------------------------------------------------------------------*/
- 
-+#ifdef CONFIG_OF
-+static void at24_get_ofdata(struct i2c_client *client,
-+		struct at24_platform_data *chip)
-+{
-+	const __be32 *val;
-+	struct device_node *node = client->dev.of_node;
-+
-+	if (node) {
-+		if (of_get_property(node, "read-only", NULL))
-+			chip->flags |= AT24_FLAG_READONLY;
-+		val = of_get_property(node, "pagesize", NULL);
-+		if (val)
-+			chip->page_size = be32_to_cpup(val);
+@@ -517,6 +517,11 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	if (!is_power_of_2(chip.byte_len))
+ 		dev_warn(&client->dev,
+ 			"byte_len looks suspicious (no power of 2)!\n");
++	if (!chip.page_size) {
++		dev_err(&client->dev, "page_size must not be 0!\n");
++		err = -EINVAL;
++		goto err_out;
 +	}
-+}
-+#else
-+static void at24_get_ofdata(struct i2c_client *client,
-+		struct at24_platform_data *chip)
-+{ }
-+#endif /* CONFIG_OF */
-+
- static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	if (!is_power_of_2(chip.page_size))
+ 		dev_warn(&client->dev,
+ 			"page_size looks suspicious (no power of 2)!\n");
+@@ -681,6 +686,11 @@ static struct i2c_driver at24_driver = {
+ 
+ static int __init at24_init(void)
  {
- 	struct at24_platform_data chip;
-@@ -485,6 +507,9 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		 */
- 		chip.page_size = 1;
- 
-+		/* update chipdata if OF is present */
-+		at24_get_ofdata(client, &chip);
++	if (!io_limit) {
++		pr_err("at24: io_limit must not be 0!\n");
++		return -EINVAL;
++	}
 +
- 		chip.setup = NULL;
- 		chip.context = NULL;
- 	}
-@@ -597,19 +622,15 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 
- 	i2c_set_clientdata(client, at24);
- 
--	dev_info(&client->dev, "%zu byte %s EEPROM %s\n",
-+	dev_info(&client->dev, "%zu byte %s EEPROM, %s, %u bytes/write\n",
- 		at24->bin.size, client->name,
--		writable ? "(writable)" : "(read-only)");
-+		writable ? "writable" : "read-only", at24->write_max);
- 	if (use_smbus == I2C_SMBUS_WORD_DATA ||
- 	    use_smbus == I2C_SMBUS_BYTE_DATA) {
- 		dev_notice(&client->dev, "Falling back to %s reads, "
- 			   "performance will suffer\n", use_smbus ==
- 			   I2C_SMBUS_WORD_DATA ? "word" : "byte");
- 	}
--	dev_dbg(&client->dev,
--		"page_size %d, num_addresses %d, write_max %d, use_smbus %d\n",
--		chip.page_size, num_addresses,
--		at24->write_max, use_smbus);
- 
- 	/* export data to kernel code */
- 	if (chip.setup)
+ 	io_limit = rounddown_pow_of_two(io_limit);
+ 	return i2c_add_driver(&at24_driver);
+ }
 -- 
 1.7.2.3
