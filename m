@@ -1,23 +1,13 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0DD53B7179
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Nov 2010 10:20:07 +1100 (EST)
-Message-ID: <53628.94.211.195.167.1290035996.squirrel@gate.crashing.org>
-In-Reply-To: <AANLkTinWry94YidZRu_4nr1ahgPiVV06g+zh_zDF8iGQ@mail.gmail.com>
-References: <AANLkTiksY8x7XOifU3FAAPpCa_h4oEBmqu_a0vjRE5h5@mail.gmail.com>
-	<1289255477.2147.1368.camel@pasglop>
-	<AANLkTin1wdo1e9nt07H+UkQmKWSvnKa+CHzwuQ8F2gR1@mail.gmail.com>
-	<AANLkTinWry94YidZRu_4nr1ahgPiVV06g+zh_zDF8iGQ@mail.gmail.com>
-Date: Thu, 18 Nov 2010 00:19:56 +0100 (CET)
-Subject: Re: PowerMac8600 help ...
-From: "Segher Boessenkool" <segher@kernel.crashing.org>
-To: "kevin diggs" <diggskevin38@gmail.com>
+Return-Path: <bones@secretlab.ca>
+Subject: [PATCH 0/5] refactor dts files for mpc5200b based systems (take 2)
+To: linux-kernel@vger.kernel.org
+From: John Bonesio <bones@secretlab.ca>
+Date: Wed, 17 Nov 2010 15:28:11 -0800
+Message-ID: <20101117232520.25947.37475.stgit@riker>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: glikely@secretlab.ca, jdl@jdl.com, linuxppc-dev@lists.ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +17,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I have also discovered what prevented
-> firefox from working with 4.3.5. It was picking up the 3.4.6 libstdc++
-> (possibly other internal tidbits as well).
+I belive I've fixed the problems with the messed up [PATCH 1/5]. I've also
+incorporated changes per comments.
 
-So you installed (one of) those compilers incorrectly.
+The following series implements a set of changes to refactor dts (device tree
+source) files for systems using the mpc5200b SoC.
 
-> P.S.:  newer powermacs have a line in cpuinfo, like "PowerMac 7,2".
-> Does this uniquely identify a particular model?
+The dtc changes allow a base dts to be defined in a common dts file included
+with '/include/ <filename>'. This base dts can then be updated and modified
+by merging in a second device tree defined in the system specific dts file.
 
-Yes.  There's a board revision as well, but I don't think we ever
-needed to use that info.
+The rest of the changes are the refactoring of the mpc5200b dts files.
+
+---
+
+John Bonesio (5):
+      Pull in recent changes from the main dtc repository. These changes primarily
+      powerpc/5200: dts: rename nodes to prepare for refactoring dts files
+      powerpc/5200: dts: remove unused properties
+      powerpc/5200: dts: Change combatible strings on localbus
+      powerpc/5200: dts: refactor dts files
 
 
-Segher
+ arch/powerpc/boot/dts/cm5200.dts    |  198 +++----------------------
+ arch/powerpc/boot/dts/digsy_mtc.dts |  179 +++--------------------
+ arch/powerpc/boot/dts/lite5200b.dts |  232 ++---------------------------
+ arch/powerpc/boot/dts/media5200.dts |  216 +++------------------------
+ arch/powerpc/boot/dts/motionpro.dts |  198 +++----------------------
+ arch/powerpc/boot/dts/mpc5200b.dtsi |  276 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mucmc52.dts   |  176 ++++++----------------
+ arch/powerpc/boot/dts/pcm030.dts    |  201 ++-----------------------
+ arch/powerpc/boot/dts/pcm032.dts    |  205 ++------------------------
+ arch/powerpc/boot/dts/uc101.dts     |  162 ++++-----------------
+ 10 files changed, 499 insertions(+), 1544 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc5200b.dtsi
+
+-- 
+Signature
