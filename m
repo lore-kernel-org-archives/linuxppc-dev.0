@@ -1,18 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <dirk.brandewie@gmail.com>
+Message-ID: <4CE372A9.2050704@gmail.com>
+Date: Tue, 16 Nov 2010 22:14:01 -0800
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20101116204951.12146.21084.stgit@riker>
-References: <20101116204917.12146.39851.stgit@riker>
-	<20101116204951.12146.21084.stgit@riker>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 16 Nov 2010 23:11:27 -0700
-Message-ID: <AANLkTinYZYR_QtS5-Nodpaf2MBBuaw06SW9pDCNQ9ov3@mail.gmail.com>
-Subject: Re: [PATCH 1/5] scripts: dtc: Merge in changes from the dtc repository
-To: John Bonesio <bones@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, jdl@jdl.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	david@gibson.dropbear.id.au
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/5] of: Add support for linking device tree blobs into
+	vmlinux
+References: <cover.1289943240.git.dirk.brandewie@gmail.com>
+	<9129f0a21ea48fb2dcb89cea290e88f3e8c0d8a2.1289943240.git.dirk.brandewie@gmail.com>
+	<4CE32453.2090403@caviumnetworks.com> <4CE33C14.9030503@gmail.com>
+	<AANLkTi=T_bqEswe32dTAfL4++WAitc7+VHnyjqP2sQfi@mail.gmail.com>
+In-Reply-To: <AANLkTi=T_bqEswe32dTAfL4++WAitc7+VHnyjqP2sQfi@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: arjan@linux.intel.com, devicetree-discuss@lists.ozlabs.org,
+	David Daney <ddaney@caviumnetworks.com>,
+	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
+	microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,47 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 16, 2010 at 1:49 PM, John Bonesio <bones@secretlab.ca> wrote:
-> Pull in recent changes from the main dtc repository. These changes primar=
-ily
-> allow multiple device trees to be declared which are merged by dtc. This
-> feature allows us to include a basic dts file and then provide more infor=
-mation
-> for the specific system through the merging functionality.
+On 11/16/2010 06:58 PM, Grant Likely wrote:
+> On Tue, Nov 16, 2010 at 7:21 PM, Dirk Brandewie
+> <dirk.brandewie@gmail.com>  wrote:
+>>
+>> On 11/16/2010 04:39 PM, David Daney wrote:
+>>>
+>>> Thanks for doing this. However I have a few comments...
+>>>
+>>> On 11/16/2010 02:41 PM, dirk.brandewie@gmail.com wrote:
+>>>>
+>>>> From: Dirk Brandewie<dirk.brandewie@gmail.com>
+>>>>
+>>>> /* .data section */
+>>>> #define DATA_DATA \
+>>>> *(.data) \
+>>>> @@ -468,7 +482,8 @@
+>>>> MCOUNT_REC() \
+>>>> DEV_DISCARD(init.rodata) \
+>>>> CPU_DISCARD(init.rodata) \
+>>>> - MEM_DISCARD(init.rodata)
+>>>> + MEM_DISCARD(init.rodata) \
+>>>> + KERNEL_DTB()
+>>>>
+>>>
+>>> I thought the init.rodata was only for data used by __init things.
+>>> Although the
+>>> current linker scripts do not put it in the section that gets recycled as
+>>> usable
+>>> memory.
+>>>
+>>> IIRC the unflattened version of the device tree has pointers to the
+>>> flattened
+>>> data. Since the device tree nodes are live for the entire kernel
+>>> lifecycle,
+>>> shouldn't the device tree blobs be in non-init memory?
+>>>
+>>
+>> The contents of the blob get copied to allocated memory during
+>> unflatten_device_tree() so the blob that is linked in is no longer needed
+>> after init.
 >
-> Signed-off-by: John Bonesio <bones@secretlab.ca>
-> ---
+> Have you written a patch to add this behaviour?  The current code doesn't.  :-)
 >
-> =A00 files changed, 0 insertions(+), 0 deletions(-)
 
-???  Something isn't right in patch generation.
+I misspoke, my blob gets copied to allocated memory during unflatten_device_tree.
+my early_init_dt_alloc_memory_arch() returns the physical address of a kmalloc'd
+buffer.
 
-Also:
+You would want copy the dtb that your platform is going to use to non-init memory.
 
-~/hacking/linux-2.6$ xc-6xx make -j3
-  GEN     /home/grant/hacking/linux-2.6.build/6xx/Makefile
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf --silentoldconfig Kconfig
-#
-# configuration written to .config
-#
-  GEN     /home/grant/hacking/linux-2.6.build/6xx/Makefile
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  HOSTCC  scripts/dtc/checks.o
-In file included from /home/grant/hacking/linux-2.6/scripts/dtc/checks.c:21=
-:
-/home/grant/hacking/linux-2.6/scripts/dtc/dtc.h:37: fatal error:
-util.h: No such file or directory
-compilation terminated.
-make[3]: *** [scripts/dtc/checks.o] Error 1
-make[2]: *** [scripts/dtc] Error 2
-make[1]: *** [scripts] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [sub-make] Error 2
-(devicetree/test) ~/hacking/linux-2.6$
-
-Looks like the updated dtc is broken.
-
-g.
+--Dirk
