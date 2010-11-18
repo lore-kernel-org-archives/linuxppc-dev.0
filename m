@@ -1,33 +1,26 @@
-Return-Path: <sonny@us.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9990AB71B8
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 67200B71BF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 06:22:35 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAIJ0mfq030631
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 14:00:48 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oAIJMWUZ459666
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 14:22:32 -0500
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id oAIJMVaG022515
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 12:22:31 -0700
-Received: from us.ibm.com (dyn9414181.austin.ibm.com [9.41.41.81])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	oAIJMVa3022504
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 12:22:31 -0700
-Resent-Message-ID: <20101118192231.GK32203@us.ibm.com>
-From: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: minor cleanups for machdep.h
-Date: Thu, 18 Nov 2010 04:39:23 -0600
-Message-Id: <1290076764-3280-1-git-send-email-sonnyrao@linux.vnet.ibm.com>
-Cc: Sonny Rao <sonnyrao@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>
+	Fri, 19 Nov 2010 07:06:37 +1100 (EST)
+Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jim Keniston <jkenisto@linux.vnet.ibm.com>
+In-Reply-To: <1290104610.3067.32.camel@localhost>
+References: <1289418856.2983.23.camel@localhost>
+	<1289426817.2147.1403.camel@pasglop>
+	<1289520464.4752.12.camel@localhost>
+	<17075.1289877977@neuling.org> <1289958663.3028.175.camel@localhost>
+	<27638.1289959435@neuling.org> <1290020404.2974.15.camel@localhost>
+	<13149.1290047579@neuling.org>  <1290104610.3067.32.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Nov 2010 07:06:19 +1100
+Message-ID: <1290110779.32570.9.camel@pasglop>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,49 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-remove stale declaration of setup_pci_ptrs, aparently from ppc before 2.4.0
+On Thu, 2010-11-18 at 10:23 -0800, Jim Keniston wrote:
 
-remove #ifdef around struct existance delcaration
+> FWIW, this failure isn't an obstacle for me.  I'm in no way attached to
+> my legacy configuration; pseries_defconfig is fine for me.  On the other
+> hand, I can continue testing fixes, and/or make my system available to
+> other IBMers when I'm not using it, if you want to continue to pursue
+> this problem.
+> 
+> Thank
 
-fix spelling of linear
+>From the look of it your "legacy" config is lacking the necessary
+storage drivers...
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Signed-off-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/machdep.h |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+Ben.
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index d045b01..8433d36 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -27,9 +27,7 @@ struct iommu_table;
- struct rtc_time;
- struct file;
- struct pci_controller;
--#ifdef CONFIG_KEXEC
- struct kimage;
--#endif
-
- #ifdef CONFIG_SMP
- struct smp_ops_t {
-@@ -72,7 +70,7 @@ struct machdep_calls {
- 					     int psize, int ssize);
- 	void		(*flush_hash_range)(unsigned long number, int local);
-
--	/* special for kexec, to be called in real mode, linar mapping is
-+	/* special for kexec, to be called in real mode, linear mapping is
- 	 * destroyed as well */
- 	void		(*hpte_clear_all)(void);
-
-@@ -324,8 +322,6 @@ extern sys_ctrler_t sys_ctrler;
-
- #endif /* CONFIG_PPC_PMAC */
-
--extern void setup_pci_ptrs(void);
--
- #ifdef CONFIG_SMP
- /* Poor default implementations */
- extern void __devinit smp_generic_give_timebase(void);
--- 
-1.5.6.5
+> .
+> Jim
+> 
+> >   
+> > 
+> > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> > index 83f534d..5e95844 100644
+> > --- a/arch/powerpc/mm/hash_utils_64.c
+> > +++ b/arch/powerpc/mm/hash_utils_64.c
+> > @@ -1123,7 +1123,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+> >  	else
+> >  #endif /* CONFIG_PPC_HAS_HASH_64K */
+> >  		rc = __hash_page_4K(ea, access, vsid, ptep, trap, local, ssize,
+> > -				    subpage_protection(pgdir, ea));
+> > +				    subpage_protection(mm, ea));
+> > 
+> >  	/* Dump some info in case of hash insertion failure, they should
+> >  	 * never happen so it is really useful to know if/when they do
+> > 
+> > 
+> 
