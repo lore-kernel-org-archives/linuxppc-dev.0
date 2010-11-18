@@ -1,15 +1,23 @@
 Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from SG2EHSOBE001.bigfish.com (sg2ehsobe001.messaging.microsoft.com
+	[207.46.51.75]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 32778B71E1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Nov 2010 11:10:29 +1100 (EST)
 From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 To: <grant.likely@secretlab.ca>, <dirk.brandewie@gmail.com>,
 	<devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<microblaze-uclinux@itee.uq.edu.au>
-Subject: [PATCH 0/7] add of_fdt_unflatten_tree
-Date: Thu, 18 Nov 2010 15:54:55 -0800
-In-Reply-To: <1290021345-4303-1-git-send-email-stephen.neuendorffer@xilinx.com>
+Subject: [PATCH 1/7] fdt: Add Kconfig for EARLY_FLATTREE
+Date: Thu, 18 Nov 2010 15:54:56 -0800
+In-Reply-To: <1290124502-13125-1-git-send-email-stephen.neuendorffer@xilinx.com>
 References: <1290021345-4303-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1290124502-13125-1-git-send-email-stephen.neuendorffer@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-ID: <cce2a5ec-536b-4668-8bbe-ae413cb435ac@VA3EHSMHS006.ehs.local>
+Message-ID: <d43cf8d1-8821-4400-9c58-692846dd37ac@SG2EHSMHS005.ehs.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,35 +27,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Currently, fdt blobs are handled solely at boot time.  However,
-it may be useful to parse blobs into device trees after boot time.  For
-instance, a PCIe device may have an FPGA which includes a device
-tree.  This set of patches locally refactors the existing code to enable
-this.
+The device tree code is now in two pieces: some which can be used generically
+on any platform which selects CONFIG_OF_FLATTREE, and some early which is used
+at boot time on only a few architectures.  This patch segregates the early
+code so that only those architectures which care about it need compile it.
+This also means that some of the requirements in the early code (such as
+a cmd_line variable) that most architectures (e.g. X86) don't provide
+can be ignored.
 
-Patch 1 and 4-7 are the interesting bits.
-Patch 2 and 3 provide the ability to use this code on x86, and are provided mostly for reference.
+Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
-The non-early boot code has been compile-tested and executed on X86.
+----
 
-Stephen Neuendorffer (7):
-  fdt: Add Kconfig for EARLY_FLATTREE
-  arch/x86: Add support for device tree code.
-  arch/x86: select OF and OF_FLATTREE
-  fdt.c: Add non-boottime device tree functions
-  fdt.c: Refactor unflatten_dt_node
-  fdt.c: Reorder unflatten_dt_node
-  fdt.c: Refactor unflatten_device_tree and add fdt_unflatten_tree
+Grant,
+We had discussed doing something like this a loooong time ago.  This (or at
+least some other way of dealing with cmd_line) is
+actually necessary to compile on X86.  Do you still want to do it this way?
+Looking at my old email, you suggested only powerpc and microblaze need this.
+Is that still the case?
 
- arch/microblaze/Kconfig    |    1 +
- arch/powerpc/Kconfig       |    1 +
- arch/x86/Kconfig           |    2 +
- arch/x86/include/asm/irq.h |    2 +
- arch/x86/kernel/irq.c      |   11 ++
- drivers/of/Kconfig         |    5 +
- drivers/of/fdt.c           |  393 ++++++++++++++++++++++++++------------------
- include/linux/of_fdt.h     |   13 ++
- 8 files changed, 272 insertions(+), 156 deletions(-)
+Conflicts:
+
+	drivers/of/fdt.c
+---
+ arch/microblaze/Kconfig |    1 +
+ arch/powerpc/Kconfig    |    1 +
+ drivers/of/Kconfig      |    5 +++++
+ drivers/of/fdt.c        |    4 ++++
+ 4 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index 692fdfc..384375c 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -20,6 +20,7 @@ config MICROBLAZE
+ 	select TRACING_SUPPORT
+ 	select OF
+ 	select OF_FLATTREE
++	select OF_EARLY_FLATTREE
+ 
+ config SWAP
+ 	def_bool n
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 631e5a0..2cd7b32 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -119,6 +119,7 @@ config PPC
+ 	default y
+ 	select OF
+ 	select OF_FLATTREE
++	select OF_EARLY_FLATTREE
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FUNCTION_TRACER
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index aa675eb..0199157 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -19,6 +19,10 @@ config OF_FLATTREE
+ 	bool
+ 	select DTC
+ 
++config OF_EARLY_FLATTREE
++	bool
++	depends on OF_FLATTREE
++
+ config OF_PROMTREE
+ 	bool
+ 
+@@ -62,3 +66,4 @@ config OF_MDIO
+ 	  OpenFirmware MDIO bus (Ethernet PHY) accessors
+ 
+ endmenu # OF
++
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index c1360e0..4d71b29 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -27,6 +27,8 @@ int __initdata dt_root_size_cells;
+ 
+ struct boot_param_header *initial_boot_params;
+ 
++#ifdef CONFIG_EARLY_FLATTREE
++
+ char *find_flat_dt_string(u32 offset)
+ {
+ 	return ((char *)initial_boot_params) +
+@@ -604,3 +606,5 @@ void __init unflatten_device_tree(void)
+ 
+ 	pr_debug(" <- unflatten_device_tree()\n");
+ }
++
++#endif /* CONFIG_EARLY_FLATTREE */
+-- 
+1.5.6.6
 
 
 
