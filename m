@@ -1,36 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B7BE1B71D2
+Return-Path: <jj@chaosbits.net>
+Received: from swampdragon.chaosbits.net (swampdragon.chaosbits.net
+	[90.184.90.115]) by ozlabs.org (Postfix) with ESMTP id 97E7CB71BC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 06:36:02 +1100 (EST)
-Received: from mail141-va3 (localhost.localdomain [127.0.0.1])	by
-	mail141-va3-R.bigfish.com (Postfix) with ESMTP id 7DB9ABB81C8	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 19:35:56 +0000 (UTC)
-Received: from VA3EHSMHS036.bigfish.com (unknown [10.7.14.236])	by
-	mail141-va3.bigfish.com (Postfix) with ESMTP id 3A82568004D	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 19:35:56 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id oAIJZpff016958	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Nov 2010 12:35:51 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oAIJZobn006889	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Nov 2010 13:35:50 -0600 (CST)
-Date: Thu, 18 Nov 2010 13:35:49 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: <steven.lin@teradyne.com>
-Subject: Re: application needs fast access to physical memory
-Message-ID: <20101118133549.1c6d2cc3@udp111988uds.am.freescale.net>
-In-Reply-To: <OF313AFE4A.0F7F91F0-ON882577DF.0057B647-862577DF.005CF920@notes.teradyne.com>
-References: <20101118125425.GE7256@yookeroo>
-	<OF313AFE4A.0F7F91F0-ON882577DF.0057B647-862577DF.005CF920@notes.teradyne.com>
+	Fri, 19 Nov 2010 06:58:22 +1100 (EST)
+Date: Thu, 18 Nov 2010 20:45:38 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v2] iSeries: Remove unused mf_getSrcHistory function and
+	caller.
+In-Reply-To: <alpine.LNX.2.00.1011050026220.16015@swampdragon.chaosbits.net>
+Message-ID: <alpine.LNX.2.00.1011182044490.3651@swampdragon.chaosbits.net>
+References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
+	<1288609842.10671.7.camel@concordia>
+	<20101102071025.2fe5e6ca.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1011012104050.12889@swampdragon.chaosbits.net>
+	<20101102082634.65342ce6.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
+	<1288657250.16790.4.camel@concordia>
+	<alpine.LNX.2.00.1011050026220.16015@swampdragon.chaosbits.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,43 +31,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 18 Nov 2010 10:55:21 -0600
-<steven.lin@teradyne.com> wrote:
+On Fri, 5 Nov 2010, Jesper Juhl wrote:
 
-> Thanks for the replies.
->=20
-> In the Linux Device Drivers book regarding mmap(), it states:
->=20
->    Mapping a device means associating a range of user-space addresses to
->    device memory.
->    Whenever the program reads or writes in the assigned address range, it
->    is actually
->    accessing the device. In the X server example, using mmap allows quick
->    and easy
->    access to the video card=E2=80=99s memory. For a performance-critical
->    application like this,
->    direct access makes a large difference.
->=20
-> For whatever reason, mmap() is definitely not quick and does not appear to
-> be a direct access to device memory. After the application completes a
-> large write into physical memory (via the pointer returned from mmap()),
-> the application performs an ioctl() to query whether the data actually
-> arrived into the memory region. It seems to take some time before the
-> associated kernel module actually "sees" the data in the physical memory
-> region.
->=20
-> There's a few things I should say about this memory region. There's a tot=
-al
-> of 512 MB of physical memory. U-Boot passes "mem=3D256M" as a kernel
-> parameter to tell Linux to only directly manage the lower 256 MB. The
-> special region of physical memory that the application is trying to access
-> is the upper 256 MB of memory not directly managed by Linux. The mmap()
-> call from the application is:
->    *memptr =3D (void *) mmap( NULL, size, PROT_READ | PROT_WRITE, MAP_SHA=
-RED,
->    _fdTerAlloc, (off_t) 0x10000000);
+> On Tue, 2 Nov 2010, Michael Ellerman wrote:
+> 
+> > On Mon, 2010-11-01 at 22:20 +0100, Jesper Juhl wrote:
+> > > Hi Stephen,
+> > > 
+> > > On Tue, 2 Nov 2010, Stephen Rothwell wrote:
+> > > 
+> > > > On Mon, 1 Nov 2010 21:06:23 +0100 (CET) Jesper Juhl <jj@chaosbits.net> wrote:
+> > > > >
+> > > > > Remove unused function 'mf_getSrcHistory' (that will never be used ever 
+> > > > > according to Stephen Rothwell).
+> > > > > 
+> > > > > Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+> > > > 
+> > > > Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > > > 
+> > > 
+> > > Ok, so if you are the (unofficial) iSeries maintainer and you don't merge 
+> > > the patch somewhere that'll eventually go up-stream, but just ACK it 
+> > > (thank you for that btw), then where do I send it to get it merged?
+> > 
+> > Here. ie. linuxppc-dev.
+> > 
+> > But, while you're removing it you should remove the #if 0'ed callsite as
+> > well, see mf_src_proc_show() in that file. :)
+> > 
+> Done. See patch below.
+> 
+> 
+> Remove unused function 'mf_getSrcHistory' (that will never be used 
+> ever according to Stephen Rothwell) and also remove most of (under 'if 
+> 0') code from mf_src_proc_show() where the function was called.
+> 
+> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+> ---
+>  mf.c |   62 
+> --------------------------------------------------------------
+>  1 file changed, 62 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/iseries/mf.c b/arch/powerpc/platforms/iseries/mf.c
+> index 42d0a88..b5e026b 100644
+> --- a/arch/powerpc/platforms/iseries/mf.c
+> +++ b/arch/powerpc/platforms/iseries/mf.c
+> @@ -1045,71 +1045,9 @@ static const struct file_operations mf_side_proc_fops = {
+>  	.write		= mf_side_proc_write,
+>  };
+>  
+> -#if 0
+> -static void mf_getSrcHistory(char *buffer, int size)
+> -{
+> -	struct IplTypeReturnStuff return_stuff;
+> -	struct pending_event *ev = new_pending_event();
+> -	int rc = 0;
+> -	char *pages[4];
+> -
+> -	pages[0] = kmalloc(4096, GFP_ATOMIC);
+> -	pages[1] = kmalloc(4096, GFP_ATOMIC);
+> -	pages[2] = kmalloc(4096, GFP_ATOMIC);
+> -	pages[3] = kmalloc(4096, GFP_ATOMIC);
+> -	if ((ev == NULL) || (pages[0] == NULL) || (pages[1] == NULL)
+> -			 || (pages[2] == NULL) || (pages[3] == NULL))
+> -		return -ENOMEM;
+> -
+> -	return_stuff.xType = 0;
+> -	return_stuff.xRc = 0;
+> -	return_stuff.xDone = 0;
+> -	ev->event.hp_lp_event.xSubtype = 6;
+> -	ev->event.hp_lp_event.x.xSubtypeData =
+> -		subtype_data('M', 'F', 'V', 'I');
+> -	ev->event.data.vsp_cmd.xEvent = &return_stuff;
+> -	ev->event.data.vsp_cmd.cmd = 4;
+> -	ev->event.data.vsp_cmd.lp_index = HvLpConfig_getLpIndex();
+> -	ev->event.data.vsp_cmd.result_code = 0xFF;
+> -	ev->event.data.vsp_cmd.reserved = 0;
+> -	ev->event.data.vsp_cmd.sub_data.page[0] = iseries_hv_addr(pages[0]);
+> -	ev->event.data.vsp_cmd.sub_data.page[1] = iseries_hv_addr(pages[1]);
+> -	ev->event.data.vsp_cmd.sub_data.page[2] = iseries_hv_addr(pages[2]);
+> -	ev->event.data.vsp_cmd.sub_data.page[3] = iseries_hv_addr(pages[3]);
+> -	mb();
+> -	if (signal_event(ev) != 0)
+> -		return;
+> -
+> - 	while (return_stuff.xDone != 1)
+> - 		udelay(10);
+> - 	if (return_stuff.xRc == 0)
+> - 		memcpy(buffer, pages[0], size);
+> -	kfree(pages[0]);
+> -	kfree(pages[1]);
+> -	kfree(pages[2]);
+> -	kfree(pages[3]);
+> -}
+> -#endif
+> -
+>  static int mf_src_proc_show(struct seq_file *m, void *v)
+>  {
+> -#if 0
+> -	int len;
+> -
+> -	mf_getSrcHistory(page, count);
+> -	len = count;
+> -	len -= off;
+> -	if (len < count) {
+> -		*eof = 1;
+> -		if (len <= 0)
+> -			return 0;
+> -	} else
+> -		len = count;
+> -	*start = page + off;
+> -	return len;
+> -#else
+>  	return 0;
+> -#endif
+>  }
+>  
+>  static int mf_src_proc_open(struct inode *inode, struct file *file)
+> 
+> 
+> 
+> 
 
-Try this patch:
-http://patchwork.ozlabs.org/patch/68246/
+PING.
 
--Scott
+Is this going to get merged somewhere or is there a problem?
+
+
+-- 
+Jesper Juhl <jj@chaosbits.net>            http://www.chaosbits.net/
+Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please.
