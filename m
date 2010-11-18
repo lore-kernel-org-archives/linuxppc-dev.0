@@ -1,17 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 18 Nov 2010 23:54:25 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: application needs fast access to physical memory
-Message-ID: <20101118125425.GE7256@yookeroo>
-References: <OFEB1252DC.D653C7C7-ON882577DE.0078DABB-862577DE.00792502@notes.teradyne.com>
-	<1290083062.22575.9.camel@concordia>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7qSK/uQB79J36Y4o"
-In-Reply-To: <1290083062.22575.9.camel@concordia>
-Cc: Steven_Lin@notes.teradyne.com, steven.lin@teradyne.com,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id CDDD2B7170
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Nov 2010 04:05:52 +1100 (EST)
+Date: Thu, 18 Nov 2010 09:06:15 -0800 (PST)
+Message-Id: <20101118.090615.71123752.davem@davemloft.net>
+To: mlcreech@gmail.com
+Subject: Re: Gianfar TCP checksumming broken in 2.6.35+
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <AANLkTi=-ZAL-to4qZ0vA20L589fMQm89E9mH9WWOvX0c@mail.gmail.com>
+References: <AANLkTi=-ZAL-to4qZ0vA20L589fMQm89E9mH9WWOvX0c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: "Matthew L. Creech" <mlcreech@gmail.com>
+Date: Tue, 2 Nov 2010 18:29:08 -0400
 
---7qSK/uQB79J36Y4o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> An upgrade from 2.6.34 to 2.6.35 caused networking to stop working on
+> my MPC8313-based board.  It turned out that TCP checksums were
+> invalid, so I dug through the .35 changelog to try and isolate the
+> reason.  The change "tcp: Set CHECKSUM_UNNECESSARY in
+> tcp_init_nondata_skb" seems to be the specific one that causes
+> breakage - if I revert this one-liner, things work again:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2e8e18ef52e7dd1af0a3bd1f7d990a1d0b249586
+> 
+> However, I also noticed that one of my boards was broken while a newer
+> prototype (which is very similar, hardware-wise) was not.  It turns
+> out they're using 2 different revisions of silicon, so the broken
+> board still has a 1.0 version microcontroller.
+> 
+> Therefore I'm guessing (just a hunch) that the root cause of the
+> problem is MPC8313 errata eTSEC12:
+> 
+> ========
+> eTSEC12: Tx IP and TCP/UDP Checksum Generation not supported for some Tx FCB
+>          offsets
+> Description:
+> 	If the Tx FCB (Frame Control Block) 32-byte offset is 0x19, 0x1A, 0x1B,
+> 	0x1C, 0x1D, 0x1E or 0x1F, IP and TCP/UDP header checksum generation do
+> 	not function properly. The checksum value may be inserted in the wrong
+> 	location or not inserted at all.
+> 	IP and TCP/UDP header checksum generation is not supported in LINUX
+> 	and other systems in which headers are prepended to pre-aligned packet
+> 	data, or where the alignment of the Tx FCB cannot be controlled.
+> 	This behavior applies to pseudo-header checksum insertion as well as
+> 	checksum generation.
+> Workaround:
+> 	Align Tx FCB to a 16 or 32-byte boundary.
+> 	If the alignment of TxFCB is not controllable, set TCTRL[TUCSEN]=0 and
+> 	TCTRL[IPCSEN]=0 to disable IP and TCP/UDP header checksum generation.
+> Fix plan:
+> 	Fixed in Rev 2.0
+> ========
+> 
+> This appears to have been working previously, but doesn't work any
+> more.  I'm not familiar enough with Dave's checksum/sk_buff changes to
+> figure out whether this errata is to blame, though, or how I should
+> fix it if it is.  Presumably there's some alignment magic needed in
+> the sk_buff or gfar_add_fcb() to make sure that the microcontroller is
+> happy with the FCB offset?
+> 
+> Any tip on how I can solve this, or at least verify that this errata
+> is at fault?  Thanks in advance
 
-On Thu, Nov 18, 2010 at 11:24:22PM +1100, Michael Ellerman wrote:
-> On Wed, 2010-11-17 at 16:03 -0600, steven.lin@teradyne.com wrote:
-> > My application needs a fast way to access a specific physical DDR
-> > memory region. The application runs on an MPC8548 PowerPC which has an
-> > MMU. I've tried two approaches that are typical for Linux, mmap() and
-> > using a kernel module that implements read()/write() into this region
-> > and I'm finding that performance is very slow for both. It's a couple
-> > orders of magnitude slower than, for example, copying a large buffer
-> > from one place in the application's virtual memory to another place in
-> > the application's virtual memory.
->=20
-> The mmap() version should basically run at "full speed", at least once
-> you've faulted the address range in.
->=20
-> This specific DDR region isn't specifically slow is it ? :)
+Can someone please follow up Matthew to get this bug resolved?  It has
+been sitting around for a long time.
 
-The other theory that springs to mind is whatever method you're using
-to access the region enabling cacheing?
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---7qSK/uQB79J36Y4o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkzlIgEACgkQaILKxv3ab8YFzgCZAVb16o9SJ9qHJFENd16FiRTU
-Ct0An2GHVSgKYLsXFOkDqFUa+/rDiO+o
-=Ao/d
------END PGP SIGNATURE-----
-
---7qSK/uQB79J36Y4o--
+I suspect the gianfar driver, for these chip revisions, will need to
+do a software checksum when the offset matches the criteria mentioned
+in the errata above.
