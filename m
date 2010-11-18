@@ -1,22 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
+Subject: Re: application needs fast access to physical memory
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <13149.1290047579@neuling.org>
-References: <1289418856.2983.23.camel@localhost>
-	<1289426817.2147.1403.camel@pasglop>
-	<1289520464.4752.12.camel@localhost>
-	<17075.1289877977@neuling.org> <1289958663.3028.175.camel@localhost>
-	<27638.1289959435@neuling.org> <1290020404.2974.15.camel@localhost>
-	<13149.1290047579@neuling.org>
+To: steven.lin@teradyne.com
+In-Reply-To: <OFEB1252DC.D653C7C7-ON882577DE.0078DABB-862577DE.00792502@notes.teradyne.com>
+References: <OFEB1252DC.D653C7C7-ON882577DE.0078DABB-862577DE.00792502@notes.teradyne.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-xEgXUbvqycQI4ODkE/4h"
-Date: Thu, 18 Nov 2010 23:21:01 +1100
-Message-ID: <1290082861.22575.6.camel@concordia>
+	boundary="=-RDW1osiPoH6TkmM8GwYX"
+Date: Thu, 18 Nov 2010 23:24:22 +1100
+Message-ID: <1290083062.22575.9.camel@concordia>
 Mime-Version: 1.0
-Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: Steven_Lin@notes.teradyne.com, linuxppc-dev@lists.ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,51 +22,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-xEgXUbvqycQI4ODkE/4h
+--=-RDW1osiPoH6TkmM8GwYX
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2010-11-18 at 13:32 +1100, Michael Neuling wrote:
-> In:=20
->   powerpc/mm: Fix pgtable cache cleanup with CONFIG_PPC_SUBPAGE_PROT
->   commit d28513bc7f675d28b479db666d572e078ecf182d
->   Author: David Gibson <david@gibson.dropbear.id.au>
->=20
-> subpage_protection() was changed to to take an mm rather a pgdir but it
-> didn't change calling site in hashpage_preload().  The change wasn't
-> noticed at compile time since hashpage_preload() used a void* as the
-> parameter to subpage_protection().
-...=20
->=20
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils=
-_64.c
-> index 83f534d..5e95844 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -1123,7 +1123,7 @@ void hash_preload(struct mm_struct *mm, unsigned lo=
-ng ea,
->  	else
->  #endif /* CONFIG_PPC_HAS_HASH_64K */
->  		rc =3D __hash_page_4K(ea, access, vsid, ptep, trap, local, ssize,
-> -				    subpage_protection(pgdir, ea));
-> +				    subpage_protection(mm, ea));
+On Wed, 2010-11-17 at 16:03 -0600, steven.lin@teradyne.com wrote:
+> My application needs a fast way to access a specific physical DDR
+> memory region. The application runs on an MPC8548 PowerPC which has an
+> MMU. I've tried two approaches that are typical for Linux, mmap() and
+> using a kernel module that implements read()/write() into this region
+> and I'm finding that performance is very slow for both. It's a couple
+> orders of magnitude slower than, for example, copying a large buffer
+> from one place in the application's virtual memory to another place in
+> the application's virtual memory.
 
-Type checking is fun :)
+The mmap() version should basically run at "full speed", at least once
+you've faulted the address range in.
 
-This is stable material no?
+This specific DDR region isn't specifically slow is it ? :)
 
 cheers
 
---=-xEgXUbvqycQI4ODkE/4h
+--=-RDW1osiPoH6TkmM8GwYX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkzlGi0ACgkQdSjSd0sB4dIb5ACfUiXocJsXsn0mqMfE7rDk+Xjs
-Id4AoLRo52j7GKX2IkgiPDw/dn7ZP9Fg
-=spYy
+iEYEABECAAYFAkzlGvYACgkQdSjSd0sB4dJzkgCfZEiWFy/9AMpXECJTw9r/7JSR
+3bAAoMecPYt9rv2p3zIVJY/S9/7jq6EZ
+=bcNT
 -----END PGP SIGNATURE-----
 
---=-xEgXUbvqycQI4ODkE/4h--
+--=-RDW1osiPoH6TkmM8GwYX--
