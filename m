@@ -1,27 +1,34 @@
-Return-Path: <jj@chaosbits.net>
-Received: from swampdragon.chaosbits.net (swampdragon.chaosbits.net
-	[90.184.90.115]) by ozlabs.org (Postfix) with ESMTP id 97E7CB71BC
+Return-Path: <sonny@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53394B71AE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 06:58:22 +1100 (EST)
-Date: Thu, 18 Nov 2010 20:45:38 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] iSeries: Remove unused mf_getSrcHistory function and
-	caller.
-In-Reply-To: <alpine.LNX.2.00.1011050026220.16015@swampdragon.chaosbits.net>
-Message-ID: <alpine.LNX.2.00.1011182044490.3651@swampdragon.chaosbits.net>
-References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
-	<1288609842.10671.7.camel@concordia>
-	<20101102071025.2fe5e6ca.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1011012104050.12889@swampdragon.chaosbits.net>
-	<20101102082634.65342ce6.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
-	<1288657250.16790.4.camel@concordia>
-	<alpine.LNX.2.00.1011050026220.16015@swampdragon.chaosbits.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Fri, 19 Nov 2010 06:22:19 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAIJ0dsv004259
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 14:00:39 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oAIJMF61462670
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 14:22:15 -0500
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id oAIJMEK6022155
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 12:22:14 -0700
+Received: from us.ibm.com (dyn9414181.austin.ibm.com [9.41.41.81])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	oAIJMEAq022079
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 12:22:14 -0700
+Resent-Message-ID: <20101118192213.GI32203@us.ibm.com>
+From: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Powerpc: separate CONFIG_RELOCATABLE from CONFIG_CRASHDUMP in
+	boot code
+Date: Thu, 18 Nov 2010 04:35:07 -0600
+Message-Id: <1290076507-3181-1-git-send-email-sonnyrao@linux.vnet.ibm.com>
+Cc: Sonny Rao <sonnyrao@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,134 +38,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 5 Nov 2010, Jesper Juhl wrote:
+Fix head_64.S so that we can build a relocatable kernel
+that isn't necessarily a crash-dump kernel
 
-> On Tue, 2 Nov 2010, Michael Ellerman wrote:
-> 
-> > On Mon, 2010-11-01 at 22:20 +0100, Jesper Juhl wrote:
-> > > Hi Stephen,
-> > > 
-> > > On Tue, 2 Nov 2010, Stephen Rothwell wrote:
-> > > 
-> > > > On Mon, 1 Nov 2010 21:06:23 +0100 (CET) Jesper Juhl <jj@chaosbits.net> wrote:
-> > > > >
-> > > > > Remove unused function 'mf_getSrcHistory' (that will never be used ever 
-> > > > > according to Stephen Rothwell).
-> > > > > 
-> > > > > Signed-off-by: Jesper Juhl <jj@chaosbits.net>
-> > > > 
-> > > > Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > > > 
-> > > 
-> > > Ok, so if you are the (unofficial) iSeries maintainer and you don't merge 
-> > > the patch somewhere that'll eventually go up-stream, but just ACK it 
-> > > (thank you for that btw), then where do I send it to get it merged?
-> > 
-> > Here. ie. linuxppc-dev.
-> > 
-> > But, while you're removing it you should remove the #if 0'ed callsite as
-> > well, see mf_src_proc_show() in that file. :)
-> > 
-> Done. See patch below.
-> 
-> 
-> Remove unused function 'mf_getSrcHistory' (that will never be used 
-> ever according to Stephen Rothwell) and also remove most of (under 'if 
-> 0') code from mf_src_proc_show() where the function was called.
-> 
-> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
-> ---
->  mf.c |   62 
-> --------------------------------------------------------------
->  1 file changed, 62 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/iseries/mf.c b/arch/powerpc/platforms/iseries/mf.c
-> index 42d0a88..b5e026b 100644
-> --- a/arch/powerpc/platforms/iseries/mf.c
-> +++ b/arch/powerpc/platforms/iseries/mf.c
-> @@ -1045,71 +1045,9 @@ static const struct file_operations mf_side_proc_fops = {
->  	.write		= mf_side_proc_write,
->  };
->  
-> -#if 0
-> -static void mf_getSrcHistory(char *buffer, int size)
-> -{
-> -	struct IplTypeReturnStuff return_stuff;
-> -	struct pending_event *ev = new_pending_event();
-> -	int rc = 0;
-> -	char *pages[4];
-> -
-> -	pages[0] = kmalloc(4096, GFP_ATOMIC);
-> -	pages[1] = kmalloc(4096, GFP_ATOMIC);
-> -	pages[2] = kmalloc(4096, GFP_ATOMIC);
-> -	pages[3] = kmalloc(4096, GFP_ATOMIC);
-> -	if ((ev == NULL) || (pages[0] == NULL) || (pages[1] == NULL)
-> -			 || (pages[2] == NULL) || (pages[3] == NULL))
-> -		return -ENOMEM;
-> -
-> -	return_stuff.xType = 0;
-> -	return_stuff.xRc = 0;
-> -	return_stuff.xDone = 0;
-> -	ev->event.hp_lp_event.xSubtype = 6;
-> -	ev->event.hp_lp_event.x.xSubtypeData =
-> -		subtype_data('M', 'F', 'V', 'I');
-> -	ev->event.data.vsp_cmd.xEvent = &return_stuff;
-> -	ev->event.data.vsp_cmd.cmd = 4;
-> -	ev->event.data.vsp_cmd.lp_index = HvLpConfig_getLpIndex();
-> -	ev->event.data.vsp_cmd.result_code = 0xFF;
-> -	ev->event.data.vsp_cmd.reserved = 0;
-> -	ev->event.data.vsp_cmd.sub_data.page[0] = iseries_hv_addr(pages[0]);
-> -	ev->event.data.vsp_cmd.sub_data.page[1] = iseries_hv_addr(pages[1]);
-> -	ev->event.data.vsp_cmd.sub_data.page[2] = iseries_hv_addr(pages[2]);
-> -	ev->event.data.vsp_cmd.sub_data.page[3] = iseries_hv_addr(pages[3]);
-> -	mb();
-> -	if (signal_event(ev) != 0)
-> -		return;
-> -
-> - 	while (return_stuff.xDone != 1)
-> - 		udelay(10);
-> - 	if (return_stuff.xRc == 0)
-> - 		memcpy(buffer, pages[0], size);
-> -	kfree(pages[0]);
-> -	kfree(pages[1]);
-> -	kfree(pages[2]);
-> -	kfree(pages[3]);
-> -}
-> -#endif
-> -
->  static int mf_src_proc_show(struct seq_file *m, void *v)
->  {
-> -#if 0
-> -	int len;
-> -
-> -	mf_getSrcHistory(page, count);
-> -	len = count;
-> -	len -= off;
-> -	if (len < count) {
-> -		*eof = 1;
-> -		if (len <= 0)
-> -			return 0;
-> -	} else
-> -		len = count;
-> -	*start = page + off;
-> -	return len;
-> -#else
->  	return 0;
-> -#endif
->  }
->  
->  static int mf_src_proc_open(struct inode *inode, struct file *file)
-> 
-> 
-> 
-> 
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/head_64.S |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-PING.
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index f0dd577..53b098f 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -96,7 +96,7 @@ __secondary_hold_acknowledge:
+ 	.llong hvReleaseData-KERNELBASE
+ #endif /* CONFIG_PPC_ISERIES */
 
-Is this going to get merged somewhere or is there a problem?
-
-
+-#ifdef CONFIG_CRASH_DUMP
++#ifdef CONFIG_RELOCATABLE
+ 	/* This flag is set to 1 by a loader if the kernel should run
+ 	 * at the loaded address instead of the linked address.  This
+ 	 * is used by kexec-tools to keep the the kdump kernel in the
+@@ -384,12 +384,10 @@ _STATIC(__after_prom_start)
+ 	/* process relocations for the final address of the kernel */
+ 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
+ 	sldi	r25,r25,32
+-#ifdef CONFIG_CRASH_DUMP
+ 	lwz	r7,__run_at_load-_stext(r26)
+-	cmplwi	cr0,r7,1	/* kdump kernel ? - stay where we are */
++	cmplwi	cr0,r7,1	/* flagged to stay where we are ? */
+ 	bne	1f
+ 	add	r25,r25,r26
+-#endif
+ 1:	mr	r3,r25
+ 	bl	.relocate
+ #endif
 -- 
-Jesper Juhl <jj@chaosbits.net>            http://www.chaosbits.net/
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please.
+1.5.6.5
