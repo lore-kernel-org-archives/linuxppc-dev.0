@@ -1,23 +1,26 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
+Subject: Re: [PATCH v2] iSeries: Remove unused mf_getSrcHistory function
+	and caller.
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <25179.1290111882@neuling.org>
-References: <1289418856.2983.23.camel@localhost>
-	<1289426817.2147.1403.camel@pasglop>
-	<1289520464.4752.12.camel@localhost>
-	<17075.1289877977@neuling.org> <1289958663.3028.175.camel@localhost>
-	<27638.1289959435@neuling.org> <1290020404.2974.15.camel@localhost>
-	<13149.1290047579@neuling.org> <1290082861.22575.6.camel@concordia>
-	<25179.1290111882@neuling.org>
+To: Jesper Juhl <jj@chaosbits.net>
+In-Reply-To: <alpine.LNX.2.00.1011182044490.3651@swampdragon.chaosbits.net>
+References: <alpine.LNX.2.00.1010301911220.1572@swampdragon.chaosbits.net>
+	<1288609842.10671.7.camel@concordia>
+	<20101102071025.2fe5e6ca.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1011012104050.12889@swampdragon.chaosbits.net>
+	<20101102082634.65342ce6.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1011012218420.12889@swampdragon.chaosbits.net>
+	<1288657250.16790.4.camel@concordia>
+	<alpine.LNX.2.00.1011050026220.16015@swampdragon.chaosbits.net>
+	<alpine.LNX.2.00.1011182044490.3651@swampdragon.chaosbits.net>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-WqUVHjzaz66NAXNgtIFw"
-Date: Fri, 19 Nov 2010 08:53:03 +1100
-Message-ID: <1290117183.29105.4.camel@concordia>
+	boundary="=-4BJN8Wjt2wBvi4xzZk3M"
+Date: Fri, 19 Nov 2010 08:57:50 +1100
+Message-ID: <1290117470.29105.9.camel@concordia>
 Mime-Version: 1.0
-Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,68 +32,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-WqUVHjzaz66NAXNgtIFw
+--=-4BJN8Wjt2wBvi4xzZk3M
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2010-11-19 at 07:24 +1100, Michael Neuling wrote:
-> > On Thu, 2010-11-18 at 13:32 +1100, Michael Neuling wrote:
-> > > In:=3D20
-> > >   powerpc/mm: Fix pgtable cache cleanup with CONFIG_PPC_SUBPAGE_PROT
-> > >   commit d28513bc7f675d28b479db666d572e078ecf182d
-> > >   Author: David Gibson <david@gibson.dropbear.id.au>
-> > >=3D20
-> > > subpage_protection() was changed to to take an mm rather a pgdir but =
-it
-> > > didn't change calling site in hashpage_preload().  The change wasn't
-> > > noticed at compile time since hashpage_preload() used a void* as the
-> > > parameter to subpage_protection().
-> > ...=3D20
-> > >=3D20
-> > > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_u=
-tils=3D
-> > _64.c
-> > > index 83f534d..5e95844 100644
-> > > --- a/arch/powerpc/mm/hash_utils_64.c
-> > > +++ b/arch/powerpc/mm/hash_utils_64.c
-> > > @@ -1123,7 +1123,7 @@ void hash_preload(struct mm_struct *mm, unsigne=
-d lo=3D
-> > ng ea,
-> > >  	else
-> > >  #endif /* CONFIG_PPC_HAS_HASH_64K */
-> > >  		rc =3D3D __hash_page_4K(ea, access, vsid, ptep, trap, local, ssiz
-> e,
-> > > -				    subpage_protection(pgdir, ea));
-> > > +				    subpage_protection(mm, ea));
-> >=20
-> > Type checking is fun :)
-> >=20
-> > This is stable material no?
+On Thu, 2010-11-18 at 20:45 +0100, Jesper Juhl wrote:
+> On Fri, 5 Nov 2010, Jesper Juhl wrote:
+> > =20
+> >  static int mf_src_proc_open(struct inode *inode, struct file *file)
+
+> PING.
 >=20
-> Yes.  In the bit you snipped was a:
->=20
->   cc: stable@kernel.org (only 2.6.33 and newer)
+> Is this going to get merged somewhere or is there a problem?
 
-Oh right, I thought you actually had to send it to them :D
+Yes, no.
 
-> Fortunately it's not in 2.6.32 so the bug missed the distros.
-
-Phew.
+It won't get lost:
+http://patchwork.ozlabs.org/patch/70201/
 
 cheers
 
 
-
---=-WqUVHjzaz66NAXNgtIFw
+--=-4BJN8Wjt2wBvi4xzZk3M
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkzloDoACgkQdSjSd0sB4dIZIACgyhzZrlyn07GHyzkRbABeuyDt
-D8YAoKBdP2dWHz06HL6kF8RR9T1miND4
-=0Xus
+iEYEABECAAYFAkzloV4ACgkQdSjSd0sB4dJHIgCgyXtCb2bwWcKLFacEvA7LNsyp
+aPoAn3Z2Z773EE8BQ3m1P3bi7dY/o6fi
+=yvXG
 -----END PGP SIGNATURE-----
 
---=-WqUVHjzaz66NAXNgtIFw--
+--=-4BJN8Wjt2wBvi4xzZk3M--
