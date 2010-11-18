@@ -1,19 +1,36 @@
-Return-Path: <Steven_Lin@notes.teradyne.com>
-Received: from newshow.teradyne.com (newshow.teradyne.com [198.51.251.9])
-	by ozlabs.org (Postfix) with ESMTP id CBF3DB719D
+Return-Path: <jkenisto@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 24122B71A8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 03:55:34 +1100 (EST)
-In-Reply-To: <20101118125425.GE7256@yookeroo>
-Subject: Re: application needs fast access to physical memory
-To: David Gibson <david@gibson.dropbear.id.au>,
-	Michael Ellerman <michael@ellerman.id.au>
-Message-ID: <OF313AFE4A.0F7F91F0-ON882577DF.0057B647-862577DF.005CF920@notes.teradyne.com>
-From: steven.lin@teradyne.com
-Date: Thu, 18 Nov 2010 10:55:21 -0600
-MIME-Version: 1.0
-Content-type: multipart/related;
-	Boundary="0__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7"
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri, 19 Nov 2010 05:23:37 +1100 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oAII1v49018831
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 13:01:57 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oAIINWr2347502
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 13:23:32 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oAIINWAt032713
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2010 13:23:32 -0500
+Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
+From: Jim Keniston <jkenisto@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <13149.1290047579@neuling.org>
+References: <1289418856.2983.23.camel@localhost>
+	<1289426817.2147.1403.camel@pasglop>
+	<1289520464.4752.12.camel@localhost>
+	<17075.1289877977@neuling.org> <1289958663.3028.175.camel@localhost>
+	<27638.1289959435@neuling.org> <1290020404.2974.15.camel@localhost>
+	<13149.1290047579@neuling.org>
+Content-Type: multipart/mixed; boundary="=-FBXptrT66GD7Ndotffp0"
+Date: Thu, 18 Nov 2010 10:23:30 -0800
+Message-ID: <1290104610.3067.32.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,275 +40,292 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7
-Content-type: multipart/alternative;
-	Boundary="1__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7"
 
---1__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7
-Content-type: text/plain; charset=UTF-8
-Content-transfer-encoding: base64
+--=-FBXptrT66GD7Ndotffp0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 
+On Thu, 2010-11-18 at 13:32 +1100, Michael Neuling wrote:
+> In: 
+>   powerpc/mm: Fix pgtable cache cleanup with CONFIG_PPC_SUBPAGE_PROT
+>   commit d28513bc7f675d28b479db666d572e078ecf182d
+>   Author: David Gibson <david@gibson.dropbear.id.au>
+> 
+> subpage_protection() was changed to to take an mm rather a pgdir but it
+> didn't change calling site in hashpage_preload().  The change wasn't
+> noticed at compile time since hashpage_preload() used a void* as the
+> parameter to subpage_protection().
+> 
+> This is obviously wrong and can trigger the following crash when
+> CONFIG_SLAB, CONFIG_DEBUG_SLAB, CONFIG_PPC_64K_PAGES
+> CONFIG_PPC_SUBPAGE_PROT are enabled.
+> 
+...
+> 
+> The following changes this subpage_protection() call.
+> 
+> Reported-by: Jim Keniston <jkenisto@linux.vnet.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Tested-by: Jim Keniston <jkenisto@linux.vnet.ibm.com>
+> cc: David Gibson <david@gibson.dropbear.id.au>
+> cc: stable@kernel.org (only 2.6.33 and newer)
+> ---
+> > It boots fine with pseries_defconfig.
+> > 
+> > Attached is the config file that I've been using, which is probably
+> > descended over many generations of kernels from some config file in my
+> > machine's distant past.  (Enable DEBUG_SLAB or DEBUG_PAGEALLOC and it
+> > will fail to boot.)  After I run 'make menuconfig' starting from
+> > pseries_defconfig...
+> > $ diff config_ok .config | wc -l
+> > 2052
+> 
+> I narrowed this down to adding the following on pseries_defconfig:
+>   +CONFIG_SLAB=y
+>   +CONFIG_PPC_64K_PAGES=y
+>   +CONFIG_PPC_SUBPAGE_PROT=y
+>   +CONFIG_DEBUG_SLAB=y
+> To reproduce the fail.
 
-VGhhbmtzIGZvciB0aGUgcmVwbGllcy4NCg0KSW4gdGhlIExpbnV4IERldmljZSBEcml2ZXJzIGJv
-b2sgcmVnYXJkaW5nIG1tYXAoKSwgaXQgc3RhdGVzOg0KDQogICBNYXBwaW5nIGEgZGV2aWNlIG1l
-YW5zIGFzc29jaWF0aW5nIGEgcmFuZ2Ugb2YgdXNlci1zcGFjZSBhZGRyZXNzZXMgdG8NCiAgIGRl
-dmljZSBtZW1vcnkuDQogICBXaGVuZXZlciB0aGUgcHJvZ3JhbSByZWFkcyBvciB3cml0ZXMgaW4g
-dGhlIGFzc2lnbmVkIGFkZHJlc3MgcmFuZ2UsIGl0DQogICBpcyBhY3R1YWxseQ0KICAgYWNjZXNz
-aW5nIHRoZSBkZXZpY2UuIEluIHRoZSBYIHNlcnZlciBleGFtcGxlLCB1c2luZyBtbWFwIGFsbG93
-cyBxdWljaw0KICAgYW5kIGVhc3kNCiAgIGFjY2VzcyB0byB0aGUgdmlkZW8gY2FyZOKAmXMgbWVt
-b3J5LiBGb3IgYSBwZXJmb3JtYW5jZS1jcml0aWNhbA0KICAgYXBwbGljYXRpb24gbGlrZSB0aGlz
-LA0KICAgZGlyZWN0IGFjY2VzcyBtYWtlcyBhIGxhcmdlIGRpZmZlcmVuY2UuDQoNCkZvciB3aGF0
-ZXZlciByZWFzb24sIG1tYXAoKSBpcyBkZWZpbml0ZWx5IG5vdCBxdWljayBhbmQgZG9lcyBub3Qg
-YXBwZWFyIHRvDQpiZSBhIGRpcmVjdCBhY2Nlc3MgdG8gZGV2aWNlIG1lbW9yeS4gQWZ0ZXIgdGhl
-IGFwcGxpY2F0aW9uIGNvbXBsZXRlcyBhDQpsYXJnZSB3cml0ZSBpbnRvIHBoeXNpY2FsIG1lbW9y
-eSAodmlhIHRoZSBwb2ludGVyIHJldHVybmVkIGZyb20gbW1hcCgpKSwNCnRoZSBhcHBsaWNhdGlv
-biBwZXJmb3JtcyBhbiBpb2N0bCgpIHRvIHF1ZXJ5IHdoZXRoZXIgdGhlIGRhdGEgYWN0dWFsbHkN
-CmFycml2ZWQgaW50byB0aGUgbWVtb3J5IHJlZ2lvbi4gSXQgc2VlbXMgdG8gdGFrZSBzb21lIHRp
-bWUgYmVmb3JlIHRoZQ0KYXNzb2NpYXRlZCBrZXJuZWwgbW9kdWxlIGFjdHVhbGx5ICJzZWVzIiB0
-aGUgZGF0YSBpbiB0aGUgcGh5c2ljYWwgbWVtb3J5DQpyZWdpb24uDQoNClRoZXJlJ3MgYSBmZXcg
-dGhpbmdzIEkgc2hvdWxkIHNheSBhYm91dCB0aGlzIG1lbW9yeSByZWdpb24uIFRoZXJlJ3MgYSB0
-b3RhbA0Kb2YgNTEyIE1CIG9mIHBoeXNpY2FsIG1lbW9yeS4gVS1Cb290IHBhc3NlcyAibWVtPTI1
-Nk0iIGFzIGEga2VybmVsDQpwYXJhbWV0ZXIgdG8gdGVsbCBMaW51eCB0byBvbmx5IGRpcmVjdGx5
-IG1hbmFnZSB0aGUgbG93ZXIgMjU2IE1CLiBUaGUNCnNwZWNpYWwgcmVnaW9uIG9mIHBoeXNpY2Fs
-IG1lbW9yeSB0aGF0IHRoZSBhcHBsaWNhdGlvbiBpcyB0cnlpbmcgdG8gYWNjZXNzDQppcyB0aGUg
-dXBwZXIgMjU2IE1CIG9mIG1lbW9yeSBub3QgZGlyZWN0bHkgbWFuYWdlZCBieSBMaW51eC4gVGhl
-IG1tYXAoKQ0KY2FsbCBmcm9tIHRoZSBhcHBsaWNhdGlvbiBpczoNCiAgICptZW1wdHIgPSAodm9p
-ZCAqKSBtbWFwKCBOVUxMLCBzaXplLCBQUk9UX1JFQUQgfCBQUk9UX1dSSVRFLCBNQVBfU0hBUkVE
-LA0KICAgX2ZkVGVyQWxsb2MsIChvZmZfdCkgMHgxMDAwMDAwMCk7DQoNCk9uIHRoZSBrZXJuZWwg
-bW9kdWxlIHNpZGUsIHRoZSBmdW5jdGlvbiBoYW5kbGluZyB0aGUgbW1hcCgpIGZpbGUgb3BlcmF0
-aW9uDQppczoNCiAgIHN0YXRpYyBpbnQgdGVyX2FsbG9jX21tYXAoIHN0cnVjdCBmaWxlICpwRmls
-ZSwgc3RydWN0IHZtX2FyZWFfc3RydWN0DQogICAqdm1hICkNCiAgIHsNCiAgICAgICBpZiAocmVt
-YXBfcGZuX3JhbmdlKHZtYSwgdm1hLT52bV9zdGFydCwgdm1hLT52bV9wZ29mZiwgdm1hLT52bV9l
-bmQgLQ0KICAgdm1hLT52bV9zdGFydCwgdm1hLT52bV9wYWdlX3Byb3QpKQ0KICAgICAgICAgICBy
-ZXR1cm4gLUVBR0FJTjsNCg0KICAgICAgIHZtYS0+dm1fb3BzID0gJnRlcl9hbGxvY19yZW1hcF92
-bV9vcHM7DQogICAgICAgdGVyX2FsbG9jX3ZtYV9vcGVuKHZtYSk7DQogICAgICAgcmV0dXJuIDA7
-DQogICB9DQoNCi1TdGV2ZSBMaW4NCg0KDQoNCg0KICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAg
-ICAgICAgRGF2aWQgR2lic29uICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICANCiAgICAgICAgICAgICA8ZGF2aWRAZ2lic29uLmRybyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgIHBiZWFyLmlkLmF1
-PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgVG8gDQogICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBNaWNoYWVsIEVsbGVybWFuICAgICAg
-ICAgICAgICAgICAgICANCiAgICAgICAgICAgICAxMS8xOC8yMDEwIDA2OjU0ICAgICAgICAgIDxt
-aWNoYWVsQGVsbGVybWFuLmlkLmF1PiAgICAgICAgICAgIA0KICAgICAgICAgICAgIEFNICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY2MgDQog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdGV2ZW4ubGluQHRlcmFkeW5l
-LmNvbSwgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IFN0ZXZlbl9MaW5Abm90ZXMudGVyYWR5bmUuY29tLCAgICAgIA0KICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcgICAgICAg
-DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgU3ViamVjdCANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIFJlOiBhcHBsaWNhdGlvbiBuZWVkcyBmYXN0IGFjY2VzcyAgIA0KICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgdG8gcGh5c2ljYWwgbWVtb3J5ICAgICAgICAgICAgICAg
-ICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgDQoNCg0KDQoNCk9uIFRodSwgTm92IDE4LCAyMDEwIGF0IDExOjI0OjIyUE0gKzEx
-MDAsIE1pY2hhZWwgRWxsZXJtYW4gd3JvdGU6DQo+IE9uIFdlZCwgMjAxMC0xMS0xNyBhdCAxNjow
-MyAtMDYwMCwgc3RldmVuLmxpbkB0ZXJhZHluZS5jb20gd3JvdGU6DQo+ID4gTXkgYXBwbGljYXRp
-b24gbmVlZHMgYSBmYXN0IHdheSB0byBhY2Nlc3MgYSBzcGVjaWZpYyBwaHlzaWNhbCBERFINCj4g
-PiBtZW1vcnkgcmVnaW9uLiBUaGUgYXBwbGljYXRpb24gcnVucyBvbiBhbiBNUEM4NTQ4IFBvd2Vy
-UEMgd2hpY2ggaGFzIGFuDQo+ID4gTU1VLiBJJ3ZlIHRyaWVkIHR3byBhcHByb2FjaGVzIHRoYXQg
-YXJlIHR5cGljYWwgZm9yIExpbnV4LCBtbWFwKCkgYW5kDQo+ID4gdXNpbmcgYSBrZXJuZWwgbW9k
-dWxlIHRoYXQgaW1wbGVtZW50cyByZWFkKCkvd3JpdGUoKSBpbnRvIHRoaXMgcmVnaW9uDQo+ID4g
-YW5kIEknbSBmaW5kaW5nIHRoYXQgcGVyZm9ybWFuY2UgaXMgdmVyeSBzbG93IGZvciBib3RoLiBJ
-dCdzIGEgY291cGxlDQo+ID4gb3JkZXJzIG9mIG1hZ25pdHVkZSBzbG93ZXIgdGhhbiwgZm9yIGV4
-YW1wbGUsIGNvcHlpbmcgYSBsYXJnZSBidWZmZXINCj4gPiBmcm9tIG9uZSBwbGFjZSBpbiB0aGUg
-YXBwbGljYXRpb24ncyB2aXJ0dWFsIG1lbW9yeSB0byBhbm90aGVyIHBsYWNlIGluDQo+ID4gdGhl
-IGFwcGxpY2F0aW9uJ3MgdmlydHVhbCBtZW1vcnkuDQo+DQo+IFRoZSBtbWFwKCkgdmVyc2lvbiBz
-aG91bGQgYmFzaWNhbGx5IHJ1biBhdCAiZnVsbCBzcGVlZCIsIGF0IGxlYXN0IG9uY2UNCj4geW91
-J3ZlIGZhdWx0ZWQgdGhlIGFkZHJlc3MgcmFuZ2UgaW4uDQo+DQo+IFRoaXMgc3BlY2lmaWMgRERS
-IHJlZ2lvbiBpc24ndCBzcGVjaWZpY2FsbHkgc2xvdyBpcyBpdCA/IDopDQoNClRoZSBvdGhlciB0
-aGVvcnkgdGhhdCBzcHJpbmdzIHRvIG1pbmQgaXMgd2hhdGV2ZXIgbWV0aG9kIHlvdSdyZSB1c2lu
-Zw0KdG8gYWNjZXNzIHRoZSByZWdpb24gZW5hYmxpbmcgY2FjaGVpbmc/DQoNCi0tDQpEYXZpZCBH
-aWJzb24JCSAJCSAJCSB8IEknbGwgaGF2ZSBteSBtdXNpYw0KYmFyb3F1ZSwgYW5kIG15IGNvZGUN
-CmRhdmlkIEFUIGdpYnNvbi5kcm9wYmVhci5pZC5hdQkJIHwgbWluaW1hbGlzdCwgdGhhbmsgeW91
-LiAgTk9UDQpfdGhlXyBfb3RoZXJfDQoJCSAJCSAJCSAJCSB8IF93YXlfIF9hcm91bmRfIQ0KaHR0
-cDovL3d3dy5vemxhYnMub3JnL35kZ2lic29uDQpbYXR0YWNobWVudCAic2lnbmF0dXJlLmFzYyIg
-ZGVsZXRlZCBieSBTdGV2ZW4gTGluL1VTVy9UZXJhZHluZV0=
+I have indeed verified that when I apply those config changes atop
+pseries_defconfig, the resulting kernel fails to boot on my Power 5
+system without this fix, and boots correctly with this fix.  So the
+Tested-by line is correct.
 
---1__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7
-Content-type: text/html; charset=UTF-8
-Content-Disposition: inline
-Content-transfer-encoding: base64
+Unfortunately, this fix doesn't enable my legacy configuration to boot
+with CONFIG_SLAB=y.  It still fails in the same way -- console output
+attached.
 
-PGh0bWw+PGJvZHk+DQo8cD48Zm9udCBzaXplPSIyIj5UaGFua3MgZm9yIHRoZSByZXBsaWVzLjwv
-Zm9udD48YnI+DQo8YnI+DQo8Zm9udCBzaXplPSIyIj5JbiB0aGUgTGludXggRGV2aWNlIERyaXZl
-cnMgYm9vayByZWdhcmRpbmcgbW1hcCgpLCBpdCBzdGF0ZXM6PC9mb250Pjxicj4NCg0KPHVsPjxm
-b250IHNpemU9IjIiIGZhY2U9IkJpcmthIj5NYXBwaW5nIGEgZGV2aWNlIG1lYW5zIGFzc29jaWF0
-aW5nIGEgcmFuZ2Ugb2YgdXNlci1zcGFjZSBhZGRyZXNzZXMgdG8gZGV2aWNlIG1lbW9yeS48L2Zv
-bnQ+PGJyPg0KPGZvbnQgc2l6ZT0iMiIgZmFjZT0iQmlya2EiPldoZW5ldmVyIHRoZSBwcm9ncmFt
-IHJlYWRzIG9yIHdyaXRlcyBpbiB0aGUgYXNzaWduZWQgYWRkcmVzcyByYW5nZSwgaXQgaXMgYWN0
-dWFsbHk8L2ZvbnQ+PGJyPg0KPGZvbnQgc2l6ZT0iMiIgZmFjZT0iQmlya2EiPmFjY2Vzc2luZyB0
-aGUgZGV2aWNlLiBJbiB0aGUgWCBzZXJ2ZXIgZXhhbXBsZSwgdXNpbmcgPC9mb250PjxpPjxmb250
-IHNpemU9IjIiIGZhY2U9IkJpcmthLUl0YWxpYyI+bW1hcCA8L2ZvbnQ+PC9pPjxmb250IHNpemU9
-IjIiIGZhY2U9IkJpcmthIj5hbGxvd3MgcXVpY2sgYW5kIGVhc3k8L2ZvbnQ+PGJyPg0KPGZvbnQg
-c2l6ZT0iMiIgZmFjZT0iQmlya2EiPmFjY2VzcyB0byB0aGUgdmlkZW8gY2FyZOKAmXMgbWVtb3J5
-LiBGb3IgYSBwZXJmb3JtYW5jZS1jcml0aWNhbCBhcHBsaWNhdGlvbiBsaWtlIHRoaXMsPC9mb250
-Pjxicj4NCjxmb250IHNpemU9IjIiIGZhY2U9IkJpcmthIj5kaXJlY3QgYWNjZXNzIG1ha2VzIGEg
-bGFyZ2UgZGlmZmVyZW5jZS48L2ZvbnQ+PGJyPg0KPC91bD4NCjxmb250IHNpemU9IjIiPkZvciB3
-aGF0ZXZlciByZWFzb24sIG1tYXAoKSBpcyBkZWZpbml0ZWx5IG5vdCBxdWljayBhbmQgZG9lcyBu
-b3QgYXBwZWFyIHRvIGJlIGEgZGlyZWN0IGFjY2VzcyB0byBkZXZpY2UgbWVtb3J5LiBBZnRlciB0
-aGUgYXBwbGljYXRpb24gY29tcGxldGVzIGEgbGFyZ2Ugd3JpdGUgaW50byBwaHlzaWNhbCBtZW1v
-cnkgKHZpYSB0aGUgcG9pbnRlciByZXR1cm5lZCBmcm9tIG1tYXAoKSksIHRoZSBhcHBsaWNhdGlv
-biBwZXJmb3JtcyBhbiBpb2N0bCgpIHRvIHF1ZXJ5IHdoZXRoZXIgdGhlIGRhdGEgYWN0dWFsbHkg
-YXJyaXZlZCBpbnRvIHRoZSBtZW1vcnkgcmVnaW9uLiBJdCBzZWVtcyB0byB0YWtlIHNvbWUgdGlt
-ZSBiZWZvcmUgdGhlIGFzc29jaWF0ZWQga2VybmVsIG1vZHVsZSBhY3R1YWxseSAmcXVvdDtzZWVz
-JnF1b3Q7IHRoZSBkYXRhIGluIHRoZSBwaHlzaWNhbCBtZW1vcnkgcmVnaW9uLjwvZm9udD48YnI+
-DQo8YnI+DQo8Zm9udCBzaXplPSIyIj5UaGVyZSdzIGEgZmV3IHRoaW5ncyBJIHNob3VsZCBzYXkg
-YWJvdXQgdGhpcyBtZW1vcnkgcmVnaW9uLiBUaGVyZSdzIGEgdG90YWwgb2YgNTEyIE1CIG9mIHBo
-eXNpY2FsIG1lbW9yeS4gVS1Cb290IHBhc3NlcyAmcXVvdDttZW09MjU2TSZxdW90OyBhcyBhIGtl
-cm5lbCBwYXJhbWV0ZXIgdG8gdGVsbCBMaW51eCB0byBvbmx5IGRpcmVjdGx5IG1hbmFnZSB0aGUg
-bG93ZXIgMjU2IE1CLiBUaGUgc3BlY2lhbCByZWdpb24gb2YgcGh5c2ljYWwgbWVtb3J5IHRoYXQg
-dGhlIGFwcGxpY2F0aW9uIGlzIHRyeWluZyB0byBhY2Nlc3MgaXMgdGhlIHVwcGVyIDI1NiBNQiBv
-ZiBtZW1vcnkgbm90IGRpcmVjdGx5IG1hbmFnZWQgYnkgTGludXguIFRoZSBtbWFwKCkgY2FsbCBm
-cm9tIHRoZSBhcHBsaWNhdGlvbiBpczo8L2ZvbnQ+DQo8dWw+PGZvbnQgc2l6ZT0iMiIgZmFjZT0i
-Q291cmllciBOZXciPiptZW1wdHIgPSAodm9pZCAqKSBtbWFwKCBOVUxMLCBzaXplLCBQUk9UX1JF
-QUQgfCBQUk9UX1dSSVRFLCBNQVBfU0hBUkVELCBfZmRUZXJBbGxvYywgKG9mZl90KSAweDEwMDAw
-MDAwKTs8L2ZvbnQ+PC91bD4NCjxicj4NCjxmb250IHNpemU9IjIiPk9uIHRoZSBrZXJuZWwgbW9k
-dWxlIHNpZGUsIHRoZSBmdW5jdGlvbiBoYW5kbGluZyB0aGUgbW1hcCgpIGZpbGUgb3BlcmF0aW9u
-IGlzOjwvZm9udD4NCjx1bD48Zm9udCBzaXplPSIyIiBmYWNlPSJDb3VyaWVyIE5ldyI+c3RhdGlj
-IGludCB0ZXJfYWxsb2NfbW1hcCggc3RydWN0IGZpbGUgKnBGaWxlLCBzdHJ1Y3Qgdm1fYXJlYV9z
-dHJ1Y3QgKnZtYSApPC9mb250Pjxicj4NCjxmb250IHNpemU9IjIiIGZhY2U9IkNvdXJpZXIgTmV3
-Ij57PC9mb250Pjxicj4NCjxmb250IHNpemU9IjIiIGZhY2U9IkNvdXJpZXIgTmV3Ij4gICAgaWYg
-KHJlbWFwX3Bmbl9yYW5nZSh2bWEsIHZtYS0mZ3Q7dm1fc3RhcnQsIHZtYS0mZ3Q7dm1fcGdvZmYs
-IHZtYS0mZ3Q7dm1fZW5kIC0gdm1hLSZndDt2bV9zdGFydCwgdm1hLSZndDt2bV9wYWdlX3Byb3Qp
-KTwvZm9udD48YnI+DQo8Zm9udCBzaXplPSIyIiBmYWNlPSJDb3VyaWVyIE5ldyI+ICAgICAgICBy
-ZXR1cm4gLUVBR0FJTjs8L2ZvbnQ+PGJyPg0KPGJyPg0KPGZvbnQgc2l6ZT0iMiIgZmFjZT0iQ291
-cmllciBOZXciPiAgICB2bWEtJmd0O3ZtX29wcyA9ICZhbXA7dGVyX2FsbG9jX3JlbWFwX3ZtX29w
-czs8L2ZvbnQ+PGJyPg0KPGZvbnQgc2l6ZT0iMiIgZmFjZT0iQ291cmllciBOZXciPiAgICB0ZXJf
-YWxsb2Nfdm1hX29wZW4odm1hKTs8L2ZvbnQ+PGJyPg0KPGZvbnQgc2l6ZT0iMiIgZmFjZT0iQ291
-cmllciBOZXciPiAgICByZXR1cm4gMDs8L2ZvbnQ+PGJyPg0KPGZvbnQgc2l6ZT0iMiIgZmFjZT0i
-Q291cmllciBOZXciPn08L2ZvbnQ+PGJyPg0KPC91bD4NCjxmb250IHNpemU9IjIiPi1TdGV2ZSBM
-aW48L2ZvbnQ+PGJyPg0KPGJyPg0KPGJyPg0KPGltZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHNy
-Yz0iY2lkOjFfXz0wN0JCRkQ0Q0RGQzQzMEQ3OGY5ZThAbm90ZXMudGVyYWR5bmUuY29tIiBib3Jk
-ZXI9IjAiIGFsdD0iSW5hY3RpdmUgaGlkZSBkZXRhaWxzIGZvciBEYXZpZCBHaWJzb24gJmx0O2Rh
-dmlkQGdpYnNvbi5kcm9wYmVhci5pZC5hdSZndDsiPjxmb250IHNpemU9IjIiPkRhdmlkIEdpYnNv
-biAmbHQ7ZGF2aWRAZ2lic29uLmRyb3BiZWFyLmlkLmF1Jmd0OzwvZm9udD48YnI+DQo8YnI+DQo8
-YnI+DQoNCjx0YWJsZSB3aWR0aD0iMTAwJSIgYm9yZGVyPSIwIiBjZWxsc3BhY2luZz0iMCIgY2Vs
-bHBhZGRpbmc9IjAiPg0KPHRyIHZhbGlnbj0idG9wIj48dGQgc3R5bGU9ImJhY2tncm91bmQtaW1h
-Z2U6dXJsKGNpZDoyX189MDdCQkZENENERkM0MzBENzhmOWU4QG5vdGVzLnRlcmFkeW5lLmNvbSk7
-IGJhY2tncm91bmQtcmVwZWF0OiBuby1yZXBlYXQ7ICIgd2lkdGg9IjQwJSI+DQo8dWw+DQo8dWw+
-DQo8dWw+DQo8dWw+PGI+PGZvbnQgc2l6ZT0iMiI+RGF2aWQgR2lic29uICZsdDtkYXZpZEBnaWJz
-b24uZHJvcGJlYXIuaWQuYXUmZ3Q7PC9mb250PjwvYj48Zm9udCBzaXplPSIyIj4gPC9mb250Pg0K
-PHA+PGZvbnQgc2l6ZT0iMiI+MTEvMTgvMjAxMCAwNjo1NCBBTTwvZm9udD48L3VsPg0KPC91bD4N
-CjwvdWw+DQo8L3VsPg0KPC90ZD48dGQgd2lkdGg9IjYwJSI+DQo8dGFibGUgd2lkdGg9IjEwMCUi
-IGJvcmRlcj0iMCIgY2VsbHNwYWNpbmc9IjAiIGNlbGxwYWRkaW5nPSIwIj4NCjx0ciB2YWxpZ249
-InRvcCI+PHRkIHdpZHRoPSIxJSI+PGltZyB3aWR0aD0iNTgiIGhlaWdodD0iMSIgc3JjPSJjaWQ6
-M19fPTA3QkJGRDRDREZDNDMwRDc4ZjllOEBub3Rlcy50ZXJhZHluZS5jb20iIGJvcmRlcj0iMCIg
-YWx0PSIiPjxicj4NCjxkaXYgYWxpZ249InJpZ2h0Ij48Zm9udCBzaXplPSIyIj5UbzwvZm9udD48
-L2Rpdj48L3RkPjx0ZCB3aWR0aD0iMTAwJSI+PGltZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBzcmM9
-ImNpZDozX189MDdCQkZENENERkM0MzBENzhmOWU4QG5vdGVzLnRlcmFkeW5lLmNvbSIgYm9yZGVy
-PSIwIiBhbHQ9IiI+PGJyPg0KPGZvbnQgc2l6ZT0iMiI+TWljaGFlbCBFbGxlcm1hbiAmbHQ7bWlj
-aGFlbEBlbGxlcm1hbi5pZC5hdSZndDs8L2ZvbnQ+PC90ZD48L3RyPg0KDQo8dHIgdmFsaWduPSJ0
-b3AiPjx0ZCB3aWR0aD0iMSUiPjxpbWcgd2lkdGg9IjU4IiBoZWlnaHQ9IjEiIHNyYz0iY2lkOjNf
-Xz0wN0JCRkQ0Q0RGQzQzMEQ3OGY5ZThAbm90ZXMudGVyYWR5bmUuY29tIiBib3JkZXI9IjAiIGFs
-dD0iIj48YnI+DQo8ZGl2IGFsaWduPSJyaWdodCI+PGZvbnQgc2l6ZT0iMiI+Y2M8L2ZvbnQ+PC9k
-aXY+PC90ZD48dGQgd2lkdGg9IjEwMCUiPjxpbWcgd2lkdGg9IjEiIGhlaWdodD0iMSIgc3JjPSJj
-aWQ6M19fPTA3QkJGRDRDREZDNDMwRDc4ZjllOEBub3Rlcy50ZXJhZHluZS5jb20iIGJvcmRlcj0i
-MCIgYWx0PSIiPjxicj4NCjxmb250IHNpemU9IjIiPnN0ZXZlbi5saW5AdGVyYWR5bmUuY29tLCBT
-dGV2ZW5fTGluQG5vdGVzLnRlcmFkeW5lLmNvbSwgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmc8L2ZvbnQ+PC90ZD48L3RyPg0KDQo8dHIgdmFsaWduPSJ0b3AiPjx0ZCB3aWR0aD0iMSUiPjxp
-bWcgd2lkdGg9IjU4IiBoZWlnaHQ9IjEiIHNyYz0iY2lkOjNfXz0wN0JCRkQ0Q0RGQzQzMEQ3OGY5
-ZThAbm90ZXMudGVyYWR5bmUuY29tIiBib3JkZXI9IjAiIGFsdD0iIj48YnI+DQo8ZGl2IGFsaWdu
-PSJyaWdodCI+PGZvbnQgc2l6ZT0iMiI+U3ViamVjdDwvZm9udD48L2Rpdj48L3RkPjx0ZCB3aWR0
-aD0iMTAwJSI+PGltZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBzcmM9ImNpZDozX189MDdCQkZENENE
-RkM0MzBENzhmOWU4QG5vdGVzLnRlcmFkeW5lLmNvbSIgYm9yZGVyPSIwIiBhbHQ9IiI+PGJyPg0K
-PGZvbnQgc2l6ZT0iMiI+UmU6IGFwcGxpY2F0aW9uIG5lZWRzIGZhc3QgYWNjZXNzIHRvIHBoeXNp
-Y2FsIG1lbW9yeTwvZm9udD48L3RkPjwvdHI+DQo8L3RhYmxlPg0KDQo8dGFibGUgYm9yZGVyPSIw
-IiBjZWxsc3BhY2luZz0iMCIgY2VsbHBhZGRpbmc9IjAiPg0KPHRyIHZhbGlnbj0idG9wIj48dGQg
-d2lkdGg9IjU4Ij48aW1nIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHNyYz0iY2lkOjNfXz0wN0JCRkQ0
-Q0RGQzQzMEQ3OGY5ZThAbm90ZXMudGVyYWR5bmUuY29tIiBib3JkZXI9IjAiIGFsdD0iIj48L3Rk
-Pjx0ZCB3aWR0aD0iMzM2Ij48aW1nIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHNyYz0iY2lkOjNfXz0w
-N0JCRkQ0Q0RGQzQzMEQ3OGY5ZThAbm90ZXMudGVyYWR5bmUuY29tIiBib3JkZXI9IjAiIGFsdD0i
-Ij48L3RkPjwvdHI+DQo8L3RhYmxlPg0KPC90ZD48L3RyPg0KPC90YWJsZT4NCjxicj4NCjx0dD48
-Zm9udCBzaXplPSIyIj5PbiBUaHUsIE5vdiAxOCwgMjAxMCBhdCAxMToyNDoyMlBNICsxMTAwLCBN
-aWNoYWVsIEVsbGVybWFuIHdyb3RlOjxicj4NCiZndDsgT24gV2VkLCAyMDEwLTExLTE3IGF0IDE2
-OjAzIC0wNjAwLCBzdGV2ZW4ubGluQHRlcmFkeW5lLmNvbSB3cm90ZTo8YnI+DQomZ3Q7ICZndDsg
-TXkgYXBwbGljYXRpb24gbmVlZHMgYSBmYXN0IHdheSB0byBhY2Nlc3MgYSBzcGVjaWZpYyBwaHlz
-aWNhbCBERFI8YnI+DQomZ3Q7ICZndDsgbWVtb3J5IHJlZ2lvbi4gVGhlIGFwcGxpY2F0aW9uIHJ1
-bnMgb24gYW4gTVBDODU0OCBQb3dlclBDIHdoaWNoIGhhcyBhbjxicj4NCiZndDsgJmd0OyBNTVUu
-IEkndmUgdHJpZWQgdHdvIGFwcHJvYWNoZXMgdGhhdCBhcmUgdHlwaWNhbCBmb3IgTGludXgsIG1t
-YXAoKSBhbmQ8YnI+DQomZ3Q7ICZndDsgdXNpbmcgYSBrZXJuZWwgbW9kdWxlIHRoYXQgaW1wbGVt
-ZW50cyByZWFkKCkvd3JpdGUoKSBpbnRvIHRoaXMgcmVnaW9uPGJyPg0KJmd0OyAmZ3Q7IGFuZCBJ
-J20gZmluZGluZyB0aGF0IHBlcmZvcm1hbmNlIGlzIHZlcnkgc2xvdyBmb3IgYm90aC4gSXQncyBh
-IGNvdXBsZTxicj4NCiZndDsgJmd0OyBvcmRlcnMgb2YgbWFnbml0dWRlIHNsb3dlciB0aGFuLCBm
-b3IgZXhhbXBsZSwgY29weWluZyBhIGxhcmdlIGJ1ZmZlcjxicj4NCiZndDsgJmd0OyBmcm9tIG9u
-ZSBwbGFjZSBpbiB0aGUgYXBwbGljYXRpb24ncyB2aXJ0dWFsIG1lbW9yeSB0byBhbm90aGVyIHBs
-YWNlIGluPGJyPg0KJmd0OyAmZ3Q7IHRoZSBhcHBsaWNhdGlvbidzIHZpcnR1YWwgbWVtb3J5Ljxi
-cj4NCiZndDsgPGJyPg0KJmd0OyBUaGUgbW1hcCgpIHZlcnNpb24gc2hvdWxkIGJhc2ljYWxseSBy
-dW4gYXQgJnF1b3Q7ZnVsbCBzcGVlZCZxdW90OywgYXQgbGVhc3Qgb25jZTxicj4NCiZndDsgeW91
-J3ZlIGZhdWx0ZWQgdGhlIGFkZHJlc3MgcmFuZ2UgaW4uPGJyPg0KJmd0OyA8YnI+DQomZ3Q7IFRo
-aXMgc3BlY2lmaWMgRERSIHJlZ2lvbiBpc24ndCBzcGVjaWZpY2FsbHkgc2xvdyBpcyBpdCA/IDop
-PGJyPg0KPGJyPg0KVGhlIG90aGVyIHRoZW9yeSB0aGF0IHNwcmluZ3MgdG8gbWluZCBpcyB3aGF0
-ZXZlciBtZXRob2QgeW91J3JlIHVzaW5nPGJyPg0KdG8gYWNjZXNzIHRoZSByZWdpb24gZW5hYmxp
-bmcgY2FjaGVpbmc/PGJyPg0KPGJyPg0KLS0gPGJyPg0KRGF2aWQgR2lic29uCQkgCQkgCQkgfCBJ
-J2xsIGhhdmUgbXkgbXVzaWMgYmFyb3F1ZSwgYW5kIG15IGNvZGU8YnI+DQpkYXZpZCBBVCBnaWJz
-b24uZHJvcGJlYXIuaWQuYXUJCSB8IG1pbmltYWxpc3QsIHRoYW5rIHlvdS4gJm5ic3A7Tk9UIF90
-aGVfIF9vdGhlcl88YnI+DQoJCSAJCSAJCSAJCSB8IF93YXlfIF9hcm91bmRfITxicj4NCjwvZm9u
-dD48L3R0Pjx0dD48Zm9udCBzaXplPSIyIj48YSBocmVmPSJodHRwOi8vd3d3Lm96bGFicy5vcmcv
-fmRnaWJzb24iPmh0dHA6Ly93d3cub3psYWJzLm9yZy9+ZGdpYnNvbjwvYT48L2ZvbnQ+PC90dD48
-dHQ+PGZvbnQgc2l6ZT0iMiI+PGJyPg0KW2F0dGFjaG1lbnQgJnF1b3Q7c2lnbmF0dXJlLmFzYyZx
-dW90OyBkZWxldGVkIGJ5IFN0ZXZlbiBMaW4vVVNXL1RlcmFkeW5lXSA8L2ZvbnQ+PC90dD48YnI+
-DQo8L2JvZHk+PC9odG1sPg==
+FWIW, this failure isn't an obstacle for me.  I'm in no way attached to
+my legacy configuration; pseries_defconfig is fine for me.  On the other
+hand, I can continue testing fixes, and/or make my system available to
+other IBMers when I'm not using it, if you want to continue to pursue
+this problem.
+
+Thanks.
+Jim
+
+>   
+> 
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 83f534d..5e95844 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1123,7 +1123,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+>  	else
+>  #endif /* CONFIG_PPC_HAS_HASH_64K */
+>  		rc = __hash_page_4K(ea, access, vsid, ptep, trap, local, ssize,
+> -				    subpage_protection(pgdir, ea));
+> +				    subpage_protection(mm, ea));
+> 
+>  	/* Dump some info in case of hash insertion failure, they should
+>  	 * never happen so it is really useful to know if/when they do
+> 
+> 
 
 
---1__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7--
+--=-FBXptrT66GD7Ndotffp0
+Content-Disposition: attachment; filename="linus-oops6"
+Content-Type: text/plain; name="linus-oops6"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+This is with Michael Neuling's subpage_protection fix, using my legacy
+.config DEBUG_SLAB configured.
+
+boot: linus
+Using 0084e28a bytes for initrd buffer
+Please wait, loading kernel...
+Allocated 00f00000 bytes for kernel @ 01e00000
+   Elf64 kernel loaded...
+Loading ramdisk...
+ramdisk loaded 0084e28a @ 02d00000
+OF stdout device is: /vdevice/vty@30000000
+Preparing to boot Linux version 2.6.37-rc2-5-ppc64 (jimk@elm3b90) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #9 SMP Wed Nov 17 18:17:23 PST 2010
+Max number of cores passed to firmware: 512 (NR_CPUS = 1024)
+Calling ibm,client-architecture-support... not implemented
+command line: root=/dev/disk/by-id/scsi-SIBM_ST373453LC_3HW1CQ1400007445Q2A4-part3 quiet profile=2 sysrq=1 insmod=sym53c8xx insmod=ipr crashkernel=256M-:128M loglevel=8 
+memory layout at init:
+  memory_limit : 0000000000000000 (16 MB aligned)
+  alloc_bottom : 0000000003550000
+  alloc_top    : 0000000008000000
+  alloc_top_hi : 0000000070000000
+  amo_top      : 0000000008000000
+  ram_top      : 0000000070000000
+instantiating rtas at 0x00000000076a0000... done
+boot cpu hw idx 0
+starting cpu hw idx 2... done
+copying OF device tree...
+Building dt strings...
+Building dt structure...
+Device tree strings 0x0000000003560000 -> 0x000000000356129c
+Device tree struct  0x0000000003570000 -> 0x0000000003580000
+Calling quiesce...
+returning from prom_init
+Crash kernel location must be 0x2000000
+Reserving 128MB of memory at 32MB for crashkernel (System RAM: 1792MB)
+Phyp-dump not supported on this hardware
+Allocated 655360 bytes for 1024 pacas at c000000001f30000
+Using pSeries machine description
+Page orders: linear mapping = 24, virtual = 12, io = 12
+Found initrd at 0xc000000002d00000:0xc00000000354e28a
+bootconsole [udbg0] enabled
+Partition configured for 4 cpus.
+CPU maps initialized for 2 threads per core
+ (thread shift is 1)
+Freed 589824 bytes for unused pacas
+Starting Linux PPC64 #9 SMP Wed Nov 17 18:17:23 PST 2010
+-----------------------------------------------------
+ppc64_pft_size                = 0x19
+physicalMemorySize            = 0x70000000
+htab_hash_mask                = 0x3ffff
+-----------------------------------------------------
+Initializing cgroup subsys cpuset
+Initializing cgroup subsys cpu
+Linux version 2.6.37-rc2-5-ppc64 (jimk@elm3b90) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #9 SMP Wed Nov 17 18:17:23 PST 2010
+[boot]0012 Setup Arch
+Node 0 Memory: 0x0-0x70000000
+PCI host bridge /pci@800000020000002  ranges:
+  IO 0x000003fe00200000..0x000003fe002fffff -> 0x0000000000000000
+ MEM 0x0000040080000000..0x00000400bfffffff -> 0x00000000c0000000 
+PCI host bridge /pci@800000020000003  ranges:
+  IO 0x000003fe00700000..0x000003fe007fffff -> 0x0000000000000000
+ MEM 0x00000401c0000000..0x00000401ffffffff -> 0x00000000c0000000 
+EEH: PCI Enhanced I/O Error Handling Enabled
+PPC64 nvram contains 7168 bytes
+Using dedicated idle loop
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00007000
+  Normal   empty
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00007000
+On node 0 totalpages: 28672
+  DMA zone: 25 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 28647 pages, LIFO batch:1
+[boot]0015 Setup Done
+PERCPU: Embedded 1 pages/cpu @c000000000f00000 s23424 r0 d42112 u262144
+pcpu-alloc: s23424 r0 d42112 u262144 alloc=1*1048576
+pcpu-alloc: [0] 0 1 2 3 
+Built 1 zonelists in Node order, mobility grouping on.  Total pages: 28647
+Policy zone: DMA
+Kernel command line: root=/dev/disk/by-id/scsi-SIBM_ST373453LC_3HW1CQ1400007445Q2A4-part3 quiet profile=2 sysrq=1 insmod=sym53c8xx insmod=ipr crashkernel=256M-:128M loglevel=8 
+kernel profiling enabled (shift: 2)
+PID hash table entries: 4096 (order: -1, 32768 bytes)
+freeing bootmem node 0
+Memory: 1681088k/1835008k available (8192k kernel code, 153920k reserved, 1536k data, 4447k bss, 512k init)
+Hierarchical RCU implementation.
+	RCU-based detection of stalled CPUs is disabled.
+NR_IRQS:512
+[boot]0020 XICS Init
+[boot]0021 XICS Done
+pic: no ISA interrupt controller
+time_init: decrementer frequency = 207.054000 MHz
+time_init: processor frequency   = 1654.344000 MHz
+clocksource: timebase mult[135191e] shift[22] registered
+clockevent: decrementer mult[35017dae] shift[32] cpu[0]
+Console: colour dummy device 80x25
+console [hvc0] enabled, bootconsole disabled
+console [hvc0] enabled, bootconsole disabled
+allocated 1146880 bytes of page_cgroup
+please try 'cgroup_disable=memory' option if you don't want memory cgroups
+pid_max: default: 32768 minimum: 301
+Security Framework initialized
+SELinux:  Disabled at boot.
+Dentry cache hash table entries: 262144 (order: 5, 2097152 bytes)
+Inode-cache hash table entries: 131072 (order: 4, 1048576 bytes)
+Mount-cache hash table entries: 4096
+Initializing cgroup subsys ns
+ns_cgroup deprecated: consider using the 'clone_children' flag without the ns_cgroup.
+Initializing cgroup subsys cpuacct
+Initializing cgroup subsys memory
+Initializing cgroup subsys devices
+Initializing cgroup subsys freezer
+irq: irq 2 on host null mapped to virtual irq 16
+Brought up 4 CPUs
+Node 0 CPUs: 0-3
+NET: Registered protocol family 16
+IBM eBus Device Driver
+POWER5 performance monitor hardware support registered
+PCI: Probing PCI hardware
+IOMMU table initialized, virtual merging enabled
+pci 0000:c0:01.0: PME# supported from D0 D3hot D3cold
+pci 0000:c0:01.0: PME# disabled
+pci 0000:c0:01.1: PME# supported from D0 D3hot D3cold
+pci 0000:c0:01.1: PME# disabled
+irq: irq 115 on host null mapped to virtual irq 115
+irq: irq 116 on host null mapped to virtual irq 116
+pci 0001:cc:01.0: supports D1
+irq: irq 150 on host null mapped to virtual irq 150
+irq: irq 151 on host null mapped to virtual irq 151
+PCI: Probing PCI hardware done
+bio: create slab <bio-0> at 0
+vgaarb: loaded
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+Switching to clocksource timebase
+NET: Registered protocol family 2
+IP route cache hash table entries: 16384 (order: 1, 131072 bytes)
+TCP established hash table entries: 65536 (order: 4, 1048576 bytes)
+TCP bind hash table entries: 65536 (order: 4, 1048576 bytes)
+TCP: Hash tables configured (established 65536 bind 65536)
+TCP reno registered
+UDP hash table entries: 2048 (order: 0, 65536 bytes)
+UDP-Lite hash table entries: 2048 (order: 0, 65536 bytes)
+NET: Registered protocol family 1
+PCI: CLS 128 bytes, default 128
+Unpacking initramfs...
+Initramfs unpacking failed: read error
+RTAS daemon started
+irq: irq 655360 on host null mapped to virtual irq 17
+irq: irq 589825 on host null mapped to virtual irq 18
+audit: initializing netlink socket (disabled)
+type=2000 audit(1290100141.460:1): initialized
+HugeTLB registered 16 MB page size, pre-allocated 0 pages
+VFS: Disk quotas dquot_6.5.2
+Dquot-cache hash table entries: 8192 (order 0, 65536 bytes)
+msgmni has been set to 3284
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+io scheduler noop registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+rpaphp: Slot [U787A.001.DNZ00XZ-P1-C1] registered
+vio_register_driver: driver hvc_console registering
+HVSI: registered 0 devices
+Generic RTC Driver v1.07
+Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+pmac_zilog: 0.6 (Benjamin Herrenschmidt <benh@kernel.crashing.org>)
+Uniform Multi-Platform E-IDE driver
+ide-gd driver 1.18
+ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+mice: PS/2 mouse device common for all mice
+EDAC MC: Ver: 2.1.0 Nov 17 2010
+usbcore: registered new interface driver usbhid
+usbhid: USB HID core driver
+TCP cubic registered
+NET: Registered protocol family 15
+registered taskstats version 1
+md: Waiting for all devices to be available before autodetect
+md: If you don't use raid, use raid=noautodetect
+md: Autodetecting RAID arrays.
+md: Scanned 0 and added 0 devices.
+md: autorun ...
+md: ... autorun DONE.
+VFS: Cannot open root device "disk/by-id/scsi-SIBM_ST373453LC_3HW1CQ1400007445Q2A4-part3" or unknown-block(0,0)
+Please append a correct "root=" boot option; here are the available partitions:
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
+Call Trace:
+[c00000006e78fc30] [c000000000011218] .show_stack+0x6c/0x16c (unreliable)
+[c00000006e78fce0] [c00000000054b204] .panic+0x9c/0x200
+[c00000006e78fd80] [c000000000781354] .mount_block_root+0x2dc/0x318
+[c00000006e78fe50] [c00000000078159c] .prepare_namespace+0x184/0x1cc
+[c00000006e78fee0] [c000000000780554] .kernel_init+0x2e4/0x310
+[c00000006e78ff90] [c00000000002985c] .kernel_thread+0x54/0x70
+Rebooting in 180 seconds..
 
 
---0__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7
-Content-type: image/gif;
-	name="graycol.gif"
-Content-Disposition: inline; filename="graycol.gif"
-Content-ID: <1__=07BBFD4CDFC430D78f9e8@notes.teradyne.com>
-Content-transfer-encoding: base64
-
-R0lGODlhEAAQAKECAMzMzAAAAP///wAAACH5BAEAAAIALAAAAAAQABAAAAIXlI+py+0PopwxUbpu
-ZRfKZ2zgSJbmSRYAIf4fT3B0aW1pemVkIGJ5IFVsZWFkIFNtYXJ0U2F2ZXIhAAA7
-
---0__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7
-Content-type: image/gif;
-	name="pic02872.gif"
-Content-Disposition: inline; filename="pic02872.gif"
-Content-ID: <2__=07BBFD4CDFC430D78f9e8@notes.teradyne.com>
-Content-transfer-encoding: base64
-
-R0lGODlhWABDALP/AAAAAK04Qf79/o+Gm7WuwlNObwoJFCsoSMDAwGFsmIuezf///wAAAAAAAAAA
-AAAAACH5BAEAAAgALAAAAABYAEMAQAT/EMlJq704682770RiFMRinqggEUNSHIchG0BCfHhOjAuh
-EDeUqTASLCbBhQrhG7xis2j0lssNDopE4jfIJhDaggI8YB1sZeZgLVA9YVCpnGagVjV171aRVrYR
-RghXcAGFhoUETwYxcXNyADJ3GlcSKGAwLwllVC1vjIUHBWsFilKQdI8GA5IcpApeJQt8L09lmgkH
-LZikoU5wjqcyAMMFrJIDPAKvCFletKSev1HBw8KrxtjZ2tvc3d5VyKtCKW3jfz4uMKmq3xu4N0nK
-BVoJQmx2LGVOmrqNjjJf2hHAQo/eDwJGTKhQMcgQEEAnEjFS98+RnW3smGkZU6ncCWav/4wYOnAI
-TihRL/4FEwbp28BXMMcoscQCVxlepL4IGDSCyJyVQOu0o7CjmLN50OZlqWmyFy5/6yBBuji0AxFR
-M00oQAqNIstqI6qKHUsWRAEAvagsmfUEAImyxgbmUpJk3IklNUtJOUAVLoUr1+wqDGTE4zk+T6FG
-uQb3SizBCwatiiUgCBN8vrz+zFjVyQ8FWkOlg4NQiZMB5QS8QO3mpOaKnL0Z2EKvNMSILEThKhCg
-zMKPVxYJh23qm9KNW7pArPynMqZDiErsTMqI+LRi3QAgkFUbXpuFKhSYZALd0O5RKa2z9EYKBbpb
-qxIKsjUPRgD7I2XYV6wyrOw92ykExP8NW4URhknC5dKGE4v4NENQj2jXjmfNgOZDaXb5glRmXQ33
-YEWQYNcZFnrYcIQLNzyTFDQNkXIff0ExVlY4srziQk43inZgL4rwxxINMvpFFAz1KOODHiu+4aEw
-NEjFl5B3JIKWKF3k6I9bfUGp5ZZcdunll5IA4cuHvQQJ5gcsoCWOOUwgltIwAKRxJgbIkJAQZEq0
-2YliZnpZZ4BH3CnYOXldOUOfQoYDqF1LFHbXCrO8xmRsfoXDXJ6ChjCAH3QlhJcT6VWE6FCkfCco
-CgrMFsROrIEX3o2whVjWDjoJccN3LdggSGXLCdLEgHr1lyU3O3QxhgohNKXJCWv8JQr/PDdaqd6w
-2rj1inLiGeiCJoDspAoQlYE6QWLSECehcWIYxIQES6zhbn1iImTHEQyqJ4eIxJJoUBc+3CbBuwZE
-V5cJPPkIjFDdeEabQbd6WgICTxiiz0f5dBKquXF6k4senwEhYGnKEFJeGrxUZy8dB8gmAXI/sPvH
-ESfCwVt5hTgYiqQqtdRNHQIU1PJ33ZqmzgE90OwLaoJcnMop1WiMmgkPHQRIrwgFuNV90A3doNKT
-mrKIN07AnGcI9BQjhCBN4RfA1qIZnMqorJCogKfGQnxSCDilTVIA0yl5ciTovgLuBDKFUDE9aQcw
-9SA+rjSNf9/M1gxrj6VwDTS0IUSElMzBfsj0NFXR2kwsV1A5IF1grLgLL/r1R40BZEnuBWgmQEyb
-jqRwSAt6bqMCOFkvKFN2GPPkUzIm/SCF8z8pVzpbjVnMsy0vOr1hw3SaSRUhpY09v0z0J1FnwzPl
-fmh+xl4WtR0zGu24I4KbMQm3lnVu2oNWxI9W/lcyzA+mCKF4DBikxb/+UWtOGRiFP8qEwAayIgIA
-Ow==
-
---0__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7
-Content-type: image/gif;
-	name="ecblank.gif"
-Content-Disposition: inline; filename="ecblank.gif"
-Content-ID: <3__=07BBFD4CDFC430D78f9e8@notes.teradyne.com>
-Content-transfer-encoding: base64
-
-R0lGODlhEAABAIAAAAAAAP///yH5BAEAAAEALAAAAAAQAAEAAAIEjI8ZBQA7
-
---0__=07BBFD4CDFC430D78f9e8a93df938690918c07BBFD4CDFC430D7--
+--=-FBXptrT66GD7Ndotffp0--
