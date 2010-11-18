@@ -1,27 +1,25 @@
 Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from SG2EHSOBE004.bigfish.com (sg2ehsobe002.messaging.microsoft.com
+	[207.46.51.76]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 667E3B730D
+	by ozlabs.org (Postfix) with ESMTPS id EB266B721A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 11:10:35 +1100 (EST)
+	Fri, 19 Nov 2010 11:10:58 +1100 (EST)
 From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 To: <grant.likely@secretlab.ca>, <dirk.brandewie@gmail.com>,
 	<devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<microblaze-uclinux@itee.uq.edu.au>
-Subject: [PATCH 5/7] fdt.c: Refactor unflatten_dt_node
-Date: Thu, 18 Nov 2010 15:55:00 -0800
-In-Reply-To: <1290124502-13125-5-git-send-email-stephen.neuendorffer@xilinx.com>
+Subject: [PATCH 3/7] arch/x86: select OF and OF_FLATTREE
+Date: Thu, 18 Nov 2010 15:54:58 -0800
+In-Reply-To: <1290124502-13125-3-git-send-email-stephen.neuendorffer@xilinx.com>
 References: <1290021345-4303-1-git-send-email-stephen.neuendorffer@xilinx.com>
 	<1290124502-13125-1-git-send-email-stephen.neuendorffer@xilinx.com>
 	<1290124502-13125-2-git-send-email-stephen.neuendorffer@xilinx.com>
 	<1290124502-13125-3-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-4-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-5-git-send-email-stephen.neuendorffer@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-ID: <e5face75-4978-4686-9d75-d92fa9ec7328@VA3EHSMHS013.ehs.local>
+Message-ID: <111913e5-7481-46b8-b04d-eee3cdc8fc32@SG2EHSMHS002.ehs.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,101 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-unflatten_dt_node is a helper function that does most of the work to
-convert a device tree blob into tree of device nodes.  This code
-now uses a passed-in blob instead of using the single boot-time blob,
-allowing it to be called in more contexts.
-
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-
+Testing patch to verify that the device tree code can be compiled on X86.
 ---
+ arch/x86/Kconfig |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-V2: don't reorder
-    blob argument first.
----
- drivers/of/fdt.c |   27 ++++++++++++++++-----------
- 1 files changed, 16 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 190e26c..a07fd1a 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -206,7 +206,7 @@ int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
- 	return of_fdt_is_compatible(initial_boot_params, node, compat);
- }
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index cea0cd9..0f2ed5b 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -59,6 +59,8 @@ config X86
+ 	select ANON_INODES
+ 	select HAVE_ARCH_KMEMCHECK
+ 	select HAVE_USER_RETURN_NOTIFIER
++	select OF
++	select OF_FLATTREE
  
--static void *__init unflatten_dt_alloc(unsigned long *mem, unsigned long size,
-+static void *unflatten_dt_alloc(unsigned long *mem, unsigned long size,
- 				       unsigned long align)
- {
- 	void *res;
-@@ -220,16 +220,18 @@ static void *__init unflatten_dt_alloc(unsigned long *mem, unsigned long size,
- 
- /**
-  * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-+ * @blob: The parent device tree blob
-  * @p: pointer to node in flat tree
-  * @dad: Parent struct device_node
-  * @allnextpp: pointer to ->allnext from last allocated device_node
-  * @fpsize: Size of the node path up at the current depth.
-  */
--unsigned long __init unflatten_dt_node(unsigned long mem,
--					unsigned long *p,
--					struct device_node *dad,
--					struct device_node ***allnextpp,
--					unsigned long fpsize)
-+unsigned long unflatten_dt_node(struct boot_param_header *blob,
-+				unsigned long mem,
-+				unsigned long *p,
-+				struct device_node *dad,
-+				struct device_node ***allnextpp,
-+				unsigned long fpsize)
- {
- 	struct device_node *np;
- 	struct property *pp, **prev_pp = NULL;
-@@ -325,10 +327,10 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
- 		sz = be32_to_cpup((__be32 *)(*p));
- 		noff = be32_to_cpup((__be32 *)((*p) + 4));
- 		*p += 8;
--		if (be32_to_cpu(initial_boot_params->version) < 0x10)
-+		if (be32_to_cpu(blob->version) < 0x10)
- 			*p = ALIGN(*p, sz >= 8 ? 8 : 4);
- 
--		pname = of_fdt_get_string(initial_boot_params, noff);
-+		pname = of_fdt_get_string(blob, noff);
- 		if (pname == NULL) {
- 			pr_info("Can't find property name in list !\n");
- 			break;
-@@ -407,7 +409,8 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
- 		if (tag == OF_DT_NOP)
- 			*p += 4;
- 		else
--			mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
-+			mem = unflatten_dt_node(blob, mem, p, np, allnextpp,
-+						fpsize);
- 		tag = be32_to_cpup((__be32 *)(*p));
- 	}
- 	if (tag != OF_DT_END_NODE) {
-@@ -599,7 +602,8 @@ void __init unflatten_device_tree(void)
- 	/* First pass, scan for size */
- 	start = ((unsigned long)initial_boot_params) +
- 		be32_to_cpu(initial_boot_params->off_dt_struct);
--	size = unflatten_dt_node(0, &start, NULL, NULL, 0);
-+	size = unflatten_dt_node(initial_boot_params, 0, &start,
-+				 NULL, NULL, 0);
- 	size = (size | 3) + 1;
- 
- 	pr_debug("  size is %lx, allocating...\n", size);
-@@ -616,7 +620,8 @@ void __init unflatten_device_tree(void)
- 	/* Second pass, do actual unflattening */
- 	start = ((unsigned long)initial_boot_params) +
- 		be32_to_cpu(initial_boot_params->off_dt_struct);
--	unflatten_dt_node(mem, &start, NULL, &allnextp, 0);
-+	unflatten_dt_node(initial_boot_params, mem, &start,
-+			  NULL, &allnextp, 0);
- 	if (be32_to_cpup((__be32 *)start) != OF_DT_END)
- 		pr_warning("Weird tag at end of tree: %08x\n", *((u32 *)start));
- 	if (be32_to_cpu(((__be32 *)mem)[size / 4]) != 0xdeadbeef)
+ config INSTRUCTION_DECODER
+ 	def_bool (KPROBES || PERF_EVENTS)
 -- 
 1.5.6.6
 
