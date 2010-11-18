@@ -1,17 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <30983.1290116555@neuling.org>
-References: <1290059208.32570.3.camel@pasglop> <30983.1290116555@neuling.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-f43X5d/ABd7tQ3FJF7iW"
-Date: Fri, 19 Nov 2010 09:08:02 +1100
-Message-ID: <1290118082.29105.11.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <stephen.neuendorffer@xilinx.com>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: <grant.likely@secretlab.ca>, <dirk.brandewie@gmail.com>,
+	<devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<microblaze-uclinux@itee.uq.edu.au>
+Subject: [PATCH 0/7] add of_fdt_unflatten_tree
+Date: Thu, 18 Nov 2010 15:54:55 -0800
+In-Reply-To: <1290021345-4303-1-git-send-email-stephen.neuendorffer@xilinx.com>
+References: <1290021345-4303-1-git-send-email-stephen.neuendorffer@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-ID: <cce2a5ec-536b-4668-8bbe-ae413cb435ac@VA3EHSMHS006.ehs.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,58 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+	Currently, fdt blobs are handled solely at boot time.  However,
+it may be useful to parse blobs into device trees after boot time.  For
+instance, a PCIe device may have an FPGA which includes a device
+tree.  This set of patches locally refactors the existing code to enable
+this.
 
---=-f43X5d/ABd7tQ3FJF7iW
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Patch 1 and 4-7 are the interesting bits.
+Patch 2 and 3 provide the ability to use this code on x86, and are provided mostly for reference.
 
-On Fri, 2010-11-19 at 08:42 +1100, Michael Neuling wrote:
-> > Michael Neuling (1):
-> >       powerpc: Fix call to subpage_protection()
->=20
-> Well that's annoying...=20
->=20
-> Looks like the bottom of my commit got chopped as the oops message has a
-> "---" in it.  We lost the cc: stable@kernel.org :-(
->=20
-> Comparing the original post to the final commit:
->   http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087141.htm=
-l
-> To the final:
->   http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3D=
-commitdiff;h=3D1c2c25c78740b2796c7c06640784cb6732fa4907
+The non-early boot code has been compile-tested and executed on X86.
 
-LOL.
+Stephen Neuendorffer (7):
+  fdt: Add Kconfig for EARLY_FLATTREE
+  arch/x86: Add support for device tree code.
+  arch/x86: select OF and OF_FLATTREE
+  fdt.c: Add non-boottime device tree functions
+  fdt.c: Refactor unflatten_dt_node
+  fdt.c: Reorder unflatten_dt_node
+  fdt.c: Refactor unflatten_device_tree and add fdt_unflatten_tree
 
-> It'd be nice if we had something like this in:
-
-> powerpc: fix debug prints to avoid ---
->=20
-> Many commit tools assume anything below a line starting with --- is a
-> comment. Since the following two prints are often used as debug
-> outputs and hence in checkin comments avoid using --- in these
->=20
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
-> Let the bike shedding begin!
-
-I vote for:
-
- -> Exception: 401 (Instruction Access) at 00000000f7937794
-
-Because exceptions are like an arrow!
+ arch/microblaze/Kconfig    |    1 +
+ arch/powerpc/Kconfig       |    1 +
+ arch/x86/Kconfig           |    2 +
+ arch/x86/include/asm/irq.h |    2 +
+ arch/x86/kernel/irq.c      |   11 ++
+ drivers/of/Kconfig         |    5 +
+ drivers/of/fdt.c           |  393 ++++++++++++++++++++++++++------------------
+ include/linux/of_fdt.h     |   13 ++
+ 8 files changed, 272 insertions(+), 156 deletions(-)
 
 
---=-f43X5d/ABd7tQ3FJF7iW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkzlo8IACgkQdSjSd0sB4dJztgCdG9QjOKIZOJVA/sNA+QzD3iaJ
-KVcAoMYmf+/Ah9AQVcjA58qR7ehET9ZO
-=RSsv
------END PGP SIGNATURE-----
-
---=-f43X5d/ABd7tQ3FJF7iW--
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
