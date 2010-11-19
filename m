@@ -1,19 +1,18 @@
-Return-Path: <Steven_Lin@notes.teradyne.com>
-Received: from newshow.teradyne.com (newshow.teradyne.com [198.51.251.9])
-	by ozlabs.org (Postfix) with ESMTP id C58DFB71D6
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A6A81B71AE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 07:46:32 +1100 (EST)
-In-Reply-To: <20101118133549.1c6d2cc3@udp111988uds.am.freescale.net>
-Subject: Re: application needs fast access to physical memory
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF40046BB1.06061608-ON882577DF.00711C8B-862577DF.00721D60@notes.teradyne.com>
-From: steven.lin@teradyne.com
-Date: Thu, 18 Nov 2010 14:46:16 -0600
-MIME-Version: 1.0
-Content-type: multipart/related;
-	Boundary="0__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B"
-Cc: steven.lin@teradyne.com, linuxppc-dev@lists.ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+	Fri, 19 Nov 2010 12:06:19 +1100 (EST)
+Date: Fri, 19 Nov 2010 12:06:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: remove second definition of STACK_FRAME_OVERHEAD
+Message-Id: <20101119120617.5c27cc56.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "H. Peter Anvin" <hpa@linux.intel.com>, Jan Beulich <JBeulich@novell.com>,
+	Arnaud Lacombe <lacombar@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,222 +22,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B
-Content-type: multipart/alternative;
-	Boundary="1__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B"
+Since STACK_FRAME_OVERHEAD is defined in asm/ptrace.h and that
+is ASSEMBER safe, we can just include that instead of going via
+asm-offsets.h.
 
---1__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B
-Content-type: text/plain; charset=UTF-8
-Content-transfer-encoding: base64
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/asm-offsets.c       |    1 -
+ arch/powerpc/kernel/entry_32.S          |    1 +
+ arch/powerpc/kernel/exceptions-64s.S    |    1 +
+ arch/powerpc/kernel/fpu.S               |    1 +
+ arch/powerpc/kernel/head_40x.S          |    1 +
+ arch/powerpc/kernel/head_44x.S          |    1 +
+ arch/powerpc/kernel/head_64.S           |    1 +
+ arch/powerpc/kernel/head_8xx.S          |    1 +
+ arch/powerpc/kernel/head_fsl_booke.S    |    1 +
+ arch/powerpc/kernel/misc_32.S           |    1 +
+ arch/powerpc/kernel/misc_64.S           |    1 +
+ arch/powerpc/kernel/ppc_save_regs.S     |    1 +
+ arch/powerpc/kernel/vector.S            |    1 +
+ arch/powerpc/platforms/pseries/hvCall.S |    1 +
+ 14 files changed, 13 insertions(+), 1 deletions(-)
 
+This was prompted by another change that caused the multiple definitions
+to produce a warning.  That warning has already been fixe, but this seems
+the correct thing to do anyway.
 
-SGVsbG8gU2NvdHQsDQoNCkRvIHlvdSBrbm93IHdoZXRoZXIgdGhpcyBwYXRjaCBpcyBuZWNlc3Nh
-cnkgaWYgSSB3ZXJlIHRvIHVzZSBhbGxvY19ib290bWVtDQooKSAodG8gc2V0IGFzaWRlIGEgcmVn
-aW9uIG9mIGNvbnRpZ3VvdXMgcGh5c2ljYWwgbWVtb3J5KSBpbnN0ZWFkIG9mIHRoZQ0Ka2VybmVs
-IHBhcmFtZXRlciAibWVtPTI1NiI/DQoNCi1TdGV2ZSBMaW4NCg0KDQoNCg0KDQogICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICANCiAgICAgICAgICAgICBTY290dCBXb29kICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgIDxzY290dHdvb2RAZnJl
-ZXNjICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAg
-ICAgICAgYWxlLmNvbT4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBUbyANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxzdGV2
-ZW4ubGluQHRlcmFkeW5lLmNvbT4gICAgICAgICAgIA0KICAgICAgICAgICAgIDExLzE4LzIwMTAg
-MDE6MzUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY2MgDQogICAg
-ICAgICAgICAgUE0gICAgICAgICAgICAgICAgICAgICAgICBEYXZpZCBHaWJzb24gICAgICAgICAg
-ICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxk
-YXZpZEBnaWJzb24uZHJvcGJlYXIuaWQuYXU+LCAgICAgIA0KICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgTWljaGFlbCBFbGxlcm1hbiAgICAgICAgICAgICAgICAgICAgDQog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8bWljaGFlbEBlbGxlcm1hbi5p
-ZC5hdT4sICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IDxsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZz4gICAgIA0KICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFN1YmplY3Qg
-DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBSZTogYXBwbGljYXRpb24g
-bmVlZHMgZmFzdCBhY2Nlc3MgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIHRvIHBoeXNpY2FsIG1lbW9yeSAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KDQoNCg0KDQpP
-biBUaHUsIDE4IE5vdiAyMDEwIDEwOjU1OjIxIC0wNjAwDQo8c3RldmVuLmxpbkB0ZXJhZHluZS5j
-b20+IHdyb3RlOg0KDQo+IFRoYW5rcyBmb3IgdGhlIHJlcGxpZXMuDQo+DQo+IEluIHRoZSBMaW51
-eCBEZXZpY2UgRHJpdmVycyBib29rIHJlZ2FyZGluZyBtbWFwKCksIGl0IHN0YXRlczoNCj4NCj4g
-ICAgTWFwcGluZyBhIGRldmljZSBtZWFucyBhc3NvY2lhdGluZyBhIHJhbmdlIG9mIHVzZXItc3Bh
-Y2UgYWRkcmVzc2VzIHRvDQo+ICAgIGRldmljZSBtZW1vcnkuDQo+ICAgIFdoZW5ldmVyIHRoZSBw
-cm9ncmFtIHJlYWRzIG9yIHdyaXRlcyBpbiB0aGUgYXNzaWduZWQgYWRkcmVzcyByYW5nZSwgaXQN
-Cj4gICAgaXMgYWN0dWFsbHkNCj4gICAgYWNjZXNzaW5nIHRoZSBkZXZpY2UuIEluIHRoZSBYIHNl
-cnZlciBleGFtcGxlLCB1c2luZyBtbWFwIGFsbG93cyBxdWljaw0KPiAgICBhbmQgZWFzeQ0KPiAg
-ICBhY2Nlc3MgdG8gdGhlIHZpZGVvIGNhcmTigJlzIG1lbW9yeS4gRm9yIGEgcGVyZm9ybWFuY2Ut
-Y3JpdGljYWwNCj4gICAgYXBwbGljYXRpb24gbGlrZSB0aGlzLA0KPiAgICBkaXJlY3QgYWNjZXNz
-IG1ha2VzIGEgbGFyZ2UgZGlmZmVyZW5jZS4NCj4NCj4gRm9yIHdoYXRldmVyIHJlYXNvbiwgbW1h
-cCgpIGlzIGRlZmluaXRlbHkgbm90IHF1aWNrIGFuZCBkb2VzIG5vdCBhcHBlYXINCnRvDQo+IGJl
-IGEgZGlyZWN0IGFjY2VzcyB0byBkZXZpY2UgbWVtb3J5LiBBZnRlciB0aGUgYXBwbGljYXRpb24g
-Y29tcGxldGVzIGENCj4gbGFyZ2Ugd3JpdGUgaW50byBwaHlzaWNhbCBtZW1vcnkgKHZpYSB0aGUg
-cG9pbnRlciByZXR1cm5lZCBmcm9tIG1tYXAoKSksDQo+IHRoZSBhcHBsaWNhdGlvbiBwZXJmb3Jt
-cyBhbiBpb2N0bCgpIHRvIHF1ZXJ5IHdoZXRoZXIgdGhlIGRhdGEgYWN0dWFsbHkNCj4gYXJyaXZl
-ZCBpbnRvIHRoZSBtZW1vcnkgcmVnaW9uLiBJdCBzZWVtcyB0byB0YWtlIHNvbWUgdGltZSBiZWZv
-cmUgdGhlDQo+IGFzc29jaWF0ZWQga2VybmVsIG1vZHVsZSBhY3R1YWxseSAic2VlcyIgdGhlIGRh
-dGEgaW4gdGhlIHBoeXNpY2FsIG1lbW9yeQ0KPiByZWdpb24uDQo+DQo+IFRoZXJlJ3MgYSBmZXcg
-dGhpbmdzIEkgc2hvdWxkIHNheSBhYm91dCB0aGlzIG1lbW9yeSByZWdpb24uIFRoZXJlJ3MgYQ0K
-dG90YWwNCj4gb2YgNTEyIE1CIG9mIHBoeXNpY2FsIG1lbW9yeS4gVS1Cb290IHBhc3NlcyAibWVt
-PTI1Nk0iIGFzIGEga2VybmVsDQo+IHBhcmFtZXRlciB0byB0ZWxsIExpbnV4IHRvIG9ubHkgZGly
-ZWN0bHkgbWFuYWdlIHRoZSBsb3dlciAyNTYgTUIuIFRoZQ0KPiBzcGVjaWFsIHJlZ2lvbiBvZiBw
-aHlzaWNhbCBtZW1vcnkgdGhhdCB0aGUgYXBwbGljYXRpb24gaXMgdHJ5aW5nIHRvDQphY2Nlc3MN
-Cj4gaXMgdGhlIHVwcGVyIDI1NiBNQiBvZiBtZW1vcnkgbm90IGRpcmVjdGx5IG1hbmFnZWQgYnkg
-TGludXguIFRoZSBtbWFwKCkNCj4gY2FsbCBmcm9tIHRoZSBhcHBsaWNhdGlvbiBpczoNCj4gICAg
-Km1lbXB0ciA9ICh2b2lkICopIG1tYXAoIE5VTEwsIHNpemUsIFBST1RfUkVBRCB8IFBST1RfV1JJ
-VEUsDQpNQVBfU0hBUkVELA0KPiAgICBfZmRUZXJBbGxvYywgKG9mZl90KSAweDEwMDAwMDAwKTsN
-Cg0KVHJ5IHRoaXMgcGF0Y2g6DQpodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNjgy
-NDYvDQoNCi1TY290dA0KDQo=
+I have build tested this for all the (top level) powerpc defconfigs.
 
---1__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B
-Content-type: text/html; charset=UTF-8
-Content-Disposition: inline
-Content-transfer-encoding: base64
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index bd0df2e..23e6a93 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -209,7 +209,6 @@ int main(void)
+ 	DEFINE(RTASENTRY, offsetof(struct rtas_t, entry));
+ 
+ 	/* Interrupt register frame */
+-	DEFINE(STACK_FRAME_OVERHEAD, STACK_FRAME_OVERHEAD);
+ 	DEFINE(INT_FRAME_SIZE, STACK_INT_FRAME_SIZE);
+ 	DEFINE(SWITCH_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct pt_regs));
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index ed4aeb9..c22dc1e 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -31,6 +31,7 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/unistd.h>
+ #include <asm/ftrace.h>
++#include <asm/ptrace.h>
+ 
+ #undef SHOW_SYSCALLS
+ #undef SHOW_SYSCALLS_TASK
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 9f8b01d..8a81799 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -13,6 +13,7 @@
+  */
+ 
+ #include <asm/exception-64s.h>
++#include <asm/ptrace.h>
+ 
+ /*
+  * We layout physical memory as follows:
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index e86c040..de36955 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -23,6 +23,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/ptrace.h>
+ 
+ #ifdef CONFIG_VSX
+ #define REST_32FPVSRS(n,c,base)						\
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 8278e8b..9dd21a8 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -40,6 +40,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/ptrace.h>
+ 
+ /* As with the other PowerPC ports, it is expected that when code
+  * execution begins here, the following registers contain valid, yet
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 562305b..cbb3436 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -37,6 +37,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/ptrace.h>
+ #include <asm/synch.h>
+ #include "head_booke.h"
+ 
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index f0dd577..ce41b97 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -38,6 +38,7 @@
+ #include <asm/page_64.h>
+ #include <asm/irqflags.h>
+ #include <asm/kvm_book3s_asm.h>
++#include <asm/ptrace.h>
+ 
+ /* The physical memory is layed out such that the secondary processor
+  * spin code sits at 0x0000...0x00ff. On server, the vectors follow
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 1f1a04b..1cbf64e 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -29,6 +29,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/ptrace.h>
+ 
+ /* Macro to make the code more readable. */
+ #ifdef CONFIG_8xx_CPU6
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 529b817..3e02710 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -41,6 +41,7 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/cache.h>
++#include <asm/ptrace.h>
+ #include "head_booke.h"
+ 
+ /* As with the other PowerPC ports, it is expected that when code
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index a7a570d..094bd98 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -30,6 +30,7 @@
+ #include <asm/processor.h>
+ #include <asm/kexec.h>
+ #include <asm/bug.h>
++#include <asm/ptrace.h>
+ 
+ 	.text
+ 
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index e514490..206a321 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -25,6 +25,7 @@
+ #include <asm/cputable.h>
+ #include <asm/thread_info.h>
+ #include <asm/kexec.h>
++#include <asm/ptrace.h>
+ 
+ 	.text
+ 
+diff --git a/arch/powerpc/kernel/ppc_save_regs.S b/arch/powerpc/kernel/ppc_save_regs.S
+index 5113bd2..e83ba3f 100644
+--- a/arch/powerpc/kernel/ppc_save_regs.S
++++ b/arch/powerpc/kernel/ppc_save_regs.S
+@@ -11,6 +11,7 @@
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/ptrace.h>
+ 
+ /*
+  * Grab the register values as they are now.
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index fe46048..9de6f39 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -5,6 +5,7 @@
+ #include <asm/cputable.h>
+ #include <asm/thread_info.h>
+ #include <asm/page.h>
++#include <asm/ptrace.h>
+ 
+ /*
+  * load_up_altivec(unused, unused, tsk)
+diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+index 48d2057..fd05fde 100644
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -11,6 +11,7 @@
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/ptrace.h>
+ 	
+ #define STK_PARM(i)     (48 + ((i)-3)*8)
+ 
+-- 
+1.7.2.3
 
-PGh0bWw+PGJvZHk+DQo8cD48Zm9udCBzaXplPSIyIj5IZWxsbyBTY290dCw8L2ZvbnQ+PGJyPg0K
-PGJyPg0KPGZvbnQgc2l6ZT0iMiI+RG8geW91IGtub3cgd2hldGhlciB0aGlzIHBhdGNoIGlzIG5l
-Y2Vzc2FyeSBpZiBJIHdlcmUgdG8gdXNlIGFsbG9jX2Jvb3RtZW0oKSAodG8gc2V0IGFzaWRlIGEg
-cmVnaW9uIG9mIGNvbnRpZ3VvdXMgcGh5c2ljYWwgbWVtb3J5KSBpbnN0ZWFkIG9mIHRoZSBrZXJu
-ZWwgcGFyYW1ldGVyICZxdW90O21lbT0yNTYmcXVvdDs/PC9mb250Pjxicj4NCjxicj4NCjxmb250
-IHNpemU9IjIiPi1TdGV2ZSBMaW48YnI+DQo8L2ZvbnQ+PGJyPg0KPGJyPg0KPGJyPg0KPGltZyB3
-aWR0aD0iMTYiIGhlaWdodD0iMTYiIHNyYz0iY2lkOjFfXz0wN0JCRkQ0Q0RGRTI5QTFCOGY5ZThA
-bm90ZXMudGVyYWR5bmUuY29tIiBib3JkZXI9IjAiIGFsdD0iSW5hY3RpdmUgaGlkZSBkZXRhaWxz
-IGZvciBTY290dCBXb29kICZsdDtzY290dHdvb2RAZnJlZXNjYWxlLmNvbSZndDsiPjxmb250IHNp
-emU9IjIiPlNjb3R0IFdvb2QgJmx0O3Njb3R0d29vZEBmcmVlc2NhbGUuY29tJmd0OzwvZm9udD48
-YnI+DQo8YnI+DQo8YnI+DQoNCjx0YWJsZSB3aWR0aD0iMTAwJSIgYm9yZGVyPSIwIiBjZWxsc3Bh
-Y2luZz0iMCIgY2VsbHBhZGRpbmc9IjAiPg0KPHRyIHZhbGlnbj0idG9wIj48dGQgc3R5bGU9ImJh
-Y2tncm91bmQtaW1hZ2U6dXJsKGNpZDoyX189MDdCQkZENENERkUyOUExQjhmOWU4QG5vdGVzLnRl
-cmFkeW5lLmNvbSk7IGJhY2tncm91bmQtcmVwZWF0OiBuby1yZXBlYXQ7ICIgd2lkdGg9IjQwJSI+
-DQo8dWw+DQo8dWw+DQo8dWw+DQo8dWw+PGI+PGZvbnQgc2l6ZT0iMiI+U2NvdHQgV29vZCAmbHQ7
-c2NvdHR3b29kQGZyZWVzY2FsZS5jb20mZ3Q7PC9mb250PjwvYj48Zm9udCBzaXplPSIyIj4gPC9m
-b250Pg0KPHA+PGZvbnQgc2l6ZT0iMiI+MTEvMTgvMjAxMCAwMTozNSBQTTwvZm9udD48L3VsPg0K
-PC91bD4NCjwvdWw+DQo8L3VsPg0KPC90ZD48dGQgd2lkdGg9IjYwJSI+DQo8dGFibGUgd2lkdGg9
-IjEwMCUiIGJvcmRlcj0iMCIgY2VsbHNwYWNpbmc9IjAiIGNlbGxwYWRkaW5nPSIwIj4NCjx0ciB2
-YWxpZ249InRvcCI+PHRkIHdpZHRoPSIxJSI+PGltZyB3aWR0aD0iNTgiIGhlaWdodD0iMSIgc3Jj
-PSJjaWQ6M19fPTA3QkJGRDRDREZFMjlBMUI4ZjllOEBub3Rlcy50ZXJhZHluZS5jb20iIGJvcmRl
-cj0iMCIgYWx0PSIiPjxicj4NCjxkaXYgYWxpZ249InJpZ2h0Ij48Zm9udCBzaXplPSIyIj5Ubzwv
-Zm9udD48L2Rpdj48L3RkPjx0ZCB3aWR0aD0iMTAwJSI+PGltZyB3aWR0aD0iMSIgaGVpZ2h0PSIx
-IiBzcmM9ImNpZDozX189MDdCQkZENENERkUyOUExQjhmOWU4QG5vdGVzLnRlcmFkeW5lLmNvbSIg
-Ym9yZGVyPSIwIiBhbHQ9IiI+PGJyPg0KPGZvbnQgc2l6ZT0iMiI+Jmx0O3N0ZXZlbi5saW5AdGVy
-YWR5bmUuY29tJmd0OzwvZm9udD48L3RkPjwvdHI+DQoNCjx0ciB2YWxpZ249InRvcCI+PHRkIHdp
-ZHRoPSIxJSI+PGltZyB3aWR0aD0iNTgiIGhlaWdodD0iMSIgc3JjPSJjaWQ6M19fPTA3QkJGRDRD
-REZFMjlBMUI4ZjllOEBub3Rlcy50ZXJhZHluZS5jb20iIGJvcmRlcj0iMCIgYWx0PSIiPjxicj4N
-CjxkaXYgYWxpZ249InJpZ2h0Ij48Zm9udCBzaXplPSIyIj5jYzwvZm9udD48L2Rpdj48L3RkPjx0
-ZCB3aWR0aD0iMTAwJSI+PGltZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBzcmM9ImNpZDozX189MDdC
-QkZENENERkUyOUExQjhmOWU4QG5vdGVzLnRlcmFkeW5lLmNvbSIgYm9yZGVyPSIwIiBhbHQ9IiI+
-PGJyPg0KPGZvbnQgc2l6ZT0iMiI+RGF2aWQgR2lic29uICZsdDtkYXZpZEBnaWJzb24uZHJvcGJl
-YXIuaWQuYXUmZ3Q7LCBNaWNoYWVsIEVsbGVybWFuICZsdDttaWNoYWVsQGVsbGVybWFuLmlkLmF1
-Jmd0OywgJmx0O2xpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnJmd0OzwvZm9udD48L3RkPjwv
-dHI+DQoNCjx0ciB2YWxpZ249InRvcCI+PHRkIHdpZHRoPSIxJSI+PGltZyB3aWR0aD0iNTgiIGhl
-aWdodD0iMSIgc3JjPSJjaWQ6M19fPTA3QkJGRDRDREZFMjlBMUI4ZjllOEBub3Rlcy50ZXJhZHlu
-ZS5jb20iIGJvcmRlcj0iMCIgYWx0PSIiPjxicj4NCjxkaXYgYWxpZ249InJpZ2h0Ij48Zm9udCBz
-aXplPSIyIj5TdWJqZWN0PC9mb250PjwvZGl2PjwvdGQ+PHRkIHdpZHRoPSIxMDAlIj48aW1nIHdp
-ZHRoPSIxIiBoZWlnaHQ9IjEiIHNyYz0iY2lkOjNfXz0wN0JCRkQ0Q0RGRTI5QTFCOGY5ZThAbm90
-ZXMudGVyYWR5bmUuY29tIiBib3JkZXI9IjAiIGFsdD0iIj48YnI+DQo8Zm9udCBzaXplPSIyIj5S
-ZTogYXBwbGljYXRpb24gbmVlZHMgZmFzdCBhY2Nlc3MgdG8gcGh5c2ljYWwgbWVtb3J5PC9mb250
-PjwvdGQ+PC90cj4NCjwvdGFibGU+DQoNCjx0YWJsZSBib3JkZXI9IjAiIGNlbGxzcGFjaW5nPSIw
-IiBjZWxscGFkZGluZz0iMCI+DQo8dHIgdmFsaWduPSJ0b3AiPjx0ZCB3aWR0aD0iNTgiPjxpbWcg
-d2lkdGg9IjEiIGhlaWdodD0iMSIgc3JjPSJjaWQ6M19fPTA3QkJGRDRDREZFMjlBMUI4ZjllOEBu
-b3Rlcy50ZXJhZHluZS5jb20iIGJvcmRlcj0iMCIgYWx0PSIiPjwvdGQ+PHRkIHdpZHRoPSIzMzYi
-PjxpbWcgd2lkdGg9IjEiIGhlaWdodD0iMSIgc3JjPSJjaWQ6M19fPTA3QkJGRDRDREZFMjlBMUI4
-ZjllOEBub3Rlcy50ZXJhZHluZS5jb20iIGJvcmRlcj0iMCIgYWx0PSIiPjwvdGQ+PC90cj4NCjwv
-dGFibGU+DQo8L3RkPjwvdHI+DQo8L3RhYmxlPg0KPGJyPg0KPHR0Pjxmb250IHNpemU9IjIiPk9u
-IFRodSwgMTggTm92IDIwMTAgMTA6NTU6MjEgLTA2MDA8YnI+DQombHQ7c3RldmVuLmxpbkB0ZXJh
-ZHluZS5jb20mZ3Q7IHdyb3RlOjxicj4NCjxicj4NCiZndDsgVGhhbmtzIGZvciB0aGUgcmVwbGll
-cy48YnI+DQomZ3Q7IDxicj4NCiZndDsgSW4gdGhlIExpbnV4IERldmljZSBEcml2ZXJzIGJvb2sg
-cmVnYXJkaW5nIG1tYXAoKSwgaXQgc3RhdGVzOjxicj4NCiZndDsgPGJyPg0KJmd0OyAmbmJzcDsg
-Jm5ic3A7TWFwcGluZyBhIGRldmljZSBtZWFucyBhc3NvY2lhdGluZyBhIHJhbmdlIG9mIHVzZXIt
-c3BhY2UgYWRkcmVzc2VzIHRvPGJyPg0KJmd0OyAmbmJzcDsgJm5ic3A7ZGV2aWNlIG1lbW9yeS48
-YnI+DQomZ3Q7ICZuYnNwOyAmbmJzcDtXaGVuZXZlciB0aGUgcHJvZ3JhbSByZWFkcyBvciB3cml0
-ZXMgaW4gdGhlIGFzc2lnbmVkIGFkZHJlc3MgcmFuZ2UsIGl0PGJyPg0KJmd0OyAmbmJzcDsgJm5i
-c3A7aXMgYWN0dWFsbHk8YnI+DQomZ3Q7ICZuYnNwOyAmbmJzcDthY2Nlc3NpbmcgdGhlIGRldmlj
-ZS4gSW4gdGhlIFggc2VydmVyIGV4YW1wbGUsIHVzaW5nIG1tYXAgYWxsb3dzIHF1aWNrPGJyPg0K
-Jmd0OyAmbmJzcDsgJm5ic3A7YW5kIGVhc3k8YnI+DQomZ3Q7ICZuYnNwOyAmbmJzcDthY2Nlc3Mg
-dG8gdGhlIHZpZGVvIGNhcmTigJlzIG1lbW9yeS4gRm9yIGEgcGVyZm9ybWFuY2UtY3JpdGljYWw8
-YnI+DQomZ3Q7ICZuYnNwOyAmbmJzcDthcHBsaWNhdGlvbiBsaWtlIHRoaXMsPGJyPg0KJmd0OyAm
-bmJzcDsgJm5ic3A7ZGlyZWN0IGFjY2VzcyBtYWtlcyBhIGxhcmdlIGRpZmZlcmVuY2UuPGJyPg0K
-Jmd0OyA8YnI+DQomZ3Q7IEZvciB3aGF0ZXZlciByZWFzb24sIG1tYXAoKSBpcyBkZWZpbml0ZWx5
-IG5vdCBxdWljayBhbmQgZG9lcyBub3QgYXBwZWFyIHRvPGJyPg0KJmd0OyBiZSBhIGRpcmVjdCBh
-Y2Nlc3MgdG8gZGV2aWNlIG1lbW9yeS4gQWZ0ZXIgdGhlIGFwcGxpY2F0aW9uIGNvbXBsZXRlcyBh
-PGJyPg0KJmd0OyBsYXJnZSB3cml0ZSBpbnRvIHBoeXNpY2FsIG1lbW9yeSAodmlhIHRoZSBwb2lu
-dGVyIHJldHVybmVkIGZyb20gbW1hcCgpKSw8YnI+DQomZ3Q7IHRoZSBhcHBsaWNhdGlvbiBwZXJm
-b3JtcyBhbiBpb2N0bCgpIHRvIHF1ZXJ5IHdoZXRoZXIgdGhlIGRhdGEgYWN0dWFsbHk8YnI+DQom
-Z3Q7IGFycml2ZWQgaW50byB0aGUgbWVtb3J5IHJlZ2lvbi4gSXQgc2VlbXMgdG8gdGFrZSBzb21l
-IHRpbWUgYmVmb3JlIHRoZTxicj4NCiZndDsgYXNzb2NpYXRlZCBrZXJuZWwgbW9kdWxlIGFjdHVh
-bGx5ICZxdW90O3NlZXMmcXVvdDsgdGhlIGRhdGEgaW4gdGhlIHBoeXNpY2FsIG1lbW9yeTxicj4N
-CiZndDsgcmVnaW9uLjxicj4NCiZndDsgPGJyPg0KJmd0OyBUaGVyZSdzIGEgZmV3IHRoaW5ncyBJ
-IHNob3VsZCBzYXkgYWJvdXQgdGhpcyBtZW1vcnkgcmVnaW9uLiBUaGVyZSdzIGEgdG90YWw8YnI+
-DQomZ3Q7IG9mIDUxMiBNQiBvZiBwaHlzaWNhbCBtZW1vcnkuIFUtQm9vdCBwYXNzZXMgJnF1b3Q7
-bWVtPTI1Nk0mcXVvdDsgYXMgYSBrZXJuZWw8YnI+DQomZ3Q7IHBhcmFtZXRlciB0byB0ZWxsIExp
-bnV4IHRvIG9ubHkgZGlyZWN0bHkgbWFuYWdlIHRoZSBsb3dlciAyNTYgTUIuIFRoZTxicj4NCiZn
-dDsgc3BlY2lhbCByZWdpb24gb2YgcGh5c2ljYWwgbWVtb3J5IHRoYXQgdGhlIGFwcGxpY2F0aW9u
-IGlzIHRyeWluZyB0byBhY2Nlc3M8YnI+DQomZ3Q7IGlzIHRoZSB1cHBlciAyNTYgTUIgb2YgbWVt
-b3J5IG5vdCBkaXJlY3RseSBtYW5hZ2VkIGJ5IExpbnV4LiBUaGUgbW1hcCgpPGJyPg0KJmd0OyBj
-YWxsIGZyb20gdGhlIGFwcGxpY2F0aW9uIGlzOjxicj4NCiZndDsgJm5ic3A7ICZuYnNwOyptZW1w
-dHIgPSAodm9pZCAqKSBtbWFwKCBOVUxMLCBzaXplLCBQUk9UX1JFQUQgfCBQUk9UX1dSSVRFLCBN
-QVBfU0hBUkVELDxicj4NCiZndDsgJm5ic3A7ICZuYnNwO19mZFRlckFsbG9jLCAob2ZmX3QpIDB4
-MTAwMDAwMDApOzxicj4NCjxicj4NClRyeSB0aGlzIHBhdGNoOjxicj4NCjwvZm9udD48L3R0Pjx0
-dD48Zm9udCBzaXplPSIyIj48YSBocmVmPSJodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0
-Y2gvNjgyNDYvIj5odHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNjgyNDYvPC9hPjwv
-Zm9udD48L3R0Pjx0dD48Zm9udCBzaXplPSIyIj48YnI+DQo8YnI+DQotU2NvdHQ8YnI+DQo8YnI+
-DQo8L2ZvbnQ+PC90dD48YnI+DQo8L2JvZHk+PC9odG1sPg==
-
-
---1__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B--
-
-
---0__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B
-Content-type: image/gif;
-	name="graycol.gif"
-Content-Disposition: inline; filename="graycol.gif"
-Content-ID: <1__=07BBFD4CDFE29A1B8f9e8@notes.teradyne.com>
-Content-transfer-encoding: base64
-
-R0lGODlhEAAQAKECAMzMzAAAAP///wAAACH5BAEAAAIALAAAAAAQABAAAAIXlI+py+0PopwxUbpu
-ZRfKZ2zgSJbmSRYAIf4fT3B0aW1pemVkIGJ5IFVsZWFkIFNtYXJ0U2F2ZXIhAAA7
-
---0__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B
-Content-type: image/gif;
-	name="pic02222.gif"
-Content-Disposition: inline; filename="pic02222.gif"
-Content-ID: <2__=07BBFD4CDFE29A1B8f9e8@notes.teradyne.com>
-Content-transfer-encoding: base64
-
-R0lGODlhWABDALP/AAAAAK04Qf79/o+Gm7WuwlNObwoJFCsoSMDAwGFsmIuezf///wAAAAAAAAAA
-AAAAACH5BAEAAAgALAAAAABYAEMAQAT/EMlJq704682770RiFMRinqggEUNSHIchG0BCfHhOjAuh
-EDeUqTASLCbBhQrhG7xis2j0lssNDopE4jfIJhDaggI8YB1sZeZgLVA9YVCpnGagVjV171aRVrYR
-RghXcAGFhoUETwYxcXNyADJ3GlcSKGAwLwllVC1vjIUHBWsFilKQdI8GA5IcpApeJQt8L09lmgkH
-LZikoU5wjqcyAMMFrJIDPAKvCFletKSev1HBw8KrxtjZ2tvc3d5VyKtCKW3jfz4uMKmq3xu4N0nK
-BVoJQmx2LGVOmrqNjjJf2hHAQo/eDwJGTKhQMcgQEEAnEjFS98+RnW3smGkZU6ncCWav/4wYOnAI
-TihRL/4FEwbp28BXMMcoscQCVxlepL4IGDSCyJyVQOu0o7CjmLN50OZlqWmyFy5/6yBBuji0AxFR
-M00oQAqNIstqI6qKHUsWRAEAvagsmfUEAImyxgbmUpJk3IklNUtJOUAVLoUr1+wqDGTE4zk+T6FG
-uQb3SizBCwatiiUgCBN8vrz+zFjVyQ8FWkOlg4NQiZMB5QS8QO3mpOaKnL0Z2EKvNMSILEThKhCg
-zMKPVxYJh23qm9KNW7pArPynMqZDiErsTMqI+LRi3QAgkFUbXpuFKhSYZALd0O5RKa2z9EYKBbpb
-qxIKsjUPRgD7I2XYV6wyrOw92ykExP8NW4URhknC5dKGE4v4NENQj2jXjmfNgOZDaXb5glRmXQ33
-YEWQYNcZFnrYcIQLNzyTFDQNkXIff0ExVlY4srziQk43inZgL4rwxxINMvpFFAz1KOODHiu+4aEw
-NEjFl5B3JIKWKF3k6I9bfUGp5ZZcdunll5IA4cuHvQQJ5gcsoCWOOUwgltIwAKRxJgbIkJAQZEq0
-2YliZnpZZ4BH3CnYOXldOUOfQoYDqF1LFHbXCrO8xmRsfoXDXJ6ChjCAH3QlhJcT6VWE6FCkfCco
-CgrMFsROrIEX3o2whVjWDjoJccN3LdggSGXLCdLEgHr1lyU3O3QxhgohNKXJCWv8JQr/PDdaqd6w
-2rj1inLiGeiCJoDspAoQlYE6QWLSECehcWIYxIQES6zhbn1iImTHEQyqJ4eIxJJoUBc+3CbBuwZE
-V5cJPPkIjFDdeEabQbd6WgICTxiiz0f5dBKquXF6k4senwEhYGnKEFJeGrxUZy8dB8gmAXI/sPvH
-ESfCwVt5hTgYiqQqtdRNHQIU1PJ33ZqmzgE90OwLaoJcnMop1WiMmgkPHQRIrwgFuNV90A3doNKT
-mrKIN07AnGcI9BQjhCBN4RfA1qIZnMqorJCogKfGQnxSCDilTVIA0yl5ciTovgLuBDKFUDE9aQcw
-9SA+rjSNf9/M1gxrj6VwDTS0IUSElMzBfsj0NFXR2kwsV1A5IF1grLgLL/r1R40BZEnuBWgmQEyb
-jqRwSAt6bqMCOFkvKFN2GPPkUzIm/SCF8z8pVzpbjVnMsy0vOr1hw3SaSRUhpY09v0z0J1FnwzPl
-fmh+xl4WtR0zGu24I4KbMQm3lnVu2oNWxI9W/lcyzA+mCKF4DBikxb/+UWtOGRiFP8qEwAayIgIA
-Ow==
-
---0__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B
-Content-type: image/gif;
-	name="ecblank.gif"
-Content-Disposition: inline; filename="ecblank.gif"
-Content-ID: <3__=07BBFD4CDFE29A1B8f9e8@notes.teradyne.com>
-Content-transfer-encoding: base64
-
-R0lGODlhEAABAIAAAAAAAP///yH5BAEAAAEALAAAAAAQAAEAAAIEjI8ZBQA7
-
---0__=07BBFD4CDFE29A1B8f9e8a93df938690918c07BBFD4CDFE29A1B--
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
