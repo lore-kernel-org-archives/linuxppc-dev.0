@@ -1,18 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A6A81B71AE
+	by ozlabs.org (Postfix) with ESMTP id C235AB7196
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Nov 2010 12:06:19 +1100 (EST)
-Date: Fri, 19 Nov 2010 12:06:17 +1100
+	Fri, 19 Nov 2010 13:06:01 +1100 (EST)
+Date: Fri, 19 Nov 2010 13:05:52 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: remove second definition of STACK_FRAME_OVERHEAD
-Message-Id: <20101119120617.5c27cc56.sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: linux-next: manual merge of the bkl-config tree with Linus' tree
+Message-Id: <20101119130552.2f195494.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "H. Peter Anvin" <hpa@linux.intel.com>, Jan Beulich <JBeulich@novell.com>,
-	Arnaud Lacombe <lacombar@gmail.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__19_Nov_2010_13_05_52_+1100_LXKCA0lslcEBQpB6"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	Alessio Igor Bogani <abogani@texware.it>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,206 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since STACK_FRAME_OVERHEAD is defined in asm/ptrace.h and that
-is ASSEMBER safe, we can just include that instead of going via
-asm-offsets.h.
+--Signature=_Fri__19_Nov_2010_13_05_52_+1100_LXKCA0lslcEBQpB6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/asm-offsets.c       |    1 -
- arch/powerpc/kernel/entry_32.S          |    1 +
- arch/powerpc/kernel/exceptions-64s.S    |    1 +
- arch/powerpc/kernel/fpu.S               |    1 +
- arch/powerpc/kernel/head_40x.S          |    1 +
- arch/powerpc/kernel/head_44x.S          |    1 +
- arch/powerpc/kernel/head_64.S           |    1 +
- arch/powerpc/kernel/head_8xx.S          |    1 +
- arch/powerpc/kernel/head_fsl_booke.S    |    1 +
- arch/powerpc/kernel/misc_32.S           |    1 +
- arch/powerpc/kernel/misc_64.S           |    1 +
- arch/powerpc/kernel/ppc_save_regs.S     |    1 +
- arch/powerpc/kernel/vector.S            |    1 +
- arch/powerpc/platforms/pseries/hvCall.S |    1 +
- 14 files changed, 13 insertions(+), 1 deletions(-)
+Hi Arnd,
 
-This was prompted by another change that caused the multiple definitions
-to produce a warning.  That warning has already been fixe, but this seems
-the correct thing to do anyway.
+Today's linux-next merge of the bkl-config tree got a conflict in
+arch/powerpc/kernel/setup_64.c between commit
+0f6b77ca12bea571e0a97b0588f62aa5f6012d61 ("powerpc: Update a BKL related
+comment") from Linus' tree and commit
+bb2d384ab8184eb7f7146897e47fa5b38583112c ("BKL: remove references to
+lock_kernel from comments") from the bkl-config tree.
 
-I have build tested this for all the (top level) powerpc defconfigs.
-
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index bd0df2e..23e6a93 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -209,7 +209,6 @@ int main(void)
- 	DEFINE(RTASENTRY, offsetof(struct rtas_t, entry));
- 
- 	/* Interrupt register frame */
--	DEFINE(STACK_FRAME_OVERHEAD, STACK_FRAME_OVERHEAD);
- 	DEFINE(INT_FRAME_SIZE, STACK_INT_FRAME_SIZE);
- 	DEFINE(SWITCH_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct pt_regs));
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index ed4aeb9..c22dc1e 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -31,6 +31,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/unistd.h>
- #include <asm/ftrace.h>
-+#include <asm/ptrace.h>
- 
- #undef SHOW_SYSCALLS
- #undef SHOW_SYSCALLS_TASK
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9f8b01d..8a81799 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -13,6 +13,7 @@
-  */
- 
- #include <asm/exception-64s.h>
-+#include <asm/ptrace.h>
- 
- /*
-  * We layout physical memory as follows:
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index e86c040..de36955 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -23,6 +23,7 @@
- #include <asm/thread_info.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
-+#include <asm/ptrace.h>
- 
- #ifdef CONFIG_VSX
- #define REST_32FPVSRS(n,c,base)						\
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 8278e8b..9dd21a8 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -40,6 +40,7 @@
- #include <asm/thread_info.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
-+#include <asm/ptrace.h>
- 
- /* As with the other PowerPC ports, it is expected that when code
-  * execution begins here, the following registers contain valid, yet
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 562305b..cbb3436 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -37,6 +37,7 @@
- #include <asm/thread_info.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
-+#include <asm/ptrace.h>
- #include <asm/synch.h>
- #include "head_booke.h"
- 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index f0dd577..ce41b97 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -38,6 +38,7 @@
- #include <asm/page_64.h>
- #include <asm/irqflags.h>
- #include <asm/kvm_book3s_asm.h>
-+#include <asm/ptrace.h>
- 
- /* The physical memory is layed out such that the secondary processor
-  * spin code sits at 0x0000...0x00ff. On server, the vectors follow
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1f1a04b..1cbf64e 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -29,6 +29,7 @@
- #include <asm/thread_info.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
-+#include <asm/ptrace.h>
- 
- /* Macro to make the code more readable. */
- #ifdef CONFIG_8xx_CPU6
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 529b817..3e02710 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -41,6 +41,7 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/cache.h>
-+#include <asm/ptrace.h>
- #include "head_booke.h"
- 
- /* As with the other PowerPC ports, it is expected that when code
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index a7a570d..094bd98 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -30,6 +30,7 @@
- #include <asm/processor.h>
- #include <asm/kexec.h>
- #include <asm/bug.h>
-+#include <asm/ptrace.h>
- 
- 	.text
- 
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index e514490..206a321 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -25,6 +25,7 @@
- #include <asm/cputable.h>
- #include <asm/thread_info.h>
- #include <asm/kexec.h>
-+#include <asm/ptrace.h>
- 
- 	.text
- 
-diff --git a/arch/powerpc/kernel/ppc_save_regs.S b/arch/powerpc/kernel/ppc_save_regs.S
-index 5113bd2..e83ba3f 100644
---- a/arch/powerpc/kernel/ppc_save_regs.S
-+++ b/arch/powerpc/kernel/ppc_save_regs.S
-@@ -11,6 +11,7 @@
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
-+#include <asm/ptrace.h>
- 
- /*
-  * Grab the register values as they are now.
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index fe46048..9de6f39 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -5,6 +5,7 @@
- #include <asm/cputable.h>
- #include <asm/thread_info.h>
- #include <asm/page.h>
-+#include <asm/ptrace.h>
- 
- /*
-  * load_up_altivec(unused, unused, tsk)
-diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
-index 48d2057..fd05fde 100644
---- a/arch/powerpc/platforms/pseries/hvCall.S
-+++ b/arch/powerpc/platforms/pseries/hvCall.S
-@@ -11,6 +11,7 @@
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
-+#include <asm/ptrace.h>
- 	
- #define STK_PARM(i)     (48 + ((i)-3)*8)
- 
--- 
-1.7.2.3
-
--- 
+I just used the former version.
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__19_Nov_2010_13_05_52_+1100_LXKCA0lslcEBQpB6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJM5duAAAoJEDMEi1NhKgbs1EcH/2FqhEYGiaTp2Hcqi5sy/BaZ
+MGJyxMM+8Rwd6iLZl7kPgDznFvL0yCX99I3KxJB2rPq3ll2s6+OTbvj2PxB5SzFg
+cTCXar/MngyXHc9/iy3duRc6cV7v7eWtyZjzXYe5iHKp+7ios1vJnqvexRKT2VHc
+8HoC6h9D4JLAW7Q0+xMSTRh7qoZf0l4wko2NnRZd9B8vGEK5t3Ga/DUZOfRpP6HD
+Nxhmk9hR+mq4Q7YaJNycGr6gxQpWl/lujVVlgBe+F9hwMfnlyv/yFJr68rzrUmtL
+lpJU60RhltfnG91NSSt9furMvzh0F085s7fZ5gXeZcNs/yxclVa89s3jzGBgi/g=
+=cdUB
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__19_Nov_2010_13_05_52_+1100_LXKCA0lslcEBQpB6--
