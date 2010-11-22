@@ -1,21 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <30421.1290146540@neuling.org>
-References: <1290059208.32570.3.camel@pasglop>
-	<30983.1290116555@neuling.org> <1290118082.29105.11.camel@concordia>
-	<20101119163104.624d264d.sfr@canb.auug.org.au>
-	<1290145458.2867.3.camel@concordia>  <30421.1290146540@neuling.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-DeBzVtxsWB1jqze5lvoZ"
-Date: Mon, 22 Nov 2010 10:05:44 +1100
-Message-ID: <1290380744.4961.7.camel@concordia>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id 4A994B70CD
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Nov 2010 21:01:48 +1100 (EST)
+Message-ID: <4CEA3F87.9080102@mlbassoc.com>
+Date: Mon, 22 Nov 2010 03:01:43 -0700
+From: Gary Thomas <gary@mlbassoc.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Change in PCI behaviour
+References: <4CE69AF6.6090408@mlbassoc.com> <1290203218.32570.48.camel@pasglop>
+	<4CE95E11.1050606@mlbassoc.com>
+In-Reply-To: <4CE95E11.1050606@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11/21/2010 10:59 AM, Gary Thomas wrote:
+> On 11/19/2010 02:46 PM, Benjamin Herrenschmidt wrote:
+>> On Fri, 2010-11-19 at 08:42 -0700, Gary Thomas wrote:
+>>> In this case, note that PCI device 0000:00:0c.0 is at 0xc0000000.
+>>> This causes problems because it's a truly stupid device that does
+>>> not work properly at PCI [relative] address 0x00000000. It simply
+>>> does not respond at that address. Pick anywhere else and it will
+>>> work fine!
+>>
+>> Hrm, we used to have a trick avoid giving out the first meg of a bus to
+>> avoid that sort of thing, I suppose it got lost. The rest is related to
+>> the way you map your PCI I suppose in your dts. You can switch back to a
+>> 1:1 instead of 1:0 mapping I suppose.
+>>
+>> One way to achieve the above result would be to, in your platform code,
+>> reserve the mem region that corresponds to PCI 0...1M (c0000000...+1M)
+>> before the device resources are assigned/allocated.
+>>
+>> I though we had code to do that with the "legacy" regions somewhere...
+>> oh well, no code at hand to check right now.
+>
+> Thanks, I found a combo of regions in my DTS that fixed this.
+>
+> That went well and the system is now running, but it's not stable :-(
+> It will crash randomly, generally leaving no trace of what went wrong.
+> I've attached a BDI to it, but mostly all it can tell me is "it's dead"
+> The one thing that seems to pop up is it looks like it's jumping into
+> space (aka the wrong place) when doing rfi (this is a guess). I've
+> seen things like the MSR ends up loaded with an address, or similar
+> strangeness.
+>
+> Were there any system level changes during this period (I know it's
+> some time ago) that might have introduced such an instability? It's
+> tough to scan through the diffs and get a feeling for any little details
+> like this.
+>
+> Any ideas or hints greatly appreciated, thanks
+>
 
---=-DeBzVtxsWB1jqze5lvoZ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I have a bit more information on this.  I'm pretty sure that the failures
+are only happening in my SCSI (SATA actually) code.  My board (8347ea) has
+a PCI bus with a SIL SATA controller.  This combo works perfectly in 2.6.28.
+In 2.6.32, it will run for a while (possibly quite a while), then timeout
+trying to do a large block write - typically 256 blocks.  Once this timeout
+happens, the SIL controller is stuck and accesses to it will eventually
+cause the whole system to hang (as above).
 
-On Fri, 2010-11-19 at 17:02 +1100, Michael Neuling wrote:
-> > On Fri, 2010-11-19 at 16:31 +1100, Stephen Rothwell wrote:
-> > > On Fri, 19 Nov 2010 09:08:02 +1100 Michael Ellerman <michael@ellerman=
-.id.=3D
-> > au> wrote:
-> > > >
-> > > > I vote for:
-> > > >=3D20
-> > > >  -> Exception: 401 (Instruction Access) at 00000000f7937794
-> > >=3D20
-> > > Or:
-> > >=3D20
-> > > =3DE2=3D98=3D9B Exception: 401 (Instruction Access) at 00000000f79377=
-94
-> >=20
-> > Let's get serious, it's _really_ like a phone call:
-> >=20
-> > =3DE2=3D98=3D8E Exception: 401 (Instruction Access) at 00000000f7937794
->=20
-> We need a dedicated NACK char!
+Was there any major change in how PCI or DMA was handled between 2.6.28
+and 2.6.32?  Given the ephemeral nature of these failures (multiple runs
+all eventually fail, but never the same twice), my only hope of fixing it
+will be to have some ideas what might have changed.
 
-=E2=90=95!
+Thanks for any ideas
 
---=-DeBzVtxsWB1jqze5lvoZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkzppcQACgkQdSjSd0sB4dIpywCdF1aKIzZCrHgdj4++JurATwvh
-TlQAoKqgpde3cVvnGIvnNF5l0GdbOiT9
-=GrTe
------END PGP SIGNATURE-----
-
---=-DeBzVtxsWB1jqze5lvoZ--
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
