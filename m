@@ -1,28 +1,20 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id 5B0ECB70DA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Nov 2010 00:38:46 +1100 (EST)
-Received: by pvg13 with SMTP id 13so2220607pvg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Nov 2010 05:38:44 -0800 (PST)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 02/22] bitops: rename generic little-endian bitops functions
-Date: Tue, 23 Nov 2010 22:38:04 +0900
-Message-Id: <1290519504-3958-3-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1290519504-3958-1-git-send-email-akinobu.mita@gmail.com>
-References: <1290519504-3958-1-git-send-email-akinobu.mita@gmail.com>
-Cc: rds-devel@oss.oracle.com, kvm@vger.kernel.org,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	Akinobu Mita <akinobu.mita@gmail.com>,
-	Andy Grover <andy.grover@oracle.com>,
-	linux-m68k@lists.linux-m68k.org, netdev@vger.kernel.org,
-	Andreas Schwab <schwab@linux-m68k.org>,
-	Avi Kivity <avi@redhat.com>, Greg Ungerer <gerg@uclinux.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id 47149B70D5
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Nov 2010 01:44:17 +1100 (EST)
+Message-ID: <4CEBD33D.7020603@mlbassoc.com>
+Date: Tue, 23 Nov 2010 07:44:13 -0700
+From: Gary Thomas <gary@mlbassoc.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Change in PCI behaviour
+References: <4CE69AF6.6090408@mlbassoc.com>	
+	<1290203218.32570.48.camel@pasglop>
+	<4CE95E11.1050606@mlbassoc.com>	 <4CEA3F87.9080102@mlbassoc.com>
+	<1290457615.32570.67.camel@pasglop>
+In-Reply-To: <1290457615.32570.67.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,359 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As a preparation for providing little-endian bitops for all architectures,
-This removes generic_ prefix from little-endian bitops function names
-in asm-generic/bitops/le.h.
+On 11/22/2010 01:26 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2010-11-22 at 03:01 -0700, Gary Thomas wrote:
+>> I have a bit more information on this.  I'm pretty sure that the failures
+>> are only happening in my SCSI (SATA actually) code.  My board (8347ea) has
+>> a PCI bus with a SIL SATA controller.  This combo works perfectly in 2.6.28.
+>> In 2.6.32, it will run for a while (possibly quite a while), then timeout
+>> trying to do a large block write - typically 256 blocks.  Once this timeout
+>> happens, the SIL controller is stuck and accesses to it will eventually
+>> cause the whole system to hang (as above).
+>>
+>> Was there any major change in how PCI or DMA was handled between 2.6.28
+>> and 2.6.32?  Given the ephemeral nature of these failures (multiple runs
+>> all eventually fail, but never the same twice), my only hope of fixing it
+>> will be to have some ideas what might have changed.
+>
+> Maybe the changes you did to the PCI outbound windows are now breaking
+> DMA ? Make sure the outbound and inbound don't overlap for example and
+> that all RAM is reachable for inbound.
 
-s/generic_find_next_le_bit/find_next_le_bit/
-s/generic_find_next_zero_le_bit/find_next_zero_le_bit/
-s/generic_find_first_zero_le_bit/find_first_zero_le_bit/
-s/generic___test_and_set_le_bit/__test_and_set_le_bit/
-s/generic___test_and_clear_le_bit/__test_and_clear_le_bit/
-s/generic_test_le_bit/test_le_bit/
-s/generic___set_le_bit/__set_le_bit/
-s/generic___clear_le_bit/__clear_le_bit/
-s/generic_test_and_set_le_bit/test_and_set_le_bit/
-s/generic_test_and_clear_le_bit/test_and_clear_le_bit/
+Here's what I did to work around this - in my DTS, I set up my PCI as
+	ranges = <0x02000000 0x0 0xC4000000 0xC4000000 0x0 0x1C000000
+	          0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+Before, I had it as
+	ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
+	          0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Andreas Schwab <schwab@linux-m68k.org>
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: Greg Ungerer <gerg@uclinux.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Andy Grover <andy.grover@oracle.com>
-Cc: rds-devel@oss.oracle.com
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: kvm@vger.kernel.org
----
-No change from previous submission
- arch/avr32/kernel/avr32_ksyms.c              |    4 ++--
- arch/avr32/lib/findbit.S                     |    4 ++--
- arch/m68k/include/asm/bitops_mm.h            |    8 ++++----
- arch/m68k/include/asm/bitops_no.h            |    2 +-
- arch/powerpc/include/asm/bitops.h            |   11 ++++++-----
- include/asm-generic/bitops/ext2-non-atomic.h |   12 ++++++------
- include/asm-generic/bitops/le.h              |   26 +++++++++++++-------------
- include/asm-generic/bitops/minix-le.h        |   10 +++++-----
- lib/find_next_bit.c                          |    9 ++++-----
- net/rds/cong.c                               |    6 +++---
- virt/kvm/kvm_main.c                          |    2 +-
- 11 files changed, 47 insertions(+), 47 deletions(-)
+I wasn't sure how to reserve the memory (based on your earlier suggestion),
+so I just narrowed the window.  Note that I did not change the PCI hardware
+registers (maybe the FSL code does?), so the outbound window should still
+be the whole 512MB.
 
-diff --git a/arch/avr32/kernel/avr32_ksyms.c b/arch/avr32/kernel/avr32_ksyms.c
-index 11e310c..c63b943 100644
---- a/arch/avr32/kernel/avr32_ksyms.c
-+++ b/arch/avr32/kernel/avr32_ksyms.c
-@@ -58,8 +58,8 @@ EXPORT_SYMBOL(find_first_zero_bit);
- EXPORT_SYMBOL(find_next_zero_bit);
- EXPORT_SYMBOL(find_first_bit);
- EXPORT_SYMBOL(find_next_bit);
--EXPORT_SYMBOL(generic_find_next_le_bit);
--EXPORT_SYMBOL(generic_find_next_zero_le_bit);
-+EXPORT_SYMBOL(find_next_le_bit);
-+EXPORT_SYMBOL(find_next_zero_le_bit);
- 
- /* I/O primitives (lib/io-*.S) */
- EXPORT_SYMBOL(__raw_readsb);
-diff --git a/arch/avr32/lib/findbit.S b/arch/avr32/lib/findbit.S
-index 997b33b..6880d85 100644
---- a/arch/avr32/lib/findbit.S
-+++ b/arch/avr32/lib/findbit.S
-@@ -123,7 +123,7 @@ ENTRY(find_next_bit)
- 	brgt	1b
- 	retal	r11
- 
--ENTRY(generic_find_next_le_bit)
-+ENTRY(find_next_le_bit)
- 	lsr	r8, r10, 5
- 	sub	r9, r11, r10
- 	retle	r11
-@@ -153,7 +153,7 @@ ENTRY(generic_find_next_le_bit)
- 	brgt	1b
- 	retal	r11
- 
--ENTRY(generic_find_next_zero_le_bit)
-+ENTRY(find_next_zero_le_bit)
- 	lsr	r8, r10, 5
- 	sub	r9, r11, r10
- 	retle	r11
-diff --git a/arch/m68k/include/asm/bitops_mm.h b/arch/m68k/include/asm/bitops_mm.h
-index b4ecdaa..f1010ab 100644
---- a/arch/m68k/include/asm/bitops_mm.h
-+++ b/arch/m68k/include/asm/bitops_mm.h
-@@ -366,9 +366,9 @@ static inline int minix_test_bit(int nr, const void *vaddr)
- #define ext2_clear_bit(nr, addr)		__test_and_clear_bit((nr) ^ 24, (unsigned long *)(addr))
- #define ext2_clear_bit_atomic(lock, nr, addr)	test_and_clear_bit((nr) ^ 24, (unsigned long *)(addr))
- #define ext2_find_next_zero_bit(addr, size, offset) \
--	generic_find_next_zero_le_bit((unsigned long *)addr, size, offset)
-+	find_next_zero_le_bit((unsigned long *)addr, size, offset)
- #define ext2_find_next_bit(addr, size, offset) \
--	generic_find_next_le_bit((unsigned long *)addr, size, offset)
-+	find_next_le_bit((unsigned long *)addr, size, offset)
- 
- static inline int ext2_test_bit(int nr, const void *vaddr)
- {
-@@ -398,7 +398,7 @@ static inline int ext2_find_first_zero_bit(const void *vaddr, unsigned size)
- 	return (p - addr) * 32 + res;
- }
- 
--static inline unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
-+static inline unsigned long find_next_zero_le_bit(const unsigned long *addr,
- 		unsigned long size, unsigned long offset)
- {
- 	const unsigned long *p = addr + (offset >> 5);
-@@ -440,7 +440,7 @@ static inline int ext2_find_first_bit(const void *vaddr, unsigned size)
- 	return (p - addr) * 32 + res;
- }
- 
--static inline unsigned long generic_find_next_le_bit(const unsigned long *addr,
-+static inline unsigned long find_next_le_bit(const unsigned long *addr,
- 		unsigned long size, unsigned long offset)
- {
- 	const unsigned long *p = addr + (offset >> 5);
-diff --git a/arch/m68k/include/asm/bitops_no.h b/arch/m68k/include/asm/bitops_no.h
-index 9d3cbe5..292e1ce 100644
---- a/arch/m68k/include/asm/bitops_no.h
-+++ b/arch/m68k/include/asm/bitops_no.h
-@@ -325,7 +325,7 @@ found_middle:
- }
- 
- #define ext2_find_next_bit(addr, size, off) \
--	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
-+	find_next_le_bit((unsigned long *)(addr), (size), (off))
- #include <asm-generic/bitops/minix.h>
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 30964ae..b4f3f84 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -294,11 +294,12 @@ static __inline__ int test_le_bit(unsigned long nr,
- #define __test_and_clear_le_bit(nr, addr) \
- 	__test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define find_first_zero_le_bit(addr, size) generic_find_next_zero_le_bit((addr), (size), 0)
--unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
-+#define find_first_zero_le_bit(addr, size) \
-+	find_next_zero_le_bit((addr), (size), 0)
-+unsigned long find_next_zero_le_bit(const unsigned long *addr,
- 				    unsigned long size, unsigned long offset);
- 
--unsigned long generic_find_next_le_bit(const unsigned long *addr,
-+unsigned long find_next_le_bit(const unsigned long *addr,
- 				    unsigned long size, unsigned long offset);
- /* Bitmap functions for the ext2 filesystem */
- 
-@@ -317,10 +318,10 @@ unsigned long generic_find_next_le_bit(const unsigned long *addr,
- #define ext2_find_first_zero_bit(addr, size) \
- 	find_first_zero_le_bit((unsigned long*)addr, size)
- #define ext2_find_next_zero_bit(addr, size, off) \
--	generic_find_next_zero_le_bit((unsigned long*)addr, size, off)
-+	find_next_zero_le_bit((unsigned long *)addr, size, off)
- 
- #define ext2_find_next_bit(addr, size, off) \
--	generic_find_next_le_bit((unsigned long *)addr, size, off)
-+	find_next_le_bit((unsigned long *)addr, size, off)
- /* Bitmap functions for the minix filesystem.  */
- 
- #define minix_test_and_set_bit(nr,addr) \
-diff --git a/include/asm-generic/bitops/ext2-non-atomic.h b/include/asm-generic/bitops/ext2-non-atomic.h
-index 63cf822..9c7bb9a 100644
---- a/include/asm-generic/bitops/ext2-non-atomic.h
-+++ b/include/asm-generic/bitops/ext2-non-atomic.h
-@@ -4,17 +4,17 @@
- #include <asm-generic/bitops/le.h>
- 
- #define ext2_set_bit(nr,addr)	\
--	generic___test_and_set_le_bit((nr),(unsigned long *)(addr))
-+	__test_and_set_le_bit((nr), (unsigned long *)(addr))
- #define ext2_clear_bit(nr,addr)	\
--	generic___test_and_clear_le_bit((nr),(unsigned long *)(addr))
-+	__test_and_clear_le_bit((nr), (unsigned long *)(addr))
- 
- #define ext2_test_bit(nr,addr)	\
--	generic_test_le_bit((nr),(unsigned long *)(addr))
-+	test_le_bit((nr), (unsigned long *)(addr))
- #define ext2_find_first_zero_bit(addr, size) \
--	generic_find_first_zero_le_bit((unsigned long *)(addr), (size))
-+	find_first_zero_le_bit((unsigned long *)(addr), (size))
- #define ext2_find_next_zero_bit(addr, size, off) \
--	generic_find_next_zero_le_bit((unsigned long *)(addr), (size), (off))
-+	find_next_zero_le_bit((unsigned long *)(addr), (size), (off))
- #define ext2_find_next_bit(addr, size, off) \
--	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
-+	find_next_le_bit((unsigned long *)(addr), (size), (off))
- 
- #endif /* _ASM_GENERIC_BITOPS_EXT2_NON_ATOMIC_H_ */
-diff --git a/include/asm-generic/bitops/le.h b/include/asm-generic/bitops/le.h
-index db2be81..6ad46ce 100644
---- a/include/asm-generic/bitops/le.h
-+++ b/include/asm-generic/bitops/le.h
-@@ -8,42 +8,42 @@
- 
- #define BITOP_LE_SWIZZLE	0
- 
--#define generic_find_next_zero_le_bit(addr, size, offset) \
-+#define find_next_zero_le_bit(addr, size, offset) \
- 	find_next_zero_bit(addr, size, offset)
--#define generic_find_next_le_bit(addr, size, offset) \
-+#define find_next_le_bit(addr, size, offset) \
- 	find_next_bit(addr, size, offset)
- 
- #elif defined(__BIG_ENDIAN)
- 
- #define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
- 
--extern unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
-+extern unsigned long find_next_zero_le_bit(const unsigned long *addr,
- 		unsigned long size, unsigned long offset);
--extern unsigned long generic_find_next_le_bit(const unsigned long *addr,
-+extern unsigned long find_next_le_bit(const unsigned long *addr,
- 		unsigned long size, unsigned long offset);
- 
- #else
- #error "Please fix <asm/byteorder.h>"
- #endif
- 
--#define generic_test_le_bit(nr, addr) \
-+#define test_le_bit(nr, addr) \
- 	test_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define generic___set_le_bit(nr, addr) \
-+#define __set_le_bit(nr, addr) \
- 	__set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define generic___clear_le_bit(nr, addr) \
-+#define __clear_le_bit(nr, addr) \
- 	__clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define generic_test_and_set_le_bit(nr, addr) \
-+#define test_and_set_le_bit(nr, addr) \
- 	test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define generic_test_and_clear_le_bit(nr, addr) \
-+#define test_and_clear_le_bit(nr, addr) \
- 	test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define generic___test_and_set_le_bit(nr, addr) \
-+#define __test_and_set_le_bit(nr, addr) \
- 	__test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define generic___test_and_clear_le_bit(nr, addr) \
-+#define __test_and_clear_le_bit(nr, addr) \
- 	__test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define generic_find_first_zero_le_bit(addr, size) \
--        generic_find_next_zero_le_bit((addr), (size), 0)
-+#define find_first_zero_le_bit(addr, size) \
-+	find_next_zero_le_bit((addr), (size), 0)
- 
- #endif /* _ASM_GENERIC_BITOPS_LE_H_ */
-diff --git a/include/asm-generic/bitops/minix-le.h b/include/asm-generic/bitops/minix-le.h
-index 4a981c1..ed0ae09 100644
---- a/include/asm-generic/bitops/minix-le.h
-+++ b/include/asm-generic/bitops/minix-le.h
-@@ -4,14 +4,14 @@
- #include <asm-generic/bitops/le.h>
- 
- #define minix_test_and_set_bit(nr,addr)	\
--	generic___test_and_set_le_bit((nr),(unsigned long *)(addr))
-+	__test_and_set_le_bit((nr), (unsigned long *)(addr))
- #define minix_set_bit(nr,addr)		\
--	generic___set_le_bit((nr),(unsigned long *)(addr))
-+	__set_le_bit((nr), (unsigned long *)(addr))
- #define minix_test_and_clear_bit(nr,addr) \
--	generic___test_and_clear_le_bit((nr),(unsigned long *)(addr))
-+	__test_and_clear_le_bit((nr), (unsigned long *)(addr))
- #define minix_test_bit(nr,addr)		\
--	generic_test_le_bit((nr),(unsigned long *)(addr))
-+	test_le_bit((nr), (unsigned long *)(addr))
- #define minix_find_first_zero_bit(addr,size) \
--	generic_find_first_zero_le_bit((unsigned long *)(addr),(size))
-+	find_first_zero_le_bit((unsigned long *)(addr), (size))
- 
- #endif /* _ASM_GENERIC_BITOPS_MINIX_LE_H_ */
-diff --git a/lib/find_next_bit.c b/lib/find_next_bit.c
-index 24c59de..eb8934b 100644
---- a/lib/find_next_bit.c
-+++ b/lib/find_next_bit.c
-@@ -185,7 +185,7 @@ static inline unsigned long ext2_swab(const unsigned long y)
- #endif
- }
- 
--unsigned long generic_find_next_zero_le_bit(const unsigned long *addr, unsigned
-+unsigned long find_next_zero_le_bit(const unsigned long *addr, unsigned
- 		long size, unsigned long offset)
- {
- 	const unsigned long *p = addr + BITOP_WORD(offset);
-@@ -226,10 +226,9 @@ found_middle:
- found_middle_swap:
- 	return result + ffz(ext2_swab(tmp));
- }
-+EXPORT_SYMBOL(find_next_zero_le_bit);
- 
--EXPORT_SYMBOL(generic_find_next_zero_le_bit);
--
--unsigned long generic_find_next_le_bit(const unsigned long *addr, unsigned
-+unsigned long find_next_le_bit(const unsigned long *addr, unsigned
- 		long size, unsigned long offset)
- {
- 	const unsigned long *p = addr + BITOP_WORD(offset);
-@@ -271,5 +270,5 @@ found_middle:
- found_middle_swap:
- 	return result + __ffs(ext2_swab(tmp));
- }
--EXPORT_SYMBOL(generic_find_next_le_bit);
-+EXPORT_SYMBOL(find_next_le_bit);
- #endif /* __BIG_ENDIAN */
-diff --git a/net/rds/cong.c b/net/rds/cong.c
-index 75ea686..90ca44f 100644
---- a/net/rds/cong.c
-+++ b/net/rds/cong.c
-@@ -285,7 +285,7 @@ void rds_cong_set_bit(struct rds_cong_map *map, __be16 port)
- 	i = be16_to_cpu(port) / RDS_CONG_MAP_PAGE_BITS;
- 	off = be16_to_cpu(port) % RDS_CONG_MAP_PAGE_BITS;
- 
--	generic___set_le_bit(off, (void *)map->m_page_addrs[i]);
-+	__set_le_bit(off, (void *)map->m_page_addrs[i]);
- }
- 
- void rds_cong_clear_bit(struct rds_cong_map *map, __be16 port)
-@@ -299,7 +299,7 @@ void rds_cong_clear_bit(struct rds_cong_map *map, __be16 port)
- 	i = be16_to_cpu(port) / RDS_CONG_MAP_PAGE_BITS;
- 	off = be16_to_cpu(port) % RDS_CONG_MAP_PAGE_BITS;
- 
--	generic___clear_le_bit(off, (void *)map->m_page_addrs[i]);
-+	__clear_le_bit(off, (void *)map->m_page_addrs[i]);
- }
- 
- static int rds_cong_test_bit(struct rds_cong_map *map, __be16 port)
-@@ -310,7 +310,7 @@ static int rds_cong_test_bit(struct rds_cong_map *map, __be16 port)
- 	i = be16_to_cpu(port) / RDS_CONG_MAP_PAGE_BITS;
- 	off = be16_to_cpu(port) % RDS_CONG_MAP_PAGE_BITS;
- 
--	return generic_test_le_bit(off, (void *)map->m_page_addrs[i]);
-+	return test_le_bit(off, (void *)map->m_page_addrs[i]);
- }
- 
- void rds_cong_add_socket(struct rds_sock *rs)
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 5225052..da16155 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1252,7 +1252,7 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
- 	if (memslot && memslot->dirty_bitmap) {
- 		unsigned long rel_gfn = gfn - memslot->base_gfn;
- 
--		generic___set_le_bit(rel_gfn, memslot->dirty_bitmap);
-+		__set_le_bit(rel_gfn, memslot->dirty_bitmap);
- 	}
- }
- 
+If this isn't viable, perhaps you could explain a bit more how to reserve
+such a chunk of memory so that the PCI mappings remain the same.
+
+Thanks again
+
 -- 
-1.7.3.2
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
