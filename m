@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 25DB9B70D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Nov 2010 08:10:47 +1100 (EST)
-Subject: Re: [PATCH v1] ppc44x:PHY fixup for USB on canyonlands board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <201011231421.02377.sr@denx.de>
+Return-Path: <rsarmah@apm.com>
+Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
+	by ozlabs.org (Postfix) with SMTP id F21EAB6F10
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Nov 2010 15:55:08 +1100 (EST)
+Received: by mail-wy0-f172.google.com with SMTP id 29so9317116wyb.17
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2010 20:55:06 -0800 (PST)
+From: Rupjyoti Sarmah <rsarmah@apm.com>
 References: <201011231256.oANCur3N016433@amcc.com>
 	<201011231421.02377.sr@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Nov 2010 08:10:21 +1100
-Message-ID: <1290546621.32570.85.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	rsarmah@apm.com
+In-Reply-To: <201011231421.02377.sr@denx.de>
+MIME-Version: 1.0
+Date: Wed, 24 Nov 2010 10:25:03 +0530
+Message-ID: <602c780cd2a81ee32f834a82814fe77f@mail.gmail.com>
+Subject: RE: [PATCH v1] ppc44x:PHY fixup for USB on canyonlands board
+To: Stefan Roese <sr@denx.de>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>>
+>> +#define BCSR_USB_EN	0x11
+>This define is wrong here. Its not common for all 44x platforms but
+Canyonlands specific.
 
-> > +	setbits8(&bcsr[7], BCSR_USB_EN);
-> > +	udelay(100000);
-> > +
-> > +	clrbits8(&bcsr[7], BCSR_USB_EN);
-> > +	udelay(100000);
-> 
-> Thats a total bootup delay of 200ms. Is this really needed?
+So, do you suggest to move this macro to the canyonlands.c ? Or introduce
+canyonlands.h ?
 
-In addition, so large delays should use msleep() if possible (depends
-how early we are here).
-
-Cheers,
-Ben,
-
-> And I suggest to add a few comments to the code explaining why exactly you are 
-> setting/clearing the bits in the BCSR and the GPIO registers.
-
-Seconded,
-
-Cheers,
-Ben.
+Regards,
+Rup
