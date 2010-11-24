@@ -1,23 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2DF3B70B8
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Nov 2010 04:03:32 +1100 (EST)
+Return-Path: <David.Daney@caviumnetworks.com>
+Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
+	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id 4B80AB70A8
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Nov 2010 04:18:07 +1100 (EST)
+Message-ID: <4CED48CE.5060300@caviumnetworks.com>
+Date: Wed, 24 Nov 2010 09:18:06 -0800
+From: David Daney <ddaney@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Subject: RE: Mega rename of device tree routines from of_*() to dt_*()
-Date: Wed, 24 Nov 2010 09:02:18 -0800
-In-Reply-To: <1290607413.12457.44.camel@concordia>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: Mega rename of device tree routines from of_*() to dt_*()
 References: <1290607413.12457.44.camel@concordia>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: <michael@ellerman.id.au>, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <fa44e045-9600-4c46-939a-af246afab4f6@VA3EHSMHS019.ehs.local>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-mips <linux-mips@linux-mips.org>,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	microblaze-uclinux@itee.uq.edu.au
+	<fa44e045-9600-4c46-939a-af246afab4f6@VA3EHSMHS019.ehs.local>
+In-Reply-To: <fa44e045-9600-4c46-939a-af246afab4f6@VA3EHSMHS019.ehs.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-mips <linux-mips@linux-mips.org>, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXhwcGMtZGV2LWJv
-dW5jZXMrc3RlcGhlbj1uZXVlbmRvcmZmZXIubmFtZUBsaXN0cy5vemxhYnMub3JnIFttYWlsdG86
-bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK3N0ZXBoZW49bmV1ZW5kb3JmZmVyLm5hbWVAbGlzdHMu
-b3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIE1pY2hhZWwgRWxsZXJtYW4NCj4gU2VudDogV2VkbmVz
-ZGF5LCBOb3ZlbWJlciAyNCwgMjAxMCA2OjA0IEFNDQo+IFRvOiBMS01MDQo+IENjOiBsaW51eC1t
-aXBzOyBtaWNyb2JsYXplLXVjbGludXhAaXRlZS51cS5lZHUuYXU7IGRldmljZXRyZWUtZGlzY3Vz
-c0BsaXN0cy5vemxhYnMub3JnOyBsaW51eHBwYy1kZXYNCj4gbGlzdDsgc3BhcmNsaW51eEB2Z2Vy
-Lmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUkZDOiBNZWdhIHJlbmFtZSBvZiBkZXZpY2UgdHJlZSBy
-b3V0aW5lcyBmcm9tIG9mXyooKSB0byBkdF8qKCkNCj4gDQo+IEhpIGFsbCwNCj4gDQo+IFRoZXJl
-IHdlcmUgc29tZSBtdXJtdXJpbmdzIG9uIElSQyBsYXN0IHdlZWsgYWJvdXQgcmVuYW1pbmcgdGhl
-IG9mXyooKQ0KPiByb3V0aW5lcy4gSSB3YXMgcHJvY3Jhc3RpbmF0aW5nIGF0IHRoZSB0aW1lIGFu
-ZCBzYWlkIEknZCBoYXZlIGEgbG9vayBhdA0KPiBpdCwgc28gaGVyZSBJIGFtLg0KPiANCj4gVGhl
-IHRoaW5raW5nIGlzIHRoYXQgb24gbWFueSBwbGF0Zm9ybXMgdGhhdCB1c2UgdGhlIG9mXygpIHJv
-dXRpbmVzDQo+IE9wZW5GaXJtd2FyZSBpcyBub3QgaW52b2x2ZWQgYXQgYWxsLCB0aGlzIGlzIHRy
-dWUgZXZlbiBvbiBtYW55IHBvd2VycGMNCj4gcGxhdGZvcm1zLiBBbHNvIGZvciBmb2xrcyB3aG8g
-ZG9uJ3Qga25vdyB0aGUgT3BlbkZpcm13YXJlIGNvbm5lY3Rpb24gaXQNCj4gcmVhZHMgYXMgIm9m
-IiwgYXMgaW4gImEgY2FuIG9mIHdvcm1zIi4NCj4gDQo+IFBlcnNvbmFsbHkgSSdtIGEgYml0IGFt
-Yml2YWxlbnQgYWJvdXQgaXQsIHRoZSBPRiBuYW1lIGlzIGEgYml0IHdyb25nIHNvDQo+IGl0IHdv
-dWxkIGJlIG5pY2UgdG8gZ2V0IHJpZCBvZiwgYnV0IGl0J3MgYSBsb3Qgb2YgY2h1cm4uDQo+IA0K
-PiBTbyBJJ20gaG9waW5nIHBlb3BsZSB3aXRoIGVpdGhlciBzYXkgIllFUyB0aGlzIGlzIGEgZ3Jl
-YXQgaWRlYSIsIG9yICJOTw0KPiB0aGlzIGlzIHN0dXBpZCIuDQoNClBlcnNvbmFsbHksIEkgdGhp
-bmsgaXQncyBhIGdyZWF0IGlkZWEsIGlmIG9ubHkgYmVjYXVzZSBJIHN0YXJlZCBsb25nIGFuZCBo
-YXJkDQphdCB0aGUgY29kZSBvbmNlIHVwb24gYSB0aW1lIHRyeWluZyB0byBmaWd1cmUgb3V0IHdo
-YXQgaXMgcmVhbGx5IE9GLXJlbGF0ZWQNCmFuZCB3aGF0IGlzbid0LiAgSXQncyBzb21ld2hhdCBj
-bGVhcmVyIG5vdyB0aGF0IGRyaXZlcnMvb2YgaGFzIGJlZW4gZmFjdG9yZWQNCm91dCAoYWx0aG91
-Z2gsIHNob3VsZG4ndCBpdCBiZSBkcml2ZXJzL2R0Pz8/KQ0KDQpUaGF0IHNhaWQsIGl0ICppcyog
-YWxvdCBvZiBjb2RlIGNodXJuLiAgSWYgaXQncyBnb2luZyB0byBiZSBkb25lLCBJIHRoaW5rIGl0
-IHNob3VsZCBiZQ0KZG9uZSBpbiBjb25jZXJ0IHdpdGggZml4aW5nIGEgYnVuY2ggb2YgdGhlIGZ1
-bmN0aW9uIG5hbWVzIHdoaWNoIGRvbid0IHJlYWxseSBmb2xsb3cgYW55DQpzYW5lIG5hbWluZyBj
-b252ZW50aW9uLCBzbyB0aGF0IHRoZSBiYWNrcG9ydGluZyBkaXNjb250aW51aXR5IG9ubHkgaGFw
-cGVucyBvbmNlLg0KDQpTdGV2ZQ0KClRoaXMgZW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBhcmUg
-aW50ZW5kZWQgZm9yIHRoZSBzb2xlIHVzZSBvZiB0aGUgbmFtZWQgcmVjaXBpZW50KHMpIGFuZCBj
-b250YWluKHMpIGNvbmZpZGVudGlhbCBpbmZvcm1hdGlvbiB0aGF0IG1heSBiZSBwcm9wcmlldGFy
-eSwgcHJpdmlsZWdlZCBvciBjb3B5cmlnaHRlZCB1bmRlciBhcHBsaWNhYmxlIGxhdy4gSWYgeW91
-IGFyZSBub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwgZG8gbm90IHJlYWQsIGNvcHksIG9yIGZv
-cndhcmQgdGhpcyBlbWFpbCBtZXNzYWdlIG9yIGFueSBhdHRhY2htZW50cy4gRGVsZXRlIHRoaXMg
-ZW1haWwgbWVzc2FnZSBhbmQgYW55IGF0dGFjaG1lbnRzIGltbWVkaWF0ZWx5Lgo=
+On 11/24/2010 09:02 AM, Stephen Neuendorffer wrote:
+>
+>
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+stephen=neuendorffer.name@lists.ozlabs.org [mailto:linuxppc-dev-
+>> bounces+stephen=neuendorffer.name@lists.ozlabs.org] On Behalf Of Michael Ellerman
+>> Sent: Wednesday, November 24, 2010 6:04 AM
+>> To: LKML
+>> Cc: linux-mips; microblaze-uclinux@itee.uq.edu.au; devicetree-discuss@lists.ozlabs.org; linuxppc-dev
+>> list; sparclinux@vger.kernel.org
+>> Subject: RFC: Mega rename of device tree routines from of_*() to dt_*()
+>>
+>> Hi all,
+>>
+>> There were some murmurings on IRC last week about renaming the of_*()
+>> routines. I was procrastinating at the time and said I'd have a look at
+>> it, so here I am.
+>>
+>> The thinking is that on many platforms that use the of_() routines
+>> OpenFirmware is not involved at all, this is true even on many powerpc
+>> platforms. Also for folks who don't know the OpenFirmware connection it
+>> reads as "of", as in "a can of worms".
+>>
+>> Personally I'm a bit ambivalent about it, the OF name is a bit wrong so
+>> it would be nice to get rid of, but it's a lot of churn.
+>>
+>> So I'm hoping people with either say "YES this is a great idea", or "NO
+>> this is stupid".
+>
+> Personally, I think it's a great idea, if only because I stared long and hard
+> at the code once upon a time trying to figure out what is really OF-related
+> and what isn't.  It's somewhat clearer now that drivers/of has been factored
+> out (although, shouldn't it be drivers/dt???)
+>
+> That said, it *is* alot of code churn.  If it's going to be done, I think it should be
+> done in concert with fixing a bunch of the function names which don't really follow any
+> sane naming convention, so that the backporting discontinuity only happens once.
+>
+
+Oh, you mean things like:
+
+of_{,un}register_platform_driver vs. platform_driver_{,un}register
+
+That one is particularly annoying to me.
+
+David Daney
