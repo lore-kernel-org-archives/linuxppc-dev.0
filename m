@@ -1,18 +1,21 @@
-Return-Path: <dvomlehn@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6F75BB70AF
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Nov 2010 05:18:46 +1100 (EST)
-Date: Wed, 24 Nov 2010 10:18:26 -0800
-From: David VomLehn <dvomlehn@cisco.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: RFC: Mega rename of device tree routines from of_*() to dt_*()
-Message-ID: <20101124181825.GA17112@dvomlehn-lnx2.corp.sa.net>
-References: <1290607413.12457.44.camel@concordia>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from SG2EHSOBE001.bigfish.com (sg2ehsobe001.messaging.microsoft.com
+	[207.46.51.75]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 731B6B70A5
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Nov 2010 05:48:31 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1290607413.12457.44.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Subject: RE: Mega rename of device tree routines from of_*() to dt_*()
+Date: Wed, 24 Nov 2010 10:32:11 -0800
+In-Reply-To: <4CED48CE.5060300@caviumnetworks.com>
+References: <1290607413.12457.44.camel@concordia>
+	<fa44e045-9600-4c46-939a-af246afab4f6@VA3EHSMHS019.ehs.local>
+	<4CED48CE.5060300@caviumnetworks.com>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: David Daney <ddaney@caviumnetworks.com>
+Message-ID: <ee487d0b-ec9d-42a9-9c8e-39f83858cffc@SG2EHSMHS007.ehs.local>
 Cc: linux-mips <linux-mips@linux-mips.org>, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org
@@ -25,34 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 25, 2010 at 01:03:33AM +1100, Michael Ellerman wrote:
-> Hi all,
-> 
-> There were some murmurings on IRC last week about renaming the of_*()
-> routines. I was procrastinating at the time and said I'd have a look at
-> it, so here I am.
-> 
-> The thinking is that on many platforms that use the of_() routines
-> OpenFirmware is not involved at all, this is true even on many powerpc
-> platforms. Also for folks who don't know the OpenFirmware connection it
-> reads as "of", as in "a can of worms".
-> 
-> Personally I'm a bit ambivalent about it, the OF name is a bit wrong so
-> it would be nice to get rid of, but it's a lot of churn.
-> 
-> So I'm hoping people with either say "YES this is a great idea", or "NO
-> this is stupid".
-> 
-> As step one I've just renamed as many routines as I could find to see
-> what the resulting patch looks like, so we can quantify the churn. I
-> also did device.of_node, which is used quite a bit.
-> 
-> Thoughts?
-
-I'm looking at it the other way. There are inconsistencies in naming of
-symbols and files we definitely should clean up. Since we're doing that,
-let's take the opportunity to move from of* to dt*. With multiple
-architectures adding device tree support, this is about the last chance
-to do this without impacting too many people.
--- 
-David VL
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGF2aWQgRGFuZXkgW21h
+aWx0bzpkZGFuZXlAY2F2aXVtbmV0d29ya3MuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIE5vdmVt
+YmVyIDI0LCAyMDEwIDk6MTggQU0NCj4gVG86IFN0ZXBoZW4gTmV1ZW5kb3JmZmVyDQo+IENjOiBt
+aWNoYWVsQGVsbGVybWFuLmlkLmF1OyBMS01MOyBsaW51eC1taXBzOyBtaWNyb2JsYXplLXVjbGlu
+dXhAaXRlZS51cS5lZHUuYXU7IGRldmljZXRyZWUtDQo+IGRpc2N1c3NAbGlzdHMub3psYWJzLm9y
+ZzsgbGludXhwcGMtZGV2IGxpc3Q7IHNwYXJjbGludXhAdmdlci5rZXJuZWwub3JnDQo+IFN1Ympl
+Y3Q6IFJlOiBNZWdhIHJlbmFtZSBvZiBkZXZpY2UgdHJlZSByb3V0aW5lcyBmcm9tIG9mXyooKSB0
+byBkdF8qKCkNCj4gDQo+IE9uIDExLzI0LzIwMTAgMDk6MDIgQU0sIFN0ZXBoZW4gTmV1ZW5kb3Jm
+ZmVyIHdyb3RlOg0KPiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
+Pj4gRnJvbTogbGludXhwcGMtZGV2LWJvdW5jZXMrc3RlcGhlbj1uZXVlbmRvcmZmZXIubmFtZUBs
+aXN0cy5vemxhYnMub3JnIFttYWlsdG86bGludXhwcGMtZGV2LQ0KPiA+PiBib3VuY2VzK3N0ZXBo
+ZW49bmV1ZW5kb3JmZmVyLm5hbWVAbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIE1pY2hh
+ZWwgRWxsZXJtYW4NCj4gPj4gU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAyNCwgMjAxMCA2OjA0
+IEFNDQo+ID4+IFRvOiBMS01MDQo+ID4+IENjOiBsaW51eC1taXBzOyBtaWNyb2JsYXplLXVjbGlu
+dXhAaXRlZS51cS5lZHUuYXU7IGRldmljZXRyZWUtZGlzY3Vzc0BsaXN0cy5vemxhYnMub3JnOyBs
+aW51eHBwYy0NCj4gZGV2DQo+ID4+IGxpc3Q7IHNwYXJjbGludXhAdmdlci5rZXJuZWwub3JnDQo+
+ID4+IFN1YmplY3Q6IFJGQzogTWVnYSByZW5hbWUgb2YgZGV2aWNlIHRyZWUgcm91dGluZXMgZnJv
+bSBvZl8qKCkgdG8gZHRfKigpDQo+ID4+DQo+ID4+IEhpIGFsbCwNCj4gPj4NCj4gPj4gVGhlcmUg
+d2VyZSBzb21lIG11cm11cmluZ3Mgb24gSVJDIGxhc3Qgd2VlayBhYm91dCByZW5hbWluZyB0aGUg
+b2ZfKigpDQo+ID4+IHJvdXRpbmVzLiBJIHdhcyBwcm9jcmFzdGluYXRpbmcgYXQgdGhlIHRpbWUg
+YW5kIHNhaWQgSSdkIGhhdmUgYSBsb29rIGF0DQo+ID4+IGl0LCBzbyBoZXJlIEkgYW0uDQo+ID4+
+DQo+ID4+IFRoZSB0aGlua2luZyBpcyB0aGF0IG9uIG1hbnkgcGxhdGZvcm1zIHRoYXQgdXNlIHRo
+ZSBvZl8oKSByb3V0aW5lcw0KPiA+PiBPcGVuRmlybXdhcmUgaXMgbm90IGludm9sdmVkIGF0IGFs
+bCwgdGhpcyBpcyB0cnVlIGV2ZW4gb24gbWFueSBwb3dlcnBjDQo+ID4+IHBsYXRmb3Jtcy4gQWxz
+byBmb3IgZm9sa3Mgd2hvIGRvbid0IGtub3cgdGhlIE9wZW5GaXJtd2FyZSBjb25uZWN0aW9uIGl0
+DQo+ID4+IHJlYWRzIGFzICJvZiIsIGFzIGluICJhIGNhbiBvZiB3b3JtcyIuDQo+ID4+DQo+ID4+
+IFBlcnNvbmFsbHkgSSdtIGEgYml0IGFtYml2YWxlbnQgYWJvdXQgaXQsIHRoZSBPRiBuYW1lIGlz
+IGEgYml0IHdyb25nIHNvDQo+ID4+IGl0IHdvdWxkIGJlIG5pY2UgdG8gZ2V0IHJpZCBvZiwgYnV0
+IGl0J3MgYSBsb3Qgb2YgY2h1cm4uDQo+ID4+DQo+ID4+IFNvIEknbSBob3BpbmcgcGVvcGxlIHdp
+dGggZWl0aGVyIHNheSAiWUVTIHRoaXMgaXMgYSBncmVhdCBpZGVhIiwgb3IgIk5PDQo+ID4+IHRo
+aXMgaXMgc3R1cGlkIi4NCj4gPg0KPiA+IFBlcnNvbmFsbHksIEkgdGhpbmsgaXQncyBhIGdyZWF0
+IGlkZWEsIGlmIG9ubHkgYmVjYXVzZSBJIHN0YXJlZCBsb25nIGFuZCBoYXJkDQo+ID4gYXQgdGhl
+IGNvZGUgb25jZSB1cG9uIGEgdGltZSB0cnlpbmcgdG8gZmlndXJlIG91dCB3aGF0IGlzIHJlYWxs
+eSBPRi1yZWxhdGVkDQo+ID4gYW5kIHdoYXQgaXNuJ3QuICBJdCdzIHNvbWV3aGF0IGNsZWFyZXIg
+bm93IHRoYXQgZHJpdmVycy9vZiBoYXMgYmVlbiBmYWN0b3JlZA0KPiA+IG91dCAoYWx0aG91Z2gs
+IHNob3VsZG4ndCBpdCBiZSBkcml2ZXJzL2R0Pz8/KQ0KPiA+DQo+ID4gVGhhdCBzYWlkLCBpdCAq
+aXMqIGFsb3Qgb2YgY29kZSBjaHVybi4gIElmIGl0J3MgZ29pbmcgdG8gYmUgZG9uZSwgSSB0aGlu
+ayBpdCBzaG91bGQgYmUNCj4gPiBkb25lIGluIGNvbmNlcnQgd2l0aCBmaXhpbmcgYSBidW5jaCBv
+ZiB0aGUgZnVuY3Rpb24gbmFtZXMgd2hpY2ggZG9uJ3QgcmVhbGx5IGZvbGxvdyBhbnkNCj4gPiBz
+YW5lIG5hbWluZyBjb252ZW50aW9uLCBzbyB0aGF0IHRoZSBiYWNrcG9ydGluZyBkaXNjb250aW51
+aXR5IG9ubHkgaGFwcGVucyBvbmNlLg0KPiA+DQo+IA0KPiBPaCwgeW91IG1lYW4gdGhpbmdzIGxp
+a2U6DQo+IA0KPiBvZl97LHVufXJlZ2lzdGVyX3BsYXRmb3JtX2RyaXZlciB2cy4gcGxhdGZvcm1f
+ZHJpdmVyX3ssdW59cmVnaXN0ZXINCj4gDQo+IFRoYXQgb25lIGlzIHBhcnRpY3VsYXJseSBhbm5v
+eWluZyB0byBtZS4NCj4gDQo+IERhdmlkIERhbmV5DQoNCkFjdHVhbGx5LCBJIHdhcyBwYXJ0aWN1
+bGFybHkgdGhpbmtpbmcgb2YgZHJpdmVycy9vZi9mZHQuYywgd2hpY2ggSSB3YXMgcmVjZW50bHkg
+aGFja2luZyBhcm91bmQgd2l0aCwNCmJ1dCBJJ20gc3VyZSB0aGVyZSBhcmUgb3RoZXJzLi4uIDop
+DQoNClN0ZXZlDQoKVGhpcyBlbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRzIGFyZSBpbnRlbmRlZCBm
+b3IgdGhlIHNvbGUgdXNlIG9mIHRoZSBuYW1lZCByZWNpcGllbnQocykgYW5kIGNvbnRhaW4ocykg
+Y29uZmlkZW50aWFsIGluZm9ybWF0aW9uIHRoYXQgbWF5IGJlIHByb3ByaWV0YXJ5LCBwcml2aWxl
+Z2VkIG9yIGNvcHlyaWdodGVkIHVuZGVyIGFwcGxpY2FibGUgbGF3LiBJZiB5b3UgYXJlIG5vdCB0
+aGUgaW50ZW5kZWQgcmVjaXBpZW50LCBkbyBub3QgcmVhZCwgY29weSwgb3IgZm9yd2FyZCB0aGlz
+IGVtYWlsIG1lc3NhZ2Ugb3IgYW55IGF0dGFjaG1lbnRzLiBEZWxldGUgdGhpcyBlbWFpbCBtZXNz
+YWdlIGFuZCBhbnkgYXR0YWNobWVudHMgaW1tZWRpYXRlbHkuCg==
