@@ -1,17 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1B9D5B70DA
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Nov 2010 01:23:47 +1100 (EST)
-To: Rupjyoti Sarmah <rsarmah@amcc.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v3] ppc44x:PHY fixup for USB on canyonlands board
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <201011261110.oAQBANZL012455@amcc.com>
+Return-Path: <rsarmah@apm.com>
+Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
+	by ozlabs.org (Postfix) with SMTP id 6C945B70B8
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Nov 2010 02:32:41 +1100 (EST)
+Received: by mail-wy0-f182.google.com with SMTP id 19so2171903wyf.41
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Nov 2010 07:32:38 -0800 (PST)
+From: Rupjyoti Sarmah <rsarmah@apm.com>
 References: <201011261110.oAQBANZL012455@amcc.com>
-Date: Fri, 26 Nov 2010 15:23:42 +0100
-Message-Id: <20101126142342.E05A411D94F1@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, rsarmah@apm.com, linux-kernel@vger.kernel.org
+	<20101126142342.E05A411D94F1@gemini.denx.de>
+In-Reply-To: <20101126142342.E05A411D94F1@gemini.denx.de>
+MIME-Version: 1.0
+Date: Fri, 26 Nov 2010 21:02:36 +0530
+Message-ID: <ade8814261339ab5028557ae3dc15c0b@mail.gmail.com>
+Subject: RE: [PATCH v3] ppc44x:PHY fixup for USB on canyonlands board
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,72 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Rupjyoti Sarmah,
+Hi Wolfgang,
 
-In message <201011261110.oAQBANZL012455@amcc.com> you wrote:
->
-> +				cpld@2,0 {
-> +					#address-cells = <1>;
-> +					#size-cells = <1>;
-> +					compatible = "apm,ppc460ex-bcsr";
+>> This results in a mix of "amcc," and "apm," strings.
+>> Are there any plans to unify this?
+We can make all as apm, but right now I believe there is no plan to do so.
 
-This results in a mix of "amcc," and "apm," strings.
+>>Earlier versions of the patch included a delay after the clrbits8()
+>>call as well. Is it intentional that you dropped this now?
+It is dropped intentionally.
 
-Are there any plans to unify this?
+Rest of your suggestions, I will modify and resubmit. Thanks.
 
-
-> diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
-> new file mode 100644
-> index 0000000..61e80ce
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/44x/canyonlands.c
-> @@ -0,0 +1,120 @@
-> +/*
-> + * This contain platform specific code for Canyonlands board based on
-> + * APM ppc44x series of processors.
-
-Canyonlands is always PPC460EX, or does it ever come with other
-processors as well?
-
-> +static int __init ppc44x_probe(void)
-> +{
-> +	unsigned long root = of_get_flat_dt_root();
-> +		if (of_flat_dt_is_compatible(root, "amcc,canyonlands")) {
-> +			ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
-> +			return 1;
-> +		}
-> +	return 0;
-> +}
-
-Bad indentation.
-
-> +	/* Disable USB, through the BCSR7 bits */
-> +	setbits8(&bcsr[7], BCSR_USB_EN);
-> +
-> +	/* Wait for a while after reset */
-> +	msleep(100);
-> +
-> +	/* Enable USB here */
-> +	clrbits8(&bcsr[7], BCSR_USB_EN);
-> +
-> +	/*
-> +	 * Configure multiplexed gpio16 and gpio19 as alternate1 output
-> +	 * source after USB reset.This configuration is done through GPIO0_TSRH
-> +	 * and GPIO0_OSRH bits 0:1 and 6:7.
-> +	 */
-
-Earlier versions of the patch included a delay after the clrbits8()
-call as well. Is it intentional that you dropped this now?
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Every program has at least one bug and can be shortened by  at  least
-one instruction - from which, by induction, one can deduce that every
-program can be reduced to one instruction which doesn't work.
+Regards,
+Rup
