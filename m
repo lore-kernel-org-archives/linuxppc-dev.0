@@ -1,18 +1,22 @@
-Return-Path: <sailingsmoky@googlemail.com>
-Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
-	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id E23DCB70D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 28 Nov 2010 00:31:19 +1100 (EST)
-Received: by ewy19 with SMTP id 19so1331380ewy.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Nov 2010 05:31:16 -0800 (PST)
-Message-ID: <4CF10819.4050007@crane-soft.de>
-Date: Sat, 27 Nov 2010 14:31:05 +0100
-From: Peter <sailingsmoky@googlemail.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 0B258B70A9
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Nov 2010 11:24:56 +1100 (EST)
+Received: from frontend1.mail.m-online.net (frontend1.mail.intern.m-online.net
+	[192.168.8.180])
+	by mail-out.m-online.net (Postfix) with ESMTP id DF760186DEF4
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Nov 2010 01:24:53 +0100 (CET)
+Received: from igel.home (ppp-88-217-99-182.dynamic.mnet-online.de
+	[88.217.99.182])
+	by mail.mnet-online.de (Postfix) with ESMTP id 4FDE71C001AC
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Nov 2010 01:24:53 +0100 (CET)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: fix PPC_PTRACE_SETHWDEBUG on PPC_BOOK3S
+Date: Sun, 28 Nov 2010 01:24:53 +0100
+Message-ID: <m2y68expka.fsf@igel.home>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: PHY/FEC Network adapter failed to initialize on MPC52xx Board
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,113 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all
+Properly set the DABR_TRANSLATION/DABR_DATA_READ/DABR_DATA_READ bits in
+the dabr when setting the debug register via PPC_PTRACE_SETHWDEBUG.  Also
+don't reject trigger type of PPC_BREAKPOINT_TRIGGER_READ.
 
-I got completely stuck with a network adapter problem on my
-ppc board (MPC52xx style). The ntwork adapter does not seem
-to intialize correctly when booted without 'help from uboot'
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/kernel/ptrace.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
 
-The adapter works properly when I first use it with uboot. E.g.
-using tftp to load the kernel or just issuing a dummy sntp
-command. It does not get intialized if I boot linux without
-using any network relevant command in ubboot
-
-The difference manifests on the boot message: (working)
-PHY working
-...
-mpc52xx MII bus: probed
-TCP cubic registered
-NET: Registered protocol family 17
-IP-Config: Complete:
-     device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
-     host=192.168.1.245, domain=, nis-domain=(none),
-     bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
-Looking up port of RPC 100003/2 on 192.168.1.244
-Looking up port of RPC 100005/1 on 192.168.1.244
-VFS: Mounted root (nfs filesystem) on device 0:11.
-Freeing unused kernel memory: 124k init
-PHY: f0003000:00 - Link is Up - 100/Full
-
-# ping 192.168.1.2  returns proper results.
-
-PHY Not working:
-...
-mpc52xx MII bus: probed
-TCP cubic registered
-NET: Registered protocol family 17
-IP-Config: Complete:
-     device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
-     host=192.168.1.245, domain=, nis-domain=(none),
-     bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
-VFS: Mounted root (squashfs filesystem) readonly on device 31:3.
-Freeing unused kernel memory: 124k init
-
-# ping 192.168.1.2  hangs
-
-
-The second snipped does not have "Looking up.." messages because it
-boots from flash. Main difference is "PHY: f0003000:00 - Link is Up - 100/Full"
-which does not appear at the failing case.
-
-Linux Version is 2.6.35.7 patched with xenomai 2.5
-U-Boot 2010.06 (Aug 05 2010 - 19:54:45)
-
-Linux configuration see below: ( i left most entries out that are not set)
-I also experimented with different settings but finally only
-CONFIG_FEC_MPC52xx=y  and CONFIG_FEC_MPC52xx_MDIO=y
-seem to be of any relevance. If both are set, the adapter works
-when initialized by uboot.
-
-Any help or tips will be very much appreciated,
-
-Regards, Peter
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index a9b3296..9065369 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1316,6 +1316,10 @@ static int set_dac_range(struct task_struct *child,
+ static long ppc_set_hwdebug(struct task_struct *child,
+ 		     struct ppc_hw_breakpoint *bp_info)
+ {
++#ifndef CONFIG_PPC_ADV_DEBUG_REGS
++	unsigned long dabr;
++#endif
++
+ 	if (bp_info->version != 1)
+ 		return -ENOTSUPP;
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+@@ -1353,11 +1357,10 @@ static long ppc_set_hwdebug(struct task_struct *child,
+ 	/*
+ 	 * We only support one data breakpoint
+ 	 */
+-	if (((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0) ||
+-	    ((bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0) ||
+-	    (bp_info->trigger_type != PPC_BREAKPOINT_TRIGGER_WRITE) ||
+-	    (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) ||
+-	    (bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE))
++	if ((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0 ||
++	    (bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0 ||
++	    bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT ||
++	    bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE)
+ 		return -EINVAL;
+ 
+ 	if (child->thread.dabr)
+@@ -1366,7 +1369,14 @@ static long ppc_set_hwdebug(struct task_struct *child,
+ 	if ((unsigned long)bp_info->addr >= TASK_SIZE)
+ 		return -EIO;
+ 
+-	child->thread.dabr = (unsigned long)bp_info->addr;
++	dabr = (unsigned long)bp_info->addr & ~7UL;
++	dabr |= DABR_TRANSLATION;
++	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
++		dabr |= DABR_DATA_READ;
++	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
++		dabr |= DABR_DATA_WRITE;
++
++	child->thread.dabr = dabr;
+ 
+ 	return 1;
+ #endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
+-- 
+1.7.3.2
 
 
-Linux .config
-
-...
-#
-# Platform support
-#
-# CONFIG_PPC_CHRP is not set
-# CONFIG_MPC5121_ADS is not set
-# CONFIG_MPC5121_GENERIC is not set
-CONFIG_PPC_MPC52xx=y
-CONFIG_PPC_MPC5200_SIMPLE=y
-# CONFIG_PPC_EFIKA is not set
-CONFIG_PPC_LITE5200=y
-# CONFIG_PPC_MEDIA5200 is not set
-CONFIG_PPC_MPC5200_BUGFIX=y
-# CONFIG_PPC_MPC5200_GPIO is not set
-CONFIG_PPC_MPC5200_LPBFIFO=y
-
-CONFIG_PPC_BESTCOMM=y
-CONFIG_PPC_BESTCOMM_FEC=y
-CONFIG_PPC_BESTCOMM_GEN_BD=y
-# CONFIG_SIMPLE_GPIO is not set
-..
-# Bus options
-#
-CONFIG_ZONE_DMA=y
-CONFIG_NEED_SG_DMA_LENGTH=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_PPC_PCI_CHOICE=y
-...
-#
-# Generic Driver Options
-#
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_MTD=y
-CONFIG_MTD_PARTITIONS=y
-CONFIG_MTD_CMDLINE_PARTS=y
-
-#
-# MII PHY device drivers
-#
-CONFIG_LXT_PHY=y                        ## Does not seem to have any influence
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_ETHOC=y                           ## Does not seem to have any influence
-CONFIG_FEC_MPC52xx=y              ## Must be Y in roder to get adapter working with uboot's init
-CONFIG_FEC_MPC52xx_MDIO=y  ## Must be Y in roder to get adapter working with uboot's init
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
