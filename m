@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1293B70DE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 29 Nov 2010 16:45:04 +1100 (EST)
-Subject: Re: Pegasos OHCI bug (was Re: PROBLEM: memory corrupting bug,
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: pacman@kosh.dhis.org
-In-Reply-To: <20101105064332.1678.qmail@kosh.dhis.org>
-References: <20101105064332.1678.qmail@kosh.dhis.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 29 Nov 2010 16:44:52 +1100
-Message-ID: <1291009492.32570.294.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 29 Nov 2010 16:55:29 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: RFC: Mega rename of device tree routines from of_*() to dt_*()
+Message-ID: <20101129055529.GB17113@yookeroo>
+References: <1290607413.12457.44.camel@concordia>
+	<1290692075.689.20.camel@concordia>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+In-Reply-To: <1290692075.689.20.camel@concordia>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+	linux-mips <linux-mips@linux-mips.org>, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,154 +24,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> I have a mostly-finished patch to do the above. I'll include it below, but
-> first a few words about why it's only mostly finished.
-> 
-> The other Pegasos workarounds are in fixup_device_tree_chrp, and I don't see
-> anything like an "if(machine_is_pegasos)" around them. What keeps them from
-> being erroneously run on other CHRP-type machines? I made this patch mainly
-> by copying pieces of other functions from prom_init.c, but couldn't find the
-> "test for Pegasos before running a Pegasos workaround" piece.
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Probably bcs the condition they test for really only happens on
-pegasos ? :-)
+On Fri, Nov 26, 2010 at 12:34:35AM +1100, Michael Ellerman wrote:
+> On Thu, 2010-11-25 at 01:03 +1100, Michael Ellerman wrote:
+> > Hi all,
+> >=20
+> > There were some murmurings on IRC last week about renaming the of_*()
+> > routines.
+> ...
+> > The thinking is that on many platforms that use the of_() routines
+> > OpenFirmware is not involved at all, this is true even on many powerpc
+> > platforms. Also for folks who don't know the OpenFirmware connection
+> > it reads as "of", as in "a can of worms".
+> ...
+> > So I'm hoping people with either say "YES this is a great idea", or "NO
+> > this is stupid".
+>=20
+> I'm still hoping, but so far it seems most people have got better things
+> to do, and of those that do have an opinion the balance is slightly
+> positive.
+>=20
+> So here's a first cut of a patch to add the new names. I've not touched
+> of_platform because that is supposed to go away. That will lead to some
+> odd looking code in the interim, but I think is the right approach.
+>=20
+> Most of these are straight renames, but some have changed more
+> substantially. The routines for the flat tree have all become fdt_foo().
 
-I agree it's a bit gross tho.
+I'm a little uneasy about using the same prefix as libfdt (fdt_foo())
+for routines that have a different implementation and different names
+/ semantics to the libfdt routines.
 
-The "ranges" property fixup is pretty harmless in any case. The other
-fixup might be worth moving to a separate pegasos-only function in which
-you would test for a pegasos properly and add your own stuff.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-> Another issue is, since the firmware doesn't give me a "compatible" property
-> with the details of the controller, I just have to assume that it's
-> little-endian. I'm not sure if that's clean, since the real ohci driver
-> supports both endiannesses, with at least 3 different Kconfig options(!) to
-> choose between them.
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-If it's PCI it's LE or somebody needs to be shot :-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> Then there's the volatile which I guess is supposed to be replaced by
-> something else, but I don't know what the something else is. I believe this
-> usage is extremely close to what volatile was meant for.
+iEYEARECAAYFAkzzQFAACgkQaILKxv3ab8aptgCfdeFXAx2mw0aSkvLCjjeK6/in
+bxcAn3B5S1BtG710FZ0hXoDDeRVuyxjk
+=0pcc
+-----END PGP SIGNATURE-----
 
-Yeah, it's fine, just add something like that on the next line:
-
- asm volatile("eieio" : : : "memory");
-
-> Finally, when I updated to a more recent upstream kernel to test the patch, I
-> found that an intervening commit (3df7169e73fc1d71a39cffeacc969f6840cdf52b,
-> OHCI: work around for nVidia shutdown problem) has had a major effect,
-> on the appearance of my bug.
-> 
-> Before that change, the window in which the bug could strike was from the end
-> of prom_init (when the kernel believes that devices are quiescent) to the
-> initialization of the ohci-hcd driver (which actually quietens the device, or
-> at least directs its scribbling to a properly allocated page). After the
-> change, the window ends at some point early in the PCI bus setup. That's a
-> window so small that with a new kernel, I can't provoke a symptom even if I
-> try.
-
-Right but it's very fishy, ie, it may still be DMA'ing and god knows
-where ... you may or may not get lucky. I'd rather you do a proper
-fixup :-)
-
-Cheers,
-Ben.
-
-> Mostly-finished patch:
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 941ff4d..a14f21b 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -2237,6 +2237,81 @@ static void __init fixup_device_tree_chrp(void)
->  		}
->  	}
->  }
-> +
-> +/*
-> + * Pegasos firmware doesn't quiesce OHCI controllers, so do it manually
-> + */
-> +static void __init pegasos_quiesce(void)
-> +{
-> +	phandle node, parent_node;
-> +	ihandle parent_ih;
-> +	int rc;
-> +	char type[16], *path;
-> +	u32 prop[5], map_size;
-> +	prom_arg_t ohci_virt;
-> +
-> +	for (node = 0; prom_next_node(&node); ) {
-> +		memset(type, 0, sizeof(type));
-> +		prom_getprop(node, "device_type", type, sizeof(type));
-> +		if (strcmp(type, RELOC("usb")) != 0)
-> +			continue;
-> +
-> +		/* Parent should be a PCI bus (so class-code makes sense).
-> +		   class-code should be 0x0C0310 */
-> +		parent_node = call_prom("parent", 1, 1, node);
-> +		if (!parent_node)
-> +			continue;
-> +		rc = prom_getprop(node, "class-code", prop, sizeof(u32));
-> +		if (rc != sizeof(u32) || prop[0] != 0x0c0310)
-> +			continue;
-> +
-> +		rc = prom_getprop(node, "assigned-addresses",
-> +				  prop, 5*sizeof(u32));
-> +		if (rc != 5*sizeof(u32))
-> +			continue;
-> +
-> +		/* Open the parent and call map-in */
-> +
-> +		/* It seems OF doesn't null-terminate the path :-( */
-> +		path = RELOC(prom_scratch);
-> +		memset(path, 0, PROM_SCRATCH_SIZE);
-> +
-> +		if (call_prom("package-to-path", 3, 1, parent_node,
-> +			      path, PROM_SCRATCH_SIZE-1) == PROM_ERROR)
-> +			continue;
-> +		parent_ih = call_prom("open", 1, 1, path);
-> +
-> +		/* Get the OHCI node's pathname, for printing later */
-> +		memset(path, 0, PROM_SCRATCH_SIZE);
-> +		call_prom("package-to-path", 3, 1, node,
-> +			  path, PROM_SCRATCH_SIZE-1);
-> +
-> +		map_size = prop[4];
-> +		if (call_prom_ret("call-method", 6, 2, &ohci_virt,
-> +				  ADDR("map-in"), parent_ih,
-> +				  map_size, prop[0], prop[1], prop[2]) == 0) {
-> +			prom_printf("resetting OHCI device %s...", path);
-> +
-> +			/* Set HostControllerReset (==1) in HcCommandStatus,
-> +			 * located at offset 8 in the register area. The <<24
-> +			 * is because the CPU is big-endian and the device is
-> +			 * little-endian. */
-> +			*(volatile u32 *)(ohci_virt + 8) |= (1<<24);
-> +
-> +			/* controller should acknowledge by zeroing the bit
-> +			 * within 10us. waiting 1ms should be plenty. */
-> +			call_prom("interpret", 1, 1, "1 ms");
-> +			if (*(volatile u32 *)(ohci_virt + 8) & (1<<24))
-> +				prom_printf("failed\n");
-> +			else
-> +				prom_printf("done\n");
-> +
-> +			call_prom("call-method", 4, 1, ADDR("map-out"),
-> +				  parent_ih, map_size, ohci_virt);
-> +		}
-> +		call_prom("close", 1, 0, parent_ih);
-> +	}
-> +}
->  #else
->  #define fixup_device_tree_chrp()
->  #endif
-> @@ -2642,6 +2717,7 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
->  	 * devices etc...
->  	 */
->  	prom_printf("Calling quiesce...\n");
-> +	pegasos_quiesce();
->  	call_prom("quiesce", 0, 0);
->  
->  	/*
-> 
+--LZvS9be/3tNcYl/X--
