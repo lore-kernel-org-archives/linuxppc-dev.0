@@ -1,32 +1,18 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D5FD71007D1
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2010 18:22:43 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id oAT7IRwR006381
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2010 18:18:27 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oAT7Mdn61667326
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2010 18:22:39 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oAT7McZ8000968
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2010 18:22:39 +1100
-Date: Mon, 29 Nov 2010 12:52:33 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Andreas Schwab <schwab@linux-m68k.org>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 369B41007D2
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Nov 2010 21:15:54 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: prasad@linux.vnet.ibm.com
 Subject: Re: ppc_set_hwdebug vs ptrace_set_debugreg
-Message-ID: <20101129072233.GA15560@in.ibm.com>
-References: <m2lj4ezhhd.fsf@igel.home>
+References: <m2lj4ezhhd.fsf@igel.home> <20101129072233.GA15560@in.ibm.com>
+Date: Mon, 29 Nov 2010 11:15:51 +0100
+In-Reply-To: <20101129072233.GA15560@in.ibm.com> (K. Prasad's message of "Mon,
+	29 Nov 2010 12:52:33 +0530")
+Message-ID: <m38w0c77vs.fsf@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m2lj4ezhhd.fsf@igel.home>
 Cc: linuxppc-dev@ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,26 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 27, 2010 at 08:36:30PM +0100, Andreas Schwab wrote:
-> Why does ptrace_set_debugreg call register_user_hw_breakpoint, but
-> ppc_set_hwdebug doesn't?  Shouldn't ppc_set_hwdebug set the
-> DABR_DATA_(READ|WRITE|TRANSLATION) bits in the dabr?
-> 
-> Andreas.
+"K.Prasad" <prasad@linux.vnet.ibm.com> writes:
 
-The hw-breakpoint interfaces were initially planned for the old ptrace
-option PTRACE_SET_DEBUGREG,while, the newer ptrace options are mostly
-to exploit the advanced debug features of Book3E processors.
+> Although ppc_set_hwdebug() can set DABR through set_dabr() in
+> arch/powerpc/kernel/process.c, it is good to have it converted to use
+> register_user_hw_breakpoint().
 
-Although ppc_set_hwdebug() can set DABR through set_dabr() in
-arch/powerpc/kernel/process.c, it is good to have it converted to use
-register_user_hw_breakpoint(). This was planned to be done alongside the
-conversion of all ptrace options enabled by CONFIG_PPC_ADV_DEBUG_REGS,
-which is yet to be done.
+What do you mean with "good to have"?  It doesn't work without it unless
+I disable PERF_EVENTS (which is the only way to disable
+HAVE_HW_BREAKPOINT).
 
-Are you looking to use debug registers through perf, or somesuch, that
-you need register_user_hw_breakpoint() to be used for these new ptrace
-flags?
+Andreas.
 
-Thanks,
-K.Prasad
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
