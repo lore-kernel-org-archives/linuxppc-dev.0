@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A168C1007D7
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 44DB1B70A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 29 Nov 2010 13:44:59 +1100 (EST)
-Subject: Re: [RFC PATCH 3/7 v2] ppc: do not search for dma-window property
-	on dlpar remove
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <1288150518-4026-4-git-send-email-nacc@us.ibm.com>
-References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
-	<1288150518-4026-4-git-send-email-nacc@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 29 Nov 2010 12:38:41 +1100
-Message-ID: <1290994721.32570.219.camel@pasglop>
-Mime-Version: 1.0
-Cc: sonnyrao@us.ibm.com, miltonm@bga.com, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+	Mon, 29 Nov 2010 13:49:21 +1100 (EST)
+Message-ID: <4CF31492.7040809@windriver.com>
+Date: Mon, 29 Nov 2010 10:48:50 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Peter <sailingsmoky@googlemail.com>
+Subject: Re: PHY/FEC Network adapter failed to initialize on MPC52xx Board
+References: <4CF10819.4050007@crane-soft.de>
+In-Reply-To: <4CF10819.4050007@crane-soft.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +25,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-10-26 at 20:35 -0700, Nishanth Aravamudan wrote:
-> The iommu_table pointer in the pci auxiliary struct of device_node has
-> not been used by the iommu ops since the dma refactor of
-> 12d04eef927bf61328af2c7cbe756c96f98ac3bf, however this code still uses
-> it to find tables for dlpar. By only setting the PCI_DN iommu_table
-> pointer on nodes with dma window properties, we will be able to quickly
-> find the node for later checks, and can remove the table without looking
-> for the the dma window property on dlpar remove.
-
-The answer might well be yes but are we sure this works with busses &
-devices that don't have a dma,window ? ie. we always properly look for
-parents when assigning pci devices arch_data iommu table ? Did you test
-it ? :-) (Best way is to find a card with a P2P bridge on it).
-
-Cheers,
-Ben. 
-
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/iommu.c |    6 +-----
->  1 files changed, 1 insertions(+), 5 deletions(-)
+Peter wrote:
+> Hi all
 > 
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 9184db3..8ab32da 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -455,9 +455,6 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
->  		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
->  		pr_debug("  created table: %p\n", ppci->iommu_table);
->  	}
-> -
-> -	if (pdn != dn)
-> -		PCI_DN(dn)->iommu_table = ppci->iommu_table;
->  }
->  
-> @@ -571,8 +568,7 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
->  
->  	switch (action) {
->  	case PSERIES_RECONFIG_REMOVE:
-> -		if (pci && pci->iommu_table &&
-> -		    of_get_property(np, "ibm,dma-window", NULL))
-> +		if (pci && pci->iommu_table)
->  			iommu_free_table(pci->iommu_table, np->full_name);
->  		break;
->  	default:
+> I got completely stuck with a network adapter problem on my
+> ppc board (MPC52xx style). The ntwork adapter does not seem
+> to intialize correctly when booted without 'help from uboot'
+> 
+
+Looks your problem is very similar to one I replied here not long ago :) That is
+also issued from MPC5200. And I remember there was a wrong Port Multiplex
+Configuration.
+
+If possible maybe you can check the email subjected "Problem Ethernet
+Initialization MPC5200 +  LXT971A" on linuxppc-dev list.
+
+Hope its useful.
+
+Tiejun
+
+> The adapter works properly when I first use it with uboot. E.g.
+> using tftp to load the kernel or just issuing a dummy sntp
+> command. It does not get intialized if I boot linux without
+> using any network relevant command in ubboot
+> 
+> The difference manifests on the boot message: (working)
+> PHY working
+> ...
+> mpc52xx MII bus: probed
+> TCP cubic registered
+> NET: Registered protocol family 17
+> IP-Config: Complete:
+>      device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
+>      host=192.168.1.245, domain=, nis-domain=(none),
+>      bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
+> Looking up port of RPC 100003/2 on 192.168.1.244
+> Looking up port of RPC 100005/1 on 192.168.1.244
+> VFS: Mounted root (nfs filesystem) on device 0:11.
+> Freeing unused kernel memory: 124k init
+> PHY: f0003000:00 - Link is Up - 100/Full
+> 
+> # ping 192.168.1.2  returns proper results.
+> 
+> PHY Not working:
+> ...
+> mpc52xx MII bus: probed
+> TCP cubic registered
+> NET: Registered protocol family 17
+> IP-Config: Complete:
+>      device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
+>      host=192.168.1.245, domain=, nis-domain=(none),
+>      bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
+> VFS: Mounted root (squashfs filesystem) readonly on device 31:3.
+> Freeing unused kernel memory: 124k init
+> 
+> # ping 192.168.1.2  hangs
+> 
+> 
+> The second snipped does not have "Looking up.." messages because it
+> boots from flash. Main difference is "PHY: f0003000:00 - Link is Up - 100/Full"
+> which does not appear at the failing case.
+> 
+> Linux Version is 2.6.35.7 patched with xenomai 2.5
+> U-Boot 2010.06 (Aug 05 2010 - 19:54:45)
+> 
+> Linux configuration see below: ( i left most entries out that are not set)
+> I also experimented with different settings but finally only
+> CONFIG_FEC_MPC52xx=y  and CONFIG_FEC_MPC52xx_MDIO=y
+> seem to be of any relevance. If both are set, the adapter works
+> when initialized by uboot.
+> 
+> Any help or tips will be very much appreciated,
+> 
+> Regards, Peter
+> 
+> 
+> Linux .config
+> 
+> ...
+> #
+> # Platform support
+> #
+> # CONFIG_PPC_CHRP is not set
+> # CONFIG_MPC5121_ADS is not set
+> # CONFIG_MPC5121_GENERIC is not set
+> CONFIG_PPC_MPC52xx=y
+> CONFIG_PPC_MPC5200_SIMPLE=y
+> # CONFIG_PPC_EFIKA is not set
+> CONFIG_PPC_LITE5200=y
+> # CONFIG_PPC_MEDIA5200 is not set
+> CONFIG_PPC_MPC5200_BUGFIX=y
+> # CONFIG_PPC_MPC5200_GPIO is not set
+> CONFIG_PPC_MPC5200_LPBFIFO=y
+> 
+> CONFIG_PPC_BESTCOMM=y
+> CONFIG_PPC_BESTCOMM_FEC=y
+> CONFIG_PPC_BESTCOMM_GEN_BD=y
+> # CONFIG_SIMPLE_GPIO is not set
+> ..
+> # Bus options
+> #
+> CONFIG_ZONE_DMA=y
+> CONFIG_NEED_SG_DMA_LENGTH=y
+> CONFIG_GENERIC_ISA_DMA=y
+> CONFIG_PPC_PCI_CHOICE=y
+> ...
+> #
+> # Generic Driver Options
+> #
+> CONFIG_STANDALONE=y
+> CONFIG_PREVENT_FIRMWARE_BUILD=y
+> CONFIG_MTD=y
+> CONFIG_MTD_PARTITIONS=y
+> CONFIG_MTD_CMDLINE_PARTS=y
+> 
+> #
+> # MII PHY device drivers
+> #
+> CONFIG_LXT_PHY=y                        ## Does not seem to have any influence
+> CONFIG_NET_ETHERNET=y
+> CONFIG_MII=y
+> CONFIG_ETHOC=y                           ## Does not seem to have any influence
+> CONFIG_FEC_MPC52xx=y              ## Must be Y in roder to get adapter working with uboot's init
+> CONFIG_FEC_MPC52xx_MDIO=y  ## Must be Y in roder to get adapter working with uboot's init
