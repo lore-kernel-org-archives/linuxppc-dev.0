@@ -1,21 +1,23 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 44DB1B70A7
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BBB13B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 29 Nov 2010 13:49:21 +1100 (EST)
-Message-ID: <4CF31492.7040809@windriver.com>
-Date: Mon, 29 Nov 2010 10:48:50 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Peter <sailingsmoky@googlemail.com>
-Subject: Re: PHY/FEC Network adapter failed to initialize on MPC52xx Board
-References: <4CF10819.4050007@crane-soft.de>
-In-Reply-To: <4CF10819.4050007@crane-soft.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon, 29 Nov 2010 14:04:15 +1100 (EST)
+Subject: Re: [PATCH 14/15] ppc64 iommu: use coherent_dma_mask for
+	alloc_coherent
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+In-Reply-To: <1284573958-8397-15-git-send-email-nacc@us.ibm.com>
+References: <1284573958-8397-1-git-send-email-nacc@us.ibm.com>
+	<1284573958-8397-15-git-send-email-nacc@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 29 Nov 2010 11:58:16 +1100
+Message-ID: <1290992296.32570.215.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,126 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter wrote:
-> Hi all
-> 
-> I got completely stuck with a network adapter problem on my
-> ppc board (MPC52xx style). The ntwork adapter does not seem
-> to intialize correctly when booted without 'help from uboot'
-> 
+On Wed, 2010-09-15 at 11:05 -0700, Nishanth Aravamudan wrote:
+> The IOMMU code has been passing the dma-mask instead of the
+> coherent_dma_mask to the iommu allocator.  Coherent allocations should
+> be made using the coherent_dma_mask.
 
-Looks your problem is very similar to one I replied here not long ago :) That is
-also issued from MPC5200. And I remember there was a wrong Port Multiplex
-Configuration.
+Won't that break macio devices too ? afaik, they don't set
+coherent_dma_mask. Have you tried booting on a G5 with iommu enabled ?
 
-If possible maybe you can check the email subjected "Problem Ethernet
-Initialization MPC5200 +  LXT971A" on linuxppc-dev list.
+(It may not be broken, just asking...)
 
-Hope its useful.
+Cheers,
+Ben.
 
-Tiejun
-
-> The adapter works properly when I first use it with uboot. E.g.
-> using tftp to load the kernel or just issuing a dummy sntp
-> command. It does not get intialized if I boot linux without
-> using any network relevant command in ubboot
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> ---
+> We currently don't check the mask other than to warn when its being set,
+> so I don't think this is stable material.
+> ---
+>  arch/powerpc/kernel/dma-iommu.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> The difference manifests on the boot message: (working)
-> PHY working
-> ...
-> mpc52xx MII bus: probed
-> TCP cubic registered
-> NET: Registered protocol family 17
-> IP-Config: Complete:
->      device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
->      host=192.168.1.245, domain=, nis-domain=(none),
->      bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
-> Looking up port of RPC 100003/2 on 192.168.1.244
-> Looking up port of RPC 100005/1 on 192.168.1.244
-> VFS: Mounted root (nfs filesystem) on device 0:11.
-> Freeing unused kernel memory: 124k init
-> PHY: f0003000:00 - Link is Up - 100/Full
-> 
-> # ping 192.168.1.2  returns proper results.
-> 
-> PHY Not working:
-> ...
-> mpc52xx MII bus: probed
-> TCP cubic registered
-> NET: Registered protocol family 17
-> IP-Config: Complete:
->      device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
->      host=192.168.1.245, domain=, nis-domain=(none),
->      bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
-> VFS: Mounted root (squashfs filesystem) readonly on device 31:3.
-> Freeing unused kernel memory: 124k init
-> 
-> # ping 192.168.1.2  hangs
-> 
-> 
-> The second snipped does not have "Looking up.." messages because it
-> boots from flash. Main difference is "PHY: f0003000:00 - Link is Up - 100/Full"
-> which does not appear at the failing case.
-> 
-> Linux Version is 2.6.35.7 patched with xenomai 2.5
-> U-Boot 2010.06 (Aug 05 2010 - 19:54:45)
-> 
-> Linux configuration see below: ( i left most entries out that are not set)
-> I also experimented with different settings but finally only
-> CONFIG_FEC_MPC52xx=y  and CONFIG_FEC_MPC52xx_MDIO=y
-> seem to be of any relevance. If both are set, the adapter works
-> when initialized by uboot.
-> 
-> Any help or tips will be very much appreciated,
-> 
-> Regards, Peter
-> 
-> 
-> Linux .config
-> 
-> ...
-> #
-> # Platform support
-> #
-> # CONFIG_PPC_CHRP is not set
-> # CONFIG_MPC5121_ADS is not set
-> # CONFIG_MPC5121_GENERIC is not set
-> CONFIG_PPC_MPC52xx=y
-> CONFIG_PPC_MPC5200_SIMPLE=y
-> # CONFIG_PPC_EFIKA is not set
-> CONFIG_PPC_LITE5200=y
-> # CONFIG_PPC_MEDIA5200 is not set
-> CONFIG_PPC_MPC5200_BUGFIX=y
-> # CONFIG_PPC_MPC5200_GPIO is not set
-> CONFIG_PPC_MPC5200_LPBFIFO=y
-> 
-> CONFIG_PPC_BESTCOMM=y
-> CONFIG_PPC_BESTCOMM_FEC=y
-> CONFIG_PPC_BESTCOMM_GEN_BD=y
-> # CONFIG_SIMPLE_GPIO is not set
-> ..
-> # Bus options
-> #
-> CONFIG_ZONE_DMA=y
-> CONFIG_NEED_SG_DMA_LENGTH=y
-> CONFIG_GENERIC_ISA_DMA=y
-> CONFIG_PPC_PCI_CHOICE=y
-> ...
-> #
-> # Generic Driver Options
-> #
-> CONFIG_STANDALONE=y
-> CONFIG_PREVENT_FIRMWARE_BUILD=y
-> CONFIG_MTD=y
-> CONFIG_MTD_PARTITIONS=y
-> CONFIG_MTD_CMDLINE_PARTS=y
-> 
-> #
-> # MII PHY device drivers
-> #
-> CONFIG_LXT_PHY=y                        ## Does not seem to have any influence
-> CONFIG_NET_ETHERNET=y
-> CONFIG_MII=y
-> CONFIG_ETHOC=y                           ## Does not seem to have any influence
-> CONFIG_FEC_MPC52xx=y              ## Must be Y in roder to get adapter working with uboot's init
-> CONFIG_FEC_MPC52xx_MDIO=y  ## Must be Y in roder to get adapter working with uboot's init
+> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+> index 6e54a0f..e755415 100644
+> --- a/arch/powerpc/kernel/dma-iommu.c
+> +++ b/arch/powerpc/kernel/dma-iommu.c
+> @@ -19,7 +19,7 @@ static void *dma_iommu_alloc_coherent(struct device *dev, size_t size,
+>  				      dma_addr_t *dma_handle, gfp_t flag)
+>  {
+>  	return iommu_alloc_coherent(dev, get_iommu_table_base(dev), size,
+> -				    dma_handle, device_to_mask(dev), flag,
+> +				    dma_handle, dev->coherent_dma_mask, flag,
+>  				    dev_to_node(dev));
+>  }
+>  
