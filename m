@@ -1,26 +1,28 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com",
+	(Client CN "e23smtp06.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9B92D1007D1
+	by ozlabs.org (Postfix) with ESMTPS id EDEFD1007D1
 	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100 (EST)
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id oAU5gmpi010414
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:42:48 +1100
+	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id oAU5liWo026924
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:44 +1100
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
 	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oAU5lovA2428988
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:50 +1100
+	oAU5lpI4671886
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
 	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oAU5ln1r027154
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:50 +1100
+	oAU5lpQL027181
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100
 From: benh@kernel.crashing.org
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 01/13] powerpc/nvram: Move things out of asm/nvram.h
-Date: Tue, 30 Nov 2010 16:47:31 +1100
-Message-Id: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 02/13] powerpc/nvram: More flexible nvram_create_partition()
+Date: Tue, 30 Nov 2010 16:47:32 +1100
+Message-Id: <1291096063-14386-2-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
+References: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
 Cc: jkensito@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,149 +35,134 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This moves a bunch of definitions out of asm/nvram.h to the files
-that use them or just outright remove completely unused stuff.
-
-We leave the partition signatures definitions, they will be useful
+Replace nvram_create_os_partition() with a variant that takes
+the partition name, signature and size as arguments.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/nvram.h       |   42 +------------------------------
- arch/powerpc/kernel/nvram_64.c         |   21 +++++++++++++++-
- arch/powerpc/platforms/chrp/time.c     |    4 +++
- arch/powerpc/platforms/pseries/nvram.c |    2 +
- 4 files changed, 28 insertions(+), 41 deletions(-)
+ arch/powerpc/kernel/nvram_64.c         |   46 +++++++++++++++++++------------
+ arch/powerpc/platforms/pseries/nvram.c |    6 ++--
+ 2 files changed, 31 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nvram.h b/arch/powerpc/include/asm/nvram.h
-index 850b72f..459dc09 100644
---- a/arch/powerpc/include/asm/nvram.h
-+++ b/arch/powerpc/include/asm/nvram.h
-@@ -10,31 +10,7 @@
- #ifndef _ASM_POWERPC_NVRAM_H
- #define _ASM_POWERPC_NVRAM_H
- 
--#include <linux/errno.h>
--
--#define NVRW_CNT 0x20
--#define NVRAM_HEADER_LEN 16 /* sizeof(struct nvram_header) */
--#define NVRAM_BLOCK_LEN 16
--#define NVRAM_MAX_REQ (2080/NVRAM_BLOCK_LEN)
--#define NVRAM_MIN_REQ (1056/NVRAM_BLOCK_LEN)
--
--#define NVRAM_AS0  0x74
--#define NVRAM_AS1  0x75
--#define NVRAM_DATA 0x77
--
--
--/* RTC Offsets */
--
--#define MOTO_RTC_SECONDS	0x1FF9
--#define MOTO_RTC_MINUTES	0x1FFA
--#define MOTO_RTC_HOURS		0x1FFB
--#define MOTO_RTC_DAY_OF_WEEK	0x1FFC
--#define MOTO_RTC_DAY_OF_MONTH	0x1FFD
--#define MOTO_RTC_MONTH		0x1FFE
--#define MOTO_RTC_YEAR		0x1FFF
--#define MOTO_RTC_CONTROLA       0x1FF8
--#define MOTO_RTC_CONTROLB       0x1FF9
--
-+/* Signatures for nvram partitions */
- #define NVRAM_SIG_SP	0x02	/* support processor */
- #define NVRAM_SIG_OF	0x50	/* open firmware config */
- #define NVRAM_SIG_FW	0x51	/* general firmware */
-@@ -49,25 +25,11 @@
- #define NVRAM_SIG_OS	0xa0	/* OS defined */
- #define NVRAM_SIG_PANIC	0xa1	/* Apple OSX "panic" */
- 
--/* If change this size, then change the size of NVNAME_LEN */
--struct nvram_header {
--	unsigned char signature;
--	unsigned char checksum;
--	unsigned short length;
--	char name[12];
--};
--
- #ifdef __KERNEL__
- 
-+#include <linux/errno.h>
- #include <linux/list.h>
- 
--struct nvram_partition {
--	struct list_head partition;
--	struct nvram_header header;
--	unsigned int index;
--};
--
--
- extern int nvram_write_error_log(char * buff, int length,
- 					 unsigned int err_type, unsigned int err_seq);
- extern int nvram_read_error_log(char * buff, int length,
 diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 9cf197f..a8154f1 100644
+index a8154f1..9e13335 100644
 --- a/arch/powerpc/kernel/nvram_64.c
 +++ b/arch/powerpc/kernel/nvram_64.c
-@@ -34,6 +34,25 @@
+@@ -307,13 +307,15 @@ static int __init nvram_remove_os_partition(void)
+ 	return 0;
+ }
  
- #undef DEBUG_NVRAM
+-/* nvram_create_os_partition
+- *
+- * Create a OS linux partition to buffer error logs.
+- * Will create a partition starting at the first free
+- * space found if space has enough room.
++/**
++ * nvram_create_partition - Create a partition in nvram
++ * @name: name of the partition to create
++ * @sig: signature of the partition to create
++ * @req_size: size to allocate preferrably
++ * @min_size: minimum acceptable size (0 means req_size)
+  */
+-static int __init nvram_create_os_partition(void)
++static int __init nvram_create_partition(const char *name, int sig,
++					 int req_size, int min_size)
+ {
+ 	struct nvram_partition *part;
+ 	struct nvram_partition *new_part;
+@@ -322,20 +324,27 @@ static int __init nvram_create_os_partition(void)
+ 	loff_t tmp_index;
+ 	long size = 0;
+ 	int rc;
+-	
++
++	/* If no minimum size specified, make it the same as the
++	 * requested size
++	 */
++	if (min_size == 0)
++		min_size = req_size;
++
+ 	/* Find a free partition that will give us the maximum needed size 
+ 	   If can't find one that will give us the minimum size needed */
+ 	list_for_each_entry(part, &nvram_part->partition, partition) {
+ 		if (part->header.signature != NVRAM_SIG_FREE)
+ 			continue;
  
-+#define NVRAM_HEADER_LEN 16 /* sizeof(struct nvram_header) */
-+#define NVRAM_BLOCK_LEN 16
-+#define NVRAM_MAX_REQ (2080/NVRAM_BLOCK_LEN)
-+#define NVRAM_MIN_REQ (1056/NVRAM_BLOCK_LEN)
-+
-+/* If change this size, then change the size of NVNAME_LEN */
-+struct nvram_header {
-+	unsigned char signature;
-+	unsigned char checksum;
-+	unsigned short length;
-+	char name[12];
-+};
-+
-+struct nvram_partition {
-+	struct list_head partition;
-+	struct nvram_header header;
-+	unsigned int index;
-+};
-+
- static struct nvram_partition * nvram_part;
- static long nvram_error_log_index = -1;
- static long nvram_error_log_size = 0;
-@@ -432,7 +451,7 @@ static int __init nvram_setup_partition(void)
+-		if (part->header.length >= NVRAM_MAX_REQ) {
+-			size = NVRAM_MAX_REQ;
++		if (part->header.length >= req_size) {
++			size = req_size;
+ 			free_part = part;
+ 			break;
+ 		}
+-		if (!size && part->header.length >= NVRAM_MIN_REQ) {
+-			size = NVRAM_MIN_REQ;
++		if (part->header.length > size &&
++		    part->header.length >= min_size) {
++			size = part->header.length;
+ 			free_part = part;
+ 		}
+ 	}
+@@ -350,9 +359,9 @@ static int __init nvram_create_os_partition(void)
+ 	}
+ 
+ 	new_part->index = free_part->index;
+-	new_part->header.signature = NVRAM_SIG_OS;
++	new_part->header.signature = sig;
+ 	new_part->header.length = size;
+-	strcpy(new_part->header.name, "ppc64,linux");
++	strncpy(new_part->header.name, name, 12);
+ 	new_part->header.checksum = nvram_checksum(&new_part->header);
+ 
+ 	rc = nvram_write_header(new_part);
+@@ -451,10 +460,10 @@ static int __init nvram_setup_partition(void)
  	}
  	
  	/* try creating a partition with the free space we have */
--	rc = nvram_create_os_partition();
-+	rc = nvram_create_partition("ppc64,linux", );
- 	if (!rc) {
+-	rc = nvram_create_partition("ppc64,linux", );
+-	if (!rc) {
++	rc = 	nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
++				       NVRAM_MAX_REQ, NVRAM_MIN_REQ);
++	if (!rc)
  		return 0;
+-	}
+ 		
+ 	/* need to free up some space */
+ 	rc = nvram_remove_os_partition();
+@@ -463,9 +472,10 @@ static int __init nvram_setup_partition(void)
  	}
-diff --git a/arch/powerpc/platforms/chrp/time.c b/arch/powerpc/platforms/chrp/time.c
-index 054dfe5..f803f4b 100644
---- a/arch/powerpc/platforms/chrp/time.c
-+++ b/arch/powerpc/platforms/chrp/time.c
-@@ -29,6 +29,10 @@
- 
- extern spinlock_t rtc_lock;
- 
-+#define NVRAM_AS0  0x74
-+#define NVRAM_AS1  0x75
-+#define NVRAM_DATA 0x77
-+
- static int nvram_as1 = NVRAM_AS1;
- static int nvram_as0 = NVRAM_AS0;
- static int nvram_data = NVRAM_DATA;
+ 	
+ 	/* create a partition in this new space */
+-	rc = nvram_create_os_partition();
++	rc = 	nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
++				       NVRAM_MAX_REQ, NVRAM_MIN_REQ);
+ 	if (rc) {
+-		printk(KERN_ERR "nvram_create_os_partition: Could not find a "
++		printk(KERN_ERR "nvram_create_partition: Could not find a "
+ 		       "NVRAM partition large enough\n");
+ 		return rc;
+ 	}
 diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index bc3c7f2..f4e4c06 100644
+index f4e4c06..2a1ef5c 100644
 --- a/arch/powerpc/platforms/pseries/nvram.c
 +++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -27,6 +27,8 @@ static int nvram_fetch, nvram_store;
- static char nvram_buf[NVRW_CNT];	/* assume this is in the first 4GB */
- static DEFINE_SPINLOCK(nvram_lock);
+@@ -22,14 +22,14 @@
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
  
 +/* Max bytes to read/write in one go */
 +#define NVRW_CNT 0x20
++
+ static unsigned int nvram_size;
+ static int nvram_fetch, nvram_store;
+ static char nvram_buf[NVRW_CNT];	/* assume this is in the first 4GB */
+ static DEFINE_SPINLOCK(nvram_lock);
  
+-/* Max bytes to read/write in one go */
+-#define NVRW_CNT 0x20
+-
  static ssize_t pSeries_nvram_read(char *buf, size_t count, loff_t *index)
  {
+ 	unsigned int i;
 -- 
 1.7.1
