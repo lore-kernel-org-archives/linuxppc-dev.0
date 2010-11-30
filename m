@@ -1,29 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A1EB01008D4
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:54 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id oAU5lqAf021520
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:52 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oAU5lpMk2240526
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oAU5lpRk013245
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100
-From: benh@kernel.crashing.org
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/13] powerpc/nvram: Shuffle code around in
-	nvram_create_partition()
-Date: Tue, 30 Nov 2010 16:47:36 +1100
-Message-Id: <1291096063-14386-6-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
-References: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
-Cc: jkensito@us.ibm.com
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id DBC6E1007D1
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 20:28:02 +1100 (EST)
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [v4] ppc44x:PHY fixup for USB on canyonlands board
+Message-Id: <mdm-canyonlands-reply2@mdm.bga.com>
+In-Reply-To: <201011291313.oATDD1AF028975@amcc.com>
+References: <201011291313.oATDD1AF028975@amcc.com>
+To: Rupjyoti Sarmah <rsarmah@amcc.com>
+Date: Tue, 30 Nov 2010 03:11:27 -0600
+Cc: linuxppc-dev@ozlabs.org, rsarmah@apm.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,186 +19,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I prepared these comments for v1, but aparently forgot to send them,
+so I'll do so now.
 
-This error log stuff is really pseries specific. As a first step we move
-the initialization of these variables to the caller of
-nvram_create_partition(), which is also slightly reorganized so we
-setup the free partition before we clear the new partition, so the
-chance of an error during clear leaving us with invalid headers
-is lessened.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/nvram_64.c |  108 +++++++++++++++++++++++-----------------
- 1 files changed, 62 insertions(+), 46 deletions(-)
+On Mon, 29 Nov 2010 about 03:13:01 -0000, Rupjyoti Sarmah wrote:
+> This fix is a reset for USB PHY that requires some amount of time for power to be stable on Canyonlands.
+> 
+> Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
+> 
+> ---
+> index a303703..3c5d63c 100644
+> --- a/arch/powerpc/boot/dts/canyonlands.dts
+> +++ b/arch/powerpc/boot/dts/canyonlands.dts
+> @@ -224,6 +224,13 @@
+>  					};
+>  				};
+>  
+> +				cpld@2,0 {
+> +					#address-cells = <1>;
+> +					#size-cells = <1>;
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 02737e6..eabee7c 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -313,9 +313,15 @@ static int __init nvram_remove_os_partition(void)
-  * @sig: signature of the partition to create
-  * @req_size: size of data to allocate in bytes
-  * @min_size: minimum acceptable size (0 means req_size)
-+ *
-+ * Returns a negative error code or a positive nvram index
-+ * of the beginning of the data area of the newly created
-+ * partition. If you provided a min_size smaller than req_size
-+ * you need to query for the actual size yourself after the
-+ * call using nvram_partition_get_size().
-  */
--static int __init nvram_create_partition(const char *name, int sig,
--					 int req_size, int min_size)
-+static loff_t __init nvram_create_partition(const char *name, int sig,
-+					    int req_size, int min_size)
- {
- 	struct nvram_partition *part;
- 	struct nvram_partition *new_part;
-@@ -334,6 +340,8 @@ static int __init nvram_create_partition(const char *name, int sig,
- 	 */
- 	if (min_size == 0)
- 		min_size = req_size;
-+	if (min_size > req_size)
-+		return -EINVAL;
- 
- 	/* Now add one block to each for the header */
- 	req_size += 1;
-@@ -362,7 +370,7 @@ static int __init nvram_create_partition(const char *name, int sig,
- 	/* Create our OS partition */
- 	new_part = kmalloc(sizeof(*new_part), GFP_KERNEL);
- 	if (!new_part) {
--		printk(KERN_ERR "nvram_create_os_partition: kmalloc failed\n");
-+		pr_err("nvram_create_os_partition: kmalloc failed\n");
- 		return -ENOMEM;
- 	}
- 
-@@ -374,12 +382,29 @@ static int __init nvram_create_partition(const char *name, int sig,
- 
- 	rc = nvram_write_header(new_part);
- 	if (rc <= 0) {
--		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header "
--				"failed (%d)\n", rc);
-+		pr_err("nvram_create_os_partition: nvram_write_header "
-+		       "failed (%d)\n", rc);
- 		return rc;
- 	}
-+	list_add_tail(&new_part->partition, &free_part->partition);
-+
-+	/* Adjust or remove the partition we stole the space from */
-+	if (free_part->header.length > size) {
-+		free_part->index += size * NVRAM_BLOCK_LEN;
-+		free_part->header.length -= size;
-+		free_part->header.checksum = nvram_checksum(&free_part->header);
-+		rc = nvram_write_header(free_part);
-+		if (rc <= 0) {
-+			pr_err("nvram_create_os_partition: nvram_write_header "
-+			       "failed (%d)\n", rc);
-+			return rc;
-+		}
-+	} else {
-+		list_del(&free_part->partition);
-+		kfree(free_part);
-+	} 
- 
--	/* Clear the partition */
-+	/* Clear the new partition */
- 	for (tmp_index = new_part->index + NVRAM_HEADER_LEN;
- 	     tmp_index <  ((size - 1) * NVRAM_BLOCK_LEN);
- 	     tmp_index += NVRAM_BLOCK_LEN) {
-@@ -390,31 +415,24 @@ static int __init nvram_create_partition(const char *name, int sig,
- 		}
- 	}
- 	
--	nvram_error_log_index = new_part->index + NVRAM_HEADER_LEN;
--	nvram_error_log_size = ((part->header.length - 1) *
--				NVRAM_BLOCK_LEN) - sizeof(struct err_log_info);
--	
--	list_add_tail(&new_part->partition, &free_part->partition);
--
--	if (free_part->header.length <= size) {
--		list_del(&free_part->partition);
--		kfree(free_part);
--		return 0;
--	} 
-+	return new_part->index + NVRAM_HEADER_LEN;
-+}
- 
--	/* Adjust the partition we stole the space from */
--	free_part->index += size * NVRAM_BLOCK_LEN;
--	free_part->header.length -= size;
--	free_part->header.checksum = nvram_checksum(&free_part->header);
-+/**
-+ * nvram_get_partition_size - Get the data size of an nvram partition
-+ * @data_index: This is the offset of the start of the data of
-+ *              the partition. The same value that is returned by
-+ *              nvram_create_partition().
-+ */
-+static int nvram_get_partition_size(loff_t data_index)
-+{
-+	struct nvram_partition *part;
- 	
--	rc = nvram_write_header(free_part);
--	if (rc <= 0) {
--		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header "
--		       "failed (%d)\n", rc);
--		return rc;
-+	list_for_each_entry(part, &nvram_part->partition, partition) {
-+		if (part->index + NVRAM_HEADER_LEN == data_index)
-+			return (part->header.length - 1) * NVRAM_BLOCK_LEN;
- 	}
--
--	return 0;
-+	return -1;
- }
- 
- 
-@@ -469,30 +487,28 @@ static int __init nvram_setup_partition(void)
- 	}
- 	
- 	/* try creating a partition with the free space we have */
--	rc = 	nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
-+	rc = nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
- 				       NVRAM_MAX_REQ, NVRAM_MIN_REQ);
--	if (!rc)
--		return 0;
--		
--	/* need to free up some space */
--	rc = nvram_remove_os_partition();
--	if (rc) {
--		return rc;
--	}
--	
--	/* create a partition in this new space */
--	rc = 	nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
--				       NVRAM_MAX_REQ, NVRAM_MIN_REQ);
--	if (rc) {
--		printk(KERN_ERR "nvram_create_partition: Could not find a "
--		       "NVRAM partition large enough\n");
--		return rc;
-+	if (rc < 0) {
-+		/* need to free up some space */
-+		rc = nvram_remove_os_partition();
-+		if (rc)
-+			return rc;	
-+		/* create a partition in this new space */
-+		rc = nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
-+					    NVRAM_MAX_REQ, NVRAM_MIN_REQ);
-+		if (rc < 0) {
-+			pr_err("nvram_create_partition: Could not find"
-+			       " enough space in NVRAM for partition\n");
-+			return rc;
-+		}
- 	}
- 	
-+	nvram_error_log_index = rc;	
-+	nvram_error_log_size = nvram_get_partition_size(rc) - sizeof(struct err_log_info);	
- 	return 0;
- }
- 
--
- static int __init nvram_scan_partitions(void)
- {
- 	loff_t cur_index = 0;
--- 
-1.7.1
+why does this node have #address-cells and #size-cells but no children? 
+
+> +					compatible = "amcc,ppc460ex-bcsr";
+> +					reg = <2 0x0 0x9>;
+> +				};
+> +
+>  				ndfc@3,0 {
+>  					compatible = "ibm,ndfc";
+>  					reg = <0x00000003 0x00000000 0x00002000>;
+..
+> diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
+> new file mode 100644
+> index 0000000..4917c31
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/44x/canyonlands.c
+> @@ -0,0 +1,120 @@
+> +
+
+> +static __initdata struct of_device_id ppc44x_of_bus[] = {
+..
+> +static int __init ppc44x_device_probe(void)
+> +{
+> +	of_platform_bus_probe(NULL, ppc44x_of_bus, NULL);
+> +
+> +	return 0;
+> +}
+> +machine_device_initcall(canyonlands, ppc44x_device_probe);
+> +
+> +/* Using this code only for the Canyonlands board.  */
+> +
+> +static int __init ppc44x_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +	if (of_flat_dt_is_compatible(root, "amcc,canyonlands")) {
+> +		ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
+> +		return 1;
+> +		}
+> +	return 0;
+> +}
+> +
+> +/* USB PHY fixup code on Canyonlands kit. */
+
+All of the above have ppc44x prefix, but have been copied to this
+canyonlands file.   While there is no build error because they
+are all static it will be less confusing if they had a canyonlands
+prefix instead.
+
+> +
+> +static int __init ppc460ex_canyonlands_fixup(void)
+> +{
+> +	u8 __iomem *bcsr ;
+> +	void __iomem *vaddr;
+> +	struct device_node *np;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-bcsr");
+> +	if (!np) {
+> +		printk(KERN_ERR "failed did not find amcc, ppc460ex bcsr node\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	bcsr = of_iomap(np, 0);
+> +	of_node_put(np);
+> +
+> +	if (!bcsr) {
+> +		printk(KERN_CRIT "Could not remap bcsr\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "ibm,ppc4xx-gpio");
+> +	vaddr = of_iomap(np, 0);
+> +	if (!vaddr) {
+> +		printk(KERN_CRIT "Could not get gpio node address\n");
+> +		return -ENODEV;
+> +	}
+> +	/* Disable USB, through the BCSR7 bits */
+> +	setbits8(&bcsr[7], BCSR_USB_EN);
+> +
+> +	/* Wait for a while after reset */
+> +	msleep(100);
+> +
+> +	/* Enable USB here */
+> +	clrbits8(&bcsr[7], BCSR_USB_EN);
+> +
+> +	/*
+> +	 * Configure multiplexed gpio16 and gpio19 as alternate1 output
+> +	 * source after USB reset.This configuration is done through GPIO0_TSRH
+> +	 * and GPIO0_OSRH bits 0:1 and 6:7.
+
+Missing spaces before the second sentence.
+
+Rather then telling us which bits are being set, which is fairly
+obvoius from the code, it would be more helpful to say what
+alternate1 output source means.
+
+I'm curious why you set these after the reset when they were not
+set before.  Should they be set to something else temporarly during
+the reset?
+
+> +	 */
+> +	setbits32((vaddr + GPIO0_OSRH), 0x42000000);
+> +	setbits32((vaddr + GPIO0_TSRH), 0x42000000);
+> +	of_node_put(np);
+> +	return 0;
+
+The error paths in this function leave incorrect refcounts on the
+nodes, and no path does of_unmap of the regions even though the
+variables with the address goes out of scope.
+
+> +}
+> +machine_device_initcall(canyonlands, ppc460ex_canyonlands_fixup);
+> +define_machine(canyonlands) {
+> +	.name = "Canyonlands",
+> +	.probe = ppc44x_probe,
+> +	.progress = udbg_progress,
+> +	.init_IRQ = uic_init_tree,
+> +	.get_irq = uic_get_irq,
+> +	.restart = ppc4xx_reset_system,
+> +	.calibrate_decr = generic_calibrate_decr,
+> +};
+
+
+Also, you shouldn't need the select PPC44x_SIMPLE in the CANYONLANDS
+stanza in arch/powerpc/platforms/44x/Kconfig.
+
+milton
