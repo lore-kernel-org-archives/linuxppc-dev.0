@@ -1,17 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 5B1BCB70E3
+	by ozlabs.org (Postfix) with ESMTP id 529761007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Nov 2010 22:06:58 +1100 (EST)
+	Tue, 30 Nov 2010 22:08:06 +1100 (EST)
 From: Milton Miller <miltonm@bga.com>
 To: Jim Keniston <jkenisto@linux.vnet.ibm.com>
 Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
 In-Reply-To: <1290110779.32570.9.camel@pasglop>
 References: <1290104610.3067.32.camel@localhost>
 	<1290110779.32570.9.camel@pasglop>
-Message-Id: <mdm-initramfs-debug@mdm.bga.com>
-Date: Tue, 30 Nov 2010 05:06:52 -0600
-Cc: Michael Neuling <mikeyatneuling.org>, linuxppc-dev@lists.ozlabs.org
+Message-Id: <mdm-initramfs-debug-fix@mdm.bga.com>
+Date: Tue, 30 Nov 2010 05:08:00 -0600
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,6 +20,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+[fixed Michael Neuling's address]
 
 On Fri Nov 19 about 07:06:19 EST in 2010, Benjamin Herrenschmidt wrote:
 > On Thu, 2010-11-18 at 10:23 -0800, Jim Keniston wrote:
