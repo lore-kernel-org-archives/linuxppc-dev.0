@@ -1,28 +1,28 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C10F910087B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:53 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id oAU5lrhu004851
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:53 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oAU5lr271618008
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:53 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oAU5lqfp001216
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:53 +1100
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6DCD51008C2
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:54 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id oAU5lqva028601
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:52 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oAU5lppb1749204
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oAU5lp4A027204
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 16:47:51 +1100
 From: benh@kernel.crashing.org
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 13/13] powerpc/nvram: Handle partition names >= 12 chars
-Date: Tue, 30 Nov 2010 16:47:43 +1100
-Message-Id: <1291096063-14386-13-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 08/13] powerpc/nvram: Add nvram_find_partition()
+Date: Tue, 30 Nov 2010 16:47:38 +1100
+Message-Id: <1291096063-14386-8-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
 References: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>, jkensito@us.ibm.com
+Cc: jkensito@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jim Keniston <jkenisto@us.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The name field in the nvram_header can be < 12 chars, null-terminated,
-or 12 chars without the null.  Handle this safely.
-
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/nvram_64.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/nvram_64.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index b8a50fa..bb12b32 100644
+index 6dd2700..01e6844 100644
 --- a/arch/powerpc/kernel/nvram_64.c
 +++ b/arch/powerpc/kernel/nvram_64.c
-@@ -42,6 +42,7 @@ struct nvram_header {
- 	unsigned char signature;
- 	unsigned char checksum;
- 	unsigned short length;
-+	/* Terminating null required only for names < 12 chars. */
- 	char name[12];
- };
+@@ -429,6 +429,28 @@ static int nvram_get_partition_size(loff_t data_index)
+ }
  
-@@ -201,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
- 	printk(KERN_WARNING "--------%s---------\n", label);
- 	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
- 	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
--		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%s\n",
-+		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
- 		       tmp_part->index, tmp_part->header.signature,
- 		       tmp_part->header.checksum, tmp_part->header.length,
- 		       tmp_part->header.name);
-@@ -256,7 +257,7 @@ int __init nvram_remove_partition(const char *name, int sig)
  
- 		/* Make partition a free partition */
- 		part->header.signature = NVRAM_SIG_FREE;
--		sprintf(part->header.name, "wwwwwwwwwwww");
-+		strncpy(part->header.name, "wwwwwwwwwwww", 12);
- 		part->header.checksum = nvram_checksum(&part->header);
- 		rc = nvram_write_header(part);
- 		if (rc <= 0) {
++/**
++ * nvram_find_partition - Find an nvram partition by signature and name
++ * @name: Name of the partition or NULL for any name
++ * @sig: Signature to test against
++ * @out_size: if non-NULL, returns the size of the data part of the partition
++ */
++loff_t nvram_find_partition(const char *name, int sig, int *out_size)
++{
++	struct nvram_partition *p;
++
++	list_for_each_entry(p, &nvram_part->partition, partition) {
++		if (p->header.signature == sig &&
++		    (!name || !strncmp(p->header.name, name, 12))) {
++			if (out_size)
++				*out_size = (p->header.length - 1) *
++					NVRAM_BLOCK_LEN;
++			return p->index + NVRAM_HEADER_LEN;
++		}
++	}
++	return 0;
++}
++
+ /* nvram_setup_partition
+  *
+  * This will setup the partition we need for buffering the
 -- 
 1.7.1
