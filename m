@@ -1,15 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id DBC6E1007D1
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 20:28:02 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5B1BCB70E3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Nov 2010 22:06:58 +1100 (EST)
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [v4] ppc44x:PHY fixup for USB on canyonlands board
-Message-Id: <mdm-canyonlands-reply2@mdm.bga.com>
-In-Reply-To: <201011291313.oATDD1AF028975@amcc.com>
-References: <201011291313.oATDD1AF028975@amcc.com>
-To: Rupjyoti Sarmah <rsarmah@amcc.com>
-Date: Tue, 30 Nov 2010 03:11:27 -0600
-Cc: linuxppc-dev@ozlabs.org, rsarmah@apm.com, linux-kernel@vger.kernel.org
+To: Jim Keniston <jkenisto@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
+In-Reply-To: <1290110779.32570.9.camel@pasglop>
+References: <1290104610.3067.32.camel@localhost>
+	<1290110779.32570.9.camel@pasglop>
+Message-Id: <mdm-initramfs-debug@mdm.bga.com>
+Date: Tue, 30 Nov 2010 05:06:52 -0600
+Cc: Michael Neuling <mikeyatneuling.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,149 +21,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I prepared these comments for v1, but aparently forgot to send them,
-so I'll do so now.
+On Fri Nov 19 about 07:06:19 EST in 2010, Benjamin Herrenschmidt wrote:
+> On Thu, 2010-11-18 at 10:23 -0800, Jim Keniston wrote:
+> > FWIW, this failure isn't an obstacle for me.  I'm in no way attached to
+> > my legacy configuration; pseries_defconfig is fine for me.  On the other
+> > hand, I can continue testing fixes, and/or make my system available to
+> > other IBMers when I'm not using it, if you want to continue to pursue
+> > this problem.
 
-
-On Mon, 29 Nov 2010 about 03:13:01 -0000, Rupjyoti Sarmah wrote:
-> This fix is a reset for USB PHY that requires some amount of time for power to be stable on Canyonlands.
+> From the look of it your "legacy" config is lacking the necessary
+> storage drivers...
 > 
-> Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
-> 
-> ---
-> index a303703..3c5d63c 100644
-> --- a/arch/powerpc/boot/dts/canyonlands.dts
-> +++ b/arch/powerpc/boot/dts/canyonlands.dts
-> @@ -224,6 +224,13 @@
->  					};
->  				};
->  
-> +				cpld@2,0 {
-> +					#address-cells = <1>;
-> +					#size-cells = <1>;
 
-why does this node have #address-cells and #size-cells but no children? 
+Looking closer, it would appear he intended to get them from initramfs
+but unpacking it failed.  Pulling from his log in the original message:
 
-> +					compatible = "amcc,ppc460ex-bcsr";
-> +					reg = <2 0x0 0x9>;
-> +				};
-> +
->  				ndfc@3,0 {
->  					compatible = "ibm,ndfc";
->  					reg = <0x00000003 0x00000000 0x00002000>;
+> > 
+> > Calling ibm,client-architecture-support... not implemented
+> > command line: root=/dev/disk/by-id/scsi-SIBM_ST373453LC_3HW1CQ1400007445Q2A4-part3 quiet profile=2 sysrq=1 insmod=sym53c8xx insmod=ipr crashkernel=256M-:128M loglevel=8 
+> > 
+> > memory layout at init:
+> >   memory_limit : 0000000000000000 (16 MB aligned)
+> >   alloc_bottom : 0000000003550000
+> >   alloc_top    : 0000000008000000
+> >   alloc_top_hi : 0000000070000000
+> >   amo_top      : 0000000008000000
+> >   ram_top      : 0000000070000000
+> > instantiating rtas at 0x00000000076a0000... done
+> > boot cpu hw idx 0
+> > starting cpu hw idx 2... done
+> > copying OF device tree...
+> > Building dt strings...
+> > Building dt structure...
+> > Device tree strings 0x0000000003560000 -> 0x000000000356129c
+> > Device tree struct  0x0000000003570000 -> 0x0000000003580000
 ..
-> diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
-> new file mode 100644
-> index 0000000..4917c31
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/44x/canyonlands.c
-> @@ -0,0 +1,120 @@
-> +
-
-> +static __initdata struct of_device_id ppc44x_of_bus[] = {
+> > Found initrd at 0xc000000002d00000:0xc00000000354e28a
 ..
-> +static int __init ppc44x_device_probe(void)
-> +{
-> +	of_platform_bus_probe(NULL, ppc44x_of_bus, NULL);
-> +
-> +	return 0;
-> +}
-> +machine_device_initcall(canyonlands, ppc44x_device_probe);
-> +
-> +/* Using this code only for the Canyonlands board.  */
-> +
-> +static int __init ppc44x_probe(void)
-> +{
-> +	unsigned long root = of_get_flat_dt_root();
-> +	if (of_flat_dt_is_compatible(root, "amcc,canyonlands")) {
-> +		ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
-> +		return 1;
-> +		}
-> +	return 0;
-> +}
-> +
-> +/* USB PHY fixup code on Canyonlands kit. */
+> > NET: Registered protocol family 1
+> > PCI: CLS 128 bytes, default 128
+> > Unpacking initramfs...
+> > Initramfs unpacking failed: read error
 
-All of the above have ppc44x prefix, but have been copied to this
-canyonlands file.   While there is no build error because they
-are all static it will be less confusing if they had a canyonlands
-prefix instead.
-
-> +
-> +static int __init ppc460ex_canyonlands_fixup(void)
-> +{
-> +	u8 __iomem *bcsr ;
-> +	void __iomem *vaddr;
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-bcsr");
-> +	if (!np) {
-> +		printk(KERN_ERR "failed did not find amcc, ppc460ex bcsr node\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	bcsr = of_iomap(np, 0);
-> +	of_node_put(np);
-> +
-> +	if (!bcsr) {
-> +		printk(KERN_CRIT "Could not remap bcsr\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "ibm,ppc4xx-gpio");
-> +	vaddr = of_iomap(np, 0);
-> +	if (!vaddr) {
-> +		printk(KERN_CRIT "Could not get gpio node address\n");
-> +		return -ENODEV;
-> +	}
-> +	/* Disable USB, through the BCSR7 bits */
-> +	setbits8(&bcsr[7], BCSR_USB_EN);
-> +
-> +	/* Wait for a while after reset */
-> +	msleep(100);
-> +
-> +	/* Enable USB here */
-> +	clrbits8(&bcsr[7], BCSR_USB_EN);
-> +
-> +	/*
-> +	 * Configure multiplexed gpio16 and gpio19 as alternate1 output
-> +	 * source after USB reset.This configuration is done through GPIO0_TSRH
-> +	 * and GPIO0_OSRH bits 0:1 and 6:7.
-
-Missing spaces before the second sentence.
-
-Rather then telling us which bits are being set, which is fairly
-obvoius from the code, it would be more helpful to say what
-alternate1 output source means.
-
-I'm curious why you set these after the reset when they were not
-set before.  Should they be set to something else temporarly during
-the reset?
-
-> +	 */
-> +	setbits32((vaddr + GPIO0_OSRH), 0x42000000);
-> +	setbits32((vaddr + GPIO0_TSRH), 0x42000000);
-> +	of_node_put(np);
-> +	return 0;
-
-The error paths in this function leave incorrect refcounts on the
-nodes, and no path does of_unmap of the regions even though the
-variables with the address goes out of scope.
-
-> +}
-> +machine_device_initcall(canyonlands, ppc460ex_canyonlands_fixup);
-> +define_machine(canyonlands) {
-> +	.name = "Canyonlands",
-> +	.probe = ppc44x_probe,
-> +	.progress = udbg_progress,
-> +	.init_IRQ = uic_init_tree,
-> +	.get_irq = uic_get_irq,
-> +	.restart = ppc4xx_reset_system,
-> +	.calibrate_decr = generic_calibrate_decr,
-> +};
+"read error" occurs in lib/decompress_inflate.c if the fill routine
+returns a negative count, which would inlclude a NULL fill pointer like
+init/initramfs.c.
 
 
-Also, you shouldn't need the select PPC44x_SIMPLE in the CANYONLANDS
-stanza in arch/powerpc/platforms/44x/Kconfig.
+Maybe this debugging patch (against 2.6.35, applys with small offset to 
+2.6.37-rc4) can help isolate the corruption?
 
-milton
+From: Milton Miller <miltonm.bga.com>
+initramfs: show input and output offsets on unpacking failures
+
+When the initramfs input is corrupted, having the pointer to the buffer
+segment being decompressed, and the decompress input and output byte
+counts from the compressed stream can help isolate the source of the
+corruption.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+
+---
+ init/initramfs.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: sim/init/initramfs.c
+===================================================================
+--- sim.orig/init/initramfs.c	2009-07-13 18:44:56.000000000 -0500
++++ sim/init/initramfs.c	2009-07-13 18:59:32.000000000 -0500
+@@ -384,6 +384,9 @@ static int __init write_buffer(char *buf
+ 	return len - count;
+ }
+ 
++static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
++static unsigned bytes_out;  /* count of chars processed from current archive */
++
+ static int __init flush_buffer(void *bufv, unsigned len)
+ {
+ 	char *buf = (char *) bufv;
+@@ -393,6 +396,7 @@ static int __init flush_buffer(void *buf
+ 		return -1;
+ 	while ((written = write_buffer(buf, len)) < len && !message) {
+ 		char c = buf[written];
++		bytes_out += written;
+ 		if (c == '0') {
+ 			buf += written;
+ 			len -= written;
+@@ -407,8 +411,6 @@ static int __init flush_buffer(void *buf
+ 	return origLen;
+ }
+ 
+-static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
+-
+ #include <linux/decompress/generic.h>
+ 
+ static char * __init unpack_to_rootfs(char *buf, unsigned len)
+@@ -430,6 +432,8 @@ static char * __init unpack_to_rootfs(ch
+ 	message = NULL;
+ 	while (!message && len) {
+ 		loff_t saved_offset = this_header;
++		bytes_out = 0;
++		my_inptr = 0;
+ 		if (*buf == '0' && !(this_header & 3)) {
+ 			state = Start;
+ 			written = write_buffer(buf, len);
+@@ -462,6 +466,9 @@ static char * __init unpack_to_rootfs(ch
+ 		buf += my_inptr;
+ 		len -= my_inptr;
+ 	}
++	if (message) {
++		printk(KERN_ERR "Failed unpacking at %p input %d output %d \n",buf - my_inptr, my_inptr, bytes_out);
++	}
+ 	dir_utime();
+ 	kfree(name_buf);
+ 	kfree(symlink_buf);
