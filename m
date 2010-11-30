@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 57815B70F9
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2010 15:08:15 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
+	by ozlabs.org (Postfix) with ESMTPS id 8EDE4B70EF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Nov 2010 16:31:39 +1100 (EST)
+Subject: Re: [PATCH 0/4] More ppc64 nvram code cleanup
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jim Keniston <jkenisto@us.ibm.com>
+In-Reply-To: <20101112045346.4290.43739.stgit@localhost.localdomain>
+References: <20101112045346.4290.43739.stgit@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 30 Nov 2010 15:07:33 +1100
-Message-ID: <1291090053.32570.353.camel@pasglop>
+Date: Tue, 30 Nov 2010 16:25:58 +1100
+Message-ID: <1291094758.32570.355.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Thu, 2010-11-11 at 20:53 -0800, Jim Keniston wrote:
+> This series contains some fixups to Ben Herrenschmidt's Aug. 2 patch
+> set, "[RFC] Clean up ppc64 nvram code" --
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-August/084601.html
+> 
+> These patches apply atop Ben's 11-patch series.
+> ---
+> 
+> Jim Keniston (4):
+>       Handle partition names >= 12 chars
+>       Fix NVRAM partition list setup
+>       Fix nvram_create_partition() arg order
+>       Fix powerpc nvram init order
 
-This is a small fix for a misuse of RCU on powerpc, please pull.
+I've folded the first two (or a slightly different variant) in my series
+and applied the two next on top. I'll post that new version of the
+series to the list after a few tests today and will include it in next
+in a couple of days, possibly along with your other patches provided
+they survive my review :-)
 
 Cheers,
 Ben.
-
-The following changes since commit
-72083646528d4887b920deb71b37e09bc7d227bb:
-
-  Un-inline get_pipe_info() helper function (2010-11-28 16:27:19 -0800)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Peter Zijlstra (1):
-      powerpc: Use call_rcu_sched() for pagetables
-
- arch/powerpc/mm/pgtable.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
