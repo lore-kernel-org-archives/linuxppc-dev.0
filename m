@@ -1,17 +1,25 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 529761007D1
+Return-Path: <dwalker@codeaurora.org>
+Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
+	[199.106.114.254])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wolverine01.qualcomm.com",
+	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 024D5B70DE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Nov 2010 22:08:06 +1100 (EST)
-From: Milton Miller <miltonm@bga.com>
-To: Jim Keniston <jkenisto@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: fix call to subpage_protection()
-In-Reply-To: <1290110779.32570.9.camel@pasglop>
-References: <1290104610.3067.32.camel@localhost>
-	<1290110779.32570.9.camel@pasglop>
-Message-Id: <mdm-initramfs-debug-fix@mdm.bga.com>
-Date: Tue, 30 Nov 2010 05:08:00 -0600
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+	Wed,  1 Dec 2010 06:36:38 +1100 (EST)
+From: Daniel Walker <dwalker@codeaurora.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers: char: hvc: add arm JTAG DCC console support
+Date: Tue, 30 Nov 2010 11:25:39 -0800
+Message-Id: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Daniel Walker <dwalker@codeaurora.org>, Mike Frysinger <vapier@gentoo.org>,
+	Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@fluxnic.net>,
+	Tony Lindgren <tony@atomide.com>, linux-arm-msm@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,119 +29,200 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[fixed Michael Neuling's address]
+This driver adds a basic console that uses the arm JTAG
+DCC to transfer data back and forth. It has support for
+ARMv6 and ARMv7.
 
-On Fri Nov 19 about 07:06:19 EST in 2010, Benjamin Herrenschmidt wrote:
-> On Thu, 2010-11-18 at 10:23 -0800, Jim Keniston wrote:
-> > FWIW, this failure isn't an obstacle for me.  I'm in no way attached to
-> > my legacy configuration; pseries_defconfig is fine for me.  On the other
-> > hand, I can continue testing fixes, and/or make my system available to
-> > other IBMers when I'm not using it, if you want to continue to pursue
-> > this problem.
+This console is created under the HVC driver, and should be named
+/dev/hvcX (or /dev/hvc0 for example).
 
-> From the look of it your "legacy" config is lacking the necessary
-> storage drivers...
-> 
-
-Looking closer, it would appear he intended to get them from initramfs
-but unpacking it failed.  Pulling from his log in the original message:
-
-> > 
-> > Calling ibm,client-architecture-support... not implemented
-> > command line: root=/dev/disk/by-id/scsi-SIBM_ST373453LC_3HW1CQ1400007445Q2A4-part3 quiet profile=2 sysrq=1 insmod=sym53c8xx insmod=ipr crashkernel=256M-:128M loglevel=8 
-> > 
-> > memory layout at init:
-> >   memory_limit : 0000000000000000 (16 MB aligned)
-> >   alloc_bottom : 0000000003550000
-> >   alloc_top    : 0000000008000000
-> >   alloc_top_hi : 0000000070000000
-> >   amo_top      : 0000000008000000
-> >   ram_top      : 0000000070000000
-> > instantiating rtas at 0x00000000076a0000... done
-> > boot cpu hw idx 0
-> > starting cpu hw idx 2... done
-> > copying OF device tree...
-> > Building dt strings...
-> > Building dt structure...
-> > Device tree strings 0x0000000003560000 -> 0x000000000356129c
-> > Device tree struct  0x0000000003570000 -> 0x0000000003580000
-..
-> > Found initrd at 0xc000000002d00000:0xc00000000354e28a
-..
-> > NET: Registered protocol family 1
-> > PCI: CLS 128 bytes, default 128
-> > Unpacking initramfs...
-> > Initramfs unpacking failed: read error
-
-"read error" occurs in lib/decompress_inflate.c if the fill routine
-returns a negative count, which would inlclude a NULL fill pointer like
-init/initramfs.c.
-
-
-Maybe this debugging patch (against 2.6.35, applys with small offset to 
-2.6.37-rc4) can help isolate the corruption?
-
-From: Milton Miller <miltonm.bga.com>
-initramfs: show input and output offsets on unpacking failures
-
-When the initramfs input is corrupted, having the pointer to the buffer
-segment being decompressed, and the decompress input and output byte
-counts from the compressed stream can help isolate the source of the
-corruption.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Nicolas Pitre <nico@fluxnic.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Daniel Walker <dwalker@codeaurora.org>
 ---
- init/initramfs.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/char/Kconfig   |    9 +++
+ drivers/char/Makefile  |    1 +
+ drivers/char/hvc_dcc.c |  133 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 143 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/char/hvc_dcc.c
 
-Index: sim/init/initramfs.c
-===================================================================
---- sim.orig/init/initramfs.c	2009-07-13 18:44:56.000000000 -0500
-+++ sim/init/initramfs.c	2009-07-13 18:59:32.000000000 -0500
-@@ -384,6 +384,9 @@ static int __init write_buffer(char *buf
- 	return len - count;
- }
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 43d3395..d4a7776 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -682,6 +682,15 @@ config HVC_UDBG
+        select HVC_DRIVER
+        default n
  
-+static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
-+static unsigned bytes_out;  /* count of chars processed from current archive */
++config HVC_DCC
++       bool "ARM JTAG DCC console"
++       depends on ARM
++       select HVC_DRIVER
++       help
++         This console uses the JTAG DCC on ARM to create a console under the HVC
++	 driver. This console is used through a JTAG only on ARM. If you don't have
++	 a JTAG then you probably don't want this option.
 +
- static int __init flush_buffer(void *bufv, unsigned len)
- {
- 	char *buf = (char *) bufv;
-@@ -393,6 +396,7 @@ static int __init flush_buffer(void *buf
- 		return -1;
- 	while ((written = write_buffer(buf, len)) < len && !message) {
- 		char c = buf[written];
-+		bytes_out += written;
- 		if (c == '0') {
- 			buf += written;
- 			len -= written;
-@@ -407,8 +411,6 @@ static int __init flush_buffer(void *buf
- 	return origLen;
- }
- 
--static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
--
- #include <linux/decompress/generic.h>
- 
- static char * __init unpack_to_rootfs(char *buf, unsigned len)
-@@ -430,6 +432,8 @@ static char * __init unpack_to_rootfs(ch
- 	message = NULL;
- 	while (!message && len) {
- 		loff_t saved_offset = this_header;
-+		bytes_out = 0;
-+		my_inptr = 0;
- 		if (*buf == '0' && !(this_header & 3)) {
- 			state = Start;
- 			written = write_buffer(buf, len);
-@@ -462,6 +466,9 @@ static char * __init unpack_to_rootfs(ch
- 		buf += my_inptr;
- 		len -= my_inptr;
- 	}
-+	if (message) {
-+		printk(KERN_ERR "Failed unpacking at %p input %d output %d \n",buf - my_inptr, my_inptr, bytes_out);
+ config VIRTIO_CONSOLE
+ 	tristate "Virtio console"
+ 	depends on VIRTIO
+diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+index ba53ec9..fa0b824 100644
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -34,6 +34,7 @@ obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
+ obj-$(CONFIG_HVC_ISERIES)	+= hvc_iseries.o
+ obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
+ obj-$(CONFIG_HVC_TILE)		+= hvc_tile.o
++obj-$(CONFIG_HVC_DCC)		+= hvc_dcc.o
+ obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
+ obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
+ obj-$(CONFIG_HVC_IRQ)		+= hvc_irq.o
+diff --git a/drivers/char/hvc_dcc.c b/drivers/char/hvc_dcc.c
+new file mode 100644
+index 0000000..6470f63
+--- /dev/null
++++ b/drivers/char/hvc_dcc.c
+@@ -0,0 +1,133 @@
++/* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA.
++ */
++
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++
++#include <asm/processor.h>
++
++#include "hvc_console.h"
++
++/* DCC Status Bits */
++#define DCC_STATUS_RX		(1 << 30)
++#define DCC_STATUS_TX		(1 << 29)
++
++static inline u32 __dcc_getstatus(void)
++{
++	u32 __ret;
++
++	asm("mrc p14, 0, %0, c0, c1, 0	@ read comms ctrl reg"
++		: "=r" (__ret) : : "cc");
++
++	return __ret;
++}
++
++
++#if defined(CONFIG_CPU_V7)
++static inline char __dcc_getchar(void)
++{
++	char __c;
++
++	asm("get_wait:	mrc p14, 0, pc, c0, c1, 0                          \n\
++			bne get_wait                                       \n\
++			mrc p14, 0, %0, c0, c5, 0	@ read comms data reg"
++		: "=r" (__c) : : "cc");
++
++	return __c;
++}
++#else
++static inline char __dcc_getchar(void)
++{
++	char __c;
++
++	asm("mrc p14, 0, %0, c0, c5, 0	@ read comms data reg"
++		: "=r" (__c));
++
++	return __c;
++}
++#endif
++
++#if defined(CONFIG_CPU_V7)
++static inline void __dcc_putchar(char c)
++{
++	asm("put_wait:	mrc p14, 0, pc, c0, c1, 0                 \n\
++			bcs put_wait                              \n\
++			mcr p14, 0, %0, c0, c5, 0                   "
++	: : "r" (c) : "cc");
++}
++#else
++static inline void __dcc_putchar(char c)
++{
++	asm("mcr p14, 0, %0, c0, c5, 0	@ write a char"
++		: /* no output register */
++		: "r" (c));
++}
++#endif
++
++static int hvc_dcc_put_chars(uint32_t vt, const char *buf, int count)
++{
++	int i;
++
++	for (i = 0; i < count; i++) {
++		while (__dcc_getstatus() & DCC_STATUS_TX)
++			cpu_relax();
++
++		__dcc_putchar((char)(buf[i] & 0xFF));
 +	}
- 	dir_utime();
- 	kfree(name_buf);
- 	kfree(symlink_buf);
++
++	return count;
++}
++
++static int hvc_dcc_get_chars(uint32_t vt, char *buf, int count)
++{
++	int i;
++
++	for (i = 0; i < count; ++i) {
++		int c = -1;
++
++		if (__dcc_getstatus() & DCC_STATUS_RX)
++			c = __dcc_getchar();
++		if (c < 0)
++			break;
++		buf[i] = c;
++	}
++
++	return i;
++}
++
++static const struct hv_ops hvc_dcc_get_put_ops = {
++	.get_chars = hvc_dcc_get_chars,
++	.put_chars = hvc_dcc_put_chars,
++};
++
++static int __init hvc_dcc_console_init(void)
++{
++	hvc_instantiate(0, 0, &hvc_dcc_get_put_ops);
++	return 0;
++}
++console_initcall(hvc_dcc_console_init);
++
++static int __init hvc_dcc_init(void)
++{
++	hvc_alloc(0, 0, &hvc_dcc_get_put_ops, 128);
++	return 0;
++}
++device_initcall(hvc_dcc_init);
+-- 
+1.7.1
+
+-- 
+Sent by a consultant of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
