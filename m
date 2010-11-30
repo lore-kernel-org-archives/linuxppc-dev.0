@@ -1,26 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 8FF501007D1
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
+	by ozlabs.org (Postfix) with SMTP id B701EB70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Dec 2010 08:23:14 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Nicolas Pitre <nico@fluxnic.net>
-Subject: Re: [PATCH] drivers: char: hvc: add arm JTAG DCC console support
-Date: Tue, 30 Nov 2010 22:17:19 +0100
-References: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>
-	<alpine.LFD.2.00.1011301455400.9313@xanadu.home>
-In-Reply-To: <alpine.LFD.2.00.1011301455400.9313@xanadu.home>
+	Wed,  1 Dec 2010 10:07:59 +1100 (EST)
+Received: by qwj9 with SMTP id 9so823649qwj.35
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Nov 2010 15:07:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201011302217.19596.arnd@arndb.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-	Daniel Walker <dwalker@codeaurora.org>, Mike Frysinger <vapier@gentoo.org>,
-	Tony Lindgren <tony@atomide.com>, linux-arm-msm@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1291080609.2648.102.camel@concordia>
+References: <1289852106-17577-1-git-send-email-tmarri@apm.com>
+	<20101129183535.GA5603@zod.rchland.ibm.com>
+	<1291080609.2648.102.camel@concordia>
+Date: Tue, 30 Nov 2010 15:07:56 -0800
+Message-ID: <AANLkTinjdMDL0QDU9Y5erGOEOr1AGUcJTNB5JNpU6gkf@mail.gmail.com>
+Subject: Re: [PATCH v2] PPC4xx: Adding PCI(E) MSI support
+From: Tirumala Marri <tmarri@apm.com>
+To: michael@ellerman.id.au
+Content-Type: multipart/alternative; boundary=0016361e81345bef6a04964d42d2
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 30 November 2010, Nicolas Pitre wrote:
-> > Cc: Tony Lindgren <tony@atomide.com>
-> > Cc: Arnd Bergmann <arnd@arndb.de>
-> > Cc: Nicolas Pitre <nico@fluxnic.net>
-> > Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> > Cc: Mike Frysinger <vapier@gentoo.org>
-> > Signed-off-by: Daniel Walker <dwalker@codeaurora.org>
-> 
-> Acked-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+--0016361e81345bef6a04964d42d2
+Content-Type: text/plain; charset=ISO-8859-1
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+On Mon, Nov 29, 2
+>
+> >
+> > My apologies in the delay here.  I was on holiday for a while and never
+> > got back to review this.  A few notes below.
+> >
+> > Also, I've added a few patches from Victor for suspend/idle support in
+> > my next branch that cause a minor conflict with this one.  It's not a
+> > big deal to fix, but if you rework the patch for the comments, rebasing
+> > it to my next branch would be appreciated.
+>
+Sure thanks for reviewing. I will fix the suggested changes and send the
+updated patch.
 
-> This doesn't support both ARMv6 and ARMv7 at run time, but this can 
-> trivially be added later when needed.
+--0016361e81345bef6a04964d42d2
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I was about to make a similar comment when I saw yours ;-)
+<br><br><div class=3D"gmail_quote">On Mon, Nov 29, 2<blockquote class=3D"gm=
+ail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-le=
+ft:1ex;"><div><div class=3D"h5">
+&gt;<br>
+&gt; My apologies in the delay here. =A0I was on holiday for a while and ne=
+ver<br>
+&gt; got back to review this. =A0A few notes below.<br>
+&gt;<br>
+&gt; Also, I&#39;ve added a few patches from Victor for suspend/idle suppor=
+t in<br>
+&gt; my next branch that cause a minor conflict with this one. =A0It&#39;s =
+not a<br>
+&gt; big deal to fix, but if you rework the patch for the comments, rebasin=
+g<br>
+&gt; it to my next branch would be appreciated.<br></div></div></blockquote=
+><div>Sure thanks for reviewing. I will fix the suggested changes and send =
+the updated patch.=A0</div></div>
+
+--0016361e81345bef6a04964d42d2--
