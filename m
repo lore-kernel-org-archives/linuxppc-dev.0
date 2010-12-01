@@ -1,30 +1,39 @@
-Return-Path: <sboyd@codeaurora.org>
-Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
-	[199.106.114.254])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wolverine01.qualcomm.com",
-	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CBBC5B70A7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Dec 2010 07:21:09 +1100 (EST)
-Message-ID: <4CF6AE04.6030201@codeaurora.org>
-Date: Wed, 01 Dec 2010 12:20:20 -0800
-From: Stephen Boyd <sboyd@codeaurora.org>
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B729B70CC
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Dec 2010 08:16:40 +1100 (EST)
+Received: from mail3-db3 (localhost.localdomain [127.0.0.1])	by
+	mail3-db3-R.bigfish.com (Postfix) with ESMTP id 7691E29074C	for
+	<linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 21:16:36 +0000 (UTC)
+Received: from DB3EHSMHS010.bigfish.com (unknown [10.3.81.253])	by
+	mail3-db3.bigfish.com (Postfix) with ESMTP id 3BB0218A804C	for
+	<linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 21:16:22 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	oB1LIEMv008981	for
+	<linuxppc-dev@ozlabs.org>; Wed, 1 Dec 2010 14:18:14 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	oB1LX4KN003559	for <linuxppc-dev@ozlabs.org>;
+	Wed, 1 Dec 2010 15:33:04 -0600 (CST)
+Date: Wed, 1 Dec 2010 15:16:12 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [MPC52xx]Latency issue with DMA on FEC
+Message-ID: <20101201151612.3ce3f06e@udp111988uds.am.freescale.net>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ABDB@saturn3.aculab.com>
+References: <1291215130.4881.55.camel@gandalf.stny.rr.com>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8ABDB@saturn3.aculab.com>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@codeaurora.org>, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] drivers: char: hvc: add arm JTAG DCC console support
-References: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>	
-	<4CF5DD63.40803@codeaurora.org>
-	<1291229696.14404.39.camel@c-dwalke-linux.qualcomm.com>
-In-Reply-To: <1291229696.14404.39.camel@c-dwalke-linux.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mike Frysinger <vapier@gentoo.org>,
-	Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@fluxnic.net>,
-	linux-arm-msm@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Eric Dumazet <eric.dumazet@gmail.com>,
+	Jean-Michel Hautbois <jhautbois@gmail.com>,
+	Steven Rostedt <rostedt@goodmis.org>, linux-rt-users@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,69 +43,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/01/2010 10:54 AM, Daniel Walker wrote:
-> Are you talking about __dcc_getstatus only? I don't think adding
-> volatile is going to hurt anything, if not having it causes problems.
->
+On Wed, 1 Dec 2010 15:09:54 +0000
+David Laight <David.Laight@ACULAB.COM> wrote:
 
-Just marking __dcc_getstatus volatile gives me
+> The in_le32() not only contains the unwanted 'sync', but also
+> a 'twi' (trap immediate - NFI exactly what this does) and 'isync'.
 
-00000038 <hvc_dcc_get_chars>:
-  38:   ee10fe11        mrc     14, 0, pc, cr0, cr1, {0}
-  3c:   1afffffd        bne     38 <hvc_dcc_get_chars>
-  40:   ee103e15        mrc     14, 0, r3, cr0, cr5, {0}
-  44:   e3a00000        mov     r0, #0  ; 0x0
-  48:   e6ef3073        uxtb    r3, r3
-  4c:   ea000004        b       64 <hvc_dcc_get_chars+0x2c>
-  50:   ee10ce11        mrc     14, 0, ip, cr0, cr1, {0}
-  54:   e31c0101        tst     ip, #1073741824 ; 0x40000000
-  58:   012fff1e        bxeq    lr
-  5c:   e7c13000        strb    r3, [r1, r0]
-  60:   e2800001        add     r0, r0, #1      ; 0x1
-  64:   e1500002        cmp     r0, r2
-  68:   bafffff8        blt     50 <hvc_dcc_get_chars+0x18>
-  6c:   e12fff1e        bx      lr
+It turns a data dependency into a flow dependency.  It's basically equivalent to:
 
-Seems the compiler keeps the value of __dcc_getchar() in r3 for the
-duration of the loop. So we need to mark that one volatile too. I don't
-think __dcc_putchar() needs to be marked volatile but it probably
-doesn't hurt.
+lwz	rX, ...
+cmpw	rX, rX
+bne	1f
+1: isync
 
->
-> We could maybe drop the looping for TX, but RX has no C based looping
-> even tho for v7 it's recommended that we loop (presumably for v6 it's
-> not recommended).
->
+> The 'isync' is particularly horrid and unnecessary (aborts
+> the instruction queue and refeches the opcode bytes)
 
-Definitely for TX since it seems like a redundant loop, but I agree RX
-code has changed. Instead of
+The isync makes sure that the twi has completed before proceeding.
 
-If RX buffer full
-Poll for RX buffer full
-Read character from RX buffer
+Note that the guarded, cache-inhibited load itself can be pretty
+painful -- the core can't restart it, so it must complete before you
+can take an interrupt.
 
-we would have
+> The very slow in_le32() might be there to give semi-synchronous
+> traps on address fault - but unless the hardware is being probed
+> that really isn't necessary.
 
-If RX buffer full
-Read character from RX buffer
+There are times when you really want to be sure that the I/O is
+finished before proceeding with something that isn't a load/store and
+thus can't be serialized with normal barriers.
 
-which doesn't seem all that different assuming the RX buffer doesn't go
-from full to empty between the If and Poll steps. Hopefully Tony knows more.
+E.g. you're about to execute instructions in a physical address window
+that you just set up (or even just create a non-guarded mapping to it
+-- could get speculative accesses any time), or you just masked an
+interrupt at the PIC (with a readback to flush) and are about to enable
+MSR[EE].
 
-> Like this?
->
-> 	for (i = 0; i < count; ++i) {
->
-> 		if (__dcc_getstatus() & DCC_STATUS_RX)
-> 			buf[i] = __dcc_getchar();
-> 		else
-> 			break;
-> 	}
->
-> It's a micro clean up I guess ..
+Most of the time, though, it's overkill.  It should probably be an
+alternate accessor form, or maybe a wait_for_io() wrapper -- if it can
+be shown to make a real performance difference.
 
-Yes, it's much clearer that way.
-
--- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+-Scott
