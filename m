@@ -1,31 +1,17 @@
-Return-Path: <jkenisto@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 83F3FB6EE9
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 18:25:08 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB17MfTS012374
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Dec 2010 00:22:41 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	oB17OxZn216288
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Dec 2010 00:24:59 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id oB17OwAN016881
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Dec 2010 00:24:58 -0700
-Subject: Re: [PATCH 01/13] powerpc/nvram: Move things out of asm/nvram.h
-From: Jim Keniston <jkenisto@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
-References: <1291096063-14386-1-git-send-email-benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 30 Nov 2010 23:24:56 -0800
-Message-ID: <1291188297.2842.3.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, jkensito@us.ibm.com
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 0C5FAB70A3
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 19:16:43 +1100 (EST)
+Received: by wyf28 with SMTP id 28so9111234wyf.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Dec 2010 00:16:41 -0800 (PST)
+MIME-Version: 1.0
+Date: Wed, 1 Dec 2010 09:16:41 +0100
+Message-ID: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
+Subject: [MPC52xx]Latency issue with DMA on FEC
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-11-30 at 16:47 +1100, benh@kernel.crashing.org wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> This moves a bunch of definitions out of asm/nvram.h to the files
-> that use them or just outright remove completely unused stuff.
-> 
-> We leave the partition signatures definitions, they will be useful
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Hi lists !
 
-I applied the whole 13-patch set, and built and booted the result.
-Seems fine.
+I measured the latency and the jitter of the RX and TX ethernet paths
+on my MPC5200 board.
+The RX path is quite good, but the TX path can be slow.
 
-Tested-by: Jim Keniston <jkenisto@us.ibm.com>
+[ 1218.976762] [mpc52xx_fec_start_xmit]Delay >30us for dma_map_single
+=3D> 76364 ns
+[ 1219.188405] [mpc52xx_fec_tx_interrupt]Delay >30us for
+dma_unmap_single =3D> 34515 ns
+[ 1220.628785] [mpc52xx_fec_start_xmit]Delay >30us for
+bcom_submit_next_buffer =3D> 97273 ns
+[ 1225.776784] [mpc52xx_fec_tx_interrupt]Delay >30us for
+dma_unmap_single =3D> 95273 ns
 
-Jim
+As one can see, this is obviously problematic.
+The first function I analyzed is bcom_submit_next_buffer() =3D> This
+function doesn't do lots of things, except a call to mb().
+
+I have been looking to the "MPC603e RISC Microprocessor User's Manual"
+and especially the chapter named "2.3.4.7 Memory Synchronization
+Instructions=E2=80=94UISA".
+
+Here is a paragraph which explains a lot :
+
+"The functions performed by the sync instruction normally take a
+signi=EF=AC=81cant amount of time
+to complete; as a result, frequent use of this instruction may
+adversely affect performance.
+In addition, the number of cycles required to complete a sync
+instruction depends on system
+parameters and on the processor's state when the instruction is issued."
+
+I am using a real time kernel, and this is a problem, as it is not
+deterministic to use this instruction.
+Is there a way to avoid this ?
+
+I will now focus on the dma_map_single() and dma_unmap_single functions...
+
+Thanks in advance for your help,
+Best Regards,
+
+JM
