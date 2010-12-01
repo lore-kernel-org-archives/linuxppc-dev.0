@@ -1,17 +1,33 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Basic driver devel questions ?
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201012011115.00960.dargaud@lpsc.in2p3.fr>
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-1TyZZ3c5+7lPbX//3fST"
-Date: Wed, 01 Dec 2010 23:19:01 +1100
-Message-ID: <1291205941.11595.9.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <JOFT@gmx.de>
+Received: from smtp.missinglinkelectronics.com
+	(odin.missinglinkelectronics.com [188.40.137.181])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 466B7B7080
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Dec 2010 00:31:04 +1100 (EST)
+Received: from localhost (odin.missinglinkelectronics.com [127.0.0.1])
+	by smtp.missinglinkelectronics.com (Postfix) with ESMTP id B842A386359
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  1 Dec 2010 14:25:34 +0100 (CET)
+Received: from smtp.missinglinkelectronics.com ([127.0.0.1])
+	by localhost (smtp.missinglinkelectronics.com [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id AL9MvutCt313 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  1 Dec 2010 14:25:32 +0100 (CET)
+Received: from [10.89.231.32] (unknown [217.10.6.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested) (Authenticated sender: joachim)
+	by smtp.missinglinkelectronics.com (Postfix) with ESMTPSA id
+	6CB54386358 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  1 Dec 2010 14:25:32 +0100 (CET)
+Message-ID: <4CF64CD7.2060802@gmx.de>
+Date: Wed, 01 Dec 2010 14:25:43 +0100
+From: Joachim Foerster <JOFT@gmx.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: _extending_ platform support options?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,38 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
---=-1TyZZ3c5+7lPbX//3fST
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+currently I'm wondering what the preferred/recommend way of _extending_ an existing 
+"Platform support" option is?
 
-On Wed, 2010-12-01 at 11:15 +0100, Guillaume Dargaud wrote:
-> Hello all,
-> is it OK if I ask basic driver development questions here ?
-> Could you recommend a better forum for that maybe ?
+We are working with custom design/boards based on Virtex4/5. So we are primarily using the 
+  CONFIG_XILINX_VIRTEX*_GENERIC_BOARD options. In our case we have some special needs, 
+like custom ppc_md.restart(), ppc_md.power_off() or ppc_md.show_cpuinfo().
 
-Hi Guillaume,
+Till now, we just duplicated arch/powerpc/platforms/4?x/virtex.c and added our special 
+stuff. Properly renaming everything, etc ...
 
-I guess it depends how basic they are :)
+An alternative could be to add a virtex_my.c which extends virtex.c, like this
+(also like virtex_ml510.c extends virtex.c):
 
-If they're basic _powerpc_ driver questions then this is probably the
-right place.
+static void virtex_my_show_cpuinfo(struct seq_file *m)
+{
+	seq_printf(m, something);
+}
 
-But I'd say just ask and maybe someone will be able to help, or maybe
-they'll point you somewhere else.
+static int __init virtex_mle_init(void)
+{
+	ppc_md.show_cpuinfo = virtex_my_show_cpuinfo;
+	return 0;
+}
+machine_core_initcall(virtex, virtex_my_init);
 
-cheers
+Though, to me, it does not seem really OK to assign ppc_md members that way. The original 
+struct machdep for "virtex" (which is defined in virtex.c with define_machine()) is not 
+adjusted either. Ok, we could modify that one, too.
+Especially I'm not sure if it is OK to use machine_core_initcall() for such modifications.
 
---=-1TyZZ3c5+7lPbX//3fST
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+So my question is: Is there any recommended way for doing such "extensions"? Or is it OK 
+to just duplicate virtex.c (which does not seem really OK, too)?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkz2PTIACgkQdSjSd0sB4dLo9gCgyzMJJQAuoqbtk6KxWgb5lBtS
-VK4AnAjA8A7G9e5RYrAMreIE2M2LjKAc
-=lA10
------END PGP SIGNATURE-----
-
---=-1TyZZ3c5+7lPbX//3fST--
+Thanks,
+  Joachim
