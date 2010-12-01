@@ -1,26 +1,15 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 3CC86B6EF1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Dec 2010 06:30:06 +1100 (EST)
-Date: Wed, 1 Dec 2010 11:28:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Daniel Walker <dwalker@codeaurora.org>
-Subject: Re: [PATCH] drivers: char: hvc: add arm JTAG DCC console support
-Message-ID: <20101201192856.GA731@suse.de>
-References: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>
-	<4CF5DD63.40803@codeaurora.org>
-	<1291229696.14404.39.camel@c-dwalke-linux.qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1291229696.14404.39.camel@c-dwalke-linux.qualcomm.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mike Frysinger <vapier@gentoo.org>,
-	Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@fluxnic.net>,
-	Tony Lindgren <tony@atomide.com>, linux-arm-msm@vger.kernel.org,
-	Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <dirk.brandewie@gmail.com>
+From: dirk.brandewie@gmail.com
+To: linux-serial@vger.kernel.org
+Subject: [PATCH 0/4] V2 Add ability to link device blob(s) into vmlinux
+Date: Wed,  1 Dec 2010 11:41:31 -0800
+Message-Id: <cover.1291231792.git.dirk.brandewie@gmail.com>
+In-Reply-To: <cover.1289943240.git.dirk.brandewie@gmail.com>
+References: <cover.1289943240.git.dirk.brandewie@gmail.com>
+Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
+	microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sodaville@linutronix.de,
+	Dirk Brandewie <dirk.brandewie@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 01, 2010 at 10:54:56AM -0800, Daniel Walker wrote:
-> On Tue, 2010-11-30 at 21:30 -0800, Stephen Boyd wrote:
-> > On 11/30/2010 11:25 AM, Daniel Walker wrote:
-> > > @@ -682,6 +682,15 @@ config HVC_UDBG
-> > >         select HVC_DRIVER
-> > >         default n
-> > >  
-> > > +config HVC_DCC
-> > > +       bool "ARM JTAG DCC console"
-> > > +       depends on ARM
-> > > +       select HVC_DRIVER
-> > > +       help
-> > > +         This console uses the JTAG DCC on ARM to create a console under the HVC
-> > 
-> > Looks like you added one too many spaces for indent here.
-> 
-> The first line is fine, but the other two might need an extra space.
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-For this, or any other changes you want, I'll gladly take a follow-on
-patch as this one is already in my tty-next tree.
+This patch set adds the ability to link device tree blobs into
+vmlinux. 
 
-thanks,
+Patch 1 implements the changes to include/asm-generic/vmlinux.lds.h and
+adds a generic rule for generating DTB objects to be linked vmlinux.
 
-greg k-h
+Patch 2 implements linking a DTB into an x86 image.
+
+Patch 3-4 move {powerpc,microblaze}/boot/Makefile to use the dtc rule
+in patch 1.
+
+This patch set has been tested on x86.
+
+Powerpc and Microblaze have been compile tested with and without patch
+3 and 4 applied.
+
+Changes from V1:
+
+Documentation added for dtc command in Makefile.lib to
+Documentation/kbuild/makefiles.txt
+Separate DTB_ALIGNMENT define removed.
+FORCE removed from dtc rule.
+Removed hardcoded path to dts files from dtc command.  
+Moved %.dtb: %.dts rule to arch specific makefiles. 
+ 
+Patch for adding kernel command line option to pass in dtb_compat
+string dropped from this set will be submitted seperately.
+
+Dirk Brandewie (4):
+  of: Add support for linking device tree blobs into vmlinux
+  x86/of: Add building device tree blob(s) into image.
+  of/powerpc: Use generic rule to build dtb's
+  microblaze/of: Use generic rule to build dtb's
+
+ Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
+ arch/microblaze/boot/Makefile      |   10 ++--------
+ arch/powerpc/boot/Makefile         |    8 +++-----
+ arch/x86/platform/ce4100/Makefile  |   10 ++++++++++
+ include/asm-generic/vmlinux.lds.h  |   15 ++++++++++++---
+ scripts/Makefile.lib               |   21 ++++++++++++++++++++-
+ 6 files changed, 62 insertions(+), 17 deletions(-)
+
+-- 
+1.7.2.3
