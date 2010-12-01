@@ -1,32 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C6A2B70A7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Dec 2010 00:48:22 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB1DYf8b029273
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Dec 2010 06:34:41 -0700
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id oB1Dm6sZ043998
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Dec 2010 06:48:06 -0700
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id oB1Dm69U013690
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Dec 2010 06:48:06 -0700
-Date: Wed, 1 Dec 2010 08:47:19 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joachim Foerster <JOFT@gmx.de>
-Subject: Re: _extending_ platform support options?
-Message-ID: <20101201134719.GA1053@zod.rchland.ibm.com>
-References: <4CF64CD7.2060802@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4CF64CD7.2060802@gmx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 6A9CFB708B
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Dec 2010 01:52:15 +1100 (EST)
+Subject: Re: [MPC52xx]Latency issue with DMA on FEC
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Jean-Michel Hautbois <jhautbois@gmail.com>
+In-Reply-To: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
+References: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 01 Dec 2010 09:52:10 -0500
+Message-ID: <1291215130.4881.55.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-rt-users@vger.kernel.org,
+	Eric Dumazet <eric.dumazet@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 01, 2010 at 02:25:43PM +0100, Joachim Foerster wrote:
->Hi all,
->
->currently I'm wondering what the preferred/recommend way of
->_extending_ an existing "Platform support" option is?
->
->We are working with custom design/boards based on Virtex4/5. So we
->are primarily using the  CONFIG_XILINX_VIRTEX*_GENERIC_BOARD options.
->In our case we have some special needs, like custom ppc_md.restart(),
->ppc_md.power_off() or ppc_md.show_cpuinfo().
->
->Till now, we just duplicated arch/powerpc/platforms/4?x/virtex.c and
->added our special stuff. Properly renaming everything, etc ...
->
->An alternative could be to add a virtex_my.c which extends virtex.c, like this
->(also like virtex_ml510.c extends virtex.c):
->
->static void virtex_my_show_cpuinfo(struct seq_file *m)
->{
->	seq_printf(m, something);
->}
->
->static int __init virtex_mle_init(void)
->{
->	ppc_md.show_cpuinfo = virtex_my_show_cpuinfo;
->	return 0;
->}
->machine_core_initcall(virtex, virtex_my_init);
->
->Though, to me, it does not seem really OK to assign ppc_md members
->that way. The original struct machdep for "virtex" (which is defined
->in virtex.c with define_machine()) is not adjusted either. Ok, we
->could modify that one, too.
->Especially I'm not sure if it is OK to use machine_core_initcall() for such modifications.
->
->So my question is: Is there any recommended way for doing such
->"extensions"? Or is it OK to just duplicate virtex.c (which does not
->seem really OK, too)?
+On Wed, 2010-12-01 at 09:16 +0100, Jean-Michel Hautbois wrote:
+> Hi lists !
+> 
+> I measured the latency and the jitter of the RX and TX ethernet paths
+> on my MPC5200 board.
+> The RX path is quite good, but the TX path can be slow.
+> 
+> [ 1218.976762] [mpc52xx_fec_start_xmit]Delay >30us for dma_map_single
+> => 76364 ns
+> [ 1219.188405] [mpc52xx_fec_tx_interrupt]Delay >30us for
+> dma_unmap_single => 34515 ns
+> [ 1220.628785] [mpc52xx_fec_start_xmit]Delay >30us for
+> bcom_submit_next_buffer => 97273 ns
+> [ 1225.776784] [mpc52xx_fec_tx_interrupt]Delay >30us for
+> dma_unmap_single => 95273 ns
+> 
+> As one can see, this is obviously problematic.
+> The first function I analyzed is bcom_submit_next_buffer() => This
+> function doesn't do lots of things, except a call to mb().
+> 
+> I have been looking to the "MPC603e RISC Microprocessor User's Manual"
+> and especially the chapter named "2.3.4.7 Memory Synchronization
+> Instructions—UISA".
+> 
+> Here is a paragraph which explains a lot :
+> 
+> "The functions performed by the sync instruction normally take a
+> signiﬁcant amount of time
+> to complete; as a result, frequent use of this instruction may
+> adversely affect performance.
+> In addition, the number of cycles required to complete a sync
+> instruction depends on system
+> parameters and on the processor's state when the instruction is issued."
+> 
+> I am using a real time kernel, and this is a problem, as it is not
+> deterministic to use this instruction.
+> Is there a way to avoid this ?
 
-Duplicate it as you have done, naming the file something unique.  We try
-to prevent unnecessary duplication of code, but sometimes it's cleaner
-to just have a separate board file instead.
+Don't use that hardware.
 
-josh
+When working with drivers there are times you must sync with the device.
+And if the device is nondeterministic, then find another set of hardware
+to use. Unfortunately, I think you may not find any.
+
+A mb() is usually used if you do a write to device and read from it.
+With out it, the CPU could perform the read before the write, which
+would give you an incorrect result. There's no other way around that.
+
+-- Steve
+
+> 
+> I will now focus on the dma_map_single() and dma_unmap_single functions...
+> 
+> Thanks in advance for your help,
+> Best Regards,
+> 
+> JM
