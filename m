@@ -1,19 +1,33 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id EB2EEB708B
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 20:59:14 +1100 (EST)
-Received: by wyf28 with SMTP id 28so9227830wyf.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Dec 2010 01:59:12 -0800 (PST)
+Return-Path: <B21284@freescale.com>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
+	[213.199.154.208])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 63773B708B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 21:20:40 +1100 (EST)
+Received: from mail61-am1 (localhost.localdomain [127.0.0.1])	by
+	mail61-am1-R.bigfish.com (Postfix) with ESMTP id 11FC7990530	for
+	<linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 10:05:28 +0000 (UTC)
+Received: from AM1EHSMHS004.bigfish.com (unknown [10.3.201.243])	by
+	mail61-am1.bigfish.com (Postfix) with ESMTP id AD77014E0050	for
+	<linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 10:05:27 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
+	id oB1A5Ke1007661	for <linuxppc-dev@ozlabs.org>;
+	Wed, 1 Dec 2010 03:05:20 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP
+	id oB1A5JqJ028890	for <linuxppc-dev@ozlabs.org>;
+	Wed, 1 Dec 2010 04:05:19 -0600 (CST)
+From: Mingkai Hu <Mingkai.hu@freescale.com>
+To: <linuxppc-dev@ozlabs.org>, <spi-devel-general@lists.sourceforge.net>
+Subject: [PATCH] eSPI: change the read behavior of the SPIRF
+Date: Wed, 1 Dec 2010 17:29:18 +0800
+Message-ID: <1291195758-12322-1-git-send-email-Mingkai.hu@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
-References: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
-Date: Wed, 1 Dec 2010 10:59:12 +0100
-Message-ID: <AANLkTimnxhzdpuixSaN=g2bVo2gT8Ys1qxQQ6X_AX5bV@mail.gmail.com>
-Subject: Re: [MPC52xx]Latency issue with DMA on FEC
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-rt-users@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com, Mingkai Hu <Mingkai.hu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,64 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/12/1 Jean-Michel Hautbois <jhautbois@gmail.com>:
-> Hi lists !
->
-> I measured the latency and the jitter of the RX and TX ethernet paths
-> on my MPC5200 board.
-> The RX path is quite good, but the TX path can be slow.
->
-> [ 1218.976762] [mpc52xx_fec_start_xmit]Delay >30us for dma_map_single
-> =3D> 76364 ns
-> [ 1219.188405] [mpc52xx_fec_tx_interrupt]Delay >30us for
-> dma_unmap_single =3D> 34515 ns
-> [ 1220.628785] [mpc52xx_fec_start_xmit]Delay >30us for
-> bcom_submit_next_buffer =3D> 97273 ns
-> [ 1225.776784] [mpc52xx_fec_tx_interrupt]Delay >30us for
-> dma_unmap_single =3D> 95273 ns
->
-> As one can see, this is obviously problematic.
-> The first function I analyzed is bcom_submit_next_buffer() =3D> This
-> function doesn't do lots of things, except a call to mb().
->
-> I have been looking to the "MPC603e RISC Microprocessor User's Manual"
-> and especially the chapter named "2.3.4.7 Memory Synchronization
-> Instructions=E2=80=94UISA".
->
-> Here is a paragraph which explains a lot :
->
-> "The functions performed by the sync instruction normally take a
-> signi=EF=AC=81cant amount of time
-> to complete; as a result, frequent use of this instruction may
-> adversely affect performance.
-> In addition, the number of cycles required to complete a sync
-> instruction depends on system
-> parameters and on the processor's state when the instruction is issued."
->
-> I am using a real time kernel, and this is a problem, as it is not
-> deterministic to use this instruction.
-> Is there a way to avoid this ?
->
-> I will now focus on the dma_map_single() and dma_unmap_single functions..=
-.
->
-> Thanks in advance for your help,
-> Best Regards,
->
-> JM
->
+The user must read N bytes of SPIRF (1 <= N <= 4) that do not exceed the
+amount of data in the receive FIFO, so read the SPIRF byte by byte when
+the data in receive FIFO is less than 4 bytes.
 
-dma_map_single() and dma_unmap_single() have the same instruction set
-used inside (sync) because there is a cleaning of cache.
-eieio instruction doesn't seem to be faster and I think that because
-cache is not inhibited, this is not a good way to do that.
+On Simics, when read N bytes that exceed the amout of data in receive
+FIFO, we can't read the data out, that is we can't clear the rx FIFO,
+then the CPU will loop on the espi rx interrupt.
 
-The delay introduced by the use of these instructions can be really
-big (about 70-90=C2=B5s) whereas in most cases it is relatively good (about
-10-20=C2=B5s).
-This jitter is a problem in my use case, and I think I am not the only one =
-:).
+Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
+---
+ drivers/spi/spi_fsl_espi.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-One other thing to say : I am using little packets (about 200 bytes).
-
-JM
+diff --git a/drivers/spi/spi_fsl_espi.c b/drivers/spi/spi_fsl_espi.c
+index e3b4f64..ae78926 100644
+--- a/drivers/spi/spi_fsl_espi.c
++++ b/drivers/spi/spi_fsl_espi.c
+@@ -507,16 +507,29 @@ void fsl_espi_cpu_irq(struct mpc8xxx_spi *mspi, u32 events)
+ 
+ 	/* We need handle RX first */
+ 	if (events & SPIE_NE) {
+-		u32 rx_data;
++		u32 rx_data, tmp;
++		u8 rx_data_8;
+ 
+ 		/* Spin until RX is done */
+ 		while (SPIE_RXCNT(events) < min(4, mspi->len)) {
+ 			cpu_relax();
+ 			events = mpc8xxx_spi_read_reg(&reg_base->event);
+ 		}
+-		mspi->len -= 4;
+ 
+-		rx_data = mpc8xxx_spi_read_reg(&reg_base->receive);
++		if (mspi->len >= 4) {
++			rx_data = mpc8xxx_spi_read_reg(&reg_base->receive);
++		} else {
++			tmp = mspi->len;
++			rx_data = 0;
++			while (tmp--) {
++				rx_data_8 = in_8((u8 *)&reg_base->receive);
++				rx_data |= (rx_data_8 << (tmp * 8));
++			}
++
++			rx_data <<= (4 - mspi->len) * 8;
++		}
++
++		mspi->len -= 4;
+ 
+ 		if (mspi->rx)
+ 			mspi->get_rx(rx_data, mspi);
+-- 
+1.7.0.4
