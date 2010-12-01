@@ -1,39 +1,39 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
-	[213.199.154.140])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B729B70CC
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Dec 2010 08:16:40 +1100 (EST)
-Received: from mail3-db3 (localhost.localdomain [127.0.0.1])	by
-	mail3-db3-R.bigfish.com (Postfix) with ESMTP id 7691E29074C	for
-	<linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 21:16:36 +0000 (UTC)
-Received: from DB3EHSMHS010.bigfish.com (unknown [10.3.81.253])	by
-	mail3-db3.bigfish.com (Postfix) with ESMTP id 3BB0218A804C	for
-	<linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 21:16:22 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
-	oB1LIEMv008981	for
-	<linuxppc-dev@ozlabs.org>; Wed, 1 Dec 2010 14:18:14 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oB1LX4KN003559	for <linuxppc-dev@ozlabs.org>;
-	Wed, 1 Dec 2010 15:33:04 -0600 (CST)
-Date: Wed, 1 Dec 2010 15:16:12 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [MPC52xx]Latency issue with DMA on FEC
-Message-ID: <20101201151612.3ce3f06e@udp111988uds.am.freescale.net>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ABDB@saturn3.aculab.com>
-References: <1291215130.4881.55.camel@gandalf.stny.rr.com>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8ABDB@saturn3.aculab.com>
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EE8F8B6F14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Dec 2010 08:50:43 +1100 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB1LS6vL010784
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Dec 2010 16:28:37 -0500
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id E83C572805D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  1 Dec 2010 16:50:36 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oB1LoaKJ389792
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Dec 2010 16:50:36 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oB1Loa5c011022
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Dec 2010 19:50:36 -0200
+Message-ID: <4CF6C32A.8000801@linux.vnet.ibm.com>
+Date: Wed, 01 Dec 2010 16:50:34 -0500
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Eric Dumazet <eric.dumazet@gmail.com>,
-	Jean-Michel Hautbois <jhautbois@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linux-rt-users@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH V2 2/3] powerpc: Poll VPA for topology changes and update
+	NUMA maps
+References: <20101109232436.17098.20055.sendpatchset@manic8ball.ltc.austin.ibm.com>
+	<20101109232501.17098.55112.sendpatchset@manic8ball.ltc.austin.ibm.com>
+	<1291002259.32570.274.camel@pasglop>
+In-Reply-To: <1291002259.32570.274.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: markn@au1.ibm.com, pmac@au1.ibm.com, tbreeds@au1.ibm.com,
+	lkessler@us.ibm.com, mjwolf@us.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,44 +43,333 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Dec 2010 15:09:54 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+On 11/28/2010 10:44 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2010-11-09 at 16:25 -0700, Jesse Larrew wrote:
+>> From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+>>
+>> This patch sets a timer during boot that will periodically poll the
+>> associativity change counters in the VPA. When a change in 
+>> associativity is detected, it retrieves the new associativity domain 
+>> information via the H_HOME_NODE_ASSOCIATIVITY hcall and updates the 
+>> NUMA node maps and sysfs entries accordingly. Note that since the 
+>> ibm,associativity device tree property does not exist on configurations 
+>> with both NUMA and SPLPAR enabled, no device tree updates are necessary.
+>>
+>> Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+>> ---
+> 
+> No fundamental objection, just quick nits before I merge:
 
-> The in_le32() not only contains the unwanted 'sync', but also
-> a 'twi' (trap immediate - NFI exactly what this does) and 'isync'.
+Thanks for the review!
 
-It turns a data dependency into a flow dependency.  It's basically equivalent to:
+>> +
+>> +/* Vrtual Processor Home Node (VPHN) support */
+>> +#define VPHN_NR_CHANGE_CTRS (8)
+>> +static u8 vphn_cpu_change_counts[NR_CPUS][VPHN_NR_CHANGE_CTRS];
+>> +static cpumask_t cpu_associativity_changes_mask;
+>> +static void topology_work_fn(struct work_struct *work);
+>> +static DECLARE_WORK(topology_work, topology_work_fn);
+> 
+> Remove the prototype for topology_work_fn() and puts the DECLARE_WORK
+> right below the function itself.
+> 
 
-lwz	rX, ...
-cmpw	rX, rX
-bne	1f
-1: isync
+No problem.
 
-> The 'isync' is particularly horrid and unnecessary (aborts
-> the instruction queue and refeches the opcode bytes)
+>> +static void topology_timer_fn(unsigned long ignored);
+>> +static struct timer_list topology_timer =
+>> +	TIMER_INITIALIZER(topology_timer_fn, 0, 0);
+> 
+> Same deal.
+> 
 
-The isync makes sure that the twi has completed before proceeding.
+Ditto.
 
-Note that the guarded, cache-inhibited load itself can be pretty
-painful -- the core can't restart it, so it must complete before you
-can take an interrupt.
+>> +static void set_topology_timer(void);
+>> +int stop_topology_update(void);
+>> +
+>> +/*
+>> + * Store the current values of the associativity change counters in the
+>> + * hypervisor.
+>> + */
+>> +static void setup_cpu_associativity_change_counters(void)
+>> +{
+>> +	int cpu = 0;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		int i = 0;
+>> +		u8 *counts = vphn_cpu_change_counts[cpu];
+>> +		volatile u8 *hypervisor_counts = lppaca[cpu].vphn_assoc_counts;
+>> +
+>> +		for (i = 0; i < VPHN_NR_CHANGE_CTRS; i++) {
+>> +			counts[i] = hypervisor_counts[i];
+>> +		}
+>> +	}
+>> +
+>> +	return;
+>> +}
+>> +
+>> +/*
+>> + * The hypervisor maintains a set of 8 associativity change counters in
+>> + * the VPA of each cpu that correspond to the associativity levels in the
+>> + * ibm,associativity-reference-points property. When an associativity
+>> + * level changes, the corresponding counter is incremented.
+>> + *
+>> + * Set a bit in cpu_associativity_changes_mask for each cpu whose home
+>> + * node associativity levels have changed.
+>> + */
+>> +static void update_cpu_associativity_changes_mask(void)
+>> +{
+>> +	int cpu = 0;
+>> +	cpumask_t *changes = &cpu_associativity_changes_mask;
+>> +
+>> +	cpumask_clear(changes);
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		int i;
+>> +		u8 *counts = vphn_cpu_change_counts[cpu];
+>> +		volatile u8 *hypervisor_counts = lppaca[cpu].vphn_assoc_counts;
+>> +
+>> +		for (i = 0; i < VPHN_NR_CHANGE_CTRS; i++) {
+>> +			if (hypervisor_counts[i] > counts[i]) {
+>> +				counts[i] = hypervisor_counts[i];
+>> +
+>> +				if (!(cpumask_test_cpu(cpu, changes)))
+>> +					cpumask_set_cpu(cpu, changes);
+>> +			}
+>> +		}
+> 
+> This is a tad sub-optimal. I'd just set a local variable, and
+> after the inside loop set the cpumask bit when that variable is set.
+> 
+> Also, keep another variable that accumulate all bits set and return
+> its value so you don't have to re-check the mask in the caller.
+> 
+> cpumask operations can be expensive.
+> 
 
-> The very slow in_le32() might be there to give semi-synchronous
-> traps on address fault - but unless the hardware is being probed
-> that really isn't necessary.
+You're right. That's more efficient.
 
-There are times when you really want to be sure that the I/O is
-finished before proceeding with something that isn't a load/store and
-thus can't be serialized with normal barriers.
+>> +	}
+>> +
+>> +	return;
+> 
+> You don't need a return; at the end of a function.
+> 
 
-E.g. you're about to execute instructions in a physical address window
-that you just set up (or even just create a non-guarded mapping to it
--- could get speculative accesses any time), or you just masked an
-interrupt at the PIC (with a readback to flush) and are about to enable
-MSR[EE].
+Ok.
 
-Most of the time, though, it's overkill.  It should probably be an
-alternate accessor form, or maybe a wait_for_io() wrapper -- if it can
-be shown to make a real performance difference.
+>> +}
+>> +
+>> +/* 6 64-bit registers unpacked into 12 32-bit associativity values */
+>> +#define VPHN_ASSOC_BUFSIZE (6*sizeof(u64)/sizeof(u32))
+>> +
+>> +/*
+>> + * Convert the associativity domain numbers returned from the hypervisor
+>> + * to the sequence they would appear in the ibm,associativity property.
+>> + */
+>> +static int vphn_unpack_associativity(const long *packed, unsigned int *unpacked)
+>> +{
+>> +	int i = 0;
+>> +	int nr_assoc_doms = 0;
+>> +	const u16 *field = (const u16*) packed;
+>> +
+>> +#define VPHN_FIELD_UNUSED	(0xffff)
+>> +#define VPHN_FIELD_MSB		(0x8000)
+>> +#define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
+>> +
+>> +	for (i = 0; i < VPHN_ASSOC_BUFSIZE; i++) {
+>> +		if (*field == VPHN_FIELD_UNUSED) {
+>> +			/* All significant fields processed, and remaining
+>> +			 * fields contain the reserved value of all 1's.
+>> +			 * Just store them.
+>> +			 */
+>> +			unpacked[i] = *((u32*)field);
+>> +			field += 2;
+>> +		}
+>> +		else if (*field & VPHN_FIELD_MSB) {
+>> +			/* Data is in the lower 15 bits of this field */
+>> +			unpacked[i] = *field & VPHN_FIELD_MASK;
+>> +			field++;
+>> +			nr_assoc_doms++;
+>> +		}
+>> +		else {
+>> +			/* Data is in the lower 15 bits of this field
+>> +			 * concatenated with the next 16 bit field
+>> +			 */
+>> +			unpacked[i] = *((u32*)field);
+>> +			field += 2;
+>> +			nr_assoc_doms++;
+>> +		}
+>> +	}
+>> +
+>> +	return nr_assoc_doms;
+>> +}
+>> +
+>> +/*
+>> + * Retrieve the new associativity information for a virtual processor's
+>> + * home node.
+>> + */
+>> +static long hcall_vphn(unsigned long cpu, unsigned int *associativity)
+>> +{
+>> +	long rc = 0;
+>> +	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
+>> +	u64 flags = 1;
+>> +	int hwcpu = get_hard_smp_processor_id(cpu);
+>> +
+>> +	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
+>> +	vphn_unpack_associativity(retbuf, associativity);
+>> +
+>> +	return rc;
+>> +}
+>> +
+>> +static long
+>> +vphn_get_associativity(unsigned long cpu, unsigned int *associativity)
+>> +{
+> 
+> Nowadays, we prefer keeping the "static long" and the function name on
+> the same line. If you really want to avoid >80 col (I don't care myself
+> much as long as you stick below 100) then move the second argument down
+> one line.
+> 
 
--Scott
+Ok. I wasn't sure which way was preferred. :P
+
+>> +	long rc = 0;
+>> +
+>> +	rc = hcall_vphn(cpu, associativity);
+>> +
+>> +	switch (rc) {
+>> +	case H_FUNCTION:
+>> +		printk(KERN_INFO
+>> +			"VPHN is not supported. Disabling polling...\n");
+>> +		stop_topology_update();
+>> +		break;
+>> +	case H_HARDWARE:
+>> +		printk(KERN_ERR
+>> +			"hcall_vphn() experienced a hardware fault "
+>> +			"preventing VPHN. Disabling polling...\n");
+>> +		stop_topology_update();
+>> +	}
+>> +
+>> +	return rc;
+>> +}
+>> +
+>> +/*
+>> + * Update the node maps and sysfs entries for each cpu whose home node
+>> + * has changed.
+>> + */
+>> +int arch_update_cpu_topology(void)
+>> +{
+>> +	int cpu = 0, nid = 0, old_nid = 0;
+>> +	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
+>> +	struct sys_device *sysdev = NULL;
+>> +
+>> +	for_each_cpu_mask(cpu, cpu_associativity_changes_mask) {
+>> +		vphn_get_associativity(cpu, associativity);
+>> +		nid = associativity_to_nid(associativity);
+>> +
+>> +		if (nid < 0 || !node_online(nid))
+>> +			nid = first_online_node;
+>> +
+>> +		old_nid = numa_cpu_lookup_table[cpu];
+>> +
+>> +		/* Disable hotplug while we update the cpu
+>> +		 * masks and sysfs.
+>> +		 */
+>> +		get_online_cpus();
+>> +		unregister_cpu_under_node(cpu, old_nid);
+>> +		unmap_cpu_from_node(cpu);
+>> +		map_cpu_to_node(cpu, nid);
+>> +		register_cpu_under_node(cpu, nid);
+>> +		put_online_cpus();
+>> +
+>> +		sysdev = get_cpu_sysdev(cpu);
+>> +		if (sysdev)
+>> +			kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
+>> +	}
+>> +
+>> +	return 1;
+>> +}
+> 
+> That looks terribly expensive. Might be worth considering adding a way
+> to sysfs to "mv" an object around in the future.
+> 
+
+That's a good idea. I'll look into it once we get VPHN finalized.
+
+>> +static void topology_work_fn(struct work_struct *work)
+>> +{
+>> +	rebuild_sched_domains();
+>> +}
+>> +
+>> +void topology_schedule_update(void)
+>> +{
+>> +	schedule_work(&topology_work);
+>> +}
+>> +
+>> +static void topology_timer_fn(unsigned long ignored)
+>> +{
+>> +	update_cpu_associativity_changes_mask();
+>> +	if (!cpumask_empty(&cpu_associativity_changes_mask))
+>> +		topology_schedule_update();
+>> +	set_topology_timer();
+>> +}
+> 
+> I wonder if we really need that cpumask and timer overall. We might be
+> better off just having a per-cpu copy of the counters and check them in
+> the timer interrupt, it's low enough overhead don't you think ?
+> 
+
+Hmmm... Good point. That would eliminate a lot of complexity, and if we wrap the code in the timer interrupt so that it only executes on systems with the VPHN feature, then partition migration pretty much takes care of itself as well. :) I'll repost this patch set with the tweaks that you mentioned above, then I'll post a separate patch to remove the cpumask and timer.
+
+>> +static void set_topology_timer(void)
+>> +{
+>> +	topology_timer.data = 0;
+>> +	topology_timer.expires = jiffies + 60 * HZ;
+>> +	add_timer(&topology_timer);
+>> +}
+>> +
+>> +/*
+>> + * Start polling for VPHN associativity changes.
+>> + */
+>> +int start_topology_update(void)
+>> +{
+>> +	int rc = 0;
+>> +
+>> +	if (firmware_has_feature(FW_FEATURE_VPHN)) {
+>> +		setup_cpu_associativity_change_counters();
+>> +		init_timer_deferrable(&topology_timer);
+>> +		set_topology_timer();
+>> +		rc = 1;
+>> +	}
+>> +
+>> +	return rc;
+>> +}
+>> +__initcall(start_topology_update);
+>> +
+>> +/*
+>> + * Disable polling for VPHN associativity changes.
+>> + */
+>> +int stop_topology_update(void)
+>> +{
+>> +	return del_timer(&topology_timer);
+>> +}
+> 
+> del_timer_sync() ?
+> 
+
+Ah, good catch! I think the proper way to do this is to use del_timer_sync() and add a "shutting down" flag to the timer function to ensure that it doesn't reschedule itself.
+
+> Cheers,
+> Ben.
+> 
+
+
+-- 
+
+Jesse Larrew
+Software Engineer, Linux on Power Kernel Team
+IBM Linux Technology Center
+Phone: (512) 973-2052 (T/L: 363-2052)
+jlarrew@linux.vnet.ibm.com
