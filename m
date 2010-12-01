@@ -1,18 +1,19 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AC0CAB6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Dec 2010 20:54:58 +1100 (EST)
-Date: Wed, 1 Dec 2010 10:54:46 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] of/address: use propper endianess in get_flags
-Message-ID: <20101201095446.GA26877@www.tglx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Cc: sodaville@linutronix.de
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id EB2EEB708B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Dec 2010 20:59:14 +1100 (EST)
+Received: by wyf28 with SMTP id 28so9227830wyf.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Dec 2010 01:59:12 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
+References: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
+Date: Wed, 1 Dec 2010 10:59:12 +0100
+Message-ID: <AANLkTimnxhzdpuixSaN=g2bVo2gT8Ys1qxQQ6X_AX5bV@mail.gmail.com>
+Subject: Re: [MPC52xx]Latency issue with DMA on FEC
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,259 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch changes u32 to __be32 for all "ranges", "prop" and "addr" and
-such. Those variables are pointing to the device tree which containts
-intergers in big endian format.
-Most functions are doing it right because of_read_number() is doing the
-right thing for them. of_bus_isa_get_flags(), of_bus_pci_get_flags() and
-of_bus_isa_map() were accessing the data directly and were doing it wrong.
+2010/12/1 Jean-Michel Hautbois <jhautbois@gmail.com>:
+> Hi lists !
+>
+> I measured the latency and the jitter of the RX and TX ethernet paths
+> on my MPC5200 board.
+> The RX path is quite good, but the TX path can be slow.
+>
+> [ 1218.976762] [mpc52xx_fec_start_xmit]Delay >30us for dma_map_single
+> =3D> 76364 ns
+> [ 1219.188405] [mpc52xx_fec_tx_interrupt]Delay >30us for
+> dma_unmap_single =3D> 34515 ns
+> [ 1220.628785] [mpc52xx_fec_start_xmit]Delay >30us for
+> bcom_submit_next_buffer =3D> 97273 ns
+> [ 1225.776784] [mpc52xx_fec_tx_interrupt]Delay >30us for
+> dma_unmap_single =3D> 95273 ns
+>
+> As one can see, this is obviously problematic.
+> The first function I analyzed is bcom_submit_next_buffer() =3D> This
+> function doesn't do lots of things, except a call to mb().
+>
+> I have been looking to the "MPC603e RISC Microprocessor User's Manual"
+> and especially the chapter named "2.3.4.7 Memory Synchronization
+> Instructions=E2=80=94UISA".
+>
+> Here is a paragraph which explains a lot :
+>
+> "The functions performed by the sync instruction normally take a
+> signi=EF=AC=81cant amount of time
+> to complete; as a result, frequent use of this instruction may
+> adversely affect performance.
+> In addition, the number of cycles required to complete a sync
+> instruction depends on system
+> parameters and on the processor's state when the instruction is issued."
+>
+> I am using a real time kernel, and this is a problem, as it is not
+> deterministic to use this instruction.
+> Is there a way to avoid this ?
+>
+> I will now focus on the dma_map_single() and dma_unmap_single functions..=
+.
+>
+> Thanks in advance for your help,
+> Best Regards,
+>
+> JM
+>
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/include/asm/prom.h |    2 +-
- drivers/of/address.c            |   54 ++++++++++++++++++++------------------
- include/linux/of_address.h      |    6 ++--
- 3 files changed, 32 insertions(+), 30 deletions(-)
+dma_map_single() and dma_unmap_single() have the same instruction set
+used inside (sync) because there is a cleaning of cache.
+eieio instruction doesn't seem to be faster and I think that because
+cache is not inhibited, this is not a good way to do that.
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index ae26f2e..ab34f60 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -42,7 +42,7 @@ extern void pci_create_OF_bus_map(void);
- 
- /* Translate a DMA address from device space to CPU space */
- extern u64 of_translate_dma_address(struct device_node *dev,
--				    const u32 *in_addr);
-+				    const __be32 *in_addr);
- 
- #ifdef CONFIG_PCI
- extern unsigned long pci_address_to_pio(phys_addr_t address);
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index 3a1c7e7..b4559c5 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -12,13 +12,13 @@
- 			(ns) > 0)
- 
- static struct of_bus *of_match_bus(struct device_node *np);
--static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
--				    u64 size, unsigned int flags,
-+static int __of_address_to_resource(struct device_node *dev,
-+		const __be32 *addrp, u64 size, unsigned int flags,
- 				    struct resource *r);
- 
- /* Debug utility */
- #ifdef DEBUG
--static void of_dump_addr(const char *s, const u32 *addr, int na)
-+static void of_dump_addr(const char *s, const __be32 *addr, int na)
- {
- 	printk(KERN_DEBUG "%s", s);
- 	while (na--)
-@@ -26,7 +26,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
- 	printk("\n");
- }
- #else
--static void of_dump_addr(const char *s, const u32 *addr, int na) { }
-+static void of_dump_addr(const char *s, const __be32 *addr, int na) { }
- #endif
- 
- /* Callbacks for bus specific translators */
-@@ -36,10 +36,10 @@ struct of_bus {
- 	int		(*match)(struct device_node *parent);
- 	void		(*count_cells)(struct device_node *child,
- 				       int *addrc, int *sizec);
--	u64		(*map)(u32 *addr, const u32 *range,
-+	u64		(*map)(u32 *addr, const __be32 *range,
- 				int na, int ns, int pna);
- 	int		(*translate)(u32 *addr, u64 offset, int na);
--	unsigned int	(*get_flags)(const u32 *addr);
-+	unsigned int	(*get_flags)(const __be32 *addr);
- };
- 
- /*
-@@ -55,7 +55,7 @@ static void of_bus_default_count_cells(struct device_node *dev,
- 		*sizec = of_n_size_cells(dev);
- }
- 
--static u64 of_bus_default_map(u32 *addr, const u32 *range,
-+static u64 of_bus_default_map(u32 *addr, const __be32 *range,
- 		int na, int ns, int pna)
- {
- 	u64 cp, s, da;
-@@ -85,7 +85,7 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
- 	return 0;
- }
- 
--static unsigned int of_bus_default_get_flags(const u32 *addr)
-+static unsigned int of_bus_default_get_flags(const __be32 *addr)
- {
- 	return IORESOURCE_MEM;
- }
-@@ -110,10 +110,10 @@ static void of_bus_pci_count_cells(struct device_node *np,
- 		*sizec = 2;
- }
- 
--static unsigned int of_bus_pci_get_flags(const u32 *addr)
-+static unsigned int of_bus_pci_get_flags(const __be32 *addr)
- {
- 	unsigned int flags = 0;
--	u32 w = addr[0];
-+	u32 w = be32_to_cpup(addr);
- 
- 	switch((w >> 24) & 0x03) {
- 	case 0x01:
-@@ -129,7 +129,8 @@ static unsigned int of_bus_pci_get_flags(const u32 *addr)
- 	return flags;
- }
- 
--static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
-+static u64 of_bus_pci_map(u32 *addr, const __be32 *range, int na, int ns,
-+		int pna)
- {
- 	u64 cp, s, da;
- 	unsigned int af, rf;
-@@ -160,7 +161,7 @@ static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
- 	return of_bus_default_translate(addr + 1, offset, na - 1);
- }
- 
--const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
-+const __be32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
- 			unsigned int *flags)
- {
- 	const __be32 *prop;
-@@ -207,7 +208,7 @@ EXPORT_SYMBOL(of_get_pci_address);
- int of_pci_address_to_resource(struct device_node *dev, int bar,
- 			       struct resource *r)
- {
--	const u32	*addrp;
-+	const __be32	*addrp;
- 	u64		size;
- 	unsigned int	flags;
- 
-@@ -237,12 +238,13 @@ static void of_bus_isa_count_cells(struct device_node *child,
- 		*sizec = 1;
- }
- 
--static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
-+static u64 of_bus_isa_map(u32 *addr, const __be32 *range, int na, int ns,
-+		int pna)
- {
- 	u64 cp, s, da;
- 
- 	/* Check address type match */
--	if ((addr[0] ^ range[0]) & 0x00000001)
-+	if ((addr[0] ^ range[0]) & cpu_to_be32(1))
- 		return OF_BAD_ADDR;
- 
- 	/* Read address values, skipping high cell */
-@@ -264,10 +266,10 @@ static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
- 	return of_bus_default_translate(addr + 1, offset, na - 1);
- }
- 
--static unsigned int of_bus_isa_get_flags(const u32 *addr)
-+static unsigned int of_bus_isa_get_flags(const __be32 *addr)
- {
- 	unsigned int flags = 0;
--	u32 w = addr[0];
-+	u32 w = be32_to_cpup(addr);
- 
- 	if (w & 1)
- 		flags |= IORESOURCE_IO;
-@@ -330,7 +332,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
- 			    struct of_bus *pbus, u32 *addr,
- 			    int na, int ns, int pna, const char *rprop)
- {
--	const u32 *ranges;
-+	const __be32 *ranges;
- 	unsigned int rlen;
- 	int rone;
- 	u64 offset = OF_BAD_ADDR;
-@@ -398,7 +400,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
-  * that can be mapped to a cpu physical address). This is not really specified
-  * that way, but this is traditionally the way IBM at least do things
-  */
--u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
-+u64 __of_translate_address(struct device_node *dev, const __be32 *in_addr,
- 			   const char *rprop)
- {
- 	struct device_node *parent = NULL;
-@@ -475,22 +477,22 @@ u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
- 	return result;
- }
- 
--u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
-+u64 of_translate_address(struct device_node *dev, const __be32 *in_addr)
- {
- 	return __of_translate_address(dev, in_addr, "ranges");
- }
- EXPORT_SYMBOL(of_translate_address);
- 
--u64 of_translate_dma_address(struct device_node *dev, const u32 *in_addr)
-+u64 of_translate_dma_address(struct device_node *dev, const __be32 *in_addr)
- {
- 	return __of_translate_address(dev, in_addr, "dma-ranges");
- }
- EXPORT_SYMBOL(of_translate_dma_address);
- 
--const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
-+const __be32 *of_get_address(struct device_node *dev, int index, u64 *size,
- 		    unsigned int *flags)
- {
--	const u32 *prop;
-+	const __be32 *prop;
- 	unsigned int psize;
- 	struct device_node *parent;
- 	struct of_bus *bus;
-@@ -525,8 +527,8 @@ const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
- }
- EXPORT_SYMBOL(of_get_address);
- 
--static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
--				    u64 size, unsigned int flags,
-+static int __of_address_to_resource(struct device_node *dev,
-+		const __be32 *addrp, u64 size, unsigned int flags,
- 				    struct resource *r)
- {
- 	u64 taddr;
-@@ -564,7 +566,7 @@ static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
- int of_address_to_resource(struct device_node *dev, int index,
- 			   struct resource *r)
- {
--	const u32	*addrp;
-+	const __be32	*addrp;
- 	u64		size;
- 	unsigned int	flags;
- 
-diff --git a/include/linux/of_address.h b/include/linux/of_address.h
-index 8aea06f..2feda6e 100644
---- a/include/linux/of_address.h
-+++ b/include/linux/of_address.h
-@@ -3,7 +3,7 @@
- #include <linux/ioport.h>
- #include <linux/of.h>
- 
--extern u64 of_translate_address(struct device_node *np, const u32 *addr);
-+extern u64 of_translate_address(struct device_node *np, const __be32 *addr);
- extern int of_address_to_resource(struct device_node *dev, int index,
- 				  struct resource *r);
- extern void __iomem *of_iomap(struct device_node *device, int index);
-@@ -21,7 +21,7 @@ static inline unsigned long pci_address_to_pio(phys_addr_t addr) { return -1; }
- #endif
- 
- #ifdef CONFIG_PCI
--extern const u32 *of_get_pci_address(struct device_node *dev, int bar_no,
-+extern const __be32 *of_get_pci_address(struct device_node *dev, int bar_no,
- 			       u64 *size, unsigned int *flags);
- extern int of_pci_address_to_resource(struct device_node *dev, int bar,
- 				      struct resource *r);
-@@ -32,7 +32,7 @@ static inline int of_pci_address_to_resource(struct device_node *dev, int bar,
- 	return -ENOSYS;
- }
- 
--static inline const u32 *of_get_pci_address(struct device_node *dev,
-+static inline const __be32 *of_get_pci_address(struct device_node *dev,
- 		int bar_no, u64 *size, unsigned int *flags)
- {
- 	return NULL;
--- 
-1.7.3.2
+The delay introduced by the use of these instructions can be really
+big (about 70-90=C2=B5s) whereas in most cases it is relatively good (about
+10-20=C2=B5s).
+This jitter is a problem in my use case, and I think I am not the only one =
+:).
+
+One other thing to say : I am using little packets (about 200 bytes).
+
+JM
