@@ -1,16 +1,21 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 6A9CFB708B
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Dec 2010 01:52:15 +1100 (EST)
-Subject: Re: [MPC52xx]Latency issue with DMA on FEC
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
-In-Reply-To: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
-References: <AANLkTi=vAEcPKLqJ_yJt7NLz5JoYvEnt8S8QB99ZBNSX@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 01 Dec 2010 09:52:10 -0500
-Message-ID: <1291215130.4881.55.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 2CF3BB6F11
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Dec 2010 02:11:09 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP id 17590-08 for <linuxppc-dev@ozlabs.org>;
+	Wed,  1 Dec 2010 15:11:04 +0000 (GMT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [MPC52xx]Latency issue with DMA on FEC
+Date: Wed, 1 Dec 2010 15:09:54 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ABDB@saturn3.aculab.com>
+In-Reply-To: <1291215130.4881.55.camel@gandalf.stny.rr.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Steven Rostedt" <rostedt@goodmis.org>,
+	"Jean-Michel Hautbois" <jhautbois@gmail.com>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-rt-users@vger.kernel.org,
 	Eric Dumazet <eric.dumazet@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,60 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-12-01 at 09:16 +0100, Jean-Michel Hautbois wrote:
-> Hi lists !
-> 
-> I measured the latency and the jitter of the RX and TX ethernet paths
-> on my MPC5200 board.
-> The RX path is quite good, but the TX path can be slow.
-> 
-> [ 1218.976762] [mpc52xx_fec_start_xmit]Delay >30us for dma_map_single
-> => 76364 ns
-> [ 1219.188405] [mpc52xx_fec_tx_interrupt]Delay >30us for
-> dma_unmap_single => 34515 ns
-> [ 1220.628785] [mpc52xx_fec_start_xmit]Delay >30us for
-> bcom_submit_next_buffer => 97273 ns
-> [ 1225.776784] [mpc52xx_fec_tx_interrupt]Delay >30us for
-> dma_unmap_single => 95273 ns
-> 
-> As one can see, this is obviously problematic.
-> The first function I analyzed is bcom_submit_next_buffer() => This
-> function doesn't do lots of things, except a call to mb().
-> 
-> I have been looking to the "MPC603e RISC Microprocessor User's Manual"
-> and especially the chapter named "2.3.4.7 Memory Synchronization
-> Instructions—UISA".
-> 
-> Here is a paragraph which explains a lot :
-> 
-> "The functions performed by the sync instruction normally take a
-> signiﬁcant amount of time
-> to complete; as a result, frequent use of this instruction may
-> adversely affect performance.
-> In addition, the number of cycles required to complete a sync
-> instruction depends on system
-> parameters and on the processor's state when the instruction is issued."
-> 
-> I am using a real time kernel, and this is a problem, as it is not
-> deterministic to use this instruction.
-> Is there a way to avoid this ?
+=20
+> A mb() is usually used if you do a write to device and read from it.
+> With out it, the CPU could perform the read before the write, which
+> would give you an incorrect result. There's no other way around that.
 
-Don't use that hardware.
+Possibly the synchronisation functions are doing significantly
+more work than is required.
 
-When working with drivers there are times you must sync with the device.
-And if the device is nondeterministic, then find another set of hardware
-to use. Unfortunately, I think you may not find any.
+I was looking at the in_le32() and out_le32() functions for the
+ppc e300 (and maybe others).
 
-A mb() is usually used if you do a write to device and read from it.
-With out it, the CPU could perform the read before the write, which
-would give you an incorrect result. There's no other way around that.
+The out_le32() contains a 'sync' instruction - this may only
+be needed after a series of writes (eg just before a command).
 
--- Steve
+The iosync() function just adds a 'sync' and can be used as needed.
 
-> 
-> I will now focus on the dma_map_single() and dma_unmap_single functions...
-> 
-> Thanks in advance for your help,
-> Best Regards,
-> 
-> JM
+The in_le32() not only contains the unwanted 'sync', but also
+a 'twi' (trap immediate - NFI exactly what this does) and 'isync'.
+The 'isync' is particularly horrid and unnecessary (aborts
+the instruction queue and refeches the opcode bytes).
+
+The very slow in_le32() might be there to give semi-synchronous
+traps on address fault - but unless the hardware is being probed
+that really isn't necessary.
+
+I did find st_le32() and ld_le32() in arch/powerpc/include/asm/swab.h
+but had difficulty #including that version of swab.h!
+    #include <../arch/powerpc/include/asm/swab.h>
+worked - but isn't that nice.
+
+	David
