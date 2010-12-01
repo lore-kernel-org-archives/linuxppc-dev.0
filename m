@@ -1,23 +1,36 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
-	by ozlabs.org (Postfix) with SMTP id B701EB70DF
+Return-Path: <nacc@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 70F32B70E3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Dec 2010 10:07:59 +1100 (EST)
-Received: by qwj9 with SMTP id 9so823649qwj.35
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Nov 2010 15:07:56 -0800 (PST)
+	Wed,  1 Dec 2010 11:31:16 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB10Iv9o021957
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2010 17:18:57 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oB10V3d3164522
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2010 17:31:03 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id oB10V2pl006158
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2010 17:31:02 -0700
+Date: Tue, 30 Nov 2010 16:30:59 -0800
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH 3/7 v2] ppc: do not search for dma-window property
+	on dlpar remove
+Message-ID: <20101201003059.GA3548@us.ibm.com>
+References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
+	<1288150518-4026-4-git-send-email-nacc@us.ibm.com>
+	<1290994721.32570.219.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <1291080609.2648.102.camel@concordia>
-References: <1289852106-17577-1-git-send-email-tmarri@apm.com>
-	<20101129183535.GA5603@zod.rchland.ibm.com>
-	<1291080609.2648.102.camel@concordia>
-Date: Tue, 30 Nov 2010 15:07:56 -0800
-Message-ID: <AANLkTinjdMDL0QDU9Y5erGOEOr1AGUcJTNB5JNpU6gkf@mail.gmail.com>
-Subject: Re: [PATCH v2] PPC4xx: Adding PCI(E) MSI support
-From: Tirumala Marri <tmarri@apm.com>
-To: michael@ellerman.id.au
-Content-Type: multipart/alternative; boundary=0016361e81345bef6a04964d42d2
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1290994721.32570.219.camel@pasglop>
+Cc: sonnyrao@us.ibm.com, miltonm@bga.com, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +40,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016361e81345bef6a04964d42d2
-Content-Type: text/plain; charset=ISO-8859-1
+On 29.11.2010 [12:38:41 +1100], Benjamin Herrenschmidt wrote:
+> On Tue, 2010-10-26 at 20:35 -0700, Nishanth Aravamudan wrote:
+> > The iommu_table pointer in the pci auxiliary struct of device_node has
+> > not been used by the iommu ops since the dma refactor of
+> > 12d04eef927bf61328af2c7cbe756c96f98ac3bf, however this code still uses
+> > it to find tables for dlpar. By only setting the PCI_DN iommu_table
+> > pointer on nodes with dma window properties, we will be able to quickly
+> > find the node for later checks, and can remove the table without looking
+> > for the the dma window property on dlpar remove.
+> 
+> The answer might well be yes but are we sure this works with busses &
+> devices that don't have a dma,window ? ie. we always properly look for
+> parents when assigning pci devices arch_data iommu table ? Did you test
+> it ? :-) (Best way is to find a card with a P2P bridge on it).
 
-On Mon, Nov 29, 2
->
-> >
-> > My apologies in the delay here.  I was on holiday for a while and never
-> > got back to review this.  A few notes below.
-> >
-> > Also, I've added a few patches from Victor for suspend/idle support in
-> > my next branch that cause a minor conflict with this one.  It's not a
-> > big deal to fix, but if you rework the patch for the comments, rebasing
-> > it to my next branch would be appreciated.
->
-Sure thanks for reviewing. I will fix the suggested changes and send the
-updated patch.
+I haven't tested this particular case. I'm getting a machine to do so
+now, though.
 
---0016361e81345bef6a04964d42d2
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Thanks,
+Nish
 
-<br><br><div class=3D"gmail_quote">On Mon, Nov 29, 2<blockquote class=3D"gm=
-ail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-le=
-ft:1ex;"><div><div class=3D"h5">
-&gt;<br>
-&gt; My apologies in the delay here. =A0I was on holiday for a while and ne=
-ver<br>
-&gt; got back to review this. =A0A few notes below.<br>
-&gt;<br>
-&gt; Also, I&#39;ve added a few patches from Victor for suspend/idle suppor=
-t in<br>
-&gt; my next branch that cause a minor conflict with this one. =A0It&#39;s =
-not a<br>
-&gt; big deal to fix, but if you rework the patch for the comments, rebasin=
-g<br>
-&gt; it to my next branch would be appreciated.<br></div></div></blockquote=
-><div>Sure thanks for reviewing. I will fix the suggested changes and send =
-the updated patch.=A0</div></div>
-
---0016361e81345bef6a04964d42d2--
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
