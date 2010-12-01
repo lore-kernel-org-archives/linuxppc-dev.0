@@ -1,21 +1,18 @@
-Return-Path: <pkue@crane-soft.de>
-Received: from mail.ud04.udmedia.de (ud04.udmedia.de [194.117.254.44])
+Return-Path: <bigeasy@www.tglx.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ud04.udmedia.de",
-	Issuer "StartCom Class 2 Primary Intermediate Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2A15B6F07
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AC0CAB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Dec 2010 20:13:39 +1100 (EST)
-Message-ID: <4CF6101B.7080404@crane-soft.de>
-Date: Wed, 01 Dec 2010 10:06:35 +0100
-From: "Peter Kuennemann@Crane-Soft" <pkue@crane-soft.de>
-MIME-Version: 1.0
+	Wed,  1 Dec 2010 20:54:58 +1100 (EST)
+Date: Wed, 1 Dec 2010 10:54:46 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: PHY/FEC Network adapter failed to initialize on MPC52xx Board
-References: <4CF10819.4050007@crane-soft.de> <4CF31492.7040809@windriver.com>
-In-Reply-To: <4CF31492.7040809@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: pkue@crane-soft.de
+Subject: [PATCH] of/address: use propper endianess in get_flags
+Message-ID: <20101201095446.GA26877@www.tglx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Cc: sodaville@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,143 +22,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch changes u32 to __be32 for all "ranges", "prop" and "addr" and
+such. Those variables are pointing to the device tree which containts
+intergers in big endian format.
+Most functions are doing it right because of_read_number() is doing the
+right thing for them. of_bus_isa_get_flags(), of_bus_pci_get_flags() and
+of_bus_isa_map() were accessing the data directly and were doing it wrong.
 
-Tanks to all for the reply to this thread. I got the tip from the thread Tiejun
-mentioned.
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ arch/powerpc/include/asm/prom.h |    2 +-
+ drivers/of/address.c            |   54 ++++++++++++++++++++------------------
+ include/linux/of_address.h      |    6 ++--
+ 3 files changed, 32 insertions(+), 30 deletions(-)
 
-Quotation: 'St. Strobel' in Xenomai-help
-
-"I had this problem too. In my case the problem was caused by an incorrect port multiplex configuration in U-Boot, see CONIFG_SYS_GPS_PORT_CONFIG (I use 0x xxx5xxxx, which corresponds to 10/100Mbit
-Eth with MD). "
-
-That fixed it for me.
-
-Regards, Peter
-
-Am 29.11.2010 03:48, schrieb tiejun.chen:
-> Peter wrote:
->> Hi all
->>
->> I got completely stuck with a network adapter problem on my
->> ppc board (MPC52xx style). The ntwork adapter does not seem
->> to intialize correctly when booted without 'help from uboot'
->>
-> Looks your problem is very similar to one I replied here not long ago :) That is
-> also issued from MPC5200. And I remember there was a wrong Port Multiplex
-> Configuration.
->
-> If possible maybe you can check the email subjected "Problem Ethernet
-> Initialization MPC5200 +  LXT971A" on linuxppc-dev list.
->
-> Hope its useful.
->
-> Tiejun
->
->> The adapter works properly when I first use it with uboot. E.g.
->> using tftp to load the kernel or just issuing a dummy sntp
->> command. It does not get intialized if I boot linux without
->> using any network relevant command in ubboot
->>
->> The difference manifests on the boot message: (working)
->> PHY working
->> ...
->> mpc52xx MII bus: probed
->> TCP cubic registered
->> NET: Registered protocol family 17
->> IP-Config: Complete:
->>      device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
->>      host=192.168.1.245, domain=, nis-domain=(none),
->>      bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
->> Looking up port of RPC 100003/2 on 192.168.1.244
->> Looking up port of RPC 100005/1 on 192.168.1.244
->> VFS: Mounted root (nfs filesystem) on device 0:11.
->> Freeing unused kernel memory: 124k init
->> PHY: f0003000:00 - Link is Up - 100/Full
->>
->> # ping 192.168.1.2  returns proper results.
->>
->> PHY Not working:
->> ...
->> mpc52xx MII bus: probed
->> TCP cubic registered
->> NET: Registered protocol family 17
->> IP-Config: Complete:
->>      device=eth0, addr=192.168.1.245, mask=255.254.0.0, gw=192.168.1.2,
->>      host=192.168.1.245, domain=, nis-domain=(none),
->>      bootserver=192.168.1.244, rootserver=192.168.1.244, rootpath=
->> VFS: Mounted root (squashfs filesystem) readonly on device 31:3.
->> Freeing unused kernel memory: 124k init
->>
->> # ping 192.168.1.2  hangs
->>
->>
->> The second snipped does not have "Looking up.." messages because it
->> boots from flash. Main difference is "PHY: f0003000:00 - Link is Up - 100/Full"
->> which does not appear at the failing case.
->>
->> Linux Version is 2.6.35.7 patched with xenomai 2.5
->> U-Boot 2010.06 (Aug 05 2010 - 19:54:45)
->>
->> Linux configuration see below: ( i left most entries out that are not set)
->> I also experimented with different settings but finally only
->> CONFIG_FEC_MPC52xx=y  and CONFIG_FEC_MPC52xx_MDIO=y
->> seem to be of any relevance. If both are set, the adapter works
->> when initialized by uboot.
->>
->> Any help or tips will be very much appreciated,
->>
->> Regards, Peter
->>
->>
->> Linux .config
->>
->> ...
->> #
->> # Platform support
->> #
->> # CONFIG_PPC_CHRP is not set
->> # CONFIG_MPC5121_ADS is not set
->> # CONFIG_MPC5121_GENERIC is not set
->> CONFIG_PPC_MPC52xx=y
->> CONFIG_PPC_MPC5200_SIMPLE=y
->> # CONFIG_PPC_EFIKA is not set
->> CONFIG_PPC_LITE5200=y
->> # CONFIG_PPC_MEDIA5200 is not set
->> CONFIG_PPC_MPC5200_BUGFIX=y
->> # CONFIG_PPC_MPC5200_GPIO is not set
->> CONFIG_PPC_MPC5200_LPBFIFO=y
->>
->> CONFIG_PPC_BESTCOMM=y
->> CONFIG_PPC_BESTCOMM_FEC=y
->> CONFIG_PPC_BESTCOMM_GEN_BD=y
->> # CONFIG_SIMPLE_GPIO is not set
->> ..
->> # Bus options
->> #
->> CONFIG_ZONE_DMA=y
->> CONFIG_NEED_SG_DMA_LENGTH=y
->> CONFIG_GENERIC_ISA_DMA=y
->> CONFIG_PPC_PCI_CHOICE=y
->> ...
->> #
->> # Generic Driver Options
->> #
->> CONFIG_STANDALONE=y
->> CONFIG_PREVENT_FIRMWARE_BUILD=y
->> CONFIG_MTD=y
->> CONFIG_MTD_PARTITIONS=y
->> CONFIG_MTD_CMDLINE_PARTS=y
->>
->> #
->> # MII PHY device drivers
->> #
->> CONFIG_LXT_PHY=y                        ## Does not seem to have any influence
->> CONFIG_NET_ETHERNET=y
->> CONFIG_MII=y
->> CONFIG_ETHOC=y                           ## Does not seem to have any influence
->> CONFIG_FEC_MPC52xx=y              ## Must be Y in roder to get adapter working with uboot's init
->> CONFIG_FEC_MPC52xx_MDIO=y  ## Must be Y in roder to get adapter working with uboot's init
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index ae26f2e..ab34f60 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -42,7 +42,7 @@ extern void pci_create_OF_bus_map(void);
+ 
+ /* Translate a DMA address from device space to CPU space */
+ extern u64 of_translate_dma_address(struct device_node *dev,
+-				    const u32 *in_addr);
++				    const __be32 *in_addr);
+ 
+ #ifdef CONFIG_PCI
+ extern unsigned long pci_address_to_pio(phys_addr_t address);
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 3a1c7e7..b4559c5 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -12,13 +12,13 @@
+ 			(ns) > 0)
+ 
+ static struct of_bus *of_match_bus(struct device_node *np);
+-static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+-				    u64 size, unsigned int flags,
++static int __of_address_to_resource(struct device_node *dev,
++		const __be32 *addrp, u64 size, unsigned int flags,
+ 				    struct resource *r);
+ 
+ /* Debug utility */
+ #ifdef DEBUG
+-static void of_dump_addr(const char *s, const u32 *addr, int na)
++static void of_dump_addr(const char *s, const __be32 *addr, int na)
+ {
+ 	printk(KERN_DEBUG "%s", s);
+ 	while (na--)
+@@ -26,7 +26,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
+ 	printk("\n");
+ }
+ #else
+-static void of_dump_addr(const char *s, const u32 *addr, int na) { }
++static void of_dump_addr(const char *s, const __be32 *addr, int na) { }
+ #endif
+ 
+ /* Callbacks for bus specific translators */
+@@ -36,10 +36,10 @@ struct of_bus {
+ 	int		(*match)(struct device_node *parent);
+ 	void		(*count_cells)(struct device_node *child,
+ 				       int *addrc, int *sizec);
+-	u64		(*map)(u32 *addr, const u32 *range,
++	u64		(*map)(u32 *addr, const __be32 *range,
+ 				int na, int ns, int pna);
+ 	int		(*translate)(u32 *addr, u64 offset, int na);
+-	unsigned int	(*get_flags)(const u32 *addr);
++	unsigned int	(*get_flags)(const __be32 *addr);
+ };
+ 
+ /*
+@@ -55,7 +55,7 @@ static void of_bus_default_count_cells(struct device_node *dev,
+ 		*sizec = of_n_size_cells(dev);
+ }
+ 
+-static u64 of_bus_default_map(u32 *addr, const u32 *range,
++static u64 of_bus_default_map(u32 *addr, const __be32 *range,
+ 		int na, int ns, int pna)
+ {
+ 	u64 cp, s, da;
+@@ -85,7 +85,7 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
+ 	return 0;
+ }
+ 
+-static unsigned int of_bus_default_get_flags(const u32 *addr)
++static unsigned int of_bus_default_get_flags(const __be32 *addr)
+ {
+ 	return IORESOURCE_MEM;
+ }
+@@ -110,10 +110,10 @@ static void of_bus_pci_count_cells(struct device_node *np,
+ 		*sizec = 2;
+ }
+ 
+-static unsigned int of_bus_pci_get_flags(const u32 *addr)
++static unsigned int of_bus_pci_get_flags(const __be32 *addr)
+ {
+ 	unsigned int flags = 0;
+-	u32 w = addr[0];
++	u32 w = be32_to_cpup(addr);
+ 
+ 	switch((w >> 24) & 0x03) {
+ 	case 0x01:
+@@ -129,7 +129,8 @@ static unsigned int of_bus_pci_get_flags(const u32 *addr)
+ 	return flags;
+ }
+ 
+-static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
++static u64 of_bus_pci_map(u32 *addr, const __be32 *range, int na, int ns,
++		int pna)
+ {
+ 	u64 cp, s, da;
+ 	unsigned int af, rf;
+@@ -160,7 +161,7 @@ static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
+ 	return of_bus_default_translate(addr + 1, offset, na - 1);
+ }
+ 
+-const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
++const __be32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
+ 			unsigned int *flags)
+ {
+ 	const __be32 *prop;
+@@ -207,7 +208,7 @@ EXPORT_SYMBOL(of_get_pci_address);
+ int of_pci_address_to_resource(struct device_node *dev, int bar,
+ 			       struct resource *r)
+ {
+-	const u32	*addrp;
++	const __be32	*addrp;
+ 	u64		size;
+ 	unsigned int	flags;
+ 
+@@ -237,12 +238,13 @@ static void of_bus_isa_count_cells(struct device_node *child,
+ 		*sizec = 1;
+ }
+ 
+-static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
++static u64 of_bus_isa_map(u32 *addr, const __be32 *range, int na, int ns,
++		int pna)
+ {
+ 	u64 cp, s, da;
+ 
+ 	/* Check address type match */
+-	if ((addr[0] ^ range[0]) & 0x00000001)
++	if ((addr[0] ^ range[0]) & cpu_to_be32(1))
+ 		return OF_BAD_ADDR;
+ 
+ 	/* Read address values, skipping high cell */
+@@ -264,10 +266,10 @@ static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
+ 	return of_bus_default_translate(addr + 1, offset, na - 1);
+ }
+ 
+-static unsigned int of_bus_isa_get_flags(const u32 *addr)
++static unsigned int of_bus_isa_get_flags(const __be32 *addr)
+ {
+ 	unsigned int flags = 0;
+-	u32 w = addr[0];
++	u32 w = be32_to_cpup(addr);
+ 
+ 	if (w & 1)
+ 		flags |= IORESOURCE_IO;
+@@ -330,7 +332,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+ 			    struct of_bus *pbus, u32 *addr,
+ 			    int na, int ns, int pna, const char *rprop)
+ {
+-	const u32 *ranges;
++	const __be32 *ranges;
+ 	unsigned int rlen;
+ 	int rone;
+ 	u64 offset = OF_BAD_ADDR;
+@@ -398,7 +400,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+  * that can be mapped to a cpu physical address). This is not really specified
+  * that way, but this is traditionally the way IBM at least do things
+  */
+-u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
++u64 __of_translate_address(struct device_node *dev, const __be32 *in_addr,
+ 			   const char *rprop)
+ {
+ 	struct device_node *parent = NULL;
+@@ -475,22 +477,22 @@ u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
+ 	return result;
+ }
+ 
+-u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
++u64 of_translate_address(struct device_node *dev, const __be32 *in_addr)
+ {
+ 	return __of_translate_address(dev, in_addr, "ranges");
+ }
+ EXPORT_SYMBOL(of_translate_address);
+ 
+-u64 of_translate_dma_address(struct device_node *dev, const u32 *in_addr)
++u64 of_translate_dma_address(struct device_node *dev, const __be32 *in_addr)
+ {
+ 	return __of_translate_address(dev, in_addr, "dma-ranges");
+ }
+ EXPORT_SYMBOL(of_translate_dma_address);
+ 
+-const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
++const __be32 *of_get_address(struct device_node *dev, int index, u64 *size,
+ 		    unsigned int *flags)
+ {
+-	const u32 *prop;
++	const __be32 *prop;
+ 	unsigned int psize;
+ 	struct device_node *parent;
+ 	struct of_bus *bus;
+@@ -525,8 +527,8 @@ const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
+ }
+ EXPORT_SYMBOL(of_get_address);
+ 
+-static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+-				    u64 size, unsigned int flags,
++static int __of_address_to_resource(struct device_node *dev,
++		const __be32 *addrp, u64 size, unsigned int flags,
+ 				    struct resource *r)
+ {
+ 	u64 taddr;
+@@ -564,7 +566,7 @@ static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+ int of_address_to_resource(struct device_node *dev, int index,
+ 			   struct resource *r)
+ {
+-	const u32	*addrp;
++	const __be32	*addrp;
+ 	u64		size;
+ 	unsigned int	flags;
+ 
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 8aea06f..2feda6e 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -3,7 +3,7 @@
+ #include <linux/ioport.h>
+ #include <linux/of.h>
+ 
+-extern u64 of_translate_address(struct device_node *np, const u32 *addr);
++extern u64 of_translate_address(struct device_node *np, const __be32 *addr);
+ extern int of_address_to_resource(struct device_node *dev, int index,
+ 				  struct resource *r);
+ extern void __iomem *of_iomap(struct device_node *device, int index);
+@@ -21,7 +21,7 @@ static inline unsigned long pci_address_to_pio(phys_addr_t addr) { return -1; }
+ #endif
+ 
+ #ifdef CONFIG_PCI
+-extern const u32 *of_get_pci_address(struct device_node *dev, int bar_no,
++extern const __be32 *of_get_pci_address(struct device_node *dev, int bar_no,
+ 			       u64 *size, unsigned int *flags);
+ extern int of_pci_address_to_resource(struct device_node *dev, int bar,
+ 				      struct resource *r);
+@@ -32,7 +32,7 @@ static inline int of_pci_address_to_resource(struct device_node *dev, int bar,
+ 	return -ENOSYS;
+ }
+ 
+-static inline const u32 *of_get_pci_address(struct device_node *dev,
++static inline const __be32 *of_get_pci_address(struct device_node *dev,
+ 		int bar_no, u64 *size, unsigned int *flags)
+ {
+ 	return NULL;
+-- 
+1.7.3.2
