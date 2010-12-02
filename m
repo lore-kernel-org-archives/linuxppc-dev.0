@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65D1C1007D1
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 30983B6EEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Dec 2010 07:22:58 +1100 (EST)
-Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201012021847.09367.dargaud@lpsc.in2p3.fr>
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
-	<201012021636.05963.dargaud@lpsc.in2p3.fr>
-	<AANLkTinnXoU2kPEB-OmDWoWom18Nu9r0jOT==zWmRp4k@mail.gmail.com>
-	<201012021847.09367.dargaud@lpsc.in2p3.fr>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 03 Dec 2010 07:22:51 +1100
-Message-ID: <1291321371.32570.415.camel@pasglop>
-Mime-Version: 1.0
+	Fri,  3 Dec 2010 09:06:45 +1100 (EST)
+To: =?iso-8859-1?Q?CTAG_/_Mois=E9s_Dom=EDnguez?= <moises.dominguez@ctag.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Problem with MPC5121 custom board.
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <765B188B547A48E7951D86ACC3544C54@ctag>
+References: <765B188B547A48E7951D86ACC3544C54@ctag>
+Date: Thu, 02 Dec 2010 23:06:40 +0100
+Message-Id: <20101202220640.3FC07160696@gemini.denx.de>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,18 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-12-02 at 18:47 +0100, Guillaume Dargaud wrote:
-> 
-> OK, learning by example then.
-> 
-> Another basic question: 
-> what's the difference between of_register_platform_driver() and 
-> platform_driver_register() ?
-> I assume I must use the first one if I want to use
-> irq_of_parse_and_map... 
+Dear =?iso-8859-1?Q?CTAG_/_Mois=E9s_Dom=EDnguez?=,
 
-No. of_platform_drivers are more/less obsolete. Normal platform drivers
-can now be associated with a device-tree node just fine.
+In message <765B188B547A48E7951D86ACC3544C54@ctag> you wrote:
+> 
+> We have a problem with custom design based on ads5121. May be you could
+> provide us any clue about what may be happening.
+> 
+> Sometimes, when the board is powered-on:
+> 
+> - U-boot does not start (at least serial port does not output anything, I
+> don't know if some piece of u-boot is executed).
 
-Cheers,
-Ben.
+In an overwhelming majority of such cases this is an indication of
+incorrect and/or incomplete initialization of your system RAM. See the
+FAQ at http://www.denx.de/wiki/view/DULG/UBootCrashAfterRelocation
+
+Note that U-Boot related questions (and this is one) should better go
+to the U-Boot mailing list instead (see
+http://lists.denx.de/mailman/listinfo/u-boot)
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+You can only live once, but if you do it right, once is enough.
