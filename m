@@ -1,20 +1,26 @@
-Return-Path: <rsarmah@apm.com>
-Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
-	by ozlabs.org (Postfix) with SMTP id 1A813B70DF
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Dec 2010 03:50:35 +1100 (EST)
-Received: by wwb29 with SMTP id 29so1292922wwb.26
-	for <linuxppc-dev@ozlabs.org>; Thu, 02 Dec 2010 08:50:32 -0800 (PST)
-From: Rupjyoti Sarmah <rsarmah@apm.com>
-References: <201011291313.oATDD1AF028975@amcc.com>
-	<mdm-canyonlands-reply2@mdm.bga.com>
-In-Reply-To: <mdm-canyonlands-reply2@mdm.bga.com>
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F0E1CB70AF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Dec 2010 04:47:15 +1100 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	oB2HlAJN032144
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Dec 2010 18:47:10 +0100
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
+Date: Thu, 2 Dec 2010 18:47:09 +0100
+References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
+	<201012021636.05963.dargaud@lpsc.in2p3.fr>
+	<AANLkTinnXoU2kPEB-OmDWoWom18Nu9r0jOT==zWmRp4k@mail.gmail.com>
+In-Reply-To: <AANLkTinnXoU2kPEB-OmDWoWom18Nu9r0jOT==zWmRp4k@mail.gmail.com>
 MIME-Version: 1.0
-Date: Thu, 2 Dec 2010 22:20:27 +0530
-Message-ID: <56c92aa53d9c89a4a068be84610db648@mail.gmail.com>
-Subject: RE: [v4] ppc44x:PHY fixup for USB on canyonlands board
-To: Milton Miller <miltonm@bga.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201012021847.09367.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>I prepared these comments for v1, but aparently forgot to send them,
->>so I'll do so now.
+>      grep -r irq_of_parse_and_map *
+> 
+> will give you plenty of examples.
 
-Thanks for your inputs. I will resubmit an updated patch soon with the
-changes.
+OK, learning by example then.
 
-Regards,
-Rup
+Another basic question: 
+what's the difference between of_register_platform_driver() and 
+platform_driver_register() ?
+I assume I must use the first one if I want to use irq_of_parse_and_map...
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
