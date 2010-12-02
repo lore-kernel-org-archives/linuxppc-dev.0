@@ -1,25 +1,20 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 4C7CEB6F1E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Dec 2010 03:18:04 +1100 (EST)
-Received: by iwn5 with SMTP id 5so1452944iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 02 Dec 2010 08:18:02 -0800 (PST)
+Return-Path: <rsarmah@apm.com>
+Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
+	by ozlabs.org (Postfix) with SMTP id 1A813B70DF
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Dec 2010 03:50:35 +1100 (EST)
+Received: by wwb29 with SMTP id 29so1292922wwb.26
+	for <linuxppc-dev@ozlabs.org>; Thu, 02 Dec 2010 08:50:32 -0800 (PST)
+From: Rupjyoti Sarmah <rsarmah@apm.com>
+References: <201011291313.oATDD1AF028975@amcc.com>
+	<mdm-canyonlands-reply2@mdm.bga.com>
+In-Reply-To: <mdm-canyonlands-reply2@mdm.bga.com>
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <201012021636.05963.dargaud@lpsc.in2p3.fr>
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
-	<201012011735.58769.dargaud@lpsc.in2p3.fr>
-	<20101201124142.15f75af7@udp111988uds.am.freescale.net>
-	<201012021636.05963.dargaud@lpsc.in2p3.fr>
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 2 Dec 2010 10:17:32 -0600
-Message-ID: <AANLkTinnXoU2kPEB-OmDWoWom18Nu9r0jOT==zWmRp4k@mail.gmail.com>
-Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+Date: Thu, 2 Dec 2010 22:20:27 +0530
+Message-ID: <56c92aa53d9c89a4a068be84610db648@mail.gmail.com>
+Subject: RE: [v4] ppc44x:PHY fixup for USB on canyonlands board
+To: Milton Miller <miltonm@bga.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 2, 2010 at 9:36 AM, Guillaume Dargaud <dargaud@lpsc.in2p3.fr> wrote:
+>>I prepared these comments for v1, but aparently forgot to send them,
+>>so I'll do so now.
 
-> Sounds like what I need... But I don't find irq_of_parse_and_map() in LDD 3rd
-> ed and very few info in google. Are there some examples of use somewhere ?
+Thanks for your inputs. I will resubmit an updated patch soon with the
+changes.
 
-     grep -r irq_of_parse_and_map *
-
-will give you plenty of examples.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Regards,
+Rup
