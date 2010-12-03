@@ -1,30 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 23A85B6EED
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 197F4B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Dec 2010 00:24:00 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB3DAGST032025
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 06:10:16 -0700
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id oB3DNhfS102812
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 06:23:43 -0700
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id oB3DNhXK017564
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 06:23:43 -0700
-Date: Fri, 3 Dec 2010 08:22:55 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20101203132255.GB4489@zod.rchland.ibm.com>
+	Sat,  4 Dec 2010 01:58:42 +1100 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	oB3Ewav9018328
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 15:58:36 +0100
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
+Date: Fri, 3 Dec 2010 15:58:35 +0100
+References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
+	<201012021847.09367.dargaud@lpsc.in2p3.fr>
+	<1291321371.32570.415.camel@pasglop>
+In-Reply-To: <1291321371.32570.415.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201012031558.35557.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,36 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben
+> No. of_platform_drivers are more/less obsolete. Normal platform drivers
+> can now be associated with a device-tree node just fine.
 
-Some 4xx power management patches from Victor.  I would have liked to
-include the PCI-e and Canyonlands USB phy fix patches as well, but they
-still need rework.  I might include those in a later pull request if
-they show up relatively soon.
+OK.
 
-josh
+If my dts definition is thus:
+		xps_acqui_data_0: xps-acqui-data@c9800000 {
+			compatible = "xlnx,xps-acqui-data-3.00.a";
+			interrupt-parent = <&xps_intc_0>;
+			interrupts = < 0 2 >;
+			reg = < 0xc9800000 0x10000 >;
+			xlnx,family = "virtex4";
+			xlnx,include-dphase-timer = <0x1>;
+			xlnx,mplb-awidth = <0x20>;
+			xlnx,mplb-clk-period-ps = <0x2710>;
+			xlnx,mplb-dwidth = <0x40>;
+			xlnx,mplb-native-dwidth = <0x40>;
+			xlnx,mplb-p2p = <0x0>;
+			xlnx,mplb-smallest-slave = <0x20>;
+		} ;
 
-The following changes since commit 46f5221049bb46b0188aad6b6dfab5dbc778be22:
+What are the names I need to pass to platform_driver_register and 
+platform_device_register_simple ? xps_acqui_data_0, xps-acqui-data or xps-
+acqui-data-3.00.a ? None seem to call any init functions...
 
-  powerpc: Remove second definition of STACK_FRAME_OVERHEAD (2010-11-29 15:48:23 +1100)
+Why is there not a word about the functions platform_*_register in my various 
+driver books ? LDD 3rd ed (O'Reilly), Writing LDD (Cooperstein) or LKD 
+(Love)... Is it something specific to powerpc and the books are oriented x86 ? 
+What's a good source, besides grepping the kernel to no end ?
 
-are available in the git repository at:
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-Victor Gallardo (3):
-      powerpc/4xx: Add suspend and idle support
-      powerpc/4xx: Add Kilauea suspend and idle support
-      powerpc/4xx: Add Canyonlands suspend and idle support
-
- Documentation/powerpc/dts-bindings/4xx/cpm.txt |   52 ++++
- arch/powerpc/Kconfig                           |   13 +-
- arch/powerpc/boot/dts/canyonlands.dts          |   31 +--
- arch/powerpc/boot/dts/kilauea.dts              |    9 +
- arch/powerpc/configs/40x/kilauea_defconfig     |    5 +
- arch/powerpc/configs/44x/canyonlands_defconfig |    3 +
- arch/powerpc/platforms/44x/Makefile            |    5 +-
- arch/powerpc/sysdev/Makefile                   |    1 +
- arch/powerpc/sysdev/ppc4xx_cpm.c               |  346 ++++++++++++++++++++++++
- 9 files changed, 439 insertions(+), 26 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/4xx/cpm.txt
- create mode 100644 arch/powerpc/sysdev/ppc4xx_cpm.c
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
