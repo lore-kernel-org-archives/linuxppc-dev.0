@@ -1,25 +1,38 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id 5DC3AB70A3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Dec 2010 05:27:11 +1100 (EST)
-Received: by wwb29 with SMTP id 29so2738083wwb.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 03 Dec 2010 10:27:08 -0800 (PST)
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
+	[213.199.154.139])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C7EDCB70A8
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2010 05:37:45 +1100 (EST)
+Received: from mail96-db3 (localhost.localdomain [127.0.0.1])	by
+	mail96-db3-R.bigfish.com (Postfix) with ESMTP id A4C716B0108	for
+	<linuxppc-dev@ozlabs.org>; Fri,  3 Dec 2010 18:22:36 +0000 (UTC)
+Received: from DB3EHSMHS012.bigfish.com (unknown [10.3.81.245])	by
+	mail96-db3.bigfish.com (Postfix) with ESMTP id 6F33015A804D	for
+	<linuxppc-dev@ozlabs.org>; Fri,  3 Dec 2010 18:22:36 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP id
+	oB3IOY6s027348	for
+	<linuxppc-dev@ozlabs.org>; Fri, 3 Dec 2010 11:24:34 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	oB3IdOiw015615	for <linuxppc-dev@ozlabs.org>;
+	Fri, 3 Dec 2010 12:39:24 -0600 (CST)
+Message-ID: <4CF93566.1050601@freescale.com>
+Date: Fri, 3 Dec 2010 12:22:30 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <9127D47D-F146-4387-AF36-3193CF47389A@kernel.crashing.org>
-References: <1291379651-8822-1-git-send-email-leoli@freescale.com>
-	<9127D47D-F146-4387-AF36-3193CF47389A@kernel.crashing.org>
-Date: Sat, 4 Dec 2010 02:27:07 +0800
-Message-ID: <AANLkTi=XekUOF2+OtCkxw7KBfAWJ_dOkSijr6AS5YZfV@mail.gmail.com>
-Subject: Re: [PATCH 1/7] powerpc/85xx: re-enable timebase sync disabled by
-	KEXEC patch
-From: Li Yang <leoli@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Matthew McClintock <msm@freescale.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] watchdog: add CONFIG_WATCHDOG_NOWAYOUT support to PowerPC
+	Book-E watchdog driver
+References: <1291395103-12394-1-git-send-email-timur@freescale.com>
+	<20101203180751.GA1903@zod.rchland.ibm.com>
+In-Reply-To: <20101203180751.GA1903@zod.rchland.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
+	linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,77 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 4, 2010 at 12:40 AM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
->
-> On Dec 3, 2010, at 6:34 AM, Li Yang wrote:
->
->> The timebase sync is not only necessary when using KEXEC. =C2=A0It shoul=
-d also
->> be used by normal boot up and cpu hotplug. =C2=A0Remove the ifdef added =
-by
->> the KEXEC patch. =C2=A0Fix a problem that cpu hotplugging freezes the wh=
-ole system.
->>
->> Signed-off-by: Jin Qing <b24347@freescale.com>
->> Singed-off-by: Li Yang <leoli@freescale.com>
->> ---
->> arch/powerpc/platforms/85xx/smp.c | =C2=A0 =C2=A04 +---
->> 1 files changed, 1 insertions(+), 3 deletions(-)
->
-> But we have problems with KEXEC w/o this? =C2=A0What is the issue with ho=
-tplugging and the generic timebase code? =C2=A0When do we freeze?
+Josh Boyer wrote:
+> I'm confused why you can't use booke_wdt_enabled for the purposes of the
+> device having been opened.  It seems the use of the wdt_is_active
+> basically duplicates this functionalit (and oddly with the bit
+> manipulation instead of just atomic_inc/dec).
 
-Actually the KEXEC patch disables timebase sync when KEXEC is not
-defined.  If the timebase sync is disabled, the timebase on non-boot
-cpu will become non-consistent.  And thus ruins the scheduler when
-hot-plugged.
+Because the watchdog can be enabled even when the driver is not open.
+booke_wdt_enabled is also initialized in setup_32.c.  So booke_wdt_enabled
+represents the watchdog hardwre, whereas wdt_is_active represents the open
+condition of /dev/watchdog.
 
->
->>
->> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/=
-85xx/smp.c
->> index 5c91a99..1e8aec8 100644
->> --- a/arch/powerpc/platforms/85xx/smp.c
->> +++ b/arch/powerpc/platforms/85xx/smp.c
->> @@ -2,7 +2,7 @@
->> =C2=A0* Author: Andy Fleming <afleming@freescale.com>
->> =C2=A0* =C2=A0 =C2=A0 =C2=A0 Kumar Gala <galak@kernel.crashing.org>
->> =C2=A0*
->> - * Copyright 2006-2008 Freescale Semiconductor Inc.
->> + * Copyright 2006-2010 Freescale Semiconductor Inc.
->> =C2=A0*
->> =C2=A0* This program is free software; you can redistribute =C2=A0it and=
-/or modify it
->> =C2=A0* under =C2=A0the terms of =C2=A0the GNU General =C2=A0Public Lice=
-nse as published by the
->> @@ -115,10 +115,8 @@ smp_85xx_setup_cpu(int cpu_nr)
->>
->> struct smp_ops_t smp_85xx_ops =3D {
->> =C2=A0 =C2=A0 =C2=A0 .kick_cpu =3D smp_85xx_kick_cpu,
->> -#ifdef CONFIG_KEXEC
->> =C2=A0 =C2=A0 =C2=A0 .give_timebase =C2=A0=3D smp_generic_give_timebase,
->> =C2=A0 =C2=A0 =C2=A0 .take_timebase =C2=A0=3D smp_generic_take_timebase,
->> -#endif
->> };
->>
->> #ifdef CONFIG_KEXEC
->> --
->> 1.6.6-rc1.GIT
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+However, now that I think about it, maybe that just causes confusion.  If the
+watchdog is already running because of a command-line parameter, should we
+prevent /dev/watchdog from ever being opened?  If you're okay with that, then I
+can combine the two variables.
 
+> If you were to keep this variable instead of just using
+> booke_wdt_enabled, wouldn't it be more correct to have the clear_bit
+> only done inside the #ifndef?  The timer is very much still active if
+> NOWAYOUT is set...
 
+In this case, yes.
 
---=20
-- Leo
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
