@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4398B7080
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Dec 2010 03:40:58 +1100 (EST)
-Subject: Re: [PATCH 1/7] powerpc/85xx: re-enable timebase sync disabled by
-	KEXEC patch
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1291379651-8822-1-git-send-email-leoli@freescale.com>
-Date: Fri, 3 Dec 2010 10:40:52 -0600
-Message-Id: <9127D47D-F146-4387-AF36-3193CF47389A@kernel.crashing.org>
-References: <1291379651-8822-1-git-send-email-leoli@freescale.com>
-To: Li Yang <leoli@freescale.com>
-Cc: Matthew McClintock <msm@freescale.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <timur@freescale.com>
+Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DA868B708B
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2010 03:52:18 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <linux-watchdog@vger.kernel.org>, <kumar.gala@freescale.com>,
+	<linuxppc-dev@ozlabs.org>
+Subject: [PATCH] watchdog: add CONFIG_WATCHDOG_NOWAYOUT support to PowerPC
+	Book-E watchdog driver
+Date: Fri, 3 Dec 2010 10:51:43 -0600
+Message-ID: <1291395103-12394-1-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Normally, the watchdog is disabled when dev/watchdog is closed, but if
+CONFIG_WATCHDOG_NOWAYOUT is defined, then it means that the watchdog should
+remain enabled.  So we should disable it only if CONFIG_WATCHDOG_NOWAYOUT is
+not defined.
 
-On Dec 3, 2010, at 6:34 AM, Li Yang wrote:
+Also ensure that /dev/watchdog is only opened by one process at a time.  That
+way, a second process can't accidentally disable the watchdog while the first
+process has it open.  There shouldn't be any need for more than one process to
+open /dev/watchdog anyway.
 
-> The timebase sync is not only necessary when using KEXEC.  It should =
-also
-> be used by normal boot up and cpu hotplug.  Remove the ifdef added by
-> the KEXEC patch.  Fix a problem that cpu hotplugging freezes the whole =
-system.
->=20
-> Signed-off-by: Jin Qing <b24347@freescale.com>
-> Singed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/platforms/85xx/smp.c |    4 +---
-> 1 files changed, 1 insertions(+), 3 deletions(-)
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-But we have problems with KEXEC w/o this?  What is the issue with =
-hotplugging and the generic timebase code?  When do we freeze?
+Kumar, please pick up this patch for 2.6.37.
 
->=20
-> diff --git a/arch/powerpc/platforms/85xx/smp.c =
-b/arch/powerpc/platforms/85xx/smp.c
-> index 5c91a99..1e8aec8 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -2,7 +2,7 @@
->  * Author: Andy Fleming <afleming@freescale.com>
->  * 	   Kumar Gala <galak@kernel.crashing.org>
->  *
-> - * Copyright 2006-2008 Freescale Semiconductor Inc.
-> + * Copyright 2006-2010 Freescale Semiconductor Inc.
->  *
->  * This program is free software; you can redistribute  it and/or =
-modify it
->  * under  the terms of  the GNU General  Public License as published =
-by the
-> @@ -115,10 +115,8 @@ smp_85xx_setup_cpu(int cpu_nr)
->=20
-> struct smp_ops_t smp_85xx_ops =3D {
-> 	.kick_cpu =3D smp_85xx_kick_cpu,
-> -#ifdef CONFIG_KEXEC
-> 	.give_timebase	=3D smp_generic_give_timebase,
-> 	.take_timebase	=3D smp_generic_take_timebase,
-> -#endif
-> };
->=20
-> #ifdef CONFIG_KEXEC
-> --=20
-> 1.6.6-rc1.GIT
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ drivers/watchdog/booke_wdt.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+index d11ffb0..636e013 100644
+--- a/drivers/watchdog/booke_wdt.c
++++ b/drivers/watchdog/booke_wdt.c
+@@ -193,8 +193,15 @@ static long booke_wdt_ioctl(struct file *file,
+ 	return 0;
+ }
+ 
++/* wdt_is_active stores wether or not the /dev/watchdog device is opened */
++static unsigned long wdt_is_active;
++
+ static int booke_wdt_open(struct inode *inode, struct file *file)
+ {
++	/* /dev/watchdog can only be opened once */
++	if (test_and_set_bit(0, &wdt_is_active))
++		return -EBUSY;
++
+ 	spin_lock(&booke_wdt_lock);
+ 	if (booke_wdt_enabled == 0) {
+ 		booke_wdt_enabled = 1;
+@@ -210,8 +217,17 @@ static int booke_wdt_open(struct inode *inode, struct file *file)
+ 
+ static int booke_wdt_release(struct inode *inode, struct file *file)
+ {
++#ifndef CONFIG_WATCHDOG_NOWAYOUT
++	/* Normally, the watchdog is disabled when /dev/watchdog is closed, but
++	 * if CONFIG_WATCHDOG_NOWAYOUT is defined, then it means that the
++	 * watchdog should remain enabled.  So we disable it only if
++	 * CONFIG_WATCHDOG_NOWAYOUT is not defined.
++	 */
+ 	on_each_cpu(__booke_wdt_disable, NULL, 0);
+ 	booke_wdt_enabled = 0;
++#endif
++
++	clear_bit(0, &wdt_is_active);
+ 
+ 	return 0;
+ }
+-- 
+1.7.2.3
