@@ -1,39 +1,14 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D7A9B70AA
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2010 06:51:22 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB3Jdhvh010934
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Dec 2010 12:39:43 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	oB3JpDQE261826
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Dec 2010 12:51:13 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id oB3JpBDs032287
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Dec 2010 12:51:12 -0700
-Date: Fri, 3 Dec 2010 14:50:23 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] watchdog: add CONFIG_WATCHDOG_NOWAYOUT support to
-	PowerPC Book-E watchdog driver
-Message-ID: <20101203195023.GD1903@zod.rchland.ibm.com>
-References: <1291395103-12394-1-git-send-email-timur@freescale.com>
-	<20101203180751.GA1903@zod.rchland.ibm.com>
-	<4CF93566.1050601@freescale.com>
-	<20101203190556.GB1903@zod.rchland.ibm.com>
-	<4CF9408A.4030506@freescale.com>
-	<20101203193900.GC1903@zod.rchland.ibm.com>
-	<4CF94869.4020705@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4CF94869.4020705@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
-	linux-watchdog@vger.kernel.org
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 8AAE7B70A8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  4 Dec 2010 10:58:06 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH RFCv3 0/2] CARMA Board Support
+Date: Fri,  3 Dec 2010 15:57:38 -0800
+Message-Id: <1291420660-25733-1-git-send-email-iws@ovro.caltech.edu>
+Cc: linux-kernel@vger.kernel.org, "Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,21 +18,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 03, 2010 at 01:43:37PM -0600, Timur Tabi wrote:
->Josh Boyer wrote:
->> Just the moving of the clear_bit inside the #ifndef
->> CONFIG_WATCHDOG_NOWAYOUT.
->
->If I move the clear_bit() call inside the #ifndef, then when
->CONFIG_WATCHDOG_NOWAYOUT is defined, after a process closes /dev/watchdog, no
->process will ever be able to open it again.  Are you saying that once
->wd_keepalive exits, you don't want anyone to be able to open /dev/watchdog and
->ping the timer again?
+Hello everyone,
 
-Oh, good point.  No, I don't think we want that.  So in that case:
+This is the third posting of these drivers, taking into account comments
+from earlier postings. The DMAEngine patches are in mainline now, and
+therefore are not part of this series anymore.
 
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+RFCv2 -> RFCv3:
+- use miscdevice framework (removing the carma class)
+- add bitfile readback capability to the programmer
 
-and sorry for the hassle.
+RFCv1 -> RFCv2:
+- change comments to kerneldoc format
+- Kconfig improvements
+- use the videobuf_dma_sg API in the programmer
+- updates for Freescale DMAEngine DMA_SLAVE API changes
 
-josh
+Information about the CARMA board:
+
+The CARMA board is essentially an MPC8349EA MDS reference design with a
+1GHz ADC and 4 high powered data processing FPGAs connected to the local
+bus. It is all packed into a compact PCI form factor. It is used at the
+Owens Valley Radio Observatory as the main component in the correlator
+system.
+
+For more information, see this webpage, maintained by the board's hardware
+engineer: http://www.mmarray.org/~dwh/carma_board/index.html
+
+These drivers are the necessary pieces to get the data processing FPGAs
+working and producing data. Despite the fact that the hardware is custom
+and we are the only users, I'd still like to get the drivers upstream.
+Several people have suggested that this is possible.
+
+Some further patches will be forthcoming. I have a driver for the LED
+subsystem and the PPS subsystem. The LED register layout is expected to
+change soon, so I won't post the driver until that is finished. The PPS
+driver will be posted seperately from this patch series; it is very
+generic.
+
+Thanks to everyone who has provided comments on earlier versions!
+
+Ira W. Snyder (2):
+  misc: add CARMA DATA-FPGA Access Driver
+  misc: add CARMA DATA-FPGA Programmer support
+
+ drivers/misc/Kconfig                    |    1 +
+ drivers/misc/Makefile                   |    1 +
+ drivers/misc/carma/Kconfig              |   18 +
+ drivers/misc/carma/Makefile             |    2 +
+ drivers/misc/carma/carma-fpga-program.c | 1084 +++++++++++++++++++++++
+ drivers/misc/carma/carma-fpga.c         | 1433 +++++++++++++++++++++++++++++++
+ 6 files changed, 2539 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/carma/Kconfig
+ create mode 100644 drivers/misc/carma/Makefile
+ create mode 100644 drivers/misc/carma/carma-fpga-program.c
+ create mode 100644 drivers/misc/carma/carma-fpga.c
+
+-- 
+1.7.2.2
