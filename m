@@ -1,24 +1,36 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7C1E31007D1
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 518E11007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Dec 2010 17:08:11 +1100 (EST)
-Date: Fri, 3 Dec 2010 17:08:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+	Fri,  3 Dec 2010 22:27:15 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id oB3BEprt030981
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 04:14:51 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	oB3BR1Yg237508
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 04:27:01 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id oB3BR0Rx017599
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Dec 2010 04:27:00 -0700
+Date: Fri, 3 Dec 2010 06:26:12 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: linux-next: build failure after merge of the final tree
 	(powerpc tree related)
-Message-Id: <20101203170805.2d99f70c.sfr@canb.auug.org.au>
-In-Reply-To: <1291355998.32570.417.camel@pasglop>
+Message-ID: <20101203112612.GA4489@zod.rchland.ibm.com>
 References: <20101203163206.72258fb8.sfr@canb.auug.org.au>
 	<1291355998.32570.417.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__3_Dec_2010_17_08_05_+1100_chByI1gvvxxoZufB"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Anton Blanchard <anton@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1291355998.32570.417.camel@pasglop>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +40,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__3_Dec_2010_17_08_05_+1100_chByI1gvvxxoZufB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 03 Dec 2010 16:59:58 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
+On Fri, Dec 03, 2010 at 04:59:58PM +1100, Benjamin Herrenschmidt wrote:
+>On Fri, 2010-12-03 at 16:32 +1100, Stephen Rothwell wrote:
+>> 
+>> After merging the  tree, today's linux-next build (powerpc allmodconfig)
+>> failed like this:
+>> 
+>> arch/powerpc/lib/hweight_64.S: Assembler messages:
+>> arch/powerpc/lib/hweight_64.S:52: Error: Unrecognized opcode: `popcntw'
+>> arch/powerpc/lib/hweight_64.S:77: Error: Unrecognized opcode: `popcntw'
+>> arch/powerpc/lib/hweight_64.S:106: Error: Unrecognized opcode: `popcntd'
+>> 
+>> This is with:
+>> 
+>> powerpc64-linux-gcc (GCC) 4.4.0
+>> GNU assembler (GNU Binutils) 2.19.1
+>> 
+>> Caused by commit 64ff31287693c1f325cb9cb049569c1611438ef1 ("powerpc: Add
+>> support for popcnt instructions"). 
 >
-> This toolchain is a bit ancient I suppose... Anton, do you reckon we
-> should use .long based macros for these for the time being or just
-> require a newer binutils ?
+>
+>This toolchain is a bit ancient I suppose... Anton, do you reckon we
 
-The currently documented minimum binutils is 2.12 ...
+SLES 11 SP1 still uses gcc 4.3.  4.4.0 is not ancient by any means.  Neither is binutils 2.19.1.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>should use .long based macros for these for the time being or just
+>require a newer binutils ?
 
---Signature=_Fri__3_Dec_2010_17_08_05_+1100_chByI1gvvxxoZufB
-Content-Type: application/pgp-signature
+.long macros sound like the proper solution.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJM+IlFAAoJEDMEi1NhKgbs49wIAIu7SaBGvGe5+9lk7QKEcIRz
-hXZ1UDEMePw3eykuVD4rEinknQKo1OMAYFd3IEqcRcqBqBf8Fqm4N+IA2dlSO5Gn
-jvPJnc2kst29fJhZm2Du2V5iROeD3qw9UCgii+H4bZcicQ2UQaqAsEGbeIl6TGGZ
-qWI1bJoftYEMbzC4VZzB53UQtc90n/bIqAi8lGjycEIfk+MFsg024nHNeOskGahB
-jGCIyogBi0Nsk/LRbo59QsibHFf9s0V1OpA9bx2foa8kkpyqkNUltgYnEaBfO/23
-Oj4MKXWfwEmnGkbtvdCwDJq4xo5gBXr7TF7IcyRkloh/e6uOpl3eHSxSwJjhg00=
-=CoCE
------END PGP SIGNATURE-----
-
---Signature=_Fri__3_Dec_2010_17_08_05_+1100_chByI1gvvxxoZufB--
+josh
