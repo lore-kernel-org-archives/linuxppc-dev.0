@@ -1,21 +1,24 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0EBBCB70A3
+	by ozlabs.org (Postfix) with ESMTPS id 403B4B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Dec 2010 02:42:21 +1100 (EST)
-Message-ID: <4CF90EA1.7040806@ge.com>
-Date: Fri, 03 Dec 2010 15:37:05 +0000
-From: Martyn Welch <martyn.welch@ge.com>
+	Sat,  4 Dec 2010 02:43:47 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: UIO / of_genirq driver
+Date: Fri, 3 Dec 2010 16:43:31 +0100
+References: <1d3f23371001272313i62fc9158se4cd9173f196fb12@mail.gmail.com>
+	<20100128104545.GA3105@pengutronix.de>
+In-Reply-To: <20100128104545.GA3105@pengutronix.de>
 MIME-Version: 1.0
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>	<201012021847.09367.dargaud@lpsc.in2p3.fr>	<1291321371.32570.415.camel@pasglop>
-	<201012031558.35557.dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201012031558.35557.dargaud@lpsc.in2p3.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201012031643.31428.sr@denx.de>
+Cc: hjk@linutronix.de, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	gregkh@suse.de, Linux Kernel list <linux-kernel@vger.kernel.org>,
+	John Williams <john.williams@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/12/10 14:58, Guillaume Dargaud wrote:
-> Why is there not a word about the functions platform_*_register in my various 
-> driver books ? LDD 3rd ed (O'Reilly), Writing LDD (Cooperstein) or LKD 
-> (Love)... Is it something specific to powerpc and the books are oriented x86 ? 
-> What's a good source, besides grepping the kernel to no end ?
+Wolfram,
+
+On Thursday 28 January 2010 11:45:45 Wolfram Sang wrote:
+> > I guess I'd like to just open up a discussion, see if there's been any
+> > progress towards a general solution.
 > 
+> I decided to wait for the outcome of the of_platform-removal-idea. Though,
+> I have to admit that in the last weeks I haven't followed of-related
+> things due to other commitments.
 
-I have yet to find a Linux Device Driver book that isn't heavily skewed
-towards x86. Some of this stuff is either specific to powerpc or
-relevant a subset of non-x86 platforms.
+Is there any update on this in the meantime? Do you know of any plans to re-
+work/-push this patchset? Just checking...
 
-I think Google, the linuxppc-dev mailing list, related IRC channel and
-lxr.linux.no have been the sources I've mostly used learning about Linux
-on powerpc.
+Thanks,
+Stefan
 
-
--- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square,
-Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
