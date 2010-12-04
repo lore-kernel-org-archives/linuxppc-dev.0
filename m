@@ -1,18 +1,19 @@
-Return-Path: <lists@gate-nine.de>
-Received: from csmtp3.one.com (csmtp3.one.com [91.198.169.23])
-	by ozlabs.org (Postfix) with ESMTP id 434B0B70A5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Dec 2010 21:10:46 +1100 (EST)
-Message-ID: <4CFA11A7.2090005@gate-nine.de>
-Date: Sat, 04 Dec 2010 11:02:15 +0100
-From: Philipp Ittershagen <lists@gate-nine.de>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id 521AAB6F1E
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2010 23:49:31 +1100 (EST)
+Message-ID: <4CFA38D8.3060209@mlbassoc.com>
+Date: Sat, 04 Dec 2010 05:49:28 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-To: tmarri@apm.com
-Subject: Re: [PATCH v3] PPC4xx: Adding PCI(E) MSI support
-References: <1291426393-1429-1-git-send-email-tmarri@apm.com>
-In-Reply-To: <1291426393-1429-1-git-send-email-tmarri@apm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Change in PCI behaviour
+References: <4CE69AF6.6090408@mlbassoc.com>		<1290203218.32570.48.camel@pasglop>	<4CE95E11.1050606@mlbassoc.com>	
+	<4CEA3F87.9080102@mlbassoc.com>	<1290457615.32570.67.camel@pasglop>
+	<4CEBD33D.7020603@mlbassoc.com>
+In-Reply-To: <4CEBD33D.7020603@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,198 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 11/23/2010 07:44 AM, Gary Thomas wrote:
+> On 11/22/2010 01:26 PM, Benjamin Herrenschmidt wrote:
+>> On Mon, 2010-11-22 at 03:01 -0700, Gary Thomas wrote:
+>>> I have a bit more information on this. I'm pretty sure that the failures
+>>> are only happening in my SCSI (SATA actually) code. My board (8347ea)
+>>> has
+>>> a PCI bus with a SIL SATA controller. This combo works perfectly in
+>>> 2.6.28.
+>>> In 2.6.32, it will run for a while (possibly quite a while), then
+>>> timeout
+>>> trying to do a large block write - typically 256 blocks. Once this
+>>> timeout
+>>> happens, the SIL controller is stuck and accesses to it will eventually
+>>> cause the whole system to hang (as above).
+>>>
+>>> Was there any major change in how PCI or DMA was handled between 2.6.28
+>>> and 2.6.32? Given the ephemeral nature of these failures (multiple runs
+>>> all eventually fail, but never the same twice), my only hope of
+>>> fixing it
+>>> will be to have some ideas what might have changed.
+>>
+>> Maybe the changes you did to the PCI outbound windows are now breaking
+>> DMA ? Make sure the outbound and inbound don't overlap for example and
+>> that all RAM is reachable for inbound.
+>
+> Here's what I did to work around this - in my DTS, I set up my PCI as
+> ranges = <0x02000000 0x0 0xC4000000 0xC4000000 0x0 0x1C000000
+> 0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+> Before, I had it as
+> ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
+> 0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+>
+> I wasn't sure how to reserve the memory (based on your earlier suggestion),
+> so I just narrowed the window. Note that I did not change the PCI hardware
+> registers (maybe the FSL code does?), so the outbound window should still
+> be the whole 512MB.
+>
+> If this isn't viable, perhaps you could explain a bit more how to reserve
+> such a chunk of memory so that the PCI mappings remain the same.
 
-a few nitpicks here. I don't have any clue about MSI, but I have seen
-some code-style related issues.
+Any ideas on this?  I'm a bit lost as to how to reserve the memory like
+you suggested and what I've tried so far has met little success.
 
-On 12/04/2010 02:33 AM, tmarri@apm.com wrote:
-> +static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-> +{
-> +	int err = 0;
-> +	int int_no = -ENOMEM;
-> +	unsigned int virq;
-> +	struct msi_msg msg;
-> +	struct msi_desc *entry;
-> +	struct ppc4xx_msi *msi_data = &ppc4xx_msi;
-> +
-> +	list_for_each_entry(entry, &dev->msi_list, list) {
-> +		int_no = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
-> +		if(int_no >= 0)
-> +			break;
-> +		if(int_no < 0) {
-> +
+Thanks again
 
-Empty line here not needed.
-
-> +			err = int_no;
-> +			pr_debug("%s: fail allocating msi interrupt\n",
-> +					__func__);
-> +		}
-> +		virq = irq_of_parse_and_map(msi_data->msi_dev, int_no);
-> +		if (virq == NO_IRQ) {
-> +			dev_err(&dev->dev, "%s: fail mapping irq\n", __func__);
-> +			msi_bitmap_free_hwirqs(&msi_data->bitmap, int_no, 1);
-> +			err = -ENOSPC;
-> +			goto out_free;
-> +		}
-> +		msi_data->msi_virqs[int_no] = virq;
-> +		set_irq_data(virq, (void *)int_no);
-> +		dev_dbg(&dev->dev, "%s: virq = %d \n", __func__, virq);
-> +
-> +		/* Setup msi address space */
-> +		msg.address_hi = msi_data->msi_addr_hi;
-> +		msg.address_lo = msi_data->msi_addr_lo;
-> +
-> +		set_irq_msi(virq, entry);
-> +		msg.data = int_no;
-> +		write_msi_msg(virq, &msg);
-> +	}
-> +
-> +out_free:
-> +	return err;
-> +}
-
-You don't really need the goto-style here, because you have nothing to
-clean up when returning. You could instead return directly and save some
-lines, because you don't have to assign err and then use goto all the time.
-
-
-> +
-> +void ppc4xx_teardown_msi_irqs(struct pci_dev *dev)
-> +{
-> +	struct msi_desc *entry;
-> +	struct ppc4xx_msi *msi_data = &ppc4xx_msi;
-> +
-> +	dev_dbg(&dev->dev, "PCIE-MSI: tearing down msi irqs\n");
-> +
-> +	list_for_each_entry(entry, &dev->msi_list, list) {
-> +		if (entry->irq == NO_IRQ)
-> +			continue;
-> +		set_irq_msi(entry->irq, NULL);
-> +		msi_bitmap_free_hwirqs(&msi_data->bitmap,
-> +				virq_to_hw(entry->irq), 1);
-> +		irq_dispose_mapping(entry->irq);
-> +	}
-> +
-> +	return;
-
-This return is not needed.
-
-
-> +static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
-> +				 struct resource res, struct ppc4xx_msi *msi)
-> +{
-> +	const u32 *msi_data;
-> +	const u32 *msi_mask;
-> +	const u32 *sdr_addr;
-> +	int err = 0;
-> +	dma_addr_t msi_phys;
-> +	void *msi_virt;
-> +
-> +	sdr_addr = of_get_property(dev->dev.of_node, "sdr-base", NULL);
-> +	if (!sdr_addr)
-> +		return -1;
-> +
-> +	SDR0_WRITE(sdr_addr, (u64)res.start >> 32);	 /*HIGH addr */
-> +	SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
-> +
-> +
-> +	msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
-> +	if (msi->msi_dev) {
-> +		err = -ENODEV;
-> +		goto error_out;
-> +	}
-> +	msi->msi_regs = of_iomap(msi->msi_dev, 0);
-> +	if (!msi->msi_regs) {
-> +		dev_err(&dev->dev, "of_iomap problem failed\n");
-> +		return -ENOMEM;
-> +	}
-
-You directly return here and in all other bad cases this function
-covers, you use the goto-style (which you don't really need here,
-because there is no cleanup to do in case of a failure). Better use a
-consistent way for returning.
-
-
-> +	msi_data = of_get_property(dev->dev.of_node, "msi-data", NULL);
-> +	if (!msi_data) {
-> +		err = -1;
-> +		goto error_out;
-> +	}
-> +
-> +	msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
-> +	if (!msi_mask) {
-> +		err = -1;
-> +		goto error_out;
-> +	}
-> +
-> +	/* Program MSI Expected data and Mask bits */
-> +	out_be32(msi->msi_regs + PEIH_MSIED, *msi_data);
-> +	out_be32(msi->msi_regs + PEIH_MSIMK, *msi_mask);
-> +
-> +	return err;
-> +error_out:
-> +	return err;
-> +}
-
-This was already mentioned by Josh Boyer.
-
-> +
-> +static int ppc4xx_of_msi_remove(struct platform_device *dev)
-> +{
-> +	struct ppc4xx_msi *msi = dev->dev.platform_data;
-> +	int i;
-> +	int virq;
-> +
-> +	for(i = 0; i < NR_MSI_IRQS; i++) {
-> +		virq = msi->msi_virqs[i];
-> +		if (virq != NO_IRQ)
-> +			irq_dispose_mapping(virq);
-> +	}
-> +
-> +	if (msi->bitmap.bitmap)
-> +		msi_bitmap_free(&msi->bitmap);
-> +	iounmap(msi->msi_regs);
-> +	of_node_put(msi->msi_dev);
-> +	kfree(msi);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __devinit ppc4xx_msi_probe(struct platform_device *dev,
-> +				      const struct of_device_id *match)
-> +{
-> +	struct ppc4xx_msi *msi;
-> +	struct resource res;
-> +	int err = 0;
-> +
-> +	msi = &ppc4xx_msi;/*keep the msi data for further use*/
-> +
-> +	dev_dbg(&dev->dev, "PCIE-MSI: Setting up MSI support...\n");
-> +
-> +	msi = kzalloc(sizeof(struct ppc4xx_msi), GFP_KERNEL);
-> +	if (!msi) {
-> +		dev_err(&dev->dev, "No memory for MSI structure\n");
-> +		err = -ENOMEM;
-> +		goto error_out;
-> +	}
-> +	dev->dev.platform_data = msi;
-> +
-[...]
-> +
-> +error_out:
-> +	ppc4xx_of_msi_remove(dev);
-> +	return err;
-> +}
-
-If this function fails on allocating memory, you don't have to remove
-your device because it was not created and therefore the expected
-resources are not available in your *_remove function.
-
-
-
-Hope this helps!
-
-
-   Philipp
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
