@@ -1,22 +1,27 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
-	by ozlabs.org (Postfix) with SMTP id AB61AB70B0
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1B051B70A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Dec 2010 12:35:34 +1100 (EST)
-Received: by qyk12 with SMTP id 12so12384302qyk.19
+	Sat,  4 Dec 2010 19:21:51 +1100 (EST)
+Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4D6921C1D9F9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 03 Dec 2010 17:35:31 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20101129183535.GA5603@zod.rchland.ibm.com>
-References: <1289852106-17577-1-git-send-email-tmarri@apm.com>
-	<20101129183535.GA5603@zod.rchland.ibm.com>
-Date: Fri, 3 Dec 2010 17:35:31 -0800
-Message-ID: <AANLkTikMfLCgPi2GKUMd6PNSmVhxiJTLPDyVBcuMjOt1@mail.gmail.com>
-Subject: Re: [PATCH v2] PPC4xx: Adding PCI(E) MSI support
-From: Tirumala Marri <tmarri@apm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Content-Type: multipart/alternative; boundary=00163628399aa3791004968bab0b
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat,  4 Dec 2010 09:21:47 +0100 (CET)
+Received: from mail.denx.de (host-82-135-33-74.customer.m-online.net
+	[82.135.33.74])
+	by smtp-auth.mnet-online.de (Postfix) with ESMTPA id BF5521C00334
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  4 Dec 2010 09:21:47 +0100 (CET)
+Received: from pollux.denx.de (pollux [192.168.1.1])
+	by mail.denx.de (Postfix) with ESMTP id 7F4D340C32AF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  4 Dec 2010 09:21:47 +0100 (CET)
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc, 5200: add support for charon board
+Date: Sat,  4 Dec 2010 09:21:46 +0100
+Message-Id: <1291450906-22445-1-git-send-email-hs@denx.de>
+Cc: Heiko Schocher <hs@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +31,272 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00163628399aa3791004968bab0b
-Content-Type: text/plain; charset=ISO-8859-1
+- MPC5200
+- serielle console on PSC 1
+- 128MiB RAM
+- 32MiB NOR Flash
+- FEC Ethernet
+- 2 I2C Busses
+- FPGA on CS3 accessed through mtd-ram
+- ATA
 
->+      msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
-> >+      if (!msi_mask) {
-> >+              err = -1;
-> >+              goto error_out;
-> >+      }
->
-> This will return non zero value to probe function which would call
-ppc4xx_msi_remove() function. In the ppc4xx_msi_remove() function  there is
-iounamp() fuction.
-Thanks,
-Marri
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+based against 2.6.37-rc4
 
---00163628399aa3791004968bab0b
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+./scripts/checkpatch.pl 0001-powerpc-5200-add-support-for-charon-board.patch
+total: 0 errors, 0 warnings, 233 lines checked
 
-<br><br><div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" style=
-=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex;"><div cl=
-ass=3D"im">
-&gt;+ =A0 =A0 =A0msi_mask =3D of_get_property(dev-&gt;dev.of_node, &quot;ms=
-i-mask&quot;, NULL);<br>
-&gt;+ =A0 =A0 =A0if (!msi_mask) {<br>
-&gt;+ =A0 =A0 =A0 =A0 =A0 =A0 =A0err =3D -1;<br>
-&gt;+ =A0 =A0 =A0 =A0 =A0 =A0 =A0goto error_out;<br>
-&gt;+ =A0 =A0 =A0}<br>
-<br></div></blockquote><div>This will return non zero value to probe functi=
-on which would call ppc4xx_msi_remove() function. In the ppc4xx_msi_remove(=
-) function =A0there is iounamp() fuction.</div><div>Thanks,</div><div>Marri=
-</div>
-</div><br>
+0001-powerpc-5200-add-support-for-charon-board.patch has no obvious style problems and is ready for submission.
 
---00163628399aa3791004968bab0b--
+ arch/powerpc/boot/dts/charon.dts             |  226 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
+ 2 files changed, 227 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/charon.dts
+
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+new file mode 100644
+index 0000000..768f0cc
+--- /dev/null
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -0,0 +1,226 @@
++/*
++ * TQM5200 board Device Tree Source
++ *
++ * Copyright (C) 2007 Semihalf
++ * Marian Balakowicz <m8@semihalf.com>
++ *
++ * Copyright (C) 2010 DENX Software Engineering GmbH
++ * Heiko Schocher <hs@denx.de>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "anon,charon";
++	compatible = "anon,charon";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&mpc5200_pic>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x4000>;	// L1, 16K
++			i-cache-size = <0x4000>;	// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>;	// 128MB
++	};
++
++	soc5200@f0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5200-immr";
++		ranges = <0 0xf0000000 0x0000c000>;
++		reg = <0xf0000000 0x00000100>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		cdm@200 {
++			compatible = "fsl,mpc5200-cdm";
++			reg = <0x200 0x38>;
++		};
++
++		mpc5200_pic: interrupt-controller@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			compatible = "fsl,mpc5200-pic";
++			reg = <0x500 0x80>;
++		};
++
++		timer@600 {	// General Purpose Timer
++			compatible = "fsl,mpc5200-gpt";
++			reg = <0x600 0x10>;
++			interrupts = <1 9 0>;
++			fsl,has-wdt;
++		};
++
++		can@900 {
++			compatible = "fsl,mpc5200-mscan";
++			interrupts = <2 17 0>;
++			reg = <0x900 0x80>;
++		};
++
++		can@980 {
++			compatible = "fsl,mpc5200-mscan";
++			interrupts = <2 18 0>;
++			reg = <0x980 0x80>;
++		};
++
++		gpio_simple: gpio@b00 {
++			compatible = "fsl,mpc5200-gpio";
++			reg = <0xb00 0x40>;
++			interrupts = <1 7 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		usb@1000 {
++			compatible = "fsl,mpc5200-ohci","ohci-be";
++			reg = <0x1000 0xff>;
++			interrupts = <2 6 0>;
++		};
++
++		dma-controller@1200 {
++			device_type = "dma-controller";
++			compatible = "fsl,mpc5200-bestcomm";
++			reg = <0x1200 0x80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 10 0  3 11 0
++			              3 12 0  3 13 0  3 14 0  3 15 0>;
++		};
++
++		xlb@1f00 {
++			compatible = "fsl,mpc5200-xlb";
++			reg = <0x1f00 0x100>;
++		};
++
++		serial@2000 {		// PSC1
++			compatible = "fsl,mpc5200-psc-uart";
++			reg = <0x2000 0x100>;
++			interrupts = <2 1 0>;
++		};
++
++		serial@2400 {		// PSC3
++			compatible = "fsl,mpc5200-psc-uart";
++			reg = <0x2400 0x100>;
++			interrupts = <2 3 0>;
++		};
++
++		ethernet@3000 {
++			compatible = "fsl,mpc5200-fec";
++			reg = <0x3000 0x400>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <2 5 0>;
++			fixed-link = <1 1 100 0 0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200-mdio";
++			reg = <0x3000 0x400>;       // fec range, since we need to setup fec interrupts
++			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
++		};
++
++		ata@3a00 {
++			compatible = "fsl,mpc5200-ata";
++			reg = <0x3a00 0x100>;
++			interrupts = <2 7 0>;
++		};
++
++		i2c@3d00 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200-i2c","fsl-i2c";
++			reg = <0x3d00 0x40>;
++			interrupts = <2 15 0>;
++		};
++
++
++		i2c@3d40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200-i2c","fsl-i2c";
++			reg = <0x3d40 0x40>;
++			interrupts = <2 16 0>;
++
++			dtt@28 {
++				compatible = "national,lm80";
++				reg = <0x28>;
++			};
++
++			rtc@68 {
++				compatible = "dallas,ds1374";
++				reg = <0x68>;
++			};
++		};
++
++		sram@8000 {
++			compatible = "fsl,mpc5200-sram";
++			reg = <0x8000 0x4000>;
++		};
++	};
++
++	localbus {
++		compatible = "fsl,mpc5200-lpb","simple-bus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges = <	0 0 0xfc000000 0x02000000
++				3 0 0xe8000000 0x00080000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x02000000>;
++			bank-width = <4>;
++			device-width = <2>;
++			#size-cells = <1>;
++			#address-cells = <1>;
++		};
++
++		mram0@3,0 {
++			compatible = "mtd-ram";
++			reg = <3 0x00000 0x80000>;
++			bank-width = <1>;
++		};
++	};
++
++	pci@f0000d00 {
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		compatible = "fsl,mpc5200-pci";
++		reg = <0xf0000d00 0x100>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
++				 0xc000 0 0 2 &mpc5200_pic 0 0 3
++				 0xc000 0 0 3 &mpc5200_pic 0 0 3
++				 0xc000 0 0 4 &mpc5200_pic 0 0 3>;
++		clock-frequency = <0>; // From boot loader
++		interrupts = <2 8 0 2 9 0 2 10 0>;
++		bus-range = <0 0>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
++			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++	};
++};
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index d45be5b..d2e0096 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -58,6 +58,7 @@ static char *board[] __initdata = {
+ 	"promess,motionpro",
+ 	"schindler,cm5200",
+ 	"tqc,tqm5200",
++	"anon,charon",
+ 	NULL
+ };
+ 
+-- 
+1.7.2.3
