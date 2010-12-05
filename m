@@ -1,15 +1,19 @@
-Return-Path: <maz@misterjones.org>
-Received: from inca-roads.misterjones.org (inca-roads.misterjones.org
-	[213.251.177.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D7F5B70B8
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Dec 2010 02:11:03 +1100 (EST)
-From: Marc Zyngier <maz@misterjones.org>
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Make auto-loading of therm_pm72 possible
-Date: Sun,  5 Dec 2010 15:05:37 +0000
-Message-Id: <1291561537-1943-1-git-send-email-maz@misterjones.org>
+	by ozlabs.org (Postfix) with ESMTPS id F1AA7B70CD
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Dec 2010 02:34:48 +1100 (EST)
+Subject: Re: PowerMac G4 (Digital Audio)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Risto Suominen <risto.suominen@gmail.com>
+In-Reply-To: <AANLkTinaCDvnOCy1e1Ca92hZO5UuB-9HKe4rvLg7TUEx@mail.gmail.com>
+References: <AANLkTinaCDvnOCy1e1Ca92hZO5UuB-9HKe4rvLg7TUEx@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 05 Dec 2010 16:16:18 +0100
+Message-ID: <1291562178.3495.6.camel@jlt3.sipsolutions.net>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,114 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The therm_pm72 driver, used on the PowerMac G5 range, cannot be
-auto-loaded, since the driver itself creates both the device node
-and the driver instance.
 
-Moving the device node creation to the platform setup code and
-adding the necessary MODULE_DEVICE_TABLE() information allows the
-driver to be automatically loaded by udev on any semi-modern
-distribution.
+> Your snd-aoa seems to support PowerMac3,4. Is it really tested?
 
-It "fixes" a major source of problem on G5 machines where the
-driver wasn't explicitely loaded by default, and the system
-would automatically shutdown under load.
+I used to add only IDs that some people tested, until most things worked
+and I wholesale added all of the ones found in Darwin.
 
-Tested on an Xserve G5.
+> The reason I'm asking: people are having problems with sound on that
+> machine. Even snd-powermac didn't function, but I believe these
+> patches have helped:
+> 
+> http://ristosu.wippiespace.com/pub/alsa-tumbler-1.0.22.1-p15.diff
+> http://ristosu.wippiespace.com/pub/alsa-tumbler-1.0.22.1-p16.diff
 
-Signed-off-by: Marc Zyngier <maz@misterjones.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/powermac/setup.c |    9 +++++++++
- drivers/macintosh/therm_pm72.c          |   30 +++++-------------------------
- 2 files changed, 14 insertions(+), 25 deletions(-)
+These patches are odd -- the first one adds something the second
+removes? Am I supposed to look at the combination?
 
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 9deb274..d5aceb7 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -506,6 +506,15 @@ static int __init pmac_declare_of_platform_devices(void)
- 		of_platform_device_create(np, "smu", NULL);
- 		of_node_put(np);
- 	}
-+	np = of_find_node_by_type(NULL, "fcu");
-+	if (np == NULL) {
-+		/* Some machines have strangely broken device-tree */
-+		np = of_find_node_by_path("/u3@0,f8000000/i2c@f8001000/fan@15e");
-+	}
-+	if (np) {
-+		of_platform_device_create(np, "temperature", NULL);
-+		of_node_put(np);
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
-index 4454927..2e041fd 100644
---- a/drivers/macintosh/therm_pm72.c
-+++ b/drivers/macintosh/therm_pm72.c
-@@ -2213,6 +2213,9 @@ static void fcu_lookup_fans(struct device_node *fcu_node)
- static int fcu_of_probe(struct platform_device* dev, const struct of_device_id *match)
- {
- 	state = state_detached;
-+	of_dev = dev;
-+
-+	dev_info(&dev->dev, "PowerMac G5 Thermal control driver %s\n", VERSION);
- 
- 	/* Lookup the fans in the device tree */
- 	fcu_lookup_fans(dev->dev.of_node);
-@@ -2235,6 +2238,7 @@ static const struct of_device_id fcu_match[] =
- 	},
- 	{},
- };
-+MODULE_DEVICE_TABLE(of, fcu_match);
- 
- static struct of_platform_driver fcu_of_platform_driver = 
- {
-@@ -2252,8 +2256,6 @@ static struct of_platform_driver fcu_of_platform_driver =
-  */
- static int __init therm_pm72_init(void)
- {
--	struct device_node *np;
--
- 	rackmac = of_machine_is_compatible("RackMac3,1");
- 
- 	if (!of_machine_is_compatible("PowerMac7,2") &&
-@@ -2261,34 +2263,12 @@ static int __init therm_pm72_init(void)
- 	    !rackmac)
- 	    	return -ENODEV;
- 
--	printk(KERN_INFO "PowerMac G5 Thermal control driver %s\n", VERSION);
--
--	np = of_find_node_by_type(NULL, "fcu");
--	if (np == NULL) {
--		/* Some machines have strangely broken device-tree */
--		np = of_find_node_by_path("/u3@0,f8000000/i2c@f8001000/fan@15e");
--		if (np == NULL) {
--			    printk(KERN_ERR "Can't find FCU in device-tree !\n");
--			    return -ENODEV;
--		}
--	}
--	of_dev = of_platform_device_create(np, "temperature", NULL);
--	if (of_dev == NULL) {
--		printk(KERN_ERR "Can't register FCU platform device !\n");
--		return -ENODEV;
--	}
--
--	of_register_platform_driver(&fcu_of_platform_driver);
--	
--	return 0;
-+	return of_register_platform_driver(&fcu_of_platform_driver);
- }
- 
- static void __exit therm_pm72_exit(void)
- {
- 	of_unregister_platform_driver(&fcu_of_platform_driver);
--
--	if (of_dev)
--		of_device_unregister(of_dev);
- }
- 
- module_init(therm_pm72_init);
--- 
-1.7.2.3
+> The problem is that active state is inverted (i.e. 1) compared to
+> other machines on inputs that detect a plug (and there is no
+> audio-gpio-active-state in the device tree in gpio 15 and gpio16).
+> Snd-powermac guessed wrong.
+> 
+> How do you handle these in your code?
+
+Well, there is gpio-feature and gpio-pmf right now. I suspect you can
+get things working by adding some overrides to ftr_gpio_init(). I guess
+you want something like
+
+get_gpio("keywest-gpio1", NULL,
+         &lineout_mute_gpio,
+         &lineout_mute_gpio_activestate);
+
+on the PowerMac4,3, and something else for the headphone ...
+
+But frankly, it's been so long that it's not all making perfect sense to
+me right now. If you send me a tarball of /proc/device-tree/ maybe I can
+take a look -- just looked at my collection and I don't have that one.
+
+johannes
