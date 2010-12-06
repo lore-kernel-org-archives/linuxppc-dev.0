@@ -1,23 +1,20 @@
-Return-Path: <hs@denx.de>
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id 48436B70D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  6 Dec 2010 21:25:24 +1100 (EST)
-Date: Mon, 06 Dec 2010 11:25:17 +0100
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH 2/2] powerpc, 5200: add defconfig for charon board
-In-reply-to: <20101206100116.GB7320@pengutronix.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Message-id: <4CFCBA0D.6020503@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-References: <1291450914-22485-1-git-send-email-hs@denx.de>
-	<20101204211734.GD671@pengutronix.de> <4CFC911D.4070306@denx.de>
-	<20101206094925.3dd90271@wker> <4CFCA91C.9030107@denx.de>
-	<20101206093148.GA7320@pengutronix.de> <4CFCB195.8000306@denx.de>
-	<20101206100116.GB7320@pengutronix.de>
-Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
-Reply-To: hs@denx.de
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jeremy Kerr <jk@ozlabs.org>
+In-Reply-To: <201012061435.07393.jk@ozlabs.org>
+References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
+	<201012031558.35557.dargaud@lpsc.in2p3.fr>
+	<1291613340.11896.216.camel@concordia>
+	<201012061435.07393.jk@ozlabs.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-Nc7UqvG438chXvXwj/Up"
+Date: Mon, 06 Dec 2010 22:56:04 +1100
+Message-ID: <1291636564.21242.3.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
 
-Wolfram Sang wrote:
->> Wolfram Sang wrote:
->>> On Mon, Dec 06, 2010 at 10:13:00AM +0100, Heiko Schocher wrote:
->>>> If such a file is accepted in mainline, I make a v2 post.
->>> ===
->>>
->>> commit 0a0a5af30b9831e4f049610b5a2d9d5108ff027a
->>> Author: Grant Likely <grant.likely@secretlab.ca>
->>> Date:   Mon Jan 21 11:22:22 2008 -0700
->>>
->>>     [POWERPC] mpc5200: merge defconfigs for all mpc5200 boards
->>>     
->>>     There is no reason to have separate defconfigs for each mpc5200 board.
->>>     Instead, here is a common defconfig that can be used for all supported
->>>     platforms.
->>>     
->>>     Merging the defconfigs means there are fewer configuration to test when
->>>     compile testing all of arch/powerpc and should make support easier.
->>>     
->>>     Supported boards:
->>>         Lite5200(b), Efika, TQM5200, CM5200, MotionPro
->>>     
->>>     Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->>>
->>> ===
->>>
->>> A defconfig which brings the board up is good enough. Specific projects tend to
->>> have specialized configs anyhow.
->> Hmm.. applies this also to the DTS?
-> 
-> How should that work? :) There is one kernel with all needed options
-> (the optional ones being modules) and the DTS selects what is needed.
+--=-Nc7UqvG438chXvXwj/Up
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Ok, so I post a v2 without defconfig patch.
+On Mon, 2010-12-06 at 14:35 +0800, Jeremy Kerr wrote:
+> Hi Michael,
+>=20
+> > So you have a device, it appears in your device tree, and you want to
+> > write a driver for it.
+>=20
+> Nice write up, mind if I steal this for the devicetree.org wiki?
 
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Sure thing, feel free to correct any mistakes too ;D
+
+cheers
+
+
+--=-Nc7UqvG438chXvXwj/Up
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkz8z1EACgkQdSjSd0sB4dI7twCcC/uybL/oWzH+NMH6mnreRDnL
+OOAAn3UbNpbG0JIu0AkjjbracX6isHNM
+=SXco
+-----END PGP SIGNATURE-----
+
+--=-Nc7UqvG438chXvXwj/Up--
