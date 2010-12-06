@@ -1,19 +1,19 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 16CEDB6EE8
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2010 05:25:51 +1100 (EST)
-Received: by iwn2 with SMTP id 2so40267iwn.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 06 Dec 2010 10:25:50 -0800 (PST)
+Return-Path: <sam@ravnborg.org>
+Date: Mon, 6 Dec 2010 20:02:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: dirk.brandewie@gmail.com
+Subject: Re: [PATCH 1/4] of: Add support for linking device tree blobs into
+	vmlinux
+Message-ID: <20101206190251.GB20882@merkur.ravnborg.org>
+References: <cover.1291656753.git.dirk.brandewie@gmail.com>
+	<76a37fa459aeadce5d11db8a7cc044687a2e0e8c.1291656753.git.dirk.brandewie@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1291561537-1943-1-git-send-email-maz@misterjones.org>
-References: <1291561537-1943-1-git-send-email-maz@misterjones.org>
-Date: Mon, 6 Dec 2010 12:25:49 -0600
-Message-ID: <AANLkTikyV0c-Djgf0xzeB2ZnJFSCi4vZue_7djcEa8PE@mail.gmail.com>
-Subject: Re: [PATCH] Make auto-loading of therm_pm72 possible
-From: kevin diggs <diggskevin38@gmail.com>
-To: Marc Zyngier <maz@misterjones.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <76a37fa459aeadce5d11db8a7cc044687a2e0e8c.1291656753.git.dirk.brandewie@gmail.com>
+Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
+	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +23,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, Dec 06, 2010 at 09:35:59AM -0800, dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.brandewie@gmail.com>
+> 
+> This patch adds support for linking device tree blob(s) into
+> vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
+> .dtb sections into vmlinux. To maintain compatiblity with the of/fdt
+> driver code platforms MUST copy the blob to a non-init memory location
+> before the kernel frees the .init.* sections in the image.
+> 
+> Modifies scripts/Makefile.lib to add a kbuild command to
+> compile DTS files to device tree blobs and a rule to create objects to
+> wrap the blobs for linking.
+> 
+> STRUCT_ALIGNMENT is defined in vmlinux.lds.h for use in the rule to
+> create wrapper objects for the dtb in Makefile.lib.  The
+> STRUCT_ALIGN() macro in vmlinux.lds.h is modified to use the
+> STRUCT_ALIGNMENT definition.
+> 
+> The DTB's are placed on 32 byte boundries to allow parsing the blob
+> with driver/of/fdt.c during early boot without having to copy the blob
+> to get the structure alignment GCC expects.
+> 
+> A DTB is linked in by adding the DTB object to the list of objects to
+> be linked into vmlinux in the archtecture specific Makefile using
+>    obj-y += foo.dtb.o
+> 
+> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+> ---
+>  Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
+>  include/asm-generic/vmlinux.lds.h  |   15 ++++++++++++---
+>  scripts/Makefile.lib               |   21 ++++++++++++++++++++-
+>  3 files changed, 47 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+> index 0ef00bd..fc18bb1 100644
+> --- a/Documentation/kbuild/makefiles.txt
+> +++ b/Documentation/kbuild/makefiles.txt
+> @@ -1136,6 +1136,21 @@ When kbuild executes, the following steps are followed (roughly):
+>  	      resulting in the target file being recompiled for no
+>  	      obvious reason.
+>  
+> +    dtc
+> +	Create flattend device tree blob object suitable for linking
+> +	into vmlinux. Device tree blobs linked into vmlinux are placed
+> +	in an init section in the image. Platform code *must* copy the
+> +	blob to non-init memory prior to calling unflatten_device_tree().
+> +
+> +	Example:
+> +		#arch/x86/platform/ce4100/Makefile
+> +		clean-files := *dtb.S
+> +
+> +		DTC_FLAGS := -p 1024
+> +		obj-y += foo.dtb.o
+> +
+> +		$(obj)/%.dtb: $(src)/%.dts
+> +			$(call if_changed,dtc)
 
-On a sort of related issue, if anyone out there has a PowerMac7,3
-(dual 2.5 GHz 970Fx, PCI-X), I would appreciate it if you could do me
-a favor.
+When using "if_changed" you need to add your target to targets-y.
+And you need to specify FORCE as a prerequisite to force kbuild
+to use the if_changed logic.
 
-I think this therm_pm72 thing creates the sysfs temperature and
-voltage attributes for the cpus. I noticed on my machine that if I use
-the cpufreq driver for this thing the frequencies were like 2.0 and
-2.5. The problem is that the cpu voltages were something like 1.25 and
-1.37 respectively. At 1.37 and 2.5 GHz, cpu 1 would zoom to 110+ under
-load.
+The purpose of if_changed is to check if the commandlien has changed
+and execute the command again also if the commandline has changed.
+The simpler variant is $(call cmd,dtc) where you do not check
+the command line and do not need FORCE.
 
-When I finally managed to get a compiler built that could build a
-kernel past 2.6.28, I removed the cpufreq driver. Now this thing runs
-at 2.5 GHz all the time. Under load cpu1 tops out at like 74 ish. I
-eventually noticed that the voltage was 1.25. Huh? I thought this
-voltage scaling business used the high voltage for the high frequency.
-How can this thing be running at its high speed at the lower
-voltage???
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index bd69d79..024d3b9 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -23,7 +23,7 @@
+>   *	_etext = .;
+>   *
+>   *      _sdata = .;
+> - *	RO_DATA_SECTION(PAGE_SIZE)
+> +*	RO_DATA_SECTION(PAGE_SIZE)
+>   *	RW_DATA_SECTION(...)
+>   *	_edata = .;
+>   *
 
-Can someone please confirm this behavior on a different 7,3? I did get
-this thing off of ebay and might have myself a franken G5?
+Change seems wrong.
 
-Thanks!
+> @@ -67,7 +67,8 @@
+>   * Align to a 32 byte boundary equal to the
+>   * alignment gcc 4.5 uses for a struct
+>   */
+> -#define STRUCT_ALIGN() . = ALIGN(32)
+> +#define STRUCT_ALIGNMENT 32
+> +#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
+>  
+>  /* The actual configuration determine if the init/exit sections
+>   * are handled as text/data or they can be discarded (which
+> @@ -146,6 +147,13 @@
+>  #define TRACE_SYSCALLS()
+>  #endif
+>  
+> +
+> +#define KERNEL_DTB()							\
+> +	STRUCT_ALIGN();							\
+> +	VMLINUX_SYMBOL(__dtb_start) = .;				\
+> +	*(.dtb.init.rodata)						\
+> +	VMLINUX_SYMBOL(__dtb_end) = .;
+> +
+>  /* .data section */
+>  #define DATA_DATA							\
+>  	*(.data)							\
+> @@ -468,7 +476,8 @@
+>  	MCOUNT_REC()							\
+>  	DEV_DISCARD(init.rodata)					\
+>  	CPU_DISCARD(init.rodata)					\
+> -	MEM_DISCARD(init.rodata)
+> +	MEM_DISCARD(init.rodata)					\
+> +	KERNEL_DTB()
+>  
+>  #define INIT_TEXT							\
+>  	*(.init.text)							\
+> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+> index 4c72c11..937eabbb 100644
+> --- a/scripts/Makefile.lib
+> +++ b/scripts/Makefile.lib
+> @@ -200,7 +200,26 @@ quiet_cmd_gzip = GZIP    $@
+>  cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
+>  	(rm -f $@ ; false)
+>  
+> -
+> +# DTC
+> +#  ---------------------------------------------------------------------------
+> +
+> +# Generate an assembly file to wrap the output of the device tree compiler
+> +$(obj)/%.dtb.S: $(obj)/%.dtb
+> +	@echo '#include <asm-generic/vmlinux.lds.h>' > $@
+> +	@echo '.section .dtb.init.rodata,"a"' >> $@
+> +	@echo '.balign STRUCT_ALIGNMENT' >> $@
+> +	@echo '.global __dtb_$(*F)_begin' >> $@
+> +	@echo '__dtb_$(*F)_begin:' >> $@
+> +	@echo '.incbin "$<" ' >> $@
+> +	@echo '__dtb_$(*F)_end:' >> $@
+> +	@echo '.global __dtb_$(*F)_end' >> $@
+> +	@echo '.balign STRUCT_ALIGNMENT' >> $@
+> +
 
-kevin
+If we really want this rule in Makefile.lib then at least make it less verbose,
+and more secure.
+Something like this:
+quiet_dt_S_dtb_cmd = DTB    $@
+      dt_S_dtb_cmd =                                      \
+(                                                         \
+	@echo '#include <asm-generic/vmlinux.lds.h>';     \
+	@echo '.section .dtb.init.rodata,"a"';            \
+	@echo '.balign STRUCT_ALIGNMENT';                 \
+	echo '.global __dtb_$(*F)_begin';                 \
+	echo '__dtb_$(*F)_begin:';                        \
+	echo '.incbin "$<" ';                             \
+	echo '__dtb_$(*F)_end:';                          \
+	echo '.global __dtb_$(*F)_end';                   \
+	echo '.balign STRUCT_ALIGNMENT';                  \
+) > $@
 
-P.S.:  I also don't get the 2.0 GHz low speed? I thought with the FX
-the speed would be 2.5 / 2 or 1.25? Does this beast NOT use the FX's
-frequency scaling capabilities?
+$(obj)/%.dtb.S: $(obj)/%.dtb
+	$(call cmd,dt_S_dtb)
+
+
+> +DTC = $(objtree)/scripts/dtc/dtc
+
+If this is the only spot where we use DTC then drop the variable.
+
+> +
+> +quiet_cmd_dtc = DTC $@
+> +      cmd_dtc = $(DTC) -O dtb -o $@ -b 0 $(DTC_FLAGS) $<
+
+
+> +ooo
+
+What is the purpose of these "ooo"? A debugging left-over?
+
+
+	Sam
