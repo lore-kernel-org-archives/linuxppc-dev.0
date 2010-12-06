@@ -1,15 +1,19 @@
-Return-Path: <dirk.brandewie@gmail.com>
-From: dirk.brandewie@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] x86/of: Add building device tree blob(s) into image.
-Date: Mon,  6 Dec 2010 09:36:00 -0800
-Message-Id: <b5a8dfa4d580d8637132f81317390a535ab98511.1291656753.git.dirk.brandewie@gmail.com>
-In-Reply-To: <cover.1291656753.git.dirk.brandewie@gmail.com>
-References: <cover.1291656753.git.dirk.brandewie@gmail.com>
-Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
-	microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sodaville@linutronix.de,
-	Dirk Brandewie <dirk.brandewie@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 16CEDB6EE8
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2010 05:25:51 +1100 (EST)
+Received: by iwn2 with SMTP id 2so40267iwn.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Dec 2010 10:25:50 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1291561537-1943-1-git-send-email-maz@misterjones.org>
+References: <1291561537-1943-1-git-send-email-maz@misterjones.org>
+Date: Mon, 6 Dec 2010 12:25:49 -0600
+Message-ID: <AANLkTikyV0c-Djgf0xzeB2ZnJFSCi4vZue_7djcEa8PE@mail.gmail.com>
+Subject: Re: [PATCH] Make auto-loading of therm_pm72 possible
+From: kevin diggs <diggskevin38@gmail.com>
+To: Marc Zyngier <maz@misterjones.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,32 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Hi,
 
-This patch adds linking device tree blob into vmlinux. DTB's are
-added by adding the blob object name to list of objects to be linked
-into the image.
+On a sort of related issue, if anyone out there has a PowerMac7,3
+(dual 2.5 GHz 970Fx, PCI-X), I would appreciate it if you could do me
+a favor.
 
-Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
----
- arch/x86/platform/ce4100/Makefile |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+I think this therm_pm72 thing creates the sysfs temperature and
+voltage attributes for the cpus. I noticed on my machine that if I use
+the cpufreq driver for this thing the frequencies were like 2.0 and
+2.5. The problem is that the cpu voltages were something like 1.25 and
+1.37 respectively. At 1.37 and 2.5 GHz, cpu 1 would zoom to 110+ under
+load.
 
-diff --git a/arch/x86/platform/ce4100/Makefile b/arch/x86/platform/ce4100/Makefile
-index 91fc929..3b49187 100644
---- a/arch/x86/platform/ce4100/Makefile
-+++ b/arch/x86/platform/ce4100/Makefile
-@@ -1 +1,11 @@
- obj-$(CONFIG_X86_INTEL_CE)	+= ce4100.o
-+clean-files := *dtb.S
-+
-+ifdef CONFIG_X86_OF
-+###
-+# device tree blob
-+obj-$(CONFIG_X86_INTEL_CE) += ce4100.dtb.o
-+
-+$(obj)/%.dtb: $(src)/%.dts
-+	$(call if_changed,dtc)
-+endif
--- 
-1.7.2.3
+When I finally managed to get a compiler built that could build a
+kernel past 2.6.28, I removed the cpufreq driver. Now this thing runs
+at 2.5 GHz all the time. Under load cpu1 tops out at like 74 ish. I
+eventually noticed that the voltage was 1.25. Huh? I thought this
+voltage scaling business used the high voltage for the high frequency.
+How can this thing be running at its high speed at the lower
+voltage???
+
+Can someone please confirm this behavior on a different 7,3? I did get
+this thing off of ebay and might have myself a franken G5?
+
+Thanks!
+
+kevin
+
+P.S.:  I also don't get the 2.0 GHz low speed? I thought with the FX
+the speed would be 2.5 / 2 or 1.25? Does this beast NOT use the FX's
+frequency scaling capabilities?
