@@ -1,22 +1,13 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 056C8B70E7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Dec 2010 01:49:21 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 11399-10 for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  6 Dec 2010 14:49:15 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Getting the IRQ number (Was: Basic driver devel questions ?)
-Date: Mon, 6 Dec 2010 14:47:59 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ABEA@saturn3.aculab.com>
-In-Reply-To: <201012061544.40124.dargaud@lpsc.in2p3.fr>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <dirk.brandewie@gmail.com>
+From: dirk.brandewie@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4]  V2 Add ability to link device blob(s) into vmlinux
+Date: Mon,  6 Dec 2010 09:35:58 -0800
+Message-Id: <cover.1291656753.git.dirk.brandewie@gmail.com>
+Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
+	microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sodaville@linutronix.de,
+	Dirk Brandewie <dirk.brandewie@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +17,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> Another question: I just spent 10 minutes trying to find
-> where "struct device" was defined.
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Dirty trick #4:
+This patch set adds the ability to link device tree blobs into
+vmlinux. 
 
-At the top of a source file (before the first include) add:
-    struct device { int fubar; };
-Then try to compile it.
+Patch 1 implements the changes to include/asm-generic/vmlinux.lds.h and
+adds a generic rule for generating DTB objects to be linked vmlinux.
 
-The compiler will the tell where it is defined!
+Patch 2 implements linking a DTB into an x86 image.
 
-	David
+Patch 3-4 move {powerpc,microblaze}/boot/Makefile to use the dtc rule
+in patch 1.
+
+This patch set has been tested on x86.
+
+Powerpc and Microblaze have been compile tested with and without patch
+3 and 4 applied.
+
+Changes from V1:
+
+Documentation added for dtc command in Makefile.lib to
+Documentation/kbuild/makefiles.txt
+Separate DTB_ALIGNMENT define removed.
+FORCE removed from dtc rule.
+Removed hardcoded path to dts files from dtc command.  
+Moved %.dtb: %.dts rule to arch specific makefiles. 
+ 
+Patch for adding kernel command line option to pass in dtb_compat
+string dropped from this set will be submitted seperately.
+
+Dirk Brandewie (4):
+  of: Add support for linking device tree blobs into vmlinux
+  x86/of: Add building device tree blob(s) into image.
+  of/powerpc: Use generic rule to build dtb's
+  microblaze/of: Use generic rule to build dtb's
+
+ Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
+ arch/microblaze/boot/Makefile      |   10 ++--------
+ arch/powerpc/boot/Makefile         |    8 +++-----
+ arch/x86/platform/ce4100/Makefile  |   10 ++++++++++
+ include/asm-generic/vmlinux.lds.h  |   15 ++++++++++++---
+ scripts/Makefile.lib               |   21 ++++++++++++++++++++-
+ 6 files changed, 62 insertions(+), 17 deletions(-)
+
+-- 
+1.7.2.3
