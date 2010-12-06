@@ -1,20 +1,22 @@
-Return-Path: <hs@denx.de>
-Received: from b.relay.invitel.net (b.relay.invitel.net [62.77.203.4])
-	by ozlabs.org (Postfix) with ESMTP id B49B3B70CC
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5A3E6B70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  6 Dec 2010 17:37:10 +1100 (EST)
-Date: Mon, 06 Dec 2010 07:29:23 +0100
-From: Heiko Schocher <hs@denx.de>
+	Mon,  6 Dec 2010 17:44:50 +1100 (EST)
+Date: Mon, 6 Dec 2010 07:44:44 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Heiko Schocher <hs@denx.de>
 Subject: Re: [PATCH 1/2] powerpc, 5200: add support for charon board
-In-reply-to: <20101204211644.GC671@pengutronix.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Message-id: <4CFC82C3.3090307@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
+Message-ID: <20101206064444.GA31994@pengutronix.de>
 References: <1291450906-22445-1-git-send-email-hs@denx.de>
-	<20101204211644.GC671@pengutronix.de>
+	<20101204211644.GC671@pengutronix.de> <4CFC82C3.3090307@denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wac7ysb48OaltWcw"
+In-Reply-To: <4CFC82C3.3090307@denx.de>
 Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,73 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
 
-Wolfram Sang wrote:
-> On Sat, Dec 04, 2010 at 09:21:46AM +0100, Heiko Schocher wrote:
->> - MPC5200
->> - serielle console on PSC 1
-> 
-> serial
+--wac7ysb48OaltWcw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hups, thanks!
+On Mon, Dec 06, 2010 at 07:29:23AM +0100, Heiko Schocher wrote:
 
->> - 128MiB RAM
->> - 32MiB NOR Flash
->> - FEC Ethernet
->> - 2 I2C Busses
->> - FPGA on CS3 accessed through mtd-ram
->> - ATA
-> 
-> although I am not sure we need those details in the commit log
+> Thanks for the review,
 
-Okay, I can remove them.
+You're welcome. Oh, just to make sure: It is really a MPC5200 and not a
+MPC5200B?
 
->> Signed-off-by: Heiko Schocher <hs@denx.de>
->> ---
->> based against 2.6.37-rc4
->>
->> ./scripts/checkpatch.pl 0001-powerpc-5200-add-support-for-charon-board.patch
->> total: 0 errors, 0 warnings, 233 lines checked
->>
->> 0001-powerpc-5200-add-support-for-charon-board.patch has no obvious style problems and is ready for submission.
->>
->>  arch/powerpc/boot/dts/charon.dts             |  226 ++++++++++++++++++++++++++
->>  arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
->>  2 files changed, 227 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/powerpc/boot/dts/charon.dts
->>
->> diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
->> new file mode 100644
->> index 0000000..768f0cc
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/charon.dts
->> @@ -0,0 +1,226 @@
->> +/*
->> + * TQM5200 board Device Tree Source
-> 
-> Ooops ;) Your board name here, maybe "based on TQM"
+Kind regards,
 
-Yep, thats right! I rename this to charon, thanks for detecting.
+   Wolfram
 
-[...]
->> diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
->> index d45be5b..d2e0096 100644
->> --- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
->> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
->> @@ -58,6 +58,7 @@ static char *board[] __initdata = {
->>  	"promess,motionpro",
->>  	"schindler,cm5200",
->>  	"tqc,tqm5200",
->> +	"anon,charon",
-> 
-> Those are sorted alphabetically
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-Change this!
+--wac7ysb48OaltWcw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Thanks for the review,
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkz8hlwACgkQD27XaX1/VRv3FgCglw5V3/8TXHVD16rfrZG7RjzT
+m3cAn0HXhdDBy/2fJ5y1ghwbVTdm1cr8
+=lkR/
+-----END PGP SIGNATURE-----
+
+--wac7ysb48OaltWcw--
