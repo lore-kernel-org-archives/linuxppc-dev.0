@@ -1,19 +1,18 @@
-Return-Path: <sam@ravnborg.org>
-Date: Mon, 6 Dec 2010 20:02:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: dirk.brandewie@gmail.com
-Subject: Re: [PATCH 1/4] of: Add support for linking device tree blobs into
-	vmlinux
-Message-ID: <20101206190251.GB20882@merkur.ravnborg.org>
-References: <cover.1291656753.git.dirk.brandewie@gmail.com>
-	<76a37fa459aeadce5d11db8a7cc044687a2e0e8c.1291656753.git.dirk.brandewie@gmail.com>
+Return-Path: <rvinson@mvista.com>
+Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
+	[209.85.216.42]) by ozlabs.org (Postfix) with ESMTP id 2E4A6B6EF1
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2010 08:03:02 +1100 (EST)
+Received: by qwj8 with SMTP id 8so10375601qwj.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Dec 2010 13:03:00 -0800 (PST)
+Message-ID: <4CFD4F5F.8070108@mvista.com>
+Date: Mon, 06 Dec 2010 14:02:23 -0700
+From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <76a37fa459aeadce5d11db8a7cc044687a2e0e8c.1291656753.git.dirk.brandewie@gmail.com>
-Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
-	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
-	linuxppc-dev@lists.ozlabs.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linux-watchdog@vger.kernel.org, Kumar Gala <kumar.gala@freescale.com>
+Subject: [PATCH] powerpc/watchdog: Propagate Book E WDT period changes to
+	all cores
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,180 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 06, 2010 at 09:35:59AM -0800, dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.brandewie@gmail.com>
-> 
-> This patch adds support for linking device tree blob(s) into
-> vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
-> .dtb sections into vmlinux. To maintain compatiblity with the of/fdt
-> driver code platforms MUST copy the blob to a non-init memory location
-> before the kernel frees the .init.* sections in the image.
-> 
-> Modifies scripts/Makefile.lib to add a kbuild command to
-> compile DTS files to device tree blobs and a rule to create objects to
-> wrap the blobs for linking.
-> 
-> STRUCT_ALIGNMENT is defined in vmlinux.lds.h for use in the rule to
-> create wrapper objects for the dtb in Makefile.lib.  The
-> STRUCT_ALIGN() macro in vmlinux.lds.h is modified to use the
-> STRUCT_ALIGNMENT definition.
-> 
-> The DTB's are placed on 32 byte boundries to allow parsing the blob
-> with driver/of/fdt.c during early boot without having to copy the blob
-> to get the structure alignment GCC expects.
-> 
-> A DTB is linked in by adding the DTB object to the list of objects to
-> be linked into vmlinux in the archtecture specific Makefile using
->    obj-y += foo.dtb.o
-> 
-> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
-> ---
->  Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
->  include/asm-generic/vmlinux.lds.h  |   15 ++++++++++++---
->  scripts/Makefile.lib               |   21 ++++++++++++++++++++-
->  3 files changed, 47 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-> index 0ef00bd..fc18bb1 100644
-> --- a/Documentation/kbuild/makefiles.txt
-> +++ b/Documentation/kbuild/makefiles.txt
-> @@ -1136,6 +1136,21 @@ When kbuild executes, the following steps are followed (roughly):
->  	      resulting in the target file being recompiled for no
->  	      obvious reason.
->  
-> +    dtc
-> +	Create flattend device tree blob object suitable for linking
-> +	into vmlinux. Device tree blobs linked into vmlinux are placed
-> +	in an init section in the image. Platform code *must* copy the
-> +	blob to non-init memory prior to calling unflatten_device_tree().
-> +
-> +	Example:
-> +		#arch/x86/platform/ce4100/Makefile
-> +		clean-files := *dtb.S
-> +
-> +		DTC_FLAGS := -p 1024
-> +		obj-y += foo.dtb.o
-> +
-> +		$(obj)/%.dtb: $(src)/%.dts
-> +			$(call if_changed,dtc)
+When the watchdog period is changed, it needs to be propagated to all cores
+in addition to the core that performed the change.
 
-When using "if_changed" you need to add your target to targets-y.
-And you need to specify FORCE as a prerequisite to force kbuild
-to use the if_changed logic.
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+---
+ drivers/watchdog/booke_wdt.c |   19 +++++++++++++++++--
+ 1 files changed, 17 insertions(+), 2 deletions(-)
 
-The purpose of if_changed is to check if the commandlien has changed
-and execute the command again also if the commandline has changed.
-The simpler variant is $(call cmd,dtc) where you do not check
-the command line and do not need FORCE.
-
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index bd69d79..024d3b9 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -23,7 +23,7 @@
->   *	_etext = .;
->   *
->   *      _sdata = .;
-> - *	RO_DATA_SECTION(PAGE_SIZE)
-> +*	RO_DATA_SECTION(PAGE_SIZE)
->   *	RW_DATA_SECTION(...)
->   *	_edata = .;
->   *
-
-Change seems wrong.
-
-> @@ -67,7 +67,8 @@
->   * Align to a 32 byte boundary equal to the
->   * alignment gcc 4.5 uses for a struct
->   */
-> -#define STRUCT_ALIGN() . = ALIGN(32)
-> +#define STRUCT_ALIGNMENT 32
-> +#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
->  
->  /* The actual configuration determine if the init/exit sections
->   * are handled as text/data or they can be discarded (which
-> @@ -146,6 +147,13 @@
->  #define TRACE_SYSCALLS()
->  #endif
->  
-> +
-> +#define KERNEL_DTB()							\
-> +	STRUCT_ALIGN();							\
-> +	VMLINUX_SYMBOL(__dtb_start) = .;				\
-> +	*(.dtb.init.rodata)						\
-> +	VMLINUX_SYMBOL(__dtb_end) = .;
-> +
->  /* .data section */
->  #define DATA_DATA							\
->  	*(.data)							\
-> @@ -468,7 +476,8 @@
->  	MCOUNT_REC()							\
->  	DEV_DISCARD(init.rodata)					\
->  	CPU_DISCARD(init.rodata)					\
-> -	MEM_DISCARD(init.rodata)
-> +	MEM_DISCARD(init.rodata)					\
-> +	KERNEL_DTB()
->  
->  #define INIT_TEXT							\
->  	*(.init.text)							\
-> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-> index 4c72c11..937eabbb 100644
-> --- a/scripts/Makefile.lib
-> +++ b/scripts/Makefile.lib
-> @@ -200,7 +200,26 @@ quiet_cmd_gzip = GZIP    $@
->  cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
->  	(rm -f $@ ; false)
->  
-> -
-> +# DTC
-> +#  ---------------------------------------------------------------------------
-> +
-> +# Generate an assembly file to wrap the output of the device tree compiler
-> +$(obj)/%.dtb.S: $(obj)/%.dtb
-> +	@echo '#include <asm-generic/vmlinux.lds.h>' > $@
-> +	@echo '.section .dtb.init.rodata,"a"' >> $@
-> +	@echo '.balign STRUCT_ALIGNMENT' >> $@
-> +	@echo '.global __dtb_$(*F)_begin' >> $@
-> +	@echo '__dtb_$(*F)_begin:' >> $@
-> +	@echo '.incbin "$<" ' >> $@
-> +	@echo '__dtb_$(*F)_end:' >> $@
-> +	@echo '.global __dtb_$(*F)_end' >> $@
-> +	@echo '.balign STRUCT_ALIGNMENT' >> $@
-> +
-
-If we really want this rule in Makefile.lib then at least make it less verbose,
-and more secure.
-Something like this:
-quiet_dt_S_dtb_cmd = DTB    $@
-      dt_S_dtb_cmd =                                      \
-(                                                         \
-	@echo '#include <asm-generic/vmlinux.lds.h>';     \
-	@echo '.section .dtb.init.rodata,"a"';            \
-	@echo '.balign STRUCT_ALIGNMENT';                 \
-	echo '.global __dtb_$(*F)_begin';                 \
-	echo '__dtb_$(*F)_begin:';                        \
-	echo '.incbin "$<" ';                             \
-	echo '__dtb_$(*F)_end:';                          \
-	echo '.global __dtb_$(*F)_end';                   \
-	echo '.balign STRUCT_ALIGNMENT';                  \
-) > $@
-
-$(obj)/%.dtb.S: $(obj)/%.dtb
-	$(call cmd,dt_S_dtb)
-
-
-> +DTC = $(objtree)/scripts/dtc/dtc
-
-If this is the only spot where we use DTC then drop the variable.
-
-> +
-> +quiet_cmd_dtc = DTC $@
-> +      cmd_dtc = $(DTC) -O dtb -o $@ -b 0 $(DTC_FLAGS) $<
-
-
-> +ooo
-
-What is the purpose of these "ooo"? A debugging left-over?
-
-
-	Sam
+diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+index d11ffb0..c8ffa6c 100644
+--- a/drivers/watchdog/booke_wdt.c
++++ b/drivers/watchdog/booke_wdt.c
+@@ -85,6 +85,22 @@ static unsigned int sec_to_period(unsigned int secs)
+ 	return 0;
+ }
+ 
++static void __booke_wdt_set(void *data)
++{
++	u32 val;
++
++	val = mfspr(SPRN_TCR);
++	val &= ~WDTP_MASK;
++	val |= WDTP(booke_wdt_period);
++
++	mtspr(SPRN_TCR, val);
++}
++
++static void booke_wdt_set(void)
++{
++	on_each_cpu(__booke_wdt_set, NULL, 0);
++}
++
+ static void __booke_wdt_ping(void *data)
+ {
+ 	mtspr(SPRN_TSR, TSR_ENW|TSR_WIS);
+@@ -181,8 +197,7 @@ static long booke_wdt_ioctl(struct file *file,
+ #else
+ 		booke_wdt_period = tmp;
+ #endif
+-		mtspr(SPRN_TCR, (mfspr(SPRN_TCR) & ~WDTP_MASK) |
+-						WDTP(booke_wdt_period));
++		booke_wdt_set();
+ 		return 0;
+ 	case WDIOC_GETTIMEOUT:
+ 		return put_user(booke_wdt_period, p);
+-- 
+1.6.3.3.328.ge81f
