@@ -1,17 +1,11 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id A7EBFB70E7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Dec 2010 17:59:27 +1100 (EST)
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2 v2] powerpc, video: add SM501 support for charon board.
-Date: Tue,  7 Dec 2010 07:59:20 +0100
-Message-Id: <1291705160-26847-1-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs@denx.de>
-References: <1291451028-22532-2-git-send-email-hs@denx.de>
-Cc: linux-fbdev@vger.kernel.org, Heiko Schocher <hs@denx.de>,
-	devicetree-discuss@ozlabs.org
+Return-Path: <Xufeng.Zhang@windriver.com>
+Message-ID: <4CFDD8C5.70905@windriver.com>
+Date: Tue, 07 Dec 2010 14:48:37 +0800
+From: xufeng zhang <xufeng.zhang@windriver.com>
+MIME-Version: 1.0
+To: shaggy@linux.vnet.ibm.com, Linuxppc-dev@ozlabs.org
+Subject: Run 'usermode-agent' cause kernel panic on Powerpc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,50 +15,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
----
-- based against 2.6.37-rc4
+Hi Dave,
 
-./scripts/checkpatch.pl 0003-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 21 lines checked
+I have a question with the below patch you made before:
+----------------------------------------
+powerpc/booke: Add support for advanced debug registers
 
-0003-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
+Based on patches originally written by Torez Smith.
+-----------------------------------------
 
- arch/powerpc/boot/dts/charon.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+I meet a kernel panic problem while running 'usermode-agent' on PowerPC
+----------------------------------------
+Oops: Exception in kernel mode, sig: 5 [#1]
+PREEMPT LTT NESTING LEVEL : 0
+MPC8536 DS
+last sysfs file: 
+/sys/devices/f3000000.soc/f3003100.i2c/i2c-1/i2c-dev/i2c-1/dev
+Modules linked in:
+NIP: c00081a0 LR: c03a9560 CTR: c003547c
+REGS: ef11bf10 TRAP: 2002   Not tainted  (2.6.34.6-WR4.0.0.0_standard)
+MSR: 00021000 <ME,CE>  CR: 44000624  XER: 00000000
+TASK = efc1de00[752] 'usermode-agent' THREAD: ef63e000
+GPR00: cc00cc00 ef63fe60 efc1de00 efc1de00 efc1f700 c04c8000 00258560 
+ffffffff
+GPR08: ffda8a00 40000000 00001fda c0500000 49eaebbd 1008b654 3ff8a900 
+00000000
+GPR16: 00000000 eed84c40 c03b4570 c04ee4d0 c04ca870 ef63e03c 00000000 
+00000000
+GPR24: c04f7ee8 c04ee4c0 00000004 c04ca440 ef63e000 efc1f700 c04ca440 
+efc1de00
+NIP [c00081a0] __switch_to+0xac/0x104
+LR [c03a9560] schedule+0x20c/0x3f4
+Call Trace:
+[ef63fe60] [efc1f700] 0xefc1f700 (unreliable)
+[ef63fe70] [c03a9560] schedule+0x20c/0x3f4
+[ef63fec0] [c00429e0] do_wait+0x1a4/0x278
+[ef63fef0] [c0042b44] sys_wait4+0x90/0xf8
+[ef63ff40] [c00106d4] ret_from_syscall+0x0/0x4
+------------------------------------------
 
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..d9af022 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
- 
- 		flash@0,0 {
-@@ -197,6 +198,14 @@
- 			#address-cells = <1>;
- 		};
- 
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
--- 
-1.7.2.3
+Actually, this problem is caused by enabling On Chip Debugging, when On
+Chip Debugging is enabled, we enable MSR_DE as below:
+#define MSR_KERNEL      (MSR_ME|MSR_RI|MSR_CE|MSR_DE)
+
+If I comment out "mtspr(SPRN_DBCR0, thread->dbcr0);" in 
+prime_debug_regs() function,
+then it will be ok.
+
+Here is my analysis for this problem:
+Run 'usermode-agent' application will set Internal Debug Mode(IDM) and
+Instruction Complete Debug Event(ICMP)flags for thread.
+As MSR_DE is enabled, when execute context switching in prime_debug_regs(),
+thread->dbcr0 would write to SPRN_DBCR0 register.
+So this will enable Instruction Complete Debug Event interrupt, and it 
+will cause a kernel-mode
+exception right now, it will be handled in native_DebugException(), then 
+kernel detected
+this exception not happens in user-mode, lastly kernel call die() and 
+kill current process.
+
+So my question is could I just comment out "mtspr(SPRN_DBCR0, 
+thread->dbcr0);" in prime_debug_regs()?
+I'm sure whether or not it will impose a bad impact on debugging.
+Thanks in advance!
+
+
+Thanks,
+Xufeng Zhang
