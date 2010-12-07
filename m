@@ -1,45 +1,16 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 00829B70A3
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 291FFB70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Dec 2010 16:00:34 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id oB750YEb020931
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Dec 2010 16:00:34 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oB750Y5x2478290
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Dec 2010 16:00:34 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oB750WIF017531
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Dec 2010 16:00:34 +1100
-Content-Type: text/plain; charset=UTF-8
-Subject: PowerPC,
-	ftrace: Add PPC raw syscall tracepoints & ftrace fixes (subset from
-	v2)
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-In-reply-to: <1291696151-4336-1-git-send-email-imunsie@au1.ibm.com>
-References: <1291696151-4336-1-git-send-email-imunsie@au1.ibm.com>
-Date: Tue, 07 Dec 2010 16:00:31 +1100
-Message-Id: <1291698004-sup-2452@au1.ibm.com>
-Cc: Andreas Dilger <adilger@dilger.ca>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jiri Kosina <jkosina@suse.cz>, Jason Baron <jbaron@redhat.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Alexander Graf <agraf@suse.de>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
-	Avantika Mathur <mathur@linux.vnet.ibm.com>,
-	David Gibson <dwg@au1.ibm.com>, Andreas Schwab <schwab@linux-m68k.org>,
-	Namhyung Kim <namhyung@gmail.com>
+	Tue,  7 Dec 2010 17:59:02 +1100 (EST)
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc, 5200: add support for charon board
+Date: Tue,  7 Dec 2010 07:58:55 +0100
+Message-Id: <1291705135-26805-1-git-send-email-hs@denx.de>
+In-Reply-To: <1291450906-22445-1-git-send-email-hs@denx.de>
+References: <1291450906-22445-1-git-send-email-hs@denx.de>
+Cc: Heiko Schocher <hs@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,42 +20,271 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oops, It seems that I missed LKML in the to address of the cover email
-for this set. Guess I shouldn't send a patch set just as the fire alarm
-goes off.  Resending:
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: Wolfram Sang <w.sang@pengutronix.de>
+---
+- based against 2.6.37-rc4
 
+./scripts/checkpatch.pl 0001-powerpc-5200-add-support-for-charon-board.patch
+total: 0 errors, 0 warnings, 233 lines checked
 
-Hi all,
+0001-powerpc-5200-add-support-for-charon-board.patch has no obvious style problems and is ready for submission.
 
-This is a partial version of my 'ftrace syscalls, PowerPC: Various fixes,
-Compat Syscall support and PowerPC implementation'.
+- changes since v1:
+  add comments from Wolfram Sang
+  - no defconfig file
+  - comment corrected in DTS
+  - boardlist sorted alphabetically
+  - commit log without boardinfo
 
-I've been tied up with other work and haven't had time to complete the
-work on the v3 of the full set, but the patches I'm including here are
-pretty stable and there has been a request for the raw syscall
-tracepoints in PowerPC.
+ arch/powerpc/boot/dts/charon.dts             |  226 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
+ 2 files changed, 227 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/charon.dts
 
-The actual patches included here have not been changed from the v2 other than
-rebasing them on tip/master. They add support for *raw* syscall tracepoints on
-PowerPC, while fixing ftrace syscalls to ensure that events will only be created
-for syscalls that successfully map their metadata to a syscall number,
-so that non-working phantom events are not created.
-
-Patch #2 and #6 in this series are not strictly necessary for this, they just
-optimise ftrace syscalls a bit.
-
-
-What's missing from this series that was in the v2 is the conversion of
-all the syscalls implemented under /arch/powerpc, Jason Baron's compat
-syscall support and the conversion of the remaining native and compat
-syscalls to this infrastructure.
-
-Cheers,
--Ian
-
-GIT: [PATCH 1/6] ftrace syscalls: don't add events for unmapped syscalls
-GIT: [PATCH 2/6] trace syscalls: Remove redundant syscall_nr checks
-GIT: [PATCH 3/6] ftrace syscalls: Make arch_syscall_addr weak
-GIT: [PATCH 4/6] ftrace syscalls: Allow arch specific syscall symbol matching
-GIT: [PATCH 5/6] trace, powerpc: Implement raw syscall tracepoints on PowerPC
-GIT: [PATCH 6/6] trace syscalls: Early terminate search for sys_ni_syscall
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+new file mode 100644
+index 0000000..9776889
+--- /dev/null
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -0,0 +1,226 @@
++/*
++ * charon board Device Tree Source
++ *
++ * Copyright (C) 2007 Semihalf
++ * Marian Balakowicz <m8@semihalf.com>
++ *
++ * Copyright (C) 2010 DENX Software Engineering GmbH
++ * Heiko Schocher <hs@denx.de>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "anon,charon";
++	compatible = "anon,charon";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&mpc5200_pic>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x4000>;	// L1, 16K
++			i-cache-size = <0x4000>;	// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>;	// 128MB
++	};
++
++	soc5200@f0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5200-immr";
++		ranges = <0 0xf0000000 0x0000c000>;
++		reg = <0xf0000000 0x00000100>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		cdm@200 {
++			compatible = "fsl,mpc5200-cdm";
++			reg = <0x200 0x38>;
++		};
++
++		mpc5200_pic: interrupt-controller@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			compatible = "fsl,mpc5200-pic";
++			reg = <0x500 0x80>;
++		};
++
++		timer@600 {	// General Purpose Timer
++			compatible = "fsl,mpc5200-gpt";
++			reg = <0x600 0x10>;
++			interrupts = <1 9 0>;
++			fsl,has-wdt;
++		};
++
++		can@900 {
++			compatible = "fsl,mpc5200-mscan";
++			interrupts = <2 17 0>;
++			reg = <0x900 0x80>;
++		};
++
++		can@980 {
++			compatible = "fsl,mpc5200-mscan";
++			interrupts = <2 18 0>;
++			reg = <0x980 0x80>;
++		};
++
++		gpio_simple: gpio@b00 {
++			compatible = "fsl,mpc5200-gpio";
++			reg = <0xb00 0x40>;
++			interrupts = <1 7 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		usb@1000 {
++			compatible = "fsl,mpc5200-ohci","ohci-be";
++			reg = <0x1000 0xff>;
++			interrupts = <2 6 0>;
++		};
++
++		dma-controller@1200 {
++			device_type = "dma-controller";
++			compatible = "fsl,mpc5200-bestcomm";
++			reg = <0x1200 0x80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 10 0  3 11 0
++			              3 12 0  3 13 0  3 14 0  3 15 0>;
++		};
++
++		xlb@1f00 {
++			compatible = "fsl,mpc5200-xlb";
++			reg = <0x1f00 0x100>;
++		};
++
++		serial@2000 {		// PSC1
++			compatible = "fsl,mpc5200-psc-uart";
++			reg = <0x2000 0x100>;
++			interrupts = <2 1 0>;
++		};
++
++		serial@2400 {		// PSC3
++			compatible = "fsl,mpc5200-psc-uart";
++			reg = <0x2400 0x100>;
++			interrupts = <2 3 0>;
++		};
++
++		ethernet@3000 {
++			compatible = "fsl,mpc5200-fec";
++			reg = <0x3000 0x400>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <2 5 0>;
++			fixed-link = <1 1 100 0 0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200-mdio";
++			reg = <0x3000 0x400>;       // fec range, since we need to setup fec interrupts
++			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
++		};
++
++		ata@3a00 {
++			compatible = "fsl,mpc5200-ata";
++			reg = <0x3a00 0x100>;
++			interrupts = <2 7 0>;
++		};
++
++		i2c@3d00 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200-i2c","fsl-i2c";
++			reg = <0x3d00 0x40>;
++			interrupts = <2 15 0>;
++		};
++
++
++		i2c@3d40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200-i2c","fsl-i2c";
++			reg = <0x3d40 0x40>;
++			interrupts = <2 16 0>;
++
++			dtt@28 {
++				compatible = "national,lm80";
++				reg = <0x28>;
++			};
++
++			rtc@68 {
++				compatible = "dallas,ds1374";
++				reg = <0x68>;
++			};
++		};
++
++		sram@8000 {
++			compatible = "fsl,mpc5200-sram";
++			reg = <0x8000 0x4000>;
++		};
++	};
++
++	localbus {
++		compatible = "fsl,mpc5200-lpb","simple-bus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges = <	0 0 0xfc000000 0x02000000
++				3 0 0xe8000000 0x00080000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x02000000>;
++			bank-width = <4>;
++			device-width = <2>;
++			#size-cells = <1>;
++			#address-cells = <1>;
++		};
++
++		mram0@3,0 {
++			compatible = "mtd-ram";
++			reg = <3 0x00000 0x80000>;
++			bank-width = <1>;
++		};
++	};
++
++	pci@f0000d00 {
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		compatible = "fsl,mpc5200-pci";
++		reg = <0xf0000d00 0x100>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
++				 0xc000 0 0 2 &mpc5200_pic 0 0 3
++				 0xc000 0 0 3 &mpc5200_pic 0 0 3
++				 0xc000 0 0 4 &mpc5200_pic 0 0 3>;
++		clock-frequency = <0>; // From boot loader
++		interrupts = <2 8 0 2 9 0 2 10 0>;
++		bus-range = <0 0>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
++			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++	};
++};
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index d45be5b..37cb892 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -50,6 +50,7 @@ static void __init mpc5200_simple_setup_arch(void)
+ 
+ /* list of the supported boards */
+ static char *board[] __initdata = {
++	"anon,charon",
+ 	"intercontrol,digsy-mtc",
+ 	"manroland,mucmc52",
+ 	"manroland,uc101",
+-- 
+1.7.2.3
