@@ -1,22 +1,21 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id A4107B70E8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Dec 2010 20:01:58 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 07673-01 for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Dec 2010 09:01:47 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: MPC831x (and others?) NAND erase performance improvements
-Date: Tue, 7 Dec 2010 09:00:33 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ABEB@saturn3.aculab.com>
-In-Reply-To: <20101207031554.GA12731@postdiluvian.org>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6643CB70E6
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2010 21:18:54 +1100 (EST)
+Subject: Re: PowerMac G4 (Digital Audio)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Risto Suominen <risto.suominen@gmail.com>
+In-Reply-To: <AANLkTin-wbJd6qSMnB0GL=mGL_u-cUY00pEHaWo-hpwK@mail.gmail.com>
+References: <AANLkTinaCDvnOCy1e1Ca92hZO5UuB-9HKe4rvLg7TUEx@mail.gmail.com>
+	<1291562178.3495.6.camel@jlt3.sipsolutions.net>
+	<AANLkTin-wbJd6qSMnB0GL=mGL_u-cUY00pEHaWo-hpwK@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 07 Dec 2010 11:18:46 +0100
+Message-ID: <1291717126.3607.17.camel@jlt3.sipsolutions.net>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> The problem cropped up when there was a lot of traffic to the NAND
-> (Samsung K9WAGU08U1B-PIB0), with the NAND being on the LBC along with
-> a video chip that needed constant and prompt attention.
->=20
-> What I would see is that, as the writes happened, the erases would
-> wind up batched and issued all at once, such that frequently 400-700
-> erases were issued in rapid succession with a 1ms LBC BUSY cycle per
-> erase.
+On Tue, 2010-12-07 at 10:51 +0200, Risto Suominen wrote:
+> 2010/12/5, Johannes Berg <johannes@sipsolutions.net>:
+> >
+> >> http://ristosu.wippiespace.com/pub/alsa-tumbler-1.0.22.1-p15.diff
+> >> http://ristosu.wippiespace.com/pub/alsa-tumbler-1.0.22.1-p16.diff
+> >
+> > These patches are odd -- the first one adds something the second
+> > removes? Am I supposed to look at the combination?
+> >
+> Not really, the second one adds gpio16 but still keeps gpio15.
 
-Are those just the reads of the status register polling to
-determine when the sector erase has completed ?
-In which case a software delay beteen the reads might work.
+Oh, so the change to "gpio1" was intended to be some wildcard?
 
-Writes probably also have to be polled, but the individual
-writes happen faster.
+> > But frankly, it's been so long that it's not all making perfect sense to
+> > me right now. If you send me a tarball of /proc/device-tree/ maybe I can
+> > take a look -- just looked at my collection and I don't have that one.
 
-It is possible that an uncached read of another memory area
-will stall the cpu long enough to allow another LBC master in.
-One every few writes might be enough.
-I had to do something similar on rather different hardware ...
+> A device tree dump
 
-	David
+Hmm ok, it's not really making a lot of sense to me now either.
+
+Can you hack the file I previously pointed out and see if that helps?
+
+johannes
