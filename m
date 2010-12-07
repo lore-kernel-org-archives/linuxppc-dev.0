@@ -1,20 +1,41 @@
-Return-Path: <mason@postdiluvian.org>
-Received: from porklips.postdiluvian.org (postdiluvian.org [128.30.54.21])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7056DB70B0
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF660B70D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Dec 2010 14:42:54 +1100 (EST)
-Received: from mason by porklips.postdiluvian.org with local (Exim 4.72)
-	(envelope-from <mason@postdiluvian.org>) id 1PPo1y-0003Jr-7g
-	for linuxppc-dev@lists.ozlabs.org; Mon, 06 Dec 2010 22:15:54 -0500
-Date: Mon, 6 Dec 2010 22:15:54 -0500
-From: Mark Mason <mason@postdiluvian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC831x (and others?) NAND erase performance improvements
-Message-ID: <20101207031554.GA12731@postdiluvian.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue,  7 Dec 2010 15:29:31 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id oB74TSWM023371
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Dec 2010 15:29:28 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oB74TRat2343052
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Dec 2010 15:29:27 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oB74TP19020636
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Dec 2010 15:29:27 +1100
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: Avantika Mathur <mathur@linux.vnet.ibm.com>
+Subject: [PATCH 5/6] trace,
+	powerpc: Implement raw syscall tracepoints on PowerPC
+Date: Tue,  7 Dec 2010 15:29:10 +1100
+Message-Id: <1291696151-4336-6-git-send-email-imunsie@au1.ibm.com>
+In-Reply-To: <1291696151-4336-1-git-send-email-imunsie@au1.ibm.com>
+References: <1291696151-4336-1-git-send-email-imunsie@au1.ibm.com>
+Cc: Andreas Dilger <adilger@dilger.ca>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Jiri Kosina <jkosina@suse.cz>, Jason Baron <jbaron@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
+	Alexander Graf <agraf@suse.de>, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
+	Andrew Morton <akpm@linux-foundation.org>, David Gibson <dwg@au1.ibm.com>,
+	Andreas Schwab <schwab@linux-m68k.org>,
+	Namhyung Kim <namhyung@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,107 +45,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A few months ago I ran into some performance problems involving
-UBI/NAND erases holding other devices off the LBC on an MPC8315.  I
-found a solution for this, which worked well, at least with the
-hardware I was working with.  I suspect the same problem affects other
-PPCs, probably including multicore devices, and maybe other
-architectures as well.
+From: Ian Munsie <imunsie@au.ibm.com>
 
-I don't have experience with similar NAND controllers on other
-devices, so I'd like to explain what I found and see if someone who's
-more familiar with the family and/or driver can tell if this is
-useful.
+This patch implements the raw syscall tracepoints on PowerPC and exports
+them for ftrace syscalls to use.
 
-The problem cropped up when there was a lot of traffic to the NAND
-(Samsung K9WAGU08U1B-PIB0), with the NAND being on the LBC along with
-a video chip that needed constant and prompt attention.
+To minimise reworking existing code, I slightly re-ordered the thread
+info flags such that the new TIF_SYSCALL_TRACEPOINT bit would still fit
+within the 16 bits of the andi. instruction's UI field. The instructions
+in question are in /arch/powerpc/kernel/entry_{32,64}.S to and the
+_TIF_SYSCALL_T_OR_A with the thread flags to see if system call tracing
+is enabled.
 
-What I would see is that, as the writes happened, the erases would
-wind up batched and issued all at once, such that frequently 400-700
-erases were issued in rapid succession with a 1ms LBC BUSY cycle per
-erase.  BUSY was shared with all of the devices on the LBC, so the PPC
-could not talk to the video chip as long as BUSY was asserted by the
-NAND.  This would give us a window of up to 700ms in which the PPC
-could manage very little communication with other devices on the LBC -
-in our case the video chip, for which this delay was essentially
-fatal.  I suspect that some multicore chips might have one core
-effectively halt if that core attempts to access the LBC while the
-other core (or itself, for that matter) is executing an erase (if they
-have a similar NAND controller).
+In the case of 64bit PowerPC, arch_syscall_addr and
+arch_syscall_match_sym_name are overridden to allow ftrace syscalls to
+work given the unusual system call table structure and symbol names that
+start with a period.
 
-What I found, though, was that the NAND did not inherently assert BUSY
-as part of the erase - BUSY was asserted because the driver polled for
-the status (NAND_CMD_STATUS).  If the status poll was delayed for the
-duration of the erase then the MPC could talk to the video chip while
-the erase was in progress.  At the end of the 1ms delay I would then
-poll for status, which would complete effectively immediately.
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ arch/powerpc/Kconfig                   |    1 +
+ arch/powerpc/include/asm/syscall.h     |    5 +++++
+ arch/powerpc/include/asm/thread_info.h |    7 +++++--
+ arch/powerpc/kernel/Makefile           |    1 +
+ arch/powerpc/kernel/ftrace.c           |   19 +++++++++++++++++++
+ arch/powerpc/kernel/ptrace.c           |   10 ++++++++++
+ 6 files changed, 41 insertions(+), 2 deletions(-)
 
-Here's a code snippet from 2.6.37, with some comments I added.
-drivers/mtd/nand/fsl_elbc_nand.c - fsl_elbc_cmdfunc():
-
-  /* ERASE2 uses the block and page address from ERASE1 */
-  case NAND_CMD_ERASE2:
-    dev_vdbg(priv->dev, "fsl_elbc_cmdfunc: NAND_CMD_ERASE2.\n");
-
-    out_be32(&lbc->fir,
-       (FIR_OP_CM0 << FIR_OP0_SHIFT) |  /* Execute CMD0 (ERASE1).           */
-       (FIR_OP_PA  << FIR_OP1_SHIFT) |  /* Issue block and page address.    */
-       (FIR_OP_CM2 << FIR_OP2_SHIFT) |  /* Execute CMD2 (ERASE2).           */
-           /* (delay needed here - this is where the erase happens) */
-       (FIR_OP_CW1 << FIR_OP3_SHIFT) |  /* Wait for LFRB (BUSY) to deassert */
-                                        /* then issue CW1 (read status).    */
-       (FIR_OP_RS  << FIR_OP4_SHIFT));  /* Read one byte.                   */
-
-    out_be32(&lbc->fcr,
-       (NAND_CMD_ERASE1 << FCR_CMD0_SHIFT) |  /* 0x60 */
-       (NAND_CMD_STATUS << FCR_CMD1_SHIFT) |  /* 0x70 */
-       (NAND_CMD_ERASE2 << FCR_CMD2_SHIFT));  /* 0xD0 */
-
-    out_be32(&lbc->fbcr, 0);
-    elbc_fcm_ctrl->read_bytes = 0;
-    elbc_fcm_ctrl->use_mdr = 1;
-
-    fsl_elbc_run_command(mtd);
-    return;
-
-What I did was to issue two commands with fsl_elbc_run_command(), with
-a 1ms sleep in between (a tightloop delay worked almost as well, the
-important part was having 1ms between the erase and the status poll).
-The first command did the FIR_OP_CM0 (NAND_CMD_ERASE1), FIR_OP_PA, and
-FIR_OP_CM2 (NAND_CMD_ERASE2).  The second did the FIR_OP_CW1
-(NAND_CMD_STATUS) and FIR_OP_RS.
-
-For a bit more detail...  fsl_elbc_run_command() would put the thread
-issuing the erase to sleep so other threads could run.  That did work
-as planned, except that I was working with a fairly pathalogical case
-- there was a very high volume of writes to the NAND, and the video
-chip required very frequent and prompt attention.  This meant that the
-thread that was most likely to run when the NAND erase was in progress
-was the thread that serviced the video chip.
-
-A logic analyzer backed this up.  It would show the erase being
-issued, BUSY (R/B# or LFRB) being asserted for 1ms, one or two 16 bit
-transactions to the video chip, then another erase, repeating this
-process hundreds of times in a row.  The UBI BGT would run long enough
-to issue an erase (probably on the order of 20us) then go to sleep.
-The video thread would then run, and issue a transaction to the chip.
-That transaction would get blocked until BUSY deasserted, at which
-point the thread would appear to have run for 1ms, even though it had
-only executed a single bus transaction.
-
-I know almost nothing at all about the scheduler, but I'm pretty sure
-that this behavior would cause the scheduler to think the video thread
-was a CPU hog, since the video thread was running for 1ms for every
-20us that the UBI BGT ran, which would cause the scheduler to unfairly
-prefer the UBI BGT.  I initially tried to address this problem with
-thread priorities, but the unfortunate reality was that either the
-NAND writes could fall behind or the video chip could fall behind, and
-there wasn't spare bandwidth to allow either.
-
-I tried the same trick for the writes.  It didn't work.
-
-I really hope that someone cares enough after all this typing.
-Unfortunately I don't have access to the hardware in question any
-more, so I'm a bit limited in what I can offer beyond this without
-hardware to run on, but I am willing to do whatever I can.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e625e9e..6614b69 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -140,6 +140,7 @@ config PPC
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
++	select HAVE_SYSCALL_TRACEPOINTS
+ 
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index 23913e9..b54b2ad 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -15,6 +15,11 @@
+ 
+ #include <linux/sched.h>
+ 
++/* ftrace syscalls requires exporting the sys_call_table */
++#ifdef CONFIG_FTRACE_SYSCALLS
++extern const unsigned long *sys_call_table;
++#endif /* CONFIG_FTRACE_SYSCALLS */
++
+ static inline long syscall_get_nr(struct task_struct *task,
+ 				  struct pt_regs *regs)
+ {
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 65eb859..4403f09 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -110,7 +110,8 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_NOERROR		12	/* Force successful syscall return */
+ #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+-#define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
++#define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
++#define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -127,8 +128,10 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
++#define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+-#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
++#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
++				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+ 				 _TIF_NOTIFY_RESUME)
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 36c30f3..13d6eb0 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -106,6 +106,7 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ 
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
++obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
+ obj-$(CONFIG_PERF_EVENTS)	+= perf_callchain.o
+ 
+ obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index ce1f3e4..f5fadbb 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -22,6 +22,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/code-patching.h>
+ #include <asm/ftrace.h>
++#include <asm/syscall.h>
+ 
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -600,3 +601,21 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 	}
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
++#if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
++unsigned long __init arch_syscall_addr(int nr)
++{
++	return sys_call_table[nr*2];
++}
++
++inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
++{
++	/*
++	 * Compare the symbol name with the system call name. Skip the .sys or
++	 * .SyS prefix from the symbol name and the sys prefix from the system
++	 * call name and just match the rest. 32bit can use the generic
++	 * function since their symbol names don't start with a period.
++	 */
++	return (!strcmp(sym + 4, name + 3));
++}
++#endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index a9b3296..f70d144 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -29,6 +29,7 @@
+ #include <linux/signal.h>
+ #include <linux/seccomp.h>
+ #include <linux/audit.h>
++#include <trace/syscall.h>
+ #ifdef CONFIG_PPC32
+ #include <linux/module.h>
+ #endif
+@@ -40,6 +41,9 @@
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/syscalls.h>
++
+ /*
+  * The parameter save area on the stack is used to store arguments being passed
+  * to callee function and is located at fixed offset from stack pointer.
+@@ -1681,6 +1685,9 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 		 */
+ 		ret = -1L;
+ 
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
++		trace_sys_enter(regs, regs->gpr[0]);
++
+ 	if (unlikely(current->audit_context)) {
+ #ifdef CONFIG_PPC64
+ 		if (!is_32bit_task())
+@@ -1709,6 +1716,9 @@ void do_syscall_trace_leave(struct pt_regs *regs)
+ 		audit_syscall_exit((regs->ccr&0x10000000)?AUDITSC_FAILURE:AUDITSC_SUCCESS,
+ 				   regs->result);
+ 
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
++		trace_sys_exit(regs, regs->result);
++
+ 	step = test_thread_flag(TIF_SINGLESTEP);
+ 	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
+ 		tracehook_report_syscall_exit(regs, step);
+-- 
+1.7.2.3
