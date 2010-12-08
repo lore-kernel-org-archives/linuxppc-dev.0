@@ -1,38 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
-	[213.199.154.204])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E3003B70A5
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7C427B70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 08:01:17 +1100 (EST)
-Received: from mail72-am1 (localhost.localdomain [127.0.0.1])	by
-	mail72-am1-R.bigfish.com (Postfix) with ESMTP id 998C019004EC	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2010 21:01:10 +0000 (UTC)
-Received: from AM1EHSMHS005.bigfish.com (unknown [10.3.201.246])	by
-	mail72-am1.bigfish.com (Postfix) with ESMTP id 2B54FE7804F	for
-	<linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2010 21:01:10 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by de01egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id oB8L3IJS017604	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 8 Dec 2010 14:03:18 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oB8L15Mo003046	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 8 Dec 2010 15:01:05 -0600 (CST)
-Date: Wed, 8 Dec 2010 15:01:02 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Deepak Saxena <deepak_saxena@mentor.com>
-Subject: Re: [PATCH 3/5] of/device: Make of_get_next_child() check status
-	properties
-Message-ID: <20101208150102.69b8062b@udp111988uds.am.freescale.net>
-In-Reply-To: <20101208192944.GE32473@mentor.com>
-References: <cover.1291799069.git.deepak_saxena@mentor.com>
-	<20101208192944.GE32473@mentor.com>
+	Thu,  9 Dec 2010 08:27:05 +1100 (EST)
+In-Reply-To: <20101208142551.19ea2333@udp111988uds.am.freescale.net>
+References: <20101207031554.GA12731@postdiluvian.org>	<20101207145153.540da45a@udp111988uds.am.freescale.net>
+	<OFF94B1B01.88594E81-ONC12577F3.002B63AA-C12577F3.002BEE0B@transmode.se>	<20101208111839.1cf95553@udp111988uds.am.freescale.net>
+	<OF349DC945.8BC48D34-ONC12577F3.00601D94-C12577F3.00605153@transmode.se>	<20101208192616.GA24560@postdiluvian.org>
+	<OF14047E09.664EC753-ONC12577F3.006CF507-C12577F3.006D97EA@transmode.se>	<20101208135928.0278f97d@udp111988uds.am.freescale.net>
+	<OFC37E86C9.59866BED-ONC12577F3.006E8F8D-C12577F3.006EE1FA@transmode.se>
+	<20101208142551.19ea2333@udp111988uds.am.freescale.net>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF6F049A4C.3AEB4068-ONC12577F3.00751175-C12577F3.0075D3F5@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 8 Dec 2010 22:26:59 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Mark Mason <mason@postdiluvian.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,52 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 8 Dec 2010 11:29:44 -0800
-Deepak Saxena <deepak_saxena@mentor.com> wrote:
+Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 21:25:51:
+>
+> On Wed, 8 Dec 2010 21:11:08 +0100
+> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> > Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 20:59:28:
+> > >
+> > > On Wed, 8 Dec 2010 20:57:03 +0100
+> > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> > >
+> > > > Can you think of any workaround such as not connecting the BUSY pin at all?
+> > >
+> > > Maybe connect the busy pin to a gpio?
+> >
+> > Is BUSY required for sane operation or it an optimization?
+>
+> You could probably get away without it by inserting delays if you know
+> the chip specs well enough.
 
-> We only return the next child if the device is available.
-> 
-> Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
-> Signed-off-by: Deepak Saxena <deepak_saxena@mentor.com>
-> ---
->  drivers/of/base.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 5d269a4..81b2601 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -321,6 +321,8 @@ struct device_node *of_get_next_parent(struct device_node *node)
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_get_next_child(const struct device_node *node,
->  	struct device_node *prev)
-> @@ -330,7 +332,7 @@ struct device_node *of_get_next_child(const struct device_node *node,
->  	read_lock(&devtree_lock);
->  	next = prev ? prev->sibling : node->child;
->  	for (; next; next = next->sibling)
-> -		if (of_node_get(next))
-> +		if (of_device_is_available(next) && of_node_get(next))
->  			break;
->  	of_node_put(prev);
->  	read_unlock(&devtree_lock);
+Urgh, that does not feel like a good solution. One would have add
+big margins to the delays mking the NAND much slower.
 
-This seems like too low-level a place to put this.  Some code may know
-how to un-disable a device in certain situations, or it may be part of
-debug code trying to dump the whole device tree, etc.  Looking
-further[1], I see a raw version of this function, but not other things
-like of_find_compatible_node.
+>
+> > Is there any risk that the NAND device will drive the LB and corrupt
+> > the bus for other devices?
+>
+> I think the only thing the NAND chip should be driving is the busy pin,
 
-Could this be done more othogonally, so that the caller specifies in a
-parameter whether to skip based on status?
+OK, good. What function is actually lost if one uses an GPIO instead of
+BUSY?
+You think Freescale could test and validate a GPIO solution? I don't
+think we will be very happy to design our board around an unproven
+workaround.
 
--Scott
-
-[1] For some reason I received some of these patches from
-linuxppc-dev, and others from devicetree-discuss.  I wish lists
-wouldn't try to be "smart" about discarding duplicates -- it messes with
-filters.
+An even better workaround would be if one could add logic between the
+NAND and the CPU which would compensate for this defect without needing
+special SW fixes.
