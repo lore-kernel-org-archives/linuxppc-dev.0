@@ -1,19 +1,25 @@
-Return-Path: <JOFT@gmx.de>
-Received: from mail.gmx.net (mailout-de.gmx.net [213.165.64.23])
-	by ozlabs.org (Postfix) with SMTP id 3FC04B70AF
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EC329B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 06:26:47 +1100 (EST)
-Message-ID: <4CFFDA61.9090803@gmx.de>
-Date: Wed, 08 Dec 2010 20:20:01 +0100
-From: =?ISO-8859-1?Q?Joachim_F=F6rster?= <JOFT@gmx.de>
+	Thu,  9 Dec 2010 06:57:08 +1100 (EST)
+In-Reply-To: <20101208192616.GA24560@postdiluvian.org>
+References: <20101207031554.GA12731@postdiluvian.org>
+	<20101207145153.540da45a@udp111988uds.am.freescale.net>
+	<OFF94B1B01.88594E81-ONC12577F3.002B63AA-C12577F3.002BEE0B@transmode.se>
+	<20101208111839.1cf95553@udp111988uds.am.freescale.net>
+	<OF349DC945.8BC48D34-ONC12577F3.00601D94-C12577F3.00605153@transmode.se>
+	<20101208192616.GA24560@postdiluvian.org>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+To: Mark Mason <mason@postdiluvian.org>
+Message-ID: <OF14047E09.664EC753-ONC12577F3.006CF507-C12577F3.006D97EA@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 8 Dec 2010 20:57:03 +0100
 MIME-Version: 1.0
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>	<201012061544.40124.dargaud@lpsc.in2p3.fr>	<1291770234.2041.102.camel@concordia>	<201012081118.13977.dargaud@lpsc.in2p3.fr>
-	<1291815910.12093.15.camel@concordia>
-In-Reply-To: <1291815910.12093.15.camel@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,68 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Guillaume,
+Mark Mason <mason@postdiluvian.org> wrote on 2010/12/08 20:26:16:
+>
+> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> > Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 18:18:39:
+> > >
+> > > On Wed, 8 Dec 2010 08:59:49 +0100
+> > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> > >
+> > > > >
+> > > > > On Mon, 6 Dec 2010 22:15:54 -0500
+> > > > > Mark Mason <mason@postdiluvian.org> wrote:
+> > > > >
+> > > > > > A few months ago I ran into some performance problems involving
+> > > > > > UBI/NAND erases holding other devices off the LBC on an MPC8315.  I
+> > > > > > found a solution for this, which worked well, at least with the
+> > > > > > hardware I was working with.  I suspect the same problem affects other
+> > > > > > PPCs, probably including multicore devices, and maybe other
+> > > > > > architectures as well.
+> > > > > >
+> > > > > > I don't have experience with similar NAND controllers on other
+> > > > > > devices, so I'd like to explain what I found and see if someone who's
+> > > > > > more familiar with the family and/or driver can tell if this is
+> > > > > > useful.
+> > > > > >
+> > > > > > The problem cropped up when there was a lot of traffic to the NAND
+> > > > > > (Samsung K9WAGU08U1B-PIB0), with the NAND being on the LBC along with
+> > > > > > a video chip that needed constant and prompt attention.
+> > > > >
+> > > > > If you attach NAND to the LBC, you should not attach anything else to
+> > > > > it which is latency-sensitive.
+> > > >
+> > > > This "feature" makes the LBC useless to us. Is there some workaround or plan
+> > > > to address this limitation?
+> > >
+> > > Complain to your support or sales contact.
+> > >
+> > > I've complained about it in the past, and got a "but pins are a limited
+> > > resource!" response.  They need to hear that it's a problem from
+> > > customers.
+> >
+> > Done, lets see what I get in return. I think this problem will be
+> > a major obstacle for our next generation boards which will be NAND
+> > based.
+>
+> It was a big problem, and a big surprise, for me too.  The next
+> generation of a couple of the chips on the bus have pcie, but those
+> are noticably more expensive.
 
-Michael Ellerman wrote:
-> On Wed, 2010-12-08 at 11:18 +0100, Guillaume Dargaud wrote:
->> ///////////////////////////////////////////////////////////////////////////////
->> // Called on insmod
->> static int __init xad_init(void) {
->>   int rc=0;
->>   printk(KERN_INFO SD "Module %s: loading...\n" FL, NAME);
->>   
-
-Are you sure that you want to have the chrdev registration here (the
-following code)?
-
-Such stuff typically goes into the probe() function. The modules's
-init() just registers the driver. Furthermore your global variables
-prohibit having more than one device instance using the driver.
-
->>   // Deal with the device
->>   first = MKDEV (my_major, my_minor);
->>   register_chrdev_region(first, count, DEVNAME);
->>   my_cdev = cdev_alloc ();
->>   if (NULL==my_cdev) goto Err;
->>   
->>   cdev_init(my_cdev, &fops);
->>   cdev_add (my_cdev, first, count);
->>
->>   printk(KERN_INFO SD "Module %s: Major=%d, Minor=%d, Count=%d\n" FL, NAME, 
->> my_major, my_minor, count);
->>
->>   // Driver
->>   rc = platform_driver_register(&xad_driver);
-> 
-> Should be of_register_platform_driver()
-> 
->> //  rc = platform_driver_probe(&xad_driver, xad_driver_probe);
->>   if (rc) goto err_plat;
->>
-
-I think the following function call to platform_device_register_simple()
-and if() does not belong here.
-
-As was said before, "devices" are registered by the (platform) bus. Your
-driver module, needs to just register, well, the "driver". You are doing
-this above - and that's it: (of_)platform_driver_register().
-
->>   // Device
->>   pdev=platform_device_register_simple("xps-acqui-data", -1, NULL, 0);
->>   if (IS_ERR(pdev)) {
->>           rc = PTR_ERR(pdev);
->>           platform_driver_unregister(&xad_driver);
->>           goto err_plat;
->>   }
->>
->>
->>   return 0;
->>
->> err_plat:
->>   unregister_chrdev_region(first, count);
->> Err:
->>   printk(KERN_ERR SD "Module %s: Failed loading rc=%d\n" FL, NAME, rc);
->>   return rc;
->> }
-
- Joachim
+Can you think of any workaround such as not connecting the BUSY pin at all?
