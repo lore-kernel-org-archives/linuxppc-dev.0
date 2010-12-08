@@ -1,22 +1,24 @@
-Return-Path: <Deepak_Saxena@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8644CB7624
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 22BD3B70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 07:04:34 +1100 (EST)
-Date: Wed, 8 Dec 2010 11:29:44 -0800
-From: Deepak Saxena <deepak_saxena@mentor.com>
-To: devicetree-discuss@ozlabs.org
-Subject: [PATCH 3/5] of/device: Make of_get_next_child() check status
-	properties
-Message-ID: <20101208192944.GE32473@mentor.com>
-References: <cover.1291799069.git.deepak_saxena@mentor.com>
+	Thu,  9 Dec 2010 07:11:13 +1100 (EST)
+In-Reply-To: <20101208135928.0278f97d@udp111988uds.am.freescale.net>
+References: <20101207031554.GA12731@postdiluvian.org>	<20101207145153.540da45a@udp111988uds.am.freescale.net>
+	<OFF94B1B01.88594E81-ONC12577F3.002B63AA-C12577F3.002BEE0B@transmode.se>	<20101208111839.1cf95553@udp111988uds.am.freescale.net>
+	<OF349DC945.8BC48D34-ONC12577F3.00601D94-C12577F3.00605153@transmode.se>	<20101208192616.GA24560@postdiluvian.org>
+	<OF14047E09.664EC753-ONC12577F3.006CF507-C12577F3.006D97EA@transmode.se>
+	<20101208135928.0278f97d@udp111988uds.am.freescale.net>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFC37E86C9.59866BED-ONC12577F3.006E8F8D-C12577F3.006EE1FA@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 8 Dec 2010 21:11:08 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1291799069.git.deepak_saxena@mentor.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Mark Mason <mason@postdiluvian.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We only return the next child if the device is available.
+Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 20:59:28:
+>
+> On Wed, 8 Dec 2010 20:57:03 +0100
+> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> > Mark Mason <mason@postdiluvian.org> wrote on 2010/12/08 20:26:16:
+> > >
+> > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> > >
+> > > > Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 18:18:39:
+> > > > >
+> > > > > On Wed, 8 Dec 2010 08:59:49 +0100
+> > > > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> > > > >
+> > > > > > > If you attach NAND to the LBC, you should not attach anything else to
+> > > > > > > it which is latency-sensitive.
+> > > > > >
+> > > > > > This "feature" makes the LBC useless to us. Is there some workaround or plan
+> > > > > > to address this limitation?
+> > > > >
+> > > > > Complain to your support or sales contact.
+> > > > >
+> > > > > I've complained about it in the past, and got a "but pins are a limited
+> > > > > resource!" response.  They need to hear that it's a problem from
+> > > > > customers.
+> > > >
+> > > > Done, lets see what I get in return. I think this problem will be
+> > > > a major obstacle for our next generation boards which will be NAND
+> > > > based.
+> > >
+> > > It was a big problem, and a big surprise, for me too.  The next
+> > > generation of a couple of the chips on the bus have pcie, but those
+> > > are noticably more expensive.
+> >
+> > Can you think of any workaround such as not connecting the BUSY pin at all?
+>
+> Maybe connect the busy pin to a gpio?
 
-Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
-Signed-off-by: Deepak Saxena <deepak_saxena@mentor.com>
----
- drivers/of/base.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Is BUSY required for sane operation or it an optimization?
+Is there any risk that the NAND device will drive the LB and corrupt
+the bus for other devices?
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 5d269a4..81b2601 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -321,6 +321,8 @@ struct device_node *of_get_next_parent(struct device_node *node)
-  *
-  *	Returns a node pointer with refcount incremented, use
-  *	of_node_put() on it when done.
-+ *
-+ *	Does not return nodes marked unavailable by a status property.
-  */
- struct device_node *of_get_next_child(const struct device_node *node,
- 	struct device_node *prev)
-@@ -330,7 +332,7 @@ struct device_node *of_get_next_child(const struct device_node *node,
- 	read_lock(&devtree_lock);
- 	next = prev ? prev->sibling : node->child;
- 	for (; next; next = next->sibling)
--		if (of_node_get(next))
-+		if (of_device_is_available(next) && of_node_get(next))
- 			break;
- 	of_node_put(prev);
- 	read_unlock(&devtree_lock);
--- 
-1.6.3.3
+I can't tell, haven't studied NAND in detail yet.
+
+ Jocke
