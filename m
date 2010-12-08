@@ -1,15 +1,20 @@
-Return-Path: <Xufeng.Zhang@windriver.com>
-Message-ID: <4CFEDD4D.5020205@windriver.com>
-Date: Wed, 08 Dec 2010 09:20:13 +0800
-From: xufeng zhang <xufeng.zhang@windriver.com>
+Return-Path: <lethal@linux-sh.org>
+Received: from master.linux-sh.org (124x34x33x190.ap124.ftth.ucom.ne.jp
+	[124.34.33.190]) by ozlabs.org (Postfix) with ESMTP id 4ACFDB70CD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  8 Dec 2010 16:56:07 +1100 (EST)
+Date: Wed, 8 Dec 2010 14:36:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH 1/2] video, sm501: add OF binding to support SM501
+Message-ID: <20101208053635.GB31508@linux-sh.org>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
 MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: Run 'usermode-agent' cause kernel panic on Powerpc
-References: <4CFDD8C5.70905@windriver.com>
-	<1291730683.16003.4.camel@shaggy-w500>
-In-Reply-To: <1291730683.16003.4.camel@shaggy-w500>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1291451028-22532-1-git-send-email-hs@denx.de>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,100 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/07/2010 10:04 PM, Dave Kleikamp wrote:
-> On Tue, 2010-12-07 at 14:48 +0800, xufeng zhang wrote:
->    
->> Hi Dave,
->>
->> I have a question with the below patch you made before:
->> ----------------------------------------
->> powerpc/booke: Add support for advanced debug registers
->>
->> From: Dave Kleikamp<shaggy@linux.vnet.ibm.com>
->>
->> Based on patches originally written by Torez Smith.
->> -----------------------------------------
->>
->> I meet a kernel panic problem while running 'usermode-agent' on PowerPC
->> ----------------------------------------
->> Oops: Exception in kernel mode, sig: 5 [#1]
->> PREEMPT LTT NESTING LEVEL : 0
->> MPC8536 DS
->> last sysfs file:
->> /sys/devices/f3000000.soc/f3003100.i2c/i2c-1/i2c-dev/i2c-1/dev
->> Modules linked in:
->> NIP: c00081a0 LR: c03a9560 CTR: c003547c
->> REGS: ef11bf10 TRAP: 2002   Not tainted  (2.6.34.6-WR4.0.0.0_standard)
->> MSR: 00021000<ME,CE>   CR: 44000624  XER: 00000000
->> TASK = efc1de00[752] 'usermode-agent' THREAD: ef63e000
->> GPR00: cc00cc00 ef63fe60 efc1de00 efc1de00 efc1f700 c04c8000 00258560
->> ffffffff
->> GPR08: ffda8a00 40000000 00001fda c0500000 49eaebbd 1008b654 3ff8a900
->> 00000000
->> GPR16: 00000000 eed84c40 c03b4570 c04ee4d0 c04ca870 ef63e03c 00000000
->> 00000000
->> GPR24: c04f7ee8 c04ee4c0 00000004 c04ca440 ef63e000 efc1f700 c04ca440
->> efc1de00
->> NIP [c00081a0] __switch_to+0xac/0x104
->> LR [c03a9560] schedule+0x20c/0x3f4
->> Call Trace:
->> [ef63fe60] [efc1f700] 0xefc1f700 (unreliable)
->> [ef63fe70] [c03a9560] schedule+0x20c/0x3f4
->> [ef63fec0] [c00429e0] do_wait+0x1a4/0x278
->> [ef63fef0] [c0042b44] sys_wait4+0x90/0xf8
->> [ef63ff40] [c00106d4] ret_from_syscall+0x0/0x4
->> ------------------------------------------
->>
->> Actually, this problem is caused by enabling On Chip Debugging, when On
->> Chip Debugging is enabled, we enable MSR_DE as below:
->> #define MSR_KERNEL      (MSR_ME|MSR_RI|MSR_CE|MSR_DE)
->>
->> If I comment out "mtspr(SPRN_DBCR0, thread->dbcr0);" in
->> prime_debug_regs() function,
->> then it will be ok.
->>
->> Here is my analysis for this problem:
->> Run 'usermode-agent' application will set Internal Debug Mode(IDM) and
->> Instruction Complete Debug Event(ICMP)flags for thread.
->> As MSR_DE is enabled, when execute context switching in prime_debug_regs(),
->> thread->dbcr0 would write to SPRN_DBCR0 register.
->> So this will enable Instruction Complete Debug Event interrupt, and it
->> will cause a kernel-mode
->> exception right now, it will be handled in native_DebugException(), then
->> kernel detected
->> this exception not happens in user-mode, lastly kernel call die() and
->> kill current process.
->>
->> So my question is could I just comment out "mtspr(SPRN_DBCR0,
->> thread->dbcr0);" in prime_debug_regs()?
->> I'm sure whether or not it will impose a bad impact on debugging.
->>      
-> I believe it would have such an impact.  I don't see that user-mode
-> debugging would be enabled at all.
->
-> Maybe something like this untested patch:
->
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 84906d3..0e7d1cf 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -323,6 +323,13 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
->
->   static void prime_debug_regs(struct thread_struct *thread)
->   {
-> +	/*
-> +	 * If we're setting up debug events for user space, make sure they
-> +	 * don't fire in kernel space before we get to user space
-> +	 */
-> +	if (thread->dbcr0&  DBCR0_IDM)
-> +		mtmsr(mfmsr()&  ~MSR_DE);
-> +
->   	mtspr(SPRN_IAC1, thread->iac1);
->   	mtspr(SPRN_IAC2, thread->iac2);
->   #if CONFIG_PPC_ADV_DEBUG_IACS>  2
->
->    
-Thanks for your reply, Dave, I know where the problem is.
-
-Thanks,
-Xufeng Zhang
+On Sat, Dec 04, 2010 at 09:23:47AM +0100, Heiko Schocher wrote:
+> - add binding to OF, compatible name "smi,sm501"
+> 
+> - add read/write functions for using this driver
+>   also on powerpc plattforms
+> 
+> - add commandline options:
+>   sm501.fb_mode:
+>     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
+>   sm501.bpp:
+>     Specify bit-per-pixel if not specified mode
+> 
+> - Add support for encoding display mode information
+>   in the device tree using verbatim EDID block.
+> 
+>   If the "edid" entry in the "smi,sm501" node is present,
+>   the driver will build mode database using EDID data
+>   and allow setting the display modes from this database.
+> 
+> Signed-off-by: Heiko Schocher <hs@denx.de>
+> cc: linux-fbdev@vger.kernel.org
+> cc: devicetree-discuss@ozlabs.org
+> ---
+> based against 2.6.37-rc4
+> 
+> ./scripts/checkpatch.pl 0003-video-sm501-add-OF-binding-to-support-SM501.patch lems and is ready for
+> total: 0 errors, 0 warnings, 1067 lines checked
+> 
+> 0003-video-sm501-add-OF-binding-to-support-SM501.patch has no obvious style problems and is ready for submission.
+> 
+>  Documentation/kernel-parameters.txt          |    7 +
+>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+>  drivers/mfd/sm501.c                          |  141 ++++++++------
+>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+>  include/linux/sm501.h                        |    8 +
+>  5 files changed, 299 insertions(+), 151 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+> 
+Given that this is all SM501 dependent, is there some particular reason
+why you neglected to Cc the author or the MFD folks?
