@@ -1,20 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201012061544.40124.dargaud@lpsc.in2p3.fr>
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
-	<201012061058.37612.dargaud@lpsc.in2p3.fr>
-	<1291637228.21242.14.camel@concordia>
-	<201012061544.40124.dargaud@lpsc.in2p3.fr>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-AQTYCHhs5TkmFbz1mQ7L"
-Date: Wed, 08 Dec 2010 12:03:54 +1100
-Message-ID: <1291770234.2041.102.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <Xufeng.Zhang@windriver.com>
+Message-ID: <4CFEDD4D.5020205@windriver.com>
+Date: Wed, 08 Dec 2010 09:20:13 +0800
+From: xufeng zhang <xufeng.zhang@windriver.com>
+MIME-Version: 1.0
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: Run 'usermode-agent' cause kernel panic on Powerpc
+References: <4CFDD8C5.70905@windriver.com>
+	<1291730683.16003.4.camel@shaggy-w500>
+In-Reply-To: <1291730683.16003.4.camel@shaggy-w500>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,131 +19,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/07/2010 10:04 PM, Dave Kleikamp wrote:
+> On Tue, 2010-12-07 at 14:48 +0800, xufeng zhang wrote:
+>    
+>> Hi Dave,
+>>
+>> I have a question with the below patch you made before:
+>> ----------------------------------------
+>> powerpc/booke: Add support for advanced debug registers
+>>
+>> From: Dave Kleikamp<shaggy@linux.vnet.ibm.com>
+>>
+>> Based on patches originally written by Torez Smith.
+>> -----------------------------------------
+>>
+>> I meet a kernel panic problem while running 'usermode-agent' on PowerPC
+>> ----------------------------------------
+>> Oops: Exception in kernel mode, sig: 5 [#1]
+>> PREEMPT LTT NESTING LEVEL : 0
+>> MPC8536 DS
+>> last sysfs file:
+>> /sys/devices/f3000000.soc/f3003100.i2c/i2c-1/i2c-dev/i2c-1/dev
+>> Modules linked in:
+>> NIP: c00081a0 LR: c03a9560 CTR: c003547c
+>> REGS: ef11bf10 TRAP: 2002   Not tainted  (2.6.34.6-WR4.0.0.0_standard)
+>> MSR: 00021000<ME,CE>   CR: 44000624  XER: 00000000
+>> TASK = efc1de00[752] 'usermode-agent' THREAD: ef63e000
+>> GPR00: cc00cc00 ef63fe60 efc1de00 efc1de00 efc1f700 c04c8000 00258560
+>> ffffffff
+>> GPR08: ffda8a00 40000000 00001fda c0500000 49eaebbd 1008b654 3ff8a900
+>> 00000000
+>> GPR16: 00000000 eed84c40 c03b4570 c04ee4d0 c04ca870 ef63e03c 00000000
+>> 00000000
+>> GPR24: c04f7ee8 c04ee4c0 00000004 c04ca440 ef63e000 efc1f700 c04ca440
+>> efc1de00
+>> NIP [c00081a0] __switch_to+0xac/0x104
+>> LR [c03a9560] schedule+0x20c/0x3f4
+>> Call Trace:
+>> [ef63fe60] [efc1f700] 0xefc1f700 (unreliable)
+>> [ef63fe70] [c03a9560] schedule+0x20c/0x3f4
+>> [ef63fec0] [c00429e0] do_wait+0x1a4/0x278
+>> [ef63fef0] [c0042b44] sys_wait4+0x90/0xf8
+>> [ef63ff40] [c00106d4] ret_from_syscall+0x0/0x4
+>> ------------------------------------------
+>>
+>> Actually, this problem is caused by enabling On Chip Debugging, when On
+>> Chip Debugging is enabled, we enable MSR_DE as below:
+>> #define MSR_KERNEL      (MSR_ME|MSR_RI|MSR_CE|MSR_DE)
+>>
+>> If I comment out "mtspr(SPRN_DBCR0, thread->dbcr0);" in
+>> prime_debug_regs() function,
+>> then it will be ok.
+>>
+>> Here is my analysis for this problem:
+>> Run 'usermode-agent' application will set Internal Debug Mode(IDM) and
+>> Instruction Complete Debug Event(ICMP)flags for thread.
+>> As MSR_DE is enabled, when execute context switching in prime_debug_regs(),
+>> thread->dbcr0 would write to SPRN_DBCR0 register.
+>> So this will enable Instruction Complete Debug Event interrupt, and it
+>> will cause a kernel-mode
+>> exception right now, it will be handled in native_DebugException(), then
+>> kernel detected
+>> this exception not happens in user-mode, lastly kernel call die() and
+>> kill current process.
+>>
+>> So my question is could I just comment out "mtspr(SPRN_DBCR0,
+>> thread->dbcr0);" in prime_debug_regs()?
+>> I'm sure whether or not it will impose a bad impact on debugging.
+>>      
+> I believe it would have such an impact.  I don't see that user-mode
+> debugging would be enabled at all.
+>
+> Maybe something like this untested patch:
+>
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 84906d3..0e7d1cf 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -323,6 +323,13 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
+>
+>   static void prime_debug_regs(struct thread_struct *thread)
+>   {
+> +	/*
+> +	 * If we're setting up debug events for user space, make sure they
+> +	 * don't fire in kernel space before we get to user space
+> +	 */
+> +	if (thread->dbcr0&  DBCR0_IDM)
+> +		mtmsr(mfmsr()&  ~MSR_DE);
+> +
+>   	mtspr(SPRN_IAC1, thread->iac1);
+>   	mtspr(SPRN_IAC2, thread->iac2);
+>   #if CONFIG_PPC_ADV_DEBUG_IACS>  2
+>
+>    
+Thanks for your reply, Dave, I know where the problem is.
 
---=-AQTYCHhs5TkmFbz1mQ7L
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2010-12-06 at 15:44 +0100, Guillaume Dargaud wrote:=20
-> Hello all,
->=20
-> > OK, that should be all pretty straight forward, and covered by the
-> > material in LDD and similar references. You just need to get your devic=
-e
-> > probed.
->=20
-> I'm not sure what you mean with that term: simply identifying that the de=
-vice=20
-> works using device specific code ?
-
-I just mean connecting your driver up to a struct device that represents
-your device.
-
-> I've looked at several *_probe functions from other drivers and they are =
-all=20
-> completely different with no common code...
-
-Yes that's pretty normal, the probe routine usually finds device
-specific info about the device and stores it in some sort of structure
-for later use.
-
-> Or do you mean calling of_platform_bus_probe() ? What does that function =
-do ?
-
-The platform code does that. That function create devices on the
-platform bus by examining the device tree. It looks for nodes that are
-compatible with the compatible strings you give it, and treats them as
-busses, ie. creates devices for all child nodes of those nodes.
-
-> > No it's just that platform_drivers are now able to do all the things an
-> > of_platform_driver can do, so new code should just use platform_driver.
-> >=20
-> > I'm not sure if of_platform_bus_probe() will go away eventually, but fo=
-r
-> > now it is the only way to achieve what you need.
->=20
-> I assume the kernel needs to be compiled with CONFIG_OF.
-
-Yes absolutely.
-
-> ...hmm I had to "git pull" in order for this to compile your snippet. Tha=
-t's=20
-> really recent! Unfortunately i need to reflash my device with the new ker=
-nel=20
-> before i can begin testing my module.
-
-It shouldn't be that recent, what kernel version were you using?
-
-> When I try to compile your (adapted) snippet, I got this minor problems:
->=20
->   .probe =3D foo_driver_probe,
-> ^ warning: initialization from incompatible pointer type
-> Shouldn't foo_driver_probe be:
-> static int foo_driver_probe(struct platform_device *pdev)
-> instead of:
-> static int foo_driver_probe(struct platform_device *device,
->                             const struct of_device_id *device_id)
-
-Yes sorry, that's a cut & paste bug, between the old and new style code.
-
-> Also:
->        struct foo_device *foo;
-> That's where I put my own content, right ?
-
-Yep.
-
-> And needs to be kfreed in a foo_driver_remove() function, right ?
-
-If you have a remove then yes.
-
-> > > I still need a platform_device_register() after your sample init, rig=
-ht ?
-> >=20
-> > I had one in there already, in foo_driver_init(), didn't I?
->=20
-> You had platform_driver_register(), not that I'm all clear yet on the=20
-> distinction...
-
-Oh sorry, I always read those wrong.
-
-platform_device_register() creates a device on the platform bus. You
-then write a driver for that device, and register it with
-platform_driver_register(), your driver then attaches to the device.
-
-In this case though you don't need to call platform_device_register()
-because the device has already been created, using the device tree (by
-of_platform_bus_probe()).
-
-In general on powerpc we don't use platform_device_register() much,
-instead things are described in the device tree and devices are created
-for them.
-
-platform_device_register() tends to be for cases where you can't
-discover or probe a device, but you "know" that it exists.
-
-> Another question: I just spent 10 minutes trying to find where "struct de=
-vice"=20
-> was defined. (ack-)grep was absolutely no use. Isn't there a way to cross=
--
-> reference my own kernel, the way I've compiled it ?
-
-Yes, "make tags", then use vim :)
-
-If you're cross-compiling make sure to set ARCH=3Dpowerpc when you make
-tags.
-
-cheers
-
---=-AQTYCHhs5TkmFbz1mQ7L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkz+2XoACgkQdSjSd0sB4dIxBQCgoEWzDaWJsKuBKLNDLXk47Wjz
-eqgAoKk1LPrGV1cZYDvawd50Pc/0Bu2z
-=o3JF
------END PGP SIGNATURE-----
-
---=-AQTYCHhs5TkmFbz1mQ7L--
+Thanks,
+Xufeng Zhang
