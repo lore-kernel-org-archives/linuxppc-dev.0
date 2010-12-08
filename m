@@ -1,16 +1,33 @@
-Return-Path: <mason@postdiluvian.org>
-Received: from porklips.postdiluvian.org (postdiluvian.org [128.30.54.21])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F1790B70A7
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E3112B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 09:02:50 +1100 (EST)
-Date: Wed, 8 Dec 2010 17:02:45 -0500
-From: Mark Mason <mason@postdiluvian.org>
+	Thu,  9 Dec 2010 09:05:42 +1100 (EST)
+Received: from mail101-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail101-tx2-R.bigfish.com (Postfix) with ESMTP id C689410082A9	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2010 22:05:37 +0000 (UTC)
+Received: from TX2EHSMHS031.bigfish.com (unknown [10.9.14.245])	by
+	mail101-tx2.bigfish.com (Postfix) with ESMTP id 805F840055	for
+	<linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2010 22:05:37 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id oB8M5YVN015170	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 8 Dec 2010 15:05:34 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	oB8M5YA5013487	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 8 Dec 2010 16:05:34 -0600 (CST)
+Date: Wed, 8 Dec 2010 16:05:31 -0600
+From: Scott Wood <scottwood@freescale.com>
 To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 Subject: Re: MPC831x (and others?) NAND erase performance improvements
-Message-ID: <20101208220245.GB26836@postdiluvian.org>
-References: <20101207145153.540da45a@udp111988uds.am.freescale.net>
+Message-ID: <20101208160531.393bedf1@udp111988uds.am.freescale.net>
+In-Reply-To: <OF6F049A4C.3AEB4068-ONC12577F3.00751175-C12577F3.0075D3F5@transmode.se>
+References: <20101207031554.GA12731@postdiluvian.org>
+	<20101207145153.540da45a@udp111988uds.am.freescale.net>
 	<OFF94B1B01.88594E81-ONC12577F3.002B63AA-C12577F3.002BEE0B@transmode.se>
 	<20101208111839.1cf95553@udp111988uds.am.freescale.net>
 	<OF349DC945.8BC48D34-ONC12577F3.00601D94-C12577F3.00605153@transmode.se>
@@ -21,9 +38,8 @@ References: <20101207145153.540da45a@udp111988uds.am.freescale.net>
 	<20101208142551.19ea2333@udp111988uds.am.freescale.net>
 	<OF6F049A4C.3AEB4068-ONC12577F3.00751175-C12577F3.0075D3F5@transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF6F049A4C.3AEB4068-ONC12577F3.00751175-C12577F3.0075D3F5@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Mark Mason <mason@postdiluvian.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,50 +49,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 8 Dec 2010 22:26:59 +0100
 Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
 
-> > > Is there any risk that the NAND device will drive the LB and
-> > > corrupt the bus for other devices?
+> Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 21:25:51:
+> >
+> > On Wed, 8 Dec 2010 21:11:08 +0100
+> > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> >
+> > > Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 20:59:28:
+> > > >
+> > > > On Wed, 8 Dec 2010 20:57:03 +0100
+> > > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> > > >
+> > > > > Can you think of any workaround such as not connecting the BUSY pin at all?
+> > > >
+> > > > Maybe connect the busy pin to a gpio?
+> > >
+> > > Is BUSY required for sane operation or it an optimization?
+> >
+> > You could probably get away without it by inserting delays if you know
+> > the chip specs well enough.
+> 
+> Urgh, that does not feel like a good solution.
+
+No, but you asked if it could be done, and if it was just a
+performance issue. :-)
+
+> > > Is there any risk that the NAND device will drive the LB and corrupt
+> > > the bus for other devices?
 > >
 > > I think the only thing the NAND chip should be driving is the busy pin,
 > 
-> OK, good. What function is actually lost if one uses an GPIO instead
-> of BUSY?
+> OK, good. What function is actually lost if one uses an GPIO instead of
+> BUSY?
 
-I tried to take this route, since it was a fairly minor board change.
-Unfortunately all the GPIOs were already used.
+Not much, if you enable interrupts on the GPIO pin.  The driver would
+have to be reworked a bit, of course.
 
-I looked long and hard for a way to not have the NAND hold the bus
-with BUSY.  If you don't connect BUSY then you can't use the LBC's
-flash controller (FCM mode).
+> You think Freescale could test and validate a GPIO solution? I don't
+> think we will be very happy to design our board around an unproven
+> workaround.
 
-I haven't done it personally, but I believe that connecting BUSY to a
-GPIO is very common thing to do, since this is the route you'd have to
-take if you didn't have a built-in flash controller.  The Linux MTD
-layer supports it.
+Ask your sales/support contacts.
 
-> An even better workaround would be if one could add logic between
-> the NAND and the CPU which would compensate for this defect without
-> needing special SW fixes.
+> An even better workaround would be if one could add logic between the
+> NAND and the CPU which would compensate for this defect without needing
+> special SW fixes.
 
-That probably won't work.  Presumably you're talking about something
-like a gate so the BUSY is only passed from the NAND when the NAND's
-chip select is asserted.  Unfortunately the NAND controller is
-monitoring the BUSY line, and if it sees the signal deassert then it
-will think the NAND is done.
+The problem with that is when would you assert the chipselect again to
+check if it's done?  Current SW depends on being able to tell the LBC
+to interrupt (or take other action) when busy goes away.
 
-I don't think that using a software NAND controller instead of the LBC
-FCM mode is all that bad.  Again, I haven't actually done it, so check
-the MTD docs, but I'm pretty sure the software is meant to do that, so
-it doesn't even really constitute a "fix".  Assuming that it is
-supported then I doubt that configuring the NAND layer to use your
-setup would be any harder than configuring the FCM.  And, U-Boot uses
-the Linux MTD code, so you'd get the same support there.
+I suppose you could poll with status reads, which could at least be
+preempted if you've got something higher priority to do with the LBC.
 
-There might also be a way to keep the BUSY and find a workaround with
-the other chips on the bus, depending on what they are.  Chances are
-that they have a BUSY, but maybe you could move the peripheral's BUSY
-to another LBC line and use UPM mode to interpret that line as a BUSY.
-Writing UPM programs isn't really all that difficult (well, not the
-second time you do it anyway).  That's getting into kludge territory,
-though.
+-Scott
