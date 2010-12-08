@@ -1,15 +1,22 @@
-Return-Path: <dirk.brandewie@gmail.com>
-From: dirk.brandewie@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] microblaze/of: Use generic rule to build dtb's
-Date: Wed,  8 Dec 2010 07:01:16 -0800
-Message-Id: <c6ab00e5766fc510ef6d7b9420f19b4397d6a5e8.1291820034.git.dirk.brandewie@gmail.com>
-In-Reply-To: <cover.1291820033.git.dirk.brandewie@gmail.com>
-References: <cover.1291820033.git.dirk.brandewie@gmail.com>
-Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
-	microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sodaville@linutronix.de,
-	Dirk Brandewie <dirk.brandewie@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C54DB70A5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  9 Dec 2010 02:49:16 +1100 (EST)
+Date: Wed, 8 Dec 2010 16:49:11 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH v2] powerpc, 5200: add support for charon board
+Message-ID: <20101208154911.GE4641@pengutronix.de>
+References: <1291450906-22445-1-git-send-email-hs@denx.de>
+	<1291705135-26805-1-git-send-email-hs@denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VdOwlNaOFKGAtAAV"
+In-Reply-To: <1291705135-26805-1-git-send-email-hs@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,47 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Modify arch/powerpc/boot/Makefile to use dtc command in
-scripts/Makefile.lib
+--VdOwlNaOFKGAtAAV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
----
- arch/microblaze/boot/Makefile |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
+On Tue, Dec 07, 2010 at 07:58:55AM +0100, Heiko Schocher wrote:
+> Signed-off-by: Heiko Schocher <hs@denx.de>
 
-diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
-index be01d78..4c4e58e 100644
---- a/arch/microblaze/boot/Makefile
-+++ b/arch/microblaze/boot/Makefile
-@@ -10,9 +10,6 @@ targets := linux.bin linux.bin.gz simpleImage.%
- 
- OBJCOPYFLAGS := -O binary
- 
--# Where the DTS files live
--dtstree         := $(srctree)/$(src)/dts
--
- # Ensure system.dtb exists
- $(obj)/linked_dtb.o: $(obj)/system.dtb
- 
-@@ -51,14 +48,11 @@ $(obj)/simpleImage.%: vmlinux FORCE
- 	$(call if_changed,strip)
- 	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
- 
--# Rule to build device tree blobs
--DTC = $(objtree)/scripts/dtc/dtc
- 
- # Rule to build device tree blobs
--quiet_cmd_dtc = DTC     $@
--	cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 -p 1024 $(dtstree)/$*.dts
-+DTC_FLAGS := -p 1024
- 
--$(obj)/%.dtb: $(dtstree)/%.dts FORCE
--	$(call if_changed,dtc)
-+$(obj)/%.dtb: $(src)/dts/%.dts FORCE
-+	$(call cmd,dtc)
- 
- clean-files += *.dtb simpleImage.*.unstrip linux.bin.ub
--- 
-1.7.2.3
+Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--VdOwlNaOFKGAtAAV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkz/qPcACgkQD27XaX1/VRukiQCgyvGzmA0y/YHr/zfkKpdwdzMv
+RtIAoKQY7rl/rsLJj1I50O2gf1ceugtN
+=YWkz
+-----END PGP SIGNATURE-----
+
+--VdOwlNaOFKGAtAAV--
