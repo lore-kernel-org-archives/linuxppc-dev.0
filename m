@@ -2,14 +2,14 @@ Return-Path: <tmarri@amcc.com>
 Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A323B6EE9
+	by ozlabs.org (Postfix) with ESMTPS id 51C3EB70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 11:49:10 +1100 (EST)
+	Thu,  9 Dec 2010 11:50:27 +1100 (EST)
 From: tmarri@apm.com
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [PATCH] ppc4xx: Add USB DWC DTS entry to Canyonlands board
-Date: Wed,  8 Dec 2010 16:49:05 -0800
-Message-Id: <1291855745-29299-1-git-send-email-tmarri@apm.com>
+Date: Wed,  8 Dec 2010 16:50:11 -0800
+Message-Id: <1291855811-29594-1-git-send-email-tmarri@apm.com>
 Cc: tmarri@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
