@@ -1,16 +1,21 @@
-Return-Path: <tmarri@amcc.com>
-Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 51C3EB70B0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 11:50:27 +1100 (EST)
-From: tmarri@apm.com
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ppc4xx: Add USB DWC DTS entry to Canyonlands board
-Date: Wed,  8 Dec 2010 16:50:11 -0800
-Message-Id: <1291855811-29594-1-git-send-email-tmarri@apm.com>
-Cc: tmarri@apm.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/5] of/device: Make of_get_next_child() check status
+	properties
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20101208150102.69b8062b@udp111988uds.am.freescale.net>
+References: <cover.1291799069.git.deepak_saxena@mentor.com>
+	<20101208192944.GE32473@mentor.com>
+	<20101208150102.69b8062b@udp111988uds.am.freescale.net>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-g4gQv5IEbk++n+xcg5Q1"
+Date: Thu, 09 Dec 2010 12:33:22 +1100
+Message-ID: <1291858402.2962.2.camel@concordia>
+Mime-Version: 1.0
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	Deepak Saxena <deepak_saxena@mentor.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tirumala Marri <tmarri@apm.com>
 
-Add Synopsys Designware DTS entry for 460EX based Canyonlands board.
+--=-g4gQv5IEbk++n+xcg5Q1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tirumala R Marri<tmarri@apm.com>
----
- arch/powerpc/boot/dts/canyonlands.dts |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+On Wed, 2010-12-08 at 15:01 -0600, Scott Wood wrote:
+> On Wed, 8 Dec 2010 11:29:44 -0800
+> Deepak Saxena <deepak_saxena@mentor.com> wrote:
+>=20
+> > We only return the next child if the device is available.
+> >=20
+> > Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
+> > Signed-off-by: Deepak Saxena <deepak_saxena@mentor.com>
+> > ---
+> >  drivers/of/base.c |    4 +++-
+> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> >=20
+> > diff --git a/drivers/of/base.c b/drivers/of/base.c
+> > index 5d269a4..81b2601 100644
+> > --- a/drivers/of/base.c
+> > +++ b/drivers/of/base.c
+> > @@ -321,6 +321,8 @@ struct device_node *of_get_next_parent(struct devic=
+e_node *node)
+> >   *
+> >   *	Returns a node pointer with refcount incremented, use
+> >   *	of_node_put() on it when done.
+> > + *
+> > + *	Does not return nodes marked unavailable by a status property.
+> >   */
+> >  struct device_node *of_get_next_child(const struct device_node *node,
+> >  	struct device_node *prev)
+> > @@ -330,7 +332,7 @@ struct device_node *of_get_next_child(const struct =
+device_node *node,
+> >  	read_lock(&devtree_lock);
+> >  	next =3D prev ? prev->sibling : node->child;
+> >  	for (; next; next =3D next->sibling)
+> > -		if (of_node_get(next))
+> > +		if (of_device_is_available(next) && of_node_get(next))
+> >  			break;
+> >  	of_node_put(prev);
+> >  	read_unlock(&devtree_lock);
+>=20
+> This seems like too low-level a place to put this.  Some code may know
+> how to un-disable a device in certain situations, or it may be part of
+> debug code trying to dump the whole device tree, etc.  Looking
+> further[1], I see a raw version of this function, but not other things
+> like of_find_compatible_node.
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index 5b27a4b..54caec6 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -172,6 +172,19 @@
- 			interrupts = <0x1e 4>;
- 		};
- 
-+		USBOTG0: usbotg@bff80000 {
-+			compatible = "amcc,dwc-otg";
-+			reg = <0x4 0xbff80000 0x10000>;
-+			interrupt-parent = <&USBOTG0>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupts = <0x0 0x1 0x2>;
-+			interrupt-map = </* USB-OTG */ 0x0 &UIC2 0x1c 0x4
-+					 /* HIGH-POWER */ 0x1 &UIC1 0x1a 0x8
-+					 /* DMA */ 0x2 &UIC0 0xc 0x4>;
-+		};
-+
- 		SATA0: sata@bffd1000 {
- 			compatible = "amcc,sata-460ex";
- 			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
--- 
-1.6.1.rc3
+Yeah I agree. I think we'll eventually end up with __ versions of all or
+lots of them. Not to mention there might be cases you've missed where
+code expects to see unavailable nodes. The right approach is to add
+_new_ routines that don't return unavailable nodes, and convert code
+that you know wants to use them.
+
+cheers
+
+
+--=-g4gQv5IEbk++n+xcg5Q1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAk0AMeAACgkQdSjSd0sB4dLHQACgvV076SSf06vhnGraJVr2F0eV
+EgcAn1dS4ifJXTIRL5S8fiqPTcrG1Mka
+=5nUg
+-----END PGP SIGNATURE-----
+
+--=-g4gQv5IEbk++n+xcg5Q1--
