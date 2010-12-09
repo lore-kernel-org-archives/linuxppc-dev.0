@@ -1,21 +1,20 @@
-Return-Path: <hs@denx.de>
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id 39CBBB6EDF
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AB1C9B70CD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 17:44:07 +1100 (EST)
-Date: Thu, 09 Dec 2010 07:43:52 +0100
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v2] powerpc, 5200: add support for charon board
-In-reply-to: <20101208154911.GE4641@pengutronix.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Message-id: <4D007AA8.9050101@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-References: <1291450906-22445-1-git-send-email-hs@denx.de>
-	<1291705135-26805-1-git-send-email-hs@denx.de>
-	<20101208154911.GE4641@pengutronix.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: hs@denx.de
+	Thu,  9 Dec 2010 17:48:19 +1100 (EST)
+Date: Wed, 8 Dec 2010 22:47:37 -0800
+From: Greg KH <greg@kroah.com>
+To: tmarri@apm.com
+Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+Message-ID: <20101209064737.GA10820@kroah.com>
+References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1291854539-23879-1-git-send-email-tmarri@apm.com>
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
-
-Wolfram Sang wrote:
-> On Tue, Dec 07, 2010 at 07:58:55AM +0100, Heiko Schocher wrote:
->> Signed-off-by: Heiko Schocher <hs@denx.de>
+On Wed, Dec 08, 2010 at 04:28:59PM -0800, tmarri@apm.com wrote:
+> From: Tirumala Marri <tmarri@apm.com>
 > 
-> Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+> v6:
+>  1. Replaced register definitions and bit fields with macros.
+>  2. Replace printks with dev_dbg or dev_err functions.
+>  3. Cleanup some assignments.
+>  4. Remove chip specific selections in Kconfig file.
 
-Thanks!
+Much nicer, thanks.
 
-One more defconfig question:
+Do you wish for me to apply this to the tree if it passes review?
 
-Is it possible to add to the mpc5200_defconfig, what is needed for
-this board to compile a kernel which contains all features it needs?
+thanks,
 
-I need:
-
-CONFIG_HWMON
-CONFIG_SENSORS_LM80
-CONFIG_RTC_LIB
-CONFIG_RTC_CLASS
-CONFIG_RTC_HCTOSYS
-CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-CONFIG_RTC_INTF_SYSFS
-CONFIG_RTC_INTF_PROC
-CONFIG_RTC_INTF_DEV
-CONFIG_RTC_DRV_DS1374
-
-I think, to have a DTS in kernel for a board, and no defconfig, which
-builds a kernel with all features for it, is suboptimal, or?
-
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+greg k-h
