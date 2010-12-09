@@ -1,15 +1,22 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Run 'usermode-agent' cause kernel panic on Powerpc
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 14714B70A9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  9 Dec 2010 15:17:18 +1100 (EST)
+Subject: Re: [RFC PATCH 7/7 v2] ppc: add dynamic dma window support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: xufeng zhang <xufeng.zhang@windriver.com>
-In-Reply-To: <4CFEDD4D.5020205@windriver.com>
-References: <4CFDD8C5.70905@windriver.com>
-	<1291730683.16003.4.camel@shaggy-w500> <4CFEDD4D.5020205@windriver.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+In-Reply-To: <1288150518-4026-8-git-send-email-nacc@us.ibm.com>
+References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
+	<1288150518-4026-8-git-send-email-nacc@us.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 09 Dec 2010 14:26:20 +1100
-Message-ID: <1291865180.16694.217.camel@pasglop>
+Date: Thu, 09 Dec 2010 15:17:06 +1100
+Message-ID: <1291868226.16694.220.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: sonnyrao@us.ibm.com, miltonm@bga.com, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,36 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-12-08 at 09:20 +0800, xufeng zhang wrote:
+On Tue, 2010-10-26 at 20:35 -0700, Nishanth Aravamudan wrote:
 
-> > I believe it would have such an impact.  I don't see that user-mode
-> > debugging would be enabled at all.
-> >
-> > Maybe something like this untested patch:
-> >
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> > index 84906d3..0e7d1cf 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -323,6 +323,13 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
-> >
-> >   static void prime_debug_regs(struct thread_struct *thread)
-> >   {
-> > +	/*
-> > +	 * If we're setting up debug events for user space, make sure they
-> > +	 * don't fire in kernel space before we get to user space
-> > +	 */
-> > +	if (thread->dbcr0&  DBCR0_IDM)
-> > +		mtmsr(mfmsr()&  ~MSR_DE);
-> > +
-> >   	mtspr(SPRN_IAC1, thread->iac1);
-> >   	mtspr(SPRN_IAC2, thread->iac2);
-> >   #if CONFIG_PPC_ADV_DEBUG_IACS>  2
-> >
-> >    
-> Thanks for your reply, Dave, I know where the problem is.
+No much comments... I'm amazed how complex he firmware folks managed to
+make this ... 
 
-So is there a kernel bug we need to fix ?
+>  static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
+>  {
+>  	int err = NOTIFY_OK;
+>  	struct device_node *np = node;
+>  	struct pci_dn *pci = PCI_DN(np);
+> +	struct direct_window *window;
+>  
+>  	switch (action) {
+>  	case PSERIES_RECONFIG_REMOVE:
+>  		if (pci && pci->iommu_table)
+>  			iommu_free_table(pci->iommu_table, np->full_name);
+> +
+> +		spin_lock(&direct_window_list_lock);
+> +		list_for_each_entry(window, &direct_window_list, list) {
+> +			if (window->device == np) {
+> +				list_del(&window->list);
+> +				break;
+> +			}
+> +		}
+> +		spin_unlock(&direct_window_list_lock);
+
+Should you also kfree the window ?
+
 
 Cheers,
 Ben.
