@@ -2,17 +2,15 @@ Return-Path: <tmarri@amcc.com>
 Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 732D5B78A3
+	by ozlabs.org (Postfix) with ESMTPS id 7A323B6EE9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 11:32:43 +1100 (EST)
+	Thu,  9 Dec 2010 11:49:10 +1100 (EST)
 From: tmarri@apm.com
-To: linux-usb@vger.kernel.org
-Subject: [PATCH V6 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
-	configuration and Makefile
-Date: Wed,  8 Dec 2010 16:32:38 -0800
-Message-Id: <1291854758-25136-1-git-send-email-tmarri@apm.com>
-Cc: tmarri@apm.com, Mark Miesfeld <mmiesfeld@apm.com>,
-	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ppc4xx: Add USB DWC DTS entry to Canyonlands board
+Date: Wed,  8 Dec 2010 16:49:05 -0800
+Message-Id: <1291855745-29299-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,188 +22,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tirumala Marri <tmarri@apm.com>
 
-Add Synopsys DesignWare HS USB OTG driver kernel configuration.
-Synopsys OTG driver may operate in  host only, device only, or OTG mode.
-The driver also allows user configure the core to use its internal DMA
-or Slave (PIO) mode.
+Add Synopsys Designware DTS entry for 460EX based Canyonlands board.
 
 Signed-off-by: Tirumala R Marri<tmarri@apm.com>
-Signed-off-by: Fushen Chen <fchen@apm.com>
-Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/Makefile             |    2 +
- drivers/usb/Kconfig          |    3 +-
- drivers/usb/dwc_otg/Kconfig  |   96 ++++++++++++++++++++++++++++++++++++++++++
- drivers/usb/dwc_otg/Makefile |   19 ++++++++
- 4 files changed, 119 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/canyonlands.dts |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 14152fc..0ecbf42 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -67,6 +67,7 @@ obj-$(CONFIG_UWB)		+= uwb/
- obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
- obj-$(CONFIG_USB)		+= usb/
- obj-$(CONFIG_USB_MUSB_HDRC)	+= usb/musb/
-+obj-$(CONFIG_USB_DWC_OTG)      += usb/dwc_otg/
- obj-$(CONFIG_PCI)		+= usb/
- obj-$(CONFIG_USB_GADGET)	+= usb/gadget/
- obj-$(CONFIG_SERIO)		+= input/serio/
-@@ -105,6 +106,7 @@ obj-$(CONFIG_ARCH_SHMOBILE)	+= sh/
- ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
- obj-y				+= clocksource/
- endif
-+obj-$(CONFIG_DMA_ENGINE)       += dma/
- obj-$(CONFIG_DCA)		+= dca/
- obj-$(CONFIG_HID)		+= hid/
- obj-$(CONFIG_PPC_PS3)		+= ps3/
-diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-index 6585f0b..8b3623d 100644
---- a/drivers/usb/Kconfig
-+++ b/drivers/usb/Kconfig
-@@ -55,7 +55,6 @@ config USB_ARCH_HAS_OHCI
- config USB_ARCH_HAS_EHCI
- 	boolean
- 	default y if PPC_83xx
--	default y if PPC_MPC512x
- 	default y if SOC_AU1200
- 	default y if ARCH_IXP4XX
- 	default y if ARCH_W90X900
-@@ -113,6 +112,8 @@ source "drivers/usb/host/Kconfig"
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index 5b27a4b..54caec6 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -172,6 +172,19 @@
+ 			interrupts = <0x1e 4>;
+ 		};
  
- source "drivers/usb/musb/Kconfig"
- 
-+source "drivers/usb/dwc_otg/Kconfig"
++		USBOTG0: usbotg@bff80000 {
++			compatible = "amcc,dwc-otg";
++			reg = <0x4 0xbff80000 0x10000>;
++			interrupt-parent = <&USBOTG0>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupts = <0x0 0x1 0x2>;
++			interrupt-map = </* USB-OTG */ 0x0 &UIC2 0x1c 0x4
++					 /* HIGH-POWER */ 0x1 &UIC1 0x1a 0x8
++					 /* DMA */ 0x2 &UIC0 0xc 0x4>;
++		};
 +
- source "drivers/usb/class/Kconfig"
- 
- source "drivers/usb/storage/Kconfig"
-diff --git a/drivers/usb/dwc_otg/Kconfig b/drivers/usb/dwc_otg/Kconfig
-new file mode 100644
-index 0000000..4d33d72
---- /dev/null
-+++ b/drivers/usb/dwc_otg/Kconfig
-@@ -0,0 +1,96 @@
-+#
-+# USB Dual Role (OTG-ready) Controller Drivers
-+# for silicon based on Synopsys DesignWare IP
-+#
-+
-+comment "Enable Host or Gadget support for DesignWare OTG controller"
-+	depends on !USB && USB_GADGET=n
-+
-+config USB_DWC_OTG
-+	depends on (USB || USB_GADGET)
-+	select NOP_USB_XCEIV
-+	select USB_OTG_UTILS
-+	tristate "Synopsys DWC OTG Controller"
-+	default USB_GADGET
-+	help
-+	  This driver provides USB Device Controller support for the
-+	  Synopsys DesignWare USB OTG Core used on the AppliedMicro PowerPC SoC.
-+
-+config DWC_DEBUG
-+	bool "Enable DWC Debugging"
-+	depends on USB_DWC_OTG
-+	default n
-+	help
-+	  Enable DWC driver debugging
-+
-+choice
-+	prompt "DWC Mode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_HOST_ONLY
-+	help
-+	  Select the DWC Core in OTG, Host only, or Device only mode.
-+
-+config DWC_HOST_ONLY
-+	bool "DWC Host Only Mode"
-+
-+config DWC_OTG_MODE
-+	bool "DWC OTG Mode"
-+	select USB_GADGET_SELECTED
-+
-+config DWC_DEVICE_ONLY
-+	bool "DWC Device Only Mode"
-+	select USB_GADGET_SELECTED
-+
-+endchoice
-+
-+# enable peripheral support (including with OTG)
-+config USB_GADGET_DWC_HDRC
-+	bool
-+	depends on USB_DWC_OTG && (DWC_DEVICE_ONLY || USB_DWC_OTG)
-+
-+choice
-+	prompt "DWC DMA/SlaveMode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_DMA_MODE
-+	help
-+	  Select the DWC DMA or Slave Mode.
-+	  DMA mode uses the DWC core internal DMA engines.
-+	  Slave mode uses the processor PIO to tranfer data.
-+	  In Slave mode, processor's DMA channels can be used if available.
-+
-+config DWC_SLAVE
-+	bool "DWC Slave Mode"
-+
-+config DWC_DMA_MODE
-+	bool "DWC DMA Mode"
-+
-+endchoice
-+
-+config USB_OTG_WHITELIST
-+	bool "Rely on OTG Targeted Peripherals List"
-+	depends on !USB_SUSPEND && USB_DWC_OTG
-+	default n
-+	help
-+	  This is the same flag as in ../core/Kconfig.
-+	  It is here for easy deselect.
-+
-+config DWC_OTG_REG_LE
-+	depends on USB_DWC_OTG
-+	bool "DWC Little Endian Register"
-+	default y
-+	help
-+	  OTG core register access is Little-Endian.
-+
-+config DWC_OTG_FIFO_LE
-+	depends on USB_DWC_OTG
-+	bool "DWC FIFO Little Endian"
-+	default n
-+	help
-+	  OTG core FIFO access is Little-Endian.
-+
-+config DWC_LIMITED_XFER_SIZE
-+	depends on USB_GADGET_DWC_HDRC
-+	bool "DWC Endpoint Limited Xfer Size"
-+	default n
-+	help
-+	  Bit fields in the Device EP Transfer Size Register is 11 bits.
-diff --git a/drivers/usb/dwc_otg/Makefile b/drivers/usb/dwc_otg/Makefile
-new file mode 100644
-index 0000000..31dd5e8
---- /dev/null
-+++ b/drivers/usb/dwc_otg/Makefile
-@@ -0,0 +1,19 @@
-+#
-+# OTG infrastructure and transceiver drivers
-+#
-+obj-$(CONFIG_USB_DWC_OTG)	+= dwc_otg.o
-+
-+dwc_otg-objs := dwc_otg_cil.o dwc_otg_cil_intr.o dwc_otg_param.o
-+
-+ifeq ($(CONFIG_4xx_SOC),y)
-+dwc_otg-objs += dwc_otg_apmppc.o
-+endif
-+
-+ifneq ($(CONFIG_DWC_DEVICE_ONLY),y)
-+dwc_otg-objs += dwc_otg_hcd.o dwc_otg_hcd_intr.o \
-+		dwc_otg_hcd_queue.o
-+endif
-+
-+ifneq ($(CONFIG_DWC_HOST_ONLY),y)
-+dwc_otg-objs += dwc_otg_pcd.o dwc_otg_pcd_intr.o
-+endif
+ 		SATA0: sata@bffd1000 {
+ 			compatible = "amcc,sata-460ex";
+ 			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
 -- 
 1.6.1.rc3
