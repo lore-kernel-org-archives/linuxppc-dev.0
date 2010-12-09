@@ -1,23 +1,21 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-ey0-f172.google.com (mail-ey0-f172.google.com
-	[209.85.215.172]) by ozlabs.org (Postfix) with ESMTP id B34AAB708B
+Return-Path: <sameo@linux.intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+	by ozlabs.org (Postfix) with ESMTP id 60E13B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Dec 2010 00:25:45 +1100 (EST)
-Received: by eyd10 with SMTP id 10so1596053eyd.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 09 Dec 2010 05:25:42 -0800 (PST)
-Message-ID: <4D00D89B.6020208@ru.mvista.com>
-Date: Thu, 09 Dec 2010 16:24:43 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+	Fri, 10 Dec 2010 02:13:23 +1100 (EST)
+Date: Thu, 9 Dec 2010 16:03:12 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH 1/2] video, sm501: add OF binding to support SM501
+Message-ID: <20101209150311.GO8884@sortiz-mobl>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+	<20101208053635.GB31508@linux-sh.org> <4D007C09.3040308@denx.de>
 MIME-Version: 1.0
-To: tmarri@apm.com
-Subject: Re: [PATCH V6 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
-	support
-References: <1291854755-25103-1-git-send-email-tmarri@apm.com>
-In-Reply-To: <1291854755-25103-1-git-send-email-tmarri@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Mark Miesfeld <mmiesfeld@apm.com>, linux-usb@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D007C09.3040308@denx.de>
+Cc: linux-fbdev@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	linuxppc-dev@lists.ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
+	devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+Hi Heiko,
 
-On 09-12-2010 3:32, tmarri@apm.com wrote:
+On Thu, Dec 09, 2010 at 07:49:45AM +0100, Heiko Schocher wrote:
+> Hello Paul,
+> 
+> Paul Mundt wrote:
+> > On Sat, Dec 04, 2010 at 09:23:47AM +0100, Heiko Schocher wrote:
+> >> - add binding to OF, compatible name "smi,sm501"
+> >>
+> [...]
+> >>  Documentation/kernel-parameters.txt          |    7 +
+> >>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+> >>  drivers/mfd/sm501.c                          |  141 ++++++++------
+> >>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+> >>  include/linux/sm501.h                        |    8 +
+> >>  5 files changed, 299 insertions(+), 151 deletions(-)
+> >>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+> >>
+> > Given that this is all SM501 dependent, is there some particular reason
+> > why you neglected to Cc the author or the MFD folks?
+> 
+> Hups, sorry! No, there is no reason, thanks for detecting this.
+> 
+> Hmm.. couldn;t find a MFD maillinglist?
+We use lkml. Could you please re-send the patch to me ?
 
-> From: Tirumala Marri<tmarri@apm.com>
+Cheers,
+Samuel.
 
-> Enable gadget support
-
-> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
-> Signed-off-by: Fushen Chen<fchen@apm.com>
-> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
-[...]
-
-> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-> index 747b0d3..b2bcc4e 100644
-> --- a/drivers/usb/gadget/Kconfig
-> +++ b/drivers/usb/gadget/Kconfig
-> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
-[...]
-> +config USB_OTG
-> +	boolean "OTG Support"
-
-    This symbol is already defined in drivers/usb/core/Kconfig.
-
-WBR, Sergei
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
