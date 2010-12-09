@@ -1,20 +1,22 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AB1C9B70CD
+Return-Path: <hs@denx.de>
+Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
+	by ozlabs.org (Postfix) with ESMTP id A9C3BB70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 17:48:19 +1100 (EST)
-Date: Wed, 8 Dec 2010 22:47:37 -0800
-From: Greg KH <greg@kroah.com>
-To: tmarri@apm.com
-Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-Message-ID: <20101209064737.GA10820@kroah.com>
-References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+	Thu,  9 Dec 2010 17:49:50 +1100 (EST)
+Date: Thu, 09 Dec 2010 07:49:45 +0100
+From: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH 1/2] video, sm501: add OF binding to support SM501
+In-reply-to: <20101208053635.GB31508@linux-sh.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Message-id: <4D007C09.3040308@denx.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+	<20101208053635.GB31508@linux-sh.org>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>,
+	Ben Dooks <ben-linux@fluff.org>
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 08, 2010 at 04:28:59PM -0800, tmarri@apm.com wrote:
-> From: Tirumala Marri <tmarri@apm.com>
-> 
-> v6:
->  1. Replaced register definitions and bit fields with macros.
->  2. Replace printks with dev_dbg or dev_err functions.
->  3. Cleanup some assignments.
->  4. Remove chip specific selections in Kconfig file.
+Hello Paul,
 
-Much nicer, thanks.
+Paul Mundt wrote:
+> On Sat, Dec 04, 2010 at 09:23:47AM +0100, Heiko Schocher wrote:
+>> - add binding to OF, compatible name "smi,sm501"
+>>
+[...]
+>>  Documentation/kernel-parameters.txt          |    7 +
+>>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+>>  drivers/mfd/sm501.c                          |  141 ++++++++------
+>>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+>>  include/linux/sm501.h                        |    8 +
+>>  5 files changed, 299 insertions(+), 151 deletions(-)
+>>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+>>
+> Given that this is all SM501 dependent, is there some particular reason
+> why you neglected to Cc the author or the MFD folks?
 
-Do you wish for me to apply this to the tree if it passes review?
+Hups, sorry! No, there is no reason, thanks for detecting this.
 
-thanks,
+Hmm.. couldn;t find a MFD maillinglist?
 
-greg k-h
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
