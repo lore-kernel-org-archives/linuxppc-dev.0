@@ -1,23 +1,23 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33CB4B70A7
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-ey0-f172.google.com (mail-ey0-f172.google.com
+	[209.85.215.172]) by ozlabs.org (Postfix) with ESMTP id B34AAB708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Dec 2010 21:39:24 +1100 (EST)
-Date: Thu, 9 Dec 2010 11:39:17 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v2] powerpc, 5200: add support for charon board
-Message-ID: <20101209103917.GA3383@pengutronix.de>
-References: <1291450906-22445-1-git-send-email-hs@denx.de>
-	<1291705135-26805-1-git-send-email-hs@denx.de>
-	<20101208154911.GE4641@pengutronix.de> <4D007AA8.9050101@denx.de>
+	Fri, 10 Dec 2010 00:25:45 +1100 (EST)
+Received: by eyd10 with SMTP id 10so1596053eyd.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 09 Dec 2010 05:25:42 -0800 (PST)
+Message-ID: <4D00D89B.6020208@ru.mvista.com>
+Date: Thu, 09 Dec 2010 16:24:43 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
-In-Reply-To: <4D007AA8.9050101@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: tmarri@apm.com
+Subject: Re: [PATCH V6 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
+	support
+References: <1291854755-25103-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1291854755-25103-1-git-send-email-tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello.
 
---gBBFr7Ir9EOA20Yy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 09-12-2010 3:32, tmarri@apm.com wrote:
 
-> Is it possible to add to the mpc5200_defconfig, what is needed for
-> this board to compile a kernel which contains all features it needs?
+> From: Tirumala Marri<tmarri@apm.com>
 
-Just add it as modules.
+> Enable gadget support
 
-Regards,
+> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
+> Signed-off-by: Fushen Chen<fchen@apm.com>
+> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
+[...]
 
-   Wolfram
+> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> index 747b0d3..b2bcc4e 100644
+> --- a/drivers/usb/gadget/Kconfig
+> +++ b/drivers/usb/gadget/Kconfig
+> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
+[...]
+> +config USB_OTG
+> +	boolean "OTG Support"
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+    This symbol is already defined in drivers/usb/core/Kconfig.
 
---gBBFr7Ir9EOA20Yy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk0AsdUACgkQD27XaX1/VRtbjwCcCeiNdREcPo4mq1WDjf3kPyJn
-y1oAn0rtg42Wzp8/MVoR5WNBAbml+foB
-=KPU5
------END PGP SIGNATURE-----
-
---gBBFr7Ir9EOA20Yy--
+WBR, Sergei
