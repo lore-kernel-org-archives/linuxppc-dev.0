@@ -4,16 +4,17 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 155C5B70A4
+	by ozlabs.org (Postfix) with ESMTPS id D632FB70A5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Dec 2010 10:19:44 +1100 (EST)
-Date: Fri, 10 Dec 2010 15:19:24 -0800
+	Sat, 11 Dec 2010 10:22:48 +1100 (EST)
+Date: Fri, 10 Dec 2010 15:22:33 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH -mm 0/4] RapidIO: Misc updates
-Message-Id: <20101210151924.333afed7.akpm@linux-foundation.org>
-In-Reply-To: <1292013498-31406-1-git-send-email-alexandre.bounine@idt.com>
+Subject: Re: [PATCH -mm 4/4] RapidIO: Add new sysfs attributes
+Message-Id: <20101210152233.3786b432.akpm@linux-foundation.org>
+In-Reply-To: <1292013498-31406-5-git-send-email-alexandre.bounine@idt.com>
 References: <1292013498-31406-1-git-send-email-alexandre.bounine@idt.com>
+	<1292013498-31406-5-git-send-email-alexandre.bounine@idt.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
@@ -27,20 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Dec 2010 15:38:14 -0500
+On Fri, 10 Dec 2010 15:38:18 -0500
 Alexandre Bounine <alexandre.bounine@idt.com> wrote:
 
-> The following four patches are follow-up to two RapidIO patches
-> that are in the -mm tree now.
-> 
-> Alexandre Bounine (4):
->   RapidIO: Add definitions of Component Tag fields
->   RapidIO: Add device object linking into discovery
->   RapidIO: Use Component Tag for unified switch identification
->   RapidIO: Add new sysfs attributes
-> 
+> Add new sysfs attributes.
 
-I held
-rapidio-use-common-destid-storage-for-endpoints-and-switches.patch and
-rapidio-integrate-rio_switch-into-rio_dev.patch back from 2.6.37 due to
-ongoing discussion.  What is the situation now?
+One would like to see documentation updates along with sysfs API
+updates.  But one fears that this entire interface wasn't documented
+anyway :(
+
+Please at least fully describe the proposed interface in the changelog
+so others can review the proposal.
+
+The proposed new sysfs files appear to break the
+one-value-per-sysfs-file rule.
