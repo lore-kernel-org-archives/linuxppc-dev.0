@@ -1,39 +1,21 @@
-Return-Path: <r58472@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2DE6CB70CC
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "localhost", Issuer "localhost" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8A6BBB6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Dec 2010 19:02:28 +1100 (EST)
-Received: from mail101-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail101-tx2-R.bigfish.com (Postfix) with ESMTP id C3DE31008591	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2010 08:02:02 +0000 (UTC)
-Received: from TX2EHSMHS029.bigfish.com (unknown [10.9.14.242])	by
-	mail101-tx2.bigfish.com (Postfix) with ESMTP id A099040057	for
-	<linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2010 08:02:02 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id oBA81xYo007140	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Dec 2010 01:02:00 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oBA81xEc011674	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Dec 2010 02:01:59 -0600 (CST)
+	Fri, 10 Dec 2010 19:52:24 +1100 (EST)
+Message-ID: <4D01E90E.8070404@matrix-vision.de>
+Date: Fri, 10 Dec 2010 09:47:10 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Subject: RE: Problem with MPC8536 and external IRQs when using a loadable
-	kernel module
-Date: Fri, 10 Dec 2010 01:03:15 -0700
-Message-ID: <3F607A5180246847A760FD34122A1E050372F9@039-SN1MPN1-003.039d.mgd.msft.net>
-In-Reply-To: <1291950448.3574.5.camel@concordia>
-References: <11BA25866A2E3A45A797B469B2344B3901554D3D@blademail.bladenetwork.net>	
-	<1291937594.3523.20.camel@concordia>	
-	<11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
-	<1291950448.3574.5.camel@concordia>
-From: Li Yang-R58472 <r58472@freescale.com>
-To: <michael@ellerman.id.au>, Mark Pearson <Mark.Pearson@bladenetwork.net>
-Cc: Jin Qing-B24347 <B24347@freescale.com>, linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+References: <20101207031554.GA12731@postdiluvian.org>	<20101207145153.540da45a@udp111988uds.am.freescale.net>	<OFF94B1B01.88594E81-ONC12577F3.002B63AA-C12577F3.002BEE0B@transmode.se>	<20101208111839.1cf95553@udp111988uds.am.freescale.net>	<OF349DC945.8BC48D34-ONC12577F3.00601D94-C12577F3.00605153@transmode.se>	<20101208192616.GA24560@postdiluvian.org>	<OF14047E09.664EC753-ONC12577F3.006CF507-C12577F3.006D97EA@transmode.se>	<20101208135928.0278f97d@udp111988uds.am.freescale.net>	<OFC37E86C9.59866BED-ONC12577F3.006E8F8D-C12577F3.006EE1FA@transmode.se>	<20101208142551.19ea2333@udp111988uds.am.freescale.net>	<OF6F049A4C.3AEB4068-ONC12577F3.00751175-C12577F3.0075D3F5@transmode.se>
+	<20101208160531.393bedf1@udp111988uds.am.freescale.net>
+In-Reply-To: <20101208160531.393bedf1@udp111988uds.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Mason <mason@postdiluvian.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,11 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pk9uIFRodSwgMjAxMC0xMi0wOSBhdCAxNzoyMCAtMDgwMCwgTWFyayBQZWFyc29uIHdyb3RlOg0K
-Pj4gTWFnaWNhbCAtIHRoYW5rIHlvdSB2ZXJ5IHZlcnkgbXVjaC4gVGhlIHBhdGNoIGZpeGVzIHRo
-ZSBwcm9ibGVtDQo+Pg0KPj4gUmVhbGx5IGFwcHJlY2lhdGUgdGhlIHF1aWNrIHJlc3BvbnNlIC0g
-YW5kIEkgd291bGQgbmV2ZXIgaGF2ZSBmb3VuZCB0aGF0DQo+aW4gYSBtaWxsaW9uIHllYXJzLg0K
-Pg0KPk5vIHdvcnJpZXMuDQo+DQo+TG9va3MgbGlrZSBzb21lb25lIHNob3VsZCBzZW5kIDc4ZTJl
-NjhhMmIgdG8gdGhlIHN0YWJsZSBjcmV3LiBGU0wgZ3V5cz8NCg0KSSB0aGluayBpdCBoYXMgYWxy
-ZWFkeSBiZWVuIHNlbnQgdG8gdGhlIHN0YWJsZUBrZXJuZWwub3JnLiAgTm90IHN1cmUgaWYgaXQg
-aGFzIGJlZW4gaW5jbHVkZWQgdGhvdWdoLg0KDQotIExlbw0KDQo=
+Scott,
+
+do you think this issue also applies to MPC8377 ?
+
+I'm in the middle of a small redesign for series production and would 
+like not to miss a thing.
+We have Nand, Nor and MRAM connected to LBC.
+
+Since RFS is running from NAND and we use the MRAM as a non-volatile 
+SRAM I'd like to avoid being hit by this issue.
+
+Any comments from your side ?
+
+Regards,
+André
+
+> On Wed, 8 Dec 2010 22:26:59 +0100
+> Joakim Tjernlund<joakim.tjernlund@transmode.se>  wrote:
+>
+>> Scott Wood<scottwood@freescale.com>  wrote on 2010/12/08 21:25:51:
+>>> On Wed, 8 Dec 2010 21:11:08 +0100
+>>> Joakim Tjernlund<joakim.tjernlund@transmode.se>  wrote:
+>>>
+>>>> Scott Wood<scottwood@freescale.com>  wrote on 2010/12/08 20:59:28:
+>>>>> On Wed, 8 Dec 2010 20:57:03 +0100
+>>>>> Joakim Tjernlund<joakim.tjernlund@transmode.se>  wrote:
+>>>>>
+>>>>>> Can you think of any workaround such as not connecting the BUSY pin at all?
+>>>>> Maybe connect the busy pin to a gpio?
+>>>> Is BUSY required for sane operation or it an optimization?
+>>> You could probably get away without it by inserting delays if you know
+>>> the chip specs well enough.
+>> Urgh, that does not feel like a good solution.
+> No, but you asked if it could be done, and if it was just a
+> performance issue. :-)
+>
+>>>> Is there any risk that the NAND device will drive the LB and corrupt
+>>>> the bus for other devices?
+>>> I think the only thing the NAND chip should be driving is the busy pin,
+>> OK, good. What function is actually lost if one uses an GPIO instead of
+>> BUSY?
+> Not much, if you enable interrupts on the GPIO pin.  The driver would
+> have to be reworked a bit, of course.
+>
+>> You think Freescale could test and validate a GPIO solution? I don't
+>> think we will be very happy to design our board around an unproven
+>> workaround.
+> Ask your sales/support contacts.
+>
+>> An even better workaround would be if one could add logic between the
+>> NAND and the CPU which would compensate for this defect without needing
+>> special SW fixes.
+> The problem with that is when would you assert the chipselect again to
+> check if it's done?  Current SW depends on being able to tell the LBC
+> to interrupt (or take other action) when busy goes away.
+>
+> I suppose you could poll with status reads, which could at least be
+> preempted if you've got something higher priority to do with the LBC.
+>
+> -Scott
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
