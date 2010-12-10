@@ -1,22 +1,39 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
-	by ozlabs.org (Postfix) with SMTP id E4342B70A5
+Return-Path: <r58472@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2DE6CB70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Dec 2010 17:21:19 +1100 (EST)
-Received: by qwa26 with SMTP id 26so3445133qwa.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 09 Dec 2010 22:21:16 -0800 (PST)
+	Fri, 10 Dec 2010 19:02:28 +1100 (EST)
+Received: from mail101-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail101-tx2-R.bigfish.com (Postfix) with ESMTP id C3DE31008591	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2010 08:02:02 +0000 (UTC)
+Received: from TX2EHSMHS029.bigfish.com (unknown [10.9.14.242])	by
+	mail101-tx2.bigfish.com (Postfix) with ESMTP id A099040057	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2010 08:02:02 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id oBA81xYo007140	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 10 Dec 2010 01:02:00 -0700 (MST)
+Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
+	[10.64.32.10])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	oBA81xEc011674	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 10 Dec 2010 02:01:59 -0600 (CST)
 MIME-Version: 1.0
-In-Reply-To: <20101210075256.296752e2@apollo.gnet>
-References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-	<20101210075256.296752e2@apollo.gnet>
-Date: Thu, 9 Dec 2010 22:21:16 -0800
-Message-ID: <AANLkTingcNxc_00=4HTLPLicJO=Tw12g5uEVvjv0J1Q2@mail.gmail.com>
-Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Tirumala Marri <tmarri@apm.com>
-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Subject: RE: Problem with MPC8536 and external IRQs when using a loadable
+	kernel module
+Date: Fri, 10 Dec 2010 01:03:15 -0700
+Message-ID: <3F607A5180246847A760FD34122A1E050372F9@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <1291950448.3574.5.camel@concordia>
+References: <11BA25866A2E3A45A797B469B2344B3901554D3D@blademail.bladenetwork.net>	
+	<1291937594.3523.20.camel@concordia>	
+	<11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
+	<1291950448.3574.5.camel@concordia>
+From: Li Yang-R58472 <r58472@freescale.com>
+To: <michael@ellerman.id.au>, Mark Pearson <Mark.Pearson@bladenetwork.net>
+Cc: Jin Qing-B24347 <B24347@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +43,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 9, 2010 at 8:52 PM, Alexander Gordeev <lasaine@lvk.cs.msu.su> w=
-rote:
-> Hi,
->
-> =D0=92 Wed, =C2=A08 Dec 2010 16:28:59 -0800
-> tmarri at apm.com (tmarri at apm.com) =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
->
->> From: Tirumala Marri <tmarri at apm.com>
->>
->> v6:
->> =C2=A01. Replaced register definitions and bit fields with macros.
->> =C2=A02. Replace printks with dev_dbg or dev_err functions.
->> =C2=A03. Cleanup some assignments.
->> =C2=A04. Remove chip specific selections in Kconfig file.
->
-> Thanks for the update!
->
-> I'm currently working on USB support for Ralink RT3050 (mipsel) boards
-> which have the same USB OTG controller. I've based my work on the
-> previous version of your patchset. The were several arch-specific issues
-> that I'd like to be fixed here before it hits mainline (BTW, is it going
-> to be mainlined?). I'll reply to the subsequent e-mails about the
-> specific issues. Is this ok?
-Yes the idea is to push into main line. I am not sure if it is good idea
- to push all the changes in one go.  I would wait for this patch to be acce=
-pted
-first and add your changes on top of that.
-
->
-> Also I'd like to note that s3c-hsotg driver that is already in the
-> kernel seems to be quite similar from the register definitions at least.
-> It handles gadget mode only and the code looks different. I think it
-> should be replaced somehow by this new driver (which is based on the
-> "official" driver).
-It sound similar to gadget portion of this OTG driver. After this patch acc=
-epted
-I will take a look and see if we can completely eliminate s3c-hsotg .
-
-Thanks,
-Marri
+Pk9uIFRodSwgMjAxMC0xMi0wOSBhdCAxNzoyMCAtMDgwMCwgTWFyayBQZWFyc29uIHdyb3RlOg0K
+Pj4gTWFnaWNhbCAtIHRoYW5rIHlvdSB2ZXJ5IHZlcnkgbXVjaC4gVGhlIHBhdGNoIGZpeGVzIHRo
+ZSBwcm9ibGVtDQo+Pg0KPj4gUmVhbGx5IGFwcHJlY2lhdGUgdGhlIHF1aWNrIHJlc3BvbnNlIC0g
+YW5kIEkgd291bGQgbmV2ZXIgaGF2ZSBmb3VuZCB0aGF0DQo+aW4gYSBtaWxsaW9uIHllYXJzLg0K
+Pg0KPk5vIHdvcnJpZXMuDQo+DQo+TG9va3MgbGlrZSBzb21lb25lIHNob3VsZCBzZW5kIDc4ZTJl
+NjhhMmIgdG8gdGhlIHN0YWJsZSBjcmV3LiBGU0wgZ3V5cz8NCg0KSSB0aGluayBpdCBoYXMgYWxy
+ZWFkeSBiZWVuIHNlbnQgdG8gdGhlIHN0YWJsZUBrZXJuZWwub3JnLiAgTm90IHN1cmUgaWYgaXQg
+aGFzIGJlZW4gaW5jbHVkZWQgdGhvdWdoLg0KDQotIExlbw0KDQo=
