@@ -1,20 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: RE: Problem with MPC8536 and external IRQs when using a loadable
-	kernel module
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Mark Pearson <Mark.Pearson@bladenetwork.net>
-In-Reply-To: <11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
-References: <11BA25866A2E3A45A797B469B2344B3901554D3D@blademail.bladenetwork.net>
-	<1291937594.3523.20.camel@concordia>
-	<11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-8WKRMf9oFwC/MnDXBm0W"
-Date: Fri, 10 Dec 2010 14:07:28 +1100
-Message-ID: <1291950448.3574.5.camel@concordia>
+Return-Path: <lasaine@lvk.cs.msu.su>
+Received: from mail.lvk.cs.msu.su (gate.lvk.cs.msu.su [158.250.17.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.lvk.cs.msu.su", Issuer "CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 64DCAB6EF2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 10 Dec 2010 16:03:25 +1100 (EST)
+Date: Fri, 10 Dec 2010 07:52:56 +0300
+From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+To: Tirumala Marri <tmarri@apm.com>
+Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+Message-ID: <20101210075256.296752e2@apollo.gnet>
+In-Reply-To: <1291854539-23879-1-git-send-email-tmarri@apm.com>
+References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
 Mime-Version: 1.0
-Cc: b24347@freescale.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; micalg=PGP-SHA256;
+	boundary="Sig_/rFmbu509DkJdfzIRxfWSUyJ";
+	protocol="application/pgp-signature"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---=-8WKRMf9oFwC/MnDXBm0W
-Content-Type: text/plain; charset="UTF-8"
+--Sig_/rFmbu509DkJdfzIRxfWSUyJ
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2010-12-09 at 17:20 -0800, Mark Pearson wrote:
-> Magical - thank you very very much. The patch fixes the problem
+Hi,
+
+=D0=92 Wed,  8 Dec 2010 16:28:59 -0800
+tmarri at apm.com (tmarri at apm.com) =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+
+> From: Tirumala Marri <tmarri at apm.com>
 >=20
-> Really appreciate the quick response - and I would never have found that =
-in a million years.
+> v6:
+>  1. Replaced register definitions and bit fields with macros.
+>  2. Replace printks with dev_dbg or dev_err functions.
+>  3. Cleanup some assignments.
+>  4. Remove chip specific selections in Kconfig file.
 
-No worries.
+Thanks for the update!
 
-Looks like someone should send 78e2e68a2b to the stable crew. FSL guys?
+I'm currently working on USB support for Ralink RT3050 (mipsel) boards
+which have the same USB OTG controller. I've based my work on the
+previous version of your patchset. The were several arch-specific issues
+that I'd like to be fixed here before it hits mainline (BTW, is it going
+to be mainlined?). I'll reply to the subsequent e-mails about the
+specific issues. Is this ok?
 
-cheers
+Also I'd like to note that s3c-hsotg driver that is already in the
+kernel seems to be quite similar from the register definitions at least.
+It handles gadget mode only and the code looks different. I think it
+should be replaced somehow by this new driver (which is based on the
+"official" driver).
 
---=-8WKRMf9oFwC/MnDXBm0W
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+--=20
+  Alexander
+
+--Sig_/rFmbu509DkJdfzIRxfWSUyJ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAk0BmW0ACgkQdSjSd0sB4dKheQCfZpKeto2GAJzQhprbIvS0N6KL
-h7YAoJCNaCSwW7qBKwsxJ4nMhO3i4guJ
-=ohJd
+iQEcBAEBCAAGBQJNAbIoAAoJEElrwznyooJblKoIAIp6C3q5P7Jxf8NeM3F1Ob+k
+xQ3xicwyqcf4Hp2lAaBRWXqDjhVcgu00JTdVewBeTqZsP5XTLRcRpAS30e9qJXFx
+MzCtb6kKNjwGE7UbdUacFpbAdqfjoKFQYPM676kM6pqgc1fughOWKdrHaazovaoE
+Zj1dGzevKujlkKQ6eZUfVwJ23ePzQJQZvfwxm6Ktft7U+yprlvWnLN6pe4+0QyFZ
+0ZPRO0EsRwjWeARLqASP3EaTnPsW9UenPJrqThfQ1CIgekedSXD6+GPcqkPOcBkn
+PUmqoJPRPPN/4nAYSn8QiHak3KXxoS2g3aB+ZdBT90IH28V1KOQksmbgL/e5k8o=
+=8Q22
 -----END PGP SIGNATURE-----
 
---=-8WKRMf9oFwC/MnDXBm0W--
+--Sig_/rFmbu509DkJdfzIRxfWSUyJ--
