@@ -1,18 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Problem with MPC8536 and external IRQs when using a loadable
+Return-Path: <Mark.Pearson@bladenetwork.net>
+Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
+	[213.199.154.208])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2E62BB70A9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 10 Dec 2010 12:36:09 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Subject: RE: Problem with MPC8536 and external IRQs when using a loadable
 	kernel module
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Mark Pearson <Mark.Pearson@bladenetwork.net>
-In-Reply-To: <11BA25866A2E3A45A797B469B2344B3901554D3D@blademail.bladenetwork.net>
+Date: Thu, 9 Dec 2010 17:20:27 -0800
+Message-ID: <11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
+In-Reply-To: <1291937594.3523.20.camel@concordia>
 References: <11BA25866A2E3A45A797B469B2344B3901554D3D@blademail.bladenetwork.net>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-FUyyQdoLWuNh6NSMbvOq"
-Date: Fri, 10 Dec 2010 10:33:14 +1100
-Message-ID: <1291937594.3523.20.camel@concordia>
-Mime-Version: 1.0
+	<1291937594.3523.20.camel@concordia>
+From: Mark Pearson <Mark.Pearson@bladenetwork.net>
+To: <michael@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---=-FUyyQdoLWuNh6NSMbvOq
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2010-12-09 at 12:45 -0800, Mark Pearson wrote:
-> I have a curious problem. This is on a MPC8636 based platform with
-> 36-bit address space (that may or may not be important).
->=20
-> =20
->=20
-> I have a very simple driver that registers for one of the external
-> IRQs with a trivial interrupt handler. It works great when built in as
-> part of the kernel.
->=20
-> =20
->=20
-> However, if I make it a loadable module I get the crash shown below
-> (blade_irq is my IRQ handler).
->=20
-> =20
->=20
-> -----Console capture ----------------------------------------
->=20
-> Unable to handle kernel paging request for instruction fetch
-                                            ^^^^^^^^^^^^^^^^^
-
-Your interrupt handler isn't mapped executable? Something wrong with
-module loading?
-
-Do you need 78e2e68a2b79f394b7cd61e07987a8a89af907f7 ?
-
-cheers
-
-
-
---=-FUyyQdoLWuNh6NSMbvOq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAk0BZzgACgkQdSjSd0sB4dLUKQCgqP//cIvEiVLPO8OZ1GlR0/gQ
-VmwAn0p4EN5Q1uxQkeKZLeEYko4+w810
-=kbzj
------END PGP SIGNATURE-----
-
---=-FUyyQdoLWuNh6NSMbvOq--
+TWFnaWNhbCAtIHRoYW5rIHlvdSB2ZXJ5IHZlcnkgbXVjaC4gVGhlIHBhdGNoIGZpeGVzIHRoZSBw
+cm9ibGVtDQoNClJlYWxseSBhcHByZWNpYXRlIHRoZSBxdWljayByZXNwb25zZSAtIGFuZCBJIHdv
+dWxkIG5ldmVyIGhhdmUgZm91bmQgdGhhdCBpbiBhIG1pbGxpb24geWVhcnMuDQoNCk1hcmsNCg0K
+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IE1pY2hhZWwgRWxsZXJtYW4gW21haWx0
+bzptaWNoYWVsQGVsbGVybWFuLmlkLmF1XSANClNlbnQ6IFRodXJzZGF5LCBEZWNlbWJlciAwOSwg
+MjAxMCA2OjMzIFBNDQpUbzogTWFyayBQZWFyc29uDQpDYzogbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmcNClN1YmplY3Q6IFJlOiBQcm9ibGVtIHdpdGggTVBDODUzNiBhbmQgZXh0ZXJuYWwg
+SVJRcyB3aGVuIHVzaW5nIGEgbG9hZGFibGUga2VybmVsIG1vZHVsZQ0KDQpPbiBUaHUsIDIwMTAt
+MTItMDkgYXQgMTI6NDUgLTA4MDAsIE1hcmsgUGVhcnNvbiB3cm90ZToNCj4gSSBoYXZlIGEgY3Vy
+aW91cyBwcm9ibGVtLiBUaGlzIGlzIG9uIGEgTVBDODYzNiBiYXNlZCBwbGF0Zm9ybSB3aXRoIA0K
+PiAzNi1iaXQgYWRkcmVzcyBzcGFjZSAodGhhdCBtYXkgb3IgbWF5IG5vdCBiZSBpbXBvcnRhbnQp
+Lg0KPiANCj4gIA0KPiANCj4gSSBoYXZlIGEgdmVyeSBzaW1wbGUgZHJpdmVyIHRoYXQgcmVnaXN0
+ZXJzIGZvciBvbmUgb2YgdGhlIGV4dGVybmFsIA0KPiBJUlFzIHdpdGggYSB0cml2aWFsIGludGVy
+cnVwdCBoYW5kbGVyLiBJdCB3b3JrcyBncmVhdCB3aGVuIGJ1aWx0IGluIGFzIA0KPiBwYXJ0IG9m
+IHRoZSBrZXJuZWwuDQo+IA0KPiAgDQo+IA0KPiBIb3dldmVyLCBpZiBJIG1ha2UgaXQgYSBsb2Fk
+YWJsZSBtb2R1bGUgSSBnZXQgdGhlIGNyYXNoIHNob3duIGJlbG93IA0KPiAoYmxhZGVfaXJxIGlz
+IG15IElSUSBoYW5kbGVyKS4NCj4gDQo+ICANCj4gDQo+IC0tLS0tQ29uc29sZSBjYXB0dXJlIC0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gDQo+IFVuYWJsZSB0byBo
+YW5kbGUga2VybmVsIHBhZ2luZyByZXF1ZXN0IGZvciBpbnN0cnVjdGlvbiBmZXRjaA0KICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBeXl5eXl5eXl5eXl5eXl5eXg0K
+DQpZb3VyIGludGVycnVwdCBoYW5kbGVyIGlzbid0IG1hcHBlZCBleGVjdXRhYmxlPyBTb21ldGhp
+bmcgd3Jvbmcgd2l0aCBtb2R1bGUgbG9hZGluZz8NCg0KRG8geW91IG5lZWQgNzhlMmU2OGEyYjc5
+ZjM5NGI3Y2Q2MWUwNzk4N2E4YTg5YWY5MDdmNyA/DQoNCmNoZWVycw0KDQoNCgpDb25maWRlbnRp
+YWxpdHkgTm90aWNlOiBUaGlzIG1lc3NhZ2UgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFp
+biAgcHJpdmlsZWdlZCBhbmQgY29uZmlkZW50aWFsIGluZm9ybWF0aW9uLiBJZiB5b3UgaGF2ZSBy
+ZWFzb24gdG8gYmVsaWV2ZSB0aGF0IHlvdSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQg
+b3IgYSBwZXJzb24gcmVzcG9uc2libGUgZm9yIGRlbGl2ZXJpbmcgdGhpcyBpbmZvcm1hdGlvbiB0
+byBhbiBpbnRlbmRlZCByZWNpcGllbnQsIHlvdSBhcmUgaGVyZWJ5IG5vdGlmaWVkIHRoYXQgYW55
+IHJldmlldywgZGlzc2VtaW5hdGlvbiwgZGlzdHJpYnV0aW9uLCBvciBjb3B5aW5nIG9mIHRoaXMg
+bWVzc2FnZSBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLiBQbGVhc2UgY29udGFjdCB0aGUgc2VuZGVy
+IGltbWVkaWF0ZWx5IGJ5IHJlcGx5IG1haWwgYW5kIGRlc3Ryb3kgYWxsIGNvcGllcyBvZiB0aGUg
+b3JpZ2luYWwgbWVzc2FnZS4K
