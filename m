@@ -1,24 +1,20 @@
-Return-Path: <Mark.Pearson@bladenetwork.net>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
-	[213.199.154.208])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2E62BB70A9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Dec 2010 12:36:09 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <michael@ellerman.id.au>
 Subject: RE: Problem with MPC8536 and external IRQs when using a loadable
 	kernel module
-Date: Thu, 9 Dec 2010 17:20:27 -0800
-Message-ID: <11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
-In-Reply-To: <1291937594.3523.20.camel@concordia>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Mark Pearson <Mark.Pearson@bladenetwork.net>
+In-Reply-To: <11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
 References: <11BA25866A2E3A45A797B469B2344B3901554D3D@blademail.bladenetwork.net>
 	<1291937594.3523.20.camel@concordia>
-From: Mark Pearson <Mark.Pearson@bladenetwork.net>
-To: <michael@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
+	<11BA25866A2E3A45A797B469B2344B3901554D94@blademail.bladenetwork.net>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-8WKRMf9oFwC/MnDXBm0W"
+Date: Fri, 10 Dec 2010 14:07:28 +1100
+Message-ID: <1291950448.3574.5.camel@concordia>
+Mime-Version: 1.0
+Cc: b24347@freescale.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-TWFnaWNhbCAtIHRoYW5rIHlvdSB2ZXJ5IHZlcnkgbXVjaC4gVGhlIHBhdGNoIGZpeGVzIHRoZSBw
-cm9ibGVtDQoNClJlYWxseSBhcHByZWNpYXRlIHRoZSBxdWljayByZXNwb25zZSAtIGFuZCBJIHdv
-dWxkIG5ldmVyIGhhdmUgZm91bmQgdGhhdCBpbiBhIG1pbGxpb24geWVhcnMuDQoNCk1hcmsNCg0K
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IE1pY2hhZWwgRWxsZXJtYW4gW21haWx0
-bzptaWNoYWVsQGVsbGVybWFuLmlkLmF1XSANClNlbnQ6IFRodXJzZGF5LCBEZWNlbWJlciAwOSwg
-MjAxMCA2OjMzIFBNDQpUbzogTWFyayBQZWFyc29uDQpDYzogbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmcNClN1YmplY3Q6IFJlOiBQcm9ibGVtIHdpdGggTVBDODUzNiBhbmQgZXh0ZXJuYWwg
-SVJRcyB3aGVuIHVzaW5nIGEgbG9hZGFibGUga2VybmVsIG1vZHVsZQ0KDQpPbiBUaHUsIDIwMTAt
-MTItMDkgYXQgMTI6NDUgLTA4MDAsIE1hcmsgUGVhcnNvbiB3cm90ZToNCj4gSSBoYXZlIGEgY3Vy
-aW91cyBwcm9ibGVtLiBUaGlzIGlzIG9uIGEgTVBDODYzNiBiYXNlZCBwbGF0Zm9ybSB3aXRoIA0K
-PiAzNi1iaXQgYWRkcmVzcyBzcGFjZSAodGhhdCBtYXkgb3IgbWF5IG5vdCBiZSBpbXBvcnRhbnQp
-Lg0KPiANCj4gIA0KPiANCj4gSSBoYXZlIGEgdmVyeSBzaW1wbGUgZHJpdmVyIHRoYXQgcmVnaXN0
-ZXJzIGZvciBvbmUgb2YgdGhlIGV4dGVybmFsIA0KPiBJUlFzIHdpdGggYSB0cml2aWFsIGludGVy
-cnVwdCBoYW5kbGVyLiBJdCB3b3JrcyBncmVhdCB3aGVuIGJ1aWx0IGluIGFzIA0KPiBwYXJ0IG9m
-IHRoZSBrZXJuZWwuDQo+IA0KPiAgDQo+IA0KPiBIb3dldmVyLCBpZiBJIG1ha2UgaXQgYSBsb2Fk
-YWJsZSBtb2R1bGUgSSBnZXQgdGhlIGNyYXNoIHNob3duIGJlbG93IA0KPiAoYmxhZGVfaXJxIGlz
-IG15IElSUSBoYW5kbGVyKS4NCj4gDQo+ICANCj4gDQo+IC0tLS0tQ29uc29sZSBjYXB0dXJlIC0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gDQo+IFVuYWJsZSB0byBo
-YW5kbGUga2VybmVsIHBhZ2luZyByZXF1ZXN0IGZvciBpbnN0cnVjdGlvbiBmZXRjaA0KICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBeXl5eXl5eXl5eXl5eXl5eXg0K
-DQpZb3VyIGludGVycnVwdCBoYW5kbGVyIGlzbid0IG1hcHBlZCBleGVjdXRhYmxlPyBTb21ldGhp
-bmcgd3Jvbmcgd2l0aCBtb2R1bGUgbG9hZGluZz8NCg0KRG8geW91IG5lZWQgNzhlMmU2OGEyYjc5
-ZjM5NGI3Y2Q2MWUwNzk4N2E4YTg5YWY5MDdmNyA/DQoNCmNoZWVycw0KDQoNCgpDb25maWRlbnRp
-YWxpdHkgTm90aWNlOiBUaGlzIG1lc3NhZ2UgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFp
-biAgcHJpdmlsZWdlZCBhbmQgY29uZmlkZW50aWFsIGluZm9ybWF0aW9uLiBJZiB5b3UgaGF2ZSBy
-ZWFzb24gdG8gYmVsaWV2ZSB0aGF0IHlvdSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQg
-b3IgYSBwZXJzb24gcmVzcG9uc2libGUgZm9yIGRlbGl2ZXJpbmcgdGhpcyBpbmZvcm1hdGlvbiB0
-byBhbiBpbnRlbmRlZCByZWNpcGllbnQsIHlvdSBhcmUgaGVyZWJ5IG5vdGlmaWVkIHRoYXQgYW55
-IHJldmlldywgZGlzc2VtaW5hdGlvbiwgZGlzdHJpYnV0aW9uLCBvciBjb3B5aW5nIG9mIHRoaXMg
-bWVzc2FnZSBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLiBQbGVhc2UgY29udGFjdCB0aGUgc2VuZGVy
-IGltbWVkaWF0ZWx5IGJ5IHJlcGx5IG1haWwgYW5kIGRlc3Ryb3kgYWxsIGNvcGllcyBvZiB0aGUg
-b3JpZ2luYWwgbWVzc2FnZS4K
+
+--=-8WKRMf9oFwC/MnDXBm0W
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2010-12-09 at 17:20 -0800, Mark Pearson wrote:
+> Magical - thank you very very much. The patch fixes the problem
+>=20
+> Really appreciate the quick response - and I would never have found that =
+in a million years.
+
+No worries.
+
+Looks like someone should send 78e2e68a2b to the stable crew. FSL guys?
+
+cheers
+
+--=-8WKRMf9oFwC/MnDXBm0W
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAk0BmW0ACgkQdSjSd0sB4dKheQCfZpKeto2GAJzQhprbIvS0N6KL
+h7YAoJCNaCSwW7qBKwsxJ4nMhO3i4guJ
+=ohJd
+-----END PGP SIGNATURE-----
+
+--=-8WKRMf9oFwC/MnDXBm0W--
