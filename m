@@ -1,18 +1,25 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 858D8B708B
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D0199B70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Dec 2010 08:53:13 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] RapidIO: Add new IDT sRIO switches
-Date: Fri, 10 Dec 2010 16:52:52 -0500
-Message-Id: <1292017972-6261-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
-	Thomas Moll <thomas.moll@sysgo.com>
+	Sat, 11 Dec 2010 09:15:40 +1100 (EST)
+Date: Fri, 10 Dec 2010 14:13:27 -0800
+From: Greg KH <greg@kroah.com>
+To: Tirumala Marri <tmarri@apm.com>
+Subject: Re: [PATCH V6 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable
+	gadget support
+Message-ID: <20101210221327.GB4620@kroah.com>
+References: <1291854755-25103-1-git-send-email-tmarri@apm.com>
+	<4D00D89B.6020208@ru.mvista.com>
+	<AANLkTimp8iF2PxApA2kXF64TM47_EeGM9BZrfi1uEVJj@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <AANLkTimp8iF2PxApA2kXF64TM47_EeGM9BZrfi1uEVJj@mail.gmail.com>
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>,
+	Sergei Shtylyov <sshtylyov@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add new sRIO switch device IDs and enable a basic support for them.
+On Thu, Dec 09, 2010 at 08:52:45AM -0800, Tirumala Marri wrote:
+> On Thu, Dec 9, 2010 at 5:24 AM, Sergei Shtylyov <sshtylyov@mvista.com> wrote:
+> > Hello.
+> >
+> > On 09-12-2010 3:32, tmarri@apm.com wrote:
+> >
+> >> From: Tirumala Marri<tmarri@apm.com>
+> >
+> >> Enable gadget support
+> >
+> >> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
+> >> Signed-off-by: Fushen Chen<fchen@apm.com>
+> >> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
+> >
+> > [...]
+> >
+> >> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> >> index 747b0d3..b2bcc4e 100644
+> >> --- a/drivers/usb/gadget/Kconfig
+> >> +++ b/drivers/usb/gadget/Kconfig
+> >> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
+> >
+> > [...]
+> >>
+> >> +config USB_OTG
+> >> +       boolean "OTG Support"
+> >
+> >   This symbol is already defined in drivers/usb/core/Kconfig.
+> >
+> > WBR, Sergei
+> >
+> Sure I will fix that.
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
-Cc: Thomas Moll <thomas.moll@sysgo.com>
-Cc: Micha Nelissen <micha@neli.hopto.org>
----
- drivers/rapidio/switches/idt_gen2.c |    2 ++
- include/linux/rio_ids.h             |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+Other than this minor thing, the patches look good.  I'll go apply
+patches 1-8 for now, care to resend 9 and 10 with this change made?
 
-diff --git a/drivers/rapidio/switches/idt_gen2.c b/drivers/rapidio/switches/idt_gen2.c
-index dd4b2b7..095016a 100644
---- a/drivers/rapidio/switches/idt_gen2.c
-+++ b/drivers/rapidio/switches/idt_gen2.c
-@@ -416,3 +416,5 @@ static int idtg2_switch_init(struct rio_dev *rdev, int do_enum)
- 
- DECLARE_RIO_SWITCH_INIT(RIO_VID_IDT, RIO_DID_IDTCPS1848, idtg2_switch_init);
- DECLARE_RIO_SWITCH_INIT(RIO_VID_IDT, RIO_DID_IDTCPS1616, idtg2_switch_init);
-+DECLARE_RIO_SWITCH_INIT(RIO_VID_IDT, RIO_DID_IDTVPS1616, idtg2_switch_init);
-+DECLARE_RIO_SWITCH_INIT(RIO_VID_IDT, RIO_DID_IDTSPS1616, idtg2_switch_init);
-diff --git a/include/linux/rio_ids.h b/include/linux/rio_ids.h
-index ee7b6ad..7410d33 100644
---- a/include/linux/rio_ids.h
-+++ b/include/linux/rio_ids.h
-@@ -36,5 +36,7 @@
- #define RIO_DID_IDTCPS10Q		0x035e
- #define RIO_DID_IDTCPS1848		0x0374
- #define RIO_DID_IDTCPS1616		0x0379
-+#define RIO_DID_IDTVPS1616		0x0377
-+#define RIO_DID_IDTSPS1616		0x0378
- 
- #endif				/* LINUX_RIO_IDS_H */
--- 
-1.7.3.1
+thanks,
+
+greg k-h
