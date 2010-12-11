@@ -1,22 +1,23 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 825AAB7080
+Return-Path: <rdunlap@xenotime.net>
+Received: from xenotime.net (xenotime.net [72.52.115.56])
+	by ozlabs.org (Postfix) with SMTP id A6049B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 12 Dec 2010 06:18:51 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH -mm 0/4] RapidIO: Misc updates
-Date: Sat, 11 Dec 2010 11:18:17 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201665506@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20101210151924.333afed7.akpm@linux-foundation.org>
-References: <1292013498-31406-1-git-send-email-alexandre.bounine@idt.com>
-	<20101210151924.333afed7.akpm@linux-foundation.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	Sun, 12 Dec 2010 09:34:57 +1100 (EST)
+Received: from chimera.site ([173.50.240.230]) by xenotime.net for
+	<linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2010 14:34:54 -0800
+Date: Sat, 11 Dec 2010 14:34:54 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH v2 1/2] video, sm501: add OF binding to support SM501
+Message-Id: <20101211143454.ccc5e296.rdunlap@xenotime.net>
+In-Reply-To: <1292049075-1809-1-git-send-email-hs@denx.de>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+	<1292049075-1809-1-git-send-email-hs@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
+	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
 	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,21 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> I held
-> rapidio-use-common-destid-storage-for-endpoints-and-switches.patch and
-> rapidio-integrate-rio_switch-into-rio_dev.patch back from 2.6.37 due
-to
-> ongoing discussion.  What is the situation now?
+On Sat, 11 Dec 2010 07:31:15 +0100 Heiko Schocher wrote:
 
-Sorry, it took me too long to do this follow-up.
-Patches in this set are direct product of that discussion and address
-the issue of unified switch identification brought by Micha Nelissen.
-The implementation is different from what he would like to see but I
-prefer to have minimal changes to the code combined with enough
-flexibility to enable proprietary implementations if such are required.
-Besides that discussion, I did not receive any complaints about the
-changes that you are referencing above.
+> - add commandline options:
+>   sm501.fb_mode:
+
+    sm501.mode:
+
+>     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
+>   sm501.bpp:
+>     Specify bit-per-pixel if not specified mode
+> 
+> ---
+> 
+>  Documentation/kernel-parameters.txt          |    7 +
+>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+>  drivers/mfd/sm501.c                          |  141 ++++++++------
+>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+>  include/linux/sm501.h                        |    8 +
+>  5 files changed, 299 insertions(+), 151 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index cdd2a6e..6341541 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -2301,6 +2301,13 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			merging on their own.
+>  			For more information see Documentation/vm/slub.txt.
+>  
+> +	sm501.bpp=	SM501 Display driver:
+> +			Specify bit-per-pixel if not specified mode
+
+			Specifiy bits-per-pixel if not specified by 'mode'
+
+> +
+> +	sm501fb.mode=	SM501 Display driver:
+
+Shouldn't that be sm501.mode ?
+
+> +			Specify resolution as
+> +			"<xres>x<yres>[-<bpp>][@<refresh>]"
+> +
+>  	smart2=		[HW]
+>  			Format: <io1>[,<io2>[,...,<io8>]]
 
 
- =20
+However, I think that these shouldn't be added to Documentation/kernel-parameters.txt
+but should be added to the Documentation/fb/ sub-directory either by adding to
+Documentation/fb/modedb.txt or by adding a new file Documentation/fb/sm501.txt.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
