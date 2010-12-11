@@ -1,22 +1,24 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
-	by ozlabs.org (Postfix) with SMTP id BC145B6F14
+Return-Path: <rdunlap@xenotime.net>
+Received: from xenotime.net (xenotime.net [72.52.115.56])
+	by ozlabs.org (Postfix) with SMTP id 57C3CB70A4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 12 Dec 2010 04:53:34 +1100 (EST)
-Received: by qwg5 with SMTP id 5so4808376qwg.34
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Dec 2010 09:53:31 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20101210224402.GA8943@kroah.com>
-References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-	<20101210224402.GA8943@kroah.com>
-Date: Sat, 11 Dec 2010 09:53:31 -0800
-Message-ID: <AANLkTi=NEqh6X0N72jP1W+gzaeFC6Tqs98KpY_OdA6RX@mail.gmail.com>
-Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Tirumala Marri <tmarri@apm.com>
-To: Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+	Sun, 12 Dec 2010 05:39:06 +1100 (EST)
+Received: from chimera.site ([173.50.240.230]) by xenotime.net for
+	<linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2010 10:28:59 -0800
+Date: Sat, 11 Dec 2010 10:28:58 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH v2 1/2] video, sm501: add OF binding to support SM501
+Message-Id: <20101211102858.fd1b5426.rdunlap@xenotime.net>
+In-Reply-To: <1292049075-1809-1-git-send-email-hs@denx.de>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+	<1292049075-1809-1-git-send-email-hs@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
+	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 10, 2010 at 2:44 PM, Greg KH <greg@kroah.com> wrote:
-> On Wed, Dec 08, 2010 at 04:28:59PM -0800, tmarri@apm.com wrote:
->> From: Tirumala Marri <tmarri@apm.com>
->>
->> v6:
->> =A01. Replaced register definitions and bit fields with macros.
->> =A02. Replace printks with dev_dbg or dev_err functions.
->> =A03. Cleanup some assignments.
->> =A04. Remove chip specific selections in Kconfig file.
->
-> There are still a lot of checkpatch errors and warnings in these
-> patches. =A0Patch 1-8 has:
-> =A0 =A0 =A0 =A0total: 64 errors, 126 warnings, 13905 lines checked
->
-> Care to fix all of these up in your next submission? =A0I can't take thes=
-e
-> as-is, sorry.
->
-> And, if you haven't run checkpatch.pl before, odds are you haven't run
-> 'sparse'. =A0Please run that as well and resolve the issues it finds.
->
-> thanks,
->
-> greg k-h
->
- I will fix the all these errors. Also will run use the sparse tool .
-Regards,
-Marri
+On Sat, 11 Dec 2010 07:31:15 +0100 Heiko Schocher wrote:
+
+> - add commandline options:
+>   sm501.fb_mode:
+
+    sm501.mode:
+
+>     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
+>   sm501.bpp:
+>     Specify bit-per-pixel if not specified mode
+> 
+> ---
+> 
+>  Documentation/kernel-parameters.txt          |    7 +
+>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+>  drivers/mfd/sm501.c                          |  141 ++++++++------
+>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+>  include/linux/sm501.h                        |    8 +
+>  5 files changed, 299 insertions(+), 151 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index cdd2a6e..6341541 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -2301,6 +2301,13 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			merging on their own.
+>  			For more information see Documentation/vm/slub.txt.
+>  
+> +	sm501.bpp=	SM501 Display driver:
+> +			Specify bit-per-pixel if not specified mode
+
+			Specifiy bits-per-pixel if not specified by 'mode'
+
+> +
+> +	sm501fb.mode=	SM501 Display driver:
+> +			Specify resolution as
+> +			"<xres>x<yres>[-<bpp>][@<refresh>]"
+> +
+>  	smart2=		[HW]
+>  			Format: <io1>[,<io2>[,...,<io8>]]
+
+
+However, I think that these shouldn't be added to Documentation/kernel-parameters.txt
+but should be added to the Documentation/fb/ sub-directory either by adding to
+Documentation/fb/modedb.txt or by adding a new file Documentation/fb/sm501.txt.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
