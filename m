@@ -1,19 +1,26 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 74EEAB73B5
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4DB7AB6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Dec 2010 17:31:41 +1100 (EST)
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/2] powerpc, video: add SM501 support for charon board.
-Date: Sat, 11 Dec 2010 07:31:36 +0100
-Message-Id: <1292049096-1852-1-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs@denx.de>
-References: <1291451028-22532-2-git-send-email-hs@denx.de>
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
-	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
-	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
-	Heiko Schocher <hs@denx.de>
+	Sat, 11 Dec 2010 20:14:13 +1100 (EST)
+In-Reply-To: <20101210115639.08d37db9@udp111988uds.am.freescale.net>
+References: <20101207145153.540da45a@udp111988uds.am.freescale.net>	<20101208111839.1cf95553@udp111988uds.am.freescale.net>
+	<OF349DC945.8BC48D34-ONC12577F3.00601D94-C12577F3.00605153@transmode.se>	<20101208192616.GA24560@postdiluvian.org>
+	<OF14047E09.664EC753-ONC12577F3.006CF507-C12577F3.006D97EA@transmode.se>	<20101208135928.0278f97d@udp111988uds.am.freescale.net>
+	<OFC37E86C9.59866BED-ONC12577F3.006E8F8D-C12577F3.006EE1FA@transmode.se>	<20101208142551.19ea2333@udp111988uds.am.freescale.net>
+	<OF6F049A4C.3AEB4068-ONC12577F3.00751175-C12577F3.0075D3F5@transmode.se>	<20101208220245.GB26836@postdiluvian.org>
+	<20101208162559.26e40cf2@udp111988uds.am.freescale.net>	<OF260A956E.E4DC084C-ONC12577F5.00456569-C12577F5.00457DC0@transmode.
+	<20101210115639.08d37db9@udp111988uds.am.freescale.net>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF51D61C57.96435CC9-ONC12577F6.00326299-C12577F6.0032BA93@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sat, 11 Dec 2010 10:14:05 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Mark Mason <mason@postdiluvian.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
+Scott Wood <scottwood@freescale.com> wrote on 2010/12/10 18:56:39:
+>
+> On Fri, 10 Dec 2010 13:39:01 +0100
+> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> > Scott Wood <scottwood@freescale.com> wrote on 2010/12/08 23:25:59:
+> > >
+> > > On Wed, 8 Dec 2010 17:02:45 -0500
+> > > Mark Mason <mason@postdiluvian.org> wrote:
+> > >
+> > > > I don't think that using a software NAND controller instead of the LBC
+> > > > FCM mode is all that bad.  Again, I haven't actually done it, so check
+> > > > the MTD docs, but I'm pretty sure the software is meant to do that, so
+> > > > it doesn't even really constitute a "fix".  Assuming that it is
+> > > > supported then I doubt that configuring the NAND layer to use your
+> > > > setup would be any harder than configuring the FCM.
+> > >
+> > > The MTD layer supports some really simple NAND controllers, but what do
+> > > you mean by not having a controller at all?  Hooking everything up to
+> > > GPIO?  Using UPM?
+> > >
+> > > There is already a UPM NAND driver, BTW.
+> > >
+> > > You would lose hardware ECC and the ability to be interrupt-driven (the
+> > > latter should be possible with SW changes, using GPIO interrupts).
+> >
+> > hmm, you think it would be possible to use one of the IRQ pins instead?
+>
+> GPIO should be fine, software just needs to be changed to use the
+> interrupt functionality.
+>
+> An external IRQ line would let you limit interrupts to rising edges
+> rather than all edges, though you'd lose the ability to directly read
+> the line status.
 
----
-- based against 2.6.37-rc4
-
-./scripts/checkpatch.pl 0003-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 21 lines checked
-
-0003-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
-
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
-
-- changes since v2:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
-  suggested from Paul Mundt.
-
- arch/powerpc/boot/dts/charon.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..d9af022 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
- 
- 		flash@0,0 {
-@@ -197,6 +198,14 @@
- 			#address-cells = <1>;
- 		};
- 
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
--- 
-1.7.2.3
+oh, one cannot read the IRQ line? didn't know that. Also I not sure
+all Freescale CPUs can do rising edge.
