@@ -1,20 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Getting the IRQ number (Was: Basic driver devel questions ?)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201012101721.03689.dargaud@lpsc.in2p3.fr>
-References: <201012011115.00960.dargaud@lpsc.in2p3.fr>
-	<201012081652.13209.dargaud@lpsc.in2p3.fr>
-	<1291854156.14490.32.camel@concordia>
-	<201012101721.03689.dargaud@lpsc.in2p3.fr>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-jBsvhBoWpQFg5/I2F9pk"
-Date: Mon, 13 Dec 2010 08:46:11 +1100
-Message-ID: <1292190371.14908.4.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C6479B7082
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 13 Dec 2010 10:53:50 +1100 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oBCNZfLD023316
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2010 18:35:41 -0500
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9A889728042
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 12 Dec 2010 18:53:46 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	oBCNrkZ32253046
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2010 18:53:46 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	oBCNrh03004865
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2010 18:53:44 -0500
+Date: Sun, 12 Dec 2010 18:53:42 -0500
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-Id: <20101212235342.3583.29397.sendpatchset@manic8ball.ltc.austin.ibm.com>
+Subject: [PATCH] powerpc/pseries: Fix VPHN build errors on non-SMP systems
+Cc: markn@au1.ibm.com, tbreeds@au1.ibm.com, lkessler@us.ibm.com,
+	Jesse Larrew <jlarrew@linux.vnet.ibm.com>, mjwolf@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +36,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 
---=-jBsvhBoWpQFg5/I2F9pk
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+The VPHN feature is only meaningful on NUMA systems that implement
+the SPLPAR option, so exclude the VPHN code on systems without
+SPLPAR enabled.
 
-On Fri, 2010-12-10 at 17:21 +0100, Guillaume Dargaud wrote:
-> Hello all,
+This patch fixes a build problem on non-SMP systems introduced by the
+following commits:
 
->=20
-> > Also turn on CONFIG_DEBUG_DRIVER and see if that gives you anything
-> > interesting.
->=20
-> I see an unset CONFIG_DEBUG_KERNEL but no CONFIG_DEBUG_DRIVER in the .con=
-fig of=20
-> my current kernel.=20
+3b7a27db3b6b5501e3d1c1628e6d5a547ffe76c6
+9eff1a38407c051273fe1a20f03f8155bd32de35
 
-Right you'd need to turn on CONFIG_DEBUG_KERNEL first, and then
-CONFIG_DEBUG_DRIVER will appear.
+Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/topology.h |   20 +++++++++++---------
+ arch/powerpc/mm/numa.c              |    3 +++
+ 2 files changed, 14 insertions(+), 9 deletions(-)
 
-> Does it need to be changed in the .config with a full kernel recompilatio=
-n, or=20
-> can I still benefit from it in my module only by doing a #define at the b=
-egining=20
-> of my code ? Some #defines like DEBUG seem to work locally on things like=
-=20
-> dev_dbg but I doubt the CONFIG_* work the same...
-
-No you'd need to rebuild your kernel. DEBUG is the only #define I can
-think of that has an effect locally. Using different values for a
-CONFIG_ in the kernel vs modules will not work.
-
-> > Er. Not sure sorry. I can't see anything obviously wrong. Maybe post
-> > your driver code again.
->=20
-> Err... I ran it again this morning and it worked farther. I now get into =
-the=20
-> probe function and can now register my interrupt, yeah!, but I don't see =
-the=20
-> ISR being called. I'm currently checking if it can be a hardware problem=
-=20
-> before coming back here for more questions !
-
-Great!
-
-> BTW, is errno/strerror used within the kernel ?
-
-Nope.
-
-cheers
-
-
-
---=-jBsvhBoWpQFg5/I2F9pk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAk0FQqAACgkQdSjSd0sB4dKFTgCgsGXcmUIar1F058qgD+jqLhK+
-RzQAn2sqrv6TO3fnIHGMit5BRXNdda8l
-=PXLG
------END PGP SIGNATURE-----
-
---=-jBsvhBoWpQFg5/I2F9pk--
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index aed188b..a2832b8 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -93,9 +93,20 @@ extern void __init dump_numa_cpu_topology(void);
+ extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
+ 
++#ifdef CONFIG_SPLPAR
+ extern int start_topology_update(void);
+ extern int stop_topology_update(void);
+ #else
++static inline int start_topology_update(void)
++{
++	return 0;
++}
++static inline int stop_topology_update(void)
++{
++	return 0;
++}
++#endif /* CONFIG_SPLPAR */
++#else
+ 
+ static inline void dump_numa_cpu_topology(void) {}
+ 
+@@ -108,15 +119,6 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
+ 						int nid)
+ {
+ }
+-
+-static inline int start_topology_update(void)
+-{
+-	return 0;
+-}
+-static inline int stop_topology_update(void)
+-{
+-	return 0;
+-}
+ #endif /* CONFIG_NUMA */
+ 
+ #include <asm-generic/topology.h>
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 42aa7d1..0f50941 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -28,6 +28,7 @@
+ #include <asm/smp.h>
+ #include <asm/firmware.h>
+ #include <asm/paca.h>
++#include <asm/hvcall.h>
+ 
+ static int numa_enabled = 1;
+ 
+@@ -1263,6 +1264,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ /* Vrtual Processor Home Node (VPHN) support */
++#ifdef CONFIG_SPLPAR
+ #define VPHN_NR_CHANGE_CTRS (8)
+ static u8 vphn_cpu_change_counts[NR_CPUS][VPHN_NR_CHANGE_CTRS];
+ static cpumask_t cpu_associativity_changes_mask;
+@@ -1505,3 +1507,4 @@ int stop_topology_update(void)
+ 	vphn_enabled = 0;
+ 	return del_timer_sync(&topology_timer);
+ }
++#endif /* CONFIG_SPLPAR */
+-- 
+1.7.2.3
