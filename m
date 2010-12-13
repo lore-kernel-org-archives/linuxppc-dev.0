@@ -1,22 +1,38 @@
-Return-Path: <neiljay@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 764C5B6EE9
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5991EB6F14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Dec 2010 02:48:20 +1100 (EST)
-Received: by yxs7 with SMTP id 7so3832773yxs.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Dec 2010 07:48:18 -0800 (PST)
+	Tue, 14 Dec 2010 04:34:11 +1100 (EST)
+Received: from mail7-va3 (localhost.localdomain [127.0.0.1])	by
+	mail7-va3-R.bigfish.com (Postfix) with ESMTP id 4BB55ED040B	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2010 17:34:03 +0000 (UTC)
+Received: from VA3EHSMHS027.bigfish.com (unknown [10.7.14.251])	by
+	mail7-va3.bigfish.com (Postfix) with ESMTP id 19820430050	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2010 17:34:03 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id oBDHXxjx017094	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 13 Dec 2010 10:33:59 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	oBDHXwsk021682	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 13 Dec 2010 11:33:58 -0600 (CST)
+Date: Mon, 13 Dec 2010 11:33:56 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+Message-ID: <20101213113356.1596c6a6@udp111988uds.am.freescale.net>
+In-Reply-To: <OF4BAAB822.8E759F4C-ONC12577F8.00393E37-C12577F8.0039DC9E@transmode.se>
+References: <OF51D61C57.96435CC9-ONC12577F6.00326299-C12577F6.0032BA93@transmode.se>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8ABFB@saturn3.aculab.com>
+	<OF4BAAB822.8E759F4C-ONC12577F8.00393E37-C12577F8.0039DC9E@transmode.se>
 MIME-Version: 1.0
-In-Reply-To: <20101210224402.GA8943@kroah.com>
-References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-	<20101210224402.GA8943@kroah.com>
-Date: Mon, 13 Dec 2010 15:48:17 +0000
-Message-ID: <AANLkTinE1sPt4YQJGgW7-RHOsA8vF9HB-joSuryYFXpi@mail.gmail.com>
-Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Neil Jones <neiljay@gmail.com>
-To: Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: tmarri@apm.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Mark Mason <mason@postdiluvian.org>, David Laight <David.Laight@ACULAB.COM>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +42,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, 13 Dec 2010 11:32:00 +0100
+Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
 
-We are currently using the latest version of this Synopsis IP in some
-of our customers SoC's.
+> "David Laight" <David.Laight@ACULAB.COM> wrote on 2010/12/13 09:33:37:
+> >
+> >
+> > > > An external IRQ line would let you limit interrupts to rising edges
+> > > > rather than all edges, though you'd lose the ability to
+> > > > directly read the line status.
+> > >
+> > > oh, one cannot read the IRQ line? didn't know that.
+> > > Also I not sure all Freescale CPUs can do rising edge.
 
-The latest hardware adds a new DMA mode which is less Interrupt
-intensive as well as a few other features.
+Ah right, 83xx has IPIC rather than MPIC.
 
-I have spent (and im still spending) a long time fixing up this driver
-to be linux standards compliant with the intention of pushing it
-upstream once complete, its still not ready yet.
-
-One of the major issues we had is the driver isn't SMP safe, I've not
-had chance to review your patches yet but have your run the driver
-with lock checking turned on ?
-
-Would it be possible to get the changes for the latest version of the
-IP merged into this driver, I can supply my current version as a
-reference.
-
-In my driver :
-
-Currently host support is working well and i've tested it with
-multiple devices and done the test outlined on
-http://www.linux-usb.org/usbtest/, the driver passed checkpatches and
-runs with lockdeps on and on a SMP system, Im still working on the
-device mode (PCD) part of the driver generally it works, but im still
-getting the odd lock dep warning and a panic on un-loading of certain
-gadget kernel modules. The only issue with our driver is I have not
-converted all the bitfield usage to macros so it might make diffing a
-pain.
-
-Cheers
-
-Neil
-
-On Fri, Dec 10, 2010 at 10:44 PM, Greg KH <greg@kroah.com> wrote:
-> On Wed, Dec 08, 2010 at 04:28:59PM -0800, tmarri@apm.com wrote:
->> From: Tirumala Marri <tmarri@apm.com>
->>
->> v6:
->> =C2=A01. Replaced register definitions and bit fields with macros.
->> =C2=A02. Replace printks with dev_dbg or dev_err functions.
->> =C2=A03. Cleanup some assignments.
->> =C2=A04. Remove chip specific selections in Kconfig file.
+> > I suspect that you may be able to leave the interupt masked, but still
+> > read the 'interrupt pending' register. Which would have the same effect.
 >
-> There are still a lot of checkpatch errors and warnings in these
-> patches. =C2=A0Patch 1-8 has:
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0total: 64 errors, 126 warnings, 13905 lines ch=
-ecked
->
-> Care to fix all of these up in your next submission? =C2=A0I can't take t=
-hese
-> as-is, sorry.
->
-> And, if you haven't run checkpatch.pl before, odds are you haven't run
-> 'sparse'. =C2=A0Please run that as well and resolve the issues it finds.
->
-> thanks,
->
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
->
+> Ah, that should work too. I should be able to read the 'interrupt pending'
+> register at all times, even when it isn't masked.
+
+This could work OK if you have board logic to invert the signal.
+
+> What if one has several NAND chips to build a big FS? Is the NAND
+> controller equipped to handle that?
+
+FCM can drive one NAND chip per eLBC chipselect, though possibly you
+could go beyond that with a board-logic chipselect mechanism.
+
+-Scott
