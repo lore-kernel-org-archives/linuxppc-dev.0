@@ -1,32 +1,24 @@
-Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C6479B7082
+Return-Path: <hs@denx.de>
+Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
+	by ozlabs.org (Postfix) with ESMTP id 99757B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Dec 2010 10:53:50 +1100 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id oBCNZfLD023316
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2010 18:35:41 -0500
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9A889728042
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 12 Dec 2010 18:53:46 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	oBCNrkZ32253046
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2010 18:53:46 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	oBCNrh03004865
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2010 18:53:44 -0500
-Date: Sun, 12 Dec 2010 18:53:42 -0500
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-Id: <20101212235342.3583.29397.sendpatchset@manic8ball.ltc.austin.ibm.com>
-Subject: [PATCH] powerpc/pseries: Fix VPHN build errors on non-SMP systems
-Cc: markn@au1.ibm.com, tbreeds@au1.ibm.com, lkessler@us.ibm.com,
-	Jesse Larrew <jlarrew@linux.vnet.ibm.com>, mjwolf@us.ibm.com
+	Mon, 13 Dec 2010 18:01:25 +1100 (EST)
+Date: Mon, 13 Dec 2010 08:01:06 +0100
+From: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH v2 1/2] video, sm501: add OF binding to support SM501
+In-reply-to: <20101211143454.ccc5e296.rdunlap@xenotime.net>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Message-id: <4D05C4B2.5030005@denx.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+	<1292049075-1809-1-git-send-email-hs@denx.de>
+	<20101211143454.ccc5e296.rdunlap@xenotime.net>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
+	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,89 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+Hello Randy,
 
-The VPHN feature is only meaningful on NUMA systems that implement
-the SPLPAR option, so exclude the VPHN code on systems without
-SPLPAR enabled.
+Randy Dunlap wrote:
+> On Sat, 11 Dec 2010 07:31:15 +0100 Heiko Schocher wrote:
+> 
+>> - add commandline options:
+>>   sm501.fb_mode:
+> 
+>     sm501.mode:
 
-This patch fixes a build problem on non-SMP systems introduced by the
-following commits:
+Sorry, type, should be "sm501fb.mode", thanks!
 
-3b7a27db3b6b5501e3d1c1628e6d5a547ffe76c6
-9eff1a38407c051273fe1a20f03f8155bd32de35
+>>     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
+>>   sm501.bpp:
 
-Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/topology.h |   20 +++++++++++---------
- arch/powerpc/mm/numa.c              |    3 +++
- 2 files changed, 14 insertions(+), 9 deletions(-)
+Here too, "sm501fb.bpp"
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index aed188b..a2832b8 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -93,9 +93,20 @@ extern void __init dump_numa_cpu_topology(void);
- extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
- extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
- 
-+#ifdef CONFIG_SPLPAR
- extern int start_topology_update(void);
- extern int stop_topology_update(void);
- #else
-+static inline int start_topology_update(void)
-+{
-+	return 0;
-+}
-+static inline int stop_topology_update(void)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_SPLPAR */
-+#else
- 
- static inline void dump_numa_cpu_topology(void) {}
- 
-@@ -108,15 +119,6 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
- 						int nid)
- {
- }
--
--static inline int start_topology_update(void)
--{
--	return 0;
--}
--static inline int stop_topology_update(void)
--{
--	return 0;
--}
- #endif /* CONFIG_NUMA */
- 
- #include <asm-generic/topology.h>
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 42aa7d1..0f50941 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -28,6 +28,7 @@
- #include <asm/smp.h>
- #include <asm/firmware.h>
- #include <asm/paca.h>
-+#include <asm/hvcall.h>
- 
- static int numa_enabled = 1;
- 
-@@ -1263,6 +1264,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
- /* Vrtual Processor Home Node (VPHN) support */
-+#ifdef CONFIG_SPLPAR
- #define VPHN_NR_CHANGE_CTRS (8)
- static u8 vphn_cpu_change_counts[NR_CPUS][VPHN_NR_CHANGE_CTRS];
- static cpumask_t cpu_associativity_changes_mask;
-@@ -1505,3 +1507,4 @@ int stop_topology_update(void)
- 	vphn_enabled = 0;
- 	return del_timer_sync(&topology_timer);
- }
-+#endif /* CONFIG_SPLPAR */
+>>     Specify bit-per-pixel if not specified mode
+>>
+>> ---
+>>
+>>  Documentation/kernel-parameters.txt          |    7 +
+>>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+>>  drivers/mfd/sm501.c                          |  141 ++++++++------
+>>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+>>  include/linux/sm501.h                        |    8 +
+>>  5 files changed, 299 insertions(+), 151 deletions(-)
+>>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+>>
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index cdd2a6e..6341541 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -2301,6 +2301,13 @@ and is between 256 and 4096 characters. It is defined in the file
+>>  			merging on their own.
+>>  			For more information see Documentation/vm/slub.txt.
+>>  
+>> +	sm501.bpp=	SM501 Display driver:
+>> +			Specify bit-per-pixel if not specified mode
+> 
+> 			Specifiy bits-per-pixel if not specified by 'mode'
+> 
+>> +
+>> +	sm501fb.mode=	SM501 Display driver:
+> 
+> Shouldn't that be sm501.mode ?
+
+No, the name of the source file is sm501fb.c -> sm501fb is right here.
+As the sm501 is a multifunction device, the "fb" is more precise here.
+
+>> +			Specify resolution as
+>> +			"<xres>x<yres>[-<bpp>][@<refresh>]"
+>> +
+>>  	smart2=		[HW]
+>>  			Format: <io1>[,<io2>[,...,<io8>]]
+> 
+> 
+> However, I think that these shouldn't be added to Documentation/kernel-parameters.txt
+> but should be added to the Documentation/fb/ sub-directory either by adding to
+> Documentation/fb/modedb.txt or by adding a new file Documentation/fb/sm501.txt.
+
+Ok, do this. Thanks for the review!
+
+bye,
+Heiko
 -- 
-1.7.2.3
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
