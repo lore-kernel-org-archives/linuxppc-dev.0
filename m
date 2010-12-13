@@ -1,43 +1,30 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
-	[213.199.154.143])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5484D1007D1
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
+	[209.85.216.172]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5C57DB70A3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Dec 2010 06:50:04 +1100 (EST)
-Received: from mail120-db3 (localhost.localdomain [127.0.0.1])	by
-	mail120-db3-R.bigfish.com (Postfix) with ESMTP id 9635A8182E0	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2010 19:49:57 +0000 (UTC)
-Received: from DB3EHSMHS009.bigfish.com (unknown [10.3.81.242])	by
-	mail120-db3.bigfish.com (Postfix) with ESMTP id 5C9E421804C	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2010 19:49:57 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	oBDJnr8u021801	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2010 12:49:53 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	oBDK76WW001340	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Dec 2010 14:07:06 -0600 (CST)
-Date: Mon, 13 Dec 2010 13:49:50 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: MPC831x (and others?) NAND erase performance improvements
-Message-ID: <20101213134950.258609b4@udp111988uds.am.freescale.net>
-In-Reply-To: <OFB1D66F80.0CE3DBB3-ONC12577F8.006ADF11-C12577F8.006B2893@transmode.se>
-References: <OF51D61C57.96435CC9-ONC12577F6.00326299-C12577F6.0032BA93@transmode.se>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8ABFB@saturn3.aculab.com>
-	<OF4BAAB822.8E759F4C-ONC12577F8.00393E37-C12577F8.0039DC9E@transmode.se>
-	<20101213113356.1596c6a6@udp111988uds.am.freescale.net>
-	<OF45E5CF67.CA505B87-ONC12577F8.00610A85-C12577F8.00612FDB@transmode.se>
-	<20101213115131.57050e1d@udp111988uds.am.freescale.net>
-	<OFB1D66F80.0CE3DBB3-ONC12577F8.006ADF11-C12577F8.006B2893@transmode.se>
+	Tue, 14 Dec 2010 08:57:11 +1100 (EST)
+Received: by qyk34 with SMTP id 34so3688851qyk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 13 Dec 2010 13:57:07 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Mark Mason <mason@postdiluvian.org>, David Laight <David.Laight@ACULAB.COM>,
-	linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1291379651-8822-7-git-send-email-leoli@freescale.com>
+References: <1291379651-8822-1-git-send-email-leoli@freescale.com>
+	<1291379651-8822-2-git-send-email-leoli@freescale.com>
+	<1291379651-8822-3-git-send-email-leoli@freescale.com>
+	<1291379651-8822-4-git-send-email-leoli@freescale.com>
+	<1291379651-8822-5-git-send-email-leoli@freescale.com>
+	<1291379651-8822-6-git-send-email-leoli@freescale.com>
+	<1291379651-8822-7-git-send-email-leoli@freescale.com>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Mon, 13 Dec 2010 15:56:36 -0600
+Message-ID: <AANLkTikMSBwxeeA35RmGjE5qxG7Ymei3e3CmwT9M4mSB@mail.gmail.com>
+Subject: Re: [PATCH 7/7] P2020ds: add event button handler
+To: Li Yang <leoli@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,37 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Dec 2010 20:30:27 +0100
-Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+On Fri, Dec 3, 2010 at 6:34 AM, Li Yang <leoli@freescale.com> wrote:
+> This can be used as a wakeup source for power management.
 
-> Scott Wood <scottwood@freescale.com> wrote on 2010/12/13 18:51:31:
-> >
-> > On Mon, 13 Dec 2010 18:41:32 +0100
-> > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
-> >
-> > > Scott Wood <scottwood@freescale.com> wrote on 2010/12/13 18:33:56:
-> > > >
-> > > > On Mon, 13 Dec 2010 11:32:00 +0100
-> > > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
-> > > >
-> > > > > What if one has several NAND chips to build a big FS? Is the NAND
-> > > > > controller equipped to handle that?
-> > > >
-> > > > FCM can drive one NAND chip per eLBC chipselect, though possibly you
-> > > > could go beyond that with a board-logic chipselect mechanism.
-> > >
-> > > hmm, then I guess one would have to use one GPIO/IRQ per NAND chip?
-> >
-> > Couldn't you just tie together all the open-drain busy lines before you
-> > invert it?  You'll only be driving one NAND chip at a time anyway; the
-> > others should not be asserting busy.
-> 
-> hmm, I guess that would work(didn't know they were open-drain), thanks.
-> Is that how the FCM do it?
+This patch doesn't actually add wake-up support.
 
-Yes, that's what started this discussion. :-)
+This patch should probably be split up, since you're adding generic
+functionality for the IRQ that applies to all 85xx boards, but you
+only update the device tree for one board.
 
-The problem there is that they share the line with all chipselects,
-NAND or otherwise.
+> +static irqreturn_t event_isr(int irq, void *dev_id)
+> +{
+> +
+> + =A0 =A0 =A0 printk(KERN_INFO "MPC85xxDS: Event button been pushed.\n");
+> + =A0 =A0 =A0 return IRQ_HANDLED;
+> +}
 
--Scott
+Would it make sense to have this be a weak function, so that it would
+be easier to implement board-specific support?
+
+> +
+> +static int __init p2020ds_ngpixis_init(void)
+
+You're adding a function called "p2020ds_ngpixis_init" to the file
+"mpc85xx_ds.c".  mpc85xx_ds.c supports more than just the P2020DS.
+
+> +{
+> + =A0 =A0 =A0 int event_irq, ret;
+> + =A0 =A0 =A0 struct device_node *np;
+> +
+> + =A0 =A0 =A0 np =3D of_find_compatible_node(NULL, NULL, "fsl,p2020ds-fpg=
+a");
+> + =A0 =A0 =A0 if (np) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 event_irq =3D irq_of_parse_and_map(np, 0);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D request_irq(event_irq, event_isr, 0=
+, "event", NULL);
+
+You should probably choose a less generic name than "event".
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (ret)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_ERR "Can't requ=
+est board event int\n");
+
+Use pr_err()
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
