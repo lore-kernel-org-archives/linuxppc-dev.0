@@ -1,23 +1,22 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EAFD6B6F1E
+Return-Path: <neiljay@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 764C5B6EE9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Dec 2010 00:56:21 +1100 (EST)
+	Tue, 14 Dec 2010 02:48:20 +1100 (EST)
+Received: by yxs7 with SMTP id 7so3832773yxs.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 13 Dec 2010 07:48:18 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH -mm 4/4] RapidIO: Add new sysfs attributes
-Date: Mon, 13 Dec 2010 05:55:22 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201665627@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20101212184834.GA17052@kroah.com>
-References: <1292013498-31406-1-git-send-email-alexandre.bounine@idt.com><1292013498-31406-5-git-send-email-alexandre.bounine@idt.com>
-	<20101212184834.GA17052@kroah.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Greg KH" <greg@kroah.com>
-Cc: akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>
+In-Reply-To: <20101210224402.GA8943@kroah.com>
+References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
+	<20101210224402.GA8943@kroah.com>
+Date: Mon, 13 Dec 2010 15:48:17 +0000
+Message-ID: <AANLkTinE1sPt4YQJGgW7-RHOsA8vF9HB-joSuryYFXpi@mail.gmail.com>
+Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+From: Neil Jones <neiljay@gmail.com>
+To: Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: tmarri@apm.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg KH wrote:
->=20
-> Like Andrew pointed out, all sysfs files are required to have entries
-in
-> Documentation/ABI.  If the existing rapidio sysfs files are not
-> documented, please document them in there _before_ adding new ones.
->=20
-I included RapidIO documentation update into my plan for next set of
-RapidIO patches. Until than this patch may be safely dropped without
-affecting other patches in this set.
+Hi,
 
-Alex. =20
+We are currently using the latest version of this Synopsis IP in some
+of our customers SoC's.
+
+The latest hardware adds a new DMA mode which is less Interrupt
+intensive as well as a few other features.
+
+I have spent (and im still spending) a long time fixing up this driver
+to be linux standards compliant with the intention of pushing it
+upstream once complete, its still not ready yet.
+
+One of the major issues we had is the driver isn't SMP safe, I've not
+had chance to review your patches yet but have your run the driver
+with lock checking turned on ?
+
+Would it be possible to get the changes for the latest version of the
+IP merged into this driver, I can supply my current version as a
+reference.
+
+In my driver :
+
+Currently host support is working well and i've tested it with
+multiple devices and done the test outlined on
+http://www.linux-usb.org/usbtest/, the driver passed checkpatches and
+runs with lockdeps on and on a SMP system, Im still working on the
+device mode (PCD) part of the driver generally it works, but im still
+getting the odd lock dep warning and a panic on un-loading of certain
+gadget kernel modules. The only issue with our driver is I have not
+converted all the bitfield usage to macros so it might make diffing a
+pain.
+
+Cheers
+
+Neil
+
+On Fri, Dec 10, 2010 at 10:44 PM, Greg KH <greg@kroah.com> wrote:
+> On Wed, Dec 08, 2010 at 04:28:59PM -0800, tmarri@apm.com wrote:
+>> From: Tirumala Marri <tmarri@apm.com>
+>>
+>> v6:
+>> =C2=A01. Replaced register definitions and bit fields with macros.
+>> =C2=A02. Replace printks with dev_dbg or dev_err functions.
+>> =C2=A03. Cleanup some assignments.
+>> =C2=A04. Remove chip specific selections in Kconfig file.
+>
+> There are still a lot of checkpatch errors and warnings in these
+> patches. =C2=A0Patch 1-8 has:
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0total: 64 errors, 126 warnings, 13905 lines ch=
+ecked
+>
+> Care to fix all of these up in your next submission? =C2=A0I can't take t=
+hese
+> as-is, sorry.
+>
+> And, if you haven't run checkpatch.pl before, odds are you haven't run
+> 'sparse'. =C2=A0Please run that as well and resolve the issues it finds.
+>
+> thanks,
+>
+> greg k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
+>
