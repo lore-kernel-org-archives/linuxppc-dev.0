@@ -1,22 +1,24 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0F6DD1007D2
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Dec 2010 06:05:40 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: prasad@linux.vnet.ibm.com
-Subject: Re: ppc_set_hwdebug vs ptrace_set_debugreg
-References: <m2lj4ezhhd.fsf@igel.home> <20101129072233.GA15560@in.ibm.com>
-	<m38w0c77vs.fsf@linux-m68k.org> <20101201043758.GA2219@in.ibm.com>
-	<20101213082619.GA6582@in.ibm.com>
-Date: Mon, 13 Dec 2010 20:05:36 +0100
-In-Reply-To: <20101213082619.GA6582@in.ibm.com> (K. Prasad's message of "Mon,
-	13 Dec 2010 13:56:19 +0530")
-Message-ID: <m2vd2x1ojj.fsf@igel.home>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F22FB1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Dec 2010 06:30:33 +1100 (EST)
+In-Reply-To: <20101213115131.57050e1d@udp111988uds.am.freescale.net>
+References: <OF51D61C57.96435CC9-ONC12577F6.00326299-C12577F6.0032BA93@transmode.se>	<AE90C24D6B3A694183C094C60CF0A2F6D8ABFB@saturn3.aculab.com>
+	<OF4BAAB822.8E759F4C-ONC12577F8.00393E37-C12577F8.0039DC9E@transmode.se>	<20101213113356.1596c6a6@udp111988uds.am.freescale.net>
+	<OF45E5CF67.CA505B87-ONC12577F8.00610A85-C12577F8.00612FDB@transmode.se>
+	<20101213115131.57050e1d@udp111988uds.am.freescale.net>
+Subject: Re: MPC831x (and others?) NAND erase performance improvements
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFB1D66F80.0CE3DBB3-ONC12577F8.006ADF11-C12577F8.006B2893@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 13 Dec 2010 20:30:27 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Content-type: text/plain; charset=US-ASCII
+Cc: Mark Mason <mason@postdiluvian.org>, David Laight <David.Laight@ACULAB.COM>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"K.Prasad" <prasad@linux.vnet.ibm.com> writes:
+Scott Wood <scottwood@freescale.com> wrote on 2010/12/13 18:51:31:
+>
+> On Mon, 13 Dec 2010 18:41:32 +0100
+> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> > Scott Wood <scottwood@freescale.com> wrote on 2010/12/13 18:33:56:
+> > >
+> > > On Mon, 13 Dec 2010 11:32:00 +0100
+> > > Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+> > >
+> > > > What if one has several NAND chips to build a big FS? Is the NAND
+> > > > controller equipped to handle that?
+> > >
+> > > FCM can drive one NAND chip per eLBC chipselect, though possibly you
+> > > could go beyond that with a board-logic chipselect mechanism.
+> >
+> > hmm, then I guess one would have to use one GPIO/IRQ per NAND chip?
+>
+> Couldn't you just tie together all the open-drain busy lines before you
+> invert it?  You'll only be driving one NAND chip at a time anyway; the
+> others should not be asserting busy.
 
-> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> +	/* Create a new breakpoint request if one doesn't exist already */
-> +	hw_breakpoint_init(&attr);
-> +	attr.bp_addr = bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-> +	arch_bp_generic_fields(bp_info->addr &
-> +				(DABR_DATA_WRITE | DABR_DATA_READ),
-> +							&attr.bp_type);
-> +
-> +	bp = register_user_hw_breakpoint(&attr, ptrace_triggered, task);
-> +	if (IS_ERR(bp))
-> +		return PTR_ERR(bp);
-> +
-> +	child->thread.ptrace_bps[0] = bp;
-> +#endif /* CONFIG_HAVE_HW_BREAKPOINT */
-> +
->  	child->thread.dabr = (unsigned long)bp_info->addr;
+hmm, I guess that would work(didn't know they were open-drain), thanks.
+Is that how the FCM do it?
 
-That cannot work, see
-<http://permalink.gmane.org/gmane.linux.ports.ppc64.devel/71418>.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+ Jocke
