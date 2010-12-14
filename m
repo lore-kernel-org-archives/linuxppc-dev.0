@@ -1,29 +1,17 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-gx0-f171.google.com (mail-gx0-f171.google.com
-	[209.85.161.171]) by ozlabs.org (Postfix) with ESMTP id 7D1E9B6EF2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Dec 2010 03:49:42 +1100 (EST)
-Received: by gxk8 with SMTP id 8so530515gxk.16
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Dec 2010 08:49:40 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <AANLkTimFpONZzSBjXJmDsX2-iYH+YgY_sANYtYq2j5x1@mail.gmail.com>
-References: <1291379651-8822-1-git-send-email-leoli@freescale.com>
-	<1291379651-8822-2-git-send-email-leoli@freescale.com>
-	<1291379651-8822-3-git-send-email-leoli@freescale.com>
-	<1291379651-8822-4-git-send-email-leoli@freescale.com>
-	<1291379651-8822-5-git-send-email-leoli@freescale.com>
-	<1291379651-8822-6-git-send-email-leoli@freescale.com>
-	<1291379651-8822-7-git-send-email-leoli@freescale.com>
-	<AANLkTikMSBwxeeA35RmGjE5qxG7Ymei3e3CmwT9M4mSB@mail.gmail.com>
-	<AANLkTimFpONZzSBjXJmDsX2-iYH+YgY_sANYtYq2j5x1@mail.gmail.com>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Tue, 14 Dec 2010 10:49:09 -0600
-Message-ID: <AANLkTimJSp8X+zO8_z8JiA1w3CGacCgKTMxpRNUMT=DZ@mail.gmail.com>
-Subject: Re: [PATCH 7/7] P2020ds: add event button handler
-To: Li Yang <leoli@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <dan@danplanet.com>
+Received: from orion.danplanet.com (stein.danplanet.com [71.245.107.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D54C9B6F11
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 03:24:11 +1100 (EST)
+From: Dan Smith <danms@us.ibm.com>
+To: danms@us.ibm.com
+Subject: [PATCH 01/19] c/r: extend arch_setup_additional_pages()
+Date: Tue, 14 Dec 2010 08:14:49 -0800
+Message-Id: <1292343307-7870-1-git-send-email-danms@us.ibm.com>
+Cc: linux-s390@vger.kernel.org, x86@kernel.org,
+	Oren Laadan <orenl@cs.columbia.edu>,
+	Alexey Dobriyan <adobriyan@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +21,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 13, 2010 at 10:24 PM, Li Yang <leoli@freescale.com> wrote:
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-> Any enabled IRQ is a valid wake-up source for standby. =A0The patch
-> enables a board specific interrupt for the purpose of wakeup.
+Add "start" argument, to request to map vDSO to a specific place,
+and fail the operation if not.
 
-Oh, right.  I should have realized that.
+This is useful for restart(2) to ensure that memory layout is restore
+exactly as needed.
 
->> This patch should probably be split up, since you're adding generic
->> functionality for the IRQ that applies to all 85xx boards, but you
->> only update the device tree for one board.
->
-> The IRQ is a board specific one from GPIO which not applicable on all
-> 85xx boards.
+Changelog[v19]:
+  - [serge hallyn] Fix potential use-before-set ret
+Changelog[v2]:
+  - [ntl] powerpc: vdso build fix (ckpt-v17)
 
-Doesn't the device tree take care of that?  If the node exists, the
-IRQ number is specified.  Otherwise, the feature is not enabled.
+Cc: x86@kernel.org
+Cc: linux-s390@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+---
+ arch/powerpc/include/asm/elf.h     |    1 +
+ arch/powerpc/kernel/vdso.c         |   13 ++++++++++++-
+ arch/s390/include/asm/elf.h        |    2 +-
+ arch/s390/kernel/vdso.c            |   13 ++++++++++++-
+ arch/sh/include/asm/elf.h          |    1 +
+ arch/sh/kernel/vsyscall/vsyscall.c |    2 +-
+ arch/x86/include/asm/elf.h         |    3 ++-
+ arch/x86/vdso/vdso32-setup.c       |    9 +++++++--
+ arch/x86/vdso/vma.c                |   11 ++++++++---
+ fs/binfmt_elf.c                    |    2 +-
+ 10 files changed, 46 insertions(+), 11 deletions(-)
 
->>> +static irqreturn_t event_isr(int irq, void *dev_id)
->>> +{
->>> +
->>> + =A0 =A0 =A0 printk(KERN_INFO "MPC85xxDS: Event button been pushed.\n"=
-);
->>> + =A0 =A0 =A0 return IRQ_HANDLED;
->>> +}
->>
->> Would it make sense to have this be a weak function, so that it would
->> be easier to implement board-specific support?
->
-> It's already a board-specific one.
-
-Hmmm.... I guess technically it is, but I wonder if it should be.
-
->>> +
->>> +static int __init p2020ds_ngpixis_init(void)
->>
->> You're adding a function called "p2020ds_ngpixis_init" to the file
->> "mpc85xx_ds.c". =A0mpc85xx_ds.c supports more than just the P2020DS.
->
-> I'm not sure if other DS boards covered by this file has the same functio=
-nality.
-
-Well, either it does or it doesn't, but you can't add a p2020-specific
-function to mpc85xx_ds.c.  You should just rename the function,
-because I see no reason why it can't work on other DS boards.
-
-The problem is the compatible string.  Each pixis implementation is
-different, but they share several common traits.  I wonder if we need
-to have a generic compatible string for the FPGA node.
-
->> You should probably choose a less generic name than "event".
->
-> Well, it's the name suggested by the board manual. =A0We may change it
-> to "event_button" if not too long.
-
-I was thinking something like "fsl-fpga-event".
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 2b917c6..1c26833 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -266,6 +266,7 @@ extern int ucache_bsize;
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
+ struct linux_binprm;
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
++				       unsigned long start,
+ 				       int uses_interp);
+ #define VDSO_AUX_ENT(a,b) NEW_AUX_ENT(a,b);
+ 
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index fd87287..c408960 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -188,7 +188,8 @@ static void dump_vdso_pages(struct vm_area_struct * vma)
+  * This is called from binfmt_elf, we create the special vma for the
+  * vDSO and insert it into the mm struct tree
+  */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++int arch_setup_additional_pages(struct linux_binprm *bprm,
++				unsigned long start, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	struct page **vdso_pagelist;
+@@ -220,6 +221,10 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	vdso_base = VDSO32_MBASE;
+ #endif
+ 
++	/* in case restart(2) mandates a specific location */
++	if (start)
++		vdso_base = start;
++
+ 	current->mm->context.vdso_base = 0;
+ 
+ 	/* vDSO has a problem and was disabled, just don't "enable" it for the
+@@ -249,6 +254,12 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	/* Add required alignment. */
+ 	vdso_base = ALIGN(vdso_base, VDSO_ALIGNMENT);
+ 
++	/* for restart(2), double check that we got we asked for */
++	if (start && vdso_base != start) {
++		rc = -EBUSY;
++		goto fail_mmapsem;
++	}
++
+ 	/*
+ 	 * Put vDSO base into mm struct. We need to do this before calling
+ 	 * install_special_mapping or the perf counter mmap tracking code
+diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
+index 354d426..5081938 100644
+--- a/arch/s390/include/asm/elf.h
++++ b/arch/s390/include/asm/elf.h
+@@ -216,6 +216,6 @@ do {									    \
+ struct linux_binprm;
+ 
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+-int arch_setup_additional_pages(struct linux_binprm *, int);
++int arch_setup_additional_pages(struct linux_binprm *, unsigned long, int);
+ 
+ #endif
+diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+index e3150dd..199642b 100644
+--- a/arch/s390/kernel/vdso.c
++++ b/arch/s390/kernel/vdso.c
+@@ -187,7 +187,8 @@ static void vdso_init_cr5(void)
+  * This is called from binfmt_elf, we create the special vma for the
+  * vDSO and insert it into the mm struct tree
+  */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++int arch_setup_additional_pages(struct linux_binprm *bprm,
++				unsigned long start, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	struct page **vdso_pagelist;
+@@ -218,6 +219,10 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	vdso_pages = vdso32_pages;
+ #endif
+ 
++	/* in case restart(2) mandates a specific location */
++	if (start)
++		vdso_base = start;
++
+ 	/*
+ 	 * vDSO has a problem and was disabled, just don't "enable" it for
+ 	 * the process
+@@ -240,6 +245,12 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 		goto out_up;
+ 	}
+ 
++	/* for restart(2), double check that we got we asked for */
++	if (start && vdso_base != start) {
++		rc = -EINVAL;
++		goto out_up;
++	}
++
+ 	/*
+ 	 * Put vDSO base into mm struct. We need to do this before calling
+ 	 * install_special_mapping or the perf counter mmap tracking code
+diff --git a/arch/sh/include/asm/elf.h b/arch/sh/include/asm/elf.h
+index f38112b..0f1dc2a 100644
+--- a/arch/sh/include/asm/elf.h
++++ b/arch/sh/include/asm/elf.h
+@@ -190,6 +190,7 @@ do {									\
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
+ struct linux_binprm;
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
++				       unsigned long start,
+ 				       int uses_interp);
+ 
+ extern unsigned int vdso_enabled;
+diff --git a/arch/sh/kernel/vsyscall/vsyscall.c b/arch/sh/kernel/vsyscall/vsyscall.c
+index 242117c..6dbdfe1 100644
+--- a/arch/sh/kernel/vsyscall/vsyscall.c
++++ b/arch/sh/kernel/vsyscall/vsyscall.c
+@@ -58,7 +58,7 @@ int __init vsyscall_init(void)
+ }
+ 
+ /* Setup a VMA at program startup for the vsyscall page */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++int arch_setup_additional_pages(struct linux_binprm *bprm, unsigned long start, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
+index f2ad216..3761be8 100644
+--- a/arch/x86/include/asm/elf.h
++++ b/arch/x86/include/asm/elf.h
+@@ -312,9 +312,10 @@ struct linux_binprm;
+ 
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
++				       unsigned long start,
+ 				       int uses_interp);
+ 
+-extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
++extern int syscall32_setup_pages(struct linux_binprm *, unsigned long start, int exstack);
+ #define compat_arch_setup_additional_pages	syscall32_setup_pages
+ 
+ extern unsigned long arch_randomize_brk(struct mm_struct *mm);
+diff --git a/arch/x86/vdso/vdso32-setup.c b/arch/x86/vdso/vdso32-setup.c
+index 36df991..8005f6f 100644
+--- a/arch/x86/vdso/vdso32-setup.c
++++ b/arch/x86/vdso/vdso32-setup.c
+@@ -310,7 +310,8 @@ int __init sysenter_setup(void)
+ }
+ 
+ /* Setup a VMA at program startup for the vsyscall page */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++int arch_setup_additional_pages(struct linux_binprm *bprm,
++				unsigned long start, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+@@ -331,13 +332,17 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	if (compat)
+ 		addr = VDSO_HIGH_BASE;
+ 	else {
+-		addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
++		addr = get_unmapped_area(NULL, start, PAGE_SIZE, 0, 0);
+ 		if (IS_ERR_VALUE(addr)) {
+ 			ret = addr;
+ 			goto up_fail;
+ 		}
+ 	}
+ 
++	/* for restart(2), double check that we got we asked for */
++	if (start && addr != start)
++		goto up_fail;
++
+ 	current->mm->context.vdso = (void *)addr;
+ 
+ 	if (compat_uses_vma || !compat) {
+diff --git a/arch/x86/vdso/vma.c b/arch/x86/vdso/vma.c
+index 4b5d26f..5b32897 100644
+--- a/arch/x86/vdso/vma.c
++++ b/arch/x86/vdso/vma.c
+@@ -101,23 +101,28 @@ static unsigned long vdso_addr(unsigned long start, unsigned len)
+ 
+ /* Setup a VMA at program startup for the vsyscall page.
+    Not called for compat tasks */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++int arch_setup_additional_pages(struct linux_binprm *bprm,
++				unsigned long start, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+-	int ret;
++	int ret = -EINVAL;
+ 
+ 	if (!vdso_enabled)
+ 		return 0;
+ 
+ 	down_write(&mm->mmap_sem);
+-	addr = vdso_addr(mm->start_stack, vdso_size);
++	addr = start ? : vdso_addr(mm->start_stack, vdso_size);
+ 	addr = get_unmapped_area(NULL, addr, vdso_size, 0, 0);
+ 	if (IS_ERR_VALUE(addr)) {
+ 		ret = addr;
+ 		goto up_fail;
+ 	}
+ 
++	/* for restart(2), double check that we got we asked for */
++	if (start && addr != start)
++		goto up_fail;
++
+ 	current->mm->context.vdso = (void *)addr;
+ 
+ 	ret = install_special_mapping(mm, addr, vdso_size,
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 6884e19..fc53346 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -923,7 +923,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	set_binfmt(&elf_format);
+ 
+ #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
+-	retval = arch_setup_additional_pages(bprm, !!elf_interpreter);
++	retval = arch_setup_additional_pages(bprm, 0, !!elf_interpreter);
+ 	if (retval < 0) {
+ 		send_sig(SIGKILL, current, 0);
+ 		goto out;
+-- 
+1.7.2.2
