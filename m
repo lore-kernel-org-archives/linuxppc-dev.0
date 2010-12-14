@@ -1,23 +1,16 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 2E129B6F2B
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 05:59:22 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: prasad@linux.vnet.ibm.com
-Subject: Re: ppc_set_hwdebug vs ptrace_set_debugreg
-References: <m2lj4ezhhd.fsf@igel.home> <20101129072233.GA15560@in.ibm.com>
-	<m38w0c77vs.fsf@linux-m68k.org> <20101201043758.GA2219@in.ibm.com>
-	<20101213082619.GA6582@in.ibm.com> <m2vd2x1ojj.fsf@igel.home>
-	<20101214125427.GA2443@in.ibm.com>
-Date: Tue, 14 Dec 2010 19:59:18 +0100
-In-Reply-To: <20101214125427.GA2443@in.ibm.com> (K. Prasad's message of "Tue,
-	14 Dec 2010 18:24:27 +0530")
-Message-ID: <m24oagb2pl.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B31D4B6F11
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 09:33:15 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] pata_mpc52xx: driver needs BMDMA
+Date: Tue, 14 Dec 2010 23:32:47 +0100
+Message-Id: <1292365967-14867-1-git-send-email-w.sang@pengutronix.de>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +20,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"K.Prasad" <prasad@linux.vnet.ibm.com> writes:
+Found by this build-error:
 
-> How about the revised patch below? It is only compile-tested; have you
-> got a quick test case that I can run?
+drivers/ata/pata_mpc52xx.c: In function 'mpc52xx_ata_init_one':
+drivers/ata/pata_mpc52xx.c:662: error: 'ata_bmdma_interrupt' undeclared (first use in this function)
 
-Try the watchpoint tests in gdb.
+So, move the Kconfig entry to the proper location.
 
-Andreas.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ drivers/ata/Kconfig  |   20 ++++++++++----------
+ drivers/ata/Makefile |    2 +-
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 11ec911..85756b8 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -128,16 +128,6 @@ config PDC_ADMA
+ 
+ 	  If unsure, say N.
+ 
+-config PATA_MPC52xx
+-	tristate "Freescale MPC52xx SoC internal IDE"
+-	depends on PPC_MPC52xx && PPC_BESTCOMM
+-	select PPC_BESTCOMM_ATA
+-	help
+-	  This option enables support for integrated IDE controller
+-	  of the Freescale MPC52xx SoC.
+-
+-	  If unsure, say N.
+-
+ config PATA_OCTEON_CF
+ 	tristate "OCTEON Boot Bus Compact Flash support"
+ 	depends on CPU_CAVIUM_OCTEON
+@@ -491,6 +481,16 @@ config PATA_MARVELL
+ 
+ 	  If unsure, say N.
+ 
++config PATA_MPC52xx
++	tristate "Freescale MPC52xx SoC internal IDE"
++	depends on PPC_MPC52xx && PPC_BESTCOMM
++	select PPC_BESTCOMM_ATA
++	help
++	  This option enables support for integrated IDE controller
++	  of the Freescale MPC52xx SoC.
++
++	  If unsure, say N.
++
+ config PATA_NETCELL
+ 	tristate "NETCELL Revolution RAID support"
+ 	depends on PCI
+diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
+index c501af5..2b67c90 100644
+--- a/drivers/ata/Makefile
++++ b/drivers/ata/Makefile
+@@ -11,7 +11,6 @@ obj-$(CONFIG_SATA_DWC)		+= sata_dwc_460ex.o
+ 
+ # SFF w/ custom DMA
+ obj-$(CONFIG_PDC_ADMA)		+= pdc_adma.o
+-obj-$(CONFIG_PATA_MPC52xx)	+= pata_mpc52xx.o
+ obj-$(CONFIG_PATA_OCTEON_CF)	+= pata_octeon_cf.o
+ obj-$(CONFIG_SATA_QSTOR)	+= sata_qstor.o
+ obj-$(CONFIG_SATA_SX4)		+= sata_sx4.o
+@@ -52,6 +51,7 @@ obj-$(CONFIG_PATA_IT821X)	+= pata_it821x.o
+ obj-$(CONFIG_PATA_JMICRON)	+= pata_jmicron.o
+ obj-$(CONFIG_PATA_MACIO)	+= pata_macio.o
+ obj-$(CONFIG_PATA_MARVELL)	+= pata_marvell.o
++obj-$(CONFIG_PATA_MPC52xx)	+= pata_mpc52xx.o
+ obj-$(CONFIG_PATA_NETCELL)	+= pata_netcell.o
+ obj-$(CONFIG_PATA_NINJA32)	+= pata_ninja32.o
+ obj-$(CONFIG_PATA_NS87415)	+= pata_ns87415.o
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.7.2.3
