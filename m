@@ -1,17 +1,23 @@
-Return-Path: <dirk.brandewie@gmail.com>
-Message-ID: <4D07A83C.9080707@gmail.com>
-Date: Tue, 14 Dec 2010 09:24:12 -0800
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 2E129B6F2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 05:59:22 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: prasad@linux.vnet.ibm.com
+Subject: Re: ppc_set_hwdebug vs ptrace_set_debugreg
+References: <m2lj4ezhhd.fsf@igel.home> <20101129072233.GA15560@in.ibm.com>
+	<m38w0c77vs.fsf@linux-m68k.org> <20101201043758.GA2219@in.ibm.com>
+	<20101213082619.GA6582@in.ibm.com> <m2vd2x1ojj.fsf@igel.home>
+	<20101214125427.GA2443@in.ibm.com>
+Date: Tue, 14 Dec 2010 19:59:18 +0100
+In-Reply-To: <20101214125427.GA2443@in.ibm.com> (K. Prasad's message of "Tue,
+	14 Dec 2010 18:24:27 +0530")
+Message-ID: <m24oagb2pl.fsf@igel.home>
 MIME-Version: 1.0
-To: dirk.brandewie@gmail.com
-Subject: Re: [PATCH 0/4] V3 Add ability to link device blob(s) into vmlinux
-References: <cover.1291820033.git.dirk.brandewie@gmail.com>
-In-Reply-To: <cover.1291820033.git.dirk.brandewie@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, mmarek@suse.cz,
-	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,60 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/08/2010 07:01 AM, dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie<dirk.brandewie@gmail.com>
->
-> This patch set adds the ability to link device tree blobs into
-> vmlinux.
->
-> Patch 1 implements the changes to include/asm-generic/vmlinux.lds.h and
-> adds a generic rule for generating DTB objects to be linked vmlinux.
->
-> Patch 2 implements linking a DTB into an x86 image.
->
-> Patch 3-4 move {powerpc,microblaze}/boot/Makefile to use the dtc rule
-> in patch 1.
->
-> This patch set has been tested on x86.
->
-> Powerpc and Microblaze have been compile tested with and without patch
-> 3 and 4 applied.
->
-> Changes from V1:
->
-> Documentation added for dtc command in Makefile.lib to
-> Documentation/kbuild/makefiles.txt
-> Separate DTB_ALIGNMENT define removed.
-> FORCE removed from dtc rule.
-> Removed hardcoded path to dts files from dtc command.
-> Moved %.dtb: %.dts rule to arch specific makefiles.
->
-> Patch for adding kernel command line option to pass in dtb_compat
-> string dropped from this set will be submitted seperately.
->
-> Changes from V2:
->
-> Rule to create assembly wrapper for blob changed to use Sam Ravnborgs
-> suggested implementation.
->
-> Rules in architecture specific Makefiles changed to use the cmd
-> function instead of the if_changed function.
->
-> Dirk Brandewie (4):
->    of: Add support for linking device tree blobs into vmlinux
->    x86/of: Add building device tree blob(s) into image.
->    of/powerpc: Use generic rule to build dtb's
->    microblaze/of: Use generic rule to build dtb's
->
->   Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
->   arch/microblaze/boot/Makefile      |   12 +++---------
->   arch/powerpc/boot/Makefile         |    8 +++-----
->   arch/x86/platform/ce4100/Makefile  |   10 ++++++++++
->   include/asm-generic/vmlinux.lds.h  |   13 +++++++++++--
->   scripts/Makefile.lib               |   23 +++++++++++++++++++++++
->   6 files changed, 65 insertions(+), 16 deletions(-)
->
+"K.Prasad" <prasad@linux.vnet.ibm.com> writes:
 
-Any Comments on this patch set?
+> How about the revised patch below? It is only compile-tested; have you
+> got a quick test case that I can run?
 
---Dirk
+Try the watchpoint tests in gdb.
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
