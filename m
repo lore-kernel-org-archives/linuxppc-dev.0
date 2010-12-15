@@ -1,25 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
+Return-Path: <baringforge@gmail.com>
 Received: from mail-fx0-f44.google.com (mail-fx0-f44.google.com
-	[209.85.161.44]) by ozlabs.org (Postfix) with ESMTP id 8ED441007D1
+	[209.85.161.44]) by ozlabs.org (Postfix) with ESMTP id B032A1007D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Dec 2010 05:40:28 +1100 (EST)
-Received: by fxm9 with SMTP id 9so2539116fxm.17
+	Thu, 16 Dec 2010 07:40:27 +1100 (EST)
+Received: by fxm9 with SMTP id 9so2676730fxm.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Dec 2010 10:40:25 -0800 (PST)
+	Wed, 15 Dec 2010 12:40:24 -0800 (PST)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <alpine.LNX.2.01.1012151430220.2052@obet.zrqbmnf.qr>
-References: <alpine.LNX.2.01.1012141840130.18577@obet.zrqbmnf.qr>
-	<AANLkTimEh+2rEFuq7q+wLcfHw_UKKHVipC0t7mFwSzx8@mail.gmail.com>
-	<alpine.LNX.2.01.1012151430220.2052@obet.zrqbmnf.qr>
-Date: Wed, 15 Dec 2010 19:40:25 +0100
-Message-ID: <AANLkTimqPU-RgNrtNF3WB0KWc-kYXpn12OAefVg2EyTX@mail.gmail.com>
-Subject: Re: Force FB off
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-	Dave Airlie <airlied@gmail.com>
+Sender: baringforge@gmail.com
+In-Reply-To: <3F607A5180246847A760FD34122A1E0503B1D8@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <AANLkTinwP6kQvWjSO3cxNUqd7tx7dhGEShTdKQXj-+iD@mail.gmail.com>
+	<3F607A5180246847A760FD34122A1E0503B1D8@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Thomas Taranowski <tom@baringforge.com>
+Date: Wed, 15 Dec 2010 12:40:02 -0800
+Message-ID: <AANLkTi=OpBXJ04snjY2XGECCRv3zX-zomj4+r=UgeyT7@mail.gmail.com>
+Subject: Re: RapidIO: multiple mport support for QorIQ
+To: Li Yang-R58472 <R58472@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 15, 2010 at 14:39, Jan Engelhardt <jengelh@medozas.de> wrote:
-> On Tuesday 2010-12-14 21:18, Dave Airlie wrote:
->>On Wed, Dec 15, 2010 at 3:41 AM, Jan Engelhardt <jengelh@medozas.de> wrot=
-e:
->>
->>>
->>>booting with video=3Doff nor video=3Di915:off has any effect on skipping
->>>FB. What is the correct option to stop FB from taking over my boot
->>>consoles?
->>
->>For KMS its not fb taking over its the drm i915 driver, nomodeset will
->>stop it however X will no longer work since it relies on the kernel
->>driver.
 >
-> That would make sense. Furthermore I discovered that video=3Dvesafb:off
-> also has no effect, but here it is clear because the source code ignores
-> the return value of fb_get_options, and so ignores any off command.
+>> There is some divergance in respect to the memory map that is non-trivia=
+l that
+>> I'm not sure how to handle, since it totally hoses the common fsl_rio.c =
+structures.
+>> I think I want to create a new set that's p2020 specific, but has potent=
+ial to be
+>> shared with the other QorIQ series, so dumping the pseries-specific code=
+ into
+>> platforms/pseries seems like a reasonable way to go. =A0Thoughts?
 >
-> The real strange thing is that video=3Doffb:off on an Apple Xserve G5
-> PPC64, while probably skipping OFFB initialization, still ends up in a
-> 640x480 mode with a 8x16 font instead of retaining the PROM
-> console/font.
+> The dual-port RIO is very common on QorIQ chips. =A0I won't suggest you a=
+dd P2020 specific memory map file. =A0The two port memory map should also b=
+e compatible with one port driver.
+>
 
-That just means something different than offb is driving the console now.
-What does /proc/fb say?
+Should be, but isn't.  For the most part the new registers introduced
+match up with the pad present in the previous processors, but not for
+the atmu registers.  They are wildly inconsistent, and I don't see a
+way to make them compatible.
 
-Gr{oetje,eeting}s,
+# The current implementation
+struct rio_atmu_regs {
+        u32 rowtar;
+        u32 rowtear;
+        u32 rowbar;
+        u32 pad2;
+        u32 rowar;
+        u32 pad3[3];
+};
 
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
+# The QorIQ p2020 register set.
+struct rio_atmu_outb_window_regs {
+    u32 rowtar0;    /* Outbound window translation address register 0 *
+    u32 rowtear0;   /* Outbound window ext. address register 0 */
+    u32 pad;        /* There is no rowbar0. Believe it. */
+    u32 rowar0;     /* Outbound window attribute register 1 */
+    u32 rowtar1;    /* Outbound window translation address register 1 *
+    u32 rowtear1;   /* Outbound window ext. translation address registe
+    u32 rowbar1;    /* Outbound window base address register 1 */
+    u32 rowar1;     /* Outbound window attributes register 1 */
+    u32 rowsr1[3];  /* Outbound window segment  register 1 */
+};
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+struct rio_atmu_inb_window_regs {
+    u32 iwtar;      /* Inbound window translation address register. */
+    u32 iwbar;      /* Inbound window base address register. */
+    u32 iwar;       /* Ibound window attribute register. */
+};
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+struct rio_atmu_regs {
+    rio_atmu_outb_window_regs outb_window[8]; /* window 1-8, upcounting
+    rio atmu_inb_window_regs  inb_window[4] /* window 4-1, downcounting
+};
+
+
+
+
+> -Leo
+>
+>
