@@ -1,23 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/5] of/device: Make of_get_next_child() check status
-	properties
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Hollis Blanchard <hollis@penguinppc.org>
-In-Reply-To: <AANLkTimPhs4AZ74e4SZfkyboeDJQaoybL+FGmwy_+bLJ@mail.gmail.com>
-References: <cover.1291799069.git.deepak_saxena@mentor.com>
-	<20101208192944.GE32473@mentor.com>
-	<20101208150102.69b8062b@udp111988uds.am.freescale.net>
-	<1291858402.2962.2.camel@concordia> <20101209030924.GC11856@yookeroo>
-	<AANLkTimPhs4AZ74e4SZfkyboeDJQaoybL+FGmwy_+bLJ@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-aKrvDoUBZKow8FjfTxWm"
-Date: Thu, 16 Dec 2010 09:40:55 +1100
-Message-ID: <1292452855.6133.5.camel@concordia>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, devicetree-discuss@ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
+	by ozlabs.org (Postfix) with SMTP id 88CF6B7082
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 16 Dec 2010 09:50:27 +1100 (EST)
+Received: by qyk36 with SMTP id 36so2556734qyk.20
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Dec 2010 14:50:20 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTikOituTX-gTQrr7cr2bXdbvf=A2UqHX0yVf8UDP@mail.gmail.com>
+References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
+	<20101210224402.GA8943@kroah.com>
+	<AANLkTinE1sPt4YQJGgW7-RHOsA8vF9HB-joSuryYFXpi@mail.gmail.com>
+	<AANLkTikOituTX-gTQrr7cr2bXdbvf=A2UqHX0yVf8UDP@mail.gmail.com>
+Date: Wed, 15 Dec 2010 14:50:20 -0800
+Message-ID: <AANLkTim4nh-9mL=ziAKbcRa2kZnoQk0pinREZ0qMYuqN@mail.gmail.com>
+Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+From: Tirumala Marri <tmarri@apm.com>
+To: Neil Jones <neiljay@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,106 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Dec 15, 2010 at 2:17 AM, Neil Jones <neiljay@gmail.com> wrote:
+> Hi,
+>
+> I've looked at the patches but your email states there are 10 patches,
+> I can't see #1 and #10, only 2- 8 ??
+>
+> It doesn't look like you have resolved the lockdep issues we have been
+> seeing, please get in contact as it
+> would be good to discuss our issues with this driver ( and our distain
+> for Synopsis ;-) ).
+>
+> Cheers
+>
+> Neil
+>
+> On Mon, Dec 13, 2010 at 3:48 PM, Neil Jones <neiljay@gmail.com> wrote:
+>> Hi,
+>>
+>> We are currently using the latest version of this Synopsis IP in some
+>> of our customers SoC's.
+>>
+>> The latest hardware adds a new DMA mode which is less Interrupt
+>> intensive as well as a few other features.
+>>
+>> I have spent (and im still spending) a long time fixing up this driver
+>> to be linux standards compliant with the intention of pushing it
+>> upstream once complete, its still not ready yet.
+>>
+>> One of the major issues we had is the driver isn't SMP safe, I've not
+>> had chance to review your patches yet but have your run the driver
+>> with lock checking turned on ?
+>>
+>> Would it be possible to get the changes for the latest version of the
+>> IP merged into this driver, I can supply my current version as a
+>> reference.
+>>
+>> In my driver :
+>>
+>> Currently host support is working well and i've tested it with
+>> multiple devices and done the test outlined on
+>> http://www.linux-usb.org/usbtest/, the driver passed checkpatches and
+>> runs with lockdeps on and on a SMP system, Im still working on the
+>> device mode (PCD) part of the driver generally it works, but im still
+>> getting the odd lock dep warning and a panic on un-loading of certain
+>> gadget kernel modules. The only issue with our driver is I have not
+>> converted all the bitfield usage to macros so it might make diffing a
+>> pain.
+>>
+>> Cheers
+>>
+>> Neil
+Hi,
+  Sorry for the late reply, I was busy working on the patch. Idea is to
+functional patch for PPC architecture initially and extend that to SMP
+and resolve other bugs if there at all. To push all the features in
+one go is kind
+of hard and increases the size of patches.
 
---=-aKrvDoUBZKow8FjfTxWm
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ Sure let us discuss further if there are know issues need to be resolved
+in the driver.
 
-On Wed, 2010-12-15 at 10:35 -0800, Hollis Blanchard wrote:
-> On Wed, Dec 8, 2010 at 7:09 PM, David Gibson
-> <david@gibson.dropbear.id.au> wrote:
-> > On Thu, Dec 09, 2010 at 12:33:22PM +1100, Michael Ellerman wrote:
-> >> On Wed, 2010-12-08 at 15:01 -0600, Scott Wood wrote:
-> >> > On Wed, 8 Dec 2010 11:29:44 -0800
-> >> > Deepak Saxena <deepak_saxena@mentor.com> wrote:
-> >> >
-> >> > > We only return the next child if the device is available.
-> >> > >
-> >> > > Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
-> >> > > Signed-off-by: Deepak Saxena <deepak_saxena@mentor.com>
-> >> > > ---
-> >> > >  drivers/of/base.c |    4 +++-
-> >> > >  1 files changed, 3 insertions(+), 1 deletions(-)
-> >> > >
-> >> > > diff --git a/drivers/of/base.c b/drivers/of/base.c
-> >> > > index 5d269a4..81b2601 100644
-> >> > > --- a/drivers/of/base.c
-> >> > > +++ b/drivers/of/base.c
-> >> > > @@ -321,6 +321,8 @@ struct device_node *of_get_next_parent(struct =
-device_node *node)
-> >> > >   *
-> >> > >   *       Returns a node pointer with refcount incremented, use
-> >> > >   *       of_node_put() on it when done.
-> >> > > + *
-> >> > > + *       Does not return nodes marked unavailable by a status pro=
-perty.
-> >> > >   */
-> >> > >  struct device_node *of_get_next_child(const struct device_node *n=
-ode,
-> >> > >   struct device_node *prev)
-> >> > > @@ -330,7 +332,7 @@ struct device_node *of_get_next_child(const st=
-ruct device_node *node,
-> >> > >   read_lock(&devtree_lock);
-> >> > >   next =3D prev ? prev->sibling : node->child;
-> >> > >   for (; next; next =3D next->sibling)
-> >> > > -         if (of_node_get(next))
-> >> > > +         if (of_device_is_available(next) && of_node_get(next))
-> >> > >                   break;
-> >> > >   of_node_put(prev);
-> >> > >   read_unlock(&devtree_lock);
-> >> >
-> >> > This seems like too low-level a place to put this.  Some code may kn=
-ow
-> >> > how to un-disable a device in certain situations, or it may be part =
-of
-> >> > debug code trying to dump the whole device tree, etc.  Looking
-> >> > further[1], I see a raw version of this function, but not other thin=
-gs
-> >> > like of_find_compatible_node.
-> >>
-> >> Yeah I agree. I think we'll eventually end up with __ versions of all =
-or
-> >> lots of them. Not to mention there might be cases you've missed where
-> >> code expects to see unavailable nodes. The right approach is to add
-> >> _new_ routines that don't return unavailable nodes, and convert code
-> >> that you know wants to use them.
-> >
-> > Actually, I don't think we really want these status-skipping
-> > iterators at all.  The device tree iterators should give us the device
-> > tree, as it is.  Those old-style drivers which seach for a node rather
-> > than using the bus probing logic can keep individual checks of the
-> > status property until they're converted to the new scheme.
->=20
-> So the patch should look something like this?
->=20
-> @@ -321,6 +321,8 @@ struct device_node *of_get_next_parent(struct
-> device_node *node)
->  *
->  *     Returns a node pointer with refcount incremented, use
->  *     of_node_put() on it when done.
-> + *
-> + *     Do not use this function.
->  */
->  struct device_node *of_get_next_child(const struct device_node *node,
->        struct device_node *prev)
-
-Haha. No it should say "this function doesn't lie to you".
-
-And the patch should say "this patch _doesn't_ subtly change all callers
-of of_get_next_child() without carefully auditing them".
-
-cheers
-
---=-aKrvDoUBZKow8FjfTxWm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAk0JQ/QACgkQdSjSd0sB4dJdKgCdFHXMM4+Qqi7miy2sT8x73z+1
-wA4AoMSDKY96vMq9hxZRCHAYjRPsGMrp
-=Nmde
------END PGP SIGNATURE-----
-
---=-aKrvDoUBZKow8FjfTxWm--
+Thanks,
+Marri
