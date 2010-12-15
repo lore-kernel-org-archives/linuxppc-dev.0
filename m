@@ -1,23 +1,15 @@
-Return-Path: <neiljay@gmail.com>
-Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
-	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id 6DBC2B6F2B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Dec 2010 21:17:03 +1100 (EST)
-Received: by gxk20 with SMTP id 20so1260909gxk.15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Dec 2010 02:17:01 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <AANLkTinE1sPt4YQJGgW7-RHOsA8vF9HB-joSuryYFXpi@mail.gmail.com>
-References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-	<20101210224402.GA8943@kroah.com>
-	<AANLkTinE1sPt4YQJGgW7-RHOsA8vF9HB-joSuryYFXpi@mail.gmail.com>
-Date: Wed, 15 Dec 2010 10:17:00 +0000
-Message-ID: <AANLkTikOituTX-gTQrr7cr2bXdbvf=A2UqHX0yVf8UDP@mail.gmail.com>
-Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Neil Jones <neiljay@gmail.com>
-To: tmarri@apm.com
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <rsarmah@amcc.com>
+Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E3A541007D1
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 23:27:22 +1100 (EST)
+Date: Wed, 15 Dec 2010 17:57:10 +0530
+From: Rupjyoti  Sarmah <rsarmah@amcc.com>
+Message-Id: <201012151227.oBFCRA3S004752@amcc.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v6] ppc44x:PHY fixup for USB on canyonlands board
+Cc: rsarmah@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,85 +19,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This fix is a reset for USB PHY that requires some amount of time for power to be stable on Canyonlands.
 
-I've looked at the patches but your email states there are 10 patches,
-I can't see #1 and #10, only 2- 8 ??
+Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
+---
+changes from previous version:
+-- error paths updated
+-- leakage of a node corrected
+-- iounmap is called on vaddr
 
-It doesn't look like you have resolved the lockdep issues we have been
-seeing, please get in contact as it
-would be good to discuss our issues with this driver ( and our distain
-for Synopsis ;-) ).
+ arch/powerpc/boot/dts/canyonlands.dts      |   11 +++
+ arch/powerpc/platforms/44x/44x.h           |    4 +
+ arch/powerpc/platforms/44x/Kconfig         |    1 -
+ arch/powerpc/platforms/44x/Makefile        |    1 +
+ arch/powerpc/platforms/44x/canyonlands.c   |  134 ++++++++++++++++++++++++++++
+ arch/powerpc/platforms/44x/ppc44x_simple.c |    1 -
+ 6 files changed, 150 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/44x/canyonlands.c
 
-Cheers
-
-Neil
-
-On Mon, Dec 13, 2010 at 3:48 PM, Neil Jones <neiljay@gmail.com> wrote:
-> Hi,
->
-> We are currently using the latest version of this Synopsis IP in some
-> of our customers SoC's.
->
-> The latest hardware adds a new DMA mode which is less Interrupt
-> intensive as well as a few other features.
->
-> I have spent (and im still spending) a long time fixing up this driver
-> to be linux standards compliant with the intention of pushing it
-> upstream once complete, its still not ready yet.
->
-> One of the major issues we had is the driver isn't SMP safe, I've not
-> had chance to review your patches yet but have your run the driver
-> with lock checking turned on ?
->
-> Would it be possible to get the changes for the latest version of the
-> IP merged into this driver, I can supply my current version as a
-> reference.
->
-> In my driver :
->
-> Currently host support is working well and i've tested it with
-> multiple devices and done the test outlined on
-> http://www.linux-usb.org/usbtest/, the driver passed checkpatches and
-> runs with lockdeps on and on a SMP system, Im still working on the
-> device mode (PCD) part of the driver generally it works, but im still
-> getting the odd lock dep warning and a panic on un-loading of certain
-> gadget kernel modules. The only issue with our driver is I have not
-> converted all the bitfield usage to macros so it might make diffing a
-> pain.
->
-> Cheers
->
-> Neil
->
-> On Fri, Dec 10, 2010 at 10:44 PM, Greg KH <greg@kroah.com> wrote:
->> On Wed, Dec 08, 2010 at 04:28:59PM -0800, tmarri@apm.com wrote:
->>> From: Tirumala Marri <tmarri@apm.com>
->>>
->>> v6:
->>> =C2=A01. Replaced register definitions and bit fields with macros.
->>> =C2=A02. Replace printks with dev_dbg or dev_err functions.
->>> =C2=A03. Cleanup some assignments.
->>> =C2=A04. Remove chip specific selections in Kconfig file.
->>
->> There are still a lot of checkpatch errors and warnings in these
->> patches. =C2=A0Patch 1-8 has:
->> =C2=A0 =C2=A0 =C2=A0 =C2=A0total: 64 errors, 126 warnings, 13905 lines c=
-hecked
->>
->> Care to fix all of these up in your next submission? =C2=A0I can't take =
-these
->> as-is, sorry.
->>
->> And, if you haven't run checkpatch.pl before, odds are you haven't run
->> 'sparse'. =C2=A0Please run that as well and resolve the issues it finds.
->>
->> thanks,
->>
->> greg k-h
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
->>
->
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index a303703..8ff1f3f 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -224,6 +224,11 @@
+ 					};
+ 				};
+ 
++				cpld@2,0 {
++					compatible = "amcc,ppc460ex-bcsr";
++					reg = <2 0x0 0x9>;
++				};
++
+ 				ndfc@3,0 {
+ 					compatible = "ibm,ndfc";
+ 					reg = <0x00000003 0x00000000 0x00002000>;
+@@ -320,6 +325,12 @@
+ 				interrupts = <0x3 0x4>;
+ 			};
+ 
++			GPIO0: gpio@ef600b00 {
++				compatible = "ibm,ppc4xx-gpio";
++				reg = <0xef600b00 0x00000048>;
++				gpio-controller;
++			};
++
+ 			ZMII0: emac-zmii@ef600d00 {
+ 				compatible = "ibm,zmii-460ex", "ibm,zmii";
+ 				reg = <0xef600d00 0x0000000c>;
+diff --git a/arch/powerpc/platforms/44x/44x.h b/arch/powerpc/platforms/44x/44x.h
+index dbc4d2b..63f703e 100644
+--- a/arch/powerpc/platforms/44x/44x.h
++++ b/arch/powerpc/platforms/44x/44x.h
+@@ -4,4 +4,8 @@
+ extern u8 as1_readb(volatile u8 __iomem  *addr);
+ extern void as1_writeb(u8 data, volatile u8 __iomem *addr);
+ 
++#define GPIO0_OSRH	0xC
++#define GPIO0_TSRH	0x14
++#define GPIO0_ISR1H	0x34
++
+ #endif /* __POWERPC_PLATFORMS_44X_44X_H */
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 0f979c5..f485fc5 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -115,7 +115,6 @@ config CANYONLANDS
+ 	bool "Canyonlands"
+ 	depends on 44x
+ 	default n
+-	select PPC44x_SIMPLE
+ 	select 460EX
+ 	select PCI
+ 	select PPC4xx_PCI_EXPRESS
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+index 82ff326..6854e73 100644
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_WARP)	+= warp.o
+ obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
+ obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
+ obj-$(CONFIG_ISS4xx)	+= iss4xx.o
++obj-$(CONFIG_CANYONLANDS)+= canyonlands.o
+diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
+new file mode 100644
+index 0000000..afc5e8e
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/canyonlands.c
+@@ -0,0 +1,134 @@
++/*
++ * This contain platform specific code for APM PPC460EX based Canyonlands
++ * board.
++ *
++ * Copyright (c) 2010, Applied Micro Circuits Corporation
++ * Author: Rupjyoti Sarmah <rsarmah@apm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <asm/pci-bridge.h>
++#include <asm/ppc4xx.h>
++#include <asm/udbg.h>
++#include <asm/uic.h>
++#include <linux/of_platform.h>
++#include <linux/delay.h>
++#include "44x.h"
++
++#define BCSR_USB_EN	0x11
++
++static __initdata struct of_device_id ppc460ex_of_bus[] = {
++	{ .compatible = "ibm,plb4", },
++	{ .compatible = "ibm,opb", },
++	{ .compatible = "ibm,ebc", },
++	{ .compatible = "simple-bus", },
++	{},
++};
++
++static int __init ppc460ex_device_probe(void)
++{
++	of_platform_bus_probe(NULL, ppc460ex_of_bus, NULL);
++
++	return 0;
++}
++machine_device_initcall(canyonlands, ppc460ex_device_probe);
++
++/* Using this code only for the Canyonlands board.  */
++
++static int __init ppc460ex_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++	if (of_flat_dt_is_compatible(root, "amcc,canyonlands")) {
++		ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
++		return 1;
++		}
++	return 0;
++}
++
++/* USB PHY fixup code on Canyonlands kit. */
++
++static int __init ppc460ex_canyonlands_fixup(void)
++{
++	u8 __iomem *bcsr ;
++	void __iomem *vaddr;
++	struct device_node *np;
++	int ret = 0;
++
++	np = of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-bcsr");
++	if (!np) {
++		printk(KERN_ERR "failed did not find amcc, ppc460ex bcsr node\n");
++		return -ENODEV;
++	}
++
++	bcsr = of_iomap(np, 0);
++	of_node_put(np);
++
++	if (!bcsr) {
++		printk(KERN_CRIT "Could not remap bcsr\n");
++		ret = -ENODEV;
++		goto err_bcsr;
++	}
++
++	np = of_find_compatible_node(NULL, NULL, "ibm,ppc4xx-gpio");
++	if (!np) {
++		printk(KERN_ERR "failed did not find ibm,ppc4xx-gpio node\n");
++		return -ENODEV;
++	}
++
++	vaddr = of_iomap(np, 0);
++	of_node_put(np);
++
++	if (!vaddr) {
++		printk(KERN_CRIT "Could not get gpio node address\n");
++		ret = -ENODEV;
++		goto err_gpio;
++	}
++	/* Disable USB, through the BCSR7 bits */
++	setbits8(&bcsr[7], BCSR_USB_EN);
++
++	/* Wait for a while after reset */
++	msleep(100);
++
++	/* Enable USB here */
++	clrbits8(&bcsr[7], BCSR_USB_EN);
++
++	/*
++	 * Configure multiplexed gpio16 and gpio19 as alternate1 output
++	 * source after USB reset. In this configuration gpio16 will be
++	 * USB2HStop and gpio19 will be USB2DStop. For more details refer to
++	 * table 34-7 of PPC460EX user manual.
++	 */
++	setbits32((vaddr + GPIO0_OSRH), 0x42000000);
++	setbits32((vaddr + GPIO0_TSRH), 0x42000000);
++err_gpio:
++	iounmap(vaddr);
++err_bcsr:
++	iounmap(bcsr);
++	return ret;
++}
++machine_device_initcall(canyonlands, ppc460ex_canyonlands_fixup);
++define_machine(canyonlands) {
++	.name = "Canyonlands",
++	.probe = ppc460ex_probe,
++	.progress = udbg_progress,
++	.init_IRQ = uic_init_tree,
++	.get_irq = uic_get_irq,
++	.restart = ppc4xx_reset_system,
++	.calibrate_decr = generic_calibrate_decr,
++};
+diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
+index 7ddcba3..c81c19c 100644
+--- a/arch/powerpc/platforms/44x/ppc44x_simple.c
++++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
+@@ -53,7 +53,6 @@ static char *board[] __initdata = {
+ 	"amcc,arches",
+ 	"amcc,bamboo",
+ 	"amcc,bluestone",
+-	"amcc,canyonlands",
+ 	"amcc,glacier",
+ 	"ibm,ebony",
+ 	"amcc,eiger",
+-- 
+1.5.6.3
