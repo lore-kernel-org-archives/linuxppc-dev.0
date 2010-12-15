@@ -1,16 +1,19 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B31D4B6F11
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 09:33:15 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] pata_mpc52xx: driver needs BMDMA
-Date: Tue, 14 Dec 2010 23:32:47 +0100
-Message-Id: <1292365967-14867-1-git-send-email-w.sang@pengutronix.de>
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <baringforge@gmail.com>
+Received: from mail-fx0-f44.google.com (mail-fx0-f44.google.com
+	[209.85.161.44]) by ozlabs.org (Postfix) with ESMTP id 765D61007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Dec 2010 18:30:03 +1100 (EST)
+Received: by fxm9 with SMTP id 9so1804418fxm.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Dec 2010 23:30:00 -0800 (PST)
+MIME-Version: 1.0
+Sender: baringforge@gmail.com
+From: Thomas Taranowski <tom@baringforge.com>
+Date: Tue, 14 Dec 2010 23:29:38 -0800
+Message-ID: <AANLkTinwP6kQvWjSO3cxNUqd7tx7dhGEShTdKQXj-+iD@mail.gmail.com>
+Subject: RapidIO: multiple mport support for QorIQ
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,76 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Found by this build-error:
+I'm planning to add support for the multiple(2) mports supported by
+the Freescale p2020 processor.  I'm currently looking at the fsl layer
+to add in support for multiple port enumeration, and work up from
+there.  It looks like the upper layers already have at least partial
+support for this.  My question is, are there any efforts already
+ongoing I can hop in on so as not to duplicate effort?  If not, I'll
+just do it.
 
-drivers/ata/pata_mpc52xx.c: In function 'mpc52xx_ata_init_one':
-drivers/ata/pata_mpc52xx.c:662: error: 'ata_bmdma_interrupt' undeclared (first use in this function)
+There is some divergance in respect to the memory map that is
+non-trivial that I'm not sure how to handle, since it totally hoses
+the common fsl_rio.c structures.  I think I want to create a new set
+that's p2020 specific, but has potential to be shared with the other
+QorIQ series, so dumping the pseries-specific code into
+platforms/pseries seems like a reasonable way to go.  Thoughts?
 
-So, move the Kconfig entry to the proper location.
+Thanks!
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
- drivers/ata/Kconfig  |   20 ++++++++++----------
- drivers/ata/Makefile |    2 +-
- 2 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 11ec911..85756b8 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -128,16 +128,6 @@ config PDC_ADMA
- 
- 	  If unsure, say N.
- 
--config PATA_MPC52xx
--	tristate "Freescale MPC52xx SoC internal IDE"
--	depends on PPC_MPC52xx && PPC_BESTCOMM
--	select PPC_BESTCOMM_ATA
--	help
--	  This option enables support for integrated IDE controller
--	  of the Freescale MPC52xx SoC.
--
--	  If unsure, say N.
--
- config PATA_OCTEON_CF
- 	tristate "OCTEON Boot Bus Compact Flash support"
- 	depends on CPU_CAVIUM_OCTEON
-@@ -491,6 +481,16 @@ config PATA_MARVELL
- 
- 	  If unsure, say N.
- 
-+config PATA_MPC52xx
-+	tristate "Freescale MPC52xx SoC internal IDE"
-+	depends on PPC_MPC52xx && PPC_BESTCOMM
-+	select PPC_BESTCOMM_ATA
-+	help
-+	  This option enables support for integrated IDE controller
-+	  of the Freescale MPC52xx SoC.
-+
-+	  If unsure, say N.
-+
- config PATA_NETCELL
- 	tristate "NETCELL Revolution RAID support"
- 	depends on PCI
-diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
-index c501af5..2b67c90 100644
---- a/drivers/ata/Makefile
-+++ b/drivers/ata/Makefile
-@@ -11,7 +11,6 @@ obj-$(CONFIG_SATA_DWC)		+= sata_dwc_460ex.o
- 
- # SFF w/ custom DMA
- obj-$(CONFIG_PDC_ADMA)		+= pdc_adma.o
--obj-$(CONFIG_PATA_MPC52xx)	+= pata_mpc52xx.o
- obj-$(CONFIG_PATA_OCTEON_CF)	+= pata_octeon_cf.o
- obj-$(CONFIG_SATA_QSTOR)	+= sata_qstor.o
- obj-$(CONFIG_SATA_SX4)		+= sata_sx4.o
-@@ -52,6 +51,7 @@ obj-$(CONFIG_PATA_IT821X)	+= pata_it821x.o
- obj-$(CONFIG_PATA_JMICRON)	+= pata_jmicron.o
- obj-$(CONFIG_PATA_MACIO)	+= pata_macio.o
- obj-$(CONFIG_PATA_MARVELL)	+= pata_marvell.o
-+obj-$(CONFIG_PATA_MPC52xx)	+= pata_mpc52xx.o
- obj-$(CONFIG_PATA_NETCELL)	+= pata_netcell.o
- obj-$(CONFIG_PATA_NINJA32)	+= pata_ninja32.o
- obj-$(CONFIG_PATA_NS87415)	+= pata_ns87415.o
--- 
-1.7.2.3
+Thomas Taranowski
+Certified netburner consultant
+baringforge.com
