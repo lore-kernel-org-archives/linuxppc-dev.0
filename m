@@ -1,15 +1,21 @@
-Return-Path: <rsarmah@amcc.com>
-Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E3A541007D1
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 23:27:22 +1100 (EST)
-Date: Wed, 15 Dec 2010 17:57:10 +0530
-From: Rupjyoti  Sarmah <rsarmah@amcc.com>
-Message-Id: <201012151227.oBFCRA3S004752@amcc.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v6] ppc44x:PHY fixup for USB on canyonlands board
-Cc: rsarmah@apm.com
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
+	[209.85.213.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A8B8D1007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2010 00:11:30 +1100 (EST)
+Received: by yws5 with SMTP id 5so1569254yws.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Dec 2010 05:11:26 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTi=vd4J8DfnLgPROrNC2Q-jxSCsrv=nv371Rhq5i@mail.gmail.com>
+References: <AANLkTi=vd4J8DfnLgPROrNC2Q-jxSCsrv=nv371Rhq5i@mail.gmail.com>
+Date: Wed, 15 Dec 2010 14:11:25 +0100
+Message-ID: <AANLkTikJFCvSQana-x9xCwSfOELdQXApd=kYyZX5OpF2@mail.gmail.com>
+Subject: Unbalanced enable for IRQ => phy_change
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,238 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fix is a reset for USB PHY that requires some amount of time for power to be stable on Canyonlands.
+Hi !
 
-Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
----
-changes from previous version:
--- error paths updated
--- leakage of a node corrected
--- iounmap is called on vaddr
+I am currently using a MPC8548 PowerPC board, and I have encountered
+the following problem :
+[ =C2=A0 19.867849] Unbalanced enable for IRQ 48
+[ =C2=A0 19.867855] ------------[ cut here ]------------
+[ =C2=A0 19.873819] Badness at /.../kernel/irq/manage.c:174
+[ =C2=A0 19.873823] NIP: c0044acc LR: c0044acc CTR: c0018480
+[ =C2=A0 19.873828] REGS: dfc2be60 TRAP: 0700 =C2=A0 Tainted: P
+(2.6.24.7_www.men.de_1.1)
+[ =C2=A0 19.873831] MSR: 00021000 <ME> =C2=A0CR: 24000022 =C2=A0XER: 000000=
+00
+[ =C2=A0 19.873839] TASK =3D dfc204e0[5] 'events/0' THREAD: dfc2a000
+[ =C2=A0 19.873842] GPR00: c0044acc dfc2bf10 dfc204e0 0000002f 00021000
+00000000 00000000 00000000
+[ =C2=A0 19.873854] GPR08: 00000034 ffffffff 0000574e de821b20 24000024
+100607bc 00008000 00001020
+[ =C2=A0 19.873865] GPR16: c0447b44 c0447b2c 00fff018 033327d2 00000008
+c044b2c8 c048d1a8 c044b300
+[ =C2=A0 19.873877] GPR24: dfc206a0 dfc204e0 dfc01f30 dfc2a000 00029000
+c04cb714 00000030 c04cb6e4
+[ =C2=A0 19.873890] NIP [c0044acc] enable_irq+0x6c/0xdc
+[ =C2=A0 19.873903] LR [c0044acc] enable_irq+0x6c/0xdc
+[ =C2=A0 19.873908] Call Trace:
+[ =C2=A0 19.873911] [dfc2bf10] [c0044acc] enable_irq+0x6c/0xdc (unreliable)
+[ =C2=A0 19.873919] [dfc2bf30] [c0217868] phy_change+0x74/0xe4
+[ =C2=A0 19.873926] [dfc2bf50] [c002fb2c] run_workqueue+0xc4/0x15c
+[ =C2=A0 19.873933] [dfc2bf90] [c002ffb0] worker_thread+0x74/0xd4
+[ =C2=A0 19.873940] [dfc2bfd0] [c0034360] kthread+0x48/0x84
+[ =C2=A0 19.873946] [dfc2bff0] [c00047bc] kernel_thread+0x44/0x60
+[ =C2=A0 19.873953] Instruction dump:
+[ =C2=A0 19.873957] 7fe04a14 3bbf0030 7fa3eb78 483a9461 813f001c 7c7c1b78
+2f890000 409e0038
+[ =C2=A0 19.873968] 3c60c045 7fc4f378 3863f1d4 4bfd9129 <0fe00000> 7fa3eb78
+7f84e378 483a91a5
 
- arch/powerpc/boot/dts/canyonlands.dts      |   11 +++
- arch/powerpc/platforms/44x/44x.h           |    4 +
- arch/powerpc/platforms/44x/Kconfig         |    1 -
- arch/powerpc/platforms/44x/Makefile        |    1 +
- arch/powerpc/platforms/44x/canyonlands.c   |  134 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/44x/ppc44x_simple.c |    1 -
- 6 files changed, 150 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/44x/canyonlands.c
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index a303703..8ff1f3f 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -224,6 +224,11 @@
- 					};
- 				};
- 
-+				cpld@2,0 {
-+					compatible = "amcc,ppc460ex-bcsr";
-+					reg = <2 0x0 0x9>;
-+				};
-+
- 				ndfc@3,0 {
- 					compatible = "ibm,ndfc";
- 					reg = <0x00000003 0x00000000 0x00002000>;
-@@ -320,6 +325,12 @@
- 				interrupts = <0x3 0x4>;
- 			};
- 
-+			GPIO0: gpio@ef600b00 {
-+				compatible = "ibm,ppc4xx-gpio";
-+				reg = <0xef600b00 0x00000048>;
-+				gpio-controller;
-+			};
-+
- 			ZMII0: emac-zmii@ef600d00 {
- 				compatible = "ibm,zmii-460ex", "ibm,zmii";
- 				reg = <0xef600d00 0x0000000c>;
-diff --git a/arch/powerpc/platforms/44x/44x.h b/arch/powerpc/platforms/44x/44x.h
-index dbc4d2b..63f703e 100644
---- a/arch/powerpc/platforms/44x/44x.h
-+++ b/arch/powerpc/platforms/44x/44x.h
-@@ -4,4 +4,8 @@
- extern u8 as1_readb(volatile u8 __iomem  *addr);
- extern void as1_writeb(u8 data, volatile u8 __iomem *addr);
- 
-+#define GPIO0_OSRH	0xC
-+#define GPIO0_TSRH	0x14
-+#define GPIO0_ISR1H	0x34
-+
- #endif /* __POWERPC_PLATFORMS_44X_44X_H */
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 0f979c5..f485fc5 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -115,7 +115,6 @@ config CANYONLANDS
- 	bool "Canyonlands"
- 	depends on 44x
- 	default n
--	select PPC44x_SIMPLE
- 	select 460EX
- 	select PCI
- 	select PPC4xx_PCI_EXPRESS
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index 82ff326..6854e73 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_WARP)	+= warp.o
- obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
- obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
- obj-$(CONFIG_ISS4xx)	+= iss4xx.o
-+obj-$(CONFIG_CANYONLANDS)+= canyonlands.o
-diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
-new file mode 100644
-index 0000000..afc5e8e
---- /dev/null
-+++ b/arch/powerpc/platforms/44x/canyonlands.c
-@@ -0,0 +1,134 @@
-+/*
-+ * This contain platform specific code for APM PPC460EX based Canyonlands
-+ * board.
-+ *
-+ * Copyright (c) 2010, Applied Micro Circuits Corporation
-+ * Author: Rupjyoti Sarmah <rsarmah@apm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc4xx.h>
-+#include <asm/udbg.h>
-+#include <asm/uic.h>
-+#include <linux/of_platform.h>
-+#include <linux/delay.h>
-+#include "44x.h"
-+
-+#define BCSR_USB_EN	0x11
-+
-+static __initdata struct of_device_id ppc460ex_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{ .compatible = "simple-bus", },
-+	{},
-+};
-+
-+static int __init ppc460ex_device_probe(void)
-+{
-+	of_platform_bus_probe(NULL, ppc460ex_of_bus, NULL);
-+
-+	return 0;
-+}
-+machine_device_initcall(canyonlands, ppc460ex_device_probe);
-+
-+/* Using this code only for the Canyonlands board.  */
-+
-+static int __init ppc460ex_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+	if (of_flat_dt_is_compatible(root, "amcc,canyonlands")) {
-+		ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
-+		return 1;
-+		}
-+	return 0;
-+}
-+
-+/* USB PHY fixup code on Canyonlands kit. */
-+
-+static int __init ppc460ex_canyonlands_fixup(void)
-+{
-+	u8 __iomem *bcsr ;
-+	void __iomem *vaddr;
-+	struct device_node *np;
-+	int ret = 0;
-+
-+	np = of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-bcsr");
-+	if (!np) {
-+		printk(KERN_ERR "failed did not find amcc, ppc460ex bcsr node\n");
-+		return -ENODEV;
-+	}
-+
-+	bcsr = of_iomap(np, 0);
-+	of_node_put(np);
-+
-+	if (!bcsr) {
-+		printk(KERN_CRIT "Could not remap bcsr\n");
-+		ret = -ENODEV;
-+		goto err_bcsr;
-+	}
-+
-+	np = of_find_compatible_node(NULL, NULL, "ibm,ppc4xx-gpio");
-+	if (!np) {
-+		printk(KERN_ERR "failed did not find ibm,ppc4xx-gpio node\n");
-+		return -ENODEV;
-+	}
-+
-+	vaddr = of_iomap(np, 0);
-+	of_node_put(np);
-+
-+	if (!vaddr) {
-+		printk(KERN_CRIT "Could not get gpio node address\n");
-+		ret = -ENODEV;
-+		goto err_gpio;
-+	}
-+	/* Disable USB, through the BCSR7 bits */
-+	setbits8(&bcsr[7], BCSR_USB_EN);
-+
-+	/* Wait for a while after reset */
-+	msleep(100);
-+
-+	/* Enable USB here */
-+	clrbits8(&bcsr[7], BCSR_USB_EN);
-+
-+	/*
-+	 * Configure multiplexed gpio16 and gpio19 as alternate1 output
-+	 * source after USB reset. In this configuration gpio16 will be
-+	 * USB2HStop and gpio19 will be USB2DStop. For more details refer to
-+	 * table 34-7 of PPC460EX user manual.
-+	 */
-+	setbits32((vaddr + GPIO0_OSRH), 0x42000000);
-+	setbits32((vaddr + GPIO0_TSRH), 0x42000000);
-+err_gpio:
-+	iounmap(vaddr);
-+err_bcsr:
-+	iounmap(bcsr);
-+	return ret;
-+}
-+machine_device_initcall(canyonlands, ppc460ex_canyonlands_fixup);
-+define_machine(canyonlands) {
-+	.name = "Canyonlands",
-+	.probe = ppc460ex_probe,
-+	.progress = udbg_progress,
-+	.init_IRQ = uic_init_tree,
-+	.get_irq = uic_get_irq,
-+	.restart = ppc4xx_reset_system,
-+	.calibrate_decr = generic_calibrate_decr,
-+};
-diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
-index 7ddcba3..c81c19c 100644
---- a/arch/powerpc/platforms/44x/ppc44x_simple.c
-+++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
-@@ -53,7 +53,6 @@ static char *board[] __initdata = {
- 	"amcc,arches",
- 	"amcc,bamboo",
- 	"amcc,bluestone",
--	"amcc,canyonlands",
- 	"amcc,glacier",
- 	"ibm,ebony",
- 	"amcc,eiger",
--- 
-1.5.6.3
+When looking at the phy_change function in drivers/net/phy/phy.c I
+have noticed something quite strange :
+We are calling phy_disable_interrupts() and after some operations, enable_i=
+rq().
+The first thing I thought about is why aren't we calling
+disable_irq/enable_irq or phy_disable_interrupts/phy_enable_interrupts
+but a mix ?
+
+Next, I took a more deep look at phy_disable_interrupts() and
+sepcifically at the phy_config_interrupt() function :
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0int err =3D 0;
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0phydev->interrupts =3D interrupts;
+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (phydev->drv->config_intr)
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0err =3D phydev->drv-=
+>config_intr(phydev);
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0return err;
+
+If phydev->drv->config_intr is not implemented (this is my use case :
+I am using the drivers/net/gianfar.c driver), then, nothing will be
+done, and there is no disable_irq() call.
+
+I don't know what is better : using disable_irq/enable_irq or the phy
+specific functions, but I think that we should avoid using a mix...
+Am I wrong ?
+
+Thanks in advance,
+Regards,
+JM
