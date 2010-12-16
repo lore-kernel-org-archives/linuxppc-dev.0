@@ -1,24 +1,24 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
-	by ozlabs.org (Postfix) with SMTP id 88CF6B7082
+Return-Path: <baringforge@gmail.com>
+Received: from mail-fx0-f44.google.com (mail-fx0-f44.google.com
+	[209.85.161.44]) by ozlabs.org (Postfix) with ESMTP id 88591B6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Dec 2010 09:50:27 +1100 (EST)
-Received: by qyk36 with SMTP id 36so2556734qyk.20
+	Thu, 16 Dec 2010 16:22:27 +1100 (EST)
+Received: by fxm9 with SMTP id 9so3088917fxm.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Dec 2010 14:50:20 -0800 (PST)
+	Wed, 15 Dec 2010 21:22:25 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <AANLkTikOituTX-gTQrr7cr2bXdbvf=A2UqHX0yVf8UDP@mail.gmail.com>
-References: <1291854539-23879-1-git-send-email-tmarri@apm.com>
-	<20101210224402.GA8943@kroah.com>
-	<AANLkTinE1sPt4YQJGgW7-RHOsA8vF9HB-joSuryYFXpi@mail.gmail.com>
-	<AANLkTikOituTX-gTQrr7cr2bXdbvf=A2UqHX0yVf8UDP@mail.gmail.com>
-Date: Wed, 15 Dec 2010 14:50:20 -0800
-Message-ID: <AANLkTim4nh-9mL=ziAKbcRa2kZnoQk0pinREZ0qMYuqN@mail.gmail.com>
-Subject: Re: [PATCH V6 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-From: Tirumala Marri <tmarri@apm.com>
-To: Neil Jones <neiljay@gmail.com>
+Sender: baringforge@gmail.com
+In-Reply-To: <AANLkTi=OpBXJ04snjY2XGECCRv3zX-zomj4+r=UgeyT7@mail.gmail.com>
+References: <AANLkTinwP6kQvWjSO3cxNUqd7tx7dhGEShTdKQXj-+iD@mail.gmail.com>
+	<3F607A5180246847A760FD34122A1E0503B1D8@039-SN1MPN1-003.039d.mgd.msft.net>
+	<AANLkTi=OpBXJ04snjY2XGECCRv3zX-zomj4+r=UgeyT7@mail.gmail.com>
+From: Thomas Taranowski <tom@baringforge.com>
+Date: Wed, 15 Dec 2010 21:22:02 -0800
+Message-ID: <AANLkTimCvoxmyQWa7T+o-3DY25H2q26Pu9u4KUmxP3y=@mail.gmail.com>
+Subject: Re: RapidIO: multiple mport support for QorIQ
+To: Li Yang-R58472 <R58472@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 15, 2010 at 2:17 AM, Neil Jones <neiljay@gmail.com> wrote:
-> Hi,
->
-> I've looked at the patches but your email states there are 10 patches,
-> I can't see #1 and #10, only 2- 8 ??
->
-> It doesn't look like you have resolved the lockdep issues we have been
-> seeing, please get in contact as it
-> would be good to discuss our issues with this driver ( and our distain
-> for Synopsis ;-) ).
->
-> Cheers
->
-> Neil
->
-> On Mon, Dec 13, 2010 at 3:48 PM, Neil Jones <neiljay@gmail.com> wrote:
->> Hi,
->>
->> We are currently using the latest version of this Synopsis IP in some
->> of our customers SoC's.
->>
->> The latest hardware adds a new DMA mode which is less Interrupt
->> intensive as well as a few other features.
->>
->> I have spent (and im still spending) a long time fixing up this driver
->> to be linux standards compliant with the intention of pushing it
->> upstream once complete, its still not ready yet.
->>
->> One of the major issues we had is the driver isn't SMP safe, I've not
->> had chance to review your patches yet but have your run the driver
->> with lock checking turned on ?
->>
->> Would it be possible to get the changes for the latest version of the
->> IP merged into this driver, I can supply my current version as a
->> reference.
->>
->> In my driver :
->>
->> Currently host support is working well and i've tested it with
->> multiple devices and done the test outlined on
->> http://www.linux-usb.org/usbtest/, the driver passed checkpatches and
->> runs with lockdeps on and on a SMP system, Im still working on the
->> device mode (PCD) part of the driver generally it works, but im still
->> getting the odd lock dep warning and a panic on un-loading of certain
->> gadget kernel modules. The only issue with our driver is I have not
->> converted all the bitfield usage to macros so it might make diffing a
->> pain.
->>
->> Cheers
->>
->> Neil
-Hi,
-  Sorry for the late reply, I was busy working on the patch. Idea is to
-functional patch for PPC architecture initially and extend that to SMP
-and resolve other bugs if there at all. To push all the features in
-one go is kind
-of hard and increases the size of patches.
+I actually take most of this back, it looks like there is a path
+available so as not to fork the driver for the pseries.
 
- Sure let us discuss further if there are know issues need to be resolved
-in the driver.
+Thomas Taranowski
+Certified netburner consultant
+baringforge.com
 
-Thanks,
-Marri
+
+
+On Wed, Dec 15, 2010 at 12:40 PM, Thomas Taranowski <tom@baringforge.com> w=
+rote:
+>>
+>>> There is some divergance in respect to the memory map that is non-trivi=
+al that
+>>> I'm not sure how to handle, since it totally hoses the common fsl_rio.c=
+ structures.
+>>> I think I want to create a new set that's p2020 specific, but has poten=
+tial to be
+>>> shared with the other QorIQ series, so dumping the pseries-specific cod=
+e into
+>>> platforms/pseries seems like a reasonable way to go. =A0Thoughts?
+>>
+>> The dual-port RIO is very common on QorIQ chips. =A0I won't suggest you =
+add P2020 specific memory map file. =A0The two port memory map should also =
+be compatible with one port driver.
+>>
+>
+> Should be, but isn't. =A0For the most part the new registers introduced
+> match up with the pad present in the previous processors, but not for
+> the atmu registers. =A0They are wildly inconsistent, and I don't see a
+> way to make them compatible.
+>
+> # The current implementation
+> struct rio_atmu_regs {
+> =A0 =A0 =A0 =A0u32 rowtar;
+> =A0 =A0 =A0 =A0u32 rowtear;
+> =A0 =A0 =A0 =A0u32 rowbar;
+> =A0 =A0 =A0 =A0u32 pad2;
+> =A0 =A0 =A0 =A0u32 rowar;
+> =A0 =A0 =A0 =A0u32 pad3[3];
+> };
+>
+> # The QorIQ p2020 register set.
+> struct rio_atmu_outb_window_regs {
+> =A0 =A0u32 rowtar0; =A0 =A0/* Outbound window translation address registe=
+r 0 *
+> =A0 =A0u32 rowtear0; =A0 /* Outbound window ext. address register 0 */
+> =A0 =A0u32 pad; =A0 =A0 =A0 =A0/* There is no rowbar0. Believe it. */
+> =A0 =A0u32 rowar0; =A0 =A0 /* Outbound window attribute register 1 */
+> =A0 =A0u32 rowtar1; =A0 =A0/* Outbound window translation address registe=
+r 1 *
+> =A0 =A0u32 rowtear1; =A0 /* Outbound window ext. translation address regi=
+ste
+> =A0 =A0u32 rowbar1; =A0 =A0/* Outbound window base address register 1 */
+> =A0 =A0u32 rowar1; =A0 =A0 /* Outbound window attributes register 1 */
+> =A0 =A0u32 rowsr1[3]; =A0/* Outbound window segment =A0register 1 */
+> };
+>
+> struct rio_atmu_inb_window_regs {
+> =A0 =A0u32 iwtar; =A0 =A0 =A0/* Inbound window translation address regist=
+er. */
+> =A0 =A0u32 iwbar; =A0 =A0 =A0/* Inbound window base address register. */
+> =A0 =A0u32 iwar; =A0 =A0 =A0 /* Ibound window attribute register. */
+> };
+>
+> struct rio_atmu_regs {
+> =A0 =A0rio_atmu_outb_window_regs outb_window[8]; /* window 1-8, upcountin=
+g
+> =A0 =A0rio atmu_inb_window_regs =A0inb_window[4] /* window 4-1, downcount=
+ing
+> };
+>
+>
+>
+>
+>> -Leo
+>>
+>>
+>
