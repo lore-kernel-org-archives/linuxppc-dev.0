@@ -1,20 +1,27 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id C0411B6F07
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Dec 2010 04:42:04 +1100 (EST)
-Date: Thu, 16 Dec 2010 18:42:02 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v4 5/5] fsl-diu-fb: Support setting display mode using EDID
-Message-ID: <20101216184202.507dc2ec@wker>
-In-Reply-To: <AANLkTin-TL5_TKnyHYtZdixosfqpkPNoarSTC+K4tTUb@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
+	[209.85.210.170]) by ozlabs.org (Postfix) with ESMTP id C022C1007D7
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Dec 2010 04:42:42 +1100 (EST)
+Received: by iym14 with SMTP id 14so2186342iym.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2010 09:42:41 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <4D0A4C38.3010105@freescale.com>
 References: <1279893639-24333-1-git-send-email-agust@denx.de>
 	<1279893639-24333-6-git-send-email-agust@denx.de>
 	<AANLkTin-TL5_TKnyHYtZdixosfqpkPNoarSTC+K4tTUb@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<AANLkTi=NwY_gcBXeKXeGX-qist3tMQ4EWqj3twYGfeWD@mail.gmail.com>
+	<4D0A446E.5020600@freescale.com>
+	<AANLkTinOf__X0p3_5G90KkYS9PXpB2j0_06MFhFcZzqO@mail.gmail.com>
+	<4D0A4C38.3010105@freescale.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 16 Dec 2010 10:42:21 -0700
+Message-ID: <AANLkTimVxKojtWP=X2=5SoZZu0_dHkWxmHxhXj1-jr+U@mail.gmail.com>
+Subject: Re: [PATCH v4 5/5] fsl-diu-fb: Support setting display mode using EDID
+To: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org
+	Anatolij Gustschin <agust@denx.de>, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 16 Dec 2010 10:47:53 -0600
-Timur Tabi <timur@freescale.com> wrote:
+On Thu, Dec 16, 2010 at 10:28 AM, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>> No. =A0It is a static property of the board/machine. =A0It is expected i=
+t
+>> to be encoded into the board's .dts file.
+>
+> Ok, but that only makes sense if the monitor is hard-wired to the board i=
+tself.
+> =A0If a user can attach any monitor he wants, then the EDID data can't be=
+ known at
+> compile time.
+>
+> I guess it's no different than using hard-coded memory controller program=
+ming
+> instead of SPD. =A0You can safely avoid SPD only if the DDR chips are sol=
+dered on
+> the board.
 
-> On Fri, Jul 23, 2010 at 9:00 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> > Adds support for encoding display mode information
-> > in the device tree using verbatim EDID block.
-> >
-> > If the EDID entry in the DIU node is present, the
-> > driver will build mode database using EDID data
-> > and allow setting the display modes from this database.
-> > Otherwise display mode will be set using mode
-> > entries from driver's internal database as usual.
-> >
-> > This patch also updates device tree bindings.
-> >
-> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> > Acked-by: Timur Tabi <timur@freescale.com>
-> > Cc: devicetree-discuss@lists.ozlabs.org
-> 
-> Anatolij,
-> 
-> I know this patch is old, but I'm now getting back to working on the
-> DIU driver.  One question I have: why are you reading the EDID data
-> from the device tree?  Why not just read it directly from the device
-> using I2C?  Who is supposed to put the EDID data into the device tree
-> in the first place?
+Correct, if a real EDID i2c channel exists, then an edid property
+should *not* be specified in the device tree.
 
-Many embedded boards only hard-wire a panel which does not provide
-an i2c edid channel. For such boards the EDID data can be inserted
-by the bootloader or encoded in the board's .dts. Look at pdm360ng
-U-Boot board code, it inserts the EDID data into device tree using
-fdt_add_edid().
-
-Anatolij
+g.
