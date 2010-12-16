@@ -1,24 +1,25 @@
-Return-Path: <baringforge@gmail.com>
-Received: from mail-fx0-f44.google.com (mail-fx0-f44.google.com
-	[209.85.161.44]) by ozlabs.org (Postfix) with ESMTP id 88591B6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Dec 2010 16:22:27 +1100 (EST)
-Received: by fxm9 with SMTP id 9so3088917fxm.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Dec 2010 21:22:25 -0800 (PST)
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EC7B11007D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Dec 2010 03:48:36 +1100 (EST)
+Received: by iwn6 with SMTP id 6so4484551iwn.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2010 08:48:33 -0800 (PST)
 MIME-Version: 1.0
-Sender: baringforge@gmail.com
-In-Reply-To: <AANLkTi=OpBXJ04snjY2XGECCRv3zX-zomj4+r=UgeyT7@mail.gmail.com>
-References: <AANLkTinwP6kQvWjSO3cxNUqd7tx7dhGEShTdKQXj-+iD@mail.gmail.com>
-	<3F607A5180246847A760FD34122A1E0503B1D8@039-SN1MPN1-003.039d.mgd.msft.net>
-	<AANLkTi=OpBXJ04snjY2XGECCRv3zX-zomj4+r=UgeyT7@mail.gmail.com>
-From: Thomas Taranowski <tom@baringforge.com>
-Date: Wed, 15 Dec 2010 21:22:02 -0800
-Message-ID: <AANLkTimCvoxmyQWa7T+o-3DY25H2q26Pu9u4KUmxP3y=@mail.gmail.com>
-Subject: Re: RapidIO: multiple mport support for QorIQ
-To: Li Yang-R58472 <R58472@freescale.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <1279893639-24333-6-git-send-email-agust@denx.de>
+References: <1279893639-24333-1-git-send-email-agust@denx.de>
+	<1279893639-24333-6-git-send-email-agust@denx.de>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 16 Dec 2010 10:47:53 -0600
+Message-ID: <AANLkTin-TL5_TKnyHYtZdixosfqpkPNoarSTC+K4tTUb@mail.gmail.com>
+Subject: Re: [PATCH v4 5/5] fsl-diu-fb: Support setting display mode using EDID
+To: Anatolij Gustschin <agust@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I actually take most of this back, it looks like there is a path
-available so as not to fork the driver for the pseries.
+On Fri, Jul 23, 2010 at 9:00 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> Adds support for encoding display mode information
+> in the device tree using verbatim EDID block.
+>
+> If the EDID entry in the DIU node is present, the
+> driver will build mode database using EDID data
+> and allow setting the display modes from this database.
+> Otherwise display mode will be set using mode
+> entries from driver's internal database as usual.
+>
+> This patch also updates device tree bindings.
+>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Acked-by: Timur Tabi <timur@freescale.com>
+> Cc: devicetree-discuss@lists.ozlabs.org
 
-Thomas Taranowski
-Certified netburner consultant
-baringforge.com
+Anatolij,
 
+I know this patch is old, but I'm now getting back to working on the
+DIU driver.  One question I have: why are you reading the EDID data
+from the device tree?  Why not just read it directly from the device
+using I2C?  Who is supposed to put the EDID data into the device tree
+in the first place?
 
-
-On Wed, Dec 15, 2010 at 12:40 PM, Thomas Taranowski <tom@baringforge.com> w=
-rote:
->>
->>> There is some divergance in respect to the memory map that is non-trivi=
-al that
->>> I'm not sure how to handle, since it totally hoses the common fsl_rio.c=
- structures.
->>> I think I want to create a new set that's p2020 specific, but has poten=
-tial to be
->>> shared with the other QorIQ series, so dumping the pseries-specific cod=
-e into
->>> platforms/pseries seems like a reasonable way to go. =A0Thoughts?
->>
->> The dual-port RIO is very common on QorIQ chips. =A0I won't suggest you =
-add P2020 specific memory map file. =A0The two port memory map should also =
-be compatible with one port driver.
->>
->
-> Should be, but isn't. =A0For the most part the new registers introduced
-> match up with the pad present in the previous processors, but not for
-> the atmu registers. =A0They are wildly inconsistent, and I don't see a
-> way to make them compatible.
->
-> # The current implementation
-> struct rio_atmu_regs {
-> =A0 =A0 =A0 =A0u32 rowtar;
-> =A0 =A0 =A0 =A0u32 rowtear;
-> =A0 =A0 =A0 =A0u32 rowbar;
-> =A0 =A0 =A0 =A0u32 pad2;
-> =A0 =A0 =A0 =A0u32 rowar;
-> =A0 =A0 =A0 =A0u32 pad3[3];
-> };
->
-> # The QorIQ p2020 register set.
-> struct rio_atmu_outb_window_regs {
-> =A0 =A0u32 rowtar0; =A0 =A0/* Outbound window translation address registe=
-r 0 *
-> =A0 =A0u32 rowtear0; =A0 /* Outbound window ext. address register 0 */
-> =A0 =A0u32 pad; =A0 =A0 =A0 =A0/* There is no rowbar0. Believe it. */
-> =A0 =A0u32 rowar0; =A0 =A0 /* Outbound window attribute register 1 */
-> =A0 =A0u32 rowtar1; =A0 =A0/* Outbound window translation address registe=
-r 1 *
-> =A0 =A0u32 rowtear1; =A0 /* Outbound window ext. translation address regi=
-ste
-> =A0 =A0u32 rowbar1; =A0 =A0/* Outbound window base address register 1 */
-> =A0 =A0u32 rowar1; =A0 =A0 /* Outbound window attributes register 1 */
-> =A0 =A0u32 rowsr1[3]; =A0/* Outbound window segment =A0register 1 */
-> };
->
-> struct rio_atmu_inb_window_regs {
-> =A0 =A0u32 iwtar; =A0 =A0 =A0/* Inbound window translation address regist=
-er. */
-> =A0 =A0u32 iwbar; =A0 =A0 =A0/* Inbound window base address register. */
-> =A0 =A0u32 iwar; =A0 =A0 =A0 /* Ibound window attribute register. */
-> };
->
-> struct rio_atmu_regs {
-> =A0 =A0rio_atmu_outb_window_regs outb_window[8]; /* window 1-8, upcountin=
-g
-> =A0 =A0rio atmu_inb_window_regs =A0inb_window[4] /* window 4-1, downcount=
-ing
-> };
->
->
->
->
->> -Leo
->>
->>
->
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
