@@ -1,20 +1,21 @@
-Return-Path: <b21284@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
-	[213.199.154.205])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B33228@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2079EB70BA
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Dec 2010 13:06:42 +1100 (EST)
-From: Mingkai Hu <Mingkai.hu@freescale.com>
-To: <linuxppc-dev@ozlabs.org>, <spi-devel-general@lists.sourceforge.net>
-Subject: [PATCH 2/2] eSPI: fix wrong setting of the address in the command
-	buffer
-Date: Tue, 21 Dec 2010 09:27:02 +0800
-Message-ID: <1292894822-7983-1-git-send-email-Mingkai.hu@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 321ADB70A3
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Dec 2010 18:28:43 +1100 (EST)
+Subject: Re: [PATCH] I2C: Add support for 64bit system.
+From: xulei <B33228@freescale.com>
+To: Ben Dooks <ben-i2c@fluff.org>
+In-Reply-To: <20101220145954.GA1126@trinity.fluff.org>
+References: <1292830654-7056-1-git-send-email-B33228@freescale.com>
+	<20101220145954.GA1126@trinity.fluff.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 21 Dec 2010 15:32:01 +0800
+Message-ID: <1292916721.1738.85.camel@xulei-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kumar.gala@freescale.com, Mingkai Hu <Mingkai.hu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Or else we cann't operate on the right address when the trans length
-is greater than 65535.
+yes, it has been built and could access the RTC well.
 
-Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
----
- drivers/spi/spi_fsl_espi.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/spi/spi_fsl_espi.c b/drivers/spi/spi_fsl_espi.c
-index ae78926..a99e233 100644
---- a/drivers/spi/spi_fsl_espi.c
-+++ b/drivers/spi/spi_fsl_espi.c
-@@ -258,18 +258,18 @@ static int fsl_espi_bufs(struct spi_device *spi, struct spi_transfer *t)
- 	return mpc8xxx_spi->count;
- }
- 
--static void fsl_espi_addr2cmd(unsigned int addr, u8 *cmd)
-+static inline void fsl_espi_addr2cmd(unsigned int addr, u8 *cmd)
- {
--	if (cmd[1] && cmd[2] && cmd[3]) {
-+	if (cmd) {
- 		cmd[1] = (u8)(addr >> 16);
- 		cmd[2] = (u8)(addr >> 8);
- 		cmd[3] = (u8)(addr >> 0);
- 	}
- }
- 
--static unsigned int fsl_espi_cmd2addr(u8 *cmd)
-+static inline unsigned int fsl_espi_cmd2addr(u8 *cmd)
- {
--	if (cmd[1] && cmd[2] && cmd[3])
-+	if (cmd)
- 		return cmd[1] << 16 | cmd[2] << 8 | cmd[3] << 0;
- 
- 	return 0;
-@@ -395,9 +395,11 @@ static void fsl_espi_rw_trans(struct spi_message *m,
- 			}
- 		}
- 
--		addr = fsl_espi_cmd2addr(local_buf);
--		addr += pos;
--		fsl_espi_addr2cmd(addr, local_buf);
-+		if (pos > 0) {
-+			addr = fsl_espi_cmd2addr(local_buf);
-+			addr += pos;
-+			fsl_espi_addr2cmd(addr, local_buf);
-+		}
- 
- 		espi_trans->n_tx = n_tx;
- 		espi_trans->n_rx = trans_len;
--- 
-1.6.4
+On =E4=B8=80, 2010-12-20 at 14:59 +0000, Ben Dooks wrote:
+> On Mon, Dec 20, 2010 at 03:37:34PM +0800, Xulei wrote:
+> > Currently I2C_MPC supports 32bit system only, then this
+> > modification makes it support 32bit and 64bit system both.
+> >=20
+> > Signed-off-by: Xulei <B33228@freescale.com>
+>=20
+> This been build or run tested?
+>=20
+> > ---
+> >  drivers/i2c/busses/Kconfig |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >=20
+> > diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> > index 9c6170c..3392f4b 100644
+> > --- a/drivers/i2c/busses/Kconfig
+> > +++ b/drivers/i2c/busses/Kconfig
+> > @@ -422,7 +422,7 @@ config I2C_IXP2000
+> > =20
+> >  config I2C_MPC
+> >  	tristate "MPC107/824x/85xx/512x/52xx/83xx/86xx"
+> > -	depends on PPC32
+> > +	depends on PPC32 || PPC64
+> >  	help
+> >  	  If you say yes to this option, support will be included for the
+> >  	  built-in I2C interface on the MPC107, Tsi107, MPC512x, MPC52xx,
+> > --=20
+> > 1.7.0.4
+> >=20
+> >=20
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-i2c" =
+in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
