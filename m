@@ -1,16 +1,13 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 369F6B70EE
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2010 02:50:32 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH RESEND] pata_mpc52xx: driver needs BMDMA
-Date: Wed, 22 Dec 2010 16:50:10 +0100
-Message-Id: <1293033011-19265-1-git-send-email-w.sang@pengutronix.de>
-Cc: linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org
+Return-Path: <dirk.brandewie@gmail.com>
+From: dirk.brandewie@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] V3 Add ability to link device blob(s) into vmlinux
+Date: Wed, 22 Dec 2010 11:57:25 -0800
+Message-Id: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
+Cc: linux-arch@vger.kernel.org, mmarek@suse.cz, linux-kbuild@vger.kernel.org,
+	microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, dirk.brandewie@gmail.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,81 +17,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Found by this build-error if BMDMA is disabled:
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-drivers/ata/pata_mpc52xx.c: In function 'mpc52xx_ata_init_one':
-drivers/ata/pata_mpc52xx.c:662: error: 'ata_bmdma_interrupt' undeclared (first use in this function)
-...
+This patch set adds the ability to link device tree blobs into
+vmlinux. 
 
-Move the Kconfig entry to the proper location as needed since
-9a7780c9acb821fe1c2b6fc53f74cc2556ff5364 (libata-sff: make BMDMA optional)
+Patch 1 implements the changes to include/asm-generic/vmlinux.lds.h and
+adds a generic rule for generating DTB objects to be linked vmlinux.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
+Patch 2 implements linking a DTB into an x86 image.
 
-This is a build-failure, so fixing it before 2.6.37 would be great.
+Patch 3-4 move {powerpc,microblaze}/boot/Makefile to use the dtc rule
+in patch 1.
 
- drivers/ata/Kconfig  |   20 ++++++++++----------
- drivers/ata/Makefile |    2 +-
- 2 files changed, 11 insertions(+), 11 deletions(-)
+This patch set has been tested on x86.
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 11ec911..85756b8 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -128,16 +128,6 @@ config PDC_ADMA
+Powerpc and Microblaze have been compile tested with and without patch
+3 and 4 applied.
+
+Changes from V1:
+
+Documentation added for dtc command in Makefile.lib to
+Documentation/kbuild/makefiles.txt
+Separate DTB_ALIGNMENT define removed.
+FORCE removed from dtc rule.
+Removed hardcoded path to dts files from dtc command.  
+Moved %.dtb: %.dts rule to arch specific makefiles. 
  
- 	  If unsure, say N.
- 
--config PATA_MPC52xx
--	tristate "Freescale MPC52xx SoC internal IDE"
--	depends on PPC_MPC52xx && PPC_BESTCOMM
--	select PPC_BESTCOMM_ATA
--	help
--	  This option enables support for integrated IDE controller
--	  of the Freescale MPC52xx SoC.
--
--	  If unsure, say N.
--
- config PATA_OCTEON_CF
- 	tristate "OCTEON Boot Bus Compact Flash support"
- 	depends on CPU_CAVIUM_OCTEON
-@@ -491,6 +481,16 @@ config PATA_MARVELL
- 
- 	  If unsure, say N.
- 
-+config PATA_MPC52xx
-+	tristate "Freescale MPC52xx SoC internal IDE"
-+	depends on PPC_MPC52xx && PPC_BESTCOMM
-+	select PPC_BESTCOMM_ATA
-+	help
-+	  This option enables support for integrated IDE controller
-+	  of the Freescale MPC52xx SoC.
-+
-+	  If unsure, say N.
-+
- config PATA_NETCELL
- 	tristate "NETCELL Revolution RAID support"
- 	depends on PCI
-diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
-index c501af5..2b67c90 100644
---- a/drivers/ata/Makefile
-+++ b/drivers/ata/Makefile
-@@ -11,7 +11,6 @@ obj-$(CONFIG_SATA_DWC)		+= sata_dwc_460ex.o
- 
- # SFF w/ custom DMA
- obj-$(CONFIG_PDC_ADMA)		+= pdc_adma.o
--obj-$(CONFIG_PATA_MPC52xx)	+= pata_mpc52xx.o
- obj-$(CONFIG_PATA_OCTEON_CF)	+= pata_octeon_cf.o
- obj-$(CONFIG_SATA_QSTOR)	+= sata_qstor.o
- obj-$(CONFIG_SATA_SX4)		+= sata_sx4.o
-@@ -52,6 +51,7 @@ obj-$(CONFIG_PATA_IT821X)	+= pata_it821x.o
- obj-$(CONFIG_PATA_JMICRON)	+= pata_jmicron.o
- obj-$(CONFIG_PATA_MACIO)	+= pata_macio.o
- obj-$(CONFIG_PATA_MARVELL)	+= pata_marvell.o
-+obj-$(CONFIG_PATA_MPC52xx)	+= pata_mpc52xx.o
- obj-$(CONFIG_PATA_NETCELL)	+= pata_netcell.o
- obj-$(CONFIG_PATA_NINJA32)	+= pata_ninja32.o
- obj-$(CONFIG_PATA_NS87415)	+= pata_ns87415.o
+Patch for adding kernel command line option to pass in dtb_compat
+string dropped from this set will be submitted seperately.
+
+Changes from V2:
+
+Rule to create assembly wrapper for blob changed to use Sam Ravnborgs
+suggested implementation.
+
+Rules in architecture specific Makefiles changed to use the cmd
+function instead of the if_changed function.
+
+Changes from V3:
+
+Cosmetic fix of DTC quiet command
+
+Dirk Brandewie (4):
+  of: Add support for linking device tree blobs into vmlinux
+  x86/of: Add building device tree blob(s) into image.
+  of/powerpc: Use generic rule to build dtb's
+  microblaze/of: Use generic rule to build dtb's
+
+ Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
+ arch/microblaze/boot/Makefile      |   12 +++---------
+ arch/powerpc/boot/Makefile         |    8 +++-----
+ arch/x86/platform/ce4100/Makefile  |   10 ++++++++++
+ include/asm-generic/vmlinux.lds.h  |   13 +++++++++++--
+ scripts/Makefile.lib               |   23 +++++++++++++++++++++++
+ 6 files changed, 65 insertions(+), 16 deletions(-)
+
 -- 
 1.7.2.3
