@@ -1,9 +1,9 @@
 Return-Path: <dirk.brandewie@gmail.com>
 From: dirk.brandewie@gmail.com
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] x86/of: Add building device tree blob(s) into image.
-Date: Wed, 22 Dec 2010 11:57:27 -0800
-Message-Id: <1293047849-26078-3-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 3/4] of/powerpc: Use generic rule to build dtb's
+Date: Wed, 22 Dec 2010 11:57:28 -0800
+Message-Id: <1293047849-26078-4-git-send-email-dirk.brandewie@gmail.com>
 In-Reply-To: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
 References: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
 Cc: linux-arch@vger.kernel.org, mmarek@suse.cz, linux-kbuild@vger.kernel.org,
@@ -21,30 +21,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-This patch adds linking device tree blob into vmlinux. DTB's are
-added by adding the blob object name to list of objects to be linked
-into the image.
+Modify arch/powerpc/boot/Makefile to use dtc command in
+scripts/Makefile.lib
 
 Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 ---
- arch/x86/platform/ce4100/Makefile |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/Makefile |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/platform/ce4100/Makefile b/arch/x86/platform/ce4100/Makefile
-index 91fc929..e5f3b7b 100644
---- a/arch/x86/platform/ce4100/Makefile
-+++ b/arch/x86/platform/ce4100/Makefile
-@@ -1 +1,11 @@
- obj-$(CONFIG_X86_INTEL_CE)	+= ce4100.o
-+clean-files := *dtb.S
-+
-+ifdef CONFIG_X86_OF
-+###
-+# device tree blob
-+obj-$(CONFIG_X86_INTEL_CE) += ce4100.dtb.o
-+
-+$(obj)/%.dtb: $(src)/%.dts
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index fae8192..96deec6 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -35,7 +35,7 @@ endif
+ 
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+ 
+-DTS_FLAGS	?= -p 1024
++DTC_FLAGS	?= -p 1024
+ 
+ $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
+@@ -332,10 +332,8 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ 	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
+ 
+ # Rule to build device tree blobs
+-DTC = $(objtree)/scripts/dtc/dtc
+-
+-$(obj)/%.dtb: $(dtstree)/%.dts
+-	$(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(dtstree)/$*.dts
++$(obj)/%.dtb: $(src)/dts/%.dts
 +	$(call cmd,dtc)
-+endif
+ 
+ # If there isn't a platform selected then just strip the vmlinux.
+ ifeq (,$(image-y))
 -- 
 1.7.2.3
