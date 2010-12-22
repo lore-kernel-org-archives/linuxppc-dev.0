@@ -1,9 +1,9 @@
 Return-Path: <dirk.brandewie@gmail.com>
 From: dirk.brandewie@gmail.com
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] of/powerpc: Use generic rule to build dtb's
-Date: Wed, 22 Dec 2010 11:57:28 -0800
-Message-Id: <1293047849-26078-4-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 4/4] microblaze/of: Use generic rule to build dtb's
+Date: Wed, 22 Dec 2010 11:57:29 -0800
+Message-Id: <1293047849-26078-5-git-send-email-dirk.brandewie@gmail.com>
 In-Reply-To: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
 References: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
 Cc: linux-arch@vger.kernel.org, mmarek@suse.cz, linux-kbuild@vger.kernel.org,
@@ -26,34 +26,40 @@ scripts/Makefile.lib
 
 Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 ---
- arch/powerpc/boot/Makefile |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ arch/microblaze/boot/Makefile |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index fae8192..96deec6 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -35,7 +35,7 @@ endif
+diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
+index be01d78..4c4e58e 100644
+--- a/arch/microblaze/boot/Makefile
++++ b/arch/microblaze/boot/Makefile
+@@ -10,9 +10,6 @@ targets := linux.bin linux.bin.gz simpleImage.%
  
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+ OBJCOPYFLAGS := -O binary
  
--DTS_FLAGS	?= -p 1024
-+DTC_FLAGS	?= -p 1024
+-# Where the DTS files live
+-dtstree         := $(srctree)/$(src)/dts
+-
+ # Ensure system.dtb exists
+ $(obj)/linked_dtb.o: $(obj)/system.dtb
  
- $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
- $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
-@@ -332,10 +332,8 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- 	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
+@@ -51,14 +48,11 @@ $(obj)/simpleImage.%: vmlinux FORCE
+ 	$(call if_changed,strip)
+ 	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
+ 
+-# Rule to build device tree blobs
+-DTC = $(objtree)/scripts/dtc/dtc
  
  # Rule to build device tree blobs
--DTC = $(objtree)/scripts/dtc/dtc
--
--$(obj)/%.dtb: $(dtstree)/%.dts
--	$(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(dtstree)/$*.dts
-+$(obj)/%.dtb: $(src)/dts/%.dts
+-quiet_cmd_dtc = DTC     $@
+-	cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 -p 1024 $(dtstree)/$*.dts
++DTC_FLAGS := -p 1024
+ 
+-$(obj)/%.dtb: $(dtstree)/%.dts FORCE
+-	$(call if_changed,dtc)
++$(obj)/%.dtb: $(src)/dts/%.dts FORCE
 +	$(call cmd,dtc)
  
- # If there isn't a platform selected then just strip the vmlinux.
- ifeq (,$(image-y))
+ clean-files += *.dtb simpleImage.*.unstrip linux.bin.ub
 -- 
 1.7.2.3
