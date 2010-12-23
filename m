@@ -1,20 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id BC398B70A3
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 06:08:42 +1100 (EST)
-Received: by pvf33 with SMTP id 33so2113464pvf.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2010 11:08:40 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Thu, 23 Dec 2010 12:08:38 -0700
+Date: Thu, 23 Dec 2010 14:42:41 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH RESEND 2] mpc52xx: gpt: include fs.h
-Message-ID: <20101223190838.GE20384@angua.secretlab.ca>
-References: <1293032575-16241-1-git-send-email-w.sang@pengutronix.de>
+To: dirk.brandewie@gmail.com
+Subject: Re: [PATCH 1/4] of: Add support for linking device tree blobs into
+	vmlinux
+Message-ID: <20101223214241.GF20384@angua.secretlab.ca>
+References: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
+	<1293047849-26078-2-git-send-email-dirk.brandewie@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1293032575-16241-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1293047849-26078-2-git-send-email-dirk.brandewie@gmail.com>
+Cc: linux-arch@vger.kernel.org, mmarek@suse.cz, linux-kbuild@vger.kernel.org,
+	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +23,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 22, 2010 at 04:42:55PM +0100, Wolfram Sang wrote:
-> Fix build errors like these (from a randconfig and my defconfig for a custom board):
+On Wed, Dec 22, 2010 at 11:57:26AM -0800, dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.brandewie@gmail.com>
 > 
-> src/arch/powerpc/platforms/52xx/mpc52xx_gpt.c:549: error: dereferencing pointer to incomplete type: 1 errors in 1 logs
-> src/arch/powerpc/platforms/52xx/mpc52xx_gpt.c:636: error: implicit declaration of function 'nonseekable_open': 1 errors in 1 logs
-> src/arch/powerpc/platforms/52xx/mpc52xx_gpt.c:657: error: variable 'mpc52xx_wdt_fops' has initializer but incomplete type: 1 errors in 1 logs
-> src/arch/powerpc/platforms/52xx/mpc52xx_gpt.c:658: error: excess elements in struct initializer: 1 errors in 1 logs
-> src/arch/powerpc/platforms/52xx/mpc52xx_gpt.c:658: error: unknown field 'owner' specified in initializer: 1 errors in 1 logs
-> ...
+> This patch adds support for linking device tree blob(s) into
+> vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
+> .dtb sections into vmlinux. To maintain compatiblity with the of/fdt
+> driver code platforms MUST copy the blob to a non-init memory location
+> before the kernel frees the .init.* sections in the image.
 > 
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Modifies scripts/Makefile.lib to add a kbuild command to
+> compile DTS files to device tree blobs and a rule to create objects to
+> wrap the blobs for linking.
+> 
+> STRUCT_ALIGNMENT is defined in vmlinux.lds.h for use in the rule to
+> create wrapper objects for the dtb in Makefile.lib.  The
+> STRUCT_ALIGN() macro in vmlinux.lds.h is modified to use the
+> STRUCT_ALIGNMENT definition.
+> 
+> The DTB's are placed on 32 byte boundries to allow parsing the blob
+> with driver/of/fdt.c during early boot without having to copy the blob
+> to get the structure alignment GCC expects.
+> 
+> A DTB is linked in by adding the DTB object to the list of objects to
+> be linked into vmlinux in the archtecture specific Makefile using
+>    obj-y += foo.dtb.o
+> 
+> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Applied, thanks.
-
-Sorry for the delay.  I got severely snowed under this fall and have
-only come up for air now.
+merged, thanks.
 
 g.
 
 > ---
+>  Documentation/kbuild/makefiles.txt |   15 +++++++++++++++
+>  include/asm-generic/vmlinux.lds.h  |   13 +++++++++++--
+>  scripts/Makefile.lib               |   23 +++++++++++++++++++++++
+>  3 files changed, 49 insertions(+), 2 deletions(-)
 > 
-> rc7 is out and we still have this build-failure. Please apply.
-> 
->  arch/powerpc/platforms/52xx/mpc52xx_gpt.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> index fea833e..e0d703c 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> @@ -63,6 +63,7 @@
->  #include <linux/of_gpio.h>
->  #include <linux/kernel.h>
->  #include <linux/slab.h>
-> +#include <linux/fs.h>
->  #include <linux/watchdog.h>
->  #include <linux/miscdevice.h>
->  #include <linux/uaccess.h>
+> diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+> index 0ef00bd..86e3cd0 100644
+> --- a/Documentation/kbuild/makefiles.txt
+> +++ b/Documentation/kbuild/makefiles.txt
+> @@ -1136,6 +1136,21 @@ When kbuild executes, the following steps are followed (roughly):
+>  	      resulting in the target file being recompiled for no
+>  	      obvious reason.
+>  
+> +    dtc
+> +	Create flattend device tree blob object suitable for linking
+> +	into vmlinux. Device tree blobs linked into vmlinux are placed
+> +	in an init section in the image. Platform code *must* copy the
+> +	blob to non-init memory prior to calling unflatten_device_tree().
+> +
+> +	Example:
+> +		#arch/x86/platform/ce4100/Makefile
+> +		clean-files := *dtb.S
+> +
+> +		DTC_FLAGS := -p 1024
+> +		obj-y += foo.dtb.o
+> +
+> +		$(obj)/%.dtb: $(src)/%.dts
+> +			$(call cmd,dtc)
+>  
+>  --- 6.7 Custom kbuild commands
+>  
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index bd69d79..05cbad0 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -67,7 +67,8 @@
+>   * Align to a 32 byte boundary equal to the
+>   * alignment gcc 4.5 uses for a struct
+>   */
+> -#define STRUCT_ALIGN() . = ALIGN(32)
+> +#define STRUCT_ALIGNMENT 32
+> +#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
+>  
+>  /* The actual configuration determine if the init/exit sections
+>   * are handled as text/data or they can be discarded (which
+> @@ -146,6 +147,13 @@
+>  #define TRACE_SYSCALLS()
+>  #endif
+>  
+> +
+> +#define KERNEL_DTB()							\
+> +	STRUCT_ALIGN();							\
+> +	VMLINUX_SYMBOL(__dtb_start) = .;				\
+> +	*(.dtb.init.rodata)						\
+> +	VMLINUX_SYMBOL(__dtb_end) = .;
+> +
+>  /* .data section */
+>  #define DATA_DATA							\
+>  	*(.data)							\
+> @@ -468,7 +476,8 @@
+>  	MCOUNT_REC()							\
+>  	DEV_DISCARD(init.rodata)					\
+>  	CPU_DISCARD(init.rodata)					\
+> -	MEM_DISCARD(init.rodata)
+> +	MEM_DISCARD(init.rodata)					\
+> +	KERNEL_DTB()
+>  
+>  #define INIT_TEXT							\
+>  	*(.init.text)							\
+> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+> index 4c72c11..7df8eb5 100644
+> --- a/scripts/Makefile.lib
+> +++ b/scripts/Makefile.lib
+> @@ -200,6 +200,29 @@ quiet_cmd_gzip = GZIP    $@
+>  cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
+>  	(rm -f $@ ; false)
+>  
+> +# DTC
+> +#  ---------------------------------------------------------------------------
+> +
+> +# Generate an assembly file to wrap the output of the device tree compiler
+> +quiet_cmd_dt_S_dtb= DTB    $@
+> +cmd_dt_S_dtb=						\
+> +(							\
+> +	echo '\#include <asm-generic/vmlinux.lds.h>'; 	\
+> +	echo '.section .dtb.init.rodata,"a"';		\
+> +	echo '.balign STRUCT_ALIGNMENT';                \
+> +	echo '.global __dtb_$(*F)_begin';               \
+> +	echo '__dtb_$(*F)_begin:';                      \
+> +	echo '.incbin "$<" ';                           \
+> +	echo '__dtb_$(*F)_end:';                        \
+> +	echo '.global __dtb_$(*F)_end';                 \
+> +	echo '.balign STRUCT_ALIGNMENT'; 		\
+> +) > $@
+> +
+> +$(obj)/%.dtb.S: $(obj)/%.dtb 
+> +	$(call cmd,dt_S_dtb)
+> +
+> +quiet_cmd_dtc = DTC     $@
+> +      cmd_dtc = $(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 $(DTC_FLAGS) $<
+>  
+>  # Bzip2
+>  # ---------------------------------------------------------------------------
 > -- 
 > 1.7.2.3
 > 
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
