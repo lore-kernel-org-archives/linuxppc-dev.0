@@ -1,18 +1,16 @@
-Return-Path: <syokazuliao@yahoo.com.tw>
-Received: from nm2-vm0.bullet.mail.tp2.yahoo.com
-	(nm2-vm0.bullet.mail.tp2.yahoo.com [203.188.200.182])
-	by ozlabs.org (Postfix) with SMTP id 08DC6B7063
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2010 20:25:14 +1100 (EST)
-Message-ID: <735799.88939.qm@web74212.mail.tp2.yahoo.com>
-Date: Thu, 23 Dec 2010 15:38:31 +0800 (CST)
-From: syokazuliao@yahoo.com.tw
-Subject: Re: [Cbe-oss-dev] [RFC 0/3] powerpc: memory copy routines tweaked for
-	Cell
-To: Gunnar von Boehn <VONBOEHN@de.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Thu, 23 Dec 2010 11:56:23 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Meador Inge <meador_inge@mentor.com>
+Subject: Re: [RFC] MPIC Bindings and Bindings for AMP Systems
+Message-ID: <20101223185623.GA20384@angua.secretlab.ca>
+References: <4D12F171.7010103@mentor.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-834038811-1293089911=:88939"
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D12F171.7010103@mentor.com>
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	"Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,116 +20,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0-834038811-1293089911=:88939
-Content-Type: multipart/alternative; boundary="0-388117525-1293089911=:88939"
+On Thu, Dec 23, 2010 at 12:51:29AM -0600, Meador Inge wrote:
+> Hi All,
+> 
+> I am currently doing some work on Linux PPC AMP systems (with Hollis,
+> CC'd).  We are using device trees to partition resources between the
+> different OSes.  To help with this effort, we would like to introduce
+> some new bindings to the MPIC.
+> 
+> Currently, there are no bindings for the MPIC under
+> '.../Documentation/powerpc/dts-bindings/'.  I think most folks are
+> following the IEEE 1275 bindings for Open PIC.
+> 
+> It would be nice to check-in a binding for the MPIC that is a superset
+> of the 1275 bindings as a place to document extensions.  The already in
+> use property 'protected-sources', for example, could be placed there.
+> 
+> I have included a draft proposal of what this would like.  It includes
+> some properties ('no-reset') and a node (for message registers) that we
+> are currently using for our AMP implementation and we would really
+> like to push upstream.  If the general idea seems sound, then I will
+> clean up the proposal and submit a patch for the bindings.
+> 
+> Thoughts?
 
---0-388117525-1293089911=:88939
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi Meador.  Comments below.
 
-Hi everyone,=0AI'm a new Cell BE=C2=A0user, and my=C2=A0debug platform is Y=
-DL6.2 run on PS3.=0A=0AI wrote=C2=A0two simple test=C2=A0programs that=C2=
-=A0tests=C2=A0Mark Nelson's=C2=A0memcpy routines under=0Aa number of condit=
-ions, and the test=C2=A0arrays=C2=A0are=C2=A0aligned on 128-byte boundaries=
-.=0A=0AFollowing explains my three files.=0A1. The main1.C is my=C2=A0first=
- test program, it assigns=C2=A0two 16KB arrays.=0A2. The main2.C is my seco=
-nd test program, it assigns=C2=A0two 4KB arrays.=0A3. The test_result.TXT i=
-s my test result.=0A=0ATherefore, I have=C2=A0three questions.=0A1. How to =
-calculate the bandwidth (MB/s)?=0A2. Is my result or test way=C2=A0correct?=
-=0A3. Why is the 4KB result different between main1.C and main2.C?=0A=0APS:=
- Please use UltraEdit open my three=C2=A0flies.=0A=0A=0A      
---0-388117525-1293089911=:88939
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+g.
 
-<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
-ad><body><div style=3D"font-family:times new roman, new york, times, serif,=
- =E6=96=B0=E7=B4=B0=E6=98=8E=E9=AB=94;font-size:12pt"><DIV style=3D"FONT-FA=
-MILY: times new roman, new york, times, serif, =E6=96=B0=E7=B4=B0=E6=98=8E=
-=E9=AB=94; FONT-SIZE: 12pt">=0A<DIV style=3D"FONT-FAMILY: times new roman, =
-new york, times, serif, =E6=96=B0=E7=B4=B0=E6=98=8E=E9=AB=94; FONT-SIZE: 12=
-pt">=0A<DIV style=3D"FONT-FAMILY: times new roman, new york, times, serif, =
-=E6=96=B0=E7=B4=B0=E6=98=8E=E9=AB=94; FONT-SIZE: 12pt">=0A<DIV>Hi everyone,=
-</DIV>=0A<DIV>I'm a new Cell BE&nbsp;user, and my&nbsp;debug platform is YD=
-L6.2 run on PS3.</DIV>=0A<DIV>&nbsp;</DIV>=0A<DIV>I wrote&nbsp;two simple t=
-est&nbsp;programs that&nbsp;tests&nbsp;Mark Nelson's&nbsp;memcpy routines u=
-nder<BR>a number of conditions, and the test&nbsp;arrays&nbsp;are&nbsp;alig=
-ned on 128-byte boundaries.</DIV>=0A<DIV>&nbsp;</DIV>=0A<DIV>=0A<DIV class=
-=3Dabstr>Following explains my three files.</DIV>=0A<DIV class=3Dabstr>1. T=
-he main1.C is my&nbsp;first test program, it assigns&nbsp;two 16KB arrays.<=
-/DIV>=0A<DIV class=3Dabstr>2. The main2.C is my second test program, it ass=
-igns&nbsp;two 4KB arrays.</DIV></DIV>=0A<DIV>3. The test_result.TXT is my t=
-est result.</DIV>=0A<DIV>&nbsp;</DIV>=0A<DIV>Therefore, I have&nbsp;three q=
-uestions.</DIV>=0A<DIV>1. How to calculate the bandwidth (MB/s)?</DIV>=0A<D=
-IV>2. Is my result or test way&nbsp;correct?</DIV>=0A<DIV>3. Why is the 4KB=
- result different between main1.C and main2.C?</DIV>=0A<DIV>&nbsp;</DIV>=0A=
-<DIV>PS: Please use UltraEdit open my three&nbsp;flies.</DIV></DIV></DIV></=
-DIV></div><br>=0A=0A=0A=0A      &nbsp;</body></html>
---0-388117525-1293089911=:88939--
+> 
+> ===============
+> 
+> * MPIC Binding
+> 
+> This binding specifies what properties and child nodes must be
+> available on the device tree representation of the MPIC interrupt
+> controller.  This binding is a superset of the binding defined for
+> Open PIC in [1].
+> 
+> ** Required properties:
+> 
+>     - All of the required properties mentioned in [1].
 
---0-834038811-1293089911=:88939
-Content-Type: text/plain; name="main2.C"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="main2.C"
+You should probably list them here anyway to aid the reader.
 
-I2luY2x1ZGUgPHN0ZGxpYi5oPg0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5j
-bHVkZSA8cHB1X2ludHJpbnNpY3MuaD4NCg0KZXh0ZXJuIHZvaWQgKm1lbWNw
-eSh2b2lkICosIGNvbnN0IHZvaWQgKiwgc2l6ZV90KTsNCg0KaW50IG1haW4o
-KSB7DQoJdW5zaWduZWQgY2hhciAqcywgKmQ7DQoJcmVnaXN0ZXIgdW5zaWdu
-ZWQgbG9uZyBsb25nIHN0YXJ0LCBmaW5pc2gsICBpOw0KCWlmKHBvc2l4X21l
-bWFsaWduKCh2b2lkICopJnMsIDEyOCwgNDA5NikpIHsNCgkJcHJpbnRmKCJm
-YWlsZWRcbiIpOw0KCQlnb3RvIGVuZDsNCgl9DQoJZm9yKGkgPSAzMiwgaiA9
-IDA7IGkgPiAwOyBpLS0sIGogKz0gMTI4KSB7CQkvKiBjbGVhciBzIGZyb20g
-Y2FjaGUgKi8NCgkJX19kY2JmKHMraik7DQoJfQ0KCWlmKHBvc2l4X21lbWFs
-aWduKCh2b2lkICopJmQsIDEyOCwgNDA5NikpIHsNCgkJcHJpbnRmKCJmYWls
-ZWRcbiIpOw0KCQlnb3RvIGVuZDsNCgl9DQoJZm9yKGkgPSAzMiwgaiA9IDA7
-IGkgPiAwOyBpLS0sIGogKz0gMTI4KSB7CQkvKiBjbGVhciBkIGZyb20gY2Fj
-aGUgKi8NCgkJX19kY2JmKHMraik7DQoJfQ0KDQoJX19kY2J0KGNweW1lbSk7
-CQkvKiBwcmVmZXRjaCBtZW1jcHkgKi8NCglfX2RjYnQoY3B5bWVtKzEyOCk7
-DQoJX19kY2J0KGNweW1lbSsyNTYpOw0KCV9fZGNidChjcHltZW0rMzg0KTsN
-CglfX2RjYnQoY3B5bWVtKzUxMik7DQoJX19kY2J0KGNweW1lbSs2NDApOw0K
-CV9fZGNidChjcHltZW0rNzY4KTsNCglfX2RjYnQoY3B5bWVtKzg5Nik7DQoJ
-X19kY2J0KGNweW1lbSsxMDI0KTsNCglfX2RjYnQoY3B5bWVtKzExNTIpOw0K
-CV9fZGNidChjcHltZW0rMTI4MCk7DQoJX19kY2J0KGNweW1lbSsxNDA4KTsN
-CglfX2RjYnQoY3B5bWVtKzE1MzYpOw0KCV9fZGNidChjcHltZW0rMTY2NCk7
-DQoJX19kY2J0KGNweW1lbSsxNzkyKTsNCglfX2RjYnQoY3B5bWVtKzE5MjAp
-Ow0KCV9fZGNidChjcHltZW0rMjA0OCk7DQoJX19kY2J0KGNweW1lbSsyMTc2
-KTsNCglfX2RjYnQoY3B5bWVtKzIzMDQpOw0KCV9fZGNidChjcHltZW0rMjQz
-Mik7DQoJX19zeW5jKCk7DQoNCglzdGFydCA9IF9fbWZ0YigpOw0KCW1lbWNw
-eShkLCBzLCA0MDk2KTsNCglmaW5pc2ggPSBfX21mdGIoKTsNCg0KCXByaW50
-ZigiJWxsZFxuIiwgZmluaXNoIC0gc3RhcnQpOw0KDQoJZnJlZShzKTsNCglm
-cmVlKGQpOw0KZW5kOg0KCXJldHVybiAwOw0KfQ0K
+> 
+> ** Optional properties:
+> 
+>     - no-reset : the presence of this property indicates that the
+>                  interrupt controller should not be reset during OS
+>                  initialization.
+>     - protected-sources : a list of interrupt sources that are not
+>                           available for use.
 
---0-834038811-1293089911=:88939
-Content-Type: text/plain; name="test_result.TXT"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="test_result.TXT"
+What is the use case for the protected-sources property?  Wouldn't the
+irqs simply not be referenced by any device nodes?  Documenting the
+reason for this property would be useful here.
 
-Q29weSBNZW1vcnktdG8tTWVtb3J5LCByZXN1bHRzIGFyZSBpbiB0aWNrcy4N
-Cg0KICAgICAgICAgICAgIDE2S0IgICAgICAgIDRLQiAgICAgMktCICAgIDFL
-QiAgICA1MTJCICAgICAyNTZCICAgICAxMjhCICAgIDY0QiAgICAgMzJCICAg
-ICAxNkIgDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQ0KbWFpbjEuQwkJMjA2M34yNDY2CSAgIDY2OX44NzkJNjB+NjMJIDMz
-fjM2CSAyMn4yNAkgIDE5fjIxCQkxN34yMQkJMTd+MTkJCTE1fjE3CQkxNX4x
-Ng0KbWFpbjIuQwkJCQkJCQkgICAxMTB+MTE0CTYwfjYyCSAzM34zNgkgMjF+
-MjQJCTE5fjIxCQkxN34xOAkJMTd+MTgJCTE1fjE2CQkxNX4xNg==
+> 
+> ** Example:
+> 
+> 	mpic: pic@40000 {
+> 		interrupt-controller;
+> 		#address-cells = <0>;
+> 		#interrupt-cells = <2>;
+> 		reg = <0x40000 0x40000>;
+> 		compatible = "chrp,open-pic";
+> 		device_type = "open-pic";
+> 		protected-sources = <0xb1 0xb2>;
+> 		no-reset;
+> 	};
+> 
+> * MPIC Message Registers
+> 
+> This binding specifies how the MPIC message registers implemented on
+> some Freescale platforms for interprocessor communication should be
+> represented.
+> 
+> ** Required parent:
+> 
+>     - Message register nodes should always been nested under a MPIC
+>       node.
+> 
+> ** Required properties:
+> 
+>     - compatible : compatible list, contains 2 entries, first is
+>                    "fsl,CHIP-msgr", where CHIP is the processor
+>                    (p2020, mpc8572, etc ...) and the second is
+>                    "fsl,mpic-msgr".
 
---0-834038811-1293089911=:88939
-Content-Type: text/plain; name="test_result.TXT"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="test_result.TXT"
+I'd rather see the 'generic' value of mpic-msgr omitted and instead
+allow new parts to claim compatibility with an older chip.  Generic
+or wildcard compatible values can be troublesome because the meaning
+has a tendency to change over time.
 
-Q29weSBNZW1vcnktdG8tTWVtb3J5LCByZXN1bHRzIGFyZSBpbiB0aWNrcy4N
-Cg0KICAgICAgICAgICAgIDE2S0IgICAgICAgIDRLQiAgICAgMktCICAgIDFL
-QiAgICA1MTJCICAgICAyNTZCICAgICAxMjhCICAgIDY0QiAgICAgMzJCICAg
-ICAxNkIgDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQ0KbWFpbjEuQwkJMjA2M34yNDY2CSAgIDY2OX44NzkJNjB+NjMJIDMz
-fjM2CSAyMn4yNAkgIDE5fjIxCQkxN34yMQkJMTd+MTkJCTE1fjE3CQkxNX4x
-Ng0KbWFpbjIuQwkJCQkJCQkgICAxMTB+MTE0CTYwfjYyCSAzM34zNgkgMjF+
-MjQJCTE5fjIxCQkxN34xOAkJMTd+MTgJCTE1fjE2CQkxNX4xNg==
+>     - reg        : should contain the address and the length of the
+>                    message register block.
+>     - cell-index : the index of the message register block.
 
---0-834038811-1293089911=:88939--
+?  This needs some more explanation.  cell-index often gets abused as
+a way to enumerate devices.  Typically, the address of the device
+itself is sufficient to identify the device.
+
+>     - interrupts : each one of the interrupts here represents the
+>                    interrupt line for one message register.  These
+>                    interrupts are routed internally to the MPIC.
+> 
+> NOTE: The 'interrupt-parent' is implicit since message register nodes
+>        are always children of interrupt controller nodes.
+> 
+> ** Example:
+> 
+> 	mpic: pic@40000 {
+> 		interrupt-controller;
+> 		#address-cells = <0>;
+> 		#interrupt-cells = <2>;
+> 		reg = <0x40000 0x40000>;
+> 		compatible = "chrp,open-pic";
+> 		device_type = "open-pic";
+> 		protected-sources = <0xb1>;
+> 
+> 		msgr@1400 {
+> 			compatible = "fsl,p2020-msgr", "fsl,mpic-msgr";
+> 			reg = <0x1400 0x200>;
+
+Are these registers memory mapped?  If so, then the parent node
+needs to have a 'ranges' property.
+
+> 			cell-index = <0>;
+> 			interrupts = <0xb0 0x2 0xb1 0x2
+>                                       0xb2 0x2 0xb3 0x2>;
+> 		};
+> 
+> 		msgr@2400 {
+> 			compatible = "fsl,p2020-msgr", "fsl,mpic-msgr";
+> 			reg = <0x2400 0x200>;
+> 			cell-index = <1>;
+> 			interrupts = <0xb4 0x2 0xb5 0x2
+>                                       0xb6 0x2 0xb7 0x2>;
+> 	         };	
+> 	};
+> 
+> * References
+> 
+> [1] PowerPC Microprocessor Common Hardware Reference Platform (CHRP)
+>      Binding, Version 1.8, 1998. Published by the Open Firmware Working
+>      Group. (http://playground.sun.com/1275/bindings/chrp/chrp1_8a.ps)
+> 
+> 
+> -- 
+> Meador Inge     | meador_inge AT mentor.com
+> Mentor Embedded | http://www.mentor.com/embedded-software
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
