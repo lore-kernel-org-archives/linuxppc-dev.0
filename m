@@ -1,6 +1,6 @@
 Return-Path: <meador_inge@mentor.com>
-Message-ID: <4D12E4F1.2030004@mentor.com>
-Date: Wed, 22 Dec 2010 23:58:09 -0600
+Message-ID: <4D12F171.7010103@mentor.com>
+Date: Thu, 23 Dec 2010 00:51:29 -0600
 From: Meador Inge <meador_inge@mentor.com>
 MIME-Version: 1.0
 To: devicetree-discuss@lists.ozlabs.org
@@ -40,8 +40,7 @@ clean up the proposal and submit a patch for the bindings.
 
 Thoughts?
 
-
-============================
+===============
 
 * MPIC Binding
 
