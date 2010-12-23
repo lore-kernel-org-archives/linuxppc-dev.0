@@ -1,15 +1,15 @@
 Return-Path: <glikely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Thu, 23 Dec 2010 14:58:41 -0700
+Date: Thu, 23 Dec 2010 15:13:19 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
 To: dirk.brandewie@gmail.com
-Subject: Re: [PATCH 2/4] x86/of: Add building device tree blob(s) into image.
-Message-ID: <20101223215841.GH20384@angua.secretlab.ca>
+Subject: Re: [PATCH 4/4] microblaze/of: Use generic rule to build dtb's
+Message-ID: <20101223221319.GI20384@angua.secretlab.ca>
 References: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
-	<1293047849-26078-3-git-send-email-dirk.brandewie@gmail.com>
+	<1293047849-26078-5-git-send-email-dirk.brandewie@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1293047849-26078-3-git-send-email-dirk.brandewie@gmail.com>
+In-Reply-To: <1293047849-26078-5-git-send-email-dirk.brandewie@gmail.com>
 Cc: linux-arch@vger.kernel.org, mmarek@suse.cz, linux-kbuild@vger.kernel.org,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -22,40 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 22, 2010 at 11:57:27AM -0800, dirk.brandewie@gmail.com wrote:
+On Wed, Dec 22, 2010 at 11:57:29AM -0800, dirk.brandewie@gmail.com wrote:
 > From: Dirk Brandewie <dirk.brandewie@gmail.com>
 > 
-> This patch adds linking device tree blob into vmlinux. DTB's are
-> added by adding the blob object name to list of objects to be linked
-> into the image.
+> Modify arch/powerpc/boot/Makefile to use dtc command in
+> scripts/Makefile.lib
 > 
 > Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
-> ---
->  arch/x86/platform/ce4100/Makefile |   10 ++++++++++
->  1 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/platform/ce4100/Makefile b/arch/x86/platform/ce4100/Makefile
-> index 91fc929..e5f3b7b 100644
-> --- a/arch/x86/platform/ce4100/Makefile
-> +++ b/arch/x86/platform/ce4100/Makefile
-> @@ -1 +1,11 @@
->  obj-$(CONFIG_X86_INTEL_CE)	+= ce4100.o
-> +clean-files := *dtb.S
-> +
-> +ifdef CONFIG_X86_OF
-> +###
-> +# device tree blob
-> +obj-$(CONFIG_X86_INTEL_CE) += ce4100.dtb.o
-> +
-> +$(obj)/%.dtb: $(src)/%.dts
-> +	$(call cmd,dtc)
-> +endif
 
-Skipped for now; will pick up after ce4100 is in mainline since this
-is a pretty low-risk change.
+applied, thanks
 
 g.
 
+> ---
+>  arch/microblaze/boot/Makefile |   12 +++---------
+>  1 files changed, 3 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
+> index be01d78..4c4e58e 100644
+> --- a/arch/microblaze/boot/Makefile
+> +++ b/arch/microblaze/boot/Makefile
+> @@ -10,9 +10,6 @@ targets := linux.bin linux.bin.gz simpleImage.%
+>  
+>  OBJCOPYFLAGS := -O binary
+>  
+> -# Where the DTS files live
+> -dtstree         := $(srctree)/$(src)/dts
+> -
+>  # Ensure system.dtb exists
+>  $(obj)/linked_dtb.o: $(obj)/system.dtb
+>  
+> @@ -51,14 +48,11 @@ $(obj)/simpleImage.%: vmlinux FORCE
+>  	$(call if_changed,strip)
+>  	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
+>  
+> -# Rule to build device tree blobs
+> -DTC = $(objtree)/scripts/dtc/dtc
+>  
+>  # Rule to build device tree blobs
+> -quiet_cmd_dtc = DTC     $@
+> -	cmd_dtc = $(DTC) -O dtb -o $(obj)/$*.dtb -b 0 -p 1024 $(dtstree)/$*.dts
+> +DTC_FLAGS := -p 1024
+>  
+> -$(obj)/%.dtb: $(dtstree)/%.dts FORCE
+> -	$(call if_changed,dtc)
+> +$(obj)/%.dtb: $(src)/dts/%.dts FORCE
+> +	$(call cmd,dtc)
+>  
+>  clean-files += *.dtb simpleImage.*.unstrip linux.bin.ub
 > -- 
 > 1.7.2.3
 > 
