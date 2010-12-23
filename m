@@ -1,13 +1,18 @@
-Return-Path: <meador_inge@mentor.com>
-Message-ID: <4D12F171.7010103@mentor.com>
-Date: Thu, 23 Dec 2010 00:51:29 -0600
-From: Meador Inge <meador_inge@mentor.com>
+Return-Path: <syokazuliao@yahoo.com.tw>
+Received: from nm1-vm0.bullet.mail.tp2.yahoo.com
+	(nm1-vm0.bullet.mail.tp2.yahoo.com [203.188.200.180])
+	by ozlabs.org (Postfix) with SMTP id 56565B70E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2010 18:49:17 +1100 (EST)
+Message-ID: <859409.54680.qm@web74208.mail.tp2.yahoo.com>
+Date: Thu, 23 Dec 2010 15:49:11 +0800 (CST)
+From: syokazuliao@yahoo.com.tw
+Subject: Re: [Cbe-oss-dev] [RFC 0/3] powerpc: memory copy routines tweaked for
+	Cell
+To: Gunnar von Boehn <VONBOEHN@de.ibm.com>
 MIME-Version: 1.0
-To: devicetree-discuss@lists.ozlabs.org
-Subject: [RFC] MPIC Bindings and Bindings for AMP Systems
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary="0-160434120-1293090551=:54680"
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,125 +22,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+--0-160434120-1293090551=:54680
+Content-Type: multipart/alternative; boundary="0-1777524534-1293090551=:54680"
 
-I am currently doing some work on Linux PPC AMP systems (with Hollis,
-CC'd).  We are using device trees to partition resources between the
-different OSes.  To help with this effort, we would like to introduce
-some new bindings to the MPIC.
+--0-1777524534-1293090551=:54680
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Currently, there are no bindings for the MPIC under
-'.../Documentation/powerpc/dts-bindings/'.  I think most folks are
-following the IEEE 1275 bindings for Open PIC.
+Sorry, I was=C2=A0send wrong files.=0AI send my three files=C2=A0again.=0A=
+=0A=0A      
+--0-1777524534-1293090551=:54680
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-It would be nice to check-in a binding for the MPIC that is a superset
-of the 1275 bindings as a place to document extensions.  The already in
-use property 'protected-sources', for example, could be placed there.
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif,=
+ =E6=96=B0=E7=B4=B0=E6=98=8E=E9=AB=94;font-size:12pt"><DIV>Sorry, I was&nbs=
+p;send wrong files.</DIV>=0A<DIV>I send my three files&nbsp;again.</DIV></d=
+iv><br>=0A=0A=0A=0A      &nbsp;</body></html>
+--0-1777524534-1293090551=:54680--
 
-I have included a draft proposal of what this would like.  It includes
-some properties ('no-reset') and a node (for message registers) that we
-are currently using for our AMP implementation and we would really
-like to push upstream.  If the general idea seems sound, then I will
-clean up the proposal and submit a patch for the bindings.
+--0-160434120-1293090551=:54680
+Content-Type: text/plain; name="main1.C"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="main1.C"
 
-Thoughts?
+I2luY2x1ZGUgPHN0ZGxpYi5oPg0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5j
+bHVkZSA8cHB1X2ludHJpbnNpY3MuaD4NCg0KZXh0ZXJuIHZvaWQgKm1lbWNw
+eSh2b2lkICosIGNvbnN0IHZvaWQgKiwgc2l6ZV90KTsNCg0KaW50IG1haW4o
+KSB7DQoJdW5zaWduZWQgY2hhciAqcywgKmQ7DQoJcmVnaXN0ZXIgdW5zaWdu
+ZWQgbG9uZyBsb25nIHN0YXJ0LCBmaW5pc2gsICBpOw0KCWlmKHBvc2l4X21l
+bWFsaWduKCh2b2lkICopJnMsIDEyOCwgMTYzODQpKSB7DQoJCXByaW50Zigi
+ZmFpbGVkXG4iKTsNCgkJZ290byBlbmQ7DQoJfQ0KCWZvcihpID0gMTI4LCBq
+ID0gMDsgaSA+IDA7IGktLSwgaiArPSAxMjgpIHsJCS8qIGNsZWFyIHMgZnJv
+bSBjYWNoZSAqLw0KCQlfX2RjYmYocytqKTsNCgl9DQoJaWYocG9zaXhfbWVt
+YWxpZ24oKHZvaWQgKikmZCwgMTI4LCAxNjM4NCkpIHsNCgkJcHJpbnRmKCJm
+YWlsZWRcbiIpOw0KCQlnb3RvIGVuZDsNCgl9DQoJZm9yKGkgPSAxMjgsIGog
+PSAwOyBpID4gMDsgaS0tLCBqICs9IDEyOCkgewkJLyogY2xlYXIgZCBmcm9t
+IGNhY2hlICovDQoJCV9fZGNiZihzK2opOw0KCX0NCg0KCV9fZGNidChtZW1j
+cHkpOwkJLyogcHJlZmV0Y2ggbWVtY3B5ICovDQoJX19kY2J0KG1lbWNweSsx
+MjgpOw0KCV9fZGNidChtZW1jcHkrMjU2KTsNCglfX2RjYnQobWVtY3B5KzM4
+NCk7DQoJX19kY2J0KG1lbWNweSs1MTIpOw0KCV9fZGNidChtZW1jcHkrNjQw
+KTsNCglfX2RjYnQobWVtY3B5Kzc2OCk7DQoJX19kY2J0KG1lbWNweSs4OTYp
+Ow0KCV9fZGNidChtZW1jcHkrMTAyNCk7DQoJX19kY2J0KG1lbWNweSsxMTUy
+KTsNCglfX2RjYnQobWVtY3B5KzEyODApOw0KCV9fZGNidChtZW1jcHkrMTQw
+OCk7DQoJX19kY2J0KG1lbWNweSsxNTM2KTsNCglfX2RjYnQobWVtY3B5KzE2
+NjQpOw0KCV9fZGNidChtZW1jcHkrMTc5Mik7DQoJX19kY2J0KG1lbWNweSsx
+OTIwKTsNCglfX2RjYnQobWVtY3B5KzIwNDgpOw0KCV9fZGNidChtZW1jcHkr
+MjE3Nik7DQoJX19kY2J0KG1lbWNweSsyMzA0KTsNCglfX2RjYnQobWVtY3B5
+KzI0MzIpOw0KCV9fc3luYygpOw0KDQoJc3RhcnQgPSBfX21mdGIoKTsNCglt
+ZW1jcHkoZCwgcywgNDA5Nik7DQoJZmluaXNoID0gX19tZnRiKCk7DQoNCglw
+cmludGYoIiVsbGRcbiIsIGZpbmlzaCAtIHN0YXJ0KTsNCg0KCWZyZWUocyk7
+DQoJZnJlZShkKTsNCmVuZDoNCglyZXR1cm4gMDsNCn0NCg==
 
-===============
+--0-160434120-1293090551=:54680
+Content-Type: text/plain; name="main2.C"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="main2.C"
 
-* MPIC Binding
+I2luY2x1ZGUgPHN0ZGxpYi5oPg0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5j
+bHVkZSA8cHB1X2ludHJpbnNpY3MuaD4NCg0KZXh0ZXJuIHZvaWQgKm1lbWNw
+eSh2b2lkICosIGNvbnN0IHZvaWQgKiwgc2l6ZV90KTsNCg0KaW50IG1haW4o
+KSB7DQoJdW5zaWduZWQgY2hhciAqcywgKmQ7DQoJcmVnaXN0ZXIgdW5zaWdu
+ZWQgbG9uZyBsb25nIHN0YXJ0LCBmaW5pc2gsICBpOw0KCWlmKHBvc2l4X21l
+bWFsaWduKCh2b2lkICopJnMsIDEyOCwgNDA5NikpIHsNCgkJcHJpbnRmKCJm
+YWlsZWRcbiIpOw0KCQlnb3RvIGVuZDsNCgl9DQoJZm9yKGkgPSAzMiwgaiA9
+IDA7IGkgPiAwOyBpLS0sIGogKz0gMTI4KSB7CQkvKiBjbGVhciBzIGZyb20g
+Y2FjaGUgKi8NCgkJX19kY2JmKHMraik7DQoJfQ0KCWlmKHBvc2l4X21lbWFs
+aWduKCh2b2lkICopJmQsIDEyOCwgNDA5NikpIHsNCgkJcHJpbnRmKCJmYWls
+ZWRcbiIpOw0KCQlnb3RvIGVuZDsNCgl9DQoJZm9yKGkgPSAzMiwgaiA9IDA7
+IGkgPiAwOyBpLS0sIGogKz0gMTI4KSB7CQkvKiBjbGVhciBkIGZyb20gY2Fj
+aGUgKi8NCgkJX19kY2JmKHMraik7DQoJfQ0KDQoJX19kY2J0KGNweW1lbSk7
+CQkvKiBwcmVmZXRjaCBtZW1jcHkgKi8NCglfX2RjYnQoY3B5bWVtKzEyOCk7
+DQoJX19kY2J0KGNweW1lbSsyNTYpOw0KCV9fZGNidChjcHltZW0rMzg0KTsN
+CglfX2RjYnQoY3B5bWVtKzUxMik7DQoJX19kY2J0KGNweW1lbSs2NDApOw0K
+CV9fZGNidChjcHltZW0rNzY4KTsNCglfX2RjYnQoY3B5bWVtKzg5Nik7DQoJ
+X19kY2J0KGNweW1lbSsxMDI0KTsNCglfX2RjYnQoY3B5bWVtKzExNTIpOw0K
+CV9fZGNidChjcHltZW0rMTI4MCk7DQoJX19kY2J0KGNweW1lbSsxNDA4KTsN
+CglfX2RjYnQoY3B5bWVtKzE1MzYpOw0KCV9fZGNidChjcHltZW0rMTY2NCk7
+DQoJX19kY2J0KGNweW1lbSsxNzkyKTsNCglfX2RjYnQoY3B5bWVtKzE5MjAp
+Ow0KCV9fZGNidChjcHltZW0rMjA0OCk7DQoJX19kY2J0KGNweW1lbSsyMTc2
+KTsNCglfX2RjYnQoY3B5bWVtKzIzMDQpOw0KCV9fZGNidChjcHltZW0rMjQz
+Mik7DQoJX19zeW5jKCk7DQoNCglzdGFydCA9IF9fbWZ0YigpOw0KCW1lbWNw
+eShkLCBzLCA0MDk2KTsNCglmaW5pc2ggPSBfX21mdGIoKTsNCg0KCXByaW50
+ZigiJWxsZFxuIiwgZmluaXNoIC0gc3RhcnQpOw0KDQoJZnJlZShzKTsNCglm
+cmVlKGQpOw0KZW5kOg0KCXJldHVybiAwOw0KfQ0K
 
-This binding specifies what properties and child nodes must be available 
-on the device tree representation of the MPIC interrupt
-controller.  This binding is a superset of the binding defined for Open 
-PIC in [1].
+--0-160434120-1293090551=:54680
+Content-Type: text/plain; name="test_result.TXT"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="test_result.TXT"
 
-** Required properties:
-
-     - All of the required properties mentioned in [1].
-
-** Optional properties:
-
-     - no-reset : the presence of this property indicates that the
-                  interrupt controller should not be reset during OS
-                  initialization.
-     - protected-sources : a list of interrupt sources that are not
-                           available for use.
-
-** Example:
-
-	mpic: pic@40000 {
-		interrupt-controller;
-		#address-cells = <0>;
-		#interrupt-cells = <2>;
-		reg = <0x40000 0x40000>;
-		compatible = "chrp,open-pic";
-		device_type = "open-pic";
-		protected-sources = <0xb1 0xb2>;
-		no-reset;
-	};
-
-* MPIC Message Registers
-
-This binding specifies how the MPIC message registers implemented on
-some Freescale platforms for interprocessor communication should be
-represented.
-
-** Required parent:
-
-     - Message register nodes should always been nested under a MPIC
-       node.
-
-** Required properties:
-
-     - compatible : compatible list, contains 2 entries, first is
-                    "fsl,CHIP-msgr", where CHIP is the processor
-                    (p2020, mpc8572, etc ...) and the second is
-                    "fsl,mpic-msgr".
-     - reg        : should contain the address and the length of the
-                    message register block.
-     - cell-index : the index of the message register block.
-     - interrupts : each one of the interrupts here represents the
-                    interrupt line for one message register.  These
-                    interrupts are routed internally to the MPIC.
-
-NOTE: The 'interrupt-parent' is implicit since message register nodes
-        are always children of interrupt controller nodes.
-
-** Example:
-
-	mpic: pic@40000 {
-		interrupt-controller;
-		#address-cells = <0>;
-		#interrupt-cells = <2>;
-		reg = <0x40000 0x40000>;
-		compatible = "chrp,open-pic";
-		device_type = "open-pic";
-		protected-sources = <0xb1>;
-
-		msgr@1400 {
-			compatible = "fsl,p2020-msgr", "fsl,mpic-msgr";
-			reg = <0x1400 0x200>;
-			cell-index = <0>;
-			interrupts = <0xb0 0x2 0xb1 0x2
-                                       0xb2 0x2 0xb3 0x2>;
-		};
-
-		msgr@2400 {
-			compatible = "fsl,p2020-msgr", "fsl,mpic-msgr";
-			reg = <0x2400 0x200>;
-			cell-index = <1>;
-			interrupts = <0xb4 0x2 0xb5 0x2
-                                       0xb6 0x2 0xb7 0x2>;
-	         };	
-	};
-
-* References
-
-[1] PowerPC Microprocessor Common Hardware Reference Platform (CHRP)
-      Binding, Version 1.8, 1998. Published by the Open Firmware Working
-      Group. (http://playground.sun.com/1275/bindings/chrp/chrp1_8a.ps)
+Q29weSBNZW1vcnktdG8tTWVtb3J5LCByZXN1bHRzIGFyZSBpbiB0aWNrcy4N
+Cg0KICAgICAgICAgICAgIDE2S0IgICAgICAgIDRLQiAgICAgMktCICAgIDFL
+QiAgICA1MTJCICAgICAyNTZCICAgICAxMjhCICAgIDY0QiAgICAgMzJCICAg
+ICAxNkIgDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLQ0KbWFpbjEuQyAgIDIwNjN+MjQ2NgkgICA2Njl+ODc5CTYwfjYzCSAz
+M34zNgkgMjJ+MjQJICAxOX4yMQkJMTd+MjEJCTE3fjE5CQkxNX4xNwkJMTV+
+MTYNCm1haW4yLkMgICAgICAgICAgICAgICAgMTEwfjExNAk2MH42MgkgMzN+
+MzYJIDIxfjI0CQkxOX4yMQkJMTd+MTgJCTE3fjE4CQkxNX4xNgkJMTV+MTY=
 
 
--- 
-Meador Inge     | meador_inge AT mentor.com
-Mentor Embedded | http://www.mentor.com/embedded-software
+--0-160434120-1293090551=:54680--
