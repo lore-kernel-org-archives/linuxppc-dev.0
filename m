@@ -1,35 +1,21 @@
-Return-Path: <michael_barry@ie.ibm.com>
-Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [194.196.100.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7570BB70DA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Dec 2010 15:10:26 +1100 (EST)
-Received: from d06nrmr1507.portsmouth.uk.ibm.com
-	(d06nrmr1507.portsmouth.uk.ibm.com [9.149.38.233])
-	by mtagate5.uk.ibm.com (8.13.1/8.13.1) with ESMTP id oBN4AJoE032505
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:19 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
-	[9.149.37.249])
-	by d06nrmr1507.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id oBN4AC5D3297362
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:21 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av08.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
-	ESMTP id oBN4AAUn029099
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:10 GMT
-Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
-	[9.149.104.171])
-	by d06av08.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with
-	ESMTP id oBN4A4tE029051
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:10 GMT
-Subject: AUTO: Michael Barry is out of the office (returning 04/01/2011)
-From: Michael Barry <michael_barry@ie.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OFF1552D1F.0775E9A0-ON80257802.0016378C-80257802.0016378C@ie.ibm.com>
-Date: Thu, 23 Dec 2010 04:02:40 +0000
+Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <4D127D72.8050303@suse.cz>
+References: <1293047849-26078-1-git-send-email-dirk.brandewie@gmail.com>
+	<1293047849-26078-2-git-send-email-dirk.brandewie@gmail.com>
+	<4D127D72.8050303@suse.cz>
+Date: Thu, 23 Dec 2010 07:14:20 +0100
+Message-ID: <AANLkTik-yqs2Dy+MBAcQ5Gpb9Vcvd80BS=C=fuDe7z-A@mail.gmail.com>
+Subject: Re: [PATCH 1/4] of: Add support for linking device tree blobs into
+	vmlinux
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michal Marek <mmarek@suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, dirk.brandewie@gmail.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,13 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2010/12/22 Michal Marek <mmarek@suse.cz>:
+> On 22.12.2010 20:57, dirk.brandewie@gmail.com wrote:
+>>
+>> From: Dirk Brandewie<dirk.brandewie@gmail.com>
+>>
+>> This patch adds support for linking device tree blob(s) into
+>> vmlinux. Modifies asm-generic/vmlinux.lds.h to add linking
+>> .dtb sections into vmlinux. To maintain compatiblity with the of/fdt
+>> driver code platforms MUST copy the blob to a non-init memory location
+>> before the kernel frees the .init.* sections in the image.
+>>
+>> Modifies scripts/Makefile.lib to add a kbuild command to
+>> compile DTS files to device tree blobs and a rule to create objects to
+>> wrap the blobs for linking.
+>>
+>> STRUCT_ALIGNMENT is defined in vmlinux.lds.h for use in the rule to
+>> create wrapper objects for the dtb in Makefile.lib. =C2=A0The
+>> STRUCT_ALIGN() macro in vmlinux.lds.h is modified to use the
+>> STRUCT_ALIGNMENT definition.
+>>
+>> The DTB's are placed on 32 byte boundries to allow parsing the blob
+>> with driver/of/fdt.c during early boot without having to copy the blob
+>> to get the structure alignment GCC expects.
+>>
+>> A DTB is linked in by adding the DTB object to the list of objects to
+>> be linked into vmlinux in the archtecture specific Makefile using
+>> =C2=A0 =C2=A0obj-y +=3D foo.dtb.o
+>>
+>> Signed-off-by: Dirk Brandewie<dirk.brandewie@gmail.com>
+>
+> Hi,
+>
+> you can add
+> Acked-by: Michal Marek <mmarek@suse.cz>
+> but I thing this series should go through the tip tree, as your primary
+> target seems to be x86 and patch 2/4 depends on the ce4100 code that is o=
+nly
+> in tip.
 
-I am out of the office until 04/01/2011.
+If the two lines
 
++# device tree blob
++obj-$(CONFIG_X86_INTEL_CE) +=3D ce4100.dtb.o
 
+are removed, patch 2/4 no longer depends on the ce4100 code.
+The summary and description for that patch don't mention anything
+about ce4100 anyway.
 
+Gr{oetje,eeting}s,
 
-Note: This is an automated response to your message  "Linuxppc-dev Digest,
-Vol 76, Issue 67" sent on 22/12/10 19:57:54.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
 
-This is the only notification you will receive while this person is away.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
