@@ -1,21 +1,35 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 6ACADB70D4
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2010 13:42:59 +1100 (EST)
-Subject: Re: Oops in trace_hardirqs_on (powerpc)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: =?ISO-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
-In-Reply-To: <20101219132705.GE6615@alea.gnuu.de>
-References: <20100806233157.GA7117@alea.gnuu.de>
-	<1285184671.26872.127.camel@gandalf.stny.rr.com>
-	<20100927125037.GA4497@alea.gnuu.de> <1285639094.2989.1.camel@frodo>
-	<20101219132705.GE6615@alea.gnuu.de>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 22 Dec 2010 21:42:56 -0500
-Message-ID: <1293072176.22802.6.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [194.196.100.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7570BB70DA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Dec 2010 15:10:26 +1100 (EST)
+Received: from d06nrmr1507.portsmouth.uk.ibm.com
+	(d06nrmr1507.portsmouth.uk.ibm.com [9.149.38.233])
+	by mtagate5.uk.ibm.com (8.13.1/8.13.1) with ESMTP id oBN4AJoE032505
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:19 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+	[9.149.37.249])
+	by d06nrmr1507.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id oBN4AC5D3297362
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:21 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av08.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
+	ESMTP id oBN4AAUn029099
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:10 GMT
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+	[9.149.104.171])
+	by d06av08.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with
+	ESMTP id oBN4A4tE029051
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Dec 2010 04:10:10 GMT
+Subject: AUTO: Michael Barry is out of the office (returning 04/01/2011)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OFF1552D1F.0775E9A0-ON80257802.0016378C-80257802.0016378C@ie.ibm.com>
+Date: Thu, 23 Dec 2010 04:02:40 +0000
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +39,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-12-19 at 14:27 +0100, Jörg Sommer wrote:
-> Hi Steven,
-> 
 
-> Did you've fixed this problem? The bug report is still marked as open.
-> https://bugzilla.kernel.org/show_bug.cgi?id=16573
-> 
+I am out of the office until 04/01/2011.
 
-I just posted a patch to that BZ. I have it here below too. Could you
-see if it fixes you problem. I only fixed the one place that you
-reported, it may need more fixes (and in that case a macro to do the
-work).
 
-I hit the same bug on my ppc64 box, and have a fix for that, that I'll
-post to LKML tomorrow.
 
--- Steve
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index ed4aeb9..915cc03 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -879,7 +879,18 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
- 	 */
- 	andi.	r10,r9,MSR_EE
- 	beq	1f
-+	/*
-+	 * Since the ftrace irqsoff latency trace checks CALLER_ADDR1,
-+	 * which is the stack frame here, we need to force a stack frame
-+	 * in case we came from user space.
-+	 */
-+	stwu	r1,-32(r1)
-+	mflr	r0
-+	stw	r0,4(r1)
-+	stwu	r1,-32(r1)
- 	bl	trace_hardirqs_on
-+	lwz	r1,0(r1)
-+	lwz	r1,0(r1)
- 	lwz	r9,_MSR(r1)
- 1:
- #endif /* CONFIG_TRACE_IRQFLAGS */
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 76, Issue 67" sent on 22/12/10 19:57:54.
+
+This is the only notification you will receive while this person is away.
