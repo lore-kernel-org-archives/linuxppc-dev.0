@@ -1,18 +1,27 @@
 Return-Path: <glikely@secretlab.ca>
+Received: from mail-iw0-f195.google.com (mail-iw0-f195.google.com
+	[209.85.214.195]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 48262B70CC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 24 Dec 2010 09:58:17 +1100 (EST)
+Received: by iwn41 with SMTP id 41so3356503iwn.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Dec 2010 14:58:14 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Thu, 23 Dec 2010 15:33:25 -0700
+Date: Thu, 23 Dec 2010 15:58:11 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Meador Inge <meador_inge@mentor.com>
-Subject: Re: [RFC] MPIC Bindings and Bindings for AMP Systems
-Message-ID: <20101223223325.GK20384@angua.secretlab.ca>
-References: <4D12F171.7010103@mentor.com>
-	<20101223185623.GA20384@angua.secretlab.ca>
-	<4D13C402.2090209@mentor.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] of/address: use propper endianess in get_flags
+Message-ID: <20101223225811.GO20384@angua.secretlab.ca>
+References: <20101201095446.GA26877@www.tglx.de>
+	<1291245312.32570.411.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D13C402.2090209@mentor.com>
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	"Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
+In-Reply-To: <1291245312.32570.411.camel@pasglop>
+Cc: sodaville@linutronix.de, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,152 +31,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 23, 2010 at 03:49:54PM -0600, Meador Inge wrote:
-> On 12/23/2010 12:56 PM, Grant Likely wrote:
-> >Hi Meador.  Comments below.
-> >
-> >g.
+On Thu, Dec 02, 2010 at 10:15:12AM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2010-12-01 at 10:54 +0100, Sebastian Andrzej Siewior wrote:
+> > This patch changes u32 to __be32 for all "ranges", "prop" and "addr" and
+> > such. Those variables are pointing to the device tree which containts
+> > intergers in big endian format.
+> > Most functions are doing it right because of_read_number() is doing the
+> > right thing for them. of_bus_isa_get_flags(), of_bus_pci_get_flags() and
+> > of_bus_isa_map() were accessing the data directly and were doing it wrong.
+> > 
+> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > 
-> Thanks a lot for the feedback Grant.
-> 
-> >You should probably list them here anyway to aid the reader.
-> 
-> Will do.
-> 
-> >What is the use case for the protected-sources property?  Wouldn't the
-> >irqs simply not be referenced by any device nodes?  Documenting the
-> >reason for this property would be useful here.
-> 
-> One use case is the original [1]:
-> 
-> 	Some HW platforms, such as the new cell blades, requires some
-> 	MPIC sources to be left alone by the operating system. This
-> 	implements support for a "protected-sources" property in the
-> 	mpic controller node containing a list of source numbers to be
-> 	protected against operating system interference.
-> 
-> Our use case is to reserve certain IRQs for certain OSes in an AMP
-> system.  As an example, consider that OS 1 has (simplified for
-> discussion):
-> 
->     mpic: pic@40000 {
->         ...
->         protected-sources = <0xb1>;
-> 
->         msgr@41400 {
->             interrupts = <0xb0 2 0xb1 2 0xb2 2 0xb3 2>;
->         };
->     };
-> 
-> and OS 2 has:
-> 
->     mpic: pic@40000 {
->         ...
->         protected-sources = <0xb0>;
-> 
->         msgr@41400 {
->             interrupts = <0xb0 2 0xb1 2 0xb2 2 0xb3 2>;
->         };
->     };
-> 
-> where OS 1 is sent messages through the message register tied to
-> 0xb0 and OS 2 is sent messages through the message register tied to
-> 0xb1.
-> 
-> We can't just remove the IRQ of the _other_ OS from the 'interrupts'
-> property in the message node because we need to know the IRQ in
-> order to talk to the other OS.  So, we use protected sources to tell
-> the OS that an IRQ is not available for its own use, while at the
-> same time keeping complete information on all the IRQ mappings for
-> the message registers.
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-If the OS cannot use the IRQ, then it better not be encoded into an
-'interrupts' property.  Instead, they should be encoded into a
-different property (which could use exactly the same encoding as
-'interrupts') that tells the driver that it is the target processor's
-irq.  Something like 'target-interrupts-cpu0 = <0xb1 2>' for OS#1 in
-the example.
+Applied for -next, thanks.
 
-> 
-> I will update the documentation.
-> 
-> >I'd rather see the 'generic' value of mpic-msgr omitted and instead
-> >allow new parts to claim compatibility with an older chip.  Generic
-> >or wildcard compatible values can be troublesome because the meaning
-> >has a tendency to change over time.
-> 
-> I don't completely see the issue here.  Do you have a specific
-> example of how generic values like this cause problems?
-
-For example, both the mpc83xx family and the mpc5xxx family of
-processors implement the same i2c core (historically using compatible
-"fsl,i2c"), but the behaviour of the two parts is subtly and
-incompatibly different.  The actual implementation name has to be
-matched to figure out how to drive the core correctly.  So, in that
-case which implementation does "fsl,i2c" really describe?
-
-> How do you
-> see this working in terms of processing the data?  It seems like we
-> are going to have to be aware of N values instead of 1, which seems
-> worse.
-
-This argument has been rehashed many times, but it basically comes
-down to compatible values should ideally be anchored to a real
-implemented device, not to a family of devices, or to an unversioned
-specification.
-
-In practise, the implementation doesn't actually look any different
-except that the 'reference' version specifies a specific
-implementation instead of a generic name.  To use a concrete example,
-if there are two parts using this MPIC, like the freescale p2040 and
-p4080, and say for argument that the p2040 was implemented first, then
-the compatible values would look like:
-
-for the p2040:   compatible = "fsl,p2040-msgr";
-for the p4080:   compatible = "fsl,p4080-msgr", "fsl,p2040-msgr";
-
-and the driver could simply bind on "fsl,p2040-msgr" to work with both
-chips.  So, instead of an arbitrary "fsl,mpic-msgr" string,
-"fsl,p2040-msgr" is used as the baseline value and there is no
-ambiguity about which part it describes.
-
-If the p4080 is actually subtly different from the p2040, then
-it would not claim compatibility with the former and the driver can
-match against either string; adapting its behaviour as necessary.
-
-> 
-> >?  This needs some more explanation.  cell-index often gets abused as
-> >a way to enumerate devices.  Typically, the address of the device
-> >itself is sufficient to identify the device.
-> 
-> The message registers typically come in blocks of four memory mapped
-> registers and may not be in contiguous memory (example [3]).  The
-> intent of 'cell-index' is to put an ordering on the blocks (so, yes,
-> enumeration).  We could order them by address as well I suppose.
-> One less property to worry about :)
-
-:-)  I'd prefer to see a binding that doesn't need to enumerate nodes.
-If the nodes *really* need to be enumerated, then I recommend looking
-at using properties in the aliases node to assign globally enumerated
-names, or at explicitly having an order list in the parent node.
-
-> 
-> >Are these registers memory mapped?  If so, then the parent node
-> >needs to have a 'ranges' property.
-> 
-> Yes, they are.  I will look into adding that.
-
-Thanks.
 g.
 
+> ---
+> 
+> > ---
+> >  arch/powerpc/include/asm/prom.h |    2 +-
+> >  drivers/of/address.c            |   54 ++++++++++++++++++++------------------
+> >  include/linux/of_address.h      |    6 ++--
+> >  3 files changed, 32 insertions(+), 30 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> > index ae26f2e..ab34f60 100644
+> > --- a/arch/powerpc/include/asm/prom.h
+> > +++ b/arch/powerpc/include/asm/prom.h
+> > @@ -42,7 +42,7 @@ extern void pci_create_OF_bus_map(void);
+> >  
+> >  /* Translate a DMA address from device space to CPU space */
+> >  extern u64 of_translate_dma_address(struct device_node *dev,
+> > -				    const u32 *in_addr);
+> > +				    const __be32 *in_addr);
+> >  
+> >  #ifdef CONFIG_PCI
+> >  extern unsigned long pci_address_to_pio(phys_addr_t address);
+> > diff --git a/drivers/of/address.c b/drivers/of/address.c
+> > index 3a1c7e7..b4559c5 100644
+> > --- a/drivers/of/address.c
+> > +++ b/drivers/of/address.c
+> > @@ -12,13 +12,13 @@
+> >  			(ns) > 0)
+> >  
+> >  static struct of_bus *of_match_bus(struct device_node *np);
+> > -static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+> > -				    u64 size, unsigned int flags,
+> > +static int __of_address_to_resource(struct device_node *dev,
+> > +		const __be32 *addrp, u64 size, unsigned int flags,
+> >  				    struct resource *r);
+> >  
+> >  /* Debug utility */
+> >  #ifdef DEBUG
+> > -static void of_dump_addr(const char *s, const u32 *addr, int na)
+> > +static void of_dump_addr(const char *s, const __be32 *addr, int na)
+> >  {
+> >  	printk(KERN_DEBUG "%s", s);
+> >  	while (na--)
+> > @@ -26,7 +26,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
+> >  	printk("\n");
+> >  }
+> >  #else
+> > -static void of_dump_addr(const char *s, const u32 *addr, int na) { }
+> > +static void of_dump_addr(const char *s, const __be32 *addr, int na) { }
+> >  #endif
+> >  
+> >  /* Callbacks for bus specific translators */
+> > @@ -36,10 +36,10 @@ struct of_bus {
+> >  	int		(*match)(struct device_node *parent);
+> >  	void		(*count_cells)(struct device_node *child,
+> >  				       int *addrc, int *sizec);
+> > -	u64		(*map)(u32 *addr, const u32 *range,
+> > +	u64		(*map)(u32 *addr, const __be32 *range,
+> >  				int na, int ns, int pna);
+> >  	int		(*translate)(u32 *addr, u64 offset, int na);
+> > -	unsigned int	(*get_flags)(const u32 *addr);
+> > +	unsigned int	(*get_flags)(const __be32 *addr);
+> >  };
+> >  
+> >  /*
+> > @@ -55,7 +55,7 @@ static void of_bus_default_count_cells(struct device_node *dev,
+> >  		*sizec = of_n_size_cells(dev);
+> >  }
+> >  
+> > -static u64 of_bus_default_map(u32 *addr, const u32 *range,
+> > +static u64 of_bus_default_map(u32 *addr, const __be32 *range,
+> >  		int na, int ns, int pna)
+> >  {
+> >  	u64 cp, s, da;
+> > @@ -85,7 +85,7 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
+> >  	return 0;
+> >  }
+> >  
+> > -static unsigned int of_bus_default_get_flags(const u32 *addr)
+> > +static unsigned int of_bus_default_get_flags(const __be32 *addr)
+> >  {
+> >  	return IORESOURCE_MEM;
+> >  }
+> > @@ -110,10 +110,10 @@ static void of_bus_pci_count_cells(struct device_node *np,
+> >  		*sizec = 2;
+> >  }
+> >  
+> > -static unsigned int of_bus_pci_get_flags(const u32 *addr)
+> > +static unsigned int of_bus_pci_get_flags(const __be32 *addr)
+> >  {
+> >  	unsigned int flags = 0;
+> > -	u32 w = addr[0];
+> > +	u32 w = be32_to_cpup(addr);
+> >  
+> >  	switch((w >> 24) & 0x03) {
+> >  	case 0x01:
+> > @@ -129,7 +129,8 @@ static unsigned int of_bus_pci_get_flags(const u32 *addr)
+> >  	return flags;
+> >  }
+> >  
+> > -static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+> > +static u64 of_bus_pci_map(u32 *addr, const __be32 *range, int na, int ns,
+> > +		int pna)
+> >  {
+> >  	u64 cp, s, da;
+> >  	unsigned int af, rf;
+> > @@ -160,7 +161,7 @@ static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
+> >  	return of_bus_default_translate(addr + 1, offset, na - 1);
+> >  }
+> >  
+> > -const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
+> > +const __be32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
+> >  			unsigned int *flags)
+> >  {
+> >  	const __be32 *prop;
+> > @@ -207,7 +208,7 @@ EXPORT_SYMBOL(of_get_pci_address);
+> >  int of_pci_address_to_resource(struct device_node *dev, int bar,
+> >  			       struct resource *r)
+> >  {
+> > -	const u32	*addrp;
+> > +	const __be32	*addrp;
+> >  	u64		size;
+> >  	unsigned int	flags;
+> >  
+> > @@ -237,12 +238,13 @@ static void of_bus_isa_count_cells(struct device_node *child,
+> >  		*sizec = 1;
+> >  }
+> >  
+> > -static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+> > +static u64 of_bus_isa_map(u32 *addr, const __be32 *range, int na, int ns,
+> > +		int pna)
+> >  {
+> >  	u64 cp, s, da;
+> >  
+> >  	/* Check address type match */
+> > -	if ((addr[0] ^ range[0]) & 0x00000001)
+> > +	if ((addr[0] ^ range[0]) & cpu_to_be32(1))
+> >  		return OF_BAD_ADDR;
+> >  
+> >  	/* Read address values, skipping high cell */
+> > @@ -264,10 +266,10 @@ static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
+> >  	return of_bus_default_translate(addr + 1, offset, na - 1);
+> >  }
+> >  
+> > -static unsigned int of_bus_isa_get_flags(const u32 *addr)
+> > +static unsigned int of_bus_isa_get_flags(const __be32 *addr)
+> >  {
+> >  	unsigned int flags = 0;
+> > -	u32 w = addr[0];
+> > +	u32 w = be32_to_cpup(addr);
+> >  
+> >  	if (w & 1)
+> >  		flags |= IORESOURCE_IO;
+> > @@ -330,7 +332,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+> >  			    struct of_bus *pbus, u32 *addr,
+> >  			    int na, int ns, int pna, const char *rprop)
+> >  {
+> > -	const u32 *ranges;
+> > +	const __be32 *ranges;
+> >  	unsigned int rlen;
+> >  	int rone;
+> >  	u64 offset = OF_BAD_ADDR;
+> > @@ -398,7 +400,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+> >   * that can be mapped to a cpu physical address). This is not really specified
+> >   * that way, but this is traditionally the way IBM at least do things
+> >   */
+> > -u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
+> > +u64 __of_translate_address(struct device_node *dev, const __be32 *in_addr,
+> >  			   const char *rprop)
+> >  {
+> >  	struct device_node *parent = NULL;
+> > @@ -475,22 +477,22 @@ u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
+> >  	return result;
+> >  }
+> >  
+> > -u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
+> > +u64 of_translate_address(struct device_node *dev, const __be32 *in_addr)
+> >  {
+> >  	return __of_translate_address(dev, in_addr, "ranges");
+> >  }
+> >  EXPORT_SYMBOL(of_translate_address);
+> >  
+> > -u64 of_translate_dma_address(struct device_node *dev, const u32 *in_addr)
+> > +u64 of_translate_dma_address(struct device_node *dev, const __be32 *in_addr)
+> >  {
+> >  	return __of_translate_address(dev, in_addr, "dma-ranges");
+> >  }
+> >  EXPORT_SYMBOL(of_translate_dma_address);
+> >  
+> > -const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
+> > +const __be32 *of_get_address(struct device_node *dev, int index, u64 *size,
+> >  		    unsigned int *flags)
+> >  {
+> > -	const u32 *prop;
+> > +	const __be32 *prop;
+> >  	unsigned int psize;
+> >  	struct device_node *parent;
+> >  	struct of_bus *bus;
+> > @@ -525,8 +527,8 @@ const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
+> >  }
+> >  EXPORT_SYMBOL(of_get_address);
+> >  
+> > -static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+> > -				    u64 size, unsigned int flags,
+> > +static int __of_address_to_resource(struct device_node *dev,
+> > +		const __be32 *addrp, u64 size, unsigned int flags,
+> >  				    struct resource *r)
+> >  {
+> >  	u64 taddr;
+> > @@ -564,7 +566,7 @@ static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+> >  int of_address_to_resource(struct device_node *dev, int index,
+> >  			   struct resource *r)
+> >  {
+> > -	const u32	*addrp;
+> > +	const __be32	*addrp;
+> >  	u64		size;
+> >  	unsigned int	flags;
+> >  
+> > diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+> > index 8aea06f..2feda6e 100644
+> > --- a/include/linux/of_address.h
+> > +++ b/include/linux/of_address.h
+> > @@ -3,7 +3,7 @@
+> >  #include <linux/ioport.h>
+> >  #include <linux/of.h>
+> >  
+> > -extern u64 of_translate_address(struct device_node *np, const u32 *addr);
+> > +extern u64 of_translate_address(struct device_node *np, const __be32 *addr);
+> >  extern int of_address_to_resource(struct device_node *dev, int index,
+> >  				  struct resource *r);
+> >  extern void __iomem *of_iomap(struct device_node *device, int index);
+> > @@ -21,7 +21,7 @@ static inline unsigned long pci_address_to_pio(phys_addr_t addr) { return -1; }
+> >  #endif
+> >  
+> >  #ifdef CONFIG_PCI
+> > -extern const u32 *of_get_pci_address(struct device_node *dev, int bar_no,
+> > +extern const __be32 *of_get_pci_address(struct device_node *dev, int bar_no,
+> >  			       u64 *size, unsigned int *flags);
+> >  extern int of_pci_address_to_resource(struct device_node *dev, int bar,
+> >  				      struct resource *r);
+> > @@ -32,7 +32,7 @@ static inline int of_pci_address_to_resource(struct device_node *dev, int bar,
+> >  	return -ENOSYS;
+> >  }
+> >  
+> > -static inline const u32 *of_get_pci_address(struct device_node *dev,
+> > +static inline const __be32 *of_get_pci_address(struct device_node *dev,
+> >  		int bar_no, u64 *size, unsigned int *flags)
+> >  {
+> >  	return NULL;
 > 
 > 
-> [1] commit 7fd7218610600b16f6f0af3f9d9353ba0265c09f, http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.36.y.git;a=commit;h=7fd7218610600b16f6f0af3f9d9353ba0265c09f
-> 
-> [2] Documentation/powerpc/dts-bindings/fsl/msi-pic.txt
-> 
-> [3] http://cache.freescale.com/files/32bit/doc/ref_manual/MPC8572ERM.pdf?fr=g
-> 
-> --
-> Meador Inge     | meador_inge AT mentor.com
-> Mentor Embedded | http://www.mentor.com/embedded-software
