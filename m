@@ -1,16 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Fri, 24 Dec 2010 02:15:45 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH 3/3] powerpc: pcm030/032: add pagesize to dts
-Message-ID: <20101224091545.GM5544@angua.secretlab.ca>
-References: <1289995250-17927-1-git-send-email-w.sang@pengutronix.de>
-	<1289995250-17927-4-git-send-email-w.sang@pengutronix.de>
+Return-Path: <jgpobox@gmail.com>
+Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
+	[209.85.216.42]) by ozlabs.org (Postfix) with ESMTP id 68FBAB70A3
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Dec 2010 05:38:50 +1100 (EST)
+Received: by qwj8 with SMTP id 8so9609230qwj.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 10:38:48 -0800 (PST)
+Sender: Jeff Garzik <jgpobox@gmail.com>
+Message-ID: <4D14E8B3.8070605@pobox.com>
+Date: Fri, 24 Dec 2010 13:38:43 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1289995250-17927-4-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH RESEND] pata_mpc52xx: driver needs BMDMA
+References: <1293033011-19265-1-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <1293033011-19265-1-git-send-email-w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 17, 2010 at 01:00:50PM +0100, Wolfram Sang wrote:
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-
-Applied for -next, thanks.
-
-g.
-
+On 12/22/2010 10:50 AM, Wolfram Sang wrote:
+> Found by this build-error if BMDMA is disabled:
+>
+> drivers/ata/pata_mpc52xx.c: In function 'mpc52xx_ata_init_one':
+> drivers/ata/pata_mpc52xx.c:662: error: 'ata_bmdma_interrupt' undeclared (first use in this function)
+> ...
+>
+> Move the Kconfig entry to the proper location as needed since
+> 9a7780c9acb821fe1c2b6fc53f74cc2556ff5364 (libata-sff: make BMDMA optional)
+>
+> Signed-off-by: Wolfram Sang<w.sang@pengutronix.de>
 > ---
->  arch/powerpc/boot/dts/pcm030.dts |    1 +
->  arch/powerpc/boot/dts/pcm032.dts |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
-> index 8a4ec30..e7c36bc 100644
-> --- a/arch/powerpc/boot/dts/pcm030.dts
-> +++ b/arch/powerpc/boot/dts/pcm030.dts
-> @@ -259,6 +259,7 @@
->  			eeprom@52 {
->  				compatible = "catalyst,24c32";
->  				reg = <0x52>;
-> +				pagesize = <32>;
->  			};
->  		};
->  
-> diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
-> index 85d857a..e175e2c 100644
-> --- a/arch/powerpc/boot/dts/pcm032.dts
-> +++ b/arch/powerpc/boot/dts/pcm032.dts
-> @@ -257,8 +257,9 @@
->  				reg = <0x51>;
->  			};
->  			eeprom@52 {
-> -				compatible = "at24,24c32";
-> +				compatible = "catalyst,24c32";
->  				reg = <0x52>;
-> +				pagesize = <32>;
->  			};
->  		};
->  
-> -- 
-> 1.7.2.3
-> 
+>
+> This is a build-failure, so fixing it before 2.6.37 would be great.
+>
+>   drivers/ata/Kconfig  |   20 ++++++++++----------
+>   drivers/ata/Makefile |    2 +-
+>   2 files changed, 11 insertions(+), 11 deletions(-)
+
+applied
