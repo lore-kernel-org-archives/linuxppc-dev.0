@@ -1,21 +1,22 @@
-Return-Path: <jgpobox@gmail.com>
-Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
-	[209.85.216.42]) by ozlabs.org (Postfix) with ESMTP id 68FBAB70A3
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Dec 2010 05:38:50 +1100 (EST)
-Received: by qwj8 with SMTP id 8so9609230qwj.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 10:38:48 -0800 (PST)
-Sender: Jeff Garzik <jgpobox@gmail.com>
-Message-ID: <4D14E8B3.8070605@pobox.com>
-Date: Fri, 24 Dec 2010 13:38:43 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH RESEND] pata_mpc52xx: driver needs BMDMA
-References: <1293033011-19265-1-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1293033011-19265-1-git-send-email-w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 69B49B6EEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Dec 2010 08:11:25 +1100 (EST)
+Subject: Re: [PATCH][GIT PULL] powerpc64/tracing: Add frame buffer to calls
+	of trace_hardirqs_on/off
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1293169566.22802.420.camel@gandalf.stny.rr.com>
+References: <1293169566.22802.420.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 25 Dec 2010 08:11:05 +1100
+Message-ID: <1293225065.16694.796.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Joerg Sommer <joerg@alea.gnuu.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +26,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/22/2010 10:50 AM, Wolfram Sang wrote:
-> Found by this build-error if BMDMA is disabled:
->
-> drivers/ata/pata_mpc52xx.c: In function 'mpc52xx_ata_init_one':
-> drivers/ata/pata_mpc52xx.c:662: error: 'ata_bmdma_interrupt' undeclared (first use in this function)
-> ...
->
-> Move the Kconfig entry to the proper location as needed since
-> 9a7780c9acb821fe1c2b6fc53f74cc2556ff5364 (libata-sff: make BMDMA optional)
->
-> Signed-off-by: Wolfram Sang<w.sang@pengutronix.de>
-> ---
->
-> This is a build-failure, so fixing it before 2.6.37 would be great.
->
->   drivers/ata/Kconfig  |   20 ++++++++++----------
->   drivers/ata/Makefile |    2 +-
->   2 files changed, 11 insertions(+), 11 deletions(-)
+On Fri, 2010-12-24 at 00:46 -0500, Steven Rostedt wrote:
 
-applied
+>  arch/powerpc/include/asm/irqflags.h |   40 ++++++++++++++++++++++++++--------
+>  1 files changed, 30 insertions(+), 10 deletions(-)
+> ---------------------------
+> commit 5025019505da6731f8be13940bb978617599c935
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Thu Dec 23 21:07:39 2010 -0800
+> 
+>     powerpc64/tracing: Add frame buffer to calls of trace_hardirqs_on/off
+>     
+>     When an interrupt occurs in userspace, we can call trace_hardirqs_on/off()
+>     With one level stack. But if we have irqsoff tracing enabled,
+>     it checks both CALLER_ADDR0 and CALLER_ADDR1. The second call
+>     goes two stack frames up. If this is from user space, then there may
+>     not exist a second stack.
+>     
+>     Add a second stack when calling trace_hardirqs_on/off() otherwise
+>     the following oops might occur:
+
+Hrm... this is really gross :-) So we add gratuituous overhead because
+the code below is dumb :-) What about making the code less stupid
+instead when poking at the stack and detect it's coming from userspace
+instead ?
+
+Cheers,
+Ben.
+
+>     Oops: Kernel access of bad area, sig: 11 [#1]
+>     PREEMPT SMP NR_CPUS=2 PA Semi PWRficient
+>     last sysfs file: /sys/block/sda/size
+>     Modules linked in: ohci_hcd ehci_hcd usbcore
+>     NIP: c0000000000e1c00 LR: c0000000000034d4 CTR: 000000011012c440
+>     REGS: c00000003e2f3af0 TRAP: 0300   Not tainted  (2.6.37-rc6+)
+>     MSR: 9000000000001032 <ME,IR,DR>  CR: 48044444  XER: 20000000
+>     DAR: 00000001ffb9db50, DSISR: 0000000040000000
+>     TASK = c00000003e1a00a0[2088] 'emacs' THREAD: c00000003e2f0000 CPU: 1
+>     GPR00: 0000000000000001 c00000003e2f3d70 c00000000084e0d0 c0000000008816e8
+>     GPR04: 000000001034c678 000000001032e8f9 0000000010336540 0000000040020000
+>     GPR08: 0000000040020000 00000001ffb9db40 c00000003e2f3e30 0000000060000000
+>     GPR12: 100000000000f032 c00000000fff0280 000000001032e8c9 0000000000000008
+>     GPR16: 00000000105be9c0 00000000105be950 00000000105be9b0 00000000105be950
+>     GPR20: 00000000ffb9dc50 00000000ffb9dbf0 00000000102f0000 00000000102f0000
+>     GPR24: 00000000102e0000 00000000102f0000 0000000010336540 c0000000009ded38
+>     GPR28: 00000000102e0000 c0000000000034d4 c0000000007ccb10 c00000003e2f3d70
+>     NIP [c0000000000e1c00] .trace_hardirqs_off+0xb0/0x1d0
+>     LR [c0000000000034d4] decrementer_common+0xd4/0x100
+>     Call Trace:
+>     [c00000003e2f3d70] [c00000003e2f3e30] 0xc00000003e2f3e30 (unreliable)
+>     [c00000003e2f3e30] [c0000000000034d4] decrementer_common+0xd4/0x100
+>     Instruction dump:
+>     81690000 7f8b0000 419e0018 f84a0028 60000000 60000000 60000000 e95f0000
+>     80030000 e92a0000 eb6301f8 2f800000 <eb890010> 41fe00dc a06d000a eb1e8050
+>     ---[ end trace 4ec7fd2be9240928 ]---
+>     
+>     Reported-by: Joerg Sommer <joerg@alea.gnuu.de>
+>     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
+> index b85d8dd..b0b06d8 100644
+> --- a/arch/powerpc/include/asm/irqflags.h
+> +++ b/arch/powerpc/include/asm/irqflags.h
+> @@ -12,24 +12,44 @@
+>  
+>  #else
+>  #ifdef CONFIG_TRACE_IRQFLAGS
+> +#ifdef CONFIG_IRQSOFF_TRACER
+> +/*
+> + * Since the ftrace irqsoff latency trace checks CALLER_ADDR1,
+> + * which is the stack frame here, we need to force a stack frame
+> + * in case we came from user space.
+> + */
+> +#define TRACE_WITH_FRAME_BUFFER(func)		\
+> +	mflr	r0;				\
+> +	stdu	r1, -32(r1);			\
+> +	std	r0, 16(r1);			\
+> +	stdu	r1, -32(r1);			\
+> +	bl func;				\
+> +	ld	r1, 0(r1);			\
+> +	ld	r1, 0(r1);
+> +#else
+> +#define TRACE_WITH_FRAME_BUFFER(func)		\
+> +	bl func;
+> +#endif
+> +
+>  /*
+>   * Most of the CPU's IRQ-state tracing is done from assembly code; we
+>   * have to call a C function so call a wrapper that saves all the
+>   * C-clobbered registers.
+>   */
+> -#define TRACE_ENABLE_INTS	bl .trace_hardirqs_on
+> -#define TRACE_DISABLE_INTS	bl .trace_hardirqs_off
+> -#define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)	\
+> -	cmpdi	en,0;				\
+> -	bne	95f;				\
+> -	stb	en,PACASOFTIRQEN(r13);		\
+> -	bl	.trace_hardirqs_off;		\
+> -	b	skip;				\
+> -95:	bl	.trace_hardirqs_on;		\
+> +#define TRACE_ENABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)
+> +#define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)
+> +
+> +#define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)		\
+> +	cmpdi	en,0;					\
+> +	bne	95f;					\
+> +	stb	en,PACASOFTIRQEN(r13);			\
+> +	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)	\
+> +	b	skip;					\
+> +95:	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)	\
+>  	li	en,1;
+>  #define TRACE_AND_RESTORE_IRQ(en)		\
+>  	TRACE_AND_RESTORE_IRQ_PARTIAL(en,96f);	\
+> -	stb	en,PACASOFTIRQEN(r13);	        \
+> +	stb	en,PACASOFTIRQEN(r13);		\
+>  96:
+>  #else
+>  #define TRACE_ENABLE_INTS
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
