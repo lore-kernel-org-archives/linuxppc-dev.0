@@ -1,27 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f195.google.com (mail-iw0-f195.google.com
-	[209.85.214.195]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 48262B70CC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Dec 2010 09:58:17 +1100 (EST)
-Received: by iwn41 with SMTP id 41so3356503iwn.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Dec 2010 14:58:14 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Thu, 23 Dec 2010 15:58:11 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] of/address: use propper endianess in get_flags
-Message-ID: <20101223225811.GO20384@angua.secretlab.ca>
-References: <20101201095446.GA26877@www.tglx.de>
-	<1291245312.32570.411.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1291245312.32570.411.camel@pasglop>
-Cc: sodaville@linutronix.de, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 25F81B70D5
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 16:46:11 +1100 (EST)
+Subject: [PATCH][GIT PULL] powerpc64/tracing: Add frame buffer to calls of
+	trace_hardirqs_on/off
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 24 Dec 2010 00:46:06 -0500
+Message-ID: <1293169566.22802.420.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Joerg Sommer <joerg@alea.gnuu.de>, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,270 +21,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 02, 2010 at 10:15:12AM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2010-12-01 at 10:54 +0100, Sebastian Andrzej Siewior wrote:
-> > This patch changes u32 to __be32 for all "ranges", "prop" and "addr" and
-> > such. Those variables are pointing to the device tree which containts
-> > intergers in big endian format.
-> > Most functions are doing it right because of_read_number() is doing the
-> > right thing for them. of_bus_isa_get_flags(), of_bus_pci_get_flags() and
-> > of_bus_isa_map() were accessing the data directly and were doing it wrong.
-> > 
-> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Ben,
 
-Applied for -next, thanks.
+Joerg reported a crash with the irqsoff tracer with PPC32.
+Unfortunately, I don't have a ppc32 that I can work with (my kids took
+it from me). I posted a test patch on the BZ that was opened for it:
 
-g.
+https://bugzilla.kernel.org/show_bug.cgi?id=16573
 
-> ---
-> 
-> > ---
-> >  arch/powerpc/include/asm/prom.h |    2 +-
-> >  drivers/of/address.c            |   54 ++++++++++++++++++++------------------
-> >  include/linux/of_address.h      |    6 ++--
-> >  3 files changed, 32 insertions(+), 30 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-> > index ae26f2e..ab34f60 100644
-> > --- a/arch/powerpc/include/asm/prom.h
-> > +++ b/arch/powerpc/include/asm/prom.h
-> > @@ -42,7 +42,7 @@ extern void pci_create_OF_bus_map(void);
-> >  
-> >  /* Translate a DMA address from device space to CPU space */
-> >  extern u64 of_translate_dma_address(struct device_node *dev,
-> > -				    const u32 *in_addr);
-> > +				    const __be32 *in_addr);
-> >  
-> >  #ifdef CONFIG_PCI
-> >  extern unsigned long pci_address_to_pio(phys_addr_t address);
-> > diff --git a/drivers/of/address.c b/drivers/of/address.c
-> > index 3a1c7e7..b4559c5 100644
-> > --- a/drivers/of/address.c
-> > +++ b/drivers/of/address.c
-> > @@ -12,13 +12,13 @@
-> >  			(ns) > 0)
-> >  
-> >  static struct of_bus *of_match_bus(struct device_node *np);
-> > -static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
-> > -				    u64 size, unsigned int flags,
-> > +static int __of_address_to_resource(struct device_node *dev,
-> > +		const __be32 *addrp, u64 size, unsigned int flags,
-> >  				    struct resource *r);
-> >  
-> >  /* Debug utility */
-> >  #ifdef DEBUG
-> > -static void of_dump_addr(const char *s, const u32 *addr, int na)
-> > +static void of_dump_addr(const char *s, const __be32 *addr, int na)
-> >  {
-> >  	printk(KERN_DEBUG "%s", s);
-> >  	while (na--)
-> > @@ -26,7 +26,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
-> >  	printk("\n");
-> >  }
-> >  #else
-> > -static void of_dump_addr(const char *s, const u32 *addr, int na) { }
-> > +static void of_dump_addr(const char *s, const __be32 *addr, int na) { }
-> >  #endif
-> >  
-> >  /* Callbacks for bus specific translators */
-> > @@ -36,10 +36,10 @@ struct of_bus {
-> >  	int		(*match)(struct device_node *parent);
-> >  	void		(*count_cells)(struct device_node *child,
-> >  				       int *addrc, int *sizec);
-> > -	u64		(*map)(u32 *addr, const u32 *range,
-> > +	u64		(*map)(u32 *addr, const __be32 *range,
-> >  				int na, int ns, int pna);
-> >  	int		(*translate)(u32 *addr, u64 offset, int na);
-> > -	unsigned int	(*get_flags)(const u32 *addr);
-> > +	unsigned int	(*get_flags)(const __be32 *addr);
-> >  };
-> >  
-> >  /*
-> > @@ -55,7 +55,7 @@ static void of_bus_default_count_cells(struct device_node *dev,
-> >  		*sizec = of_n_size_cells(dev);
-> >  }
-> >  
-> > -static u64 of_bus_default_map(u32 *addr, const u32 *range,
-> > +static u64 of_bus_default_map(u32 *addr, const __be32 *range,
-> >  		int na, int ns, int pna)
-> >  {
-> >  	u64 cp, s, da;
-> > @@ -85,7 +85,7 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
-> >  	return 0;
-> >  }
-> >  
-> > -static unsigned int of_bus_default_get_flags(const u32 *addr)
-> > +static unsigned int of_bus_default_get_flags(const __be32 *addr)
-> >  {
-> >  	return IORESOURCE_MEM;
-> >  }
-> > @@ -110,10 +110,10 @@ static void of_bus_pci_count_cells(struct device_node *np,
-> >  		*sizec = 2;
-> >  }
-> >  
-> > -static unsigned int of_bus_pci_get_flags(const u32 *addr)
-> > +static unsigned int of_bus_pci_get_flags(const __be32 *addr)
-> >  {
-> >  	unsigned int flags = 0;
-> > -	u32 w = addr[0];
-> > +	u32 w = be32_to_cpup(addr);
-> >  
-> >  	switch((w >> 24) & 0x03) {
-> >  	case 0x01:
-> > @@ -129,7 +129,8 @@ static unsigned int of_bus_pci_get_flags(const u32 *addr)
-> >  	return flags;
-> >  }
-> >  
-> > -static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
-> > +static u64 of_bus_pci_map(u32 *addr, const __be32 *range, int na, int ns,
-> > +		int pna)
-> >  {
-> >  	u64 cp, s, da;
-> >  	unsigned int af, rf;
-> > @@ -160,7 +161,7 @@ static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
-> >  	return of_bus_default_translate(addr + 1, offset, na - 1);
-> >  }
-> >  
-> > -const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
-> > +const __be32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
-> >  			unsigned int *flags)
-> >  {
-> >  	const __be32 *prop;
-> > @@ -207,7 +208,7 @@ EXPORT_SYMBOL(of_get_pci_address);
-> >  int of_pci_address_to_resource(struct device_node *dev, int bar,
-> >  			       struct resource *r)
-> >  {
-> > -	const u32	*addrp;
-> > +	const __be32	*addrp;
-> >  	u64		size;
-> >  	unsigned int	flags;
-> >  
-> > @@ -237,12 +238,13 @@ static void of_bus_isa_count_cells(struct device_node *child,
-> >  		*sizec = 1;
-> >  }
-> >  
-> > -static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
-> > +static u64 of_bus_isa_map(u32 *addr, const __be32 *range, int na, int ns,
-> > +		int pna)
-> >  {
-> >  	u64 cp, s, da;
-> >  
-> >  	/* Check address type match */
-> > -	if ((addr[0] ^ range[0]) & 0x00000001)
-> > +	if ((addr[0] ^ range[0]) & cpu_to_be32(1))
-> >  		return OF_BAD_ADDR;
-> >  
-> >  	/* Read address values, skipping high cell */
-> > @@ -264,10 +266,10 @@ static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
-> >  	return of_bus_default_translate(addr + 1, offset, na - 1);
-> >  }
-> >  
-> > -static unsigned int of_bus_isa_get_flags(const u32 *addr)
-> > +static unsigned int of_bus_isa_get_flags(const __be32 *addr)
-> >  {
-> >  	unsigned int flags = 0;
-> > -	u32 w = addr[0];
-> > +	u32 w = be32_to_cpup(addr);
-> >  
-> >  	if (w & 1)
-> >  		flags |= IORESOURCE_IO;
-> > @@ -330,7 +332,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
-> >  			    struct of_bus *pbus, u32 *addr,
-> >  			    int na, int ns, int pna, const char *rprop)
-> >  {
-> > -	const u32 *ranges;
-> > +	const __be32 *ranges;
-> >  	unsigned int rlen;
-> >  	int rone;
-> >  	u64 offset = OF_BAD_ADDR;
-> > @@ -398,7 +400,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
-> >   * that can be mapped to a cpu physical address). This is not really specified
-> >   * that way, but this is traditionally the way IBM at least do things
-> >   */
-> > -u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
-> > +u64 __of_translate_address(struct device_node *dev, const __be32 *in_addr,
-> >  			   const char *rprop)
-> >  {
-> >  	struct device_node *parent = NULL;
-> > @@ -475,22 +477,22 @@ u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
-> >  	return result;
-> >  }
-> >  
-> > -u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
-> > +u64 of_translate_address(struct device_node *dev, const __be32 *in_addr)
-> >  {
-> >  	return __of_translate_address(dev, in_addr, "ranges");
-> >  }
-> >  EXPORT_SYMBOL(of_translate_address);
-> >  
-> > -u64 of_translate_dma_address(struct device_node *dev, const u32 *in_addr)
-> > +u64 of_translate_dma_address(struct device_node *dev, const __be32 *in_addr)
-> >  {
-> >  	return __of_translate_address(dev, in_addr, "dma-ranges");
-> >  }
-> >  EXPORT_SYMBOL(of_translate_dma_address);
-> >  
-> > -const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
-> > +const __be32 *of_get_address(struct device_node *dev, int index, u64 *size,
-> >  		    unsigned int *flags)
-> >  {
-> > -	const u32 *prop;
-> > +	const __be32 *prop;
-> >  	unsigned int psize;
-> >  	struct device_node *parent;
-> >  	struct of_bus *bus;
-> > @@ -525,8 +527,8 @@ const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
-> >  }
-> >  EXPORT_SYMBOL(of_get_address);
-> >  
-> > -static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
-> > -				    u64 size, unsigned int flags,
-> > +static int __of_address_to_resource(struct device_node *dev,
-> > +		const __be32 *addrp, u64 size, unsigned int flags,
-> >  				    struct resource *r)
-> >  {
-> >  	u64 taddr;
-> > @@ -564,7 +566,7 @@ static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
-> >  int of_address_to_resource(struct device_node *dev, int index,
-> >  			   struct resource *r)
-> >  {
-> > -	const u32	*addrp;
-> > +	const __be32	*addrp;
-> >  	u64		size;
-> >  	unsigned int	flags;
-> >  
-> > diff --git a/include/linux/of_address.h b/include/linux/of_address.h
-> > index 8aea06f..2feda6e 100644
-> > --- a/include/linux/of_address.h
-> > +++ b/include/linux/of_address.h
-> > @@ -3,7 +3,7 @@
-> >  #include <linux/ioport.h>
-> >  #include <linux/of.h>
-> >  
-> > -extern u64 of_translate_address(struct device_node *np, const u32 *addr);
-> > +extern u64 of_translate_address(struct device_node *np, const __be32 *addr);
-> >  extern int of_address_to_resource(struct device_node *dev, int index,
-> >  				  struct resource *r);
-> >  extern void __iomem *of_iomap(struct device_node *device, int index);
-> > @@ -21,7 +21,7 @@ static inline unsigned long pci_address_to_pio(phys_addr_t addr) { return -1; }
-> >  #endif
-> >  
-> >  #ifdef CONFIG_PCI
-> > -extern const u32 *of_get_pci_address(struct device_node *dev, int bar_no,
-> > +extern const __be32 *of_get_pci_address(struct device_node *dev, int bar_no,
-> >  			       u64 *size, unsigned int *flags);
-> >  extern int of_pci_address_to_resource(struct device_node *dev, int bar,
-> >  				      struct resource *r);
-> > @@ -32,7 +32,7 @@ static inline int of_pci_address_to_resource(struct device_node *dev, int bar,
-> >  	return -ENOSYS;
-> >  }
-> >  
-> > -static inline const u32 *of_get_pci_address(struct device_node *dev,
-> > +static inline const __be32 *of_get_pci_address(struct device_node *dev,
-> >  		int bar_no, u64 *size, unsigned int *flags)
-> >  {
-> >  	return NULL;
-> 
-> 
+Anyway, I was also able to reproduce the crash on PPC64. This patch
+handles that case.
+
+The following patch is in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: ppc/ftrace
+
+
+Steven Rostedt (1):
+      powerpc64/tracing: Add frame buffer to calls of trace_hardirqs_on/off
+
+----
+ arch/powerpc/include/asm/irqflags.h |   40 ++++++++++++++++++++++++++--------
+ 1 files changed, 30 insertions(+), 10 deletions(-)
+---------------------------
+commit 5025019505da6731f8be13940bb978617599c935
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Dec 23 21:07:39 2010 -0800
+
+    powerpc64/tracing: Add frame buffer to calls of trace_hardirqs_on/off
+    
+    When an interrupt occurs in userspace, we can call trace_hardirqs_on/off()
+    With one level stack. But if we have irqsoff tracing enabled,
+    it checks both CALLER_ADDR0 and CALLER_ADDR1. The second call
+    goes two stack frames up. If this is from user space, then there may
+    not exist a second stack.
+    
+    Add a second stack when calling trace_hardirqs_on/off() otherwise
+    the following oops might occur:
+    
+    Oops: Kernel access of bad area, sig: 11 [#1]
+    PREEMPT SMP NR_CPUS=2 PA Semi PWRficient
+    last sysfs file: /sys/block/sda/size
+    Modules linked in: ohci_hcd ehci_hcd usbcore
+    NIP: c0000000000e1c00 LR: c0000000000034d4 CTR: 000000011012c440
+    REGS: c00000003e2f3af0 TRAP: 0300   Not tainted  (2.6.37-rc6+)
+    MSR: 9000000000001032 <ME,IR,DR>  CR: 48044444  XER: 20000000
+    DAR: 00000001ffb9db50, DSISR: 0000000040000000
+    TASK = c00000003e1a00a0[2088] 'emacs' THREAD: c00000003e2f0000 CPU: 1
+    GPR00: 0000000000000001 c00000003e2f3d70 c00000000084e0d0 c0000000008816e8
+    GPR04: 000000001034c678 000000001032e8f9 0000000010336540 0000000040020000
+    GPR08: 0000000040020000 00000001ffb9db40 c00000003e2f3e30 0000000060000000
+    GPR12: 100000000000f032 c00000000fff0280 000000001032e8c9 0000000000000008
+    GPR16: 00000000105be9c0 00000000105be950 00000000105be9b0 00000000105be950
+    GPR20: 00000000ffb9dc50 00000000ffb9dbf0 00000000102f0000 00000000102f0000
+    GPR24: 00000000102e0000 00000000102f0000 0000000010336540 c0000000009ded38
+    GPR28: 00000000102e0000 c0000000000034d4 c0000000007ccb10 c00000003e2f3d70
+    NIP [c0000000000e1c00] .trace_hardirqs_off+0xb0/0x1d0
+    LR [c0000000000034d4] decrementer_common+0xd4/0x100
+    Call Trace:
+    [c00000003e2f3d70] [c00000003e2f3e30] 0xc00000003e2f3e30 (unreliable)
+    [c00000003e2f3e30] [c0000000000034d4] decrementer_common+0xd4/0x100
+    Instruction dump:
+    81690000 7f8b0000 419e0018 f84a0028 60000000 60000000 60000000 e95f0000
+    80030000 e92a0000 eb6301f8 2f800000 <eb890010> 41fe00dc a06d000a eb1e8050
+    ---[ end trace 4ec7fd2be9240928 ]---
+    
+    Reported-by: Joerg Sommer <joerg@alea.gnuu.de>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
+index b85d8dd..b0b06d8 100644
+--- a/arch/powerpc/include/asm/irqflags.h
++++ b/arch/powerpc/include/asm/irqflags.h
+@@ -12,24 +12,44 @@
+ 
+ #else
+ #ifdef CONFIG_TRACE_IRQFLAGS
++#ifdef CONFIG_IRQSOFF_TRACER
++/*
++ * Since the ftrace irqsoff latency trace checks CALLER_ADDR1,
++ * which is the stack frame here, we need to force a stack frame
++ * in case we came from user space.
++ */
++#define TRACE_WITH_FRAME_BUFFER(func)		\
++	mflr	r0;				\
++	stdu	r1, -32(r1);			\
++	std	r0, 16(r1);			\
++	stdu	r1, -32(r1);			\
++	bl func;				\
++	ld	r1, 0(r1);			\
++	ld	r1, 0(r1);
++#else
++#define TRACE_WITH_FRAME_BUFFER(func)		\
++	bl func;
++#endif
++
+ /*
+  * Most of the CPU's IRQ-state tracing is done from assembly code; we
+  * have to call a C function so call a wrapper that saves all the
+  * C-clobbered registers.
+  */
+-#define TRACE_ENABLE_INTS	bl .trace_hardirqs_on
+-#define TRACE_DISABLE_INTS	bl .trace_hardirqs_off
+-#define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)	\
+-	cmpdi	en,0;				\
+-	bne	95f;				\
+-	stb	en,PACASOFTIRQEN(r13);		\
+-	bl	.trace_hardirqs_off;		\
+-	b	skip;				\
+-95:	bl	.trace_hardirqs_on;		\
++#define TRACE_ENABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)
++#define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)
++
++#define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)		\
++	cmpdi	en,0;					\
++	bne	95f;					\
++	stb	en,PACASOFTIRQEN(r13);			\
++	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)	\
++	b	skip;					\
++95:	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)	\
+ 	li	en,1;
+ #define TRACE_AND_RESTORE_IRQ(en)		\
+ 	TRACE_AND_RESTORE_IRQ_PARTIAL(en,96f);	\
+-	stb	en,PACASOFTIRQEN(r13);	        \
++	stb	en,PACASOFTIRQEN(r13);		\
+ 96:
+ #else
+ #define TRACE_ENABLE_INTS
