@@ -1,19 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-pw0-f66.google.com (mail-pw0-f66.google.com
-	[209.85.160.66]) by ozlabs.org (Postfix) with ESMTP id 7E6F6B7088
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 19:55:17 +1100 (EST)
-Received: by pwj5 with SMTP id 5so570354pwj.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 00:55:16 -0800 (PST)
+Received: from mail-iw0-f194.google.com (mail-iw0-f194.google.com
+	[209.85.214.194]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A8172B7277
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 19:55:24 +1100 (EST)
+Received: by iwn42 with SMTP id 42so3458368iwn.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2010 00:55:21 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Fri, 24 Dec 2010 01:55:13 -0700
+Date: Fri, 24 Dec 2010 01:55:18 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
 To: Mingkai Hu <Mingkai.hu@freescale.com>
-Subject: Re: [PATCH 1/2] eSPI: change the read behavior of the SPIRF
-Message-ID: <20101224085513.GF5544@angua.secretlab.ca>
-References: <1292894768-6737-1-git-send-email-Mingkai.hu@freescale.com>
+Subject: Re: [PATCH 2/2] eSPI: fix wrong setting of the address in the
+	command buffer
+Message-ID: <20101224085518.GG5544@angua.secretlab.ca>
+References: <1292894822-7983-1-git-send-email-Mingkai.hu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1292894768-6737-1-git-send-email-Mingkai.hu@freescale.com>
+In-Reply-To: <1292894822-7983-1-git-send-email-Mingkai.hu@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
 	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,14 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 21, 2010 at 09:26:07AM +0800, Mingkai Hu wrote:
-> The user must read N bytes of SPIRF (1 <= N <= 4) that do not exceed the
-> amount of data in the receive FIFO, so read the SPIRF byte by byte when
-> the data in receive FIFO is less than 4 bytes.
-> 
-> On Simics, when read N bytes that exceed the amout of data in receive
-> FIFO, we can't read the data out, that is we can't clear the rx FIFO,
-> then the CPU will loop on the espi rx interrupt.
+On Tue, Dec 21, 2010 at 09:27:02AM +0800, Mingkai Hu wrote:
+> Or else we cann't operate on the right address when the trans length
+> is greater than 65535.
 > 
 > Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
 
@@ -41,49 +40,51 @@ Applied to merge branch for 2.6.27, thanks.
 g.
 
 > ---
-> The patch 2/2 is againsted on this patch, so I resent this patch again
-> for convience which sent several weeks ago.
-> 
->  drivers/spi/spi_fsl_espi.c |   19 ++++++++++++++++---
->  1 files changed, 16 insertions(+), 3 deletions(-)
+>  drivers/spi/spi_fsl_espi.c |   16 +++++++++-------
+>  1 files changed, 9 insertions(+), 7 deletions(-)
 > 
 > diff --git a/drivers/spi/spi_fsl_espi.c b/drivers/spi/spi_fsl_espi.c
-> index e3b4f64..ae78926 100644
+> index ae78926..a99e233 100644
 > --- a/drivers/spi/spi_fsl_espi.c
 > +++ b/drivers/spi/spi_fsl_espi.c
-> @@ -507,16 +507,29 @@ void fsl_espi_cpu_irq(struct mpc8xxx_spi *mspi, u32 events)
+> @@ -258,18 +258,18 @@ static int fsl_espi_bufs(struct spi_device *spi, struct spi_transfer *t)
+>  	return mpc8xxx_spi->count;
+>  }
 >  
->  	/* We need handle RX first */
->  	if (events & SPIE_NE) {
-> -		u32 rx_data;
-> +		u32 rx_data, tmp;
-> +		u8 rx_data_8;
+> -static void fsl_espi_addr2cmd(unsigned int addr, u8 *cmd)
+> +static inline void fsl_espi_addr2cmd(unsigned int addr, u8 *cmd)
+>  {
+> -	if (cmd[1] && cmd[2] && cmd[3]) {
+> +	if (cmd) {
+>  		cmd[1] = (u8)(addr >> 16);
+>  		cmd[2] = (u8)(addr >> 8);
+>  		cmd[3] = (u8)(addr >> 0);
+>  	}
+>  }
 >  
->  		/* Spin until RX is done */
->  		while (SPIE_RXCNT(events) < min(4, mspi->len)) {
->  			cpu_relax();
->  			events = mpc8xxx_spi_read_reg(&reg_base->event);
+> -static unsigned int fsl_espi_cmd2addr(u8 *cmd)
+> +static inline unsigned int fsl_espi_cmd2addr(u8 *cmd)
+>  {
+> -	if (cmd[1] && cmd[2] && cmd[3])
+> +	if (cmd)
+>  		return cmd[1] << 16 | cmd[2] << 8 | cmd[3] << 0;
+>  
+>  	return 0;
+> @@ -395,9 +395,11 @@ static void fsl_espi_rw_trans(struct spi_message *m,
+>  			}
 >  		}
-> -		mspi->len -= 4;
 >  
-> -		rx_data = mpc8xxx_spi_read_reg(&reg_base->receive);
-> +		if (mspi->len >= 4) {
-> +			rx_data = mpc8xxx_spi_read_reg(&reg_base->receive);
-> +		} else {
-> +			tmp = mspi->len;
-> +			rx_data = 0;
-> +			while (tmp--) {
-> +				rx_data_8 = in_8((u8 *)&reg_base->receive);
-> +				rx_data |= (rx_data_8 << (tmp * 8));
-> +			}
-> +
-> +			rx_data <<= (4 - mspi->len) * 8;
+> -		addr = fsl_espi_cmd2addr(local_buf);
+> -		addr += pos;
+> -		fsl_espi_addr2cmd(addr, local_buf);
+> +		if (pos > 0) {
+> +			addr = fsl_espi_cmd2addr(local_buf);
+> +			addr += pos;
+> +			fsl_espi_addr2cmd(addr, local_buf);
 > +		}
-> +
-> +		mspi->len -= 4;
 >  
->  		if (mspi->rx)
->  			mspi->get_rx(rx_data, mspi);
+>  		espi_trans->n_tx = n_tx;
+>  		espi_trans->n_rx = trans_len;
 > -- 
 > 1.6.4
 > 
