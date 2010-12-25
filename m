@@ -1,22 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69B49B6EEB
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Dec 2010 08:11:25 +1100 (EST)
-Subject: Re: [PATCH][GIT PULL] powerpc64/tracing: Add frame buffer to calls
-	of trace_hardirqs_on/off
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1293169566.22802.420.camel@gandalf.stny.rr.com>
-References: <1293169566.22802.420.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 25 Dec 2010 08:11:05 +1100
-Message-ID: <1293225065.16694.796.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Joerg Sommer <joerg@alea.gnuu.de>, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <akinobu.mita@gmail.com>
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] spufs: use simple_write_to_buffer
+Date: Sat, 25 Dec 2010 15:03:56 +0900
+Message-Id: <1293257039-2580-1-git-send-email-akinobu.mita@gmail.com>
+In-Reply-To: <n>
+References: <n>
+Cc: cbe-oss-dev@lists.ozlabs.org, Akinobu Mita <akinobu.mita@gmail.com>,
+	Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,127 +18,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-12-24 at 00:46 -0500, Steven Rostedt wrote:
+Simplify several write fileoperations for spufs by using
+simple_write_to_buffer().
 
->  arch/powerpc/include/asm/irqflags.h |   40 ++++++++++++++++++++++++++--------
->  1 files changed, 30 insertions(+), 10 deletions(-)
-> ---------------------------
-> commit 5025019505da6731f8be13940bb978617599c935
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Thu Dec 23 21:07:39 2010 -0800
-> 
->     powerpc64/tracing: Add frame buffer to calls of trace_hardirqs_on/off
->     
->     When an interrupt occurs in userspace, we can call trace_hardirqs_on/off()
->     With one level stack. But if we have irqsoff tracing enabled,
->     it checks both CALLER_ADDR0 and CALLER_ADDR1. The second call
->     goes two stack frames up. If this is from user space, then there may
->     not exist a second stack.
->     
->     Add a second stack when calling trace_hardirqs_on/off() otherwise
->     the following oops might occur:
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jeremy Kerr <jk@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/cell/spufs/file.c |   27 +++++++--------------------
+ 1 files changed, 7 insertions(+), 20 deletions(-)
 
-Hrm... this is really gross :-) So we add gratuituous overhead because
-the code below is dumb :-) What about making the code less stupid
-instead when poking at the stack and detect it's coming from userspace
-instead ?
-
-Cheers,
-Ben.
-
->     Oops: Kernel access of bad area, sig: 11 [#1]
->     PREEMPT SMP NR_CPUS=2 PA Semi PWRficient
->     last sysfs file: /sys/block/sda/size
->     Modules linked in: ohci_hcd ehci_hcd usbcore
->     NIP: c0000000000e1c00 LR: c0000000000034d4 CTR: 000000011012c440
->     REGS: c00000003e2f3af0 TRAP: 0300   Not tainted  (2.6.37-rc6+)
->     MSR: 9000000000001032 <ME,IR,DR>  CR: 48044444  XER: 20000000
->     DAR: 00000001ffb9db50, DSISR: 0000000040000000
->     TASK = c00000003e1a00a0[2088] 'emacs' THREAD: c00000003e2f0000 CPU: 1
->     GPR00: 0000000000000001 c00000003e2f3d70 c00000000084e0d0 c0000000008816e8
->     GPR04: 000000001034c678 000000001032e8f9 0000000010336540 0000000040020000
->     GPR08: 0000000040020000 00000001ffb9db40 c00000003e2f3e30 0000000060000000
->     GPR12: 100000000000f032 c00000000fff0280 000000001032e8c9 0000000000000008
->     GPR16: 00000000105be9c0 00000000105be950 00000000105be9b0 00000000105be950
->     GPR20: 00000000ffb9dc50 00000000ffb9dbf0 00000000102f0000 00000000102f0000
->     GPR24: 00000000102e0000 00000000102f0000 0000000010336540 c0000000009ded38
->     GPR28: 00000000102e0000 c0000000000034d4 c0000000007ccb10 c00000003e2f3d70
->     NIP [c0000000000e1c00] .trace_hardirqs_off+0xb0/0x1d0
->     LR [c0000000000034d4] decrementer_common+0xd4/0x100
->     Call Trace:
->     [c00000003e2f3d70] [c00000003e2f3e30] 0xc00000003e2f3e30 (unreliable)
->     [c00000003e2f3e30] [c0000000000034d4] decrementer_common+0xd4/0x100
->     Instruction dump:
->     81690000 7f8b0000 419e0018 f84a0028 60000000 60000000 60000000 e95f0000
->     80030000 e92a0000 eb6301f8 2f800000 <eb890010> 41fe00dc a06d000a eb1e8050
->     ---[ end trace 4ec7fd2be9240928 ]---
->     
->     Reported-by: Joerg Sommer <joerg@alea.gnuu.de>
->     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
-> index b85d8dd..b0b06d8 100644
-> --- a/arch/powerpc/include/asm/irqflags.h
-> +++ b/arch/powerpc/include/asm/irqflags.h
-> @@ -12,24 +12,44 @@
->  
->  #else
->  #ifdef CONFIG_TRACE_IRQFLAGS
-> +#ifdef CONFIG_IRQSOFF_TRACER
-> +/*
-> + * Since the ftrace irqsoff latency trace checks CALLER_ADDR1,
-> + * which is the stack frame here, we need to force a stack frame
-> + * in case we came from user space.
-> + */
-> +#define TRACE_WITH_FRAME_BUFFER(func)		\
-> +	mflr	r0;				\
-> +	stdu	r1, -32(r1);			\
-> +	std	r0, 16(r1);			\
-> +	stdu	r1, -32(r1);			\
-> +	bl func;				\
-> +	ld	r1, 0(r1);			\
-> +	ld	r1, 0(r1);
-> +#else
-> +#define TRACE_WITH_FRAME_BUFFER(func)		\
-> +	bl func;
-> +#endif
-> +
->  /*
->   * Most of the CPU's IRQ-state tracing is done from assembly code; we
->   * have to call a C function so call a wrapper that saves all the
->   * C-clobbered registers.
->   */
-> -#define TRACE_ENABLE_INTS	bl .trace_hardirqs_on
-> -#define TRACE_DISABLE_INTS	bl .trace_hardirqs_off
-> -#define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)	\
-> -	cmpdi	en,0;				\
-> -	bne	95f;				\
-> -	stb	en,PACASOFTIRQEN(r13);		\
-> -	bl	.trace_hardirqs_off;		\
-> -	b	skip;				\
-> -95:	bl	.trace_hardirqs_on;		\
-> +#define TRACE_ENABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)
-> +#define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)
-> +
-> +#define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)		\
-> +	cmpdi	en,0;					\
-> +	bne	95f;					\
-> +	stb	en,PACASOFTIRQEN(r13);			\
-> +	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)	\
-> +	b	skip;					\
-> +95:	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)	\
->  	li	en,1;
->  #define TRACE_AND_RESTORE_IRQ(en)		\
->  	TRACE_AND_RESTORE_IRQ_PARTIAL(en,96f);	\
-> -	stb	en,PACASOFTIRQEN(r13);	        \
-> +	stb	en,PACASOFTIRQEN(r13);		\
->  96:
->  #else
->  #define TRACE_ENABLE_INTS
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 02f7b11..3c7c3f8 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -219,24 +219,17 @@ spufs_mem_write(struct file *file, const char __user *buffer,
+ 	loff_t pos = *ppos;
+ 	int ret;
+ 
+-	if (pos < 0)
+-		return -EINVAL;
+ 	if (pos > LS_SIZE)
+ 		return -EFBIG;
+-	if (size > LS_SIZE - pos)
+-		size = LS_SIZE - pos;
+ 
+ 	ret = spu_acquire(ctx);
+ 	if (ret)
+ 		return ret;
+ 
+ 	local_store = ctx->ops->get_ls(ctx);
+-	ret = copy_from_user(local_store + pos, buffer, size);
++	size = simple_write_to_buffer(local_store, LS_SIZE, ppos, buffer, size);
+ 	spu_release(ctx);
+ 
+-	if (ret)
+-		return -EFAULT;
+-	*ppos = pos + size;
+ 	return size;
+ }
+ 
+@@ -574,18 +567,15 @@ spufs_regs_write(struct file *file, const char __user *buffer,
+ 	if (*pos >= sizeof(lscsa->gprs))
+ 		return -EFBIG;
+ 
+-	size = min_t(ssize_t, sizeof(lscsa->gprs) - *pos, size);
+-	*pos += size;
+-
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = copy_from_user((char *)lscsa->gprs + *pos - size,
+-			     buffer, size) ? -EFAULT : size;
++	size = simple_write_to_buffer(lscsa->gprs, sizeof(lscsa->gprs), pos,
++					buffer, size);
+ 
+ 	spu_release_saved(ctx);
+-	return ret;
++	return size;
+ }
+ 
+ static const struct file_operations spufs_regs_fops = {
+@@ -630,18 +620,15 @@ spufs_fpcr_write(struct file *file, const char __user * buffer,
+ 	if (*pos >= sizeof(lscsa->fpcr))
+ 		return -EFBIG;
+ 
+-	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
+-
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 
+-	*pos += size;
+-	ret = copy_from_user((char *)&lscsa->fpcr + *pos - size,
+-			     buffer, size) ? -EFAULT : size;
++	size = simple_write_to_buffer(&lscsa->fpcr, sizeof(lscsa->fpcr), pos,
++					buffer, size);
+ 
+ 	spu_release_saved(ctx);
+-	return ret;
++	return size;
+ }
+ 
+ static const struct file_operations spufs_fpcr_fops = {
+-- 
+1.7.3.4
