@@ -1,17 +1,29 @@
-Return-Path: <ptyser@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+Return-Path: <hughd@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.67])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0E72CB70E2
+	by ozlabs.org (Postfix) with ESMTPS id 08E86B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Dec 2010 07:14:07 +1100 (EST)
-From: Peter Tyser <ptyser@xes-inc.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Fix SPRG get/set for Book3S and BookE
-Date: Wed, 29 Dec 2010 13:51:25 -0600
-Message-Id: <1293652285-13313-1-git-send-email-ptyser@xes-inc.com>
-Cc: Peter Tyser <ptyser@xes-inc.com>, linuxppc-dev@lists.ozlabs.org,
-	agraf@suse.de, kvm@vger.kernel.org
+	Thu, 30 Dec 2010 10:05:23 +1100 (EST)
+Received: from wpaz1.hot.corp.google.com (wpaz1.hot.corp.google.com
+	[172.24.198.65]) by smtp-out.google.com with ESMTP id oBTMsvMc029833
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Dec 2010 14:54:58 -0800
+Received: from iwn2 (iwn2.prod.google.com [10.241.68.66])
+	by wpaz1.hot.corp.google.com with ESMTP id oBTMsuC2029528
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Dec 2010 14:54:56 -0800
+Received: by iwn2 with SMTP id 2so11301975iwn.21
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Dec 2010 14:54:56 -0800 (PST)
+Date: Wed, 29 Dec 2010 14:54:49 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Subject: PowerPC BUG: using smp_processor_id() in preemptible code
+Message-ID: <alpine.LSU.2.00.1012291413360.22939@sister.anvils>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linuxppc-dev@lists.ozlabs.org,
+	Nick Piggin <npiggin@kernel.dk>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,82 +33,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously SPRGs 4-7 were improperly read and written in
-kvm_arch_vcpu_ioctl_get_regs() and kvm_arch_vcpu_ioctl_set_regs();
+With recent 2.6.37-rc, with CONFIG_PREEMPT=y CONFIG_DEBUG_PREEMPT=y
+on the PowerPC G5, I get spammed by BUG warnings each time I swapoff:
 
-Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
----
-I noticed this while grepping for somthing unrelated and assume its
-a typo.  Feel free to add to the patch description; I don't use KVM
-so don't know what the high-level consequences of this change are.
+BUG: using smp_processor_id() in preemptible [00000000] code: swapoff/3974
+caller is .hpte_need_flush+0x4c/0x2e8
+Call Trace:
+[c0000001b4a3f830] [c00000000000f3cc] .show_stack+0x6c/0x16c (unreliable)
+[c0000001b4a3f8e0] [c00000000023eda0] .debug_smp_processor_id+0xe4/0x11c
+[c0000001b4a3f970] [c00000000002f2f4] .hpte_need_flush+0x4c/0x2e8
+[c0000001b4a3fa30] [c0000000000e7ef8] .vunmap_pud_range+0x148/0x200
+[c0000001b4a3fb10] [c0000000000e8058] .vunmap_page_range+0xa8/0xd4
+[c0000001b4a3fbb0] [c0000000000e80a4] .free_unmap_vmap_area+0x20/0x38
+[c0000001b4a3fc40] [c0000000000e8138] .remove_vm_area+0x7c/0xb4
+[c0000001b4a3fcd0] [c0000000000e8308] .__vunmap+0x50/0x104
+[c0000001b4a3fd60] [c0000000000ef3fc] .SyS_swapoff+0x59c/0x6a8
+[c0000001b4a3fe30] [c0000000000075a8] syscall_exit+0x0/0x40
 
- arch/powerpc/kvm/book3s.c |   14 ++++++++------
- arch/powerpc/kvm/booke.c  |   14 ++++++++------
- 2 files changed, 16 insertions(+), 12 deletions(-)
+I notice hpte_need_flush() itself acknowledges
+ * Must be called from within some kind of spinlock/non-preempt region...
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index e316847..5eb86c9 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -1141,9 +1141,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->sprg1 = vcpu->arch.shared->sprg1;
- 	regs->sprg2 = vcpu->arch.shared->sprg2;
- 	regs->sprg3 = vcpu->arch.shared->sprg3;
--	regs->sprg5 = vcpu->arch.sprg4;
--	regs->sprg6 = vcpu->arch.sprg5;
--	regs->sprg7 = vcpu->arch.sprg6;
-+	regs->sprg4 = vcpu->arch.sprg4;
-+	regs->sprg5 = vcpu->arch.sprg5;
-+	regs->sprg6 = vcpu->arch.sprg6;
-+	regs->sprg7 = vcpu->arch.sprg7;
+Though I didn't actually bisect, I believe this is since Jeremy's
+64141da587241301ce8638cc945f8b67853156ec "vmalloc: eagerly clear ptes
+on vunmap", which moves a call to vunmap_page_range() from one place
+(which happened to be inside a spinlock) to another (where it's not).
+
+I guess my warnings would be easily silenced by moving that call to
+vunmap_page_range() down just inside the spinlock below it; but I'm
+dubious that that's the right fix - it looked as if there are other
+paths through vmalloc.c where vunmap_page_range() has been getting
+called without preemption disabled, long before Jeremy's change,
+just paths that I never happen to go down in my limited testing.
+
+For the moment I'm using the obvious patch below to keep it quiet;
+but I doubt that this is the right patch either.  I'm hoping that
+ye who understand the importance of hpte_need_flush() will be best
+able to judge what to do.  Or might there be other architectures
+expecting to be unpreemptible there?
+
+Thanks,
+Hugh
+
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -37,11 +37,13 @@ static void vunmap_pte_range(pmd_t *pmd,
+ {
+ 	pte_t *pte;
  
- 	for (i = 0; i < ARRAY_SIZE(regs->gpr); i++)
- 		regs->gpr[i] = kvmppc_get_gpr(vcpu, i);
-@@ -1167,9 +1168,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	vcpu->arch.shared->sprg1 = regs->sprg1;
- 	vcpu->arch.shared->sprg2 = regs->sprg2;
- 	vcpu->arch.shared->sprg3 = regs->sprg3;
--	vcpu->arch.sprg5 = regs->sprg4;
--	vcpu->arch.sprg6 = regs->sprg5;
--	vcpu->arch.sprg7 = regs->sprg6;
-+	vcpu->arch.sprg4 = regs->sprg4;
-+	vcpu->arch.sprg5 = regs->sprg5;
-+	vcpu->arch.sprg6 = regs->sprg6;
-+	vcpu->arch.sprg7 = regs->sprg7;
++	preempt_disable(); /* Stop __vunmap() triggering smp_processor_id() in preemptible from hpte_need_flush() */
+ 	pte = pte_offset_kernel(pmd, addr);
+ 	do {
+ 		pte_t ptent = ptep_get_and_clear(&init_mm, addr, pte);
+ 		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
+ 	} while (pte++, addr += PAGE_SIZE, addr != end);
++	preempt_enable();
+ }
  
- 	for (i = 0; i < ARRAY_SIZE(regs->gpr); i++)
- 		kvmppc_set_gpr(vcpu, i, regs->gpr[i]);
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 77575d0..ef76acb 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -546,9 +546,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->sprg1 = vcpu->arch.shared->sprg1;
- 	regs->sprg2 = vcpu->arch.shared->sprg2;
- 	regs->sprg3 = vcpu->arch.shared->sprg3;
--	regs->sprg5 = vcpu->arch.sprg4;
--	regs->sprg6 = vcpu->arch.sprg5;
--	regs->sprg7 = vcpu->arch.sprg6;
-+	regs->sprg4 = vcpu->arch.sprg4;
-+	regs->sprg5 = vcpu->arch.sprg5;
-+	regs->sprg6 = vcpu->arch.sprg6;
-+	regs->sprg7 = vcpu->arch.sprg7;
- 
- 	for (i = 0; i < ARRAY_SIZE(regs->gpr); i++)
- 		regs->gpr[i] = kvmppc_get_gpr(vcpu, i);
-@@ -572,9 +573,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	vcpu->arch.shared->sprg1 = regs->sprg1;
- 	vcpu->arch.shared->sprg2 = regs->sprg2;
- 	vcpu->arch.shared->sprg3 = regs->sprg3;
--	vcpu->arch.sprg5 = regs->sprg4;
--	vcpu->arch.sprg6 = regs->sprg5;
--	vcpu->arch.sprg7 = regs->sprg6;
-+	vcpu->arch.sprg4 = regs->sprg4;
-+	vcpu->arch.sprg5 = regs->sprg5;
-+	vcpu->arch.sprg6 = regs->sprg6;
-+	vcpu->arch.sprg7 = regs->sprg7;
- 
- 	for (i = 0; i < ARRAY_SIZE(regs->gpr); i++)
- 		kvmppc_set_gpr(vcpu, i, regs->gpr[i]);
--- 
-1.7.0.4
+ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end)
