@@ -1,21 +1,24 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C57F8B70DF
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iy0-f195.google.com (mail-iy0-f195.google.com
+	[209.85.210.195]) by ozlabs.org (Postfix) with ESMTP id 370961007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Dec 2010 12:34:03 +1100 (EST)
-Message-ID: <4D1BDFC1.3030101@goop.org>
-Date: Thu, 30 Dec 2010 12:26:25 +1100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	Thu, 30 Dec 2010 16:35:51 +1100 (EST)
+Received: by iyj17 with SMTP id 17so5149333iyj.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Dec 2010 21:35:49 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Wed, 29 Dec 2010 22:35:45 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Ilya Yanok <yanok@emcraft.com>
+Subject: Re: [PATCH 1/6] mpc512x_dma: scatter/gather fix
+Message-ID: <20101230053545.GA27954@angua.secretlab.ca>
+References: <1285676696-5358-1-git-send-email-yanok@emcraft.com>
+	<1288137180-3220-2-git-send-email-yanok@emcraft.com>
 MIME-Version: 1.0
-To: Hugh Dickins <hughd@google.com>
-Subject: Re: PowerPC BUG: using smp_processor_id() in preemptible code
-References: <alpine.LSU.2.00.1012291413360.22939@sister.anvils>
-In-Reply-To: <alpine.LSU.2.00.1012291413360.22939@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	Nick Piggin <npiggin@kernel.dk>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1288137180-3220-2-git-send-email-yanok@emcraft.com>
+Cc: vlad@emcraft.com, linuxppc-dev@lists.ozlabs.org, wd@denx.de, dzu@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/30/2010 09:54 AM, Hugh Dickins wrote:
-> With recent 2.6.37-rc, with CONFIG_PREEMPT=y CONFIG_DEBUG_PREEMPT=y
-> on the PowerPC G5, I get spammed by BUG warnings each time I swapoff:
->
-> BUG: using smp_processor_id() in preemptible [00000000] code: swapoff/3974
-> caller is .hpte_need_flush+0x4c/0x2e8
-> Call Trace:
-> [c0000001b4a3f830] [c00000000000f3cc] .show_stack+0x6c/0x16c (unreliable)
-> [c0000001b4a3f8e0] [c00000000023eda0] .debug_smp_processor_id+0xe4/0x11c
-> [c0000001b4a3f970] [c00000000002f2f4] .hpte_need_flush+0x4c/0x2e8
-> [c0000001b4a3fa30] [c0000000000e7ef8] .vunmap_pud_range+0x148/0x200
-> [c0000001b4a3fb10] [c0000000000e8058] .vunmap_page_range+0xa8/0xd4
-> [c0000001b4a3fbb0] [c0000000000e80a4] .free_unmap_vmap_area+0x20/0x38
-> [c0000001b4a3fc40] [c0000000000e8138] .remove_vm_area+0x7c/0xb4
-> [c0000001b4a3fcd0] [c0000000000e8308] .__vunmap+0x50/0x104
-> [c0000001b4a3fd60] [c0000000000ef3fc] .SyS_swapoff+0x59c/0x6a8
-> [c0000001b4a3fe30] [c0000000000075a8] syscall_exit+0x0/0x40
->
-> I notice hpte_need_flush() itself acknowledges
->  * Must be called from within some kind of spinlock/non-preempt region...
->
-> Though I didn't actually bisect, I believe this is since Jeremy's
-> 64141da587241301ce8638cc945f8b67853156ec "vmalloc: eagerly clear ptes
-> on vunmap", which moves a call to vunmap_page_range() from one place
-> (which happened to be inside a spinlock) to another (where it's not).
+On Wed, Oct 27, 2010 at 01:52:55AM +0200, Ilya Yanok wrote:
+> While testing mpc512x-dma driver with dmatest module I've found that
+> I can hang the mpc512x-dma issueing request from multiple threads to
+> the single channel.
+> (insmod dmatest.ko max_channels=1 threads_per_chan=16)
+> After investingating this case I've managed to find that this happens
+> if and only if we have more than one quequed requests.
+> In this case the driver tries to make use of hardware scatter/gather
+> functionality. I've found two problems with scatter/gather:
+>  1. When TCD is copied form RAM to the TCD register space with memcpy_io()
+> e_sg bit eventually gets cleared. This results in only first TCD being
+> executed. I've added setting of e_sg bit excplicitly in the TCD registers.
+> BTW, what is the correct way to do this? (How can I use setbits with bitfield
+> structure?) After that hardware loads consecutive TCDs and we hit the
+> second issue.
+>  2. Existing code clears int_maj bit in the last TCD so we never get
+> an interrupt on transfefr completion.
+> 
+> With these fixes my tests with many threads of single channel succeed but
+> tests that use many channels simultaneously still don't work reliable.
+> 
+> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+> Cc: Piotr Ziecik <kosmo@semihalf.com>
 
-Yes.  I was  bit worried by the interaction between vb->lock and the pte
-locks, and thought it safer to keep it outside.  Though I suppose kernel
-mappings don't have pte locks, so that's a non-issue.
+Merged for -next, thanks.
 
-> I guess my warnings would be easily silenced by moving that call to
-> vunmap_page_range() down just inside the spinlock below it; but I'm
-> dubious that that's the right fix - it looked as if there are other
-> paths through vmalloc.c where vunmap_page_range() has been getting
-> called without preemption disabled, long before Jeremy's change,
-> just paths that I never happen to go down in my limited testing.
->
-> For the moment I'm using the obvious patch below to keep it quiet;
-> but I doubt that this is the right patch either.  I'm hoping that
-> ye who understand the importance of hpte_need_flush() will be best
-> able to judge what to do.  Or might there be other architectures
-> expecting to be unpreemptible there?
+g.
 
-Since kernel mappings don't have a formal pte lock to rely on for
-synchronization, each subsystem defines its own ad-hoc one.  In this
-case that's probably vb->lock anyway, so the fix is to move
-vunmap_page_range() back into its protection.
-
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -37,11 +37,13 @@ static void vunmap_pte_range(pmd_t *pmd,
->  {
->  	pte_t *pte;
+> ---
+>  drivers/dma/mpc512x_dma.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+> index 4e9cbf3..1bc04aa 100644
+> --- a/drivers/dma/mpc512x_dma.c
+> +++ b/drivers/dma/mpc512x_dma.c
+> @@ -252,11 +252,13 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+>  		prev = mdesc;
+>  	}
 >  
-> +	preempt_disable(); /* Stop __vunmap() triggering smp_processor_id() in preemptible from hpte_need_flush() */
->  	pte = pte_offset_kernel(pmd, addr);
->  	do {
->  		pte_t ptent = ptep_get_and_clear(&init_mm, addr, pte);
->  		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
->  	} while (pte++, addr += PAGE_SIZE, addr != end);
-> +	preempt_enable();
+> -	prev->tcd->start = 0;
+>  	prev->tcd->int_maj = 1;
+>  
+>  	/* Send first descriptor in chain into hardware */
+>  	memcpy_toio(&mdma->tcd[cid], first->tcd, sizeof(struct mpc_dma_tcd));
+> +
+> +	if (first != prev)
+> +		mdma->tcd[cid].e_sg = 1;
+>  	out_8(&mdma->regs->dmassrt, cid);
 >  }
 >  
->  static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end)
-
-That looks OK, but it interferes with my plans to use
-apply_to_page_range(_batch) to replace all this code.
-
-    J
+> -- 
+> 1.7.2.3
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
