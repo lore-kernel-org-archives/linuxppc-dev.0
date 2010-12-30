@@ -1,25 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 29 Dec 2010 17:43:41 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 7/7] fdt.c: Refactor unflatten_device_tree and add
-	fdt_unflatten_tree
-Message-ID: <20101230004341.GG32711@angua.secretlab.ca>
-References: <1290021345-4303-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-2-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-3-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-4-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-5-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-6-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1290124502-13125-7-git-send-email-stephen.neuendorffer@xilinx.com>
-	<8aead437-fb77-4e72-8b66-2b1626f6316d@SG2EHSMHS008.ehs.local>
+Return-Path: <jeremy@goop.org>
+Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C57F8B70DF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 30 Dec 2010 12:34:03 +1100 (EST)
+Message-ID: <4D1BDFC1.3030101@goop.org>
+Date: Thu, 30 Dec 2010 12:26:25 +1100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8aead437-fb77-4e72-8b66-2b1626f6316d@SG2EHSMHS008.ehs.local>
-Cc: dirk.brandewie@gmail.com, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+To: Hugh Dickins <hughd@google.com>
+Subject: Re: PowerPC BUG: using smp_processor_id() in preemptible code
+References: <alpine.LSU.2.00.1012291413360.22939@sister.anvils>
+In-Reply-To: <alpine.LSU.2.00.1012291413360.22939@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Nick Piggin <npiggin@kernel.dk>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,249 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 18, 2010 at 03:55:02PM -0800, Stephen Neuendorffer wrote:
-> unflatten_device_tree has two dependencies on things that happen
-> during boot time.  Firstly, it references the initial device tree
-> directly. Secondly, it allocates memory using the early boot
-> allocator.  This patch factors out these dependencies and uses
-> the new __unflatten_device_tree function to implement a driver-visible
-> fdt_unflatten_tree function, which can be used to unflatten a
-> blob after boot time.
-> 
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+On 12/30/2010 09:54 AM, Hugh Dickins wrote:
+> With recent 2.6.37-rc, with CONFIG_PREEMPT=y CONFIG_DEBUG_PREEMPT=y
+> on the PowerPC G5, I get spammed by BUG warnings each time I swapoff:
+>
+> BUG: using smp_processor_id() in preemptible [00000000] code: swapoff/3974
+> caller is .hpte_need_flush+0x4c/0x2e8
+> Call Trace:
+> [c0000001b4a3f830] [c00000000000f3cc] .show_stack+0x6c/0x16c (unreliable)
+> [c0000001b4a3f8e0] [c00000000023eda0] .debug_smp_processor_id+0xe4/0x11c
+> [c0000001b4a3f970] [c00000000002f2f4] .hpte_need_flush+0x4c/0x2e8
+> [c0000001b4a3fa30] [c0000000000e7ef8] .vunmap_pud_range+0x148/0x200
+> [c0000001b4a3fb10] [c0000000000e8058] .vunmap_page_range+0xa8/0xd4
+> [c0000001b4a3fbb0] [c0000000000e80a4] .free_unmap_vmap_area+0x20/0x38
+> [c0000001b4a3fc40] [c0000000000e8138] .remove_vm_area+0x7c/0xb4
+> [c0000001b4a3fcd0] [c0000000000e8308] .__vunmap+0x50/0x104
+> [c0000001b4a3fd60] [c0000000000ef3fc] .SyS_swapoff+0x59c/0x6a8
+> [c0000001b4a3fe30] [c0000000000075a8] syscall_exit+0x0/0x40
+>
+> I notice hpte_need_flush() itself acknowledges
+>  * Must be called from within some kind of spinlock/non-preempt region...
+>
+> Though I didn't actually bisect, I believe this is since Jeremy's
+> 64141da587241301ce8638cc945f8b67853156ec "vmalloc: eagerly clear ptes
+> on vunmap", which moves a call to vunmap_page_range() from one place
+> (which happened to be inside a spinlock) to another (where it's not).
 
-Merged, thanks.  One comment below, please fix with a followup patch.
+Yes.  I was  bit worried by the interaction between vb->lock and the pte
+locks, and thought it safer to keep it outside.  Though I suppose kernel
+mappings don't have pte locks, so that's a non-issue.
 
-g.
+> I guess my warnings would be easily silenced by moving that call to
+> vunmap_page_range() down just inside the spinlock below it; but I'm
+> dubious that that's the right fix - it looked as if there are other
+> paths through vmalloc.c where vunmap_page_range() has been getting
+> called without preemption disabled, long before Jeremy's change,
+> just paths that I never happen to go down in my limited testing.
+>
+> For the moment I'm using the obvious patch below to keep it quiet;
+> but I doubt that this is the right patch either.  I'm hoping that
+> ye who understand the importance of hpte_need_flush() will be best
+> able to judge what to do.  Or might there be other architectures
+> expecting to be unpreemptible there?
 
-> 
-> --
-> 
-> V2: remove extra __va() call
-> 	 make dt_alloc functions return void *.  This doesn't fix the general
->     strangeness in this code that constantly casts back and forth between
->     unsigned long and __be32 *
-> ---
->  drivers/of/fdt.c       |  149 +++++++++++++++++++++++++++++++----------------
->  include/linux/of_fdt.h |    2 +
->  2 files changed, 100 insertions(+), 51 deletions(-)
-> 
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 236a8c9..e29dbe2 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -11,10 +11,12 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/initrd.h>
-> +#include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/of_fdt.h>
->  #include <linux/string.h>
->  #include <linux/errno.h>
-> +#include <linux/slab.h>
->  
->  #ifdef CONFIG_PPC
->  #include <asm/machdep.h>
-> @@ -312,6 +314,94 @@ unsigned long unflatten_dt_node(struct boot_param_header *blob,
->  	return mem;
->  }
->  
-> +/**
-> + * __unflatten_device_tree - create tree of device_nodes from flat blob
-> + *
-> + * unflattens a device-tree, creating the
-> + * tree of struct device_node. It also fills the "name" and "type"
-> + * pointers of the nodes so the normal device-tree walking functions
-> + * can be used.
-> + * @blob: The blob to expand
-> + * @mynodes: The device_node tree created by the call
-> + * @dt_alloc: An allocator that provides a virtual address to memory
-> + * for the resulting tree
-> + */
-> +void __unflatten_device_tree(struct boot_param_header *blob,
-> +			     struct device_node **mynodes,
-> +			     void * (*dt_alloc)(u64 size, u64 align))
-> +{
-> +	unsigned long start, mem, size;
-> +	struct device_node **allnextp = mynodes;
-> +
-> +	pr_debug(" -> unflatten_device_tree()\n");
-> +
-> +	if (!blob) {
-> +		pr_debug("No device tree pointer\n");
-> +		return;
-> +	}
-> +
-> +	pr_debug("Unflattening device tree:\n");
-> +	pr_debug("magic: %08x\n", be32_to_cpu(blob->magic));
-> +	pr_debug("size: %08x\n", be32_to_cpu(blob->totalsize));
-> +	pr_debug("version: %08x\n", be32_to_cpu(blob->version));
-> +
-> +	if (be32_to_cpu(blob->magic) != OF_DT_HEADER) {
-> +		pr_err("Invalid device tree blob header\n");
-> +		return;
-> +	}
-> +
-> +	/* First pass, scan for size */
-> +	start = ((unsigned long)blob) +
-> +		be32_to_cpu(blob->off_dt_struct);
-> +	size = unflatten_dt_node(blob, 0, &start, NULL, NULL, 0);
-> +	size = (size | 3) + 1;
-> +
-> +	pr_debug("  size is %lx, allocating...\n", size);
-> +
-> +	/* Allocate memory for the expanded device tree */
-> +	mem = (unsigned long)
-> +		dt_alloc(size + 4, __alignof__(struct device_node));
-> +
-> +	((__be32 *)mem)[size / 4] = cpu_to_be32(0xdeadbeef);
-> +
-> +	pr_debug("  unflattening %lx...\n", mem);
-> +
-> +	/* Second pass, do actual unflattening */
-> +	start = ((unsigned long)blob) +
-> +		be32_to_cpu(blob->off_dt_struct);
-> +	unflatten_dt_node(blob, mem, &start, NULL, &allnextp, 0);
-> +	if (be32_to_cpup((__be32 *)start) != OF_DT_END)
-> +		pr_warning("Weird tag at end of tree: %08x\n", *((u32 *)start));
-> +	if (be32_to_cpu(((__be32 *)mem)[size / 4]) != 0xdeadbeef)
-> +		pr_warning("End of tree marker overwritten: %08x\n",
-> +			   be32_to_cpu(((__be32 *)mem)[size / 4]));
-> +	*allnextp = NULL;
-> +
-> +	pr_debug(" <- unflatten_device_tree()\n");
-> +}
-> +
-> +static void *kernel_tree_alloc(u64 size, u64 align)
-> +{
-> +	return kzalloc(size, GFP_KERNEL);
-> +}
-> +
-> +/**
-> + * of_fdt_unflatten_tree - create tree of device_nodes from flat blob
-> + *
-> + * unflattens the device-tree passed by the firmware, creating the
-> + * tree of struct device_node. It also fills the "name" and "type"
-> + * pointers of the nodes so the normal device-tree walking functions
-> + * can be used.
-> + */
-> +void of_fdt_unflatten_tree(unsigned long *blob,
-> +			struct device_node **mynodes)
-> +{
-> +	struct boot_param_header *device_tree =
-> +		(struct boot_param_header *)blob;
-> +	__unflatten_device_tree(device_tree, mynodes, &kernel_tree_alloc);
-> +}
-> +EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
+Since kernel mappings don't have a formal pte lock to rely on for
+synchronization, each subsystem defines its own ad-hoc one.  In this
+case that's probably vb->lock anyway, so the fix is to move
+vunmap_page_range() back into its protection.
 
-The blob parameter to of_fdt_unflatten_tree should either be void* or
-boot_param_header*.  What's the reason for unsigned long *?  Also,
-blob can be passed directly into the __unflatten_device_tree() call.
-No reason for the device_tree = blob assignment.  In fact, you could
-probably eliminate this function entirely and rename
-__unflatten_device_tree to of_fdt_unflatten_tree.
-
-> +
->  /* Everything below here references initial_boot_params directly. */
->  int __initdata dt_root_addr_cells;
->  int __initdata dt_root_size_cells;
-> @@ -569,6 +659,12 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
->  	return 1;
->  }
->  
-> +static void *__init early_device_tree_alloc(u64 size, u64 align)
-> +{
-> +	unsigned long mem = early_init_dt_alloc_memory_arch(size, align);
-> +	return __va(mem);
-> +}
-> +
->  /**
->   * unflatten_device_tree - create tree of device_nodes from flat blob
->   *
-> @@ -579,62 +675,13 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
->   */
->  void __init unflatten_device_tree(void)
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -37,11 +37,13 @@ static void vunmap_pte_range(pmd_t *pmd,
 >  {
-> -	unsigned long start, mem, size;
-> -	struct device_node **allnextp = &allnodes;
-> -
-> -	pr_debug(" -> unflatten_device_tree()\n");
-> -
-> -	if (!initial_boot_params) {
-> -		pr_debug("No device tree pointer\n");
-> -		return;
-> -	}
-> -
-> -	pr_debug("Unflattening device tree:\n");
-> -	pr_debug("magic: %08x\n", be32_to_cpu(initial_boot_params->magic));
-> -	pr_debug("size: %08x\n", be32_to_cpu(initial_boot_params->totalsize));
-> -	pr_debug("version: %08x\n", be32_to_cpu(initial_boot_params->version));
-> -
-> -	if (be32_to_cpu(initial_boot_params->magic) != OF_DT_HEADER) {
-> -		pr_err("Invalid device tree blob header\n");
-> -		return;
-> -	}
-> -
-> -	/* First pass, scan for size */
-> -	start = ((unsigned long)initial_boot_params) +
-> -		be32_to_cpu(initial_boot_params->off_dt_struct);
-> -	size = unflatten_dt_node(initial_boot_params, 0, &start,
-> -				 NULL, NULL, 0);
-> -	size = (size | 3) + 1;
-> -
-> -	pr_debug("  size is %lx, allocating...\n", size);
-> -
-> -	/* Allocate memory for the expanded device tree */
-> -	mem = early_init_dt_alloc_memory_arch(size + 4,
-> -			__alignof__(struct device_node));
-> -	mem = (unsigned long) __va(mem);
-> -
-> -	((__be32 *)mem)[size / 4] = cpu_to_be32(0xdeadbeef);
-> -
-> -	pr_debug("  unflattening %lx...\n", mem);
-> -
-> -	/* Second pass, do actual unflattening */
-> -	start = ((unsigned long)initial_boot_params) +
-> -		be32_to_cpu(initial_boot_params->off_dt_struct);
-> -	unflatten_dt_node(initial_boot_params, mem, &start,
-> -			  NULL, &allnextp, 0);
-> -	if (be32_to_cpup((__be32 *)start) != OF_DT_END)
-> -		pr_warning("Weird tag at end of tree: %08x\n", *((u32 *)start));
-> -	if (be32_to_cpu(((__be32 *)mem)[size / 4]) != 0xdeadbeef)
-> -		pr_warning("End of tree marker overwritten: %08x\n",
-> -			   be32_to_cpu(((__be32 *)mem)[size / 4]));
-> -	*allnextp = NULL;
-> +	__unflatten_device_tree(initial_boot_params, &allnodes,
-> +				early_device_tree_alloc);
+>  	pte_t *pte;
 >  
->  	/* Get pointer to OF "/chosen" node for use everywhere */
->  	of_chosen = of_find_node_by_path("/chosen");
->  	if (of_chosen == NULL)
->  		of_chosen = of_find_node_by_path("/chosen@0");
-> -
-> -	pr_debug(" <- unflatten_device_tree()\n");
+> +	preempt_disable(); /* Stop __vunmap() triggering smp_processor_id() in preemptible from hpte_need_flush() */
+>  	pte = pte_offset_kernel(pmd, addr);
+>  	do {
+>  		pte_t ptent = ptep_get_and_clear(&init_mm, addr, pte);
+>  		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
+>  	} while (pte++, addr += PAGE_SIZE, addr != end);
+> +	preempt_enable();
 >  }
 >  
->  #endif /* CONFIG_EARLY_FLATTREE */
-> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-> index 70c5b73..9ce5dfd 100644
-> --- a/include/linux/of_fdt.h
-> +++ b/include/linux/of_fdt.h
-> @@ -68,6 +68,8 @@ extern void *of_fdt_get_property(struct boot_param_header *blob,
->  extern int of_fdt_is_compatible(struct boot_param_header *blob,
->  				unsigned long node,
->  				const char *compat);
-> +extern void of_fdt_unflatten_tree(unsigned long *blob,
-> +			       struct device_node **mynodes);
->  
->  /* TBD: Temporary export of fdt globals - remove when code fully merged */
->  extern int __initdata dt_root_addr_cells;
-> -- 
-> 1.5.6.6
-> 
-> 
-> 
-> This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-> 
-> 
+>  static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end)
+
+That looks OK, but it interferes with my plans to use
+apply_to_page_range(_batch) to replace all this code.
+
+    J
