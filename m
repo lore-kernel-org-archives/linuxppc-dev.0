@@ -1,23 +1,12 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 035A11007D8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Dec 2010 18:46:26 +1100 (EST)
-Received: by iye19 with SMTP id 19so11406874iye.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Dec 2010 23:46:24 -0800 (PST)
+Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Fri, 31 Dec 2010 00:46:20 -0700
+Subject: [PATCH] of/flattree: Add of_flat_dt_match() helper function
+To: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Deepak Saxena <deepak_saxena@mentor.com>
-Subject: Re: [PATCH 2/5] of/device: make for_each_node* check status properties
-Message-ID: <20101231074620.GC4195@angua.secretlab.ca>
-References: <cover.1291799069.git.deepak_saxena@mentor.com>
-	<20101208192957.GF32473@mentor.com>
+Date: Fri, 31 Dec 2010 02:15:55 -0700
+Message-ID: <20101231091500.7355.2314.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20101208192957.GF32473@mentor.com>
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,260 +16,384 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 08, 2010 at 11:29:57AM -0800, Deepak Saxena wrote:
-> Some early device drivers don't actually implement a struct of_platform_driver,
-> and instead use the for_each_node* iterators to search for matching device
-> nodes. Disabled device nodes will no longer be returned by these iterators.
-> 
-> Signed-off-by: Hollis Blanchard <hollis_blanchard@mentor.com>
-> Signed-off-by: Deepak Saxena <deepak_saxena@mentor.com>
+This patch adds of_flat_dt_match() which tests a node for
+compatibility with a list of values and converts the relevant powerpc
+platform code to use it.  This approach simplifies the board support
+code a bit.
 
-As already discussed, the generic device tree iterator and search
-functions should not be filtering the results as done here.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/powerpc/platforms/40x/ppc40x_simple.c    |   13 +++-------
+ arch/powerpc/platforms/512x/mpc5121_generic.c |   13 +---------
+ arch/powerpc/platforms/52xx/lite5200.c        |   16 +++++-------
+ arch/powerpc/platforms/52xx/media5200.c       |   13 +---------
+ arch/powerpc/platforms/52xx/mpc5200_simple.c  |   13 +---------
+ arch/powerpc/platforms/83xx/mpc830x_rdb.c     |   13 ++++++----
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c     |   11 +++++---
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c     |   15 +++++++----
+ arch/powerpc/platforms/85xx/tqm85xx.c         |   20 +++++++--------
+ drivers/of/fdt.c                              |   34 ++++++++++++++++++++++++-
+ include/linux/of_fdt.h                        |    1 +
+ 11 files changed, 84 insertions(+), 78 deletions(-)
 
-g.
-
-> ---
->  arch/powerpc/kernel/pci_of_scan.c         |    2 --
->  arch/powerpc/platforms/83xx/usb.c         |    2 +-
->  arch/powerpc/platforms/85xx/mpc85xx_mds.c |   13 ++-----------
->  arch/powerpc/sysdev/fsl_pci.c             |    5 -----
->  arch/powerpc/sysdev/ppc4xx_pci.c          |   15 ---------------
->  drivers/of/base.c                         |   25 +++++++++++++++++++++++--
->  6 files changed, 26 insertions(+), 36 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-> index e751506..fa4f719 100644
-> --- a/arch/powerpc/kernel/pci_of_scan.c
-> +++ b/arch/powerpc/kernel/pci_of_scan.c
-> @@ -310,8 +310,6 @@ static void __devinit __of_scan_bus(struct device_node *node,
->  	/* Scan direct children */
->  	for_each_child_of_node(node, child) {
->  		pr_debug("  * %s\n", child->full_name);
-> -		if (!of_device_is_available(child))
-> -			continue;
->  		reg = of_get_property(child, "reg", &reglen);
->  		if (reg == NULL || reglen < 20)
->  			continue;
-> diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-> index 3ba4bb7..749c70b 100644
-> --- a/arch/powerpc/platforms/83xx/usb.c
-> +++ b/arch/powerpc/platforms/83xx/usb.c
-> @@ -211,7 +211,7 @@ int mpc837x_usb_cfg(void)
->  	int ret = 0;
->  
->  	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
-> -	if (!np || !of_device_is_available(np))
-> +	if (!np)
->  		return -ENODEV;
->  	prop = of_get_property(np, "phy_type", NULL);
->  
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> index aa34cac..5d1a33f 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> @@ -170,10 +170,8 @@ static void __init mpc85xx_publish_qe_devices(void)
->  	struct device_node *np;
->  
->  	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-> -	if (!of_device_is_available(np)) {
-> -		of_node_put(np);
-> +	if (!np)
->  		return;
-> -	}
->  
->  	of_platform_bus_probe(NULL, mpc85xx_qe_ids, NULL);
->  }
-> @@ -267,11 +265,6 @@ static void __init mpc85xx_mds_qe_init(void)
->  			return;
->  	}
->  
-> -	if (!of_device_is_available(np)) {
-> -		of_node_put(np);
-> -		return;
-> -	}
-> -
->  	qe_reset();
->  	of_node_put(np);
->  
-> @@ -328,10 +321,8 @@ static void __init mpc85xx_mds_qeic_init(void)
->  	struct device_node *np;
->  
->  	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-> -	if (!of_device_is_available(np)) {
-> -		of_node_put(np);
-> +	if (!np)
->  		return;
-> -	}
->  
->  	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
->  	if (!np) {
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 818f7c6..fba4ec7 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -623,11 +623,6 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
->  
->  	is_mpc83xx_pci = 1;
->  
-> -	if (!of_device_is_available(dev)) {
-> -		pr_warning("%s: disabled by the firmware.\n",
-> -			   dev->full_name);
-> -		return -ENODEV;
-> -	}
->  	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
->  
->  	/* Fetch host bridge registers address */
-> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-> index 156aa7d..cf2adec 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> @@ -321,13 +321,6 @@ static void __init ppc4xx_probe_pci_bridge(struct device_node *np)
->  	const int *bus_range;
->  	int primary = 0;
->  
-> -	/* Check if device is enabled */
-> -	if (!of_device_is_available(np)) {
-> -		printk(KERN_INFO "%s: Port disabled via device-tree\n",
-> -		       np->full_name);
-> -		return;
-> -	}
-> -
->  	/* Fetch config space registers address */
->  	if (of_address_to_resource(np, 0, &rsrc_cfg)) {
->  		printk(KERN_ERR "%s: Can't get PCI config register base !",
-> @@ -1890,14 +1883,6 @@ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
->  	port = &ppc4xx_pciex_ports[portno];
->  	port->index = portno;
->  
-> -	/*
-> -	 * Check if device is enabled
-> -	 */
-> -	if (!of_device_is_available(np)) {
-> -		printk(KERN_INFO "PCIE%d: Port disabled via device-tree\n", port->index);
-> -		return;
-> -	}
-> -
->  	port->node = of_node_get(np);
->  	pval = of_get_property(np, "sdr-base", NULL);
->  	if (pval == NULL) {
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 710b53b..5d269a4 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -344,6 +344,8 @@ EXPORT_SYMBOL(of_get_next_child);
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_find_node_by_path(const char *path)
->  {
-> @@ -352,6 +354,7 @@ struct device_node *of_find_node_by_path(const char *path)
->  	read_lock(&devtree_lock);
->  	for (; np; np = np->allnext) {
->  		if (np->full_name && (of_node_cmp(np->full_name, path) == 0)
-> +			&& of_device_is_available(np)
->  		    && of_node_get(np))
->  			break;
->  	}
-> @@ -370,6 +373,8 @@ EXPORT_SYMBOL(of_find_node_by_path);
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_find_node_by_name(struct device_node *from,
->  	const char *name)
-> @@ -380,6 +385,7 @@ struct device_node *of_find_node_by_name(struct device_node *from,
->  	np = from ? from->allnext : allnodes;
->  	for (; np; np = np->allnext)
->  		if (np->name && (of_node_cmp(np->name, name) == 0)
-> +			&& of_device_is_available(np)
->  		    && of_node_get(np))
->  			break;
->  	of_node_put(from);
-> @@ -399,6 +405,8 @@ EXPORT_SYMBOL(of_find_node_by_name);
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_find_node_by_type(struct device_node *from,
->  	const char *type)
-> @@ -409,6 +417,7 @@ struct device_node *of_find_node_by_type(struct device_node *from,
->  	np = from ? from->allnext : allnodes;
->  	for (; np; np = np->allnext)
->  		if (np->type && (of_node_cmp(np->type, type) == 0)
-> +			&& of_device_is_available(np)
->  		    && of_node_get(np))
->  			break;
->  	of_node_put(from);
-> @@ -430,6 +439,8 @@ EXPORT_SYMBOL(of_find_node_by_type);
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_find_compatible_node(struct device_node *from,
->  	const char *type, const char *compatible)
-> @@ -442,7 +453,9 @@ struct device_node *of_find_compatible_node(struct device_node *from,
->  		if (type
->  		    && !(np->type && (of_node_cmp(np->type, type) == 0)))
->  			continue;
-> -		if (of_device_is_compatible(np, compatible) && of_node_get(np))
-> +		if (of_device_is_compatible(np, compatible)
-> +			&& of_device_is_available(np)
-> +			&& of_node_get(np))
->  			break;
->  	}
->  	of_node_put(from);
-> @@ -462,6 +475,8 @@ EXPORT_SYMBOL(of_find_compatible_node);
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_find_node_with_property(struct device_node *from,
->  	const char *prop_name)
-> @@ -472,6 +487,8 @@ struct device_node *of_find_node_with_property(struct device_node *from,
->  	read_lock(&devtree_lock);
->  	np = from ? from->allnext : allnodes;
->  	for (; np; np = np->allnext) {
-> +		if (!of_device_is_available(np))
-> +			continue;
->  		for (pp = np->properties; pp != 0; pp = pp->next) {
->  			if (of_prop_cmp(pp->name, prop_name) == 0) {
->  				of_node_get(np);
-> @@ -526,6 +543,8 @@ EXPORT_SYMBOL(of_match_node);
->   *
->   *	Returns a node pointer with refcount incremented, use
->   *	of_node_put() on it when done.
-> + *
-> + *	Does not return nodes marked unavailable by a status property.
->   */
->  struct device_node *of_find_matching_node(struct device_node *from,
->  					  const struct of_device_id *matches)
-> @@ -535,7 +554,9 @@ struct device_node *of_find_matching_node(struct device_node *from,
->  	read_lock(&devtree_lock);
->  	np = from ? from->allnext : allnodes;
->  	for (; np; np = np->allnext) {
-> -		if (of_match_node(matches, np) && of_node_get(np))
-> +		if (of_match_node(matches, np)
-> +			&& of_device_is_available(np)
-> +			&& of_node_get(np))
->  			break;
->  	}
->  	of_node_put(from);
-> -- 
-> 1.6.3.3
-> 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
+diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+index 546bbc2..2521d93 100644
+--- a/arch/powerpc/platforms/40x/ppc40x_simple.c
++++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
+@@ -50,7 +50,7 @@ machine_device_initcall(ppc40x_simple, ppc40x_device_probe);
+  * Again, if your board needs to do things differently then create a
+  * board.c file for it rather than adding it to this list.
+  */
+-static char *board[] __initdata = {
++static const char *board[] __initdata = {
+ 	"amcc,acadia",
+ 	"amcc,haleakala",
+ 	"amcc,kilauea",
+@@ -60,14 +60,9 @@ static char *board[] __initdata = {
+ 
+ static int __init ppc40x_probe(void)
+ {
+-	unsigned long root = of_get_flat_dt_root();
+-	int i = 0;
+-
+-	for (i = 0; i < ARRAY_SIZE(board); i++) {
+-		if (of_flat_dt_is_compatible(root, board[i])) {
+-			ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
+-			return 1;
+-		}
++	if (of_flat_dt_match(of_get_flat_dt_root(), board)) {
++		ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
++		return 1;
+ 	}
+ 
+ 	return 0;
+diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
+index e487eb0..926731f 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_generic.c
++++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+@@ -26,7 +26,7 @@
+ /*
+  * list of supported boards
+  */
+-static char *board[] __initdata = {
++static const char *board[] __initdata = {
+ 	"prt,prtlvt",
+ 	NULL
+ };
+@@ -36,16 +36,7 @@ static char *board[] __initdata = {
+  */
+ static int __init mpc5121_generic_probe(void)
+ {
+-	unsigned long node = of_get_flat_dt_root();
+-	int i = 0;
+-
+-	while (board[i]) {
+-		if (of_flat_dt_is_compatible(node, board[i]))
+-			break;
+-		i++;
+-	}
+-
+-	return board[i] != NULL;
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ define_machine(mpc5121_generic) {
+diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
+index de55bc0..01ffa64 100644
+--- a/arch/powerpc/platforms/52xx/lite5200.c
++++ b/arch/powerpc/platforms/52xx/lite5200.c
+@@ -172,20 +172,18 @@ static void __init lite5200_setup_arch(void)
+ 	mpc52xx_setup_pci();
+ }
+ 
++static const char *board[] __initdata = {
++	"fsl,lite5200",
++	"fsl,lite5200b",
++	NULL,
++};
++
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+  */
+ static int __init lite5200_probe(void)
+ {
+-	unsigned long node = of_get_flat_dt_root();
+-	const char *model = of_get_flat_dt_prop(node, "model", NULL);
+-
+-	if (!of_flat_dt_is_compatible(node, "fsl,lite5200") &&
+-	    !of_flat_dt_is_compatible(node, "fsl,lite5200b"))
+-		return 0;
+-	pr_debug("%s board found\n", model ? model : "unknown");
+-
+-	return 1;
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ define_machine(lite5200) {
+diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
+index 0bac3a3..2c7780c 100644
+--- a/arch/powerpc/platforms/52xx/media5200.c
++++ b/arch/powerpc/platforms/52xx/media5200.c
+@@ -239,7 +239,7 @@ static void __init media5200_setup_arch(void)
+ }
+ 
+ /* list of the supported boards */
+-static char *board[] __initdata = {
++static const char *board[] __initdata = {
+ 	"fsl,media5200",
+ 	NULL
+ };
+@@ -249,16 +249,7 @@ static char *board[] __initdata = {
+  */
+ static int __init media5200_probe(void)
+ {
+-	unsigned long node = of_get_flat_dt_root();
+-	int i = 0;
+-
+-	while (board[i]) {
+-		if (of_flat_dt_is_compatible(node, board[i]))
+-			break;
+-		i++;
+-	}
+-
+-	return (board[i] != NULL);
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ define_machine(media5200_platform) {
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index d45be5b..e36d6e2 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -49,7 +49,7 @@ static void __init mpc5200_simple_setup_arch(void)
+ }
+ 
+ /* list of the supported boards */
+-static char *board[] __initdata = {
++static const char *board[] __initdata = {
+ 	"intercontrol,digsy-mtc",
+ 	"manroland,mucmc52",
+ 	"manroland,uc101",
+@@ -66,16 +66,7 @@ static char *board[] __initdata = {
+  */
+ static int __init mpc5200_simple_probe(void)
+ {
+-	unsigned long node = of_get_flat_dt_root();
+-	int i = 0;
+-
+-	while (board[i]) {
+-		if (of_flat_dt_is_compatible(node, board[i]))
+-			break;
+-		i++;
+-	}
+-	
+-	return (board[i] != NULL);
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ define_machine(mpc5200_simple_platform) {
+diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+index 846831d..661d354 100644
+--- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+@@ -57,16 +57,19 @@ static void __init mpc830x_rdb_init_IRQ(void)
+ 	ipic_set_default_priority();
+ }
+ 
++struct const char *board[] __initdata = {
++	"MPC8308RDB",
++	"fsl,mpc8308rdb",
++	"denx,mpc8308_p1m",
++	NULL
++}
++
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+  */
+ static int __init mpc830x_rdb_probe(void)
+ {
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	return of_flat_dt_is_compatible(root, "MPC8308RDB") ||
+-	       of_flat_dt_is_compatible(root, "fsl,mpc8308rdb") ||
+-	       of_flat_dt_is_compatible(root, "denx,mpc8308_p1m");
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+index ae525e4..b54cd73 100644
+--- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+@@ -60,15 +60,18 @@ static void __init mpc831x_rdb_init_IRQ(void)
+ 	ipic_set_default_priority();
+ }
+ 
++struct const char *board[] __initdata = {
++	"MPC8313ERDB",
++	"fsl,mpc8315erdb",
++	NULL
++}
++
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+  */
+ static int __init mpc831x_rdb_probe(void)
+ {
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	return of_flat_dt_is_compatible(root, "MPC8313ERDB") ||
+-	       of_flat_dt_is_compatible(root, "fsl,mpc8315erdb");
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+index 910caa6..7bafbf2 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+@@ -101,17 +101,20 @@ static void __init mpc837x_rdb_init_IRQ(void)
+ 	ipic_set_default_priority();
+ }
+ 
++static const char *board[] __initdata = {
++	"fsl,mpc8377rdb",
++	"fsl,mpc8378rdb",
++	"fsl,mpc8379rdb",
++	"fsl,mpc8377wlan",
++	NULL
++};
++
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+  */
+ static int __init mpc837x_rdb_probe(void)
+ {
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	return of_flat_dt_is_compatible(root, "fsl,mpc8377rdb") ||
+-	       of_flat_dt_is_compatible(root, "fsl,mpc8378rdb") ||
+-	       of_flat_dt_is_compatible(root, "fsl,mpc8379rdb") ||
+-	       of_flat_dt_is_compatible(root, "fsl,mpc8377wlan");
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ define_machine(mpc837x_rdb) {
+diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
+index 8f29bbc..5e847d0 100644
+--- a/arch/powerpc/platforms/85xx/tqm85xx.c
++++ b/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -186,21 +186,21 @@ static int __init declare_of_platform_devices(void)
+ }
+ machine_device_initcall(tqm85xx, declare_of_platform_devices);
+ 
++static const char *board[] __initdata = {
++	"tqc,tqm8540",
++	"tqc,tqm8541",
++	"tqc,tqm8548",
++	"tqc,tqm8555",
++	"tqc,tqm8560",
++	NULL
++};
++
+ /*
+  * Called very early, device-tree isn't unflattened
+  */
+ static int __init tqm85xx_probe(void)
+ {
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if ((of_flat_dt_is_compatible(root, "tqc,tqm8540")) ||
+-	    (of_flat_dt_is_compatible(root, "tqc,tqm8541")) ||
+-	    (of_flat_dt_is_compatible(root, "tqc,tqm8548")) ||
+-	    (of_flat_dt_is_compatible(root, "tqc,tqm8555")) ||
+-	    (of_flat_dt_is_compatible(root, "tqc,tqm8560")))
+-		return 1;
+-
+-	return 0;
++	return of_flat_dt_match(of_get_flat_dt_root(), board);
+ }
+ 
+ define_machine(tqm85xx) {
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 8a90ee4..5a3db04 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -78,19 +78,23 @@ void *of_fdt_get_property(struct boot_param_header *blob,
+  * @blob: A device tree blob
+  * @node: node to test
+  * @compat: compatible string to compare with compatible list.
++ *
++ * On match, returns a non-zero value with smaller values returned for more
++ * specific compatible values.
+  */
+ int of_fdt_is_compatible(struct boot_param_header *blob,
+ 		      unsigned long node, const char *compat)
+ {
+ 	const char *cp;
+-	unsigned long cplen, l;
++	unsigned long cplen, l, score = 0;
+ 
+ 	cp = of_fdt_get_property(blob, node, "compatible", &cplen);
+ 	if (cp == NULL)
+ 		return 0;
+ 	while (cplen > 0) {
++		score++;
+ 		if (of_compat_cmp(cp, compat, strlen(compat)) == 0)
+-			return 1;
++			return score;
+ 		l = strlen(cp) + 1;
+ 		cp += l;
+ 		cplen -= l;
+@@ -99,6 +103,24 @@ int of_fdt_is_compatible(struct boot_param_header *blob,
+ 	return 0;
+ }
+ 
++/**
++ * of_flat_dt_match - Return true if node matches a list of compatible values
++ */
++int of_fdt_match(struct boot_param_header *blob, unsigned long node,
++                 const char **compat)
++{
++	unsigned int tmp, score = 0;
++
++	while (*compat) {
++		tmp = of_fdt_is_compatible(blob, node, *compat);
++		if (tmp && (score == 0 || (tmp < score)))
++			score = tmp;
++		compat++;
++	}
++
++	return score;
++}
++
+ static void *unflatten_dt_alloc(unsigned long *mem, unsigned long size,
+ 				       unsigned long align)
+ {
+@@ -511,6 +533,14 @@ int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
+ 	return of_fdt_is_compatible(initial_boot_params, node, compat);
+ }
+ 
++/**
++ * of_flat_dt_match - Return true if node matches a list of compatible values
++ */
++int __init of_flat_dt_match(unsigned long node, const char **compat)
++{
++	return of_fdt_match(initial_boot_params, node, compat);
++}
++
+ #ifdef CONFIG_BLK_DEV_INITRD
+ /**
+  * early_init_dt_check_for_initrd - Decode initrd location from flat tree
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 9ce5dfd..fb327f3 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -84,6 +84,7 @@ extern int of_scan_flat_dt(int (*it)(unsigned long node, const char *uname,
+ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
+ 				 unsigned long *size);
+ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
++extern int of_flat_dt_match(unsigned long node, const char **matches);
+ extern unsigned long of_get_flat_dt_root(void);
+ 
+ extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
