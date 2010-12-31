@@ -1,22 +1,20 @@
 Return-Path: <justinmattock@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E53561007F8
+Received: from mail-yi0-f51.google.com (mail-yi0-f51.google.com
+	[209.85.218.51]) by ozlabs.org (Postfix) with ESMTP id 328B510084B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Dec 2010 11:09:41 +1100 (EST)
-Received: by ywe10 with SMTP id 10so5116971ywe.38
+	Fri, 31 Dec 2010 11:09:42 +1100 (EST)
+Received: by yib12 with SMTP id 12so2621446yib.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Dec 2010 16:09:38 -0800 (PST)
+	Thu, 30 Dec 2010 16:09:41 -0800 (PST)
 From: "Justin P. Mattock" <justinmattock@gmail.com>
 To: trivial@kernel.org
-Subject: [PATCH 2/5]drivers:staging:rtl8192e:ieee80211:rtl819x_HTProc.c Typo
-	change singal to signal
-Date: Thu, 30 Dec 2010 16:09:41 -0800
-Message-Id: <1293754184-1928-2-git-send-email-justinmattock@gmail.com>
-In-Reply-To: <1293754184-1928-1-git-send-email-justinmattock@gmail.com>
+Subject: [PATCH 3/5]drivers:staging:tidspbridge:core:tiomap3430.c Typo change
+	singal to signal
+Date: Thu, 30 Dec 2010 16:09:42 -0800
+Message-Id: <1293754184-1928-3-git-send-email-justinmattock@gmail.com>
+In-Reply-To: <1293754184-1928-2-git-send-email-justinmattock@gmail.com>
 References: <1293754184-1928-1-git-send-email-justinmattock@gmail.com>
+	<1293754184-1928-2-git-send-email-justinmattock@gmail.com>
 Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	"Justin P. Mattock" <justinmattock@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,21 +32,21 @@ know if anything needs to be changed.
 Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
 
 ---
- .../staging/rtl8192e/ieee80211/rtl819x_HTProc.c    |    2 +-
+ drivers/staging/tidspbridge/core/tiomap3430.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/rtl8192e/ieee80211/rtl819x_HTProc.c b/drivers/staging/rtl8192e/ieee80211/rtl819x_HTProc.c
-index b0c9c78..1be2b13 100644
---- a/drivers/staging/rtl8192e/ieee80211/rtl819x_HTProc.c
-+++ b/drivers/staging/rtl8192e/ieee80211/rtl819x_HTProc.c
-@@ -1007,7 +1007,7 @@ u8 HTFilterMCSRate( struct ieee80211_device* ieee, u8* pSupportMCS, u8* pOperate
- 	// TODO: adjust our operational rate set  according to our channel bandwidth, STBC and Antenna number
+diff --git a/drivers/staging/tidspbridge/core/tiomap3430.c b/drivers/staging/tidspbridge/core/tiomap3430.c
+index 1be081f..7e56ff6 100644
+--- a/drivers/staging/tidspbridge/core/tiomap3430.c
++++ b/drivers/staging/tidspbridge/core/tiomap3430.c
+@@ -1796,7 +1796,7 @@ static int mem_map_vmalloc(struct bridge_dev_context *dev_context,
  
- 	// TODO: fill suggested rate adaptive rate index and give firmware info using Tx command packet
--	// we also shall suggested the first start rate set according to our singal strength
-+	// we also shall suggested the first start rate set according to our signal strength
- 	HT_PickMCSRate(ieee, pOperateMCS);
- 
- 	// For RTL819X, if pairwisekey = wep/tkip, we support only MCS0~7.
+ /*
+  *  ======== wait_for_start ========
+- *      Wait for the singal from DSP that it has started, or time out.
++ *      Wait for the signal from DSP that it has started, or time out.
+  */
+ bool wait_for_start(struct bridge_dev_context *dev_context, u32 dw_sync_addr)
+ {
 -- 
 1.6.5.2.180.gc5b3e
