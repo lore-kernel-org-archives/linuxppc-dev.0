@@ -1,24 +1,19 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id B36E7B70DA
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2011 01:58:51 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: prasad@linux.vnet.ibm.com
-Subject: Re: ppc_set_hwdebug vs ptrace_set_debugreg
-References: <m2lj4ezhhd.fsf@igel.home> <20101129072233.GA15560@in.ibm.com>
-	<m38w0c77vs.fsf@linux-m68k.org> <20101201043758.GA2219@in.ibm.com>
-	<20101213082619.GA6582@in.ibm.com> <m2vd2x1ojj.fsf@igel.home>
-	<20101214125427.GA2443@in.ibm.com> <m2oc8lhcik.fsf@igel.home>
-	<20110102125401.GA2390@in.ibm.com>
-Date: Sun, 02 Jan 2011 15:58:47 +0100
-In-Reply-To: <20110102125401.GA2390@in.ibm.com> (K. Prasad's message of "Sun,
-	2 Jan 2011 18:24:01 +0530")
-Message-ID: <m2oc7z5p3s.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <acrux_it@libero.it>
+Received: from cp-out11.libero.it (cp-out11.libero.it [212.52.84.111])
+	by ozlabs.org (Postfix) with ESMTP id 95A04B6F07
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  3 Jan 2011 23:13:44 +1100 (EST)
+Received: from acrux-1faad1e87 (62.98.27.116) by cp-out11.libero.it (8.5.133)
+	(authenticated as acrux_it@libero.it)
+	id 4D0F3682016B3E28 for linuxppc-dev@lists.ozlabs.org;
+	Mon, 3 Jan 2011 13:08:00 +0100
+Date: Mon, 3 Jan 2011 13:08:38 +0100
+From: acrux <acrux_it@libero.it>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: PATA_WINBOND  lost interrupt - linux-2.6.36.2 - ppc64
+Message-Id: <20110103130838.34f34218.acrux_it@libero.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"K.Prasad" <prasad@linux.vnet.ibm.com> writes:
+hi,
+there is a problem using new pata drivers with an old IBM Intellistation POWER 275  (9114-275 pSeries POWER4+).
+These boxes are equipped with an IDE dvd-rom drive (PATA_WINBOND driver). 
+0000:00:03.1 IDE interface: Symphony Labs SL82c105 (rev 05)
 
-> The watch-vfork test actually fails on my system (4 unexpected failures)
+I can report, instead, that the old ide-cd driver BLK_DEV_SL82C105 (i tested the same scenario but with linux-2.6.32.7) works fine. Obviously it happens only when boot or try to read from the dvdrom drive.
 
-It should pass all four tests.  If gdb cannot even set a watchpoint it
-cannot trigger the crash, of course.
+[...]
+ata1: lost interrupt (Status 0x50)
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+sr 1:0:0:0: CDB: Xdread, Read track info: 52 01 00 00 00 01 00 00 20 00
+ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
+         res 40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA2
+ata1: EH complete
+sr0: CDROM (ioctl) error, command: Xdread, Read track info 52 01 00 00 00 01 00 00 20 00
+sr: Sense Key : Aborted Command [current] [descriptor]
+sr: Add. Sense: No additional sense information
+ata1: lost interrupt (Status 0x50)
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+sr 1:0:0:0: [sr0] CDB: Xpwrite, Read disk info: 51 00 00 00 00 00 00 00 20 00
+ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
+         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA2
+ata1: EH complete
+ata1: lost interrupt (Status 0x50)
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
+ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
+         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA2
+sr0: CDROM (ioctl) error, command: 
+ata1: EH complete
+Get configuration 46 00 00 00 00 00 00 00 20 00
+sr: Sense Key : Aborted Command [current] [descriptor]
+sr: Add. Sense: No additional sense information
+ata1: lost interrupt (Status 0x50)
+ata1.00: limiting speed to MWDMA1:PIO4
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+sr 1:0:0:0: [sr0] CDB: Xpwrite, Read disk info: 51 00 00 00 00 00 00 00 20 00
+ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
+         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA1
+ata1: EH complete
+ata1: lost interrupt (Status 0x50)
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+sr 1:0:0:0: CDB: Get configuration: 46 00 00 00 00 00 00 00 20 00
+ata1.00: cmd a0/01:00:00:20:00/00:00:00:00:00/a0 tag 0 dma 16416 in
+         res 40/00:02:00:0c:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+ata1.00: status: { DRDY }
+ata1: soft resetting link
+ata1.00: configured for MWDMA1
+ata1: EH complete
+sr0: CDROM (ioctl) error, command: Get configuration 46 00 00 00 00 00 00 00 20 00
+sr: Sense Key : Aborted Command [current] [descriptor]
+sr: Add. Sense: No additional sense information
+[...]
 
-Andreas.
+Here the full dmesg and kernel config:
+http://cruxppc.org/~acrux/linux-2.6.36.2-IntellistationPOWER275.dmesg
+http://cruxppc.org/~acrux/linux-2.6.36.2-IntellistationPOWER275.config
 
+
+
+thanks,
+--acrux
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+GNU/Linux on Power Architecture
+CRUX PPC - http://cruxppc.org/
