@@ -1,17 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH] of/device: Don't register disabled devices
-To: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 03 Jan 2011 16:01:22 -0700
-Message-ID: <20110103230122.25772.72990.stgit@localhost6.localdomain6>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
+	[209.85.210.170]) by ozlabs.org (Postfix) with ESMTP id C1FF5B70EC
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jan 2011 10:13:21 +1100 (EST)
+Received: by iym14 with SMTP id 14so17541143iym.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 03 Jan 2011 15:13:19 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Scott Wood <scottwood@freescale.com>,
-	Deepak Saxena <deepak_saxena@mentor.com>,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Sender: glikely@secretlab.ca
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 3 Jan 2011 16:12:59 -0700
+Message-ID: <AANLkTinXEDH4=R1XcSfeua-CkZ-gMHA20_Vx9bCxyFA9@mail.gmail.com>
+Subject: [git pull] powerpc changes for 2.6.38
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,78 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Device nodes with the property status="disabled" are not usable and so
-don't register them when parsing the device tree for devices.
+Hi Ben,
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
-Cc: Deepak Saxena <deepak_saxena@mentor.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-Cc: David Gibson <david@gibson.dropbear.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/of/platform.c |   22 ++++++++++++++--------
- 1 files changed, 14 insertions(+), 8 deletions(-)
+Here are some of the powerpc patched I've picked up for .38.
 
-diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index 5b4a07f..c01cd1a 100644
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -633,6 +633,9 @@ EXPORT_SYMBOL(of_device_alloc);
-  * @np: pointer to node to create device for
-  * @bus_id: name to assign device
-  * @parent: Linux device model parent device.
-+ *
-+ * Returns pointer to created platform device, or NULL if a device was not
-+ * registered.  Unavailable devices will not get registered.
-  */
- struct platform_device *of_platform_device_create(struct device_node *np,
- 					    const char *bus_id,
-@@ -640,6 +643,9 @@ struct platform_device *of_platform_device_create(struct device_node *np,
- {
- 	struct platform_device *dev;
- 
-+	if (!of_device_is_available(np))
-+		return NULL;
-+
- 	dev = of_device_alloc(np, bus_id, parent);
- 	if (!dev)
- 		return NULL;
-@@ -683,8 +689,9 @@ static int of_platform_bus_create(const struct device_node *bus,
- 		pr_debug("   create child: %s\n", child->full_name);
- 		dev = of_platform_device_create(child, NULL, parent);
- 		if (dev == NULL)
--			rc = -ENOMEM;
--		else if (!of_match_node(matches, child))
-+			continue;
-+
-+		if (!of_match_node(matches, child))
- 			continue;
- 		if (rc == 0) {
- 			pr_debug("   and sub busses\n");
-@@ -733,10 +740,9 @@ int of_platform_bus_probe(struct device_node *root,
- 	if (of_match_node(matches, root)) {
- 		pr_debug(" root match, create all sub devices\n");
- 		dev = of_platform_device_create(root, NULL, parent);
--		if (dev == NULL) {
--			rc = -ENOMEM;
-+		if (dev == NULL)
- 			goto bail;
--		}
-+
- 		pr_debug(" create all sub busses\n");
- 		rc = of_platform_bus_create(root, matches, &dev->dev);
- 		goto bail;
-@@ -748,9 +754,9 @@ int of_platform_bus_probe(struct device_node *root,
- 		pr_debug("  match: %s\n", child->full_name);
- 		dev = of_platform_device_create(child, NULL, parent);
- 		if (dev == NULL)
--			rc = -ENOMEM;
--		else
--			rc = of_platform_bus_create(child, matches, &dev->dev);
-+			continue;
-+
-+		rc = of_platform_bus_create(child, matches, &dev->dev);
- 		if (rc) {
- 			of_node_put(child);
- 			break;
+g.
+
+The following changes since commit b518a64983cbf2ff31aed530898de2d80e4573d5:
+
+  hwmon: (s3c-hwmon) Fix compilation (2011-01-02 15:31:11 -0800)
+
+are available in the git repository at:
+  git://git.secretlab.ca/git/linux-2.6 next
+
+Anatolij Gustschin (1):
+      powerpc/5xxx: extend mpc8xxx_gpio driver to support mpc512x gpios
+
+Grant Likely (1):
+      Merge v2.6.37-rc8 into powerpc/next
+
+Ilya Yanok (6):
+      powerpc/512x: scatter/gather dma fix
+      powerpc/512x: fix the hanged dma transfer issue
+      powerpc/512x: add MPC8308 dma support
+      powerpc/512x: try to free dma descriptors in case of allocation failure
+      powerpc/83xx: add DMA controller to mpc8308 device-tree node
+      powerpc/83xx: add mpc8308_p1m DMA controller device-tree node
+
+ arch/powerpc/boot/dts/mpc8308_p1m.dts |    8 ++
+ arch/powerpc/boot/dts/mpc8308rdb.dts  |    8 ++
+ arch/powerpc/platforms/Kconfig        |    7 +-
+ arch/powerpc/sysdev/mpc8xxx_gpio.c    |   75 ++++++++++++--
+ drivers/dma/Kconfig                   |    2 +-
+ drivers/dma/mpc512x_dma.c             |  187 +++++++++++++++++++++------------
+ 6 files changed, 210 insertions(+), 77 deletions(-)
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
