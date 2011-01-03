@@ -1,23 +1,22 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 69036B6F1E
+Return-Path: <scottwood@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C6999B7082
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Jan 2011 09:06:08 +1100 (EST)
-Received: by iwn42 with SMTP id 42so15183751iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 03 Jan 2011 14:06:05 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH] powerpc/405: Fix missing #{address,size}-cells in i2c node
-To: linuxppc-dev@lists.ozlabs.org, jwboyer@linux.vnet.ibm.com,
-	solomon@linux-wlan.com
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 03 Jan 2011 15:06:03 -0700
-Message-ID: <20110103220520.9355.2745.stgit@localhost6.localdomain6>
+	Tue,  4 Jan 2011 09:07:22 +1100 (EST)
+Date: Mon, 3 Jan 2011 16:07:06 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Alexandru Ionut Grama <gramaalexandruionut@gmail.com>
+Subject: Re: problem backporting talitos for MPC8272
+Message-ID: <20110103160706.4329947c@udp111988uds.am.freescale.net>
+In-Reply-To: <AANLkTikjjGGd5h7TsQtEuSjX3qhJv3wC28UtWHtJ19jo@mail.gmail.com>
+References: <AANLkTikjjGGd5h7TsQtEuSjX3qhJv3wC28UtWHtJ19jo@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+On Wed, 29 Dec 2010 02:10:55 +0100
+Alexandru Ionut Grama <gramaalexandruionut@gmail.com> wrote:
 
-I'm putting this patch into my next-devicetree branch.
+> My final question it's about of-tree. I have the mpc8272ads.dts file with=
+ a
+> tree that involves talitos, but I've changed the properties acording the =
+new
+> version of it on 2.6.35. =C2=BFThis file (mpc8272ads.dts) when it's used?=
+I think
+> I don't use this file for nothing (it doesn't appears on make V=3D1) beca=
+use I
+> don't have a normal bootloader and I have to load the kernel like a
+> flat-binary gz, so there's no more step after building System.map.
 
-g.
+IIRC, in 2.6.21, it wasn't used on 82xx (I think there was only
+arch/ppc support for 82xx, or at best 82xx arch/powerpc support was
+just getting started).  2.6.21 is very old, and doing new development on
+it is not recommended.
 
- arch/powerpc/boot/dts/hotfoot.dts |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Why not work with the current kernel?
 
-diff --git a/arch/powerpc/boot/dts/hotfoot.dts b/arch/powerpc/boot/dts/hotfoot.dts
-index cad9c38..71d3bb4 100644
---- a/arch/powerpc/boot/dts/hotfoot.dts
-+++ b/arch/powerpc/boot/dts/hotfoot.dts
-@@ -117,6 +117,8 @@
- 			};
- 
- 			IIC: i2c@ef600500 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
- 				compatible = "ibm,iic-405ep", "ibm,iic";
- 				reg = <0xef600500 0x00000011>;
- 				interrupt-parent = <&UIC0>;
+-Scott
