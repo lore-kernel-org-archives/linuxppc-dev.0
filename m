@@ -1,22 +1,19 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0F969B710A
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 03BDDB7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Jan 2011 01:34:19 +1100 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: PowerPC MPC5200B ATA MWDMA regression
-References: <201101031445.47922.roman.fietze@telemotive.de>
-	<20110103135929.GO18831@htj.dyndns.org>
-In-Reply-To: <20110103135929.GO18831@htj.dyndns.org>
+	Tue,  4 Jan 2011 02:10:58 +1100 (EST)
+Date: Mon, 3 Jan 2011 16:10:51 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: [PATCH 1/5]arch:powerpc:platforms:85xx:mpc85xx_mds.c Typo change
+	singal to signal
+In-Reply-To: <1293754184-1928-1-git-send-email-justinmattock@gmail.com>
+Message-ID: <alpine.LNX.2.00.1101031610420.26685@pobox.suse.cz>
+References: <1293754184-1928-1-git-send-email-justinmattock@gmail.com>
 MIME-Version: 1.0
-Message-ID: <201101031534.13533.roman.fietze@telemotive.de>
-Date: Mon, 3 Jan 2011 15:34:13 +0100
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: gregkh@suse.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hallo Tejun,
+On Thu, 30 Dec 2010, Justin P. Mattock wrote:
 
-On Monday, 03.January.2011 14:59:29 Tejun Heo wrote:
+> The patches below fixes a typo "singal" to "signal". Please let me 
+> know if anything needs to be changed.
+> 
+> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+> 
+> ---
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> index aa34cac..747d1ee 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> @@ -309,7 +309,7 @@ static void __init mpc85xx_mds_qe_init(void)
+>  			/* P1021 has pins muxed for QE and other functions. To
+>  			 * enable QE UEC mode, we need to set bit QE0 for UCC1
+>  			 * in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
+> -			 * and QE12 for QE MII management singals in PMUXCR
+> +			 * and QE12 for QE MII management signals in PMUXCR
+>  			 * register.
+>  			 */
 
-> Which driver is it?
-
-drivers/ata/pata_mpc52xx.c from the standard tree, 100% unchanged. As
-I said, for the bisect I was using the original, unchanged
-torvalds/master tree from git.kernel.org.
-
-> You probably now want to use ata_bmdma_qc_issue() ...
-
-I'm sorry, but if I would know about the details, and would know more
-about ATA I would have tried to patch pata_mpc52xx.c by myself.
-
->  Even better, just send the driver upstream.
-
-It has been there for a long while. You even patched it last summer.
-
-
-Roman
+Applied.
 
 -- 
-Roman Fietze              Telemotive AG Buero Muehlhausen
-Breitwiesen                             73347 Muehlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+Jiri Kosina
+SUSE Labs, Novell Inc.
