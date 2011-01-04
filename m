@@ -1,19 +1,16 @@
-Return-Path: <seanm@seanm.ca>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 6C939B7063
+Return-Path: <musaabmohammed@hotmail.com>
+Received: from col0-omc3-s8.col0.hotmail.com (col0-omc3-s8.col0.hotmail.com
+	[65.55.34.146]) by ozlabs.org (Postfix) with ESMTP id 1969BB7109
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Jan 2011 08:33:38 +1100 (EST)
-Date: Tue, 4 Jan 2011 16:26:55 -0500
-From: Sean MacLennan <seanm@seanm.ca>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Question about combining a PCI driver with an OF driver
-Message-ID: <20110104162655.3fa2dba0@lappy.seanm.ca>
-In-Reply-To: <OF2F9BC586.7E8383F3-ON8825780E.0072ACEA-8825780E.00735E90@selinc.com>
-References: <OF413F3FA8.B1C9F99A-ON8825780E.006706F6-8825780E.00683E0B@selinc.com>
-	<20110104132317.006ead39@udp111988uds.am.freescale.net>
-	<OF2F9BC586.7E8383F3-ON8825780E.0072ACEA-8825780E.00735E90@selinc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue,  4 Jan 2011 19:05:48 +1100 (EST)
+Message-ID: <COL124-W88EE610C32AE1FBA2D668CC080@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_315d8717-ed09-4aba-b9d6-a9db420d24a8_"
+From: musaab ali <musaabmohammed@hotmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: AMCC 460EX GPIO
+Date: Tue, 4 Jan 2011 08:00:35 +0000
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 4 Jan 2011 13:00:07 -0800
-Bruce_Leonard@selinc.com wrote:
+--_315d8717-ed09-4aba-b9d6-a9db420d24a8_
+Content-Type: text/plain; charset="windows-1256"
+Content-Transfer-Encoding: 8bit
 
-> True, but we really didn't want to recreate all the infrastructure
-> that the gianfar driver has in it we wanted to just use it.  Maybe
-> what I should do is just take the guts of the gianfar driver and make
-> a pure PCI driver out of it. 
 
-This is what I would do. Odds are the final FPGA driver will have a lot
-of "optimizations" and "we don't need this" changes to the point where
-you won't be able to read the original code for ifdefs ;)
+Hi there,
 
-Cheers,
-   Sean
+I'm using the Canyonlands evaluation board for the ppc 460ex processor. I want to access the GPIO pins, set its direction and set/get their values.
+Is there is any common driver to do so? I went throught the Documentation/gpio.txt and the arch/powerpc/sysdev/ppc4xx_gpio.c but I don't know 
+how to test the later driver either from kernel space or from user space. Any ideas or sample codes?
+
+Thanks in advance.
+
+Musaab.
+ 		 	   		  
+--_315d8717-ed09-4aba-b9d6-a9db420d24a8_
+Content-Type: text/html; charset="windows-1256"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt;
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class='hmmessage'>
+Hi there,<br><br>I'm using the Canyonlands evaluation board for the ppc 460ex processor. I want to access the GPIO pins, set its direction and set/get their values.<br>Is there is any common driver to do so? I went throught the Documentation/gpio.txt and the arch/powerpc/sysdev/ppc4xx_gpio.c but I don't know <br>how to test the later driver either from kernel space or from user space. Any ideas or sample codes?<br><br>Thanks in advance.<br><br>Musaab.<br> 		 	   		  </body>
+</html>
+--_315d8717-ed09-4aba-b9d6-a9db420d24a8_--
