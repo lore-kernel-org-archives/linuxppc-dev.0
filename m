@@ -1,19 +1,32 @@
-Return-Path: <baringforge@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) by ozlabs.org (Postfix) with ESMTP id 5FD8BB70DA
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2F478B70E2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Jan 2011 18:30:11 +1100 (EST)
-Received: by fxm5 with SMTP id 5so13190239fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 03 Jan 2011 23:30:08 -0800 (PST)
+	Wed,  5 Jan 2011 01:00:59 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p04Do0w5023317
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jan 2011 06:50:00 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p04E0gDP088056
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jan 2011 07:00:43 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p04E0foH006324
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jan 2011 07:00:41 -0700
+Date: Tue, 4 Jan 2011 08:59:31 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/dts: fix syntax bugs in bluestone.dts
+Message-ID: <20110104135930.GA2364@zod.rchland.ibm.com>
+References: <20110103210715.10427.56175.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
-Sender: baringforge@gmail.com
-From: Thomas Taranowski <tom@baringforge.com>
-Date: Mon, 3 Jan 2011 23:29:47 -0800
-Message-ID: <AANLkTikTWejPTTS1Xt6mk86u=_HKSX==Y=d2iyqKFb8m@mail.gmail.com>
-Subject: [PATCH] RapidIO: Fix hang on RapidIO doorbell queue full condition
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110103210715.10427.56175.stgit@localhost6.localdomain6>
+Cc: tmarri@apm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In fsl_rio_dbell_handler, the code currently simply acknowledges the QFI queue
-full interrupt, but does nothing to resolve the queue full condition.  Instead,
-it jumps to the end of the isr.  When a queue full condition occurs, the isr is
-then re-entered immediately and continually, forever.
+On Mon, Jan 03, 2011 at 02:07:40PM -0700, Grant Likely wrote:
+>Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>---
+>
+>I'm picking this one up immediately into my next-devicetree branch
 
-The fix is to just fall through and read out current doorbell entries.
+Hm.  So these are of course correct, and with that:
 
-Tested against 2.6.26-rc8 on a p2020
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Signed-off-by: Thomas Taranowski <tom@baringforge.com>
----
- arch/powerpc/sysdev/fsl_rio.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+but I do wonder how you noticed them?  DTC didn't throw an error when I
+built this originally.  Either way, more diligence on my part would be
+appropriate, but knowing how you came across these might teach me
+something.
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 9725369..9f99bef 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -973,7 +973,6 @@ fsl_rio_dbell_handler(int irq, void *dev_instance)
-        if (dsr & DOORBELL_DSR_QFI) {
-                pr_info("RIO: doorbell queue full\n");
-                out_be32(&priv->msg_regs->dsr, DOORBELL_DSR_QFI);
--               goto out;
-        }
+Nit: C++ comments still make me get queasy.  Maybe just remove the
+properties that point to lables that don't exist?
 
-        /* XXX Need to check/dispatch until queue empty */
--- 
-1.7.0.4
-
-
-Thomas Taranowski
-Certified netburner consultant
-baringforge.com
+josh
