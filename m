@@ -1,18 +1,23 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id C214DB70B3
+Return-Path: <scottwood@freescale.com>
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8647CB7104
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Jan 2011 08:09:42 +1100 (EST)
-Subject: Re: [PATCH] KVM: PPC: Fix SPRG get/set for Book3S and BookE
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1293652285-13313-1-git-send-email-ptyser@xes-inc.com>
-Date: Tue, 4 Jan 2011 22:09:38 +0100
-Message-Id: <BFFB6065-C605-44A2-9400-9340203C68F6@suse.de>
-References: <1293652285-13313-1-git-send-email-ptyser@xes-inc.com>
-To: Peter Tyser <ptyser@xes-inc.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+	Wed,  5 Jan 2011 08:20:36 +1100 (EST)
+Date: Tue, 4 Jan 2011 15:20:18 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: <Bruce_Leonard@selinc.com>
+Subject: Re: Question about combining a PCI driver with an OF driver
+Message-ID: <20110104152018.080ff075@udp111988uds.am.freescale.net>
+In-Reply-To: <OF2F9BC586.7E8383F3-ON8825780E.0072ACEA-8825780E.00735E90@selinc.com>
+References: <OF413F3FA8.B1C9F99A-ON8825780E.006706F6-8825780E.00683E0B@selinc.com>
+	<20110104132317.006ead39@udp111988uds.am.freescale.net>
+	<OF2F9BC586.7E8383F3-ON8825780E.0072ACEA-8825780E.00735E90@selinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, 4 Jan 2011 13:00:07 -0800
+<Bruce_Leonard@selinc.com> wrote:
 
+> Okay, I get that and it makes sense with what I know so far about how the 
+> kernel device model works (which I'm still learning).  So how would I 
+> manually add a device?  Say I create the PCI wrapper driver that claims 
+> the clone-TSEC, is there a "register device" type call similar to 
+> pci_register_driver() that I could put in the wrapper code that causes the 
+> gfar_probe() to be called?
 
-On 29.12.2010, at 20:51, Peter Tyser wrote:
+Create an OF node (probably under the root node) programatically with
+all the information the gianfar driver will want, based on what you
+detect on PCI, and call of_platform_device_create().
 
-> Previously SPRGs 4-7 were improperly read and written in
-> kvm_arch_vcpu_ioctl_get_regs() and kvm_arch_vcpu_ioctl_set_regs();
->=20
-> Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
-
-Thanks a lot for the catch. At least for Book3S we don't support SPRGs > =
-3 anyways, so it's not really too bad of a glitch. It's irritating =
-nevertheless :).
-
-Marcelo/Avi, please include this patch in the kvm tree.
-
-Signed-off-by: Alexander Graf <agraf@suse.de>
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.16 (Darwin)
-
-iEYEARECAAYFAk0jjJIACgkQq7Wi27wfN1PIMwCfffOOFsI5K6LXi5AYBUcwK07Q
-dGoAn21M9Brz8vxpXxHFNs1QhGOuPGlo
-=3D/b/r
------END PGP SIGNATURE-----
+-Scott
