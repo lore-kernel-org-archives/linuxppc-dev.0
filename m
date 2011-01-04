@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DCAFCB70B3
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id C214DB70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Jan 2011 08:06:08 +1100 (EST)
-Subject: Re: Question about combining a PCI driver with an OF driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20110104132317.006ead39@udp111988uds.am.freescale.net>
-References: <OF413F3FA8.B1C9F99A-ON8825780E.006706F6-8825780E.00683E0B@selinc.com>
-	<20110104132317.006ead39@udp111988uds.am.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 05 Jan 2011 08:05:57 +1100
-Message-ID: <1294175157.17779.120.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Bruce_Leonard@selinc.com
+	Wed,  5 Jan 2011 08:09:42 +1100 (EST)
+Subject: Re: [PATCH] KVM: PPC: Fix SPRG get/set for Book3S and BookE
+Mime-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1293652285-13313-1-git-send-email-ptyser@xes-inc.com>
+Date: Tue, 4 Jan 2011 22:09:38 +0100
+Message-Id: <BFFB6065-C605-44A2-9400-9340203C68F6@suse.de>
+References: <1293652285-13313-1-git-send-email-ptyser@xes-inc.com>
+To: Peter Tyser <ptyser@xes-inc.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-01-04 at 13:23 -0600, Scott Wood wrote:
-> On Tue, 4 Jan 2011 10:58:35 -0800
-> <Bruce_Leonard@selinc.com> wrote:
-> 
-> > Hi all,
-> > 
-> > I'm working on a project with an MPC8347 and three ethernet ports. Because 
-> > of end of life issues we've had to replace the part we're using for the 
-> > third ethernet port and we decided rather than rely on a vendor who would 
-> > pull a part out from under us every two to three years we would do our own 
-> > MAC in an FPGA.  In order to reduce driver work it was decided that we 
-> > would use the same hardware interface as the TSEC in the 8347 so we could 
-> > reuse the gianfar driver.
-> 
-> Making a faithful clone of any reasonably complex device strikes me as
-> more work than writing a new ethernet driver.
-> 
-> The last thing you want to end up doing is...
-> 
-> >  And for speed sake it would go on the PCI bus. 
-> > (So much for letting HW make decisions regarding SW :)   )
-> 
-> ...hacking up the existing driver to deal with the quirks of the clone,
-> and having to maintain those hacks. :-)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I definitely agree. You're up for more work and problems than just doing
-a new design or getting an existing one off opencores or even buying an
-IP block with its own driver.
 
-> > So now I'm stuck with hacking the gianfar driver to work on PCI.  However, 
-> > I think it would be a lot more elegant if I could wrap the gianfar driver 
-> > with a PCI interface.  After all the idea is sound, with a HW interface 
-> > that looks like the TSEC I should be able to reuse the gianfar driver. But 
-> > the gianfar driver is an open firmware driver registered with a call to 
-> > of_register_platform_driver() and depending on the order in which the 
-> > busses are walked the PCI bus may not be enumerated and available when the 
-> > onboard TSECS are detected and the gianfar driver claims them.
-> 
-> It shouldn't matter -- the way buses work in Linux, you should be able
-> to add a platform device at any time, and the driver will receive a
-> probe() callback.  The driver never actively searches for devices to
-> claim.
+On 29.12.2010, at 20:51, Peter Tyser wrote:
 
-Cheers,
-Ben.
+> Previously SPRGs 4-7 were improperly read and written in
+> kvm_arch_vcpu_ioctl_get_regs() and kvm_arch_vcpu_ioctl_set_regs();
+>=20
+> Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
 
-> -Scott
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Thanks a lot for the catch. At least for Book3S we don't support SPRGs > =
+3 anyways, so it's not really too bad of a glitch. It's irritating =
+nevertheless :).
+
+Marcelo/Avi, please include this patch in the kvm tree.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.16 (Darwin)
+
+iEYEARECAAYFAk0jjJIACgkQq7Wi27wfN1PIMwCfffOOFsI5K6LXi5AYBUcwK07Q
+dGoAn21M9Brz8vxpXxHFNs1QhGOuPGlo
+=3D/b/r
+-----END PGP SIGNATURE-----
