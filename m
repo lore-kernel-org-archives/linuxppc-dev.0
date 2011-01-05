@@ -1,20 +1,17 @@
-Return-Path: <rbeims@gmail.com>
-Received: from mail-fx0-f66.google.com (mail-fx0-f66.google.com
-	[209.85.161.66]) by ozlabs.org (Postfix) with ESMTP id 9D85BB70E7
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2011 05:45:25 +1100 (EST)
-Received: by fxm14 with SMTP id 14so4657004fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 05 Jan 2011 10:45:23 -0800 (PST)
+Return-Path: <michael@evidence.eu.com>
+Received: from sssup.it (ms01.sssup.it [193.205.80.99])
+	by ozlabs.org (Postfix) with ESMTP id A93A3B7128
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2011 06:23:45 +1100 (EST)
+Message-ID: <4D24B725.2020300@evidence.eu.com>
+Date: Wed, 05 Jan 2011 19:23:33 +0100
+From: michael <michael@evidence.eu.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTi=uvunJ-ZFVGHZZExgBaNL9Sh0uZ3OiiCrcPnx=@mail.gmail.com>
+To: Rafael Beims <rbeims@gmail.com>
+Subject: Re: mpc880 linux-2.6.32 slow running processes
 References: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>
-	<4D24B725.2020300@evidence.eu.com>
-	<AANLkTi=uvunJ-ZFVGHZZExgBaNL9Sh0uZ3OiiCrcPnx=@mail.gmail.com>
-Date: Wed, 5 Jan 2011 16:45:23 -0200
-Message-ID: <AANLkTimc0nu-YriLRvm1KSVKk0-Qz8J-DJgAwAUbf1Ep@mail.gmail.com>
-Subject: Fwd: mpc880 linux-2.6.32 slow running processes
-From: Rafael Beims <rbeims@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=20cf30433e3ab2443004991dc9e9
+In-Reply-To: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="------------030804090904020305070703"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf30433e3ab2443004991dc9e9
-Content-Type: text/plain; charset=ISO-8859-1
-
-I forgot to copy the list, sorry...
-
----------- Forwarded message ----------
-From: Rafael Beims <rbeims@gmail.com>
-Date: Wed, Jan 5, 2011 at 4:43 PM
-Subject: Re: mpc880 linux-2.6.32 slow running processes
-To: michael <michael@evidence.eu.com>
+This is a multi-part message in MIME format.
+--------------030804090904020305070703
+Content-Type: multipart/alternative;
+ boundary="------------070606060406000603090200"
 
 
-Wow! That was fast!
-I applied the patch and it worked very well. Now I can use the commands
-normally.
-I will be doing more tests in the next days, but it seems that my problem is
-solved.
+--------------070606060406000603090200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Is this patch already mainstream in newer kernel versions?
+Hi
 
-Thanks again,
-
-Rafael Beims
-rbeims@gmail.com
-(41) 8873-7565
-"What I hear, I forget. What I see, I remember. And what I do, I
-understand."
-- Chinese Proverb
-
-
-On Wed, Jan 5, 2011 at 4:23 PM, michael <michael@evidence.eu.com> wrote:
-
->  Hi
->
-> On 01/05/2011 07:09 PM, Rafael Beims wrote:
->
+On 01/05/2011 07:09 PM, Rafael Beims wrote:
 > Hello all,
 > I'm working with an MPC880 board that is supposed to run linux-2.6.32. After
 > some work, I could get the kernel up and running, mounting a rootfs via
@@ -75,10 +49,9 @@ On Wed, Jan 5, 2011 at 4:23 PM, michael <michael@evidence.eu.com> wrote:
 > pinged the board from the PC and during all this I can see the packets being
 > answered.
 >
->
->  Can you try this patch?
->
->  My question to all is, did anyone see something like this already? Besides
+Can you try this patch?
+
+> My question to all is, did anyone see something like this already? Besides
 > that, what is the status of the linux kernel support for the 8xx platform?
 > Is it being actively tested / used today? I ask this because it seems that
 > all the information on the internet very aged (forum discussions from 2005
@@ -90,7 +63,8 @@ On Wed, Jan 5, 2011 at 4:23 PM, michael <michael@evidence.eu.com> wrote:
 > the right place to ask this too.
 >
 > Thanks and best regards,
-> Rafael Beimsrbeims@gmail.com
+> Rafael Beims
+> rbeims@gmail.com
 > (41) 8873-7565
 > "What I hear, I forget. What I see, I remember. And what I do, I
 > understand."
@@ -99,77 +73,52 @@ On Wed, Jan 5, 2011 at 4:23 PM, michael <michael@evidence.eu.com> wrote:
 >
 >
 > _______________________________________________
-> Linuxppc-dev mailing listLinuxppc-dev@lists.ozlabs.orghttps://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
->
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
---20cf30433e3ab2443004991dc9e9
+
+--------------070606060406000603090200
 Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-I forgot to copy the list, sorry...<div><br><div class=3D"gmail_quote">----=
------- Forwarded message ----------<br>From: <b class=3D"gmail_sendername">=
-Rafael Beims</b> <span dir=3D"ltr">&lt;<a href=3D"mailto:rbeims@gmail.com">=
-rbeims@gmail.com</a>&gt;</span><br>
-Date: Wed, Jan 5, 2011 at 4:43 PM<br>Subject: Re: mpc880 linux-2.6.32 slow =
-running processes<br>To: michael &lt;<a href=3D"mailto:michael@evidence.eu.=
-com">michael@evidence.eu.com</a>&gt;<br><br><br>Wow! That was fast!<div>I a=
-pplied the patch and it worked very well. Now I can use the commands normal=
-ly.</div>
-<div>I will be doing more tests in the next days, but it seems that my prob=
-lem is solved.</div><div><br></div><div>
-Is this patch already mainstream in newer kernel versions?</div><div><br></=
-div><div>Thanks again,<div class=3D"im"><br clear=3D"all">Rafael Beims<br><=
-a href=3D"mailto:rbeims@gmail.com" target=3D"_blank">rbeims@gmail.com</a><b=
-r>(41) 8873-7565<br>
-&quot;What I hear, I forget. What I see, I remember. And what I do, I under=
-stand.&quot;<br>
-- Chinese Proverb<br>
-<br><br></div><div><div></div><div class=3D"h5"><div class=3D"gmail_quote">=
-On Wed, Jan 5, 2011 at 4:23 PM, michael <span dir=3D"ltr">&lt;<a href=3D"ma=
-ilto:michael@evidence.eu.com" target=3D"_blank">michael@evidence.eu.com</a>=
-&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
-
-
- =20
-   =20
- =20
-  <div text=3D"#000000" bgcolor=3D"#ffffff">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1"
+      http-equiv="Content-Type">
+  </head>
+  <body text="#000000" bgcolor="#ffffff">
     <tt>Hi<br>
       <br>
-    </tt><div>On 01/05/2011 07:09 PM, Rafael Beims wrote:
-    <blockquote type=3D"cite">
-      <pre>Hello all,
-I&#39;m working with an MPC880 board that is supposed to run linux-2.6.32. =
-After
+    </tt>On 01/05/2011 07:09 PM, Rafael Beims wrote:
+    <blockquote
+      cite="mid:AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com"
+      type="cite">
+      <pre wrap="">Hello all,
+I'm working with an MPC880 board that is supposed to run linux-2.6.32. After
 some work, I could get the kernel up and running, mounting a rootfs via
 NFS.
-The problem that I&#39;m facing now is that when I try to run any process (=
-may
+The problem that I'm facing now is that when I try to run any process (may
 be an ls, cat, or whatever), the response of the process is *very* slow
 (something like 10 to 20 seconds for a ls).
-Monitoring the network packets, I can see that the nfs protocol is exchange=
-d
+Monitoring the network packets, I can see that the nfs protocol is exchanged
 just fine, but at some time it simply stops, starting again with a request
 from the board several seconds later.
-I&#39;m thinking that the processor is running (something, I don&#39;t know=
- what)
+I'm thinking that the processor is running (something, I don't know what)
 for all this time before I can see requests coming from the board again. I
-pinged the board from the PC and during all this I can see the packets bein=
-g
+pinged the board from the PC and during all this I can see the packets being
 answered.
 
 </pre>
     </blockquote>
-    </div><tt>Can you try this patch?<br>
+    <tt>Can you try this patch?<br>
       <br>
     </tt>
-    <blockquote type=3D"cite"><div>
-      <pre>My question to all is, did anyone see something like this alread=
-y? Besides
+    <blockquote
+      cite="mid:AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com"
+      type="cite">
+      <pre wrap="">My question to all is, did anyone see something like this already? Besides
 that, what is the status of the linux kernel support for the 8xx platform?
 Is it being actively tested / used today? I ask this because it seems that
 all the information on the internet very aged (forum discussions from 2005
@@ -177,31 +126,108 @@ and below mostly).
 
 Is there something that I can do to try to narrow the cause of the problem?
 
-Anyway, any help would be truly appreciated. Please excuse me if this is no=
-t
+Anyway, any help would be truly appreciated. Please excuse me if this is not
 the right place to ask this too.
 
 Thanks and best regards,
 Rafael Beims
-<a href=3D"mailto:rbeims@gmail.com" target=3D"_blank">rbeims@gmail.com</a>
+<a class="moz-txt-link-abbreviated" href="mailto:rbeims@gmail.com">rbeims@gmail.com</a>
 (41) 8873-7565
-&quot;What I hear, I forget. What I see, I remember. And what I do, I
-understand.&quot;
+"What I hear, I forget. What I see, I remember. And what I do, I
+understand."
 - Chinese Proverb
 
 </pre>
-      </div><pre><fieldset></fieldset>
+      <pre wrap="">
+<fieldset class="mimeAttachmentHeader"></fieldset>
 _______________________________________________
 Linuxppc-dev mailing list
-<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org" target=3D"_blank">Linuxppc=
--dev@lists.ozlabs.org</a>
-<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
-">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></pre>
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></pre>
     </blockquote>
     <br>
-  </div>
+  </body>
+</html>
 
-</blockquote></div><br></div></div></div>
-</div><br></div>
+--------------070606060406000603090200--
 
---20cf30433e3ab2443004991dc9e9--
+--------------030804090904020305070703
+Content-Type: text/x-diff;
+ name="slowdown.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="slowdown.patch"
+
+diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
+index dd5ea95..cb67076 100644
+--- a/arch/powerpc/include/asm/pte-8xx.h
++++ b/arch/powerpc/include/asm/pte-8xx.h
+@@ -32,7 +32,7 @@
+ #define _PAGE_FILE	0x0002	/* when !present: nonlinear file mapping */
+ #define _PAGE_NO_CACHE	0x0002	/* I: cache inhibit */
+ #define _PAGE_SHARED	0x0004	/* No ASID (context) compare */
+-#define _PAGE_SPECIAL	0x0008	/* SW entry, forced to 0 by the TLB miss */
++#define _PAGE_SPECIAL	0x0000	/* SW entry, forced to 0 by the TLB miss */
+ 
+ /* These five software bits must be masked out when the entry is loaded
+  * into the TLB.
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index f2b3701..3b88376 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -176,5 +176,7 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
+ #define HAVE_PAGE_AGP
+ 
+ /* Advertise support for _PAGE_SPECIAL */
++#if _PAGE_SPECIAL != 0
+ #define __HAVE_ARCH_PTE_SPECIAL
++#endif
+ 
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 5304093..1da03a8 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -173,21 +173,29 @@ static pte_t set_pte_filter(pte_t pte, unsigned long addr)
+ 	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+ 	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
+ 				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
+-		struct page *pg = maybe_pte_to_page(pte);
+-		if (!pg)
++		unsigned long pfn = pte_pfn(pte);
++		struct page *pg;
++
++		if (unlikely(!pfn_valid(pfn)))
+ 			return pte;
+-		if (!test_bit(PG_arch_1, &pg->flags)) {
++
++		pg = pfn_to_page(pfn);
+ #ifdef CONFIG_8xx
+-			/* On 8xx, cache control instructions (particularly
+-			 * "dcbst" from flush_dcache_icache) fault as write
+-			 * operation if there is an unpopulated TLB entry
+-			 * for the address in question. To workaround that,
+-			 * we invalidate the TLB here, thus avoiding dcbst
+-			 * misbehaviour.
+-			 */
+-			/* 8xx doesn't care about PID, size or ind args */
+-			_tlbil_va(addr, 0, 0, 0);
++		/* On 8xx, cache control instructions (particularly
++		 * "dcbst" from flush_dcache_icache) fault as write
++		 * operation if there is an unpopulated TLB entry
++		 * for the address in question. To workaround that,
++		 * we invalidate the TLB here, thus avoiding dcbst
++		 * misbehaviour.
++		 */
++		/* 8xx doesn't care about PID, size or ind args */
++		_tlbil_va(addr, 0, 0, 0);
+ #endif /* CONFIG_8xx */
++
++		if (!pg)
++			return pte;
++
++		if (!PageReserved(pg) && !test_bit(PG_arch_1, &pg->flags)) {
+ 			flush_dcache_icache_page(pg);
+ 			set_bit(PG_arch_1, &pg->flags);
+ 		}
+
+--------------030804090904020305070703--
