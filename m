@@ -1,17 +1,20 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: Re: [PATCH] of/device: Don't register disabled devices
-Date: Wed, 5 Jan 2011 14:53:27 -0800
-Message-ID: <DD7A9A95166BF4418C4C1EB2033B6EE2038FA8E5@na3-mail.mgc.mentorg.com>
-In-Reply-To: <20110103230122.25772.72990.stgit@localhost6.localdomain6>
-References: <20110103230122.25772.72990.stgit@localhost6.localdomain6>
-From: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Saxena,
-	Deepak" <deepak_saxena@mentor.com>, Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id A9571B7164
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2011 10:06:42 +1100 (EST)
+Message-Id: <20110105230326.477177117@clark.site>
+Date: Wed, 05 Jan 2011 15:00:48 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org,
+ stable@kernel.org
+Subject: [30/49] hvc_console: Fix race between hvc_close and hvc_remove
+In-Reply-To: <20110105230438.GA26241@kroah.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org,
+	Amit Shah <amit.shah@redhat.com>, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, stable-review@kernel.org,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,54 +24,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gMDEvMDMvMjAxMSAwMzowMSBQTSwgR3JhbnQgTGlrZWx5IHdyb3RlOg0KPiBEZXZpY2Ugbm9k
-ZXMgd2l0aCB0aGUgcHJvcGVydHkgc3RhdHVzPSJkaXNhYmxlZCIgYXJlIG5vdCB1c2FibGUgYW5k
-IHNvDQo+IGRvbid0IHJlZ2lzdGVyIHRoZW0gd2hlbiBwYXJzaW5nIHRoZSBkZXZpY2UgdHJlZSBm
-b3IgZGV2aWNlcy4NCj4NClRoaXMgaXMgZ3JlYXQgYW5kIGFsbCwgYnV0IGEgZmFpciBhbW91bnQg
-b2YgZHJpdmVyIGNvZGUgZXhwbGljaXRseSANCnNlYXJjaGVzIHRoZSB0cmVlLCByYXRoZXIgdGhh
-biByZWdpc3RlcmluZyBhIHByb2JlIGZ1bmN0aW9uLiBUaGF0J3Mgd2h5IA0Kb3VyIGVhcmxpZXIg
-cGF0Y2hlcyBpbiB0aGlzIGFyZWEgd2VyZSBtb3JlIGNvbXByZWhlbnNpdmUuDQoNCldoYXQgYXJl
-IHlvdXIgdGhvdWdodHMgb24gaGFuZGxpbmcgdGhvc2UgY2FzZXM/DQoNCkhvbGxpcyBCbGFuY2hh
-cmQNCk1lbnRvciBHcmFwaGljcywgRW1iZWRkZWQgU3lzdGVtcyBEaXZpc2lvbg0KDQo+IC0tLQ0K
-PiAgIGRyaXZlcnMvb2YvcGxhdGZvcm0uYyB8ICAgMjIgKysrKysrKysrKysrKystLS0tLS0tLQ0K
-PiAgIDEgZmlsZXMgY2hhbmdlZCwgMTQgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkNCj4N
-Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvb2YvcGxhdGZvcm0uYyBiL2RyaXZlcnMvb2YvcGxhdGZv
-cm0uYw0KPiBpbmRleCA1YjRhMDdmLi5jMDFjZDFhIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL29m
-L3BsYXRmb3JtLmMNCj4gKysrIGIvZHJpdmVycy9vZi9wbGF0Zm9ybS5jDQo+IEBAIC02MzMsNiAr
-NjMzLDkgQEAgRVhQT1JUX1NZTUJPTChvZl9kZXZpY2VfYWxsb2MpOw0KPiAgICAqIEBucDogcG9p
-bnRlciB0byBub2RlIHRvIGNyZWF0ZSBkZXZpY2UgZm9yDQo+ICAgICogQGJ1c19pZDogbmFtZSB0
-byBhc3NpZ24gZGV2aWNlDQo+ICAgICogQHBhcmVudDogTGludXggZGV2aWNlIG1vZGVsIHBhcmVu
-dCBkZXZpY2UuDQo+ICsgKg0KPiArICogUmV0dXJucyBwb2ludGVyIHRvIGNyZWF0ZWQgcGxhdGZv
-cm0gZGV2aWNlLCBvciBOVUxMIGlmIGEgZGV2aWNlIHdhcyBub3QNCj4gKyAqIHJlZ2lzdGVyZWQu
-ICBVbmF2YWlsYWJsZSBkZXZpY2VzIHdpbGwgbm90IGdldCByZWdpc3RlcmVkLg0KPiAgICAqLw0K
-PiAgIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKm9mX3BsYXRmb3JtX2RldmljZV9jcmVhdGUoc3Ry
-dWN0IGRldmljZV9ub2RlICpucCwNCj4gICAJCQkJCSAgICBjb25zdCBjaGFyICpidXNfaWQsDQo+
-IEBAIC02NDAsNiArNjQzLDkgQEAgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqb2ZfcGxhdGZvcm1f
-ZGV2aWNlX2NyZWF0ZShzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLA0KPiAgIHsNCj4gICAJc3RydWN0
-IHBsYXRmb3JtX2RldmljZSAqZGV2Ow0KPg0KPiArCWlmICghb2ZfZGV2aWNlX2lzX2F2YWlsYWJs
-ZShucCkpDQo+ICsJCXJldHVybiBOVUxMOw0KPiArDQo+ICAgCWRldiA9IG9mX2RldmljZV9hbGxv
-YyhucCwgYnVzX2lkLCBwYXJlbnQpOw0KPiAgIAlpZiAoIWRldikNCj4gICAJCXJldHVybiBOVUxM
-Ow0KPiBAQCAtNjgzLDggKzY4OSw5IEBAIHN0YXRpYyBpbnQgb2ZfcGxhdGZvcm1fYnVzX2NyZWF0
-ZShjb25zdCBzdHJ1Y3QgZGV2aWNlX25vZGUgKmJ1cywNCj4gICAJCXByX2RlYnVnKCIgICBjcmVh
-dGUgY2hpbGQ6ICVzXG4iLCBjaGlsZC0+ZnVsbF9uYW1lKTsNCj4gICAJCWRldiA9IG9mX3BsYXRm
-b3JtX2RldmljZV9jcmVhdGUoY2hpbGQsIE5VTEwsIHBhcmVudCk7DQo+ICAgCQlpZiAoZGV2ID09
-IE5VTEwpDQo+IC0JCQlyYyA9IC1FTk9NRU07DQo+IC0JCWVsc2UgaWYgKCFvZl9tYXRjaF9ub2Rl
-KG1hdGNoZXMsIGNoaWxkKSkNCj4gKwkJCWNvbnRpbnVlOw0KPiArDQo+ICsJCWlmICghb2ZfbWF0
-Y2hfbm9kZShtYXRjaGVzLCBjaGlsZCkpDQo+ICAgCQkJY29udGludWU7DQo+ICAgCQlpZiAocmMg
-PT0gMCkgew0KPiAgIAkJCXByX2RlYnVnKCIgICBhbmQgc3ViIGJ1c3Nlc1xuIik7DQo+IEBAIC03
-MzMsMTAgKzc0MCw5IEBAIGludCBvZl9wbGF0Zm9ybV9idXNfcHJvYmUoc3RydWN0IGRldmljZV9u
-b2RlICpyb290LA0KPiAgIAlpZiAob2ZfbWF0Y2hfbm9kZShtYXRjaGVzLCByb290KSkgew0KPiAg
-IAkJcHJfZGVidWcoIiByb290IG1hdGNoLCBjcmVhdGUgYWxsIHN1YiBkZXZpY2VzXG4iKTsNCj4g
-ICAJCWRldiA9IG9mX3BsYXRmb3JtX2RldmljZV9jcmVhdGUocm9vdCwgTlVMTCwgcGFyZW50KTsN
-Cj4gLQkJaWYgKGRldiA9PSBOVUxMKSB7DQo+IC0JCQlyYyA9IC1FTk9NRU07DQo+ICsJCWlmIChk
-ZXYgPT0gTlVMTCkNCj4gICAJCQlnb3RvIGJhaWw7DQo+IC0JCX0NCj4gKw0KPiAgIAkJcHJfZGVi
-dWcoIiBjcmVhdGUgYWxsIHN1YiBidXNzZXNcbiIpOw0KPiAgIAkJcmMgPSBvZl9wbGF0Zm9ybV9i
-dXNfY3JlYXRlKHJvb3QsIG1hdGNoZXMsJmRldi0+ZGV2KTsNCj4gICAJCWdvdG8gYmFpbDsNCj4g
-QEAgLTc0OCw5ICs3NTQsOSBAQCBpbnQgb2ZfcGxhdGZvcm1fYnVzX3Byb2JlKHN0cnVjdCBkZXZp
-Y2Vfbm9kZSAqcm9vdCwNCj4gICAJCXByX2RlYnVnKCIgIG1hdGNoOiAlc1xuIiwgY2hpbGQtPmZ1
-bGxfbmFtZSk7DQo+ICAgCQlkZXYgPSBvZl9wbGF0Zm9ybV9kZXZpY2VfY3JlYXRlKGNoaWxkLCBO
-VUxMLCBwYXJlbnQpOw0KPiAgIAkJaWYgKGRldiA9PSBOVUxMKQ0KPiAtCQkJcmMgPSAtRU5PTUVN
-Ow0KPiAtCQllbHNlDQo+IC0JCQlyYyA9IG9mX3BsYXRmb3JtX2J1c19jcmVhdGUoY2hpbGQsIG1h
-dGNoZXMsJmRldi0+ZGV2KTsNCj4gKwkJCWNvbnRpbnVlOw0KPiArDQo+ICsJCXJjID0gb2ZfcGxh
-dGZvcm1fYnVzX2NyZWF0ZShjaGlsZCwgbWF0Y2hlcywmZGV2LT5kZXYpOw0KPiAgIAkJaWYgKHJj
-KSB7DQo+ICAgCQkJb2Zfbm9kZV9wdXQoY2hpbGQpOw0KPiAgIAkJCWJyZWFrOw0KPg0K
+2.6.32-longterm review patch.  If anyone has any objections, please let us know.
+
+------------------
+
+From: Amit Shah <amit.shah@redhat.com>
+
+commit e74d098c66543d0731de62eb747ccd5b636a6f4c upstream.
+
+Alan pointed out a race in the code where hvc_remove is invoked. The
+recent virtio_console work is the first user of hvc_remove().
+
+Alan describes it thus:
+
+The hvc_console assumes that a close and remove call can't occur at the
+same time.
+
+In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
+itself....
+
+So this can happen
+
+        hvc_close                               hvc_remove
+        hung up ? - no
+                                                lock
+                                                tty = hp->tty
+                                                unlock
+        lock
+        hp->tty = NULL
+        unlock
+        notify del
+        kref_put the hvc struct
+        close completes
+        tty is destroyed
+                                                tty_hangup dead tty
+                                                tty->ops will be NULL
+                                                NULL->...
+
+This patch adds some tty krefs and also converts to using tty_vhangup().
+
+Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linuxppc-dev@ozlabs.org
+CC: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
+
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *t
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	/* Check and then increment for fast path open. */
+ 	if (hp->count++ > 0) {
++		tty_kref_get(tty);
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 		hvc_kick();
+ 		return 0;
+@@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *t
+ 
+ 	tty->driver_data = hp;
+ 
+-	hp->tty = tty;
++	hp->tty = tty_kref_get(tty);
+ 
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+@@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *t
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
++		tty_kref_put(tty);
+ 		tty->driver_data = NULL;
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+@@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct
+ 		return;
+ 
+ 	hp = tty->driver_data;
++
+ 	spin_lock_irqsave(&hp->lock, flags);
++	tty_kref_get(tty);
+ 
+ 	if (--hp->count == 0) {
+ 		/* We are done with the tty pointer now. */
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
++		/* Put the ref obtained in hvc_open() */
++		tty_kref_put(tty);
++
+ 		if (hp->ops->notifier_del)
+ 			hp->ops->notifier_del(hp, hp->data);
+ 
+@@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 	}
+ 
++	tty_kref_put(tty);
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ }
+ 
+@@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+ 	if (hp->ops->notifier_hangup)
+-			hp->ops->notifier_hangup(hp, hp->data);
++		hp->ops->notifier_hangup(hp, hp->data);
+ 
+ 	while(temp_open_count) {
+ 		--temp_open_count;
++		tty_kref_put(tty);
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 	}
+ }
+@@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
+ 	}
+ 
+ 	/* No tty attached, just skip */
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 	if (tty == NULL)
+ 		goto bail;
+ 
+@@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
+ 
+ 		tty_flip_buffer_push(tty);
+ 	}
++	if (tty)
++		tty_kref_put(tty);
+ 
+ 	return poll_mask;
+ }
+@@ -806,7 +817,7 @@ int hvc_remove(struct hvc_struct *hp)
+ 	struct tty_struct *tty;
+ 
+ 	spin_lock_irqsave(&hp->lock, flags);
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+ 		vtermnos[hp->index] = -1;
+@@ -818,18 +829,18 @@ int hvc_remove(struct hvc_struct *hp)
+ 	/*
+ 	 * We 'put' the instance that was grabbed when the kref instance
+ 	 * was initialized using kref_init().  Let the last holder of this
+-	 * kref cause it to be removed, which will probably be the tty_hangup
++	 * kref cause it to be removed, which will probably be the tty_vhangup
+ 	 * below.
+ 	 */
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ 
+ 	/*
+-	 * This function call will auto chain call hvc_hangup.  The tty should
+-	 * always be valid at this time unless a simultaneous tty close already
+-	 * cleaned up the hvc_struct.
++	 * This function call will auto chain call hvc_hangup.
+ 	 */
+-	if (tty)
+-		tty_hangup(tty);
++	if (tty) {
++		tty_vhangup(tty);
++		tty_kref_put(tty);
++	}
+ 	return 0;
+ }
+ 
