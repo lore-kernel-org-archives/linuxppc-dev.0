@@ -1,17 +1,17 @@
 Return-Path: <Hollis_Blanchard@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: [RFC] MPIC Bindings and Bindings for AMP Systems
-Date: Wed, 5 Jan 2011 14:49:40 -0800
-Message-ID: <DD7A9A95166BF4418C4C1EB2033B6EE2038FA8E4@na3-mail.mgc.mentorg.com>
-In-Reply-To: <20110105160918.2b530fea@udp111988uds.am.freescale.net>
-References: <4D12F171.7010103@mentor.com>	<20101223185623.GA20384@angua.secretlab.ca>	<4D13C402.2090209@mentor.com>	<20101223223325.GK20384@angua.secretlab.ca>	<20110103135120.32aeb60d@udp111988uds.am.freescale.net>	<4D24E99F.90908@mentor.com>
-	<20110105160918.2b530fea@udp111988uds.am.freescale.net>
+	charset="utf-8"
+Subject: Re: [PATCH] of/device: Don't register disabled devices
+Date: Wed, 5 Jan 2011 14:53:27 -0800
+Message-ID: <DD7A9A95166BF4418C4C1EB2033B6EE2038FA8E5@na3-mail.mgc.mentorg.com>
+In-Reply-To: <20110103230122.25772.72990.stgit@localhost6.localdomain6>
+References: <20110103230122.25772.72990.stgit@localhost6.localdomain6>
 From: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: "Inge, Meador" <meador_inge@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Saxena,
+	Deepak" <deepak_saxena@mentor.com>, Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/05/2011 02:09 PM, Scott Wood wrote:
-> On Wed, 5 Jan 2011 15:58:55 -0600
-> Meador Inge<meador_inge@mentor.com>  wrote:
->
->> We need some sort of mapping between a message register and a message
->> register number so that the message registers can be referenced =
-through
->> some sort of API (e.g. 'mpic_msgr_read(0)').  One way to do that =
-would
->> be by putting an order on the registers.  Maybe there is a better =
-way,
->> though ...
-> A message register is uniquely identified by a reference to the device
-> tree node, plus a 0-3 index into that node's message registers.
-Really what we're talking about is software configuration, not hardware=20
-description. We've gone back and forth on representing this information=20
-in the device tree, and most recently decided against it. Outside the=20
-kernel, a device node reference isn't really practical.
-
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+T24gMDEvMDMvMjAxMSAwMzowMSBQTSwgR3JhbnQgTGlrZWx5IHdyb3RlOg0KPiBEZXZpY2Ugbm9k
+ZXMgd2l0aCB0aGUgcHJvcGVydHkgc3RhdHVzPSJkaXNhYmxlZCIgYXJlIG5vdCB1c2FibGUgYW5k
+IHNvDQo+IGRvbid0IHJlZ2lzdGVyIHRoZW0gd2hlbiBwYXJzaW5nIHRoZSBkZXZpY2UgdHJlZSBm
+b3IgZGV2aWNlcy4NCj4NClRoaXMgaXMgZ3JlYXQgYW5kIGFsbCwgYnV0IGEgZmFpciBhbW91bnQg
+b2YgZHJpdmVyIGNvZGUgZXhwbGljaXRseSANCnNlYXJjaGVzIHRoZSB0cmVlLCByYXRoZXIgdGhh
+biByZWdpc3RlcmluZyBhIHByb2JlIGZ1bmN0aW9uLiBUaGF0J3Mgd2h5IA0Kb3VyIGVhcmxpZXIg
+cGF0Y2hlcyBpbiB0aGlzIGFyZWEgd2VyZSBtb3JlIGNvbXByZWhlbnNpdmUuDQoNCldoYXQgYXJl
+IHlvdXIgdGhvdWdodHMgb24gaGFuZGxpbmcgdGhvc2UgY2FzZXM/DQoNCkhvbGxpcyBCbGFuY2hh
+cmQNCk1lbnRvciBHcmFwaGljcywgRW1iZWRkZWQgU3lzdGVtcyBEaXZpc2lvbg0KDQo+IC0tLQ0K
+PiAgIGRyaXZlcnMvb2YvcGxhdGZvcm0uYyB8ICAgMjIgKysrKysrKysrKysrKystLS0tLS0tLQ0K
+PiAgIDEgZmlsZXMgY2hhbmdlZCwgMTQgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkNCj4N
+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvb2YvcGxhdGZvcm0uYyBiL2RyaXZlcnMvb2YvcGxhdGZv
+cm0uYw0KPiBpbmRleCA1YjRhMDdmLi5jMDFjZDFhIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL29m
+L3BsYXRmb3JtLmMNCj4gKysrIGIvZHJpdmVycy9vZi9wbGF0Zm9ybS5jDQo+IEBAIC02MzMsNiAr
+NjMzLDkgQEAgRVhQT1JUX1NZTUJPTChvZl9kZXZpY2VfYWxsb2MpOw0KPiAgICAqIEBucDogcG9p
+bnRlciB0byBub2RlIHRvIGNyZWF0ZSBkZXZpY2UgZm9yDQo+ICAgICogQGJ1c19pZDogbmFtZSB0
+byBhc3NpZ24gZGV2aWNlDQo+ICAgICogQHBhcmVudDogTGludXggZGV2aWNlIG1vZGVsIHBhcmVu
+dCBkZXZpY2UuDQo+ICsgKg0KPiArICogUmV0dXJucyBwb2ludGVyIHRvIGNyZWF0ZWQgcGxhdGZv
+cm0gZGV2aWNlLCBvciBOVUxMIGlmIGEgZGV2aWNlIHdhcyBub3QNCj4gKyAqIHJlZ2lzdGVyZWQu
+ICBVbmF2YWlsYWJsZSBkZXZpY2VzIHdpbGwgbm90IGdldCByZWdpc3RlcmVkLg0KPiAgICAqLw0K
+PiAgIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKm9mX3BsYXRmb3JtX2RldmljZV9jcmVhdGUoc3Ry
+dWN0IGRldmljZV9ub2RlICpucCwNCj4gICAJCQkJCSAgICBjb25zdCBjaGFyICpidXNfaWQsDQo+
+IEBAIC02NDAsNiArNjQzLDkgQEAgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqb2ZfcGxhdGZvcm1f
+ZGV2aWNlX2NyZWF0ZShzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLA0KPiAgIHsNCj4gICAJc3RydWN0
+IHBsYXRmb3JtX2RldmljZSAqZGV2Ow0KPg0KPiArCWlmICghb2ZfZGV2aWNlX2lzX2F2YWlsYWJs
+ZShucCkpDQo+ICsJCXJldHVybiBOVUxMOw0KPiArDQo+ICAgCWRldiA9IG9mX2RldmljZV9hbGxv
+YyhucCwgYnVzX2lkLCBwYXJlbnQpOw0KPiAgIAlpZiAoIWRldikNCj4gICAJCXJldHVybiBOVUxM
+Ow0KPiBAQCAtNjgzLDggKzY4OSw5IEBAIHN0YXRpYyBpbnQgb2ZfcGxhdGZvcm1fYnVzX2NyZWF0
+ZShjb25zdCBzdHJ1Y3QgZGV2aWNlX25vZGUgKmJ1cywNCj4gICAJCXByX2RlYnVnKCIgICBjcmVh
+dGUgY2hpbGQ6ICVzXG4iLCBjaGlsZC0+ZnVsbF9uYW1lKTsNCj4gICAJCWRldiA9IG9mX3BsYXRm
+b3JtX2RldmljZV9jcmVhdGUoY2hpbGQsIE5VTEwsIHBhcmVudCk7DQo+ICAgCQlpZiAoZGV2ID09
+IE5VTEwpDQo+IC0JCQlyYyA9IC1FTk9NRU07DQo+IC0JCWVsc2UgaWYgKCFvZl9tYXRjaF9ub2Rl
+KG1hdGNoZXMsIGNoaWxkKSkNCj4gKwkJCWNvbnRpbnVlOw0KPiArDQo+ICsJCWlmICghb2ZfbWF0
+Y2hfbm9kZShtYXRjaGVzLCBjaGlsZCkpDQo+ICAgCQkJY29udGludWU7DQo+ICAgCQlpZiAocmMg
+PT0gMCkgew0KPiAgIAkJCXByX2RlYnVnKCIgICBhbmQgc3ViIGJ1c3Nlc1xuIik7DQo+IEBAIC03
+MzMsMTAgKzc0MCw5IEBAIGludCBvZl9wbGF0Zm9ybV9idXNfcHJvYmUoc3RydWN0IGRldmljZV9u
+b2RlICpyb290LA0KPiAgIAlpZiAob2ZfbWF0Y2hfbm9kZShtYXRjaGVzLCByb290KSkgew0KPiAg
+IAkJcHJfZGVidWcoIiByb290IG1hdGNoLCBjcmVhdGUgYWxsIHN1YiBkZXZpY2VzXG4iKTsNCj4g
+ICAJCWRldiA9IG9mX3BsYXRmb3JtX2RldmljZV9jcmVhdGUocm9vdCwgTlVMTCwgcGFyZW50KTsN
+Cj4gLQkJaWYgKGRldiA9PSBOVUxMKSB7DQo+IC0JCQlyYyA9IC1FTk9NRU07DQo+ICsJCWlmIChk
+ZXYgPT0gTlVMTCkNCj4gICAJCQlnb3RvIGJhaWw7DQo+IC0JCX0NCj4gKw0KPiAgIAkJcHJfZGVi
+dWcoIiBjcmVhdGUgYWxsIHN1YiBidXNzZXNcbiIpOw0KPiAgIAkJcmMgPSBvZl9wbGF0Zm9ybV9i
+dXNfY3JlYXRlKHJvb3QsIG1hdGNoZXMsJmRldi0+ZGV2KTsNCj4gICAJCWdvdG8gYmFpbDsNCj4g
+QEAgLTc0OCw5ICs3NTQsOSBAQCBpbnQgb2ZfcGxhdGZvcm1fYnVzX3Byb2JlKHN0cnVjdCBkZXZp
+Y2Vfbm9kZSAqcm9vdCwNCj4gICAJCXByX2RlYnVnKCIgIG1hdGNoOiAlc1xuIiwgY2hpbGQtPmZ1
+bGxfbmFtZSk7DQo+ICAgCQlkZXYgPSBvZl9wbGF0Zm9ybV9kZXZpY2VfY3JlYXRlKGNoaWxkLCBO
+VUxMLCBwYXJlbnQpOw0KPiAgIAkJaWYgKGRldiA9PSBOVUxMKQ0KPiAtCQkJcmMgPSAtRU5PTUVN
+Ow0KPiAtCQllbHNlDQo+IC0JCQlyYyA9IG9mX3BsYXRmb3JtX2J1c19jcmVhdGUoY2hpbGQsIG1h
+dGNoZXMsJmRldi0+ZGV2KTsNCj4gKwkJCWNvbnRpbnVlOw0KPiArDQo+ICsJCXJjID0gb2ZfcGxh
+dGZvcm1fYnVzX2NyZWF0ZShjaGlsZCwgbWF0Y2hlcywmZGV2LT5kZXYpOw0KPiAgIAkJaWYgKHJj
+KSB7DQo+ICAgCQkJb2Zfbm9kZV9wdXQoY2hpbGQpOw0KPiAgIAkJCWJyZWFrOw0KPg0K
