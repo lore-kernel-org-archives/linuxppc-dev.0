@@ -1,16 +1,17 @@
-Return-Path: <rbeims@gmail.com>
-Received: from mail-fx0-f66.google.com (mail-fx0-f66.google.com
-	[209.85.161.66]) by ozlabs.org (Postfix) with ESMTP id 77B31B710D
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2011 05:09:09 +1100 (EST)
-Received: by fxm14 with SMTP id 14so4646238fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 05 Jan 2011 10:09:06 -0800 (PST)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 4F511B7063
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2011 05:35:08 +1100 (EST)
+To: Rafael Beims <rbeims@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: mpc880 linux-2.6.32 slow running processes
 MIME-Version: 1.0
-Date: Wed, 5 Jan 2011 16:09:06 -0200
-Message-ID: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>
-Subject: mpc880 linux-2.6.32 slow running processes
-From: Rafael Beims <rbeims@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=90e6ba211f29edebae04991d47fd
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>
+References: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>
+Date: Wed, 05 Jan 2011 19:35:06 +0100
+Message-Id: <20110105183506.07BB815243A@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,74 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---90e6ba211f29edebae04991d47fd
-Content-Type: text/plain; charset=ISO-8859-1
+Dear Rafael Beims,
 
-Hello all,
-I'm working with an MPC880 board that is supposed to run linux-2.6.32. After
-some work, I could get the kernel up and running, mounting a rootfs via
-NFS.
-The problem that I'm facing now is that when I try to run any process (may
-be an ls, cat, or whatever), the response of the process is *very* slow
-(something like 10 to 20 seconds for a ls).
-Monitoring the network packets, I can see that the nfs protocol is exchanged
-just fine, but at some time it simply stops, starting again with a request
-from the board several seconds later.
-I'm thinking that the processor is running (something, I don't know what)
-for all this time before I can see requests coming from the board again. I
-pinged the board from the PC and during all this I can see the packets being
-answered.
+In message <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com> you wrote:
+>
+> I'm working with an MPC880 board that is supposed to run linux-2.6.32. After
+> some work, I could get the kernel up and running, mounting a rootfs via
+> NFS.
 
-My question to all is, did anyone see something like this already? Besides
-that, what is the status of the linux kernel support for the 8xx platform?
-Is it being actively tested / used today? I ask this because it seems that
-all the information on the internet very aged (forum discussions from 2005
-and below mostly).
+2.6.32 is pretty old.  Is there any specific reason for not using a
+recent kernel version?
 
-Is there something that I can do to try to narrow the cause of the problem?
+> The problem that I'm facing now is that when I try to run any process (may
+> be an ls, cat, or whatever), the response of the process is *very* slow
+> (something like 10 to 20 seconds for a ls).
 
-Anyway, any help would be truly appreciated. Please excuse me if this is not
-the right place to ask this too.
+This sounds as if only the output to the (serial ?) console port was
+slow - typically this happens when there is a problem with interrupt
+assignment, and you receive charatcers only after each of these times
+out.
 
-Thanks and best regards,
-Rafael Beims
-rbeims@gmail.com
-(41) 8873-7565
-"What I hear, I forget. What I see, I remember. And what I do, I
-understand."
-- Chinese Proverb
+> My question to all is, did anyone see something like this already? Besides
 
---90e6ba211f29edebae04991d47fd
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+We have seen this many times in the past, when interrupts were not
+working correctly.  I recommend to check youyr device tree settings
+for these.
 
-Hello all,<div>I&#39;m working with an MPC880 board that is supposed to run=
- linux-2.6.32. After some work, I could get the kernel up and running, moun=
-ting a rootfs via NFS.=A0</div><div>The problem that I&#39;m facing now is =
-that when I try to run any process (may be an ls, cat, or whatever), the re=
-sponse of the process is *very* slow (something like 10 to 20 seconds for a=
- ls).=A0</div>
-<div>Monitoring the network packets, I can see that the nfs protocol is exc=
-hanged just fine, but at some time it simply stops, starting again with a r=
-equest from the board several seconds later.</div><div>I&#39;m thinking tha=
-t the processor is running (something, I don&#39;t know what) for all this =
-time before I can see requests coming from the board again. I pinged the bo=
-ard from the PC and during all this I can see the packets being answered.</=
-div>
-<div><br></div><div>My question to all is, did anyone see something like th=
-is already? Besides that, what is the status of the linux kernel support fo=
-r the 8xx platform? Is it being actively tested / used today? I ask this be=
-cause it seems that all the information on the internet very aged (forum di=
-scussions from 2005 and below mostly).</div>
-<div><br></div><div>Is there something that I can do to try to narrow the c=
-ause of the problem?</div><div><br></div><div>Anyway, any help would be tru=
-ly appreciated. Please excuse me if this is not the right place to ask this=
- too.</div>
-<div><br></div><div>Thanks and best regards,<br clear=3D"all">Rafael Beims<=
-br><a href=3D"mailto:rbeims@gmail.com">rbeims@gmail.com</a><br>(41) 8873-75=
-65<br>&quot;What I hear, I forget. What I see, I remember. And what I do, I=
- understand.&quot;<br>
-- Chinese Proverb<br>
-</div>
+[It would have helped if you had included a log of your kernel's boot
+messages.]
 
---90e6ba211f29edebae04991d47fd--
+> that, what is the status of the linux kernel support for the 8xx platform?
+
+It is working and actively maintained, but 8xx is a platform that is
+more or less hopelessly obsoleted - nobody uses it in new designs any
+more, so there is little work going on with it in recent kernel
+versions (at least compared with other architectures).
+
+> Is it being actively tested / used today? I ask this because it seems that
+
+Yes, it is.
+
+> all the information on the internet very aged (forum discussions from 2005
+> and below mostly).
+
+> Is there something that I can do to try to narrow the cause of the problem?
+
+Check your interrupts.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Never underestimate the power of human stupidity  when  it  comes  to
+using technology they don't understand.
