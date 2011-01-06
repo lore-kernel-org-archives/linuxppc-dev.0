@@ -1,20 +1,17 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 14BB6B713F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Jan 2011 06:43:35 +1100 (EST)
+Return-Path: <scottwood@freescale.com>
+Date: Thu, 6 Jan 2011 14:10:23 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Meador Inge <meador_inge@mentor.com>
+Subject: Re: [RFC] MPIC Bindings and Bindings for AMP Systems
+Message-ID: <20110106141023.43a0d35f@udp111988uds.am.freescale.net>
+In-Reply-To: <4D252FDC.4090404@mentor.com>
+References: <4D12E4F1.2030004@mentor.com>
+	<20110103142200.738c0b17@udp111988uds.am.freescale.net>
+	<4D252FDC.4090404@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: RapidIO: question about rionet probe call
-Date: Thu, 6 Jan 2011 11:43:17 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520172675B@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <AANLkTi=ns4-bz1JBdzjX0tvqNuEDRiM6UpmzMu_Fr8cw@mail.gmail.com>
-References: <AANLkTi=ns4-bz1JBdzjX0tvqNuEDRiM6UpmzMu_Fr8cw@mail.gmail.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Thomas Taranowski" <tom@baringforge.com>, <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	"Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Did you change anything in RIO initialization sequence?
-For multiple mport support I had to adjust rio_init_mports/rio_init
-sequence.
+On Wed, 5 Jan 2011 20:58:36 -0600
+Meador Inge <meador_inge@mentor.com> wrote:
 
-Alex.
+> On 01/03/2011 02:22 PM, Scott Wood wrote:
+> > On Wed, 22 Dec 2010 23:58:09 -0600
+> > Perhaps a something like this, with "doorbell" being a new standard
+> > hw-independent service with its own binding:
+> >
+> > msg1: mpic-msg@1400 {
+> > 	compatible = "fsl,mpic-v3.0-msg";
+> > 	reg =<0x1400 0x200>;
+> > 	interrupts<176 2 178 2>;
+> >
+> > 	// We have message registers 0 and 2 for sending,
+> > 	// and 1 and 3 for receiving.
+> > 	// If absent, we own all message registers in this block.
+> > 	fsl,mpic-msg-send-mask =<0x5>;
+> > 	fsl,mpic-msg-receive-mask =<0xa>;
 
-> -----Original Message-----
-> From: =
-linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org] On Behalf Of
-Thomas Taranowski
-> Sent: Thursday, January 06, 2011 3:27 AM
-> To: linuxppc-dev@lists.ozlabs.org
-> Subject: RapidIO: question about rionet probe call
->=20
-> I'm doing some work to support multiple mport architectures, and have
-> run into an issue where the rionet_probe() function isn't being
-> called, so my rionet net device never get's created.  I've also
-> verified that the rio_device_probe() isn't being called either.
->=20
-> The low level rio bus driver initializes and probes correctly, and
-> creates the required entries in sysfs.  Then, later, I see the
-> rionet_init get called and return success, indicating it registered
-> with the rapidio bus correctly, so everything looks good.
->=20
->=20
-> I see the following output (extra debug prints added) , indicating the
-> rionet driver is being added, but it never gets probed afterward.
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> ~~~ rio_register_driver ~~~
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> bus: 'rapidio': add driver rionet
-> initializing klist
-> init and added kobj, err=3D0
-> driver_create_file err=3D0
-> driver added attrs, err=3D0
-> returning 0
-> RIO: rionet_init rio_register_driver: rc=3D0
->=20
->=20
-> Any ideas on why rionet isn't being probed?  Is rionet currently
-working?
-> I'm running a 2.6.36-rc8 baseline.
->=20
-> Thanks,
-> Thomas Taranowski
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Alternatively, we could describe available ranges similarly to the
+existing MSI binding.
+
+> After thinking about it a little more, I like the idea of having a 
+> 'receive-mask' to further partition the message register blocks.  This 
+> would also allow us to remove IRQs from the 'interrupts' property that 
+> are not being used on a given node.  As for the 'send-mask', why would 
+> we want to block sending messages?  It seems to me that it would be 
+> reasonable to allow a node to send a message to any other node.
+
+The send-mask, like the receive-mask, is optional.  If for your
+application it makes sense to give all partitions send access to all
+doorbells, then you can do that.
+
+You might want to provide a send-mask if you are not specifying to the
+partition how to use the message registers, just splitting them up for
+their own internal use (especially if you have a larger multicore system
+where each partition has multiple CPUs).
+
+Or, you may want to add a layer of robustness against one partition
+interfering with a message register that is only supposed to be used by
+another partition, even if there are instructions elsewhere about which
+message register to use for what purpose.
+
+Plus, it provides symmetry between send and receive -- otherwise, you'd
+have a numberspace that is limited to your own resources on receive,
+but a global numberspace on send.
+
+> As an example, consider a four core system.  Then we might have 
+> something like (only relevant DTS bits shown):
+> 
+> Core 0:
+>     mpic-msgr-block@1400 {
+>        // Receives messages on registers 1 and 3.
+>        interrupts = <0xb1 2 0xb3 2>;
+>        receive-mask = <0xa>;
+>     };
+> Core 1:
+>     mpic-msgr-block@1400 {
+>        // Receives messages on register 2.
+>        interrupts = <0xb2 2>;
+>        receive-mask = <0x4>;
+>     };
+> Core 2:
+>     mpic-msgr-block@1400 {
+>        // Receives messages on register 0.
+>        interrupts = <0xb0 2>;
+>        receive-mask = <0x1>;
+>     };
+> Core 3:
+>     mpic-msgr-block@1400 {
+>        // Receives no messages.
+>        interrupts = <>;
+>     };
+
+For core 3 I'd just leave out the node entirely.  Note that the absence
+of a receive-mask indicates that all the registers are available (i.e.
+normal unpartitioned case), not none.
+
+-Scott
