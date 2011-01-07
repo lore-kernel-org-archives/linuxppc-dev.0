@@ -1,9 +1,9 @@
 Return-Path: <anton@samba.org>
-Date: Fri, 7 Jan 2011 14:54:15 +1100
+Date: Fri, 7 Jan 2011 14:54:58 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH 1/8] powerpc: Move all ppc_md kexec function pointers together
-Message-ID: <20110107145415.4fa304eb@kryten>
+Subject: [PATCH 2/8] powerpc/kexec: Remove ppc_md.machine_kexec_cleanup
+Message-ID: <20110107145458.3d47b7e8@kryten>
 In-Reply-To: <20110107145255.72cf30ba@kryten>
 References: <20110107145255.72cf30ba@kryten>
 Mime-Version: 1.0
@@ -19,31 +19,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Move all the kexec handlers together.
+No one uses ppc_md.machine_kexec_cleanup, so remove it.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: powerpc.git/arch/powerpc/include/asm/machdep.h
 ===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/machdep.h	2011-01-07 12:50:52.020438276 +1100
-+++ powerpc.git/arch/powerpc/include/asm/machdep.h	2011-01-07 12:51:46.682161055 +1100
-@@ -118,9 +118,6 @@ struct machdep_calls {
- 	 * If for some reason there is no irq, but the interrupt
- 	 * shouldn't be counted as spurious, return NO_IRQ_IGNORE. */
- 	unsigned int	(*get_irq)(void);
--#ifdef CONFIG_KEXEC
--	void		(*kexec_cpu_down)(int crash_shutdown, int secondary);
--#endif
+--- powerpc.git.orig/arch/powerpc/include/asm/machdep.h	2011-01-07 12:51:46.682161055 +1100
++++ powerpc.git/arch/powerpc/include/asm/machdep.h	2011-01-07 12:51:51.352308248 +1100
+@@ -249,9 +249,6 @@ struct machdep_calls {
+ 	 */
+ 	int (*machine_kexec_prepare)(struct kimage *image);
  
- 	/* PCI stuff */
- 	/* Called after scanning the bus, before allocating resources */
-@@ -237,6 +234,8 @@ struct machdep_calls {
- 	void (*machine_shutdown)(void);
+-	/* Called to handle any machine specific cleanup on image */
+-	void (*machine_kexec_cleanup)(struct kimage *image);
+-
+ 	/* Called to perform the _real_ kexec.
+ 	 * Do NOT allocate memory or fail here. We are past the point of
+ 	 * no return.
+Index: powerpc.git/arch/powerpc/kernel/machine_kexec.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/kernel/machine_kexec.c	2010-12-13 22:52:03.975251680 +1100
++++ powerpc.git/arch/powerpc/kernel/machine_kexec.c	2011-01-07 12:51:51.352308248 +1100
+@@ -65,8 +65,6 @@ int machine_kexec_prepare(struct kimage
  
- #ifdef CONFIG_KEXEC
-+	void (*kexec_cpu_down)(int crash_shutdown, int secondary);
-+
- 	/* Called to do the minimal shutdown needed to run a kexec'd kernel
- 	 * to run successfully.
- 	 * XXX Should we move this one out of kexec scope?
+ void machine_kexec_cleanup(struct kimage *image)
+ {
+-	if (ppc_md.machine_kexec_cleanup)
+-		ppc_md.machine_kexec_cleanup(image);
+ }
+ 
+ void arch_crash_save_vmcoreinfo(void)
