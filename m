@@ -1,9 +1,10 @@
 Return-Path: <anton@samba.org>
-Date: Fri, 7 Jan 2011 14:58:36 +1100
+Date: Fri, 7 Jan 2011 14:59:54 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH 6/8] powerpc/kexec: Remove empty ppc_md.machine_kexec_prepare
-Message-ID: <20110107145836.77ed440c@kryten>
+Subject: [PATCH 7/8] powerpc/kdump: Move crash_kexec_stop_spus to kdump
+	crash handler
+Message-ID: <20110107145954.4f421183@kryten>
 In-Reply-To: <20110107145255.72cf30ba@kryten>
 References: <20110107145255.72cf30ba@kryten>
 Mime-Version: 1.0
@@ -19,74 +20,189 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We check for a valid handler before calling ppc_md.machine_kexec_prepare
-so we can just remove these empty handlers.
+Use the crash handler hooks to run the SPU stop code, just like we do for
+ehea and cell RAS code.
+
+While I'm here I noticed "CPUSs reliabally"
+
+so fix the spelling MISTAKESs reliabally.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: powerpc.git/arch/powerpc/platforms/embedded6xx/wii.c
+Index: powerpc.git/arch/powerpc/kernel/crash.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/embedded6xx/wii.c	2010-12-13 22:52:03.535243386 +1100
-+++ powerpc.git/arch/powerpc/platforms/embedded6xx/wii.c	2011-01-07 12:51:59.422562597 +1100
-@@ -18,7 +18,6 @@
- #include <linux/init.h>
- #include <linux/irq.h>
- #include <linux/seq_file.h>
--#include <linux/kexec.h>
- #include <linux/of_platform.h>
- #include <linux/memblock.h>
- #include <mm/mmu_decl.h>
-@@ -226,13 +225,6 @@ static void wii_shutdown(void)
- 	flipper_quiesce();
+--- powerpc.git.orig/arch/powerpc/kernel/crash.c	2010-12-13 22:52:03.475242242 +1100
++++ powerpc.git/arch/powerpc/kernel/crash.c	2011-01-07 12:52:00.812606428 +1100
+@@ -48,7 +48,7 @@ int crashing_cpu = -1;
+ static cpumask_t cpus_in_crash = CPU_MASK_NONE;
+ cpumask_t cpus_in_sr = CPU_MASK_NONE;
+ 
+-#define CRASH_HANDLER_MAX 2
++#define CRASH_HANDLER_MAX 3
+ /* NULL terminated list of shutdown handles */
+ static crash_shutdown_t crash_shutdown_handles[CRASH_HANDLER_MAX+1];
+ static DEFINE_SPINLOCK(crash_handlers_lock);
+@@ -125,7 +125,7 @@ static void crash_kexec_prepare_cpus(int
+ 	smp_wmb();
+ 
+ 	/*
+-	 * FIXME: Until we will have the way to stop other CPUSs reliabally,
++	 * FIXME: Until we will have the way to stop other CPUs reliably,
+ 	 * the crash CPU will send an IPI and wait for other CPUs to
+ 	 * respond.
+ 	 * Delay of at least 10 seconds.
+@@ -254,72 +254,6 @@ void crash_kexec_secondary(struct pt_reg
+ 	cpus_in_sr = CPU_MASK_NONE;
  }
- 
--#ifdef CONFIG_KEXEC
--static int wii_machine_kexec_prepare(struct kimage *image)
--{
--	return 0;
--}
--#endif /* CONFIG_KEXEC */
+ #endif
+-#ifdef CONFIG_SPU_BASE
 -
- define_machine(wii) {
- 	.name			= "wii",
- 	.probe			= wii_probe,
-@@ -246,9 +238,6 @@ define_machine(wii) {
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- 	.machine_shutdown	= wii_shutdown,
--#ifdef CONFIG_KEXEC
--	.machine_kexec_prepare	= wii_machine_kexec_prepare,
--#endif
- };
+-#include <asm/spu.h>
+-#include <asm/spu_priv1.h>
+-
+-struct crash_spu_info {
+-	struct spu *spu;
+-	u32 saved_spu_runcntl_RW;
+-	u32 saved_spu_status_R;
+-	u32 saved_spu_npc_RW;
+-	u64 saved_mfc_sr1_RW;
+-	u64 saved_mfc_dar;
+-	u64 saved_mfc_dsisr;
+-};
+-
+-#define CRASH_NUM_SPUS	16	/* Enough for current hardware */
+-static struct crash_spu_info crash_spu_info[CRASH_NUM_SPUS];
+-
+-static void crash_kexec_stop_spus(void)
+-{
+-	struct spu *spu;
+-	int i;
+-	u64 tmp;
+-
+-	for (i = 0; i < CRASH_NUM_SPUS; i++) {
+-		if (!crash_spu_info[i].spu)
+-			continue;
+-
+-		spu = crash_spu_info[i].spu;
+-
+-		crash_spu_info[i].saved_spu_runcntl_RW =
+-			in_be32(&spu->problem->spu_runcntl_RW);
+-		crash_spu_info[i].saved_spu_status_R =
+-			in_be32(&spu->problem->spu_status_R);
+-		crash_spu_info[i].saved_spu_npc_RW =
+-			in_be32(&spu->problem->spu_npc_RW);
+-
+-		crash_spu_info[i].saved_mfc_dar    = spu_mfc_dar_get(spu);
+-		crash_spu_info[i].saved_mfc_dsisr  = spu_mfc_dsisr_get(spu);
+-		tmp = spu_mfc_sr1_get(spu);
+-		crash_spu_info[i].saved_mfc_sr1_RW = tmp;
+-
+-		tmp &= ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
+-		spu_mfc_sr1_set(spu, tmp);
+-
+-		__delay(200);
+-	}
+-}
+-
+-void crash_register_spus(struct list_head *list)
+-{
+-	struct spu *spu;
+-
+-	list_for_each_entry(spu, list, full_list) {
+-		if (WARN_ON(spu->number >= CRASH_NUM_SPUS))
+-			continue;
+-
+-		crash_spu_info[spu->number].spu = spu;
+-	}
+-}
+-
+-#else
+-static inline void crash_kexec_stop_spus(void)
+-{
+-}
+-#endif /* CONFIG_SPU_BASE */
  
- static struct of_device_id wii_of_bus[] = {
-Index: powerpc.git/arch/powerpc/platforms/embedded6xx/gamecube.c
+ /*
+  * Register a function to be called on shutdown.  Only use this if you
+@@ -439,8 +373,6 @@ void default_machine_crash_shutdown(stru
+ 	crash_shutdown_cpu = -1;
+ 	__debugger_fault_handler = old_handler;
+ 
+-	crash_kexec_stop_spus();
+-
+ 	if (ppc_md.kexec_cpu_down)
+ 		ppc_md.kexec_cpu_down(1, 0);
+ }
+Index: powerpc.git/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/embedded6xx/gamecube.c	2010-12-13 22:52:03.555243746 +1100
-+++ powerpc.git/arch/powerpc/platforms/embedded6xx/gamecube.c	2011-01-07 12:51:59.422562597 +1100
-@@ -75,14 +75,6 @@ static void gamecube_shutdown(void)
- 	flipper_quiesce();
- }
+--- powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c	2010-12-13 22:52:03.495242622 +1100
++++ powerpc.git/arch/powerpc/platforms/cell/spu_base.c	2011-01-07 12:52:00.812606428 +1100
+@@ -727,6 +727,67 @@ static ssize_t spu_stat_show(struct sys_
  
--#ifdef CONFIG_KEXEC
--static int gamecube_kexec_prepare(struct kimage *image)
--{
--	return 0;
--}
--#endif /* CONFIG_KEXEC */
--
--
- define_machine(gamecube) {
- 	.name			= "gamecube",
- 	.probe			= gamecube_probe,
-@@ -95,9 +87,6 @@ define_machine(gamecube) {
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- 	.machine_shutdown	= gamecube_shutdown,
--#ifdef CONFIG_KEXEC
--	.machine_kexec_prepare	= gamecube_kexec_prepare,
--#endif
- };
+ static SYSDEV_ATTR(stat, 0644, spu_stat_show, NULL);
  
- 
++struct crash_spu_info {
++	struct spu *spu;
++	u32 saved_spu_runcntl_RW;
++	u32 saved_spu_status_R;
++	u32 saved_spu_npc_RW;
++	u64 saved_mfc_sr1_RW;
++	u64 saved_mfc_dar;
++	u64 saved_mfc_dsisr;
++};
++
++#define CRASH_NUM_SPUS	16	/* Enough for current hardware */
++static struct crash_spu_info crash_spu_info[CRASH_NUM_SPUS];
++
++static void crash_kexec_stop_spus(void)
++{
++	struct spu *spu;
++	int i;
++	u64 tmp;
++
++	for (i = 0; i < CRASH_NUM_SPUS; i++) {
++		if (!crash_spu_info[i].spu)
++			continue;
++
++		spu = crash_spu_info[i].spu;
++
++		crash_spu_info[i].saved_spu_runcntl_RW =
++			in_be32(&spu->problem->spu_runcntl_RW);
++		crash_spu_info[i].saved_spu_status_R =
++			in_be32(&spu->problem->spu_status_R);
++		crash_spu_info[i].saved_spu_npc_RW =
++			in_be32(&spu->problem->spu_npc_RW);
++
++		crash_spu_info[i].saved_mfc_dar    = spu_mfc_dar_get(spu);
++		crash_spu_info[i].saved_mfc_dsisr  = spu_mfc_dsisr_get(spu);
++		tmp = spu_mfc_sr1_get(spu);
++		crash_spu_info[i].saved_mfc_sr1_RW = tmp;
++
++		tmp &= ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
++		spu_mfc_sr1_set(spu, tmp);
++
++		__delay(200);
++	}
++}
++
++static void crash_register_spus(struct list_head *list)
++{
++	struct spu *spu;
++	int ret;
++
++	list_for_each_entry(spu, list, full_list) {
++		if (WARN_ON(spu->number >= CRASH_NUM_SPUS))
++			continue;
++
++		crash_spu_info[spu->number].spu = spu;
++	}
++
++	ret = crash_shutdown_register(&crash_kexec_stop_spus);
++	if (ret)
++		printk(KERN_ERR "Could not register SPU crash handler");
++}
++
+ static int __init init_spu_base(void)
+ {
+ 	int i, ret = 0;
