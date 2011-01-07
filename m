@@ -1,28 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Date: Fri, 7 Jan 2011 14:57:13 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
-Subject: Re: [RFC] MPIC Bindings and Bindings for AMP Systems
-Message-ID: <20110107145713.174e3a67@udp111988uds.am.freescale.net>
-In-Reply-To: <DD7A9A95166BF4418C4C1EB2033B6EE2038FA90D@na3-mail.mgc.mentorg.com>
-References: <4D12F171.7010103@mentor.com>
-	<20101223185623.GA20384@angua.secretlab.ca>
-	<4D13C402.2090209@mentor.com>
-	<20101223223325.GK20384@angua.secretlab.ca>
-	<20110103135120.32aeb60d@udp111988uds.am.freescale.net>
-	<4D24E99F.90908@mentor.com>
-	<20110105160918.2b530fea@udp111988uds.am.freescale.net>
-	<DD7A9A95166BF4418C4C1EB2033B6EE2038FA8E4@na3-mail.mgc.mentorg.com>
-	<20110105170725.1a82c5a6@udp111988uds.am.freescale.net>
-	<DD7A9A95166BF4418C4C1EB2033B6EE2038FA8FD@na3-mail.mgc.mentorg.com>
-	<AANLkTikROM4MtmLYEK_6ndRzbDJ3xjMM5iSPzDhpRWLy@mail.gmail.com>
-	<DD7A9A95166BF4418C4C1EB2033B6EE2038FA900@na3-mail.mgc.mentorg.com>
-	<AANLkTikY8z3V-opZ6K3j28QfyBV_p8jEAhxOKywjX27T@mail.gmail.com>
-	<DD7A9A95166BF4418C4C1EB2033B6EE2038FA90D@na3-mail.mgc.mentorg.com>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id 8D8BAB7158
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jan 2011 10:07:01 +1100 (EST)
+Message-ID: <4D279C90.8000006@mlbassoc.com>
+Date: Fri, 07 Jan 2011 16:06:56 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: "Inge, Meador" <meador_inge@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: PCI woes with 2.6.37
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,68 +18,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 7 Jan 2011 12:30:52 -0800
-"Blanchard, Hollis" <Hollis_Blanchard@mentor.com> wrote:
+I just tried porting my target (MPC8347) from 2.6.28 (remember
+that one?) to 2.6.37.  Recently I tried this with 2.6.32 without
+a lot of success, so I thought I'd try the latest :-)  The changes
+are very simple, pretty much just the addition of my 8347 based
+platform DTS.
 
-> On 01/07/2011 08:44 AM, Grant Likely wrote:
-> > On Fri, Jan 7, 2011 at 9:00 AM, Blanchard, Hollis
-> > <Hollis_Blanchard@mentor.com>  wrote:
-> >> On 01/07/2011 07:48 AM, Grant Likely wrote:
-> >>> Actually, for a while now the kernel has been moving towards userspace
-> >>> being responsible for device identification.  That's what udev is for.
-> >>>    The kernel udev looks at the available information when a device is
-> >>> registered/bound, and it creates useful symlinks to the dynamically
-> >>> assigned major/minor devices.  The rest of userspace doesn't need to
-> >>> know about it; it can simply use the symlinks in /dev, but it is
-> >>> appropriate to let udev figure out the correct naming.
-> >> Can you point out an example of how this is done for Open Firmware
-> >> devices currently?
-> > Nope, because while it has been a theoretical concern, in practice the
-> > issue hasn't come up on any of the hardware I've worked on or I've
-> > seen patches for.
-> That is still this case here: it's a theoretical concern. Don't forget: 
-> we're talking about eight registers in the MPIC. There is no bus, no 
-> hotplug, nothing. Really, the only requirement is that somehow we can 
-> match the names used in the hardware documentation.
+Sadly, it fails even worse than it did on 2.6.32.
 
-It's a practical concern on other devices, and we need to solve that.
-Once that happens, the same infrastructure should be usable to deal
-with this as well -- though really, it's a separate issue from what
-goes in the device tree.
+For some reason, although everything seems to report that the
+PCI bus is alive, MEM access fails completely.  If I try to
+access various PCI devices via their memory space (I only have
+memory peripherals so I can't test IO space access), I get
+what I assume are BUS timeouts - all 0xFFFFFFFF
 
-The established mechanism for "match the names used in the hardware
-documentation" is aliases.
+My PCI bus is defined in DTS like this:
+	pci0: pci@ff008500 {
+		cell-index = <1>;
+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+		interrupt-map = <
+				/* IDSEL 0x0B (SIL SATA) */
+				 0x5800 0x0 0x0 0x1 &ipic 0x16 8
+				 0x5800 0x0 0x0 0x2 &ipic 0x16 8
+				 0x5800 0x0 0x0 0x3 &ipic 0x16 8
+				 0x5800 0x0 0x0 0x4 &ipic 0x16 8
 
-In this particular case, if you want userspace to just see timers 0-7,
-have the kernel driver look for the standard aliases to determine which
-block is which, and expose it to userspace in the manner of your
-choosing.
+				/* IDSEL 0x0C (Fujitsu Coral-P) */
+				 0x6000 0x0 0x0 0x1 &ipic 0x13 8
+				 0x6000 0x0 0x0 0x2 &ipic 0x13 8
+				 0x6000 0x0 0x0 0x3 &ipic 0x13 8
+				 0x6000 0x0 0x0 0x4 &ipic 0x13 8
+                                 >;
+		interrupt-parent = <&ipic>;
+		interrupts = <0x13 0x8
+                               0x14 0x8>;
+		bus-range = <0 0>;
+		ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
+			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+		clock-frequency = <33333333>;
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0xff008500 0x100		/* Internal registers */
+		       0xff008300 0x8>;         /* Config Space registers */
+		compatible = "fsl,mpc8349-pci";
+		device_type = "pci";
+	};
 
-> > Mostly this is because the device tree
-> > representations are internally self consistent;
-> > dependencies/connections are explicitly expressed with phandles or
-> > full paths which eliminates any need for enumeration in all the cases
-> > I've had to deal with.
-> The device tree on every platform contains devices which must be 
-> referenced by userspace. That is the problem we're trying to solve -- 
-> let's not get distracted by theoretical principles of enumeration.
-> 
-> The closest analogy might be serial devices, which unlike ethernet 
-> devices don't have other distinguishing information for udev to 
-> interpret. To my surprise, when I reverse the order of the serial nodes 
-> in the device tree, the ttyS0/S1 ordering reverses too. This is exactly 
-> the problem we were trying to avoid... but it seems nobody has solved it 
-> anywhere. :(
+When I boot, I get these messages indicating that the PCI bus is found,
+mapped, scanned, etc:
 
-What if you plug in a PCI serial card?  Or USB?  What if you're under a
-hypervisor and you have a variety of virtual serial/console/etc.
-objects that don't have any meaningful enumeration order?
+PCI: Probing PCI hardware
+PCI: Scanning PHB /pci@ff008500
+PCI: PHB IO resource    = 0000000000000000-00000000000FF FFf [100]
+PCI: PHB MEM resource 0 = 00000000c0000000-00000000dFF FFfff [200]
+PCI: PHB MEM offset     = 0000000000000000
+PCI: PHB IO  offset     = 00000000
+     probe mode: 0
+PCI:0000:00:0b.0 Resource 0 0000000000001000-0000000000001007 [40101] fixup...
+PCI:0000:00:0b.0            0000000000001000-0000000000001007
+PCI:0000:00:0b.0 Resource 1 0000000000001008-000000000000100b [40101] fixup...
+PCI:0000:00:0b.0            0000000000001008-000000000000100b
+PCI:0000:00:0b.0 Resource 2 0000000000001010-0000000000001017 [40101] fixup...
+PCI:0000:00:0b.0            0000000000001010-0000000000001017
+PCI:0000:00:0b.0 Resource 3 0000000000001018-000000000000101b [40101] fixup...
+PCI:0000:00:0b.0            0000000000001018-000000000000101b
+PCI:0000:00:0b.0 Resource 4 0000000000001020-000000000000102f [40101] fixup...
+PCI:0000:00:0b.0            0000000000001020-000000000000102f
+PCI:0000:00:0b.0 Resource 5 0000000000100000-00000000001001ff [40200] fixup...
+PCI:0000:00:0b.0            0000000000100000-00000000001001ff
+PCI:0000:00:0b.0 Resource 6 0000000000000000-000000000007FF FF [4e200] is unassigned
+PCI:0000:00:0c.0 Resource 0 0000000004000000-0000000007FF FFff [40200] fixup...
+PCI:0000:00:0c.0            0000000004000000-0000000007FF FFff
+PCI: Fixup bus devices 0 (PHB)
+PCI: Try to map irq for 0000:00:0b.0...
+  Got one, spec 2 cells (0x00000016 0x00000008...) on /soc8349@ff000000/pic@700
+  Mapped to linux irq 22
+PCI: Try to map irq for 0000:00:0c.0...
+  Got one, spec 2 cells (0x00000013 0x00000008...) on /soc8349@ff000000/pic@700
+  Mapped to linux irq 19
+PCI: Allocating bus resources for 0000:00...
+PCI: PHB (bus 0) bridge rsrc 0: 0000000000000000-00000000000FF FFf [0x100], parent c03b5740 (PCI IO)
+PCI: PHB (bus 0) bridge rsrc 1: 00000000c0000000-00000000dFF FFfff [0x200], parent c03b5724 (PCI mem)
+PCI: Allocating 0000:00:0b.0: Resource 0: 0000000000001000..0000000000001007 [40101]
+PCI: Allocating 0000:00:0b.0: Resource 1: 0000000000001008..000000000000100b [40101]
+PCI: Allocating 0000:00:0b.0: Resource 2: 0000000000001010..0000000000001017 [40101]
+PCI: Allocating 0000:00:0b.0: Resource 3: 0000000000001018..000000000000101b [40101]
+PCI: Allocating 0000:00:0b.0: Resource 4: 0000000000001020..000000000000102f [40101]
+PCI: Allocating 0000:00:0b.0: Resource 5: 0000000000100000..00000000001001ff [40200]
+PCI: Cannot allocate resource region 5 of device 0000:00:0b.0, will remap
+PCI: Allocating 0000:00:0c.0: Resource 0: 0000000004000000..0000000007FF FFff [40200]
+PCI: Cannot allocate resource region 0 of device 0000:00:0c.0, will remap
+Reserving legacy ranges for domain 0000
+Candidate legacy IO: [io  0x0000-0x0fff]
+hose mem offset: 0000000000000000
+hose mem res: [mem 0xc0000000-0xdFF FFfff]
+Local memory hole: [mem 0xc0000000-0xc01FF FFf]
+PCI: Assigning unassigned resources...
+pci 0000:00:0c.0: BAR 0: assigned [mem 0xc4000000-0xc7FF FFff]
+pci 0000:00:0c.0: BAR 0: set to [mem 0xc4000000-0xc7FF FFff] (PCI address [0xc4000000-0xc7FF FFff])
+pci 0000:00:0b.0: BAR 6: assigned [mem 0xc0200000-0xc027FF FF pref]
+pci 0000:00:0b.0: BAR 5: assigned [mem 0xc0280000-0xc02801ff]
+pci 0000:00:0b.0: BAR 5: set to [mem 0xc0280000-0xc02801ff] (PCI address [0xc0280000-0xc02801ff])
+   ...
+Coral-P FB [1024x768x24] at 0xc4000000..0xc7FF FFff [0xd1100000]
+D1100000: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100010: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100020: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100030: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100040: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100050: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100060: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+D1100070: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+  ...
+scsi0 : sata_sil
+scsi1 : sata_sil
+ata1: SATA max UDMA/100 mmio m512@0xc0280000 tf 0xc0280080 irq 22
+ata2: SATA max UDMA/100 mmio m512@0xc0280000 tf 0xc02800c0 irq 22
+ata1: failed to resume link (SControl FFFFFFFF)
+ata1: SATA link down (SStatus FFFFFFFF SControl FFFFFFFF)
+ata2: failed to resume link (SControl FFFFFFFF)
+ata2: SATA link down (SStatus FFFFFFFF SControl FFFFFFFF)
 
-As Grant suggested, udev should be made aware of device-tree aliases --
-which would be the distinguishing information udev needs.
+Things of note:
+   * The 'local memory hole' is a space I have to steal from the PCI
+     address space so that the Coral-P gets mapped to something other
+     than PCI memory address 0x0 (relative).  This device is dirt stupid
+     (previously discussed) and refuses to work at 0x0
+   * The dump after the Coral-P FB line is what it sees in it's memory
+     space.  It _should_ look something like this:
+C4140600: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+C4140610: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+C4140620: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+C4140630: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+C4140640: FF FF FF 00 FF FF FF 00  FF FD FF 00 FF FD FF 00  |................|
+C4140650: FF FD FF 00 FF FD FF 00  FF FD FF 00 FF FD FF 00  |................|
+     Notice how byte 3 of every longword is 0x00?
+   * The SATA device driver is failing along similar lines.
 
-In the absence of aliases or other good information, perhaps the udev
-rule could fall back on heuristics such as bus type and address to at
-least reduce unpredictability.
+Any ideas what I'm doing wrong?  or what I can look at?
 
--Scott
+Thanks
+
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
