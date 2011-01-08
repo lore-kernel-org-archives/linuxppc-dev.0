@@ -1,38 +1,19 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 62104B7157
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Jan 2011 13:53:54 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p082mmew005129
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jan 2011 19:48:48 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p082rbhv067748
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jan 2011 19:53:37 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p082radl014766
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jan 2011 19:53:37 -0700
-Date: Fri, 7 Jan 2011 18:53:34 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: sonnyrao@us.ibm.com, miltonm@bga.com,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Grant Likely <grant.likely@secretlab.ca>,
-	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ppc: update dynamic dma support
-Message-ID: <20110108025334.GA13468@us.ibm.com>
-References: <1288150518-4026-1-git-send-email-nacc@us.ibm.com>
-	<1288150518-4026-8-git-send-email-nacc@us.ibm.com>
-	<20101209190920.GB25003@us.ibm.com>
-	<20101211000744.GA12355@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20101211000744.GA12355@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 06969B70DA
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jan 2011 18:34:13 +1100 (EST)
+Subject: Re: PCI woes with 2.6.37
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <4D279C90.8000006@mlbassoc.com>
+References: <4D279C90.8000006@mlbassoc.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 08 Jan 2011 18:33:56 +1100
+Message-ID: <1294472036.17779.253.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,261 +23,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10.12.2010 [16:07:44 -0800], Nishanth Aravamudan wrote:
-> On 09.12.2010 [11:09:20 -0800], Nishanth Aravamudan wrote:
-> > On 26.10.2010 [20:35:17 -0700], Nishanth Aravamudan wrote:
-> > > If firmware allows us to map all of a partition's memory for DMA on a
-> > > particular bridge, create a 1:1 mapping of that memory. Add hooks for
-> > > dealing with hotplug events. Dyanmic DMA windows can use larger than the
-> > > default page size, and we use the largest one possible.
-> > > 
-> > > Not-yet-signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> > > 
-> > > ---
-> > > 
-> > > I've tested this briefly on a machine with suitable firmware/hardware.
-> > > Things seem to work well, but I want to do more exhaustive I/O testing
-> > > before asking for upstream merging. I would really appreciate any
-> > > feedback on the updated approach.
-> > > 
-> > > Specific questions:
-> > > 
-> > > Ben, did I hook into the dma_set_mask() platform callback as you
-> > > expected? Anything I can do better or which perhaps might lead to
-> > > gotchas later?
-> > > 
-> > > I've added a disable_ddw option, but perhaps it would be better to
-> > > just disable the feature if iommu=force?
-> > 
-> > So for the final version, I probably should document this option in
-> > kernel-parameters.txt w/ the patch, right?
+On Fri, 2011-01-07 at 16:06 -0700, Gary Thomas wrote:
+> I just tried porting my target (MPC8347) from 2.6.28 (remember
+> that one?) to 2.6.37.  Recently I tried this with 2.6.32 without
+> a lot of success, so I thought I'd try the latest :-)  The changes
+> are very simple, pretty much just the addition of my 8347 based
+> platform DTS.
 > 
-> Here's an updated version. Ben, think you can pick this up to your tree?
+> Sadly, it fails even worse than it did on 2.6.32.
+> 
+> For some reason, although everything seems to report that the
+> PCI bus is alive, MEM access fails completely.  If I try to
+> access various PCI devices via their memory space (I only have
+> memory peripherals so I can't test IO space access), I get
+> what I assume are BUS timeouts - all 0xFFFFFFFF
+> 
+> My PCI bus is defined in DTS like this:
 
-Hi Ben,
+>    		ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
 
-I have a small follow-on patch that tidies up the code a bit and deals
-with an error condition on dlpar remove of ddw slots. I'm putting it
-below as a follow-on patch, but I can roll it into the v3 patch and post
-a v4 if you'd prefer?
+What are the #address-cells and #size-cells properties of the parent of
+the PCI controller node ?
 
-Thanks,
-Nish
+PCI has 3 cells, so that accounts for the first 3 numbers of each of
+these. That leaves only 3 numbers, so either you have #address-cells = 1
+and #size-cells = 2 or the other way around.
 
+The first sounds the most plausible and would mean that you are mapping
+c0000000 CPU space to c0000000 PCI space and the window is 512M long.
 
-pseries: ddw cleanups
-    
-Use symbolic constants to access RTAS responses.
-    
-Disable reconfig notifier's clearing of TCEs and removal of DMA window.
-This is handled by firmware currently. If the kernel were to do it, we'd
-need a new callback action before the isolation of the slot in question,
-or else we'd always get permission errors (firmware revokes the window
-automatically).
-    
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Now of course, one needs to double check that the HW is configured that
+way (I suppose fsl_pci.c does the configuration based on the "ranges"
+property but I don't know for sure).
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 43268f1..c17adf7 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -47,6 +47,20 @@ extern int rtas_setup_phb(struct pci_controller *phb);
- 
- extern unsigned long pci_probe_only;
- 
-+/* Dynamic DMA Window support */
-+struct ddw_query_response {
-+        u32 windows_available;
-+        u32 largest_available_block;
-+        u32 page_size;
-+        u32 migration_capable;
-+};
-+
-+struct ddw_create_response {
-+        u32 liobn;
-+        u32 addr_hi;
-+        u32 addr_lo;
-+};
-+
- /* ---- EEH internal-use-only related routines ---- */
- #ifdef CONFIG_EEH
- 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 4ba2338..b6f73c6 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -323,7 +323,7 @@ static int tce_clearrange_multi_pSeriesLP(unsigned long start_pfn,
- 		dma_offset = next + be64_to_cpu(maprange->dma_base);
- 
- 		rc = plpar_tce_stuff((u64)be32_to_cpu(maprange->liobn),
--					    (u64)dma_offset,
-+					     dma_offset,
- 					     0, limit);
- 		num_tce -= limit;
- 	} while (num_tce > 0 && !rc);
-@@ -383,7 +383,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
- 		}
- 
- 		rc = plpar_tce_put_indirect(liobn,
--					    (u64)dma_offset,
-+					    dma_offset,
- 					    (u64)virt_to_abs(tcep),
- 					    limit);
- 
-@@ -731,7 +731,8 @@ static u64 dupe_ddw_if_kexec(struct pci_dev *dev, struct device_node *pdn)
- 	return dma_addr;
- }
- 
--static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail, u32 *query)
-+static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail,
-+			struct ddw_query_response *query)
- {
- 	struct device_node *dn;
- 	struct pci_dn *pcidn;
-@@ -751,7 +752,7 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail, u32 *query)
- 	if (pcidn->eeh_pe_config_addr)
- 		cfg_addr = pcidn->eeh_pe_config_addr;
- 	buid = pcidn->phb->buid;
--	ret = rtas_call(ddr_avail[0], 3, 5, query,
-+	ret = rtas_call(ddr_avail[0], 3, 5, (u32 *)query,
- 		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
- 	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
- 		" returned %d\n", ddr_avail[0], cfg_addr, BUID_HI(buid),
-@@ -759,7 +760,9 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail, u32 *query)
- 	return ret;
- }
- 
--static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail, u32 *create, int page_shift, int window_shift)
-+static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail,
-+			struct ddw_create_response *create, int page_shift,
-+		       	int window_shift)
- {
- 	struct device_node *dn;
- 	struct pci_dn *pcidn;
-@@ -782,14 +785,14 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail, u32 *create, in
- 
- 	do {
- 		/* extra outputs are LIOBN and dma-addr (hi, lo) */
--		ret = rtas_call(ddr_avail[1], 5, 4, &create[0], cfg_addr,
-+		ret = rtas_call(ddr_avail[1], 5, 4, (u32 *)create, cfg_addr,
- 				BUID_HI(buid), BUID_LO(buid), page_shift, window_shift);
- 	} while(rtas_busy_delay(ret));
- 	dev_info(&dev->dev,
- 		"ibm,create-pe-dma-window(%x) %x %x %x %x %x returned %d "
- 		"(liobn = 0x%x starting addr = %x %x)\n", ddr_avail[1],
- 		 cfg_addr, BUID_HI(buid), BUID_LO(buid), page_shift,
--		 window_shift, ret, create[0], create[1], create[2]);
-+		 window_shift, ret, create->liobn, create->addr_hi, create->addr_lo);
- 	
- 	return ret;
- }
-@@ -808,7 +811,8 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail, u32 *create, in
- static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- {
- 	int len, ret;
--	u32 query[4], create[3];
-+        struct ddw_query_response query;
-+        struct ddw_create_response create;
- 	int page_shift;
- 	u64 dma_addr, max_addr;
- 	struct device_node *dn;
-@@ -846,11 +850,11 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	 * of page sizes: supported and supported for migrate-dma.
- 	 */
- 	dn = pci_device_to_OF_node(dev);
--	ret = query_ddw(dev, ddr_avail, &query[0]);
-+	ret = query_ddw(dev, ddr_avail, &query);
- 	if (ret != 0)
- 		goto out_unlock;
- 
--	if (!query[0]) {
-+	if (query.windows_available == 0) {
- 		/*
- 		 * no additional windows are available for this device.
- 		 * We might be able to reallocate the existing window,
-@@ -859,23 +863,23 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 		dev_dbg(&dev->dev, "no free dynamic windows");
- 		goto out_unlock;
- 	}
--	if (query[2] & 4) {
-+	if (query.page_size & 4) {
- 		page_shift = 24; /* 16MB */
--	} else if (query[2] & 2) {
-+	} else if (query.page_size & 2) {
- 		page_shift = 16; /* 64kB */
--	} else if (query[2] & 1) {
-+	} else if (query.page_size & 1) {
- 		page_shift = 12; /* 4kB */
- 	} else {
- 		dev_dbg(&dev->dev, "no supported direct page size in mask %x",
--			  query[2]);
-+			  query.page_size);
- 		goto out_unlock;
- 	}
- 	/* verify the window * number of ptes will map the partition */
- 	/* check largest block * page size > max memory hotplug addr */
- 	max_addr = memory_hotplug_max();
--	if (query[1] < (max_addr >> page_shift)) {
-+	if (query.largest_available_block < (max_addr >> page_shift)) {
- 		dev_dbg(&dev->dev, "can't map partiton max 0x%llx with %u "
--			  "%llu-sized pages\n", max_addr,  query[1],
-+			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
- 			  1ULL << page_shift);
- 		goto out_unlock;
- 	}
-@@ -894,19 +898,17 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 		goto out_free_prop;
- 	}
- 
--	ret = create_ddw(dev, ddr_avail, &create[0], page_shift, len);
-+	ret = create_ddw(dev, ddr_avail, &create, page_shift, len);
- 	if (ret != 0)
- 		goto out_free_prop;
- 
--	*ddwprop = (struct dynamic_dma_window_prop) {
--		.liobn = cpu_to_be32(create[0]),
--		.dma_base = cpu_to_be64(((u64)create[1] << 32) + (u64)create[2]),
--		.tce_shift = cpu_to_be32(page_shift),
--		.window_shift = cpu_to_be32(len)
--	};
-+	ddwprop->liobn = cpu_to_be32(create.liobn);
-+	ddwprop->dma_base = cpu_to_be64(of_read_number(&create.addr_hi, 2));
-+	ddwprop->tce_shift = cpu_to_be32(page_shift);
-+	ddwprop->window_shift = cpu_to_be32(len);
- 
- 	dev_dbg(&dev->dev, "created tce table LIOBN 0x%x for %s\n",
--		  create[0], dn->full_name);
-+		  create.liobn, dn->full_name);
- 
- 	window = kzalloc(sizeof(*window), GFP_KERNEL);
- 	if (!window)
-@@ -933,7 +935,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	list_add(&window->list, &direct_window_list);
- 	spin_unlock(&direct_window_list_lock);
- 
--	dma_addr = of_read_number(&create[1], 2);
-+	dma_addr = of_read_number(&create.addr_hi, 2);
- 	set_dma_offset(&dev->dev, dma_addr);
- 	goto out_unlock;
- 
-@@ -1118,7 +1120,15 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
- 		}
- 		spin_unlock(&direct_window_list_lock);
- 
--		remove_ddw(np);
-+		/*
-+		 * Because the notifier runs after isolation of the
-+		 * slot, we are guaranteed any DMA window has already
-+		 * been revoked and the TCEs have been marked invalid,
-+		 * so we don't need a call to remove_ddw(np). However,
-+		 * if an additional notifier action is added before the
-+		 * isolate call, we should update this code for
-+		 * completeness with such a call.
-+		 */
- 		break;
- 	default:
- 		err = NOTIFY_DONE;
+So far nothing strikes me as totally odd.
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+> 			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+
+This looks reasonable too with the same assumption as above.
+
+> PCI: Probing PCI hardware
+> PCI: Scanning PHB /pci@ff008500
+> PCI: PHB IO resource    = 0000000000000000-00000000000FF FFf [100]
+> PCI: PHB MEM resource 0 = 00000000c0000000-00000000dFF FFfff [200]
+
+Did you edit those by hand ? :-) They look correct tho as far as I can
+tell.
+
+> PCI: PHB MEM offset     = 0000000000000000
+> PCI: PHB IO  offset     = 00000000
+
+And that too.
+
+>      probe mode: 0
+> PCI:0000:00:0b.0 Resource 0 0000000000001000-0000000000001007 [40101] fixup...
+> PCI:0000:00:0b.0            0000000000001000-0000000000001007
+> PCI:0000:00:0b.0 Resource 1 0000000000001008-000000000000100b [40101] fixup...
+> PCI:0000:00:0b.0            0000000000001008-000000000000100b
+> PCI:0000:00:0b.0 Resource 2 0000000000001010-0000000000001017 [40101] fixup...
+> PCI:0000:00:0b.0            0000000000001010-0000000000001017
+> PCI:0000:00:0b.0 Resource 3 0000000000001018-000000000000101b [40101] fixup...
+> PCI:0000:00:0b.0            0000000000001018-000000000000101b
+> PCI:0000:00:0b.0 Resource 4 0000000000001020-000000000000102f [40101] fixup...
+> PCI:0000:00:0b.0            0000000000001020-000000000000102f
+> PCI:0000:00:0b.0 Resource 5 0000000000100000-00000000001001ff [40200] fixup...
+> PCI:0000:00:0b.0            0000000000100000-00000000001001ff
+> PCI:0000:00:0b.0 Resource 6 0000000000000000-000000000007FF FF [4e200] is unassigned
+> PCI:0000:00:0c.0 Resource 0 0000000004000000-0000000007FF FFff [40200] fixup...
+> PCI:0000:00:0c.0            0000000004000000-0000000007FF FFff
+> PCI: Fixup bus devices 0 (PHB)
+> PCI: Try to map irq for 0000:00:0b.0...
+>   Got one, spec 2 cells (0x00000016 0x00000008...) on /soc8349@ff000000/pic@700
+>   Mapped to linux irq 22
+> PCI: Try to map irq for 0000:00:0c.0...
+>   Got one, spec 2 cells (0x00000013 0x00000008...) on /soc8349@ff000000/pic@700
+>   Mapped to linux irq 19
+> PCI: Allocating bus resources for 0000:00...
+> PCI: PHB (bus 0) bridge rsrc 0: 0000000000000000-00000000000FF FFf [0x100], parent c03b5740 (PCI IO)
+> PCI: PHB (bus 0) bridge rsrc 1: 00000000c0000000-00000000dFF FFfff [0x200], parent c03b5724 (PCI mem)
+> PCI: Allocating 0000:00:0b.0: Resource 0: 0000000000001000..0000000000001007 [40101]
+> PCI: Allocating 0000:00:0b.0: Resource 1: 0000000000001008..000000000000100b [40101]
+> PCI: Allocating 0000:00:0b.0: Resource 2: 0000000000001010..0000000000001017 [40101]
+> PCI: Allocating 0000:00:0b.0: Resource 3: 0000000000001018..000000000000101b [40101]
+> PCI: Allocating 0000:00:0b.0: Resource 4: 0000000000001020..000000000000102f [40101]
+> PCI: Allocating 0000:00:0b.0: Resource 5: 0000000000100000..00000000001001ff [40200]
+> PCI: Cannot allocate resource region 5 of device 0000:00:0b.0, will remap
+> PCI: Allocating 0000:00:0c.0: Resource 0: 0000000004000000..0000000007FF FFff [40200]
+
+That's huge, is this your "Coral" framebuffer ? It's clearly using a
+different address scheme which won't fit, so the kernel decides to remap
+it, so far so good.
+
+> PCI: Cannot allocate resource region 0 of device 0000:00:0c.0, will remap
+> Reserving legacy ranges for domain 0000
+> Candidate legacy IO: [io  0x0000-0x0fff]
+> hose mem offset: 0000000000000000
+> hose mem res: [mem 0xc0000000-0xdFF FFfff]
+> Local memory hole: [mem 0xc0000000-0xc01FF FFf]
+
+Now I can't grep the above string, what is it ? What is this "memory
+hole" ? It covers a good part of your PCI mapping ...
+
+> PCI: Assigning unassigned resources...
+> pci 0000:00:0c.0: BAR 0: assigned [mem 0xc4000000-0xc7FF FFff]
+> pci 0000:00:0c.0: BAR 0: set to [mem 0xc4000000-0xc7FF FFff] (PCI address [0xc4000000-0xc7FF FFff])
+
+So you fb looks like it has now landed at c4000000, which doesn't strike
+me as wrong nor strange so far...
+ 
+> pci 0000:00:0b.0: BAR 6: assigned [mem 0xc0200000-0xc027FF FF pref]
+> pci 0000:00:0b.0: BAR 5: assigned [mem 0xc0280000-0xc02801ff]
+> pci 0000:00:0b.0: BAR 5: set to [mem 0xc0280000-0xc02801ff] (PCI address [0xc0280000-0xc02801ff])
+>    ...
+> Coral-P FB [1024x768x24] at 0xc4000000..0xc7FF FFff [0xd1100000]
+
+I suspect 0xd1100000 is the result of ioremap ?
+
+> D1100000: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100010: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100020: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100030: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100040: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100050: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100060: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+> D1100070: FF FF FF FF FF FF FF FF  FF FF FF FF FF FF FF FF   |................|
+>   ...
+> scsi0 : sata_sil
+> scsi1 : sata_sil
+> ata1: SATA max UDMA/100 mmio m512@0xc0280000 tf 0xc0280080 irq 22
+> ata2: SATA max UDMA/100 mmio m512@0xc0280000 tf 0xc02800c0 irq 22
+> ata1: failed to resume link (SControl FFFFFFFF)
+> ata1: SATA link down (SStatus FFFFFFFF SControl FFFFFFFF)
+> ata2: failed to resume link (SControl FFFFFFFF)
+> ata2: SATA link down (SStatus FFFFFFFF SControl FFFFFFFF)
+> 
+> Things of note:
+>    * The 'local memory hole' is a space I have to steal from the PCI
+>      address space so that the Coral-P gets mapped to something other
+>      than PCI memory address 0x0 (relative).  This device is dirt stupid
+>      (previously discussed) and refuses to work at 0x0
+>    * The dump after the Coral-P FB line is what it sees in it's memory
+>      space.  It _should_ look something like this:
+> C4140600: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+> C4140610: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+> C4140620: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+> C4140630: FF FF FF 00 FF FF FF 00  FF FF FF 00 FF FF FF 00  |................|
+> C4140640: FF FF FF 00 FF FF FF 00  FF FD FF 00 FF FD FF 00  |................|
+> C4140650: FF FD FF 00 FF FD FF 00  FF FD FF 00 FF FD FF 00  |................|
+>      Notice how byte 3 of every longword is 0x00?
+>    * The SATA device driver is failing along similar lines.
+> 
+> Any ideas what I'm doing wrong?  or what I can look at?
+
+I can't see anything obviously wrong in what you've pasted there, but I
+am not familiar with fsl PCI or SoC's, so it's possible that there's
+something there going on ... We'll have to wait for somebody from FSL to
+have a look, unless you can find something in the doco.
+
+Cheers,
+Ben.
