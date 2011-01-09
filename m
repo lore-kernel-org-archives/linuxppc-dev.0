@@ -2,20 +2,17 @@ Return-Path: <ben@decadent.org.uk>
 Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
 	[88.96.1.126]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1637DB70B3
+	by ozlabs.org (Postfix) with ESMTPS id 39F2C100876
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  9 Jan 2011 11:41:57 +1100 (EST)
+	Sun,  9 Jan 2011 11:42:09 +1100 (EST)
 From: Ben Hutchings <ben@decadent.org.uk>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
 	<paulus@samba.org>
-In-Reply-To: <1294532641.3283.70.camel@localhost>
-References: <1294532641.3283.70.camel@localhost>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 09 Jan 2011 00:25:36 +0000
-Message-ID: <1294532736.3283.73.camel@localhost>
+Date: Sun, 09 Jan 2011 00:24:01 +0000
+Message-ID: <1294532641.3283.70.camel@localhost>
 Mime-Version: 1.0
-Subject: [PATCH 2/2] powerpc/boot/Makefile: Use $(src) and $(obj) as per
-	makefiles.txt
+Subject: [PATCH 1/2] powerpc/boot/dts: Install dts from the right directory
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,51 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-$(src) and $(obj) are normally the same, but are supposed to be used
-for paths under $(srctree) and $(objtree) respectively.
+The dts-installed variable is initialised using a wildcard path that
+will be expanded relative to the build directory.  Use the existing
+variable dtstree to generate an absolute wildcard path that will work
+when building in a separate directory.
 
-Also use $(dtstree) and $(wrapper) as appropriate.
-
+Reported-by: Gerhard Pircher <gerhard_pircher@gmx.net>
 Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Tested-by: Gerhard Pircher <gerhard_pircher@gmx.net> [against 2.6.32]
 ---
-This is totally untested, so please review carefully!
-
-Ben.
-
- arch/powerpc/boot/Makefile |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 8917816..bd7abba 100644
+index 96deec6..8917816 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -33,7 +33,7 @@ ifeq ($(call cc-option-yn, -fstack-protector),y)
- BOOTCFLAGS	+=3D -fno-stack-protector
- endif
+@@ -368,7 +368,7 @@ INSTALL :=3D install
+ extra-installed		:=3D $(patsubst $(obj)/%, $(DESTDIR)$(WRAPPER_OBJDIR)/%, =
+$(extra-y))
+ hostprogs-installed	:=3D $(patsubst %, $(DESTDIR)$(WRAPPER_BINDIR)/%, $(ho=
+stprogs-y))
+ wrapper-installed	:=3D $(DESTDIR)$(WRAPPER_BINDIR)/wrapper
+-dts-installed		:=3D $(patsubst $(obj)/dts/%, $(DESTDIR)$(WRAPPER_DTSDIR)/%=
+, $(wildcard $(obj)/dts/*.dts))
++dts-installed		:=3D $(patsubst $(dtstree)/%, $(DESTDIR)$(WRAPPER_DTSDIR)/%=
+, $(wildcard $(dtstree)/*.dts))
 =20
--BOOTCFLAGS	+=3D -I$(obj) -I$(srctree)/$(obj)
-+BOOTCFLAGS	+=3D -I$(obj) -I$(srctree)/$(src)
+ all-installed		:=3D $(extra-installed) $(hostprogs-installed) $(wrapper-in=
+stalled) $(dts-installed)
 =20
- DTC_FLAGS	?=3D -p 1024
-=20
-@@ -399,10 +399,10 @@ $(extra-installed)	: $(DESTDIR)$(WRAPPER_OBJDIR)/% : =
-$(obj)/% | $(DESTDIR)$(WRAP
- $(hostprogs-installed)  : $(DESTDIR)$(WRAPPER_BINDIR)/% : $(obj)/% | $(DES=
-TDIR)$(WRAPPER_BINDIR)
- 	$(call cmd,install_exe)
-=20
--$(dts-installed)	: $(DESTDIR)$(WRAPPER_DTSDIR)/% : $(srctree)/$(obj)/dts/%=
- | $(DESTDIR)$(WRAPPER_DTSDIR)
-+$(dts-installed)	: $(DESTDIR)$(WRAPPER_DTSDIR)/% : $(dtstree)/% | $(DESTDI=
-R)$(WRAPPER_DTSDIR)
- 	$(call cmd,install_dts)
-=20
--$(wrapper-installed): $(DESTDIR)$(WRAPPER_BINDIR) $(srctree)/$(obj)/wrappe=
-r | $(DESTDIR)$(WRAPPER_BINDIR)
-+$(wrapper-installed): $(DESTDIR)$(WRAPPER_BINDIR) $(wrapper) | $(DESTDIR)$=
-(WRAPPER_BINDIR)
- 	$(call cmd,install_wrapper)
-=20
- $(obj)/bootwrapper_install: $(all-installed)
 --=20
 1.7.2.3
