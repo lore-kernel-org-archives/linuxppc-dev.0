@@ -1,15 +1,25 @@
-Return-Path: <oakad@yahoo.com>
-Received: from web37605.mail.mud.yahoo.com (web37605.mail.mud.yahoo.com
-	[209.191.87.88]) by ozlabs.org (Postfix) with SMTP id 3A938B708B
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DF111B70AF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Jan 2011 17:22:06 +1100 (EST)
-Message-ID: <529099.8266.qm@web37605.mail.mud.yahoo.com>
-Date: Sun, 9 Jan 2011 22:22:04 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: gianfar: incorrect TCP checksum when timestamps are enabled
-To: linuxppc-dev@lists.ozlabs.org
+	Mon, 10 Jan 2011 18:26:41 +1100 (EST)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH #upstream-fixes] pata_mpc52xx: inherit from
+	ata_bmdma_port_ops
+References: <201101031445.47922.roman.fietze@telemotive.de>
+	<4D21FA4D.3030506@mvista.com>
+	<20110109224820.GB26607@mtj.dyndns.org>
+In-Reply-To: <20110109224820.GB26607@mtj.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-ID: <201101100826.34728.roman.fietze@telemotive.de>
+Date: Mon, 10 Jan 2011 08:26:34 +0100
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	linuxppc-dev@lists.ozlabs.org, Sergei Shtylyov <sshtylyov@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,13 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greetings.=0A=0AI'm working on MPC8548 based board (I started with 2.6.37-r=
-c7, now upgraded=0Ato post release 2.6.37 git head).=0A=0AIt so appears, th=
-at when tcp timestamps are enabled (default setting)=0ATCP checksums of out=
-going SYN packets are calculated incorrectly. This=0Acauses remote machines=
- to reject such packets, effectively preventing any=0Auseful network use. T=
-he problem is reproducible every time.=0A=0AOther protocols appear to work =
-reliably (UDP/DHCP do work).=0A=0AIf tcp timestamps are disabled, checksums=
- are calculated correctly.=0A=0ANetdev guys tend to think that the problem =
-is with hardware checksum=0Aoffloading, the theory I'm going to test now.=
-=0A=0A=0A=0A      
+Hello Tejun,
+
+On Sunday, 09.January.2011 23:48:20 Tejun Heo wrote:
+
+> Fix it.
+
+I can confirm that, it's fixed.
+
+Thank's a lot. Should have looked into it, that was really a simple
+fix.
+
+
+Roman
+
+-- 
+Roman Fietze              Telemotive AG Buero Muehlhausen
+Breitwiesen                             73347 Muehlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
