@@ -1,24 +1,36 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1858B70D6
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2011 03:55:17 +1100 (EST)
-In-Reply-To: <AANLkTi=cAswFh1cFCU=nomd6yg5Ux9jK0x9h9s7f2571@mail.gmail.com>
-References: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>	<4D24B725.2020300@evidence.eu.com>
-	<20110105174256.29fd378a@udp111988uds.am.freescale.net>	<4D25BB08.7000001@evidence.eu.com>
-	<OFB0350E05.07B070EF-ONC1257810.005CAF17-C1257810.005CAF19@transmode.se>	<AANLkTinbdEc2kTVHZp3b31V6sFSqOfquUidb5BZYdgEX@mail.gmail.com>
-	<OFBA8894F8.FF5AA75D-ONC1257812.00773DA9-C1257812.00776196@transmode.se>
-	<AANLkTi=cAswFh1cFCU=nomd6yg5Ux9jK0x9h9s7f2571@mail.gmail.com>
-Subject: Re: mpc880 linux-2.6.32 slow running processes
-To: Rafael Beims <rbeims@gmail.com>
-Message-ID: <OFCA182CE3.B20BFA9C-ONC1257814.005C7CE1-C1257814.005CF1A7@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 10 Jan 2011 17:55:11 +0100
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A2D63B7130
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 11 Jan 2011 05:09:02 +1100 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0AHppt3029015
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2011 12:51:51 -0500
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A3BD14DE803B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 10 Jan 2011 13:05:58 -0500 (EST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p0AI8v3m478374
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2011 13:08:57 -0500
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p0AI8uIJ020479
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2011 11:08:57 -0700
+Message-ID: <4D2B4B38.80102@austin.ibm.com>
+Date: Mon, 10 Jan 2011 12:08:56 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: michael@evidence.eu.com, linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	scottwood <scottwood@freescale.com>, RFeany <RFeany@mrv.com>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH 0/4] De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Robin Holt <holt@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rafael Beims <rbeims@gmail.com> wrote on 2011/01/10 17:35:38:
-> >
-> > Once you have tested it and it works, please send a patch to remove the 8xx workaround.
-> > Make sure Scott is cc:ed
-> >
-> >
->
-> I tested linux-2.6.33 on my ppc880 board today, and even without the
-> slowdown.patch applied, the board runs processes with good
-> performance.
-> It really seems that the problem is solved from linux-2.6.33 on.
->
-> I'm not sure what you mean by sending a patch to remove the
-> workaround. The only thing that I did in the 2.6.32 version was to
-> apply the slowdown.patch attached in the message from Michael.
->
-> Could you clarify please?
+This is a re-send of the remaining patches that did not make it
+into the last kernel release for de-coupling sysfs memory
+directories from memory sections.  The first three patches of the
+previous set went in, and this is the remaining patches that
+need to be applied.
 
-Yes, this part in arch/powerpc/mm/pgtable.c:
-#ifdef CONFIG_8xx
-			/* On 8xx, cache control instructions (particularly
-			 * "dcbst" from flush_dcache_icache) fault as write
-			 * operation if there is an unpopulated TLB entry
-			 * for the address in question. To workaround that,
-			 * we invalidate the TLB here, thus avoiding dcbst
-			 * misbehaviour.
-			 */
-			/* 8xx doesn't care about PID, size or ind args */
-			_tlbil_va(addr, 0, 0, 0);
-#endif /* CONFIG_8xx */
+The patches decouple the concept that a single memory
+section corresponds to a single directory in 
+/sys/devices/system/memory/.  On systems
+with large amounts of memory (1+ TB) there are performance issues
+related to creating the large number of sysfs directories.  For
+a powerpc machine with 1 TB of memory we are creating 63,000+
+directories.  This is resulting in boot times of around 45-50
+minutes for systems with 1 TB of memory and 8 hours for systems
+with 2 TB of memory.  With this patch set applied I am now seeing
+boot times of 5 minutes or less.
 
-Should be removed in >= 2.6.33 kernels.
-My 8xx TLB work fixes this problem more efficiently.
+The root of this issue is in sysfs directory creation. Every time
+a directory is created a string compare is done against all sibling
+directories to ensure we do not create duplicates.  The list of
+directory nodes in sysfs is kept as an unsorted list which results
+in this being an exponentially longer operation as the number of
+directories are created.
 
-    Jocke
+The solution solved by this patch set is to allow a single
+directory in sysfs to span multiple memory sections.  This is
+controlled by an optional architecturally defined function
+memory_block_size_bytes().  The default definition of this
+routine returns a memory block size equal to the memory section
+size. This maintains the current layout of sysfs memory
+directories as it appears to userspace to remain the same as it
+is today.
+
+For architectures that define their own version of this routine,
+as is done for powerpc and x86 in this patchset, the view in userspace
+would change such that each memoryXXX directory would span
+multiple memory sections.  The number of sections spanned would
+depend on the value reported by memory_block_size_bytes.
+
+-Nathan Fontenot
