@@ -1,30 +1,19 @@
-Return-Path: <B33228@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6C72BB708B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Jan 2011 21:05:31 +1100 (EST)
-Received: from mail37-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail37-tx2-R.bigfish.com (Postfix) with ESMTP id 4297D5780F3	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2011 10:05:20 +0000 (UTC)
-Received: from TX2EHSMHS018.bigfish.com (unknown [10.9.14.248])	by
-	mail37-tx2.bigfish.com (Postfix) with ESMTP id 28BB3DD8057	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2011 10:05:20 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id p0AA5IBM016999	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Jan 2011 03:05:18 -0700 (MST)
-From: Xulei <B33228@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] USB: Fix USB Kconfig dependency problem on 85xx/QoirQ
-	platforms
-Date: Mon, 10 Jan 2011 18:06:57 +0800
-Message-ID: <1294654017-32568-1-git-send-email-B33228@freescale.com>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id AB6ECB6EED
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2011 01:01:59 +1100 (EST)
+Message-ID: <4D2B1151.9040109@mlbassoc.com>
+Date: Mon, 10 Jan 2011 07:01:53 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Xulei <B33228@freescale.com>, Kumar Gala <kumar.gala@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI woes with 2.6.37
+References: <4D279C90.8000006@mlbassoc.com>
+	<1294472036.17779.253.camel@pasglop>
+	<4D28617A.8020606@mlbassoc.com>
+In-Reply-To: <4D28617A.8020606@mlbassoc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +23,220 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For FSL PPC SoCs USB_ARCH_HAS_EHCI currently on depends on PPC_83xx.
-However that excludes support for USB on 85xx & QorIQ devices.  Use
-FSL_SOC insted which will get us 83xx, 85xx, QorIQ, and 5xxx which all
-have the same USB IP on them.
+On 01/08/2011 06:07 AM, Gary Thomas wrote:
+> On 01/08/2011 12:33 AM, Benjamin Herrenschmidt wrote:
+>> On Fri, 2011-01-07 at 16:06 -0700, Gary Thomas wrote:
+>>> I just tried porting my target (MPC8347) from 2.6.28 (remember
+>>> that one?) to 2.6.37. Recently I tried this with 2.6.32 without
+>>> a lot of success, so I thought I'd try the latest :-) The changes
+>>> are very simple, pretty much just the addition of my 8347 based
+>>> platform DTS.
+>>>
+>>> Sadly, it fails even worse than it did on 2.6.32.
+>>>
+>>> For some reason, although everything seems to report that the
+>>> PCI bus is alive, MEM access fails completely. If I try to
+>>> access various PCI devices via their memory space (I only have
+>>> memory peripherals so I can't test IO space access), I get
+>>> what I assume are BUS timeouts - all 0xFFFFFFFF
+>>>
+>>> My PCI bus is defined in DTS like this:
+>>
+>>> ranges =<0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
+>>
+>> What are the #address-cells and #size-cells properties of the parent of
+>> the PCI controller node ?
+>>
+>> PCI has 3 cells, so that accounts for the first 3 numbers of each of
+>> these. That leaves only 3 numbers, so either you have #address-cells = 1
+>> and #size-cells = 2 or the other way around.
+>>
+>> The first sounds the most plausible and would mean that you are mapping
+>> c0000000 CPU space to c0000000 PCI space and the window is 512M long.
+>>
+>> Now of course, one needs to double check that the HW is configured that
+>> way (I suppose fsl_pci.c does the configuration based on the "ranges"
+>> property but I don't know for sure).
+>>
+>> So far nothing strikes me as totally odd.
+>>
+>>> 0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+>>
+>> This looks reasonable too with the same assumption as above.
+>>
+>>> PCI: Probing PCI hardware
+>>> PCI: Scanning PHB /pci@ff008500
+>>> PCI: PHB IO resource = 0000000000000000-00000000000FF FFf [100]
+>>> PCI: PHB MEM resource 0 = 00000000c0000000-00000000dFF FFfff [200]
+>>
+>> Did you edit those by hand ? :-) They look correct tho as far as I can
+>> tell.
+>
+> Sorry, I did a little editing of the dump below (to make it more readable,
+> no content changes) and "find & replace" went wild on me :-( It should
+> have read:
+> PCI: PHB MEM resource 0 = 00000000c0000000-00000000dfffffff [200]
+>
+>>
+>>
+>>> PCI: PHB MEM offset = 0000000000000000
+>>> PCI: PHB IO offset = 00000000
+>>
+>> And that too.
+>>
+>>> probe mode: 0
+>>> PCI:0000:00:0b.0 Resource 0 0000000000001000-0000000000001007 [40101] fixup...
+>>> PCI:0000:00:0b.0 0000000000001000-0000000000001007
+>>> PCI:0000:00:0b.0 Resource 1 0000000000001008-000000000000100b [40101] fixup...
+>>> PCI:0000:00:0b.0 0000000000001008-000000000000100b
+>>> PCI:0000:00:0b.0 Resource 2 0000000000001010-0000000000001017 [40101] fixup...
+>>> PCI:0000:00:0b.0 0000000000001010-0000000000001017
+>>> PCI:0000:00:0b.0 Resource 3 0000000000001018-000000000000101b [40101] fixup...
+>>> PCI:0000:00:0b.0 0000000000001018-000000000000101b
+>>> PCI:0000:00:0b.0 Resource 4 0000000000001020-000000000000102f [40101] fixup...
+>>> PCI:0000:00:0b.0 0000000000001020-000000000000102f
+>>> PCI:0000:00:0b.0 Resource 5 0000000000100000-00000000001001ff [40200] fixup...
+>>> PCI:0000:00:0b.0 0000000000100000-00000000001001ff
+>>> PCI:0000:00:0b.0 Resource 6 0000000000000000-000000000007FF FF [4e200] is unassigned
+>>> PCI:0000:00:0c.0 Resource 0 0000000004000000-0000000007FF FFff [40200] fixup...
+>>> PCI:0000:00:0c.0 0000000004000000-0000000007FF FFff
+>>> PCI: Fixup bus devices 0 (PHB)
+>>> PCI: Try to map irq for 0000:00:0b.0...
+>>> Got one, spec 2 cells (0x00000016 0x00000008...) on /soc8349@ff000000/pic@700
+>>> Mapped to linux irq 22
+>>> PCI: Try to map irq for 0000:00:0c.0...
+>>> Got one, spec 2 cells (0x00000013 0x00000008...) on /soc8349@ff000000/pic@700
+>>> Mapped to linux irq 19
+>>> PCI: Allocating bus resources for 0000:00...
+>>> PCI: PHB (bus 0) bridge rsrc 0: 0000000000000000-00000000000FF FFf [0x100], parent c03b5740 (PCI IO)
+>>> PCI: PHB (bus 0) bridge rsrc 1: 00000000c0000000-00000000dFF FFfff [0x200], parent c03b5724 (PCI mem)
+>>> PCI: Allocating 0000:00:0b.0: Resource 0: 0000000000001000..0000000000001007 [40101]
+>>> PCI: Allocating 0000:00:0b.0: Resource 1: 0000000000001008..000000000000100b [40101]
+>>> PCI: Allocating 0000:00:0b.0: Resource 2: 0000000000001010..0000000000001017 [40101]
+>>> PCI: Allocating 0000:00:0b.0: Resource 3: 0000000000001018..000000000000101b [40101]
+>>> PCI: Allocating 0000:00:0b.0: Resource 4: 0000000000001020..000000000000102f [40101]
+>>> PCI: Allocating 0000:00:0b.0: Resource 5: 0000000000100000..00000000001001ff [40200]
+>>> PCI: Cannot allocate resource region 5 of device 0000:00:0b.0, will remap
+>>> PCI: Allocating 0000:00:0c.0: Resource 0: 0000000004000000..0000000007FF FFff [40200]
+>>
+>> That's huge, is this your "Coral" framebuffer ? It's clearly using a
+>> different address scheme which won't fit, so the kernel decides to remap
+>> it, so far so good.
+>
+> Indeed, the frame buffer takes 4MB
+>
+>>
+>>> PCI: Cannot allocate resource region 0 of device 0000:00:0c.0, will remap
+>>> Reserving legacy ranges for domain 0000
+>>> Candidate legacy IO: [io 0x0000-0x0fff]
+>>> hose mem offset: 0000000000000000
+>>> hose mem res: [mem 0xc0000000-0xdFF FFfff]
+>>> Local memory hole: [mem 0xc0000000-0xc01FF FFf]
+>>
+>> Now I can't grep the above string, what is it ? What is this "memory
+>> hole" ? It covers a good part of your PCI mapping ...
+>>
+>>> PCI: Assigning unassigned resources...
+>>> pci 0000:00:0c.0: BAR 0: assigned [mem 0xc4000000-0xc7FF FFff]
+>>> pci 0000:00:0c.0: BAR 0: set to [mem 0xc4000000-0xc7FF FFff] (PCI address [0xc4000000-0xc7FF FFff])
+>>
+>> So you fb looks like it has now landed at c4000000, which doesn't strike
+>> me as wrong nor strange so far...
+>>
+>>> pci 0000:00:0b.0: BAR 6: assigned [mem 0xc0200000-0xc027FF FF pref]
+>>> pci 0000:00:0b.0: BAR 5: assigned [mem 0xc0280000-0xc02801ff]
+>>> pci 0000:00:0b.0: BAR 5: set to [mem 0xc0280000-0xc02801ff] (PCI address [0xc0280000-0xc02801ff])
+>>> ...
+>>> Coral-P FB [1024x768x24] at 0xc4000000..0xc7FF FFff [0xd1100000]
+>>
+>> I suspect 0xd1100000 is the result of ioremap ?
+>>
+>>> D1100000: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100010: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100020: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100030: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100040: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100050: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100060: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> D1100070: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF |................|
+>>> ...
+>>> scsi0 : sata_sil
+>>> scsi1 : sata_sil
+>>> ata1: SATA max UDMA/100 mmio m512@0xc0280000 tf 0xc0280080 irq 22
+>>> ata2: SATA max UDMA/100 mmio m512@0xc0280000 tf 0xc02800c0 irq 22
+>>> ata1: failed to resume link (SControl FFFFFFFF)
+>>> ata1: SATA link down (SStatus FFFFFFFF SControl FFFFFFFF)
+>>> ata2: failed to resume link (SControl FFFFFFFF)
+>>> ata2: SATA link down (SStatus FFFFFFFF SControl FFFFFFFF)
+>>>
+>>> Things of note:
+>>> * The 'local memory hole' is a space I have to steal from the PCI
+>>> address space so that the Coral-P gets mapped to something other
+>>> than PCI memory address 0x0 (relative). This device is dirt stupid
+>>> (previously discussed) and refuses to work at 0x0
+>>> * The dump after the Coral-P FB line is what it sees in it's memory
+>>> space. It _should_ look something like this:
+>>> C4140600: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00 |................|
+>>> C4140610: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00 |................|
+>>> C4140620: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00 |................|
+>>> C4140630: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00 |................|
+>>> C4140640: FF FF FF 00 FF FF FF 00 FF FD FF 00 FF FD FF 00 |................|
+>>> C4140650: FF FD FF 00 FF FD FF 00 FF FD FF 00 FF FD FF 00 |................|
+>>> Notice how byte 3 of every longword is 0x00?
+>>> * The SATA device driver is failing along similar lines.
+>>>
+>>> Any ideas what I'm doing wrong? or what I can look at?
+>>
+>> I can't see anything obviously wrong in what you've pasted there, but I
+>> am not familiar with fsl PCI or SoC's, so it's possible that there's
+>> something there going on ... We'll have to wait for somebody from FSL to
+>> have a look, unless you can find something in the doco.
+>
+> The curious thing is that this exact same setup works perfectly
+> in 2.6.28 and near perfectly in 2.6.32. Unless something else
+> changed in the PCI handling between 2.6.32 and 2.6.37, I would
+> hope it work work there as well.
+>
+> I'll keep looking for differences between those two system versions.
 
-Signed-off-by: Xulei <B33228@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
----
- drivers/usb/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I found the problem - a change I had in <2.6.32 that I hadn't
+pushed forward.  It seems to be related to how I have the PCI
+controller setup (in RedBoot).  Because of this, using these
+settings in my DTS make things work properly:
+     ranges = <0x02000000 0x0 0x00000000 0xC0000000 0x0 0x20000000
+               0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+Instead of
+     ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
+               0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
 
-diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-index 6a58cb1..d513d3a 100644
---- a/drivers/usb/Kconfig
-+++ b/drivers/usb/Kconfig
-@@ -57,7 +57,7 @@ config USB_ARCH_HAS_OHCI
- # some non-PCI hcds implement EHCI
- config USB_ARCH_HAS_EHCI
- 	boolean
--	default y if PPC_83xx
-+	default y if FSL_SOC
- 	default y if SOC_AU1200
- 	default y if ARCH_IXP4XX
- 	default y if ARCH_W90X900
+Sorry for the noise (wild goose chase), but discussing it did help
+me to work out some PCI issues in general.
+
+Now that this is working, I'm trying to move to the next problem.
+The system works fine, but only to a point.  In this [embedded]
+system, I have an SIL SATA controller on the PCI bus.  On 2.6.28,
+this device is rock solid.  On 2.6.32 and now 2.6.37, I have issues.
+Operations work on the device (connected to a SSD), but after some
+arbitrary time, an operation will fail, causing the PCI bus (and
+indeed the whole system) to hang.  I've tried to peek in using a
+BDI and once it hangs, even the BDI can't access the CPU any more.
+
+I'm pretty lost on this one - it will execute hundreds of SATA operations
+properly and then die.  Turning on SATA/SCSI traces, I can see the
+final operation be issued and there seems to be no substantive difference
+between this operation and the previous ones that all worked.  In fact
+if I reset and rerun the same program, it _will_ fail but never on
+the same operation :-(
+
+Any ideas what could cause this failure?  I have a similar system
+that uses a different SATA controller that I'm going to try.  Maybe
+it's something peculiar to the SIL device as opposed to generic PCI
+operations.
+
+Thanks for any feedback
+
 -- 
-1.7.0.4
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
