@@ -1,24 +1,26 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
-	[213.199.154.144])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 86541B712D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Jan 2011 03:22:56 +1100 (EST)
-Subject: Re: [PATCH] USB: Fix USB Kconfig dependency problem on 85xx/QoirQ
-	platforms
-MIME-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1294654017-32568-1-git-send-email-B33228@freescale.com>
-Date: Mon, 10 Jan 2011 10:22:40 -0600
-Message-ID: <F4B27091-DAAF-4E0C-A726-C7111161210C@freescale.com>
-References: <1294654017-32568-1-git-send-email-B33228@freescale.com>
-To: Xulei Lei-B33228 <B33228@freescale.com>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <rbeims@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id C6A0DB713B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2011 03:35:40 +1100 (EST)
+Received: by fxm11 with SMTP id 11so21637294fxm.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2011 08:35:38 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <OFBA8894F8.FF5AA75D-ONC1257812.00773DA9-C1257812.00776196@transmode.se>
+References: <AANLkTin5XTnDEu1BJUOeF0UWtfEpotW5Bq__i8g6U05h@mail.gmail.com>
+	<4D24B725.2020300@evidence.eu.com>
+	<20110105174256.29fd378a@udp111988uds.am.freescale.net>
+	<4D25BB08.7000001@evidence.eu.com>
+	<OFB0350E05.07B070EF-ONC1257810.005CAF17-C1257810.005CAF19@transmode.se>
+	<AANLkTinbdEc2kTVHZp3b31V6sFSqOfquUidb5BZYdgEX@mail.gmail.com>
+	<OFBA8894F8.FF5AA75D-ONC1257812.00773DA9-C1257812.00776196@transmode.se>
+Date: Mon, 10 Jan 2011 14:35:38 -0200
+Message-ID: <AANLkTi=cAswFh1cFCU=nomd6yg5Ux9jK0x9h9s7f2571@mail.gmail.com>
+Subject: Re: mpc880 linux-2.6.32 slow running processes
+From: Rafael Beims <rbeims@gmail.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: michael@evidence.eu.com, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	scottwood <scottwood@freescale.com>, RFeany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>
+> Once you have tested it and it works, please send a patch to remove the 8xx workaround.
+> Make sure Scott is cc:ed
+>
+>
 
-On Jan 10, 2011, at 4:06 AM, Xulei wrote:
+I tested linux-2.6.33 on my ppc880 board today, and even without the
+slowdown.patch applied, the board runs processes with good
+performance.
+It really seems that the problem is solved from linux-2.6.33 on.
 
-> For FSL PPC SoCs USB_ARCH_HAS_EHCI currently on depends on PPC_83xx.
-> However that excludes support for USB on 85xx & QorIQ devices.  Use
-> FSL_SOC insted which will get us 83xx, 85xx, QorIQ, and 5xxx which all
-> have the same USB IP on them.
-> 
-> Signed-off-by: Xulei <B33228@freescale.com>
-> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-> ---
-> drivers/usb/Kconfig |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-> index 6a58cb1..d513d3a 100644
-> --- a/drivers/usb/Kconfig
-> +++ b/drivers/usb/Kconfig
-> @@ -57,7 +57,7 @@ config USB_ARCH_HAS_OHCI
-> # some non-PCI hcds implement EHCI
-> config USB_ARCH_HAS_EHCI
-> 	boolean
-> -	default y if PPC_83xx
-> +	default y if FSL_SOC
-> 	default y if SOC_AU1200
-> 	default y if ARCH_IXP4XX
-> 	default y if ARCH_W90X900
-> -- 
-> 1.7.0.4
+I'm not sure what you mean by sending a patch to remove the
+workaround. The only thing that I did in the 2.6.32 version was to
+apply the slowdown.patch attached in the message from Michael.
 
-This really should have been CC'd to the USB list & maintainer.
+Could you clarify please?
 
-- k
+Thanks for all the help so far,
+Rafael
