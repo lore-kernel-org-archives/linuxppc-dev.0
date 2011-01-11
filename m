@@ -1,18 +1,21 @@
-Return-Path: <ptyser@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6182DB6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Jan 2011 10:34:31 +1100 (EST)
-From: Peter Tyser <ptyser@xes-inc.com>
-To: linux-usb@vger.kernel.org
-Subject: [PATCH] ehci-fsl: Fix 'have_sysif_regs' detection
-Date: Mon, 10 Jan 2011 17:34:14 -0600
-Message-Id: <1294702454-5832-1-git-send-email-ptyser@xes-inc.com>
-Cc: Peter Tyser <ptyser@xes-inc.com>, Anatolij Gustschin <agust@denx.de>,
-	linuxppc-dev@lists.ozlabs.org,
-	David Brownell <dbrownell@users.sourceforge.net>
+	by ozlabs.org (Postfix) with ESMTPS id E210EB70E4
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2011 11:54:01 +1100 (EST)
+Subject: Re: PCI woes with 2.6.37
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <4D2B1151.9040109@mlbassoc.com>
+References: <4D279C90.8000006@mlbassoc.com>
+	<1294472036.17779.253.camel@pasglop> <4D28617A.8020606@mlbassoc.com>
+	<4D2B1151.9040109@mlbassoc.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 11 Jan 2011 11:53:49 +1100
+Message-ID: <1294707229.17779.306.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,114 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously a check was done on an ID register at the base of a CPU's
-internal USB registers to determine if system interface regsiters were
-present.  The check looked for an ID register that had the format
-ID[0:5] == ~ID[8:13] as described in the MPC5121 User's Manual to
-determine if a MPC5121 or MPC83xx/85xx was being used.
 
-There are two issues with this method:
-- The ID register is not defined on the MPC83xx/85xx CPUs, so its
-  unclear what is being checked on them.
-- Newer CPUs such as the P4080 also don't document the ID register, but
-  do share the same format as the MPC5121.  Thus the previous code did
-  not set 'have_sysif_regs' properly which results in the P4080 not
-  properly initializing its USB ports.
+> I found the problem - a change I had in <2.6.32 that I hadn't
+> pushed forward.  It seems to be related to how I have the PCI
+> controller setup (in RedBoot).  Because of this, using these
+> settings in my DTS make things work properly:
+>      ranges = <0x02000000 0x0 0x00000000 0xC0000000 0x0 0x20000000
+>                0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+> Instead of
+>      ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x20000000
+>                0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
 
-Using the device tree 'compatible' node is a cleaner way to determine if
-'have_sysif_regs' should be set and resolves the USB initialization issue
-seen on the P4080.
+Right so instead of a 1:1 mapping you have a N:1 mapping. We support
+both forms, tho it would have been nice if the fsl PCI code had properly
+reconfigured the controller based on the DT.
 
-Tested on a P4080-based system and compile tested on mpc512x_defconfig
-with Freescale EHCI driver enabled.
+> Sorry for the noise (wild goose chase), but discussing it did help
+> me to work out some PCI issues in general.
+> 
+> Now that this is working, I'm trying to move to the next problem.
+> The system works fine, but only to a point.  In this [embedded]
+> system, I have an SIL SATA controller on the PCI bus.
 
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
----
- drivers/usb/host/ehci-fsl.c      |   13 -------------
- drivers/usb/host/ehci-fsl.h      |    3 ---
- drivers/usb/host/fsl-mph-dr-of.c |   11 ++++++++---
- 3 files changed, 8 insertions(+), 19 deletions(-)
+Ok, those are pretty common and generally work fine.
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index 86e4289..5c761df 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -52,7 +52,6 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 	struct resource *res;
- 	int irq;
- 	int retval;
--	unsigned int temp;
- 
- 	pr_debug("initializing FSL-SOC USB Controller\n");
- 
-@@ -126,18 +125,6 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 		goto err3;
- 	}
- 
--	/*
--	 * Check if it is MPC5121 SoC, otherwise set pdata->have_sysif_regs
--	 * flag for 83xx or 8536 system interface registers.
--	 */
--	if (pdata->big_endian_mmio)
--		temp = in_be32(hcd->regs + FSL_SOC_USB_ID);
--	else
--		temp = in_le32(hcd->regs + FSL_SOC_USB_ID);
--
--	if ((temp & ID_MSK) != (~((temp & NID_MSK) >> 8) & ID_MSK))
--		pdata->have_sysif_regs = 1;
--
- 	/* Enable USB controller, 83xx or 8536 */
- 	if (pdata->have_sysif_regs)
- 		setbits32(hcd->regs + FSL_SOC_USB_CTRL, 0x4);
-diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index 2c83537..3fabed3 100644
---- a/drivers/usb/host/ehci-fsl.h
-+++ b/drivers/usb/host/ehci-fsl.h
-@@ -19,9 +19,6 @@
- #define _EHCI_FSL_H
- 
- /* offsets for the non-ehci registers in the FSL SOC USB controller */
--#define FSL_SOC_USB_ID		0x0
--#define ID_MSK			0x3f
--#define NID_MSK			0x3f00
- #define FSL_SOC_USB_ULPIVP	0x170
- #define FSL_SOC_USB_PORTSC1	0x184
- #define PORT_PTS_MSK		(3<<30)
-diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-index 574b99e..341fa81 100644
---- a/drivers/usb/host/fsl-mph-dr-of.c
-+++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -262,19 +262,24 @@ static void fsl_usb2_mpc5121_exit(struct platform_device *pdev)
- 	}
- }
- 
--struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
-+static struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
- 	.big_endian_desc = 1,
- 	.big_endian_mmio = 1,
- 	.es = 1,
-+	.have_sysif_regs = 0,
- 	.le_setup_buf = 1,
- 	.init = fsl_usb2_mpc5121_init,
- 	.exit = fsl_usb2_mpc5121_exit,
- };
- #endif /* CONFIG_PPC_MPC512x */
- 
-+static struct fsl_usb2_platform_data fsl_usb2_mpc8xxx_pd = {
-+	.have_sysif_regs = 1,
-+};
-+
- static const struct of_device_id fsl_usb2_mph_dr_of_match[] = {
--	{ .compatible = "fsl-usb2-mph", },
--	{ .compatible = "fsl-usb2-dr", },
-+	{ .compatible = "fsl-usb2-mph", .data = &fsl_usb2_mpc8xxx_pd, },
-+	{ .compatible = "fsl-usb2-dr", .data = &fsl_usb2_mpc8xxx_pd, },
- #ifdef CONFIG_PPC_MPC512x
- 	{ .compatible = "fsl,mpc5121-usb2-dr", .data = &fsl_usb2_mpc5121_pd, },
- #endif
--- 
-1.7.0.4
+>   On 2.6.28,
+> this device is rock solid.  On 2.6.32 and now 2.6.37, I have issues.
+> Operations work on the device (connected to a SSD), but after some
+> arbitrary time, an operation will fail, causing the PCI bus (and
+> indeed the whole system) to hang.  I've tried to peek in using a
+> BDI and once it hangs, even the BDI can't access the CPU any more.
+
+Ugh. Never hit a problem like this I'm afraid.
+
+> I'm pretty lost on this one - it will execute hundreds of SATA operations
+> properly and then die.  Turning on SATA/SCSI traces, I can see the
+> final operation be issued and there seems to be no substantive difference
+> between this operation and the previous ones that all worked.  In fact
+> if I reset and rerun the same program, it _will_ fail but never on
+> the same operation :-(
+> 
+> Any ideas what could cause this failure?  I have a similar system
+> that uses a different SATA controller that I'm going to try.  Maybe
+> it's something peculiar to the SIL device as opposed to generic PCI
+> operations.
+
+Yes, definitely try different controllers. Also check your voltages just
+in case....
+
+Other things you can do is double check the settings of things like max
+read request size, max payload size etc... in the PCIe config space of
+the device and the bridge.
+
+Cheers,
+Ben.
