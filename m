@@ -1,19 +1,20 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mailout-de.gmx.net [213.165.64.22])
-	by ozlabs.org (Postfix) with SMTP id 0D189B6F2B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Jan 2011 06:05:17 +1100 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Tue, 11 Jan 2011 20:05:10 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1294532641.3283.70.camel@localhost>
-Message-ID: <20110111190510.154630@gmx.net>
-MIME-Version: 1.0
-References: <1294532641.3283.70.camel@localhost>
-Subject: Re: [PATCH 1/2] powerpc/boot/dts: Install dts from the right directory
-To: Ben Hutchings <ben@decadent.org.uk>, paulus@samba.org,
-	benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <w@1wt.eu>
+Received: from 1wt.eu (1wt.eu [62.212.114.60])
+	by ozlabs.org (Postfix) with ESMTP id 94BCAB70A3
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jan 2011 07:08:58 +1100 (EST)
+Date: Tue, 11 Jan 2011 21:08:53 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 00/13] powerpc: Backport 8xx TLB to 2.4
+Message-ID: <20110111200853.GA21915@1wt.eu>
+References: <1294695479-344-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20110111060926.GE16301@1wt.eu>
+	<OFEC114402.5A694921-ONC1257815.002CC8F2-C1257815.002D1C7D@transmode.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFEC114402.5A694921-ONC1257815.002CC8F2-C1257815.002D1C7D@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Sun, 09 Jan 2011 00:24:01 +0000
-> Von: Ben Hutchings <ben@decadent.org.uk>
-> An: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-> CC: Gerhard Pircher <gerhard_pircher@gmx.net>, linuxppc-dev@lists.ozlabs.org
-> Betreff: [PATCH 1/2] powerpc/boot/dts: Install dts from the right directory
-
-> The dts-installed variable is initialised using a wildcard path that
-> will be expanded relative to the build directory.  Use the existing
-> variable dtstree to generate an absolute wildcard path that will work
-> when building in a separate directory.
-
-Wouldn't this patch be a good candidate for the stable kernel series?
-
-> Reported-by: Gerhard Pircher <gerhard_pircher@gmx.net>
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-> Tested-by: Gerhard Pircher <gerhard_pircher@gmx.net> [against 2.6.32]
-> ---
->  arch/powerpc/boot/Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Tue, Jan 11, 2011 at 09:12:44AM +0100, Joakim Tjernlund wrote:
+> Willy Tarreau <w@1wt.eu> wrote on 2011/01/11 07:09:26:
+> >
+> > Hi Joakim,
+> >
+> > On Mon, Jan 10, 2011 at 10:37:46PM +0100, Joakim Tjernlund wrote:
+> > > This is a backport from 2.6 which I did to overcome 8xx CPU
+> > > bugs. 8xx does not update the DAR register when taking a TLB
+> > > error caused by dcbX and icbi insns which makes it very
+> > > tricky to use these insns. Also the dcbst wrongly sets the
+> > > the store bit when faulting into DTLB error.
+> > > A few more bugs very found during development.
+> > >
+> > > I know 2.4 is in strict maintenance mode and 8xx is obsolete
+> > > but as it is still in use I wanted 8xx to age with grace.
+> >
+> > Thank you very much for taking care of this, that's very much appreciated.
+> > I'll look at this ASAP. Just a quick question in order to be certain, did
+> > you have the opportunity to test all of these changes on real hardware ?
 > 
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 96deec6..8917816 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -368,7 +368,7 @@ INSTALL := install
->  extra-installed		:= $(patsubst $(obj)/%, $(DESTDIR)$(WRAPPER_OBJDIR)/%,
-> $(extra-y))
->  hostprogs-installed	:= $(patsubst %, $(DESTDIR)$(WRAPPER_BINDIR)/%,
-> $(hostprogs-y))
->  wrapper-installed	:= $(DESTDIR)$(WRAPPER_BINDIR)/wrapper
-> -dts-installed		:= $(patsubst $(obj)/dts/%, $(DESTDIR)$(WRAPPER_DTSDIR)/%,
-> $(wildcard $(obj)/dts/*.dts))
-> +dts-installed		:= $(patsubst $(dtstree)/%, $(DESTDIR)$(WRAPPER_DTSDIR)/%,
-> $(wildcard $(dtstree)/*.dts))
->  
->  all-installed		:= $(extra-installed) $(hostprogs-installed)
-> $(wrapper-installed) $(dts-installed)
->  
-> -- 
-> 1.7.2.3
+> I tested these on real 8xx HW but I used an older 2.4 linux as we haven't
+> moved forward on 2.4 for quite some time.
+> The affected files were almost identical though.
 
-Gerhard
+OK thank you for this precision. If you remember what version it was, we can
+also diff it against mainline and see if we spot any relevant changes that
+we need to take care of.
 
--- 
-NEU: FreePhone - kostenlos mobil telefonieren und surfen!			
-Jetzt informieren: http://www.gmx.net/de/go/freephone
+> Would be great if Scott could give them a spin on 8xx with current 2.4.
+
+Indeed, that would be great. My goal really is that 2.4 users can upgrade
+without wondering about any risk of regression. I appreciate a lot your
+fixes, they mean some people might see that some issues have suddenly
+disappeared. But it's important to stay on the non-reg side as much as
+possible.
+
+Thanks,
+Willy
