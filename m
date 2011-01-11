@@ -2,20 +2,21 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 941CFB6F1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2011 19:12:50 +1100 (EST)
-In-Reply-To: <20110111060926.GE16301@1wt.eu>
+	by ozlabs.org (Postfix) with ESMTPS id 42EB5B6F2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2011 21:56:37 +1100 (EST)
+In-Reply-To: <OFEC114402.5A694921-ONC1257815.002CC8F2-C1257815.002D1C7D@LocalDomain>
 References: <1294695479-344-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<20110111060926.GE16301@1wt.eu>
+	<OFEC114402.5A694921-ONC1257815.002CC8F2-C1257815.002D1C7D@LocalDomain>
 Subject: Re: [PATCH 00/13] powerpc: Backport 8xx TLB to 2.4
-To: Willy Tarreau <w@1wt.eu>
-Message-ID: <OFEC114402.5A694921-ONC1257815.002CC8F2-C1257815.002D1C7D@transmode.se>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-ID: <OF18595787.9140CED3-ONC1257815.003BD10E-C1257815.003C1BD5@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 11 Jan 2011 09:12:44 +0100
+Date: Tue, 11 Jan 2011 11:56:32 +0100
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +26,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Willy Tarreau <w@1wt.eu> wrote on 2011/01/11 07:09:26:
+Joakim Tjernlund/Transmode wrote on 2011/01/11 09:12:44:
 >
-> Hi Joakim,
->
-> On Mon, Jan 10, 2011 at 10:37:46PM +0100, Joakim Tjernlund wrote:
-> > This is a backport from 2.6 which I did to overcome 8xx CPU
-> > bugs. 8xx does not update the DAR register when taking a TLB
-> > error caused by dcbX and icbi insns which makes it very
-> > tricky to use these insns. Also the dcbst wrongly sets the
-> > the store bit when faulting into DTLB error.
-> > A few more bugs very found during development.
+> Willy Tarreau <w@1wt.eu> wrote on 2011/01/11 07:09:26:
 > >
-> > I know 2.4 is in strict maintenance mode and 8xx is obsolete
-> > but as it is still in use I wanted 8xx to age with grace.
->
-> Thank you very much for taking care of this, that's very much appreciated.
-> I'll look at this ASAP. Just a quick question in order to be certain, did
-> you have the opportunity to test all of these changes on real hardware ?
+> > Hi Joakim,
+> >
+> > On Mon, Jan 10, 2011 at 10:37:46PM +0100, Joakim Tjernlund wrote:
+> > > This is a backport from 2.6 which I did to overcome 8xx CPU
+> > > bugs. 8xx does not update the DAR register when taking a TLB
+> > > error caused by dcbX and icbi insns which makes it very
+> > > tricky to use these insns. Also the dcbst wrongly sets the
+> > > the store bit when faulting into DTLB error.
+> > > A few more bugs very found during development.
+> > >
+> > > I know 2.4 is in strict maintenance mode and 8xx is obsolete
+> > > but as it is still in use I wanted 8xx to age with grace.
+> >
+> > Thank you very much for taking care of this, that's very much appreciated.
+> > I'll look at this ASAP. Just a quick question in order to be certain, did
+> > you have the opportunity to test all of these changes on real hardware ?
 
-I tested these on real 8xx HW but I used an older 2.4 linux as we haven't
-moved forward on 2.4 for quite some time.
-The affected files were almost identical though. Would be great if
-Scott could give them a spin on 8xx with current 2.4.
+> I tested these on real 8xx HW but I used an older 2.4 linux as we haven't
+> moved forward on 2.4 for quite some time.
+> The affected files were almost identical though. Would be great if
+> Scott could give them a spin on 8xx with current 2.4.
 
-      Jocke
+BTW, it occurred to me that the following 8xx quirk is best
+done in 8xx code:
+
+>From c1985a3b8b16d96ddce5ef90d5a15e70fb8a2aec Mon Sep 17 00:00:00 2001
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Tue, 11 Jan 2011 11:24:22 +0100
+Subject: [PATCH] 8xx: Move invalidation of non present TLBs
+
+8xx does not invalidate ~PRESENT TLBs, move the workaround
+in mm/fault.c here to keep 8xx quirks localized.
+
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+---
+ arch/ppc/kernel/head_8xx.S |   12 ++++++++++--
+ arch/ppc/mm/fault.c        |    7 -------
+ 2 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index 75acaa0..24b206c 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -221,7 +221,11 @@ DataAccess:
+ 	mr	r5,r20
+ 	mfspr	r4,DAR
+ 	stw	r4,_DAR(r21)
+-	li	r20,0x00f0
++	/* invalidate ~PRESENT TLBs, 8xx MMU don't do this */
++	andis.	r20,r5,0x4000
++	beq+	1f
++	tlbie	r4
++1:	li	r20,0x00f0
+ 	mtspr	DAR,r20	/* Tag DAR */
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	li	r20,MSR_KERNEL
+@@ -238,7 +242,11 @@ InstructionAccess:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	mr	r4,r22
+ 	mr	r5,r23
+-	li	r20,MSR_KERNEL
++	/* invalidate ~PRESENT TLBs, 8xx MMU don't do this */
++	andis.	r20,r5,0x4000
++	beq+	1f
++	tlbie	r4
++1:	li	r20,MSR_KERNEL
+ 	rlwimi	r20,r23,0,16,16		/* copy EE bit from saved MSR */
+ 	FINISH_EXCEPTION(do_page_fault)
+
+diff --git a/arch/ppc/mm/fault.c b/arch/ppc/mm/fault.c
+index 874005a..8819fb1 100644
+--- a/arch/ppc/mm/fault.c
++++ b/arch/ppc/mm/fault.c
+@@ -116,13 +116,6 @@ void do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	else
+ 		is_write = error_code & 0x02000000;
+ #endif /* CONFIG_4xx || CONFIG_BOOKE */
+-#if defined(CONFIG_8xx)
+-	/* 8xx does no invalidate TLBs that are ~PRESENT,
+-	 * do it here.
+-	 */
+-	if (error_code & 0x40000000)
+-		_tlbie(address);
+-#endif
+ #if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
+ 	if (debugger_fault_handler && regs->trap == 0x300) {
+ 		debugger_fault_handler(regs);
+--
+1.7.3.4
+
+Scott, what do you think of this? Is it safe to call tlbie in this context?
+
+    Jocke
