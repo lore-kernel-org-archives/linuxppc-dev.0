@@ -1,10 +1,10 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 12 Jan 2011 16:46:29 +1100
+Date: Wed, 12 Jan 2011 16:47:20 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 3/9] powerpc: Never halt RTAS error logging after receiving
-	an unrecoverable machine check
-Message-ID: <20110112164629.47585ca9@kryten>
+Subject: [PATCH 4/9] powerpc: Remove duplicate debugger hook in
+	machine_check_exception
+Message-ID: <20110112164720.7022e1b7@kryten>
 In-Reply-To: <20110112164318.753a435b@kryten>
 References: <20110112164318.753a435b@kryten>
 Mime-Version: 1.0
@@ -20,32 +20,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Newer versions of the System p firwmare send a partial RTAS error log in the
-machine check handler with a more detailed response appearing sometime later
-via check event.
-
-This means at machine check time we do not have enough information to
-ascertain exactly what went on. Furthermore, I have found the RTAS error
-logs in the machine check handler contain no useful information, so halting on
-them makes little sense. If we want to halt it would make more sense to do
-it following the error log received sometime later via check event.
-
-In light of this, never halt the error log in the pseries machine
-check handler.
+We are calling debugger_fault_handler twice in machine_check_exception.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: powerpc.git/arch/powerpc/platforms/pseries/ras.c
+Index: powerpc.git/arch/powerpc/kernel/traps.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/pseries/ras.c	2010-09-27 21:19:32.805480948 +1000
-+++ powerpc.git/arch/powerpc/platforms/pseries/ras.c	2010-10-15 13:23:34.161268941 +1100
-@@ -281,7 +281,7 @@ static int recover_mce(struct pt_regs *r
- 		nonfatal = 1;
- 	}
+--- powerpc.git.orig/arch/powerpc/kernel/traps.c	2011-01-11 13:46:42.601133580 +1100
++++ powerpc.git/arch/powerpc/kernel/traps.c	2011-01-11 13:46:47.391281975 +1100
+@@ -648,8 +648,6 @@ void machine_check_exception(struct pt_r
+ 	if (check_io_access(regs))
+ 		return;
  
--	log_error((char *)err, ERR_TYPE_RTAS_LOG, !nonfatal);
-+	log_error((char *)err, ERR_TYPE_RTAS_LOG, 0);
+-	if (debugger_fault_handler(regs))
+-		return;
+ 	die("Machine check", regs, SIGBUS);
  
- 	return nonfatal;
- }
+ 	/* Must die if the interrupt is not recoverable */
