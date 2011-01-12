@@ -1,16 +1,12 @@
-Return-Path: <tklauser@distanz.ch>
-Received: from mx1.zhaw.ch (mx1.zhaw.ch [160.85.104.50])
-	by ozlabs.org (Postfix) with ESMTP id E6006B6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Jan 2011 20:38:44 +1100 (EST)
-From: Tobias Klauser <tklauser@distanz.ch>
-To: Li Yang <leoli@freescale.com>,
-	netdev@vger.kernel.org
-Subject: [PATCH net-next-2.6] netdev: ucc_geth: Use is_multicast_ether_addr
-	helper
-Date: Wed, 12 Jan 2011 10:31:01 +0100
-Message-Id: <1294824661-10564-1-git-send-email-tklauser@distanz.ch>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Wed, 12 Jan 2011 23:12:43 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH 1/2] powerpc: Disable mcount tracers in pseries config
+Message-ID: <20110112231243.71c71291@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +16,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
----
- drivers/net/ucc_geth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 73a3e0d..715e7b4 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -2032,7 +2032,7 @@ static void ucc_geth_set_multi(struct net_device *dev)
- 			netdev_for_each_mc_addr(ha, dev) {
- 				/* Only support group multicast for now.
- 				 */
--				if (!(ha->addr[0] & 1))
-+				if (!is_multicast_ether_addr(ha->addr))
- 					continue;
+IRQSOFF_TRACER and STACK_TRACER force the kernel to be built with -pg
+which is a substantial overhead.
  
- 				/* Ask CPM to run CRC and set bit in
--- 
-1.7.0.4
+Signed-off-by: Anton Blanchard <anton@samba.org> 
+---     
+
+Index: powerpc.git/arch/powerpc/configs/pseries_defconfig
+===================================================================
+--- powerpc.git.orig/arch/powerpc/configs/pseries_defconfig	2011-01-11 14:34:38.890639046 +1100
++++ powerpc.git/arch/powerpc/configs/pseries_defconfig	2011-01-12 23:06:28.770355258 +1100
+@@ -311,9 +311,7 @@ CONFIG_DEBUG_KERNEL=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
+ CONFIG_LATENCYTOP=y
+ CONFIG_SYSCTL_SYSCALL_CHECK=y
+-CONFIG_IRQSOFF_TRACER=y
+ CONFIG_SCHED_TRACER=y
+-CONFIG_STACK_TRACER=y
+ CONFIG_BLK_DEV_IO_TRACE=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_DEBUG_STACK_USAGE=y
