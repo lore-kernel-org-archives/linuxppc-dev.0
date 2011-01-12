@@ -1,9 +1,12 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 12 Jan 2011 23:12:43 +1100
+Date: Wed, 12 Jan 2011 23:14:32 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH 1/2] powerpc: Disable mcount tracers in pseries config
-Message-ID: <20110112231243.71c71291@kryten>
+Subject: [PATCH 2/2] powerpc: Enable 64kB pages and 1024 threads in pseries
+	config
+Message-ID: <20110112231432.28f485f3@kryten>
+In-Reply-To: <20110112231243.71c71291@kryten>
+References: <20110112231243.71c71291@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -17,23 +20,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-IRQSOFF_TRACER and STACK_TRACER force the kernel to be built with -pg
-which is a substantial overhead.
- 
+- Enable 64kB pages so it gets some regular testing.
+
+- The largest POWER7 has 1024 threads so bump NR_CPUS it to match.
+
 Signed-off-by: Anton Blanchard <anton@samba.org> 
 ---     
 
 Index: powerpc.git/arch/powerpc/configs/pseries_defconfig
 ===================================================================
---- powerpc.git.orig/arch/powerpc/configs/pseries_defconfig	2011-01-11 14:34:38.890639046 +1100
-+++ powerpc.git/arch/powerpc/configs/pseries_defconfig	2011-01-12 23:06:28.770355258 +1100
-@@ -311,9 +311,7 @@ CONFIG_DEBUG_KERNEL=y
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
- CONFIG_LATENCYTOP=y
- CONFIG_SYSCTL_SYSCALL_CHECK=y
--CONFIG_IRQSOFF_TRACER=y
- CONFIG_SCHED_TRACER=y
--CONFIG_STACK_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_DEBUG_STACK_USAGE=y
+--- powerpc.git.orig/arch/powerpc/configs/pseries_defconfig	2011-01-12 22:51:34.101760097 +1100
++++ powerpc.git/arch/powerpc/configs/pseries_defconfig	2011-01-12 22:52:47.434064107 +1100
+@@ -2,7 +2,7 @@ CONFIG_PPC64=y
+ CONFIG_ALTIVEC=y
+ CONFIG_VSX=y
+ CONFIG_SMP=y
+-CONFIG_NR_CPUS=128
++CONFIG_NR_CPUS=1024
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+@@ -45,6 +45,8 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_PPC_64K_PAGES=y
++CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_HOTPLUG_PCI=m
+ CONFIG_HOTPLUG_PCI_RPA=m
