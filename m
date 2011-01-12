@@ -1,9 +1,9 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 12 Jan 2011 16:44:30 +1100
+Date: Wed, 12 Jan 2011 16:45:31 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 1/9] powerpc: Print 32 bits of DSISR in show_regs
-Message-ID: <20110112164430.5ac00b94@kryten>
+Subject: [PATCH 2/9] powerpc: Don't force MSR_RI in machine_check_exception
+Message-ID: <20110112164531.0f8ea467@kryten>
 In-Reply-To: <20110112164318.753a435b@kryten>
 References: <20110112164318.753a435b@kryten>
 Mime-Version: 1.0
@@ -19,21 +19,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We were printing 64 bits of DSISR in show_regs even though it is 32 bit.
+We should never force MSR_RI on. If we take a machine check with MSR_RI off
+then we have no chance of recovering safely.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: powerpc.git/arch/powerpc/kernel/process.c
+Index: powerpc.git/arch/powerpc/kernel/traps.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/process.c	2010-10-15 13:23:24.911164446 +1100
-+++ powerpc.git/arch/powerpc/kernel/process.c	2010-10-15 13:23:28.611206248 +1100
-@@ -631,7 +631,7 @@ void show_regs(struct pt_regs * regs)
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		printk("DEAR: "REG", ESR: "REG"\n", regs->dar, regs->dsisr);
- #else
--		printk("DAR: "REG", DSISR: "REG"\n", regs->dar, regs->dsisr);
-+		printk("DAR: "REG", DSISR: %08lx\n", regs->dar, regs->dsisr);
+--- powerpc.git.orig/arch/powerpc/kernel/traps.c	2011-01-11 13:46:39.541038778 +1100
++++ powerpc.git/arch/powerpc/kernel/traps.c	2011-01-11 13:46:42.601133580 +1100
+@@ -627,7 +627,6 @@ void machine_check_exception(struct pt_r
+ 		return;
+ 
+ 	if (user_mode(regs)) {
+-		regs->msr |= MSR_RI;
+ 		_exception(SIGBUS, regs, BUS_ADRERR, regs->nip);
+ 		return;
+ 	}
+@@ -643,10 +642,8 @@ void machine_check_exception(struct pt_r
+ 	return;
  #endif
- 	printk("TASK = %p[%d] '%s' THREAD: %p",
- 	       current, task_pid_nr(current), current->comm, task_thread_info(current));
+ 
+-	if (debugger_fault_handler(regs)) {
+-		regs->msr |= MSR_RI;
++	if (debugger_fault_handler(regs))
+ 		return;
+-	}
+ 
+ 	if (check_io_access(regs))
+ 		return;
