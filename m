@@ -1,17 +1,35 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <nacc@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D88C0B70F6
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jan 2011 09:22:08 +1100 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Scott Wood <scottwood@freescale.com>, Willy Tarreau <w@1wt.eu>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] 8xx: Set correct HW pte flags in DTLB Error too
-Date: Thu, 13 Jan 2011 23:21:55 +0100
-Message-Id: <1294957315-1696-4-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1294957315-1696-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1294957315-1696-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 23824B70EE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 14 Jan 2011 10:22:51 +1100 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0DNDvgM014247
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 18:13:57 -0500
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7295C4DE8040
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 13 Jan 2011 18:19:37 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p0DNMgPq2121838
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 18:22:42 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p0DNMgwQ002219
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 18:22:42 -0500
+Date: Thu, 13 Jan 2011 15:22:39 -0800
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] pseries_defconfig: add BNX2=m
+Message-ID: <20110113232239.GA4277@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Michael Neuling <mikey@neuling.org>, sonnyrao@us.ibm.com,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +39,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DTLB Error needs to adjust the HW PTE bits as DTLB Miss
-does.
+Upcoming servers will include a Broadcom NIC, add to the defconfig to
+increase testing coverage and make sure mainline builds come up with
+networking.
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
- arch/ppc/kernel/head_8xx.S |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-index 7a449d1..6e64681 100644
---- a/arch/ppc/kernel/head_8xx.S
-+++ b/arch/ppc/kernel/head_8xx.S
-@@ -604,7 +604,12 @@ DARFixed:
- 	mfspr	r21, MD_TWC		/* get the pte address again */
- 	ori	r20, r20, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
- 	stw	r20, 0(r21)		/* and update pte in table */
--	xori	r20, r20, _PAGE_RW	/* RW bit is inverted */
-+	rlwimi	r20, r20, 32-2, _PAGE_USER>>2 /* Copy USER to Encoding */
-+	/* r21 =  (r20 & _PAGE_RW) >> 1 */
-+	rlwinm	r21, r20, 32-1, _PAGE_RW>>1
-+	or	r20, r21, r20
-+	/* invert RW and 0x200 bits */
-+	xori	r20, r20, _PAGE_RW | 0x200
- 	b	finish_DTLB
- 2:
- 	mfspr	r20, M_TW	/* Restore registers */
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index f87f0e1..2048585 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -184,6 +184,7 @@ CONFIG_ACENIC_OMIT_TIGON_I=y
+ CONFIG_E1000=y
+ CONFIG_E1000E=y
+ CONFIG_TIGON3=y
++CONFIG_BNX2=m
+ CONFIG_CHELSIO_T1=m
+ CONFIG_CHELSIO_T3=m
+ CONFIG_EHEA=y
+
+
 -- 
-1.7.3.4
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
