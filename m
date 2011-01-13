@@ -1,19 +1,24 @@
-Return-Path: <prarit@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id CCFB7B7088
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 14 Jan 2011 01:09:05 +1100 (EST)
-Received: from int-mx02.intmail.prod.int.phx2.redhat.com
-	(int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
-	by mx1.redhat.com (8.13.8/8.13.8) with ESMTP id p0DE93sv020222
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 09:09:03 -0500
-Date: Thu, 13 Jan 2011 09:09:01 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-Id: <20110113140901.1415.69539.sendpatchset@prarit.bos.redhat.com>
-Subject: [PATCH]: ppc: notifier_from_errno() cleanup
-Cc: Prarit Bhargava <prarit@redhat.com>
+Return-Path: <scottwood@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 39681B6EEB
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jan 2011 07:44:15 +1100 (EST)
+Date: Thu, 13 Jan 2011 14:44:00 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 00/13] powerpc: Backport 8xx TLB to 2.4
+Message-ID: <20110113144400.28892935@udp111988uds.am.freescale.net>
+In-Reply-To: <OF18595787.9140CED3-ONC1257815.003BD10E-C1257815.003C1BD5@transmode.se>
+References: <1294695479-344-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20110111060926.GE16301@1wt.eu>
+	<OFEC114402.5A694921-ONC1257815.002CC8F2-C1257815.002D1C7D@LocalDomain>
+	<OF18595787.9140CED3-ONC1257815.003BD10E-C1257815.003C1BD5@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +28,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Minor cleanup of notifier_from_errno() in powerpc.
+On Tue, 11 Jan 2011 11:56:32 +0100
+Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
 
-notifier_from_errno() now contains the if(ret)/else conditional.  There is no
-need to do it in the powerpc code.
+> Joakim Tjernlund/Transmode wrote on 2011/01/11 09:12:44:
+> >
+> > Willy Tarreau <w@1wt.eu> wrote on 2011/01/11 07:09:26:
+> > >
+> > > Hi Joakim,
+> > >
+> > > On Mon, Jan 10, 2011 at 10:37:46PM +0100, Joakim Tjernlund wrote:
+> > > > This is a backport from 2.6 which I did to overcome 8xx CPU
+> > > > bugs. 8xx does not update the DAR register when taking a TLB
+> > > > error caused by dcbX and icbi insns which makes it very
+> > > > tricky to use these insns. Also the dcbst wrongly sets the
+> > > > the store bit when faulting into DTLB error.
+> > > > A few more bugs very found during development.
+> > > >
+> > > > I know 2.4 is in strict maintenance mode and 8xx is obsolete
+> > > > but as it is still in use I wanted 8xx to age with grace.
+> > >
+> > > Thank you very much for taking care of this, that's very much appreciated.
+> > > I'll look at this ASAP. Just a quick question in order to be certain, did
+> > > you have the opportunity to test all of these changes on real hardware ?
+> 
+> > I tested these on real 8xx HW but I used an older 2.4 linux as we haven't
+> > moved forward on 2.4 for quite some time.
+> > The affected files were almost identical though. Would be great if
+> > Scott could give them a spin on 8xx with current 2.4.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Is ep88xc (the board I have easily available to test) supported in
+mainline 2.4?  I don't see a platform file, defconfig, or bootwrapper
+code that obviously covers it.
 
-diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
-index f480386..3cafc30 100644
---- a/arch/powerpc/platforms/pseries/cmm.c
-+++ b/arch/powerpc/platforms/pseries/cmm.c
-@@ -508,12 +508,7 @@ static int cmm_memory_isolate_cb(struct notifier_block *self,
- 	if (action == MEM_ISOLATE_COUNT)
- 		ret = cmm_count_pages(arg);
- 
--	if (ret)
--		ret = notifier_from_errno(ret);
--	else
--		ret = NOTIFY_OK;
--
--	return ret;
-+	return notifier_from_errno(ret);
- }
- 
- static struct notifier_block cmm_mem_isolate_nb = {
-@@ -635,12 +630,7 @@ static int cmm_memory_cb(struct notifier_block *self,
- 		break;
- 	}
- 
--	if (ret)
--		ret = notifier_from_errno(ret);
--	else
--		ret = NOTIFY_OK;
--
--	return ret;
-+	return notifier_from_errno(ret);
- }
- 
- static struct notifier_block cmm_mem_nb = {
+Is there anyone out there actually using 8xx on top-of-tree mainline
+2.4 who can test it?
+
+> BTW, it occurred to me that the following 8xx quirk is best
+> done in 8xx code:
+> 
+> From c1985a3b8b16d96ddce5ef90d5a15e70fb8a2aec Mon Sep 17 00:00:00 2001
+> From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> Date: Tue, 11 Jan 2011 11:24:22 +0100
+> Subject: [PATCH] 8xx: Move invalidation of non present TLBs
+> 
+> 8xx does not invalidate ~PRESENT TLBs, move the workaround
+> in mm/fault.c here to keep 8xx quirks localized.
+> 
+> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> ---
+>  arch/ppc/kernel/head_8xx.S |   12 ++++++++++--
+>  arch/ppc/mm/fault.c        |    7 -------
+>  2 files changed, 10 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+> index 75acaa0..24b206c 100644
+> --- a/arch/ppc/kernel/head_8xx.S
+> +++ b/arch/ppc/kernel/head_8xx.S
+> @@ -221,7 +221,11 @@ DataAccess:
+>  	mr	r5,r20
+>  	mfspr	r4,DAR
+>  	stw	r4,_DAR(r21)
+> -	li	r20,0x00f0
+> +	/* invalidate ~PRESENT TLBs, 8xx MMU don't do this */
+> +	andis.	r20,r5,0x4000
+> +	beq+	1f
+> +	tlbie	r4
+> +1:	li	r20,0x00f
+>  	mtspr	DAR,r20	/* Tag DAR */
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD
+>  	li	r20,MSR_KERNEL
+> @@ -238,7 +242,11 @@ InstructionAccess:
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD
+>  	mr	r4,r22
+>  	mr	r5,r23
+> -	li	r20,MSR_KERNEL
+> +	/* invalidate ~PRESENT TLBs, 8xx MMU don't do this */
+> +	andis.	r20,r5,0x4000
+> +	beq+	1f
+> +	tlbie	r4
+> +1:	li	r20,MSR_KERNEL
+>  	rlwimi	r20,r23,0,16,16		/* copy EE bit from saved MSR */
+>  	FINISH_EXCEPTION(do_page_fault)
+> 
+> diff --git a/arch/ppc/mm/fault.c b/arch/ppc/mm/fault.c
+> index 874005a..8819fb1 100644
+> --- a/arch/ppc/mm/fault.c
+> +++ b/arch/ppc/mm/fault.c
+> @@ -116,13 +116,6 @@ void do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	else
+>  		is_write = error_code & 0x02000000;
+>  #endif /* CONFIG_4xx || CONFIG_BOOKE */
+> -#if defined(CONFIG_8xx)
+> -	/* 8xx does no invalidate TLBs that are ~PRESENT,
+> -	 * do it here.
+> -	 */
+> -	if (error_code & 0x40000000)
+> -		_tlbie(address);
+> -#endif
+>  #if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
+>  	if (debugger_fault_handler && regs->trap == 0x300) {
+>  		debugger_fault_handler(regs);
+> --
+> 1.7.3.4
+> 
+> Scott, what do you think of this? Is it safe to call tlbie in this context?
+
+I'd guess so (I assume the concern is MMU translation being off?), but I
+don't have any particular knowledge about this.  I'd be checking the
+same manual that you have. :-)
+
+-Scott
