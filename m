@@ -1,35 +1,30 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <tony@atomide.com>
+Received: from mho-02-ewr.mailhop.org (mho-02-ewr.mailhop.org [204.13.248.72])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 23824B70EE
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BAB10B6EEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 14 Jan 2011 10:22:51 +1100 (EST)
-Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0DNDvgM014247
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 18:13:57 -0500
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7295C4DE8040
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Jan 2011 18:19:37 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p0DNMgPq2121838
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 18:22:42 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p0DNMgwQ002219
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2011 18:22:42 -0500
-Date: Thu, 13 Jan 2011 15:22:39 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] pseries_defconfig: add BNX2=m
-Message-ID: <20110113232239.GA4277@us.ibm.com>
+	Sat, 15 Jan 2011 06:38:08 +1100 (EST)
+Date: Fri, 14 Jan 2011 11:19:57 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] drivers: char: hvc: add arm JTAG DCC console support
+Message-ID: <20110114191956.GK4957@atomide.com>
+References: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>
+	<4CF5DD63.40803@codeaurora.org>
+	<1291229696.14404.39.camel@c-dwalke-linux.qualcomm.com>
+	<4CF6AE04.6030201@codeaurora.org> <4CFE86AC.9010801@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Michael Neuling <mikey@neuling.org>, sonnyrao@us.ibm.com,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4CFE86AC.9010801@codeaurora.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Daniel Walker <dwalker@codeaurora.org>, Mike Frysinger <vapier@gentoo.org>,
+	Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@fluxnic.net>,
+	linux-arm-msm@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,26 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Upcoming servers will include a Broadcom NIC, add to the defconfig to
-increase testing coverage and make sure mainline builds come up with
-networking.
+* Stephen Boyd <sboyd@codeaurora.org> [101207 11:00]:
+> On 12/01/2010 12:20 PM, Stephen Boyd wrote:
+> > Definitely for TX since it seems like a redundant loop, but I agree RX
+> > code has changed. Instead of
+> >
+> > If RX buffer full
+> > Poll for RX buffer full
+> > Read character from RX buffer
+> >
+> > we would have
+> >
+> > If RX buffer full
+> > Read character from RX buffer
+> >
+> > which doesn't seem all that different assuming the RX buffer doesn't go
+> > from full to empty between the If and Poll steps. Hopefully Tony knows more.
+> >
+> 
+> Tony, any thoughts?
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Sorry for the delay, looks like I'm only 1 month behind with email..
+Sounds like it should work to me. I can try it out if you point me
+to a patch.
 
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index f87f0e1..2048585 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -184,6 +184,7 @@ CONFIG_ACENIC_OMIT_TIGON_I=y
- CONFIG_E1000=y
- CONFIG_E1000E=y
- CONFIG_TIGON3=y
-+CONFIG_BNX2=m
- CONFIG_CHELSIO_T1=m
- CONFIG_CHELSIO_T3=m
- CONFIG_EHEA=y
+Regards,
 
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+Tony
