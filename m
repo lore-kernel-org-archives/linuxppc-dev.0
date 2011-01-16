@@ -1,24 +1,23 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 64A75B6EE8
+Return-Path: <geert@linux-m68k.org>
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+	by ozlabs.org (Postfix) with ESMTP id D8400B6EF2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 17 Jan 2011 00:08:33 +1100 (EST)
-Received: by iwb12 with SMTP id 12so4387200iwb.38
+	Mon, 17 Jan 2011 05:47:24 +1100 (EST)
+Received: from georges.telenet-ops.be (unknown [195.130.137.68])
+	by winston.telenet-ops.be (Postfix) with ESMTP id 0D8BC1C2986
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 16 Jan 2011 05:08:29 -0800 (PST)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	akpm@linux-foundation.org
-Subject: [PATCH v4 03/24] powerpc: introduce little-endian bitops
-Date: Sun, 16 Jan 2011 22:08:32 +0900
-Message-Id: <1295183333-13802-4-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1295183333-13802-1-git-send-email-akinobu.mita@gmail.com>
-References: <1295183333-13802-1-git-send-email-akinobu.mita@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Akinobu Mita <akinobu.mita@gmail.com>
+	Sun, 16 Jan 2011 19:37:02 +0100 (CET)
+Date: Sun, 16 Jan 2011 19:36:58 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH] m68k/amiga: Reclaim Chip RAM for PPC exception handlers
+Message-ID: <alpine.DEB.2.00.1101161931280.12726@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,110 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce little-endian bit operations by renaming existing powerpc
-native little-endian bit operations.
+On m68k, it doesn't make sense to reserve memory for the PPC exception
+handlers, and APUS support is dead.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
+Or does this impact Amigas with APUS boards running in m68k mode?
+As we don't (no longer) modify the start address, we were actually stealing the
+_last_ 4 pages.
 
-The whole series is available in the git repository at:
- git://git.kernel.org/pub/scm/linux/kernel/git/mita/linux-2.6.git le-bitops-v4
+ arch/m68k/amiga/chipram.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
- arch/powerpc/include/asm/bitops.h |   38 ++++++++++++++++++------------------
- 1 files changed, 19 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index e903264..7b1c5a9 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -281,29 +281,29 @@ unsigned long __arch_hweight64(__u64 w);
+diff --git a/arch/m68k/amiga/chipram.c b/arch/m68k/amiga/chipram.c
+index 61df1d3..dd0447d 100644
+--- a/arch/m68k/amiga/chipram.c
++++ b/arch/m68k/amiga/chipram.c
+@@ -33,10 +33,6 @@ void __init amiga_chip_init(void)
+     if (!AMIGAHW_PRESENT(CHIP_RAM))
+ 	return;
  
- /* Little-endian versions */
- 
--static __inline__ int test_le_bit(unsigned long nr,
-+static __inline__ int test_bit_le(unsigned long nr,
- 				  __const__ unsigned long *addr)
- {
- 	__const__ unsigned char	*tmp = (__const__ unsigned char *) addr;
- 	return (tmp[nr >> 3] >> (nr & 7)) & 1;
- }
- 
--#define __set_le_bit(nr, addr) \
-+#define __set_bit_le(nr, addr) \
- 	__set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define __clear_le_bit(nr, addr) \
-+#define __clear_bit_le(nr, addr) \
- 	__clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define test_and_set_le_bit(nr, addr) \
-+#define test_and_set_bit_le(nr, addr) \
- 	test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define test_and_clear_le_bit(nr, addr) \
-+#define test_and_clear_bit_le(nr, addr) \
- 	test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define __test_and_set_le_bit(nr, addr) \
-+#define __test_and_set_bit_le(nr, addr) \
- 	__test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
--#define __test_and_clear_le_bit(nr, addr) \
-+#define __test_and_clear_bit_le(nr, addr) \
- 	__test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
- 
--#define find_first_zero_le_bit(addr, size) \
-+#define find_first_zero_bit_le(addr, size) \
- 	find_next_zero_bit_le((addr), (size), 0)
- unsigned long find_next_zero_bit_le(const unsigned long *addr,
- 				    unsigned long size, unsigned long offset);
-@@ -313,19 +313,19 @@ unsigned long find_next_bit_le(const unsigned long *addr,
- /* Bitmap functions for the ext2 filesystem */
- 
- #define ext2_set_bit(nr,addr) \
--	__test_and_set_le_bit((nr), (unsigned long*)addr)
-+	__test_and_set_bit_le((nr), (unsigned long*)addr)
- #define ext2_clear_bit(nr, addr) \
--	__test_and_clear_le_bit((nr), (unsigned long*)addr)
-+	__test_and_clear_bit_le((nr), (unsigned long*)addr)
- 
- #define ext2_set_bit_atomic(lock, nr, addr) \
--	test_and_set_le_bit((nr), (unsigned long*)addr)
-+	test_and_set_bit_le((nr), (unsigned long*)addr)
- #define ext2_clear_bit_atomic(lock, nr, addr) \
--	test_and_clear_le_bit((nr), (unsigned long*)addr)
-+	test_and_clear_bit_le((nr), (unsigned long*)addr)
- 
--#define ext2_test_bit(nr, addr)      test_le_bit((nr),(unsigned long*)addr)
-+#define ext2_test_bit(nr, addr)      test_bit_le((nr),(unsigned long*)addr)
- 
- #define ext2_find_first_zero_bit(addr, size) \
--	find_first_zero_le_bit((unsigned long*)addr, size)
-+	find_first_zero_bit_le((unsigned long*)addr, size)
- #define ext2_find_next_zero_bit(addr, size, off) \
- 	find_next_zero_bit_le((unsigned long *)addr, size, off)
- 
-@@ -334,16 +334,16 @@ unsigned long find_next_bit_le(const unsigned long *addr,
- /* Bitmap functions for the minix filesystem.  */
- 
- #define minix_test_and_set_bit(nr,addr) \
--	__test_and_set_le_bit(nr, (unsigned long *)addr)
-+	__test_and_set_bit_le(nr, (unsigned long *)addr)
- #define minix_set_bit(nr,addr) \
--	__set_le_bit(nr, (unsigned long *)addr)
-+	__set_bit_le(nr, (unsigned long *)addr)
- #define minix_test_and_clear_bit(nr,addr) \
--	__test_and_clear_le_bit(nr, (unsigned long *)addr)
-+	__test_and_clear_bit_le(nr, (unsigned long *)addr)
- #define minix_test_bit(nr,addr) \
--	test_le_bit(nr, (unsigned long *)addr)
-+	test_bit_le(nr, (unsigned long *)addr)
- 
- #define minix_find_first_zero_bit(addr,size) \
--	find_first_zero_le_bit((unsigned long *)addr, size)
-+	find_first_zero_bit_le((unsigned long *)addr, size)
- 
- #include <asm-generic/bitops/sched.h>
+-    /*
+-     *  Remove the first 4 pages where PPC exception handlers will be located
+-     */
+-    amiga_chip_size -= 0x4000;
+     chipram_res.end = amiga_chip_size-1;
+     request_resource(&iomem_resource, &chipram_res);
  
 -- 
-1.7.3.4
+1.7.0.4
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
