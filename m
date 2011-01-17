@@ -1,63 +1,28 @@
-Return-Path: <schwidefsky@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [194.196.100.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 209A5B70A3
+Return-Path: <kumar.gala@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9F2D5B70DA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 17 Jan 2011 23:18:39 +1100 (EST)
-Received: from d06nrmr1806.portsmouth.uk.ibm.com
-	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
-	by mtagate1.uk.ibm.com (8.13.1/8.13.1) with ESMTP id p0HCITnI005417
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2011 12:18:29 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
-	[9.149.37.247])
-	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id p0HCIWAx1089540
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2011 12:18:32 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av12.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
-	ESMTP id p0HCIQ9s006694
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2011 05:18:29 -0700
-Date: Mon, 17 Jan 2011 13:18:23 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] sched: provide scheduler_ipi() callback in response to
-	smp_send_reschedule()
-Message-ID: <20110117131823.410e515c@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <1295262433.30950.53.camel@laptop>
-References: <1295262433.30950.53.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
-	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Helge Deller <deller@gmx.de>,
-	sparclinux@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>,
-	linux-s390@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>,
-	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-	Russell King <linux@arm.linux.org.uk>,
-	Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
-	"James E.J. Bottomley" <jejb@parisc-linux.org>,
-	virtualization@lists.osdl.org, Ingo Molnar <mingo@redhat.com>,
-	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
-	Mike Frysinger <vapier@gentoo.org>,
-	user-mode-linux-devel@lists.sourceforge.net,
-	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
-	Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
-	xen-devel@lists.xensource.com, Mikael Starvik <starvik@axis.com>,
-	linux-m32r@ml.linux-m32r.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	user-mode-linux-user@lists.sourceforge.net,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
-	Richard Henderson <rth@twiddle.net>,
-	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
-	linux-cris-kernel@axis.com, linux-am33-list@redhat.com,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Kyle McMartin <kyle@mcmartin.ca>,
-	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
-	linux390@de.ibm.com, Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
-	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+	Tue, 18 Jan 2011 01:57:35 +1100 (EST)
+Subject: Re: [PATCH] ATA: Add FSL sata v2 controller support
+MIME-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <45903308677306428B6EE7E6FF5A520408654D@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Mon, 17 Jan 2011 08:57:06 -0600
+Message-ID: <54228DB3-E95B-4A4D-BB83-CABEACAD77C5@freescale.com>
+References: <1295248259-14752-1-git-send-email-B33228@freescale.com>
+	<4D342C6E.6000608@ru.mvista.com>
+	<45903308677306428B6EE7E6FF5A520408654D@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Aggrwal Poonam-B10812 <B10812@freescale.com>
+Cc: Xu Lei-B33228 <B33228@freescale.com>,
+	Sergei Shtylyov <sshtylyov@mvista.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+	Gala Kumar-B11780 <B11780@freescale.com>,
+	"jgarzik@pobox.com" <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,38 +32,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 17 Jan 2011 12:07:13 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
 
-> I visited existing smp_send_reschedule() implementations and tried to
-> add a call to scheduler_ipi() in their handler part, but esp. for MIPS
-> I'm not quite sure I actually got all of them.
->  
-> diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-> index 94cf510..61789e8 100644
-> --- a/arch/s390/kernel/smp.c
-> +++ b/arch/s390/kernel/smp.c
-> @@ -163,12 +163,12 @@ static void do_ext_call_interrupt(unsigned int ext_int_code,
->  
->  	/*
->  	 * handle bit signal external calls
-> -	 *
-> -	 * For the ec_schedule signal we have to do nothing. All the work
-> -	 * is done automatically when we return from the interrupt.
->  	 */
->  	bits = xchg(&S390_lowcore.ext_call_fast, 0);
->  
-> +	if (test_bit(ec_schedule, &bits))
-> +		scheduler_ipi();
-> +
->  	if (test_bit(ec_call_function, &bits))
->  		generic_smp_call_function_interrupt();
->  
+On Jan 17, 2011, at 5:58 AM, Aggrwal Poonam-B10812 wrote:
 
-s390 bits are fine.
+> 
+> 
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+poonam.aggrwal=freescale.com@lists.ozlabs.org
+>> [mailto:linuxppc-dev-
+>> bounces+poonam.aggrwal=freescale.com@lists.ozlabs.org] On Behalf Of
+>> Sergei Shtylyov
+>> Sent: Monday, January 17, 2011 5:18 PM
+>> To: Xu Lei-B33228
+>> Cc: jgarzik@pobox.com; Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org;
+>> linux-ide@vger.kernel.org
+>> Subject: Re: [PATCH] ATA: Add FSL sata v2 controller support
+>> 
+>> Hello.
+>> 
+>> On 17-01-2011 10:10, Xulei wrote:
+>> 
+>>> In FSL sata v2 block, the snoop bit of PRDT Word3 description
+>>> information is at bit28 instead of bit22.
+>> 
+>>> This patch adds FSL sata v2 probe and resolve this difference.
+>> 
+>>> Signed-off-by: Xulei <B33228@freescale.com>
+>> 
+>>    AFAIK, full name is required.
+>> 
+>>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+>> [...]
+>> 
+>>> diff --git a/arch/powerpc/boot/dts/p1022ds.dts
+>>> b/arch/powerpc/boot/dts/p1022ds.dts
+>>> index 2bbecbb..9ad41dd 100644
+>>> --- a/arch/powerpc/boot/dts/p1022ds.dts
+>>> +++ b/arch/powerpc/boot/dts/p1022ds.dts
+>>> @@ -475,14 +475,14 @@
+>>>  		};
+>>> 
+>>>  		sata@18000 {
+>>> -			compatible = "fsl,mpc8536-sata", "fsl,pq-sata";
+>>> +			compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
+> 
+> Can we fix this compatibity at run time by u-boot?
 
--- 
-blue skies,
-   Martin.
+We can, but its not reason not to update the .dts as well.
 
-"Reality continues to ruin my life." - Calvin.
+- k
