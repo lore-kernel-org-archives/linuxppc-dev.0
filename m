@@ -1,15 +1,16 @@
 Return-Path: <timur@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4D1FDB713E
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 08:28:44 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 27696B7144
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 08:29:50 +1100 (EST)
 From: Timur Tabi <timur@freescale.com>
-To: <linuxppc-dev@ozlabs.org>, <wim@iguana.be>, <watchdog@vger.kernel.org>
+To: <linuxppc-dev@ozlabs.org>, <wim@iguana.be>,
+	<linux-watchdog@vger.kernel.org>
 Subject: [PATCH] watchdog: booke_wdt: clean up status messages
-Date: Mon, 17 Jan 2011 15:28:35 -0600
-Message-ID: <1295299715-27299-1-git-send-email-timur@freescale.com>
+Date: Mon, 17 Jan 2011 15:29:40 -0600
+Message-ID: <1295299780-27338-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
