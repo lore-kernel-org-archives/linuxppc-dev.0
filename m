@@ -1,12 +1,49 @@
-Return-Path: <scottwood@freescale.com>
-Date: Mon, 17 Jan 2011 14:25:28 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/fsl_msi: Handle msi-available-ranges better
-Message-ID: <20110117202528.GB561@udp111988uds.am.freescale.net>
+Return-Path: <David.Daney@caviumnetworks.com>
+Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
+	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id D0449B7106
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 18 Jan 2011 06:19:17 +1100 (EST)
+Message-ID: <4D349621.1040603@caviumnetworks.com>
+Date: Mon, 17 Jan 2011 11:18:57 -0800
+From: David Daney <ddaney@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] sched: provide scheduler_ipi() callback in response to
+	smp_send_reschedule()
+References: <1295262433.30950.53.camel@laptop>
+In-Reply-To: <1295262433.30950.53.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Linux-Arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+	Russell King <linux@arm.linux.org.uk>,
+	Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
+	"James E.J. Bottomley" <jejb@parisc-linux.org>,
+	virtualization@lists.osdl.org, Ingo Molnar <mingo@redhat.com>,
+	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+	Mike Frysinger <vapier@gentoo.org>,
+	user-mode-linux-devel@lists.sourceforge.net,
+	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+	Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
+	xen-devel@lists.xensource.com, Mikael Starvik <starvik@axis.com>,
+	linux-m32r@ml.linux-m32r.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	user-mode-linux-user@lists.sourceforge.net,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+	Richard Henderson <rth@twiddle.net>,
+	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+	linux-cris-kernel@axis.com, linux-am33-list@redhat.com,
+	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+	"David S. Miller" <davem@davemloft.net>, Kyle McMartin <kyle@mcmartin.ca>,
+	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+	linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,175 +53,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now handles multiple ranges, doesn't make assumptions about interrupt
-specifier format, and doesn't claim interrupts that don't correspond to an
-available range.
+On 01/17/2011 03:07 AM, Peter Zijlstra wrote:
+> For future rework of try_to_wake_up() we'd like to push part of that
+> onto the CPU the task is actually going to run on, in order to do so we
+> need a generic callback from the existing scheduler IPI.
+>
+> This patch introduces such a generic callback: scheduler_ipi() and
+> implements it as a NOP.
+>
+> I visited existing smp_send_reschedule() implementations and tried to
+> add a call to scheduler_ipi() in their handler part, but esp. for MIPS
+> I'm not quite sure I actually got all of them.
+>
+> Also, while reading through all this, I noticed the blackfin SMP code
+> looks to be broken, it simply discards any IPI when low on memory.
+>
+> Signed-off-by: Peter Zijlstra<a.p.zijlstra@chello.nl>
+> ---
+>   arch/alpha/kernel/smp.c         |    1 +
+>   arch/arm/kernel/smp.c           |    1 +
+>   arch/blackfin/mach-common/smp.c |    3 ++-
+>   arch/cris/arch-v32/kernel/smp.c |   13 ++++++++-----
+>   arch/ia64/kernel/irq_ia64.c     |    2 ++
+>   arch/ia64/xen/irq_xen.c         |   10 +++++++++-
+>   arch/m32r/kernel/smp.c          |    2 +-
+>   arch/mips/kernel/smtc.c         |    1 +
+>   arch/mips/sibyte/bcm1480/smp.c  |    7 +++----
+>   arch/mips/sibyte/sb1250/smp.c   |    7 +++----
+[...]
 
-Also has some better error checking.
+Peter,
 
-The device tree binding is updated to clarify some existing assumptions.
+You will also have to patch the mailbox_interrupt() function in 
+arch/mips/cavium-octeon/smp.c
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- Documentation/powerpc/dts-bindings/fsl/msi-pic.txt |    9 ++-
- arch/powerpc/sysdev/fsl_msi.c                      |   92 ++++++++++++--------
- 2 files changed, 64 insertions(+), 37 deletions(-)
-
-diff --git a/Documentation/powerpc/dts-bindings/fsl/msi-pic.txt b/Documentation/powerpc/dts-bindings/fsl/msi-pic.txt
-index bcc30ba..c0d80fb 100644
---- a/Documentation/powerpc/dts-bindings/fsl/msi-pic.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/msi-pic.txt
-@@ -5,14 +5,21 @@ Required properties:
-   first is "fsl,CHIP-msi", where CHIP is the processor(mpc8610, mpc8572,
-   etc.) and the second is "fsl,mpic-msi" or "fsl,ipic-msi" depending on
-   the parent type.
-+
- - reg : should contain the address and the length of the shared message
-   interrupt register set.
-+
- - msi-available-ranges: use <start count> style section to define which
-   msi interrupt can be used in the 256 msi interrupts. This property is
-   optional, without this, all the 256 MSI interrupts can be used.
-+  Each available range must begin and end on a multiple of 32 (i.e.
-+  no splitting an individual MSI register or the associated PIC interrupt).
-+
- - interrupts : each one of the interrupts here is one entry per 32 MSIs,
-   and routed to the host interrupt controller. the interrupts should
--  be set as edge sensitive.
-+  be set as edge sensitive.  If msi-available-ranges is present, only
-+  the interrupts that correspond to available ranges shall be present.
-+
- - interrupt-parent: the phandle for the interrupt controller
-   that services interrupts for this device. for 83xx cpu, the interrupts
-   are routed to IPIC, and for 85xx/86xx cpu the interrupts are routed
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 108d76f..46e27ac 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2010 Freescale Semiconductor, Inc.
-+ * Copyright (C) 2007-2011 Freescale Semiconductor, Inc.
-  *
-  * Author: Tony Li <tony.li@freescale.com>
-  *	   Jason Jin <Jason.jin@freescale.com>
-@@ -273,19 +273,47 @@ static int fsl_of_msi_remove(struct platform_device *ofdev)
- 	return 0;
- }
- 
-+static int __devinit fsl_msi_setup_hwirq(struct fsl_msi *msi,
-+					 struct platform_device *dev,
-+					 int offset, int irq_index)
-+{
-+	struct fsl_msi_cascade_data *cascade_data = NULL;
-+	int virt_msir;
-+
-+	virt_msir = irq_of_parse_and_map(dev->dev.of_node, irq_index);
-+	if (virt_msir == NO_IRQ) {
-+		dev_err(&dev->dev, "%s: Cannot translate IRQ index %d\n",
-+			__func__, irq_index);
-+		return 0;
-+	}
-+
-+	cascade_data = kzalloc(sizeof(struct fsl_msi_cascade_data), GFP_KERNEL);
-+	if (!cascade_data) {
-+		dev_err(&dev->dev, "No memory for MSI cascade data\n");
-+		return -ENOMEM;
-+	}
-+
-+	msi->msi_virqs[irq_index] = virt_msir;
-+	cascade_data->index = offset + irq_index;
-+	cascade_data->msi_data = msi;
-+	set_irq_data(virt_msir, cascade_data);
-+	set_irq_chained_handler(virt_msir, fsl_msi_cascade);
-+
-+	return 0;
-+}
-+
- static int __devinit fsl_of_msi_probe(struct platform_device *dev,
- 				const struct of_device_id *match)
- {
- 	struct fsl_msi *msi;
- 	struct resource res;
--	int err, i, count;
-+	int err, i, j, irq_index, count;
- 	int rc;
--	int virt_msir;
- 	const u32 *p;
- 	struct fsl_msi_feature *features = match->data;
--	struct fsl_msi_cascade_data *cascade_data = NULL;
- 	int len;
- 	u32 offset;
-+	static const u32 all_avail[] = { 0, NR_MSI_IRQS };
- 
- 	printk(KERN_DEBUG "Setting up Freescale MSI support\n");
- 
-@@ -332,42 +360,34 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev,
- 		goto error_out;
- 	}
- 
--	p = of_get_property(dev->dev.of_node, "interrupts", &count);
--	if (!p) {
--		dev_err(&dev->dev, "no interrupts property found on %s\n",
--				dev->dev.of_node->full_name);
--		err = -ENODEV;
--		goto error_out;
--	}
--	if (count % 8 != 0) {
--		dev_err(&dev->dev, "Malformed interrupts property on %s\n",
--				dev->dev.of_node->full_name);
-+	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
-+	if (p && len % (2 * sizeof(u32)) != 0) {
-+		dev_err(&dev->dev, "%s: Malformed msi-available-ranges property\n",
-+			__func__);
- 		err = -EINVAL;
- 		goto error_out;
- 	}
--	offset = 0;
--	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
--	if (p)
--		offset = *p / IRQS_PER_MSI_REG;
--
--	count /= sizeof(u32);
--	for (i = 0; i < min(count / 2, NR_MSI_REG); i++) {
--		virt_msir = irq_of_parse_and_map(dev->dev.of_node, i);
--		if (virt_msir != NO_IRQ) {
--			cascade_data = kzalloc(
--					sizeof(struct fsl_msi_cascade_data),
--					GFP_KERNEL);
--			if (!cascade_data) {
--				dev_err(&dev->dev,
--					"No memory for MSI cascade data\n");
--				err = -ENOMEM;
-+
-+	if (!p)
-+		p = all_avail;
-+
-+	for (irq_index = 0, i = 0; i < len / (2 * sizeof(u32)); i++) {
-+		if (p[i * 2] % IRQS_PER_MSI_REG ||
-+		    p[i * 2 + 1] % IRQS_PER_MSI_REG) {
-+			printk(KERN_WARNING "%s: %s: msi available range of %u at %u is not IRQ-aligned\n",
-+			       __func__, dev->dev.of_node->full_name,
-+			       p[i * 2 + 1], p[i * 2]);
-+			err = -EINVAL;
-+			goto error_out;
-+		}
-+
-+		offset = p[i * 2] / IRQS_PER_MSI_REG;
-+		count = p[i * 2 + 1] / IRQS_PER_MSI_REG;
-+
-+		for (j = 0; j < count; j++, irq_index++) {
-+			err = fsl_msi_setup_hwirq(msi, dev, offset, irq_index);
-+			if (err)
- 				goto error_out;
--			}
--			msi->msi_virqs[i] = virt_msir;
--			cascade_data->index = i + offset;
--			cascade_data->msi_data = msi;
--			set_irq_data(virt_msir, (void *)cascade_data);
--			set_irq_chained_handler(virt_msir, fsl_msi_cascade);
- 		}
- 	}
- 
--- 
-1.7.0.4
+David Daney.
