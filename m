@@ -1,22 +1,21 @@
-Return-Path: <vapier.adi@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id 8AB94B7114
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E48E1B712A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Jan 2011 06:52:33 +1100 (EST)
-Received: by wwb29 with SMTP id 29so5990812wwb.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 17 Jan 2011 11:52:30 -0800 (PST)
-MIME-Version: 1.0
-Sender: vapier.adi@gmail.com
-In-Reply-To: <1295262433.30950.53.camel@laptop>
-References: <1295262433.30950.53.camel@laptop>
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Mon, 17 Jan 2011 14:49:40 -0500
-Message-ID: <AANLkTik3hE=_34Lbs944MzKpkNzqY+kCxpxmncUM2HB7@mail.gmail.com>
+	Tue, 18 Jan 2011 07:16:38 +1100 (EST)
 Subject: Re: [uclinux-dist-devel] [PATCH] sched: provide scheduler_ipi()
 	callback in response to smp_send_reschedule()
-To: Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Frysinger <vapier@gentoo.org>
+In-Reply-To: <AANLkTik3hE=_34Lbs944MzKpkNzqY+kCxpxmncUM2HB7@mail.gmail.com>
+References: <1295262433.30950.53.camel@laptop>
+	<AANLkTik3hE=_34Lbs944MzKpkNzqY+kCxpxmncUM2HB7@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 17 Jan 2011 21:16:03 +0100
+Message-ID: <1295295363.30950.318.camel@laptop>
+Mime-Version: 1.0
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	"H. Peter Anvin" <hpa@zytor.com>,
@@ -56,9 +55,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 17, 2011 at 06:07, Peter Zijlstra wrote:
-> Also, while reading through all this, I noticed the blackfin SMP code
-> looks to be broken, it simply discards any IPI when low on memory.
+On Mon, 2011-01-17 at 14:49 -0500, Mike Frysinger wrote:
+> On Mon, Jan 17, 2011 at 06:07, Peter Zijlstra wrote:
+> > Also, while reading through all this, I noticed the blackfin SMP code
+> > looks to be broken, it simply discards any IPI when low on memory.
+>=20
+> not really.  see changelog of commit 73a400646b8e26615f3ef1a0a4bc0cd0d5bd=
+284c.
 
-not really.  see changelog of commit 73a400646b8e26615f3ef1a0a4bc0cd0d5bd284c.
--mike
+Ah, indeed, it appears my tree was simply out of date, very good!
