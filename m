@@ -1,14 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Date: Tue, 18 Jan 2011 14:59:31 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: MohanReddy koppula <mohanreddykv@gmail.com>
-Subject: Re: Problem with Busybox shell
-Message-ID: <20110118145931.00957731@udp111988uds.am.freescale.net>
-In-Reply-To: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
-References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E3B88B70EF
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 08:09:44 +1100 (EST)
+Message-Id: <201101182109.p0IL992W005451@imap1.linux-foundation.org>
+Subject: [patch 1/2] macintosh: wrong test in fan_{read,write}_reg()
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Tue, 18 Jan 2011 13:09:09 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, roel.kluin@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,28 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Jan 2011 07:54:42 -0500
-MohanReddy koppula <mohanreddykv@gmail.com> wrote:
+From: roel kluin <roel.kluin@gmail.com>
 
-> Hi All,
-> 
-> I am working on an MPC885 based custom board. I am able to boot up the
-> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
-> is not accepting any inputs, I am not able to enter any command, it
-> just hangs there. I am using ttyCPM0 terminal.
-> 
-> I suspected if there was any problem in CPM driver interrupts
-> generation and put some printk's in the interrupt handler and could
-> see interrupts are raised and data is read, but shell is not taking
-> the input.
-> 
-> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
-> but couldn't. I am able to write to ttyCPM0 and see it on the host
-> minicom.
-> 
-> Please some one help me.
+Fix error test in fan_{read,write}_reg()
 
-Check your pin and clock setup -- perhaps tx is set up correctly but rx
-isn't.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
--Scott
+ drivers/macintosh/therm_pm72.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN drivers/macintosh/therm_pm72.c~macintosh-wrong-test-in-fan_readwrite_reg drivers/macintosh/therm_pm72.c
+--- a/drivers/macintosh/therm_pm72.c~macintosh-wrong-test-in-fan_readwrite_reg
++++ a/drivers/macintosh/therm_pm72.c
+@@ -443,7 +443,7 @@ static int fan_read_reg(int reg, unsigne
+ 	tries = 0;
+ 	for (;;) {
+ 		nr = i2c_master_recv(fcu, buf, nb);
+-		if (nr > 0 || (nr < 0 && nr != ENODEV) || tries >= 100)
++		if (nr > 0 || (nr < 0 && nr != -ENODEV) || tries >= 100)
+ 			break;
+ 		msleep(10);
+ 		++tries;
+@@ -464,7 +464,7 @@ static int fan_write_reg(int reg, const 
+ 	tries = 0;
+ 	for (;;) {
+ 		nw = i2c_master_send(fcu, buf, nb);
+-		if (nw > 0 || (nw < 0 && nw != EIO) || tries >= 100)
++		if (nw > 0 || (nw < 0 && nw != -EIO) || tries >= 100)
+ 			break;
+ 		msleep(10);
+ 		++tries;
+_
