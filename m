@@ -1,19 +1,13 @@
 Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E3B88B70EF
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 08:09:44 +1100 (EST)
-Message-Id: <201101182109.p0IL992W005451@imap1.linux-foundation.org>
-Subject: [patch 1/2] macintosh: wrong test in fan_{read,write}_reg()
+Message-Id: <201101182109.p0IL9A3h005454@imap1.linux-foundation.org>
+Subject: [patch 2/2] spufs: use simple_write_to_buffer()
 To: benh@kernel.crashing.org
 From: akpm@linux-foundation.org
-Date: Tue, 18 Jan 2011 13:09:09 -0800
+Date: Tue, 18 Jan 2011 13:09:10 -0800
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, roel.kluin@gmail.com
+Cc: arnd@arndb.de, akinobu.mita@gmail.com, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, jk@ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +17,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: roel kluin <roel.kluin@gmail.com>
+From: Akinobu Mita <akinobu.mita@gmail.com>
 
-Fix error test in fan_{read,write}_reg()
+Simplify several write fileoperations for spufs by using
+simple_write_to_buffer().
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jeremy Kerr <jk@ozlabs.org>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/macintosh/therm_pm72.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spufs/file.c |   27 +++++----------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
 
-diff -puN drivers/macintosh/therm_pm72.c~macintosh-wrong-test-in-fan_readwrite_reg drivers/macintosh/therm_pm72.c
---- a/drivers/macintosh/therm_pm72.c~macintosh-wrong-test-in-fan_readwrite_reg
-+++ a/drivers/macintosh/therm_pm72.c
-@@ -443,7 +443,7 @@ static int fan_read_reg(int reg, unsigne
- 	tries = 0;
- 	for (;;) {
- 		nr = i2c_master_recv(fcu, buf, nb);
--		if (nr > 0 || (nr < 0 && nr != ENODEV) || tries >= 100)
-+		if (nr > 0 || (nr < 0 && nr != -ENODEV) || tries >= 100)
- 			break;
- 		msleep(10);
- 		++tries;
-@@ -464,7 +464,7 @@ static int fan_write_reg(int reg, const 
- 	tries = 0;
- 	for (;;) {
- 		nw = i2c_master_send(fcu, buf, nb);
--		if (nw > 0 || (nw < 0 && nw != EIO) || tries >= 100)
-+		if (nw > 0 || (nw < 0 && nw != -EIO) || tries >= 100)
- 			break;
- 		msleep(10);
- 		++tries;
+diff -puN arch/powerpc/platforms/cell/spufs/file.c~spufs-use-simple_write_to_buffer arch/powerpc/platforms/cell/spufs/file.c
+--- a/arch/powerpc/platforms/cell/spufs/file.c~spufs-use-simple_write_to_buffer
++++ a/arch/powerpc/platforms/cell/spufs/file.c
+@@ -219,24 +219,17 @@ spufs_mem_write(struct file *file, const
+ 	loff_t pos = *ppos;
+ 	int ret;
+ 
+-	if (pos < 0)
+-		return -EINVAL;
+ 	if (pos > LS_SIZE)
+ 		return -EFBIG;
+-	if (size > LS_SIZE - pos)
+-		size = LS_SIZE - pos;
+ 
+ 	ret = spu_acquire(ctx);
+ 	if (ret)
+ 		return ret;
+ 
+ 	local_store = ctx->ops->get_ls(ctx);
+-	ret = copy_from_user(local_store + pos, buffer, size);
++	size = simple_write_to_buffer(local_store, LS_SIZE, ppos, buffer, size);
+ 	spu_release(ctx);
+ 
+-	if (ret)
+-		return -EFAULT;
+-	*ppos = pos + size;
+ 	return size;
+ }
+ 
+@@ -574,18 +567,15 @@ spufs_regs_write(struct file *file, cons
+ 	if (*pos >= sizeof(lscsa->gprs))
+ 		return -EFBIG;
+ 
+-	size = min_t(ssize_t, sizeof(lscsa->gprs) - *pos, size);
+-	*pos += size;
+-
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = copy_from_user((char *)lscsa->gprs + *pos - size,
+-			     buffer, size) ? -EFAULT : size;
++	size = simple_write_to_buffer(lscsa->gprs, sizeof(lscsa->gprs), pos,
++					buffer, size);
+ 
+ 	spu_release_saved(ctx);
+-	return ret;
++	return size;
+ }
+ 
+ static const struct file_operations spufs_regs_fops = {
+@@ -630,18 +620,15 @@ spufs_fpcr_write(struct file *file, cons
+ 	if (*pos >= sizeof(lscsa->fpcr))
+ 		return -EFBIG;
+ 
+-	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
+-
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 
+-	*pos += size;
+-	ret = copy_from_user((char *)&lscsa->fpcr + *pos - size,
+-			     buffer, size) ? -EFAULT : size;
++	size = simple_write_to_buffer(&lscsa->fpcr, sizeof(lscsa->fpcr), pos,
++					buffer, size);
+ 
+ 	spu_release_saved(ctx);
+-	return ret;
++	return size;
+ }
+ 
+ static const struct file_operations spufs_fpcr_fops = {
 _
