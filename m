@@ -1,15 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 2/2] spufs: use simple_write_to_buffer()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: akpm@linux-foundation.org
-In-Reply-To: <201101182109.p0IL9A3h005454@imap1.linux-foundation.org>
-References: <201101182109.p0IL9A3h005454@imap1.linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 19 Jan 2011 08:22:29 +1100
-Message-ID: <1295385749.2148.86.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, akinobu.mita@gmail.com,
-	arnd@arndb.de, jk@ozlabs.org
+Return-Path: <nacc@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 54724B711B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 09:47:33 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0IMaQn1008446
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 15:36:26 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p0IMlRAF091280
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 15:47:27 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p0IMlPRv023499
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 15:47:26 -0700
+Date: Tue, 18 Jan 2011 14:47:18 -0800
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: 2.6.37-git17 virtual IO boot failure
+Message-ID: <20110118224718.GA19039@us.ibm.com>
+References: <20110118123152.50f75a72@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110118123152.50f75a72@kryten>
+Cc: sonnyrao@us.ibm.com, miltonm@bga.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,99 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-01-18 at 13:09 -0800, akpm@linux-foundation.org wrote:
-> From: Akinobu Mita <akinobu.mita@gmail.com>
+On 18.01.2011 [12:31:52 +1100], Anton Blanchard wrote:
+> Hi,
 > 
-> Simplify several write fileoperations for spufs by using
-> simple_write_to_buffer().
-
-I'll pick that one up too.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Jeremy Kerr <jk@ozlabs.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
+> I was testing 2.6.37-git17 on a POWER7 with virtual IO and hit this:
 > 
->  arch/powerpc/platforms/cell/spufs/file.c |   27 +++++----------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
+> Trying to unpack rootfs image as initramfs...
+> Freeing initrd memory: 7446k freed
+> vio 30000000: Warning: IOMMU dma not supported: mask
+> 0xffffffffffffffff, table unavailable
+> vio 4000: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
+> table unavailable
+> vio 4001: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
+> table unavailable
+> vio 4002: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
+> table unavailable
+> vio 4004: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
+> table unavailable
+> audit: initializing netlink socket (disabled)
 > 
-> diff -puN arch/powerpc/platforms/cell/spufs/file.c~spufs-use-simple_write_to_buffer arch/powerpc/platforms/cell/spufs/file.c
-> --- a/arch/powerpc/platforms/cell/spufs/file.c~spufs-use-simple_write_to_buffer
-> +++ a/arch/powerpc/platforms/cell/spufs/file.c
-> @@ -219,24 +219,17 @@ spufs_mem_write(struct file *file, const
->  	loff_t pos = *ppos;
->  	int ret;
->  
-> -	if (pos < 0)
-> -		return -EINVAL;
->  	if (pos > LS_SIZE)
->  		return -EFBIG;
-> -	if (size > LS_SIZE - pos)
-> -		size = LS_SIZE - pos;
->  
->  	ret = spu_acquire(ctx);
->  	if (ret)
->  		return ret;
->  
->  	local_store = ctx->ops->get_ls(ctx);
-> -	ret = copy_from_user(local_store + pos, buffer, size);
-> +	size = simple_write_to_buffer(local_store, LS_SIZE, ppos, buffer, size);
->  	spu_release(ctx);
->  
-> -	if (ret)
-> -		return -EFAULT;
-> -	*ppos = pos + size;
->  	return size;
->  }
->  
-> @@ -574,18 +567,15 @@ spufs_regs_write(struct file *file, cons
->  	if (*pos >= sizeof(lscsa->gprs))
->  		return -EFBIG;
->  
-> -	size = min_t(ssize_t, sizeof(lscsa->gprs) - *pos, size);
-> -	*pos += size;
-> -
->  	ret = spu_acquire_saved(ctx);
->  	if (ret)
->  		return ret;
->  
-> -	ret = copy_from_user((char *)lscsa->gprs + *pos - size,
-> -			     buffer, size) ? -EFAULT : size;
-> +	size = simple_write_to_buffer(lscsa->gprs, sizeof(lscsa->gprs), pos,
-> +					buffer, size);
->  
->  	spu_release_saved(ctx);
-> -	return ret;
-> +	return size;
->  }
->  
->  static const struct file_operations spufs_regs_fops = {
-> @@ -630,18 +620,15 @@ spufs_fpcr_write(struct file *file, cons
->  	if (*pos >= sizeof(lscsa->fpcr))
->  		return -EFBIG;
->  
-> -	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
-> -
->  	ret = spu_acquire_saved(ctx);
->  	if (ret)
->  		return ret;
->  
-> -	*pos += size;
-> -	ret = copy_from_user((char *)&lscsa->fpcr + *pos - size,
-> -			     buffer, size) ? -EFAULT : size;
-> +	size = simple_write_to_buffer(&lscsa->fpcr, sizeof(lscsa->fpcr), pos,
-> +					buffer, size);
->  
->  	spu_release_saved(ctx);
-> -	return ret;
-> +	return size;
->  }
->  
->  static const struct file_operations spufs_fpcr_fops = {
-> _
+> Haven't had a chance to look closer yet.
+
+After debugging a bit, this would appear to be due to the second hunk of
+b3c73856ae47d43d0d181f9de1c1c6c0820c4515.
+
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index b265405..1b695fd 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1257,6 +1257,10 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+        viodev->dev.parent = &vio_bus_device.dev;
+        viodev->dev.bus = &vio_bus_type;
+        viodev->dev.release = vio_dev_release;
++        /* needed to ensure proper operation of coherent allocations
++         * later, in case driver doesn't set it explicitly */
++        dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
++        dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
+
+        /* register with generic device framework */
+        if (device_register(&viodev->dev)) {
+
+Milton, Sonny, any thoughts?
+
+Thanks,
+Nish
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
