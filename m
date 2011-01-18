@@ -1,15 +1,14 @@
 Return-Path: <scottwood@freescale.com>
-Date: Tue, 18 Jan 2011 14:31:31 -0600
+Date: Tue, 18 Jan 2011 14:59:31 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Meador Inge <meador_inge@mentor.com>
-Subject: Re: [PATCH 1/2] powerpc: document the MPIC device tree binding
-Message-ID: <20110118143131.37811236@udp111988uds.am.freescale.net>
-In-Reply-To: <4D34E448.8000902@mentor.com>
-References: <4D34E448.8000902@mentor.com>
+To: MohanReddy koppula <mohanreddykv@gmail.com>
+Subject: Re: Problem with Busybox shell
+Message-ID: <20110118145931.00957731@udp111988uds.am.freescale.net>
+In-Reply-To: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
+References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
-Cc: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,54 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 17 Jan 2011 18:52:24 -0600
-Meador Inge <meador_inge@mentor.com> wrote:
+On Tue, 18 Jan 2011 07:54:42 -0500
+MohanReddy koppula <mohanreddykv@gmail.com> wrote:
 
-> +** Required properties:
-> +
-> +   NOTE: Many of these descriptions were paraphrased from [1] to aid
-> +         readability.
-> +
-> +   - name : Specifies the name of the MPIC.
+> Hi All,
+> 
+> I am working on an MPC885 based custom board. I am able to boot up the
+> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
+> is not accepting any inputs, I am not able to enter any command, it
+> just hangs there. I am using ttyCPM0 terminal.
+> 
+> I suspected if there was any problem in CPM driver interrupts
+> generation and put some printk's in the interrupt handler and could
+> see interrupts are raised and data is read, but shell is not taking
+> the input.
+> 
+> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
+> but couldn't. I am able to write to ttyCPM0 and see it on the host
+> minicom.
+> 
+> Please some one help me.
 
-"name" isn't really a property with flat trees.  The appropriate
-node name, according to the Generic Names recommendation and ePAPR, is
-interrupt-controller.
-
-> +   - device_type : Specifies the device type of this MPIC.  The value 
-> of this
-> +                   property shall be "open-pic".
-
-Can we drop device_type, and fix the kernel to look for compatible
-instead?
-
-> +   - compatible : Specifies the compatibility list for the MPIC.  The 
-> property
-> +                  value shall include "chrp,open-pic".
-
-ePAPR wants just "open-pic".  And while chrp,open-pic is common in
-existing trees, only one platform currently checks for it.
-
-I'd make in "open-pic" in the binding, and have the kernel accept
-either one.
-
-> +** Optional properties:
-> +
-> +   - no-reset : The presence of this property indicates that the MPIC
-> +                should not be reset during runtime initialization.
-> +   - protected-sources : Specifies a list of interrupt sources that are 
-> not
-> +                         available for use and whose corresponding vectors
-> +                         should not be initialized.  A typical use case for
-> +                         this property is in AMP systems where multiple
-> +                         independent operating systems need to share 
-> the MPIC
-> +                         without clobbering each other.
-> +
-
-Can we define no-reset as meaning that all vectors are in a sane state
-(either directed at other cores, or masked)?
-
-If we do that, maybe we can get rid of protected-sources.
+Check your pin and clock setup -- perhaps tx is set up correctly but rx
+isn't.
 
 -Scott
