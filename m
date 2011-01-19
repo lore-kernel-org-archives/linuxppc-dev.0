@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8E7B8B7088
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 17:06:28 +1100 (EST)
-Subject: Re: 2.6.37-git17 virtual IO boot failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <20110119004824.GA20441@us.ibm.com>
-References: <20110118123152.50f75a72@kryten>
-	<20110118224718.GA19039@us.ibm.com> <20110119004824.GA20441@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 19 Jan 2011 17:06:18 +1100
-Message-ID: <1295417178.2148.131.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com,
-	Anton Blanchard <anton@samba.org>, miltonm@bga.com
+Return-Path: <kumar.gala@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1outboundpool.messaging.microsoft.com [157.55.116.160])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0DF0DB70CD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 19 Jan 2011 17:10:32 +1100 (EST)
+Subject: Re: [PATCH] ATA: Add FSL sata v2 controller support
+MIME-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <4D3639FB.10608@pobox.com>
+Date: Tue, 18 Jan 2011 23:23:56 -0600
+Message-ID: <95A8843E-F05C-474F-BB5D-52B2D20A66F5@freescale.com>
+References: <1295248259-14752-1-git-send-email-B33228@freescale.com>
+	<4D342C6E.6000608@ru.mvista.com> <4D3639FB.10608@pobox.com>
+To: Roy Zang <tie-fei.zang@freescale.com>, Xulei <B33228@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
+	Sergei Shtylyov <sshtylyov@mvista.com>, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-01-18 at 16:48 -0800, Nishanth Aravamudan wrote:
-> 
-> Ben, if you're ok with waiting to see if Milton or Sonny have any
-> ideas,
-> I'd like to hold off on asking for a revert. In the case they do, I'll
-> be able to test and send out any proposed fix rapidly. 
 
-I don't believe this specific error is causing the lockup, I think we
-only hit a spurrious message on devices that don't have DMA capabilities
-in the first place. (But I may be wrong, I'll wait for you guys to dig
-more or I'll have a look myself tomorrow if I manage to get out of
-meetings).
+On Jan 18, 2011, at 7:10 PM, Jeff Garzik wrote:
 
-So there's another problem with SCSI tho it -could- also be a DMA issue,
-hard to tell at this point.
+> On 01/17/2011 06:47 AM, Sergei Shtylyov wrote:
+>> Hello.
+>>=20
+>> On 17-01-2011 10:10, Xulei wrote:
+>>=20
+>>> In FSL sata v2 block, the snoop bit of PRDT Word3 description
+>>> information is at bit28 instead of bit22.
+>>=20
+>>> This patch adds FSL sata v2 probe and resolve this difference.
+>>=20
+>>> Signed-off-by: Xulei <B33228@freescale.com>
+>>=20
+>> AFAIK, full name is required.
+>>=20
+>>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+>> [...]
+>>=20
+>>> diff --git a/arch/powerpc/boot/dts/p1022ds.dts
+>>> b/arch/powerpc/boot/dts/p1022ds.dts
+>>> index 2bbecbb..9ad41dd 100644
+>>> --- a/arch/powerpc/boot/dts/p1022ds.dts
+>>> +++ b/arch/powerpc/boot/dts/p1022ds.dts
+>>> @@ -475,14 +475,14 @@
+>>> };
+>>>=20
+>>> sata@18000 {
+>>> - compatible =3D "fsl,mpc8536-sata", "fsl,pq-sata";
+>>> + compatible =3D "fsl,p1022-sata", "fsl,pq-sata-v2";
+>>> reg =3D<0x18000 0x1000>;
+>>> cell-index =3D<1>;
+>>> interrupts =3D<74 0x2>;
+>>> };
+>>>=20
+>>> sata@19000 {
+>>> - compatible =3D "fsl,mpc8536-sata", "fsl,pq-sata";
+>>> + compatible =3D "fsl,p1022-sata", "fsl,pq-sata-v2";
+>>> reg =3D<0x19000 0x1000>;
+>>> cell-index =3D<2>;
+>>> interrupts =3D<41 0x2>;
+>>=20
+>> Please put this into the separate patch and push thru the PPC tree.
+>=20
+> I think it's OK to send 100% of this via the PPC tree.  The sata_fsl.c =
+patch for data_snoop variability directly keys off a call to =
+platform-specific detail (of_device_is_compatible call).
+>=20
+> Acked-by: Jeff Garzik <jgarzik@redhat.com>
 
-BTW. I'm not too happy with those defaults set to 64-bit. Probably not
-an issue until your other patches go in, but some devices like veth
-cannot do 64-bit DMA. I think we should default to 32-bit in the VIO
-base code and explicitely enable 64-bit DMA from drivers that support it
-(in theory vscsi but I haven't verified the implementation).
+With Jeff's ack I'll pull this in via the powerpc tree's.
 
-Cheers,
-Ben.
+Can we make the minor updates that Sergei has commented on.
+
+- k=
