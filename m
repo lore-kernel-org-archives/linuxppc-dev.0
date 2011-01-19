@@ -1,17 +1,24 @@
-Return-Path: <mohanreddykv@gmail.com>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+	[209.85.161.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A3F56B70CC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 20 Jan 2011 03:20:34 +1100 (EST)
+Received: by gxk21 with SMTP id 21so306824gxk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 19 Jan 2011 08:20:31 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH] powerpc/83xx: fix build failures on dt compatible list.
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+	galak@kernel.crashing.org, linux-kernel@vger.kernel.org
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 19 Jan 2011 09:20:28 -0700
+Message-ID: <20110119161908.25999.76832.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
-In-Reply-To: <4D3678B6.1040707@windriver.com>
-References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
-	<20110118175533.GB28268@opentech.at>
-	<AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
-	<4D3678B6.1040707@windriver.com>
-Date: Wed, 19 Jan 2011 07:06:24 -0500
-Message-ID: <AANLkTim0xJr_sr4ZZxngTS7adDKaBpS7=_KeDMwv6mTc@mail.gmail.com>
-Subject: Re: Problem with Busybox shell
-From: MohanReddy koppula <mohanreddykv@gmail.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@lists.ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>
+Content-Type: text/plain; charset="utf-8"
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,86 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I further debugged and found that flush_to_ldisc() function is not
-called which actually wakes up the readers. This is a worker function
-and is not being scheduled. I suspected whether timer interrupts are
-generated or not. powerpc uses decrementer exceptions as timer
-interrupts. I see that timer_interrupt() function in
-arch/powerpc/kernel/time.c is not called at all. I printed even
-jiffies values and it is not incremented. And I beleivethis makes
-scheduler is not scheduling this worker thread.
+Commit a4f740cf, "of/flattree: Add of_flat_dt_match() helper function"
+introduced build failures in arch/powerpc/platform/83xx by mistyping
+'static' as 'struct' in the compatible string list, and omitting a few
+semicolons.  This patch fixes it.
 
- I think if flush_to_ldisc is not called nothing can be read from the tty.
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-Please let me know what could be the reason for timer interrupt being
-not called.
-
-Thanks,
-Mohan
+Ben, I can put this one into my merge-devicetree branch and I'll ask Linus
+to merge it in a few days.
 
 
+ arch/powerpc/platforms/83xx/mpc830x_rdb.c |    4 ++--
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-
-On Wed, Jan 19, 2011 at 12:37 AM, tiejun.chen <tiejun.chen@windriver.com> wrote:
-> MohanReddy koppula wrote:
->> But, if there is any problem with cable I could not have seen any
->> character in the interrupt routine of the driver. I turned off both
->
-> I suppose the bootloader, i.e u-boot, works well so looks this should not be
-> issued by the cable at least.
->
->> software and hardware flow control as by board doesn't have hardware
->> flow control. tty_read is called and it hangs at ldisc->read. And I
->
-> Any panic information? Or any dead lock? Which line in detail?
->
->> see that data is put into the tty buffer by the driver. Will there be
->> any problem with copy_to_user() if there is some problem in the
->> memory?
->
-> Can the serial driver support the poll mode? If so maybe you can take a try to
-> exclude any interrupt reason.
->
-> And even you can remove all codes to initialize the corresponding PIN & CLK
-> dedicated to the serial port, then try again since the bootloader already did this.
->
-> Tiejun
->
->>
->> Thanks,
->> Mohan
->>
->> On Tue, Jan 18, 2011 at 12:55 PM, Nicholas Mc Guire <der.herr@hofr.at> wrote:
->>> On Tue, 18 Jan 2011, MohanReddy koppula wrote:
->>>
->>>> Hi All,
->>>>
->>>> I am working on an MPC885 based custom board. I am able to boot up the
->>>> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
->>>> is not accepting any inputs, I am not able to enter any command, it
->>>> just hangs there. I am using ttyCPM0 terminal.
->>>>
->>>> I suspected if there was any problem in CPM driver interrupts
->>>> generation and put some printk's in the interrupt handler and could
->>>> see interrupts are raised and data is read, but shell is not taking
->>>> the input.
->>>>
->>>> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
->>>> but couldn't. I am able to write to ttyCPM0 and see it on the host
->>>> minicom.
->>>>
->>> if you are using minicom to connect check if you have hardware/software flow
->>> control turned on - it also could be a cabling problem - had this with the
->>> beagle board where the tx line was on the wrong pin - so I got output but
->>> could not get any response to input.
->>>
->>> hofrat
->>>
->>>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
->
->
+diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+index 661d354..d0c4e15 100644
+--- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+@@ -57,12 +57,12 @@ static void __init mpc830x_rdb_init_IRQ(void)
+ 	ipic_set_default_priority();
+ }
+ 
+-struct const char *board[] __initdata = {
++static const char *board[] __initdata = {
+ 	"MPC8308RDB",
+ 	"fsl,mpc8308rdb",
+ 	"denx,mpc8308_p1m",
+ 	NULL
+-}
++};
+ 
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+index b54cd73..f859ead 100644
+--- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+@@ -60,11 +60,11 @@ static void __init mpc831x_rdb_init_IRQ(void)
+ 	ipic_set_default_priority();
+ }
+ 
+-struct const char *board[] __initdata = {
++static const char *board[] __initdata = {
+ 	"MPC8313ERDB",
+ 	"fsl,mpc8315erdb",
+ 	NULL
+-}
++};
+ 
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
