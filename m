@@ -1,19 +1,20 @@
-Return-Path: <stern+4d39b18a@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id BE9B2B70D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Jan 2011 03:30:10 +1100 (EST)
-Date: Wed, 19 Jan 2011 11:23:27 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: tmarri@apm.com
-Subject: Re: [PATCH V7 07/10] USB/ppc4xx: Add Synopsys DWC OTG PCD function
-In-Reply-To: <1295402749-2193-1-git-send-email-tmarri@apm.com>
-Message-ID: <Pine.LNX.4.44L0.1101191122180.3655-100000@iolanthe.rowland.org>
+Return-Path: <meador_inge@mentor.com>
+Message-ID: <4D371EB4.3000703@mentor.com>
+Date: Wed, 19 Jan 2011 11:26:12 -0600
+From: Meador Inge <meador_inge@mentor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>
+To: Yoder Stuart-B08248 <B08248@freescale.com>
+Subject: Re: [PATCH] define binding for fsl mpic interrupt controllers
+References: <1295306382-3246-1-git-send-email-stuart.yoder@freescale.com>
+	<AANLkTim5i89k4OpUBWw0UgMoa5vwN5eSZ1MCs34S0VXB@mail.gmail.com>
+	<4D34EB06.9040908@mentor.com>
+	<9F6FE96B71CF29479FF1CDC8046E150306A71F@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E150306A71F@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>,
+	"devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Jan 2011 tmarri@apm.com wrote:
+On 01/18/2011 01:47 PM, Yoder Stuart-B08248 wrote:
+>
+> I'm not sure a complete merge into one binding makes sense.  The thing that
+> motivated creating this new binding with 4 cells was a thread from
+> last year.  See:
+>
+> http://lists.ozlabs.org/pipermail/devicetree-discuss/2010-January/001489.html
 
-> From: Tirumala Marri <tmarri@apm.com>
-> 
-> The PCD is responsible for translating requests from the gadget driver
-> to appropriate actions on the DWC OTG controller.
-> 
-> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
-> Signed-off-by: Fushen Chen <fchen@apm.com>
-> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
-> ---
->  drivers/usb/dwc_otg/dwc_otg_pcd.c | 1752 +++++++++++++++++++++++++++++++++++++
->  drivers/usb/dwc_otg/dwc_otg_pcd.h |  139 +++
->  2 files changed, 1891 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/usb/dwc_otg/dwc_otg_pcd.c b/drivers/usb/dwc_otg/dwc_otg_pcd.c
-> new file mode 100644
-> index 0000000..857dcee
-> --- /dev/null
-> +++ b/drivers/usb/dwc_otg/dwc_otg_pcd.c
+I agree that one binding may not make sense, but perhaps we could have 
+something like:
 
-...
+    dts-bindings/
+    |-- mpic.txt
+    |-- fsl
+        |-- mpic.txt
 
-> +static struct usb_ep_ops dwc_otg_pcd_ep_ops = {
-> +	.enable = dwc_otg_pcd_ep_enable,
-> +	.disable = dwc_otg_pcd_ep_disable,
-> +	.alloc_request = dwc_otg_pcd_alloc_request,
-> +	.free_request = dwc_otg_pcd_free_request,
-> +	.queue = dwc_otg_pcd_ep_queue,
-> +	.dequeue = dwc_otg_pcd_ep_dequeue,
-> +	.set_halt = dwc_otg_pcd_ep_set_halt,
-> +	.fifo_status = NULL,
-> +	.fifo_flush = NULL,
-> +};
+where '.../fsl/mpic.txt' only documents the overrides (and maybe refers 
+to '.../mpic.txt' in the intro).  For example, the 
+'interrupt-controller', '#address-cells', and 'reg' properties are 
+really not that different between the two bindings and could be placed 
+just in '.../mpic.txt'.  Where as the specific interrupt specifier 
+definition and the overrides for 'compatible' and '#interrupt-cells' 
+could go in .../fsl/mpic.txt'.
 
-This is missing a .set_wedge method.
+> Since Freescale had the need to represent additional information
+> in interrupt specifiers (error ints, timers, ipis), the suggestion
+> at the end was to add additional cells in a FSL-specific binding.
+> So this really is a Freescale specific thing and does belong in the
+> Freescale binding directory.
 
-Alan Stern
+Agreed.
+
+> That being said, if there is consensus on the AMP related properties,
+> I should probably incorporate those as well-- protected-sources
+> and no-reset.
+>
+> I'll separately comment on your mpic binding patch.
+
+Great, thanks.
+
+-- 
+Meador Inge     | meador_inge AT mentor.com
+Mentor Embedded | http://www.mentor.com/embedded-software
