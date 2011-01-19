@@ -2,14 +2,15 @@ Return-Path: <tmarri@amcc.com>
 Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 31DDAB7190
+	by ozlabs.org (Postfix) with ESMTPS id F0E2BB75B6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Jan 2011 13:05:43 +1100 (EST)
+	Wed, 19 Jan 2011 13:05:56 +1100 (EST)
 From: tmarri@apm.com
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V7 01/10] USB/ppc4xx: Add Synopsys DWC OTG Register definitions
-Date: Tue, 18 Jan 2011 18:05:18 -0800
-Message-Id: <1295402718-1891-1-git-send-email-tmarri@apm.com>
+Subject: [PATCH V7 05/10] USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt
+	function
+Date: Tue, 18 Jan 2011 18:05:42 -0800
+Message-Id: <1295402742-2093-1-git-send-email-tmarri@apm.com>
 Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,21 +24,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tirumala Marri <tmarri@apm.com>
 
-Add Synopsys Design Ware core register definitions.
+Implements DWC OTG USB HCD interrupt service routine.
 
 Signed-off-by: Tirumala R Marri <tmarri@apm.com>
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/usb/dwc_otg/dwc_otg_regs.h | 1325 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 1325 insertions(+), 0 deletions(-)
+ drivers/usb/dwc_otg/dwc_otg_hcd_intr.c | 1477 ++++++++++++++++++++++++++++++++
+ 1 files changed, 1477 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/dwc_otg/dwc_otg_regs.h b/drivers/usb/dwc_otg/dwc_otg_regs.h
+diff --git a/drivers/usb/dwc_otg/dwc_otg_hcd_intr.c b/drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
 new file mode 100644
-index 0000000..bd53bf6
+index 0000000..027635d
 --- /dev/null
-+++ b/drivers/usb/dwc_otg/dwc_otg_regs.h
-@@ -0,0 +1,1325 @@
++++ b/drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
+@@ -0,0 +1,1477 @@
 +/*
 + * DesignWare HS OTG controller driver
 + * Copyright (C) 2006 Synopsys, Inc.
@@ -59,8 +60,8 @@ index 0000000..bd53bf6
 + *
 + * Based on Synopsys driver version 2.60a
 + * Modified by Mark Miesfeld <mmiesfeld@apm.com>
-+ *
-+ * Revamped register difinitions by Tirumala R Marri(tmarri@apm.com)
++ * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
++ * Modified by Chuck Meade <chuck@theptrgroup.com>
 + *
 + * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 + * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
@@ -75,1293 +76,1445 @@ index 0000000..bd53bf6
 + *
 + */
 +
-+#ifndef __DWC_OTG_REGS_H__
-+#define __DWC_OTG_REGS_H__
++#include "dwc_otg_hcd.h"
 +
-+#include <linux/types.h>
++/* This file contains the implementation of the HCD Interrupt handlers.	*/
++static const int erratum_usb09_patched;
++static const int deferral_on = 1;
++static const int nak_deferral_delay = 8;
++static const int nyet_deferral_delay = 1;
 +
-+/*
-+ * This file contains the Macro defintions for accessing the DWC_otg core
-+ * registers.
-+ *
-+ * The application interfaces with the HS OTG core by reading from and
-+ * writing to the Control and Status Register (CSR) space through the
-+ * AHB Slave interface. These registers are 32 bits wide, and the
-+ * addresses are 32-bit-block aligned.
-+ * CSRs are classified as follows:
-+ * - Core Global Registers
-+ * - Device Mode Registers
-+ * - Device Global Registers
-+ * - Device Endpoint Specific Registers
-+ * - Host Mode Registers
-+ * - Host Global Registers
-+ * - Host Port CSRs
-+ * - Host Channel Specific Registers
-+ *
-+ * Only the Core Global registers can be accessed in both Device and
-+ * Host modes. When the HS OTG core is operating in one mode, either
-+ * Device or Host, the application must not access registers from the
-+ * other mode. When the core switches from one mode to another, the
-+ * registers in the new mode of operation must be reprogrammed as they
-+ * would be after a power-on reset.
++/**
++ * Handles the start-of-frame interrupt in host mode. Non-periodic
++ * transactions may be queued to the DWC_otg controller for the current
++ * (micro)frame. Periodic transactions may be queued to the controller for the
++ * next (micro)frame.
 + */
++static int dwc_otg_hcd_handle_sof_intr(struct dwc_hcd *hcd)
++{
++	u32 hfnum = 0;
++	struct list_head *qh_entry;
++	struct dwc_qh *qh;
++	enum dwc_transaction_type tr_type;
++	u32 gintsts = 0;
 +
-+/*
-+ * DWC_otg Core registers.  The core_global_regs structure defines the
-+ * size and relative field offsets for the Core Global registers.
++	hfnum =
++	    dwc_read32((u32) hcd->core_if->host_if->host_global_regs +
++		       DWC_HFNUM);
++
++	hcd->frame_number = DWC_HFNUM_FRNUM_RD(hfnum);
++
++	/* Determine whether any periodic QHs should be executed. */
++	qh_entry = hcd->periodic_sched_inactive.next;
++	while (qh_entry != &hcd->periodic_sched_inactive) {
++		qh = list_entry(qh_entry, struct dwc_qh, qh_list_entry);
++		qh_entry = qh_entry->next;
++
++		/*
++		 * If needed, move QH to the ready list to be executed next
++		 * (micro)frame.
++		 */
++		if (dwc_frame_num_le(qh->sched_frame, hcd->frame_number))
++			list_move(&qh->qh_list_entry,
++				  &hcd->periodic_sched_ready);
++	}
++
++	tr_type = dwc_otg_hcd_select_transactions(hcd);
++	if (tr_type != DWC_OTG_TRANSACTION_NONE)
++		dwc_otg_hcd_queue_transactions(hcd, tr_type);
++
++	/* Clear interrupt */
++	gintsts |= DWC_INTMSK_STRT_OF_FRM;
++	dwc_write32(gintsts_reg(hcd), gintsts);
++	return 1;
++}
++
++/**
++ * Handles the Rx Status Queue Level Interrupt, which indicates that there is at
++ * least one packet in the Rx FIFO.  The packets are moved from the FIFO to
++ * memory if the DWC_otg controller is operating in Slave mode.
 + */
-+#define	DWC_GOTGCTL		0x000
-+#define	DWC_GOTGINT		0x004
-+#define	DWC_GAHBCFG		0x008
-+#define	DWC_GUSBCFG		0x00C
-+#define	DWC_GRSTCTL		0x010
-+#define	DWC_GINTSTS		0x014
-+#define	DWC_GINTMSK		0x018
-+#define	DWC_GRXSTSR		0x01C
-+#define	DWC_GRXSTSP		0x020
-+#define	DWC_GRXFSIZ		0x024
-+#define	DWC_GNPTXFSIZ		0x028
-+#define	DWC_GNPTXSTS		0x02C
-+#define	DWC_GI2CCTL		0x030
-+#define	DWC_VDCTL		0x034
-+#define	DWC_GGPIO		0x038
-+#define	DWC_GUID		0x03C
-+#define	DWC_GSNPSID		0x040
-+#define	DWC_GHWCFG1		0x044
-+#define	DWC_GHWCFG2		0x048
-+#define	DWC_GHWCFG3		0x04c
-+#define	DWC_GHWCFG4		0x050
-+#define	DWC_HPTXFSIZ		0x100
-+#define	DWC_DPTX_FSIZ_DIPTXF(x)	(0x104 + x * 4)	/* 15 <= x > 1 */
++static int dwc_otg_hcd_handle_rx_status_q_level_intr(struct dwc_hcd *hcd)
++{
++	u32 grxsts;
++	struct dwc_hc *hc;
 +
-+#define DWC_GLBINTRMASK				0x0001
-+#define DWC_DMAENABLE				0x0020
-+#define DWC_NPTXEMPTYLVL_EMPTY			0x0080
-+#define DWC_NPTXEMPTYLVL_HALFEMPTY		0x0000
-+#define DWC_PTXEMPTYLVL_EMPTY			0x0100
-+#define DWC_PTXEMPTYLVL_HALFEMPTY		0x0000
++	grxsts = dwc_read32((u32) hcd->core_if->core_global_regs + DWC_GRXSTSP);
++	hc = hcd->hc_ptr_array[grxsts & DWC_HM_RXSTS_CHAN_NUM_RD(grxsts)];
 +
-+#define DWC_SLAVE_ONLY_ARCH			0
-+#define DWC_EXT_DMA_ARCH			1
-+#define DWC_INT_DMA_ARCH			2
++	/* Packet Status */
++	switch (DWC_HM_RXSTS_PKT_STS_RD(grxsts)) {
++	case DWC_GRXSTS_PKTSTS_IN:
++		/* Read the data into the host buffer. */
++		if (DWC_HM_RXSTS_BYTE_CNT_RD(grxsts) > 0) {
++			dwc_otg_read_packet(hcd->core_if, hc->xfer_buff,
++					    DWC_HM_RXSTS_BYTE_CNT_RD(grxsts));
++			/* Update the HC fields for the next packet received. */
++			hc->xfer_count += DWC_HM_RXSTS_BYTE_CNT_RD(grxsts);
++			hc->xfer_buff += DWC_HM_RXSTS_BYTE_CNT_RD(grxsts);
++		}
++	case DWC_GRXSTS_PKTSTS_IN_XFER_COMP:
++	case DWC_GRXSTS_PKTSTS_DATA_TOGGLE_ERR:
++	case DWC_GRXSTS_PKTSTS_CH_HALTED:
++		/* Handled in interrupt, just ignore data */
++		break;
++	default:
++		pr_err("RX_STS_Q Interrupt: Unknown status %d\n",
++		       DWC_HM_RXSTS_PKT_STS_RD(grxsts));
++		break;
++	}
++	return 1;
++}
 +
-+#define DWC_MODE_HNP_SRP_CAPABLE		0
-+#define DWC_MODE_SRP_ONLY_CAPABLE		1
-+#define DWC_MODE_NO_HNP_SRP_CAPABLE		2
-+#define DWC_MODE_SRP_CAPABLE_DEVICE		3
-+#define DWC_MODE_NO_SRP_CAPABLE_DEVICE		4
-+#define DWC_MODE_SRP_CAPABLE_HOST		5
-+#define DWC_MODE_NO_SRP_CAPABLE_HOST		6
-+
-+/*
-+ * These Macros represents the bit fields of the Core OTG Controland Status
-+ * Register (GOTGCTL).  Set the bits using the bit fields then write the u32
-+ * value to the register.
++/**
++ * This interrupt occurs when the non-periodic Tx FIFO is half-empty. More
++ * data packets may be written to the FIFO for OUT transfers. More requests
++ * may be written to the non-periodic request queue for IN transfers. This
++ * interrupt is enabled only in Slave mode.
 + */
-+#define DWC_GCTL_BSESSION_VALID     (1 << 19)
-+#define DWC_GCTL_CSESSION_VALID     (1 << 18)
-+#define DWC_GCTL_DEBOUNCE           (1 << 17)
-+#define DWC_GCTL_CONN_ID_STATUS     (1 << 16)
-+#define DWC_GCTL_DEV_HNP_ENA        (1 << 11)
-+#define DWC_GCTL_HOST_HNP_ENA       (1 << 10)
-+#define DWC_GCTL_HNP_REQ            (1 << 9)
-+#define DWC_GCTL_HOST_NEG_SUCCES    (1 << 8)
-+#define DWC_GCTL_SES_REQ            (1 << 1)
-+#define DWC_GCTL_SES_REQ_SUCCESS    (1 << 0)
++static int dwc_otg_hcd_handle_np_tx_fifo_empty_intr(struct dwc_hcd *hcd)
++{
++	dwc_otg_hcd_queue_transactions(hcd, DWC_OTG_TRANSACTION_NON_PERIODIC);
++	return 1;
++}
 +
-+#define DWC_GCTL_BSESSION_VALID_RD(reg)		(((reg) & (0x001 << 19)) >> 19)
-+#define DWC_GCTL_CSESSION_VALID_RD(reg)		(((reg) & (0x001 << 18)) >> 18)
-+#define DWC_GCTL_DEBOUNCE_RD(reg)		(((reg) & (0x001 << 17)) >> 17)
-+#define DWC_GCTL_CONN_ID_STATUS_RD(reg)		(((reg) & (0x001 << 16)) >> 16)
-+#define DWC_GCTL_DEV_HNP_ENA_RD(reg)		(((reg) & (0x001 << 11)) >> 11)
-+#define DWC_GCTL_HOST_HNP_ENA_RD(reg)		(((reg) & (0x001 << 10)) >> 10)
-+#define DWC_GCTL_HNP_REQ_RD(reg)		(((reg) & (0x001 << 9)) >> 9)
-+#define DWC_GCTL_HOST_NEG_SUCCES_RD(reg)	(((reg) & (0x001 << 8)) >> 8)
-+#define DWC_GCTL_SES_REQ_RD(reg)		(((reg) & (0x001 << 1)) >> 1)
-+#define DWC_GCTL_SES_REQ_SUCCESS_RD(reg)	(((reg) & (0x001 << 0)) >> 0)
-+
-+#define DWC_GCTL_BSESSION_VALID_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 19))) | ((x) << 19))
-+#define DWC_GCTL_CSESSION_VALID_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 18))) | ((x) << 18))
-+#define DWC_GCTL_DEBOUNCE_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 17))) | ((x) << 17))
-+#define DWC_GCTL_CONN_ID_STATUS_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 16))) | ((x) << 16))
-+#define DWC_GCTL_DEV_HNP_ENA_RW	(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 11))) | ((x) << 11))
-+#define DWC_GCTL_HOST_HNP_ENA_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 10))) | ((x) << 10))
-+#define DWC_GCTL_HNP_REQ_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 9))) | ((x) << 9))
-+#define DWC_GCTL_HOST_NEG_SUCCES_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 8))) | ((x) << 8))
-+#define DWC_GCTL_SES_REQ_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 1))) | ((x) << 1))
-+#define DWC_GCTL_SES_REQ_SUCCESS_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 0))) | ((x) << 0))
-+/*
-+ * These Macros represents the bit fields of the Core OTG Interrupt Register
-+ * (GOTGINT).  Set/clear the bits using the bit fields then write the u32
-+ * value to the register.
++/**
++ * This interrupt occurs when the periodic Tx FIFO is half-empty. More data
++ * packets may be written to the FIFO for OUT transfers. More requests may be
++ * written to the periodic request queue for IN transfers. This interrupt is
++ * enabled only in Slave mode.
 + */
-+#define DWC_GINT_DEBDONE	(1 << 19)
-+#define DWC_GINT_DEVTOUT	(1 << 18)
-+#define DWC_GINT_HST_NEGDET	(1 << 17)
-+#define DWC_GINT_HST_NEGSUC	(1 << 9)
-+#define DWC_GINT_SES_REQSUC	(1 << 8)
-+#define DWC_GINT_SES_ENDDET	(1 << 2)
++static int dwc_otg_hcd_handle_perio_tx_fifo_empty_intr(struct dwc_hcd *hcd)
++{
++	dwc_otg_hcd_queue_transactions(hcd, DWC_OTG_TRANSACTION_PERIODIC);
++	return 1;
++}
 +
-+/*
-+ * These Macros represents the bit fields of the Core AHB Configuration Register
-+ * (GAHBCFG).  Set/clear the bits using the bit fields then write the u32 value
-+ * to the register.
++/**
++ * When the port changes to enabled it may be necessary to adjust the phy clock
++ * speed.
 + */
-+#define DWC_AHBCFG_FIFO_EMPTY		(1 << 8)
-+#define DWC_AHBCFG_NPFIFO_EMPTY		(1 << 7)
-+#define DWC_AHBCFG_DMA_ENA		(1 << 5)
-+#define DWC_AHBCFG_BURST_LEN(x)		(x << 1)
-+#define DWC_AHBCFG_GLBL_INT_MASK	(1 << 0)
++static int adjusted_phy_clock_speed(struct dwc_hcd *hcd, u32 hprt0)
++{
++	int adjusted = 0;
++	u32 usbcfg;
++	u32 global_regs = (u32) hcd->core_if->core_global_regs;
++	struct core_params *params = hcd->core_if->core_params;
++	u32 h_regs = (u32) hcd->core_if->host_if->host_global_regs;
 +
-+#define DWC_GAHBCFG_TXFEMPTYLVL_EMPTY		1
-+#define DWC_GAHBCFG_TXFEMPTYLVL_HALFEMPTY	0
-+#define DWC_GAHBCFG_DMAENABLE			1
-+#define DWC_GAHBCFG_INT_DMA_BURST_SINGLE	0
-+#define DWC_GAHBCFG_INT_DMA_BURST_INCR		1
-+#define DWC_GAHBCFG_INT_DMA_BURST_INCR4		3
-+#define DWC_GAHBCFG_INT_DMA_BURST_INCR8		5
-+#define DWC_GAHBCFG_INT_DMA_BURST_INCR16	7
++	usbcfg = dwc_read32(global_regs + DWC_GUSBCFG);
 +
-+/*
++	if (DWC_HPRT0_PRT_SPD_RD(hprt0) == DWC_HPRT0_PRTSPD_LOW_SPEED ||
++	    DWC_HPRT0_PRT_SPD_RD(hprt0) == DWC_HPRT0_PRTSPD_FULL_SPEED) {
++		/* Low power */
++		u32 hcfg;
 +
-+ * (GUSBCFG).  Set the bits using the bit fields then write the u32 value to the
-+ * register.
++		if (!(usbcfg & DWC_USBCFG_PHYLPWRCLKSEL)) {
++			/* Set PHY low power clock select for FS/LS devices */
++			usbcfg |= DWC_USBCFG_PHYLPWRCLKSEL;
++			dwc_write32(global_regs + DWC_GUSBCFG, usbcfg);
++			adjusted = 1;
++		}
++
++		hcfg = dwc_read32(h_regs + DWC_HCFG);
++		if (DWC_HPRT0_PRT_SPD_RD(hprt0) == DWC_HPRT0_PRTSPD_LOW_SPEED &&
++		    params->host_ls_low_power_phy_clk ==
++		    DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_6MHZ) {
++			/* 6 MHZ, check for 6 MHZ clock select */
++			if (DWC_HCFG_FSLSP_CLK_RD(hcfg) != DWC_HCFG_6_MHZ) {
++				hcfg = DWC_HCFG_FSLSP_CLK_RW(hcfg,
++							     DWC_HCFG_6_MHZ);
++				dwc_write32(h_regs + DWC_HCFG, hcfg);
++				adjusted = 1;
++			}
++		} else if (DWC_HCFG_FSLSP_CLK_RD(hcfg) != DWC_HCFG_48_MHZ) {
++			/* 48 MHZ and clock select is not 48 MHZ */
++			hcfg = DWC_HCFG_FSLSP_CLK_RW(hcfg, DWC_HCFG_48_MHZ);
++			dwc_write32(h_regs + DWC_HCFG, hcfg);
++			adjusted = 1;
++		}
++	} else if (usbcfg & DWC_USBCFG_PHYLPWRCLKSEL) {
++		usbcfg &= ~((u32) DWC_USBCFG_PHYLPWRCLKSEL);
++		dwc_write32(global_regs + DWC_GUSBCFG, usbcfg);
++		adjusted = 1;
++	}
++	if (adjusted)
++		schedule_work(&hcd->usb_port_reset);
++
++	return adjusted;
++}
++
++/**
++ * Helper function to handle the port enable changed interrupt when the port
++ * becomes enabled.  Checks if we need to adjust the PHY clock speed for low
++ * power and  adjusts it if needed.
 + */
-+#define DWC_USBCFG_CORR_PKT		(1 << 31)
-+#define DWC_USBCFG_FRC_DEV_MODE		(1 << 30)
-+#define DWC_USBCFG_FRC_HST_MODE		(1 << 29)
-+#define DWC_USBCFG_TERM_SEL_DL_PULSE	(1 << 22)
-+#define DWC_USBCFG_ULPI_INTVBUS_INDICATOR (1 << 21)
-+#define DWC_USBCFG_ULPI_EXT_VBUS_DRV	(1 << 20)
-+#define DWC_USBCFG_ULPI_CLK_SUS_M	(1 << 19)
-+#define DWC_USBCFG_ULPI_AUTO_RES	(1 << 18)
-+#define DWC_USBCFG_ULPI_FSLS		(1 << 17)
-+#define DWC_USBCFG_OTGUTMIFSSEL		(1 << 16)
-+#define DWC_USBCFG_PHYLPWRCLKSEL	(1 << 15)
-+#define DWC_USBCFG_NPTXFRWNDEN		(1 << 14)
-+#define DWC_USBCFG_TRN_TIME(x)		(x << 10)
-+#define DWC_USBCFG_HNP_CAP		(1 << 9)
-+#define DWC_USBCFG_SRP_CAP		(1 << 8)
-+#define DWC_USBCFG_DDRSEL		(1 << 7)
-+#define DWC_USBCFG_USB_2_11		(1 << 6)
-+#define DWC_USBCFG_FSINTF		(1 << 5)
-+#define DWC_USBCFG_ULPI_UTMI_SEL	(1 << 4)
-+#define DWC_USBCFG_PHYIF		(1 << 3)
-+#define DWC_USBCFG_TOUT_CAL(x)		(x << 0)
++static void port_enabled(struct dwc_hcd *hcd, u32 hprt0)
++{
++	if (hcd->core_if->core_params->host_support_fs_ls_low_power)
++		if (!adjusted_phy_clock_speed(hcd, hprt0))
++			hcd->flags.b.port_reset_change = 1;
++}
 +
-+/*
-+ * These Macros represents the bit fields of the Core Reset Register (GRSTCTL).
-+ * Set/clear the bits using the bit fields then write the u32 value to the
-+ * register.
++/**
++ * There are multiple conditions that can cause a port interrupt. This function
++ * determines which interrupt conditions have occurred and handles them
++ * appropriately.
 + */
-+#define DWC_RSTCTL_AHB_IDLE	(1 << 31)
-+#define DWC_RSTCTL_DMA_REQ	(1 << 30)
-+#define DWC_RSTCTL_TX_FIFO_NUM(reg, x)	\
-+	(((reg) & (~((u32)0x1f << 6))) | ((x) << 6))
-+#define DWC_RSTCTL_TX_FIFO_FLUSH	(1 << 5)
-+#define DWC_RSTCTL_RX_FIFO_FLUSH	(1 << 4)
-+#define DWC_RSTCTL_TKN_QUE_FLUSH	(1 << 3)
-+#define DWC_RSTCTL_HSTFRM_CNTR_RST	(1 << 2)
-+#define DWC_RSTCTL_HCLK_SFT_RST	(1 << 1)
-+#define DWC_RSTCTL_SFT_RST	(1 << 1)
-+#define DWC_GRSTCTL_TXFNUM_ALL	0x10
-+
-+/*
-+ * These Macros represents the bit fields of the Core Interrupt Mask Register
-+ * (GINTMSK).  Set/clear the bits using the bit fields then write the u32 value
-+ * to the register.
-+ */
-+#define DWC_INTMSK_WKP			(1 << 31)
-+#define DWC_INTMSK_NEW_SES_DET		(1 << 30)
-+#define DWC_INTMSK_SES_DISCON_DET	(1 << 29)
-+#define DWC_INTMSK_CON_ID_STS_CHG	(1 << 28)
-+#define DWC_INTMSK_P_TXFIFO_EMPTY	(1 << 26)
-+#define DWC_INTMSK_HST_CHAN		(1 << 25)
-+#define DWC_INTMSK_HST_PORT		(1 << 24)
-+#define DWC_INTMSK_DATA_FETCH_SUS	(1 << 23)
-+#define DWC_INTMSK_INCMP_PTX		(1 << 22)
-+#define DWC_INTMSK_INCMP_OUT_PTX	(1 << 21)
-+#define DWC_INTMSK_INCMP_IN_ATX		(1 << 20)
-+#define DWC_INTMSK_OUT_ENDP		(1 << 19)
-+#define DWC_INTMSK_IN_ENDP		(1 << 18)
-+#define DWC_INTMSK_ENDP_MIS_MTCH	(1 << 17)
-+#define DWC_INTMSK_END_OF_PFRM		(1 << 15)
-+#define DWC_INTMSK_ISYNC_OUTPKT_DRP	(1 << 14)
-+#define DWC_INTMSK_ENUM_DONE		(1 << 13)
-+#define DWC_INTMSK_USB_RST		(1 << 12)
-+#define DWC_INTMSK_USB_SUSP		(1 << 11)
-+#define DWC_INTMSK_EARLY_SUSP		(1 << 10)
-+#define DWC_INTMSK_I2C_INTR		(1 << 9)
-+#define DWC_INTMSK_GLBL_OUT_NAK		(1 << 7)
-+#define DWC_INTMSK_GLBL_IN_NAK		(1 << 6)
-+#define DWC_INTMSK_NP_TXFIFO_EMPT	(1 << 5)
-+#define DWC_INTMSK_RXFIFO_NOT_EMPT	(1 << 4)
-+#define DWC_INTMSK_STRT_OF_FRM		(1 << 3)
-+#define DWC_INTMSK_OTG			(1 << 2)
-+#define DWC_INTMSK_MODE_MISMTC		(1 << 1)
-+/*
-+ * These Macros represents the bit fields of the Core Interrupt Register
-+ * (GINTSTS).  Set/clear the bits using the bit fields then write the u32 value
-+ * to the register.
-+ */
-+#define DWC_INTSTS_WKP			(1 << 31)
-+#define DWC_INTSTS_NEW_SES_DET		(1 << 30)
-+#define DWC_INTSTS_SES_DISCON_DET	(1 << 29)
-+#define DWC_INTSTS_CON_ID_STS_CHG	(1 << 28)
-+#define DWC_INTSTS_P_TXFIFO_EMPTY	(1 << 26)
-+#define DWC_INTSTS_HST_CHAN		(1 << 25)
-+#define DWC_INTSTS_HST_PORT		(1 << 24)
-+#define DWC_INTSTS_DATA_FETCH_SUS	(1 << 23)
-+#define DWC_INTSTS_INCMP_PTX		(1 << 22)
-+#define DWC_INTSTS_INCMP_OUT_PTX	(1 << 21)
-+#define DWC_INTSTS_INCMP_IN_ATX		(1 << 20)
-+#define DWC_INTSTS_OUT_ENDP		(1 << 19)
-+#define DWC_INTSTS_IN_ENDP		(1 << 18)
-+#define DWC_INTSTS_ENDP_MIS_MTCH	(1 << 17)
-+#define DWC_INTSTS_END_OF_PFRM		(1 << 15)
-+#define DWC_INTSTS_ISYNC_OUTPKT_DRP	(1 << 14)
-+#define DWC_INTSTS_ENUM_DONE		(1 << 13)
-+#define DWC_INTSTS_USB_RST		(1 << 12)
-+#define DWC_INTSTS_USB_SUSP		(1 << 11)
-+#define DWC_INTSTS_EARLY_SUSP		(1 << 10)
-+#define DWC_INTSTS_I2C_INTR		(1 << 9)
-+#define DWC_INTSTS_GLBL_OUT_NAK		(1 << 7)
-+#define DWC_INTSTS_GLBL_IN_NAK		(1 << 6)
-+#define DWC_INTSTS_NP_TXFIFO_EMPT	(1 << 5)
-+#define DWC_INTSTS_RXFIFO_NOT_EMPT	(1 << 4)
-+#define DWC_INTSTS_STRT_OF_FRM		(1 << 3)
-+#define DWC_INTSTS_OTG			(1 << 2)
-+#define DWC_INTSTS_MODE_MISMTC		(1 << 1)
-+#define DWC_INTSTS_CURR_MODE		(1 << 0)
-+#define DWC_SOF_INTR_MASK		0x0008
-+#define DWC_HOST_MODE			1
-+
-+/*
-+ * These Macros represents the bit fields in the Device Receive Status Read and
-+ * Pop Registers (GRXSTSR, GRXSTSP) Read the register into the u32
-+ * element then read out the bits using the bit elements.
-+ */
-+#define DWC_DM_RXSTS_PKT_STS	(0x01f << 17)
-+#define DWC_DM_RXSTS_PKT_DPID	(0x003 << 15)
-+#define DWC_DM_RXSTS_BYTE_CNT	(0x7ff << 4)
-+#define DWC_DM_RXSTS_CHAN_NUM	(0x00f << 0)
-+
-+#define DWC_DM_RXSTS_PKT_STS_RD(reg)	(((reg) & (0x00f << 17)) >> 17)
-+#define DWC_DM_RXSTS_PKT_DPID_RD(reg)	(((reg) & (0x003 << 15)) >> 15)
-+#define DWC_DM_RXSTS_BYTE_CNT_RD(reg)	(((reg) & (0x7ff << 04)) >> 04)
-+#define DWC_DM_RXSTS_CHAN_NUM_RD(reg)	((reg) & 0x00f)
-+
-+#define DWC_STS_DATA_UPDT		0x2	/* OUT Data Packet */
-+#define DWC_STS_XFER_COMP		0x3	/* OUT Data Transfer Complete */
-+#define DWC_DSTS_GOUT_NAK		0x1	/* Global OUT NAK */
-+#define DWC_DSTS_SETUP_COMP		0x4	/* Setup Phase Complete */
-+#define DWC_DSTS_SETUP_UPDT		0x6	/* SETUP Packet */
-+
-+/*
-+ * These Macros represents the bit fields in the Host Receive Status Read and
-+ * Pop Registers (GRXSTSR, GRXSTSP) Read the register into the u32
-+ * element then read out the bits using the bit elements.
-+ */
-+#define DWC_HM_RXSTS_FRM_NUM	(0x00f << 21)
-+#define DWC_HM_RXSTS_PKT_STS	(0x01f << 17)
-+#define DWC_HM_RXSTS_PKT_DPID	(0x003 << 15)
-+#define DWC_HM_RXSTS_BYTE_CNT	(0x7ff << 4)
-+#define DWC_HM_RXSTS_CHAN_NUM	(0x00f << 0)
-+
-+#define DWC_HM_RXSTS_PKT_STS_RD(reg)	(((reg) & (0x00f << 17)) >> 17)
-+#define DWC_HM_RXSTS_PKT_DPID_RD(reg)	(((reg) & (0x003 << 15)) >> 15)
-+#define DWC_HM_RXSTS_BYTE_CNT_RD(reg)	(((reg) & (0x7ff << 04)) >> 04)
-+#define DWC_HM_RXSTS_CHAN_NUM_RD(reg)	((reg) & 0x00f)
-+
-+#define DWC_GRXSTS_PKTSTS_IN			0x2
-+#define DWC_GRXSTS_PKTSTS_IN_XFER_COMP		0x3
-+#define DWC_GRXSTS_PKTSTS_DATA_TOGGLE_ERR	0x5
-+#define DWC_GRXSTS_PKTSTS_CH_HALTED		0x7
-+
-+/*
-+ * These Macros represents the bit fields in the FIFO Size Registers (HPTXFSIZ,
-+ * GNPTXFSIZ, DPTXFSIZn). Read the register into the u32 element then
-+ * read out the bits using the bit elements.
-+ */
-+#define DWC_RX_FIFO_DEPTH_RD(reg)	(((reg) & ((u32)0xffff << 16)) >> 16)
-+#define DWC_RX_FIFO_DEPTH_WR(reg, x)	\
-+	(((reg) & (~((u32)0xffff << 16))) | ((x) << 16))
-+#define DWC_RX_FIFO_START_ADDR_RD(reg)		((reg) & 0xffff)
-+#define DWC_RX_FIFO_START_ADDR_WR(reg, x)	\
-+	(((reg) & (~((u32)0xffff))) | (x))
-+
-+/*
-+ * These Macros represents the bit fields in the Non-Periodic Tx FIFO/Queue
-+ * Status Register (GNPTXSTS). Read the register into the u32 element then read
-+ * out the bits using the bit elements.
-+ */
-+#define DWC_GNPTXSTS_NPTXQTOP_CHNEP_RD(x)	(((x) & (0x3f << 26)) >> 26)
-+#define DWC_GNPTXSTS_NPTXQTOP_TKN_RD(x)		(((x) & (0x03 << 24)) >> 24)
-+#define DWC_GNPTXSTS_NPTXQSPCAVAIL_RD(x)	(((x) & (0xff << 16)) >> 16)
-+#define DWC_GNPTXSTS_NPTXFSPCAVAIL_RD(x)	(0xffff & (x))
-+
-+/*
-+ * These Macros represents the bit fields in the Transmit FIFO Status Register
-+ * (DTXFSTS). Read the register into the u32 element then read out the bits
-+ * using the bit elements.
-+ */
-+#define DWC_DTXFSTS_TXFSSPC_AVAI_RD(x)	((x) & 0xffff)
-+
-+/*
-+ * These Macros represents the bit fields in the I2C Control Register (I2CCTL).
-+ * Read the register into the u32 element then read out the bits using the bit
-+ * elements.
-+ */
-+#define DWC_I2CCTL_BSYDNE	(1 << 31)
-+#define DWC_I2CCTL_RW		(1 << 30)
-+#define DWC_I2CCTL_I2CDEVADDR(x)	((x) << 27)
-+#define DWC_I2CCTL_I2CSUSCTL	(1 << 25)
-+#define DWC_I2CCTL_ACK		(1 << 24)
-+#define DWC_I2CCTL_I2CEN	(1 << 23)
-+#define DWC_I2CCTL_ADDR		(1 << 22)
-+#define DWC_I2CCTL_REGADDR(x)	((x) << 14)
-+#define DWC_I2CCTL_RWDATA(x)	((x) << 6)
-+
-+/*
-+ * These Macros represents the bit fields in the User HW Config1 Register.  Read
-+ * the register into the u32 element then read out the bits using the bit
-+ * elements.
-+ */
-+#define DWC_HWCFG1_EPDIR15(x)	((x) << 30)
-+#define DWC_HWCFG1_EPDIR14(x)	((x) << 28)
-+#define DWC_HWCFG1_EPDIR13(x)	((x) << 26)
-+#define DWC_HWCFG1_EPDIR12(x)	((x) << 24)
-+#define DWC_HWCFG1_EPDIR11(x)	((x) << 22)
-+#define DWC_HWCFG1_EPDIR10(x)	((x) << 20)
-+#define DWC_HWCFG1_EPDIR9(x)	((x) << 18)
-+#define DWC_HWCFG1_EPDIR8(x)	((x) << 16)
-+#define DWC_HWCFG1_EPDIR7(x)	((x) << 14)
-+#define DWC_HWCFG1_EPDIR6(x)	((x) << 13)
-+#define DWC_HWCFG1_EPDIR5(x)	((x) << 10)
-+#define DWC_HWCFG1_EPDIR4(x)	((x) << 08)
-+#define DWC_HWCFG1_EPDIR3(x)	((x) << 06)
-+#define DWC_HWCFG1_EPDIR2(x)	((x) << 04)
-+#define DWC_HWCFG1_EPDIR1(x)	((x) << 02)
-+#define DWC_HWCFG1_EPDIR0(x)	((x) << 00)
-+
-+/*
-+ * These Macros represents the bit fields in the User HW Config2 Register.  Read
-+ * the register into the u32 element then read out the bits using the bit
-+ * elements.
-+ */
-+#define DWC_HWCFG2_DEV_TKN_Q_DEPTH_RD(x)	(((x) & (0x1F << 26)) >> 26)
-+#define DWC_HWCFG2_HOST_PERIO_Q_DEPTH_RD(x)	(((x) & (0x3 << 24)) >> 24)
-+#define DWC_HWCFG2_NP_TX_Q_DEPTH_RD(x)		(((x) & (0x3 << 22)) >> 22)
-+#define DWC_HWCFG2_RX_STS_Q_DEPTH_RD(x)		(((x) & (0x3 << 20)) >> 20)
-+#define DWC_HWCFG2_DYN_FIFO_RD(x)		(((x) & (0x1 << 19)) >> 19)
-+#define DWC_HWCFG2_PERIO_EP_SUPP_RD(x)		(((x) & (0x1 << 18)) >> 18)
-+#define DWC_HWCFG2_NO_HST_CHAN_RD(x)		(((x) & (0xf << 14)) >> 14)
-+#define DWC_HWCFG2_NO_DEV_EP_RD(x)		(((x) & (0xf << 10)) >> 10)
-+#define DWC_HWCFG2_FS_PHY_TYPE_RD(x)		(((x) & (0x3 <<  8)) >> 8)
-+#define DWC_HWCFG2_HS_PHY_TYPE_RD(x)		(((x) & (0x3 << 06)) >> 06)
-+#define DWC_HWCFG2_P_2_P_RD(x)			(((x) & (0x1 << 05)) >> 05)
-+#define DWC_HWCFG2_ARCH_RD(x)			(((x) & (0x3 << 03)) >> 03)
-+#define DWC_HWCFG2_OP_MODE_RD(x)		((x) & 0x7)
-+
-+#define DWC_HWCFG2_HS_PHY_TYPE_NOT_SUPPORTED		0
-+#define DWC_HWCFG2_HS_PHY_TYPE_UTMI			1
-+#define DWC_HWCFG2_HS_PHY_TYPE_ULPI			2
-+#define DWC_HWCFG2_HS_PHY_TYPE_UTMI_ULPI		3
-+#define DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG		0
-+#define DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG		1
-+#define DWC_HWCFG2_OP_MODE_NO_HNP_SRP_CAPABLE_OTG	2
-+#define DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE		3
-+#define DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE	4
-+#define DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST		5
-+#define DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST		6
-+
-+/*
-+ * These Macros represents the bit fields in the User HW Config3 Register.  ead
-+ * the register into the u32 element then read out the bits using the bit
-+ * elements.
-+ */
-+#define DWC_HWCFG3_DFIFO_DEPTH_RD(x)		(((x) & (0xffff << 16)) >> 16)
-+#define	DWC_HWCFG3_AHB_PHY_CLK_SYNC_RD(x)	(((x) & (0x1 << 12)) >> 12)
-+#define DWC_HWCFG3_SYNC_RST_TYPE_RD(x)		(((x) & (0x1 << 11)) >> 11)
-+#define DWC_HWCFG3_OPT_FEATURES_RD(x)		(((x) & (0x1 << 10)) >> 10)
-+#define DWC_HWCFG3_VEND_CTRL_IF_RD(x)		(((x) & (0x1 << 9)) >> 9)
-+#define DWC_HWCFG3_I2C_RD(x)			(((x) & (0x1 << 8)) >> 8)
-+#define DWC_HWCFG3_OTG_FUNC_RD(x)		(((x) & (0x1 << 07)) >> 07)
-+#define DWC_HWCFG3_PKTSIZE_CTR_WIDTH_RD(x)	(((x) & (0x7 << 04)) >> 04)
-+#define DWC_HWCFG3_XFERSIZE_CTR_WIDTH_RD(x)	((x) & 0xf)
-+
-+/*
-+ * These Macros represents the bit fields in the User HW Config4 Register.  Read
-+ * the register into the u32 element then read out the bits using the bit
-+ * elements.
-+ */
-+#define DWC_HWCFG4_NUM_IN_EPS_RD(x)		(((x) & (0xF << 26)) >> 26)
-+#define DWC_HWCFG4_DED_FIFO_ENA_RD(x)		(((x) & (0x1 << 25)) >> 25)
-+#define DWC_HWCFG4_SES_END_FILT_EN_RD(x)	(((x) & (0x1 << 24)) >> 24)
-+#define DWC_HWCFG4_BVALID_FILT_EN_RD(x)		(((x) & (0x1 << 23)) >> 23)
-+#define DWC_HWCFG4_AVALID_FILT_EN_RD(x)		(((x) & (0x1 << 22)) >> 22)
-+#define DWC_HWCFG4_VBUS_VALID_FILT_EN_RD(x)	(((x) & (0x1 << 21)) >> 21)
-+#define DWC_HWCFG4_IDDIG_FILT_EN_RD(x)		(((x) & (0x1 << 20)) >> 20)
-+#define DWC_HWCFG4_NUM_DEV_MODE_CTRL_EP_RD(x)	(((x) & (0xF << 16)) >> 16)
-+#define DWC_HWCFG4_UTMI_PHY_DATA_WIDTH_RD(x)	(((x) & (0x3 << 14)) >> 14)
-+#define DWC_HWCFG4_MIN_AHB_FREQ_RD(x)		(((x) & (0x1 << 05)) >> 05)
-+#define DWC_HWCFG4_POWER_OPT_RD(x)		(((x) & (0x1 << 04)) >> 04)
-+#define	DWC_HWCFG4_NUM_DEV_PERIO_IN_EP_RD(x)	((x) & 0xf)
-+
-+/*
-+ * Device Global Registers. Offsets 800h-BFFh
-+ *
-+ * The following structures define the size and relative field offsets for the
-+ * Device Mode Registers.
-+ *
-+ * These registers are visible only in Device mode and must not be accessed in
-+ * Host mode, as the results are unknown.
-+ */
-+#define DWC_DCFG	0x000
-+#define DWC_DCTL	0x004
-+#define DWC_DSTS	0x008
-+#define DWC_DIEPMSK	0x010
-+#define DWC_DOEPMSK	0x014
-+#define DWC_DAINT	0x018
-+#define DWC_DAINTMSK	0x01C
-+#define DWC_DTKNQR1	0x020
-+#define DWC_DTKNQR2	0x024
-+#define DWC_DVBUSDIS	0x028
-+#define DWC_DVBUSPULSE	0x02C
-+#define DWC_DTKNQR3_DTHRCTL	0x030
-+#define DWC_DTKNQR4FIFOEMPTYMSK	0x034
-+
-+/*
-+ * These Macros represents the bit fields in the Device Configuration
-+ * Register.  Read the register into the u32 member then
-+ * set/clear the bits using the bit elements.  Write the
-+ * u32 member to the dcfg register.
-+*/
-+#define DWC_DCFG_IN_EP_MISMATCH_CNT_RD(x)	(((x) & (0x1f << 18)) >> 18)
-+#define DWC_DCFG_P_FRM_INTRVL_RD(x)		(((x) & (0x03 << 11)) >> 11)
-+#define DWC_DCFG_DEV_ADDR_RD(x)			(((x) & (0x3f << 04)) >> 04)
-+#define DWC_DCFG_NGL_STS_OUT_RD(x)		(((x) & (0x1 << 2)) >> 2)
-+#define DWC_DCFG_DEV_SPEED_RD(x)		((x) & 0x3)
-+
-+#define DWC_DCFG_IN_EP_MISMATCH_CNT_WR(reg, x)	\
-+	(((reg) & (~((u32)0x1f << 18))) | ((x) << 18))
-+#define DWC_DCFG_P_FRM_INTRVL_WR(reg, x)	\
-+	(((reg) & (~((u32)0x03 << 11))) | ((x) << 11))
-+#define DWC_DCFG_DEV_ADDR_WR(reg, x)	\
-+	(((reg) & (~((u32)0x3f << 04))) | ((x) << 04))
-+#define DWC_DCFG_NGL_STS_OUT_WR(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 2)))   | ((x) << 2))
-+#define DWC_DCFG_DEV_SPEED_WR(reg, x)	\
-+	(((reg) & (~(u32)0x3)) | (x))
-+
-+#define DWC_DCFG_FRAME_INTERVAL_80		0
-+#define DWC_DCFG_FRAME_INTERVAL_85		1
-+#define DWC_DCFG_FRAME_INTERVAL_90		2
-+#define DWC_DCFG_FRAME_INTERVAL_95		3
-+
-+/*
-+ * These Macros represents the bit fields in the Device Control Register.  Read
-+ * the register into the u32 member then set/clear the bits using the bit
-+ * elements.
-+ */
-+#define DWC_DCTL_PWR_ON_PROG_DONE_RD(x)	(((x) & (1 << 11)) >> 11)
-+
-+#define DWC_DCTL_PWR_ON_PROG_DONE_WR(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 11))) | ((x) << 11))
-+#define DWC_DCTL_CLR_GLBL_OUT_NAK_WR(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 10))) | ((x) << 10))
-+#define DWC_DCTL_SET_GLBL_OUT_NAL(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 9))) | ((x) << 9))
-+#define DWC_DCTL_CLR_CLBL_NP_IN_NAK(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 8))) | ((x) << 8))
-+#define DWC_DCTL_SET_GLBL_NP_IN_NAK(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 07))) | ((x) << 07))
-+#define DWC_DCTL_TST_CTL(reg, x)	\
-+	(((reg) & (~((u32)0x07 << 04))) | ((x) << 04))
-+#define DWC_DCTL_GLBL_OUT_NAK_STS(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 03))) | ((x) << 03))
-+#define DWC_DCTL_GLBL_NP_IN_NAK(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 02))) | ((x) << 02))
-+#define DWC_DCTL_SFT_DISCONNECT(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 01))) | ((x) << 01))
-+#define DEC_DCTL_REMOTE_WAKEUP_SIG(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 00))) | ((x) << 00))
-+
-+/*
-+ * These Macros represents the bit fields in the Dev Status Register. Read the
-+ * register into the u32 member then set/clear the bits using the bit elements.
-+ */
-+#define DWC_DSTS_SOFFN_RD(x)		(((x) & (0x3fff << 8)) >> 8)
-+#define DWC_DSTS_ERRTICERR_RD(x)	(((x) & (0x0001 << 3)) >> 3)
-+#define DWC_DSTS_ENUM_SPEED_RD(x)	(((x) & (0x0003 << 1)) >> 1)
-+#define DWC_DSTS_SUSP_STS_RD(x)		((x) & 1)
-+
-+#define DWC_DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ		0
-+#define DWC_DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ		1
-+#define DWC_DSTS_ENUMSPD_LS_PHY_6MHZ			2
-+#define DWC_DSTS_ENUMSPD_FS_PHY_48MHZ			3
-+
-+/*
-+ * These Macros represents the bit fields in the Device IN EP Interrupt Register
-+ * and the Device IN EP Common Mask Register.
-+ *
-+ * Read the register into the u32 member then set/clear the bits using the bit
-+ * elements.
-+ */
-+#define DWC_DIEPINT_TXFIFO_UNDERN_RD(x)		(((x) & (0x1 << 8)) >> 8)
-+#define DWC_DIEPINT_TXFIFO_EMPTY_RD(x)		(((x) & (0x1 << 7)) >> 7)
-+#define DWC_DIEPINT_IN_EP_NAK_RD(x)		(((x) & (0x1 << 6)) >> 6)
-+#define DWC_DIEPINT_IN_TKN_EP_MISS_RD(x)	(((x) & (0x1 << 5)) >> 5)
-+#define DWC_DIEPINT_IN_TKN_TX_EMPTY_RD(x)	(((x) & (0x1 << 4)) >> 4)
-+#define DWC_DIEPINT_TOUT_COND_RD(x)		(((x) & (0x1 << 3)) >> 3)
-+#define DWC_DIEPINT_AHB_ERROR_RD(x)		(((x) & (0x1 << 2)) >> 2)
-+#define DWC_DIEPINT_EP_DISA_RD(x)		(((x) & (0x1 << 1)) >> 1)
-+#define DWC_DIEPINT_TX_CMPL_RD(x)		((x) & 0x1)
-+
-+#define DWC_DIEPINT_TXFIFO_UNDERN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 8))) | ((x) << 8))
-+#define DWC_DIEPINT_TXFIFO_EMPTY_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 7))) | ((x) << 7))
-+#define DWC_DIEPINT_IN_EP_NAK_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 6))) | ((x) << 6))
-+#define DWC_DIEPINT_IN_TKN_EP_MISS_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 5))) | ((x) << 5))
-+#define DWC_DIEPINT_IN_TKN_TX_EMPTY_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 4))) | ((x) << 4))
-+#define DWC_DIEPINT_TOUT_COND_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 3))) | ((x) << 3))
-+#define DWC_DIEPINT_AHB_ERROR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 2))) | ((x) << 2))
-+#define DWC_DIEPINT_EP_DISA_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 1))) | ((x) << 1))
-+#define DWC_DIEPINT_TX_CMPL_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 0))) | ((x) << 0))
-+
-+#define DWC_DIEPMSK_TXFIFO_UNDERN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 8))) | ((x) << 8))
-+#define DWC_DIEPMSK_TXFIFO_EMPTY_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 7))) | ((x) << 7))
-+#define DWC_DIEPMSK_IN_EP_NAK_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 6))) | ((x) << 6))
-+#define DWC_DIEPMSK_IN_TKN_EP_MISS_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 5))) | ((x) << 5))
-+#define DWC_DIEPMSK_IN_TKN_TX_EMPTY_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 4))) | ((x) << 4))
-+#define DWC_DIEPMSK_TOUT_COND_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 3))) | ((x) << 3))
-+#define DWC_DIEPMSK_AHB_ERROR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 2))) | ((x) << 2))
-+#define DWC_DIEPMSK_EP_DISA_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 1))) | ((x) << 1))
-+#define DWC_DIEPMSK_TX_CMPL_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 0))) | ((x) << 0))
-+
-+/*
-+ * These Macros represents the bit fields in the Device OUT EP Itr Register
-+ * and Device OUT EP Common Interrupt Mask Register.
-+ *
-+ * Read the register into the u32 member then set/clear the bits using the bit
-+ * elements.
-+ */
-+#define DWC_DOEPINT_OUTPKT_ERR_RD(x)	(((x) & (0x1 << 8)) >> 8)
-+#define DWC_DOEPINT_B2B_PKTS_RD(x)	(((x) & (0x1 << 6)) >> 6)
-+#define DWC_DOEPINT_OUT_TKN_RD(x)	(((x) & (0x1 << 4)) >> 4)
-+#define DWC_DOEPINT_SETUP_DONE_RD(x)	(((x) & (0x1 << 3)) >> 3)
-+#define DWC_DOEPINT_AHB_ERROR_RD(x)	(((x) & (0x1 << 2)) >> 2)
-+#define DWC_DOEPINT_EP_DISA_RD(x)	(((x) & (0x1 << 1)) >> 1)
-+#define DWC_DOEPINT_TX_COMPL_RD(x)	(((x) & (0x1 << 0)) >> 0)
-+
-+#define DWC_DOEPMSK_OUTPKT_ERR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 8))) | ((x) << 8))
-+#define DWC_DOEPMSK_B2B_PKTS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 6))) | ((x) << 6))
-+#define DWC_DOEPMSK_OUT_TKN_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 4))) | ((x) << 4))
-+#define DWC_DOEPMSK_SETUP_DONE_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 3))) | ((x) << 3))
-+#define DWC_DOEPMSK_AHB_ERROR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 2))) | ((x) << 2))
-+#define DWC_DOEPMSK_EP_DISA_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 1))) | ((x) << 1))
-+#define DWC_DOEPMSK_TX_COMPL_RW(reg, x)		\
-+	(((reg) & (~((u32)0x01 << 0))) | ((x) << 0))
-+
-+/*
-+ * These Macros represents the bit fields in the Device All EP Intr and Mask
-+ * Registers.  Read the register into the u32 member then set/clear the bits
-+ * using the bit elements.
-+ */
-+#define DWC_DAINT_OUT_EP_RD(reg, ep)	\
-+	(((reg) & (1 << (ep + 16))) >> (ep + 16))
-+#define DWC_DAINTMSK_OUT_EP_RW(reg, ep)	\
-+	(((reg) & (~(u32)(1 << (ep + 16)))) | (1 << (ep + 16)))
-+#define DWC_DAINT_IN_EP_RD(reg, ep)		(((reg) & (1 << ep)) >> ep)
-+#define DWC_DAINTMSK_IN_EP_RW(reg, ep)	\
-+	(((reg) & (~(u32)(1 << ep))) | (1 << ep))
-+#define DWC_DAINT_OUTEP15	(1 << 31)
-+#define DWC_DAINT_OUTEP14	(1 << 30)
-+#define DWC_DAINT_OUTEP13	(1 << 29)
-+#define DWC_DAINT_OUTEP12	(1 << 28)
-+#define DWC_DAINT_OUTEP11	(1 << 27)
-+#define DWC_DAINT_OUTEP10	(1 << 26)
-+#define DWC_DAINT_OUTEP09	(1 << 25)
-+#define DWC_DAINT_OUTEP08	(1 << 24)
-+#define DWC_DAINT_OUTEP07	(1 << 23)
-+#define DWC_DAINT_OUTEP06	(1 << 22)
-+#define DWC_DAINT_OUTEP05	(1 << 21)
-+#define DWC_DAINT_OUTEP04	(1 << 20)
-+#define DWC_DAINT_OUTEP03	(1 << 19)
-+#define DWC_DAINT_OUTEP02	(1 << 18)
-+#define DWC_DAINT_OUTEP01	(1 << 17)
-+#define DWC_DAINT_OUTEP00	(1 << 16)
-+#define DWC_DAINT_INEP15	(1 << 15)
-+#define DWC_DAINT_INEP14	(1 << 14)
-+#define DWC_DAINT_INEP13	(1 << 13)
-+#define DWC_DAINT_INEP12	(1 << 12)
-+#define DWC_DAINT_INEP11	(1 << 11)
-+#define DWC_DAINT_INEP10	(1 << 10)
-+#define DWC_DAINT_INEP09	(1 << 09)
-+#define DWC_DAINT_INEP08	(1 << 08)
-+#define DWC_DAINT_INEP07	(1 << 07)
-+#define DWC_DAINT_INEP06	(1 << 06)
-+#define DWC_DAINT_INEP05	(1 << 05)
-+#define DWC_DAINT_INEP04	(1 << 04)
-+#define DWC_DAINT_INEP03	(1 << 03)
-+#define DWC_DAINT_INEP02	(1 << 02)
-+#define DWC_DAINT_INEP01	(1 << 01)
-+#define DWC_DAINT_INEP00	(1 << 00)
-+
-+/*
-+ * These Macros represents the bit fields in the Device IN Token Queue Read
-+ * Registers.  Read the register into the u32 member. READ-ONLY Register
-+ */
-+#define DWC_DTKNQR1_EP_TKN_NO_RD(x)		(((x) & (0xffffff << 8)) >> 8)
-+#define DWC_DTKNQR1_WRAP_BIT_RD(x)		(((x) & (1 << 7)) >> 7)
-+#define DWC_DTKNQR1_INT_TKN_Q_WR_PTR_RD(x)	((x)  & 0x1f)
-+
-+/*
-+ * These Macros represents Threshold control Register. Read and wr the register
-+ * into the u32 member.  READ-WRITABLE Register
-+ */
-+#define DWC_DTHCTRL_RX_ARB_PARK_EN_RD(x)	(((x) & (0x001 << 27)) >> 27)
-+#define DWC_DTHCTRL_RX_THR_LEN_RD(x)		(((x) & (0x1ff << 17)) >> 17)
-+#define DWC_DTHCTRL_RX_THR_EN_RD(x)		(((x) & (0x001 << 16)) >> 16)
-+#define DWC_DTHCTRL_TX_THR_LEN_RD(x)		(((x) & (0x1ff << 02)) >> 02)
-+#define DWC_DTHCTRL_ISO_THR_EN(x)		(((x) & (0x001 << 01)) >> 01)
-+#define DWC_DTHCTRL_NON_ISO_THR_ENA_RD(x)	(((x) & (0x001 << 00)) >> 00)
-+
-+#define DWC_DTHCTRL_RX_ARB_PARK_EN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 27))) | ((x) << 27))
-+#define DWC_DTHCTRL_RX_THR_LEN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1ff << 17))) | ((x) << 17))
-+#define DWC_DTHCTRL_RX_THR_EN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 16))) | ((x) << 16))
-+#define DWC_DTHCTRL_TX_THR_LEN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1ff << 02))) | ((x) << 02))
-+#define DWC_DTHCTRL_ISO_THR_EN_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 01))) | ((x) << 01))
-+#define DWC_DTHCTRL_NON_ISO_THR_ENA_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 00))) | ((x) << 00))
-+
-+/*
-+ * Device Logical IN Endpoint-Specific Registers. Offsets 900h-AFCh
-+ *
-+ * There will be one set of endpoint registers per logical endpoint implemented.
-+ *
-+ * These registers are visible only in Device mode and must not be accessed in
-+ * Host mode, as the results are unknown.
-+ */
-+#define DWC_DIEPCTL         0x00
-+#define DWC_DIEPINT         0x08
-+#define DWC_DIEPTSIZ        0x10
-+#define DWC_DIEPDMA         0x14
-+#define DWC_DTXFSTS         0x18
-+
-+/*
-+ * Device Logical OUT Endpoint-Specific Registers. Offsets: B00h-CFCh
-+ *
-+ * There will be one set of endpoint registers per logical endpoint implemented.
-+ *
-+ * These registers are visible only in Device mode and must not be accessed in
-+ * Host mode, as the results are unknown.
-+ */
-+#define DWC_DOEPCTL		0x00
-+#define DWC_DOEPFN		0x04
-+#define DWC_DOEPINT		0x08
-+#define DWC_DOEPTSIZ		0x10
-+#define DWC_DOEPDMA		0x14
-+
-+/*
-+ * These Macros represents the bit fields in the Device EP Ctrl Register. Read
-+ * the register into the u32 member then set/clear the bits using the bit
-+ * elements.
-+ */
-+#define DWC_DEP0CTL_MPS_64			0
-+#define DWC_DEP0CTL_MPS_32			1
-+#define DWC_DEP0CTL_MPS_16			2
-+#define DWC_DEP0CTL_MPS_8			3
-+
-+#define DWC_DEPCTL_EPENA_RD(x)		(((x) & (0x1 << 31)) >> 31)
-+#define DWC_DEPCTL_EPDIS_RD(x)		(((x) & (0x1 << 30)) >> 30)
-+#define DWC_DEPCTL_SET_DATA1_PID_RD(x)	(((x) & (0x1 << 29)) >> 29)
-+#define DWC_DEPCTL_SET_DATA0_PID_RD(x)	(((x) & (0x1 << 28)) >> 28)
-+#define DWC_DEPCTL_SET_NAK_RD(x)	(((x) & (0x1 << 27)) >> 27)
-+#define DWC_DEPCTL_CLR_NAK_RD(x)	(((x) & (0x1 << 26)) >> 26)
-+#define DWC_DEPCTL_TX_FIFO_NUM_RD(x)	(((x) & (0xf << 22)) >> 22)
-+#define DWC_DEPCTL_STALL_HNDSHK	_RD(x)	(((x) & (0x1 << 21)) >> 21)
-+#define DWC_DEPCTL_SNP_MODE_RD(x)	(((x) & (0x1 << 20)) >> 20)
-+#define DWC_DEPCTL_EP_TYPE_RD(x)	(((x) & (0x3 << 18)) >> 18)
-+#define DWC_DEPCTL_NKASTS_RD(x)		(((x) & (0x1 << 17)) >> 17)
-+#define DWC_DEPCTL_DPID	_RD(x)		(((x) & (0x1 << 16)) >> 16)
-+#define DWC_DEPCTL_ACT_EP_RD(x)		(((x) & (0x1 << 15)) >> 15)
-+#define DWC_DEPCTL_NXT_EP_RD(x)		(((x) & (0xf << 11)) >> 11)
-+#define DWC_DEPCTL_MPS_RD(x)		(((x) & (0x7ff << 00)) >> 00)
-+
-+#define DWC_DEPCTL_EPENA_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 31))) | ((x) << 31))
-+#define DWC_DEPCTL_EPDIS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 30))) | ((x) << 30))
-+#define DWC_DEPCTL_SET_DATA1_PID_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 29))) | ((x) << 29))
-+#define DWC_DEPCTL_SET_DATA0_PID_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 28))) | ((x) << 28))
-+#define DWC_DEPCTL_SET_NAK_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 27))) | ((x) << 27))
-+#define DWC_DEPCTL_CLR_NAK_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 26))) | ((x) << 26))
-+#define DWC_DEPCTL_TX_FIFO_NUM_RW(reg, x)	\
-+	(((reg) & (~((u32)0x00f << 22))) | ((x) << 22))
-+#define DWC_DEPCTL_STALL_HNDSHK_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 21))) | ((x) << 21))
-+#define DWC_DEPCTL_SNP_MODE_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 20))) | ((x) << 20))
-+#define DWC_DEPCTL_EP_TYPE_RW(reg, x)		\
-+	(((reg) & (~((u32)0x003 << 18))) | ((x) << 18))
-+#define DWC_DEPCTL_NKASTS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 17))) | ((x) << 17))
-+#define DWC_DEPCTL_DPID_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 16))) | ((x) << 16))
-+#define DWC_DEPCTL_ACT_EP_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 15))) | ((x) << 15))
-+#define DWC_DEPCTL_NXT_EP_RW(reg, x)		\
-+	(((reg) & (~((u32)0x00f << 11))) | ((x) << 11))
-+#define DWC_DEPCTL_MPS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x7ff << 00))) | ((x) << 00))
-+
-+/*
-+ * These Macros represents the bit fields in the Device EP Txfer Size Register.
-+ * Read the register into the u32 member then set/clear the bits using the bit
-+ * elements.
-+ */
-+#if defined(CONFIG_DWC_LIMITED_XFER_SIZE)
-+#define DWC_DEPTSIZ_MCOUNT_RD(x)	(((x) & (0x003 << 29)) >> 29)
-+#define	DWC_DEPTSIZ_PKT_CNT_RD(x)	(((x) & (0x01f << 19)) >> 19)
-+#define DWC_DEPTSIZ_XFER_SIZ_RD(x)	(((x) & (0x7ff << 00)) >> 00)
-+#define DWC_DEPTSIZ_MCOUNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x003 << 29))) | ((x) << 29))
-+#define	DWC_DEPTSIZ_PKT_CNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01f << 19))) | ((x) << 19))
-+#define DWC_DEPTSIZ_XFER_SIZ_RW(reg, x)	\
-+	(((reg) & (~((u32)0x7ff << 00))) | ((x) << 00))
-+#else
-+#define DWC_DEPTSIZ_MCOUNT_RD(x)	\
-+	(((x) & (0x003 << 29)) >> 29)
-+#define	DWC_DEPTSIZ_PKT_CNT_RD(x)	\
-+	(((x) & (0x3ff << 19)) >> 19)
-+#define DWC_DEPTSIZ_XFER_SIZ_RD(x)	\
-+	(((x) & (0x7ffff << 00)) >> 00)
-+#define DWC_DEPTSIZ_MCOUNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x003 << 29))) | ((x) << 29))
-+#define	DWC_DEPTSIZ_PKT_CNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x7ff << 19))) | ((x) << 19))
-+#define DWC_DEPTSIZ_XFER_SIZ_RW(reg, x)	\
-+	(((reg) & (~((u32)0x7ffff << 00))) | ((x) << 00))
-+#endif
-+
-+/*
-+ * These Macros represents the bit fields in the Device EP 0 Transfer Size
-+ * Register.  Read the register into the u32 member then set/clear the bits
-+ * using the bit elements.
-+ */
-+#define DWC_DEPTSIZ0_SUPCNT_RD(x)	(((x) & (0x003 << 29)) >> 29)
-+#define	DWC_DEPTSIZ0_PKT_CNT_RD(x)	(((x) & (0x001 << 19)) >> 19)
-+#define DWC_DEPTSIZ0_XFER_SIZ_RD(x)	(((x) & (0x07f << 00)) >> 00)
-+#define DWC_DEPTSIZ0_SUPCNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x003 << 29))) | ((x) << 29))
-+#define	DWC_DEPTSIZ0_PKT_CNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 19))) | ((x) << 19))
-+#define DWC_DEPTSIZ0_XFER_SIZ_RW(reg, x)	\
-+	(((reg) & (~((u32)0x07f << 00))) | ((x) << 00))
-+
-+#define MAX_PERIO_FIFOS			15	/* Max periodic FIFOs */
-+#define MAX_TX_FIFOS			15	/* Max non-periodic FIFOs */
-+
-+/* Maximum number of Endpoints/HostChannels */
-+#define MAX_EPS_CHANNELS 12	/* This come from device tree or defconfig */
-+
-+/*
-+ * The device_if structure contains information needed to manage the DWC_otg
-+ * controller acting in device mode. It represents the programming view of the
-+ * device-specific aspects of the controller.
-+ */
-+struct device_if {
-+	/* Device Global Registers starting at offset 800h */
-+	u32 dev_global_regs;
-+#define DWC_DEV_GLOBAL_REG_OFFSET		0x800
-+
-+	/* Device Logical IN Endpoint-Specific Registers 900h-AFCh */
-+	u32 in_ep_regs[MAX_EPS_CHANNELS];
-+#define DWC_DEV_IN_EP_REG_OFFSET		0x900
-+#define DWC_EP_REG_OFFSET			0x20
-+
-+	/* Device Logical OUT Endpoint-Specific Registers B00h-CFCh */
-+	u32 out_ep_regs[MAX_EPS_CHANNELS];
-+#define DWC_DEV_OUT_EP_REG_OFFSET		0xB00
-+
-+	/* Device configuration information */
-+	/* Device Speed  0: Unknown, 1: LS, 2:FS, 3: HS */
-+	u8 speed;
-+	/*  Number # of Tx EP range: 0-15 exept ep0 */
-+	u8 num_in_eps;
-+	/*  Number # of Rx EP range: 0-15 exept ep 0 */
-+	u8 num_out_eps;
-+
-+	/* Size of periodic FIFOs (Bytes) */
-+	u16 perio_tx_fifo_size[MAX_PERIO_FIFOS];
-+
-+	/* Size of Tx FIFOs (Bytes) */
-+	u16 tx_fifo_size[MAX_TX_FIFOS];
-+
-+	/* Thresholding enable flags and length varaiables */
-+	u16 rx_thr_en;
-+	u16 iso_tx_thr_en;
-+	u16 non_iso_tx_thr_en;
-+	u16 rx_thr_length;
-+	u16 tx_thr_length;
-+};
-+
-+/*
-+ * These Macros represents the bit fields in the Power and Clock Gating Control
-+ * Register. Read the register into the u32 member then set/clear the
-+ * bits using the bit elements.
-+ */
-+#define DWC_PCGCCTL_PHY_SUS_RD(x)		(((x) & (0x001 << 4)) >> 4)
-+#define DWC_PCGCCTL_RSTP_DWN_RD(x)		(((x) & (0x001 << 3)) >> 3)
-+#define DWC_PCGCCTL_PWR_CLAMP_RD(x)		(((x) & (0x001 << 2)) >> 2)
-+#define DWC_PCGCCTL_GATE_HCLK_RD(x)		(((x) & (0x001 << 1)) >> 1)
-+#define DWC_PCGCCTL_STOP_CLK_RD(x)		(((x) & (0x001 << 0)) >> 0)
-+
-+#define DWC_PCGCCTL_RSTP_DWN_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 3))) | ((x) << 3))
-+#define DWC_PCGCCTL_PWR_CLAMP_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 2))) | ((x) << 2))
-+#define DWC_PCGCCTL_GATE_HCLK_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 1))) | ((x) << 1))
-+#define DWC_PCGCCTL_STOP_CLK_SET(reg)		\
-+	(((reg) | 1))
-+#define DWC_PCGCCTL_STOP_CLK_CLR(reg)		\
-+	(((reg) & (~((u32)0x001 << 0))))
-+
-+/*
-+ * Host Mode Register Structures
-+ */
-+
-+/*
-+ * The Host Global Registers structure defines the size and relative field
-+ * offsets for the Host Mode Global Registers.  Host Global Registers offsets
-+ * 400h-7FFh.
-+*/
-+#define DWC_HCFG		0x00
-+#define DWC_HFIR		0x04
-+#define DWC_HFNUM		0x08
-+#define DWC_HPTXSTS		0x10
-+#define DWC_HAINT		0x14
-+#define DWC_HAINTMSK		0x18
-+
-+/*
-+ * These Macros represents the bit fields in the Host Configuration Register.
-+ * Read the register into the u32 member then set/clear the bits using the bit
-+ * elements. Write the u32 member to the hcfg register.
-+ */
-+#define DWC_HCFG_FSLSUPP_RD(x)		(((x) & (0x001 << 2)) >> 2)
-+#define DWC_HCFG_FSLSP_CLK_RD(x)	(((x) & (0x003 << 0)) >> 0)
-+#define DWC_HCFG_FSLSUPP_RW(reg, x)	\
-+	(((reg) & (~((u32)0x001 << 2))) | ((x) << 2))
-+#define DWC_HCFG_FSLSP_CLK_RW(reg, x)	\
-+	(((reg) & (~((u32)0x003 << 0))) | ((x) << 0))
-+
-+#define DWC_HCFG_30_60_MHZ			0
-+#define DWC_HCFG_48_MHZ				1
-+#define DWC_HCFG_6_MHZ				2
-+
-+/*
-+ * These Macros represents the bit fields in the Host Frame Remaing/Number
-+ * Register.
-+ */
-+#define DWC_HFIR_FRINT_RD(x)	(((x) & (0xffff << 0)) >> 0)
-+#define DWC_HFIR_FRINT_RW(reg, x)	\
-+	(((reg) & (~((u32)0xffff << 0))) | ((x) << 0))
-+
-+/*
-+ * These Macros represents the bit fields in the Host Frame Remaing/Number
-+ * Register.
-+ */
-+#define DWC_HFNUM_FRREM_RD(x)		(((x) & (0xffff << 16)) >> 16)
-+#define DWC_HFNUM_FRNUM_RD(x)		(((x) & (0xffff << 0)) >> 0)
-+#define DWC_HFNUM_FRREM_RW(reg, x)	\
-+	(((reg) & (~((u32)0xffff << 16))) | ((x) << 16))
-+#define DWC_HFNUM_FRNUM_RW(reg, x)	\
-+	(((reg) & (~((u32)0xffff << 0))) | ((x) << 0))
-+#define DWC_HFNUM_MAX_FRNUM			0x3FFF
-+#define DWC_HFNUM_MAX_FRNUM			0x3FFF
-+
-+#define DWC_HPTXSTS_PTXQTOP_ODD_RD(x)	(((x) & (0x01 << 31)) >> 31)
-+#define DWC_HPTXSTS_PTXQTOP_CHNUM_RD(x)	(((x) & (0x0f << 27)) >> 27)
-+#define DWC_HPTXSTS_PTXQTOP_TKN_RD(x)	(((x) & (0x03 << 25)) >> 25)
-+#define DWC_HPTXSTS_PTXQTOP_TERM_RD(x)	(((x) & (0x01 << 24)) >> 24)
-+#define DWC_HPTXSTS_PTXSPC_AVAIL_RD(x)	(((x) & (0xff << 16)) >> 16)
-+#define DWC_HPTXSTS_PTXFSPC_AVAIL_RD(x)	(((x) & (0xffff << 00)) >> 00)
-+
-+/*
-+ * These Macros represents the bit fields in the Host Port Control and Status
-+ * Register. Read the register into the u32 member then set/clear the bits using
-+ * the bit elements. Write the u32 member to the hprt0 register.
-+ */
-+#define DWC_HPRT0_PRT_SPD_RD(x)		(((x) & (0x3 << 17)) >> 17)
-+#define DWC_HPRT0_PRT_TST_CTL_RD(x)	(((x) & (0xf << 13)) >> 13)
-+#define DWC_HPRT0_PRT_PWR_RD(x)		(((x) & (0x1 << 12)) >> 12)
-+#define DWC_HPRT0_PRT_LSTS_RD(x)	(((x) & (0x3 << 10)) >> 10)
-+#define DWC_HPRT0_PRT_RST_RD(x)		(((x) & (0x1 << 8)) >> 8)
-+#define DWC_HPRT0_PRT_SUS_RD(x)		(((x) & (0x1 << 7)) >> 7)
-+#define DWC_HPRT0_PRT_RES_RD(x)		(((x) & (0x1 << 6)) >> 6)
-+#define DWC_HPRT0_PRT_OVRCURR_CHG_RD(x)	(((x) & (0x1 << 5)) >> 5)
-+#define DWC_HPRT0_PRT_OVRCURR_ACT_RD(x)	(((x) & (0x1 << 4)) >> 4)
-+#define DWC_HPRT0_PRT_ENA_DIS_CHG_RD(x)	(((x) & (0x1 << 3)) >> 3)
-+#define DWC_HPRT0_PRT_ENA_RD(x)		(((x) & (0x1 << 2)) >> 2)
-+#define DWC_HPRT0_PRT_CONN_DET_RD(x)	(((x) & (0x1 << 1)) >> 1)
-+#define DWC_HPRT0_PRT_STS_RD(x)		(((x) & (0x1 << 0)) >> 0)
-+
-+#define DWC_HPRT0_PRT_SPD_RW(reg, x)		\
-+	(((reg) & (~((u32)0x3 << 17))) | ((x) << 17))
-+#define DWC_HPRT0_PRT_TST_CTL_RW(reg, x)	\
-+	(((reg) & (~((u32)0xf << 13))) | ((x) << 13))
-+#define DWC_HPRT0_PRT_PWR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 12))) | ((x) << 12))
-+#define DWC_HPRT0_PRT_LSTS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x3 << 10))) | ((x) << 10))
-+#define DWC_HPRT0_PRT_RST_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 8))) | ((x) << 8))
-+#define DWC_HPRT0_PRT_SUS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 7))) | ((x) << 7))
-+#define DWC_HPRT0_PRT_RES_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 6))) | ((x) << 6))
-+#define DWC_HPRT0_PRT_OVRCURR_CHG_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 5))) | ((x) << 5))
-+#define DWC_HPRT0_PRT_OVRCURR_ACT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 4))) | ((x) << 4))
-+#define DWC_HPRT0_PRT_ENA_DIS_CHG_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 3))) | ((x) << 3))
-+#define DWC_HPRT0_PRT_ENA_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 2))) | ((x) << 2))
-+#define DWC_HPRT0_PRT_CONN_DET_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 1))) | ((x) << 1))
-+#define DWC_HPRT0_PRT_STS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 0))) | ((x) << 0))
-+
-+#define DWC_HPRT0_PRTSPD_HIGH_SPEED		0
-+#define DWC_HPRT0_PRTSPD_FULL_SPEED		1
-+#define DWC_HPRT0_PRTSPD_LOW_SPEED		2
-+
-+/*
-+ * These Macros represents the bit fields in the Host All Interrupt Register.
-+ */
-+#define DWC_HAINT_CH15_RD(x)	(((x) & (0x1 << 15)) >> 15)
-+#define DWC_HAINT_CH14_RD(x)	(((x) & (0x1 << 14)) >> 14)
-+#define DWC_HAINT_CH13_RD(x)	(((x) & (0x1 << 13)) >> 13)
-+#define DWC_HAINT_CH12_RD(x)	(((x) & (0x1 << 12)) >> 12)
-+#define DWC_HAINT_CH11_RD(x)	(((x) & (0x1 << 11)) >> 11)
-+#define DWC_HAINT_CH10_RD(x)	(((x) & (0x1 << 10)) >> 10)
-+#define DWC_HAINT_CH09_RD(x)	(((x) & (0x1 << 9)) >> 9)
-+#define DWC_HAINT_CH08_RD(x)	(((x) & (0x1 << 8)) >> 8)
-+#define DWC_HAINT_CH07_RD(x)	(((x) & (0x1 << 7)) >> 7)
-+#define DWC_HAINT_CH06_RD(x)	(((x) & (0x1 << 6)) >> 6)
-+#define DWC_HAINT_CH05_RD(x)	(((x) & (0x1 << 5)) >> 5)
-+#define DWC_HAINT_CH04_RD(x)	(((x) & (0x1 << 4)) >> 4)
-+#define DWC_HAINT_CH03_RD(x)	(((x) & (0x1 << 3)) >> 3)
-+#define DWC_HAINT_CH02_RD(x)	(((x) & (0x1 << 2)) >> 2)
-+#define DWC_HAINT_CH01_RD(x)	(((x) & (0x1 << 1)) >> 1)
-+#define DWC_HAINT_CH00_RD(x)	(((x) & (0x1 << 0)) >> 0)
-+
-+#define DWC_HAINT_RD(x)	(((x) & (0xffff << 0)) >> 0)
-+
-+/*
-+ * These Macros represents the bit fields in the Host All Interrupt Register.
-+ */
-+#define DWC_HAINTMSK_CH15_RD(x)	(((x) & (0x1 << 15)) >> 15)
-+#define DWC_HAINTMSK_CH14_RD(x)	(((x) & (0x1 << 14)) >> 14)
-+#define DWC_HAINTMSK_CH13_RD(x)	(((x) & (0x1 << 13)) >> 13)
-+#define DWC_HAINTMSK_CH12_RD(x)	(((x) & (0x1 << 12)) >> 12)
-+#define DWC_HAINTMSK_CH11_RD(x)	(((x) & (0x1 << 11)) >> 11)
-+#define DWC_HAINTMSK_CH10_RD(x)	(((x) & (0x1 << 10)) >> 10)
-+#define DWC_HAINTMSK_CH09_RD(x)	(((x) & (0x1 << 9)) >> 9)
-+#define DWC_HAINTMSK_CH08_RD(x)	(((x) & (0x1 << 8)) >> 8)
-+#define DWC_HAINTMSK_CH07_RD(x)	(((x) & (0x1 << 7)) >> 7)
-+#define DWC_HAINTMSK_CH06_RD(x)	(((x) & (0x1 << 6)) >> 6)
-+#define DWC_HAINTMSK_CH05_RD(x)	(((x) & (0x1 << 5)) >> 5)
-+#define DWC_HAINTMSK_CH04_RD(x)	(((x) & (0x1 << 4)) >> 4)
-+#define DWC_HAINTMSK_CH03_RD(x)	(((x) & (0x1 << 3)) >> 3)
-+#define DWC_HAINTMSK_CH02_RD(x)	(((x) & (0x1 << 2)) >> 2)
-+#define DWC_HAINTMSK_CH01_RD(x)	(((x) & (0x1 << 1)) >> 1)
-+#define DWC_HAINTMSK_CH00_RD(x)	(((x) & (0x1 << 0)) >> 0)
-+#define DWC_HAINTMSK_RD(x)	((x) & 0xffff)
-+
-+#define DWC_HAINTMSK_CH15_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 15))) | ((x) << 15))
-+#define DWC_HAINTMSK_CH14_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 14))) | ((x) << 14))
-+#define DWC_HAINTMSK_CH13_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 13))) | ((x) << 13))
-+#define DWC_HAINTMSK_CH12_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 12))) | ((x) << 12))
-+#define DWC_HAINTMSK_CH11_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 11))) | ((x) << 11))
-+#define DWC_HAINTMSK_CH10_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 10))) | ((x) << 10))
-+#define DWC_HAINTMSK_CH09_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 9))) | ((x) << 9))
-+#define DWC_HAINTMSK_CH08_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 8))) | ((x) << 8))
-+#define DWC_HAINTMSK_CH07_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 7))) | ((x) << 7))
-+#define DWC_HAINTMSK_CH06_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 6))) | ((x) << 6))
-+#define DWC_HAINTMSK_CH05_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 5))) | ((x) << 5))
-+#define DWC_HAINTMSK_CH04_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 4))) | ((x) << 4))
-+#define DWC_HAINTMSK_CH03_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 3))) | ((x) << 3))
-+#define DWC_HAINTMSK_CH02_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 2))) | ((x) << 2))
-+#define DWC_HAINTMSK_CH01_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 1))) | ((x) << 1))
-+#define DWC_HAINTMSK_CH00_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 0))) | ((x) << 0))
-+#define DWC_HAINTMSK_RW(reg, x)		\
-+	(((reg) & (~((u32)0xffff))) | x)
-+
-+/*
-+ * Host Channel Specific Registers. 500h-5FCh
-+ */
-+#define DWC_HCCHAR	0x00
-+#define DWC_HCSPLT	0x04
-+#define DWC_HCINT	0x08
-+#define DWC_HCINTMSK	0x0C
-+#define DWC_HCTSIZ	0x10
-+#define DWC_HCDMA	0x14
-+
-+/*
-+ * These Macros represents the bit fields in the Host Channel Characteristics
-+ * Register. Read the register into the u32 member then set/clear the bits using
-+ * the bit elements. Write the u32 member to the hcchar register.
-+ */
-+#define DWC_HCCHAR_ENA_RD(x)		(((x) & (0x001 << 31)) >> 31)
-+#define DWC_HCCHAR_DIS_RD(x)		(((x) & (0x001 << 30)) >> 30)
-+#define DWC_HCCHAR_ODD_FRAME_RD(x)	(((x) & (0x001 << 29)) >> 29)
-+#define DWC_HCCHAR_DEV_ADDR_RD(x)	(((x) & (0x07f << 22)) >> 22)
-+#define DWC_HCCHAR_MULTI_CNT_RD(x)	(((x) & (0x003 << 20)) >> 20)
-+#define DWC_HCCHAR_EPTYPE_RD(x)		(((x) & (0x003 << 18)) >> 18)
-+#define DWC_HCCHAR_LSP_DEV_RD(x)	(((x) & (0x001 << 17)) >> 17)
-+#define DWC_HCCHAR_EPDIR_RD(x)		(((x) & (0x001 << 15)) >> 15)
-+#define DWC_HCCHAR_EP_NUM_RD(x)	(((x) & (0x00f << 11)) >> 11)
-+#define DWC_HCCHAR_MPS_RD(x)		(((x) & (0x7ff << 0)) >> 0)
-+
-+#define DWC_HCCHAR_ENA_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 31))) | ((x) << 31))
-+#define DWC_HCCHAR_DIS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 30))) | ((x) << 30))
-+#define DWC_HCCHAR_ODD_FRAME_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 29))) | ((x) << 29))
-+#define DWC_HCCHAR_DEV_ADDR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x07f << 22))) | ((x) << 22))
-+#define DWC_HCCHAR_MULTI_CNT_RW(reg, x)		\
-+	(((reg) & (~((u32)0x003 << 20))) | ((x) << 20))
-+#define DWC_HCCHAR_EPTYPE_RW(reg, x)		\
-+	(((reg) & (~((u32)0x003 << 18))) | ((x) << 18))
-+#define DWC_HCCHAR_LSP_DEV_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 17))) | ((x) << 17))
-+#define DWC_HCCHAR_EPDIR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x001 << 15))) | ((x) << 15))
-+#define DWC_HCCHAR_EP_NUM_RW(reg, x)		\
-+	(((reg) & (~((u32)0x00f << 11))) | ((x) << 11))
-+#define DWC_HCCHAR_MPS_RW(reg, x)		\
-+	(((reg) & (~((u32)0x7ff << 0))) | ((x) << 0))
-+
-+#define DWC_HCSPLT_ENA_RD(x)		(((x) & (0x01 << 31)) >> 31)
-+#define DWC_HCSPLT_COMP_SPLT_RD(x)	(((x) & (0x01 << 16)) >> 16)
-+#define DWC_HCSPLT_TRANS_POS_RD(x)	(((x) & (0x03 << 14)) >> 14)
-+#define DWC_HCSPLT_HUB_ADDR_RD(x)	(((x) & (0x7f << 7)) >> 7)
-+#define DWC_HCSPLT_PRT_ADDR_RD(x)	(((x) & (0x7f << 0)) >> 0)
-+
-+#define DWC_HCSPLT_ENA_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 31))) | ((x) << 31))
-+#define DWC_HCSPLT_COMP_SPLT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x01 << 16))) | ((x) << 16))
-+#define DWC_HCSPLT_TRANS_POS_RW(reg, x)	\
-+	(((reg) & (~((u32)0x03 << 14))) | ((x) << 14))
-+#define DWC_HCSPLT_HUB_ADDR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x7f << 7))) | ((x) << 7))
-+#define DWC_HCSPLT_PRT_ADDR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x7f << 0))) | ((x) << 0))
-+
-+#define DWC_HCSPLIT_XACTPOS_MID			0
-+#define DWC_HCSPLIT_XACTPOS_END			1
-+#define DWC_HCSPLIT_XACTPOS_BEGIN		2
-+#define DWC_HCSPLIT_XACTPOS_ALL			3
-+
-+/*
-+ * These Macros represents the bit fields in the Host All Interrupt
-+ * Register.
-+ */
-+#define DWC_HCINT_DATA_TOG_ERR_RD(x)		(((x) & (0x1 << 10)) >> 10)
-+#define DWC_HCINT_FRAME_OVERN_ERR_RD(x)		(((x) & (0x1 << 9)) >> 9)
-+#define DWC_HCINT_BBL_ERR_RD(x)			(((x) & (0x1 << 8)) >> 8)
-+#define DWC_HCINT_TRANS_ERR_RD(x)		(((x) & (0x1 << 7)) >> 7)
-+#define DWC_HCINT_NYET_RESP_REC_RD(x)		(((x) & (0x1 << 6)) >> 6)
-+#define DWC_HCINT_ACK_RESP_REC_RD(x)		(((x) & (0x1 << 5)) >> 5)
-+#define DWC_HCINT_NAK_RESP_REC_RD(x)		(((x) & (0x1 << 4)) >> 4)
-+#define DWC_HCINT_STALL_RESP_REC_RD(x)		(((x) & (0x1 << 3)) >> 3)
-+#define DWC_HCINT_AHB_ERR_RD(x)			(((x) & (0x1 << 2)) >> 2)
-+#define DWC_HCINT_CHAN_HALTED_RD(x)		(((x) & (0x1 << 1)) >> 1)
-+#define DWC_HCINT_TXFER_CMPL_RD(x)		(((x) & (0x1 << 0)) >> 0)
-+
-+#define DWC_HCINT_DATA_TOG_ERR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 10))) | ((x) << 10))
-+#define DWC_HCINT_FRAME_OVERN_ERR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 9))) | ((x) << 9))
-+#define DWC_HCINT_BBL_ERR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 8))) | ((x) << 8))
-+#define DWC_HCINT_TRANS_ERR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 7))) | ((x) << 7))
-+#define DWC_HCINT_NYET_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 6))) | ((x) << 6))
-+#define DWC_HCINT_ACK_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 5))) | ((x) << 5))
-+#define DWC_HCINT_NAK_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 4))) | ((x) << 4))
-+#define DWC_HCINT_STALL_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 3))) | ((x) << 3))
-+#define DWC_HCINT_AHB_ERR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 2))) | ((x) << 2))
-+#define DWC_HCINT_CHAN_HALTED_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 1))) | ((x) << 1))
-+#define DWC_HCINT_TXFER_CMPL_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 0))) | ((x) << 0))
-+
-+/*
-+ * These Macros represents the bit fields in the Host Channel Transfer Size
-+ * Register. Read the register into the u32 member then set/clear the  bits
-+ * using the bit elements. Write the u32 member to the hcchar register.
-+ */
-+#define DWC_HCTSIZ_DO_PING_PROTO_RD(x)	(((x) & (0x00001 << 31)) >> 31)
-+#define DWC_HCTSIZ_PKT_PID_RD(x)	(((x) & (0x00003 << 29)) >> 29)
-+#define DWC_HCTSIZ_PKT_CNT_RD(x)	(((x) & (0x003ff << 19)) >> 19)
-+#define DWC_HCTSIZ_XFER_SIZE_RD(x)	(((x) & (0x7ffff << 00)) >> 00)
-+
-+#define DWC_HCTSIZ_DO_PING_PROTO_RW(reg, x)	\
-+	(((reg) & (~((u32)0x00001 << 31))) | ((x) << 31))
-+#define DWC_HCTSIZ_PKT_PID_RW(reg, x)	\
-+	(((reg) & (~((u32)0x00003 << 29))) | ((x) << 29))
-+#define DWC_HCTSIZ_PKT_CNT_RW(reg, x)	\
-+	(((reg) & (~((u32)0x003ff << 19))) | ((x) << 19))
-+#define DWC_HCTSIZ_XFER_SIZE_RW(reg, x)	\
-+	(((reg) & (~((u32)0x7ffff << 00))) | ((x) << 00))
-+
-+#define DWC_HCTSIZ_DATA0			0
-+#define DWC_HCTSIZ_DATA1			2
-+#define DWC_HCTSIZ_DATA2			1
-+#define DWC_HCTSIZ_MDATA			3
-+#define DWC_HCTSIZ_SETUP			3
-+
-+/*
-+ * These Macros represents the bit fields in the Host Channel Interrupt Mask
-+ * Register. Read the register into the u32 member then set/clear the bits using
-+ * the bit elements. Write the u32 member to the hcintmsk register.
-+ */
-+#define DWC_HCINTMSK_DATA_TOG_ERR_RD(x)		(((x) & (0x1 << 10)) >> 10)
-+#define DWC_HCINTMSK_FRAME_OVERN_ERR_RD(x)	(((x) & (0x1 << 9)) >> 9)
-+#define DWC_HCINTMSK_BBL_ERR_RD(x)		(((x) & (0x1 << 8)) >> 8)
-+#define DWC_HCINTMSK_TRANS_ERR_RD(x)		(((x) & (0x1 << 7)) >> 7)
-+#define DWC_HCINTMSK_NYET_RESP_REC_RD(x)	(((x) & (0x1 << 6)) >> 6)
-+#define DWC_HCINTMSK_ACK_RESP_REC_RD(x)		(((x) & (0x1 << 5)) >> 5)
-+#define DWC_HCINTMSK_NAK_RESP_REC_RD(x)		(((x) & (0x1 << 4)) >> 4)
-+#define DWC_HCINTMSK_STALL_RESP_REC_RD(x)	(((x) & (0x1 << 3)) >> 3)
-+#define DWC_HCINTMSK_AHB_ERR_RD(x)		(((x) & (0x1 << 2)) >> 2)
-+#define DWC_HCINTMSK_CHAN_HALTED_RD(x)		(((x) & (0x1 << 1)) >> 1)
-+#define DWC_HCINTMSK_TXFER_CMPL_RD(x)		(((x) & (0x1 << 0)) >> 0)
-+
-+#define DWC_HCINTMSK_DATA_TOG_ERR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 10))) | ((x) << 10))
-+#define DWC_HCINTMSK_FRAME_OVERN_ERR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 9))) | ((x) << 9))
-+#define DWC_HCINTMSK_BBL_ERR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 8))) | ((x) << 8))
-+#define DWC_HCINTMSK_TRANS_ERR_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 7))) | ((x) << 7))
-+#define DWC_HCINTMSK_NYET_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 6))) | ((x) << 6))
-+#define DWC_HCINTMSK_ACK_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 5))) | ((x) << 5))
-+#define DWC_HCINTMSK_NAK_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 4))) | ((x) << 4))
-+#define DWC_HCINTMSK_STALL_RESP_REC_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 3))) | ((x) << 3))
-+#define DWC_HCINTMSK_AHB_ERR_RW(reg, x)		\
-+	(((reg) & (~((u32)0x1 << 2))) | ((x) << 2))
-+#define DWC_HCINTMSK_CHAN_HALTED_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 1))) | ((x) << 1))
-+#define DWC_HCINTMSK_TXFER_CMPL_RW(reg, x)	\
-+	(((reg) & (~((u32)0x1 << 0))) | ((x) << 0))
-+
-+/*
-+ * OTG Host Interface Structure.
-+ *
-+ * The OTG Host Interface Structure structure contains information needed to
-+ * manage the DWC_otg controller acting in host mode. It represents the
-+ * programming view of the host-specific aspects of the controller.
-+ */
-+struct dwc_host_if {		/* CONFIG_DWC_OTG_REG_LE */
-+	/* Host Global Registers starting at offset 400h. */
-+	u32 host_global_regs;
-+#define DWC_OTG_HOST_GLOBAL_REG_OFFSET		0x400
-+
-+	/* Host Port 0 Control and Status Register */
++static int dwc_otg_hcd_handle_port_intr(struct dwc_hcd *hcd)
++{
++	int retval = 0;
 +	u32 hprt0;
-+#define DWC_OTG_HOST_PORT_REGS_OFFSET		0x440
++	u32 hprt0_modify;
 +
-+	/* Host Channel Specific Registers at offsets 500h-5FCh. */
-+	u32 hc_regs[MAX_EPS_CHANNELS];
-+#define DWC_OTG_HOST_CHAN_REGS_OFFSET		0x500
-+#define DWC_OTG_CHAN_REGS_OFFSET		0x20
++	hprt0 = dwc_read32(hcd->core_if->host_if->hprt0);
++	hprt0_modify = dwc_read32(hcd->core_if->host_if->hprt0);
 +
-+	/* Host configuration information */
-+	/* Number of Host Channels (range: 1-16) */
-+	u8 num_host_channels;
-+	/* Periodic EPs supported (0: no, 1: yes) */
-+	u8 perio_eps_supported;
-+	/* Periodic Tx FIFO Size (Only 1 host periodic Tx FIFO) */
-+	u16 perio_tx_fifo_size;
-+};
-+#endif
++	/*
++	 * Clear appropriate bits in HPRT0 to clear the interrupt bit in
++	 * GINTSTS
++	 */
++	hprt0_modify = DWC_HPRT0_PRT_ENA_RW(hprt0_modify, 0);
++	hprt0_modify = DWC_HPRT0_PRT_CONN_DET_RW(hprt0_modify, 0);
++	hprt0_modify = DWC_HPRT0_PRT_ENA_DIS_CHG_RW(hprt0_modify, 0);
++	hprt0_modify = DWC_HPRT0_PRT_OVRCURR_CHG_RW(hprt0_modify, 0);
++
++	/* Port connect detected interrupt */
++	if (DWC_HPRT0_PRT_CONN_DET_RD(hprt0)) {
++		/* Set the status flags and clear interrupt */
++		hcd->flags.b.port_connect_status_change = 1;
++		hcd->flags.b.port_connect_status = 1;
++		hprt0_modify = DWC_HPRT0_PRT_CONN_DET_RW(hprt0_modify, 1);
++
++		/* B-Device has connected, Delete the connection timer. */
++		del_timer_sync(&hcd->conn_timer);
++
++		/*
++		 * The Hub driver asserts a reset when it sees port connect
++		 * status change flag
++		 */
++		retval |= 1;
++	}
++
++	/* Port enable changed interrupt */
++	if (DWC_HPRT0_PRT_ENA_DIS_CHG_RD(hprt0)) {
++		/* Set the internal flag if the port was disabled */
++		if (DWC_HPRT0_PRT_ENA_RD(hprt0))
++			port_enabled(hcd, hprt0);
++		else
++			hcd->flags.b.port_enable_change = 1;
++
++		/* Clear the interrupt */
++		hprt0_modify = DWC_HPRT0_PRT_ENA_DIS_CHG_RW(hprt0_modify, 1);
++		retval |= 1;
++	}
++
++	/* Overcurrent change interrupt */
++	if (DWC_HPRT0_PRT_OVRCURR_CHG_RD(hprt0)) {
++		hcd->flags.b.port_over_current_change = 1;
++		hprt0_modify = DWC_HPRT0_PRT_OVRCURR_CHG_RW(hprt0_modify, 1);
++		retval |= 1;
++	}
++
++	/* Clear the port interrupts */
++	dwc_write32(hcd->core_if->host_if->hprt0, hprt0_modify);
++	return retval;
++}
++
++/**
++ * Gets the actual length of a transfer after the transfer halts. halt_status
++ * holds the reason for the halt.
++ *
++ * For IN transfers where halt_status is DWC_OTG_HC_XFER_COMPLETE, _short_read
++ * is set to 1 upon return if less than the requested number of bytes were
++ * transferred. Otherwise, _short_read is set to 0 upon return. _short_read may
++ * also be NULL on entry, in which case it remains unchanged.
++ */
++static u32 get_actual_xfer_length(struct dwc_hc *hc, u32 regs,
++				  struct dwc_qtd *qtd,
++				  enum dwc_halt_status halt_status,
++				  int *_short_read)
++{
++	u32 hctsiz = 0;
++	u32 length;
++
++	if (_short_read)
++		*_short_read = 0;
++
++	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
++	if (halt_status == DWC_OTG_HC_XFER_COMPLETE) {
++		if (hc->ep_is_in) {
++			length = hc->xfer_len - DWC_HCTSIZ_XFER_SIZE_RD(hctsiz);
++			if (_short_read)
++				*_short_read =
++				    (DWC_HCTSIZ_XFER_SIZE_RD(hctsiz) != 0);
++		} else if (hc->qh->do_split) {
++			length = qtd->ssplit_out_xfer_count;
++		} else {
++			length = hc->xfer_len;
++		}
++	} else {
++		/*
++		 * Must use the hctsiz.pktcnt field to determine how much data
++		 * has been transferred. This field reflects the number of
++		 * packets that have been transferred via the USB. This is
++		 * always an integral number of packets if the transfer was
++		 * halted before its normal completion. (Can't use the
++		 * hctsiz.xfersize field because that reflects the number of
++		 * bytes transferred via the AHB, not the USB).
++		 */
++		length = (hc->start_pkt_count - DWC_HCTSIZ_PKT_CNT_RD(hctsiz)) *
++		    hc->max_packet;
++	}
++	return length;
++}
++
++/**
++ * Updates the state of the URB after a Transfer Complete interrupt on the
++ * host channel. Updates the actual_length field of the URB based on the
++ * number of bytes transferred via the host channel. Sets the URB status
++ * if the data transfer is finished.
++ */
++static int update_urb_state_xfer_comp(struct dwc_hc *hc,
++				      u32 regs, struct urb *urb,
++				      struct dwc_qtd *qtd, int *status)
++{
++	int xfer_done = 0;
++	int short_read = 0;
++
++	urb->actual_length += get_actual_xfer_length(hc, regs, qtd,
++						     DWC_OTG_HC_XFER_COMPLETE,
++						     &short_read);
++
++	if (short_read || urb->actual_length == urb->transfer_buffer_length) {
++		xfer_done = 1;
++		if (short_read && (urb->transfer_flags & URB_SHORT_NOT_OK))
++			*status = -EREMOTEIO;
++		else
++			*status = 0;
++	}
++	return xfer_done;
++}
++
++/*
++ * Save the starting data toggle for the next transfer. The data toggle is
++ * saved in the QH for non-control transfers and it's saved in the QTD for
++ * control transfers.
++ */
++static void save_data_toggle(struct dwc_hc *hc, u32 regs, struct dwc_qtd *qtd)
++{
++	u32 hctsiz = 0;
++	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
++
++	if (hc->ep_type != DWC_OTG_EP_TYPE_CONTROL) {
++		struct dwc_qh *qh = hc->qh;
++
++		if (DWC_HCTSIZ_PKT_PID_RD(hctsiz) == DWC_HCTSIZ_DATA0)
++			qh->data_toggle = DWC_OTG_HC_PID_DATA0;
++		else
++			qh->data_toggle = DWC_OTG_HC_PID_DATA1;
++	} else {
++		if (DWC_HCTSIZ_PKT_PID_RD(hctsiz) == DWC_HCTSIZ_DATA0)
++			qtd->data_toggle = DWC_OTG_HC_PID_DATA0;
++		else
++			qtd->data_toggle = DWC_OTG_HC_PID_DATA1;
++	}
++}
++
++/**
++ * Frees the first QTD in the QH's list if free_qtd is 1. For non-periodic
++ * QHs, removes the QH from the active non-periodic schedule. If any QTDs are
++ * still linked to the QH, the QH is added to the end of the inactive
++ * non-periodic schedule. For periodic QHs, removes the QH from the periodic
++ * schedule if no more QTDs are linked to the QH.
++ */
++static void deactivate_qh(struct dwc_hcd *hcd, struct dwc_qh *qh, int free_qtd)
++{
++	int continue_split = 0;
++	struct dwc_qtd *qtd;
++
++	qtd = list_entry(qh->qtd_list.next, struct dwc_qtd, qtd_list_entry);
++	if (qtd->complete_split)
++		continue_split = 1;
++	else if (qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_MID ||
++		 qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_END)
++		continue_split = 1;
++
++	if (free_qtd) {
++		dwc_otg_hcd_qtd_remove(qtd);
++		continue_split = 0;
++	}
++
++	qh->channel = NULL;
++	qh->qtd_in_process = NULL;
++	dwc_otg_hcd_qh_deactivate(hcd, qh, continue_split);
++}
++
++/**
++ * Updates the state of an Isochronous URB when the transfer is stopped for
++ * any reason. The fields of the current entry in the frame descriptor array
++ * are set based on the transfer state and the input status. Completes the
++ * Isochronous URB if all the URB frames have been completed.
++ */
++static enum dwc_halt_status update_isoc_urb_state(struct dwc_hcd *hcd,
++						  struct dwc_hc *hc, u32 regs,
++						  struct dwc_qtd *qtd,
++						  enum dwc_halt_status status)
++{
++	struct urb *urb = qtd->urb;
++	enum dwc_halt_status ret_val = status;
++	struct usb_iso_packet_descriptor *frame_desc;
++	frame_desc = &urb->iso_frame_desc[qtd->isoc_frame_index];
++
++	switch (status) {
++	case DWC_OTG_HC_XFER_COMPLETE:
++		frame_desc->status = 0;
++		frame_desc->actual_length =
++		    get_actual_xfer_length(hc, regs, qtd, status, NULL);
++		break;
++	case DWC_OTG_HC_XFER_FRAME_OVERRUN:
++		urb->error_count++;
++		if (hc->ep_is_in)
++			frame_desc->status = -ENOSR;
++		else
++			frame_desc->status = -ECOMM;
++
++		frame_desc->actual_length = 0;
++		break;
++	case DWC_OTG_HC_XFER_BABBLE_ERR:
++		/* Don't need to update actual_length in this case. */
++		urb->error_count++;
++		frame_desc->status = -EOVERFLOW;
++		break;
++	case DWC_OTG_HC_XFER_XACT_ERR:
++		urb->error_count++;
++		frame_desc->status = -EPROTO;
++		frame_desc->actual_length =
++		    get_actual_xfer_length(hc, regs, qtd, status, NULL);
++	default:
++		pr_err("%s: Unhandled halt_status (%d)\n", __func__, status);
++		BUG();
++		break;
++	}
++
++	if (++qtd->isoc_frame_index == urb->number_of_packets) {
++		/*
++		 * urb->status is not used for isoc transfers.
++		 * The individual frame_desc statuses are used instead.
++		 */
++		dwc_otg_hcd_complete_urb(hcd, urb, 0);
++		ret_val = DWC_OTG_HC_XFER_URB_COMPLETE;
++	} else {
++		ret_val = DWC_OTG_HC_XFER_COMPLETE;
++	}
++	return ret_val;
++}
++
++/**
++ * Releases a host channel for use by other transfers. Attempts to select and
++ * queue more transactions since at least one host channel is available.
++ */
++static void release_channel(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			    struct dwc_qtd *qtd,
++			    enum dwc_halt_status halt_status, int *must_free)
++{
++	enum dwc_transaction_type tr_type;
++	int free_qtd;
++	int deact = 1;
++	struct dwc_qh *qh;
++	int retry_delay = 1;
++
++	switch (halt_status) {
++	case DWC_OTG_HC_XFER_NYET:
++	case DWC_OTG_HC_XFER_NAK:
++		if (halt_status == DWC_OTG_HC_XFER_NYET)
++			retry_delay = nyet_deferral_delay;
++		else
++			retry_delay = nak_deferral_delay;
++		free_qtd = 0;
++		if (deferral_on && hc->do_split) {
++			qh = hc->qh;
++			if (qh)
++				deact = dwc_otg_hcd_qh_deferr(hcd, qh,
++							      retry_delay);
++		}
++		break;
++	case DWC_OTG_HC_XFER_URB_COMPLETE:
++		free_qtd = 1;
++		break;
++	case DWC_OTG_HC_XFER_AHB_ERR:
++	case DWC_OTG_HC_XFER_STALL:
++	case DWC_OTG_HC_XFER_BABBLE_ERR:
++		free_qtd = 1;
++		break;
++	case DWC_OTG_HC_XFER_XACT_ERR:
++		if (qtd->error_count >= 3) {
++			free_qtd = 1;
++			dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPROTO);
++		} else {
++			free_qtd = 0;
++		}
++		break;
++	case DWC_OTG_HC_XFER_URB_DEQUEUE:
++		/*
++		 * The QTD has already been removed and the QH has been
++		 * deactivated. Don't want to do anything except release the
++		 * host channel and try to queue more transfers.
++		 */
++		goto cleanup;
++	case DWC_OTG_HC_XFER_NO_HALT_STATUS:
++		pr_err("%s: No halt_status, channel %d\n", __func__,
++		       hc->hc_num);
++		free_qtd = 0;
++		break;
++	default:
++		free_qtd = 0;
++		break;
++	}
++	if (free_qtd)
++		/* must_free pre-initialized to zero */
++		*must_free = 1;
++	if (deact)
++		deactivate_qh(hcd, hc->qh, free_qtd);
++
++cleanup:
++	/*
++	 * Release the host channel for use by other transfers. The cleanup
++	 * function clears the channel interrupt enables and conditions, so
++	 * there's no need to clear the Channel Halted interrupt separately.
++	 */
++	dwc_otg_hc_cleanup(hcd->core_if, hc);
++	list_add_tail(&hc->hc_list_entry, &hcd->free_hc_list);
++	hcd->available_host_channels++;
++	/* Try to queue more transfers now that there's a free channel. */
++	if (!erratum_usb09_patched) {
++		tr_type = dwc_otg_hcd_select_transactions(hcd);
++		if (tr_type != DWC_OTG_TRANSACTION_NONE)
++			dwc_otg_hcd_queue_transactions(hcd, tr_type);
++	}
++}
++
++/**
++ * Halts a host channel. If the channel cannot be halted immediately because
++ * the request queue is full, this function ensures that the FIFO empty
++ * interrupt for the appropriate queue is enabled so that the halt request can
++ * be queued when there is space in the request queue.
++ *
++ * This function may also be called in DMA mode. In that case, the channel is
++ * simply released since the core always halts the channel automatically in
++ * DMA mode.
++ */
++static void halt_channel(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			 struct dwc_qtd *qtd, enum dwc_halt_status halt_status,
++			 int *must_free)
++{
++	if (hcd->core_if->dma_enable) {
++		release_channel(hcd, hc, qtd, halt_status, must_free);
++		return;
++	}
++
++	/* Slave mode processing... */
++	dwc_otg_hc_halt(hcd->core_if, hc, halt_status);
++	if (hc->halt_on_queue) {
++		u32 gintmsk = 0;
++
++		if (hc->ep_type == DWC_OTG_EP_TYPE_CONTROL ||
++		    hc->ep_type == DWC_OTG_EP_TYPE_BULK) {
++			/*
++			 * Make sure the Non-periodic Tx FIFO empty interrupt
++			 * is enabled so that the non-periodic schedule will
++			 * be processed.
++			 */
++			gintmsk |= DWC_INTMSK_NP_TXFIFO_EMPT;
++			dwc_modify32(gintmsk_reg(hcd), 0, gintmsk);
++		} else {
++			/*
++			 * Move the QH from the periodic queued schedule to
++			 * the periodic assigned schedule. This allows the
++			 * halt to be queued when the periodic schedule is
++			 * processed.
++			 */
++			list_move(&hc->qh->qh_list_entry,
++				  &hcd->periodic_sched_assigned);
++
++			/*
++			 * Make sure the Periodic Tx FIFO Empty interrupt is
++			 * enabled so that the periodic schedule will be
++			 * processed.
++			 */
++			gintmsk |= DWC_INTMSK_P_TXFIFO_EMPTY;
++			dwc_modify32(gintmsk_reg(hcd), 0, gintmsk);
++		}
++	}
++}
++
++/**
++ * Performs common cleanup for non-periodic transfers after a Transfer
++ * Complete interrupt. This function should be called after any endpoint type
++ * specific handling is finished to release the host channel.
++ */
++static void complete_non_periodic_xfer(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				       u32 regs, struct dwc_qtd *qtd,
++				       enum dwc_halt_status halt_status,
++				       int *must_free)
++{
++	u32 hcint;
++
++	qtd->error_count = 0;
++	hcint = dwc_read32(regs + DWC_HCINT);
++	if (DWC_HCINT_NYET_RESP_REC_RD(hcint)) {
++		u32 hcint_clear = 0;
++
++		hcint_clear = DWC_HCINT_NYET_RESP_REC_RW(hcint_clear, 1);
++		/*
++		 * Got a NYET on the last transaction of the transfer. This
++		 * means that the endpoint should be in the PING state at the
++		 * beginning of the next transfer.
++		 */
++		hc->qh->ping_state = 1;
++		dwc_write32((regs + DWC_HCINT), hcint_clear);
++	}
++
++	/*
++	 * Always halt and release the host channel to make it available for
++	 * more transfers. There may still be more phases for a control
++	 * transfer or more data packets for a bulk transfer at this point,
++	 * but the host channel is still halted. A channel will be reassigned
++	 * to the transfer when the non-periodic schedule is processed after
++	 * the channel is released. This allows transactions to be queued
++	 * properly via dwc_otg_hcd_queue_transactions, which also enables the
++	 * Tx FIFO Empty interrupt if necessary.
++	 *
++	 * IN transfers in Slave mode require an explicit disable to
++	 * halt the channel. (In DMA mode, this call simply releases
++	 * the channel.)
++	 *
++	 * The channel is automatically disabled by the core for OUT
++	 * transfers in Slave mode.
++	 */
++	if (hc->ep_is_in)
++		halt_channel(hcd, hc, qtd, halt_status, must_free);
++	else
++		release_channel(hcd, hc, qtd, halt_status, must_free);
++}
++
++/**
++ * Performs common cleanup for periodic transfers after a Transfer Complete
++ * interrupt. This function should be called after any endpoint type specific
++ * handling is finished to release the host channel.
++ */
++static void complete_periodic_xfer(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				   u32 regs, struct dwc_qtd *qtd,
++				   enum dwc_halt_status halt_status,
++				   int *must_free)
++{
++	u32 hctsiz = 0;
++
++	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
++	qtd->error_count = 0;
++
++	/*
++	 * For OUT transfers and 0 packet count, the Core halts the channel,
++	 * otherwise, Flush any outstanding requests from the Tx queue.
++	 */
++	if (!hc->ep_is_in || (DWC_HCTSIZ_PKT_CNT_RD(hctsiz) == 0))
++		release_channel(hcd, hc, qtd, halt_status, must_free);
++	else
++		halt_channel(hcd, hc, qtd, halt_status, must_free);
++}
++
++/**
++ * Handles a host channel Transfer Complete interrupt. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_xfercomp_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				   u32 regs, struct dwc_qtd *qtd,
++				   int *must_free)
++{
++	int urb_xfer_done;
++	enum dwc_halt_status halt_status = DWC_OTG_HC_XFER_COMPLETE;
++	struct urb *urb = qtd->urb;
++	int pipe_type = usb_pipetype(urb->pipe);
++	int status = -EINPROGRESS;
++	u32 hcintmsk = 0;
++
++	/* Handle xfer complete on CSPLIT. */
++	if (hc->qh->do_split)
++		qtd->complete_split = 0;
++
++	/* Update the QTD and URB states. */
++	switch (pipe_type) {
++	case PIPE_CONTROL:
++		switch (qtd->control_phase) {
++		case DWC_OTG_CONTROL_SETUP:
++			if (urb->transfer_buffer_length > 0)
++				qtd->control_phase = DWC_OTG_CONTROL_DATA;
++			else
++				qtd->control_phase = DWC_OTG_CONTROL_STATUS;
++			halt_status = DWC_OTG_HC_XFER_COMPLETE;
++			break;
++		case DWC_OTG_CONTROL_DATA:
++			urb_xfer_done = update_urb_state_xfer_comp(hc, regs,
++								   urb, qtd,
++								   &status);
++			if (urb_xfer_done)
++				qtd->control_phase = DWC_OTG_CONTROL_STATUS;
++			else
++				save_data_toggle(hc, regs, qtd);
++			halt_status = DWC_OTG_HC_XFER_COMPLETE;
++			break;
++		case DWC_OTG_CONTROL_STATUS:
++			if (status == -EINPROGRESS)
++				status = 0;
++			dwc_otg_hcd_complete_urb(hcd, urb, status);
++			halt_status = DWC_OTG_HC_XFER_URB_COMPLETE;
++			break;
++		}
++		complete_non_periodic_xfer(hcd, hc, regs, qtd,
++					   halt_status, must_free);
++		break;
++	case PIPE_BULK:
++		urb_xfer_done = update_urb_state_xfer_comp(hc, regs, urb, qtd,
++							   &status);
++		if (urb_xfer_done) {
++			dwc_otg_hcd_complete_urb(hcd, urb, status);
++			halt_status = DWC_OTG_HC_XFER_URB_COMPLETE;
++		} else {
++			halt_status = DWC_OTG_HC_XFER_COMPLETE;
++		}
++
++		save_data_toggle(hc, regs, qtd);
++		complete_non_periodic_xfer(hcd, hc, regs, qtd,
++					   halt_status, must_free);
++		break;
++	case PIPE_INTERRUPT:
++		update_urb_state_xfer_comp(hc, regs, urb, qtd, &status);
++		/*
++		 * Interrupt URB is done on the first transfer complete
++		 * interrupt.
++		 */
++		dwc_otg_hcd_complete_urb(hcd, urb, status);
++		save_data_toggle(hc, regs, qtd);
++		complete_periodic_xfer(hcd, hc, regs, qtd,
++				       DWC_OTG_HC_XFER_URB_COMPLETE, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		if (qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_ALL) {
++			halt_status = update_isoc_urb_state(hcd, hc, regs, qtd,
++						    DWC_OTG_HC_XFER_COMPLETE);
++		}
++		complete_periodic_xfer(hcd, hc, regs, qtd,
++				       halt_status, must_free);
++		break;
++	}
++
++	/* disable xfercompl */
++	hcintmsk = DWC_HCINTMSK_TXFER_CMPL_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel STALL interrupt. This handler may be called in
++ * either DMA mode or Slave mode.
++ */
++static int handle_hc_stall_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	struct urb *urb = qtd->urb;
++	int pipe_type = usb_pipetype(urb->pipe);
++	u32 hcintmsk = 0;
++
++	if (pipe_type == PIPE_CONTROL)
++		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPIPE);
++
++	if (pipe_type == PIPE_BULK || pipe_type == PIPE_INTERRUPT) {
++		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPIPE);
++		/*
++		 * USB protocol requires resetting the data toggle for bulk
++		 * and interrupt endpoints when a CLEAR_FEATURE(ENDPOINT_HALT)
++		 * setup command is issued to the endpoint. Anticipate the
++		 * CLEAR_FEATURE command since a STALL has occurred and reset
++		 * the data toggle now.
++		 */
++		hc->qh->data_toggle = 0;
++	}
++
++	halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_STALL, must_free);
++	/* disable stall */
++	hcintmsk = DWC_HCINTMSK_STALL_RESP_REC_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Updates the state of the URB when a transfer has been stopped due to an
++ * abnormal condition before the transfer completes. Modifies the
++ * actual_length field of the URB to reflect the number of bytes that have
++ * actually been transferred via the host channel.
++ */
++static void update_urb_state_xfer_intr(struct dwc_hc *hc,
++				       u32 regs, struct urb *urb,
++				       struct dwc_qtd *qtd,
++				       enum dwc_halt_status sts)
++{
++	u32 xfr_len = get_actual_xfer_length(hc, regs, qtd, sts, NULL);
++	urb->actual_length += xfr_len;
++}
++
++/**
++ * Handles a host channel NAK interrupt. This handler may be called in either
++ * DMA mode or Slave mode.
++ */
++static int handle_hc_nak_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			      u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	u32 hcintmsk = 0;
++
++	/*
++	 * Handle NAK for IN/OUT SSPLIT/CSPLIT transfers, bulk, control, and
++	 * interrupt.  Re-start the SSPLIT transfer.
++	 */
++	if (hc->do_split) {
++		if (hc->complete_split)
++			qtd->error_count = 0;
++
++		qtd->complete_split = 0;
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
++		goto handle_nak_done;
++	}
++	switch (usb_pipetype(qtd->urb->pipe)) {
++	case PIPE_CONTROL:
++	case PIPE_BULK:
++		if (hcd->core_if->dma_enable && hc->ep_is_in) {
++			/*
++			 * NAK interrupts are enabled on bulk/control IN
++			 * transfers in DMA mode for the sole purpose of
++			 * resetting the error count after a transaction error
++			 * occurs. The core will continue transferring data.
++			 */
++			qtd->error_count = 0;
++			goto handle_nak_done;
++		}
++
++		/*
++		 * NAK interrupts normally occur during OUT transfers in DMA
++		 * or Slave mode. For IN transfers, more requests will be
++		 * queued as request queue space is available.
++		 */
++		qtd->error_count = 0;
++		if (!hc->qh->ping_state) {
++			update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
++						   DWC_OTG_HC_XFER_NAK);
++
++			save_data_toggle(hc, regs, qtd);
++			if (qtd->urb->dev->speed == USB_SPEED_HIGH)
++				hc->qh->ping_state = 1;
++		}
++
++		/*
++		 * Halt the channel so the transfer can be re-started from
++		 * the appropriate point or the PING protocol will
++		 * start/continue.
++		 */
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
++		break;
++	case PIPE_INTERRUPT:
++		qtd->error_count = 0;
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		/* Should never get called for isochronous transfers. */
++		BUG();
++		break;
++	}
++
++handle_nak_done:
++	/* disable nak */
++	hcintmsk = DWC_HCINTMSK_NAK_RESP_REC_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Helper function for handle_hc_ack_intr().  Sets the split values for an ACK
++ * on SSPLIT for ISOC OUT.
++ */
++static void set_isoc_out_vals(struct dwc_hc *hc, struct dwc_qtd *qtd)
++{
++	struct usb_iso_packet_descriptor *frame_desc;
++
++	switch (hc->xact_pos) {
++	case DWC_HCSPLIT_XACTPOS_ALL:
++		break;
++	case DWC_HCSPLIT_XACTPOS_END:
++		qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_ALL;
++		qtd->isoc_split_offset = 0;
++		break;
++	case DWC_HCSPLIT_XACTPOS_BEGIN:
++	case DWC_HCSPLIT_XACTPOS_MID:
++		/*
++		 * For BEGIN or MID, calculate the length for the next
++		 * microframe to determine the correct SSPLIT token, either MID
++		 * or END.
++		 */
++		frame_desc = &qtd->urb->iso_frame_desc[qtd->isoc_frame_index];
++		qtd->isoc_split_offset += 188;
++
++		if ((frame_desc->length - qtd->isoc_split_offset) <= 188)
++			qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_END;
++		else
++			qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_MID;
++
++		break;
++	}
++}
++
++/**
++ * Handles a host channel ACK interrupt. This interrupt is enabled when
++ * performing the PING protocol in Slave mode, when errors occur during
++ * either Slave mode or DMA mode, and during Start Split transactions.
++ */
++static int handle_hc_ack_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			      u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	u32 hcintmsk = 0;
++
++	if (hc->do_split) {
++		/* Handle ACK on SSPLIT. ACK should not occur in CSPLIT. */
++		if (!hc->ep_is_in && hc->data_pid_start != DWC_OTG_HC_PID_SETUP)
++			qtd->ssplit_out_xfer_count = hc->xfer_len;
++
++		/* Don't need complete for isochronous out transfers. */
++		if (!(hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in))
++			qtd->complete_split = 1;
++
++		if (hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in)
++			set_isoc_out_vals(hc, qtd);
++		else
++			halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_ACK,
++				     must_free);
++	} else {
++		qtd->error_count = 0;
++		if (hc->qh->ping_state) {
++			hc->qh->ping_state = 0;
++
++			/*
++			 * Halt the channel so the transfer can be re-started
++			 * from the appropriate point. This only happens in
++			 * Slave mode. In DMA mode, the ping_state is cleared
++			 * when the transfer is started because the core
++			 * automatically executes the PING, then the transfer.
++			 */
++			halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_ACK,
++				     must_free);
++		}
++	}
++
++	/*
++	 * If the ACK occurred when _not_ in the PING state, let the channel
++	 * continue transferring data after clearing the error count.
++	 */
++	/* disable ack */
++	hcintmsk = DWC_HCINTMSK_ACK_RESP_REC_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel NYET interrupt. This interrupt should only occur on
++ * Bulk and Control OUT endpoints and for complete split transactions. If a
++ * NYET occurs at the same time as a Transfer Complete interrupt, it is
++ * handled in the xfercomp interrupt handler, not here. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_nyet_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++			       u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	u32 hcintmsk = 0;
++	u32 hcint_clear = 0;
++
++	/*
++	 * NYET on CSPLIT
++	 * re-do the CSPLIT immediately on non-periodic
++	 */
++	if (hc->do_split && hc->complete_split) {
++		if (hc->ep_type == DWC_OTG_EP_TYPE_INTR ||
++		    hc->ep_type == DWC_OTG_EP_TYPE_ISOC) {
++			int frnum =
++			    dwc_otg_hcd_get_frame_number(dwc_otg_hcd_to_hcd
++							 (hcd));
++			if (dwc_full_frame_num(frnum) !=
++			    dwc_full_frame_num(hc->qh->sched_frame)) {
++				qtd->complete_split = 0;
++				halt_channel(hcd, hc, qtd,
++					     DWC_OTG_HC_XFER_XACT_ERR,
++					     must_free);
++				goto handle_nyet_done;
++			}
++		}
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NYET, must_free);
++		goto handle_nyet_done;
++	}
++	hc->qh->ping_state = 1;
++	qtd->error_count = 0;
++	update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
++				   DWC_OTG_HC_XFER_NYET);
++	save_data_toggle(hc, regs, qtd);
++	/*
++	 * Halt the channel and re-start the transfer so the PING
++	 * protocol will start.
++	 */
++	halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NYET, must_free);
++
++handle_nyet_done:
++	/* disable nyet */
++	hcintmsk = DWC_HCINTMSK_NYET_RESP_REC_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++	/* clear nyet */
++	hcint_clear = DWC_HCINT_NYET_RESP_REC_RW(hcint_clear, 1);
++	dwc_write32((regs + DWC_HCINT), hcint_clear);
++	return 1;
++}
++
++/**
++ * Handles a host channel babble interrupt. This handler may be called in
++ * either DMA mode or Slave mode.
++ */
++static int handle_hc_babble_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				 u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	u32 hcintmsk = 0;
++
++	if (hc->ep_type != DWC_OTG_EP_TYPE_ISOC) {
++		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EOVERFLOW);
++		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_BABBLE_ERR,
++			     must_free);
++	} else {
++		enum dwc_halt_status halt_status;
++		halt_status = update_isoc_urb_state(hcd, hc, regs, qtd,
++						    DWC_OTG_HC_XFER_BABBLE_ERR);
++		halt_channel(hcd, hc, qtd, halt_status, must_free);
++	}
++	/* disable bblerr */
++	hcintmsk = DWC_HCINTMSK_BBL_ERR_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++	return 1;
++}
++
++/**
++ * Handles a host channel AHB error interrupt. This handler is only called in
++ * DMA mode.
++ */
++static int handle_hc_ahberr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				 u32 regs, struct dwc_qtd *qtd)
++{
++	u32 hcchar;
++	u32 hcsplt;
++	u32 hctsiz = 0;
++	u32 hcdma;
++	struct urb *urb = qtd->urb;
++	u32 hcintmsk = 0;
++
++	hcchar = dwc_read32(regs + DWC_HCCHAR);
++	hcsplt = dwc_read32(regs + DWC_HCSPLT);
++	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
++	hcdma = dwc_read32(regs + DWC_HCDMA);
++
++	pr_err("AHB ERROR, Channel %d\n", hc->hc_num);
++	pr_err("  hcchar 0x%08x, hcsplt 0x%08x\n", hcchar, hcsplt);
++	pr_err("  hctsiz 0x%08x, hcdma 0x%08x\n", hctsiz, hcdma);
++
++	pr_err("  Device address: %d\n", usb_pipedevice(urb->pipe));
++	pr_err("  Endpoint: %d, %s\n", usb_pipeendpoint(urb->pipe),
++	       (usb_pipein(urb->pipe) ? "IN" : "OUT"));
++
++	pr_err("  Endpoint type: %s\n", pipetype_str(urb->pipe));
++	pr_err("  Speed: %s\n", dev_speed_str(urb->dev->speed));
++	pr_err("  Max packet size: %d\n",
++	       usb_maxpacket(urb->dev, urb->pipe, usb_pipeout(urb->pipe)));
++	pr_err("  Data buffer length: %d\n", urb->transfer_buffer_length);
++	pr_err("  Transfer buffer: %p, Transfer DMA: %p\n",
++	       urb->transfer_buffer, (void *)(u32) urb->transfer_dma);
++	pr_err("  Setup buffer: %p, Setup DMA: %p\n",
++	       urb->setup_packet, (void *)(u32) urb->setup_dma);
++	pr_err("  Interval: %d\n", urb->interval);
++
++	dwc_otg_hcd_complete_urb(hcd, urb, -EIO);
++
++	/*
++	 * Force a channel halt. Don't call halt_channel because that won't
++	 * write to the HCCHARn register in DMA mode to force the halt.
++	 */
++	dwc_otg_hc_halt(hcd->core_if, hc, DWC_OTG_HC_XFER_AHB_ERR);
++	/* disable ahberr */
++	hcintmsk = DWC_HCINTMSK_AHB_ERR_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel transaction error interrupt. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_xacterr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				  u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	enum dwc_halt_status status = DWC_OTG_HC_XFER_XACT_ERR;
++	u32 hcintmsk = 0;
++
++	switch (usb_pipetype(qtd->urb->pipe)) {
++	case PIPE_CONTROL:
++	case PIPE_BULK:
++		qtd->error_count++;
++		if (!hc->qh->ping_state) {
++			update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
++						   status);
++			save_data_toggle(hc, regs, qtd);
++
++			if (!hc->ep_is_in && qtd->urb->dev->speed ==
++			    USB_SPEED_HIGH)
++				hc->qh->ping_state = 1;
++		}
++		/*
++		 * Halt the channel so the transfer can be re-started from
++		 * the appropriate point or the PING protocol will start.
++		 */
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	case PIPE_INTERRUPT:
++		qtd->error_count++;
++		if (hc->do_split && hc->complete_split)
++			qtd->complete_split = 0;
++
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		status = update_isoc_urb_state(hcd, hc, regs, qtd, status);
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	}
++	/* Disable xacterr */
++	hcintmsk = DWC_HCINTMSK_TRANS_ERR_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel frame overrun interrupt. This handler may be called
++ * in either DMA mode or Slave mode.
++ */
++static int handle_hc_frmovrun_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				   u32 regs, struct dwc_qtd *qtd,
++				   int *must_free)
++{
++	enum dwc_halt_status status = DWC_OTG_HC_XFER_FRAME_OVERRUN;
++	u32 hcintmsk = 0;
++
++	switch (usb_pipetype(qtd->urb->pipe)) {
++	case PIPE_CONTROL:
++	case PIPE_BULK:
++		break;
++	case PIPE_INTERRUPT:
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	case PIPE_ISOCHRONOUS:
++		status = update_isoc_urb_state(hcd, hc, regs, qtd, status);
++		halt_channel(hcd, hc, qtd, status, must_free);
++		break;
++	}
++	/* Disable frmovrun */
++	hcintmsk = DWC_HCINTMSK_FRAME_OVERN_ERR_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host channel data toggle error interrupt. This handler may be
++ * called in either DMA mode or Slave mode.
++ */
++static int handle_hc_datatglerr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				     u32 regs, struct dwc_qtd *qtd)
++{
++	u32 hcintmsk = 0;
++
++	if (hc->ep_is_in)
++		qtd->error_count = 0;
++	else
++		pr_err("Data Toggle Error on OUT transfer, channel "
++		       "%d\n", hc->hc_num);
++
++	/* disable datatglerr */
++	hcintmsk = DWC_HCINTMSK_DATA_TOG_ERR_RW(hcintmsk, 1);
++	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++
++	return 1;
++}
++
++/**
++ * Handles a host Channel Halted interrupt in DMA mode. This handler
++ * determines the reason the channel halted and proceeds accordingly.
++ */
++static void handle_hc_chhltd_intr_dma(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				      u32 regs, struct dwc_qtd *qtd,
++				      int *must_free)
++{
++	u32 hcint;
++	u32 hcintmsk = 0;
++
++	if (hc->halt_status == DWC_OTG_HC_XFER_URB_DEQUEUE ||
++	    hc->halt_status == DWC_OTG_HC_XFER_AHB_ERR) {
++		/*
++		 * Just release the channel. A dequeue can happen on a
++		 * transfer timeout. In the case of an AHB Error, the channel
++		 * was forced to halt because there's no way to gracefully
++		 * recover.
++		 */
++		release_channel(hcd, hc, qtd, hc->halt_status, must_free);
++		return;
++	}
++
++	/* Read the HCINTn register to determine the cause for the halt. */
++	hcint = dwc_read32(regs + DWC_HCINT);
++	hcintmsk = dwc_read32(regs + DWC_HCINTMSK);
++	if (DWC_HCINT_TXFER_CMPL_RD(hcint)) {
++		/*
++		 * This is here because of a possible hardware bug.  Spec
++		 * says that on SPLIT-ISOC OUT transfers in DMA mode that a HALT
++		 * interrupt w/ACK bit set should occur, but I only see the
++		 * XFERCOMP bit, even with it masked out.  This is a workaround
++		 * for that behavior.  Should fix this when hardware is fixed.
++		 */
++		if (hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in)
++			handle_hc_ack_intr(hcd, hc, regs, qtd, must_free);
++
++		handle_hc_xfercomp_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_STALL_RESP_REC_RD(hcint)) {
++		handle_hc_stall_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_TRANS_ERR_RD(hcint)) {
++		/*
++		 * Must handle xacterr before nak or ack. Could get a xacterr
++		 * at the same time as either of these on a BULK/CONTROL OUT
++		 * that started with a PING. The xacterr takes precedence.
++		 */
++		handle_hc_xacterr_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_NYET_RESP_REC_RD(hcint)) {
++		/*
++		 * Must handle nyet before nak or ack. Could get a nyet at the
++		 * same time as either of those on a BULK/CONTROL OUT that
++		 * started with a PING. The nyet takes precedence.
++		 */
++		handle_hc_nyet_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_BBL_ERR_RD(hcint)) {
++		handle_hc_babble_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_FRAME_OVERN_ERR_RD(hcint)) {
++		handle_hc_frmovrun_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_DATA_TOG_ERR_RD(hcint)) {
++		handle_hc_datatglerr_intr(hcd, hc, regs, qtd);
++		hc->qh->data_toggle = 0;
++		halt_channel(hcd, hc, qtd, hc->halt_status, must_free);
++	} else if (DWC_HCINT_NAK_RESP_REC_RD(hcint) &&
++		   !DWC_HCINTMSK_NAK_RESP_REC_RD(hcintmsk)) {
++		/*
++		 * If nak is not masked, it's because a non-split IN transfer
++		 * is in an error state. In that case, the nak is handled by
++		 * the nak interrupt handler, not here. Handle nak here for
++		 * BULK/CONTROL OUT transfers, which halt on a NAK to allow
++		 * rewinding the buffer pointer.
++		 */
++		handle_hc_nak_intr(hcd, hc, regs, qtd, must_free);
++	} else if (DWC_HCINT_ACK_RESP_REC_RD(hcint) &&
++		   !DWC_HCINTMSK_ACK_RESP_REC_RD(hcintmsk)) {
++		/*
++		 * If ack is not masked, it's because a non-split IN transfer
++		 * is in an error state. In that case, the ack is handled by
++		 * the ack interrupt handler, not here. Handle ack here for
++		 * split transfers. Start splits halt on ACK.
++		 */
++		handle_hc_ack_intr(hcd, hc, regs, qtd, must_free);
++	} else {
++		if (hc->ep_type == DWC_OTG_EP_TYPE_INTR ||
++		    hc->ep_type == DWC_OTG_EP_TYPE_ISOC) {
++			/*
++			 * A periodic transfer halted with no other channel
++			 * interrupts set. Assume it was halted by the core
++			 * because it could not be completed in its scheduled
++			 * (micro)frame.
++			 */
++			halt_channel(hcd, hc, qtd,
++				     DWC_OTG_HC_XFER_PERIODIC_INCOMPLETE,
++				     must_free);
++		} else {
++			pr_err("%s: Channel %d, DMA Mode -- ChHltd "
++			       "set, but reason for halting is unknown, "
++			       "hcint 0x%08x, intsts 0x%08x\n",
++			       __func__, hc->hc_num, hcint,
++			       dwc_read32(gintsts_reg(hcd)));
++		}
++	}
++}
++
++/**
++ * Handles a host channel Channel Halted interrupt.
++ *
++ * In slave mode, this handler is called only when the driver specifically
++ * requests a halt. This occurs during handling other host channel interrupts
++ * (e.g. nak, xacterr, stall, nyet, etc.).
++ *
++ * In DMA mode, this is the interrupt that occurs when the core has finished
++ * processing a transfer on a channel. Other host channel interrupts (except
++ * ahberr) are disabled in DMA mode.
++ */
++static int handle_hc_chhltd_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
++				 u32 regs, struct dwc_qtd *qtd, int *must_free)
++{
++	if (hcd->core_if->dma_enable)
++		handle_hc_chhltd_intr_dma(hcd, hc, regs, qtd, must_free);
++	else
++		release_channel(hcd, hc, qtd, hc->halt_status, must_free);
++
++	return 1;
++}
++
++/* Handles interrupt for a specific Host Channel */
++static int dwc_otg_hcd_handle_hc_n_intr(struct dwc_hcd *hcd, u32 num)
++{
++	int must_free = 0;
++	int retval = 0;
++	u32 hcint;
++	u32 hcintmsk = 0;
++	struct dwc_hc *hc;
++	u32 hc_regs;
++	struct dwc_qtd *qtd;
++
++	hc = hcd->hc_ptr_array[num];
++	hc_regs = (u32) hcd->core_if->host_if->hc_regs[num];
++	qtd = list_entry(hc->qh->qtd_list.next, struct dwc_qtd, qtd_list_entry);
++
++	hcint = dwc_read32(hc_regs + DWC_HCINT);
++	hcintmsk = dwc_read32(hc_regs + DWC_HCINTMSK);
++
++	hcint = hcint & hcintmsk;
++	if (!hcd->core_if->dma_enable && DWC_HCINT_CHAN_HALTED_RD(hcint)
++	    && hcint != 0x2)
++		hcint = DWC_HCINT_CHAN_HALTED_RW(hcint, 0);
++
++	if (DWC_HCINT_TXFER_CMPL_RD(hcint)) {
++		retval |= handle_hc_xfercomp_intr(hcd, hc, hc_regs,
++						  qtd, &must_free);
++		/*
++		 * If NYET occurred at same time as Xfer Complete, the NYET is
++		 * handled by the Xfer Complete interrupt handler. Don't want
++		 * to call the NYET interrupt handler in this case.
++		 */
++		hcint = DWC_HCINT_NYET_RESP_REC_RW(hcint, 0);
++	}
++
++	if (DWC_HCINT_CHAN_HALTED_RD(hcint))
++		retval |= handle_hc_chhltd_intr(hcd, hc, hc_regs,
++						qtd, &must_free);
++	if (DWC_HCINT_AHB_ERR_RD(hcint))
++		retval |= handle_hc_ahberr_intr(hcd, hc, hc_regs, qtd);
++	if (DWC_HCINT_STALL_RESP_REC_RD(hcint))
++		retval |= handle_hc_stall_intr(hcd, hc, hc_regs,
++					       qtd, &must_free);
++	if (DWC_HCINT_NAK_RESP_REC_RD(hcint))
++		retval |= handle_hc_nak_intr(hcd, hc, hc_regs, qtd, &must_free);
++	if (DWC_HCINT_ACK_RESP_REC_RD(hcint))
++		retval |= handle_hc_ack_intr(hcd, hc, hc_regs, qtd, &must_free);
++	if (DWC_HCINT_NYET_RESP_REC_RD(hcint))
++		retval |= handle_hc_nyet_intr(hcd, hc, hc_regs,
++					      qtd, &must_free);
++	if (DWC_HCINT_TRANS_ERR_RD(hcint))
++		retval |= handle_hc_xacterr_intr(hcd, hc, hc_regs,
++						 qtd, &must_free);
++	if (DWC_HCINT_BBL_ERR_RD(hcint))
++		retval |= handle_hc_babble_intr(hcd, hc, hc_regs,
++						qtd, &must_free);
++	if (DWC_HCINT_FRAME_OVERN_ERR_RD(hcint))
++		retval |= handle_hc_frmovrun_intr(hcd, hc, hc_regs,
++						  qtd, &must_free);
++	if (DWC_HCINT_DATA_TOG_ERR_RD(hcint))
++		retval |= handle_hc_datatglerr_intr(hcd, hc, hc_regs, qtd);
++
++	if (must_free)
++		/* Free the qtd here now that we are done using it. */
++		dwc_otg_hcd_qtd_free(qtd);
++	return retval;
++}
++
++/**
++ * This function returns the Host All Channel Interrupt register
++ */
++static inline u32 dwc_otg_read_host_all_channels_intr(struct core_if
++						      *core_if)
++{
++	return dwc_read32((u32) core_if->host_if->host_global_regs + DWC_HAINT);
++}
++
++/**
++ * This interrupt indicates that one or more host channels has a pending
++ * interrupt. There are multiple conditions that can cause each host channel
++ * interrupt. This function determines which conditions have occurred for each
++ * host channel interrupt and handles them appropriately.
++ */
++static int dwc_otg_hcd_handle_hc_intr(struct dwc_hcd *hcd)
++{
++	u32 i;
++	int retval = 0;
++	u32 haint;
++
++	/*
++	 * Clear appropriate bits in HCINTn to clear the interrupt bit in
++	 *  GINTSTS
++	 */
++	haint = dwc_otg_read_host_all_channels_intr(hcd->core_if);
++	for (i = 0; i < hcd->core_if->core_params->host_channels; i++)
++		if (DWC_HAINT_RD(haint) & (1 << i))
++			retval |= dwc_otg_hcd_handle_hc_n_intr(hcd, i);
++
++	return retval;
++}
++
++/* This function handles interrupts for the HCD.*/
++int dwc_otg_hcd_handle_intr(struct dwc_hcd *hcd)
++{
++	int ret = 0;
++	struct core_if *core_if = hcd->core_if;
++	u32 gintsts;
++
++	/* Check if HOST Mode */
++	if (dwc_otg_is_host_mode(core_if)) {
++		spin_lock(&hcd->lock);
++		gintsts = dwc_otg_read_core_intr(core_if);
++		if (!gintsts) {
++			spin_unlock(&hcd->lock);
++			return IRQ_NONE;
++		}
++
++		if (gintsts & DWC_INTMSK_STRT_OF_FRM)
++			ret |= dwc_otg_hcd_handle_sof_intr(hcd);
++		if (gintsts & DWC_INTMSK_RXFIFO_NOT_EMPT)
++			ret |= dwc_otg_hcd_handle_rx_status_q_level_intr(hcd);
++		if (gintsts & DWC_INTMSK_NP_TXFIFO_EMPT)
++			ret |= dwc_otg_hcd_handle_np_tx_fifo_empty_intr(hcd);
++		if (gintsts & DWC_INTMSK_HST_PORT)
++			ret |= dwc_otg_hcd_handle_port_intr(hcd);
++		if (gintsts & DWC_INTMSK_HST_CHAN)
++			ret |= dwc_otg_hcd_handle_hc_intr(hcd);
++		if (gintsts & DWC_INTMSK_P_TXFIFO_EMPTY)
++			ret |= dwc_otg_hcd_handle_perio_tx_fifo_empty_intr(hcd);
++
++		spin_unlock(&hcd->lock);
++	}
++	return ret;
++}
 -- 
 1.6.1.rc3
