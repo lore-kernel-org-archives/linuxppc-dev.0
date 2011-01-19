@@ -1,37 +1,12 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B958CB6EE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2011 09:26:57 +1100 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0JMHof5019725
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 17:17:57 -0500
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id E253C72805B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 17:26:53 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p0JMQniK1552604
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 17:26:53 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p0JMQmDP023144
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 20:26:49 -0200
-Date: Wed, 19 Jan 2011 14:26:46 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.37-git17 virtual IO boot failure
-Message-ID: <20110119222646.GB19903@us.ibm.com>
-References: <20110118123152.50f75a72@kryten>
-	<20110118224718.GA19039@us.ibm.com>
-	<20110119004824.GA20441@us.ibm.com>
-	<1295417178.2148.131.camel@pasglop>
+Return-Path: <stuart.yoder@freescale.com>
+From: Stuart yoder <stuart.yoder@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree-discuss@lists.ozlabs.org>
+Subject: [PATCH][v2] define binding for fsl mpic interrupt controllers
+Date: Wed, 19 Jan 2011 16:30:14 -0600
+Message-ID: <1295476214-27698-1-git-send-email-stuart.yoder@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1295417178.2148.131.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com,
-	Anton Blanchard <anton@samba.org>, miltonm@bga.com
+Content-Type: text/plain
+Cc: Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,43 +16,282 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19.01.2011 [17:06:18 +1100], Benjamin Herrenschmidt wrote:
-> On Tue, 2011-01-18 at 16:48 -0800, Nishanth Aravamudan wrote:
-> > 
-> > Ben, if you're ok with waiting to see if Milton or Sonny have any
-> > ideas,
-> > I'd like to hold off on asking for a revert. In the case they do, I'll
-> > be able to test and send out any proposed fix rapidly. 
-> 
-> I don't believe this specific error is causing the lockup, I think we
-> only hit a spurrious message on devices that don't have DMA
-> capabilities in the first place. (But I may be wrong, I'll wait for
-> you guys to dig more or I'll have a look myself tomorrow if I manage
-> to get out of meetings).
+From: Stuart Yoder <stuart.yoder@freescale.com>
 
-Yes, this seems accurate. Like I mentioned elsewhere, this box came up
-ok even with these messages and seemed ok (up until the disk locked up).
+define the binding for compatible = "fsl,mpic", including
+the definition of 4-cell interrupt specifiers.  The
+3rd and 4th cells are needed to define additional
+types of interrupt source outside the "normal"
+external and internal interrupts in FSL SoCs.  Define
+error interrupt, IPIs, and PIC timer sources.
 
-> So there's another problem with SCSI tho it -could- also be a DMA issue,
-> hard to tell at this point.
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
+-version 2
+   -fix some typos
+   -move defintion of interrupt number to the interrupt
+    type 0
+   -defined no-reset property
+   -added some examples
 
-Right, I'm not sure how to determine that. I did see the lockup, though,
-with both my patches reverted (the patches for vio, I mean, after
-2.6.37)
+ Documentation/powerpc/dts-bindings/fsl/mpic.txt |  251 +++++++++++++++++++----
+ 1 files changed, 209 insertions(+), 42 deletions(-)
 
-> BTW. I'm not too happy with those defaults set to 64-bit. Probably not
-> an issue until your other patches go in, but some devices like veth
-> cannot do 64-bit DMA. I think we should default to 32-bit in the VIO
-> base code and explicitely enable 64-bit DMA from drivers that support it
-> (in theory vscsi but I haven't verified the implementation).
-
-Ok, so change the bit-mask to 32-bit? Or would it be appropriate to
-attempt 64-bit, if it fails fallback to 32-bit? Seems to be a common
-pattern throughout the DMA bit-setting callers.
-
-Thanks,
-Nish
-
+diff --git a/Documentation/powerpc/dts-bindings/fsl/mpic.txt b/Documentation/powerpc/dts-bindings/fsl/mpic.txt
+index 71e39cf..a6160b5 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/mpic.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/mpic.txt
+@@ -1,42 +1,209 @@
+-* OpenPIC and its interrupt numbers on Freescale's e500/e600 cores
+-
+-The OpenPIC specification does not specify which interrupt source has to
+-become which interrupt number. This is up to the software implementation
+-of the interrupt controller. The only requirement is that every
+-interrupt source has to have an unique interrupt number / vector number.
+-To accomplish this the current implementation assigns the number zero to
+-the first source, the number one to the second source and so on until
+-all interrupt sources have their unique number.
+-Usually the assigned vector number equals the interrupt number mentioned
+-in the documentation for a given core / CPU. This is however not true
+-for the e500 cores (MPC85XX CPUs) where the documentation distinguishes
+-between internal and external interrupt sources and starts counting at
+-zero for both of them.
+-
+-So what to write for external interrupt source X or internal interrupt
+-source Y into the device tree? Here is an example:
+-
+-The memory map for the interrupt controller in the MPC8544[0] shows,
+-that the first interrupt source starts at 0x5_0000 (PIC Register Address
+-Map-Interrupt Source Configuration Registers). This source becomes the
+-number zero therefore:
+- External interrupt 0 = interrupt number 0
+- External interrupt 1 = interrupt number 1
+- External interrupt 2 = interrupt number 2
+- ...
+-Every interrupt number allocates 0x20 bytes register space. So to get
+-its number it is sufficient to shift the lower 16bits to right by five.
+-So for the external interrupt 10 we have:
+-  0x0140 >> 5 = 10
+-
+-After the external sources, the internal sources follow. The in core I2C
+-controller on the MPC8544 for instance has the internal source number
+-27. Oo obtain its interrupt number we take the lower 16bits of its memory
+-address (0x5_0560) and shift it right:
+- 0x0560 >> 5 = 43
+-
+-Therefore the I2C device node for the MPC8544 CPU has to have the
+-interrupt number 43 specified in the device tree.
+-
+-[0] MPC8544E PowerQUICCTM III, Integrated Host Processor Family Reference Manual
+-    MPC8544ERM Rev. 1 10/2007
++=====================================================================
++Freescale MPIC Interrupt Controller Node
++Copyright (C) 2010,2011 Freescale Semiconductor Inc.
++=====================================================================
++
++The Freescale MPIC interrupt controller is found on all PowerQUICC
++and QorIQ processors and is compatible with the Open PIC.  The
++notable difference from Open PIC binding is the addition of 2
++additional cells in the interrupt specifier defining interrupt type
++information.
++
++PROPERTIES
++
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: Shall include "fsl,mpic".  Freescale MPIC
++          controllers compatible with this binding have Block
++          Revision Registers BRR1 and BRR2 at offset 0x0 and
++          0x10 in the MPIC.
++
++  - reg
++      Usage: required
++      Value type: <prop-encoded-array>
++      Definition: A standard property.  Specifies the physical
++          offset and length of the device's registers within the
++          CCSR address space.
++
++  - interrupt-controller
++      Usage: required
++      Value type: <empty>
++      Definition: Specifies that this node is an interrupt
++          controller
++
++  - #interrupt-cells
++      Usage: required
++      Value type: <u32>
++      Definition: Shall be 2 or 4.  A value of 2 means that interrupt
++          specifiers do not contain the interrupt-type or type-specific
++          information cells.
++
++  - #address-cells
++      Usage: required
++      Value type: <u32>
++      Definition: Shall be 0.
++
++  - no-reset
++      Usage: optional
++      Value type: <empty>
++      Definition: The presence of this property specifies that the
++          MPIC must not be reset by the client program, and that
++          the boot program has initialized all interrupt source
++          configuration registers to a sane state-- masked or
++          directed at other cores.  This ensures that the client
++          program will not receive interrupts for sources not belonging
++          to the client.
++       
++INTERRUPT SPECIFIER DEFINITION
++
++  Interrupt specifiers consists of 4 cells encoded as
++  follows:
++
++   <1st-cell>   interrupt-number
++
++                Identifies the interrupt source.  The meaning
++                depends on the type of interrupt.
++
++                Note: If the interrupt-type cell is undefined
++                (i.e. #interrupt-cells = 2), this cell
++                should be interpreted the same as for
++                interrupt-type 0-- i.e. an external or
++                normal SoC device interrupt.
++
++   <2nd-cell>   level-sense information, encoded as follows:
++                    0 = low-to-high edge triggered
++                    1 = active low level-sensitive
++                    2 = active high level-sensitive
++                    3 = high-to-low edge triggered
++
++   <3rd-cell>   interrupt-type
++
++                The following types are supported:
++
++                  0 = external or normal SoC device interrupt
++
++                      The interrupt-number cell contains
++                      the SoC device interrupt number.  The
++                      type-specific cell is undefined.  The
++                      interrupt-number is derived from the
++                      MPIC a block of registers referred to as
++                      the "Interrupt Source Configuration Registers".
++                      Each source has 32-bytes of registers
++                      (vector/priority and destination) in this
++                      region.   So interrupt 0 is at offset 0x0,
++                      interrupt 1 is at offset 0x20, and so on.
++
++                  1 = error interrupt
++
++                      The interrupt-number cell contains
++                      the SoC device interrupt number for
++                      the error interrupt.  The type-specific
++                      cell identifies the specific error
++                      interrupt number.
++
++                  2 = MPIC inter-processor interrupt (IPI)
++
++                      The interrupt-number cell identifies
++                      the MPIC IPI number.  The type-specific
++                      cell is undefined.
++
++                  3 = MPIC timer interrupt
++
++                      The interrupt-number cell identifies
++                      the MPIC timer number.  The type-specific
++                      cell is undefined.
++
++   <4th-cell>   type-specific information
++
++                The type-specific cell is encoded as follows:
++
++                 - For interrupt-type 1 (error interrupt),
++                   the type-specific cell contains the
++                   bit number of the error interrupt in the
++                   Error Interrupt Summary Register.
++
++EXAMPLE 1
++	/*
++	 * mpic interrupt controller with 4 cells per specifier
++	 */
++	mpic: pic@40000 {
++		compatible = "fsl,mpic";
++		interrupt-controller;
++		#interrupt-cells = <4>;
++		#address-cells = <0>;
++		reg = <0x40000 0x40000>;
++	};
++
++EXAMPLE 2
++	/*
++	 * The MPC8544 I2C controller node has an internal
++	 * interrupt number of 27.  As per the reference manual
++	 * this corresponds to interrupt source configuration
++	 * registers at 0x5_0560.
++	 *
++	 * The interrupt source configuration registers begin
++	 * at 0x5_0000.
++	 *
++	 * To compute the interrupt specifier interrupt number
++         *
++	 *       0x560 >> 5 = 43
++	 *
++	 * The interrupt source configuration registers begin
++	 * at 0x5_0000, and so the i2c vector/priority registers
++	 * are at 0x5_0560.
++	 */
++	i2c@3000 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		cell-index = <0>;
++		compatible = "fsl-i2c";
++		reg = <0x3000 0x100>;
++		interrupts = <43 2>;
++		interrupt-parent = <&mpic>;
++		dfsrr;
++	};
++
++
++EXAMPLE 3
++	/*
++	 *  Definition of a node defining the 4
++	 *  MPIC IPI interrupts.  Note the interrupt
++	 *  type of 2.
++	 */
++	ipi@410a0 {
++		compatible = "fsl,mpic-ipi";
++		reg = <0x40040 0x10>;
++		interrupts = <0 0 2 0
++		              1 0 2 0
++		              2 0 2 0
++		              3 0 2 0>;
++	};
++
++EXAMPLE 4
++	/*
++	 *  Definition of a node defining the MPIC
++	 *  global timers.  Note the interrupt
++	 *  type of 3.
++	 */
++	timer0: timer@41100 {
++		compatible = "fsl,mpic-global-timer";
++		reg = <0x41100 0x100>;
++		interrupts = <0 0 3 0
++		              1 0 3 0
++		              2 0 3 0
++		              3 0 3 0>;
++	};
++
++EXAMPLE 5
++	/*
++	 * Definition of an error interrupt (interupt type 1).
++	 * SoC interrupt number is 16 and the specific error
++         * interrupt bit in the error interrupt summary register
++	 * is 23.
++	 */
++	memory-controller@8000 {
++		compatible = "fsl,p4080-memory-controller";
++		reg = <0x8000 0x1000>;
++		interrupts = <16 2 1 23>;
++	};
 -- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+1.7.2.2
