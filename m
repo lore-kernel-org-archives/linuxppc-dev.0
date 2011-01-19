@@ -1,28 +1,16 @@
-Return-Path: <jgpobox@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C02FFB70E6
+Return-Path: <tmarri@amcc.com>
+Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 089F4B70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Jan 2011 12:10:25 +1100 (EST)
-Received: by vws20 with SMTP id 20so130137vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Jan 2011 17:10:22 -0800 (PST)
-Sender: Jeff Garzik <jgpobox@gmail.com>
-Message-ID: <4D3639FB.10608@pobox.com>
-Date: Tue, 18 Jan 2011 20:10:19 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@mvista.com>, kumar.gala@freescale.com,
-	Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH] ATA: Add FSL sata v2 controller support
-References: <1295248259-14752-1-git-send-email-B33228@freescale.com>
-	<4D342C6E.6000608@ru.mvista.com>
-In-Reply-To: <4D342C6E.6000608@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Xulei <B33228@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-ide@vger.kernel.org
+	Wed, 19 Jan 2011 13:05:40 +1100 (EST)
+From: tmarri@apm.com
+To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V7 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+Date: Tue, 18 Jan 2011 18:05:10 -0800
+Message-Id: <1295402710-1787-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +20,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/17/2011 06:47 AM, Sergei Shtylyov wrote:
-> Hello.
->
-> On 17-01-2011 10:10, Xulei wrote:
->
->> In FSL sata v2 block, the snoop bit of PRDT Word3 description
->> information is at bit28 instead of bit22.
->
->> This patch adds FSL sata v2 probe and resolve this difference.
->
->> Signed-off-by: Xulei <B33228@freescale.com>
->
-> AFAIK, full name is required.
->
->> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> [...]
->
->> diff --git a/arch/powerpc/boot/dts/p1022ds.dts
->> b/arch/powerpc/boot/dts/p1022ds.dts
->> index 2bbecbb..9ad41dd 100644
->> --- a/arch/powerpc/boot/dts/p1022ds.dts
->> +++ b/arch/powerpc/boot/dts/p1022ds.dts
->> @@ -475,14 +475,14 @@
->> };
->>
->> sata@18000 {
->> - compatible = "fsl,mpc8536-sata", "fsl,pq-sata";
->> + compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
->> reg =<0x18000 0x1000>;
->> cell-index =<1>;
->> interrupts =<74 0x2>;
->> };
->>
->> sata@19000 {
->> - compatible = "fsl,mpc8536-sata", "fsl,pq-sata";
->> + compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
->> reg =<0x19000 0x1000>;
->> cell-index =<2>;
->> interrupts =<41 0x2>;
->
-> Please put this into the separate patch and push thru the PPC tree.
+From: Tirumala Marri <tmarri@apm.com>
 
-I think it's OK to send 100% of this via the PPC tree.  The sata_fsl.c 
-patch for data_snoop variability directly keys off a call to 
-platform-specific detail (of_device_is_compatible call).
+v7:
+ 1. Fix sparse tool warnings.
+ 2. Fix checkpatch errors and warnings.
+ 3. Rename USB_OTG config variable to USB_DWC_CONFIG
 
-Acked-by: Jeff Garzik <jgarzik@redhat.com>
+v6:
+ 1. Replaced register definitions and bit fields with macros.
+ 2. Replace printks with dev_dbg or dev_err functions.
+ 3. Cleanup some assignments.
+ 4. Remove chip specific selections in Kconfig file.
+
+Tirumala Marri (10):
+  USB/ppc4xx: Add Synopsys DWC OTG Register definitions
+  USB/ppc4xx: Add Synopsys DWC OTG driver framework
+  USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer (CIL)
+  USB/ppc4xx: Add Synopsys DWC OTG HCD function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
+  USB/ppc4xx: Add Synopsys DWC OTG PCD function
+  USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
+  USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
+  USB ppc4xx: Add Synopsys DWC OTG driver kernel configuration and
+    Makefile
+
+ drivers/Makefile                        |    2 +
+ drivers/usb/Kconfig                     |    3 +-
+ drivers/usb/dwc_otg/Kconfig             |   96 ++
+ drivers/usb/dwc_otg/Makefile            |   19 +
+ drivers/usb/dwc_otg/dwc_otg_apmppc.c    |  414 ++++++
+ drivers/usb/dwc_otg/dwc_otg_cil.c       |  972 ++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_cil.h       | 1219 +++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_cil_intr.c  |  616 ++++++++
+ drivers/usb/dwc_otg/dwc_otg_driver.h    |   76 +
+ drivers/usb/dwc_otg/dwc_otg_hcd.c       | 2466 +++++++++++++++++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_hcd.h       |  416 ++++++
+ drivers/usb/dwc_otg/dwc_otg_hcd_intr.c  | 1477 ++++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_hcd_queue.c |  696 +++++++++
+ drivers/usb/dwc_otg/dwc_otg_param.c     |  180 +++
+ drivers/usb/dwc_otg/dwc_otg_pcd.c       | 1752 ++++++++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_pcd.h       |  139 ++
+ drivers/usb/dwc_otg/dwc_otg_pcd_intr.c  | 2311 +++++++++++++++++++++++++++++
+ drivers/usb/dwc_otg/dwc_otg_regs.h      | 1325 +++++++++++++++++
+ drivers/usb/gadget/Kconfig              |   22 +
+ drivers/usb/gadget/gadget_chips.h       |    9 +
+ 20 files changed, 14209 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/usb/dwc_otg/Kconfig
+ create mode 100644 drivers/usb/dwc_otg/Makefile
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_apmppc.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_cil_intr.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_driver.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_intr.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_hcd_queue.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_param.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd.h
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_pcd_intr.c
+ create mode 100644 drivers/usb/dwc_otg/dwc_otg_regs.h
