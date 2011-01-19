@@ -1,15 +1,21 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Message-ID: <4D3678B6.1040707@windriver.com>
-Date: Wed, 19 Jan 2011 13:37:58 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: MohanReddy koppula <mohanreddykv@gmail.com>
-Subject: Re: Problem with Busybox shell
-References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>	<20110118175533.GB28268@opentech.at>
-	<AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
-In-Reply-To: <AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linuxppc-dev@lists.ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E7B8B7088
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 17:06:28 +1100 (EST)
+Subject: Re: 2.6.37-git17 virtual IO boot failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+In-Reply-To: <20110119004824.GA20441@us.ibm.com>
+References: <20110118123152.50f75a72@kryten>
+	<20110118224718.GA19039@us.ibm.com> <20110119004824.GA20441@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 19 Jan 2011 17:06:18 +1100
+Message-ID: <1295417178.2148.131.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com,
+	Anton Blanchard <anton@samba.org>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,63 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MohanReddy koppula wrote:
-> But, if there is any problem with cable I could not have seen any
-> character in the interrupt routine of the driver. I turned off both
-
-I suppose the bootloader, i.e u-boot, works well so looks this should not be
-issued by the cable at least.
-
-> software and hardware flow control as by board doesn't have hardware
-> flow control. tty_read is called and it hangs at ldisc->read. And I
-
-Any panic information? Or any dead lock? Which line in detail?
-
-> see that data is put into the tty buffer by the driver. Will there be
-> any problem with copy_to_user() if there is some problem in the
-> memory?
-
-Can the serial driver support the poll mode? If so maybe you can take a try to
-exclude any interrupt reason.
-
-And even you can remove all codes to initialize the corresponding PIN & CLK
-dedicated to the serial port, then try again since the bootloader already did this.
-
-Tiejun
-
+On Tue, 2011-01-18 at 16:48 -0800, Nishanth Aravamudan wrote:
 > 
-> Thanks,
-> Mohan
-> 
-> On Tue, Jan 18, 2011 at 12:55 PM, Nicholas Mc Guire <der.herr@hofr.at> wrote:
->> On Tue, 18 Jan 2011, MohanReddy koppula wrote:
->>
->>> Hi All,
->>>
->>> I am working on an MPC885 based custom board. I am able to boot up the
->>> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
->>> is not accepting any inputs, I am not able to enter any command, it
->>> just hangs there. I am using ttyCPM0 terminal.
->>>
->>> I suspected if there was any problem in CPM driver interrupts
->>> generation and put some printk's in the interrupt handler and could
->>> see interrupts are raised and data is read, but shell is not taking
->>> the input.
->>>
->>> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
->>> but couldn't. I am able to write to ttyCPM0 and see it on the host
->>> minicom.
->>>
->> if you are using minicom to connect check if you have hardware/software flow
->> control turned on - it also could be a cabling problem - had this with the
->> beagle board where the tx line was on the wrong pin - so I got output but
->> could not get any response to input.
->>
->> hofrat
->>
->>
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> Ben, if you're ok with waiting to see if Milton or Sonny have any
+> ideas,
+> I'd like to hold off on asking for a revert. In the case they do, I'll
+> be able to test and send out any proposed fix rapidly. 
+
+I don't believe this specific error is causing the lockup, I think we
+only hit a spurrious message on devices that don't have DMA capabilities
+in the first place. (But I may be wrong, I'll wait for you guys to dig
+more or I'll have a look myself tomorrow if I manage to get out of
+meetings).
+
+So there's another problem with SCSI tho it -could- also be a DMA issue,
+hard to tell at this point.
+
+BTW. I'm not too happy with those defaults set to 64-bit. Probably not
+an issue until your other patches go in, but some devices like veth
+cannot do 64-bit DMA. I think we should default to 32-bit in the VIO
+base code and explicitely enable 64-bit DMA from drivers that support it
+(in theory vscsi but I haven't verified the implementation).
+
+Cheers,
+Ben.
