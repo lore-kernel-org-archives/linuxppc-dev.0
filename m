@@ -1,22 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A77FDB6F10
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 15:54:46 +1100 (EST)
-Subject: Re: 2.6.37-git17 virtual IO boot failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <20110119043757.GA29865@us.ibm.com>
-References: <20110118123152.50f75a72@kryten>
-	<20110118224718.GA19039@us.ibm.com> <1295409980.2148.125.camel@pasglop>
-	<20110119043757.GA29865@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 19 Jan 2011 15:54:38 +1100
-Message-ID: <1295412878.2148.127.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com,
-	Anton Blanchard <anton@samba.org>, miltonm@bga.com
+Return-Path: <mohanreddykv@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20110118175533.GB28268@opentech.at>
+References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
+	<20110118175533.GB28268@opentech.at>
+Date: Wed, 19 Jan 2011 00:06:04 -0500
+Message-ID: <AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
+Subject: Re: Problem with Busybox shell
+From: MohanReddy koppula <mohanreddykv@gmail.com>
+To: Nicholas Mc Guire <der.herr@hofr.at>, Linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-01-18 at 20:37 -0800, Nishanth Aravamudan wrote:
+But, if there is any problem with cable I could not have seen any
+character in the interrupt routine of the driver. I turned off both
+software and hardware flow control as by board doesn't have hardware
+flow control. tty_read is called and it hangs at ldisc->read. And I
+see that data is put into the tty buffer by the driver. Will there be
+any problem with copy_to_user() if there is some problem in the
+memory?
 
-> Is this what you were looking for?
-> 
-> vio 30000000: Warning: IOMMU dma not supported: mask 0xffffffffffffffff, table unavailable
-> vio 30000000: Path: /vdevice/vty@30000000
-> vio 4000: Warning: IOMMU dma not supported: mask 0xffffffffffffffff, table unavailable
-> vio 4000: Path: /vdevice/IBM,sp@4000
-> vio 4001: Warning: IOMMU dma not supported: mask 0xffffffffffffffff, table unavailable
-> vio 4001: Path: /vdevice/rtc@4001
-> vio 4002: Warning: IOMMU dma not supported: mask 0xffffffffffffffff, table unavailable
-> vio 4002: Path: /vdevice/nvram@4002
-> vio 4004: Warning: IOMMU dma not supported: mask 0xffffffffffffffff, table unavailable
-> vio 4004: Path: /vdevice/gscsi@4004
+Thanks,
+Mohan
 
-Ok, so they are all harmess (none of those device do DMA, appart maybe
-gscsi, I have no idea what it is :-)
-
-> FWIW, I looked at Anton's logs, and I don't think the boot failed, per
-> se. I think it may have timed out (but not positive on that). I was able
-> to boot 2.6.27-git17 on the exact same box, albeit it locks up at a
-> later point (the sd abort I e-mailed about in a follow-up).
-
-I haven't seen your email. I'll dig. Have to run now.
-
-Cheers,
-Ben.
-
-> 
-> 
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > > After debugging a bit, this would appear to be due to the second hunk of
-> > > b3c73856ae47d43d0d181f9de1c1c6c0820c4515.
-> > > 
-> > > diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> > > index b265405..1b695fd 100644
-> > > --- a/arch/powerpc/kernel/vio.c
-> > > +++ b/arch/powerpc/kernel/vio.c
-> > > @@ -1257,6 +1257,10 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
-> > >         viodev->dev.parent = &vio_bus_device.dev;
-> > >         viodev->dev.bus = &vio_bus_type;
-> > >         viodev->dev.release = vio_dev_release;
-> > > +        /* needed to ensure proper operation of coherent allocations
-> > > +         * later, in case driver doesn't set it explicitly */
-> > > +        dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
-> > > +        dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-> > > 
-> > >         /* register with generic device framework */
-> > >         if (device_register(&viodev->dev)) {
-> > > 
-> > > Milton, Sonny, any thoughts?
-> > > 
-> > > Thanks,
-> > > Nish
-> > > 
-> > 
-> > 
-> 
+On Tue, Jan 18, 2011 at 12:55 PM, Nicholas Mc Guire <der.herr@hofr.at> wrote:
+> On Tue, 18 Jan 2011, MohanReddy koppula wrote:
+>
+>> Hi All,
+>>
+>> I am working on an MPC885 based custom board. I am able to boot up the
+>> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
+>> is not accepting any inputs, I am not able to enter any command, it
+>> just hangs there. I am using ttyCPM0 terminal.
+>>
+>> I suspected if there was any problem in CPM driver interrupts
+>> generation and put some printk's in the interrupt handler and could
+>> see interrupts are raised and data is read, but shell is not taking
+>> the input.
+>>
+>> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
+>> but couldn't. I am able to write to ttyCPM0 and see it on the host
+>> minicom.
+>>
+> if you are using minicom to connect check if you have hardware/software flow
+> control turned on - it also could be a cabling problem - had this with the
+> beagle board where the tx line was on the wrong pin - so I got output but
+> could not get any response to input.
+>
+> hofrat
+>
+>
