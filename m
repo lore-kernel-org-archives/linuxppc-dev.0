@@ -1,24 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3F56B70CC
+Return-Path: <stern+4d39b18a@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id BE9B2B70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Jan 2011 03:20:34 +1100 (EST)
-Received: by gxk21 with SMTP id 21so306824gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Jan 2011 08:20:31 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH] powerpc/83xx: fix build failures on dt compatible list.
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
-	galak@kernel.crashing.org, linux-kernel@vger.kernel.org
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 19 Jan 2011 09:20:28 -0700
-Message-ID: <20110119161908.25999.76832.stgit@localhost6.localdomain6>
+	Thu, 20 Jan 2011 03:30:10 +1100 (EST)
+Date: Wed, 19 Jan 2011 11:23:27 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: tmarri@apm.com
+Subject: Re: [PATCH V7 07/10] USB/ppc4xx: Add Synopsys DWC OTG PCD function
+In-Reply-To: <1295402749-2193-1-git-send-email-tmarri@apm.com>
+Message-ID: <Pine.LNX.4.44L0.1101191122180.3655-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a4f740cf, "of/flattree: Add of_flat_dt_match() helper function"
-introduced build failures in arch/powerpc/platform/83xx by mistyping
-'static' as 'struct' in the compatible string list, and omitting a few
-semicolons.  This patch fixes it.
+On Tue, 18 Jan 2011 tmarri@apm.com wrote:
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+> From: Tirumala Marri <tmarri@apm.com>
+> 
+> The PCD is responsible for translating requests from the gadget driver
+> to appropriate actions on the DWC OTG controller.
+> 
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+> ---
+>  drivers/usb/dwc_otg/dwc_otg_pcd.c | 1752 +++++++++++++++++++++++++++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_pcd.h |  139 +++
+>  2 files changed, 1891 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/usb/dwc_otg/dwc_otg_pcd.c b/drivers/usb/dwc_otg/dwc_otg_pcd.c
+> new file mode 100644
+> index 0000000..857dcee
+> --- /dev/null
+> +++ b/drivers/usb/dwc_otg/dwc_otg_pcd.c
 
-Ben, I can put this one into my merge-devicetree branch and I'll ask Linus
-to merge it in a few days.
+...
 
+> +static struct usb_ep_ops dwc_otg_pcd_ep_ops = {
+> +	.enable = dwc_otg_pcd_ep_enable,
+> +	.disable = dwc_otg_pcd_ep_disable,
+> +	.alloc_request = dwc_otg_pcd_alloc_request,
+> +	.free_request = dwc_otg_pcd_free_request,
+> +	.queue = dwc_otg_pcd_ep_queue,
+> +	.dequeue = dwc_otg_pcd_ep_dequeue,
+> +	.set_halt = dwc_otg_pcd_ep_set_halt,
+> +	.fifo_status = NULL,
+> +	.fifo_flush = NULL,
+> +};
 
- arch/powerpc/platforms/83xx/mpc830x_rdb.c |    4 ++--
- arch/powerpc/platforms/83xx/mpc831x_rdb.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+This is missing a .set_wedge method.
 
-diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-index 661d354..d0c4e15 100644
---- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-@@ -57,12 +57,12 @@ static void __init mpc830x_rdb_init_IRQ(void)
- 	ipic_set_default_priority();
- }
- 
--struct const char *board[] __initdata = {
-+static const char *board[] __initdata = {
- 	"MPC8308RDB",
- 	"fsl,mpc8308rdb",
- 	"denx,mpc8308_p1m",
- 	NULL
--}
-+};
- 
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index b54cd73..f859ead 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -60,11 +60,11 @@ static void __init mpc831x_rdb_init_IRQ(void)
- 	ipic_set_default_priority();
- }
- 
--struct const char *board[] __initdata = {
-+static const char *board[] __initdata = {
- 	"MPC8313ERDB",
- 	"fsl,mpc8315erdb",
- 	NULL
--}
-+};
- 
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
+Alan Stern
