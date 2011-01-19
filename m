@@ -1,14 +1,15 @@
-Return-Path: <mohanreddykv@gmail.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Message-ID: <4D3678B6.1040707@windriver.com>
+Date: Wed, 19 Jan 2011 13:37:58 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-In-Reply-To: <20110118175533.GB28268@opentech.at>
-References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
-	<20110118175533.GB28268@opentech.at>
-Date: Wed, 19 Jan 2011 00:06:04 -0500
-Message-ID: <AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
+To: MohanReddy koppula <mohanreddykv@gmail.com>
 Subject: Re: Problem with Busybox shell
-From: MohanReddy koppula <mohanreddykv@gmail.com>
-To: Nicholas Mc Guire <der.herr@hofr.at>, Linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>	<20110118175533.GB28268@opentech.at>
+	<AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
+In-Reply-To: <AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linuxppc-dev@lists.ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,41 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-But, if there is any problem with cable I could not have seen any
-character in the interrupt routine of the driver. I turned off both
-software and hardware flow control as by board doesn't have hardware
-flow control. tty_read is called and it hangs at ldisc->read. And I
-see that data is put into the tty buffer by the driver. Will there be
-any problem with copy_to_user() if there is some problem in the
-memory?
+MohanReddy koppula wrote:
+> But, if there is any problem with cable I could not have seen any
+> character in the interrupt routine of the driver. I turned off both
 
-Thanks,
-Mohan
+I suppose the bootloader, i.e u-boot, works well so looks this should not be
+issued by the cable at least.
 
-On Tue, Jan 18, 2011 at 12:55 PM, Nicholas Mc Guire <der.herr@hofr.at> wrote:
-> On Tue, 18 Jan 2011, MohanReddy koppula wrote:
->
->> Hi All,
+> software and hardware flow control as by board doesn't have hardware
+> flow control. tty_read is called and it hangs at ldisc->read. And I
+
+Any panic information? Or any dead lock? Which line in detail?
+
+> see that data is put into the tty buffer by the driver. Will there be
+> any problem with copy_to_user() if there is some problem in the
+> memory?
+
+Can the serial driver support the poll mode? If so maybe you can take a try to
+exclude any interrupt reason.
+
+And even you can remove all codes to initialize the corresponding PIN & CLK
+dedicated to the serial port, then try again since the bootloader already did this.
+
+Tiejun
+
+> 
+> Thanks,
+> Mohan
+> 
+> On Tue, Jan 18, 2011 at 12:55 PM, Nicholas Mc Guire <der.herr@hofr.at> wrote:
+>> On Tue, 18 Jan 2011, MohanReddy koppula wrote:
 >>
->> I am working on an MPC885 based custom board. I am able to boot up the
->> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
->> is not accepting any inputs, I am not able to enter any command, it
->> just hangs there. I am using ttyCPM0 terminal.
+>>> Hi All,
+>>>
+>>> I am working on an MPC885 based custom board. I am able to boot up the
+>>> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
+>>> is not accepting any inputs, I am not able to enter any command, it
+>>> just hangs there. I am using ttyCPM0 terminal.
+>>>
+>>> I suspected if there was any problem in CPM driver interrupts
+>>> generation and put some printk's in the interrupt handler and could
+>>> see interrupts are raised and data is read, but shell is not taking
+>>> the input.
+>>>
+>>> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
+>>> but couldn't. I am able to write to ttyCPM0 and see it on the host
+>>> minicom.
+>>>
+>> if you are using minicom to connect check if you have hardware/software flow
+>> control turned on - it also could be a cabling problem - had this with the
+>> beagle board where the tx line was on the wrong pin - so I got output but
+>> could not get any response to input.
 >>
->> I suspected if there was any problem in CPM driver interrupts
->> generation and put some printk's in the interrupt handler and could
->> see interrupts are raised and data is read, but shell is not taking
->> the input.
+>> hofrat
 >>
->> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
->> but couldn't. I am able to write to ttyCPM0 and see it on the host
->> minicom.
 >>
-> if you are using minicom to connect check if you have hardware/software flow
-> control turned on - it also could be a cabling problem - had this with the
-> beagle board where the tx line was on the wrong pin - so I got output but
-> could not get any response to input.
->
-> hofrat
->
->
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
