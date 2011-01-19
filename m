@@ -1,21 +1,17 @@
-Return-Path: <B33228@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [157.55.116.159])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35E24B70A3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Jan 2011 21:21:03 +1100 (EST)
-From: Xulei <B33228@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] ATA: Add FSL sata v2 controller support
-Date: Wed, 19 Jan 2011 17:07:29 +0800
-Message-ID: <1295428050-21934-1-git-send-email-B33228@freescale.com>
+Return-Path: <mohanreddykv@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-ide@vger.kernel.org, kumar.gala@freescale.com, jgarzik@pobox.com,
-	Xulei <B33228@freescale.com>
+In-Reply-To: <4D3678B6.1040707@windriver.com>
+References: <AANLkTinSfn+TQvzNWc++qP=4B2tbcHo-2iGv6E8tsq+b@mail.gmail.com>
+	<20110118175533.GB28268@opentech.at>
+	<AANLkTinDsQYS=dHM2EVbCxv0Yk2zVq5LrYJemL6nSn3D@mail.gmail.com>
+	<4D3678B6.1040707@windriver.com>
+Date: Wed, 19 Jan 2011 07:06:24 -0500
+Message-ID: <AANLkTim0xJr_sr4ZZxngTS7adDKaBpS7=_KeDMwv6mTc@mail.gmail.com>
+Subject: Re: Problem with Busybox shell
+From: MohanReddy koppula <mohanreddykv@gmail.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@lists.ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,109 +21,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In FSL sata v2 block, the snoop bit of PRDT Word3 description
-information is at bit28 instead of bit22.
+I further debugged and found that flush_to_ldisc() function is not
+called which actually wakes up the readers. This is a worker function
+and is not being scheduled. I suspected whether timer interrupts are
+generated or not. powerpc uses decrementer exceptions as timer
+interrupts. I see that timer_interrupt() function in
+arch/powerpc/kernel/time.c is not called at all. I printed even
+jiffies values and it is not incremented. And I beleivethis makes
+scheduler is not scheduling this worker thread.
 
-This patch adds FSL sata v2 probe and resolve this difference.
+ I think if flush_to_ldisc is not called nothing can be read from the tty.
 
-Signed-off-by: Lei Xu <B33228@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Acked-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/ata/sata_fsl.c |   25 ++++++++++++++++++-------
- 1 files changed, 18 insertions(+), 7 deletions(-)
+Please let me know what could be the reason for timer interrupt being
+not called.
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index b0214d0..01a5400 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -6,7 +6,7 @@
-  * Author: Ashish Kalra <ashish.kalra@freescale.com>
-  * Li Yang <leoli@freescale.com>
-  *
-- * Copyright (c) 2006-2007 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2006-2007, 2011 Freescale Semiconductor, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -158,7 +158,8 @@ enum {
- 	    IE_ON_SINGL_DEVICE_ERR | IE_ON_CMD_COMPLETE,
- 
- 	EXT_INDIRECT_SEG_PRD_FLAG = (1 << 31),
--	DATA_SNOOP_ENABLE = (1 << 22),
-+	DATA_SNOOP_ENABLE_V1 = (1 << 22),
-+	DATA_SNOOP_ENABLE_V2 = (1 << 28),
- };
- 
- /*
-@@ -256,6 +257,7 @@ struct sata_fsl_host_priv {
- 	void __iomem *ssr_base;
- 	void __iomem *csr_base;
- 	int irq;
-+	int data_snoop;
- };
- 
- static inline unsigned int sata_fsl_tag(unsigned int tag,
-@@ -308,7 +310,8 @@ static void sata_fsl_setup_cmd_hdr_entry(struct sata_fsl_port_priv *pp,
- }
- 
- static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
--				     u32 *ttl, dma_addr_t cmd_desc_paddr)
-+				     u32 *ttl, dma_addr_t cmd_desc_paddr,
-+				     int data_snoop)
- {
- 	struct scatterlist *sg;
- 	unsigned int num_prde = 0;
-@@ -358,8 +361,7 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
- 
- 		ttl_dwords += sg_len;
- 		prd->dba = cpu_to_le32(sg_addr);
--		prd->ddc_and_ext =
--		    cpu_to_le32(DATA_SNOOP_ENABLE | (sg_len & ~0x03));
-+		prd->ddc_and_ext = cpu_to_le32(data_snoop | (sg_len & ~0x03));
- 
- 		VPRINTK("sg_fill, ttl=%d, dba=0x%x, ddc=0x%x\n",
- 			ttl_dwords, prd->dba, prd->ddc_and_ext);
-@@ -374,7 +376,7 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
- 		/* set indirect extension flag along with indirect ext. size */
- 		prd_ptr_to_indirect_ext->ddc_and_ext =
- 		    cpu_to_le32((EXT_INDIRECT_SEG_PRD_FLAG |
--				 DATA_SNOOP_ENABLE |
-+				 data_snoop |
- 				 (indirect_ext_segment_sz & ~0x03)));
- 	}
- 
-@@ -417,7 +419,8 @@ static void sata_fsl_qc_prep(struct ata_queued_cmd *qc)
- 
- 	if (qc->flags & ATA_QCFLAG_DMAMAP)
- 		num_prde = sata_fsl_fill_sg(qc, (void *)cd,
--					    &ttl_dwords, cd_paddr);
-+					    &ttl_dwords, cd_paddr,
-+					    host_priv->data_snoop);
- 
- 	if (qc->tf.protocol == ATA_PROT_NCQ)
- 		desc_info |= FPDMA_QUEUED_CMD;
-@@ -1336,6 +1339,11 @@ static int sata_fsl_probe(struct platform_device *ofdev,
- 	}
- 	host_priv->irq = irq;
- 
-+	if (of_device_is_compatible(ofdev->dev.of_node, "fsl,pq-sata-v2"))
-+		host_priv->data_snoop = DATA_SNOOP_ENABLE_V2;
-+	else
-+		host_priv->data_snoop = DATA_SNOOP_ENABLE_V1;
-+
- 	/* allocate host structure */
- 	host = ata_host_alloc_pinfo(&ofdev->dev, ppi, SATA_FSL_MAX_PORTS);
- 
-@@ -1418,6 +1426,9 @@ static struct of_device_id fsl_sata_match[] = {
- 	{
- 		.compatible = "fsl,pq-sata",
- 	},
-+	{
-+		.compatible = "fsl,pq-sata-v2",
-+	},
- 	{},
- };
- 
--- 
-1.7.0.4
+Thanks,
+Mohan
+
+
+
+
+On Wed, Jan 19, 2011 at 12:37 AM, tiejun.chen <tiejun.chen@windriver.com> wrote:
+> MohanReddy koppula wrote:
+>> But, if there is any problem with cable I could not have seen any
+>> character in the interrupt routine of the driver. I turned off both
+>
+> I suppose the bootloader, i.e u-boot, works well so looks this should not be
+> issued by the cable at least.
+>
+>> software and hardware flow control as by board doesn't have hardware
+>> flow control. tty_read is called and it hangs at ldisc->read. And I
+>
+> Any panic information? Or any dead lock? Which line in detail?
+>
+>> see that data is put into the tty buffer by the driver. Will there be
+>> any problem with copy_to_user() if there is some problem in the
+>> memory?
+>
+> Can the serial driver support the poll mode? If so maybe you can take a try to
+> exclude any interrupt reason.
+>
+> And even you can remove all codes to initialize the corresponding PIN & CLK
+> dedicated to the serial port, then try again since the bootloader already did this.
+>
+> Tiejun
+>
+>>
+>> Thanks,
+>> Mohan
+>>
+>> On Tue, Jan 18, 2011 at 12:55 PM, Nicholas Mc Guire <der.herr@hofr.at> wrote:
+>>> On Tue, 18 Jan 2011, MohanReddy koppula wrote:
+>>>
+>>>> Hi All,
+>>>>
+>>>> I am working on an MPC885 based custom board. I am able to boot up the
+>>>> linux (linux-2.6.33.7). I could see busybox shell (ash) prompt. But it
+>>>> is not accepting any inputs, I am not able to enter any command, it
+>>>> just hangs there. I am using ttyCPM0 terminal.
+>>>>
+>>>> I suspected if there was any problem in CPM driver interrupts
+>>>> generation and put some printk's in the interrupt handler and could
+>>>> see interrupts are raised and data is read, but shell is not taking
+>>>> the input.
+>>>>
+>>>> I wrote an init.c and opened the ttyCPM0 and tried to read from it,
+>>>> but couldn't. I am able to write to ttyCPM0 and see it on the host
+>>>> minicom.
+>>>>
+>>> if you are using minicom to connect check if you have hardware/software flow
+>>> control turned on - it also could be a cabling problem - had this with the
+>>> beagle board where the tx line was on the wrong pin - so I got output but
+>>> could not get any response to input.
+>>>
+>>> hofrat
+>>>
+>>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+>
+>
