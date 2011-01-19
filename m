@@ -1,34 +1,33 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B9C53B708B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2011 11:48:36 +1100 (EST)
-Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0J0OoQN005665
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 19:25:08 -0500
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F40974DE804E
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 19:45:15 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p0J0mTwJ2338998
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 19:48:31 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p0J0mSvv003823
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2011 19:48:29 -0500
-Date: Tue, 18 Jan 2011 16:48:24 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: 2.6.37-git17 virtual IO boot failure
-Message-ID: <20110119004824.GA20441@us.ibm.com>
-References: <20110118123152.50f75a72@kryten>
-	<20110118224718.GA19039@us.ibm.com>
+Return-Path: <jgpobox@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E209EB70CD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 19 Jan 2011 12:00:34 +1100 (EST)
+Received: by vws20 with SMTP id 20so126165vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 18 Jan 2011 17:00:30 -0800 (PST)
+Sender: Jeff Garzik <jgpobox@gmail.com>
+Message-ID: <4D3637AB.2040202@pobox.com>
+Date: Tue, 18 Jan 2011 20:00:27 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110118224718.GA19039@us.ibm.com>
-Cc: sonnyrao@us.ibm.com, miltonm@bga.com, linuxppc-dev@ozlabs.org
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH #upstream-fixes] pata_mpc52xx: inherit from
+	ata_bmdma_port_ops
+References: <201101031445.47922.roman.fietze@telemotive.de>
+	<20110103135929.GO18831@htj.dyndns.org>
+	<4D21DD55.2000000@ru.mvista.com>
+	<AANLkTi=5TrmxeWppabYaFUr-AhLwWcn4b_EQgLSJT44T@mail.gmail.com>
+	<4D21EAF1.2010504@ru.mvista.com> <4D21FA4D.3030506@mvista.com>
+	<20110109224820.GB26607@mtj.dyndns.org>
+In-Reply-To: <20110109224820.GB26607@mtj.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Sergei Shtylyov <sshtylyov@mvista.com>,
+	Roman Fietze <roman.fietze@telemotive.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,74 +37,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18.01.2011 [14:47:18 -0800], Nishanth Aravamudan wrote:
-> On 18.01.2011 [12:31:52 +1100], Anton Blanchard wrote:
-> > Hi,
-> > 
-> > I was testing 2.6.37-git17 on a POWER7 with virtual IO and hit this:
-> > 
-> > Trying to unpack rootfs image as initramfs...
-> > Freeing initrd memory: 7446k freed
-> > vio 30000000: Warning: IOMMU dma not supported: mask
-> > 0xffffffffffffffff, table unavailable
-> > vio 4000: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
-> > table unavailable
-> > vio 4001: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
-> > table unavailable
-> > vio 4002: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
-> > table unavailable
-> > vio 4004: Warning: IOMMU dma not supported: mask 0xffffffffffffffff,
-> > table unavailable
-> > audit: initializing netlink socket (disabled)
-> > 
-> > Haven't had a chance to look closer yet.
-> 
-> After debugging a bit, this would appear to be due to the second hunk of
-> b3c73856ae47d43d0d181f9de1c1c6c0820c4515.
-> 
-> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> index b265405..1b695fd 100644
-> --- a/arch/powerpc/kernel/vio.c
-> +++ b/arch/powerpc/kernel/vio.c
-> @@ -1257,6 +1257,10 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
->         viodev->dev.parent = &vio_bus_device.dev;
->         viodev->dev.bus = &vio_bus_type;
->         viodev->dev.release = vio_dev_release;
-> +        /* needed to ensure proper operation of coherent allocations
-> +         * later, in case driver doesn't set it explicitly */
-> +        dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
-> +        dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-> 
->         /* register with generic device framework */
->         if (device_register(&viodev->dev)) {
-> 
-> Milton, Sonny, any thoughts?
+On 01/09/2011 05:48 PM, Tejun Heo wrote:
+> pata_mpc52xx supports BMDMA but inherits ata_sff_port_ops which
+> triggers BUG_ON() when a DMA command is issued.  Fix it.
+>
+> Signed-off-by: Tejun Heo<tj@kernel.org>
+> Reported-by: Roman Fietze<roman.fietze@telemotive.de>
+> Cc: Sergei Shtylyov<sshtylyov@mvista.com>
+> Cc: stable@kernel.org
+> ---
+>   drivers/ata/pata_mpc52xx.c |    2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
+> index 8cc536e..d7d8026 100644
+> --- a/drivers/ata/pata_mpc52xx.c
+> +++ b/drivers/ata/pata_mpc52xx.c
+> @@ -610,7 +610,7 @@ static struct scsi_host_template mpc52xx_ata_sht = {
+>   };
+>
+>   static struct ata_port_operations mpc52xx_ata_port_ops = {
+> -	.inherits		=&ata_sff_port_ops,
+> +	.inherits		=&ata_bmdma_port_ops,
+>   	.sff_dev_select		= mpc52xx_ata_dev_select,
+>   	.set_piomode		= mpc52xx_ata_set_piomode,
 
-A bit more detail after trying a few more kernels on the box that
-originally showed the error:
-
-1) This doesn't actually prevent booting, afaict. I think it "just"
-disables DMA, which is bad, but not a boot fail, technically.
-
-2) Reverting the above commit definitely prevents those messages.
-
-3) I'm seeing a separate issue with 2.6.37-git17 (that's not present in
-2.6.37):
-
-sd 0:4:2:0: [sda] Aborting command: 2A
-sd 0:4:2:0: Abort timed out. Resetting bus.
-
-At which point the box locks up :)
-
-So testing fixes is a bit of a challenge right now.
-
-Ben, if you're ok with waiting to see if Milton or Sonny have any ideas,
-I'd like to hold off on asking for a revert. In the case they do, I'll
-be able to test and send out any proposed fix rapidly.
-
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+applied
