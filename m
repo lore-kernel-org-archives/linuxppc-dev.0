@@ -1,21 +1,36 @@
-Return-Path: <B08248@freescale.com>
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Meador Inge <meador_inge@mentor.com>
-Subject: RE: [PATCH 1/2] powerpc: document the MPIC device tree binding
-Date: Thu, 20 Jan 2011 15:50:47 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E150307A5C8@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <4D34E448.8000902@mentor.com>
-	<AANLkTi=QX4BfLvPfQDMOgmh90TtX4MQqio6AOZR8JKas@mail.gmail.com>
-	<9F6FE96B71CF29479FF1CDC8046E150306BF11@039-SN1MPN1-004.039d.mgd.msft.net>
-	<4D377CE3.6000608@mentor.com>
-In-Reply-To: <4D377CE3.6000608@mentor.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <nfont@austin.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2205FB70E7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 21 Jan 2011 03:38:37 +1100 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0KGJ9tN007409
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 11:19:13 -0500
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B6140728065
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 20 Jan 2011 11:36:46 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p0KGakeb140068
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 11:36:46 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p0KGaj5d005566
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 11:36:46 -0500
+Message-ID: <4D386498.9080201@austin.ibm.com>
+Date: Thu, 20 Jan 2011 10:36:40 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Cc: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>,
-	Wood Scott-B07421 <B07421@freescale.com>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH 0/4] De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Robin Holt <holt@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a re-send of the remaining patches that did not make it
+into the last kernel release for de-coupling sysfs memory
+directories from memory sections.  The first three patches of the
+previous set went in, and this is the remaining patches that
+need to be applied.
 
+The patches decouple the concept that a single memory section corresponds
+to a single directory in /sys/devices/system/memory/.  On systems
+with large amounts of memory (1+ TB) there are performance issues
+related to creating the large number of sysfs directories.  For
+a powerpc machine with 1 TB of memory we are creating 63,000+
+directories.  This is resulting in boot times of around 45-50
+minutes for systems with 1 TB of memory and 8+ hours for systems
+with 2 TB of memory.  With this patch set applied I am now seeing
+boot times of 5 minutes or less.
 
-> -----Original Message-----
-> From: Meador Inge [mailto:meador_inge@mentor.com]
-> Sent: Wednesday, January 19, 2011 6:08 PM
-> To: Yoder Stuart-B08248
-> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; devicetree-
-> discuss@lists.ozlabs.org; Blanchard, Hollis
-> Subject: Re: [PATCH 1/2] powerpc: document the MPIC device tree binding
->=20
-> On 01/19/2011 04:14 PM, Yoder Stuart-B08248 wrote:
-> >
-> >> +** Optional properties:
-> >> +
-> >> +   - no-reset : The presence of this property indicates that the MPIC
-> >> +                should not be reset during runtime initialization.
-> >> +   - protected-sources : Specifies a list of interrupt sources that
-> >> + are not
-> >> +                         available for use and whose corresponding
-> >> + vectors
-> >> +                         should not be initialized.  A typical use
-> >> + case for
-> >> +                         this property is in AMP systems where multip=
-le
-> >> +                         independent operating systems need to share
-> >> + the MPIC
-> >> +                         without clobbering each other.
-> >
-> > Is "protected-sources" really needed for AMP systems to tell the OSes
-> > not to clobber each other?  Won't each OS be given a device tree with
-> > only its interrupt sources?  ...so you know what you are allowed to
-> > touch.
->=20
-> This was discussed a little bit already [1, 2].  The MPIC driver currentl=
-y
-> initializes the VECPRI register for all interrupt sources, which can lead
-> to the aforementioned clobbering.
+The root of this issue is in sysfs directory creation. Every time
+a directory is created a string compare is done against sibling
+directories ( see sysfs_find_dirent() ) to ensure we do not create 
+duplicates.  The list of directory nodes in sysfs is kept as an
+unsorted list which results in this being an exponentially longer
+operation as the number of directories are created.
 
-For sources that are protected and not to be touched, it seems
-that the other need is for the OS to know (be guaranteed?) that
-those sources have been put in state where the source is masked
-or directed to other cores.   You can't have interrupts occurring
-on sources that you are not allowed to initialize.
+The solution solved by this patch set is to allow a single
+directory in sysfs to span multiple memory sections.  This is
+controlled by an optional architecturally defined function
+memory_block_size_bytes().  The default definition of this
+routine returns a memory block size equal to the memory section
+size. This maintains the current layout of sysfs memory
+directories as it appears to userspace to remain the same as it
+is today.
 
-So the "no-reset" property could potentially cover this as well-- if it was
-defined to mean "don't reset the mpic" and boot firmware has put all source=
-s
-in a sane initial state.   And we wouldn't need the "protected-sources"
-property any longer.
+For architectures that define their own version of this routine,
+as is done for powerpc and x86 in this patchset, the view in userspace
+would change such that each memoryXXX directory would span
+multiple memory sections.  The number of sections spanned would
+depend on the value reported by memory_block_size_bytes.
 
-Stuart
-
-
-Right...so it would seem that the no-reset property if prop
+-Nathan Fontenot
