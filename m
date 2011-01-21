@@ -1,30 +1,29 @@
 Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 56488B7112
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D74C0B7120
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Jan 2011 16:00:46 +1100 (EST)
-Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0L4h5PY010406
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 23:43:14 -0500
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1B50F4DE8026
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Jan 2011 23:57:21 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p0L50fCZ350352
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jan 2011 00:00:41 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p0L50d4c026482
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jan 2011 00:00:40 -0500
-Date: Fri, 21 Jan 2011 00:00:10 -0500
+	Fri, 21 Jan 2011 16:01:01 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0L4mgWJ030207
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 21:48:42 -0700
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id p0L50rVC094530
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 22:00:53 -0700
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p0L50qp7017631
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2011 22:00:53 -0700
+Date: Thu, 20 Jan 2011 22:00:51 -0700
 From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Message-Id: <20110121050010.5062.3390.sendpatchset@oc7304238415.ibm.com>
-Subject: [PATCH 0/4] powerpc/pseries: VPHN code cleanups
+Message-Id: <20110121050050.5062.98751.sendpatchset@oc7304238415.ibm.com>
+In-Reply-To: <20110121050010.5062.3390.sendpatchset@oc7304238415.ibm.com>
+References: <20110121050010.5062.3390.sendpatchset@oc7304238415.ibm.com>
+Subject: [PATCH 1/4] powerpc/pseries: Fix typo in VPHN comments
 Cc: markn@au1.ibm.com, tbreeds@au1.ibm.com, lkessler@us.ibm.com,
 	Jesse Larrew <jlarrew@linux.vnet.ibm.com>, mjwolf@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,13 +37,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 
-This patch set includes some simple style cleanups for VPHN:
+Correct a spelling error in VPHN comments in numa.c.
 
-PATCH 1/4: powerpc/pseries: Fix typo in VPHN comments
-PATCH 2/4: powerpc/pseries: Fix brace placement in numa.c
-PATCH 3/4: powerpc/pseries: Remove unnecessary initializations in numa.c
-PATCH 4/4: powerpc/pseries: Reorder VPHN functions to reduce forward 
-                            declarations
+Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- arch/powerpc/mm/numa.c |  143 +++++++++++++++++++++++-------------------------
- 1 files changed, 69 insertions(+), 74 deletions(-)
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 8f8845e..5259dde 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1263,7 +1263,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ 
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+-/* Vrtual Processor Home Node (VPHN) support */
++/* Virtual Processor Home Node (VPHN) support */
+ #ifdef CONFIG_PPC_SPLPAR
+ #define VPHN_NR_CHANGE_CTRS (8)
+ static u8 vphn_cpu_change_counts[NR_CPUS][VPHN_NR_CHANGE_CTRS];
+-- 
+1.7.3.4
