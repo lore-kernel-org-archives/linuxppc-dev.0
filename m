@@ -1,15 +1,19 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 21 Jan 2011 13:43:59 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH 7/8] powerpc/kdump: Move crash_kexec_stop_spus to kdump
-	crash handler
-Message-ID: <20110121134359.17ace4de@kryten>
-In-Reply-To: <20110107145954.4f421183@kryten>
-References: <20110107145255.72cf30ba@kryten> <20110107145954.4f421183@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E0B5AB7104
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2011 15:50:46 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 21 Jan 2011 15:50:02 +1100
+Message-ID: <1295585402.2148.274.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,230 +23,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Linus !
 
-And here's a version that actually compiles. Sorry Ben :)
+Here's a bunch of powerpc stuff for you to pull. There's a whole series from
+Anton which is in large part trivial cleanups, but it's all obvious enough
+stuff or worthy enough fixes that I decided to not wait until the next merge
+window (besides it's from Anton :-)
 
-Anton
---
+The rest is generally minor fixes. The two simple_write_to_buffer changes
+from Akinobu were around for a while (and Andrew had picked them up already),
+I just happen to have "missed" them in my collection for the previous batch.
 
-Use the crash handler hooks to run the SPU stop code, just like we do for
-ehea and cell RAS code.
+Cheers,
+Ben.
 
-While I'm here I noticed "CPUSs reliabally"
+The following changes since commit 12fcdba1b7ae8b25696433f420b775aeb556d89b:
 
-so fix the spelling MISTAKESs reliabally.
+  Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip (2011-01-19 20:27:25 -0800)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+are available in the git repository at:
 
-Index: powerpc.git/arch/powerpc/kernel/crash.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/crash.c	2011-01-21 13:41:01.192747292 +1100
-+++ powerpc.git/arch/powerpc/kernel/crash.c	2011-01-21 13:41:07.272364454 +1100
-@@ -48,7 +48,7 @@ int crashing_cpu = -1;
- static cpumask_t cpus_in_crash = CPU_MASK_NONE;
- cpumask_t cpus_in_sr = CPU_MASK_NONE;
- 
--#define CRASH_HANDLER_MAX 2
-+#define CRASH_HANDLER_MAX 3
- /* NULL terminated list of shutdown handles */
- static crash_shutdown_t crash_shutdown_handles[CRASH_HANDLER_MAX+1];
- static DEFINE_SPINLOCK(crash_handlers_lock);
-@@ -125,7 +125,7 @@ static void crash_kexec_prepare_cpus(int
- 	smp_wmb();
- 
- 	/*
--	 * FIXME: Until we will have the way to stop other CPUSs reliabally,
-+	 * FIXME: Until we will have the way to stop other CPUs reliably,
- 	 * the crash CPU will send an IPI and wait for other CPUs to
- 	 * respond.
- 	 * Delay of at least 10 seconds.
-@@ -254,72 +254,6 @@ void crash_kexec_secondary(struct pt_reg
- 	cpus_in_sr = CPU_MASK_NONE;
- }
- #endif
--#ifdef CONFIG_SPU_BASE
--
--#include <asm/spu.h>
--#include <asm/spu_priv1.h>
--
--struct crash_spu_info {
--	struct spu *spu;
--	u32 saved_spu_runcntl_RW;
--	u32 saved_spu_status_R;
--	u32 saved_spu_npc_RW;
--	u64 saved_mfc_sr1_RW;
--	u64 saved_mfc_dar;
--	u64 saved_mfc_dsisr;
--};
--
--#define CRASH_NUM_SPUS	16	/* Enough for current hardware */
--static struct crash_spu_info crash_spu_info[CRASH_NUM_SPUS];
--
--static void crash_kexec_stop_spus(void)
--{
--	struct spu *spu;
--	int i;
--	u64 tmp;
--
--	for (i = 0; i < CRASH_NUM_SPUS; i++) {
--		if (!crash_spu_info[i].spu)
--			continue;
--
--		spu = crash_spu_info[i].spu;
--
--		crash_spu_info[i].saved_spu_runcntl_RW =
--			in_be32(&spu->problem->spu_runcntl_RW);
--		crash_spu_info[i].saved_spu_status_R =
--			in_be32(&spu->problem->spu_status_R);
--		crash_spu_info[i].saved_spu_npc_RW =
--			in_be32(&spu->problem->spu_npc_RW);
--
--		crash_spu_info[i].saved_mfc_dar    = spu_mfc_dar_get(spu);
--		crash_spu_info[i].saved_mfc_dsisr  = spu_mfc_dsisr_get(spu);
--		tmp = spu_mfc_sr1_get(spu);
--		crash_spu_info[i].saved_mfc_sr1_RW = tmp;
--
--		tmp &= ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
--		spu_mfc_sr1_set(spu, tmp);
--
--		__delay(200);
--	}
--}
--
--void crash_register_spus(struct list_head *list)
--{
--	struct spu *spu;
--
--	list_for_each_entry(spu, list, full_list) {
--		if (WARN_ON(spu->number >= CRASH_NUM_SPUS))
--			continue;
--
--		crash_spu_info[spu->number].spu = spu;
--	}
--}
--
--#else
--static inline void crash_kexec_stop_spus(void)
--{
--}
--#endif /* CONFIG_SPU_BASE */
- 
- /*
-  * Register a function to be called on shutdown.  Only use this if you
-@@ -439,8 +373,6 @@ void default_machine_crash_shutdown(stru
- 	crash_shutdown_cpu = -1;
- 	__debugger_fault_handler = old_handler;
- 
--	crash_kexec_stop_spus();
--
- 	if (ppc_md.kexec_cpu_down)
- 		ppc_md.kexec_cpu_down(1, 0);
- }
-Index: powerpc.git/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c	2011-01-21 13:41:01.192747292 +1100
-+++ powerpc.git/arch/powerpc/platforms/cell/spu_base.c	2011-01-21 13:42:12.358265951 +1100
-@@ -37,6 +37,7 @@
- #include <asm/spu_csa.h>
- #include <asm/xmon.h>
- #include <asm/prom.h>
-+#include <asm/kexec.h>
- 
- const struct spu_management_ops *spu_management_ops;
- EXPORT_SYMBOL_GPL(spu_management_ops);
-@@ -727,6 +728,75 @@ static ssize_t spu_stat_show(struct sys_
- 
- static SYSDEV_ATTR(stat, 0644, spu_stat_show, NULL);
- 
-+#ifdef CONFIG_KEXEC
-+
-+struct crash_spu_info {
-+	struct spu *spu;
-+	u32 saved_spu_runcntl_RW;
-+	u32 saved_spu_status_R;
-+	u32 saved_spu_npc_RW;
-+	u64 saved_mfc_sr1_RW;
-+	u64 saved_mfc_dar;
-+	u64 saved_mfc_dsisr;
-+};
-+
-+#define CRASH_NUM_SPUS	16	/* Enough for current hardware */
-+static struct crash_spu_info crash_spu_info[CRASH_NUM_SPUS];
-+
-+static void crash_kexec_stop_spus(void)
-+{
-+	struct spu *spu;
-+	int i;
-+	u64 tmp;
-+
-+	for (i = 0; i < CRASH_NUM_SPUS; i++) {
-+		if (!crash_spu_info[i].spu)
-+			continue;
-+
-+		spu = crash_spu_info[i].spu;
-+
-+		crash_spu_info[i].saved_spu_runcntl_RW =
-+			in_be32(&spu->problem->spu_runcntl_RW);
-+		crash_spu_info[i].saved_spu_status_R =
-+			in_be32(&spu->problem->spu_status_R);
-+		crash_spu_info[i].saved_spu_npc_RW =
-+			in_be32(&spu->problem->spu_npc_RW);
-+
-+		crash_spu_info[i].saved_mfc_dar    = spu_mfc_dar_get(spu);
-+		crash_spu_info[i].saved_mfc_dsisr  = spu_mfc_dsisr_get(spu);
-+		tmp = spu_mfc_sr1_get(spu);
-+		crash_spu_info[i].saved_mfc_sr1_RW = tmp;
-+
-+		tmp &= ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
-+		spu_mfc_sr1_set(spu, tmp);
-+
-+		__delay(200);
-+	}
-+}
-+
-+static void crash_register_spus(struct list_head *list)
-+{
-+	struct spu *spu;
-+	int ret;
-+
-+	list_for_each_entry(spu, list, full_list) {
-+		if (WARN_ON(spu->number >= CRASH_NUM_SPUS))
-+			continue;
-+
-+		crash_spu_info[spu->number].spu = spu;
-+	}
-+
-+	ret = crash_shutdown_register(&crash_kexec_stop_spus);
-+	if (ret)
-+		printk(KERN_ERR "Could not register SPU crash handler");
-+}
-+
-+#else
-+static inline void crash_register_spus(struct list_head *list)
-+{
-+}
-+#endif
-+
- static int __init init_spu_base(void)
- {
- 	int i, ret = 0;
-Index: powerpc.git/arch/powerpc/include/asm/spu.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/spu.h	2011-01-21 13:41:00.592785080 +1100
-+++ powerpc.git/arch/powerpc/include/asm/spu.h	2011-01-21 13:42:12.358265951 +1100
-@@ -203,14 +203,6 @@ void spu_irq_setaffinity(struct spu *spu
- void spu_setup_kernel_slbs(struct spu *spu, struct spu_lscsa *lscsa,
- 		void *code, int code_size);
- 
--#ifdef CONFIG_KEXEC
--void crash_register_spus(struct list_head *list);
--#else
--static inline void crash_register_spus(struct list_head *list)
--{
--}
--#endif
--
- extern void spu_invalidate_slbs(struct spu *spu);
- extern void spu_associate_mm(struct spu *spu, struct mm_struct *mm);
- int spu_64k_pages_available(void);
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Akinobu Mita (2):
+      powerpc/spufs: Use simple_write_to_buffer
+      powerpc/rtas_flash: Use simple_read_from_buffer
+
+Anton Blanchard (19):
+      powerpc/kexec: Move all ppc_md kexec function pointers together
+      powerpc/kexec: Remove ppc_md.machine_kexec_cleanup
+      powerpc/kexec: Remove ppc_md.machine_kexec
+      powerpc/kdump: Remove ppc_md.machine_crash_shutdown
+      powerpc/kexec: Don't initialise kexec hooks to default handlers
+      powerpc/kexec: Remove empty ppc_md.machine_kexec_prepare
+      powerpc/kdump: Move crash_kexec_stop_spus to kdump crash handler
+      powerpc/kdump: Disable ftrace during kexec
+      powerpc: Print 32 bits of DSISR in show_regs
+      powerpc: Don't force MSR_RI in machine_check_exception
+      powerpc: Never halt RTAS error logging after receiving an unrecoverable machine check
+      powerpc: Remove duplicate debugger hook in machine_check_exception
+      powerpc: Don't silently handle machine checks from userspace
+      powerpc: Rework pseries machine check handler
+      powerpc: Fix corruption when grabbing FWNMI data
+      powerpc: Check RTAS extended log flag before checking length
+      powerpc: machine_check_generic is wrong on 64bit
+      powerpc: Disable mcount tracers in pseries defconfig
+      powerpc: Enable 64kB pages and 1024 threads in pseries config
+
+Ben Hutchings (1):
+      powerpc/boot/dts: Install dts from the right directory
+
+Benjamin Herrenschmidt (1):
+      Merge remote branch 'kumar/next' into merge
+
+Ilya Yanok (1):
+      powerpc/mpc8308: fix USB DR controller initialization
+
+Li Yang (1):
+      powerpc/85xx: add e500 HID1 bit definition
+
+Michael Ellerman (1):
+      powerpc: Ensure the else case of feature sections will fit
+
+Nishanth Aravamudan (1):
+      powerpc/pseries: Add BNX2=m to defconfig
+
+Scott Wood (1):
+      powerpc/mpic: Fix mask/unmask timeout message
+
+Shaohui Xie (1):
+      powerpc/fsl_rio: Fix non-standard HID1 register access
+
+Steven Rostedt (2):
+      powerpc/ppc64/tracing: Add stack frame to calls of trace_hardirqs_on/off
+      powerpc/ppc32/tracing: Add stack frame to calls of trace_hardirqs_on/off
+
+Tejun Heo (1):
+      powerpc/cell: Use system_wq in cpufreq_spudemand
+
+Timur Tabi (2):
+      powerpc/85xx: fix compatible properties of the P1022DS DMA nodes used for audio
+      powerpc: fix warning when compiling immap_qe.h
+
+roel kluin (1):
+      powerpc/macintosh: Fix wrong test in fan_{read,write}_reg()
+
+ arch/powerpc/boot/Makefile                      |    2 +-
+ arch/powerpc/boot/dts/mpc8308rdb.dts            |    2 +-
+ arch/powerpc/boot/dts/p1022ds.dts               |    4 +-
+ arch/powerpc/configs/pseries_defconfig          |    7 +-
+ arch/powerpc/include/asm/feature-fixups.h       |   27 ++++---
+ arch/powerpc/include/asm/immap_qe.h             |   21 ++++--
+ arch/powerpc/include/asm/irqflags.h             |   40 +++++++--
+ arch/powerpc/include/asm/machdep.h              |   18 +----
+ arch/powerpc/include/asm/reg.h                  |    2 +
+ arch/powerpc/include/asm/reg_booke.h            |   14 +++
+ arch/powerpc/include/asm/spu.h                  |    8 --
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S       |    6 ++
+ arch/powerpc/kernel/cputable.c                  |   23 -----
+ arch/powerpc/kernel/crash.c                     |   72 +----------------
+ arch/powerpc/kernel/entry_32.S                  |   11 +++
+ arch/powerpc/kernel/machine_kexec.c             |   19 ++--
+ arch/powerpc/kernel/process.c                   |    2 +-
+ arch/powerpc/kernel/rtas_flash.c                |   53 ++-----------
+ arch/powerpc/kernel/rtasd.c                     |    2 +-
+ arch/powerpc/kernel/time.c                      |   25 +++++-
+ arch/powerpc/kernel/traps.c                     |   12 +---
+ arch/powerpc/lib/feature-fixups-test.S          |   19 ++++
+ arch/powerpc/platforms/83xx/mpc83xx.h           |    2 +
+ arch/powerpc/platforms/83xx/usb.c               |   21 ++++-
+ arch/powerpc/platforms/cell/cpufreq_spudemand.c |   20 +----
+ arch/powerpc/platforms/cell/qpace_setup.c       |    5 -
+ arch/powerpc/platforms/cell/spu_base.c          |   70 ++++++++++++++++
+ arch/powerpc/platforms/cell/spufs/file.c        |   27 ++-----
+ arch/powerpc/platforms/embedded6xx/gamecube.c   |   11 ---
+ arch/powerpc/platforms/embedded6xx/wii.c        |   11 ---
+ arch/powerpc/platforms/pseries/kexec.c          |   10 --
+ arch/powerpc/platforms/pseries/ras.c            |  102 +++++++++++++++-------
+ arch/powerpc/sysdev/fsl_rio.c                   |    2 -
+ arch/powerpc/sysdev/mpic.c                      |    6 +-
+ drivers/macintosh/therm_pm72.c                  |    4 +-
+ 35 files changed, 334 insertions(+), 346 deletions(-)
