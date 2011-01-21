@@ -1,15 +1,24 @@
-Return-Path: <jdl@jdl.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Globally s/struct irq_host/struct irq_domain/ 
-In-reply-to: <AANLkTi=bHV9XJoUT_ki1Eziq5fM3DekrOLoFuNzGGv91@mail.gmail.com> 
-References: <E1Pd18R-0002d3-US@jdl.com>
-	<20110121171314.GD7477@angua.secretlab.ca>
-	<E1PgKdi-0005fc-J5@jdl.com>
-	<AANLkTi=bHV9XJoUT_ki1Eziq5fM3DekrOLoFuNzGGv91@mail.gmail.com>
-Date: Fri, 21 Jan 2011 12:02:28 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1PgLJc-0005rB-CP@jdl.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CE7D4B70A9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 22 Jan 2011 05:15:42 +1100 (EST)
+Received: by iwb12 with SMTP id 12so2128341iwb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 21 Jan 2011 10:15:38 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1295591723.2148.281.camel@pasglop>
+References: <1295591723.2148.281.camel@pasglop>
+Date: Fri, 21 Jan 2011 12:15:30 -0600
+Message-ID: <AANLkTikd14Kw02nzde19FsR9JUGA=c-xzVVXpkGLoUjf@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Fix some 6xx/7xxx CPU setup functions
+From: kevin diggs <diggskevin38@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,26 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> 
-> I always reserve the right to change my mind.  }:-> 
+On Fri, Jan 21, 2011 at 12:35 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Some of those functions try to adjust the CPU features, for example
+> to remove NAP support on some revisions. However, they seem to use
+> r5 as an index into the CPU table entry, which might have been right
+> a long time ago but no longer is. r4 is the right register to use.
+Can you quantify 'a long time ago'? Is this compiler dependent?
+>
+> This probably caused some off behaviours on some PowerMac variants
+> using 750cx or 7455 processor revisions.
+what about a 750gx?
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>
+> Can somebody with one of these PowerMacs test this ? I only managed to
+> find a 7448 which not directly affected...
+>
+I have a GigE (PowerMac 3,4?) with an upgrade card that has a pair of
+7455s on it and an 8600 with a 750GX cpu card. I can probably test
+this on the GigE. It is running 2.6.36. Is that recent enough? The
+8600 is not cooperating.
 
-Naturally!
-
-> Sorry about that,
-
-No problem.  The thought back then was that we'd hit the "global"
-piece and then we'd buy the time to hit the local pieces as we could.
-
-> but I actually applied the patch this morning with the thought that
-> I'd get Linus to pick it up late to avoid collisions in linux-next.
-
-Makes sense.
-
-> However, when I actually looked at the result I realized that at the
-> very least, the irq_host_ops, the #defines, and the irq_*_host
-> functions absolutely have to be renamed at the same time.  Not
-> necessarily in the same patch, but definitely at the same time.
-
-Will do!
-
-jdl
+The GigE is running 2.6.36 compiled with 4.3.5 built from sources. It
+seems to run fine.
+_______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
