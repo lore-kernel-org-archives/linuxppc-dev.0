@@ -1,20 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8F3D2B70E4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Jan 2011 13:30:45 +1100 (EST)
-Date: Fri, 21 Jan 2011 13:30:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: of_flat_dt_match() helper build FAIL
-Message-Id: <20110121133039.bc48cef7.sfr@canb.auug.org.au>
-In-Reply-To: <1295576122.2148.271.camel@pasglop>
-References: <1295576122.2148.271.camel@pasglop>
+Return-Path: <anton@samba.org>
+Date: Fri, 21 Jan 2011 13:43:59 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH 7/8] powerpc/kdump: Move crash_kexec_stop_spus to kdump
+	crash handler
+Message-ID: <20110121134359.17ace4de@kryten>
+In-Reply-To: <20110107145954.4f421183@kryten>
+References: <20110107145255.72cf30ba@kryten> <20110107145954.4f421183@kryten>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__21_Jan_2011_13_30_39_+1100_qr.tJsxEE/Z_0LkM"
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +19,230 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__21_Jan_2011_13_30_39_+1100_qr.tJsxEE/Z_0LkM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+And here's a version that actually compiles. Sorry Ben :)
 
-On Fri, 21 Jan 2011 13:15:22 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> a4f740cf33f7f6c164bbde3c0cdbcc77b0c4997c introduces:
->=20
-> /arch/powerpc/platforms/83xx/mpc831x_rdb.c:63: error: expected '{'
-> before 'const'
->=20
->  and more...
->=20
-> This hunk is obviously bogus:
->=20
-> +struct const char *board[] __initdata =3D {
-> +	"MPC8313ERDB",
-> +	"fsl,mpc8315erdb",
-> +	NULL
-> +}
-> +
->=20
-> You should at least compile test your changes :-(
->=20
-> Please send Linus a fix.
+Anton
+--
 
-Its already in Grant's devicetree/merge branch (which I assume he will
-ask you to pull soon) and has been in linux-next for the past 2 days.
+Use the crash handler hooks to run the SPU stop code, just like we do for
+ehea and cell RAS code.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+While I'm here I noticed "CPUSs reliabally"
 
---Signature=_Fri__21_Jan_2011_13_30_39_+1100_qr.tJsxEE/Z_0LkM
-Content-Type: application/pgp-signature
+so fix the spelling MISTAKESs reliabally.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-iQEcBAEBAgAGBQJNOO/PAAoJEDMEi1NhKgbsrD4H/09u10zXh6xDgqLdCmavS65R
-QwHSrrBraD/2OIIJVj4EiI87Jqbg3Ev9fE2GNk/dw6vKTmvaph+Zjhds1Ds5Ehbp
-ZqJpiX/N9BAVkM3MYQpauhcx1h243UVtex9d+kcbV3qFuCteMl0gTQNM5bJSwdD0
-m+kqYnrbMc1+lBYSnYIFk8NGPoZAieEq8h4HshKnyMLOvJ9paT94Vkq4nr6nY4AB
-nRP18Xz7XcfbsokLbW/dHZvb1sEs/jwOPc7x2EYVKX3MmcRZVsE+T+TkrhoZNchx
-r990XZpojNzmcGs/O27cNDfGz5j9y9usC219X0O8HAiwTK5Ru1OQ7RU5puDdQjw=
-=HzPT
------END PGP SIGNATURE-----
-
---Signature=_Fri__21_Jan_2011_13_30_39_+1100_qr.tJsxEE/Z_0LkM--
+Index: powerpc.git/arch/powerpc/kernel/crash.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/kernel/crash.c	2011-01-21 13:41:01.192747292 +1100
++++ powerpc.git/arch/powerpc/kernel/crash.c	2011-01-21 13:41:07.272364454 +1100
+@@ -48,7 +48,7 @@ int crashing_cpu = -1;
+ static cpumask_t cpus_in_crash = CPU_MASK_NONE;
+ cpumask_t cpus_in_sr = CPU_MASK_NONE;
+ 
+-#define CRASH_HANDLER_MAX 2
++#define CRASH_HANDLER_MAX 3
+ /* NULL terminated list of shutdown handles */
+ static crash_shutdown_t crash_shutdown_handles[CRASH_HANDLER_MAX+1];
+ static DEFINE_SPINLOCK(crash_handlers_lock);
+@@ -125,7 +125,7 @@ static void crash_kexec_prepare_cpus(int
+ 	smp_wmb();
+ 
+ 	/*
+-	 * FIXME: Until we will have the way to stop other CPUSs reliabally,
++	 * FIXME: Until we will have the way to stop other CPUs reliably,
+ 	 * the crash CPU will send an IPI and wait for other CPUs to
+ 	 * respond.
+ 	 * Delay of at least 10 seconds.
+@@ -254,72 +254,6 @@ void crash_kexec_secondary(struct pt_reg
+ 	cpus_in_sr = CPU_MASK_NONE;
+ }
+ #endif
+-#ifdef CONFIG_SPU_BASE
+-
+-#include <asm/spu.h>
+-#include <asm/spu_priv1.h>
+-
+-struct crash_spu_info {
+-	struct spu *spu;
+-	u32 saved_spu_runcntl_RW;
+-	u32 saved_spu_status_R;
+-	u32 saved_spu_npc_RW;
+-	u64 saved_mfc_sr1_RW;
+-	u64 saved_mfc_dar;
+-	u64 saved_mfc_dsisr;
+-};
+-
+-#define CRASH_NUM_SPUS	16	/* Enough for current hardware */
+-static struct crash_spu_info crash_spu_info[CRASH_NUM_SPUS];
+-
+-static void crash_kexec_stop_spus(void)
+-{
+-	struct spu *spu;
+-	int i;
+-	u64 tmp;
+-
+-	for (i = 0; i < CRASH_NUM_SPUS; i++) {
+-		if (!crash_spu_info[i].spu)
+-			continue;
+-
+-		spu = crash_spu_info[i].spu;
+-
+-		crash_spu_info[i].saved_spu_runcntl_RW =
+-			in_be32(&spu->problem->spu_runcntl_RW);
+-		crash_spu_info[i].saved_spu_status_R =
+-			in_be32(&spu->problem->spu_status_R);
+-		crash_spu_info[i].saved_spu_npc_RW =
+-			in_be32(&spu->problem->spu_npc_RW);
+-
+-		crash_spu_info[i].saved_mfc_dar    = spu_mfc_dar_get(spu);
+-		crash_spu_info[i].saved_mfc_dsisr  = spu_mfc_dsisr_get(spu);
+-		tmp = spu_mfc_sr1_get(spu);
+-		crash_spu_info[i].saved_mfc_sr1_RW = tmp;
+-
+-		tmp &= ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
+-		spu_mfc_sr1_set(spu, tmp);
+-
+-		__delay(200);
+-	}
+-}
+-
+-void crash_register_spus(struct list_head *list)
+-{
+-	struct spu *spu;
+-
+-	list_for_each_entry(spu, list, full_list) {
+-		if (WARN_ON(spu->number >= CRASH_NUM_SPUS))
+-			continue;
+-
+-		crash_spu_info[spu->number].spu = spu;
+-	}
+-}
+-
+-#else
+-static inline void crash_kexec_stop_spus(void)
+-{
+-}
+-#endif /* CONFIG_SPU_BASE */
+ 
+ /*
+  * Register a function to be called on shutdown.  Only use this if you
+@@ -439,8 +373,6 @@ void default_machine_crash_shutdown(stru
+ 	crash_shutdown_cpu = -1;
+ 	__debugger_fault_handler = old_handler;
+ 
+-	crash_kexec_stop_spus();
+-
+ 	if (ppc_md.kexec_cpu_down)
+ 		ppc_md.kexec_cpu_down(1, 0);
+ }
+Index: powerpc.git/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c	2011-01-21 13:41:01.192747292 +1100
++++ powerpc.git/arch/powerpc/platforms/cell/spu_base.c	2011-01-21 13:42:12.358265951 +1100
+@@ -37,6 +37,7 @@
+ #include <asm/spu_csa.h>
+ #include <asm/xmon.h>
+ #include <asm/prom.h>
++#include <asm/kexec.h>
+ 
+ const struct spu_management_ops *spu_management_ops;
+ EXPORT_SYMBOL_GPL(spu_management_ops);
+@@ -727,6 +728,75 @@ static ssize_t spu_stat_show(struct sys_
+ 
+ static SYSDEV_ATTR(stat, 0644, spu_stat_show, NULL);
+ 
++#ifdef CONFIG_KEXEC
++
++struct crash_spu_info {
++	struct spu *spu;
++	u32 saved_spu_runcntl_RW;
++	u32 saved_spu_status_R;
++	u32 saved_spu_npc_RW;
++	u64 saved_mfc_sr1_RW;
++	u64 saved_mfc_dar;
++	u64 saved_mfc_dsisr;
++};
++
++#define CRASH_NUM_SPUS	16	/* Enough for current hardware */
++static struct crash_spu_info crash_spu_info[CRASH_NUM_SPUS];
++
++static void crash_kexec_stop_spus(void)
++{
++	struct spu *spu;
++	int i;
++	u64 tmp;
++
++	for (i = 0; i < CRASH_NUM_SPUS; i++) {
++		if (!crash_spu_info[i].spu)
++			continue;
++
++		spu = crash_spu_info[i].spu;
++
++		crash_spu_info[i].saved_spu_runcntl_RW =
++			in_be32(&spu->problem->spu_runcntl_RW);
++		crash_spu_info[i].saved_spu_status_R =
++			in_be32(&spu->problem->spu_status_R);
++		crash_spu_info[i].saved_spu_npc_RW =
++			in_be32(&spu->problem->spu_npc_RW);
++
++		crash_spu_info[i].saved_mfc_dar    = spu_mfc_dar_get(spu);
++		crash_spu_info[i].saved_mfc_dsisr  = spu_mfc_dsisr_get(spu);
++		tmp = spu_mfc_sr1_get(spu);
++		crash_spu_info[i].saved_mfc_sr1_RW = tmp;
++
++		tmp &= ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
++		spu_mfc_sr1_set(spu, tmp);
++
++		__delay(200);
++	}
++}
++
++static void crash_register_spus(struct list_head *list)
++{
++	struct spu *spu;
++	int ret;
++
++	list_for_each_entry(spu, list, full_list) {
++		if (WARN_ON(spu->number >= CRASH_NUM_SPUS))
++			continue;
++
++		crash_spu_info[spu->number].spu = spu;
++	}
++
++	ret = crash_shutdown_register(&crash_kexec_stop_spus);
++	if (ret)
++		printk(KERN_ERR "Could not register SPU crash handler");
++}
++
++#else
++static inline void crash_register_spus(struct list_head *list)
++{
++}
++#endif
++
+ static int __init init_spu_base(void)
+ {
+ 	int i, ret = 0;
+Index: powerpc.git/arch/powerpc/include/asm/spu.h
+===================================================================
+--- powerpc.git.orig/arch/powerpc/include/asm/spu.h	2011-01-21 13:41:00.592785080 +1100
++++ powerpc.git/arch/powerpc/include/asm/spu.h	2011-01-21 13:42:12.358265951 +1100
+@@ -203,14 +203,6 @@ void spu_irq_setaffinity(struct spu *spu
+ void spu_setup_kernel_slbs(struct spu *spu, struct spu_lscsa *lscsa,
+ 		void *code, int code_size);
+ 
+-#ifdef CONFIG_KEXEC
+-void crash_register_spus(struct list_head *list);
+-#else
+-static inline void crash_register_spus(struct list_head *list)
+-{
+-}
+-#endif
+-
+ extern void spu_invalidate_slbs(struct spu *spu);
+ extern void spu_associate_mm(struct spu *spu, struct mm_struct *mm);
+ int spu_64k_pages_available(void);
