@@ -1,20 +1,20 @@
-Return-Path: <schwab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 8AF3EB7121
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 690DDB711E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Jan 2011 20:52:44 +1100 (EST)
-From: Andreas Schwab <schwab@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Pass the right cpu_spec to ->setup_cpu() on
-	64-bit
-References: <1295591763.2148.282.camel__24783.9240976193$1295591799$gmane$org@pasglop>
-Date: Fri, 21 Jan 2011 10:52:40 +0100
-In-Reply-To: <1295591763.2148.282.camel__24783.9240976193$1295591799$gmane$org@pasglop>
-	(Benjamin Herrenschmidt's message of "Fri, 21 Jan 2011 17:36:03
-	+1100")
-Message-ID: <m3wrly4m8n.fsf@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Jan 2011 21:00:14 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Fix some 6xx/7xxx CPU setup functions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@redhat.com>
+In-Reply-To: <m31v4660zb.fsf@redhat.com>
+References: <1295591723.2148.281.camel__36384.4125684865$1295591768$gmane$org@pasglop>
+	<m31v4660zb.fsf@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 21 Jan 2011 21:00:07 +1100
+Message-ID: <1295604007.2148.294.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,13 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-You may also want to remove the misleading sentence about PTRRELOC in
-the preceding comment, since both s and t were already passed through it
-anyway.
+On Fri, 2011-01-21 at 10:48 +0100, Andreas Schwab wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > In absence of good testing I would appreciate a close inspection of the patch
+> > by different pairs of eyes :-)
+> 
+> Looks good to me.  That broke apparently in 400d221 ("ppc32: make
+> cur_cpu_spec a single pointer instead of an array"), which changed the
+> calling convention in call_setup_cpu.
 
-Andreas.
+Nice, >5 years ago and it's not even my fault :-) Thanks for the
+review !
 
--- 
-Andreas Schwab, schwab@redhat.com
-GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
-"And now for something completely different."
+Cheers,
+Ben.
