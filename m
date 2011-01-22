@@ -1,24 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05614B7106
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9B6E1B7101
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 22 Jan 2011 13:32:09 +1100 (EST)
-Subject: Re: BootX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kevin diggs <diggskevin38@gmail.com>
-In-Reply-To: <AANLkTikitgJYiALMRmtKQTs_eYgzGbZpeMkpg2M478cj@mail.gmail.com>
-References: <AANLkTikAVgH9-UQfrjoAJSemet5p_PxhxCdot8cChQu3@mail.gmail.com>
-	<1295644908.2148.309.camel@pasglop>
-	<AANLkTi=CVNC-UjdCyByyey_VnPHGtujuH01tquSQyqRm@mail.gmail.com>
-	<1295661056.2148.334.camel@pasglop>
-	<AANLkTikitgJYiALMRmtKQTs_eYgzGbZpeMkpg2M478cj@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 22 Jan 2011 13:31:58 +1100
-Message-ID: <1295663518.2148.335.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat, 22 Jan 2011 14:17:15 +1100 (EST)
+Received: by iwb12 with SMTP id 12so2552490iwb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 21 Jan 2011 19:17:12 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTime0kT7rpVKvqZZ1uyib8GqBkgpQ6osDnfCrN0p@mail.gmail.com>
+References: <AANLkTimbZh5KCD2tT3rE5prhOBV9D_-QVdLyu0usmvMw@mail.gmail.com>
+	<AANLkTime0kT7rpVKvqZZ1uyib8GqBkgpQ6osDnfCrN0p@mail.gmail.com>
+Date: Fri, 21 Jan 2011 21:17:12 -0600
+Message-ID: <AANLkTinhu1fS5ESwivxSepnp-CXirm9dfV74_GEUi9qB@mail.gmail.com>
+Subject: Re: elf section .text.unlikely
+From: kevin diggs <diggskevin38@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-01-21 at 20:03 -0600, kevin diggs wrote:
-> Hi,
-> 
-> The link:
-> 
-> http://www.shiner.info/?files/Yellow%20Dog%20Linux%204/quik
-> 
-> to download the latest source does not seem to have anything useful???
+Hi,
 
-Ah right. 2.0e is still there tho. Try to have a look at what's in
-distros like debian or genpoo..
+One more thing:
 
-Cheers,
-Ben.
+The last message printed is:
 
+Driver 'sd' needs updating - please us bus_type methods
+
+The mesh SCSI controller seems to successfully scan the bus. The next
+message that a 3.4.6 compiled kernel prints are details about disk sda
+(from SCSI disk driver?).
+
+4.3.5 keyboard is dead.
+
+Jog any thoughts?
+
+Thanks!
+
+kevin
+
+On Fri, Jan 21, 2011 at 8:31 PM, kevin diggs <diggskevin38@gmail.com> wrote:
+> For what it is worth, this section contains dump_stack, panic, and printk
+>
+> Thanks!
+>
 > kevin
-> 
-> On Fri, Jan 21, 2011 at 7:50 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Fri, 2011-01-21 at 19:48 -0600, kevin diggs wrote:
-> >> Hi,
-> >>
-> >> This would require quik, right? I went to penguinppc.org and tried to
-> >> get the latest BootX and quik but the links are dead. Do you know
-> >> where the latest versions are?
-> >
-> > That link still works:
-> >
-> > Oops... typing FAIL :-)
-> >
-> > I meant:
-> >
-> > http://penguinppc.org/bootloaders/quik/
-> >
-> > However, it's possible that distros like debian have done more changes to it.
-> >
-> > Another option is to netboot a zImage directly, which works if it's not
-> > too big.
-> >
-> > Cheers,
-> > Ben.
-> >
-> >> kevin
-> >>
-> >> On Fri, Jan 21, 2011 at 3:21 PM, Benjamin Herrenschmidt
-> >> <benh@kernel.crashing.org> wrote:
-> >> > On Fri, 2011-01-21 at 13:26 -0600, kevin diggs wrote:
-> >> >> Hi,
-> >> >>
-> >> >> Anyone familiar with BootX? Could my problems with the 8600 be related
-> >> >> to some interaction with BootX?
-> >> >
-> >> > It's possible. Have you tried using OF booting instead ? The 8600 should
-> >> > be cable to boot off SCSI or netboot COFF images.
-> >> >
-> >> > Cheers,
-> >> > Ben.
-> >> >
-> >> >
-> >
-> >
-> >
-> >
+>
+> On Fri, Jan 21, 2011 at 7:40 PM, kevin diggs <diggskevin38@gmail.com> wrote:
+>> Hi,
+>>
+>> I am trying to get a PowerMac 8600 to boot past 2.6.28.
+>>
+>> I can boot 2.6.28 compiled with either 3.3.3 or 3.4.6. I can't get
+>> 2.6.28 to boot using 4.3.5. The 4.3.5 vmlinux has a section
+>> '.text.unlikely' that the 3.4.6 version does not. Anyone know what
+>> this might be?
+>>
+>> kevin
+>>
+>
