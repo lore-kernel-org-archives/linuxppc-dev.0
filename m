@@ -1,19 +1,24 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 67180100DD5
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DB4D4B712B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 24 Jan 2011 20:57:51 +1100 (EST)
-From: Heiko Schocher <hs@denx.de>
+	Tue, 25 Jan 2011 04:51:26 +1100 (EST)
+Received: by iwb12 with SMTP id 12so4785153iwb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 24 Jan 2011 09:51:23 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTim6v25Sam+E8Bo9za1q0GJqWZitgqR0KBuKCoWz@mail.gmail.com>
+References: <AANLkTikAVgH9-UQfrjoAJSemet5p_PxhxCdot8cChQu3@mail.gmail.com>
+	<AANLkTim6v25Sam+E8Bo9za1q0GJqWZitgqR0KBuKCoWz@mail.gmail.com>
+Date: Mon, 24 Jan 2011 11:51:23 -0600
+Message-ID: <AANLkTinOz+5YAGzuB_SYAAoX2oYq92FJDc0qw90KL=4z@mail.gmail.com>
+Subject: Re: BootX
+From: kevin diggs <diggskevin38@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4 v4] powerpc, video: add SM501 support for charon board.
-Date: Mon, 24 Jan 2011 10:57:48 +0100
-Message-Id: <1295863068-11205-1-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs@denx.de>
-References: <1291451028-22532-2-git-send-email-hs@denx.de>
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
-	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
-	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
-	Heiko Schocher <hs@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
+Hi,
 
----
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
+I've never done any real kernel debugging. Can anyone give any
+pointers on how to do early boot debugging on an old world (buggy OF)
+powermac? Can I do anything using a serial console?
 
-- changes since v2:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
-  suggested from Paul Mundt.
+A little reading last night suggested that spinlocks are supposed to
+disappear for single processor machines. I do not understand why they
+are present in 3.4.6 (at least the symbol anyway)? The 'acct_lock'
+spin lock was also missing with gcc 4.2.4.
 
-- changes since v3:
-  - rebased against v2.6.38-rc2
+kevin
 
-./scripts/checkpatch.pl 0004-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 22 lines checked
-
-0004-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
-
- arch/powerpc/boot/dts/charon.dts |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..0e00e50 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
- 
- 		flash@0,0 {
-@@ -197,6 +198,15 @@
- 			#address-cells = <1>;
- 		};
- 
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+			little-endian;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
--- 
-1.7.3.4
+On Sat, Jan 22, 2011 at 12:24 PM, kevin diggs <diggskevin38@gmail.com> wrote:
+> Hi,
+>
+> If I enable SMP then I can build a 2.6.28 kernel with gcc 4.3.5 that
+> WILL boot on the PowerMac8600 (single 750GX). The previously mentioned
+> G4 that runs is a dual cpu beast and thus also runs SMP.
+>
+> I at least know this (ok, I THINK I know):
+>
+> For non-SMP:  The spinlock 'acct_lock' in kernel/acct.c that IS
+> present in 3.4.6 (i.e. kernel 2.6.28 compiled with gcc 3.4.6). Not so
+> much for 4.3.5. I have not yet done a general 4.3.5 compiled 2.6.28
+> spinlock safari.
+>
+> Don't some funky, optimizery things happen to spinlocks for the NON-smp case?
+>
+> I'll see what the 4.2.x gcc does.
+>
+> Thanks!
+>
+> kevin
+>
+> P.S.:  There is one other difference for the SMP 4.3.5 compiled
+> 2.6.28:  my 750gx cpufreq driver gets disabled. It is fairly isolated
+> code though. Should not be able to nuke the spinlock in kernel/acct.c
+>
+> On Fri, Jan 21, 2011 at 1:26 PM, kevin diggs <diggskevin38@gmail.com> wrote:
+>> Hi,
+>>
+>> Anyone familiar with BootX? Could my problems with the 8600 be related
+>> to some interaction with BootX?
+>>
+>> kevin
+>>
+>
