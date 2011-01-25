@@ -1,32 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
-	[213.199.154.140])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE304100973
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A48D81007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 Jan 2011 18:17:17 +1100 (EST)
-Received: from mail82-db3 (localhost.localdomain [127.0.0.1])	by
-	mail82-db3-R.bigfish.com (Postfix) with ESMTP id 95B12B682E3	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2011 07:02:05 +0000 (UTC)
-Received: from DB3EHSMHS012.bigfish.com (unknown [10.3.81.252])	by
-	mail82-db3.bigfish.com (Postfix) with ESMTP id 0DED7109007C	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2011 07:01:28 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw01.freescale.net (8.14.3/8.14.3) with ESMTP
-	id p0P71NnT004348	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 Jan 2011 00:01:23 -0700 (MST)
-Subject: Re: [PATCH] e500: Erratum cpu a005 workaround
-MIME-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1295935333-13045-1-git-send-email-yu.liu@freescale.com>
-Date: Tue, 25 Jan 2011 01:01:23 -0600
-Message-ID: <5DA54AEE-B8AC-452B-A56C-65B35391A97C@freescale.com>
-References: <1295935333-13045-1-git-send-email-yu.liu@freescale.com>
-To: Liu Yu <yu.liu@freescale.com>
-Cc: B11780@freescale.com, linuxppc-dev@lists.ozlabs.org
+	Tue, 25 Jan 2011 18:20:35 +1100 (EST)
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/4 v4] video, sm501: add OF binding to support SM501
+Date: Tue, 25 Jan 2011 08:20:31 +0100
+Message-Id: <1295940031-28268-1-git-send-email-hs@denx.de>
+In-Reply-To: <1291451028-22532-1-git-send-email-hs@denx.de>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
+	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Paul Mundt <lethal@linux-sh.org>, Heiko Schocher <hs@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,156 +24,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+- add binding to OF, compatible name "smi,sm501"
 
-On Jan 25, 2011, at 12:02 AM, Liu Yu wrote:
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: linux-fbdev@vger.kernel.org
+cc: devicetree-discuss@ozlabs.org
+cc: Ben Dooks <ben@simtec.co.uk>
+cc: Vincent Sanders <vince@simtec.co.uk>
+cc: Samuel Ortiz <sameo@linux.intel.com>
+cc: linux-kernel@vger.kernel.org
+cc: Randy Dunlap <rdunlap@xenotime.net>
+cc: Paul Mundt <lethal@linux-sh.org>
 
-> This errata can occur if a single-precision floating-point, =
-double-precision
-> floating-point or vector floating-point instruction on a mispredicted =
-branch
-> path signals one of the floating-point data interrupts which are =
-enabled by the
-> SPEFSCR (FINVE, FDBZE, FUNFE or FOVFE bits).  This interrupt must be =
-recorded
-> in a one-cycle window when the misprediction is resolved.  If this =
-extremely
-> rare event should occur, the result could be:
->=20
-> The SPE Data Exception from the mispredicted path may be reported
-> erroneously if a single-precision floating-point, double-precision
-> floating-point or vector floating-point instruction is the second =
-instruction
-> on the correct branch path.
->=20
-> According to errata description, some efp instructions
-> which are not supposed to trigger SPE exceptions
-> can trigger the exceptions in this case.
-> However, as we haven't emulated these instructions here,
-> a signal will send to userspace, and userspace application would exit.
->=20
-> This patch re-issue the efp instruction that we haven't emulated,
-> so that hardware can properly execute it again if this case happen.
->=20
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> ---
-> This is an erratum workaround patch.
-> It would be better if the patch can go into 2.6.38.
->=20
-> arch/powerpc/include/asm/reg.h   |    2 +
-> arch/powerpc/math-emu/math_efp.c |   53 =
-+++++++++++++++++++++++++++++++++++++-
-> 2 files changed, 54 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/reg.h =
-b/arch/powerpc/include/asm/reg.h
-> index 6315edc..0abfd91 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -833,6 +833,8 @@
-> #define PVR_7450	0x80000000
-> #define PVR_8540	0x80200000
-> #define PVR_8560	0x80200000
-> +#define PVR_VER_E500V1	0x8020
-> +#define PVR_VER_E500V2	0x8021
-> /*
->  * For the 8xx processors, all of them report the same PVR family for
->  * the PowerPC core. The various versions of these processors must be
-> diff --git a/arch/powerpc/math-emu/math_efp.c =
-b/arch/powerpc/math-emu/math_efp.c
-> index 41f4ef3..634830b 100644
-> --- a/arch/powerpc/math-emu/math_efp.c
-> +++ b/arch/powerpc/math-emu/math_efp.c
-> @@ -1,7 +1,7 @@
-> /*
->  * arch/powerpc/math-emu/math_efp.c
->  *
-> - * Copyright (C) 2006-2008 Freescale Semiconductor, Inc. All rights =
-reserved.
-> + * Copyright (C) 2006-2008, 2010 Freescale Semiconductor, Inc.
->  *
->  * Author: Ebony Zhu,	<ebony.zhu@freescale.com>
->  *         Yu Liu,	<yu.liu@freescale.com>
-> @@ -104,6 +104,8 @@
-> #define FP_EX_MASK	(FP_EX_INEXACT | FP_EX_INVALID | FP_EX_DIVZERO | =
-\
-> 			FP_EX_UNDERFLOW | FP_EX_OVERFLOW)
->=20
-> +static int have_e500_cpu_a005_erratum;
-> +
-> union dw_union {
-> 	u64 dp[1];
-> 	u32 wp[2];
-> @@ -652,6 +654,15 @@ update_regs:
-> 	return 0;
->=20
-> illegal:
-> +	if (have_e500_cpu_a005_erratum) {
-> +		/* according to e500 cpu a005 erratum, reissue efp inst =
-*/
-> +		regs->nip -=3D 4;
-> +#ifdef DEBUG
-> +		printk(KERN_DEBUG "re-issue efp inst: %08lx\n", =
-speinsn);
-> +#endif
-> +		return 0;
-> +	}
-> +
-> 	printk(KERN_ERR "\nOoops! IEEE-754 compliance handler =
-encountered un-supported instruction.\ninst code: %08lx\n", speinsn);
-> 	return -ENOSYS;
-> }
-> @@ -718,3 +729,43 @@ int speround_handler(struct pt_regs *regs)
->=20
-> 	return 0;
-> }
-> +
-> +int __init spe_mathemu_init(void)
-> +{
-> +	u32 pvr, maj, min;
-> +
-> +	pvr =3D mfspr(SPRN_PVR);
-> +
-> +	if ((PVR_VER(pvr) =3D=3D PVR_VER_E500V1) ||
-> +	    (PVR_VER(pvr) =3D=3D PVR_VER_E500V2)) {
-> +		maj =3D PVR_MAJ(pvr);
-> +		min =3D PVR_MIN(pvr);
-> +
-> +		/*
-> +		 * E500 revision below 1.1, 2.3, 3.1, 4.1, 5.1
-> +		 * need cpu a005 errata workaround
-> +		 */
+---
+- changes since v1:
+  add Ben Dooks, Vincent Sanders and Samuel Ortiz to cc, as suggested from
+  Paul Mundt.
+- changes since v2:
+  add comments from Randy Dunlap:
+  - move parameter documentation to Documentation/fb/sm501.txt
+- changes since v3:
+  - rebased against v2.6.38-rc2
+  - split in 3 patches
+    - of support patch
+      - get rid of "#if defined(CONFIG_PPC_MPC52xx)" usage
+        hide this in DTS, as Paul suggested.
+    - i/o routine patch
+    - edid support patch
+- changes since v4
+  replace remaining CONFIG_PPC_MPC52xx with CONFIG_OF, as
+  it is no longer MPC52xx only.
 
-This isn't the way to do this.  We normally add entries in cputable.c an =
-add a new cpu_feature_bit for the errata.
+./scripts/checkpatch.pl 0003-video-sm501-add-OF-binding-to-support-SM501.patch
+total: 0 errors, 0 warnings, 117 lines checked
 
-Than above we'd do:
+0003-video-sm501-add-OF-binding-to-support-SM501.patch has no obvious style problems and is ready for submission.
 
-if (cur_cpu_spec->cpu_features & CPU_FTR_E500_A005_ERRATUM)
+ Documentation/powerpc/dts-bindings/sm501.txt |   34 ++++++++++++++++++++++++++
+ drivers/mfd/sm501.c                          |   16 +++++++++++-
+ drivers/video/sm501fb.c                      |   33 ++++++++++++++++++++++++-
+ 3 files changed, 81 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
 
-
-> +		switch (maj) {
-> +		case 1:
-> +			if (min < 1)
-> +				have_e500_cpu_a005_erratum =3D 1;
-> +			break;
-> +		case 2:
-> +			if (min < 3)
-> +				have_e500_cpu_a005_erratum =3D 1;
-> +			break;
-> +		case 3:
-> +		case 4:
-> +		case 5:
-> +			if (min < 1)
-> +				have_e500_cpu_a005_erratum =3D 1;
-> +			break;
-> +		default:
-> +			break;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +module_init(spe_mathemu_init);
-> --=20
-> 1.6.4
+diff --git a/Documentation/powerpc/dts-bindings/sm501.txt b/Documentation/powerpc/dts-bindings/sm501.txt
+new file mode 100644
+index 0000000..7d319fb
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/sm501.txt
+@@ -0,0 +1,34 @@
++* SM SM501
++
++The SM SM501 is a LCD controller, with proper hardware, it can also
++drive DVI monitors.
++
++Required properties:
++- compatible : should be "smi,sm501".
++- reg : contain two entries:
++    - First entry: System Configuration register
++    - Second entry: IO space (Display Controller register)
++- interrupts : SMI interrupt to the cpu should be described here.
++- interrupt-parent : the phandle for the interrupt controller that
++  services interrupts for this device.
++
++Optional properties:
++- mode : select a video mode:
++    <xres>x<yres>[-<bpp>][@<refresh>]
++- edid : verbatim EDID data block describing attached display.
++  Data from the detailed timing descriptor will be used to
++  program the display controller.
++- little-endian: availiable on big endian systems, to
++  set different foreign endian.
++- big-endian: availiable on little endian systems, to
++  set different foreign endian.
++
++Example for MPC5200:
++	display@1,0 {
++		compatible = "smi,sm501";
++		reg = <1 0x00000000 0x00800000
++		       1 0x03e00000 0x00200000>;
++		interrupts = <1 1 3>;
++		mode = "640x480-32@60";
++		edid = [edid-data];
++	};
+diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index 558d5f3..5b7a8f4 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -1377,7 +1377,7 @@ static int __devinit sm501_init_dev(struct sm501_devdata *sm)
+ 			sm501_register_gpio(sm);
+ 	}
+ 
+-	if (pdata->gpio_i2c != NULL && pdata->gpio_i2c_nr > 0) {
++	if (pdata && pdata->gpio_i2c != NULL && pdata->gpio_i2c_nr > 0) {
+ 		if (!sm501_gpio_isregistered(sm))
+ 			dev_err(sm->dev, "no gpio available for i2c gpio.\n");
+ 		else
+@@ -1422,6 +1422,14 @@ static int __devinit sm501_plat_probe(struct platform_device *dev)
+ 
+ 	sm->io_res = platform_get_resource(dev, IORESOURCE_MEM, 1);
+ 	sm->mem_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
++
++	if (sm->mem_res)
++		pr_debug("sm501 mem 0x%lx, 0x%lx\n",
++			 sm->mem_res->start, sm->mem_res->end);
++	if (sm->io_res)
++		pr_debug("sm501 io 0x%lx, 0x%lx\n",
++			 sm->io_res->start, sm->io_res->end);
++
+ 	if (sm->io_res == NULL || sm->mem_res == NULL) {
+ 		dev_err(&dev->dev, "failed to get IO resource\n");
+ 		ret = -ENOENT;
+@@ -1735,10 +1743,16 @@ static struct pci_driver sm501_pci_driver = {
+ 
+ MODULE_ALIAS("platform:sm501");
+ 
++static struct of_device_id __devinitdata of_sm501_match_tbl[] = {
++	{ .compatible = "smi,sm501", },
++	{ /* end */ }
++};
++
+ static struct platform_driver sm501_plat_driver = {
+ 	.driver		= {
+ 		.name	= "sm501",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = of_sm501_match_tbl,
+ 	},
+ 	.probe		= sm501_plat_probe,
+ 	.remove		= sm501_plat_remove,
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 30b53ae..bbdb359 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -1729,6 +1729,15 @@ static int sm501fb_init_fb(struct fb_info *fb,
+ 		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
+ 		FBINFO_HWACCEL_XPAN | FBINFO_HWACCEL_YPAN;
+ 
++#if defined(CONFIG_OF)
++#ifdef __BIG_ENDIAN
++	if (of_get_property(info->dev->parent->of_node, "little-endian", NULL))
++		fb->flags |= FBINFO_FOREIGN_ENDIAN;
++#else
++	if (of_get_property(info->dev->parent->of_node, "big-endian", NULL))
++		fb->flags |= FBINFO_FOREIGN_ENDIAN;
++#endif
++#endif
+ 	/* fixed data */
+ 
+ 	fb->fix.type		= FB_TYPE_PACKED_PIXELS;
+@@ -1934,7 +1943,29 @@ static int __devinit sm501fb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (info->pdata == NULL) {
+-		dev_info(dev, "using default configuration data\n");
++		int found = 0;
++#if defined(CONFIG_OF)
++		struct device_node *np = pdev->dev.parent->of_node;
++		const u8 *prop;
++		const char *cp;
++		int len;
++
++		info->pdata = &sm501fb_def_pdata;
++		if (np) {
++			/* Get EDID */
++			cp = of_get_property(np, "mode", &len);
++			if (cp)
++				strcpy(fb_mode, cp);
++			prop = of_get_property(np, "edid", &len);
++			if (prop && len == EDID_LENGTH) {
++				info->edid_data = kmemdup(prop, EDID_LENGTH,
++							  GFP_KERNEL);
++				found = 1;
++			}
++		}
++#endif
++		if (!found)
++			dev_info(dev, "using default configuration data\n");
+ 	}
+ 
+ 	/* probe for the presence of each panel */
+-- 
+1.7.3.4
