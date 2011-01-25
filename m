@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
-	[213.199.154.140])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A26321007D1
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jan 2011 06:57:35 +1100 (EST)
-Date: Tue, 25 Jan 2011 13:57:06 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: FSL DMA engine transfer to PCI memory
-Message-ID: <20110125135706.45f351a2@udp111988uds.am.freescale.net>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC29@saturn3.aculab.com>
-References: <20110125162946.GA13438@ovro.caltech.edu>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AC29@saturn3.aculab.com>
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
+	by ozlabs.org (Postfix) with SMTP id 190CAB70A3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 26 Jan 2011 09:13:03 +1100 (EST)
+Received: by mail-qw0-f51.google.com with SMTP id 5so282521qwg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 25 Jan 2011 14:13:02 -0800 (PST)
+From: Tirumala Marri <tmarri@apm.com>
+References: <1295477836-14589-1-git-send-email-tmarri@apm.com>
+	<20110123030150.GA28358@kroah.com>
+In-Reply-To: <20110123030150.GA28358@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+Date: Tue, 25 Jan 2011 14:06:41 -0800
+Message-ID: <5fc573f3ae6c3de2c5bbfe0052a45f5e@mail.gmail.com>
+Subject: RE: [PATCH V8 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+To: Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 25 Jan 2011 16:34:49 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+-----Original Message-----
+From: Greg KH [mailto:greg@kroah.com]
+Sent: Saturday, January 22, 2011 7:02 PM
+To: tmarri@apm.com
+Cc: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V8 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
 
->  
-> > > >>>> custom board based on P2020 running linux-2.6.35. The PCI
-> > > >>>> device is Altera FPGA, connected directly to SoC PCI-E
-> controller.
-> 
->  
-> > This sounds like your FPGA doesn't handle burst mode accesses 
-> > correctly.
-> > A logic analyzer will help you prove it.
-> 
-> He is doing PCIe, not PCI.
-> A PCIe transfers is an HDLC packet pair, one containing the
-> request, the other the response.
-> In order to get any significant throughput the hdlc packet(s)
-> have to contain all the data (eg 128 bytes).
-> On the ppc we used that means you have to use the dma
-> controller inside the PCIe interface block.
+On Wed, Jan 19, 2011 at 02:57:16PM -0800, tmarri@apm.com wrote:
+> From: Tirumala Marri <tmarri@apm.com>
+>
+> v8:
+>  1. Add set_wedge to usb_ep_ops.
+>
+> v7:
+>  1. Fix sparse tool warnings.
+>  2. Fix checkpatch errors and warnings.
+>  3. Rename USB_OTG config variable to USB_DWC_CONFIG
+>
+> Tirumala Marri (10):
+>   USB/ppc4xx: Add Synopsys DWC OTG Register definitions
+>   USB/ppc4xx: Add Synopsys DWC OTG driver framework
+>   USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer
+>   USB/ppc4xx: Add Synopsys DWC OTG HCD function
+>   USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
+>   USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
+>   USB/ppc4xx: Add Synopsys DWC OTG PCD function
+>   USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
+>   USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
+>   USB ppc4xx: Add Synopsys DWC OTG driver kernel configuration and
+>     Makefile
+>
+>  drivers/Makefile                        |    2 +
+>  drivers/usb/Kconfig                     |    3 +-
+>  drivers/usb/dwc_otg/Kconfig             |   96 ++
 
-What was the ppc you used?
+Why are you creating a new subdirectory here?  Shouldn't it be in
+drivers/usb/otg/dwc/ instead?
 
-On 85xx/QorIQ-family chips such as P2020, there is no DMA controller
-inside the PCIe controller itself (or are you talking about bus
-mastering by the PCIe device[1]?  "interface" is a bit ambiguous),
-though it was considered part of the PCI controller on 82xx.
+>  drivers/usb/dwc_otg/Makefile            |   19 +
+>  drivers/usb/dwc_otg/dwc_otg_apmppc.c    |  414 ++++++
+>  drivers/usb/dwc_otg/dwc_otg_cil.c       |  972 ++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_cil.h       | 1220 +++++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_cil_intr.c  |  616 ++++++++
+>  drivers/usb/dwc_otg/dwc_otg_driver.h    |   76 +
+>  drivers/usb/dwc_otg/dwc_otg_hcd.c       | 2466
++++++++++++++++++++++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_hcd.h       |  416 ++++++
+>  drivers/usb/dwc_otg/dwc_otg_hcd_intr.c  | 1477 ++++++++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_hcd_queue.c |  696 +++++++++
+>  drivers/usb/dwc_otg/dwc_otg_param.c     |  180 +++
+>  drivers/usb/dwc_otg/dwc_otg_pcd.c       | 1766 ++++++++++++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_pcd.h       |  139 ++
+>  drivers/usb/dwc_otg/dwc_otg_pcd_intr.c  | 2311
++++++++++++++++++++++++++++++
+>  drivers/usb/dwc_otg/dwc_otg_regs.h      | 1325 +++++++++++++++++
 
-The DMA engine and PCIe are both on OCeaN, so the traffic does not need
-to pass through the e500 Coherency Module.  My understanding -- for
-what it's worth, coming from a software person :-) -- is that you should
-be able to get large transfer chunks using the DMA engine.
+As you are in your own subdir, no need to put "dwc_otg_" at the start of
+every file name, right?
 
-I suggest getting things working, and then seeing whether the
-performance is acceptable.
+Care to make these changes and resend?
 
-> The generic dma controller can't even generate 64bit
-> cycles into the ppc's PCIe engine.
-
-Could you elaborate?
-
--Scott
-
-[1] To the original poster, is there any reason you're not doing bus
-mastering from the PCIe device, assuming you control the content of
-the FPGA?
+[Marri] Sure I will make changes and resend.
+-Marri
