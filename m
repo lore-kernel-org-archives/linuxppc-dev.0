@@ -1,28 +1,33 @@
-Return-Path: <mitsutaka.amano@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2837AB7102
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D9BF5B7105
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Jan 2011 21:51:10 +1100 (EST)
-Received: by bwz10 with SMTP id 10so1256228bwz.38
+	Thu, 27 Jan 2011 03:22:57 +1100 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p0QG4wNo004896
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jan 2011 11:05:03 -0500
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id B8B264DE8162
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Jan 2011 02:51:05 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <AANLkTimNmtqV3uO1+oiODeJmrDoyK570Vpb6n5AFnTKF@mail.gmail.com>
-References: <AANLkTin0RHAF8ieFqv12dFfOr_N3g3w6VVUTGOvH47uq@mail.gmail.com>
-	<4D3D20D4.5040902@windriver.com>
-	<AANLkTi=wfBzUUPqByQQK=UYiXN6CXrzferePCeM3TGpn@mail.gmail.com>
-	<4D3E3004.2040308@windriver.com>
-	<AANLkTimNmtqV3uO1+oiODeJmrDoyK570Vpb6n5AFnTKF@mail.gmail.com>
-Date: Wed, 26 Jan 2011 19:51:05 +0900
-Message-ID: <AANLkTin-4ObR44sg+e5iFfGUZ6LAtGsOp5JvenFaSn-t@mail.gmail.com>
-Subject: Re: About mpc85xx flash memory allocation
-From: Mitsutaka Amano <mitsutaka.amano@gmail.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	Wed, 26 Jan 2011 11:14:34 -0500 (EST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p0QGI5wj146078
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jan 2011 11:18:05 -0500
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p0QGI310000834
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jan 2011 09:18:05 -0700
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 2/2] powerpc/476: Workaround for PLB6 hang
+Date: Wed, 26 Jan 2011 10:17:59 -0600
+Message-Id: <1296058679-21352-3-git-send-email-shaggy@linux.vnet.ibm.com>
+In-Reply-To: <1296058679-21352-1-git-send-email-shaggy@linux.vnet.ibm.com>
+References: <1296058679-21352-1-git-send-email-shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,97 +37,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 25, 2011 at 11:17 AM, Mitsutaka Amano
-<mitsutaka.amano@gmail.com> wrote:
-> On Tue, Jan 25, 2011 at 11:05 AM, tiejun.chen <tiejun.chen@windriver.com>=
- wrote:
->> Mitsutaka Amano wrote:
->>> On Mon, Jan 24, 2011 at 3:48 PM, tiejun.chen <tiejun.chen@windriver.com=
-> wrote:
->>>> Mitsutaka Amano wrote:
->>>>> Hi all,
->>>>>
->>>>> I'm testing the ppc platform is based on mpc85xx. 256MB Flash memory
->>>>> has been installed. Then I found this entries.
->>>>>
->>>>> /proc/vmallocinfo
->>>>> ~~~
->>>>> 0xc9100000-0xd9101000 268439552 of_flash_probe+0x290/0x814 ioremap
->>>>>
->>>>> physmap_of allocated 268MB over to the vmalloc. vmalloc space is tigh=
-t.
->>>>>
->>>>> Why does we need mpc platforms to flash memory allocation? I know
->>>> This should not be dedicated to so-called mpc platform. And we always =
-use
->>>> ioremap() to map the device space. And on PPC ioremap also use the sam=
-e space as
->>>> vmalloc(). While bootstrap you also can see this associated message li=
-ke the
->>>> follows,
->>>> ------
->>>> ......
->>>> =A0* 0xd1000000..0xffbe9000 =A0: vmalloc & ioremap
->>> Yeah. My platform says the follow message.
->>>
->>> =A0 * 0xc9000000..0xdf000000 =A0: vmalloc & ioremap
->>
->> Any reason why you don't access > 0xdf000000?
->
-> Higher than 0xdf000000 has to map TLB for using other peripherals.
-> it's 400MB over.
->
->>
->>>
->>> The default vmalloc & ioremap space was about 200MB. so I increased
->>> that by decreasing lowmem.
->>> But If possible, I hope to keep default maps. So I don't want to use
->>> vmalloc & ioremap
->>>
->>>>> other architectures don't allocate to the vmalloc.
->>>>> The design of the hardware? or Is there the way to use the flash
->>>> You can open /dev/mem then mmap() with a appropriate offset to access =
-the device
->>>> space including flash.
->>> I use the device tree(dts) and define flash partitions. Also I use CFI
->>> driver and CFI_PHYSMAP_OF for device tree.
->>> Is there the reference driver in what uses mmap() kernel tree? I think
->>> I have to write a driver what can support dts and mmap() with a
->>> appropriate offset to access the device.
->>
->> You should not write anything again. And you can access any physical add=
-ress
->> directly via /dev/mem from the user space like the following:
->>
->> fd =3D open(/dev/mem,);
->> mmap(fd + offset);
->
-> Thanks for letting me know. I want to use in combination with device
-> tree. So I'll write a driver based on physmap_of.c(such as mmap_of.c)
-I confused and misunderstand that. it has to use as a rootfs. so It
-can't use a userland program.
-Of cource, it can be force mapping to the userspace. but system will
-be unstable. I think.
+The 476FP core may hang if an instruction fetch happens during an msync
+following a tlbsync.  This workaround makes sure that enough instruction
+cache lines are pre-fetched before executing the msync.  (sync and msync
+are the same to the compiler.)
 
-Mitsutaka
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/tlb_nohash_low.S |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
->
-> Thanks,
-> Mitsutaka
->
->>
->> Tiejun
->>
->>>
->>> Thanks,
->>> Mitsutaka
->>>
->>>> Tiejun
->>>>
->>>>> memory without vmalloc?
->>>>>
->>>>> Thanks,
->>>>> Mitsutaka
->>
->>
->
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index af405ee..7c63c0e 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -189,6 +189,13 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
+ 	blr
+ 
+ #ifdef CONFIG_PPC_47x
++
++/*
++ * 47x variant of icbt
++ */
++# define ICBT(CT,RA,RB)	\
++	.long	0x7c00002c | ((CT) << 21) | ((RA) << 16) | ((RB) << 11)
++
+ /*
+  * _tlbivax_bcast is only on 47x. We don't bother doing a runtime
+  * check though, it will blow up soon enough if we mistakenly try
+@@ -206,7 +213,35 @@ _GLOBAL(_tlbivax_bcast)
+ 	isync
+ 	eieio
+ 	tlbsync
++BEGIN_FTR_SECTION
++	b	1f
++END_FTR_SECTION_IFSET(CPU_FTR_476_DD2)
++	sync
++	wrtee	r10
++	blr
++/*
++ * DD2 HW could hang if in instruction fetch happens before msync completes.
++ * Touch enough instruction cache lines to ensure cache hits
++ */
++1:	mflr	r9
++	bl	2f
++2:	mflr	r6
++	li	r7,32
++	ICBT(0,r6,r7)		/* touch next cache line */
++	add	r6,r6,r7
++	ICBT(0,r6,r7)		/* touch next cache line */
++	add	r6,r6,r7
++	ICBT(0,r6,r7)		/* touch next cache line */
+ 	sync
++	nop
++	nop
++	nop
++	nop
++	nop
++	nop
++	nop
++	nop
++	mtlr	r9
+ 	wrtee	r10
+ 	blr
+ #endif /* CONFIG_PPC_47x */
+-- 
+1.7.3.4
