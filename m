@@ -1,22 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C4F0B7116
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2011 06:09:25 +1100 (EST)
-Date: Wed, 26 Jan 2011 13:09:00 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: FSL DMA engine transfer to PCI memory
-Message-ID: <20110126130900.7d38ba83@udp111988uds.am.freescale.net>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC2A@saturn3.aculab.com>
-References: <20110125135706.45f351a2@udp111988uds.am.freescale.net>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AC2A@saturn3.aculab.com>
+Return-Path: <sam@ravnborg.org>
+Date: Wed, 26 Jan 2011 20:12:10 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] dt: Move device tree documentation out of powerpc
+	directory
+Message-ID: <20110126191210.GA3377@merkur.ravnborg.org>
+References: <1296062434-18027-1-git-send-email-grant.likely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1296062434-18027-1-git-send-email-grant.likely@secretlab.ca>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Jan 2011 10:18:01 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+On Wed, Jan 26, 2011 at 10:20:34AM -0700, Grant Likely wrote:
+> The device tree is used by more than just PowerPC.  Make the documentation
+> directory available to all.
 
->  
-> > What was the ppc you used?
-> 
-> The 8315E PowerQUIICC II
+How does the planned stucture look like for this
+new directory?
+I see that in your move the architecture is dropped.
+But some of these looks like they are arch candidates.
+The 4xx/* for example looks like powerpc stuff that
+should be in a powerpc directory.
 
-Ah.  The interconnect between the DMA engine and PCIe is different on
-83xx.
+Another is sja1000. This is obviously a can driver.
+So how about mirroring the kernel structure:
 
-> > The DMA engine and PCIe are both on OCeaN, so the traffic 
-> > does not need to pass through the e500 Coherency Module.
-> > My understanding -- for what it's worth, coming from a
-> > software person :-) -- is that you should
-> > be able to get large transfer chunks using the DMA engine.
-> 
-> It might be possible - but the ppc's pcie would need to know
-> the length of the dma (or at least be told that there was more
-> data to arrive) before even starting the pcie transfer.
+Proposal:
 
-On 85xx/QorIQ, I believe the connection between the DMA engine and the
-PCIe controller allows the data to arrive in suitably large chunks.
+drivers/net/can   <=== sja1000.txt
+drivers/ata/      <=== fsl/sata.txt
+arch/powerpc      <=== powerpc specific stuff
 
-> > I suggest getting things working, and then seeing whether the
-> > performance is acceptable.
-> 
-> The only reason for using dma (instead of pio) is to get
-> long pcie transfers - otherwise it isn't really worth the
-> effort. Transfers are unlikely to take long enough to make
-> it worth taking an interrupt at the end of the dma.
+This is a bit more effort but then we end
+up with a well-known structure.
 
-But in the absence of specific knowledge about this specific
-chip, implementing it and testing is a good way of determining whether
-you get those large PCIe transactions on this particular hardware.
-
-And even if the transfers aren't particularly fast, if the total
-transfer size (not the size of the chunks that go on the bus) is large
-enough, it could be worth freeing up the core to do something else.  It
-could also avoid running the data through the core's caches, or be a
-transfer from one PCIe device to another, etc.  Don't be too quick to
-say don't bother. :-)
-
-> > > The generic dma controller can't even generate 64bit
-> > > cycles into the ppc's PCIe engine.
-> > 
-> > Could you elaborate?
-> 
-> The pcie is (apparantly) a 64bit interface, to a single 32bit
-> transfer is actually a 64bit one with only 4 byte enables driven.
-
-My understanding is that PCIe is an aggregation of one or more
-serial links, over which packets are sent.  I'm not sure to what extent
-it makes sense to call it a 64-bit interface, other than addressing.
-
-> I couldn't see anything that would allow a CSB master to generate
-> two 32bit cycles (since it is a 32bit bus) that the pcie hardware
-> could convert into a single 64bit pcie transfer.
-
-Again, that's an 83xx thing, 85xx/QorIQ is different.
-
-Though from the 8315 manual it looks like the CSB can do 64-bit data
-(but not addresses).
-
--Scott
+	Sam
