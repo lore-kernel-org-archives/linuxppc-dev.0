@@ -1,25 +1,24 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D2F4BB7106
+Return-Path: <lasaine@lvk.cs.msu.su>
+Received: from mail.lvk.cs.msu.su (gate.lvk.cs.msu.su [158.250.17.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.lvk.cs.msu.su", Issuer "CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EC3A41007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Jan 2011 04:20:33 +1100 (EST)
-Received: by iwb12 with SMTP id 12so1186364iwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Jan 2011 09:20:30 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1296016338.2349.125.camel@pasglop>
-References: <AANLkTikJ8V-gQv93HBDH3=4o51vY5xyxQojqEV7DqNj=@mail.gmail.com>
-	<1296016338.2349.125.camel@pasglop>
-Date: Wed, 26 Jan 2011 11:20:29 -0600
-Message-ID: <AANLkTim7gDwj+xCxiiTka23eu=v7kZX+Pq=3sQ1FT49J@mail.gmail.com>
-Subject: Re: 750gx cpufreq induced kernel panic in 2.6.36
-From: kevin diggs <diggskevin38@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu, 27 Jan 2011 04:36:09 +1100 (EST)
+Date: Wed, 26 Jan 2011 20:35:58 +0300
+From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+To: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH V8 03/10] USB/ppc4xx: Add Synopsys DWC OTG CoreInterface
+	Layer
+Message-ID: <20110126203558.4d2ed74e@desktopvm.lvknet>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC2C@saturn3.aculab.com>
+References: <20110126191734.5dff9641@desktopvm.lvknet>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8AC2C@saturn3.aculab.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA256;
+	boundary="Sig_/bIA4kTh0X2C5FMF27oy94IS";
+	protocol="application/pgp-signature"
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 25, 2011 at 10:32 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->>
->> What are exception 700 & 901?
->
-> 700 is a program check (illegal instruction or BUG_ON() statement)
->
-> 900 is decrementer (aka timer) interrupt.
->
->> The 0x1000c694 address looks fishy?
->
-> That's userspace.
->
-> So you took a timer interrupt, which got into hrtimer, and something you
-> did caused cpufreq_notify_transition to crash, probably with a BUG_ON
+--Sig_/bIA4kTh0X2C5FMF27oy94IS
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This should prove quite useful! Thanks!
+=D0=92 Wed, 26 Jan 2011 16:35:05 -0000
+"David Laight" <David.Laight@ACULAB.COM> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
 
-> (which you can probably see above what you pasted, unless you don't have
-> access to that part of the backtrace).
->
-This is kind of my problem. ANY suggestions (applicable to an old
-world PowerMac) would be appreciated on how to get access to the rest
-of the information. This thing appears completely dead at this point.
+> =20
+> > Also in_le32/out_le32/in_be32/out_be32 are=20
+> > architecture-specific AFAIK.
+>=20
+> Isn't the whole patch architecture-specific ?
 
-Thanks!
+I use this driver on MIPS board right now. :)
+This core from Synopsys is used in many SOCs with various architectures.
 
-kevin
+> > I'd suggest using readl/writel for LE ops and
+> > __be32_to_cpu(__raw_readl(addr))/__raw_writel(__cpu_to_be32(b),addr)
+> > for BE ops.
+>=20
+> Since the ppc doesn't have a byteswap instruction (and the LE
+> memory transfers might even be slow!) you really don't want to
+> be doing software byteswap.
+>=20
+> Not to mention the horrific synchronistion instructions
+> that in_le32() and out_le32() actually contain.
+>=20
+> I didn't find __raw_readl() when I was looking for asm
+> patterns that byteswapped memory transfers.
+>=20
+> I did find st_le32() and ld_le32() in arch/powerpc/include/asm/swab.h
+> but that file is actually quite difficult to #include because
+> there is another swab.h that gets included instead.
 
-P.S.:  There are 2 columns of numbers:
+I see. readl/writel are defined in asm-generic/io.h. So IMHO there
+should be also le and be versions that can be redefined in
+arch-specific code.
 
-[xxx] [yyy]
+--=20
+  Alexander
 
-One of these is the PC. What is the other? stack?
+--Sig_/bIA4kTh0X2C5FMF27oy94IS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-> Cheers,
-> Ben.
->
->> Thanks!
->>
->> kevin
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBCAAGBQJNQFt+AAoJEElrwznyooJb8SQIAIyhKdD6VNlbE8H8ZfHy/82T
+l0p5QXvK+PKE4HQeo728694Nx+/xs/bWZgtnWjJ3W0XZF+rFMP1ZL86jvPR4GimR
+uk5llaUlICLW+Ybs+U5ZnCcJ91P45ku6exWxgdckh1RKokwtyLduEtm6dmYdg/CH
+A3JrLBYLSYJLLKZQfaefLeH2ygdiGzqqya9k0jB5XAZ4xhH0ozNLNnq76QkZLMNI
+h9gygurPRECH5yhi2EwyGhZbPWHbZAofcPwF2GE9VzaQfcsEZ/SaDVVXDKuw/oqZ
+1O+ywUmUt8bd/vFEWbckh2zWfVZLV8Wss+3Rmjv2Q91JbDUVtIYoJtR4/tjLdTY=
+=8d8X
+-----END PGP SIGNATURE-----
+
+--Sig_/bIA4kTh0X2C5FMF27oy94IS--
