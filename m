@@ -1,24 +1,22 @@
-Return-Path: <lasaine@lvk.cs.msu.su>
-Received: from mail.lvk.cs.msu.su (gate.lvk.cs.msu.su [158.250.17.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.lvk.cs.msu.su", Issuer "CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EC3A41007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Jan 2011 04:36:09 +1100 (EST)
-Date: Wed, 26 Jan 2011 20:35:58 +0300
-From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-To: "David Laight" <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH V8 03/10] USB/ppc4xx: Add Synopsys DWC OTG CoreInterface
-	Layer
-Message-ID: <20110126203558.4d2ed74e@desktopvm.lvknet>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC2C@saturn3.aculab.com>
-References: <20110126191734.5dff9641@desktopvm.lvknet>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AC2C@saturn3.aculab.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA256;
-	boundary="Sig_/bIA4kTh0X2C5FMF27oy94IS";
-	protocol="application/pgp-signature"
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+	[213.199.154.141])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7C4F0B7116
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2011 06:09:25 +1100 (EST)
+Date: Wed, 26 Jan 2011 13:09:00 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: FSL DMA engine transfer to PCI memory
+Message-ID: <20110126130900.7d38ba83@udp111988uds.am.freescale.net>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC2A@saturn3.aculab.com>
+References: <20110125135706.45f351a2@udp111988uds.am.freescale.net>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8AC2A@saturn3.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,61 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/bIA4kTh0X2C5FMF27oy94IS
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, 26 Jan 2011 10:18:01 +0000
+David Laight <David.Laight@ACULAB.COM> wrote:
 
-=D0=92 Wed, 26 Jan 2011 16:35:05 -0000
-"David Laight" <David.Laight@ACULAB.COM> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+>  
+> > What was the ppc you used?
+> 
+> The 8315E PowerQUIICC II
 
-> =20
-> > Also in_le32/out_le32/in_be32/out_be32 are=20
-> > architecture-specific AFAIK.
->=20
-> Isn't the whole patch architecture-specific ?
+Ah.  The interconnect between the DMA engine and PCIe is different on
+83xx.
 
-I use this driver on MIPS board right now. :)
-This core from Synopsys is used in many SOCs with various architectures.
+> > The DMA engine and PCIe are both on OCeaN, so the traffic 
+> > does not need to pass through the e500 Coherency Module.
+> > My understanding -- for what it's worth, coming from a
+> > software person :-) -- is that you should
+> > be able to get large transfer chunks using the DMA engine.
+> 
+> It might be possible - but the ppc's pcie would need to know
+> the length of the dma (or at least be told that there was more
+> data to arrive) before even starting the pcie transfer.
 
-> > I'd suggest using readl/writel for LE ops and
-> > __be32_to_cpu(__raw_readl(addr))/__raw_writel(__cpu_to_be32(b),addr)
-> > for BE ops.
->=20
-> Since the ppc doesn't have a byteswap instruction (and the LE
-> memory transfers might even be slow!) you really don't want to
-> be doing software byteswap.
->=20
-> Not to mention the horrific synchronistion instructions
-> that in_le32() and out_le32() actually contain.
->=20
-> I didn't find __raw_readl() when I was looking for asm
-> patterns that byteswapped memory transfers.
->=20
-> I did find st_le32() and ld_le32() in arch/powerpc/include/asm/swab.h
-> but that file is actually quite difficult to #include because
-> there is another swab.h that gets included instead.
+On 85xx/QorIQ, I believe the connection between the DMA engine and the
+PCIe controller allows the data to arrive in suitably large chunks.
 
-I see. readl/writel are defined in asm-generic/io.h. So IMHO there
-should be also le and be versions that can be redefined in
-arch-specific code.
+> > I suggest getting things working, and then seeing whether the
+> > performance is acceptable.
+> 
+> The only reason for using dma (instead of pio) is to get
+> long pcie transfers - otherwise it isn't really worth the
+> effort. Transfers are unlikely to take long enough to make
+> it worth taking an interrupt at the end of the dma.
 
---=20
-  Alexander
+But in the absence of specific knowledge about this specific
+chip, implementing it and testing is a good way of determining whether
+you get those large PCIe transactions on this particular hardware.
 
---Sig_/bIA4kTh0X2C5FMF27oy94IS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+And even if the transfers aren't particularly fast, if the total
+transfer size (not the size of the chunks that go on the bus) is large
+enough, it could be worth freeing up the core to do something else.  It
+could also avoid running the data through the core's caches, or be a
+transfer from one PCIe device to another, etc.  Don't be too quick to
+say don't bother. :-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> > > The generic dma controller can't even generate 64bit
+> > > cycles into the ppc's PCIe engine.
+> > 
+> > Could you elaborate?
+> 
+> The pcie is (apparantly) a 64bit interface, to a single 32bit
+> transfer is actually a 64bit one with only 4 byte enables driven.
 
-iQEcBAEBCAAGBQJNQFt+AAoJEElrwznyooJb8SQIAIyhKdD6VNlbE8H8ZfHy/82T
-l0p5QXvK+PKE4HQeo728694Nx+/xs/bWZgtnWjJ3W0XZF+rFMP1ZL86jvPR4GimR
-uk5llaUlICLW+Ybs+U5ZnCcJ91P45ku6exWxgdckh1RKokwtyLduEtm6dmYdg/CH
-A3JrLBYLSYJLLKZQfaefLeH2ygdiGzqqya9k0jB5XAZ4xhH0ozNLNnq76QkZLMNI
-h9gygurPRECH5yhi2EwyGhZbPWHbZAofcPwF2GE9VzaQfcsEZ/SaDVVXDKuw/oqZ
-1O+ywUmUt8bd/vFEWbckh2zWfVZLV8Wss+3Rmjv2Q91JbDUVtIYoJtR4/tjLdTY=
-=8d8X
------END PGP SIGNATURE-----
+My understanding is that PCIe is an aggregation of one or more
+serial links, over which packets are sent.  I'm not sure to what extent
+it makes sense to call it a 64-bit interface, other than addressing.
 
---Sig_/bIA4kTh0X2C5FMF27oy94IS--
+> I couldn't see anything that would allow a CSB master to generate
+> two 32bit cycles (since it is a 32bit bus) that the pcie hardware
+> could convert into a single 64bit pcie transfer.
+
+Again, that's an 83xx thing, 85xx/QorIQ is different.
+
+Though from the 8315 manual it looks like the CSB can do 64-bit data
+(but not addresses).
+
+-Scott
