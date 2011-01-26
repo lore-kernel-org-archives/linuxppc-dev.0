@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E9FEB7088
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0A59F1007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Jan 2011 15:34:00 +1100 (EST)
-Subject: Re: 750gx cpufreq induced kernel panic in 2.6.36
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kevin diggs <diggskevin38@gmail.com>
-In-Reply-To: <AANLkTikJ8V-gQv93HBDH3=4o51vY5xyxQojqEV7DqNj=@mail.gmail.com>
-References: <AANLkTikJ8V-gQv93HBDH3=4o51vY5xyxQojqEV7DqNj=@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 26 Jan 2011 15:32:18 +1100
-Message-ID: <1296016338.2349.125.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Wed, 26 Jan 2011 18:21:27 +1100 (EST)
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/4 v5] video, sm501: add edid and commandline support
+Date: Wed, 26 Jan 2011 08:21:22 +0100
+Message-Id: <1296026482-14616-1-git-send-email-hs@denx.de>
+In-Reply-To: <1291451028-22532-1-git-send-email-hs@denx.de>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
+	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Paul Mundt <lethal@linux-sh.org>, Heiko Schocher <hs@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +24,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-01-25 at 17:54 -0600, kevin diggs wrote:
-> Hi,
-> 
-> The cpufreq driver I wrote for the 750gx causes a kernel panic in 2.6.36.
-> 
-> This is from a screen shot:
-> 
-> [c6035f30] [c001014c] timer_interrupt+0x13c/0x19c
-> [c6035f40] [c0013294] ret_from_except+0x0/0x14
-> --- Exception: 901 at 0x1000c694
->     LR = 0x1000f3e4
-> Instruction dump:
-> 4bffff48 38610008 4be7b2b1 4bffff9c 9421fff0 7c0802a6 bfc10xxx
-> 90010014 7c0000a6 68008000 54008ffe <0f000000> 3d20c030 2f84xxxx
-> Kernel panic - not syncing: Fatal exception in interrupt
-> Call Trace:
-> [c6035bf0] [c00084e4] show_stack+0x3c/0x160 (unreliable)
-> [c6035c20] [c002cf44] panic+0xa4/0x1c8
-> [c6035c70] [c001085c] die+0x194/0x1a0
-> [c6035c90] [c0010aa8] _exception+0xfc/0x108
-> [c6035d80] [c0013248] ret_from_except_full+0x0/0x4c
-> --- Exception: 700 at cpufreq_notify_transition+0x20/0x128
->     LR = cf750gx_pll_switch_cb+0x20/0xd0 [cf750gx]
-> [c6035e40] [c02e2280] 0xc02e2280 (unreliable)
-> [c6035e50] [ddc4b3dc] cf750gx_pll_switch_cb+0x20/0xd0 [cf750gx]
-> [c6035e60] [c004d7ac] notifier_call_chain+0x60/0xb0
-> [c6035e80] [ddc361c4] pllif_i_switch_PLLs+0xa0/0x140 [pll_if]
-> [c6035e90] [ddc365fc] pllif_i_timer_f+0x4c/0x6c [pll_if]
-> [c6035ea0] [c004bb24] __run_hrtimer+0x44/0xb8
-> [c6035eb0] [c004c1f8] hrtimer_interrupt+0x10c/0x388
-> [c6035f30] [c001014c] timer_interrupt+0x13c/0x19c
-> [c6035f40] [c0013294] ret_from_except+0x0/0x14
-> --- Exception: 901 at 0x1000c694
->     LR = 0x1000f3e4
-> Rebooting in 180 seconds.._
-> 
-> What are exception 700 & 901?
+- add commandline options:
+  sm501fb.mode:
+    Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
+  sm501fb.bpp:
+    Specify bit-per-pixel if not specified mode
 
-700 is a program check (illegal instruction or BUG_ON() statement)
+- Add support for encoding display mode information
+  in the device tree using verbatim EDID block.
 
-900 is decrementer (aka timer) interrupt.
+  If the "edid" entry in the "smi,sm501" node is present,
+  the driver will build mode database using EDID data
+  and allow setting the display modes from this database.
 
-> The 0x1000c694 address looks fishy?
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: linux-fbdev@vger.kernel.org
+cc: devicetree-discuss@ozlabs.org
+cc: Ben Dooks <ben@simtec.co.uk>
+cc: Vincent Sanders <vince@simtec.co.uk>
+cc: Samuel Ortiz <sameo@linux.intel.com>
+cc: linux-kernel@vger.kernel.org
+cc: Randy Dunlap <rdunlap@xenotime.net>
+cc: Paul Mundt <lethal@linux-sh.org>
 
-That's userspace.
+---
+- changes since v1:
+  add Ben Dooks, Vincent Sanders and Samuel Ortiz to cc, as suggested from
+  Paul Mundt.
+- changes since v2:
+  add comments from Randy Dunlap:
+  - move parameter documentation to Documentation/fb/sm501.txt
+- changes since v3:
+  - rebased against v2.6.38-rc2
+  - split in 3 patches
+    - of support patch
+    - i/o routine patch
+    - edid support patch
+- changes since v4:
+  - add "info->pdata = &sm501fb_def_pdata;" in sm501fb_probe()
+    as Paul Mundt suggested (and I wrongly deleted)
+  - move kfree(info->edid_data); to patch 3/4
+    as edid_data is only allocated in the CONFIG_OF case
 
-So you took a timer interrupt, which got into hrtimer, and something you
-did caused cpufreq_notify_transition to crash, probably with a BUG_ON
-(which you can probably see above what you pasted, unless you don't have
-access to that part of the backtrace).
+./scripts/checkpatch.pl 0002-video-sm501-add-edid-and-commandline-support.patch
+total: 0 errors, 0 warnings, 109 lines checked
 
-Cheers,
-Ben.
+0002-video-sm501-add-edid-and-commandline-support.patch has no obvious style problems and is ready for submission.
 
-> Thanks!
-> 
-> kevin
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ Documentation/fb/sm501.txt |   10 +++++++
+ drivers/video/sm501fb.c    |   65 ++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 70 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/fb/sm501.txt
+
+diff --git a/Documentation/fb/sm501.txt b/Documentation/fb/sm501.txt
+new file mode 100644
+index 0000000..8d17aeb
+--- /dev/null
++++ b/Documentation/fb/sm501.txt
+@@ -0,0 +1,10 @@
++Configuration:
++
++You can pass the following kernel command line options to sm501 videoframebuffer:
++
++	sm501fb.bpp=	SM501 Display driver:
++			Specifiy bits-per-pixel if not specified by 'mode'
++
++	sm501fb.mode=	SM501 Display driver:
++			Specify resolution as
++			"<xres>x<yres>[-<bpp>][@<refresh>]"
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index c5b4b95..d60b2a2 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -41,6 +41,26 @@
+ #include <linux/sm501.h>
+ #include <linux/sm501-regs.h>
+ 
++#include "edid.h"
++
++static char *fb_mode = "640x480-16@60";
++static unsigned long default_bpp = 16;
++
++static struct fb_videomode __devinitdata sm501_default_mode = {
++	.refresh	= 60,
++	.xres		= 640,
++	.yres		= 480,
++	.pixclock	= 20833,
++	.left_margin	= 142,
++	.right_margin	= 13,
++	.upper_margin	= 21,
++	.lower_margin	= 1,
++	.hsync_len	= 69,
++	.vsync_len	= 3,
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	.vmode		= FB_VMODE_NONINTERLACED
++};
++
+ #define NR_PALETTE	256
+ 
+ enum sm501_controller {
+@@ -77,6 +97,7 @@ struct sm501fb_info {
+ 	void __iomem		*regs2d;	/* 2d remapped registers */
+ 	void __iomem		*fbmem;		/* remapped framebuffer */
+ 	size_t			 fbmem_len;	/* length of remapped region */
++	u8 *edid_data;
+ };
+ 
+ /* per-framebuffer private data */
+@@ -1725,9 +1746,16 @@ static int sm501fb_init_fb(struct fb_info *fb,
+ 	fb->var.vmode		= FB_VMODE_NONINTERLACED;
+ 	fb->var.bits_per_pixel  = 16;
+ 
++	if (info->edid_data) {
++			/* Now build modedb from EDID */
++			fb_edid_to_monspecs(info->edid_data, &fb->monspecs);
++			fb_videomode_to_modelist(fb->monspecs.modedb,
++						 fb->monspecs.modedb_len,
++						 &fb->modelist);
++	}
++
+ 	if (enable && (pd->flags & SM501FB_FLAG_USE_INIT_MODE) && 0) {
+ 		/* TODO read the mode from the current display */
+-
+ 	} else {
+ 		if (pd->def_mode) {
+ 			dev_info(info->dev, "using supplied mode\n");
+@@ -1737,12 +1765,34 @@ static int sm501fb_init_fb(struct fb_info *fb,
+ 			fb->var.xres_virtual = fb->var.xres;
+ 			fb->var.yres_virtual = fb->var.yres;
+ 		} else {
+-			ret = fb_find_mode(&fb->var, fb,
++			if (info->edid_data)
++				ret = fb_find_mode(&fb->var, fb, fb_mode,
++					fb->monspecs.modedb,
++					fb->monspecs.modedb_len,
++					&sm501_default_mode, default_bpp);
++			else
++				ret = fb_find_mode(&fb->var, fb,
+ 					   NULL, NULL, 0, NULL, 8);
+ 
+-			if (ret == 0 || ret == 4) {
+-				dev_err(info->dev,
+-					"failed to get initial mode\n");
++			switch (ret) {
++			case 1:
++				dev_info(info->dev, "using mode specified in "
++						"@mode\n");
++				break;
++			case 2:
++				dev_info(info->dev, "using mode specified in "
++					"@mode with ignored refresh rate\n");
++				break;
++			case 3:
++				dev_info(info->dev, "using mode default "
++					"mode\n");
++				break;
++			case 4:
++				dev_info(info->dev, "using mode from list\n");
++				break;
++			default:
++				dev_info(info->dev, "ret = %d\n", ret);
++				dev_info(info->dev, "failed to find mode\n");
+ 				return -EINVAL;
+ 			}
+ 		}
+@@ -2157,6 +2207,11 @@ static void __exit sm501fb_cleanup(void)
+ module_init(sm501fb_init);
+ module_exit(sm501fb_cleanup);
+ 
++module_param_named(mode, fb_mode, charp, 0);
++MODULE_PARM_DESC(mode,
++	"Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
++module_param_named(bpp, default_bpp, ulong, 0);
++MODULE_PARM_DESC(bpp, "Specify bit-per-pixel if not specified mode");
+ MODULE_AUTHOR("Ben Dooks, Vincent Sanders");
+ MODULE_DESCRIPTION("SM501 Framebuffer driver");
+ MODULE_LICENSE("GPL v2");
+-- 
+1.7.3.4
