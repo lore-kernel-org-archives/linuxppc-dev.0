@@ -1,15 +1,16 @@
 Return-Path: <g_pr21@yahoo.in>
-Received: from nm2.bullet.mail.in.yahoo.com (nm2.bullet.mail.in.yahoo.com
-	[121.101.151.224]) by ozlabs.org (Postfix) with SMTP id 7589C1007D2
+Received: from nm1-vm0.bullet.mail.in.yahoo.com
+	(nm1-vm0.bullet.mail.in.yahoo.com [121.101.151.211])
+	by ozlabs.org (Postfix) with SMTP id CB8F1B7106
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Jan 2011 16:29:17 +1100 (EST)
-Message-ID: <484187.87276.qm@web95709.mail.in.yahoo.com>
-Date: Thu, 27 Jan 2011 10:58:14 +0530 (IST)
+	Thu, 27 Jan 2011 17:14:01 +1100 (EST)
+Message-ID: <645630.41274.qm@web95716.mail.in.yahoo.com>
+Date: Thu, 27 Jan 2011 11:41:20 +0530 (IST)
 From: Giriprasad Deviprasad <g_pr21@yahoo.in>
-Subject: Buxybox for powerpc not compiling
+Subject: Busybox for powerpc not compiling
 To: linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1800096128-1296106094=:87276"
+Content-Type: multipart/alternative; boundary="0-1207964824-1296108680=:41274"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,7 +20,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0-1800096128-1296106094=:87276
+--0-1207964824-1296108680=:41274
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -125,7 +126,7 @@ Thanks & Regards,
 D.Giriprasad
 
 =0A=0A
---0-1800096128-1296106094=:87276
+--0-1207964824-1296108680=:41274
 Content-Type: text/html; charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -206,4 +207,4 @@ o util-linux/built-in.o util-linux/volume_id/built-in.o -Wl,--end-group -Wl=
  status<br>make: *** [busybox_unstripped] Error 1<br><br><br>Any clues as t=
 o why this happens?<br><br>Thanks &amp; Regards,<br>D.Giriprasad<br><br></t=
 d></tr></table><br>
---0-1800096128-1296106094=:87276--
+--0-1207964824-1296108680=:41274--
