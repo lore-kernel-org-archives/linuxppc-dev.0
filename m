@@ -1,22 +1,18 @@
-Return-Path: <meador_inge@mentor.com>
-Message-ID: <4D4204C8.9040905@mentor.com>
-Date: Thu, 27 Jan 2011 17:50:32 -0600
-From: Meador Inge <meador_inge@mentor.com>
+Return-Path: <oakad@yahoo.com>
+Received: from web37603.mail.mud.yahoo.com (web37603.mail.mud.yahoo.com
+	[209.191.87.86]) by ozlabs.org (Postfix) with SMTP id 508611007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 28 Jan 2011 13:43:47 +1100 (EST)
+Message-ID: <983577.58398.qm@web37603.mail.mud.yahoo.com>
+Date: Thu, 27 Jan 2011 18:43:44 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: [PATCH] gianfar: Fall back to software tcp/udp checksum on older
+	controllers
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+In-Reply-To: <20110127095100.GA5411@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Yoder Stuart-B08248 <B08248@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc: document the MPIC device tree binding
-References: <4D34E448.8000902@mentor.com>
-	<AANLkTi=QX4BfLvPfQDMOgmh90TtX4MQqio6AOZR8JKas@mail.gmail.com>
-	<9F6FE96B71CF29479FF1CDC8046E150306BF11@039-SN1MPN1-004.039d.mgd.msft.net>
-	<4D377CE3.6000608@mentor.com>
-	<9F6FE96B71CF29479FF1CDC8046E150307A5C8@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <9F6FE96B71CF29479FF1CDC8046E150307A5C8@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>,
-	Wood Scott-B07421 <B07421@freescale.com>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, mlcreech@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +22,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/20/2011 09:50 AM, Yoder Stuart-B08248 wrote:
->
->
->> -----Original Message-----
->> From: Meador Inge [mailto:meador_inge@mentor.com]
->> Sent: Wednesday, January 19, 2011 6:08 PM
->> To: Yoder Stuart-B08248
->> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; devicetree-
->> discuss@lists.ozlabs.org; Blanchard, Hollis
->> Subject: Re: [PATCH 1/2] powerpc: document the MPIC device tree binding
->>
->> On 01/19/2011 04:14 PM, Yoder Stuart-B08248 wrote:
->>>
->>>> +** Optional properties:
->>>> +
->>>> +   - no-reset : The presence of this property indicates that the MPIC
->>>> +                should not be reset during runtime initialization.
->>>> +   - protected-sources : Specifies a list of interrupt sources that
->>>> + are not
->>>> +                         available for use and whose corresponding
->>>> + vectors
->>>> +                         should not be initialized.  A typical use
->>>> + case for
->>>> +                         this property is in AMP systems where multiple
->>>> +                         independent operating systems need to share
->>>> + the MPIC
->>>> +                         without clobbering each other.
->>>
->>> Is "protected-sources" really needed for AMP systems to tell the OSes
->>> not to clobber each other?  Won't each OS be given a device tree with
->>> only its interrupt sources?  ...so you know what you are allowed to
->>> touch.
->>
->> This was discussed a little bit already [1, 2].  The MPIC driver currently
->> initializes the VECPRI register for all interrupt sources, which can lead
->> to the aforementioned clobbering.
->
-> For sources that are protected and not to be touched, it seems
-> that the other need is for the OS to know (be guaranteed?) that
-> those sources have been put in state where the source is masked
-> or directed to other cores.   You can't have interrupts occurring
-> on sources that you are not allowed to initialize.
->
-> So the "no-reset" property could potentially cover this as well-- if it was
-> defined to mean "don't reset the mpic" and boot firmware has put all sources
-> in a sane initial state.   And we wouldn't need the "protected-sources"
-> property any longer.
->
-
-This seems reasonable to me.  If "no-reset" is there, then we will not 
-reset the MPIC and *only* sources explicitly listed in "interrupts" 
-properties are up for any sort of initialization (e.g. the VECPRI init). 
-   If "no-reset" is not there, then anything is free game.
-
-In terms of implementation, I think we can (1) pull the protected 
-sources code, (2) keep the VECPRI initialization in 'mpic_init' from 
-happening when "no-reset" is present, and (3) "lazily" perform the 
-VECPRI initialization in 'mpic_host_map' (this way only sources 
-mentioned in the device tree are initialized).
-
-I will send out a patch with these updates tomorrow.  I also CC'd Ben, 
-who wrote the original protected sources work, to make sure something 
-about the original use case is not being missed.
-
--- 
-Meador Inge     | meador_inge AT mentor.com
-Mentor Embedded | http://www.mentor.com/embedded-software
+> > -=A0=A0=A0 =A0=A0=A0=0A> gfar_tx_checksum(skb, fcb);=0A> > +=A0=A0=A0 =
+=A0=A0=A0 switch=0A> (unlikely(gfar_has_errata(priv, GFAR_ERRATA_12))=0A> >=
+ +=A0=A0=A0 =A0=A0=A0=0A> =A0=A0=A0 ? 1 : 0) {=0A> =0A> The switch construc=
+tion is quite bizarre. ;-) Why not=0A> =0A=0AMy testing shows that even on =
+broken chips unaligned packets are quite rare=0A(only some SYN packets seem=
+ to be affected). So I tried to leave the=0Achecksum offload path as the mo=
+st preferred one.=0A=0A=0A=0A      
