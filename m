@@ -1,18 +1,35 @@
-Return-Path: <oakad@yahoo.com>
-Received: from web37603.mail.mud.yahoo.com (web37603.mail.mud.yahoo.com
-	[209.191.87.86]) by ozlabs.org (Postfix) with SMTP id 508611007D2
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [194.196.100.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2BF1B1007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Jan 2011 13:43:47 +1100 (EST)
-Message-ID: <983577.58398.qm@web37603.mail.mud.yahoo.com>
-Date: Thu, 27 Jan 2011 18:43:44 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [PATCH] gianfar: Fall back to software tcp/udp checksum on older
-	controllers
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-In-Reply-To: <20110127095100.GA5411@oksana.dev.rtsoft.ru>
+	Fri, 28 Jan 2011 15:01:47 +1100 (EST)
+Received: from d06nrmr1307.portsmouth.uk.ibm.com
+	(d06nrmr1307.portsmouth.uk.ibm.com [9.149.38.129])
+	by mtagate2.uk.ibm.com (8.13.1/8.13.1) with ESMTP id p0S41eZL022755
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jan 2011 04:01:40 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1307.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id p0S41YIi1814782
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jan 2011 04:01:42 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with
+	ESMTP id p0S41VWY027721
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2011 21:01:31 -0700
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+	[9.149.104.171])
+	by d06av04.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with
+	ESMTP id p0S41UCH027693
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2011 21:01:31 -0700
+Subject: AUTO: Michael Barry is out of the office (returning 08/02/2011)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF9D0B116C.809CE004-ON80257826.00160E4F-80257826.00160E4F@ie.ibm.com>
+Date: Fri, 28 Jan 2011 04:00:54 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, mlcreech@gmail.com
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,10 +39,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > -=A0=A0=A0 =A0=A0=A0=0A> gfar_tx_checksum(skb, fcb);=0A> > +=A0=A0=A0 =
-=A0=A0=A0 switch=0A> (unlikely(gfar_has_errata(priv, GFAR_ERRATA_12))=0A> >=
- +=A0=A0=A0 =A0=A0=A0=0A> =A0=A0=A0 ? 1 : 0) {=0A> =0A> The switch construc=
-tion is quite bizarre. ;-) Why not=0A> =0A=0AMy testing shows that even on =
-broken chips unaligned packets are quite rare=0A(only some SYN packets seem=
- to be affected). So I tried to leave the=0Achecksum offload path as the mo=
-st preferred one.=0A=0A=0A=0A      
+
+I am out of the office until 08/02/2011.
+
+
+
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 77, Issue 92" sent on 27/1/11 20:32:14.
+
+This is the only notification you will receive while this person is away.
