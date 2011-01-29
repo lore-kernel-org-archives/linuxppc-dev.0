@@ -1,11 +1,10 @@
 Return-Path: <anton@samba.org>
-Date: Sun, 30 Jan 2011 09:35:22 +1100
+Date: Sun, 30 Jan 2011 09:37:16 +1100
 From: Anton Blanchard <anton@samba.org>
 To: Nishanth Aravamudan <nacc@us.ibm.com>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, jlarrew@linux.vnet.ibm.com
-Subject: [PATCH 4/5] powerpc/numa: Disable VPHN on dedicated processor
-	partitions
-Message-ID: <20110130093522.1fee5a4e@kryten>
+Subject: [PATCH 5/5] powerpc/numa: Fix bug in unmap_cpu_from_node
+Message-ID: <20110130093716.79e78bec@kryten>
 In-Reply-To: <20110130092434.42a887ef@kryten>
 References: <20110118123152.50f75a72@kryten>
 	<20110118224718.GA19039@us.ibm.com>
@@ -25,23 +24,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-There is no need to start up the timer and monitor topology changes on a
-dedicated processor partition, so disable it.
+When converting to the new cpumask code I screwed up:
+
+-       if (cpu_isset(cpu, numa_cpumask_lookup_table[node])) {
+-               cpu_clear(cpu, numa_cpumask_lookup_table[node]);
++       if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
++               cpumask_set_cpu(cpu, node_to_cpumask_map[node]);
+
+This was introduced in commit 25863de07af9 (powerpc/cpumask: Convert NUMA code
+to new cpumask API)
+
+Fix it.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: <stable@kernel.org>
 ---
 
 Index: linux-2.6/arch/powerpc/mm/numa.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/mm/numa.c	2011-01-29 12:58:01.849279835 +1100
-+++ linux-2.6/arch/powerpc/mm/numa.c	2011-01-29 12:58:02.489239819 +1100
-@@ -1520,7 +1520,8 @@ int start_topology_update(void)
- {
- 	int rc = 0;
+--- linux-2.6.orig/arch/powerpc/mm/numa.c	2011-01-29 13:06:05.259039081 +1100
++++ linux-2.6/arch/powerpc/mm/numa.c	2011-01-30 08:26:48.148366563 +1100
+@@ -186,7 +186,7 @@ static void unmap_cpu_from_node(unsigned
+ 	dbg("removing cpu %lu from node %d\n", cpu, node);
  
--	if (firmware_has_feature(FW_FEATURE_VPHN)) {
-+	if (firmware_has_feature(FW_FEATURE_VPHN) &&
-+	    get_lppaca()->shared_proc) {
- 		vphn_enabled = 1;
- 		setup_cpu_associativity_change_counters();
- 		init_timer_deferrable(&topology_timer);
+ 	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
+-		cpumask_set_cpu(cpu, node_to_cpumask_map[node]);
++		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
+ 	} else {
+ 		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
+ 		       cpu, node);
