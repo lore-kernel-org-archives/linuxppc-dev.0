@@ -1,17 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Mon, 31 Jan 2011 06:41:01 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3] dt: Move device tree documentation out of powerpc
-	directory
-Message-ID: <20110131114101.GD13541@zod.rchland.ibm.com>
-References: <20110131073918.9058.37628.stgit@localhost6.localdomain6>
-	<20110131074446.9058.52690.stgit@localhost6.localdomain6>
-MIME-Version: 1.0
+Return-Path: <minipli@googlemail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5B91E1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 30 Jan 2011 05:43:18 +1100 (EST)
+Received: by bwz10 with SMTP id 10so4426474bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 29 Jan 2011 10:43:12 -0800 (PST)
+From: Mathias Krause <minipli@googlemail.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110131074446.9058.52690.stgit@localhost6.localdomain6>
-Cc: sam@ravnborg.org, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: State of suspend-to-ram?
+Date: Sat, 29 Jan 2011 19:43:11 +0100
+Message-Id: <ABC3C637-7966-431D-B6F0-33E5546CAC60@googlemail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0 (Apple Message framework v1082)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,13 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 31, 2011 at 12:44:57AM -0700, Grant Likely wrote:
->The device tree is used by more than just PowerPC.  Make the documentation
->directory available to all.
->
->v2: reorganized files while moving to create arch and driver specific
->    directories.
+Hi all!
 
-Thanks Grant.
+First of all: Sorry, this is the wrong mailing list, but I searched a =
+lot and found none that would fit to PPC user-related problems -- =
+linux-ppc would have been one but this one seems to be dead since 2004?!
 
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+I've a G4 based Mac mini and would like to suspend it to RAM, though the =
+vanilla kernel doesn't allow me to do this (/sys/power/state mentions =
+only "disk"). The reason for this is my platform is marked as =
+PMAC_MB_MAY_SLEEP instead of PMAC_MB_CAN_SLEEP in =
+arch/powerpc/platforms/powermac/feature.c. So I changed that to be =
+PMAC_MB_CAN_SLEEP and was able to suspend the system using the =
+pm-suspend script from the pm-utils suite. The LED on the front was =
+pulsing like it is when suspended under MacOS X. After pushing the power =
+button the system started to resume but just got stuck. I see no =
+messages on the console, nothing in syslog. So I assume the system =
+panics pretty early in the resume path. Because the system has no serial =
+console the debug capabilities are fairly limited. Any hints why this =
+doesn't work or how to debug this any further?
+
+Some system information:
+
+mk@maxi:~$ cat /proc/cpuinfo=20
+processor	: 0
+cpu		: 7447A, altivec supported
+clock		: 1416.666661MHz
+revision	: 1.2 (pvr 8003 0102)
+bogomips	: 83.24
+timebase	: 41620997
+platform	: PowerMac
+model		: PowerMac10,1
+machine		: PowerMac10,1
+motherboard	: PowerMac10,1 MacRISC3 Power Macintosh=20
+detected as	: 287 (Mac mini)
+pmac flags	: 00000001
+L2 cache	: 512K unified
+pmac-generation	: NewWorld
+Memory		: 1024 MB
+mk@maxi:~$ uname -a=20
+Linux maxi 2.6.37+ #2 Mon Jan 24 08:56:01 CET 2011 ppc GNU/Linux
+
+Regards,
+Mathias
