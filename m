@@ -1,11 +1,11 @@
 Return-Path: <anton@samba.org>
-Date: Sun, 30 Jan 2011 09:28:04 +1100
+Date: Sun, 30 Jan 2011 09:35:22 +1100
 From: Anton Blanchard <anton@samba.org>
 To: Nishanth Aravamudan <nacc@us.ibm.com>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, jlarrew@linux.vnet.ibm.com
-Subject: [PATCH 3/5] powerpc/numa: Add length when creating OF properties
-	via VPHN
-Message-ID: <20110130092804.45c80318@kryten>
+Subject: [PATCH 4/5] powerpc/numa: Disable VPHN on dedicated processor
+	partitions
+Message-ID: <20110130093522.1fee5a4e@kryten>
 In-Reply-To: <20110130092434.42a887ef@kryten>
 References: <20110118123152.50f75a72@kryten>
 	<20110118224718.GA19039@us.ibm.com>
@@ -25,47 +25,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-The rest of the NUMA code expects an OF associativity property with
-the first cell containing the length. Without this fix all topology changes
-cause us to misparse the property and put the cpu into node 0.
+There is no need to start up the timer and monitor topology changes on a
+dedicated processor partition, so disable it.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-2.6/arch/powerpc/mm/numa.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/mm/numa.c	2011-01-29 12:45:09.257654450 +1100
-+++ linux-2.6/arch/powerpc/mm/numa.c	2011-01-29 12:56:30.854975882 +1100
-@@ -1356,8 +1356,11 @@ static int update_cpu_associativity_chan
- 	return nr_cpus;
- }
+--- linux-2.6.orig/arch/powerpc/mm/numa.c	2011-01-29 12:58:01.849279835 +1100
++++ linux-2.6/arch/powerpc/mm/numa.c	2011-01-29 12:58:02.489239819 +1100
+@@ -1520,7 +1520,8 @@ int start_topology_update(void)
+ {
+ 	int rc = 0;
  
--/* 6 64-bit registers unpacked into 12 32-bit associativity values */
--#define VPHN_ASSOC_BUFSIZE (6*sizeof(u64)/sizeof(u32))
-+/*
-+ * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
-+ * the complete property we have to add the length in the first cell.
-+ */
-+#define VPHN_ASSOC_BUFSIZE (6*sizeof(u64)/sizeof(u32) + 1)
- 
- /*
-  * Convert the associativity domain numbers returned from the hypervisor
-@@ -1373,7 +1376,7 @@ static int vphn_unpack_associativity(con
- #define VPHN_FIELD_MSB		(0x8000)
- #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
- 
--	for (i = 0; i < VPHN_ASSOC_BUFSIZE; i++) {
-+	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
- 		if (*field == VPHN_FIELD_UNUSED) {
- 			/* All significant fields processed, and remaining
- 			 * fields contain the reserved value of all 1's.
-@@ -1398,6 +1401,9 @@ static int vphn_unpack_associativity(con
- 		}
- 	}
- 
-+	/* The first cell contains the length of the property */
-+	unpacked[0] = nr_assoc_doms;
-+
- 	return nr_assoc_doms;
- }
- 
+-	if (firmware_has_feature(FW_FEATURE_VPHN)) {
++	if (firmware_has_feature(FW_FEATURE_VPHN) &&
++	    get_lppaca()->shared_proc) {
+ 		vphn_enabled = 1;
+ 		setup_cpu_associativity_change_counters();
+ 		init_timer_deferrable(&topology_timer);
