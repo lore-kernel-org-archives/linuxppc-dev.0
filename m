@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F27B51007D1
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5FD33B7106
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 30 Jan 2011 22:09:23 +1100 (EST)
-Subject: Re: State of suspend-to-ram?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mathias Krause <minipli@googlemail.com>
-In-Reply-To: <4537ED74-779B-4511-B4ED-339CAC355261@googlemail.com>
-References: <4537ED74-779B-4511-B4ED-339CAC355261@googlemail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 30 Jan 2011 22:09:13 +1100
-Message-ID: <1296385753.2349.184.camel@pasglop>
+	Mon, 31 Jan 2011 17:26:17 +1100 (EST)
+Date: Mon, 31 Jan 2011 17:26:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the final tree
+Message-Id: <20110131172609.1d5e1695.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__31_Jan_2011_17_26_09_+1100_VtEdLlAbZiOJDFgJ"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-01-30 at 12:03 +0100, Mathias Krause wrote:
-> Hi all!
-> 
-> First of all: Sorry, this is the wrong mailing list, but I searched a
-> lot and found none that would fit to PPC user-related problems --
-> linux-ppc would have been one but this one seems to be dead since
-> 2004?
+--Signature=_Mon__31_Jan_2011_17_26_09_+1100_VtEdLlAbZiOJDFgJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- .../....
+Hi all,
 
-The matter is mostly to get the video chip back. It gets powered down
-during suspend and we don't have the black magic formula to
-re-initialize it.
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
-I've reverse-engineered that for other similar chips, but not that one.
-If you think you're up to the task, let me know privately and I'll point
-you to some tools that can help spying what the MacOS driver does, which
-you can then use to find the right sequence. But beware, it's nasty :-)
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:989: Error: attempt to move .org backw=
+ards
+arch/powerpc/kernel/exceptions-64s.S:999: Error: attempt to move .org backw=
+ards
+arch/powerpc/kernel/exceptions-64s.S:1008: Error: attempt to move .org back=
+wards
 
+So something has added a bit of bloat in there.  I have left this broken
+for now.
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> I've a G4 based Mac mini and would like to suspend it to RAM, though
-> the vanilla kernel doesn't allow me to do this (/sys/power/state
-> mentions only "disk"). The reason for this is my platform is marked as
-> PMAC_MB_MAY_SLEEP instead of PMAC_MB_CAN_SLEEP in
-> arch/powerpc/platforms/powermac/feature.c. So I changed that to be
-> PMAC_MB_CAN_SLEEP and was able to suspend the system using the
-> pm-suspend script from the pm-utils suite. The LED on the front was
-> pulsing like it is when suspended under MacOS X. After pushing the
-> power button the system started to resume but just got stuck. I see no
-> messages on the console, nothing in syslog. So I assume the system
-> panics pretty early in the resume path. Because the system has no
-> serial console the debug capabilities are fairly limited. Any hints
-> why this doesn't work or how to debug this any further?
-> 
-> Some system information:
-> 
-> mk@maxi:~$ cat /proc/cpuinfo 
-> processor	: 0
-> cpu		: 7447A, altivec supported
-> clock		: 1416.666661MHz
-> revision	: 1.2 (pvr 8003 0102)
-> bogomips	: 83.24
-> timebase	: 41620997
-> platform	: PowerMac
-> model		: PowerMac10,1
-> machine		: PowerMac10,1
-> motherboard	: PowerMac10,1 MacRISC3 Power Macintosh 
-> detected as	: 287 (Mac mini)
-> pmac flags	: 00000001
-> L2 cache	: 512K unified
-> pmac-generation	: NewWorld
-> Memory		: 1024 MB
-> mk@maxi:~$ uname -a 
-> Linux maxi 2.6.37+ #2 Mon Jan 24 08:56:01 CET 2011 ppc GNU/Linux
-> 
-> Regards,
-> Mathias
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+--Signature=_Mon__31_Jan_2011_17_26_09_+1100_VtEdLlAbZiOJDFgJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJNRlYCAAoJEDMEi1NhKgbsSTwH/Rzop6pyZMJaVHLc9CSB1SQA
+kZBm8uSuhPZqzeQsdGb3N8CbBPLI7u13Nha6stWkVKf1SVBaK+MezI6T2Jsnrqgm
+1Oq6RJY2UaV07RoC2iZJxWGIvgQFVeuG432cP6057BKMdO1Sd0qM98676k2JJ5eF
+U4373R7Q/hYuoRrHdAZpovd6vyrs8w1hdUEGMqV7eU7jNAfTYbFEYRuuggf2RaQ2
+iUeKYQ2cvdftllZG4m1npiv9hrDkMGjCifvdP+NZ1ryaJID6bQjN8zvaG+4XglEM
+HwUNDNDHuFFjGgIl5BQGtr+pP144+7Q4JXIhnpwWqYsb6dZyEdMEckljsJ1ecUM=
+=YC3W
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__31_Jan_2011_17_26_09_+1100_VtEdLlAbZiOJDFgJ--
