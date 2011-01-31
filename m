@@ -1,21 +1,17 @@
-Return-Path: <minipli@googlemail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5B91E1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 30 Jan 2011 05:43:18 +1100 (EST)
-Received: by bwz10 with SMTP id 10so4426474bwz.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 Jan 2011 10:43:12 -0800 (PST)
-From: Mathias Krause <minipli@googlemail.com>
-Content-Type: text/plain; charset=us-ascii
-Subject: State of suspend-to-ram?
-Date: Sat, 29 Jan 2011 19:43:11 +0100
-Message-Id: <ABC3C637-7966-431D-B6F0-33E5546CAC60@googlemail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Mime-Version: 1.0 (Apple Message framework v1082)
+Return-Path: <stephen.neuendorffer@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 3/3 RFC] dt: add documentation of ARM dt boot interface
+Date: Mon, 31 Jan 2011 10:00:03 -0800
+In-Reply-To: <20110131074510.9058.59071.stgit@localhost6.localdomain6>
+References: <20110131073918.9058.37628.stgit@localhost6.localdomain6>
+	<20110131074510.9058.59071.stgit@localhost6.localdomain6>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+	<devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>
+Message-ID: <44dc88e7-3086-4762-8789-f455f3b265ec@VA3EHSMHS027.ehs.local>
+Cc: sam@ravnborg.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all!
 
-First of all: Sorry, this is the wrong mailing list, but I searched a =
-lot and found none that would fit to PPC user-related problems -- =
-linux-ppc would have been one but this one seems to be dead since 2004?!
 
-I've a G4 based Mac mini and would like to suspend it to RAM, though the =
-vanilla kernel doesn't allow me to do this (/sys/power/state mentions =
-only "disk"). The reason for this is my platform is marked as =
-PMAC_MB_MAY_SLEEP instead of PMAC_MB_CAN_SLEEP in =
-arch/powerpc/platforms/powermac/feature.c. So I changed that to be =
-PMAC_MB_CAN_SLEEP and was able to suspend the system using the =
-pm-suspend script from the pm-utils suite. The LED on the front was =
-pulsing like it is when suspended under MacOS X. After pushing the power =
-button the system started to resume but just got stuck. I see no =
-messages on the console, nothing in syslog. So I assume the system =
-panics pretty early in the resume path. Because the system has no serial =
-console the debug capabilities are fairly limited. Any hints why this =
-doesn't work or how to debug this any further?
+> -----Original Message-----
+> From: linuxppc-dev-bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org] On Behalf Of Grant
+Likely
+> Sent: Sunday, January 30, 2011 11:46 PM
+> To: devicetree-discuss@lists.ozlabs.org;
+linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> Cc: sam@ravnborg.org
+> Subject: [PATCH 3/3 RFC] dt: add documentation of ARM dt boot
+interface
+> =
 
-Some system information:
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> =
 
-mk@maxi:~$ cat /proc/cpuinfo=20
-processor	: 0
-cpu		: 7447A, altivec supported
-clock		: 1416.666661MHz
-revision	: 1.2 (pvr 8003 0102)
-bogomips	: 83.24
-timebase	: 41620997
-platform	: PowerMac
-model		: PowerMac10,1
-machine		: PowerMac10,1
-motherboard	: PowerMac10,1 MacRISC3 Power Macintosh=20
-detected as	: 287 (Mac mini)
-pmac flags	: 00000001
-L2 cache	: 512K unified
-pmac-generation	: NewWorld
-Memory		: 1024 MB
-mk@maxi:~$ uname -a=20
-Linux maxi 2.6.37+ #2 Mon Jan 24 08:56:01 CET 2011 ppc GNU/Linux
+> For RFC only.  I do not plan to merge this change yet.
+> =
 
-Regards,
-Mathias
+> g.
+> =
+
+>  Documentation/devicetree/booting-without-of.txt |   40
++++++++++++++++++++++++
+>  1 files changed, 40 insertions(+), 0 deletions(-)
+> =
+
+> diff --git a/Documentation/devicetree/booting-without-of.txt
+b/Documentation/devicetree/booting-
+> without-of.txt
+> index 6bca668..3950aea 100644
+> --- a/Documentation/devicetree/booting-without-of.txt
+> +++ b/Documentation/devicetree/booting-without-of.txt
+
+In order to make this more generic, perhaps it should change names, so
+that it is actually a description of what the file
+describes, as opposed to what it doesn't describe.  "booting.txt"?
+
+> @@ -13,6 +13,7 @@ Table of Contents
+> =
+
+>    I - Introduction
+>      1) Entry point for arch/powerpc
+> +    2) Entry point for arch/arm
+
+We should probably include microblaze here too...
+
+Steve
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
