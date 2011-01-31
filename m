@@ -1,16 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <sam@ravnborg.org>
+Date: Mon, 31 Jan 2011 23:23:11 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 0/3] dt: documentation reorganization
+Message-ID: <20110131222311.GA7903@merkur.ravnborg.org>
+References: <20110131073918.9058.37628.stgit@localhost6.localdomain6>
+	<20110131203449.GA4199@merkur.ravnborg.org>
+	<20110131210131.GA14086@angua.secretlab.ca>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20110131215935.26336.32719.stgit@localhost6.localdomain6>
-References: <20110131215935.26336.32719.stgit@localhost6.localdomain6>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 31 Jan 2011 15:07:49 -0700
-Message-ID: <AANLkTimpjCtaksHCURsZX9JDLd+1+ivPN7Zeq9A4RxMs@mail.gmail.com>
-Subject: Re: [RFC] dt: add of_platform_bus_snoop() which attaches nodes to
-	devices
-To: linaro-dev@lists.linaro.org, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110131210131.GA14086@angua.secretlab.ca>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 31, 2011 at 3:01 PM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> This patch implements an alternate method for using device tree data
-> for populating machine device registration. =A0Traditionally, board
-> support has directly generated and registered devices based on nodes
-> in the device tree. =A0The board support code starts at the root of the
-> tree and begins allocating devices for each device node it finds.
-> Similarly, bus drivers (i2c, spi, etc.) use their child nodes to
-> register child devices. =A0This model can be seen in almost all the power=
-pc
-> board ports (arch/powerpc/platforms/*).
->
-> However, for many of the ARM SoCs, there already exists complete board
-> support for many SoCs that have their own code for registering the
-> basic set of platform devices with non-trivial dependencies on clock
-> structure and machine specific platform code. =A0While starting at the
-> base of the tree and working up is certainly possible, it requires
-> modifying a lot of machine support code to get it working.
->
-> Instead, this patch provides an alternate approach. =A0Instead of
-> starting at the root of the tree and working up, this patch allows the
-> SoC support code to register its standard set of platform devices in
-> the normal way. =A0However, it also registers a platform_bus notifier
-> function which compares platform_device registrations with data in the
-> device tree. =A0Whenever it finds a matching node, it increments the
-> node reference count and assigns it to the device's of_node pointer so
-> that it is available for the device driver to use and bind against.
-> For example, an spi master driver would have access to the spi node
-> which contains information about all the spi slaves on the bus.
+On Mon, Jan 31, 2011 at 02:01:31PM -0700, Grant Likely wrote:
+> On Mon, Jan 31, 2011 at 09:34:49PM +0100, Sam Ravnborg wrote:
+> > On Mon, Jan 31, 2011 at 12:44:41AM -0700, Grant Likely wrote:
+> > > This series reorganizes and cleans up the device tree documentation
+> > > to make the directory useful for non-powerpc users.
+> > 
+> > Looks better than first try. But the structure is very flat.
+> > Did you consider an arch/* for all arch specific stuff?
+> 
+> Yes I did; but this stuff is pretty sparse so I didn't want to create
+> a whole lot of levels when it isn't warranted.  If really required in
+> the future I'll split the arch and drivers into two separate
+> directories.  In the mean time I'm going to stick with this.
+OK.
 
-One more note.  It might also be a good idea to do something like this
-for the PCI and AMBA buses.  I've not yet looked at how much code
-could be made common for implementing that.
-
-g.
+	Sam
