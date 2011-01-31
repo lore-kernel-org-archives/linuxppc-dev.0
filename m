@@ -1,22 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6744DB70EE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Feb 2011 06:56:23 +1100 (EST)
-Date: Mon, 31 Jan 2011 13:40:57 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Steve Best <sfbest@us.ibm.com>
-Subject: Re: [PATCH] powerpc/mm: add devmem_is_allowed() for STRICT_DEVMEM
-	checking
-Message-ID: <20110131134057.153d6844@udp111988uds.am.freescale.net>
-In-Reply-To: <20110131191109.5727.87742.sendpatchset@squad5-lp1.lab.bos.redhat.com>
-References: <20110131191109.5727.87742.sendpatchset@squad5-lp1.lab.bos.redhat.com>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id E7D5BB70E3
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Feb 2011 07:12:32 +1100 (EST)
+Message-ID: <4D4717AD.2040905@mlbassoc.com>
+Date: Mon, 31 Jan 2011 13:12:29 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: MMC on MPC8379
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 31 Jan 2011 14:16:00 -0500
-Steve Best <sfbest@us.ibm.com> wrote:
+I'm running 2.6.32 on MPC8379, trying to use the SDHCI interface.
+It seems to work, reads are fine, but when I write to the device
+(I've tried both eMMC soldered-on and pluggable MMC/SD cards),
+I get intermittent failures.  Specifically, some blocks will be
+written while others fail.  I haven't yet found a pattern.
 
->     Provide devmem_is_allowed() routine to restrict access to kernel
->     memory from userspace.
->     Set CONFIG_STRICT_DEVMEM config option to switch on checking.
-> 
-> Signed-off-by: Steve Best <sfbest@us.ibm.com>
-> 
-> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> index 2d38a50..6805d5d 100644
-> --- a/arch/powerpc/Kconfig.debug
-> +++ b/arch/powerpc/Kconfig.debug
-> @@ -299,4 +299,16 @@ config PPC_EARLY_DEBUG_CPM_ADDR
->  	  platform probing is done, all platforms selected must
->  	  share the same address.
->  
-> +config STRICT_DEVMEM
-> +        def_bool y
-> +        prompt "Filter access to /dev/mem"
-> +        ---help---
-> +          This option restricts access to /dev/mem.  If this option is
-> +          disabled, you allow userspace access to all memory, including
-> +          kernel and userspace memory. Accidental memory access is likely
-> +          to be disastrous.
-> +          Memory access is required for experts who want to debug the kernel.
-> +
-> +          If you are unsure, say Y.
-> +
->  endmenu
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 53b64be..f225032 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -262,6 +262,11 @@ extern void copy_user_page(void *to, void *from, unsigned long vaddr,
->  		struct page *p);
->  extern int page_is_ram(unsigned long pfn);
->  
-> +static inline int devmem_is_allowed(unsigned long pfn)
-> +{
-> +        return 0;
-> +}
-> +
+Is there anything special about this interface?  I notice that
+it's not really used by any FSL platforms although the driver
+claims support.
 
-I don't see how this is a sane thing to turn on by default (you're not
-restricting it, BTW -- you're completely disabling it with that
-implementation of devmem_is_allowed).  It will break anything that
-uses /dev/mem to access I/O, possibly including desktoppy stuff like X
-servers, as well as lots of stuff that goes on in embedded setups.
+Any ideas?
 
-You need to be root to access /dev/mem, and root has plenty of
-other options for causing "disastrous" results.  You don't just stumble
-onto /dev/mem by accident.
+Thanks
 
--Scott
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
