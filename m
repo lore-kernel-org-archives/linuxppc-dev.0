@@ -1,34 +1,28 @@
-Return-Path: <sfbest@us.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 376DCB70E3
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 962B6B7103
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Feb 2011 04:21:15 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p11H8p5i028945
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Feb 2011 10:08:51 -0700
+	Wed,  2 Feb 2011 05:49:14 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p11IkeB1011956
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Feb 2011 11:46:40 -0700
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id p11HLBZh105016
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Feb 2011 10:21:11 -0700
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	p11InAdS257980
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Feb 2011 11:49:10 -0700
 Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p11HLALS001578
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Feb 2011 10:21:10 -0700
-Subject: Re: [PATCH] powerpc/mm: add devmem_is_allowed() for STRICT_DEVMEM
-	checking
-From: Steve Best <sfbest@us.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20110131134057.153d6844@udp111988uds.am.freescale.net>
-References: <20110131191109.5727.87742.sendpatchset@squad5-lp1.lab.bos.redhat.com>
-	<20110131134057.153d6844@udp111988uds.am.freescale.net>
-Content-Type: text/plain
-Date: Tue, 01 Feb 2011 12:21:45 -0500
-Message-Id: <1296580906.5343.6.camel@dhcp-100-2-27.bos.redhat.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	id p11In96M003482
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Feb 2011 11:49:09 -0700
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH V2 0/6] powerpc: AMP support for 47x
+Date: Tue,  1 Feb 2011 12:48:40 -0600
+Message-Id: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,75 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+These patches add Asynchonous MultiProcessing support for the 47x chipset.
+This allows independent OS instances to run on separate cores.
 
-On Mon, 2011-01-31 at 13:40 -0600, Scott Wood wrote:
-> On Mon, 31 Jan 2011 14:16:00 -0500
-> Steve Best <sfbest@us.ibm.com> wrote:
-> 
-> >     Provide devmem_is_allowed() routine to restrict access to kernel
-> >     memory from userspace.
-> >     Set CONFIG_STRICT_DEVMEM config option to switch on checking.
-> > 
-> > Signed-off-by: Steve Best <sfbest@us.ibm.com>
-> > 
-> > diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> > index 2d38a50..6805d5d 100644
-> > --- a/arch/powerpc/Kconfig.debug
-> > +++ b/arch/powerpc/Kconfig.debug
-> > @@ -299,4 +299,16 @@ config PPC_EARLY_DEBUG_CPM_ADDR
-> >  	  platform probing is done, all platforms selected must
-> >  	  share the same address.
-> >  
-> > +config STRICT_DEVMEM
-> > +        def_bool y
-> > +        prompt "Filter access to /dev/mem"
-> > +        ---help---
-> > +          This option restricts access to /dev/mem.  If this option is
-> > +          disabled, you allow userspace access to all memory, including
-> > +          kernel and userspace memory. Accidental memory access is likely
-> > +          to be disastrous.
-> > +          Memory access is required for experts who want to debug the kernel.
-> > +
-> > +          If you are unsure, say Y.
-> > +
-> >  endmenu
-> > diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> > index 53b64be..f225032 100644
-> > --- a/arch/powerpc/include/asm/page.h
-> > +++ b/arch/powerpc/include/asm/page.h
-> > @@ -262,6 +262,11 @@ extern void copy_user_page(void *to, void *from, unsigned long vaddr,
-> >  		struct page *p);
-> >  extern int page_is_ram(unsigned long pfn);
-> >  
-> > +static inline int devmem_is_allowed(unsigned long pfn)
-> > +{
-> > +        return 0;
-> > +}
-> > +
-> 
-> I don't see how this is a sane thing to turn on by default (you're not
-> restricting it, BTW -- you're completely disabling it with that
-> implementation of devmem_is_allowed).  It will break anything that
-> uses /dev/mem to access I/O, 
+V2:
+ 1. Replace ugly hack in boot wrapper with generic solution
 
-could you expand on what I/O depends on /dev/mem, so I can take
-that into account?
+Dave Kleikamp (6):
+  powerpc: Move udbg_early_init() after early_init_devtree()
+  powerpc/44x: allow override to hard-coded uart address
+  powerpc/47x: allow kernel to be loaded in higher physical memory
+  powerpc/44x: don't use tlbivax on AMP systems
+  powerpc/44x: boot wrapper: allow kernel to load into non-zero address
+  powerpc/476: Create a dts files for two 476 AMP instances under ISS
 
-> possibly including desktoppy stuff like X
-> servers, 
+ arch/powerpc/Kconfig                          |    2 +-
+ arch/powerpc/boot/Makefile                    |    6 +-
+ arch/powerpc/boot/dts/iss476-amp1.dts         |  119 ++++++++++++++++++++++++
+ arch/powerpc/boot/dts/iss476-amp2.dts         |  120 +++++++++++++++++++++++++
+ arch/powerpc/boot/treeboot-iss4xx.c           |   22 +++++-
+ arch/powerpc/boot/wrapper                     |    7 ++
+ arch/powerpc/configs/44x/iss476-smp_defconfig |    6 +-
+ arch/powerpc/include/asm/mmu.h                |    2 +-
+ arch/powerpc/kernel/head_44x.S                |   42 +++++++--
+ arch/powerpc/kernel/setup_32.c                |    6 +-
+ arch/powerpc/kernel/udbg_16550.c              |   17 +++-
+ arch/powerpc/mm/44x_mmu.c                     |   13 ++-
+ arch/powerpc/mm/tlb_nohash.c                  |   21 ++++-
+ 13 files changed, 359 insertions(+), 24 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/iss476-amp1.dts
+ create mode 100644 arch/powerpc/boot/dts/iss476-amp2.dts
 
-you are right just found out that X needs to access it. will 
-take that into account
-> as well as lots of stuff that goes on in embedded setups.
-
-could you explain more about what needs access to /dev/mem in 
-the embedded setups?
-
-> 
-> You need to be root to access /dev/mem, and root has plenty of
-> other options for causing "disastrous" results.  You don't just stumble
-> onto /dev/mem by accident.
-> 
-> -Scott
-
--Steve
+-- 
+1.7.3.4
