@@ -1,32 +1,33 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 4507CB7113
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 10FAFB710F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Feb 2011 01:28:19 +1100 (EST)
-Subject: RE: [PATCH 4/6] ftrace syscalls: Allow arch specific syscallsymbol
-	matching
-From: Steven Rostedt <rostedt@goodmis.org>
-To: David Laight <David.Laight@ACULAB.COM>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC3A@saturn3.aculab.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8AC3A@saturn3.aculab.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 02 Feb 2011 09:28:13 -0500
-Message-ID: <1296656893.10797.53.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: Andreas Dilger <adilger@dilger.ca>, David Gibson <dwg@au1.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	"open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-	Jiri Kosina <jkosina@suse.cz>, Namhyung Kim <namhyung@gmail.com>,
-	linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
-	Avantika Mathur <mathur@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@redhat.com>, Andreas Schwab <schwab@linux-m68k.org>,
-	Ian Munsie <imunsie@au1.ibm.com>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Nathan Lynch <ntl@pobox.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Jason Baron <jbaron@redhat.com>
+	Thu,  3 Feb 2011 01:32:39 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p12EU3YL028979
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:30:03 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p12EWXHf111304
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:32:33 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p12EWXQK027199
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:32:33 -0700
+Received: from zod.rchland.ibm.com ([9.12.228.69])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	p12EWWKX027089
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:32:32 -0700
+Date: Wed, 2 Feb 2011 09:31:55 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: 4xx next branch
+Message-ID: <20110202143155.GB17643@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,45 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-02-02 at 14:15 +0000, David Laight wrote:
-> > +#define arch_syscall_match_sym_name(sym, name) !strcmp(sym + 3, name
-> + 3)
-> 
-> Whenever you use a #define macro arg, you should enclose it in ().
-> About the only time you don't need to is when it is being
-> passed as an argument to another function
-> (ie when it's use is also ',' separated).
-> 
-> So the above ought to be:
-> #define arch_syscall_match_sym_name(sym, name) (!strcmp((sym) + 3,
-> (name) + 3))
+Hi All,
 
-I would have mentioned this if I wanted it to stay a macro ;)
+I've added the following patches to my next branch:
 
-> 
-> Whether an inline function is better or worse is much more subtle!
-> For instance I've used:
->    asm volatile ( "# line " STR(__LINE__) :: )
-> to stop gcc merging the tails of conditionals.
-> Useful when the conditional is at the end of a loop (etc),
-> it might increase code size slightly, but removes a branch.
-> 
-> If I put one of those in an 'inline' function separate copies
-> of the function end up sharing code.
-> With a #define __LINE__ differs so they don't.
-> 
-> (I had some code to get below 190 clocks, these changes
-> were significant!)
+Dave Kleikamp (2):
+      powerpc/476: define specific cpu table entry DD2 core
+      powerpc/476: Workaround for PLB6 hang
 
-For what you were doing, this may have helped. But the code in question
-is the "default" version of the function. I much more prefer it to be a
-static inline. The issues you experience could change from gcc to gcc.
-But static inlined functions are much cleaner and easier to read than
-macros.
+Rupjyoti Sarmah (1):
+      powerpc/44x: PHY fixup for USB on canyonlands board
 
-Using a macro for this purpose is just too messy.
+Tirumala Marri (1):
+      powerpc/44x: Add USB DWC DTS entry to Canyonlands board
 
-Again, look at include/trace/ftrace.h. If I'm saying using a macro is
-ugly, then don't use it! Listen to me, because I'm Mr. Ugly Macro Man.
 
--- Steve
+There are a few more I'd like to review still, including the AMP support
+for 476 before I ask Ben to pull.  The above patches will sit in my
+branch for a few days.  If there are any others I have missed, please
+let me know.
+
+josh
