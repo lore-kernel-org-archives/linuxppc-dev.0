@@ -1,31 +1,32 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C86F9B710F
+	(Client CN "e23smtp03.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CAB32B7113
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed,  2 Feb 2011 18:12:20 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id p127CJE1009153
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:12:19 +1100
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p1277qnn016230
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:07:52 +1100
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p127CJ7u2322590
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p127CJvx2162838
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:12:19 +1100
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
 	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p127CHYN011791
+	p127CHrY011800
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:12:19 +1100
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] trace syscalls: Convert redundant syscall_nr checks into
-	WARN_ON
-Date: Wed,  2 Feb 2011 18:11:54 +1100
-Message-Id: <1296630718-17537-3-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 3/6] ftrace syscalls: Make arch_syscall_addr weak
+Date: Wed,  2 Feb 2011 18:11:55 +1100
+Message-Id: <1296630718-17537-4-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1296630718-17537-1-git-send-email-imunsie@au1.ibm.com>
 References: <1296630718-17537-1-git-send-email-imunsie@au1.ibm.com>
 Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
 	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	"open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
 	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
 	Jason Baron <jbaron@redhat.com>, Alexander Graf <agraf@suse.de>,
 	Steven Rostedt <rostedt@goodmis.org>,
@@ -48,56 +49,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-With the ftrace events now checking if the syscall_nr is valid upon
-initialisation it should no longer be possible to register or unregister
-a syscall event without a valid syscall_nr since they should not be
-created. This adds a WARN_ON_ONCE in the register and unregister
-functions to locate potential regressions in the future.
+Some architectures use non-trivial system call tables and will not work
+with the generic arch_syscall_addr code. For example, PowerPC64 uses a
+table of twin long longs.
+
+This patch makes the generic arch_syscall_addr weak to allow
+architectures with non-trivial system call tables to override it.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- kernel/trace/trace_syscalls.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ Documentation/trace/ftrace-design.txt |    3 +++
+ kernel/trace/trace_syscalls.c         |    2 +-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
+diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
+index dc52bd4..6fca17b 100644
+--- a/Documentation/trace/ftrace-design.txt
++++ b/Documentation/trace/ftrace-design.txt
+@@ -247,6 +247,9 @@ You need very few things to get the syscalls tracing in an arch.
+ - Support the TIF_SYSCALL_TRACEPOINT thread flags.
+ - Put the trace_sys_enter() and trace_sys_exit() tracepoints calls from ptrace
+   in the ptrace syscalls tracing path.
++- If the system call table on this arch is more complicated than a simple array
++  of addresses of the system calls, implement an arch_syscall_addr to return
++  the address of a given system call.
+ - Tag this arch as HAVE_SYSCALL_TRACEPOINTS.
+ 
+ 
 diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index a66bc13..1a6e8dd 100644
+index 1a6e8dd..33360b9 100644
 --- a/kernel/trace/trace_syscalls.c
 +++ b/kernel/trace/trace_syscalls.c
-@@ -358,7 +358,7 @@ int reg_event_syscall_enter(struct ftrace_event_call *call)
- 	int num;
+@@ -445,7 +445,7 @@ int init_syscall_trace(struct ftrace_event_call *call)
+ 	return id;
+ }
  
- 	num = ((struct syscall_metadata *)call->data)->syscall_nr;
--	if (num < 0 || num >= NR_syscalls)
-+	if (WARN_ON_ONCE(num < 0 || num >= NR_syscalls))
- 		return -ENOSYS;
- 	mutex_lock(&syscall_trace_lock);
- 	if (!sys_refcount_enter)
-@@ -376,7 +376,7 @@ void unreg_event_syscall_enter(struct ftrace_event_call *call)
- 	int num;
- 
- 	num = ((struct syscall_metadata *)call->data)->syscall_nr;
--	if (num < 0 || num >= NR_syscalls)
-+	if (WARN_ON_ONCE(num < 0 || num >= NR_syscalls))
- 		return;
- 	mutex_lock(&syscall_trace_lock);
- 	sys_refcount_enter--;
-@@ -392,7 +392,7 @@ int reg_event_syscall_exit(struct ftrace_event_call *call)
- 	int num;
- 
- 	num = ((struct syscall_metadata *)call->data)->syscall_nr;
--	if (num < 0 || num >= NR_syscalls)
-+	if (WARN_ON_ONCE(num < 0 || num >= NR_syscalls))
- 		return -ENOSYS;
- 	mutex_lock(&syscall_trace_lock);
- 	if (!sys_refcount_exit)
-@@ -410,7 +410,7 @@ void unreg_event_syscall_exit(struct ftrace_event_call *call)
- 	int num;
- 
- 	num = ((struct syscall_metadata *)call->data)->syscall_nr;
--	if (num < 0 || num >= NR_syscalls)
-+	if (WARN_ON_ONCE(num < 0 || num >= NR_syscalls))
- 		return;
- 	mutex_lock(&syscall_trace_lock);
- 	sys_refcount_exit--;
+-unsigned long __init arch_syscall_addr(int nr)
++unsigned long __init __weak arch_syscall_addr(int nr)
+ {
+ 	return (unsigned long)sys_call_table[nr];
+ }
 -- 
 1.7.2.3
