@@ -1,23 +1,18 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 7A538B7109
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 4507CB7113
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Feb 2011 01:17:25 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 26346-02 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Feb 2011 14:17:20 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Thu,  3 Feb 2011 01:28:19 +1100 (EST)
 Subject: RE: [PATCH 4/6] ftrace syscalls: Allow arch specific syscallsymbol
 	matching
-Date: Wed, 2 Feb 2011 14:15:00 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AC3A@saturn3.aculab.com>
-In-Reply-To: <1296655484.10797.47.camel@gandalf.stny.rr.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Steven Rostedt" <rostedt@goodmis.org>, "Ian Munsie" <imunsie@au1.ibm.com>
+From: Steven Rostedt <rostedt@goodmis.org>
+To: David Laight <David.Laight@ACULAB.COM>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC3A@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8AC3A@saturn3.aculab.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 02 Feb 2011 09:28:13 -0500
+Message-ID: <1296656893.10797.53.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Cc: Andreas Dilger <adilger@dilger.ca>, David Gibson <dwg@au1.ibm.com>,
 	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
 	"open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
@@ -25,6 +20,7 @@ Cc: Andreas Dilger <adilger@dilger.ca>, David Gibson <dwg@au1.ibm.com>,
 	linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
 	Avantika Mathur <mathur@linux.vnet.ibm.com>,
 	Ingo Molnar <mingo@redhat.com>, Andreas Schwab <schwab@linux-m68k.org>,
+	Ian Munsie <imunsie@au1.ibm.com>,
 	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
 	Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
@@ -40,31 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> +#define arch_syscall_match_sym_name(sym, name) !strcmp(sym + 3, name
-+ 3)
+On Wed, 2011-02-02 at 14:15 +0000, David Laight wrote:
+> > +#define arch_syscall_match_sym_name(sym, name) !strcmp(sym + 3, name
+> + 3)
+> 
+> Whenever you use a #define macro arg, you should enclose it in ().
+> About the only time you don't need to is when it is being
+> passed as an argument to another function
+> (ie when it's use is also ',' separated).
+> 
+> So the above ought to be:
+> #define arch_syscall_match_sym_name(sym, name) (!strcmp((sym) + 3,
+> (name) + 3))
 
-Whenever you use a #define macro arg, you should enclose it in ().
-About the only time you don't need to is when it is being
-passed as an argument to another function
-(ie when it's use is also ',' separated).
+I would have mentioned this if I wanted it to stay a macro ;)
 
-So the above ought to be:
-#define arch_syscall_match_sym_name(sym, name) (!strcmp((sym) + 3,
-(name) + 3))
+> 
+> Whether an inline function is better or worse is much more subtle!
+> For instance I've used:
+>    asm volatile ( "# line " STR(__LINE__) :: )
+> to stop gcc merging the tails of conditionals.
+> Useful when the conditional is at the end of a loop (etc),
+> it might increase code size slightly, but removes a branch.
+> 
+> If I put one of those in an 'inline' function separate copies
+> of the function end up sharing code.
+> With a #define __LINE__ differs so they don't.
+> 
+> (I had some code to get below 190 clocks, these changes
+> were significant!)
 
-Whether an inline function is better or worse is much more subtle!
-For instance I've used:
-   asm volatile ( "# line " STR(__LINE__) :: )
-to stop gcc merging the tails of conditionals.
-Useful when the conditional is at the end of a loop (etc),
-it might increase code size slightly, but removes a branch.
+For what you were doing, this may have helped. But the code in question
+is the "default" version of the function. I much more prefer it to be a
+static inline. The issues you experience could change from gcc to gcc.
+But static inlined functions are much cleaner and easier to read than
+macros.
 
-If I put one of those in an 'inline' function separate copies
-of the function end up sharing code.
-With a #define __LINE__ differs so they don't.
+Using a macro for this purpose is just too messy.
 
-(I had some code to get below 190 clocks, these changes
-were significant!)
+Again, look at include/trace/ftrace.h. If I'm saying using a macro is
+ugly, then don't use it! Listen to me, because I'm Mr. Ugly Macro Man.
 
-	David
+-- Steve
