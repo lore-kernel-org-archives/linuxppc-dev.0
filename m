@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8540CB7128
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4A79FB711E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Feb 2011 18:48:58 +1100 (EST)
-Subject: Re: [PATCH V2 4/6] powerpc/44x: don't use tlbivax on AMP systems
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1296586126-32765-5-git-send-email-shaggy@linux.vnet.ibm.com>
-Date: Wed, 2 Feb 2011 01:48:45 -0600
-Message-Id: <85A99D1E-9B32-4816-91FD-355B325D3F8F@kernel.crashing.org>
-References: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1296586126-32765-5-git-send-email-shaggy@linux.vnet.ibm.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+	Wed,  2 Feb 2011 18:50:54 +1100 (EST)
+To: sunny bhayani <bhayanisunny@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Need help for USB OTG feature for Canyonlands PPC460EX Board
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <AANLkTikatrqNZydG3Do8UgYeB4c=iteBG==r2dBn6hZV@mail.gmail.com>
+References: <AANLkTikatrqNZydG3Do8UgYeB4c=iteBG==r2dBn6hZV@mail.gmail.com>
+Date: Wed, 02 Feb 2011 08:50:50 +0100
+Message-Id: <20110202075050.70EDBEA65FA@gemini.denx.de>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,12 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Dear sunny bhayani,
 
-On Feb 1, 2011, at 12:48 PM, Dave Kleikamp wrote:
+In message <AANLkTikatrqNZydG3Do8UgYeB4c=iteBG==r2dBn6hZV@mail.gmail.com> you wrote:
+>
+> I am trying to enable the USB DWC OTG feature for Canyonlands PPC460EX
+> Board, and am using the 2.6.30 kernel from denx.
+> 
+> Now the issue is I am selecting the "USB Gadget" feature from the kernel
+> menuconfig, but the kernel log only shows,
 
-> Since other OS's may be running on the other cores don't use tlbivax
+I don't really understand why you ask this again, now on the next
+mailing list - after I sent you a reply on the ELDK list.
 
-Are you guys building SMP kernel for use with AMP?  Just wondering why =
-you'd be using tlbivax at all.
+Here is a link to my reply:
+http://thread.gmane.org/gmane.comp.embedded.eldk/1827/focus=1828
 
-- k
+Please update, and try again.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+grep me no patterns and I'll tell you no lines.
