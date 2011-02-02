@@ -1,28 +1,19 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0546EB70E3
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
+	by ozlabs.org (Postfix) with ESMTP id 2D71BB70E7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Feb 2011 08:55:56 +1100 (EST)
-Received: by iye19 with SMTP id 19so445967iye.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 02 Feb 2011 13:55:54 -0800 (PST)
+	Thu,  3 Feb 2011 08:57:14 +1100 (EST)
+Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
+	by duster.selinc.com (8.14.3/8.14.3) with ESMTP id p12LvCRm016275
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 13:57:12 -0800
+To: linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-In-Reply-To: <1296682842.2349.730.camel@pasglop>
-References: <AANLkTikAVgH9-UQfrjoAJSemet5p_PxhxCdot8cChQu3@mail.gmail.com>
-	<AANLkTim6v25Sam+E8Bo9za1q0GJqWZitgqR0KBuKCoWz@mail.gmail.com>
-	<AANLkTik9ejmu2vE13f_nRZZMspU-LW4y2=74iczoXGNt@mail.gmail.com>
-	<AANLkTikGK-7JspQMTiqjXcvoP1FVSt2gZJ9SRqGj=7DO@mail.gmail.com>
-	<1296682842.2349.730.camel@pasglop>
-Date: Wed, 2 Feb 2011 15:55:53 -0600
-Message-ID: <AANLkTi=xM5qt4sic-YBD87Znt0vVOyX2yOyhODhtKNqC@mail.gmail.com>
-Subject: Re: BootX
-From: kevin diggs <diggskevin38@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Question on supporting multiple HW versions with a single driver
+	(warning: long post)
+Message-ID: <OF8C287A2E.13F8CEBF-ON8825782B.0073FBAF-8825782B.00789868@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Wed, 2 Feb 2011 13:57:13 -0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+So this is sort of a follow on question to one I posted a month ago about 
+trying to get a PCI driver to work with OF (which I think I more or less 
+understood the answer to).  I'm encountering a different sort of problem 
+that I'd like to solve with OF but I'm not sure I can.  Let me lay out a 
+little background first.
 
-I know you are VERY busy. I appreciate your taking the time to reply.
+We build embedded systems, so we never really have hot plug events and our 
+addresses (at least for HW interfaces) are pretty much static for any 
+given product.  In other words for product "A" the NAND controller will 
+always be at address "X", though on product "B" that same NAND controller 
+may be at address "Y".  Also, the devices in the product are static, i.e., 
+we'll always talk to an LXT971 as the PHY.
 
-Since I'm am still using this thing I'll take a stab at trying to
-track it down. I just posted the FYI to see if I could trigger some
-thoughts (like your post).
+Currently I'm working on building a driver for an ethernet MAC we're 
+putting in an FPGA.  The MAC is based on the MPC8347 TSEC and the driver 
+is based on the gianfar driver.  (My previous question was how to spoof 
+the OF gianfar driver into thinking it was a PCI driver because our MAC is 
+going to be hanging off a PCI bus.  Ultimately I decided to just 
+steal...err...borrow... the guts of the gianfar driver and make it a PCI 
+driver that only deals with our MAC.)
 
-With a 4.3.5 compiled mesh, it fails a lot of early stuff like getting
-cache info? I don't remember the full list because it fails to find
-the root fs and does the reboot in 180 seconds thing (I still have in
-a back corner of my brain the serial console xmon boot stuff and will
-probably eventually try that).
+Right in the middle of writing this driver, my HW guys came to me and said 
+they wanted to use this same MAC in other products.  Great I said.  Local 
+bus they said.  Which opens up a whole can of worms and leads to my 
+question.  We've got a MAC in a FPGA with a nice generic interface on the 
+front of it that can talk to a whole range of different busses, PCI, PCIe, 
+local bus (of any variety of any processor), etc.  But the internals of 
+the MAC (i.e., the register sets, the buffers, the whole buffer descriptor 
+mechanism) all looks the same.  Seems to me that this is exactly the sort 
+of situation OF and device trees was developed for.
 
-I am hopeful that since it (at least so far) always fails that it
-might not be THAT bad to track down. That coupled with some knowledge
-of what the compilers are doing differently can hopefully help track
-it down.
+What I'd like to do, and I'm sure it's possible but I have no idea how, is 
+to still have this as an OF driver and have the device tree tell the 
+kernel about the HW interface to use.  So on one product (currently all 
+products use an MCP83xx variant) I would have a child node under a PCI 
+node to describe it's interrupts, addressing (which could also come from a 
+PCI probe I expect), compatibility, any attached PHYs etc, and on a second 
+product do the same thing under a localbus node.
 
-Thanks!
+First question that comes to mind is ordering.  If I put a child node in 
+the PCI node of the device tree, what happens when the device tree is 
+processed?  Is it immediately going to try and find and install a driver 
+for that child node?  Since the device tree is processed very early, the 
+PCI bus isn't going to be set up and available yet.  Will trying to 
+install a PCI driver via OF even be possible at this point?  Then I'd 
+still need a PCI function to claim the device when the PCI bus gets 
+probed.  If the driver is already installed via OF, what does the PCI 
+function do?
 
-kevin
+Or am I all backwards.  Does having the child node to the PCI node 
+actually do anything when the early OF code runs?  If not would the PCI 
+probe function be the first indication to the system that the driver needs 
+to be loaded?  In which case I just walk the device tree looking 
+for...what?  How would I match up the PCI ID with something in the device 
+tree?
 
-On Wed, Feb 2, 2011 at 3:40 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
-> That's interesting... That driver is really nasty, we probably have a
-> bug in it that's exposed by optimizations done by more recent compilers
-> but it's not going to be trivial to figure out I'm afraid. I at least
-> have very dim memories of mesh and how it operates...
->
-> One thing to be careful of with Mesh is that the DMA engine, while
-> supposedly cache coherent, has shown in the past to have issues when
-> DMA'ing to unaligned memory locations. This shouldn't be a problem with
-> normal block transfers but we may have to be careful with things like
-> inquiry, mode pages, sense requests etc...
->
-> Ben.
->
+Then there's the local bus side of the question?  That should truly be an 
+OF driver and use struct of_platform_driver along with that whole 
+mechanism.  How do I make that compatible with the version of the MAC that 
+runs on PCI?
+
+Or am I making a whole lot of work for myself and I should just make them 
+separate drivers?  I'm trying to keep the code base as small and coherent 
+as possible.  I don't want to have to maintain multiple copies of a driver 
+that are essentially identical.
+
+Thanks.
+
+Bruce
