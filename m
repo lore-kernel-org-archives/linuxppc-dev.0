@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8220B70DA
+	by ozlabs.org (Postfix) with ESMTPS id 8540CB7128
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Feb 2011 18:46:02 +1100 (EST)
-Subject: Re: [PATCH V2 3/6] powerpc/47x: allow kernel to be loaded in higher
-	physical memory
+	Wed,  2 Feb 2011 18:48:58 +1100 (EST)
+Subject: Re: [PATCH V2 4/6] powerpc/44x: don't use tlbivax on AMP systems
 Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1296586126-32765-4-git-send-email-shaggy@linux.vnet.ibm.com>
-Date: Wed, 2 Feb 2011 01:45:48 -0600
-Message-Id: <7637207D-0D0C-4920-9E8D-B175711C1164@kernel.crashing.org>
+In-Reply-To: <1296586126-32765-5-git-send-email-shaggy@linux.vnet.ibm.com>
+Date: Wed, 2 Feb 2011 01:48:45 -0600
+Message-Id: <85A99D1E-9B32-4816-91FD-355B325D3F8F@kernel.crashing.org>
 References: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1296586126-32765-4-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1296586126-32765-5-git-send-email-shaggy@linux.vnet.ibm.com>
 To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,19 +28,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Feb 1, 2011, at 12:48 PM, Dave Kleikamp wrote:
 
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
-> arch/powerpc/Kconfig                          |    2 +-
-> arch/powerpc/configs/44x/iss476-smp_defconfig |    6 ++--
-> arch/powerpc/kernel/head_44x.S                |   42 =
-++++++++++++++++++++-----
-> arch/powerpc/mm/44x_mmu.c                     |   13 ++++++--
-> 4 files changed, 48 insertions(+), 15 deletions(-)
+> Since other OS's may be running on the other cores don't use tlbivax
 
-Would be nice to expand in the commit message on what "higher physical" =
-means.
+Are you guys building SMP kernel for use with AMP?  Just wondering why =
+you'd be using tlbivax at all.
 
-- k=
+- k
