@@ -1,42 +1,22 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4724BB7160
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8220B70DA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Feb 2011 18:12:28 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp01.au.ibm.com (8.14.4/8.13.1) with ESMTP id p1278gMr028931
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:08:42 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p127CIQR1781810
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:12:18 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p127CHdk004867
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 18:12:18 +1100
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6] ftrace syscalls: don't add events for unmapped syscalls
-Date: Wed,  2 Feb 2011 18:11:53 +1100
-Message-Id: <1296630718-17537-2-git-send-email-imunsie@au1.ibm.com>
-In-Reply-To: <1296630718-17537-1-git-send-email-imunsie@au1.ibm.com>
-References: <1296630718-17537-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-	Jason Baron <jbaron@redhat.com>, Alexander Graf <agraf@suse.de>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	David Gibson <dwg@au1.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Avantika Mathur <mathur@linux.vnet.ibm.com>
+	Wed,  2 Feb 2011 18:46:02 +1100 (EST)
+Subject: Re: [PATCH V2 3/6] powerpc/47x: allow kernel to be loaded in higher
+	physical memory
+Mime-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1296586126-32765-4-git-send-email-shaggy@linux.vnet.ibm.com>
+Date: Wed, 2 Feb 2011 01:45:48 -0600
+Message-Id: <7637207D-0D0C-4920-9E8D-B175711C1164@kernel.crashing.org>
+References: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1296586126-32765-4-git-send-email-shaggy@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,66 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
 
-FTRACE_SYSCALLS would create events for each and every system call, even
-if it had failed to map the system call's name with it's number. This
-resulted in a number of events being created that would not behave as
-expected.
+On Feb 1, 2011, at 12:48 PM, Dave Kleikamp wrote:
 
-This could happen, for example, on architectures who's symbol names are
-unusual and will not match the system call name. It could also happen
-with system calls which were mapped to sys_ni_syscall.
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+> arch/powerpc/Kconfig                          |    2 +-
+> arch/powerpc/configs/44x/iss476-smp_defconfig |    6 ++--
+> arch/powerpc/kernel/head_44x.S                |   42 =
+++++++++++++++++++++-----
+> arch/powerpc/mm/44x_mmu.c                     |   13 ++++++--
+> 4 files changed, 48 insertions(+), 15 deletions(-)
 
-This patch changes the default system call number in the metadata to -1.
-If the system call name from the metadata is not successfully mapped to
-a system call number during boot, than the event initialisation routine
-will now return an error, preventing the event from being created.
+Would be nice to expand in the commit message on what "higher physical" =
+means.
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
- include/linux/syscalls.h      |    2 ++
- kernel/trace/trace_syscalls.c |    8 ++++++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 18cd068..2e5a68d 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -160,6 +160,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- 	  __attribute__((section("__syscalls_metadata")))	\
- 	  __syscall_meta_##sname = {				\
- 		.name 		= "sys"#sname,			\
-+		.syscall_nr	= -1,	/* Filled in at boot */	\
- 		.nb_args 	= nb,				\
- 		.types		= types_##sname,		\
- 		.args		= args_##sname,			\
-@@ -176,6 +177,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- 	  __attribute__((section("__syscalls_metadata")))	\
- 	  __syscall_meta__##sname = {				\
- 		.name 		= "sys_"#sname,			\
-+		.syscall_nr	= -1,	/* Filled in at boot */	\
- 		.nb_args 	= 0,				\
- 		.enter_event	= &event_enter__##sname,	\
- 		.exit_event	= &event_exit__##sname,		\
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index b706529..a66bc13 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -423,6 +423,14 @@ void unreg_event_syscall_exit(struct ftrace_event_call *call)
- int init_syscall_trace(struct ftrace_event_call *call)
- {
- 	int id;
-+	int num;
-+
-+	num = ((struct syscall_metadata *)call->data)->syscall_nr;
-+	if (num < 0 || num >= NR_syscalls) {
-+		pr_debug("syscall %s metadata not mapped, disabling ftrace event\n",
-+				((struct syscall_metadata *)call->data)->name);
-+		return -ENOSYS;
-+	}
- 
- 	if (set_syscall_print_fmt(call) < 0)
- 		return -ENOMEM;
--- 
-1.7.2.3
+- k=
