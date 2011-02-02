@@ -1,33 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 10FAFB710F
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F2582B70EA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Feb 2011 01:32:39 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p12EU3YL028979
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:30:03 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p12EWXHf111304
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:32:33 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p12EWXQK027199
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:32:33 -0700
-Received: from zod.rchland.ibm.com ([9.12.228.69])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	p12EWWKX027089
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Feb 2011 07:32:32 -0700
-Date: Wed, 2 Feb 2011 09:31:55 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: 4xx next branch
-Message-ID: <20110202143155.GB17643@zod.rchland.ibm.com>
+	Thu,  3 Feb 2011 06:36:47 +1100 (EST)
+Received: by iye19 with SMTP id 19so307314iye.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 02 Feb 2011 11:36:45 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTik9ejmu2vE13f_nRZZMspU-LW4y2=74iczoXGNt@mail.gmail.com>
+References: <AANLkTikAVgH9-UQfrjoAJSemet5p_PxhxCdot8cChQu3@mail.gmail.com>
+	<AANLkTim6v25Sam+E8Bo9za1q0GJqWZitgqR0KBuKCoWz@mail.gmail.com>
+	<AANLkTik9ejmu2vE13f_nRZZMspU-LW4y2=74iczoXGNt@mail.gmail.com>
+Date: Wed, 2 Feb 2011 13:36:44 -0600
+Message-ID: <AANLkTikGK-7JspQMTiqjXcvoP1FVSt2gZJ9SRqGj=7DO@mail.gmail.com>
+Subject: Re: BootX
+From: kevin diggs <diggskevin38@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,24 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi,
 
-I've added the following patches to my next branch:
+FYI:
 
-Dave Kleikamp (2):
-      powerpc/476: define specific cpu table entry DD2 core
-      powerpc/476: Workaround for PLB6 hang
+I have narrowed this down to drivers/scsi/mesh.c (the root disk
+controller for the PowerMac 8600). I have compiled everything else for
+2.6.36 with 4.3.5, including modules. With a 4.1.2 compiled mesh.c the
+beast boots. I am using it to post this follow up.
 
-Rupjyoti Sarmah (1):
-      powerpc/44x: PHY fixup for USB on canyonlands board
+kevin
 
-Tirumala Marri (1):
-      powerpc/44x: Add USB DWC DTS entry to Canyonlands board
-
-
-There are a few more I'd like to review still, including the AMP support
-for 476 before I ask Ben to pull.  The above patches will sit in my
-branch for a few days.  If there are any others I have missed, please
-let me know.
-
-josh
+> On Sat, Jan 22, 2011 at 12:24 PM, kevin diggs <diggskevin38@gmail.com> wrote:
+>> Hi,
+>>
+>> If I enable SMP then I can build a 2.6.28 kernel with gcc 4.3.5 that
+>> WILL boot on the PowerMac8600 (single 750GX). The previously mentioned
+>> G4 that runs is a dual cpu beast and thus also runs SMP.
+>>
