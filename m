@@ -1,17 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1296697900-14004-3-git-send-email-meador_inge@mentor.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: devicetree-discuss@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/3] powerpc: Removing support for 'protected-sources'
+Date: Thu, 3 Feb 2011 16:56:38 +0100
 References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
-	<1296697900-14004-3-git-send-email-meador_inge@mentor.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 3 Feb 2011 08:56:51 -0700
-Message-ID: <AANLkTinVak_ukf0wP8=zbGTq8ENV4d88hNuzW_tqvCFf@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] powerpc: document the Open PIC device tree binding
-To: Meador Inge <meador_inge@mentor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+	<1296697900-14004-2-git-send-email-meador_inge@mentor.com>
+In-Reply-To: <1296697900-14004-2-git-send-email-meador_inge@mentor.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201102031656.38222.arnd@arndb.de>
+Cc: Meador Inge <meador_inge@mentor.com>,
+	Hollis Blanchard <hollis_blanchard@mentor.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,201 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 2, 2011 at 6:51 PM, Meador Inge <meador_inge@mentor.com> wrote:
-> This binding documents several properties that have been in use for quite
-> some time, and adds one new property 'no-reset', which controls whether t=
-he
-> Open PIC should be reset during runtime initialization.
->
-> The general formatting and interrupt specifier definition is based off of
-> Stuart Yoder's FSL MPIC binding.
->
-> Signed-off-by: Meador Inge <meador_inge@mentor.com>
-> CC: Hollis Blanchard <hollis_blanchard@mentor.com>
-> CC: Stuart Yoder <stuart.yoder@freescale.com>
-> ---
-> =A0Documentation/powerpc/dts-bindings/open-pic.txt | =A0115 +++++++++++++=
-++++++++++
-> =A01 files changed, 115 insertions(+), 0 deletions(-)
-> =A0create mode 100644 Documentation/powerpc/dts-bindings/open-pic.txt
->
-> diff --git a/Documentation/powerpc/dts-bindings/open-pic.txt b/Documentat=
-ion/powerpc/dts-bindings/open-pic.txt
-> new file mode 100644
-> index 0000000..447ef65
-> --- /dev/null
-> +++ b/Documentation/powerpc/dts-bindings/open-pic.txt
-> @@ -0,0 +1,115 @@
-> +* Open PIC Binding
-> +
-> +This binding specifies what properties must be available in the device t=
-ree
-> +representation of an Open PIC compliant interrupt controller. =A0This bi=
-nding is
-> +based on the binding defined for Open PIC in [1] and is a superset of th=
-at
-> +binding.
-> +
-> +PROPERTIES
-> +
-> + =A0NOTE: Many of these descriptions were paraphrased here from [1] to a=
-id
-> + =A0 =A0 =A0 =A0readability.
-> +
-> + =A0- compatible
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <string>
-> + =A0 =A0 =A0Definition: Specifies the compatibility list for the PIC. =
-=A0The
-> + =A0 =A0 =A0 =A0 =A0property value shall include "open-pic".
-> +
-> + =A0- reg
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <prop-encoded-array>
-> + =A0 =A0 =A0Definition: Specifies the base physical address(s) and size(=
-s) of this
-> + =A0 =A0 =A0 =A0 =A0PIC's addressable register space.
-> +
-> + =A0- interrupt-controller
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <empty>
-> + =A0 =A0 =A0Definition: The presence of this property identifies the nod=
-e
-> + =A0 =A0 =A0 =A0 =A0as an Open PIC. =A0No property value should be defin=
-ed.
-> +
-> + =A0- #interrupt-cells
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <u32>
-> + =A0 =A0 =A0Definition: Specifies the number of cells needed to encode a=
-n
-> + =A0 =A0 =A0 =A0 =A0interrupt source. =A0Shall be 2.
-> +
-> + =A0- #address-cells
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <u32>
-> + =A0 =A0 =A0Definition: Specifies the number of cells needed to encode a=
-n
-> + =A0 =A0 =A0 =A0 =A0address. =A0The value of this property shall always =
-be 0.
-> + =A0 =A0 =A0 =A0 =A0As such, 'interrupt-map' nodes do not have to specif=
-y a
-> + =A0 =A0 =A0 =A0 =A0parent unit address.
-> +
-> + =A0- no-reset
-> + =A0 =A0 =A0Usage: optional
-> + =A0 =A0 =A0Value type: <empty>
-> + =A0 =A0 =A0Definition: The presence of this property indicates that the=
- PIC
-> + =A0 =A0 =A0 =A0 =A0should not be reset during runtime initialization. =
-=A0The presence of
-> + =A0 =A0 =A0 =A0 =A0this property also mandates that any initialization =
-related to
-> + =A0 =A0 =A0 =A0 =A0interrupt sources shall be limited to sources explic=
-itly referenced
-> + =A0 =A0 =A0 =A0 =A0in the device tree.
+On Thursday 03 February 2011, Meador Inge wrote:
+> In a recent discussion [1, 2] concerning device trees for AMP systems, the
+> question of whether we really need 'protected-sources' arose.  The general
+> consensus was that if you don't want a source to be used, then it should *not*
+> be mentioned in an 'interrupts' property.  If a source really needs to be
+> mentioned, then it should be put in a property other than 'interrupts' with
+> a specific binding for that use case.
+> 
+> [1] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/004038.html
+> [2] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/003991.html
 
-Please follow the lead set by the other binding documentation which is
-more concise and tends to be of the form:
+That doesn't work in the case that this code was written for:
 
-    Required properties:
-        - reg : <description>
-        - interrupt-controller : <description>
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg01394.html
 
-    Optional Properties:
-        - no-reset : blah
+The problem is that you don't want the mpic to initialize the interrupt
+line to the default, but instead leave it at whatever the boot firmware
+has set up. Note that interrupt is not listed in any "interrupts"
+property of any of the devices on the CPU interpreting the device
+tree, but it may be mentioned in the device tree that another CPU
+uses to access the same MPIC.
 
-I'm considering formalizing the binding format so that fully specified
-and cross-referenced documentation can be generated from the bindings
-directory.
-
-Also, to avoid the potential of a future namespace collision, it would
-not be a bad idea to name this openpic-no-reset or something that
-makes it clear that this is a binding specific property.  "no-reset"
-sounds generic enough to give me pause.
-
-> +
-> +INTERRUPT SPECIFIER DEFINITION
-> +
-> + =A0Interrupt specifiers consists of 2 cells encoded as
-> + =A0follows:
-> +
-> + =A0 <1st-cell> =A0 interrupt-number
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Identifies the interrupt source.
-> +
-> + =A0 <2nd-cell> =A0 level-sense information, encoded as follows:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00 =3D low-to-high edge triggered
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A01 =3D active low level-sensitive
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A02 =3D active high level-sensitiv=
-e
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A03 =3D high-to-low edge triggered
-> +
-> +EXAMPLE 1
-> +
-> + =A0 =A0/*
-> + =A0 =A0 * An Open PIC interrupt controller
-> + =A0 =A0 */
-> + =A0 =A0 =A0 mpic: pic@40000 {
-> + =A0 =A0 =A0 =A0// This is an interrupt controller node.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupt-controller;
-> +
-> + =A0 =A0 =A0 =A0// No address cells so that 'interrupt-map' nodes which =
-reference
-> + =A0 =A0 =A0 =A0// this Open PIC node do not need a parent address speci=
-fier.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <0>;
-> +
-> + =A0 =A0 =A0 =A0// Two cells to encode interrupt sources.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #interrupt-cells =3D <2>;
-> +
-> + =A0 =A0 =A0 =A0// Offset address of 0x40000 and size of 0x40000.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x40000 0x40000>;
-> +
-> + =A0 =A0 =A0 =A0// Compatible with Open PIC.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "open-pic";
-> +
-> + =A0 =A0 =A0 =A0// The PIC should not be reset.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 no-reset;
-> + =A0 =A0 =A0 };
-> +
-> +EXAMPLE 2
-> +
-> + =A0 =A0/*
-> + =A0 =A0 * An interrupt generating device that is wired to an Open PIC.
-> + =A0 =A0 */
-> + =A0 =A0serial0: serial@4500 {
-> + =A0 =A0 =A0 =A0// Interrupt source '42' that is active high level-sensi=
-tive.
-> + =A0 =A0 =A0 =A0// Note that there are only two cells as specified in th=
-e interrupt
-> + =A0 =A0 =A0 =A0// parent's '#interrupt-cells' property.
-> + =A0 =A0 =A0 =A0interrupts =3D <42 2>;
-> +
-> + =A0 =A0 =A0 =A0// The interrupt controller that this device is wired to=
-.
-> + =A0 =A0 =A0 =A0interrupt-parent =3D <&mpic>;
-> + =A0 =A0};
-> +
-> +REFERENCES
-> +
-> +[1] Power.org (TM) Standard for Embedded Power Architecture (TM) Platfor=
-m
-> + =A0 =A0Requirements (ePAPR), Version 1.0, July 2008.
-> + =A0 =A0(http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v=
-1.0.pdf)
-> +
-> --
-> 1.6.3.3
->
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	Arnd
