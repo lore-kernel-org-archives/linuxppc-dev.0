@@ -1,14 +1,14 @@
 Return-Path: <meador_inge@mentor.com>
 From: Meador Inge <meador_inge@mentor.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/3] powerpc: document the Open PIC device tree binding
-Date: Wed,  2 Feb 2011 19:51:39 -0600
-Message-Id: <1296697900-14004-3-git-send-email-meador_inge@mentor.com>
+Subject: [PATCH v2 3/3] powerpc: make MPIC honor the 'no-reset' device tree
+	property
+Date: Wed,  2 Feb 2011 19:51:40 -0600
+Message-Id: <1296697900-14004-4-git-send-email-meador_inge@mentor.com>
 In-Reply-To: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
 References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
 Cc: devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	Stuart Yoder <stuart.yoder@freescale.com>
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,141 +18,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This binding documents several properties that have been in use for quite
-some time, and adds one new property 'no-reset', which controls whether the
-Open PIC should be reset during runtime initialization.
-
-The general formatting and interrupt specifier definition is based off of
-Stuart Yoder's FSL MPIC binding.
+This property, defined in the Open PIC binding, tells the kernel not to use the
+reset bit in the global configuration register.  Additionally, its presence
+mandates that only sources which are actually used (i.e. appear in the device
+tree) should have their VECPRI bits initialized.
 
 Signed-off-by: Meador Inge <meador_inge@mentor.com>
 CC: Hollis Blanchard <hollis_blanchard@mentor.com>
-CC: Stuart Yoder <stuart.yoder@freescale.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- Documentation/powerpc/dts-bindings/open-pic.txt |  115 +++++++++++++++++++++++
- 1 files changed, 115 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/open-pic.txt
+ arch/powerpc/include/asm/mpic.h |    4 ++-
+ arch/powerpc/sysdev/mpic.c      |   54 ++++++++++++++++++++++++++++++--------
+ 2 files changed, 45 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/open-pic.txt b/Documentation/powerpc/dts-bindings/open-pic.txt
-new file mode 100644
-index 0000000..447ef65
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/open-pic.txt
-@@ -0,0 +1,115 @@
-+* Open PIC Binding
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index 9b94f18..688e3e0 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -322,6 +322,8 @@ struct mpic
+ #ifdef CONFIG_PM
+ 	struct mpic_irq_save	*save_data;
+ #endif
 +
-+This binding specifies what properties must be available in the device tree
-+representation of an Open PIC compliant interrupt controller.  This binding is
-+based on the binding defined for Open PIC in [1] and is a superset of that
-+binding.
++	int cpu;
+ };
+ 
+ /*
+@@ -333,7 +335,7 @@ struct mpic
+  */
+ 
+ /* This is the primary controller, only that one has IPIs and
+- * has afinity control. A non-primary MPIC always uses CPU0
++ * has affinity control. A non-primary MPIC always uses CPU0
+  * registers only
+  */
+ #define MPIC_PRIMARY			0x00000001
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index a98f41d..5f17022 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -308,6 +308,15 @@ static inline void mpic_map(struct mpic *mpic, struct device_node *node,
+ #define mpic_map(m,n,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
+ #endif /* !CONFIG_PPC_DCR */
+ 
++static inline void mpic_init_vector(struct mpic *mpic, int source)
++{
++	/* start with vector = source number, and masked */
++	u32 vecpri = MPIC_VECPRI_MASK | source | (8 << MPIC_VECPRI_PRIORITY_SHIFT);
++		
++	/* init hw */
++	mpic_irq_write(source, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
++	mpic_irq_write(source, MPIC_INFO(IRQ_DESTINATION), 1 << mpic->cpu);
++}
+ 
+ 
+ /* Check if we have one of those nice broken MPICs with a flipped endian on
+@@ -622,6 +631,14 @@ static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int irq)
+ 	return (src >= mpic->ipi_vecs[0] && src <= mpic->ipi_vecs[3]);
+ }
+ 
++/* Determine if the linux irq is a timer interrupt */
++static unsigned int mpic_is_timer_interrupt(struct mpic *mpic, unsigned int irq)
++{
++	unsigned int src = mpic_irq_to_hw(irq);
 +
-+PROPERTIES
++	return (src >= mpic->timer_vecs[0] && src <= mpic->timer_vecs[3]);
++}
 +
-+  NOTE: Many of these descriptions were paraphrased here from [1] to aid
-+        readability.
+ 
+ /* Convert a cpu mask from logical to physical cpu numbers. */
+ static inline u32 mpic_physmask(u32 cpumask)
+@@ -963,6 +980,15 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
+ 	if (hw >= mpic->irq_count)
+ 		return -EINVAL;
+ 
++	/* If the MPIC was reset, then all vectors have already been
++	 * initialized.  Otherwise, the appropriate vector needs to be
++	 * initialized here to ensure that only used sources are setup with
++	 * a vector.
++	 */
++	if (!(mpic->flags & MPIC_WANTS_RESET))
++		if (!(mpic_is_ipi(mpic, hw) || mpic_is_timer_interrupt(mpic, hw)))
++			mpic_init_vector(mpic, hw);
 +
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Specifies the compatibility list for the PIC.  The
-+          property value shall include "open-pic".
+ 	mpic_msi_reserve_hwirq(mpic, hw);
+ 
+ 	/* Default chip */
+@@ -1129,7 +1155,16 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	mpic_map(mpic, node, paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
+ 	/* Reset */
+-	if (flags & MPIC_WANTS_RESET) {
 +
-+  - reg
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+      Definition: Specifies the base physical address(s) and size(s) of this
-+          PIC's addressable register space.
++	/* When using a device-node, reset requests are only honored if the MPIC
++	 * is allowed to reset.
++	 */
++	if (node && of_get_property(node, "no-reset", NULL)) {
++		mpic->flags &= ~MPIC_WANTS_RESET;
++	}
 +
-+  - interrupt-controller
-+      Usage: required
-+      Value type: <empty>
-+      Definition: The presence of this property identifies the node
-+          as an Open PIC.  No property value should be defined.
-+
-+  - #interrupt-cells
-+      Usage: required
-+      Value type: <u32>
-+      Definition: Specifies the number of cells needed to encode an
-+          interrupt source.  Shall be 2.
-+
-+  - #address-cells
-+      Usage: required
-+      Value type: <u32>
-+      Definition: Specifies the number of cells needed to encode an
-+          address.  The value of this property shall always be 0.
-+          As such, 'interrupt-map' nodes do not have to specify a
-+          parent unit address.
-+
-+  - no-reset
-+      Usage: optional
-+      Value type: <empty>
-+      Definition: The presence of this property indicates that the PIC
-+          should not be reset during runtime initialization.  The presence of
-+          this property also mandates that any initialization related to
-+          interrupt sources shall be limited to sources explicitly referenced
-+          in the device tree.
-+
-+INTERRUPT SPECIFIER DEFINITION
-+
-+  Interrupt specifiers consists of 2 cells encoded as
-+  follows:
-+
-+   <1st-cell>   interrupt-number
-+
-+                Identifies the interrupt source.
-+
-+   <2nd-cell>   level-sense information, encoded as follows:
-+                    0 = low-to-high edge triggered
-+                    1 = active low level-sensitive
-+                    2 = active high level-sensitive
-+                    3 = high-to-low edge triggered
-+
-+EXAMPLE 1
-+
-+    /*
-+     * An Open PIC interrupt controller
-+     */
-+	mpic: pic@40000 {
-+        // This is an interrupt controller node.
-+		interrupt-controller;
-+
-+        // No address cells so that 'interrupt-map' nodes which reference
-+        // this Open PIC node do not need a parent address specifier.
-+		#address-cells = <0>;
-+
-+        // Two cells to encode interrupt sources.
-+		#interrupt-cells = <2>;
-+
-+        // Offset address of 0x40000 and size of 0x40000.
-+		reg = <0x40000 0x40000>;
-+
-+        // Compatible with Open PIC.
-+		compatible = "open-pic";
-+
-+        // The PIC should not be reset.
-+		no-reset;
-+	};
-+
-+EXAMPLE 2
-+
-+    /*
-+     * An interrupt generating device that is wired to an Open PIC.
-+     */
-+    serial0: serial@4500 {
-+        // Interrupt source '42' that is active high level-sensitive.
-+        // Note that there are only two cells as specified in the interrupt
-+        // parent's '#interrupt-cells' property.
-+        interrupts = <42 2>;
-+
-+        // The interrupt controller that this device is wired to.
-+        interrupt-parent = <&mpic>;
-+    };
-+
-+REFERENCES
-+
-+[1] Power.org (TM) Standard for Embedded Power Architecture (TM) Platform
-+    Requirements (ePAPR), Version 1.0, July 2008.
-+    (http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf)
-+
++	if (mpic->flags & MPIC_WANTS_RESET) {
++		printk(KERN_DEBUG "mpic: Resetting\n");
+ 		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
+ 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
+ 			   | MPIC_GREG_GCONF_RESET);
+@@ -1246,7 +1281,6 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
+ void __init mpic_init(struct mpic *mpic)
+ {
+ 	int i;
+-	int cpu;
+ 
+ 	BUG_ON(mpic->num_sources == 0);
+ 
+@@ -1290,18 +1324,14 @@ void __init mpic_init(struct mpic *mpic)
+ 	mpic_pasemi_msi_init(mpic);
+ 
+ 	if (mpic->flags & MPIC_PRIMARY)
+-		cpu = hard_smp_processor_id();
++		mpic->cpu = hard_smp_processor_id();
+ 	else
+-		cpu = 0;
++		mpic->cpu = 0;
+ 
+-	for (i = 0; i < mpic->num_sources; i++) {
+-		/* start with vector = source number, and masked */
+-		u32 vecpri = MPIC_VECPRI_MASK | i |
+-			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
+-		
+-		/* init hw */
+-		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
+-		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
++	if (mpic->flags & MPIC_WANTS_RESET) {
++		for (i = 0; i < mpic->num_sources; i++) {
++			mpic_init_vector(mpic, i);
++		}
+ 	}
+ 	
+ 	/* Init spurious vector */
 -- 
 1.6.3.3
