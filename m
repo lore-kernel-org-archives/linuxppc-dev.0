@@ -1,47 +1,13 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 32C37B70EC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Feb 2011 11:28:33 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id p130NBMn003827
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 11:23:11 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p130SXFD2314418
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 11:28:33 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p130SVd4029877
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 11:28:33 +1100
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [PATCH 4/6] ftrace syscalls: Allow arch specific syscall symbol
-	matching
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-reply-to: <1296655484.10797.47.camel@gandalf.stny.rr.com>
-References: <1296630718-17537-1-git-send-email-imunsie@au1.ibm.com>
-	<1296630718-17537-5-git-send-email-imunsie@au1.ibm.com>
-	<1296655484.10797.47.camel@gandalf.stny.rr.com>
-Date: Thu, 03 Feb 2011 11:28:27 +1100
-Message-Id: <1296692691-sup-5940@au1.ibm.com>
-Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	DOCUMENTATION <linux-doc@vger.kernel.org>,
-	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-	Jason Baron <jbaron@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Alexander Graf <agraf@suse.de>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
-	Andrew Morton <akpm@linux-foundation.org>, David Gibson <dwg@au1.ibm.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Avantika Mathur <mathur@linux.vnet.ibm.com>
+Return-Path: <meador_inge@mentor.com>
+From: Meador Inge <meador_inge@mentor.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/3] powerpc: Removing support for 'protected-sources'
+Date: Wed,  2 Feb 2011 19:51:38 -0600
+Message-Id: <1296697900-14004-2-git-send-email-meador_inge@mentor.com>
+In-Reply-To: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
+References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
+Cc: devicetree-discuss@lists.ozlabs.org,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,30 +17,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Steven Rostedt's message of Thu Feb 03 01:04:44 +1100 2011:
-> I'll answer your question here.
+In a recent discussion [1, 2] concerning device trees for AMP systems, the
+question of whether we really need 'protected-sources' arose.  The general
+consensus was that if you don't want a source to be used, then it should *not*
+be mentioned in an 'interrupts' property.  If a source really needs to be
+mentioned, then it should be put in a property other than 'interrupts' with
+a specific binding for that use case.
 
-> > +#define arch_syscall_match_sym_name(sym, name) !strcmp(sym + 3, name + 3)
-> 
-> Instead, you could have:
-> 
-> #ifndef ARCH_HAS_SYSCALL_MATCH_SYM_NAME
-> 
-> static inline arch_syscall_match_sym_name(const char *sym, const char *name)
-> {
->     return strcmp(sym + 3, name + 3) != 0;
-> }
-> 
-> 
-> If an arch needs to make its own, then it can simply override it by
-> creating its own version and defining:
-> 
-> #define ARCH_HAS_SYSCALL_MATCH_SYM_NAME
-> 
-> Just like they do when an arch has its own strcmp.
+[1] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/004038.html
+[2] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/003991.html
 
-Ok, I've changed it over. Just doing a quick regression test on ppc64 &
-x86 then I'll repost.
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+CC: Hollis Blanchard <hollis_blanchard@mentor.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/mpic.h |    3 ---
+ arch/powerpc/sysdev/mpic.c      |   38 --------------------------------------
+ 2 files changed, 0 insertions(+), 41 deletions(-)
 
-Cheers,
--Ian
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index e000cce..9b94f18 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -301,9 +301,6 @@ struct mpic
+ 	struct mpic_reg_bank	cpuregs[MPIC_MAX_CPUS];
+ 	struct mpic_reg_bank	isus[MPIC_MAX_ISU];
+ 
+-	/* Protected sources */
+-	unsigned long		*protected;
+-
+ #ifdef CONFIG_MPIC_WEIRD
+ 	/* Pointer to HW info array */
+ 	u32			*hw_set;
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 7c13426..a98f41d 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -947,8 +947,6 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
+ 
+ 	if (hw == mpic->spurious_vec)
+ 		return -EINVAL;
+-	if (mpic->protected && test_bit(hw, mpic->protected))
+-		return -EINVAL;
+ 
+ #ifdef CONFIG_SMP
+ 	else if (hw >= mpic->ipi_vecs[0]) {
+@@ -1095,26 +1093,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	if (node && of_get_property(node, "big-endian", NULL) != NULL)
+ 		mpic->flags |= MPIC_BIG_ENDIAN;
+ 
+-	/* Look for protected sources */
+-	if (node) {
+-		int psize;
+-		unsigned int bits, mapsize;
+-		const u32 *psrc =
+-			of_get_property(node, "protected-sources", &psize);
+-		if (psrc) {
+-			psize /= 4;
+-			bits = intvec_top + 1;
+-			mapsize = BITS_TO_LONGS(bits) * sizeof(unsigned long);
+-			mpic->protected = kzalloc(mapsize, GFP_KERNEL);
+-			BUG_ON(mpic->protected == NULL);
+-			for (i = 0; i < psize; i++) {
+-				if (psrc[i] > intvec_top)
+-					continue;
+-				__set_bit(psrc[i], mpic->protected);
+-			}
+-		}
+-	}
+-
+ #ifdef CONFIG_MPIC_WEIRD
+ 	mpic->hw_set = mpic_infos[MPIC_GET_REGSET(flags)];
+ #endif
+@@ -1321,9 +1299,6 @@ void __init mpic_init(struct mpic *mpic)
+ 		u32 vecpri = MPIC_VECPRI_MASK | i |
+ 			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
+ 		
+-		/* check if protected */
+-		if (mpic->protected && test_bit(i, mpic->protected))
+-			continue;
+ 		/* init hw */
+ 		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
+ 		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
+@@ -1492,13 +1467,6 @@ static unsigned int _mpic_get_one_irq(struct mpic *mpic, int reg)
+ 			mpic_eoi(mpic);
+ 		return NO_IRQ;
+ 	}
+-	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
+-		if (printk_ratelimit())
+-			printk(KERN_WARNING "%s: Got protected source %d !\n",
+-			       mpic->name, (int)src);
+-		mpic_eoi(mpic);
+-		return NO_IRQ;
+-	}
+ 
+ 	return irq_linear_revmap(mpic->irqhost, src);
+ }
+@@ -1532,12 +1500,6 @@ unsigned int mpic_get_coreint_irq(void)
+ 			mpic_eoi(mpic);
+ 		return NO_IRQ;
+ 	}
+-	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
+-		if (printk_ratelimit())
+-			printk(KERN_WARNING "%s: Got protected source %d !\n",
+-			       mpic->name, (int)src);
+-		return NO_IRQ;
+-	}
+ 
+ 	return irq_linear_revmap(mpic->irqhost, src);
+ #else
+-- 
+1.6.3.3
