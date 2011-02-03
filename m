@@ -1,20 +1,19 @@
-Return-Path: <B08248@freescale.com>
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>, Meador Inge
-	<meador_inge@mentor.com>
-Subject: RE: [PATCH v2 2/3] powerpc: document the Open PIC device tree binding
-Date: Thu, 3 Feb 2011 17:02:14 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E15030BE4F7@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
-	<1296697900-14004-3-git-send-email-meador_inge@mentor.com>
-	<AANLkTinVak_ukf0wP8=zbGTq8ENV4d88hNuzW_tqvCFf@mail.gmail.com>
-In-Reply-To: <AANLkTinVak_ukf0wP8=zbGTq8ENV4d88hNuzW_tqvCFf@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <timur@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B6202B710C
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Feb 2011 04:39:12 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: <stable@kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: fix compatible properties of the P1022DS DMA
+	nodes used for audio
+Date: Thu, 3 Feb 2011 11:39:04 -0600
+Message-ID: <1296754744-22526-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	Hollis Blanchard <hollis_blanchard@mentor.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In order to prevent the fsl_dma driver from claiming the DMA channels that the
+P1022DS audio driver needs, the compatible properties for those nodes must say
+"fsl,ssi-dma-channel" instead of "fsl,eloplus-dma-channel".
 
-> > + =A0- no-reset
-> > + =A0 =A0 =A0Usage: optional
-> > + =A0 =A0 =A0Value type: <empty>
-> > + =A0 =A0 =A0Definition: The presence of this property indicates that t=
-he
-> > + PIC
-> > + =A0 =A0 =A0 =A0 =A0should not be reset during runtime initialization.=
- =A0The
-> > + presence of
-> > + =A0 =A0 =A0 =A0 =A0this property also mandates that any initializatio=
-n related
-> > + to
-> > + =A0 =A0 =A0 =A0 =A0interrupt sources shall be limited to sources expl=
-icitly
-> > + referenced
-> > + =A0 =A0 =A0 =A0 =A0in the device tree.
->=20
-> Please follow the lead set by the other binding documentation which is mo=
-re
-> concise and tends to be of the form:
->=20
->     Required properties:
->         - reg : <description>
->         - interrupt-controller : <description>
->=20
->     Optional Properties:
->         - no-reset : blah
->=20
-> I'm considering formalizing the binding format so that fully specified an=
-d
-> cross-referenced documentation can be generated from the bindings
-> directory.
+Commit b2e0861e51f2961954330dcafe6d148ee3ab5cff upstream.
 
-Regarding the format-- The definition should also to specify the value
-type.  I don't see this being consistently done in existing bindings. =20
-They are not completely unclear, but using consistent terms might help.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+Cc: stable@kernel.org
+---
+ arch/powerpc/boot/dts/p1022ds.dts |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-The ePAPR uses this convention:
-
-    <empty>      # no value, a Boolean
-     <u32>       # A 32-bit integer in big-endian format
-     <u64>       # A 64-bit integer in big-endian format
-   <string>      # null terminated
- <prop-encoded-array>    # format specific to the property
-   <phandle>    # A <u32> value, referecnes another node
-  <stringlist>    # A list of <string> values concatenated together.
-
-The identifier prop-encoded-array came from precedence in other
-of binding and ieee1275.   prop-encoded-arrays should be
-be specifically defined in terms of # of cells and the=20
-meaning of each cell.
-
-If you use the above types identifiers, there is no ambiguity.
-
-Also, there are properties that don't necessarily fall in 'required'
-and 'optional', but may be required depending on the context.  Thus
-the 'Usage' identifier which Meador derived from my mpic binding
-posted.   Usage could be:
-               Required
-               Optional
-               See Definition
-
-Stuart
+diff --git a/arch/powerpc/boot/dts/p1022ds.dts b/arch/powerpc/boot/dts/p1022ds.dts
+index 2bbecbb..69422eb 100644
+--- a/arch/powerpc/boot/dts/p1022ds.dts
++++ b/arch/powerpc/boot/dts/p1022ds.dts
+@@ -291,13 +291,13 @@
+ 			ranges = <0x0 0xc100 0x200>;
+ 			cell-index = <1>;
+ 			dma00: dma-channel@0 {
+-				compatible = "fsl,eloplus-dma-channel";
++				compatible = "fsl,ssi-dma-channel";
+ 				reg = <0x0 0x80>;
+ 				cell-index = <0>;
+ 				interrupts = <76 2>;
+ 			};
+ 			dma01: dma-channel@80 {
+-				compatible = "fsl,eloplus-dma-channel";
++				compatible = "fsl,ssi-dma-channel";
+ 				reg = <0x80 0x80>;
+ 				cell-index = <1>;
+ 				interrupts = <77 2>;
+-- 
+1.7.3.4
