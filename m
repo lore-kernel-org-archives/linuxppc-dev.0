@@ -1,17 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 3 Feb 2011 16:03:51 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 4/6] powerpc/44x: don't use tlbivax on AMP systems
-Message-ID: <20110203050351.GK3032@yookeroo>
-References: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1296586126-32765-5-git-send-email-shaggy@linux.vnet.ibm.com>
-	<20110202230844.GG3032@yookeroo>
-	<1296690839.12290.108.camel@shaggy-w500>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 0/3] powerpc: Open PIC binding and 'no-reset'
+	implementation
+Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1296690839.12290.108.camel@shaggy-w500>
-Cc: linuxppc-dev@lists.ozlabs.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
+Date: Thu, 3 Feb 2011 09:22:53 -0600
+Message-Id: <D6C286E3-9D14-4C11-9974-61DDAB7CB6E2@kernel.crashing.org>
+References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
+To: Meador Inge <meador_inge@mentor.com>
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 02, 2011 at 05:53:59PM -0600, Dave Kleikamp wrote:
-> On Thu, 2011-02-03 at 10:08 +1100, David Gibson wrote:
-> > On Tue, Feb 01, 2011 at 12:48:44PM -0600, Dave Kleikamp wrote:
-> > > Since other OS's may be running on the other cores don't use tlbivax
-> > 
-> > [snip]
-> > > +#ifdef CONFIG_44x
-> > > +void __init early_init_mmu_44x(void)
-> > > +{
-> > > +	unsigned long root = of_get_flat_dt_root();
-> > > +	if (of_flat_dt_is_compatible(root, "ibm,47x-AMP"))
-> > > +		amp = 1;
-> > > +}
-> > > +#endif /* CONFIG_44x */
-> > 
-> > A test against a hardcoded compatible string seems a nasty way to do
-> > this.  Maybe we should define a new boolean property for the root
-> > node.
-> 
-> I'm not crazy about this string, but I needed something in the device
-> tree to key off of.  Freescale has something similar (i.e.
-> MPC8572DS-CAMP), so I chose to follow their example.  I'd be happy to
-> replace it with a boolean property.  Any objection to just using
-> "amp"?
 
-Bit too short, I think.  I'd suggest either spelling out
-'asymmetric-multiprocessor' or 'cooperative-partition' (a more
-accurate term, IMO).
+On Feb 2, 2011, at 7:51 PM, Meador Inge wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> This patch set provides a binding for Open PIC and implements support =
+for
+> a new property, specified by that binding, called 'no-reset'.  With =
+'no-reset'
+> in place the 'protected-sources' property is no longer needed and was =
+removed.
+>=20
+> Signed-off-by: Meador Inge <meador_inge@mentor.com>
+> CC: Hollis Blanchard <hollis_blanchard@mentor.com>
+>=20
+> Meador Inge (3):
+>  powerpc: Removing support for 'protected-sources'
+>  powerpc: document the Open PIC device tree binding
+>  powerpc: make MPIC honor the 'no-reset' device tree property
+>=20
+> Documentation/powerpc/dts-bindings/open-pic.txt |  115 =
++++++++++++++++++++++++
+> arch/powerpc/include/asm/mpic.h                 |    7 +-
+> arch/powerpc/sysdev/mpic.c                      |   92 =
+++++++++----------
+> 3 files changed, 160 insertions(+), 54 deletions(-)
+> create mode 100644 Documentation/powerpc/dts-bindings/open-pic.txt
+>=20
+
+Please cleanup all the .dts that are impacted by this.
+
+- k
