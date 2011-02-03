@@ -1,36 +1,36 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com",
+	(Client CN "e23smtp03.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D9640B7113
+	by ozlabs.org (Postfix) with ESMTPS id 5401EB7113
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Feb 2011 14:27:39 +1100 (EST)
+	Thu,  3 Feb 2011 14:27:42 +1100 (EST)
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id p133MVA9021477
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:22:31 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p133NEre014583
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:23:14 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
 	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p133RcVp1798200
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:27:38 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p133RavH021251
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:27:38 +1100
+	p133RfSf2523274
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:27:41 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p133Rde1018155
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:27:41 +1100
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: PowerPC,
-	ftrace: Add PPC raw syscall tracepoints & ftrace fixes (mimimal
-	subset only) v4
-Date: Thu,  3 Feb 2011 14:27:19 +1100
-Message-Id: <1296703645-18718-1-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 1/6] ftrace syscalls: don't add events for unmapped syscalls
+Date: Thu,  3 Feb 2011 14:27:20 +1100
+Message-Id: <1296703645-18718-2-git-send-email-imunsie@au1.ibm.com>
+In-Reply-To: <1296703645-18718-1-git-send-email-imunsie@au1.ibm.com>
+References: <1296703645-18718-1-git-send-email-imunsie@au1.ibm.com>
 Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
 	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
 	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
 	Jason Baron <jbaron@redhat.com>, Alexander Graf <agraf@suse.de>,
 	Steven Rostedt <rostedt@goodmis.org>,
 	David Gibson <dwg@au1.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
+	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
 	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
 	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
@@ -46,47 +46,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-This is a partial version of my 'ftrace syscalls, PowerPC: Various fixes,
-Compat Syscall support and PowerPC implementation'. This is updated from
-yesterday with arch_syscall_addr changed to a static inline function from
-Steven's suggestion.
+FTRACE_SYSCALLS would create events for each and every system call, even
+if it had failed to map the system call's name with it's number. This
+resulted in a number of events being created that would not behave as
+expected.
 
-This subset implements the raw syscall tracepoints on PowerPC which has been
-requested recently.  It also fixes ftrace syscalls to ensure that events will
-only be created for syscalls that successfully map their metadata to a syscall
-number, so that non-working phantom events are not created. Patches #2 and #6
-in this series are not strictly necessary for this, they just optimise ftrace
-syscalls a bit.
+This could happen, for example, on architectures who's symbol names are
+unusual and will not match the system call name. It could also happen
+with system calls which were mapped to sys_ni_syscall.
 
-What's missing from this series that was in the full 40 patch v2 series is the
-conversion of all the syscalls implemented under /arch/powerpc, Jason Baron's
-compat syscall support and the conversion of the remaining native and compat
-syscalls to this infrastructure.
+This patch changes the default system call number in the metadata to -1.
+If the system call name from the metadata is not successfully mapped to
+a system call number during boot, than the event initialisation routine
+will now return an error, preventing the event from being created.
 
-Cheers,
--Ian
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ include/linux/syscalls.h      |    2 ++
+ kernel/trace/trace_syscalls.c |    8 ++++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-
-Changelog:
-Subset v4:
-- Changed arch_syscall_addr to a static inline function from Steven's
-  suggestion. Archs implementing their own function must now define
-  ARCH_HAS_SYSCALL_MATCH_SYM_NAME in their asm/ftrace.h
-
-Subset v3:
-- Rather than removing the redundant syscall_nr checks completely, I have
-  turned them into WARN_ON_ONCE to catch possible future regressions, from
-  Steven Rostedt's suggestion.
-- From Mike Frysinger's suggestion, arch_syscall_addr is now a macro rather
-  than a weak function to minimise the overhead at boot. Archs with special
-  requirements (such as ppc64) can define their own macro in asm/ftrace.h.
-  Steven Rostedt suggested this be made a static inline function, but I don't
-  see how this would be possible (at least without #defines and #ifndefs) given
-  that it has to be weak to allow archs to override it (Unless I misunderstood
-  something?  Steven?).
-
-Subset v2:
-- Minimal unchanged subset from 'ftrace syscalls, PowerPC: Various fixes,
-  Compat Syscall support and PowerPC implementation' v2 patch series.
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 18cd068..2e5a68d 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -160,6 +160,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 	  __attribute__((section("__syscalls_metadata")))	\
+ 	  __syscall_meta_##sname = {				\
+ 		.name 		= "sys"#sname,			\
++		.syscall_nr	= -1,	/* Filled in at boot */	\
+ 		.nb_args 	= nb,				\
+ 		.types		= types_##sname,		\
+ 		.args		= args_##sname,			\
+@@ -176,6 +177,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 	  __attribute__((section("__syscalls_metadata")))	\
+ 	  __syscall_meta__##sname = {				\
+ 		.name 		= "sys_"#sname,			\
++		.syscall_nr	= -1,	/* Filled in at boot */	\
+ 		.nb_args 	= 0,				\
+ 		.enter_event	= &event_enter__##sname,	\
+ 		.exit_event	= &event_exit__##sname,		\
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index b706529..a66bc13 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -423,6 +423,14 @@ void unreg_event_syscall_exit(struct ftrace_event_call *call)
+ int init_syscall_trace(struct ftrace_event_call *call)
+ {
+ 	int id;
++	int num;
++
++	num = ((struct syscall_metadata *)call->data)->syscall_nr;
++	if (num < 0 || num >= NR_syscalls) {
++		pr_debug("syscall %s metadata not mapped, disabling ftrace event\n",
++				((struct syscall_metadata *)call->data)->name);
++		return -ENOSYS;
++	}
+ 
+ 	if (set_syscall_print_fmt(call) < 0)
+ 		return -ENOMEM;
+-- 
+1.7.2.3
