@@ -1,19 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B6202B710C
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Feb 2011 04:39:12 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: <stable@kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/85xx: fix compatible properties of the P1022DS DMA
-	nodes used for audio
-Date: Thu, 3 Feb 2011 11:39:04 -0600
-Message-ID: <1296754744-22526-1-git-send-email-timur@freescale.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from cc-smtpout3.netcologne.de (cc-smtpout3.netcologne.de
+	[89.1.8.213]) by ozlabs.org (Postfix) with ESMTP id 24BB2B70EA
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Feb 2011 05:44:35 +1100 (EST)
+Received: from cc-smtpin1.netcologne.de (cc-smtpin1.netcologne.de [89.1.8.201])
+	by cc-smtpout3.netcologne.de (Postfix) with ESMTP id 8E4AA1238C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2011 19:34:41 +0100 (CET)
+Received: from antares (xdsl-89-0-96-22.netcologne.de [89.0.96.22])
+	by cc-smtpin1.netcologne.de (Postfix) with ESMTP id 637DD11E8D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2011 19:34:41 +0100 (CET)
+Received: from antares (antares [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 010D6BA01B
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2011 19:34:41 +0100 (CET)
+Date: Thu, 03 Feb 2011 19:34:32 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: [OT - MPC5200B] strange framing, break problems with uart
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Message-Id: <1296758080.1854.0@antares>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-Sb/913HnqO4WOa9WE5yg"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to prevent the fsl_dma driver from claiming the DMA channels that the
-P1022DS audio driver needs, the compatible properties for those nodes must say
-"fsl,ssi-dma-channel" instead of "fsl,eloplus-dma-channel".
+--=-Sb/913HnqO4WOa9WE5yg
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Commit b2e0861e51f2961954330dcafe6d148ee3ab5cff upstream.
+Hi all,
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
-Cc: stable@kernel.org
----
- arch/powerpc/boot/dts/p1022ds.dts |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+sorry for a slightly off-topic question, but I hope someone here on the lis=
+t may be able to help me...
 
-diff --git a/arch/powerpc/boot/dts/p1022ds.dts b/arch/powerpc/boot/dts/p1022ds.dts
-index 2bbecbb..69422eb 100644
---- a/arch/powerpc/boot/dts/p1022ds.dts
-+++ b/arch/powerpc/boot/dts/p1022ds.dts
-@@ -291,13 +291,13 @@
- 			ranges = <0x0 0xc100 0x200>;
- 			cell-index = <1>;
- 			dma00: dma-channel@0 {
--				compatible = "fsl,eloplus-dma-channel";
-+				compatible = "fsl,ssi-dma-channel";
- 				reg = <0x0 0x80>;
- 				cell-index = <0>;
- 				interrupts = <76 2>;
- 			};
- 			dma01: dma-channel@80 {
--				compatible = "fsl,eloplus-dma-channel";
-+				compatible = "fsl,ssi-dma-channel";
- 				reg = <0x80 0x80>;
- 				cell-index = <1>;
- 				interrupts = <77 2>;
--- 
-1.7.3.4
+I have a strange problem with the psc uart of the mpc5200b, running 2.6.32.=
+26 (still), with my baud rate divisor selection patch [1].
+
+The uart runs at 115.2 kBaud with rtc/cts handshake to send bigger chunks o=
+f data to the '5200.  I noticed "missing" data in the input stream, and ins=
+pected the uart status using the TIOCGICOUNT ioctl which tells me that a bu=
+nch of framing and break errors occurred.  I "tapped" the RxD line and conn=
+ected it via a level shifter to a standard 16450-style uart in a (much fast=
+er) Linux PC, and *that* one receives the *complete* stream *without any* b=
+reak or framing errors!
+
+I also looked at the waveforms with an oscilloscope, and they look pretty f=
+ine.  The port configuration should also be ok, re-checked with a bdi3000 j=
+tag debugger - it's PSC3, set to '1100', with PSC3_0 .. PSC3_3 being used h=
+ere.
+
+This leads me to the assumption that either the hardware handshake or the L=
+inux driver or both are broken...  any insight would be highly appreciated!
+
+Cheers,
+Albrecht.
+
+
+[1] <http://patchwork.ozlabs.org/patch/48884/>; included in 2.6.37
+
+--=-Sb/913HnqO4WOa9WE5yg
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+
+iD8DBQBNSvU/n/9unNAn/9ERAk8dAJ41FwBKfD+dxsNHBukAWfYqqTtyLgCgrxcC
+v4QanRfm7rBqJuyObihDp2M=
+=dt8T
+-----END PGP SIGNATURE-----
+
+--=-Sb/913HnqO4WOa9WE5yg--
