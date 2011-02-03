@@ -1,14 +1,42 @@
-Return-Path: <meador_inge@mentor.com>
-From: Meador Inge <meador_inge@mentor.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/3] powerpc: make MPIC honor the 'no-reset' device tree
-	property
-Date: Wed,  2 Feb 2011 19:51:40 -0600
-Message-Id: <1296697900-14004-4-git-send-email-meador_inge@mentor.com>
-In-Reply-To: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
-References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
-Cc: devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D9640B7113
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  3 Feb 2011 14:27:39 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id p133MVA9021477
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:22:31 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p133RcVp1798200
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:27:38 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p133RavH021251
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 14:27:38 +1100
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: PowerPC,
+	ftrace: Add PPC raw syscall tracepoints & ftrace fixes (mimimal
+	subset only) v4
+Date: Thu,  3 Feb 2011 14:27:19 +1100
+Message-Id: <1296703645-18718-1-git-send-email-imunsie@au1.ibm.com>
+Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+	Jason Baron <jbaron@redhat.com>, Alexander Graf <agraf@suse.de>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	David Gibson <dwg@au1.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Avantika Mathur <mathur@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,142 +46,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This property, defined in the Open PIC binding, tells the kernel not to use the
-reset bit in the global configuration register.  Additionally, its presence
-mandates that only sources which are actually used (i.e. appear in the device
-tree) should have their VECPRI bits initialized.
+Hi All,
 
-Signed-off-by: Meador Inge <meador_inge@mentor.com>
-CC: Hollis Blanchard <hollis_blanchard@mentor.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/mpic.h |    4 ++-
- arch/powerpc/sysdev/mpic.c      |   54 ++++++++++++++++++++++++++++++--------
- 2 files changed, 45 insertions(+), 13 deletions(-)
+This is a partial version of my 'ftrace syscalls, PowerPC: Various fixes,
+Compat Syscall support and PowerPC implementation'. This is updated from
+yesterday with arch_syscall_addr changed to a static inline function from
+Steven's suggestion.
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index 9b94f18..688e3e0 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -322,6 +322,8 @@ struct mpic
- #ifdef CONFIG_PM
- 	struct mpic_irq_save	*save_data;
- #endif
-+
-+	int cpu;
- };
- 
- /*
-@@ -333,7 +335,7 @@ struct mpic
-  */
- 
- /* This is the primary controller, only that one has IPIs and
-- * has afinity control. A non-primary MPIC always uses CPU0
-+ * has affinity control. A non-primary MPIC always uses CPU0
-  * registers only
-  */
- #define MPIC_PRIMARY			0x00000001
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index a98f41d..5f17022 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -308,6 +308,15 @@ static inline void mpic_map(struct mpic *mpic, struct device_node *node,
- #define mpic_map(m,n,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
- #endif /* !CONFIG_PPC_DCR */
- 
-+static inline void mpic_init_vector(struct mpic *mpic, int source)
-+{
-+	/* start with vector = source number, and masked */
-+	u32 vecpri = MPIC_VECPRI_MASK | source | (8 << MPIC_VECPRI_PRIORITY_SHIFT);
-+		
-+	/* init hw */
-+	mpic_irq_write(source, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
-+	mpic_irq_write(source, MPIC_INFO(IRQ_DESTINATION), 1 << mpic->cpu);
-+}
- 
- 
- /* Check if we have one of those nice broken MPICs with a flipped endian on
-@@ -622,6 +631,14 @@ static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int irq)
- 	return (src >= mpic->ipi_vecs[0] && src <= mpic->ipi_vecs[3]);
- }
- 
-+/* Determine if the linux irq is a timer interrupt */
-+static unsigned int mpic_is_timer_interrupt(struct mpic *mpic, unsigned int irq)
-+{
-+	unsigned int src = mpic_irq_to_hw(irq);
-+
-+	return (src >= mpic->timer_vecs[0] && src <= mpic->timer_vecs[3]);
-+}
-+
- 
- /* Convert a cpu mask from logical to physical cpu numbers. */
- static inline u32 mpic_physmask(u32 cpumask)
-@@ -963,6 +980,15 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- 	if (hw >= mpic->irq_count)
- 		return -EINVAL;
- 
-+	/* If the MPIC was reset, then all vectors have already been
-+	 * initialized.  Otherwise, the appropriate vector needs to be
-+	 * initialized here to ensure that only used sources are setup with
-+	 * a vector.
-+	 */
-+	if (!(mpic->flags & MPIC_WANTS_RESET))
-+		if (!(mpic_is_ipi(mpic, hw) || mpic_is_timer_interrupt(mpic, hw)))
-+			mpic_init_vector(mpic, hw);
-+
- 	mpic_msi_reserve_hwirq(mpic, hw);
- 
- 	/* Default chip */
-@@ -1129,7 +1155,16 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic_map(mpic, node, paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
- 
- 	/* Reset */
--	if (flags & MPIC_WANTS_RESET) {
-+
-+	/* When using a device-node, reset requests are only honored if the MPIC
-+	 * is allowed to reset.
-+	 */
-+	if (node && of_get_property(node, "no-reset", NULL)) {
-+		mpic->flags &= ~MPIC_WANTS_RESET;
-+	}
-+
-+	if (mpic->flags & MPIC_WANTS_RESET) {
-+		printk(KERN_DEBUG "mpic: Resetting\n");
- 		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
- 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
- 			   | MPIC_GREG_GCONF_RESET);
-@@ -1246,7 +1281,6 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
- void __init mpic_init(struct mpic *mpic)
- {
- 	int i;
--	int cpu;
- 
- 	BUG_ON(mpic->num_sources == 0);
- 
-@@ -1290,18 +1324,14 @@ void __init mpic_init(struct mpic *mpic)
- 	mpic_pasemi_msi_init(mpic);
- 
- 	if (mpic->flags & MPIC_PRIMARY)
--		cpu = hard_smp_processor_id();
-+		mpic->cpu = hard_smp_processor_id();
- 	else
--		cpu = 0;
-+		mpic->cpu = 0;
- 
--	for (i = 0; i < mpic->num_sources; i++) {
--		/* start with vector = source number, and masked */
--		u32 vecpri = MPIC_VECPRI_MASK | i |
--			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
--		
--		/* init hw */
--		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
--		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
-+	if (mpic->flags & MPIC_WANTS_RESET) {
-+		for (i = 0; i < mpic->num_sources; i++) {
-+			mpic_init_vector(mpic, i);
-+		}
- 	}
- 	
- 	/* Init spurious vector */
--- 
-1.6.3.3
+This subset implements the raw syscall tracepoints on PowerPC which has been
+requested recently.  It also fixes ftrace syscalls to ensure that events will
+only be created for syscalls that successfully map their metadata to a syscall
+number, so that non-working phantom events are not created. Patches #2 and #6
+in this series are not strictly necessary for this, they just optimise ftrace
+syscalls a bit.
+
+What's missing from this series that was in the full 40 patch v2 series is the
+conversion of all the syscalls implemented under /arch/powerpc, Jason Baron's
+compat syscall support and the conversion of the remaining native and compat
+syscalls to this infrastructure.
+
+Cheers,
+-Ian
+
+
+Changelog:
+Subset v4:
+- Changed arch_syscall_addr to a static inline function from Steven's
+  suggestion. Archs implementing their own function must now define
+  ARCH_HAS_SYSCALL_MATCH_SYM_NAME in their asm/ftrace.h
+
+Subset v3:
+- Rather than removing the redundant syscall_nr checks completely, I have
+  turned them into WARN_ON_ONCE to catch possible future regressions, from
+  Steven Rostedt's suggestion.
+- From Mike Frysinger's suggestion, arch_syscall_addr is now a macro rather
+  than a weak function to minimise the overhead at boot. Archs with special
+  requirements (such as ppc64) can define their own macro in asm/ftrace.h.
+  Steven Rostedt suggested this be made a static inline function, but I don't
+  see how this would be possible (at least without #defines and #ifndefs) given
+  that it has to be weak to allow archs to override it (Unless I misunderstood
+  something?  Steven?).
+
+Subset v2:
+- Minimal unchanged subset from 'ftrace syscalls, PowerPC: Various fixes,
+  Compat Syscall support and PowerPC implementation' v2 patch series.
