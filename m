@@ -1,36 +1,17 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B4BADB70E7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Feb 2011 10:16:04 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p13N20TC014906
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 16:02:00 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p13NFxlH113820
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 16:16:00 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p13NFxvx007034
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Feb 2011 16:15:59 -0700
-Subject: Re: [PATCH V2 4/6] powerpc/44x: don't use tlbivax on AMP systems
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20110203050351.GK3032@yookeroo>
-References: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
-	<1296586126-32765-5-git-send-email-shaggy@linux.vnet.ibm.com>
-	<20110202230844.GG3032@yookeroo>
-	<1296690839.12290.108.camel@shaggy-w500>
-	<20110203050351.GK3032@yookeroo>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Thu, 03 Feb 2011 17:15:57 -0600
-Message-ID: <1296774957.14077.23.camel@shaggy-w500>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <meador_inge@mentor.com>
+Message-ID: <4D4B3A4E.2070106@mentor.com>
+Date: Thu, 03 Feb 2011 17:29:18 -0600
+From: Meador Inge <meador_inge@mentor.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2 1/3] powerpc: Removing support for 'protected-sources'
+References: <1296697900-14004-1-git-send-email-meador_inge@mentor.com>
+	<1296697900-14004-2-git-send-email-meador_inge@mentor.com>
+	<201102031656.38222.arnd@arndb.de>
+In-Reply-To: <201102031656.38222.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +21,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-02-03 at 16:03 +1100, David Gibson wrote:
-> On Wed, Feb 02, 2011 at 05:53:59PM -0600, Dave Kleikamp wrote:
-> > On Thu, 2011-02-03 at 10:08 +1100, David Gibson wrote:
-> > > On Tue, Feb 01, 2011 at 12:48:44PM -0600, Dave Kleikamp wrote:
-> > > > Since other OS's may be running on the other cores don't use tlbivax
-> > > 
-> > > [snip]
-> > > > +#ifdef CONFIG_44x
-> > > > +void __init early_init_mmu_44x(void)
-> > > > +{
-> > > > +	unsigned long root = of_get_flat_dt_root();
-> > > > +	if (of_flat_dt_is_compatible(root, "ibm,47x-AMP"))
-> > > > +		amp = 1;
-> > > > +}
-> > > > +#endif /* CONFIG_44x */
-> > > 
-> > > A test against a hardcoded compatible string seems a nasty way to do
-> > > this.  Maybe we should define a new boolean property for the root
-> > > node.
-> > 
-> > I'm not crazy about this string, but I needed something in the device
-> > tree to key off of.  Freescale has something similar (i.e.
-> > MPC8572DS-CAMP), so I chose to follow their example.  I'd be happy to
-> > replace it with a boolean property.  Any objection to just using
-> > "amp"?
-> 
-> Bit too short, I think.  I'd suggest either spelling out
-> 'asymmetric-multiprocessor' or 'cooperative-partition' (a more
-> accurate term, IMO).
+On 02/03/2011 09:56 AM, Arnd Bergmann wrote:
+> On Thursday 03 February 2011, Meador Inge wrote:
+>> In a recent discussion [1, 2] concerning device trees for AMP systems, the
+>> question of whether we really need 'protected-sources' arose.  The general
+>> consensus was that if you don't want a source to be used, then it should *not*
+>> be mentioned in an 'interrupts' property.  If a source really needs to be
+>> mentioned, then it should be put in a property other than 'interrupts' with
+>> a specific binding for that use case.
+>>
+>> [1] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/004038.html
+>> [2] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/003991.html
+>
+> That doesn't work in the case that this code was written for:
+>
+> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg01394.html
+>
+> The problem is that you don't want the mpic to initialize the interrupt
+> line to the default, but instead leave it at whatever the boot firmware
+> has set up. Note that interrupt is not listed in any "interrupts"
+> property of any of the devices on the CPU interpreting the device
+> tree, but it may be mentioned in the device tree that another CPU
+> uses to access the same MPIC.
+>
+> 	Arnd
 
-I could be wrong, but I thought the A stands for Asynchronous, not
-Asymmetric.  I thought Asymmetric means that different types of tasks
-run on the secondary processors, as on the Cell.  Anyway, going with
-'cooperative-partition' would avoid that confusion.
+We touched on that use case before on list.  However, I did a really bad 
+job of explaining things in the above patch description.  I understand 
+that the sources that are being protected are mentioned in a device tree 
+other than the one that actually interprets the 'protected-sources' 
+property.
 
-Shaggy
+The idea is to try and expand the meaning of the 'no-reset' property to 
+cover what 'protected-sources' was taking care of, but without 
+explicitly naming the sources.
+
+In the protected sources version of the code, the relevant MPIC 
+initialization went something like (in 'mpic_init'):
+
+	for (i = 0; i < mpic->num_sources; i++) {
+		/* start with vector = source number, and masked */
+		u32 vecpri = MPIC_VECPRI_MASK | i |
+			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
+		
+		/* check if protected */
+		if (mpic->protected && test_bit(i, mpic->protected))
+			continue;
+		/* init hw */
+		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
+		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
+	}
+
+So unless a particular source was marked as protected, it would get the 
+VECPRI and CPU binding initialization.  This is the exact behavior that 
+you describe above, Arnd.
+
+In the 'no-reset' model, the initialization looks more like (see PATCH 3 
+in the set for the full implementation):
+
+	if (mpic->flags & MPIC_WANTS_RESET) {
+		for (i = 0; i < mpic->num_sources; i++) {
+			mpic_init_vector(mpic, hw);
+		}
+	}
+
+So in 'mpic_init' we don't initialize anything and then in 
+'mpic_host_map' we lazily do the VECPRI and CPU binding initialization with:
+
+	if (!(mpic->flags & MPIC_WANTS_RESET))
+		if (!(mpic_is_ipi(mpic, hw)
+			|| mpic_is_timer_interrupt(mpic, hw)))
+			mpic_init_vector(mpic, hw);
+
+Thus when 'no-reset' is thrown it ensures that only the sources which 
+are mentioned in the device tree are actually initialized.  The net 
+effect should be the same as what 'protected-sources' was accomplishing, 
+but without having to maintain the list of sources in the property cell.
+
+
 -- 
-Dave Kleikamp
-IBM Linux Technology Center
+Meador Inge     | meador_inge AT mentor.com
+Mentor Embedded | http://www.mentor.com/embedded-software
