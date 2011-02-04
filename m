@@ -1,13 +1,14 @@
 Return-Path: <meador_inge@mentor.com>
 From: Meador Inge <meador_inge@mentor.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/4] powerpc: Removing support for 'protected-sources'
-Date: Fri,  4 Feb 2011 17:25:38 -0600
-Message-Id: <1296861941-3370-2-git-send-email-meador_inge@mentor.com>
+Subject: [PATCH v3 2/4] powerpc: document the Open PIC device tree binding
+Date: Fri,  4 Feb 2011 17:25:39 -0600
+Message-Id: <1296861941-3370-3-git-send-email-meador_inge@mentor.com>
 In-Reply-To: <1296861941-3370-1-git-send-email-meador_inge@mentor.com>
 References: <1296861941-3370-1-git-send-email-meador_inge@mentor.com>
 Cc: devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>
+	Hollis Blanchard <hollis_blanchard@mentor.com>,
+	Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,121 +18,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In a recent thread [1,2,3] concerning device trees for AMP systems, the
-question of whether we really need 'protected-sources' arose.  The general
-consensus was that a new boolean property 'pic-no-reset' (described in more
-detail in a following patch) could be expanded to cover the use cases that
-'protected-sources' was covering.
+This binding documents several properties that have been in use for quite
+some time, and adds one new property 'pic-no-reset', which controls the runtime
+initialization behavior of the PIC.  More specifically, the presence of
+'pic-no-reset' mandates that the PIC shall not be reset during runtime
+initialization and that any initialization related to interrupt sources
+shall be limited to sources explicitly referenced in the device tree.  This
+functionality is useful in AMP systems where multiple OSes are sharing the
+PIC and the reinitialization of the PIC can interfere with OSes that are
+already up and running.
 
-One concern that was raised was for legacy systems which already use the
-'protected-sources' property [4].  For legacy use cases, 'protected-sources'
-will be treated as an alias of 'pic-no-reset'.  The sources
-encoded in the 'protected-sources' cells, however, will not be processed.  This
-legacy check is added in a later patch in the series.
-
-[1] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/004038.html
-[2] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/003991.html
-[3] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-January/004043.html
-[4] http://lists.ozlabs.org/pipermail/devicetree-discuss/2011-February/004254.html
+The interrupt specifier definition is based off of Stuart Yoder's FSL MPIC
+binding.
 
 Signed-off-by: Meador Inge <meador_inge@mentor.com>
 Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stuart Yoder <stuart.yoder@freescale.com>
 ---
- arch/powerpc/include/asm/mpic.h |    3 ---
- arch/powerpc/sysdev/mpic.c      |   38 --------------------------------------
- 2 files changed, 0 insertions(+), 41 deletions(-)
+ Documentation/powerpc/dts-bindings/open-pic.txt |   98 +++++++++++++++++++++++
+ 1 files changed, 98 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/open-pic.txt
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index e000cce..9b94f18 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -301,9 +301,6 @@ struct mpic
- 	struct mpic_reg_bank	cpuregs[MPIC_MAX_CPUS];
- 	struct mpic_reg_bank	isus[MPIC_MAX_ISU];
- 
--	/* Protected sources */
--	unsigned long		*protected;
--
- #ifdef CONFIG_MPIC_WEIRD
- 	/* Pointer to HW info array */
- 	u32			*hw_set;
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 7c13426..a98f41d 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -947,8 +947,6 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- 
- 	if (hw == mpic->spurious_vec)
- 		return -EINVAL;
--	if (mpic->protected && test_bit(hw, mpic->protected))
--		return -EINVAL;
- 
- #ifdef CONFIG_SMP
- 	else if (hw >= mpic->ipi_vecs[0]) {
-@@ -1095,26 +1093,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	if (node && of_get_property(node, "big-endian", NULL) != NULL)
- 		mpic->flags |= MPIC_BIG_ENDIAN;
- 
--	/* Look for protected sources */
--	if (node) {
--		int psize;
--		unsigned int bits, mapsize;
--		const u32 *psrc =
--			of_get_property(node, "protected-sources", &psize);
--		if (psrc) {
--			psize /= 4;
--			bits = intvec_top + 1;
--			mapsize = BITS_TO_LONGS(bits) * sizeof(unsigned long);
--			mpic->protected = kzalloc(mapsize, GFP_KERNEL);
--			BUG_ON(mpic->protected == NULL);
--			for (i = 0; i < psize; i++) {
--				if (psrc[i] > intvec_top)
--					continue;
--				__set_bit(psrc[i], mpic->protected);
--			}
--		}
--	}
--
- #ifdef CONFIG_MPIC_WEIRD
- 	mpic->hw_set = mpic_infos[MPIC_GET_REGSET(flags)];
- #endif
-@@ -1321,9 +1299,6 @@ void __init mpic_init(struct mpic *mpic)
- 		u32 vecpri = MPIC_VECPRI_MASK | i |
- 			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
- 		
--		/* check if protected */
--		if (mpic->protected && test_bit(i, mpic->protected))
--			continue;
- 		/* init hw */
- 		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
- 		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
-@@ -1492,13 +1467,6 @@ static unsigned int _mpic_get_one_irq(struct mpic *mpic, int reg)
- 			mpic_eoi(mpic);
- 		return NO_IRQ;
- 	}
--	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
--		if (printk_ratelimit())
--			printk(KERN_WARNING "%s: Got protected source %d !\n",
--			       mpic->name, (int)src);
--		mpic_eoi(mpic);
--		return NO_IRQ;
--	}
- 
- 	return irq_linear_revmap(mpic->irqhost, src);
- }
-@@ -1532,12 +1500,6 @@ unsigned int mpic_get_coreint_irq(void)
- 			mpic_eoi(mpic);
- 		return NO_IRQ;
- 	}
--	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
--		if (printk_ratelimit())
--			printk(KERN_WARNING "%s: Got protected source %d !\n",
--			       mpic->name, (int)src);
--		return NO_IRQ;
--	}
- 
- 	return irq_linear_revmap(mpic->irqhost, src);
- #else
+diff --git a/Documentation/powerpc/dts-bindings/open-pic.txt b/Documentation/powerpc/dts-bindings/open-pic.txt
+new file mode 100644
+index 0000000..909a902
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/open-pic.txt
+@@ -0,0 +1,98 @@
++* Open PIC Binding
++
++This binding specifies what properties must be available in the device tree
++representation of an Open PIC compliant interrupt controller.  This binding is
++based on the binding defined for Open PIC in [1] and is a superset of that
++binding.
++
++Required properties:
++
++  NOTE: Many of these descriptions were paraphrased here from [1] to aid
++        readability.
++
++    - compatible: Specifies the compatibility list for the PIC.  The type
++      shall be <string> and the value shall include "open-pic".
++
++    - reg: Specifies the base physical address(s) and size(s) of this
++      PIC's addressable register space.  The type shall be <prop-encoded-array>.
++
++    - interrupt-controller: The presence of this property identifies the node
++      as an Open PIC.  No property value shall be defined.
++
++    - #interrupt-cells: Specifies the number of cells needed to encode an
++      interrupt source.  The type shall be a <u32> and the value shall be 2.
++
++    - #address-cells: Specifies the number of cells needed to encode an
++      address.  The type shall be <u32> and the value shall be 0.  As such,
++      'interrupt-map' nodes do not have to specify a parent unit address.
++
++Optional properties:
++
++    - pic-no-reset: The presence of this property indicates that the PIC
++      shall not be reset during runtime initialization.  No property value shall
++      be defined.  The presence of this property also mandates that any
++      initialization related to interrupt sources shall be limited to sources
++      explicitly referenced in the device tree.
++
++* Interrupt Specifier Definition
++
++  Interrupt specifiers consists of 2 cells encoded as
++  follows:
++
++    - <1st-cell>: The interrupt-number that identifies the interrupt source.
++
++    - <2nd-cell>: The level-sense information, encoded as follows:
++                    0 = low-to-high edge triggered
++                    1 = active low level-sensitive
++                    2 = active high level-sensitive
++                    3 = high-to-low edge triggered
++
++* Examples
++
++Example 1:
++
++	/*
++	 * An Open PIC interrupt controller
++	 */
++	mpic: pic@40000 {
++		// This is an interrupt controller node.
++		interrupt-controller;
++
++		// No address cells so that 'interrupt-map' nodes which reference
++		// this Open PIC node do not need a parent address specifier.
++		#address-cells = <0>;
++
++		// Two cells to encode interrupt sources.
++		#interrupt-cells = <2>;
++
++		// Offset address of 0x40000 and size of 0x40000.
++		reg = <0x40000 0x40000>;
++
++		// Compatible with Open PIC.
++		compatible = "open-pic";
++
++		// The PIC shall not be reset.
++		pic-no-reset;
++	};
++
++Example 2:
++
++	/*
++	 * An interrupt generating device that is wired to an Open PIC.
++	 */
++	serial0: serial@4500 {
++		// Interrupt source '42' that is active high level-sensitive.
++		// Note that there are only two cells as specified in the interrupt
++		// parent's '#interrupt-cells' property.
++		interrupts = <42 2>;
++
++		// The interrupt controller that this device is wired to.
++		interrupt-parent = <&mpic>;
++	};
++
++* References
++
++[1] Power.org (TM) Standard for Embedded Power Architecture (TM) Platform
++    Requirements (ePAPR), Version 1.0, July 2008.
++    (http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf)
++
 -- 
 1.6.3.3
