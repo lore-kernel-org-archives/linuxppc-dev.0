@@ -1,10 +1,10 @@
 Return-Path: <meador_inge@mentor.com>
 From: Meador Inge <meador_inge@mentor.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 3/4] powerpc: make MPIC honor the "pic-no-reset" device
-	tree property
-Date: Fri,  4 Feb 2011 17:25:40 -0600
-Message-Id: <1296861941-3370-4-git-send-email-meador_inge@mentor.com>
+Subject: [PATCH v3 4/4] powerpc: Replacing "protected-sources" with
+	"pic-no-reset" in DTS files
+Date: Fri,  4 Feb 2011 17:25:41 -0600
+Message-Id: <1296861941-3370-5-git-send-email-meador_inge@mentor.com>
 In-Reply-To: <1296861941-3370-1-git-send-email-meador_inge@mentor.com>
 References: <1296861941-3370-1-git-send-email-meador_inge@mentor.com>
 Cc: devicetree-discuss@lists.ozlabs.org,
@@ -18,165 +18,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This property, defined in the Open PIC binding, tells the kernel not to use the
-reset bit in the global configuration register.  Additionally, its presence
-mandates that only sources which are actually used (i.e. appear in the device
-tree) should have their VECPRI bits initialized.
-
-The presence of "protected-sources" is checked for the backwards
-compatibility of systems which are already using "protected-sources"
-in firmware and the firmware can not be updated.  Any sources encoded in the
-"protected-sources" cells are not processed.  "protected-sources" is
-effectively a synonym for "pic-no-reset".
+The "protected-sources" property was being used in the AMP configured
+MPC8572DS and P2020RDB DTS files.  This changeset modifies those files
+to use "pic-no-reset" instead.
 
 Signed-off-by: Meador Inge <meador_inge@mentor.com>
 Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/mpic.h |    4 ++-
- arch/powerpc/sysdev/mpic.c      |   64 +++++++++++++++++++++++++++++++-------
- 2 files changed, 55 insertions(+), 13 deletions(-)
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |    6 +-----
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |   11 +----------
+ arch/powerpc/boot/dts/p2020rdb_camp_core0.dts  |    7 +------
+ arch/powerpc/boot/dts/p2020rdb_camp_core1.dts  |    7 +------
+ 4 files changed, 4 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index 9b94f18..688e3e0 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -322,6 +322,8 @@ struct mpic
- #ifdef CONFIG_PM
- 	struct mpic_irq_save	*save_data;
- #endif
-+
-+	int cpu;
- };
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+index 3375c2a..4f7ee6d 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+@@ -252,11 +252,7 @@
+ 			reg = <0x40000 0x40000>;
+ 			compatible = "chrp,open-pic";
+ 			device_type = "open-pic";
+-			protected-sources = <
+-			31 32 33 37 38 39       /* enet2 enet3 */
+-			76 77 78 79 26 42	/* dma2 pci2 serial*/
+-			0xe4 0xe5 0xe6 0xe7	/* msi */
+-			>;
++			pic-no-reset;
+ 		};
+ 	};
  
- /*
-@@ -333,7 +335,7 @@ struct mpic
-  */
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+index e7b477f..62fd64f 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+@@ -178,16 +178,7 @@
+ 			reg = <0x40000 0x40000>;
+ 			compatible = "chrp,open-pic";
+ 			device_type = "open-pic";
+-			protected-sources = <
+-			18 16 10 42 45 58	/* MEM L2 mdio serial crypto */
+-			29 30 34 35 36 40	/* enet0 enet1 */
+-			24 25 20 21 22 23	/* pci0 pci1 dma1 */
+-			43			/* i2c */
+-			0x1 0x2 0x3 0x4         /* pci slot */
+-			0x9 0xa 0xb 0xc         /* usb */
+-			0x6 0x7 0xe 0x5         /* Audio elgacy SATA */
+-			0xe0 0xe1 0xe2 0xe3	/* msi */
+-			>;
++			pic-no-reset;
+ 		};
+ 	};
  
- /* This is the primary controller, only that one has IPIs and
-- * has afinity control. A non-primary MPIC always uses CPU0
-+ * has affinity control. A non-primary MPIC always uses CPU0
-  * registers only
-  */
- #define MPIC_PRIMARY			0x00000001
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index a98f41d..8de47ca 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -308,6 +308,15 @@ static inline void mpic_map(struct mpic *mpic, struct device_node *node,
- #define mpic_map(m,n,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
- #endif /* !CONFIG_PPC_DCR */
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+index 0fe93d0..f749cbb 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+@@ -318,12 +318,7 @@
+ 			reg = <0x40000 0x40000>;
+ 			compatible = "chrp,open-pic";
+ 			device_type = "open-pic";
+-			protected-sources = <
+-			42 76 77 78 79 /* serial1 , dma2 */
+-			29 30 34 26 /* enet0, pci1 */
+-			0xe0 0xe1 0xe2 0xe3 /* msi */
+-			0xe4 0xe5 0xe6 0xe7
+-			>;
++			pic-no-reset;
+ 		};
  
-+static inline void mpic_init_vector(struct mpic *mpic, int source)
-+{
-+	/* start with vector = source number, and masked */
-+	u32 vecpri = MPIC_VECPRI_MASK | source | (8 << MPIC_VECPRI_PRIORITY_SHIFT);
-+		
-+	/* init hw */
-+	mpic_irq_write(source, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
-+	mpic_irq_write(source, MPIC_INFO(IRQ_DESTINATION), 1 << mpic->cpu);
-+}
+ 		global-utilities@e0000 {
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+index e95a512..6ef2e64 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+@@ -129,12 +129,7 @@
+ 			reg = <0x40000 0x40000>;
+ 			compatible = "chrp,open-pic";
+ 			device_type = "open-pic";
+-			protected-sources = <
+-			17 18 43 42 59 47 /*ecm, mem, i2c, serial0, spi,gpio */
+-			16 20 21 22 23 28 	/* L2, dma1, USB */
+-			03 35 36 40 31 32 33 	/* mdio, enet1, enet2 */
+-			72 45 58 25 		/* sdhci, crypto , pci */
+-			>;
++			pic-no-reset;
+ 		};
  
- 
- /* Check if we have one of those nice broken MPICs with a flipped endian on
-@@ -622,6 +631,14 @@ static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int irq)
- 	return (src >= mpic->ipi_vecs[0] && src <= mpic->ipi_vecs[3]);
- }
- 
-+/* Determine if the linux irq is a timer interrupt */
-+static unsigned int mpic_is_timer_interrupt(struct mpic *mpic, unsigned int irq)
-+{
-+	unsigned int src = mpic_irq_to_hw(irq);
-+
-+	return (src >= mpic->timer_vecs[0] && src <= mpic->timer_vecs[3]);
-+}
-+
- 
- /* Convert a cpu mask from logical to physical cpu numbers. */
- static inline u32 mpic_physmask(u32 cpumask)
-@@ -963,6 +980,15 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- 	if (hw >= mpic->irq_count)
- 		return -EINVAL;
- 
-+	/* If the MPIC was reset, then all vectors have already been
-+	 * initialized.  Otherwise, the appropriate vector needs to be
-+	 * initialized here to ensure that only used sources are setup with
-+	 * a vector.
-+	 */
-+	if (!(mpic->flags & MPIC_WANTS_RESET))
-+		if (!(mpic_is_ipi(mpic, hw) || mpic_is_timer_interrupt(mpic, hw)))
-+			mpic_init_vector(mpic, hw);
-+
- 	mpic_msi_reserve_hwirq(mpic, hw);
- 
- 	/* Default chip */
-@@ -1029,6 +1055,16 @@ static struct irq_host_ops mpic_host_ops = {
- 	.xlate = mpic_host_xlate,
- };
- 
-+static int mpic_reset_prohibited(struct device_node *node)
-+{
-+	/* The presence of "protected-sources" is checked for the backwards
-+	 * compatibility of systems which are already using "protected-sources"
-+	 * in firmware and the firmware can not be updated.
-+	 */
-+	return node && (of_get_property(node, "pic-no-reset", NULL)
-+		|| of_get_property(node, "protected-sources", NULL));
-+}
-+
- /*
-  * Exported functions
-  */
-@@ -1129,7 +1165,16 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic_map(mpic, node, paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
- 
- 	/* Reset */
--	if (flags & MPIC_WANTS_RESET) {
-+
-+	/* When using a device-node, reset requests are only honored if the MPIC
-+	 * is allowed to reset.
-+	 */
-+	if (mpic_reset_prohibited(node)) {
-+		mpic->flags &= ~MPIC_WANTS_RESET;
-+	}
-+
-+	if (mpic->flags & MPIC_WANTS_RESET) {
-+		printk(KERN_DEBUG "mpic: Resetting\n");
- 		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
- 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
- 			   | MPIC_GREG_GCONF_RESET);
-@@ -1246,7 +1291,6 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
- void __init mpic_init(struct mpic *mpic)
- {
- 	int i;
--	int cpu;
- 
- 	BUG_ON(mpic->num_sources == 0);
- 
-@@ -1290,18 +1334,14 @@ void __init mpic_init(struct mpic *mpic)
- 	mpic_pasemi_msi_init(mpic);
- 
- 	if (mpic->flags & MPIC_PRIMARY)
--		cpu = hard_smp_processor_id();
-+		mpic->cpu = hard_smp_processor_id();
- 	else
--		cpu = 0;
-+		mpic->cpu = 0;
- 
--	for (i = 0; i < mpic->num_sources; i++) {
--		/* start with vector = source number, and masked */
--		u32 vecpri = MPIC_VECPRI_MASK | i |
--			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
--		
--		/* init hw */
--		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
--		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
-+	if (mpic->flags & MPIC_WANTS_RESET) {
-+		for (i = 0; i < mpic->num_sources; i++) {
-+			mpic_init_vector(mpic, i);
-+		}
- 	}
- 	
- 	/* Init spurious vector */
+ 		msi@41600 {
 -- 
 1.6.3.3
