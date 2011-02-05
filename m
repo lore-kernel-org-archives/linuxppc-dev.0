@@ -1,22 +1,21 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 99CAAB7137
+Return-Path: <ppc6dev@digitaldans.com>
+Received: from wsl00026.west-datacenter.net (wsl00026.west-datacenter.net
+	[69.36.176.27])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 47108B7101
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Feb 2011 11:15:30 +1100 (EST)
-Received: by fxm5 with SMTP id 5so2961120fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 04 Feb 2011 16:15:25 -0800 (PST)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-From: Timur Tabi <timur@freescale.com>
-Date: Fri, 4 Feb 2011 18:14:44 -0600
-Message-ID: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
-Subject: minimum guaranteed alignment of dma_alloc_coherent?
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat,  5 Feb 2011 12:57:02 +1100 (EST)
+Message-Id: <2A5A3DDA-94B3-48E3-9E49-6A5260BE1484@digitaldans.com>
+From: Dan Malek <ppc6dev@digitaldans.com>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: minimum guaranteed alignment of dma_alloc_coherent?
+Date: Fri, 4 Feb 2011 17:09:28 -0800
+References: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Is there any official statement on what the minimum alignment is for
-memory returned by dma_alloc_coherent?  I know that since it uses a
-page allocator to do the actual allocation, that the memory is page
-aligned (at least on PowerPC).  Is this something I can rely on?
 
-Would anyone have a complaint if I did this:
+On Feb 4, 2011, at 4:14 PM, Timur Tabi wrote:
 
-vaddr = dma_alloc_coherent(dev, ssize, &paddr, GFP_DMA | __GFP_ZERO);
-BUG_ON(paddr & (alignment - 1));
+> Is there any official statement on what the minimum alignment is for
+> memory returned by dma_alloc_coherent?
 
-'alignment' will always be 32 or less.
+This is dependent upon the particular implementation.
+There have been several over the history of this API,
+and some would work out of a DMA pool that would
+only provide word alignment.
 
-The reason I ask is that I currently have code that ensures an
-alignment, but it does so by allocating extra memory, and that seems
-wasteful.
+> Would anyone have a complaint if I did this:
+>
+> vaddr = dma_alloc_coherent(dev, ssize, &paddr, GFP_DMA | __GFP_ZERO);
+> BUG_ON(paddr & (alignment - 1));
 
-On a side note, do I really need to pass GFP_DMA when calling
-dma_alloc_coherent?  That seems redundant, but I don't see the code
-force it to be set.  Should it be forced on?
+Well, the usual design for anything that requires alignment
+is that you never assume you get it unless it can be specified,
+so over allocate as you are doing currently, and then adjust
+the base address.  Or, you could allocate exactly what you
+want, if it aligns properly you are good to go, and if not release,
+over allocate, and adjust.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+The problem with the suggested implementation is the results
+aren't predictable.  Even if the API doesn't guarantee your
+alignment, you may get it most of the time, but once in a
+while this may fail.  You could test and all looks good,
+ship something and it fails.
+
+Today, this may work fine, but it would be nice to ensure
+it continues to work in the future. :-)
+
+> On a side note, do I really need to pass GFP_DMA ....
+
+The GFP_DMA is architecture dependent.  Are you writing
+a driver to be used across multiple architectures?  If it's
+necessary, I'd document why you are using it (an ISA device
+on x86 for example) and then let other architectures
+determine if it's necessary for them.
+
+Thanks.
+
+	-- Dan
