@@ -1,21 +1,22 @@
-Return-Path: <ppc6dev@digitaldans.com>
-Received: from wsl00026.west-datacenter.net (wsl00026.west-datacenter.net
-	[69.36.176.27])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 47108B7101
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3982CB7109
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Feb 2011 12:57:02 +1100 (EST)
-Message-Id: <2A5A3DDA-94B3-48E3-9E49-6A5260BE1484@digitaldans.com>
-From: Dan Malek <ppc6dev@digitaldans.com>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v936)
+	Sat,  5 Feb 2011 13:05:03 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Dan Malek <ppc6dev@digitaldans.com>
 Subject: Re: minimum guaranteed alignment of dma_alloc_coherent?
-Date: Fri, 4 Feb 2011 17:09:28 -0800
+Date: Sat, 5 Feb 2011 02:04:40 +0000
+Message-ID: <4D4CB038.9020602@freescale.com>
 References: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+	<2A5A3DDA-94B3-48E3-9E49-6A5260BE1484@digitaldans.com>
+In-Reply-To: <2A5A3DDA-94B3-48E3-9E49-6A5260BE1484@digitaldans.com>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Feb 4, 2011, at 4:14 PM, Timur Tabi wrote:
-
-> Is there any official statement on what the minimum alignment is for
-> memory returned by dma_alloc_coherent?
-
-This is dependent upon the particular implementation.
-There have been several over the history of this API,
-and some would work out of a DMA pool that would
-only provide word alignment.
-
-> Would anyone have a complaint if I did this:
+Dan Malek wrote:
 >
-> vaddr = dma_alloc_coherent(dev, ssize, &paddr, GFP_DMA | __GFP_ZERO);
-> BUG_ON(paddr & (alignment - 1));
+>
+>> On a side note, do I really need to pass GFP_DMA ....
+>
+> The GFP_DMA is architecture dependent.  Are you writing
+> a driver to be used across multiple architectures?
 
-Well, the usual design for anything that requires alignment
-is that you never assume you get it unless it can be specified,
-so over allocate as you are doing currently, and then adjust
-the base address.  Or, you could allocate exactly what you
-want, if it aligns properly you are good to go, and if not release,
-over allocate, and adjust.
+It's conceivable that the driver could work on PowerPC and ARM.
 
-The problem with the suggested implementation is the results
-aren't predictable.  Even if the API doesn't guarantee your
-alignment, you may get it most of the time, but once in a
-while this may fail.  You could test and all looks good,
-ship something and it fails.
+> If it's
+> necessary, I'd document why you are using it (an ISA device
+> on x86 for example) and then let other architectures
+> determine if it's necessary for them.
 
-Today, this may work fine, but it would be nice to ensure
-it continues to work in the future. :-)
+I guess I'm not clear.  I was wondering why an API called "dma_alloc_cohere=
+nt" (that has the word "dma" in it) needs to be told to allocate DMA-safe m=
+emory.  When would it make sense to call dma_alloc_cohernet without GFP_DMA=
+?  If you don't want DMA-able memory, then you shouldn't be calling dma_all=
+oc_anything.
 
-> On a side note, do I really need to pass GFP_DMA ....
-
-The GFP_DMA is architecture dependent.  Are you writing
-a driver to be used across multiple architectures?  If it's
-necessary, I'd document why you are using it (an ISA device
-on x86 for example) and then let other architectures
-determine if it's necessary for them.
-
-Thanks.
-
-	-- Dan
+--=20
+Timur Tabi
+Linux kernel developer=
