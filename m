@@ -1,16 +1,23 @@
-Return-Path: <w@1wt.eu>
-Received: from 1wt.eu (1wt.eu [62.212.114.60])
-	by ozlabs.org (Postfix) with ESMTP id 7F889B70E3
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Feb 2011 10:45:31 +1100 (EST)
-Message-Id: <20110206232253.421321729@pcw.home.local>
-Date: Mon, 07 Feb 2011 00:23:13 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
-Subject: [PATCH 21/23] hvc_console: Fix race between hvc_close and hvc_remove
-In-Reply-To: <4beed4da27f06efb2c13d6ed48850634@local>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-	linuxppc-dev@ozlabs.org, Amit Shah <amit.shah@redhat.com>,
-	Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 95285B711B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  7 Feb 2011 10:50:19 +1100 (EST)
+Subject: RE: [PATCH] e500: Erratum cpu a005 workaround
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Liu Yu-B13201 <B13201@freescale.com>
+In-Reply-To: <FBDE6FBB4662C043AC9EECB95F62CDDE114038@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1295935333-13045-1-git-send-email-yu.liu@freescale.com>
+	<5DA54AEE-B8AC-452B-A56C-65B35391A97C@freescale.com>
+	<FBDE6FBB4662C043AC9EECB95F62CDDE114038@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Feb 2011 10:49:15 +1100
+Message-ID: <1297036155.14982.19.camel@pasglop>
+Mime-Version: 1.0
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,170 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.27.58-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+> > 
+> > This isn't the way to do this.  We normally add entries in 
+> > cputable.c an add a new cpu_feature_bit for the errata.
+> > 
+> > Than above we'd do:
+> > 
+> > if (cur_cpu_spec->cpu_features & CPU_FTR_E500_A005_ERRATUM)
+> > 
+> > 
+> 
+> IMHO, a cpu erratum is not a cpu feature.
+> See there're only 32 bits can be used for all PowerPC platform to represent cpu feature, 
+> then is it worth consuming one of them to represent one e500 erratum?
 
-From: Amit Shah <amit.shah@redhat.com>
+This is an interesting debate :-)
 
-commit e74d098c66543d0731de62eb747ccd5b636a6f4c upstream.
+We have used cpu_features for errata in the past. However, we are
+getting a bit short and I'd rather keep CPU features for things
+that are spread out in multiple places and/or hitting hot code path.
 
-Alan pointed out a race in the code where hvc_remove is invoked. The
-recent virtio_console work is the first user of hvc_remove().
+If the workaround is very limited to a single non-critical code path,
+testing the PVR might actually be a nicer way to do it.
 
-Alan describes it thus:
+Now, this specific patch is ... hrm ... hard to decide. I don't like
+that much the global variable. On the other hand, it's static and allows
+the whole business of this errata to be completely local to the
+math_efp.c file which is a good thing.
 
-The hvc_console assumes that a close and remove call can't occur at the
-same time.
+So I'm tempted to say go with the patch as it-is, but I'll let Kumar
+ultimately decide.
 
-In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
-itself....
-
-So this can happen
-
-        hvc_close                               hvc_remove
-        hung up ? - no
-                                                lock
-                                                tty = hp->tty
-                                                unlock
-        lock
-        hp->tty = NULL
-        unlock
-        notify del
-        kref_put the hvc struct
-        close completes
-        tty is destroyed
-                                                tty_hangup dead tty
-                                                tty->ops will be NULL
-                                                NULL->...
-
-This patch adds some tty krefs and also converts to using tty_vhangup().
-
-Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linuxppc-dev@ozlabs.org
-CC: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Willy Tarreau <w@1wt.eu>
-
----
- drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
- 1 file changed, 21 insertions(+), 10 deletions(-)
-
-Index: longterm-2.6.27/drivers/char/hvc_console.c
-===================================================================
---- longterm-2.6.27.orig/drivers/char/hvc_console.c	2011-01-23 10:52:15.000000000 +0100
-+++ longterm-2.6.27/drivers/char/hvc_console.c	2011-01-29 15:33:05.169065818 +0100
-@@ -312,6 +312,7 @@
- 	spin_lock_irqsave(&hp->lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->count++ > 0) {
-+		tty_kref_get(tty);
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 		hvc_kick();
- 		return 0;
-@@ -320,7 +321,7 @@
- 	tty->driver_data = hp;
- 	tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
- 
--	hp->tty = tty;
-+	hp->tty = tty_kref_get(tty);
- 
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
-@@ -337,6 +338,7 @@
- 		spin_lock_irqsave(&hp->lock, flags);
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
-+		tty_kref_put(tty);
- 		tty->driver_data = NULL;
- 		kref_put(&hp->kref, destroy_hvc_struct);
- 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
-@@ -364,13 +366,18 @@
- 		return;
- 
- 	hp = tty->driver_data;
-+
- 	spin_lock_irqsave(&hp->lock, flags);
-+	tty_kref_get(tty);
- 
- 	if (--hp->count == 0) {
- 		/* We are done with the tty pointer now. */
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 
-+		/* Put the ref obtained in hvc_open() */
-+		tty_kref_put(tty);
-+
- 		if (hp->ops->notifier_del)
- 			hp->ops->notifier_del(hp, hp->data);
- 
-@@ -387,6 +394,7 @@
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 	}
- 
-+	tty_kref_put(tty);
- 	kref_put(&hp->kref, destroy_hvc_struct);
- }
- 
-@@ -423,6 +431,7 @@
- 
- 	while(temp_open_count) {
- 		--temp_open_count;
-+		tty_kref_put(tty);
- 		kref_put(&hp->kref, destroy_hvc_struct);
- 	}
- }
-@@ -550,7 +559,7 @@
- 		poll_mask |= HVC_POLL_WRITE;
- 
- 	/* No tty attached, just skip */
--	tty = hp->tty;
-+	tty = tty_kref_get(hp->tty);
- 	if (tty == NULL)
- 		goto bail;
- 
-@@ -627,6 +636,8 @@
- 
- 		tty_flip_buffer_push(tty);
- 	}
-+	if (tty)
-+		tty_kref_put(tty);
- 
- 	return poll_mask;
- }
-@@ -749,7 +760,7 @@
- 	struct tty_struct *tty;
- 
- 	spin_lock_irqsave(&hp->lock, flags);
--	tty = hp->tty;
-+	tty = tty_kref_get(hp->tty);
- 
- 	if (hp->index < MAX_NR_HVC_CONSOLES)
- 		vtermnos[hp->index] = -1;
-@@ -761,18 +772,18 @@
- 	/*
- 	 * We 'put' the instance that was grabbed when the kref instance
- 	 * was initialized using kref_init().  Let the last holder of this
--	 * kref cause it to be removed, which will probably be the tty_hangup
-+	 * kref cause it to be removed, which will probably be the tty_vhangup
- 	 * below.
- 	 */
- 	kref_put(&hp->kref, destroy_hvc_struct);
- 
- 	/*
--	 * This function call will auto chain call hvc_hangup.  The tty should
--	 * always be valid at this time unless a simultaneous tty close already
--	 * cleaned up the hvc_struct.
-+	 * This function call will auto chain call hvc_hangup.
- 	 */
--	if (tty)
--		tty_hangup(tty);
-+	if (tty) {
-+		tty_vhangup(tty);
-+		tty_kref_put(tty);
-+	}
- 	return 0;
- }
- 
+Cheers,
+Ben.
