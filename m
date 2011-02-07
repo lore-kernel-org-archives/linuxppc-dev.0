@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9BD94B70E2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  7 Feb 2011 17:59:45 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix call to flush_ptrace_hw_breakpoint()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: prasad@linux.vnet.ibm.com
-In-Reply-To: <20110207045230.GB4287@in.ibm.com>
-References: <1297032853.14982.3.camel@pasglop>
-	<20110207025643.GA12223@in.ibm.com> <1297048239.14982.29.camel@pasglop>
-	<20110207045230.GB4287@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Feb 2011 16:13:37 +1100
-Message-ID: <1297055617.14982.59.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	David Kleikamp <shaggy@us.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 7 Feb 2011 19:29:34 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/6] powerpc: Move udbg_early_init() after
+	early_init_devtree()
+Message-ID: <20110207082934.GA28943@yookeroo>
+References: <1296586126-32765-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1296586126-32765-2-git-send-email-shaggy@linux.vnet.ibm.com>
+	<20110202230643.GF3032@yookeroo>
+	<1296691225.12290.112.camel@shaggy-w500>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1296691225.12290.112.camel@shaggy-w500>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-07 at 10:22 +0530, K.Prasad wrote:
-> Okay! Another wrapper of "#ifndef CONFIG_HAVE_HW_BREAKPOINT" around
-> the
-> definition of 'set_debug_reg_defaults'.
+On Wed, Feb 02, 2011 at 06:00:25PM -0600, Dave Kleikamp wrote:
+> On Thu, 2011-02-03 at 10:06 +1100, David Gibson wrote:
+> > On Tue, Feb 01, 2011 at 12:48:41PM -0600, Dave Kleikamp wrote:
+> > > so that it can use information from the device tree.
+> > 
+> > Hrm.  On the other hand this means that the early_init_devtree() code
+> > can't benefit from hardcoded early debugging.  Since you don't
+> > actually appear to use devtree information in udbg_early_init() in the
+> > latest series, I'd suggest dropping this patch.
+> 
+> Patch 2 depends on early_init_devtree() being run.  Until then, I don't
+> know of a way to get at the bootargs.
 
-Can you send a patch ?
+Ah, yes.  Drat.
 
-> There's indeed too much sprinkling of #ifdefs in the code, but most of
-> it would go away when the BookE code also uses the generic
-> hw-breakpoint interfaces. 
 
-What's your status for those patches ?
-
-> Given the advanced debug features that BookE supports, it's
-> unfortunately not that straight-forward (needs additions to generic
-> hw-breakpoint infrastructure).
-
-Might want to move a lot of that code to a separate set of files maybe
-and just call a single hook from the various process.c locations ?
-
-Cheers,
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
