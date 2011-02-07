@@ -1,23 +1,28 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
-	by ozlabs.org (Postfix) with SMTP id 4D31FB7178
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id EF21CB7120
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 05:53:51 +1100 (EST)
-Received: by vxb41 with SMTP id 41so1684326vxb.0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 07 Feb 2011 10:53:48 -0800 (PST)
-From: Tirumala Marri <tmarri@apm.com>
-References: <1295477855-14775-1-git-send-email-tmarri@apm.com>
-	<20110126192743.646af6d2@desktopvm.lvknet>
-In-Reply-To: <20110126192743.646af6d2@desktopvm.lvknet>
+	Tue,  8 Feb 2011 06:40:35 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
+Date: Mon, 7 Feb 2011 20:16:53 +0100
+References: <20110207152132.GM10564@opensource.wolfsonmicro.com>
+	<Pine.LNX.4.44L0.1102071035320.1924-100000@iolanthe.rowland.org>
+	<20110207154953.GN10564@opensource.wolfsonmicro.com>
+In-Reply-To: <20110207154953.GN10564@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Date: Mon, 7 Feb 2011 10:53:47 -0800
-Message-ID: <b1ca0e7cedbf942783fedb44fea7ee52@mail.gmail.com>
-Subject: RE: [PATCH V8 04/10] USB/ppc4xx: Add Synopsys DWC OTG HCD function
-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>, Mark Miesfeld <mmiesfeld@apm.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201102072016.53410.rjw@sisk.pl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org,
+	Len Brown <len.brown@intel.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-pm@lists.linux-foundation.org,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,11 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	}
- 	dev_set_drvdata(_dev, dwc_otg_device);
- 	hcd->regs = otg_dev->base;
-+	hcd->rsrc_start = otg_dev->phys_addr;
-+	hcd->rsrc_len = otg_dev->base_len;
- 	hcd->self.otg_port = 1;
+On Monday, February 07, 2011, Mark Brown wrote:
+> On Mon, Feb 07, 2011 at 10:36:31AM -0500, Alan Stern wrote:
+> > On Mon, 7 Feb 2011, Mark Brown wrote:
+> 
+> > > I'd not be so sure - since it's a bool without an explicit default set
+> > > Kconfig will default to disabling it and if anything enabling it is the
+> > > option that requires special effort.
+> 
+> > This may be a naive suggestion, but have you considered simply _asking_
+> > the people who added those defconfigs?
+> 
+> I'm rather hoping that they'll notice the mailing list thread or that
+> someone else who knows what's going on with them does - as Geert pointed
+> out there's a considerable number of defconfigs that have this turned
+> off.  It seems more sensible to get some idea if this seems sane to
+> people in the general case before going trying to identify and contact
+> so many individuals.
+> 
+> If there are systems that really require disabling CONFIG_PM we probably
+> need to add stuff to Kconfig to make sure it can't be enabled anyway;
+> this shouldn't enable any new configurations.
 
-[Marri] Sure
+Well, as I've just said, I don't like this change.  I'd very much prefer it if
+CONFIG_PM_OPS were renamed to CONFIG_PM.
+
+Thanks,
+Rafael
