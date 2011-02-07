@@ -1,33 +1,17 @@
-Return-Path: <thlin@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 07583B7101
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 08:40:50 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p17Lc2qI019390
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Feb 2011 14:38:02 -0700
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id p17LeXL4090594
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Feb 2011 14:40:33 -0700
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p17LeXAF009075
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Feb 2011 14:40:33 -0700
-Subject: Re: [PATCH v2 3/3] powerpc: Add IO event interrupt support
-From: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1297055437.14982.57.camel@pasglop>
-References: <1294267483.24377.30.camel@flin.austin.ibm.com>
-	<1297055437.14982.57.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 1/4] powerpc: Removing support for 'protected-sources'
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Meador Inge <meador_inge@mentor.com>
+In-Reply-To: <4D5033C9.8030407@mentor.com>
+References: <1296861941-3370-1-git-send-email-meador_inge@mentor.com>
+	<1296861941-3370-2-git-send-email-meador_inge@mentor.com>
+	<1297035336.14982.14.camel@pasglop>  <4D5033C9.8030407@mentor.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Feb 2011 15:40:32 -0600
-Message-ID: <1297114832.24377.42.camel@flin.austin.ibm.com>
+Date: Tue, 08 Feb 2011 08:45:36 +1100
+Message-ID: <1297115136.14982.82.camel@pasglop>
 Mime-Version: 1.0
-Cc: tsenglin@us.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-07 at 16:10 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2011-01-05 at 16:44 -0600, Tseng-Hui (Frank) Lin wrote:
-> > This patch adds support for handling IO Event interrupts which come
-> > through at the /event-sources/ibm,io-events device tree node.
-> 
->  .../...
-> 
-> The previous patches regarding the error log sometimes call it error log
-> and sometimes event log. Can you consolidate that ?
 
-Sure. The top level of the RTAS error/event log is for both error and
-event. Starting V6 extension, they should be all event.
+> In my previous reply I said that "it is not so much as a need as it is a 
+> potential simplification."  After further reflection, I don't think that 
+> is completely true.  As we get into AMP systems with higher core counts, 
+> then implementing this functionality using the existing 
+> "protected-sources" implementation versus the new "pic-no-reset" work is 
+> going to be harder to maintain.
 
+I'm not arguing that your approach isn't more suitable for AMP systems,
+I just want to leave the existing protected-sources mechanism alone. I'm
+not opposing adding a new, better, mechanism for newer platforms.
+
+However, I'd name it differently. "pic-no-reset" doesn't carry enough
+meaning in that case. What we want to point out here is that the PIC
+has been pre-initialized.
+
+Another option, which may be cleaner, is to stick to "no-reset" (no need
+for pic- prefix) and make it do just that (prevent the reset), and then
+use a positive variant of "protected-sources", call it
+"allowed-sources". Maybe even make it a series of ranges. Then have the
+MPIC only access these.
+
+I think this is more robust as it would also prevent "accidental" use of
+the wrong sources (bad device-tree, drivers that let you muck around
+with irq numbers, etc...).
+
+Cheers,
+Ben.
+
+> The reason being that *every* OS instance has to know about *every* 
+> other OSes interrupt sources, which is a little gross.  You can see this 
+> happening already in "arch/powerpc/boot/dts/p2020rdb_camp_core0.dts" and 
+> "arch/powerpc/boot/dts/p2020rdb_camp_core1.dts":
 > 
-> > +int pseries_ioei_register_handler(pseries_ioei_handler_t handler)
-> > +{
+> 	// p2020rdb_camp_core0.dts
+> 	mpic: pic@40000 {
+> 	...
+> 		// Sources used by the OS on core 1
+> 		protected-sources = <
+> 		42 76 77 78 79 /* serial1 , dma2 */
+> 		29 30 34 26 /* enet0, pci1 */
+> 		0xe0 0xe1 0xe2 0xe3 /* msi */
+> 		0xe4 0xe5 0xe6 0xe7
+> 		>;
+> 	};
 > 
-> Shouldn't we have a void * to attach with each client so it can put
-> its private data there and get them back in the handler ?
-
-Although not used at this moment, this is a good idea. Will add private
-data.
-
-> We are -really- re-inventing interrupts and/or notifiers here, which
-> I find a tad annoying..
-
-Agree. This is ugly. We could have just used the regular interrupt
-mechanism if the firmware didn't use shared rtas call and interrupt
-to report multiple types of events.
-
+> 	// p2020rdb_camp_core1.dts
+> 	mpic: pic@40000 {
+> 	...
+> 		// Sources used by the OS on core 0
+> 		protected-sources = <
+> 		17 18 43 42 59 47 /*ecm, mem, i2c, serial0, spi,gpio */
+> 		16 20 21 22 23 28 	/* L2, dma1, USB */
+> 		03 35 36 40 31 32 33 	/* mdio, enet1, enet2 */
+> 		72 45 58 25 		/* sdhci, crypto , pci */
+> 		>;
+> 	};
 > 
-> Cheers,
-> Ben.
+> It is going to be a real pain to keep all of the lists up to date. 
+> Especially considering we already have sufficient information in the 
+> device tree to do this work.  I do understand the concern of 
+> finding/testing the older systems.  However, is the testing of those 
+> systems enough to keep out the proposed change and potentially lower 
+> maintenance in the future?  Is the legacy system argument the only 
+> reason to keep this change out or are there other technical deficiencies?
 > 
+> Also, in the proposed MPIC modifications there is a check for protected 
+> sources (it is treated as an alias for "pic-no-reset"; see PATCH 3 in 
+> the set) that should provide functionality equivalent to what systems 
+> using "protected-sources" already have.  That check only looks for the 
+> presence of "protected-sources" and does not process the cells.  Another 
+> option would be to leave in the protected sources implementation (but 
+> undocumented in the binding) and have the full "pic-no-reset" behavior 
+> there as well (and documented in the binding).
+> 
+> If this has no chance of acceptance (?), then I will just re-submit the 
+> binding and implementation with "protected-sources" and the limited form 
+> of "pic-no-reset".
 > 
