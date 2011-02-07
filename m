@@ -1,23 +1,16 @@
-Return-Path: <w@1wt.eu>
-Received: from 1wt.eu (1wt.eu [62.212.114.60])
-	by ozlabs.org (Postfix) with ESMTP id 581B5B70EA
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Feb 2011 09:11:18 +1100 (EST)
-Date: Mon, 7 Feb 2011 23:11:06 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 21/23] hvc_console: Fix race between hvc_close and
-	hvc_remove
-Message-ID: <20110207221106.GA10317@1wt.eu>
-References: <4beed4da27f06efb2c13d6ed48850634@local>
-	<20110206232253.421321729@pcw.home.local>
-	<20110208081600.1a816af5@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110208081600.1a816af5@kryten>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, stable@kernel.org,
-	linuxppc-dev@ozlabs.org, Amit Shah <amit.shah@redhat.com>,
-	stable-review@kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <tmarri@amcc.com>
+Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0530FB711B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  8 Feb 2011 09:48:20 +1100 (EST)
+From: tmarri@apm.com
+To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V9 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+Date: Mon,  7 Feb 2011 14:48:09 -0800
+Message-Id: <1297118889-27094-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,23 +20,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anton,
+From: Tirumala Marri <tmarri@apm.com>
 
-On Tue, Feb 08, 2011 at 08:16:00AM +1100, Anton Blanchard wrote:
-> 
-> Hi,
-> 
-> > From: Amit Shah <amit.shah@redhat.com>
-> > 
-> > commit e74d098c66543d0731de62eb747ccd5b636a6f4c upstream.
-> > 
-> > Alan pointed out a race in the code where hvc_remove is invoked. The
-> > recent virtio_console work is the first user of hvc_remove().
-> 
-> I faintly remember this bug caused boot issues and the following patch
-> must be applied to fix it.
+v9:
+ 1. Move the source under usb/otg/dwc.
+ 2. Rename the source files with out dwc_otg prefix.
+ 3. Remove unused read/write modify functions.
+ 4. Including changes related to register base print.
 
-The patch you pointed was indeed merged just after this one so we should
-be OK. Thanks very much for the double check !
+v8:
+ 1. Add set_wedge to usb_ep_ops.
 
-Willy
+Tirumala Marri (10):
+  USB/ppc4xx: Add Synopsys DWC OTG Register definitions
+  USB/ppc4xx: Add Synopsys DWC OTG driver framework
+  USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer (CIL)
+  USB/ppc4xx: Add Synopsys DWC OTG HCD function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
+  USB/ppc4xx: Add Synopsys DWC OTG PCD function
+  USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
+  USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
+  USB ppc4xx: Add Synopsys DWC OTG driver kernel configuration and
+    Makefile
+
+ drivers/Makefile                  |    2 +
+ drivers/usb/Kconfig               |    3 +-
+ drivers/usb/gadget/Kconfig        |   22 +
+ drivers/usb/gadget/gadget_chips.h |    9 +
+ drivers/usb/otg/dwc/Kconfig       |   96 ++
+ drivers/usb/otg/dwc/Makefile      |   19 +
+ drivers/usb/otg/dwc/apmppc.c      |  414 +++++++
+ drivers/usb/otg/dwc/cil.c         |  972 +++++++++++++++
+ drivers/usb/otg/dwc/cil.h         | 1179 ++++++++++++++++++
+ drivers/usb/otg/dwc/cil_intr.c    |  616 +++++++++
+ drivers/usb/otg/dwc/driver.h      |   76 ++
+ drivers/usb/otg/dwc/hcd.c         | 2467 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/hcd.h         |  416 +++++++
+ drivers/usb/otg/dwc/hcd_intr.c    | 1477 ++++++++++++++++++++++
+ drivers/usb/otg/dwc/hcd_queue.c   |  696 +++++++++++
+ drivers/usb/otg/dwc/param.c       |  180 +++
+ drivers/usb/otg/dwc/pcd.c         | 1765 ++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/pcd.h         |  139 +++
+ drivers/usb/otg/dwc/pcd_intr.c    | 2311 ++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/regs.h        | 1325 ++++++++++++++++++++
+ 20 files changed, 14183 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc/Kconfig
+ create mode 100644 drivers/usb/otg/dwc/Makefile
+ create mode 100644 drivers/usb/otg/dwc/apmppc.c
+ create mode 100644 drivers/usb/otg/dwc/cil.c
+ create mode 100644 drivers/usb/otg/dwc/cil.h
+ create mode 100644 drivers/usb/otg/dwc/cil_intr.c
+ create mode 100644 drivers/usb/otg/dwc/driver.h
+ create mode 100644 drivers/usb/otg/dwc/hcd.c
+ create mode 100644 drivers/usb/otg/dwc/hcd.h
+ create mode 100644 drivers/usb/otg/dwc/hcd_intr.c
+ create mode 100644 drivers/usb/otg/dwc/hcd_queue.c
+ create mode 100644 drivers/usb/otg/dwc/param.c
+ create mode 100644 drivers/usb/otg/dwc/pcd.c
+ create mode 100644 drivers/usb/otg/dwc/pcd.h
+ create mode 100644 drivers/usb/otg/dwc/pcd_intr.c
+ create mode 100644 drivers/usb/otg/dwc/regs.h
