@@ -1,18 +1,30 @@
-Return-Path: <tmarri@amcc.com>
-Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
+Return-Path: <nacc@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4B07A1012BC
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06C60B7144
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 09:54:14 +1100 (EST)
-From: tmarri@apm.com
-To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V9 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
-	configuration and Makefile
-Date: Mon,  7 Feb 2011 14:54:02 -0800
-Message-Id: <1297119242-28562-1-git-send-email-tmarri@apm.com>
-Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
-	Fushen Chen <fchen@apm.com>
+	Tue,  8 Feb 2011 10:00:36 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p17MtKb7006213
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Feb 2011 15:55:20 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p17N0KmO110182
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Feb 2011 16:00:20 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p17N0Krt003881
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Feb 2011 16:00:20 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] ppc: add dynamic dma window support
+Date: Mon,  7 Feb 2011 15:00:08 -0800
+Message-Id: <1297119608-2335-1-git-send-email-nacc@us.ibm.com>
+Cc: Milton Miller <miltonm@bga.com>, Randy Dunlap <rdunlap@xenotime.net>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Nishanth Aravamudan <nacc@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,190 +34,701 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tirumala Marri <tmarri@apm.com>
+If firmware allows us to map all of a partition's memory for DMA on a
+particular bridge, create a 1:1 mapping of that memory. Add hooks for
+dealing with hotplug events. Dyanmic DMA windows can use larger than the
+default page size, and we use the largest one possible.
 
-Add Synopsys DesignWare HS USB OTG driver kernel configuration.
-Synopsys OTG driver may operate in  host only, device only, or OTG mode.
-The driver also allows user configure the core to use its internal DMA
-or Slave (PIO) mode.
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-Signed-off-by: Tirumala R Marri <tmarri@apm.com>
-Signed-off-by: Fushen Chen <fchen@apm.com>
-Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/Makefile             |    2 +
- drivers/usb/Kconfig          |    3 +-
- drivers/usb/otg/dwc/Kconfig  |   96 ++++++++++++++++++++++++++++++++++++++++++
- drivers/usb/otg/dwc/Makefile |   19 ++++++++
- 4 files changed, 119 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 2cbb4b7..3bfc728 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -65,6 +65,7 @@ obj-$(CONFIG_PARIDE) 		+= block/paride/
- obj-$(CONFIG_TC)		+= tc/
- obj-$(CONFIG_UWB)		+= uwb/
- obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
-+obj-$(CONFIG_USB_DWC_OTG)	+= usb/otg/dwc/
- obj-$(CONFIG_USB)		+= usb/
- obj-$(CONFIG_USB_MUSB_HDRC)	+= usb/musb/
- obj-$(CONFIG_PCI)		+= usb/
-@@ -105,6 +106,7 @@ obj-$(CONFIG_ARCH_SHMOBILE)	+= sh/
- ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
- obj-y				+= clocksource/
- endif
-+obj-$(CONFIG_DMA_ENGINE)       += dma/
- obj-$(CONFIG_DCA)		+= dca/
- obj-$(CONFIG_HID)		+= hid/
- obj-$(CONFIG_PPC_PS3)		+= ps3/
-diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-index 41b6e51..887f702 100644
---- a/drivers/usb/Kconfig
-+++ b/drivers/usb/Kconfig
-@@ -55,7 +55,6 @@ config USB_ARCH_HAS_OHCI
- config USB_ARCH_HAS_EHCI
- 	boolean
- 	default y if PPC_83xx
--	default y if PPC_MPC512x
- 	default y if SOC_AU1200
- 	default y if ARCH_IXP4XX
- 	default y if ARCH_W90X900
-@@ -115,6 +114,8 @@ source "drivers/usb/host/Kconfig"
+I've tested this fairly heavily on a machine with suitable
+firmware/hardware, including dlpar operations.
+
+For now, I've disabled reconfig notifier's clearing of TCEs and removal
+of DMA window. This is handled by firmware currently. If the kernel were
+to do it, we'd need a new callback action before the isolation of the
+slot in question, or else we'd always get permission errors (firmware
+revokes the window automatically). I've mentioned this to Nathan
+Fontenot.
+
+ Documentation/kernel-parameters.txt    |    4 +
+ arch/powerpc/platforms/pseries/iommu.c |  588 ++++++++++++++++++++++++++++++++
+ 2 files changed, 592 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 89835a4..fb70894 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -617,6 +617,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	disable=	[IPV6]
+ 			See Documentation/networking/ipv6.txt.
  
- source "drivers/usb/musb/Kconfig"
++	disable_ddw     [PPC]
++			Disable Dynamic DMA Window support. Use this if
++			to workaround buggy firmware.
++
+ 	disable_ipv6=	[IPV6]
+ 			See Documentation/networking/ipv6.txt.
  
-+source "drivers/usb/otg/dwc/Kconfig"
-+
- source "drivers/usb/class/Kconfig"
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index edea60b..84929e9 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -33,6 +33,7 @@
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/crash_dump.h>
++#include <linux/memory.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -45,6 +46,7 @@
+ #include <asm/tce.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/udbg.h>
++#include <asm/mmzone.h>
  
- source "drivers/usb/storage/Kconfig"
-diff --git a/drivers/usb/otg/dwc/Kconfig b/drivers/usb/otg/dwc/Kconfig
-new file mode 100644
-index 0000000..4d33d72
---- /dev/null
-+++ b/drivers/usb/otg/dwc/Kconfig
-@@ -0,0 +1,96 @@
-+#
-+# USB Dual Role (OTG-ready) Controller Drivers
-+# for silicon based on Synopsys DesignWare IP
-+#
+ #include "plpar_wrappers.h"
+ 
+@@ -270,6 +272,152 @@ static unsigned long tce_get_pSeriesLP(struct iommu_table *tbl, long tcenum)
+ 	return tce_ret;
+ }
+ 
++/* this is compatable with cells for the device tree property */
++struct dynamic_dma_window_prop {
++	__be32	liobn;		/* tce table number */
++	__be64	dma_base;	/* address hi,lo */
++	__be32	tce_shift;	/* ilog2(tce_page_size) */
++	__be32	window_shift;	/* ilog2(tce_window_size) */
++};
 +
-+comment "Enable Host or Gadget support for DesignWare OTG controller"
-+	depends on !USB && USB_GADGET=n
++struct direct_window {
++	struct device_node *device;
++	const struct dynamic_dma_window_prop *prop;
++	struct list_head list;
++};
 +
-+config USB_DWC_OTG
-+	depends on (USB || USB_GADGET)
-+	select NOP_USB_XCEIV
-+	select USB_OTG_UTILS
-+	tristate "Synopsys DWC OTG Controller"
-+	default USB_GADGET
-+	help
-+	  This driver provides USB Device Controller support for the
-+	  Synopsys DesignWare USB OTG Core used on the AppliedMicro PowerPC SoC.
++/* Dynamic DMA Window support */
++struct ddw_query_response {
++	u32 windows_available;
++	u32 largest_available_block;
++	u32 page_size;
++	u32 migration_capable;
++};
 +
-+config DWC_DEBUG
-+	bool "Enable DWC Debugging"
-+	depends on USB_DWC_OTG
-+	default n
-+	help
-+	  Enable DWC driver debugging
++struct ddw_create_response {
++	u32 liobn;
++	u32 addr_hi;
++	u32 addr_lo;
++};
 +
-+choice
-+	prompt "DWC Mode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_HOST_ONLY
-+	help
-+	  Select the DWC Core in OTG, Host only, or Device only mode.
++static LIST_HEAD(direct_window_list);
++/* prevents races between memory on/offline and window creation */
++static DEFINE_SPINLOCK(direct_window_list_lock);
++/* protects initializing window twice for same device */
++static DEFINE_MUTEX(direct_window_init_mutex);
++#define DIRECT64_PROPNAME "linux,direct64-ddr-window-info"
 +
-+config DWC_HOST_ONLY
-+	bool "DWC Host Only Mode"
++static int tce_clearrange_multi_pSeriesLP(unsigned long start_pfn,
++					unsigned long num_pfn, const void *arg)
++{
++	const struct dynamic_dma_window_prop *maprange = arg;
++	int rc;
++	u64 tce_size, num_tce, dma_offset, next;
++	u32 tce_shift;
++	long limit;
 +
-+config DWC_OTG_MODE
-+	bool "DWC OTG Mode"
-+	select USB_GADGET_SELECTED
++	tce_shift = be32_to_cpu(maprange->tce_shift);
++	tce_size = 1ULL << tce_shift;
++	next = start_pfn << PAGE_SHIFT;
++	num_tce = num_pfn << PAGE_SHIFT;
 +
-+config DWC_DEVICE_ONLY
-+	bool "DWC Device Only Mode"
-+	select USB_GADGET_SELECTED
++	/* round back to the beginning of the tce page size */
++	num_tce += next & (tce_size - 1);
++	next &= ~(tce_size - 1);
 +
-+endchoice
++	/* covert to number of tces */
++	num_tce |= tce_size - 1;
++	num_tce >>= tce_shift;
 +
-+# enable peripheral support (including with OTG)
-+config USB_GADGET_DWC_HDRC
-+	bool
-+	depends on USB_DWC_OTG && (DWC_DEVICE_ONLY || USB_DWC_OTG)
++	do {
++		/*
++		 * Set up the page with TCE data, looping through and setting
++		 * the values.
++		 */
++		limit = min_t(long, num_tce, 512);
++		dma_offset = next + be64_to_cpu(maprange->dma_base);
 +
-+choice
-+	prompt "DWC DMA/SlaveMode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_DMA_MODE
-+	help
-+	  Select the DWC DMA or Slave Mode.
-+	  DMA mode uses the DWC core internal DMA engines.
-+	  Slave mode uses the processor PIO to tranfer data.
-+	  In Slave mode, processor's DMA channels can be used if available.
++		rc = plpar_tce_stuff((u64)be32_to_cpu(maprange->liobn),
++					     dma_offset,
++					     0, limit);
++		num_tce -= limit;
++	} while (num_tce > 0 && !rc);
 +
-+config DWC_SLAVE
-+	bool "DWC Slave Mode"
++	return rc;
++}
 +
-+config DWC_DMA_MODE
-+	bool "DWC DMA Mode"
++static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
++					unsigned long num_pfn, const void *arg)
++{
++	const struct dynamic_dma_window_prop *maprange = arg;
++	u64 *tcep, tce_size, num_tce, dma_offset, next, proto_tce, liobn;
++	u32 tce_shift;
++	u64 rc = 0;
++	long l, limit;
 +
-+endchoice
++	local_irq_disable();	/* to protect tcep and the page behind it */
++	tcep = __get_cpu_var(tce_page);
 +
-+config USB_OTG_WHITELIST
-+	bool "Rely on OTG Targeted Peripherals List"
-+	depends on !USB_SUSPEND && USB_DWC_OTG
-+	default n
-+	help
-+	  This is the same flag as in ../core/Kconfig.
-+	  It is here for easy deselect.
++	if (!tcep) {
++		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
++		if (!tcep) {
++			local_irq_enable();
++			return -ENOMEM;
++		}
++		__get_cpu_var(tce_page) = tcep;
++	}
 +
-+config DWC_OTG_REG_LE
-+	depends on USB_DWC_OTG
-+	bool "DWC Little Endian Register"
-+	default y
-+	help
-+	  OTG core register access is Little-Endian.
++	proto_tce = TCE_PCI_READ | TCE_PCI_WRITE;
 +
-+config DWC_OTG_FIFO_LE
-+	depends on USB_DWC_OTG
-+	bool "DWC FIFO Little Endian"
-+	default n
-+	help
-+	  OTG core FIFO access is Little-Endian.
++	liobn = (u64)be32_to_cpu(maprange->liobn);
++	tce_shift = be32_to_cpu(maprange->tce_shift);
++	tce_size = 1ULL << tce_shift;
++	next = start_pfn << PAGE_SHIFT;
++	num_tce = num_pfn << PAGE_SHIFT;
 +
-+config DWC_LIMITED_XFER_SIZE
-+	depends on USB_GADGET_DWC_HDRC
-+	bool "DWC Endpoint Limited Xfer Size"
-+	default n
-+	help
-+	  Bit fields in the Device EP Transfer Size Register is 11 bits.
-diff --git a/drivers/usb/otg/dwc/Makefile b/drivers/usb/otg/dwc/Makefile
-new file mode 100644
-index 0000000..4102add
---- /dev/null
-+++ b/drivers/usb/otg/dwc/Makefile
-@@ -0,0 +1,19 @@
-+#
-+# OTG infrastructure and transceiver drivers
-+#
-+obj-$(CONFIG_USB_DWC_OTG)	+= dwc.o
++	/* round back to the beginning of the tce page size */
++	num_tce += next & (tce_size - 1);
++	next &= ~(tce_size - 1);
 +
-+dwc-objs := cil.o cil_intr.o param.o
++	/* covert to number of tces */
++	num_tce |= tce_size - 1;
++	num_tce >>= tce_shift;
 +
-+ifeq ($(CONFIG_4xx_SOC),y)
-+dwc-objs += apmppc.o
-+endif
++	/* We can map max one pageful of TCEs at a time */
++	do {
++		/*
++		 * Set up the page with TCE data, looping through and setting
++		 * the values.
++		 */
++		limit = min_t(long, num_tce, 4096/TCE_ENTRY_SIZE);
++		dma_offset = next + be64_to_cpu(maprange->dma_base);
 +
-+ifneq ($(CONFIG_DWC_DEVICE_ONLY),y)
-+dwc-objs += hcd.o hcd_intr.o \
-+		hcd_queue.o
-+endif
++		for (l = 0; l < limit; l++) {
++			tcep[l] = proto_tce | next;
++			next += tce_size;
++		}
 +
-+ifneq ($(CONFIG_DWC_HOST_ONLY),y)
-+dwc-objs += pcd.o pcd_intr.o
-+endif
++		rc = plpar_tce_put_indirect(liobn,
++					    dma_offset,
++					    (u64)virt_to_abs(tcep),
++					    limit);
++
++		num_tce -= limit;
++	} while (num_tce > 0 && !rc);
++
++	/* error cleanup: caller will clear whole range */
++
++	local_irq_enable();
++	return rc;
++}
++
++static int tce_setrange_multi_pSeriesLP_walk(unsigned long start_pfn,
++		unsigned long num_pfn, void *arg)
++{
++	return tce_setrange_multi_pSeriesLP(start_pfn, num_pfn, arg);
++}
++
++
+ #ifdef CONFIG_PCI
+ static void iommu_table_setparms(struct pci_controller *phb,
+ 				 struct device_node *dn,
+@@ -495,6 +643,330 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		       pci_name(dev));
+ }
+ 
++static int __read_mostly disable_ddw;
++
++static int __init disable_ddw_setup(char *str)
++{
++	disable_ddw = 1;
++	printk(KERN_INFO "ppc iommu: disabling ddw.\n");
++
++	return 0;
++}
++
++early_param("disable_ddw", disable_ddw_setup);
++
++static void remove_ddw(struct device_node *np)
++{
++	struct dynamic_dma_window_prop *dwp;
++	struct property *win64;
++	const u32 *ddr_avail;
++	u64 liobn;
++	int len, ret;
++
++	ddr_avail = of_get_property(np, "ibm,ddw-applicable", &len);
++	win64 = of_find_property(np, DIRECT64_PROPNAME, NULL);
++	if (!win64 || !ddr_avail || len < 3 * sizeof(u32))
++		return;
++
++	dwp = win64->value;
++	liobn = (u64)be32_to_cpu(dwp->liobn);
++
++	/* clear the whole window, note the arg is in kernel pages */
++	ret = tce_clearrange_multi_pSeriesLP(0,
++		1ULL << (be32_to_cpu(dwp->window_shift) - PAGE_SHIFT), dwp);
++	if (ret)
++		pr_warning("%s failed to clear tces in window.\n",
++			 np->full_name);
++	else
++		pr_warning("%s successfully cleared tces in window.\n",
++			 np->full_name);
++
++	ret = rtas_call(ddr_avail[2], 1, 1, NULL, liobn);
++	if (ret)
++		pr_warning("%s: failed to remove direct window: rtas returned "
++			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
++			np->full_name, ret, ddr_avail[2], liobn);
++	else
++		pr_warning("%s: successfully removed direct window: rtas returned "
++			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
++			np->full_name, ret, ddr_avail[2], liobn);
++}
++
++
++static int dupe_ddw_if_already_created(struct pci_dev *dev, struct device_node *pdn)
++{
++	struct device_node *dn;
++	struct pci_dn *pcidn;
++	struct direct_window *window;
++	const struct dynamic_dma_window_prop *direct64;
++	u64 dma_addr;
++
++	dn = pci_device_to_OF_node(dev);
++	pcidn = PCI_DN(dn);
++	spin_lock(&direct_window_list_lock);
++	/* check if we already created a window and dupe that config if so */
++	list_for_each_entry(window, &direct_window_list, list) {
++		if (window->device == pdn) {
++			direct64 = window->prop;
++			dma_addr = direct64->dma_base;
++			break;
++		}
++	}
++	spin_unlock(&direct_window_list_lock);
++
++	return dma_addr;
++}
++
++static u64 dupe_ddw_if_kexec(struct pci_dev *dev, struct device_node *pdn)
++{
++	struct device_node *dn;
++	struct pci_dn *pcidn;
++	int len;
++	struct direct_window *window;
++	const struct dynamic_dma_window_prop *direct64;
++	u64 dma_addr;
++
++	dn = pci_device_to_OF_node(dev);
++	pcidn = PCI_DN(dn);
++	direct64 = of_get_property(pdn, DIRECT64_PROPNAME, &len);
++	if (direct64) {
++		window = kzalloc(sizeof(*window), GFP_KERNEL);
++		if (!window) {
++			remove_ddw(pdn);
++		} else {
++			window->device = pdn;
++			window->prop = direct64;
++			spin_lock(&direct_window_list_lock);
++			list_add(&window->list, &direct_window_list);
++			spin_unlock(&direct_window_list_lock);
++			dma_addr = direct64->dma_base;
++		}
++	}
++
++	return dma_addr;
++}
++
++static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail,
++			struct ddw_query_response *query)
++{
++	struct device_node *dn;
++	struct pci_dn *pcidn;
++	u32 cfg_addr;
++	u64 buid;
++	int ret;
++
++	/*
++	 * Get the config address and phb build of the PE window.
++	 * Rely on eeh to retrieve this for us.
++	 * Retrieve them from the pci device, not the node with the
++	 * dma-window property
++	 */
++	dn = pci_device_to_OF_node(dev);
++	pcidn = PCI_DN(dn);
++	cfg_addr = pcidn->eeh_config_addr;
++	if (pcidn->eeh_pe_config_addr)
++		cfg_addr = pcidn->eeh_pe_config_addr;
++	buid = pcidn->phb->buid;
++	ret = rtas_call(ddr_avail[0], 3, 5, (u32 *)query,
++		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
++	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
++		" returned %d\n", ddr_avail[0], cfg_addr, BUID_HI(buid),
++		BUID_LO(buid), ret);
++	return ret;
++}
++
++static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail,
++			struct ddw_create_response *create, int page_shift,
++			int window_shift)
++{
++	struct device_node *dn;
++	struct pci_dn *pcidn;
++	u32 cfg_addr;
++	u64 buid;
++	int ret;
++
++	/*
++	 * Get the config address and phb build of the PE window.
++	 * Rely on eeh to retrieve this for us.
++	 * Retrieve them from the pci device, not the node with the
++	 * dma-window property
++	 */
++	dn = pci_device_to_OF_node(dev);
++	pcidn = PCI_DN(dn);
++	cfg_addr = pcidn->eeh_config_addr;
++	if (pcidn->eeh_pe_config_addr)
++		cfg_addr = pcidn->eeh_pe_config_addr;
++	buid = pcidn->phb->buid;
++
++	do {
++		/* extra outputs are LIOBN and dma-addr (hi, lo) */
++		ret = rtas_call(ddr_avail[1], 5, 4, (u32 *)create, cfg_addr,
++				BUID_HI(buid), BUID_LO(buid), page_shift, window_shift);
++	} while (rtas_busy_delay(ret));
++	dev_info(&dev->dev,
++		"ibm,create-pe-dma-window(%x) %x %x %x %x %x returned %d "
++		"(liobn = 0x%x starting addr = %x %x)\n", ddr_avail[1],
++		 cfg_addr, BUID_HI(buid), BUID_LO(buid), page_shift,
++		 window_shift, ret, create->liobn, create->addr_hi, create->addr_lo);
++
++	return ret;
++}
++
++/*
++ * If the PE supports dynamic dma windows, and there is space for a table
++ * that can map all pages in a linear offset, then setup such a table,
++ * and record the dma-offset in the struct device.
++ *
++ * dev: the pci device we are checking
++ * pdn: the parent pe node with the ibm,dma_window property
++ * Future: also check if we can remap the base window for our base page size
++ *
++ * returns the dma offset for use by dma_set_mask
++ */
++static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
++{
++	int len, ret;
++	struct ddw_query_response query;
++	struct ddw_create_response create;
++	int page_shift;
++	u64 dma_addr, max_addr;
++	struct device_node *dn;
++	const u32 *uninitialized_var(ddr_avail);
++	struct direct_window *window;
++	struct property *uninitialized_var(win64);
++	struct dynamic_dma_window_prop *ddwprop;
++
++	mutex_lock(&direct_window_init_mutex);
++
++	dma_addr = dupe_ddw_if_already_created(dev, pdn);
++	if (dma_addr != 0)
++		goto out_unlock;
++
++	dma_addr = dupe_ddw_if_kexec(dev, pdn);
++	if (dma_addr != 0)
++		goto out_unlock;
++
++	/*
++	 * the ibm,ddw-applicable property holds the tokens for:
++	 * ibm,query-pe-dma-window
++	 * ibm,create-pe-dma-window
++	 * ibm,remove-pe-dma-window
++	 * for the given node in that order.
++	 * the property is actually in the parent, not the PE
++	 */
++	ddr_avail = of_get_property(pdn, "ibm,ddw-applicable", &len);
++	if (!ddr_avail || len < 3 * sizeof(u32))
++		goto out_unlock;
++
++       /*
++	 * Query if there is a second window of size to map the
++	 * whole partition.  Query returns number of windows, largest
++	 * block assigned to PE (partition endpoint), and two bitmasks
++	 * of page sizes: supported and supported for migrate-dma.
++	 */
++	dn = pci_device_to_OF_node(dev);
++	ret = query_ddw(dev, ddr_avail, &query);
++	if (ret != 0)
++		goto out_unlock;
++
++	if (query.windows_available == 0) {
++		/*
++		 * no additional windows are available for this device.
++		 * We might be able to reallocate the existing window,
++		 * trading in for a larger page size.
++		 */
++		dev_dbg(&dev->dev, "no free dynamic windows");
++		goto out_unlock;
++	}
++	if (query.page_size & 4) {
++		page_shift = 24; /* 16MB */
++	} else if (query.page_size & 2) {
++		page_shift = 16; /* 64kB */
++	} else if (query.page_size & 1) {
++		page_shift = 12; /* 4kB */
++	} else {
++		dev_dbg(&dev->dev, "no supported direct page size in mask %x",
++			  query.page_size);
++		goto out_unlock;
++	}
++	/* verify the window * number of ptes will map the partition */
++	/* check largest block * page size > max memory hotplug addr */
++	max_addr = memory_hotplug_max();
++	if (query.largest_available_block < (max_addr >> page_shift)) {
++		dev_dbg(&dev->dev, "can't map partiton max 0x%llx with %u "
++			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
++			  1ULL << page_shift);
++		goto out_unlock;
++	}
++	len = order_base_2(max_addr);
++	win64 = kzalloc(sizeof(struct property), GFP_KERNEL);
++	if (!win64) {
++		dev_info(&dev->dev,
++			"couldn't allocate property for 64bit dma window\n");
++		goto out_unlock;
++	}
++	win64->name = kstrdup(DIRECT64_PROPNAME, GFP_KERNEL);
++	win64->value = ddwprop = kmalloc(sizeof(*ddwprop), GFP_KERNEL);
++	if (!win64->name || !win64->value) {
++		dev_info(&dev->dev,
++			"couldn't allocate property name and value\n");
++		goto out_free_prop;
++	}
++
++	ret = create_ddw(dev, ddr_avail, &create, page_shift, len);
++	if (ret != 0)
++		goto out_free_prop;
++
++	ddwprop->liobn = cpu_to_be32(create.liobn);
++	ddwprop->dma_base = cpu_to_be64(of_read_number(&create.addr_hi, 2));
++	ddwprop->tce_shift = cpu_to_be32(page_shift);
++	ddwprop->window_shift = cpu_to_be32(len);
++
++	dev_dbg(&dev->dev, "created tce table LIOBN 0x%x for %s\n",
++		  create.liobn, dn->full_name);
++
++	window = kzalloc(sizeof(*window), GFP_KERNEL);
++	if (!window)
++		goto out_clear_window;
++
++	ret = walk_system_ram_range(0, memblock_end_of_DRAM() >> PAGE_SHIFT,
++			win64->value, tce_setrange_multi_pSeriesLP_walk);
++	if (ret) {
++		dev_info(&dev->dev, "failed to map direct window for %s: %d\n",
++			 dn->full_name, ret);
++		goto out_clear_window;
++	}
++
++	ret = prom_add_property(pdn, win64);
++	if (ret) {
++		dev_err(&dev->dev, "unable to add dma window property for %s: %d",
++			 pdn->full_name, ret);
++		goto out_clear_window;
++	}
++
++	window->device = pdn;
++	window->prop = ddwprop;
++	spin_lock(&direct_window_list_lock);
++	list_add(&window->list, &direct_window_list);
++	spin_unlock(&direct_window_list_lock);
++
++	dma_addr = of_read_number(&create.addr_hi, 2);
++	set_dma_offset(&dev->dev, dma_addr);
++	goto out_unlock;
++
++out_clear_window:
++	remove_ddw(pdn);
++
++out_free_prop:
++	kfree(win64->name);
++	kfree(win64->value);
++	kfree(win64);
++
++out_unlock:
++	mutex_unlock(&direct_window_init_mutex);
++	return dma_addr;
++}
++
+ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ {
+ 	struct device_node *pdn, *dn;
+@@ -541,23 +1013,137 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 
+ 	set_iommu_table_base(&dev->dev, pci->iommu_table);
+ }
++
++static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
++{
++	bool ddw_enabled = false;
++	struct device_node *pdn, *dn;
++	struct pci_dev *pdev;
++	const void *dma_window = NULL;
++	u64 dma_offset;
++
++	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
++		return -EIO;
++
++	/* only attempt to use a new window if 64-bit DMA is requested */
++	if (!disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
++		pdev = to_pci_dev(dev);
++
++		dn = pci_device_to_OF_node(pdev);
++		dev_dbg(dev, "node is %s\n", dn->full_name);
++
++		/*
++		 * the device tree might contain the dma-window properties
++		 * per-device and not neccesarily for the bus. So we need to
++		 * search upwards in the tree until we either hit a dma-window
++		 * property, OR find a parent with a table already allocated.
++		 */
++		for (pdn = dn; pdn && PCI_DN(pdn) && !PCI_DN(pdn)->iommu_table;
++				pdn = pdn->parent) {
++			dma_window = of_get_property(pdn, "ibm,dma-window", NULL);
++			if (dma_window)
++				break;
++		}
++		if (pdn && PCI_DN(pdn)) {
++			dma_offset = enable_ddw(pdev, pdn);
++			if (dma_offset != 0) {
++				dev_info(dev, "Using 64-bit direct DMA at offset %llx\n", dma_offset);
++				set_dma_offset(dev, dma_offset);
++				set_dma_ops(dev, &dma_direct_ops);
++				ddw_enabled = true;
++			}
++		}
++	}
++
++	/* fall-through to iommu ops */
++	if (!ddw_enabled) {
++		dev_info(dev, "Using 32-bit DMA via iommu\n");
++		set_dma_ops(dev, &dma_iommu_ops);
++	}
++
++	*dev->dma_mask = dma_mask;
++	return 0;
++}
++
+ #else  /* CONFIG_PCI */
+ #define pci_dma_bus_setup_pSeries	NULL
+ #define pci_dma_dev_setup_pSeries	NULL
+ #define pci_dma_bus_setup_pSeriesLP	NULL
+ #define pci_dma_dev_setup_pSeriesLP	NULL
++#define dma_set_mask_pSeriesLP		NULL
+ #endif /* !CONFIG_PCI */
+ 
++static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
++		void *data)
++{
++	struct direct_window *window;
++	struct memory_notify *arg = data;
++	int ret = 0;
++
++	switch (action) {
++	case MEM_GOING_ONLINE:
++		spin_lock(&direct_window_list_lock);
++		list_for_each_entry(window, &direct_window_list, list) {
++			ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
++					arg->nr_pages, window->prop);
++			/* XXX log error */
++		}
++		spin_unlock(&direct_window_list_lock);
++		break;
++	case MEM_CANCEL_ONLINE:
++	case MEM_OFFLINE:
++		spin_lock(&direct_window_list_lock);
++		list_for_each_entry(window, &direct_window_list, list) {
++			ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
++					arg->nr_pages, window->prop);
++			/* XXX log error */
++		}
++		spin_unlock(&direct_window_list_lock);
++		break;
++	default:
++		break;
++	}
++	if (ret && action != MEM_CANCEL_ONLINE)
++		return NOTIFY_BAD;
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block iommu_mem_nb = {
++	.notifier_call = iommu_mem_notifier,
++};
++
+ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
+ {
+ 	int err = NOTIFY_OK;
+ 	struct device_node *np = node;
+ 	struct pci_dn *pci = PCI_DN(np);
++	struct direct_window *window;
+ 
+ 	switch (action) {
+ 	case PSERIES_RECONFIG_REMOVE:
+ 		if (pci && pci->iommu_table)
+ 			iommu_free_table(pci->iommu_table, np->full_name);
++
++		spin_lock(&direct_window_list_lock);
++		list_for_each_entry(window, &direct_window_list, list) {
++			if (window->device == np) {
++				list_del(&window->list);
++				kfree(window);
++				break;
++			}
++		}
++		spin_unlock(&direct_window_list_lock);
++
++		/*
++		 * Because the notifier runs after isolation of the
++		 * slot, we are guaranteed any DMA window has already
++		 * been revoked and the TCEs have been marked invalid,
++		 * so we don't need a call to remove_ddw(np). However,
++		 * if an additional notifier action is added before the
++		 * isolate call, we should update this code for
++		 * completeness with such a call.
++		 */
+ 		break;
+ 	default:
+ 		err = NOTIFY_DONE;
+@@ -587,6 +1173,7 @@ void iommu_init_early_pSeries(void)
+ 		ppc_md.tce_get   = tce_get_pSeriesLP;
+ 		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
+ 		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
++		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
+ 	} else {
+ 		ppc_md.tce_build = tce_build_pSeries;
+ 		ppc_md.tce_free  = tce_free_pSeries;
+@@ -597,6 +1184,7 @@ void iommu_init_early_pSeries(void)
+ 
+ 
+ 	pSeries_reconfig_notifier_register(&iommu_reconfig_nb);
++	register_memory_notifier(&iommu_mem_nb);
+ 
+ 	set_pci_dma_ops(&dma_iommu_ops);
+ }
 -- 
-1.6.1.rc3
+1.7.1
