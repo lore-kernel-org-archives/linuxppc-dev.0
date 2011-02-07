@@ -1,17 +1,23 @@
-Return-Path: <tmarri@amcc.com>
-Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AA82FB7425
+Return-Path: <tmarri@apm.com>
+Received: from exprod5og102.obsmtp.com (exprod5og102.obsmtp.com [64.18.0.143])
+	by ozlabs.org (Postfix) with SMTP id A04E5B7159
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 09:48:55 +1100 (EST)
-From: tmarri@apm.com
-To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
+	Tue,  8 Feb 2011 09:53:09 +1100 (EST)
+Received: by qwj9 with SMTP id 9so3697394qwj.36
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 07 Feb 2011 14:53:06 -0800 (PST)
+From: Tirumala Marri <tmarri@apm.com>
+References: <1297118927-27507-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1297118927-27507-1-git-send-email-tmarri@apm.com>
+MIME-Version: 1.0
+Date: Mon, 7 Feb 2011 14:53:05 -0800
+Message-ID: <1ba8e9da2f61c7b346e857cd27ee275f@mail.gmail.com>
+Subject: RE: [PATCH 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
 	configuration and Makefile
-Date: Mon,  7 Feb 2011 14:48:47 -0800
-Message-Id: <1297118927-27507-1-git-send-email-tmarri@apm.com>
-Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
+To: Tirumala Marri <tmarri@apm.com>, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,6 +27,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+Please ignore all my previous emails. That was wrong set.
+
+-----Original Message-----
+From: tmarri@apm.com [mailto:tmarri@apm.com]
+Sent: Monday, February 07, 2011 2:49 PM
+To: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+Cc: greg@kroah.com; tmarri@apm.com; Fushen Chen; Mark Miesfeld
+Subject: [PATCH 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
+configuration and Makefile
 
 From: Tirumala Marri <tmarri@apm.com>
 
@@ -35,7 +51,8 @@ Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
  drivers/Makefile             |    2 +
  drivers/usb/Kconfig          |    3 +-
- drivers/usb/otg/dwc/Kconfig  |   96 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/Kconfig  |   96
+++++++++++++++++++++++++++++++++++++++++++
  drivers/usb/otg/dwc/Makefile |   19 ++++++++
  4 files changed, 119 insertions(+), 1 deletions(-)
  create mode 100644 drivers/usb/otg/dwc/Kconfig
@@ -74,13 +91,13 @@ index 41b6e51..887f702 100644
  	default y if ARCH_IXP4XX
  	default y if ARCH_W90X900
 @@ -115,6 +114,8 @@ source "drivers/usb/host/Kconfig"
- 
+
  source "drivers/usb/musb/Kconfig"
- 
+
 +source "drivers/usb/otg/dwc/Kconfig"
 +
  source "drivers/usb/class/Kconfig"
- 
+
  source "drivers/usb/storage/Kconfig"
 diff --git a/drivers/usb/otg/dwc/Kconfig b/drivers/usb/otg/dwc/Kconfig
 new file mode 100644
@@ -104,7 +121,8 @@ index 0000000..4d33d72
 +	default USB_GADGET
 +	help
 +	  This driver provides USB Device Controller support for the
-+	  Synopsys DesignWare USB OTG Core used on the AppliedMicro PowerPC SoC.
++	  Synopsys DesignWare USB OTG Core used on the AppliedMicro
+PowerPC SoC.
 +
 +config DWC_DEBUG
 +	bool "Enable DWC Debugging"
@@ -146,7 +164,8 @@ index 0000000..4d33d72
 +	  Select the DWC DMA or Slave Mode.
 +	  DMA mode uses the DWC core internal DMA engines.
 +	  Slave mode uses the processor PIO to tranfer data.
-+	  In Slave mode, processor's DMA channels can be used if available.
++	  In Slave mode, processor's DMA channels can be used if
+available.
 +
 +config DWC_SLAVE
 +	bool "DWC Slave Mode"
