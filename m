@@ -1,17 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/4] powerpc: Removing support for 'protected-sources'
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Meador Inge <meador_inge@mentor.com>
-In-Reply-To: <4D4F4BAD.4000909@mentor.com>
-References: <1296861941-3370-1-git-send-email-meador_inge@mentor.com>
-	<1296861941-3370-2-git-send-email-meador_inge@mentor.com>
-	<1297035336.14982.14.camel@pasglop>  <4D4F4BAD.4000909@mentor.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Feb 2011 12:37:03 +1100
-Message-ID: <1297042623.14982.26.camel@pasglop>
-Mime-Version: 1.0
-Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 07EDFB7110
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  7 Feb 2011 12:43:48 +1100 (EST)
+Date: Sun, 6 Feb 2011 17:42:05 -0800
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/4]Define memory_block_size_bytes for powerpc/pseries
+Message-ID: <20110207014205.GA16217@kroah.com>
+References: <4D386498.9080201@austin.ibm.com> <4D3866A0.6010803@austin.ibm.com>
+	<1297035563.14982.15.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1297035563.14982.15.camel@pasglop>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, Robin Holt <holt@sgi.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,10 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-02-06 at 19:32 -0600, Meador Inge wrote:
-> So barring the removal of protected sources, does the inclusion of the
-> "pic-no-reset" property seem reasonable? 
+On Mon, Feb 07, 2011 at 10:39:23AM +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2011-01-20 at 10:45 -0600, Nathan Fontenot wrote:
+> > Define a version of memory_block_size_bytes() for powerpc/pseries such that
+> > a memory block spans an entire lmb.
+> > 
+> > Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> > Reviewed-by: Robin Holt <holt@sgi.com>
+> 
+> Hi Nathan !
+> 
+> Is somebody from -mm picking the rest of the series ? This patch as well
+> or shall I wait for the first two to go in and then pick that one in
+> -powerpc ?
 
-Sure.
+I took all of these in my tree already, is that ok?
 
-Ben.
+thanks,
+
+greg k-h
