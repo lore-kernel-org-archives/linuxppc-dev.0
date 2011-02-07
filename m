@@ -1,29 +1,22 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
-	[209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA6EEB70A9
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 51562B70A3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  7 Feb 2011 14:08:22 +1100 (EST)
-Received: by qyk34 with SMTP id 34so1065225qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 06 Feb 2011 19:08:18 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1297034086.14982.8.camel@pasglop>
-References: <1296136583-13815-1-git-send-email-akinobu.mita@gmail.com>
-	<1296136583-13815-3-git-send-email-akinobu.mita@gmail.com>
-	<1297034086.14982.8.camel@pasglop>
-Date: Mon, 7 Feb 2011 12:08:18 +0900
-Message-ID: <AANLkTik3OEJV1AMSDPg+DkmxZuGL7uzBHSswRorhc7xQ@mail.gmail.com>
-Subject: Re: [PATCH -mm 2/6] powerpc: convert little-endian bitops macros to
-	static inline functions
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	akpm@linux-foundation.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+	Mon,  7 Feb 2011 14:11:03 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Fix call to flush_ptrace_hw_breakpoint()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: prasad@linux.vnet.ibm.com
+In-Reply-To: <20110207025643.GA12223@in.ibm.com>
+References: <1297032853.14982.3.camel@pasglop>
+	<20110207025643.GA12223@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Feb 2011 14:10:39 +1100
+Message-ID: <1297048239.14982.29.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	David Kleikamp <shaggy@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/2/7 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> On Thu, 2011-01-27 at 22:56 +0900, Akinobu Mita wrote:
->> (This patch is intended to be folded into the patch in -mm:
->> powerpc-introduce-little-endian-bitops.patch)
->>
->> The little-endian bitops on powerpc are written as preprocessor
->> macros with the cast to "unsigned long *".
->> This means that even non-pointers will be accepted without an error, and
->> that is a Very Bad Thing.
->>
->> This converts the little-endian bitops macros to static inline functions
->> with proper prototypes.
->
-> No objection to the powerpc variant of the patches. What is the status
-> with the wholes series tho ? Does it looks like its going to be
-> accepted ? Do you expect my Ack and will merge the whole thing at once ?
+On Mon, 2011-02-07 at 08:26 +0530, K.Prasad wrote:
+> On Mon, Feb 07, 2011 at 09:54:13AM +1100, Benjamin Herrenschmidt wrote:
+> > A typo in the #ifdef statement makes us never call it
+> > in flush_thread()
+> >
+> 
+> I wish it never compiled for such typos :-)
+> 
+>  
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
 
-The whole series now seems acceptable since I fixed two issues
-that Linus found annoying. (the naming and the change of prototype)
+Interestingly, that 'fix' now breaks the build:
 
-Please give your ack if it is OK.
+cc1: warnings being treated as errors
+/home/benh/linux-powerpc-test/arch/powerpc/kernel/process.c:356: error:
+'set_debug_reg_defaults' defined but not used 
 
-I should have fixed them quickly so that the series went upstream
-in the last merge windows. But I couldn't because I spent some time
-fixing and compile testing for a bisection hole.
+This file is is becoming an absolute mess of ifdef's in large part due
+to the new BookE debug stuff and your HW breakpoint stuff... Any chance
+you and Shaggy see if you can improve that situation a bit ?
 
-> Does it break bisection unless it's merged as one single giant patch ?
-
-I think there is no known problem that breaks bisectability by
-this patch series.
+Cheers,
+Ben.
