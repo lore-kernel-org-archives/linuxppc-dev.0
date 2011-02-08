@@ -1,35 +1,26 @@
-Return-Path: <madrabbit@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61FB5B7159
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D19C8B716D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 12:18:23 +1100 (EST)
-Received: by iwb12 with SMTP id 12so5551453iwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 07 Feb 2011 17:18:20 -0800 (PST)
+	Tue,  8 Feb 2011 12:49:02 +1100 (EST)
+Date: Mon, 7 Feb 2011 17:30:25 -0800
+From: Greg KH <greg@kroah.com>
+To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+Subject: Re: [PATCH V8 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
+	Interface Layer
+Message-ID: <20110208013025.GA3151@kroah.com>
+References: <1295477852-14735-1-git-send-email-tmarri@apm.com>
+	<20110126191734.5dff9641@desktopvm.lvknet>
+	<4d3a1de3bf1ff8a4f69bf2d90da0a1cf@mail.gmail.com>
+	<20110208031925.60bd1118@apollo.gnet>
 MIME-Version: 1.0
-Sender: madrabbit@gmail.com
-In-Reply-To: <20110207154953.GN10564@opensource.wolfsonmicro.com>
-References: <20110207152132.GM10564@opensource.wolfsonmicro.com>
-	<Pine.LNX.4.44L0.1102071035320.1924-100000@iolanthe.rowland.org>
-	<20110207154953.GN10564@opensource.wolfsonmicro.com>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Mon, 7 Feb 2011 17:17:59 -0800
-Message-ID: <AANLkTimh=8pSmQ6i-5H5+agSso7dCOcOrUJ6Uq_fu7nh@mail.gmail.com>
-Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org,
-	Len Brown <len.brown@intel.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-pm@lists.linux-foundation.org,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20110208031925.60bd1118@apollo.gnet>
+Cc: Tirumala Marri <tmarri@apm.com>, Mark Miesfeld <mmiesfeld@apm.com>,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,12 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 7, 2011 at 7:49 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> I'm rather hoping that they'll notice the mailing list thread or that
-> someone else who knows what's going on with them does
+On Tue, Feb 08, 2011 at 03:19:25AM +0300, Alexander Gordeev wrote:
+> В Mon, 7 Feb 2011 10:53:25 -0800
+> Tirumala Marri <tmarri@apm.com> пишет:
+> 
+> > dwc_read_reg32 is used nowhere throughout the code. One of dwc_read32 and
+> > dwc_read_reg32 should be removed IMO. There was once only dwc_read_reg32. In
+> > version 5 of your patchset I believe. Why did you add another function?
+> > AFAIK it is not correct to store pointers in u32 because they need 8 bytes
+> > on 64-bit archs. So it was ok with the old dwc_read_reg32.
+> > [Marri] If u32 is 8bytes isn't pointer type would be 8bytes as well.
+> 
+> Sorry, I don't understand that. I think u32 is always 32bit = 4byte on
+> all archs. Right?
 
-Surely you're joking. I mean, do _you_ scan every message that comes
-through lkml and its various sister lists?
+Yes.
 
-Do a git blame and add them to the CC:. It's the polite thing to do.
+Use an unsigned long if you want to hold a pointer correctly on all
+arches.
+
+thanks,
+
+greg k-h
