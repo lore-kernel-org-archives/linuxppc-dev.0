@@ -1,27 +1,38 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 59028B7043
+Return-Path: <thlin@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2900CB6EF1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 23:46:06 +1100 (EST)
-Received: by bwz10 with SMTP id 10so5986296bwz.38
+	Wed,  9 Feb 2011 01:29:39 +1100 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p18E3SnC009720
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Feb 2011 09:04:22 -0500
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E9CF04DE8042
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 08 Feb 2011 04:46:01 -0800 (PST)
-Message-ID: <4D513ABE.1030700@ru.mvista.com>
-Date: Tue, 08 Feb 2011 15:44:46 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-MIME-Version: 1.0
-To: tmarri@apm.com
-Subject: Re: [PATCH V9 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
-	support
-References: <1297119240-28531-1-git-send-email-tmarri@apm.com>
-In-Reply-To: <1297119240-28531-1-git-send-email-tmarri@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>
+	Tue,  8 Feb 2011 09:28:43 -0500 (EST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p18ETU0h470878
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Feb 2011 09:29:30 -0500
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p18ETUDu031447
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Feb 2011 07:29:30 -0700
+Subject: Re: [PATCH v2 3/3] powerpc: Add IO event interrupt support
+From: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1297115180.14982.83.camel@pasglop>
+References: <1294267483.24377.30.camel@flin.austin.ibm.com>
+	<1297055437.14982.57.camel@pasglop>
+	<1297114832.24377.42.camel@flin.austin.ibm.com>
+	<1297115180.14982.83.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Feb 2011 08:29:26 -0600
+Message-ID: <1297175367.24377.44.camel@flin.austin.ibm.com>
+Mime-Version: 1.0
+Cc: tsenglin@us.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Tue, 2011-02-08 at 08:46 +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-02-07 at 15:40 -0600, Tseng-Hui (Frank) Lin wrote:
+> > > We are -really- re-inventing interrupts and/or notifiers here, which
+> > > I find a tad annoying..
+> > 
+> > Agree. This is ugly. We could have just used the regular interrupt
+> > mechanism if the firmware didn't use shared rtas call and interrupt
+> > to report multiple types of events.
+> 
+> A notifier wouldn't have worked ?
 
-On 08.02.2011 1:54, tmarri@apm.com wrote:
+Yes. A notifier should have worked. Will change to use a notifier for
+the chain.
 
-> From: Tirumala Marri<tmarri@apm.com>
-
-> Enable gadget support
-
-> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
-> Signed-off-by: Fushen Chen<fchen@apm.com>
-> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
-> ---
->   drivers/usb/gadget/Kconfig        |   22 ++++++++++++++++++++++
->   drivers/usb/gadget/gadget_chips.h |    9 +++++++++
->   2 files changed, 31 insertions(+), 0 deletions(-)
-
-> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-> index 5df8a8d..de7c10b 100644
-> --- a/drivers/usb/gadget/Kconfig
-> +++ b/drivers/usb/gadget/Kconfig
-> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
->   	  This OTG-capable silicon IP is used in dual designs including
->   	  the TI DaVinci, OMAP 243x, OMAP 343x, TUSB 6010, and ADI Blackfin
->
-> +# dwc_otg builds in ../dwc_otg along with host support
-> +config USB_GADGET_DWC_HDRC
-> +	boolean "DesignWare USB Peripheral"
-> +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
-
-    Patch 10 should precede this one as it defines DWC_OTG_MODE and 
-DWC_DEVICE_ONLY.
-
-> +	select USB_GADGET_DUALSPEED
-> +	select USB_GADGET_SELECTED
-> +	select USB_GADGET_DWC_OTG
-> +	help
-> +	This OTG-capable Designware USB IP
-> +
-> +config USB_GADGET_DWC_OTG
-> +	boolean "OTG Support"
-> +	depends on USB_GADGET_DWC_HDRC
-
-    What's the point of this option if it gets auto-selected by 
-USB_GADGET_DWC_HDRC anyway?
-
-WBR, Sergei
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
