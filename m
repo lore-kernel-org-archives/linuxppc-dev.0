@@ -1,32 +1,15 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 8C294B7143
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 13:11:36 +1100 (EST)
-Subject: Re: [PATCH 5/6] ftrace, powerpc: Implement raw syscall tracepoints
-	on PowerPC
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ian Munsie <imunsie@au1.ibm.com>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>
-In-Reply-To: <1296703645-18718-6-git-send-email-imunsie@au1.ibm.com>
-References: <1296703645-18718-1-git-send-email-imunsie@au1.ibm.com>
-	<1296703645-18718-6-git-send-email-imunsie@au1.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 07 Feb 2011 21:10:28 -0500
-Message-ID: <1297131028.23343.7.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-	Alexander Graf <agraf@suse.de>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
-	Andrew Morton <akpm@linux-foundation.org>, David Gibson <dwg@au1.ibm.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Avantika Mathur <mathur@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 8 Feb 2011 13:16:16 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Bruce_Leonard@selinc.com
+Subject: Re: Question on supporting multiple HW versions with a single
+	driver (warning: long post)
+Message-ID: <20110208021616.GO30616@yookeroo>
+References: <OF8C287A2E.13F8CEBF-ON8825782B.0073FBAF-8825782B.00789868@selinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF8C287A2E.13F8CEBF-ON8825782B.0073FBAF-8825782B.00789868@selinc.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,196 +19,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+On Wed, Feb 02, 2011 at 01:57:13PM -0800, Bruce_Leonard@selinc.com wrote:
+> So this is sort of a follow on question to one I posted a month ago about 
+> trying to get a PCI driver to work with OF (which I think I more or less 
+> understood the answer to).  I'm encountering a different sort of problem 
+> that I'd like to solve with OF but I'm not sure I can.  Let me lay out a 
+> little background first.
+> 
+> We build embedded systems, so we never really have hot plug events and our 
+> addresses (at least for HW interfaces) are pretty much static for any 
+> given product.  In other words for product "A" the NAND controller will 
+> always be at address "X", though on product "B" that same NAND controller 
+> may be at address "Y".  Also, the devices in the product are static, i.e., 
+> we'll always talk to an LXT971 as the PHY.
+> 
+> Currently I'm working on building a driver for an ethernet MAC we're 
+> putting in an FPGA.  The MAC is based on the MPC8347 TSEC and the driver 
+> is based on the gianfar driver.  (My previous question was how to spoof 
+> the OF gianfar driver into thinking it was a PCI driver because our MAC is 
+> going to be hanging off a PCI bus.  Ultimately I decided to just 
+> steal...err...borrow... the guts of the gianfar driver and make it a PCI 
+> driver that only deals with our MAC.)
+> 
+> Right in the middle of writing this driver, my HW guys came to me and said 
+> they wanted to use this same MAC in other products.  Great I said.  Local 
+> bus they said.  Which opens up a whole can of worms and leads to my 
+> question.  We've got a MAC in a FPGA with a nice generic interface on the 
+> front of it that can talk to a whole range of different busses, PCI, PCIe, 
+> local bus (of any variety of any processor), etc.  But the internals of 
+> the MAC (i.e., the register sets, the buffers, the whole buffer descriptor 
+> mechanism) all looks the same.  Seems to me that this is exactly the sort 
+> of situation OF and device trees was developed for.
+> 
+> What I'd like to do, and I'm sure it's possible but I have no idea how, is 
+> to still have this as an OF driver and have the device tree tell the 
+> kernel about the HW interface to use.  So on one product (currently all 
+> products use an MCP83xx variant) I would have a child node under a PCI 
+> node to describe it's interrupts, addressing (which could also come from a 
+> PCI probe I expect), compatibility, any attached PHYs etc, and on a second 
+> product do the same thing under a localbus node.
+> 
+> First question that comes to mind is ordering.  If I put a child node in 
+> the PCI node of the device tree, what happens when the device tree is 
+> processed?  Is it immediately going to try and find and install a driver 
+> for that child node?  Since the device tree is processed very early, the 
+> PCI bus isn't going to be set up and available yet.  Will trying to 
+> install a PCI driver via OF even be possible at this point?  Then I'd 
+> still need a PCI function to claim the device when the PCI bus gets 
+> probed.  If the driver is already installed via OF, what does the PCI 
+> function do?
+> 
+> Or am I all backwards.  Does having the child node to the PCI node 
+> actually do anything when the early OF code runs?  If not would the PCI 
+> probe function be the first indication to the system that the driver needs 
+> to be loaded?  In which case I just walk the device tree looking 
+> for...what?  How would I match up the PCI ID with something in the device 
+> tree?
+> 
+> Then there's the local bus side of the question?  That should truly be an 
+> OF driver and use struct of_platform_driver along with that whole 
+> mechanism.  How do I make that compatible with the version of the MAC that 
+> runs on PCI?
+> 
+> Or am I making a whole lot of work for myself and I should just make them 
+> separate drivers?  I'm trying to keep the code base as small and coherent 
+> as possible.  I don't want to have to maintain multiple copies of a driver 
+> that are essentially identical.
 
-How do you want to work this? Do you want to ack it and I take this
-patch with the others through the tracing tree, or do you want to wait
-till the tracing tree gets updated into mainline and then pull this in
-though the ppc tree. As this touches a bit of the ppc side.
+No, you shouldn't need multiple drivers.  However, what you will want
+is two sets of bus binding "glue" for the one driver.  The driver
+proper won't directly advertise a struct driver, but will provide some
+sort of explicit init/probe function with enough information to set up
+the device on either PCI or localbus.
 
--- Steve
+Then you have a PCI bus binding which advertises to the driver model
+as a PCI driver, and when probed does any PCI specific magic then
+instantiates the core driver in the right way based on the information
+obtained from the PCI system.
 
+A second bus binding advertises as a platform[*] driver and when
+probed instantiates the core driver based on the platform device
+information.
 
-On Thu, 2011-02-03 at 14:27 +1100, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au.ibm.com>
-> 
-> This patch implements the raw syscall tracepoints on PowerPC and exports
-> them for ftrace syscalls to use.
-> 
-> To minimise reworking existing code, I slightly re-ordered the thread
-> info flags such that the new TIF_SYSCALL_TRACEPOINT bit would still fit
-> within the 16 bits of the andi. instruction's UI field. The instructions
-> in question are in /arch/powerpc/kernel/entry_{32,64}.S to and the
-> _TIF_SYSCALL_T_OR_A with the thread flags to see if system call tracing
-> is enabled.
-> 
-> In the case of 64bit PowerPC, arch_syscall_addr and
-> arch_syscall_match_sym_name are overridden to allow ftrace syscalls to
-> work given the unusual system call table structure and symbol names that
-> start with a period.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> ---
->  arch/powerpc/Kconfig                   |    1 +
->  arch/powerpc/include/asm/ftrace.h      |   14 ++++++++++++++
->  arch/powerpc/include/asm/syscall.h     |    5 +++++
->  arch/powerpc/include/asm/thread_info.h |    7 +++++--
->  arch/powerpc/kernel/Makefile           |    1 +
->  arch/powerpc/kernel/ftrace.c           |    8 ++++++++
->  arch/powerpc/kernel/ptrace.c           |   10 ++++++++++
->  7 files changed, 44 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 7d69e9b..a0e8e02 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -134,6 +134,7 @@ config PPC
->  	select HAVE_GENERIC_HARDIRQS
->  	select HAVE_SPARSE_IRQ
->  	select IRQ_PER_CPU
-> +	select HAVE_SYSCALL_TRACEPOINTS
->  
->  config EARLY_PRINTK
->  	bool
-> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-> index dde1296..169d039 100644
-> --- a/arch/powerpc/include/asm/ftrace.h
-> +++ b/arch/powerpc/include/asm/ftrace.h
-> @@ -60,4 +60,18 @@ struct dyn_arch_ftrace {
->  
->  #endif
->  
-> +#if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64) && !defined(__ASSEMBLY__)
-> +#define ARCH_HAS_SYSCALL_MATCH_SYM_NAME
-> +static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
-> +{
-> +	/*
-> +	 * Compare the symbol name with the system call name. Skip the .sys or .SyS
-> +	 * prefix from the symbol name and the sys prefix from the system call name and
-> +	 * just match the rest. This is only needed on ppc64 since symbol names on
-> +	 * 32bit do not start with a period so the generic function will work.
-> +	 */
-> +	return !strcmp(sym + 4, name + 3);
-> +}
-> +#endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 && !__ASSEMBLY__ */
-> +
->  #endif /* _ASM_POWERPC_FTRACE */
-> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> index 23913e9..b54b2ad 100644
-> --- a/arch/powerpc/include/asm/syscall.h
-> +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -15,6 +15,11 @@
->  
->  #include <linux/sched.h>
->  
-> +/* ftrace syscalls requires exporting the sys_call_table */
-> +#ifdef CONFIG_FTRACE_SYSCALLS
-> +extern const unsigned long *sys_call_table;
-> +#endif /* CONFIG_FTRACE_SYSCALLS */
-> +
->  static inline long syscall_get_nr(struct task_struct *task,
->  				  struct pt_regs *regs)
->  {
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 65eb859..4403f09 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -110,7 +110,8 @@ static inline struct thread_info *current_thread_info(void)
->  #define TIF_NOERROR		12	/* Force successful syscall return */
->  #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
->  #define TIF_FREEZE		14	/* Freezing for suspend */
-> -#define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
-> +#define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
-> +#define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
->  
->  /* as above, but as bit values */
->  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-> @@ -127,8 +128,10 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_NOERROR		(1<<TIF_NOERROR)
->  #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
->  #define _TIF_FREEZE		(1<<TIF_FREEZE)
-> +#define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
->  #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
-> -#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
-> +#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
-> +				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
->  
->  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->  				 _TIF_NOTIFY_RESUME)
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 3bb2a3e..fe1ac47 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -105,6 +105,7 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
->  
->  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
->  obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
-> +obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
->  obj-$(CONFIG_PERF_EVENTS)	+= perf_callchain.o
->  
->  obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index ce1f3e4..bf99cfa 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -22,6 +22,7 @@
->  #include <asm/cacheflush.h>
->  #include <asm/code-patching.h>
->  #include <asm/ftrace.h>
-> +#include <asm/syscall.h>
->  
-> 
->  #ifdef CONFIG_DYNAMIC_FTRACE
-> @@ -600,3 +601,10 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
->  	}
->  }
->  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-> +
-> +#if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
-> +unsigned long __init arch_syscall_addr(int nr)
-> +{
-> +	return sys_call_table[nr*2];
-> +}
-> +#endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 */
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 9065369..b6ff0cb 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -29,6 +29,7 @@
->  #include <linux/signal.h>
->  #include <linux/seccomp.h>
->  #include <linux/audit.h>
-> +#include <trace/syscall.h>
->  #ifdef CONFIG_PPC32
->  #include <linux/module.h>
->  #endif
-> @@ -40,6 +41,9 @@
->  #include <asm/pgtable.h>
->  #include <asm/system.h>
->  
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/syscalls.h>
-> +
->  /*
->   * The parameter save area on the stack is used to store arguments being passed
->   * to callee function and is located at fixed offset from stack pointer.
-> @@ -1691,6 +1695,9 @@ long do_syscall_trace_enter(struct pt_regs *regs)
->  		 */
->  		ret = -1L;
->  
-> +	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
-> +		trace_sys_enter(regs, regs->gpr[0]);
-> +
->  	if (unlikely(current->audit_context)) {
->  #ifdef CONFIG_PPC64
->  		if (!is_32bit_task())
-> @@ -1719,6 +1726,9 @@ void do_syscall_trace_leave(struct pt_regs *regs)
->  		audit_syscall_exit((regs->ccr&0x10000000)?AUDITSC_FAILURE:AUDITSC_SUCCESS,
->  				   regs->result);
->  
-> +	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
-> +		trace_sys_exit(regs, regs->result);
-> +
->  	step = test_thread_flag(TIF_SINGLESTEP);
->  	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
->  		tracehook_report_syscall_exit(regs, step);
+There are a number of drivers which already have this sort of dual bus
+binding.
+
+[*] of_platform_driver is now deprecated - the whole concept was
+based on a flawed conceptual model which causes problems in, amongst
+others, exactly this case.  The new approach is to have a platform
+device structure which is created automatically during device tree
+scanning.  This also makes it easier to have a single driver (and
+binding) which will work both on device-tree-based and non
+device-tree-based platforms.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
