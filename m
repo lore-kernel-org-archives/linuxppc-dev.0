@@ -1,32 +1,27 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A1E60B6F1E
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 59028B7043
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 22:18:37 +1100 (EST)
-Date: Tue, 8 Feb 2011 11:18:27 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Ray Lee <ray-lk@madrabbit.org>
-Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Message-ID: <20110208111827.GA29850@opensource.wolfsonmicro.com>
-References: <20110207152132.GM10564@opensource.wolfsonmicro.com>
-	<Pine.LNX.4.44L0.1102071035320.1924-100000@iolanthe.rowland.org>
-	<20110207154953.GN10564@opensource.wolfsonmicro.com>
-	<AANLkTimh=8pSmQ6i-5H5+agSso7dCOcOrUJ6Uq_fu7nh@mail.gmail.com>
+	Tue,  8 Feb 2011 23:46:06 +1100 (EST)
+Received: by bwz10 with SMTP id 10so5986296bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 08 Feb 2011 04:46:01 -0800 (PST)
+Message-ID: <4D513ABE.1030700@ru.mvista.com>
+Date: Tue, 08 Feb 2011 15:44:46 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTimh=8pSmQ6i-5H5+agSso7dCOcOrUJ6Uq_fu7nh@mail.gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org,
-	Len Brown <len.brown@intel.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-pm@lists.linux-foundation.org,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+To: tmarri@apm.com
+Subject: Re: [PATCH V9 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
+	support
+References: <1297119240-28531-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1297119240-28531-1-git-send-email-tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,21 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 07, 2011 at 05:17:59PM -0800, Ray Lee wrote:
-> On Mon, Feb 7, 2011 at 7:49 AM, Mark Brown
+Hello.
 
-> > I'm rather hoping that they'll notice the mailing list thread or that
-> > someone else who knows what's going on with them does
+On 08.02.2011 1:54, tmarri@apm.com wrote:
 
-> Surely you're joking. I mean, do _you_ scan every message that comes
-> through lkml and its various sister lists?
+> From: Tirumala Marri<tmarri@apm.com>
 
-Actually I do at least scan most of the lists.
+> Enable gadget support
 
-> Do a git blame and add them to the CC:. It's the polite thing to do.
+> Signed-off-by: Tirumala R Marri<tmarri@apm.com>
+> Signed-off-by: Fushen Chen<fchen@apm.com>
+> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
+> ---
+>   drivers/usb/gadget/Kconfig        |   22 ++++++++++++++++++++++
+>   drivers/usb/gadget/gadget_chips.h |    9 +++++++++
+>   2 files changed, 31 insertions(+), 0 deletions(-)
 
-It's also going to result in the mail not going to the mailing lists as
-there's a limit on the number of people you can CC enforced by vger
-which probably isn't constructive.  It's moot now but as I said in the
-text you've helpfully cut I'd have suggested contacting them after the
-thread had come to a conclusion.
+> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> index 5df8a8d..de7c10b 100644
+> --- a/drivers/usb/gadget/Kconfig
+> +++ b/drivers/usb/gadget/Kconfig
+> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
+>   	  This OTG-capable silicon IP is used in dual designs including
+>   	  the TI DaVinci, OMAP 243x, OMAP 343x, TUSB 6010, and ADI Blackfin
+>
+> +# dwc_otg builds in ../dwc_otg along with host support
+> +config USB_GADGET_DWC_HDRC
+> +	boolean "DesignWare USB Peripheral"
+> +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
+
+    Patch 10 should precede this one as it defines DWC_OTG_MODE and 
+DWC_DEVICE_ONLY.
+
+> +	select USB_GADGET_DUALSPEED
+> +	select USB_GADGET_SELECTED
+> +	select USB_GADGET_DWC_OTG
+> +	help
+> +	This OTG-capable Designware USB IP
+> +
+> +config USB_GADGET_DWC_OTG
+> +	boolean "OTG Support"
+> +	depends on USB_GADGET_DWC_HDRC
+
+    What's the point of this option if it gets auto-selected by 
+USB_GADGET_DWC_HDRC anyway?
+
+WBR, Sergei
