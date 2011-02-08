@@ -1,27 +1,27 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 89775B7129
+	by ozlabs.org (Postfix) with ESMTPS id B730BB711B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Feb 2011 04:50:56 +1100 (EST)
-Received: by gyg8 with SMTP id 8so2524565gyg.38
+	Wed,  9 Feb 2011 05:29:30 +1100 (EST)
+Received: by bwz10 with SMTP id 10so69288bwz.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 08 Feb 2011 09:50:53 -0800 (PST)
-Date: Tue, 8 Feb 2011 09:50:29 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH 1/2] misc: add CARMA DATA-FPGA Access Driver
-Message-ID: <20110208175028.GD4476@core.coreip.homeip.net>
-References: <1297121021-3522-1-git-send-email-iws@ovro.caltech.edu>
-	<1297121021-3522-2-git-send-email-iws@ovro.caltech.edu>
-	<20110208073309.GB906@core.coreip.homeip.net>
-	<20110208172046.GB10125@ovro.caltech.edu>
+	Tue, 08 Feb 2011 10:29:25 -0800 (PST)
+Message-ID: <4D518B2D.3090603@ru.mvista.com>
+Date: Tue, 08 Feb 2011 21:27:57 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110208172046.GB10125@ovro.caltech.edu>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: tmarri@apm.com
+Subject: Re: [PATCH V9 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
+	configuration and Makefile
+References: <1297119242-28562-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1297119242-28562-1-git-send-email-tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,284 +31,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 08, 2011 at 09:20:46AM -0800, Ira W. Snyder wrote:
-> On Mon, Feb 07, 2011 at 11:33:10PM -0800, Dmitry Torokhov wrote:
-> > > +static void data_free_buffer(struct device *dev, struct data_buf *buf)
-> > > +{
-> > > +	/* It is ok to free a NULL buffer */
-> > > +	if (!buf)
-> > > +		return;
-> > > +
-> > > +	/* Make sure the buffer is not on any list */
-> > > +	list_del_init(&buf->entry);
-> > 
-> > And what happens if it is? Should it be WARN_ON(!list_empty()) instead?
-> > 
-> 
-> This was only defensive programming. Everywhere this function is called,
-> the buffer has already been removed from the list.
+Hello.
 
-I am concerned as sometimes defencive programming is the sign that we
-arenot quite sure how the code works. I believe defensive programming
-should be used when providing library-like code, not in local cases.
+tmarri@apm.com wrote:
 
-> > > +
-> > > +	list_for_each_entry_safe(buf, tmp, &priv->free, entry) {
-> > > +		list_del_init(&buf->entry);
-> > > +		spin_unlock_irq(&priv->lock);
-> > > +		data_free_buffer(priv->dev, buf);
-> > > +		spin_lock_irq(&priv->lock);
-> > > +	}
-> > 
-> > This is messed up. If there is concurrent access to the free list then
-> > it is not safe to continue iterating list after releasing the lock, you
-> > need to do:
-> > 
-> > 	spin_lock_irq(&priv->lock);
-> > 	while (!list_empty(&priv->free)) {
-> > 		buf = list_first_entry(&priv->free, struct data_buf, entry);
-> > 		list_del_init(&buf->entry);
-> > 		spin_unlock_irq(&priv->lock);
-> > 		data_free_buffer(priv->dev, buf);
-> > 		spin_lock_irq(&priv->lock);
-> > 	}
-> > 
-> > BUT, the function is only called when you disable (or fail to enable) device
-> > which, at this point, should be quiesced, thus all this locking is not
-> > really needed.
-> > 
-> 
-> Correct.
-> 
-> I thought it would be clearer to reviewers if I always used the lock to
-> protect a data structure, even when it isn't technically needed.
+> From: Tirumala Marri <tmarri@apm.com>
 
-No, locks should protect wehat needs to be protected. The rest just
-muddles water.
+> Add Synopsys DesignWare HS USB OTG driver kernel configuration.
+> Synopsys OTG driver may operate in  host only, device only, or OTG mode.
+> The driver also allows user configure the core to use its internal DMA
+> or Slave (PIO) mode.
 
-> > > +
-> > > +	spin_lock_irq(&priv->lock);
-> > > +	while (!list_empty(list)) {
-> > > +		spin_unlock_irq(&priv->lock);
-> > > +
-> > > +		ret = wait_event_interruptible(priv->wait, list_empty(list));
-> > > +		if (ret)
-> > > +			return -ERESTARTSYS;
-> > > +
-> > > +		spin_lock_irq(&priv->lock);
-> > > +	}
-> > > +	spin_unlock_irq(&priv->lock);
-> > 
-> > Locking is not needed - if you disable interrupyts what would put more
-> > stuff on the list?
-> > 
-> 
-> The locking is definitely needed.
-> 
-> You've missed a critical piece of information. There are *two* devices
-> we are interacting with here, and BOTH generate interrupts.
-> 
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+[...]
 
-No, I did not miss this fact. The point is that when we get to this code
-the device _putting_ items on wauiting list is stopped and we only need
-to wait for the list to drain. Nobody puts more stuff on it. You can
-check fir list_empty() condition without locking.
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index 2cbb4b7..3bfc728 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -65,6 +65,7 @@ obj-$(CONFIG_PARIDE) 		+= block/paride/
+>  obj-$(CONFIG_TC)		+= tc/
+>  obj-$(CONFIG_UWB)		+= uwb/
+>  obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
+> +obj-$(CONFIG_USB_DWC_OTG)	+= usb/otg/dwc/
 
-And if someone _is_ putting more stuff on the list - you are screwed
-since list may become non-empty the moment you release the lock.
+    Hardly a good place for this...
 
-> > > +
-> > > +static ssize_t data_num_buffers_show(struct device *dev,
-> > > +				     struct device_attribute *attr, char *buf)
-> > > +{
-> > > +	struct fpga_device *priv = dev_get_drvdata(dev);
-> > > +	unsigned int num;
-> > > +
-> > > +	spin_lock_irq(&priv->lock);
-> > > +	num = priv->num_buffers;
-> > > +	spin_unlock_irq(&priv->lock);
-> > 
-> > This spin lock is pointless, priv->num_buffers might be already changed
-> > here, you can't guarantee that you show accurate data.
-> > 
-> 
-> Correct, I know this. I just wanted to protect the data structure at all
-> points of use in the driver.
+>  obj-$(CONFIG_USB)		+= usb/
+>  obj-$(CONFIG_USB_MUSB_HDRC)	+= usb/musb/
+>  obj-$(CONFIG_PCI)		+= usb/
+> @@ -105,6 +106,7 @@ obj-$(CONFIG_ARCH_SHMOBILE)	+= sh/
+>  ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
+>  obj-y				+= clocksource/
+>  endif
+> +obj-$(CONFIG_DMA_ENGINE)       += dma/
 
-Protect from what? integer reads are guaranteed to be complete and you
-are not concerned with missing updates as information is obsolete the
-moment you release trhe lock.
+    How is this change related? Moreover, it's already present several lines ago 
+in this file...
 
-> Would an atomic_t be better for this, or
-> should I just remove the locking completely?
+> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+> index 41b6e51..887f702 100644
+> --- a/drivers/usb/Kconfig
+> +++ b/drivers/usb/Kconfig
+> @@ -55,7 +55,6 @@ config USB_ARCH_HAS_OHCI
+>  config USB_ARCH_HAS_EHCI
+>  	boolean
+>  	default y if PPC_83xx
+> -	default y if PPC_MPC512x
 
-Just remove the locking.
+    How is this change related?
 
-> > > +
-> > > +	if (mutex_lock_interruptible(&priv->mutex))
-> > > +		return -ERESTARTSYS;
-> > 
-> > Why don't
-> > 
-> > 	error = mutex_lock_interruptible(&priv->mutex);
-> > 	if (error)
-> > 		return error;
-> > 
-> > - do not clobber perfectly valid error codes.
-> > 
-> 
-> That's what the Linux Device Drivers 3rd Edition book does. See page
-> 112. I will change it to fix the return code.
->
+> diff --git a/drivers/usb/otg/dwc/Kconfig b/drivers/usb/otg/dwc/Kconfig
+> new file mode 100644
+> index 0000000..4d33d72
+> --- /dev/null
+> +++ b/drivers/usb/otg/dwc/Kconfig
+> @@ -0,0 +1,96 @@
+> +#
+> +# USB Dual Role (OTG-ready) Controller Drivers
+> +# for silicon based on Synopsys DesignWare IP
+> +#
+> +
+> +comment "Enable Host or Gadget support for DesignWare OTG controller"
+> +	depends on !USB && USB_GADGET=n
+> +
+> +config USB_DWC_OTG
+> +	depends on (USB || USB_GADGET)
 
-LDD3 is quite old by now...
+    Parens not necessary.
 
-> > > +
-> > > +static struct attribute *data_sysfs_attrs[] = {
-> > > +	&dev_attr_num_buffers.attr,
-> > > +	&dev_attr_buffer_size.attr,
-> > > +	&dev_attr_num_inflight.attr,
-> > > +	&dev_attr_num_free.attr,
-> > > +	&dev_attr_num_used.attr,
-> > > +	&dev_attr_num_dropped.attr,
-> > > +	&dev_attr_enable.attr,
-> > > +	NULL,
-> > > +};
-> > 
-> > Are all of these really needed or most of them are for debug?
-> > 
-> 
-> Most are for debugging. They have proved useful a few times in
-> production to track down bugs.
-> 
+> +	select NOP_USB_XCEIV
+> +	select USB_OTG_UTILS
+> +	tristate "Synopsys DWC OTG Controller"
 
-Consider switching over to debugfs then. Or, if you believe the device
-is sufficiently bug-free just cut the code.
+    "tristate" should come before "depends" I think -- at least that's how 
+everybody does...
 
-> > > +
-> > > +static ssize_t data_read(struct file *filp, char __user *ubuf, size_t count,
-> > > +			 loff_t *f_pos)
-> > > +{
-> > > +	struct fpga_reader *reader = filp->private_data;
-> > > +	struct fpga_device *priv = reader->priv;
-> > > +	struct list_head *used = &priv->used;
-> > > +	struct data_buf *dbuf;
-> > > +	size_t avail;
-> > > +	void *data;
-> > > +	int ret;
-> > > +
-> > > +	/* check if we already have a partial buffer */
-> > > +	if (reader->buf) {
-> > > +		dbuf = reader->buf;
-> > > +		goto have_buffer;
-> > > +	}
-> > > +
-> > > +	spin_lock_irq(&priv->lock);
-> > > +
-> > > +	/* Block until there is at least one buffer on the used list */
-> > > +	while (list_empty(used)) {
-> > > +		spin_unlock_irq(&priv->lock);
-> > > +
-> > > +		if (filp->f_flags & O_NONBLOCK)
-> > > +			return -EAGAIN;
-> > > +
-> > > +		if (wait_event_interruptible(priv->wait, !list_empty(used)))
-> > > +			return -ERESTARTSYS;
-> > > +
-> > 
-> > And somebody grabs that entry here...
-> > 
-> > > +		spin_lock_irq(&priv->lock);
-> > > +	}
-> > > +
-> > > +	/* Grab the first buffer off of the used list */
-> > > +	dbuf = list_first_entry(used, struct data_buf, entry);
-> > 
-> > And list is empty so you grabgarbage.
-> > 
-> > > +	list_del_init(&dbuf->entry);
-> > > +
-> > > +	spin_unlock_irq(&priv->lock);
-> > 
-> > Shoudl be:
-> > 
-> > 	struct data_buf *dbuf = NULL;
-> > 	...
-> > 
-> > 	if (list_empty(&priv->used) && (filp->f_flags & O_NONBLOCK))
-> > 		return -EAGAIN;
-> > 
-> > 	error = wait_event_interruptible(priv->wait, !list_empty(&priv->used);
-> > 	if (error)
-> > 		return error;
-> > 
-> > 	spin_lock_irq(&priv->lock);
-> > 	if (!list_empty(&priv->used)) {
-> > 		buf = list_first_entry(&priv->used, struct data_buf, entry);
-> > 		list_del_init(&dbuf->entry);
-> > 	}
-> > 	spin_unlock_irq(&priv->lock);
-> > 
-> > 	if (dbuf) {
-> > 		.. deal with the buffer
-> > 	}
-> > 
-> 
-> I'm pretty sure you're wrong.
+> +	default USB_GADGET
+> +	help
+> +	  This driver provides USB Device Controller support for the
+> +	  Synopsys DesignWare USB OTG Core used on the AppliedMicro PowerPC SoC.
+[...]
+> +choice
+> +	prompt "DWC Mode Selection"
+> +	depends on USB_DWC_OTG
+> +	default DWC_HOST_ONLY
+> +	help
+> +	  Select the DWC Core in OTG, Host only, or Device only mode.
+> +
+> +config DWC_HOST_ONLY
+> +	bool "DWC Host Only Mode"
+> +
+> +config DWC_OTG_MODE
+> +	bool "DWC OTG Mode"
+> +	select USB_GADGET_SELECTED
+> +
+> +config DWC_DEVICE_ONLY
+> +	bool "DWC Device Only Mode"
+> +	select USB_GADGET_SELECTED
+> +
+> +endchoice
 
-And I am certain I am correct. Given that I've even given example how you
-can lose your list entry I don't know why you think I did not understand
-your code.
+    So this is tri-modal driver after all... how come we place it in 
+drivers/usb/otg/dwc/, while the same tri-modal MUSB driver was placed in 
+drivers/usb/musb/?
 
-> Go back and re-think my loop. This is a
-> common idiom straight of out LDD3 pages 153-154.
-> 
-> You should note that it is only possible to exit the loop with the lock
-> held AND !list_empty(used). The lock protects the used list, and
-> therefore, there must be a buffer on the list.
+> +config USB_OTG_WHITELIST
+> +	bool "Rely on OTG Targeted Peripherals List"
+> +	depends on !USB_SUSPEND && USB_DWC_OTG
+> +	default n
+> +	help
+> +	  This is the same flag as in ../core/Kconfig.
+> +	  It is here for easy deselect.
 
-No, because you are woken up while not holding the lock so another
-reader is free to take it off the list.
+    What?! Option duplication isn't allowed, I think.
 
-> > > +
-> > > +static unsigned int data_poll(struct file *filp, struct poll_table_struct *tbl)
-> > > +{
-> > > +	struct fpga_reader *reader = filp->private_data;
-> > > +	struct fpga_device *priv = reader->priv;
-> > > +	unsigned int mask = 0;
-> > > +
-> > > +	poll_wait(filp, &priv->wait, tbl);
-> > > +
-> > > +	spin_lock_irq(&priv->lock);
-> > > +
-> > > +	if (!list_empty(&priv->used))
-> > > +		mask |= POLLIN | POLLRDNORM;
-> > > +
-> > > +	spin_unlock_irq(&priv->lock);
-> > 
-> > No lock is needed.
-> > 
-> 
-> Why not? For example, there are two readers:
-> 1) blocked in poll()
-> 2) blocked in poll()
-> 
-> A single buffer gets added to the used list. I should only unblock one
-> of them with (POLLIN | POLLRDNORM), correct? Otherwise one of them must
-> have a spurious wakeup. I think that's incorrect (or undesirable)
-> behavior.
+> +config DWC_OTG_REG_LE
+> +	depends on USB_DWC_OTG
+> +	bool "DWC Little Endian Register"
 
-And how your lock prevents both of them wakign up? You are not resetting
-wakeup condition in any way.
+    "bool" should come before "depends", I think.
 
-> 
-> Again, it seems very inconsistent and confusing to me to protect the
-> used list with a spinlock in some places and not in others.
+> +	default y
+> +	help
+> +	  OTG core register access is Little-Endian.
+> +
+> +config DWC_OTG_FIFO_LE
+> +	depends on USB_DWC_OTG
+> +	bool "DWC FIFO Little Endian"
 
-Please try to think about what exactly you protecting and whether lock
-adds any protection or not and it will put your mind at ease.
+    Same here.
 
-Thanks.
+> +	default n
+> +	help
+> +	  OTG core FIFO access is Little-Endian.
+> +
+> +config DWC_LIMITED_XFER_SIZE
+> +	depends on USB_GADGET_DWC_HDRC
+> +	bool "DWC Endpoint Limited Xfer Size"
 
--- 
-Dmitry
+    ... and here.
+
+> +	default n
+> +	help
+> +	  Bit fields in the Device EP Transfer Size Register is 11 bits.
+
+    s/is/are/
+    Also, such things should better be passed via the platform data, I think.
+
+WBR, Sergei
