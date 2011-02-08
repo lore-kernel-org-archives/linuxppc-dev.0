@@ -1,21 +1,33 @@
-Return-Path: <timur@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C82E3B70B3
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Feb 2011 03:33:31 +1100 (EST)
-Message-ID: <4D517052.7050003@freescale.com>
-Date: Tue, 8 Feb 2011 10:33:22 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 39EA4B7125
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Feb 2011 03:54:51 +1100 (EST)
+Subject: Re: [PATCH 5/6] ftrace, powerpc: Implement raw syscall tracepoints
+	on PowerPC
+From: Steven Rostedt <rostedt@goodmis.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] watchdog: booke_wdt: clean up status messages
-References: <1295299780-27338-1-git-send-email-timur@freescale.com>
-	<1297040772.14982.25.camel@pasglop>
-In-Reply-To: <1297040772.14982.25.camel@pasglop>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, wim@iguana.be, linux-watchdog@vger.kernel.org
+In-Reply-To: <1297159672.14982.205.camel@pasglop>
+References: <1296703645-18718-1-git-send-email-imunsie@au1.ibm.com>
+	<1296703645-18718-6-git-send-email-imunsie@au1.ibm.com>
+	<1297131028.23343.7.camel@gandalf.stny.rr.com>
+	<1297159672.14982.205.camel@pasglop>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Tue, 08 Feb 2011 11:54:46 -0500
+Message-ID: <1297184086.23343.10.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Andreas Dilger <adilger@dilger.ca>, Andreas Schwab <schwab@linux-m68k.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Namhyung Kim <namhyung@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+	Alexander Graf <agraf@suse.de>, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
+	Andrew Morton <akpm@linux-foundation.org>, David Gibson <dwg@au1.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Avantika Mathur <mathur@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> If you're going to cleanup the messages, then I think displaying:
+On Tue, 2011-02-08 at 21:07 +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-02-07 at 21:10 -0500, Steven Rostedt wrote:
+> > Ben,
+> > 
+> > How do you want to work this? Do you want to ack it and I take this
+> > patch with the others through the tracing tree, or do you want to wait
+> > till the tracing tree gets updated into mainline and then pull this in
+> > though the ppc tree. As this touches a bit of the ppc side.
 > 
-> PowerPC Book-E Watchdog Timer Loaded
-> booke_wdt: watchdog enabled (timeout = xxx sec)
+> I was waiting to see what you were up to vs. the rest of the series :-)
 > 
-> Isn't very nice.
-> 
-> Lacks consistency ... you can prefix both lines the same way, or
-> maybe better print only one line with all the necessary info.
+> I still need to review that one closely, at which point I'm happy for
+> you to take it.
 
-Yeah, I see your point.  I'll post a v2.
+It survived my tests, I'm continuing with other patches for 39 and I
+have no problem with Ian's patches.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-- Steve
