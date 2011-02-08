@@ -1,29 +1,15 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CF68AB712F
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 4F920B70DE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Feb 2011 06:33:35 +1100 (EST)
-Received: by pzk34 with SMTP id 34so1442179pzk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 08 Feb 2011 11:33:32 -0800 (PST)
-Date: Tue, 8 Feb 2011 11:33:21 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH 1/2] misc: add CARMA DATA-FPGA Access Driver
-Message-ID: <20110208193321.GA16527@core.coreip.homeip.net>
-References: <1297121021-3522-1-git-send-email-iws@ovro.caltech.edu>
-	<1297121021-3522-2-git-send-email-iws@ovro.caltech.edu>
-	<20110208073309.GB906@core.coreip.homeip.net>
-	<20110208172046.GB10125@ovro.caltech.edu>
-	<20110208175028.GD4476@core.coreip.homeip.net>
-	<20110208191143.GC10125@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110208191143.GC10125@ovro.caltech.edu>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Wed,  9 Feb 2011 10:37:58 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH RFCv5 0/2] CARMA Board Support
+Date: Tue,  8 Feb 2011 15:37:45 -0800
+Message-Id: <1297208267-27087-1-git-send-email-iws@ovro.caltech.edu>
+Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,27 +19,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 08, 2011 at 11:11:44AM -0800, Ira W. Snyder wrote:
-> On Tue, Feb 08, 2011 at 09:50:29AM -0800, Dmitry Torokhov wrote:
-> > On Tue, Feb 08, 2011 at 09:20:46AM -0800, Ira W. Snyder wrote:
-> > 
-> > > Go back and re-think my loop. This is a
-> > > common idiom straight of out LDD3 pages 153-154.
-> > > 
-> > > You should note that it is only possible to exit the loop with the lock
-> > > held AND !list_empty(used). The lock protects the used list, and
-> > > therefore, there must be a buffer on the list.
-> > 
-> > No, because you are woken up while not holding the lock so another
-> > reader is free to take it off the list.
-> > 
-> 
-> Correct. But then I go around the loop and check list_empty() again
-> before exiting the loop. The list MUST NOT be empty before the loop will
-> terminate.
+Hello everyone,
 
-Yes, you are right, I competely missed the fact that we'd loop around
-and check the condition again. I'll go grab another coffee now.
+This is the fifth posting of these drivers, taking into account comments from
+earlier postings. I would appreciate as much review as you can offer.
+
+RFCv4 -> RFCv5:
+- remove unecessary locking per review comments
+- do not clobber return values from *_interruptible()
+- explicitly track buffer DMA mapping
+- use #defines instead of raw hex addresses
+- change enable sysfs attribute to root-writeable only
+
+RFCv3 -> RFCv4:
+- updates for DATA-FPGA version 2
+
+RFCv2 -> RFCv3:
+- use miscdevice framework (removing the carma class)
+- add bitfile readback capability to the programmer
+
+RFCv1 -> RFCv2:
+- change comments to kerneldoc format
+- Kconfig improvements
+- use the videobuf_dma_sg API in the programmer
+- updates for Freescale DMAEngine DMA_SLAVE API changes
+
+Information about the CARMA board:
+
+The CARMA board is essentially an MPC8349EA MDS reference design with a
+1GHz ADC and 4 high powered data processing FPGAs connected to the local
+bus. It is all packed into a compact PCI form factor. It is used at the
+Owens Valley Radio Observatory as the main component in the correlator
+system.
+
+For board information, see:
+http://www.mmarray.org/~dwh/carma_board/index.html
+
+For DATA-FPGA register layout, see:
+http://www.mmarray.org/memos/carma_memo46.pdf
+
+These drivers are the necessary pieces to get the data processing FPGAs
+working and producing data. Despite the fact that the hardware is custom
+and we are the only users, I'd still like to get the drivers upstream.
+Several people have suggested that this is possible.
+
+Some further patches will be forthcoming. I have a driver for the LED
+subsystem and the PPS subsystem. The LED register layout is expected to
+change soon, so I won't post the driver until that is finished. The PPS
+driver will be posted seperately from this patch series; it is very
+generic.
+
+Thanks to everyone who has provided comments on earlier versions!
+
+Ira W. Snyder (2):
+  misc: add CARMA DATA-FPGA Access Driver
+  misc: add CARMA DATA-FPGA Programmer support
+
+ drivers/misc/Kconfig                    |    1 +
+ drivers/misc/Makefile                   |    1 +
+ drivers/misc/carma/Kconfig              |   18 +
+ drivers/misc/carma/Makefile             |    2 +
+ drivers/misc/carma/carma-fpga-program.c | 1084 ++++++++++++++++++++++++
+ drivers/misc/carma/carma-fpga.c         | 1396 +++++++++++++++++++++++++++++++
+ 6 files changed, 2502 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/carma/Kconfig
+ create mode 100644 drivers/misc/carma/Makefile
+ create mode 100644 drivers/misc/carma/carma-fpga-program.c
+ create mode 100644 drivers/misc/carma/carma-fpga.c
 
 -- 
-Dmitry
+1.7.3.4
