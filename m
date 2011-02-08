@@ -1,25 +1,27 @@
-Return-Path: <B32167@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AA909B70DE
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EE70DB71BE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Feb 2011 15:31:36 +1100 (EST)
-From: Jain Priyanka-B32167 <B32167@freescale.com>
-To: Alessandro Zummo <a.zummo@towertech.it>, Paul Gortmaker
-	<p_gortmaker@yahoo.com>, "rtc-linux@googlegroups.com"
-	<rtc-linux@googlegroups.com>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
-Date: Tue, 8 Feb 2011 04:31:16 +0000
-Message-ID: <470DB7CE2CD0944E9436E7ADEFC02FE3129FED@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+	Tue,  8 Feb 2011 16:13:06 +1100 (EST)
+Received: by fxm5 with SMTP id 5so5776154fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 07 Feb 2011 21:13:02 -0800 (PST)
 MIME-Version: 1.0
-Cc: Gupta Maneesh-B18878 <B18878@freescale.com>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	Jain Priyanka-B32167 <B32167@freescale.com>
+In-Reply-To: <OF0A8BBBE2.4D143142-ON88257831.000E1C77-88257831.000E6FD6@selinc.com>
+References: <OF8C287A2E.13F8CEBF-ON8825782B.0073FBAF-8825782B.00789868@selinc.com>
+	<20110208021616.GO30616@yookeroo>
+	<OF0A8BBBE2.4D143142-ON88257831.000E1C77-88257831.000E6FD6@selinc.com>
+Date: Mon, 7 Feb 2011 23:13:02 -0600
+Message-ID: <AANLkTin5B02PuVrDH_5FaeYEK+amnopKzS36wyjEafFZ@mail.gmail.com>
+Subject: Re: Question on supporting multiple HW versions with a single driver
+	(warning: long post)
+From: Bill Gatliff <bgat@billgatliff.com>
+To: Bruce_Leonard@selinc.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,323 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Guys:
 
-Please review and acknowledge this patch.
 
-Regards
-Priyanka
+I think the Silicon Motion SM501 driver might provide a useful
+example, since the chip comes in both memory-mapped and PCI versions.
+Unfortunately the chip is implemented as a multi-function driver
+(mfd), so the code is not un-complicated.  Still fairly
+straightforward and well-written once you learn your way around it,
+though.
 
-> -----Original Message-----
-> From: Jain Priyanka-B32167
-> Sent: Monday, November 22, 2010 9:24 AM
-> To: 'Alessandro Zummo'
-> Cc: 'rtc-linux@googlegroups.com'
-> Subject: FW: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
->=20
-> Hi,
->=20
-> Please review and acknowledge this patch.
->=20
-> Thanks and Regards
-> Priyanka
->=20
->=20
->=20
-> -----Original Message-----
-> From: Jain Priyanka-B32167
-> Sent: Thursday, November 11, 2010 9:36 AM
-> To: Jain Priyanka-B32167; rtc-linux@googlegroups.com; linuxppc-
-> dev@lists.ozlabs.org
-> Subject: RE: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
->=20
-> Hi,
->=20
-> I am waiting for review comments and acknowledgement that this patch will
-> be pick up for open source.
-> Please acknowledge.
->=20
-> Regards
-> Priyanka Jain
->=20
-> -----Original Message-----
-> From: Jain Priyanka-B32167
-> Sent: Tuesday, October 26, 2010 3:12 PM
-> To: rtc-linux@googlegroups.com; linuxppc-dev@lists.ozlabs.org
-> Cc: Jain Priyanka-B32167
-> Subject: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
->=20
-> PT7C4338 chip is being manufactured by Pericom Technology Inc.
-> It is a serial real-time clock which provides:
-> 1)Low-power clock/calendar.
-> 2)Programmable square-wave output.
-> It has 56 bytes of nonvolatile RAM.
->=20
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> ---
->  PT7C4338 RTC driver is verified on Freescale P1010RDB.
-> Changes for v1:
-> 	Incoperated Kumar Gala's review comments
-> 	-Removing board name from commit messages.
->=20
->  drivers/rtc/Kconfig        |    9 ++
->  drivers/rtc/Makefile       |    1 +
->  drivers/rtc/rtc-pt7c4338.c |  215
-> ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 225 insertions(+), 0 deletions(-)  create mode 100644
-> drivers/rtc/rtc-pt7c4338.c
->=20
-> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig index
-> 10ba12c..6ff0901 100644
-> --- a/drivers/rtc/Kconfig
-> +++ b/drivers/rtc/Kconfig
-> @@ -324,6 +324,15 @@ config RTC_DRV_RX8025
->  	  This driver can also be built as a module. If so, the module
->  	  will be called rtc-rx8025.
->=20
-> +config RTC_DRV_PT7C4338
-> +	tristate "Pericom Technology Inc. PT7C4338 RTC"
-> +	help
-> +	  If you say yes here you get support for the Pericom Technology
-> +	  Inc. PT7C4338 RTC chip.
-> +
-> +	  This driver can also be built as a module. If so, the module
-> +	  will be called rtc-pt7c4338.
-> +
->  endif # I2C
->=20
->  comment "SPI RTC drivers"
-> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile index
-> 5adbba7..4014607 100644
-> --- a/drivers/rtc/Makefile
-> +++ b/drivers/rtc/Makefile
-> @@ -70,6 +70,7 @@ obj-$(CONFIG_RTC_DRV_PCF50633)	+=3D rtc-pcf50633.o
->  obj-$(CONFIG_RTC_DRV_PL030)	+=3D rtc-pl030.o
->  obj-$(CONFIG_RTC_DRV_PL031)	+=3D rtc-pl031.o
->  obj-$(CONFIG_RTC_DRV_PS3)	+=3D rtc-ps3.o
-> +obj-$(CONFIG_RTC_DRV_PT7C4338)	+=3D rtc-pt7c4338.o
->  obj-$(CONFIG_RTC_DRV_PXA)	+=3D rtc-pxa.o
->  obj-$(CONFIG_RTC_DRV_R9701)	+=3D rtc-r9701.o
->  obj-$(CONFIG_RTC_DRV_RP5C01)	+=3D rtc-rp5c01.o
-> diff --git a/drivers/rtc/rtc-pt7c4338.c b/drivers/rtc/rtc-pt7c4338.c new
-> file mode 100644 index 0000000..fca52cd
-> --- /dev/null
-> +++ b/drivers/rtc/rtc-pt7c4338.c
-> @@ -0,0 +1,215 @@
-> +/*
-> + * Copyright 2010 Freescale Semiconductor, Inc.
-> + *
-> + * Author:	Priyanka Jain <Priyanka.Jain@freescale.com>
-> + *
-> + * See file CREDITS for list of people who contributed to this
-> + * project.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> + * MA 02111-1307 USA
-> + */
-> +
-> +/*
-> + * This file provides Date & Time support (no alarms) for PT7C4338 chip.
-> + *
-> + * This file is based on drivers/rtc/rtc-ds1307.c
-> + *
-> + * PT7C4338 chip is manufactured by Pericom Technology Inc.
-> + * It is a serial real-time clock which provides
-> + * 1)Low-power clock/calendar.
-> + * 2)Programmable square-wave output.
-> + * It has 56 bytes of nonvolatile RAM.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/i2c.h>
-> +#include <linux/rtc.h>
-> +#include <linux/bcd.h>
-> +
-> +/* RTC register addresses */
-> +#define PT7C4338_REG_SECONDS          0x00
-> +#define PT7C4338_REG_MINUTES          0x01
-> +#define PT7C4338_REG_HOURS            0x02
-> +#define PT7C4338_REG_AMPM             0x02
-> +#define PT7C4338_REG_DAY              0x03
-> +#define PT7C4338_REG_DATE             0x04
-> +#define PT7C4338_REG_MONTH            0x05
-> +#define PT7C4338_REG_YEAR             0x06
-> +#define PT7C4338_REG_CTRL_STAT        0x07
-> +
-> +/* RTC second register address bit */
-> +#define PT7C4338_SEC_BIT_CH           0x80	/*Clock Halt (in Register
-> 0)*/
-> +
-> +/* RTC control and status register bits */
-> +#define PT7C4338_CTRL_STAT_BIT_RS0    0x1	/*Rate select 0*/
-> +#define PT7C4338_CTRL_STAT_BIT_RS1    0x2	/*Rate select 1*/
-> +#define PT7C4338_CTRL_STAT_BIT_SQWE   0x10	/*Square Wave Enable*/
-> +#define PT7C4338_CTRL_STAT_BIT_OSF    0x20	/*Oscillator Stop Flag*/
-> +#define PT7C4338_CTRL_STAT_BIT_OUT    0x80	/*Output Level Control*/
-> +
-> +static const struct i2c_device_id pt7c4338_id[] =3D {
-> +	{ "pt7c4338", 0 },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, pt7c4338_id);
-> +
-> +struct pt7c4338{
-> +	struct i2c_client *client;
-> +	struct rtc_device *rtc;
-> +};
-> +
-> +static int pt7c4338_read_time(struct device *dev, struct rtc_time
-> +*time) {
-> +	struct i2c_client *client =3D to_i2c_client(dev);
-> +	int ret;
-> +	u8 buf[7];
-> +	u8 year, month, day, hour, minute, second;
-> +	u8 week, twelve_hr, am_pm;
-> +
-> +	ret =3D i2c_smbus_read_i2c_block_data(client,
-> +			PT7C4338_REG_SECONDS, 7, buf);
-> +	if (ret < 0)
-> +		return ret;
-> +	if (ret < 7)
-> +		return -EIO;
-> +
-> +	second =3D buf[0];
-> +	minute =3D buf[1];
-> +	hour =3D buf[2];
-> +	week =3D buf[3];
-> +	day =3D buf[4];
-> +	month =3D buf[5];
-> +	year =3D buf[6];
-> +
-> +	/* Extract additional information for AM/PM */
-> +	twelve_hr =3D hour & 0x40;
-> +	am_pm =3D hour & 0x20;
-> +
-> +	/* Write to rtc_time structure */
-> +	time->tm_sec =3D bcd2bin(second & 0x7f);
-> +	time->tm_min =3D bcd2bin(minute & 0x7f);
-> +	if (twelve_hr) {
-> +		/* Convert to 24 hr */
-> +		if (am_pm)
-> +			time->tm_hour =3D bcd2bin(hour & 0x10) + 12;
-> +		else
-> +			time->tm_hour =3D bcd2bin(hour & 0xBF);
-> +	} else {
-> +		time->tm_hour =3D bcd2bin(hour);
-> +	}
-> +
-> +	time->tm_wday =3D bcd2bin(week & 0x07) - 1;
-> +	time->tm_mday =3D bcd2bin(day & 0x3f);
-> +	time->tm_mon =3D bcd2bin(month & 0x1F) - 1;
-> +	/* assume 20YY not 19YY */
-> +	time->tm_year =3D bcd2bin(year) + 100;
-> +
-> +	return 0;
-> +}
-> +
-> +static int pt7c4338_set_time(struct device *dev, struct rtc_time *time)
-> +{
-> +	struct i2c_client *client =3D to_i2c_client(dev);
-> +	u8 buf[7];
-> +
-> +	/* Extract time from rtc_time and load into pt7c4338*/
-> +	buf[0] =3D bin2bcd(time->tm_sec);
-> +	buf[1] =3D bin2bcd(time->tm_min);
-> +	buf[2] =3D bin2bcd(time->tm_hour);
-> +	buf[3] =3D bin2bcd(time->tm_wday + 1); /* Day of the week */
-> +	buf[4] =3D bin2bcd(time->tm_mday); /* Date */
-> +	buf[5] =3D bin2bcd(time->tm_mon + 1);
-> +
-> +	/* assume 20YY not 19YY */
-> +	if (time->tm_year >=3D 100)
-> +		buf[6] =3D bin2bcd(time->tm_year - 100);
-> +	else
-> +		buf[6] =3D bin2bcd(time->tm_year);
-> +
-> +	return i2c_smbus_write_i2c_block_data(client,
-> +					PT7C4338_REG_SECONDS, 7, buf);
-> +}
-> +
-> +static const struct rtc_class_ops pt7c4338_rtc_ops =3D {
-> +	.read_time =3D pt7c4338_read_time,
-> +	.set_time =3D pt7c4338_set_time,
-> +};
-> +
-> +static int pt7c4338_probe(struct i2c_client *client,
-> +		const struct i2c_device_id *id)
-> +{
-> +	struct pt7c4338 *pt7c4338;
-> +	struct i2c_adapter *adapter =3D to_i2c_adapter(client->dev.parent);
-> +	int ret;
-> +
-> +	pt7c4338 =3D kzalloc(sizeof(struct pt7c4338), GFP_KERNEL);
-> +	if (!pt7c4338)
-> +		return -ENOMEM;
-> +
-> +	pt7c4338->client =3D client;
-> +	i2c_set_clientdata(client, pt7c4338);
-> +	pt7c4338->rtc =3D rtc_device_register(client->name, &client->dev,
-> +					&pt7c4338_rtc_ops, THIS_MODULE);
-> +	if (IS_ERR(pt7c4338->rtc)) {
-> +		ret =3D PTR_ERR(pt7c4338->rtc);
-> +		dev_err(&client->dev, "unable to register the class
-> device\n");
-> +		goto out_free;
-> +	}
-> +
-> +	return 0;
-> +out_free:
-> +	i2c_set_clientdata(client, NULL);
-> +	kfree(pt7c4338);
-> +	return ret;
-> +}
-> +
-> +static int __devexit pt7c4338_remove(struct i2c_client *client) {
-> +	struct pt7c4338 *pt7c4338 =3D i2c_get_clientdata(client);
-> +
-> +	rtc_device_unregister(pt7c4338->rtc);
-> +	i2c_set_clientdata(client, NULL);
-> +	kfree(pt7c4338);
-> +	return 0;
-> +}
-> +
-> +static struct i2c_driver pt7c4338_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "rtc-pt7c4338",
-> +		.owner =3D THIS_MODULE,
-> +	},
-> +	.probe =3D pt7c4338_probe,
-> +	.remove =3D __devexit_p(pt7c4338_remove),
-> +	.id_table =3D pt7c4338_id,
-> +};
-> +
-> +static int __init pt7c4338_init(void)
-> +{
-> +	return i2c_add_driver(&pt7c4338_driver); }
-> +
-> +static void __exit pt7c4338_exit(void)
-> +{
-> +	i2c_del_driver(&pt7c4338_driver);
-> +}
-> +
-> +module_init(pt7c4338_init);
-> +module_exit(pt7c4338_exit);
-> +
-> +MODULE_AUTHOR("Priyanka Jain <Priyanka.Jain@freescale.com>");
-> +MODULE_DESCRIPTION("pericom Technology Inc. PT7C4338 RTC Driver");
-> +MODULE_LICENSE("GPL");
-> --
-> 1.6.5.6
+Basically, it implements a core set of functionality to talk to the
+actual chip registers, which is bus-agnostic.  Then the bus-specific
+drivers use these functions when they actually want to touch the chip
+itself.  In other words, exactly what David suggested.
+
+
+b.g.
+
+
+On Mon, Feb 7, 2011 at 8:37 PM,  <Bruce_Leonard@selinc.com> wrote:
+>>
+>> There are a number of drivers which already have this sort of dual bus
+>> binding.
+>>
+>
+> Thanks for the feedback David, I appreciate it. =A0Could you point me to =
+one
+> of those drivers that has "this sort of dual bus binding" so can see an
+> example of what I'm trying to do?
+>
+> Bruce
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+
+
+
+--=20
+Bill Gatliff
+bgat@billgatliff.com
