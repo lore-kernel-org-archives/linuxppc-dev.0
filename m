@@ -1,33 +1,22 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 96A07B7A4F
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 6558CB7103
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Feb 2011 10:10:45 +1100 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p19Innuk032166
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Feb 2011 13:52:34 -0500
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2511E7281A5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Feb 2011 18:09:34 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p19N8Gfj2212030
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Feb 2011 18:08:16 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p19N8Gph027410
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Feb 2011 18:08:16 -0500
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v3 2/6] powerpc/44x: allow override to hard-coded uart address
-Date: Wed,  9 Feb 2011 17:08:09 -0600
-Message-Id: <1297292893-30241-3-git-send-email-shaggy@linux.vnet.ibm.com>
-In-Reply-To: <1297292893-30241-1-git-send-email-shaggy@linux.vnet.ibm.com>
-References: <1297292893-30241-1-git-send-email-shaggy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+	Thu, 10 Feb 2011 10:35:50 +1100 (EST)
+Date: Wed, 9 Feb 2011 15:35:45 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 1/2] misc: add CARMA DATA-FPGA Access Driver
+Message-ID: <20110209233544.GA5303@ovro.caltech.edu>
+References: <1297208267-27087-1-git-send-email-iws@ovro.caltech.edu>
+	<1297208267-27087-2-git-send-email-iws@ovro.caltech.edu>
+	<20110209083325.GA7256@core.coreip.homeip.net>
+	<20110209173532.GB21766@ovro.caltech.edu>
+	<20110209182740.GC23867@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110209182740.GC23867@core.coreip.homeip.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,54 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow the early debug uart address to be overridden from the kernel
-command line.
+On Wed, Feb 09, 2011 at 10:27:40AM -0800, Dmitry Torokhov wrote:
 
-I would have preferred use the uart's virtual-reg property, but the device
-tree hasn't been unflatted yet, and I don't know a reliable way to find it.
+[ snip stuff I've already fixed in the next version ]
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/udbg_16550.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+> > 
+> > The requirement is that the device stay open during reconfiguration.
+> > This provides for that. Readers just block for as long as the device is
+> > not producing data.
+> 
+> OK, you still need to make sure you do not touch free/used buffer while
+> device is disabled. Also, you need to kick readers if you unbind the
+> driver, so maybe a new flag priv->exists should be introduced and
+> checked.
+> 
 
-diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
-index b4b167b..d36021a 100644
---- a/arch/powerpc/kernel/udbg_16550.c
-+++ b/arch/powerpc/kernel/udbg_16550.c
-@@ -219,6 +219,19 @@ void udbg_init_pas_realmode(void)
- #ifdef CONFIG_PPC_EARLY_DEBUG_44x
- #include <platforms/44x/44x.h>
- 
-+static unsigned long udbg_44x_comport = PPC44x_EARLY_DEBUG_VIRTADDR;
-+
-+static int __init early_parse_comport(char *p)
-+{
-+	if (!p || !(*p))
-+		return 0;
-+
-+	udbg_44x_comport = simple_strtoul(p, 0, 16);
-+
-+	return 0;
-+}
-+early_param("uart_addr", early_parse_comport);
-+
- static void udbg_44x_as1_flush(void)
- {
- 	if (udbg_comport) {
-@@ -249,9 +262,7 @@ static int udbg_44x_as1_getc(void)
- 
- void __init udbg_init_44x_as1(void)
- {
--	udbg_comport =
--		(struct NS16550 __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR;
--
-+	udbg_comport = (struct NS16550 __iomem *)udbg_44x_comport;
- 	udbg_putc = udbg_44x_as1_putc;
- 	udbg_flush = udbg_44x_as1_flush;
- 	udbg_getc = udbg_44x_as1_getc;
--- 
-1.7.3.4
+I don't understand what you mean by "kick readers if you unbind the
+driver". The kernel automatically increases the refcount on a module
+when a process is using the module. This shows up in the "Used by"
+column of lsmod's output.
+
+The kernel will not let you rmmod a module with a non-zero refcount. You
+cannot get into the situation where you have rmmod'ed the module and a
+reader is still blocking in read()/poll().
+
+Thanks for the review. A v6 is coming right up.
+
+Ira
