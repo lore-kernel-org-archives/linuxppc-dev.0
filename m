@@ -1,31 +1,27 @@
 Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94126B711E
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D5DD1B711E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Feb 2011 08:57:37 +1100 (EST)
-Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p1ALltxO004092
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:48:12 -0500
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9718D4DE8041
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Feb 2011 16:56:41 -0500 (EST)
+	Fri, 11 Feb 2011 08:57:38 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p1ALt1cZ006714
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:55:01 -0700
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p1ALvXK5416170
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:57:33 -0500
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p1ALvXo5128984
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:57:33 -0700
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p1ALvW2R028453
+	id p1ALvWOc028456
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:57:32 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH powerpc 1/2] powerpc: protect per-CPU access with
-	preempt_disable
-Date: Thu, 10 Feb 2011 13:57:26 -0800
-Message-Id: <1297375047-18608-1-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH powerpc 2/2] powerpc: mask smp_processor_id() false positive
+Date: Thu, 10 Feb 2011 13:57:27 -0800
+Message-Id: <1297375047-18608-2-git-send-email-paulmck@linux.vnet.ibm.com>
 In-Reply-To: <20110210215710.GA18429@linux.vnet.ibm.com>
 References: <20110210215710.GA18429@linux.vnet.ibm.com>
 Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
@@ -39,31 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hpte_need_flush() function accesses the ppc64_tlb_batch per-CPU
-variable with preemption enabled, a bug that this patch fixes.  Perhaps
-crudely.
+The rtas_event_scan() function uses smp_processor_id() to select a
+starting point in cpu_online_mask, and does so under the protection
+of get_online_cpus().  This might not select the current processor
+in any case, so switch to raw_smp_processor_id().
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/rtasd.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 2b09cd5..6ed08ab 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -228,8 +228,11 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 		assert_pte_locked(mm, addr);
+diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+index 049dbec..7980ec0 100644
+--- a/arch/powerpc/kernel/rtasd.c
++++ b/arch/powerpc/kernel/rtasd.c
+@@ -412,7 +412,8 @@ static void rtas_event_scan(struct work_struct *w)
  
- #ifdef CONFIG_PPC_STD_MMU_64
--	if (old & _PAGE_HASHPTE)
-+	if (old & _PAGE_HASHPTE) {
-+		preempt_disable();
- 		hpte_need_flush(mm, addr, ptep, old, huge);
-+		preempt_enable();
-+	}
- #endif
+ 	get_online_cpus();
  
- 	return old;
+-	cpu = cpumask_next(smp_processor_id(), cpu_online_mask);
++	/* raw_ OK because just using CPU as starting point. */
++	cpu = cpumask_next(raw_smp_processor_id(), cpu_online_mask);
+         if (cpu >= nr_cpu_ids) {
+ 		cpu = cpumask_first(cpu_online_mask);
+ 
 -- 
 1.7.3.2
