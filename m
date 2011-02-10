@@ -1,31 +1,21 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D5DD1B711E
+Return-Path: <ppc.addon@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6965FB711C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Feb 2011 08:57:38 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p1ALt1cZ006714
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:55:01 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p1ALvXo5128984
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:57:33 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p1ALvWOc028456
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:57:32 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH powerpc 2/2] powerpc: mask smp_processor_id() false positive
-Date: Thu, 10 Feb 2011 13:57:27 -0800
-Message-Id: <1297375047-18608-2-git-send-email-paulmck@linux.vnet.ibm.com>
-In-Reply-To: <20110210215710.GA18429@linux.vnet.ibm.com>
-References: <20110210215710.GA18429@linux.vnet.ibm.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Fri, 11 Feb 2011 09:40:20 +1100 (EST)
+Received: by yxs7 with SMTP id 7so892375yxs.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Feb 2011 14:40:16 -0800 (PST)
+MIME-Version: 1.0
+Date: Thu, 10 Feb 2011 23:40:16 +0100
+Message-ID: <AANLkTi=TywofeCbwHgRkLXyKmvHeKD9kSgy_udhQXKMy@mail.gmail.com>
+Subject: Re: ydl powerstation is unable to use external usb hard disk drives
+From: nello martuscielli <ppc.addon@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The rtas_event_scan() function uses smp_processor_id() to select a
-starting point in cpu_online_mask, and does so under the protection
-of get_online_cpus().  This might not select the current processor
-in any case, so switch to raw_smp_processor_id().
+hi all,
+there is the same issue here on my iBook G4 with 2.6.38-rc4 thus it
+isn't an issue related to ppc64.
+It's not possible to use it.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/rtasd.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+usb 1-2: new high speed USB device using ehci_hcd and address 3
+usb 1-2: New USB device found, idVendor=1058, idProduct=1010
+usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+usb 1-2: Product: External HDD
+usb 1-2: Manufacturer: Western Digital
+usb 1-2: SerialNumber: 57442D575839304138394D31313237
+scsi3 : usb-storage 1-2:1.0
+scsi 3:0:0:0: Direct-Access     WD       3200BEV External 1.75 PQ: 0 ANSI: 4
+sd 3:0:0:0: Attached scsi generic sg2 type 0
+sd 3:0:0:0: [sdb] 625142448 512-byte logical blocks: (320 GB/298 GiB)
+sd 3:0:0:0: [sdb] Write Protect is off
+sd 3:0:0:0: [sdb] Mode Sense: 23 00 00 00
+sd 3:0:0:0: [sdb] No Caching mode page present
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+sd 3:0:0:0: [sdb] No Caching mode page present
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 3:0:0:0: [sdb] No Caching mode page present
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+sd 3:0:0:0: [sdb] Attached SCSI disk
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 049dbec..7980ec0 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -412,7 +412,8 @@ static void rtas_event_scan(struct work_struct *w)
- 
- 	get_online_cpus();
- 
--	cpu = cpumask_next(smp_processor_id(), cpu_online_mask);
-+	/* raw_ OK because just using CPU as starting point. */
-+	cpu = cpumask_next(raw_smp_processor_id(), cpu_online_mask);
-         if (cpu >= nr_cpu_ids) {
- 		cpu = cpumask_first(cpu_online_mask);
- 
--- 
-1.7.3.2
+
+
+
+cheers,
+Nel
