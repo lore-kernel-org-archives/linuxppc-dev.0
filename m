@@ -1,38 +1,19 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AB2A1B70DE
+Return-Path: <acrux_it@libero.it>
+Received: from cp-out10.libero.it (cp-out10.libero.it [212.52.84.110])
+	by ozlabs.org (Postfix) with ESMTP id 4719BB7103
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Feb 2011 01:44:43 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id p1AEibEd010960
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 20:14:37 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p1AEibc02216084
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 20:14:37 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p1AEiabW001777
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 20:14:37 +0530
-Date: Thu, 10 Feb 2011 20:14:35 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix call to flush_ptrace_hw_breakpoint()
-Message-ID: <20110210144435.GB2488@in.ibm.com>
-References: <1297032853.14982.3.camel@pasglop>
-	<20110207025643.GA12223@in.ibm.com>
-	<1297048239.14982.29.camel@pasglop>
-	<20110207045230.GB4287@in.ibm.com>
-	<1297055617.14982.59.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1297055617.14982.59.camel@pasglop>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	David Kleikamp <shaggy@us.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	Fri, 11 Feb 2011 06:07:06 +1100 (EST)
+Received: from hermes (151.53.95.114) by cp-out10.libero.it (8.5.133)
+	(authenticated as acrux_it@libero.it)
+	id 4D4A5DCB0105FCDB for linuxppc-dev@lists.ozlabs.org;
+	Thu, 10 Feb 2011 20:01:16 +0100
+Date: Thu, 10 Feb 2011 20:01:16 +0100
+From: acrux <acrux_it@libero.it>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: ydl powerstation is unable to use external usb hard disk drives
+Message-Id: <20110210200116.0b11baab.acrux_it@libero.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,74 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 07, 2011 at 04:13:37PM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2011-02-07 at 10:22 +0530, K.Prasad wrote:
-> > Okay! Another wrapper of "#ifndef CONFIG_HAVE_HW_BREAKPOINT" around
-> > the
-> > definition of 'set_debug_reg_defaults'.
-> 
-> Can you send a patch ?
->
 
-Pasted below.
- 
-> > There's indeed too much sprinkling of #ifdefs in the code, but most of
-> > it would go away when the BookE code also uses the generic
-> > hw-breakpoint interfaces. 
-> 
-> What's your status for those patches ?
-> 
+i'm a bit in trouble when i try to use an external usb hard disk drive on 
+our YDL Powerstation (2x PPC970MP). 
+Sombody is able to suggest me a solution? Instead, on my iBook G4, everything is working fine.
 
-The last I checked, I knew that the version of patchset I sent out
-(linuxppc-dev message id: 20100629165152.GA8586@in.ibm.com)
-didn't actually work when tested on hardware (it was just compile tested
-before sending). It needs substantial amount of time to get it in shape,
-which I'm unfortunately lacking now (plenty of priority items in hand that
-needs dedicated attention).
+Actually i don't have another ppc64 to do further attempts. 
 
-Thanks,
-K.Prasad
 
-Fix the error in spelling the config option for hw-breakpoints and fix
-the build issue that follows.
 
-Signed-off by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/process.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+# YDL Powerstation (Bimini) (kernel linux-2.6.38-rc4)
 
-Index: linux-2.6.set_hwdebug/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6.set_hwdebug.orig/arch/powerpc/kernel/process.c
-+++ linux-2.6.set_hwdebug/arch/powerpc/kernel/process.c
-@@ -353,6 +353,7 @@ static void switch_booke_debug_regs(stru
- 			prime_debug_regs(new_thread);
- }
- #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
-+#ifndef CONFIG_HAVE_HW_BREAKPOINT
- static void set_debug_reg_defaults(struct thread_struct *thread)
- {
- 	if (thread->dabr) {
-@@ -360,6 +361,7 @@ static void set_debug_reg_defaults(struc
- 		set_dabr(0);
- 	}
- }
-+#endif /* !CONFIG_HAVE_HW_BREAKPOINT */
- #endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
- 
- int set_dabr(unsigned long dabr)
-@@ -670,11 +672,11 @@ void flush_thread(void)
- {
- 	discard_lazy_cpu_state();
- 
--#ifdef CONFIG_HAVE_HW_BREAKPOINTS
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
- 	flush_ptrace_hw_breakpoint(current);
--#else /* CONFIG_HAVE_HW_BREAKPOINTS */
-+#else /* CONFIG_HAVE_HW_BREAKPOINT */
- 	set_debug_reg_defaults(&current->thread);
--#endif /* CONFIG_HAVE_HW_BREAKPOINTS */
-+#endif /* CONFIG_HAVE_HW_BREAKPOINT */
- }
- 
- void
+usb 1-2: new high speed USB device using ehci_hcd and address 2
+usb 1-2: New USB device found, idVendor=04b4, idProduct=6830
+usb 1-2: New USB device strings: Mfr=0, Product=57, SerialNumber=44
+usb 1-2: Product: Cypress AT2LP
+usb 1-2: SerialNumber: DEF10CE2CF76
+scsi3 : usb-storage 1-2:1.0
+scsi 3:0:0:0: Direct-Access     ST332062 0A               0000 PQ: 0 ANSI: 0
+sd 3:0:0:0: Attached scsi generic sg3 type 0
+sd 3:0:0:0: [sdb] 625142448 512-byte logical blocks: (320 GB/298 GiB)
+sd 3:0:0:0: [sdb] Write Protect is off
+sd 3:0:0:0: [sdb] Mode Sense: 27 00 00 00
+sd 3:0:0:0: [sdb] No Caching mode page present
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+sd 3:0:0:0: [sdb] No Caching mode page present
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 3:0:0:0: [sdb] No Caching mode page present
+sd 3:0:0:0: [sdb] Assuming drive cache: write through
+sd 3:0:0:0: [sdb] Attached SCSI disk
+
+
+usb 1-2: new high speed USB device using ehci_hcd and address 3
+usb 1-2: New USB device found, idVendor=152d, idProduct=2338
+usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=5
+usb 1-2: Product: USB to ATA/ATAPI Bridge
+usb 1-2: Manufacturer: JMicron
+usb 1-2: SerialNumber: D57CA3932565
+scsi4 : usb-storage 1-2:1.0
+scsi 4:0:0:0: Direct-Access     WDC WD50 00AAKB-00H8A0    4E05 PQ: 0 ANSI: 2 CCS
+sd 4:0:0:0: [sdb] 976773168 512-byte logical blocks: (500 GB/465 GiB)
+sd 4:0:0:0: Attached scsi generic sg3 type 0
+sd 4:0:0:0: [sdb] Write Protect is off
+sd 4:0:0:0: [sdb] Mode Sense: 00 38 00 00
+sd 4:0:0:0: [sdb] Asking for cache data failed
+sd 4:0:0:0: [sdb] Assuming drive cache: write through
+sd 4:0:0:0: [sdb] Asking for cache data failed
+sd 4:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 4:0:0:0: [sdb] Asking for cache data failed
+sd 4:0:0:0: [sdb] Assuming drive cache: write through
+sd 4:0:0:0: [sdb] Attached SCSI disk
+
+# iBook G4 12.1" mid2005 (kernel linux-2.6.37)
+
+usb 1-1: new high speed USB device using ehci_hcd and address 12
+usb 1-1: New USB device found, idVendor=04b4, idProduct=6830
+usb 1-1: New USB device strings: Mfr=0, Product=57, SerialNumber=44
+usb 1-1: Product: Cypress AT2LP
+usb 1-1: SerialNumber: DEF10CE2CF76
+scsi12 : usb-storage 1-1:1.0
+scsi 12:0:0:0: Direct-Access     ST332062 0A               0000 PQ: 0 ANSI: 0
+sd 12:0:0:0: [sdb] 625142448 512-byte logical blocks: (320 GB/298 GiB)
+sd 12:0:0:0: Attached scsi generic sg2 type 0
+sd 12:0:0:0: [sdb] Write Protect is off
+sd 12:0:0:0: [sdb] Mode Sense: 27 00 00 00
+sd 12:0:0:0: [sdb] Assuming drive cache: write through
+sd 12:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 12:0:0:0: [sdb] Assuming drive cache: write through
+sd 12:0:0:0: [sdb] Attached SCSI disk
+
+
+usb 1-1: new high speed USB device using ehci_hcd and address 11
+usb 1-1: New USB device found, idVendor=152d, idProduct=2338
+usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=5
+usb 1-1: Product: USB to ATA/ATAPI Bridge
+usb 1-1: Manufacturer: JMicron
+usb 1-1: SerialNumber: D57CA3932565
+scsi11 : usb-storage 1-1:1.0
+scsi 11:0:0:0: Direct-Access     WDC WD50 00AAKB-00H8A0    4E05 PQ: 0 ANSI: 2 CCS
+sd 11:0:0:0: Attached scsi generic sg2 type 0
+sd 11:0:0:0: [sdb] 976773168 512-byte logical blocks: (500 GB/465 GiB)
+sd 11:0:0:0: [sdb] Write Protect is off
+sd 11:0:0:0: [sdb] Mode Sense: 00 38 00 00
+sd 11:0:0:0: [sdb] Assuming drive cache: write through
+sd 11:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 11:0:0:0: [sdb] Assuming drive cache: write through
+sd 11:0:0:0: [sdb] Attached SCSI disk
+
+
+
+
+-- 
+GNU/Linux on Power Architecture
+CRUX PPC - http://cruxppc.org/
