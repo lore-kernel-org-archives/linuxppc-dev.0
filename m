@@ -1,34 +1,35 @@
 Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE58BB7113
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 94126B711E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Feb 2011 08:57:17 +1100 (EST)
+	Fri, 11 Feb 2011 08:57:37 +1100 (EST)
 Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p1ALbXON023123
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:37:39 -0500
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id CF2E04DE8026
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p1ALltxO004092
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:48:12 -0500
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9718D4DE8041
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Feb 2011 16:56:21 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p1ALvD1E354184
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:57:13 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p1ALvCKv005807
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:57:13 -0500
-Date: Thu, 10 Feb 2011 13:57:10 -0800
+	Thu, 10 Feb 2011 16:56:41 -0500 (EST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p1ALvXK5416170
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 16:57:33 -0500
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p1ALvW2R028453
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2011 14:57:32 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH powerpc 0/2] powerpc CONFIG_PREEMPT fixes
-Message-ID: <20110210215710.GA18429@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: paulmck@linux.vnet.ibm.com
+Subject: [PATCH powerpc 1/2] powerpc: protect per-CPU access with
+	preempt_disable
+Date: Thu, 10 Feb 2011 13:57:26 -0800
+Message-Id: <1297375047-18608-1-git-send-email-paulmck@linux.vnet.ibm.com>
+In-Reply-To: <20110210215710.GA18429@linux.vnet.ibm.com>
+References: <20110210215710.GA18429@linux.vnet.ibm.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,16 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+The hpte_need_flush() function accesses the ppc64_tlb_batch per-CPU
+variable with preemption enabled, a bug that this patch fixes.  Perhaps
+crudely.
 
-This series provides fixes for a couple of CONFIG_PREEMPT problems on
-Power:
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-1.	The hpte_need_flush() function accesses per-CPU variables without
-	protection.
-2.	The rtas_event_scan() function needs to use raw_smp_processor_id()
-	to get a starting point to avoid debugging splats.
-
-There are probably a few more where these came from.  ;-)
-
-								Thanx, Paul
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 2b09cd5..6ed08ab 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -228,8 +228,11 @@ static inline unsigned long pte_update(struct mm_struct *mm,
+ 		assert_pte_locked(mm, addr);
+ 
+ #ifdef CONFIG_PPC_STD_MMU_64
+-	if (old & _PAGE_HASHPTE)
++	if (old & _PAGE_HASHPTE) {
++		preempt_disable();
+ 		hpte_need_flush(mm, addr, ptep, old, huge);
++		preempt_enable();
++	}
+ #endif
+ 
+ 	return old;
+-- 
+1.7.3.2
