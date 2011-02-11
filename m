@@ -1,24 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C431FB71A7
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 4AF16B71A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Feb 2011 09:19:38 +1100 (EST)
-Date: Fri, 11 Feb 2011 16:19:20 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kenny Ho <kho@belairnetworks.com>
-Subject: Re: Question on setting up external interrupt for P1020 (MPC8xxx)
-	with device tree
-Message-ID: <20110211161920.3c44a678@udp111988uds>
-In-Reply-To: <92C536451C241244A14F3001819BF6688A503C@bnott05.belairnetworks.com>
-References: <92C536451C241244A14F3001819BF6688A503B@bnott05.belairnetworks.com>
-	<20110211155644.6799f6b6@udp111988uds>
-	<92C536451C241244A14F3001819BF6688A503C@bnott05.belairnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat, 12 Feb 2011 10:34:34 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH RFCv7 0/2] CARMA Board Support
+Date: Fri, 11 Feb 2011 15:34:28 -0800
+Message-Id: <1297467270-29576-1-git-send-email-iws@ovro.caltech.edu>
+Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +19,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 11 Feb 2011 17:15:47 -0500
-Kenny Ho <kho@belairnetworks.com> wrote:
+Hello everyone,
 
-> Thanks Scott.
-> 
-> Do you know the logic of the hwirq <-> virq mapping?
+This is the seventh posting of these drivers, taking into account comments
+from earlier postings. I've made sure that the drivers both pass checkpatch
+without any errors or warnings. I would appreciate as much review as you
+can offer, so that these can get into the next merge cycle. They've been
+sitting outside mainline for far too long.
 
-It's dynamic.
+RFCv6 -> RFCv7:
+- reference count private data structure (to support unbind)
+- use #defines instead of hex values for registers
+- keep lines <=80 characters
 
-> When I was digging into the GPIO interrupt, the hwirq seems to be the same as the virq
+RFCv5 -> RFCv6:
+- change locking in several functions
+- use list_move_tail() to simplify code
+- remove unused helper functions
 
-The allocator tries that if it's available, but if that virq is already
-taken, or is in the legacy ISA region under 16, you'll get a different
-number.
+RFCv4 -> RFCv5:
+- remove unecessary locking per review comments
+- do not clobber return values from *_interruptible()
+- explicitly track buffer DMA mapping
+- use #defines instead of raw hex addresses
+- change enable sysfs attribute to root-writeable only
 
-> (both are 47 which is 16 (external interrupt) + 31 (internal interrupt).
-> If I want to use external interrupt 7 and 8, should the virq also be 7
-> and 8?
+RFCv3 -> RFCv4:
+- updates for DATA-FPGA version 2
 
-No.
+RFCv2 -> RFCv3:
+- use miscdevice framework (removing the carma class)
+- add bitfile readback capability to the programmer
 
-> For some reason I am getting 41 for virq... may be I am still
-> doing something wrong.
+RFCv1 -> RFCv2:
+- change comments to kerneldoc format
+- Kconfig improvements
+- use the videobuf_dma_sg API in the programmer
+- updates for Freescale DMAEngine DMA_SLAVE API changes
 
-It's correct.  Pass what you receive into request_irq().
+KNOWN ISSUES:
+- untested with a setup that can generate interrupts (will get access soon)
+- does not handle runtime "unbind"
 
--Scott
+Information about the CARMA board:
+
+The CARMA board is essentially an MPC8349EA MDS reference design with a
+1GHz ADC and 4 high powered data processing FPGAs connected to the local
+bus. It is all packed into a compact PCI form factor. It is used at the
+Owens Valley Radio Observatory as the main component in the correlator
+system.
+
+For board information, see:
+http://www.mmarray.org/~dwh/carma_board/index.html
+
+For DATA-FPGA register layout, see:
+http://www.mmarray.org/memos/carma_memo46.pdf
+
+These drivers are the necessary pieces to get the data processing FPGAs
+working and producing data. Despite the fact that the hardware is custom
+and we are the only users, I'd still like to get the drivers upstream.
+Several people have suggested that this is possible.
+
+Some further patches will be forthcoming. I have a driver for the LED
+subsystem and the PPS subsystem. The LED register layout is expected to
+change soon, so I won't post the driver until that is finished. The PPS
+driver will be posted seperately from this patch series; it is very
+generic.
+
+Thanks to everyone who has provided comments on earlier versions!
+
+Ira W. Snyder (2):
+  misc: add CARMA DATA-FPGA Access Driver
+  misc: add CARMA DATA-FPGA Programmer support
+
+ drivers/misc/Kconfig                    |    1 +
+ drivers/misc/Makefile                   |    1 +
+ drivers/misc/carma/Kconfig              |   18 +
+ drivers/misc/carma/Makefile             |    2 +
+ drivers/misc/carma/carma-fpga-program.c | 1141 ++++++++++++++++++++++++
+ drivers/misc/carma/carma-fpga.c         | 1433 +++++++++++++++++++++++++++++++
+ 6 files changed, 2596 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/carma/Kconfig
+ create mode 100644 drivers/misc/carma/Makefile
+ create mode 100644 drivers/misc/carma/carma-fpga-program.c
+ create mode 100644 drivers/misc/carma/carma-fpga.c
+
+-- 
+1.7.3.4
