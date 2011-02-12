@@ -1,28 +1,17 @@
-Return-Path: <sunder.svit@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F0473B7103
+Return-Path: <dcb314@hotmail.com>
+Received: from blu0-omc3-s4.blu0.hotmail.com (blu0-omc3-s4.blu0.hotmail.com
+	[65.55.116.79]) by ozlabs.org (Postfix) with ESMTP id E59A9B70E2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Feb 2011 17:28:04 +1100 (EST)
-Received: by fxm5 with SMTP id 5so3547854fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Feb 2011 22:28:00 -0800 (PST)
+	Sat, 12 Feb 2011 21:13:49 +1100 (EST)
+Message-ID: <BLU154-w1013E8541813DF8B7564CD9CEE0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_e86b3faa-e9d0-4427-b633-237642e46f22_"
+From: David Binderman <dcb314@hotmail.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>
+Subject: arch/powerpc/kernel/cacheinfo.c: Possible null pointer dereference
+Date: Sat, 12 Feb 2011 10:08:36 +0000
 MIME-Version: 1.0
-In-Reply-To: <4D55A7F7.5090700@mentor.com>
-References: <4D55A7F7.5090700@mentor.com>
-Date: Sat, 12 Feb 2011 11:58:00 +0530
-Message-ID: <AANLkTikP0P9S1VgiU_yT53f-kZq0JMLBJoVWigAy8YWB@mail.gmail.com>
-Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-From: Sundar <sunder.svit@gmail.com>
-To: Meador Inge <meador_inge@mentor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linus WALLEIJ <linus.walleij@stericsson.com>,
-	Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, "Blanchard,
-	Hollis" <Hollis_Blanchard@mentor.com>,
-	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,54 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--_e86b3faa-e9d0-4427-b633-237642e46f22_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, Feb 12, 2011 at 2:49 AM, Meador Inge <meador_inge@mentor.com> wrote=
-:
->
-> =A0 =A01. Hardware specific bits somewhere under '.../arch/*'. =A0Drivers
-> =A0 =A0 =A0 for the MPIC message registers on Power and OMAP4 mailboxes, =
-for
-> =A0 =A0 =A0 example.
 
-Yes; this can help.
+Hello there=2C
 
-> =A0 =A02. A higher level driver under '.../drivers/mailbox/*'. =A0That th=
-e
-> =A0 =A0 =A0 pieces in (1) would register with. =A0This piece would expose=
- the
-> =A0 =A0 =A0 main kernel API.
+I just tried out cppcheck-1.47 on the linux-2.6.38-rc4 source code.
 
-A lot of mailboxes are too platform specific with regards to the communicat=
-ion
-with the main CPU and probably it depends on the mailbox too; you can
-find polling and
-interrupt supported mailbox support at times on the same platform.
-APIs should probably be
-generic enough to be able to operate in any context.
+It said
 
-> Now I have the following questions:
->
-> =A0 =A01. Do others see value in this?
+[arch/powerpc/kernel/cacheinfo.c:380]: (error) Possible null pointer derefe=
+rence: cache - otherwise it is redundant to check if cache is null at line =
+382
 
-At least I would like this; I wanted to generalize such mailbox IPCs
-right from the
-day when I was working on one, but coudnt really work on that.
+The source code is
 
-> =A0 =A02. Does something like this already exist?
+    WARN_ONCE(cache && cache->level !=3D level=2C
+          "cache level mismatch on lookup (got %d=2C expected %d)\n"=2C
+          cache->level=2C level)=3B
 
-Not generic as you say; but apart from the OMAP platforms,
-you could refer to arch/arm/mach-ux500/prcmu for a mailbox based
-IPC on the U8500 platform.
+    if (!cache)
 
-> =A0 =A03. Is someone else already working on this?
+I agree with cppcheck. Suggest code rework.
 
-Not sure of that too :), but I am CCing Linus W, the maintainer
-of U8500 if he thinks it is a good idea to come up with a mailbox IPC
-framework
+Regards
 
-Cheers!
---=20
----------
-The views expressed in this email are personal and do not necessarily
-echo my employers.
+David Binderman
+
+ 		 	   		  =
+
+--_e86b3faa-e9d0-4427-b633-237642e46f22_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+Hello there=2C<br><br>I just tried out cppcheck-1.47 on the linux-2.6.38-rc=
+4 source code.<br><br>It said<br><br>[arch/powerpc/kernel/cacheinfo.c:380]:=
+ (error) Possible null pointer dereference: cache - otherwise it is redunda=
+nt to check if cache is null at line 382<br><br>The source code is<br><br>&=
+nbsp=3B&nbsp=3B&nbsp=3B WARN_ONCE(cache &amp=3B&amp=3B cache-&gt=3Blevel !=
+=3D level=2C<br>&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nb=
+sp=3B&nbsp=3B "cache level mismatch on lookup (got %d=2C expected %d)\n"=2C=
+<br>&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=
+=3B cache-&gt=3Blevel=2C level)=3B<br><br>&nbsp=3B&nbsp=3B&nbsp=3B if (!cac=
+he)<br><br>I agree with cppcheck. Suggest code rework.<br><br>Regards<br><b=
+r>David Binderman<br><br> 		 	   		  </body>
+</html>=
+
+--_e86b3faa-e9d0-4427-b633-237642e46f22_--
