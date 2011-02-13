@@ -1,27 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <linus.ml.walleij@gmail.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AB271B7126
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Feb 2011 02:15:37 +1100 (EST)
-Received: by iwn6 with SMTP id 6so5363828iwn.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Feb 2011 07:15:33 -0800 (PST)
+	by ozlabs.org (Postfix) with ESMTPS id 09A3DB7124
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 14 Feb 2011 08:16:16 +1100 (EST)
+Received: by pzk34 with SMTP id 34so943583pzk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 13 Feb 2011 13:16:13 -0800 (PST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <AANLkTikM0bZbRfSPeXjf4NVn_AAHm1w7FWRKYvoucdHj@mail.gmail.com>
-References: <AANLkTikM0bZbRfSPeXjf4NVn_AAHm1w7FWRKYvoucdHj@mail.gmail.com>
-Date: Sun, 13 Feb 2011 08:15:33 -0700
-Message-ID: <AANLkTikpR4191DrgyodXV-Qx=r8mjXziknzJ8tJpgBt9@mail.gmail.com>
-Subject: [git pull] Documentation changes and an SPI bug fix
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: multipart/alternative; boundary=005045015a63147c82049c2b672a
-Cc: spi-devel-general@lists.sourceforge.net,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Sender: linus.ml.walleij@gmail.com
+In-Reply-To: <AANLkTikP0P9S1VgiU_yT53f-kZq0JMLBJoVWigAy8YWB@mail.gmail.com>
+References: <4D55A7F7.5090700@mentor.com>
+	<AANLkTikP0P9S1VgiU_yT53f-kZq0JMLBJoVWigAy8YWB@mail.gmail.com>
+Date: Sun, 13 Feb 2011 22:16:12 +0100
+Message-ID: <AANLkTikoExk30pqdcHXCA2K_oJB=VJ5_AnCkoYUrEt3X@mail.gmail.com>
+Subject: Re: [RFC] Inter-processor Mailboxes Drivers
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Sundar <sunder.svit@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Meador Inge <meador_inge@mentor.com>, Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
+	"Blanchard, Hollis" <Hollis_Blanchard@mentor.com>,
+	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,372 +33,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---005045015a63147c82049c2b672a
-Content-Type: text/plain; charset=ISO-8859-1
+2011/2/12 Sundar <sunder.svit@gmail.com>:
 
-Hi Linus,
+> At least I would like this; I wanted to generalize such mailbox IPCs
+> right from the day when I was working on one, but coudnt really
+> work on that.
+>
+>> =A0 =A02. Does something like this already exist?
+>
+> Not generic as you say; but apart from the OMAP platforms,
+> you could refer to arch/arm/mach-ux500/prcmu for a mailbox based
+> IPC on the U8500 platform.
 
-A set of mostly documentation changes, but I also had an spi bug fix that I
-needed to send to you, so I've sent it all in one pull req.
+We also have this thing:
+arch/arm/mach-ux500/mbox-db5500.c
 
-g.
+It's another mailbox driver, this one talks to the modem in the
+U5500 (basically a physical transport for the CAIF protocol).
+(For the U8500 I think modem IPC is instead handled with
+a high-speed hardware FIFO, a bit different.)
 
-The following changes since commit d2478521afc20227658a10a8c5c2bf1a2aa615b3:
+>> =A0 =A03. Is someone else already working on this?
+>
+> Not sure of that too :), but I am CCing Linus W, the maintainer
+> of U8500 if he thinks it is a good idea to come up with a mailbox IPC
+> framework
 
-char/ipmi: fix OOPS caused by pnp_unregister_driver on unregistered driver
-(2011-02-10 18:00:21 -0800)
+I don't know too much about the subject actually, I've not been
+deeply into any such code. I don't think anyone is working
+on something general from ST-Ericsson or Linaro.
 
-are available in the git repository at:
-git://git.secretlab.ca/git/linux-2.6 spi/merge
+Recently I saw that Texas Instruments are posting a "hardware
+spinlock" framework though, this would be on a related tone,
+but I think it's for shared data structures (control path) rather
+than buffer passing (data path). I'm guessing this works like
+that one CPU gets to spin waiting for another one to release
+the lock.
 
-Grant Likely (5):
-dt: Move device tree documentation out of powerpc directory
-dt: Remove obsolete description of powerpc boot interface
-dt: add documentation of ARM dt boot interface
-MAINTAINERS: Add entry for GPIO subsystem
-Merge branch 'devicetree/merge' into spi/merge
+Given that we may have a framework for hardware spinlock
+and that we don't want to stockpile drivers into arch/*
+or drivers/misc/* I would say it's intuitively a good idea,
+but the question is what data types you would pass in?
+In arch/arm/mach-ux500/include/mach/mbox-db5500.h
+we have a struct like this:
 
-Guennadi Liakhovetski (1):
-spi/spi_sh_msiof: fix wrong address calculation, which leads to an Oops
+/**
+  * struct mbox - Mailbox instance struct
+  * @list:              Linked list head.
+  * @pdev:              Pointer to device struct.
+  * @cb:                Callback function. Will be called
+  *                     when new data is received.
+  * @client_data:       Clients private data. Will be sent back
+  *                     in the callback function.
+  * @virtbase_peer:     Virtual address for outgoing mailbox.
+  * @virtbase_local:    Virtual address for incoming mailbox.
+  * @buffer:            Then internal queue for outgoing messages.
+  * @name:              Name of this mailbox.
+  * @buffer_available:  Completion variable to achieve "blocking send".
+  *                     This variable will be signaled when there is
+  *                     internal buffer space available.
+  * @client_blocked:    To keep track if any client is currently
+  *                     blocked.
+  * @lock:              Spinlock to protect this mailbox instance.
+  * @write_index:       Index in internal buffer to write to.
+  * @read_index:        Index in internal buffer to read from.
+  * @allocated:         Indicates whether this particular mailbox
+  *                     id has been allocated by someone.
+  */
+struct mbox {
+        struct list_head list;
+        struct platform_device *pdev;
+        mbox_recv_cb_t *cb;
+        void *client_data;
+        void __iomem *virtbase_peer;
+        void __iomem *virtbase_local;
+        u32 buffer[MBOX_BUF_SIZE];
+        char name[MBOX_NAME_SIZE];
+        struct completion buffer_available;
+        u8 client_blocked;
+        spinlock_t lock;
+        u8 write_index;
+        u8 read_index;
+        bool allocated;
+};
 
-Paul Bolle (1):
-devicetree-discuss is moderated for non-subscribers
+Compare OMAPs mailboxes in
+arch/arm/plat-omap/include/plat/mailbox.h:
 
-Documentation/arm/Booting | 33 +++-
-.../bindings/ata/fsl-sata.txt} | 0
-.../bindings}/eeprom.txt | 0
-.../fsl => devicetree/bindings/gpio}/8xxx_gpio.txt | 0
-.../bindings}/gpio/gpio.txt | 0
-.../bindings}/gpio/led.txt | 0
-.../bindings/i2c/fsl-i2c.txt} | 0
-.../bindings}/marvell.txt | 0
-.../bindings/mmc/fsl-esdhc.txt} | 0
-.../bindings/mmc}/mmc-spi-slot.txt | 0
-.../bindings/mtd/fsl-upm-nand.txt} | 0
-.../bindings/mtd}/mtd-physmap.txt | 0
-.../bindings/net/can/mpc5xxx-mscan.txt} | 0
-.../bindings/net}/can/sja1000.txt | 0
-.../bindings/net/fsl-tsec-phy.txt} | 0
-.../bindings/net/mdio-gpio.txt} | 0
-.../bindings/net}/phy.txt | 0
-.../bindings/pci}/83xx-512x-pci.txt | 0
-.../bindings/powerpc}/4xx/cpm.txt | 0
-.../bindings/powerpc}/4xx/emac.txt | 0
-.../bindings/powerpc}/4xx/ndfc.txt | 0
-.../bindings/powerpc}/4xx/ppc440spe-adma.txt | 0
-.../bindings/powerpc}/4xx/reboot.txt | 0
-.../bindings/powerpc}/fsl/board.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/cpm.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/cpm/brg.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/cpm/i2c.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/cpm/pic.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/cpm/usb.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/gpio.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/network.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/qe.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/qe/firmware.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/qe/par_io.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/qe/pincfg.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/qe/ucc.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/qe/usb.txt | 0
-.../bindings/powerpc}/fsl/cpm_qe/serial.txt | 0
-.../bindings/powerpc}/fsl/diu.txt | 0
-.../bindings/powerpc}/fsl/dma.txt | 0
-.../bindings/powerpc/fsl}/ecm.txt | 0
-.../bindings/powerpc}/fsl/gtm.txt | 0
-.../bindings/powerpc}/fsl/guts.txt | 0
-.../bindings/powerpc}/fsl/lbc.txt | 0
-.../bindings/powerpc}/fsl/mcm.txt | 0
-.../bindings/powerpc}/fsl/mcu-mpc8349emitx.txt | 0
-.../bindings/powerpc}/fsl/mpc5121-psc.txt | 0
-.../bindings/powerpc}/fsl/mpc5200.txt | 0
-.../bindings/powerpc}/fsl/mpic.txt | 0
-.../bindings/powerpc}/fsl/msi-pic.txt | 0
-.../bindings/powerpc}/fsl/pmc.txt | 0
-.../bindings/powerpc}/fsl/sec.txt | 0
-.../bindings/powerpc}/fsl/ssi.txt | 0
-.../bindings/powerpc}/nintendo/gamecube.txt | 0
-.../bindings/powerpc}/nintendo/wii.txt | 0
-.../bindings/spi/fsl-spi.txt} | 0
-.../bindings/spi}/spi-bus.txt | 0
-.../bindings/usb/fsl-usb.txt} | 0
-.../bindings/usb}/usb-ehci.txt | 0
-.../bindings}/xilinx.txt | 0
-.../{powerpc => devicetree}/booting-without-of.txt | 193
-+++++++++-----------
-MAINTAINERS | 11 +-
-drivers/spi/spi_sh_msiof.c | 6 +-
-63 files changed, 131 insertions(+), 112 deletions(-)
-rename Documentation/{powerpc/dts-bindings/fsl/sata.txt =>
-devicetree/bindings/ata/fsl-sata.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings}/eeprom.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl =>
-devicetree/bindings/gpio}/8xxx_gpio.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings}/gpio/gpio.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings}/gpio/led.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/i2c.txt =>
-devicetree/bindings/i2c/fsl-i2c.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings}/marvell.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/esdhc.txt =>
-devicetree/bindings/mmc/fsl-esdhc.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/mmc}/mmc-spi-slot.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/upm-nand.txt =>
-devicetree/bindings/mtd/fsl-upm-nand.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/mtd}/mtd-physmap.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/can.txt =>
-devicetree/bindings/net/can/mpc5xxx-mscan.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/net}/can/sja1000.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/tsec.txt =>
-devicetree/bindings/net/fsl-tsec-phy.txt} (100%)
-rename Documentation/{powerpc/dts-bindings/gpio/mdio.txt =>
-devicetree/bindings/net/mdio-gpio.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/net}/phy.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl =>
-devicetree/bindings/pci}/83xx-512x-pci.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/4xx/cpm.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/4xx/emac.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/4xx/ndfc.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/4xx/ppc440spe-adma.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/4xx/reboot.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/board.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/cpm.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/brg.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/i2c.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/pic.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/usb.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/gpio.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/network.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/qe.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/qe/firmware.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/qe/par_io.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/qe/pincfg.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/qe/ucc.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/qe/usb.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/cpm_qe/serial.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/diu.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/dma.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc/fsl}/ecm.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/gtm.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/guts.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/lbc.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/mcm.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/mcu-mpc8349emitx.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/mpc5121-psc.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/mpc5200.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/mpic.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/msi-pic.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/pmc.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/sec.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/fsl/ssi.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/nintendo/gamecube.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/powerpc}/nintendo/wii.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/spi.txt =>
-devicetree/bindings/spi/fsl-spi.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/spi}/spi-bus.txt (100%)
-rename Documentation/{powerpc/dts-bindings/fsl/usb.txt =>
-devicetree/bindings/usb/fsl-usb.txt} (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings/usb}/usb-ehci.txt (100%)
-rename Documentation/{powerpc/dts-bindings =>
-devicetree/bindings}/xilinx.txt (100%)
-rename Documentation/{powerpc => devicetree}/booting-without-of.txt (90%)
+typedef u32 mbox_msg_t;
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+truct omap_mbox_ops {
+        omap_mbox_type_t        type;
+        int             (*startup)(struct omap_mbox *mbox);
+        void            (*shutdown)(struct omap_mbox *mbox);
+        /* fifo */
+        mbox_msg_t      (*fifo_read)(struct omap_mbox *mbox);
+        void            (*fifo_write)(struct omap_mbox *mbox, mbox_msg_t ms=
+g);
+        int             (*fifo_empty)(struct omap_mbox *mbox);
+        int             (*fifo_full)(struct omap_mbox *mbox);
+        /* irq */
+        void            (*enable_irq)(struct omap_mbox *mbox,
+                                                omap_mbox_irq_t irq);
+        void            (*disable_irq)(struct omap_mbox *mbox,
+                                                omap_mbox_irq_t irq);
+        void            (*ack_irq)(struct omap_mbox *mbox, omap_mbox_irq_t =
+irq);
+        int             (*is_irq)(struct omap_mbox *mbox, omap_mbox_irq_t i=
+rq);
+        /* ctx */
+        void            (*save_ctx)(struct omap_mbox *mbox);
+        void            (*restore_ctx)(struct omap_mbox *mbox);
+};
 
---005045015a63147c82049c2b672a
-Content-Type: text/html; charset=ISO-8859-1
+struct omap_mbox_queue {
+        spinlock_t              lock;
+        struct kfifo            fifo;
+        struct work_struct      work;
+        struct tasklet_struct   tasklet;
+        struct omap_mbox        *mbox;
+        bool full;
+};
 
-<p>Hi Linus,</p>
-<p>A set of mostly documentation changes, but I also had an spi bug fix that I needed to send to you, so I&#39;ve sent it all in one pull req.</p>
-<p>g.</p>
-<p>The following changes since commit d2478521afc20227658a10a8c5c2bf1a2aa615b3:</p>
-<p>char/ipmi: fix OOPS caused by pnp_unregister_driver on unregistered driver (2011-02-10 18:00:21 -0800)</p>
-<p>are available in the git repository at:<br>
-git://<a href="http://git.secretlab.ca/git/linux-2.6">git.secretlab.ca/git/linux-2.6</a> spi/merge</p>
-<p>Grant Likely (5):<br>
-dt: Move device tree documentation out of powerpc directory<br>
-dt: Remove obsolete description of powerpc boot interface<br>
-dt: add documentation of ARM dt boot interface<br>
-MAINTAINERS: Add entry for GPIO subsystem<br>
-Merge branch &#39;devicetree/merge&#39; into spi/merge</p>
-<p>Guennadi Liakhovetski (1):<br>
-spi/spi_sh_msiof: fix wrong address calculation, which leads to an Oops</p>
-<p>Paul Bolle (1):<br>
-devicetree-discuss is moderated for non-subscribers</p>
-<p>Documentation/arm/Booting | 33 +++-<br>
-.../bindings/ata/fsl-sata.txt} | 0<br>
-.../bindings}/eeprom.txt | 0<br>
-.../fsl =&gt; devicetree/bindings/gpio}/8xxx_gpio.txt | 0<br>
-.../bindings}/gpio/gpio.txt | 0<br>
-.../bindings}/gpio/led.txt | 0<br>
-.../bindings/i2c/fsl-i2c.txt} | 0<br>
-.../bindings}/marvell.txt | 0<br>
-.../bindings/mmc/fsl-esdhc.txt} | 0<br>
-.../bindings/mmc}/mmc-spi-slot.txt | 0<br>
-.../bindings/mtd/fsl-upm-nand.txt} | 0<br>
-.../bindings/mtd}/mtd-physmap.txt | 0<br>
-.../bindings/net/can/mpc5xxx-mscan.txt} | 0<br>
-.../bindings/net}/can/sja1000.txt | 0<br>
-.../bindings/net/fsl-tsec-phy.txt} | 0<br>
-.../bindings/net/mdio-gpio.txt} | 0<br>
-.../bindings/net}/phy.txt | 0<br>
-.../bindings/pci}/83xx-512x-pci.txt | 0<br>
-.../bindings/powerpc}/4xx/cpm.txt | 0<br>
-.../bindings/powerpc}/4xx/emac.txt | 0<br>
-.../bindings/powerpc}/4xx/ndfc.txt | 0<br>
-.../bindings/powerpc}/4xx/ppc440spe-adma.txt | 0<br>
-.../bindings/powerpc}/4xx/reboot.txt | 0<br>
-.../bindings/powerpc}/fsl/board.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/cpm.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/cpm/brg.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/cpm/i2c.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/cpm/pic.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/cpm/usb.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/gpio.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/network.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/qe.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/qe/firmware.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/qe/par_io.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/qe/pincfg.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/qe/ucc.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/qe/usb.txt | 0<br>
-.../bindings/powerpc}/fsl/cpm_qe/serial.txt | 0<br>
-.../bindings/powerpc}/fsl/diu.txt | 0<br>
-.../bindings/powerpc}/fsl/dma.txt | 0<br>
-.../bindings/powerpc/fsl}/ecm.txt | 0<br>
-.../bindings/powerpc}/fsl/gtm.txt | 0<br>
-.../bindings/powerpc}/fsl/guts.txt | 0<br>
-.../bindings/powerpc}/fsl/lbc.txt | 0<br>
-.../bindings/powerpc}/fsl/mcm.txt | 0<br>
-.../bindings/powerpc}/fsl/mcu-mpc8349emitx.txt | 0<br>
-.../bindings/powerpc}/fsl/mpc5121-psc.txt | 0<br>
-.../bindings/powerpc}/fsl/mpc5200.txt | 0<br>
-.../bindings/powerpc}/fsl/mpic.txt | 0<br>
-.../bindings/powerpc}/fsl/msi-pic.txt | 0<br>
-.../bindings/powerpc}/fsl/pmc.txt | 0<br>
-.../bindings/powerpc}/fsl/sec.txt | 0<br>
-.../bindings/powerpc}/fsl/ssi.txt | 0<br>
-.../bindings/powerpc}/nintendo/gamecube.txt | 0<br>
-.../bindings/powerpc}/nintendo/wii.txt | 0<br>
-.../bindings/spi/fsl-spi.txt} | 0<br>
-.../bindings/spi}/spi-bus.txt | 0<br>
-.../bindings/usb/fsl-usb.txt} | 0<br>
-.../bindings/usb}/usb-ehci.txt | 0<br>
-.../bindings}/xilinx.txt | 0<br>
-.../{powerpc =&gt; devicetree}/booting-without-of.txt | 193 +++++++++-----------<br>
-MAINTAINERS | 11 +-<br>
-drivers/spi/spi_sh_msiof.c | 6 +-<br>
-63 files changed, 131 insertions(+), 112 deletions(-)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/sata.txt =&gt; devicetree/bindings/ata/fsl-sata.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings}/eeprom.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl =&gt; devicetree/bindings/gpio}/8xxx_gpio.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings}/gpio/gpio.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings}/gpio/led.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/i2c.txt =&gt; devicetree/bindings/i2c/fsl-i2c.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings}/marvell.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/esdhc.txt =&gt; devicetree/bindings/mmc/fsl-esdhc.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/mmc}/mmc-spi-slot.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/upm-nand.txt =&gt; devicetree/bindings/mtd/fsl-upm-nand.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/mtd}/mtd-physmap.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/can.txt =&gt; devicetree/bindings/net/can/mpc5xxx-mscan.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/net}/can/sja1000.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/tsec.txt =&gt; devicetree/bindings/net/fsl-tsec-phy.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings/gpio/mdio.txt =&gt; devicetree/bindings/net/mdio-gpio.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/net}/phy.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl =&gt; devicetree/bindings/pci}/83xx-512x-pci.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/4xx/cpm.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/4xx/emac.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/4xx/ndfc.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/4xx/ppc440spe-adma.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/4xx/reboot.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/board.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/cpm.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/brg.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/i2c.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/pic.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/usb.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/gpio.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/network.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/qe.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/qe/firmware.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/qe/par_io.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/qe/pincfg.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/qe/ucc.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/qe/usb.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/cpm_qe/serial.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/diu.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/dma.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc/fsl}/ecm.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/gtm.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/guts.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/lbc.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/mcm.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/mcu-mpc8349emitx.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/mpc5121-psc.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/mpc5200.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/mpic.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/msi-pic.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/pmc.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/sec.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/fsl/ssi.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/nintendo/gamecube.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/powerpc}/nintendo/wii.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/spi.txt =&gt; devicetree/bindings/spi/fsl-spi.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/spi}/spi-bus.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings/fsl/usb.txt =&gt; devicetree/bindings/usb/fsl-usb.txt} (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings/usb}/usb-ehci.txt (100%)<br>
-rename Documentation/{powerpc/dts-bindings =&gt; devicetree/bindings}/xilinx.txt (100%)<br>
-rename Documentation/{powerpc =&gt; devicetree}/booting-without-of.txt (90%)<br></p>
-<p>-- <br>
-Grant Likely, B.Sc., P.Eng.<br>
-Secret Lab Technologies Ltd.</p>
+struct omap_mbox {
+        char                    *name;
+        unsigned int            irq;
+        struct omap_mbox_queue  *txq, *rxq;
+        struct omap_mbox_ops    *ops;
+        struct device           *dev;
+        void                    *priv;
+        int                     use_count;
+        struct blocking_notifier_head   notifier;
+};
 
---005045015a63147c82049c2b672a--
+Some of this may be generalized? I dunno, they look quite
+different but maybe queueing etc can actually be made general
+enough to form a framework.
+
+Yours,
+Linus Walleij
