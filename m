@@ -1,17 +1,17 @@
-Return-Path: <dcb314@hotmail.com>
-Received: from blu0-omc3-s4.blu0.hotmail.com (blu0-omc3-s4.blu0.hotmail.com
-	[65.55.116.79]) by ozlabs.org (Postfix) with ESMTP id E59A9B70E2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Feb 2011 21:13:49 +1100 (EST)
-Message-ID: <BLU154-w1013E8541813DF8B7564CD9CEE0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_e86b3faa-e9d0-4427-b633-237642e46f22_"
-From: David Binderman <dcb314@hotmail.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>
-Subject: arch/powerpc/kernel/cacheinfo.c: Possible null pointer dereference
-Date: Sat, 12 Feb 2011 10:08:36 +0000
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: arch/powerpc/kernel/cacheinfo.c: Possible null pointer dereference
+From: Michael Ellerman <michael@ellerman.id.au>
+To: David Binderman <dcb314@hotmail.com>
+In-Reply-To: <BLU154-w1013E8541813DF8B7564CD9CEE0@phx.gbl>
+References: <BLU154-w1013E8541813DF8B7564CD9CEE0@phx.gbl>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-o5YMBenEG4v3alVjz3CH"
+Date: Mon, 14 Feb 2011 10:24:30 +1100
+Message-ID: <1297639470.9492.11.camel@concordia>
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,68 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_e86b3faa-e9d0-4427-b633-237642e46f22_
-Content-Type: text/plain; charset="iso-8859-1"
+
+--=-o5YMBenEG4v3alVjz3CH
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
+On Sat, 2011-02-12 at 10:08 +0000, David Binderman wrote:
+> Hello there,
+>=20
+> I just tried out cppcheck-1.47 on the linux-2.6.38-rc4 source code.
+>=20
+> It said
+>=20
+> [arch/powerpc/kernel/cacheinfo.c:380]: (error) Possible null pointer
+> dereference: cache - otherwise it is redundant to check if cache is
+> null at line 382
+>=20
+> The source code is
+>=20
+>     WARN_ONCE(cache && cache->level !=3D level,
+>           "cache level mismatch on lookup (got %d, expected %d)\n",
+>           cache->level, level);
+>=20
+>     if (!cache)
+>=20
+> I agree with cppcheck. Suggest code rework.
 
-Hello there=2C
+It's wrong.
 
-I just tried out cppcheck-1.47 on the linux-2.6.38-rc4 source code.
+The code is essentially:
 
-It said
+if (cache && cache->level !=3D level)
+	printf("cache level mismatch on lookup (got %d, expected %d)\n", cache->le=
+vel, level);
 
-[arch/powerpc/kernel/cacheinfo.c:380]: (error) Possible null pointer derefe=
-rence: cache - otherwise it is redundant to check if cache is null at line =
-382
+if (!cache)
+	cache =3D cache_do_one_devnode(node, level);
 
-The source code is
 
-    WARN_ONCE(cache && cache->level !=3D level=2C
-          "cache level mismatch on lookup (got %d=2C expected %d)\n"=2C
-          cache->level=2C level)=3B
+Which looks fine to me?
 
-    if (!cache)
+cheers
 
-I agree with cppcheck. Suggest code rework.
+--=-o5YMBenEG4v3alVjz3CH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Regards
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-David Binderman
+iEYEABECAAYFAk1YaCsACgkQdSjSd0sB4dJWeQCfQXAdlRWmsmOpRUXe9qm8TgRt
+AU8An2ZiAjjFur3U/LP+2rDeTf+GZqna
+=x9Gs
+-----END PGP SIGNATURE-----
 
- 		 	   		  =
-
---_e86b3faa-e9d0-4427-b633-237642e46f22_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Tahoma
-}
---></style>
-</head>
-<body class=3D'hmmessage'>
-Hello there=2C<br><br>I just tried out cppcheck-1.47 on the linux-2.6.38-rc=
-4 source code.<br><br>It said<br><br>[arch/powerpc/kernel/cacheinfo.c:380]:=
- (error) Possible null pointer dereference: cache - otherwise it is redunda=
-nt to check if cache is null at line 382<br><br>The source code is<br><br>&=
-nbsp=3B&nbsp=3B&nbsp=3B WARN_ONCE(cache &amp=3B&amp=3B cache-&gt=3Blevel !=
-=3D level=2C<br>&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nb=
-sp=3B&nbsp=3B "cache level mismatch on lookup (got %d=2C expected %d)\n"=2C=
-<br>&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=
-=3B cache-&gt=3Blevel=2C level)=3B<br><br>&nbsp=3B&nbsp=3B&nbsp=3B if (!cac=
-he)<br><br>I agree with cppcheck. Suggest code rework.<br><br>Regards<br><b=
-r>David Binderman<br><br> 		 	   		  </body>
-</html>=
-
---_e86b3faa-e9d0-4427-b633-237642e46f22_--
+--=-o5YMBenEG4v3alVjz3CH--
