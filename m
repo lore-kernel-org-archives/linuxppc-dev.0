@@ -1,28 +1,17 @@
-Return-Path: <linus.ml.walleij@gmail.com>
-Received: from mail-px0-f179.google.com (mail-px0-f179.google.com
-	[209.85.212.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DB1FDB7126
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Feb 2011 08:24:40 +1100 (EST)
-Received: by pxi20 with SMTP id 20so944260pxi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Feb 2011 13:24:38 -0800 (PST)
-MIME-Version: 1.0
-Sender: linus.ml.walleij@gmail.com
-In-Reply-To: <4D55A7F7.5090700@mentor.com>
-References: <4D55A7F7.5090700@mentor.com>
-Date: Sun, 13 Feb 2011 22:24:38 +0100
-Message-ID: <AANLkTin+ZSNHX2iv=XwWCgxy330UJwhkf1T=4BMXZ22s@mail.gmail.com>
-Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Meador Inge <meador_inge@mentor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: openmcapi-dev@googlegroups.com, "Blanchard,
-	Hollis" <Hollis_Blanchard@mentor.com>,
-	Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Resources used by driver ?
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+In-Reply-To: <201102101108.47647.dargaud@lpsc.in2p3.fr>
+References: <201102101108.47647.dargaud@lpsc.in2p3.fr>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-P8slsxNG8AToGo0Bw+Uo"
+Date: Mon, 14 Feb 2011 10:38:49 +1100
+Message-ID: <1297640329.9492.15.camel@concordia>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <LinuxPPC-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/2/11 Meador Inge <meador_inge@mentor.com>:
 
->=A0This would entail the traditional
-> generic/specific driver split:
->
-> =A0 =A01. Hardware specific bits somewhere under '.../arch/*'. =A0Drivers
-> =A0 =A0 =A0 for the MPIC message registers on Power and OMAP4 mailboxes, =
-for
-> =A0 =A0 =A0 example.
+--=-P8slsxNG8AToGo0Bw+Uo
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Having any drivers under arch/* is no good tradition IMO.
-Better move the whole shebang down to drivers/mailbox so
-that the subsystem maintainer get the complete overview
-of her/his driver family.
+On Thu, 2011-02-10 at 11:08 +0100, Guillaume Dargaud wrote:
+> Thanks to the advice I received here, I now have my first 'real' Linux dr=
+iver=20
+> up and running and am now at the optimization stage.
+>=20
+> Is it possible to see the resources consumed by a module ? They don't sho=
+w in=20
+> 'ps/top' but I'm sure there are ways to see how much memory it uses (to c=
+heck=20
+> for memory leaks) and how much CPU it takes. How ?
 
-> =A0 =A02. A higher level driver under '.../drivers/mailbox/*'. =A0That th=
-e
-> =A0 =A0 =A0 pieces in (1) would register with. =A0This piece would expose=
- the
-> =A0 =A0 =A0 main kernel API.
+Hi Guillaume,
 
-Cool...
+It's actually not that easy to measure the resources used by a driver.
+In general your driver code only runs on behalf of another process, and
+so that process is where the cpu usage will be accounted.
 
-> =A0 =A03. Userspace interfaces for accessing the mailboxes. =A0A
-> =A0 =A0 =A0 '/dev/mailbox1', '/dev/mailbox2', etc... mapping, for example=
-.
+One exception is if your driver spawns a kernel thread for something, in
+that case you can see it with top.
 
-What kind of business does userspace have with directly using
-mailboxes? Enlighten me so I get it... in our system these are
-used by protocols, such as net/caif/* thru drivers/net/caif/*, and
-we have similar kernelspace functionality for Phonet.
+For memory usage, you can monitor /proc/slabinfo and see if anything is
+growing every time you access your driver. Another option is to enable
+CONFIG_DEBUG_KMEMLEAK, which will try and detect real leaks for you.
 
-CAIF and Phonet on the other hand, have custom openings
-down to the thing that exists on the other end of the mailbox.
-Most of these systems tend to talk some funny protocol that
-is often better handled by the kernel than by any userspace.
+cheers
 
-So is this for the situation when you have no intermediate
-protocol between your userpace and the other CPU's
-subsystem? Or are you thinking about handling that
-protocol in userspace? That is generally not such a good idea
-for efficiency reasons.
+--=-P8slsxNG8AToGo0Bw+Uo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Yoursm
-Linus Walleij
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAk1Ya4kACgkQdSjSd0sB4dJmlACgrVCvUXmhZ1AhodMnMluvM8ff
+mN4An2BQqFkERaan+dk5qG+mCyBZW9cY
+=m1Rp
+-----END PGP SIGNATURE-----
+
+--=-P8slsxNG8AToGo0Bw+Uo--
