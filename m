@@ -1,26 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 854FEB7184
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Feb 2011 19:55:57 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 10813-02 for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Feb 2011 08:55:50 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH V8 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
-	InterfaceLayer
-Date: Mon, 14 Feb 2011 08:53:21 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AC4D@saturn3.aculab.com>
-In-Reply-To: <4f99d54a42d4f13663c88b0b081f047b@mail.gmail.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Tirumala Marri" <tmarri@apm.com>, "Greg KH" <greg@kroah.com>,
-	"Alexander Gordeev" <lasaine@lvk.cs.msu.su>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, Fushen Chen <fchen@apm.com>
+Return-Path: <nab@linux-iscsi.org>
+Received: from linux-iscsi.org (mail.linux-iscsi.org [67.23.28.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 81A7EB7160
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Feb 2011 20:25:07 +1100 (EST)
+Subject: Re: [PATCH v2 3/3] tcm ibmvscsis driver
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20110214124821T.fujita.tomonori@lab.ntt.co.jp>
+References: <20110214124821T.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Mon, 14 Feb 2011 01:12:54 -0800
+Message-Id: <1297674774.7114.52.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> > Sorry, I don't understand that. I think u32 is always 32bit=20
-> > 4byte on all archs. Right?
->=20
-> Yes.
->=20
-> Use an unsigned long if you want to hold a pointer correctly on all
-> arches.
+On Mon, 2011-02-14 at 12:48 +0900, FUJITA Tomonori wrote:
+> This is the second version of tcm ibmvscsis driver. You can find the
+> first version at:
+> 
+> http://marc.info/?t=129734085600004&r=1&w=2
+> 
+> The changes are:
+> 
+> - send VIOSRP_MAD_NOT_SUPPORTED for unknown mad type requests.
+> - fix inquiry typo
+> - sends task management response (for now, 'NOT SUPPORTED').
+> - remove dead code.
+> 
 
-Although that is true for many systems (and probably all ppc Linux)
-it isn't necessarily true (eg 64 bit Microsoft Windows).
-C99 inttypes.h should define uintptr_t as an unsigned integer
-type that is large enough to hold a (data) pointer.
-I'm not sure if this is defined for the Linux kernel.
+Your rev2 patch has been merged into lio-core-2.6.git/tcm_ibmvscsis
+currently @ .38-rc4.
 
-	David
+Thanks!
+
+--nab
