@@ -1,29 +1,22 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E6EB5B7169
+Return-Path: <Hiroshi.DOYU@nokia.com>
+Received: from mgw-da01.nokia.com (smtp.nokia.com [147.243.128.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.nokia.com",
+	Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 33FCDB716A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Feb 2011 19:39:38 +1100 (EST)
-Received: by wyi11 with SMTP id 11so4398623wyi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Feb 2011 00:39:33 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20110214.093257.58795266617213863.Hiroshi.DOYU@nokia.com>
-References: <4D55A7F7.5090700@mentor.com>
-	<AANLkTikP0P9S1VgiU_yT53f-kZq0JMLBJoVWigAy8YWB@mail.gmail.com>
-	<AANLkTikoExk30pqdcHXCA2K_oJB=VJ5_AnCkoYUrEt3X@mail.gmail.com>
-	<20110214.093257.58795266617213863.Hiroshi.DOYU@nokia.com>
-Date: Mon, 14 Feb 2011 09:39:32 +0100
-Message-ID: <AANLkTimnHHhYKnvUgsMo_jsKaYdY+XuABZ+FV0p25JLi@mail.gmail.com>
+	Mon, 14 Feb 2011 19:48:47 +1100 (EST)
+Date: Mon, 14 Feb 2011 09:21:56 +0200 (EET)
+Message-Id: <20110214.092156.806824256640411558.Hiroshi.DOYU@nokia.com>
+To: meador_inge@mentor.com
 Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: meador_inge@mentor.com, Hollis_Blanchard@mentor.com, sunder.svit@gmail.com,
-	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <4D55A7F7.5090700@mentor.com>
+References: <4D55A7F7.5090700@mentor.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: openmcapi-dev@googlegroups.com, Hollis_Blanchard@mentor.com,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,13 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 14, 2011 at 8:32 AM, Hiroshi DOYU <Hiroshi.DOYU@nokia.com> wrote:
+Hi Meador,
 
-> OMAP mailbox is the interrupt driven 32bit unit H/W FIFO to other
-> cores.
+From: ext Meador Inge <meador_inge@mentor.com>
+Subject: [RFC] Inter-processor Mailboxes Drivers
+Date: Fri, 11 Feb 2011 15:19:51 -0600
 
-How is it used? Is it a low-traffic (like single 32bit words etc) signal
-control-path link while the actual high-throughput data-path is done
-with shared memory? (That is how the db5500 mbox works anyways.)
+> Hi All,
+> 
+> I am currently working on building AMP systems using OpenMCAPI
+> (https://bitbucket.org/hollisb/openmcapi/wiki/Home) as the
+> inter-processor communication mechanism.  With OpenMCAPI we, of
+> course,
+> need a way to send messages to various cores.  On some Freescale PPC
+> platforms (e.g. P1022DS, MPC8572DS), we have been using message
+> registers to do this work.  Recently, I was looking at the OMAP4
+> mailboxes to gear up for moving into ARM based platforms.
+> 
+> With that, I noticed 'arch/arm/plat-omap/mailbox.c'.  This is very
+> specific to the OMAP4 boards.  I am looking at designing a new set of
+> drivers to expose a mailbox service to userspace that will be used
+> for inter-processor communication.  This would entail the traditional
+> generic/specific driver split:
+> 
+>     1. Hardware specific bits somewhere under '.../arch/*'.  Drivers
+>        for the MPIC message registers on Power and OMAP4 mailboxes, for
+>        example.
+>     2. A higher level driver under '.../drivers/mailbox/*'.  That the
+>        pieces in (1) would register with.  This piece would expose the
+>        main kernel API.
+>     3. Userspace interfaces for accessing the mailboxes.  A
+>        '/dev/mailbox1', '/dev/mailbox2', etc... mapping, for example.
+> 
+> Now I have the following questions:
+> 
+>     1. Do others see value in this?
 
-Linus Walleij
+Yes.
+
+I discussed this with TI(Hari) long time ago, but it didn't proceed
+with some reason, not techinical one.
+
+>     2. Does something like this already exist?
+>     3. Is someone else already working on this?
+> 
+> Any feedback will be greatly appreciated.
+
+Now the basic concpet can be devided into 3 parts, (1)HW dependent,
+(2) generic driver, (3) character device interface. I guess that it
+might be good to have one _pseudo_ H/W instance, then easier for
+verification without real H/W and firmwares, across multiplatforms.
