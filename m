@@ -1,20 +1,27 @@
-Return-Path: <nab@linux-iscsi.org>
-Received: from linux-iscsi.org (mail.linux-iscsi.org [67.23.28.174])
+Return-Path: <lasaine@lvk.cs.msu.su>
+Received: from mail.lvk.cs.msu.su (gate.lvk.cs.msu.su [158.250.17.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26A81B718F
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Feb 2011 21:36:23 +1100 (EST)
-Subject: Re: [PATCH v3 3/3] tcm ibmvscsis driver
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20110214192600L.fujita.tomonori@lab.ntt.co.jp>
-References: <20110214192600L.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Mon, 14 Feb 2011 02:29:49 -0800
-Message-Id: <1297679389.21049.32.camel@haakon2.linux-iscsi.org>
+	(Client CN "mail.lvk.cs.msu.su", Issuer "CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0A0CFB7194
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 14 Feb 2011 22:34:37 +1100 (EST)
+Date: Mon, 14 Feb 2011 14:34:19 +0300
+From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+To: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH V8 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
+	InterfaceLayer
+Message-ID: <20110214143419.0da18a20@apollo.gnet>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC4D@saturn3.aculab.com>
+References: <4f99d54a42d4f13663c88b0b081f047b@mail.gmail.com>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8AC4D@saturn3.aculab.com>
 Mime-Version: 1.0
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	linux-scsi@vger.kernel.org
+Content-Type: multipart/signed; micalg=PGP-SHA256;
+	boundary="Sig_/WhrkfhfnR9tZ21A6h3mH1x=";
+	protocol="application/pgp-signature"
+Cc: Tirumala Marri <tmarri@apm.com>, Greg KH <greg@kroah.com>,
+	linux-usb@vger.kernel.org, Mark
+	Miesfeld <mmiesfeld@apm.com>, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-14 at 19:25 +0900, FUJITA Tomonori wrote:
-> This is the third version of tcm ibmvscsis driver. You can find the
-> first version at:
-> 
-> http://marc.info/?t=129734085600004&r=1&w=2
-> 
-> The changes are:
-> v3:
-> - fix task attribute (convert MSG_* to TASK_ATTR_*)
-> v2:
-> - send VIOSRP_MAD_NOT_SUPPORTED for unknown mad type requests.
-> - fix inquiry typo
-> - sends task management response (for now, 'NOT SUPPORTED').
-> - remove dead code.
-> 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH v3 3/3] tcm ibmvscsis driver
-> 
-> This replaces ibmvstgt driver that uses the old target framework.
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  drivers/scsi/ibmvscsi/Makefile    |    4 +-
->  drivers/scsi/ibmvscsi/ibmvscsis.c | 1761 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 1764 insertions(+), 1 deletions(-)
->  create mode 100644 drivers/scsi/ibmvscsi/ibmvscsis.c
-> 
+--Sig_/WhrkfhfnR9tZ21A6h3mH1x=
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Merged and pushed your rev3 changes into lio-core-2.6.git/tcm_ibmvscsis
+=D0=92 Mon, 14 Feb 2011 08:53:21 -0000
+"David Laight" <David.Laight@ACULAB.COM> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
 
-Thanks again Tomo-san!
+> =20
+> > > Sorry, I don't understand that. I think u32 is always 32bit=20
+> > > 4byte on all archs. Right?
+> >=20
+> > Yes.
+> >=20
+> > Use an unsigned long if you want to hold a pointer correctly on all
+> > arches.
+>=20
+> Although that is true for many systems (and probably all ppc Linux)
+> it isn't necessarily true (eg 64 bit Microsoft Windows).
+> C99 inttypes.h should define uintptr_t as an unsigned integer
+> type that is large enough to hold a (data) pointer.
+> I'm not sure if this is defined for the Linux kernel.
 
---nab
+I think, the most reasonable option is to use a pointer type to hold
+pointer. :)
+
+--=20
+  Alexander
+
+--Sig_/WhrkfhfnR9tZ21A6h3mH1x=
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBCAAGBQJNWRM7AAoJEElrwznyooJbDFwH/R8U/7xN8E0f/fZu6Qknvnyl
+qUvab2dcJnoFNSDGZxZGXLiQd+6b8qDLa/ioWduRzEzRtAcby3yueJ8wbsbireL6
+gyKGsEDHw78d65oc8NOg/nJk3ugXXRnsL8VnD/UP8iZ1pNEk0nSo6wuMbEsFZMJu
+ytjbqHKb9yZ/TYfPajmvRrOlhNGjYJIXfhixNOhyTJPfzynD+oMOJ4viZhR/E/tR
+nAha5OIegsFoAnrOKNqUQytC/rdyRNbINS0aSSGlTM+apf4SRYtdoMQ3FHj9vCgt
+mpuHBT7btHl9MNNooT0dUR4wuu6iirXZQkIhxQp4doinxH3R0U0A5qeukkSNisE=
+=xavO
+-----END PGP SIGNATURE-----
+
+--Sig_/WhrkfhfnR9tZ21A6h3mH1x=--
