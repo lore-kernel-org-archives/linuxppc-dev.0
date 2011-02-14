@@ -1,24 +1,26 @@
-Return-Path: <Hiroshi.DOYU@nokia.com>
-Received: from mgw-da02.nokia.com (smtp.nokia.com [147.243.128.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.nokia.com",
-	Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9223EB7160
+Return-Path: <jamie@jamieiles.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 90C26B7170
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Feb 2011 20:07:42 +1100 (EST)
-Date: Mon, 14 Feb 2011 11:06:40 +0200 (EET)
-Message-Id: <20110214.110640.467772673621785414.Hiroshi.DOYU@nokia.com>
-To: meador_inge@mentor.com, linus.walleij@linaro.org
+	Mon, 14 Feb 2011 21:01:14 +1100 (EST)
+Received: by eyg24 with SMTP id 24so2024854eyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 14 Feb 2011 02:01:09 -0800 (PST)
+Date: Mon, 14 Feb 2011 10:01:04 +0000
+From: Jamie Iles <jamie@jamieiles.com>
+To: Meador Inge <meador_inge@mentor.com>
 Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-In-Reply-To: <20110214.105553.296482686007701595.Hiroshi.DOYU@nokia.com>
-References: <20110214.093257.58795266617213863.Hiroshi.DOYU@nokia.com>
-	<AANLkTimnHHhYKnvUgsMo_jsKaYdY+XuABZ+FV0p25JLi@mail.gmail.com>
-	<20110214.105553.296482686007701595.Hiroshi.DOYU@nokia.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: openmcapi-dev@googlegroups.com, sunder.svit@gmail.com,
-	Hollis_Blanchard@mentor.com, linuxppc-dev@lists.ozlabs.org,
+Message-ID: <20110214100104.GC4371@pulham.picochip.com>
+References: <4D55A7F7.5090700@mentor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D55A7F7.5090700@mentor.com>
+Cc: openmcapi-dev@googlegroups.com, "Blanchard,
+	Hollis" <Hollis_Blanchard@mentor.com>,
+	Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,42 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-Date: Mon, 14 Feb 2011 10:55:53 +0200 (EET)
+On Fri, Feb 11, 2011 at 03:19:51PM -0600, Meador Inge wrote:
+>     1. Hardware specific bits somewhere under '.../arch/*'.  Drivers
+>        for the MPIC message registers on Power and OMAP4 mailboxes, for
+>        example.
+>     2. A higher level driver under '.../drivers/mailbox/*'.  That the
+>        pieces in (1) would register with.  This piece would expose the
+>        main kernel API.
+>     3. Userspace interfaces for accessing the mailboxes.  A
+>        '/dev/mailbox1', '/dev/mailbox2', etc... mapping, for example.
 
-> From: ext Linus Walleij <linus.walleij@linaro.org>
-> Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-> Date: Mon, 14 Feb 2011 09:39:32 +0100
-> 
->> On Mon, Feb 14, 2011 at 8:32 AM, Hiroshi DOYU <Hiroshi.DOYU@nokia.com> wrote:
->> 
->>> OMAP mailbox is the interrupt driven 32bit unit H/W FIFO to other
->>> cores.
->> 
->> How is it used? Is it a low-traffic (like single 32bit words etc) signal
->> control-path link while the actual high-throughput data-path is done
->> with shared memory? (That is how the db5500 mbox works anyways.)
-> 
-> Yes, maybe quite similar.
-> 
-> maibox is not single 32 bit but is 32 bit x 4(or 8?) slots fifo, IIRC,
-> and mainly it is used as notification between cores. And big amount of
-> data is transftered with sahred memory, which has been mapped onto the
-> virtual address space of the other side of core, in advance.
-> 
-> For example, typical usage of DSP, mp3 decoding,
-> 
-> 1, ARM maps 2 shared memory area(input/output) onto DSP virtual
->    address space.
-> 2, ARM fills mp3 data in input buffer.
-> 3, ARM notifies DSP that data is ready in input buffer.
-> 4, DSP decodes input data and put output data on output buffer.
-> 5, DSP notifies that output buffer is ready.
-> 
-> Roughly something like the above. DSP S/W is multi-tasking, though.
+How about using virtio for all of this and having the mailbox as a 
+notification/message passing driver for the virtio backend?  There are 
+already virtio console and network drivers that could be useful for the 
+userspace part of it.  drivers/virtio/virtio_ring.c might be a good 
+starting point if you thought there was some mileage in this approach.
 
-Here, ARM side process talks to DSP site process in their own way, and
-also there are another cores, talking with their own protocols. So I
-think that at least, protocol part should be pluggable anyway although
-it doesn't have to be always in userland.
+Jamie
