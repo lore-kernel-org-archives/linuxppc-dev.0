@@ -1,20 +1,25 @@
-Return-Path: <nab@linux-iscsi.org>
-Received: from linux-iscsi.org (mail.linux-iscsi.org [67.23.28.174])
+Return-Path: <Hiroshi.DOYU@nokia.com>
+Received: from mgw-da01.nokia.com (smtp.nokia.com [147.243.128.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 81A7EB7160
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Feb 2011 20:25:07 +1100 (EST)
-Subject: Re: [PATCH v2 3/3] tcm ibmvscsis driver
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20110214124821T.fujita.tomonori@lab.ntt.co.jp>
-References: <20110214124821T.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Mon, 14 Feb 2011 01:12:54 -0800
-Message-Id: <1297674774.7114.52.camel@haakon2.linux-iscsi.org>
+	(Client CN "smtp.nokia.com",
+	Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 93445B717A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 14 Feb 2011 19:56:55 +1100 (EST)
+Date: Mon, 14 Feb 2011 10:55:53 +0200 (EET)
+Message-Id: <20110214.105553.296482686007701595.Hiroshi.DOYU@nokia.com>
+To: linus.walleij@linaro.org
+Subject: Re: [RFC] Inter-processor Mailboxes Drivers
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <AANLkTimnHHhYKnvUgsMo_jsKaYdY+XuABZ+FV0p25JLi@mail.gmail.com>
+References: <AANLkTikoExk30pqdcHXCA2K_oJB=VJ5_AnCkoYUrEt3X@mail.gmail.com>
+	<20110214.093257.58795266617213863.Hiroshi.DOYU@nokia.com>
+	<AANLkTimnHHhYKnvUgsMo_jsKaYdY+XuABZ+FV0p25JLi@mail.gmail.com>
 Mime-Version: 1.0
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	linux-scsi@vger.kernel.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: meador_inge@mentor.com, Hollis_Blanchard@mentor.com, sunder.svit@gmail.com,
+	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-14 at 12:48 +0900, FUJITA Tomonori wrote:
-> This is the second version of tcm ibmvscsis driver. You can find the
-> first version at:
-> 
-> http://marc.info/?t=129734085600004&r=1&w=2
-> 
-> The changes are:
-> 
-> - send VIOSRP_MAD_NOT_SUPPORTED for unknown mad type requests.
-> - fix inquiry typo
-> - sends task management response (for now, 'NOT SUPPORTED').
-> - remove dead code.
-> 
+From: ext Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [RFC] Inter-processor Mailboxes Drivers
+Date: Mon, 14 Feb 2011 09:39:32 +0100
 
-Your rev2 patch has been merged into lio-core-2.6.git/tcm_ibmvscsis
-currently @ .38-rc4.
+> On Mon, Feb 14, 2011 at 8:32 AM, Hiroshi DOYU <Hiroshi.DOYU@nokia.com> wrote:
+> 
+>> OMAP mailbox is the interrupt driven 32bit unit H/W FIFO to other
+>> cores.
+> 
+> How is it used? Is it a low-traffic (like single 32bit words etc) signal
+> control-path link while the actual high-throughput data-path is done
+> with shared memory? (That is how the db5500 mbox works anyways.)
 
-Thanks!
+Yes, maybe quite similar.
 
---nab
+maibox is not single 32 bit but is 32 bit x 4(or 8?) slots fifo, IIRC,
+and mainly it is used as notification between cores. And big amount of
+data is transftered with sahred memory, which has been mapped onto the
+virtual address space of the other side of core, in advance.
+
+For example, typical usage of DSP, mp3 decoding,
+
+1, ARM maps 2 shared memory area(input/output) onto DSP virtual
+   address space.
+2, ARM fills mp3 data in input buffer.
+3, ARM notifies DSP that data is ready in input buffer.
+4, DSP decodes input data and put output data on output buffer.
+5, DSP notifies that output buffer is ready.
+
+Roughly something like the above. DSP S/W is multi-tasking, though.
+
+Does db5500 use IOMMU for mapping shared memories?
