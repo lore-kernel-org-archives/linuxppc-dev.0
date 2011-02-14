@@ -1,17 +1,28 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Resources used by driver ?
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201102101108.47647.dargaud@lpsc.in2p3.fr>
-References: <201102101108.47647.dargaud@lpsc.in2p3.fr>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-P8slsxNG8AToGo0Bw+Uo"
-Date: Mon, 14 Feb 2011 10:38:49 +1100
-Message-ID: <1297640329.9492.15.camel@concordia>
-Mime-Version: 1.0
-Cc: LinuxPPC-dev <LinuxPPC-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
+	[209.85.210.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3940AB715F
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Feb 2011 14:47:00 +1100 (EST)
+Received: by iym14 with SMTP id 14so5891040iym.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Feb 2011 19:46:56 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <AANLkTikpR4191DrgyodXV-Qx=r8mjXziknzJ8tJpgBt9@mail.gmail.com>
+References: <AANLkTikM0bZbRfSPeXjf4NVn_AAHm1w7FWRKYvoucdHj@mail.gmail.com>
+	<AANLkTikpR4191DrgyodXV-Qx=r8mjXziknzJ8tJpgBt9@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sun, 13 Feb 2011 20:46:34 -0700
+Message-ID: <AANLkTimbsKh3P2QQpJOYZQKNkKJkANm1qGr1g0y-aRpi@mail.gmail.com>
+Subject: [git pull] Documentation changes and an SPI bug fix
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: spi-devel-general@lists.sourceforge.net,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,47 +32,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+[Resend: Android insisted on sending HTML, so it was rejected by LKML]
 
---=-P8slsxNG8AToGo0Bw+Uo
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-On Thu, 2011-02-10 at 11:08 +0100, Guillaume Dargaud wrote:
-> Thanks to the advice I received here, I now have my first 'real' Linux dr=
-iver=20
-> up and running and am now at the optimization stage.
->=20
-> Is it possible to see the resources consumed by a module ? They don't sho=
-w in=20
-> 'ps/top' but I'm sure there are ways to see how much memory it uses (to c=
-heck=20
-> for memory leaks) and how much CPU it takes. How ?
+A set of mostly documentation changes, but I also had an spi bug fix
+that I needed to send to you, so I've sent it all in one pull req.
 
-Hi Guillaume,
+g.
 
-It's actually not that easy to measure the resources used by a driver.
-In general your driver code only runs on behalf of another process, and
-so that process is where the cpu usage will be accounted.
+The following changes since commit d2478521afc20227658a10a8c5c2bf1a2aa615b3:
 
-One exception is if your driver spawns a kernel thread for something, in
-that case you can see it with top.
+char/ipmi: fix OOPS caused by pnp_unregister_driver on unregistered
+driver (2011-02-10 18:00:21 -0800)
 
-For memory usage, you can monitor /proc/slabinfo and see if anything is
-growing every time you access your driver. Another option is to enable
-CONFIG_DEBUG_KMEMLEAK, which will try and detect real leaks for you.
+are available in the git repository at:
+git://git.secretlab.ca/git/linux-2.6 spi/merge
 
-cheers
+Grant Likely (5):
+dt: Move device tree documentation out of powerpc directory
+dt: Remove obsolete description of powerpc boot interface
+dt: add documentation of ARM dt boot interface
+MAINTAINERS: Add entry for GPIO subsystem
+Merge branch 'devicetree/merge' into spi/merge
 
---=-P8slsxNG8AToGo0Bw+Uo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Guennadi Liakhovetski (1):
+spi/spi_sh_msiof: fix wrong address calculation, which leads to an Oops
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Paul Bolle (1):
+devicetree-discuss is moderated for non-subscribers
 
-iEYEABECAAYFAk1Ya4kACgkQdSjSd0sB4dJmlACgrVCvUXmhZ1AhodMnMluvM8ff
-mN4An2BQqFkERaan+dk5qG+mCyBZW9cY
-=m1Rp
------END PGP SIGNATURE-----
+Documentation/arm/Booting | 33 +++-
+.../bindings/ata/fsl-sata.txt} | 0
+.../bindings}/eeprom.txt | 0
+.../fsl => devicetree/bindings/gpio}/8xxx_gpio.txt | 0
+.../bindings}/gpio/gpio.txt | 0
+.../bindings}/gpio/led.txt | 0
+.../bindings/i2c/fsl-i2c.txt} | 0
+.../bindings}/marvell.txt | 0
+.../bindings/mmc/fsl-esdhc.txt} | 0
+.../bindings/mmc}/mmc-spi-slot.txt | 0
+.../bindings/mtd/fsl-upm-nand.txt} | 0
+.../bindings/mtd}/mtd-physmap.txt | 0
+.../bindings/net/can/mpc5xxx-mscan.txt} | 0
+.../bindings/net}/can/sja1000.txt | 0
+.../bindings/net/fsl-tsec-phy.txt} | 0
+.../bindings/net/mdio-gpio.txt} | 0
+.../bindings/net}/phy.txt | 0
+.../bindings/pci}/83xx-512x-pci.txt | 0
+.../bindings/powerpc}/4xx/cpm.txt | 0
+.../bindings/powerpc}/4xx/emac.txt | 0
+.../bindings/powerpc}/4xx/ndfc.txt | 0
+.../bindings/powerpc}/4xx/ppc440spe-adma.txt | 0
+.../bindings/powerpc}/4xx/reboot.txt | 0
+.../bindings/powerpc}/fsl/board.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/cpm.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/cpm/brg.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/cpm/i2c.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/cpm/pic.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/cpm/usb.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/gpio.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/network.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/qe.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/qe/firmware.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/qe/par_io.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/qe/pincfg.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/qe/ucc.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/qe/usb.txt | 0
+.../bindings/powerpc}/fsl/cpm_qe/serial.txt | 0
+.../bindings/powerpc}/fsl/diu.txt | 0
+.../bindings/powerpc}/fsl/dma.txt | 0
+.../bindings/powerpc/fsl}/ecm.txt | 0
+.../bindings/powerpc}/fsl/gtm.txt | 0
+.../bindings/powerpc}/fsl/guts.txt | 0
+.../bindings/powerpc}/fsl/lbc.txt | 0
+.../bindings/powerpc}/fsl/mcm.txt | 0
+.../bindings/powerpc}/fsl/mcu-mpc8349emitx.txt | 0
+.../bindings/powerpc}/fsl/mpc5121-psc.txt | 0
+.../bindings/powerpc}/fsl/mpc5200.txt | 0
+.../bindings/powerpc}/fsl/mpic.txt | 0
+.../bindings/powerpc}/fsl/msi-pic.txt | 0
+.../bindings/powerpc}/fsl/pmc.txt | 0
+.../bindings/powerpc}/fsl/sec.txt | 0
+.../bindings/powerpc}/fsl/ssi.txt | 0
+.../bindings/powerpc}/nintendo/gamecube.txt | 0
+.../bindings/powerpc}/nintendo/wii.txt | 0
+.../bindings/spi/fsl-spi.txt} | 0
+.../bindings/spi}/spi-bus.txt | 0
+.../bindings/usb/fsl-usb.txt} | 0
+.../bindings/usb}/usb-ehci.txt | 0
+.../bindings}/xilinx.txt | 0
+.../{powerpc => devicetree}/booting-without-of.txt | 193 +++++++++-----------
+MAINTAINERS | 11 +-
+drivers/spi/spi_sh_msiof.c | 6 +-
+63 files changed, 131 insertions(+), 112 deletions(-)
+rename Documentation/{powerpc/dts-bindings/fsl/sata.txt =>
+devicetree/bindings/ata/fsl-sata.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings}/eeprom.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl =>
+devicetree/bindings/gpio}/8xxx_gpio.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings}/gpio/gpio.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings}/gpio/led.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/i2c.txt =>
+devicetree/bindings/i2c/fsl-i2c.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings}/marvell.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/esdhc.txt =>
+devicetree/bindings/mmc/fsl-esdhc.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/mmc}/mmc-spi-slot.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/upm-nand.txt =>
+devicetree/bindings/mtd/fsl-upm-nand.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/mtd}/mtd-physmap.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/can.txt =>
+devicetree/bindings/net/can/mpc5xxx-mscan.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/net}/can/sja1000.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/tsec.txt =>
+devicetree/bindings/net/fsl-tsec-phy.txt} (100%)
+rename Documentation/{powerpc/dts-bindings/gpio/mdio.txt =>
+devicetree/bindings/net/mdio-gpio.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/net}/phy.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl =>
+devicetree/bindings/pci}/83xx-512x-pci.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/4xx/cpm.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/4xx/emac.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/4xx/ndfc.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/4xx/ppc440spe-adma.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/4xx/reboot.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/board.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/cpm.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/brg.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/i2c.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/pic.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/cpm/usb.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/gpio.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/network.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/qe.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/qe/firmware.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/qe/par_io.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/qe/pincfg.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/qe/ucc.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/qe/usb.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/cpm_qe/serial.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/diu.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/dma.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc/fsl}/ecm.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/gtm.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/guts.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/lbc.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/mcm.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/mcu-mpc8349emitx.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/mpc5121-psc.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/mpc5200.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/mpic.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/msi-pic.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/pmc.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/sec.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/fsl/ssi.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/nintendo/gamecube.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/powerpc}/nintendo/wii.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/spi.txt =>
+devicetree/bindings/spi/fsl-spi.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/spi}/spi-bus.txt (100%)
+rename Documentation/{powerpc/dts-bindings/fsl/usb.txt =>
+devicetree/bindings/usb/fsl-usb.txt} (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings/usb}/usb-ehci.txt (100%)
+rename Documentation/{powerpc/dts-bindings =>
+devicetree/bindings}/xilinx.txt (100%)
+rename Documentation/{powerpc => devicetree}/booting-without-of.txt (90%)
 
---=-P8slsxNG8AToGo0Bw+Uo--
+--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
