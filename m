@@ -1,25 +1,25 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D2CD5B7117
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AB3D9B711C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Feb 2011 10:05:06 +1100 (EST)
+	Tue, 15 Feb 2011 12:08:34 +1100 (EST)
+Date: Mon, 14 Feb 2011 17:04:16 -0800
+From: Greg KH <greg@kroah.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH V8 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
+	InterfaceLayer
+Message-ID: <20110215010416.GA16060@kroah.com>
+References: <4f99d54a42d4f13663c88b0b081f047b@mail.gmail.com>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8AC4D@saturn3.aculab.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-Date: Mon, 14 Feb 2011 15:05:00 -0800
-Message-ID: <DD7A9A95166BF4418C4C1EB2033B6EE2038FAADB@na3-mail.mgc.mentorg.com>
-In-Reply-To: <AANLkTin+ZSNHX2iv=XwWCgxy330UJwhkf1T=4BMXZ22s@mail.gmail.com>
-References: <4D55A7F7.5090700@mentor.com>
-	<AANLkTin+ZSNHX2iv=XwWCgxy330UJwhkf1T=4BMXZ22s@mail.gmail.com>
-From: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
-To: "Linus Walleij" <linus.walleij@linaro.org>
-Cc: "Inge, Meador" <meador_inge@mentor.com>, openmcapi-dev@googlegroups.com,
-	Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC4D@saturn3.aculab.com>
+Cc: Tirumala Marri <tmarri@apm.com>, linux-usb@vger.kernel.org,
+	Alexander Gordeev <lasaine@lvk.cs.msu.su>,
+	Mark Miesfeld <mmiesfeld@apm.com>, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/13/2011 01:24 PM, Linus Walleij wrote:
->> >      3. Userspace interfaces for accessing the mailboxes.  A
->> >         '/dev/mailbox1', '/dev/mailbox2', etc... mapping, for =
-example.
-> What kind of business does userspace have with directly using
-> mailboxes? Enlighten me so I get it... in our system these are
-> used by protocols, such as net/caif/* thru drivers/net/caif/*, and
-> we have similar kernelspace functionality for Phonet.
->
-> CAIF and Phonet on the other hand, have custom openings
-> down to the thing that exists on the other end of the mailbox.
-> Most of these systems tend to talk some funny protocol that
-> is often better handled by the kernel than by any userspace.
->
-> So is this for the situation when you have no intermediate
-> protocol between your userpace and the other CPU's
-> subsystem? Or are you thinking about handling that
-> protocol in userspace? That is generally not such a good idea
-> for efficiency reasons.
-OpenMCAPI (http://openmcapi.org) implements the MCAPI specification,=20
-which is a simple application-level communication API that uses shared=20
-memory. The API could be layered over any protocol, but was more or less =
+On Mon, Feb 14, 2011 at 08:53:21AM -0000, David Laight wrote:
+>  
+> > > Sorry, I don't understand that. I think u32 is always 32bit 
+> > > 4byte on all archs. Right?
+> > 
+> > Yes.
+> > 
+> > Use an unsigned long if you want to hold a pointer correctly on all
+> > arches.
+> 
+> Although that is true for many systems (and probably all ppc Linux)
+> it isn't necessarily true (eg 64 bit Microsoft Windows).
 
-designed for simple shared-memory systems, e.g. fixed topology, no=20
-retransmission, etc.
+Again, it is true for all Linux architectures.  We aren't caring about
+any other operating systems here, sorry.
 
-Currently, we implement almost all of this as a shared library, plus a=20
-very small kernel driver. The only requirements on the kernel are to=20
-allow userspace to map the shared memory area, and provide an IPI=20
-mechanism (and allow the process to sleep while waiting). Applications=20
-sync with each other using normal atomic memory operations.
+> C99 inttypes.h should define uintptr_t as an unsigned integer
+> type that is large enough to hold a (data) pointer.
+> I'm not sure if this is defined for the Linux kernel.
 
-We're now trying to optimize the transfer of scalars on platforms that=20
-provide mailboxes (beyond simple IPIs), which is why we're looking at=20
-defining a user-facing API to such hardware.
+uint* aren't to be used within the kernel as they make no sense.
 
-I'll add that we haven't done serious optimization yet, but the numbers=20
-we do have seem reasonable. What are the "efficiency" issues you're=20
-worried about?
+thanks,
 
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+greg k-h
