@@ -1,17 +1,21 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
-	by ozlabs.org (Postfix) with ESMTP id 725CEB710B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2011 11:25:50 +1100 (EST)
-Message-ID: <4D5B1985.90101@mlbassoc.com>
-Date: Tue, 15 Feb 2011 17:25:41 -0700
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <mitsutaka.amano@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 73F49B7118
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Feb 2011 15:28:29 +1100 (EST)
+Received: by bwz10 with SMTP id 10so1228554bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Feb 2011 20:28:23 -0800 (PST)
 MIME-Version: 1.0
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: FSL USB in 2.6.37
-References: <4D5ABC25.80104@mlbassoc.com> <20110215191856.67f8f0c4@wker>
-In-Reply-To: <20110215191856.67f8f0c4@wker>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Date: Wed, 16 Feb 2011 13:28:23 +0900
+Message-ID: <AANLkTimW1yZ+H=X+j=TYMM8-zZx5XaEPczek05KtKKxN@mail.gmail.com>
+Subject: Question about flash allocation
+From: Mitsutaka Amano <mitsutaka.amano@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/15/2011 11:18 AM, Anatolij Gustschin wrote:
-> On Tue, 15 Feb 2011 10:47:17 -0700
-> Gary Thomas<gary@mlbassoc.com>  wrote:
->
->> I'm trying to get my platform support working in mainline
->> 2.6.37.  I have a MPC8379 which is working well in 2.6.32.
->>
->> When I just move my platform to the new kernel, everything
->> works except for USB host mode.  Nothing special about my
->> platform - it's pretty much like the FSL eval boards (as
->> far as this part is concerned).  I can see it start up,
->> claim to power up the internal hub, but I never see the
->> state change interrupt from the hub.
->>
->> Are there any known gotchas here?  Any ideas?
->
-> Does this patch [1] help?
->
-> [1] http://patchwork.ozlabs.org/patch/78260/
+Hi,
 
-Indeed, it fixes my problem :-)
+Why does CFI(or other flash memory) have to alloc amount of flash
+memory size to the vmalloc area(such as PHYSMAP or PHYSMAP_OF)?
+I wondered other devices seems to not allocating(e.g, most NAND flash,
+flash on ARM, MIPS and so on). I don't know difference between my
+board and other. Doesn't other devices need to allocate to vmalloc?
 
-Thanks
-
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Thanks,
+Mitsutaka
