@@ -1,19 +1,17 @@
-Return-Path: <meador_inge@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CDF1EB7088
+Return-Path: <jdboyer@media5corp.com>
+Received: from MAIL1.mediatrix.com (mail1.mediatrix.com [207.134.65.15])
+	by ozlabs.org (Postfix) with ESMTP id 95DE3B6EF1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Feb 2011 05:00:34 +1100 (EST)
-Message-ID: <4D5C10B9.9010702@mentor.com>
-Date: Wed, 16 Feb 2011 12:00:25 -0600
-From: Meador Inge <meador_inge@mentor.com>
+	Thu, 17 Feb 2011 02:11:27 +1100 (EST)
+From: Jean-Denis Boyer <jdboyer@media5corp.com>
+To: 'Anton Vorontsov' <avorontsov@ru.mvista.com>,
+	"'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 16 Feb 2011 09:59:11 -0500
+Subject: Bug in arch/powerpc/sysdev/fsl_gtm.c
+Message-ID: <265ED5BA1B926340AF277A54E6A8341441FD6401F2@exchange.media5corp.com>
+Content-Type: multipart/mixed;
+	boundary="_002_265ED5BA1B926340AF277A54E6A8341441FD6401F2exchangemedia_"
 MIME-Version: 1.0
-To: galak@kernel.crashing.org
-Subject: Using CONFIG_PHYSICAL_START
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+--_002_265ED5BA1B926340AF277A54E6A8341441FD6401F2exchangemedia_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Quick question about the support for booting at a non-zero base address 
-(as committed here: 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=37dd2badcfcec35f5e21a0926968d77a404f03c3). 
-  Is booting from a non-zero address as simple as changing 
-"CONFIG_PHYSICAL_START" (assuming it meets the alignment constraints, of 
-course)?
+Hi.
+There is a bug in the function gtm_set_ref_timer16.
+When called, it correctly sets the requested timer,
+but the other timer that shares the register GTCFR is reset.
 
-For example, I want to boot from a non-zero address on the P1022DS.  I 
-should just be able to change "CONFIG_PHYSICAL_START" to, say, 
-0x08000000, and it should work, right?  Any other bits that need to be 
-done (i.e. U-Boot or device tree magic)?
+The parameter 'clear' passed to macro clrsetbits_8 should not be
+a bitwise complement, since the macro already complements it.
 
--- 
-Meador Inge     | meador_inge AT mentor.com
-Mentor Embedded | http://www.mentor.com/embedded-software
+Here is a patch that should fix this issue.
+
+--- linux-2.6.35.11/arch/powerpc/sysdev/fsl_gtm.c
++++ linux/arch/powerpc/sysdev/fsl_gtm.c
+@@ -203,13 +203,10 @@
+ 	spin_lock_irqsave(&gtm->lock, flags);
+=20
+ 	/*
+-	 * Properly reset timers: stop, reset, set up prescalers, reference
++	 * Properly set timers: stop, set up prescalers, reference
+ 	 * value and clear event register.
+ 	 */
+-	clrsetbits_8(tmr->gtcfr, ~(GTCFR_STP(num) | GTCFR_RST(num)),
+-				 GTCFR_STP(num) | GTCFR_RST(num));
+-
+-	setbits8(tmr->gtcfr, GTCFR_STP(num));
++	setbits8(tmr->gtcfr, GTCFR_STP(num) | GTCFR_RST(num));
+=20
+ 	if (tmr->gtpsr)
+ 		out_be16(tmr->gtpsr, psr);
+
+Regards,
+
+Jean-Denis Boyer, Eng.
+Media5 Corporation - Mediatrix, M5T, Media5Boss
+4229 Garlock Street, Sherbrooke (Qu=E9bec), J1L 2C8, CANADA
+(819)829-8749 x5241
+
+
+--_002_265ED5BA1B926340AF277A54E6A8341441FD6401F2exchangemedia_
+Content-Type: application/octet-stream; name="fsl_gtm.patch"
+Content-Description: fsl_gtm.patch
+Content-Disposition: attachment; filename="fsl_gtm.patch"; size=585;
+	creation-date="Wed, 16 Feb 2011 09:02:28 GMT";
+	modification-date="Tue, 15 Feb 2011 22:14:39 GMT"
+Content-Transfer-Encoding: base64
+
+LS0tIGxpbnV4LTIuNi4zNS4xMS9hcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9ndG0uYworKysgbGlu
+dXgvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfZ3RtLmMKQEAgLTIwMywxMyArMjAzLDEwIEBACiAJ
+c3Bpbl9sb2NrX2lycXNhdmUoJmd0bS0+bG9jaywgZmxhZ3MpOwogCiAJLyoKLQkgKiBQcm9wZXJs
+eSByZXNldCB0aW1lcnM6IHN0b3AsIHJlc2V0LCBzZXQgdXAgcHJlc2NhbGVycywgcmVmZXJlbmNl
+CisJICogUHJvcGVybHkgc2V0IHRpbWVyczogc3RvcCwgc2V0IHVwIHByZXNjYWxlcnMsIHJlZmVy
+ZW5jZQogCSAqIHZhbHVlIGFuZCBjbGVhciBldmVudCByZWdpc3Rlci4KIAkgKi8KLQljbHJzZXRi
+aXRzXzgodG1yLT5ndGNmciwgfihHVENGUl9TVFAobnVtKSB8IEdUQ0ZSX1JTVChudW0pKSwKLQkJ
+CQkgR1RDRlJfU1RQKG51bSkgfCBHVENGUl9SU1QobnVtKSk7Ci0KLQlzZXRiaXRzOCh0bXItPmd0
+Y2ZyLCBHVENGUl9TVFAobnVtKSk7CisJc2V0Yml0czgodG1yLT5ndGNmciwgR1RDRlJfU1RQKG51
+bSkgfCBHVENGUl9SU1QobnVtKSk7CiAKIAlpZiAodG1yLT5ndHBzcikKIAkJb3V0X2JlMTYodG1y
+LT5ndHBzciwgcHNyKTsK
+
+--_002_265ED5BA1B926340AF277A54E6A8341441FD6401F2exchangemedia_--
