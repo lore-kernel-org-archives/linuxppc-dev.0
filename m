@@ -1,21 +1,25 @@
-Return-Path: <meador_inge@mentor.com>
+Return-Path: <Hollis_Blanchard@mentor.com>
 Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "relay1.mentorg.com",
 	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id A99ECB70E2
+	by ozlabs.org (Postfix) with ESMTPS id 02A4DB7043
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Feb 2011 07:02:59 +1100 (EST)
-Message-ID: <4D5C2D6C.8000906@mentor.com>
-Date: Wed, 16 Feb 2011 14:02:52 -0600
-From: Meador Inge <meador_inge@mentor.com>
+	Thu, 17 Feb 2011 07:22:46 +1100 (EST)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Using CONFIG_PHYSICAL_START
-References: <4D5C10B9.9010702@mentor.com> <20110216132403.3466a83e@schlenkerla>
-In-Reply-To: <20110216132403.3466a83e@schlenkerla>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: [openmcapi-dev] Re: [RFC] Inter-processor Mailboxes Drivers
+Date: Wed, 16 Feb 2011 12:22:41 -0800
+Message-ID: <DD7A9A95166BF4418C4C1EB2033B6EE2038FAB15@na3-mail.mgc.mentorg.com>
+In-Reply-To: <20110216.082228.814509512977216497.Hiroshi.DOYU@nokia.com>
+References: <20110214100104.GC4371@pulham.picochip.com>	<4D5AF712.3080509@mentor.com>	<DD7A9A95166BF4418C4C1EB2033B6EE2038FAAF0@na3-mail.mgc.mentorg.com>
+	<20110216.082228.814509512977216497.Hiroshi.DOYU@nokia.com>
+From: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
+To: "Hiroshi DOYU" <Hiroshi.DOYU@nokia.com>
+Cc: "Inge, Meador" <meador_inge@mentor.com>, jamie@jamieiles.com,
+	linuxppc-dev@lists.ozlabs.org, openmcapi-dev@googlegroups.com,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/16/2011 01:24 PM, Scott Wood wrote:
-> On Wed, 16 Feb 2011 12:00:25 -0600
-> Meador Inge<meador_inge@mentor.com>  wrote:
+On 02/15/2011 10:22 PM, Hiroshi DOYU wrote:
+> From: "ext Blanchard, Hollis"<Hollis_Blanchard@mentor.com>
+> Subject: Re: [RFC] Inter-processor Mailboxes Drivers
+> Date: Tue, 15 Feb 2011 15:38:25 -0800
 >
->> Hi Kumar,
->>
->> Quick question about the support for booting at a non-zero base address
->> (as committed here:
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=37dd2badcfcec35f5e21a0926968d77a404f03c3).
->>    Is booting from a non-zero address as simple as changing
->> "CONFIG_PHYSICAL_START" (assuming it meets the alignment constraints, of
->> course)?
->
-> Another option is to turn on CONFIG_RELOCATABLE.  Note that you'll still
-> have the same alignment constraints; it doesn't generate a truly relocatable
-> binary (the effective addresses are fixed).  But you don't have to specify
-> the physical address at compile-time.  This allows you to use the same
-> kernel image for multiple AMP partitions.
->
->> For example, I want to boot from a non-zero address on the P1022DS.  I
->> should just be able to change "CONFIG_PHYSICAL_START" to, say,
->> 0x08000000, and it should work, right?  Any other bits that need to be
->> done (i.e. U-Boot or device tree magic)?
->
-> You'll want the memory node adjusted for your restricted address range
-> (I'm assuming that this is why you want to start at non-zero, and that
-> you're not trying to have the kernel be located in the middle of its
-> partition).
->
-> There are some special u-boot variables (bootm_low/bootm_size) that govern
-> placement of the kernel, fdt, etc.
+>> On 02/15/2011 01:58 PM, Meador Inge wrote:
+>>> On 02/14/2011 04:01 AM, Jamie Iles wrote:
+>>>> On Fri, Feb 11, 2011 at 03:19:51PM -0600, Meador Inge wrote:
+>>>>>       1. Hardware specific bits somewhere under '.../arch/*'.  =
+Drivers
+>>>>>          for the MPIC message registers on Power and OMAP4 =
+mailboxes,
+>>>>> for
+>>>>>          example.
+>>>>>       2. A higher level driver under '.../drivers/mailbox/*'.  =
+That the
+>>>>>          pieces in (1) would register with.  This piece would =
+expose the
+>>>>>          main kernel API.
+>>>>>       3. Userspace interfaces for accessing the mailboxes.  A
+>>>>>          '/dev/mailbox1', '/dev/mailbox2', etc... mapping, for =
+example.
+>>>> How about using virtio for all of this and having the mailbox as a
+>>>> notification/message passing driver for the virtio backend?  There =
+are
+>>>> already virtio console and network drivers that could be useful for =
+the
+>>>> userspace part of it.  drivers/virtio/virtio_ring.c might be a good
+>>>> starting point if you thought there was some mileage in this =
+approach.
+>>> To be honest, I am not that familiar with 'virtio', but I will take =
+a
+>>> look.  Thanks for the pointer.  Maybe Hollis can speak to this idea =
+more.
+>> My opinion is that virtio is (over?) complicated.
+> Considering the case of omap mailbox H/W, it is just a simple one way
+> 4 slot x 32bit H/W FIFO, I also may think that this may be a bit too
+> much...
+I think the proposal is to implement a virtio link using the OMAP=20
+mailboxes as the interrupt mechanism, and shared memory to carry the=20
+data and descriptor rings.
 
-
-Thanks Scott.  I should have looked in the u-boot docs.  There are very 
-clear instructions on how to setup an AMP environment in 
-'.../doc/README.mpc8572ds' 
-(http://git.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=blob;f=doc/README.mpc8572ds;h=06dab596bea52ab8d8c2ba89d86f793cc4881ccb;hb=HEAD).
-
-
-> -Scott
->
->
-
-
--- 
-Meador Inge     | meador_inge AT mentor.com
-Mentor Embedded | http://www.mentor.com/embedded-software
+Hollis Blanchard
+Mentor Graphics, Embedded Systems Division
