@@ -1,24 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35DB9B7117
+Return-Path: <meador_inge@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "relay1.mentorg.com",
+	Issuer "Entrust Certification Authority - L1B" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CDF1EB7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Feb 2011 22:26:37 +1100 (EST)
-Received: by wyi11 with SMTP id 11so1188603wyi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Feb 2011 03:26:32 -0800 (PST)
+	Thu, 17 Feb 2011 05:00:34 +1100 (EST)
+Message-ID: <4D5C10B9.9010702@mentor.com>
+Date: Wed, 16 Feb 2011 12:00:25 -0600
+From: Meador Inge <meador_inge@mentor.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTimW1yZ+H=X+j=TYMM8-zZx5XaEPczek05KtKKxN@mail.gmail.com>
-References: <AANLkTimW1yZ+H=X+j=TYMM8-zZx5XaEPczek05KtKKxN@mail.gmail.com>
-Date: Wed, 16 Feb 2011 06:26:30 -0500
-Message-ID: <AANLkTinD1S_tdjbjsLi4oL=K9HH0cvdBf0PGpUVWLsKF@mail.gmail.com>
-Subject: Re: Question about flash allocation
-From: Josh Boyer <jwboyer@gmail.com>
-To: Mitsutaka Amano <mitsutaka.amano@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+To: galak@kernel.crashing.org
+Subject: Using CONFIG_PHYSICAL_START
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 15, 2011 at 11:28 PM, Mitsutaka Amano
-<mitsutaka.amano@gmail.com> wrote:
-> Hi,
->
-> Why does CFI(or other flash memory) have to alloc amount of flash
-> memory size to the vmalloc area(such as PHYSMAP or PHYSMAP_OF)?
-> I wondered other devices seems to not allocating(e.g, most NAND flash,
-> flash on ARM, MIPS and so on). I don't know difference between my
-> board and other. Doesn't other devices need to allocate to vmalloc?
+Hi Kumar,
 
-You asked this on the MTD mailing list already:
+Quick question about the support for booting at a non-zero base address 
+(as committed here: 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=37dd2badcfcec35f5e21a0926968d77a404f03c3). 
+  Is booting from a non-zero address as simple as changing 
+"CONFIG_PHYSICAL_START" (assuming it meets the alignment constraints, of 
+course)?
 
-http://lists.infradead.org/pipermail/linux-mtd/2011-January/033787.html
+For example, I want to boot from a non-zero address on the P1022DS.  I 
+should just be able to change "CONFIG_PHYSICAL_START" to, say, 
+0x08000000, and it should work, right?  Any other bits that need to be 
+done (i.e. U-Boot or device tree magic)?
 
-The answers aren't going to change based on which list you ask.
-
-As for the last question, the memory space for modules are in vmalloc
-space, and any HW resources they ioremap are as well.  However for
-true memory allocations, most device drivers use kmalloc.  Some use
-vmalloc for large buffers that don't need to be physically contiguous
-but there aren't that many.
-
-josh
+-- 
+Meador Inge     | meador_inge AT mentor.com
+Mentor Embedded | http://www.mentor.com/embedded-software
