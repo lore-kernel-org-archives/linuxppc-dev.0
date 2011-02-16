@@ -1,26 +1,17 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D69C4B710D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Feb 2011 10:38:31 +1100 (EST)
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [64.234.241.98])
+	by ozlabs.org (Postfix) with ESMTP id 725CEB710B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2011 11:25:50 +1100 (EST)
+Message-ID: <4D5B1985.90101@mlbassoc.com>
+Date: Tue, 15 Feb 2011 17:25:41 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: [RFC] Inter-processor Mailboxes Drivers
-Date: Tue, 15 Feb 2011 15:38:25 -0800
-Message-ID: <DD7A9A95166BF4418C4C1EB2033B6EE2038FAAF0@na3-mail.mgc.mentorg.com>
-In-Reply-To: <4D5AF712.3080509@mentor.com>
-References: <4D55A7F7.5090700@mentor.com>
-	<20110214100104.GC4371@pulham.picochip.com>
-	<4D5AF712.3080509@mentor.com>
-From: "Blanchard, Hollis" <Hollis_Blanchard@mentor.com>
-To: "Inge, Meador" <meador_inge@mentor.com>
-Cc: openmcapi-dev@googlegroups.com, Jamie Iles <jamie@jamieiles.com>,
-	Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: FSL USB in 2.6.37
+References: <4D5ABC25.80104@mlbassoc.com> <20110215191856.67f8f0c4@wker>
+In-Reply-To: <20110215191856.67f8f0c4@wker>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/15/2011 01:58 PM, Meador Inge wrote:
-> On 02/14/2011 04:01 AM, Jamie Iles wrote:
->> On Fri, Feb 11, 2011 at 03:19:51PM -0600, Meador Inge wrote:
->>>      1. Hardware specific bits somewhere under '.../arch/*'.  =
-Drivers
->>>         for the MPIC message registers on Power and OMAP4 mailboxes, =
-
->>> for
->>>         example.
->>>      2. A higher level driver under '.../drivers/mailbox/*'.  That =
-the
->>>         pieces in (1) would register with.  This piece would expose =
-the
->>>         main kernel API.
->>>      3. Userspace interfaces for accessing the mailboxes.  A
->>>         '/dev/mailbox1', '/dev/mailbox2', etc... mapping, for =
-example.
->>
->> How about using virtio for all of this and having the mailbox as a
->> notification/message passing driver for the virtio backend?  There =
-are
->> already virtio console and network drivers that could be useful for =
-the
->> userspace part of it.  drivers/virtio/virtio_ring.c might be a good
->> starting point if you thought there was some mileage in this =
-approach.
+On 02/15/2011 11:18 AM, Anatolij Gustschin wrote:
+> On Tue, 15 Feb 2011 10:47:17 -0700
+> Gary Thomas<gary@mlbassoc.com>  wrote:
 >
-> To be honest, I am not that familiar with 'virtio', but I will take a=20
-> look.  Thanks for the pointer.  Maybe Hollis can speak to this idea =
-more.
-My opinion is that virtio is (over?) complicated.
+>> I'm trying to get my platform support working in mainline
+>> 2.6.37.  I have a MPC8379 which is working well in 2.6.32.
+>>
+>> When I just move my platform to the new kernel, everything
+>> works except for USB host mode.  Nothing special about my
+>> platform - it's pretty much like the FSL eval boards (as
+>> far as this part is concerned).  I can see it start up,
+>> claim to power up the internal hub, but I never see the
+>> state change interrupt from the hub.
+>>
+>> Are there any known gotchas here?  Any ideas?
+>
+> Does this patch [1] help?
+>
+> [1] http://patchwork.ozlabs.org/patch/78260/
 
-I've looked into it in the past, and I'm definitely open to using it if=20
-somebody can demonstrate how easy it is, but adopting it wouldn't have=20
-helped OpenMCAPI with our use cases, and would have incurred extra pain, =
+Indeed, it fixes my problem :-)
 
-so we didn't.
+Thanks
 
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
