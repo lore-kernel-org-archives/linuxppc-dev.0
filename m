@@ -1,22 +1,16 @@
-Return-Path: <monstr@monstr.eu>
-Message-ID: <4D5CD30E.30103@monstr.eu>
-Date: Thu, 17 Feb 2011 08:49:34 +0100
-From: Michal Simek <monstr@monstr.eu>
+Return-Path: <linuxuser330250@gmx.net>
+Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
+	by ozlabs.org (Postfix) with SMTP id 56EE5B70F4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 18 Feb 2011 07:17:28 +1100 (EST)
+From: "Linux User #330250" <linuxuser330250@gmx.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Add support for PowerMac3,5 in snd-aoa ALSA sound module
+Date: Thu, 17 Feb 2011 21:17:24 +0100
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH OF 07/14] of: move of_irq_map_pci() into generic code
-References: <1295843342-1122-1-git-send-email-bigeasy@linutronix.de>
-	<1295843342-1122-8-git-send-email-bigeasy@linutronix.de>
-	<AANLkTimE=mB_yWsOeD3zw+b4cHFx591h-605tK4yWAJr@mail.gmail.com>
-In-Reply-To: <AANLkTimE=mB_yWsOeD3zw+b4cHFx591h-605tK4yWAJr@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, sodaville@linutronix.de,
-	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-	linuxppc-dev@lists.ozlabs.org,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Reply-To: monstr@monstr.eu
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_VJYXNm1ZlkucSE8"
+Message-Id: <201102172117.25424.linuxuser330250@gmx.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,528 +20,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Sun, Jan 23, 2011 at 9:28 PM, Sebastian Andrzej Siewior
-> <bigeasy@linutronix.de> wrote:
->> From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
->>
->> There is a tiny difference between PPC32 and PPC64. Microblaze uses the
->> PPC32 variant.
->>
->> Cc: devicetree-discuss@lists.ozlabs.org
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-> 
-> I've got this one in my devicetree/next branch which is pulled into
-> linux-next.  I've not received an ack from Ben yet.  Michal, is this
-> okay by you?
+--Boundary-00=_VJYXNm1ZlkucSE8
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-yep. No problem. I don't have pci hw for testing but compilation is fine.
+Hello!
 
-If you like:
-Acked-by: Michal Simek <monstr@monstr.eu>
+About two years ago Johannes Berg wrote support for the PowerMac3,6 aka G4 =
+MDD=20
+which I was using as a desktop computer then. Johannes wrote all the code, =
+and=20
+I tested it.
+
+I now have a PowerMac3,5 =E2=80=93 yes, an earlier model.
+
+This patch makes the snd-aoa ALSA sound module support the TAS3001C codec o=
+f=20
+my Apple Power Mac G4 "Quicksilver" (2001 model). I suppose it will also wo=
+rk=20
+for the "Quicksilver 2002", since both identify as PowerMac3,5.
+
+The patch also changes a few comments to name the exact Power Mac model mor=
+e=20
+accurately in sound/aoa/fabrics/layout.c.
+
+This is my first contribution to the linux kernel ever, so I hope you will =
+be=20
+kind to me. I am not a programmer, but adding already supported devices was=
+ a=20
+task even I could accomplish.
 
 Thanks,
-Michal
-
-> 
-> http://git.secretlab.ca/?p=linux-2.6.git;a=commit;h=04bea68b2f0eeebb089ecc67b618795925268b4a
-> 
-> g.
-> 
->> ---
->>  arch/microblaze/include/asm/pci-bridge.h |   12 ++++
->>  arch/microblaze/include/asm/prom.h       |   15 -----
->>  arch/microblaze/kernel/prom_parse.c      |   77 ---------------------------
->>  arch/microblaze/pci/pci-common.c         |    1 +
->>  arch/powerpc/include/asm/pci-bridge.h    |   10 ++++
->>  arch/powerpc/include/asm/prom.h          |   15 -----
->>  arch/powerpc/kernel/pci-common.c         |    1 +
->>  arch/powerpc/kernel/prom_parse.c         |   84 ------------------------------
->>  drivers/of/Kconfig                       |    6 ++
->>  drivers/of/Makefile                      |    1 +
->>  drivers/of/of_pci.c                      |   80 ++++++++++++++++++++++++++++
->>  include/linux/of_pci.h                   |   20 +++++++
->>  12 files changed, 131 insertions(+), 191 deletions(-)
->>  create mode 100644 drivers/of/of_pci.c
->>  create mode 100644 include/linux/of_pci.h
->>
->> diff --git a/arch/microblaze/include/asm/pci-bridge.h b/arch/microblaze/include/asm/pci-bridge.h
->> index 0c68764..c2a40a4 100644
->> --- a/arch/microblaze/include/asm/pci-bridge.h
->> +++ b/arch/microblaze/include/asm/pci-bridge.h
->> @@ -104,11 +104,22 @@ struct pci_controller {
->>        int global_number;      /* PCI domain number */
->>  };
->>
->> +#ifdef CONFIG_PCI
->>  static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
->>  {
->>        return bus->sysdata;
->>  }
->>
->> +static inline struct device_node *pci_bus_to_OF_node(struct pci_bus *bus)
->> +{
->> +       struct pci_controller *host;
->> +
->> +       if (bus->self)
->> +               return pci_device_to_OF_node(bus->self);
->> +       host = pci_bus_to_host(bus);
->> +       return host ? host->dn : NULL;
->> +}
->> +
->>  static inline int isa_vaddr_is_ioport(void __iomem *address)
->>  {
->>        /* No specific ISA handling on ppc32 at this stage, it
->> @@ -116,6 +127,7 @@ static inline int isa_vaddr_is_ioport(void __iomem *address)
->>         */
->>        return 0;
->>  }
->> +#endif
->>
->>  /* These are used for config access before all the PCI probing
->>    has been done. */
->> diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
->> index 2e72af0..d0890d3 100644
->> --- a/arch/microblaze/include/asm/prom.h
->> +++ b/arch/microblaze/include/asm/prom.h
->> @@ -64,21 +64,6 @@ extern void kdump_move_device_tree(void);
->>  /* CPU OF node matching */
->>  struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
->>
->> -/**
->> - * of_irq_map_pci - Resolve the interrupt for a PCI device
->> - * @pdev:      the device whose interrupt is to be resolved
->> - * @out_irq:   structure of_irq filled by this function
->> - *
->> - * This function resolves the PCI interrupt for a given PCI device. If a
->> - * device-node exists for a given pci_dev, it will use normal OF tree
->> - * walking. If not, it will implement standard swizzling and walk up the
->> - * PCI tree until an device-node is found, at which point it will finish
->> - * resolving using the OF tree walking.
->> - */
->> -struct pci_dev;
->> -struct of_irq;
->> -extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
->> -
->>  #endif /* __ASSEMBLY__ */
->>  #endif /* __KERNEL__ */
->>
->> diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
->> index 9ae24f4..47187cc 100644
->> --- a/arch/microblaze/kernel/prom_parse.c
->> +++ b/arch/microblaze/kernel/prom_parse.c
->> @@ -2,88 +2,11 @@
->>
->>  #include <linux/kernel.h>
->>  #include <linux/string.h>
->> -#include <linux/pci_regs.h>
->>  #include <linux/module.h>
->>  #include <linux/ioport.h>
->>  #include <linux/etherdevice.h>
->>  #include <linux/of_address.h>
->>  #include <asm/prom.h>
->> -#include <asm/pci-bridge.h>
->> -
->> -#ifdef CONFIG_PCI
->> -int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
->> -{
->> -       struct device_node *dn, *ppnode;
->> -       struct pci_dev *ppdev;
->> -       u32 lspec;
->> -       u32 laddr[3];
->> -       u8 pin;
->> -       int rc;
->> -
->> -       /* Check if we have a device node, if yes, fallback to standard OF
->> -        * parsing
->> -        */
->> -       dn = pci_device_to_OF_node(pdev);
->> -       if (dn)
->> -               return of_irq_map_one(dn, 0, out_irq);
->> -
->> -       /* Ok, we don't, time to have fun. Let's start by building up an
->> -        * interrupt spec.  we assume #interrupt-cells is 1, which is standard
->> -        * for PCI. If you do different, then don't use that routine.
->> -        */
->> -       rc = pci_read_config_byte(pdev, PCI_INTERRUPT_PIN, &pin);
->> -       if (rc != 0)
->> -               return rc;
->> -       /* No pin, exit */
->> -       if (pin == 0)
->> -               return -ENODEV;
->> -
->> -       /* Now we walk up the PCI tree */
->> -       lspec = pin;
->> -       for (;;) {
->> -               /* Get the pci_dev of our parent */
->> -               ppdev = pdev->bus->self;
->> -
->> -               /* Ouch, it's a host bridge... */
->> -               if (ppdev == NULL) {
->> -                       struct pci_controller *host;
->> -                       host = pci_bus_to_host(pdev->bus);
->> -                       ppnode = host ? host->dn : NULL;
->> -                       /* No node for host bridge ? give up */
->> -                       if (ppnode == NULL)
->> -                               return -EINVAL;
->> -               } else
->> -                       /* We found a P2P bridge, check if it has a node */
->> -                       ppnode = pci_device_to_OF_node(ppdev);
->> -
->> -               /* Ok, we have found a parent with a device-node, hand over to
->> -                * the OF parsing code.
->> -                * We build a unit address from the linux device to be used for
->> -                * resolution. Note that we use the linux bus number which may
->> -                * not match your firmware bus numbering.
->> -                * Fortunately, in most cases, interrupt-map-mask doesn't
->> -                * include the bus number as part of the matching.
->> -                * You should still be careful about that though if you intend
->> -                * to rely on this function (you ship  a firmware that doesn't
->> -                * create device nodes for all PCI devices).
->> -                */
->> -               if (ppnode)
->> -                       break;
->> -
->> -               /* We can only get here if we hit a P2P bridge with no node,
->> -                * let's do standard swizzling and try again
->> -                */
->> -               lspec = pci_swizzle_interrupt_pin(pdev, lspec);
->> -               pdev = ppdev;
->> -       }
->> -
->> -       laddr[0] = (pdev->bus->number << 16)
->> -               | (pdev->devfn << 8);
->> -       laddr[1]  = laddr[2] = 0;
->> -       return of_irq_map_raw(ppnode, &lspec, 1, laddr, out_irq);
->> -}
->> -EXPORT_SYMBOL_GPL(of_irq_map_pci);
->> -#endif /* CONFIG_PCI */
->>
->>  void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
->>                unsigned long *busno, unsigned long *phys, unsigned long *size)
->> diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
->> index e363615..1e01a12 100644
->> --- a/arch/microblaze/pci/pci-common.c
->> +++ b/arch/microblaze/pci/pci-common.c
->> @@ -29,6 +29,7 @@
->>  #include <linux/slab.h>
->>  #include <linux/of.h>
->>  #include <linux/of_address.h>
->> +#include <linux/of_pci.h>
->>
->>  #include <asm/processor.h>
->>  #include <asm/io.h>
->> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->> index 51e9e6f..edeb80f 100644
->> --- a/arch/powerpc/include/asm/pci-bridge.h
->> +++ b/arch/powerpc/include/asm/pci-bridge.h
->> @@ -171,6 +171,16 @@ static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
->>        return bus->sysdata;
->>  }
->>
->> +static inline struct device_node *pci_bus_to_OF_node(struct pci_bus *bus)
->> +{
->> +       struct pci_controller *host;
->> +
->> +       if (bus->self)
->> +               return pci_device_to_OF_node(bus->self);
->> +       host = pci_bus_to_host(bus);
->> +       return host ? host->dn : NULL;
->> +}
->> +
->>  static inline int isa_vaddr_is_ioport(void __iomem *address)
->>  {
->>        /* No specific ISA handling on ppc32 at this stage, it
->> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
->> index d727575..c189aa5 100644
->> --- a/arch/powerpc/include/asm/prom.h
->> +++ b/arch/powerpc/include/asm/prom.h
->> @@ -70,21 +70,6 @@ static inline int of_node_to_nid(struct device_node *device) { return 0; }
->>  #endif
->>  #define of_node_to_nid of_node_to_nid
->>
->> -/**
->> - * of_irq_map_pci - Resolve the interrupt for a PCI device
->> - * @pdev:      the device whose interrupt is to be resolved
->> - * @out_irq:   structure of_irq filled by this function
->> - *
->> - * This function resolves the PCI interrupt for a given PCI device. If a
->> - * device-node exists for a given pci_dev, it will use normal OF tree
->> - * walking. If not, it will implement standard swizzling and walk up the
->> - * PCI tree until an device-node is found, at which point it will finish
->> - * resolving using the OF tree walking.
->> - */
->> -struct pci_dev;
->> -struct of_irq;
->> -extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
->> -
->>  extern void of_instantiate_rtc(void);
->>
->>  /* These includes are put at the bottom because they may contain things
->> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->> index 10a44e6..eb341be 100644
->> --- a/arch/powerpc/kernel/pci-common.c
->> +++ b/arch/powerpc/kernel/pci-common.c
->> @@ -22,6 +22,7 @@
->>  #include <linux/init.h>
->>  #include <linux/bootmem.h>
->>  #include <linux/of_address.h>
->> +#include <linux/of_pci.h>
->>  #include <linux/mm.h>
->>  #include <linux/list.h>
->>  #include <linux/syscalls.h>
->> diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
->> index c2b7a07..47187cc 100644
->> --- a/arch/powerpc/kernel/prom_parse.c
->> +++ b/arch/powerpc/kernel/prom_parse.c
->> @@ -2,95 +2,11 @@
->>
->>  #include <linux/kernel.h>
->>  #include <linux/string.h>
->> -#include <linux/pci_regs.h>
->>  #include <linux/module.h>
->>  #include <linux/ioport.h>
->>  #include <linux/etherdevice.h>
->>  #include <linux/of_address.h>
->>  #include <asm/prom.h>
->> -#include <asm/pci-bridge.h>
->> -
->> -#ifdef CONFIG_PCI
->> -int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
->> -{
->> -       struct device_node *dn, *ppnode;
->> -       struct pci_dev *ppdev;
->> -       u32 lspec;
->> -       u32 laddr[3];
->> -       u8 pin;
->> -       int rc;
->> -
->> -       /* Check if we have a device node, if yes, fallback to standard OF
->> -        * parsing
->> -        */
->> -       dn = pci_device_to_OF_node(pdev);
->> -       if (dn) {
->> -               rc = of_irq_map_one(dn, 0, out_irq);
->> -               if (!rc)
->> -                       return rc;
->> -       }
->> -
->> -       /* Ok, we don't, time to have fun. Let's start by building up an
->> -        * interrupt spec.  we assume #interrupt-cells is 1, which is standard
->> -        * for PCI. If you do different, then don't use that routine.
->> -        */
->> -       rc = pci_read_config_byte(pdev, PCI_INTERRUPT_PIN, &pin);
->> -       if (rc != 0)
->> -               return rc;
->> -       /* No pin, exit */
->> -       if (pin == 0)
->> -               return -ENODEV;
->> -
->> -       /* Now we walk up the PCI tree */
->> -       lspec = pin;
->> -       for (;;) {
->> -               /* Get the pci_dev of our parent */
->> -               ppdev = pdev->bus->self;
->> -
->> -               /* Ouch, it's a host bridge... */
->> -               if (ppdev == NULL) {
->> -#ifdef CONFIG_PPC64
->> -                       ppnode = pci_bus_to_OF_node(pdev->bus);
->> -#else
->> -                       struct pci_controller *host;
->> -                       host = pci_bus_to_host(pdev->bus);
->> -                       ppnode = host ? host->dn : NULL;
->> -#endif
->> -                       /* No node for host bridge ? give up */
->> -                       if (ppnode == NULL)
->> -                               return -EINVAL;
->> -               } else
->> -                       /* We found a P2P bridge, check if it has a node */
->> -                       ppnode = pci_device_to_OF_node(ppdev);
->> -
->> -               /* Ok, we have found a parent with a device-node, hand over to
->> -                * the OF parsing code.
->> -                * We build a unit address from the linux device to be used for
->> -                * resolution. Note that we use the linux bus number which may
->> -                * not match your firmware bus numbering.
->> -                * Fortunately, in most cases, interrupt-map-mask doesn't include
->> -                * the bus number as part of the matching.
->> -                * You should still be careful about that though if you intend
->> -                * to rely on this function (you ship  a firmware that doesn't
->> -                * create device nodes for all PCI devices).
->> -                */
->> -               if (ppnode)
->> -                       break;
->> -
->> -               /* We can only get here if we hit a P2P bridge with no node,
->> -                * let's do standard swizzling and try again
->> -                */
->> -               lspec = pci_swizzle_interrupt_pin(pdev, lspec);
->> -               pdev = ppdev;
->> -       }
->> -
->> -       laddr[0] = (pdev->bus->number << 16)
->> -               | (pdev->devfn << 8);
->> -       laddr[1]  = laddr[2] = 0;
->> -       return of_irq_map_raw(ppnode, &lspec, 1, laddr, out_irq);
->> -}
->> -EXPORT_SYMBOL_GPL(of_irq_map_pci);
->> -#endif /* CONFIG_PCI */
->>
->>  void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
->>                unsigned long *busno, unsigned long *phys, unsigned long *size)
->> diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
->> index 3c6e100..c71cff1 100644
->> --- a/drivers/of/Kconfig
->> +++ b/drivers/of/Kconfig
->> @@ -69,4 +69,10 @@ config OF_MDIO
->>        help
->>          OpenFirmware MDIO bus (Ethernet PHY) accessors
->>
->> +config OF_PCI
->> +       def_tristate PCI
->> +       depends on PCI && !SPARC
->> +       help
->> +         OpenFirmware PCI bus accessors
->> +
->>  endmenu # OF
->> diff --git a/drivers/of/Makefile b/drivers/of/Makefile
->> index 3ab21a0..f7861ed 100644
->> --- a/drivers/of/Makefile
->> +++ b/drivers/of/Makefile
->> @@ -9,3 +9,4 @@ obj-$(CONFIG_OF_I2C)    += of_i2c.o
->>  obj-$(CONFIG_OF_NET)   += of_net.o
->>  obj-$(CONFIG_OF_SPI)   += of_spi.o
->>  obj-$(CONFIG_OF_MDIO)  += of_mdio.o
->> +obj-$(CONFIG_OF_PCI)   += of_pci.o
->> diff --git a/drivers/of/of_pci.c b/drivers/of/of_pci.c
->> new file mode 100644
->> index 0000000..dd862d2
->> --- /dev/null
->> +++ b/drivers/of/of_pci.c
->> @@ -0,0 +1,80 @@
->> +#include <linux/kernel.h>
->> +#include <linux/of_pci.h>
->> +#include <asm/prom.h>
->> +
->> +int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
->> +{
->> +       struct device_node *dn, *ppnode;
->> +       struct pci_dev *ppdev;
->> +       u32 lspec;
->> +       __be32 lspec_be;
->> +       __be32 laddr[3];
->> +       u8 pin;
->> +       int rc;
->> +
->> +       /* Check if we have a device node, if yes, fallback to standard OF
->> +        * parsing
->> +        */
->> +       dn = pci_device_to_OF_node(pdev);
->> +       if (dn) {
->> +               rc = of_irq_map_one(dn, 0, out_irq);
->> +               if (!rc)
->> +                       return rc;
->> +       }
->> +
->> +       /* Ok, we don't, time to have fun. Let's start by building up an
->> +        * interrupt spec.  we assume #interrupt-cells is 1, which is standard
->> +        * for PCI. If you do different, then don't use that routine.
->> +        */
->> +       rc = pci_read_config_byte(pdev, PCI_INTERRUPT_PIN, &pin);
->> +       if (rc != 0)
->> +               return rc;
->> +       /* No pin, exit */
->> +       if (pin == 0)
->> +               return -ENODEV;
->> +
->> +       /* Now we walk up the PCI tree */
->> +       lspec = pin;
->> +       for (;;) {
->> +               /* Get the pci_dev of our parent */
->> +               ppdev = pdev->bus->self;
->> +
->> +               /* Ouch, it's a host bridge... */
->> +               if (ppdev == NULL) {
->> +                       ppnode = pci_bus_to_OF_node(pdev->bus);
->> +
->> +                       /* No node for host bridge ? give up */
->> +                       if (ppnode == NULL)
->> +                               return -EINVAL;
->> +               } else {
->> +                       /* We found a P2P bridge, check if it has a node */
->> +                       ppnode = pci_device_to_OF_node(ppdev);
->> +               }
->> +
->> +               /* Ok, we have found a parent with a device-node, hand over to
->> +                * the OF parsing code.
->> +                * We build a unit address from the linux device to be used for
->> +                * resolution. Note that we use the linux bus number which may
->> +                * not match your firmware bus numbering.
->> +                * Fortunately, in most cases, interrupt-map-mask doesn't
->> +                * include the bus number as part of the matching.
->> +                * You should still be careful about that though if you intend
->> +                * to rely on this function (you ship  a firmware that doesn't
->> +                * create device nodes for all PCI devices).
->> +                */
->> +               if (ppnode)
->> +                       break;
->> +
->> +               /* We can only get here if we hit a P2P bridge with no node,
->> +                * let's do standard swizzling and try again
->> +                */
->> +               lspec = pci_swizzle_interrupt_pin(pdev, lspec);
->> +               pdev = ppdev;
->> +       }
->> +
->> +       lspec_be = cpu_to_be32(lspec);
->> +       laddr[0] = cpu_to_be32((pdev->bus->number << 16) | (pdev->devfn << 8));
->> +       laddr[1]  = laddr[2] = cpu_to_be32(0);
->> +       return of_irq_map_raw(ppnode, &lspec_be, 1, laddr, out_irq);
->> +}
->> +EXPORT_SYMBOL_GPL(of_irq_map_pci);
->> diff --git a/include/linux/of_pci.h b/include/linux/of_pci.h
->> new file mode 100644
->> index 0000000..9b0ba67
->> --- /dev/null
->> +++ b/include/linux/of_pci.h
->> @@ -0,0 +1,20 @@
->> +#ifndef __OF_PCI_H
->> +#define __OF_PCI_H
->> +
->> +#include <linux/pci.h>
->> +
->> +/**
->> + * of_irq_map_pci - Resolve the interrupt for a PCI device
->> + * @pdev:       the device whose interrupt is to be resolved
->> + * @out_irq:    structure of_irq filled by this function
->> + *
->> + * This function resolves the PCI interrupt for a given PCI device. If a
->> + * device-node exists for a given pci_dev, it will use normal OF tree
->> + * walking. If not, it will implement standard swizzling and walk up the
->> + * PCI tree until an device-node is found, at which point it will finish
->> + * resolving using the OF tree walking.
->> + */
->> +struct pci_dev;
->> +struct of_irq;
->> +int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
->> +#endif
->> --
->> 1.7.3.2
->>
->> _______________________________________________
->> devicetree-discuss mailing list
->> devicetree-discuss@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/devicetree-discuss
->>
-> 
-> 
-> 
+Andreas  aka  Linux User #330250
 
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+--Boundary-00=_VJYXNm1ZlkucSE8
+Content-Type: text/x-patch;
+  charset="UTF-8";
+  name="Quicksilver-aoa.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="Quicksilver-aoa.patch"
+
+diff -Naur linux-2.6.38-rc5-git2/sound/aoa/fabrics/layout.c linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/fabrics/layout.c
+--- linux-2.6.38-rc5-git2/sound/aoa/fabrics/layout.c    2011-01-05 01:50:19.000000000 +0100
++++ linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/fabrics/layout.c    2011-02-17 18:43:26.000000000 +0100
+@@ -111,6 +111,7 @@
+ MODULE_ALIAS("sound-layout-100");
+ 
+ MODULE_ALIAS("aoa-device-id-14");
++MODULE_ALIAS("aoa-device-id-21");
+ MODULE_ALIAS("aoa-device-id-22");
+ MODULE_ALIAS("aoa-device-id-35");
+ 
+@@ -333,14 +334,14 @@
+                .connections = topaz_input,
+          },
+        },
+-       /* Quad PowerMac (analog in, analog/digital out) */
++       /* PowerMac11,2 (G5 Dual-Core and Quad) (analog in, analog/digital out) */
+        { .layout_id = 68,
+          .codecs[0] = {
+                .name = "onyx",
+                .connections = onyx_connections_nomic,
+          },
+        },
+-       /* Quad PowerMac (digital in) */
++       /* PowerMac11,2 (G5 Dual-Core and Quad) (digital in) */
+        { .layout_id = 69,
+          .codecs[0] = {
+                .name = "topaz",
+@@ -521,14 +522,21 @@
+                .connections = onyx_connections_noheadphones,
+          },
+        },
+-       /* PowerMac3,4 */
++       /* PowerMac3,4 (Digital Audio) */
+        { .device_id = 14,
+          .codecs[0] = {
+                .name = "tas",
+                .connections = tas_connections_noline,
+          },
+        },
+-       /* PowerMac3,6 */
++       /* PowerMac3,5 (Quicksilver) */
++       { .device_id = 21,
++         .codecs[0] = {
++               .name = "tas",
++               .connections = tas_connections_noline,
++         },
++       },
++       /* PowerMac3,6 (Mirrored Drive Doors) */
+        { .device_id = 22,
+          .codecs[0] = {
+                .name = "tas",
+diff -Naur linux-2.6.38-rc5-git2/sound/aoa/soundbus/i2sbus/core.c linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/soundbus/i2sbus/core.c
+--- linux-2.6.38-rc5-git2/sound/aoa/soundbus/i2sbus/core.c      2011-01-05 01:50:19.000000000 +0100
++++ linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/soundbus/i2sbus/core.c      2011-02-17 18:44:36.000000000 +0100
+@@ -200,7 +200,7 @@
+                         * We probably cannot handle all device-id machines,
+                         * so restrict to those we do handle for now.
+                         */
+-                       if (id && (*id == 22 || *id == 14 || *id == 35)) {
++                       if (id && (*id == 22 || *id == 21 || *id == 14 || *id == 35)) {
+                                snprintf(dev->sound.modalias, 32,
+                                         "aoa-device-id-%d", *id);
+                                ok = 1;
+
+--Boundary-00=_VJYXNm1ZlkucSE8--
