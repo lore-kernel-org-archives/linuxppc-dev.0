@@ -1,16 +1,35 @@
-Return-Path: <linuxuser330250@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
-	by ozlabs.org (Postfix) with SMTP id 9334FB7102
+Return-Path: <prabhakar@localhost.localdomain.freescale.net>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F1531B70D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Feb 2011 07:53:31 +1100 (EST)
-From: "Linux User #330250" <linuxuser330250@gmx.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Add support for PowerMac3,5 in snd-aoa ALSA sound module
-Date: Thu, 17 Feb 2011 21:53:26 +0100
+	Fri, 18 Feb 2011 16:50:39 +1100 (EST)
+Received: from mail31-db3 (localhost.localdomain [127.0.0.1])	by
+	mail31-db3-R.bigfish.com (Postfix) with ESMTP id 5A218109042B	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2011 05:35:25 +0000 (UTC)
+Received: from DB3EHSMHS011.bigfish.com (unknown [10.3.81.240])	by
+	mail31-db3.bigfish.com (Postfix) with ESMTP id 05C921908052	for
+	<linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2011 05:35:25 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by de01egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id p1I5ZMBQ000730	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Feb 2011 22:35:22 -0700 (MST)
+Received: from localhost.localdomain ([10.232.14.58])	by
+	az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	p1I5ZIkd020369	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2011 23:35:21 -0600 (CST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] driver/FSL SATA:Fix wrong Device Error Register usage
+Date: Fri, 18 Feb 2011 11:04:58 +0530
+Message-ID: <1298007298-12511-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201102172153.26831.linuxuser330250@gmx.net>
+Content-Type: text/plain
+Cc: Ashish Kalra <B00888@freescale.com>,
+	Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,107 +39,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+When a single device error is detected, the device under the error is indicated
+by the error bit set in the DER. There is a one to one mapping between register
+bit and devices on Port multiplier(PMP) i.e. bit 0 represents PMP device 0 and
+bit 1 represents PMP device 1 etc.
 
-About two years ago Johannes Berg wrote support for the PowerMac3,6 aka G4 =
-MDD=20
-which I was using as a desktop computer then. Johannes wrote all the code, =
-and=20
-I tested it.
+Current implementation treats Device error register value as device number not
+set of bits representing multiple device on PMP. It is changed to consider bit
+level.
+No need to check for each set bit as all command is going to be aborted.
 
-I now have a PowerMac3,5 =E2=80=93 yes, an earlier model.
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Ashish Kalra <B00888@freescale.com>
+---
+ git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (branch master)
 
-This patch makes the snd-aoa ALSA sound module support the TAS3001C codec o=
-f=20
-my Apple Power Mac G4 "Quicksilver" (2001 model). I suppose it will also wo=
-rk=20
-for the "Quicksilver 2002", since both identify as PowerMac3,5.
+ drivers/ata/sata_fsl.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-The patch also changes a few comments to name the exact Power Mac model mor=
-e=20
-accurately in sound/aoa/fabrics/layout.c.
-
-This is my first contribution to the linux kernel ever, so I hope you will =
-be=20
-kind to me. I am not a programmer, but adding already supported devices was=
- a=20
-task even I could accomplish.
-
-Thanks,
-Andreas  aka  Linux User #330250
-
-=2D--
-
-diff -Naur linux-2.6.38-rc5-git2/sound/aoa/fabrics/layout.c linux-2.6.38-rc=
-5-git2-aoa-PowerMac3,5/sound/aoa/fabrics/layout.c
-=2D-- linux-2.6.38-rc5-git2/sound/aoa/fabrics/layout.c    2011-01-05 01:50:=
-19.000000000 +0100
-+++ linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/fabrics/layout.c    201=
-1-02-17 18:43:26.000000000 +0100
-@@ -111,6 +111,7 @@
- MODULE_ALIAS("sound-layout-100");
-=20
- MODULE_ALIAS("aoa-device-id-14");
-+MODULE_ALIAS("aoa-device-id-21");
- MODULE_ALIAS("aoa-device-id-22");
- MODULE_ALIAS("aoa-device-id-35");
-=20
-@@ -333,14 +334,14 @@
-                .connections =3D topaz_input,
-          },
-        },
-=2D       /* Quad PowerMac (analog in, analog/digital out) */
-+       /* PowerMac11,2 (G5 Dual-Core and Quad) (analog in, analog/digital =
-out) */
-        { .layout_id =3D 68,
-          .codecs[0] =3D {
-                .name =3D "onyx",
-                .connections =3D onyx_connections_nomic,
-          },
-        },
-=2D       /* Quad PowerMac (digital in) */
-+       /* PowerMac11,2 (G5 Dual-Core and Quad) (digital in) */
-        { .layout_id =3D 69,
-          .codecs[0] =3D {
-                .name =3D "topaz",
-@@ -521,14 +522,21 @@
-                .connections =3D onyx_connections_noheadphones,
-          },
-        },---
-=2D       /* PowerMac3,4 */
-+       /* PowerMac3,4 (Digital Audio) */
-        { .device_id =3D 14,
-          .codecs[0] =3D {
-                .name =3D "tas",
-                .connections =3D tas_connections_noline,
-          },
-        },
-=2D       /* PowerMac3,6 */
-+       /* PowerMac3,5 (Quicksilver) */
-+       { .device_id =3D 21,
-+         .codecs[0] =3D {
-+               .name =3D "tas",
-+               .connections =3D tas_connections_noline,
-+         },
-+       },
-+       /* PowerMac3,6 (Mirrored Drive Doors) */
-        { .device_id =3D 22,
-          .codecs[0] =3D {
-                .name =3D "tas",
-diff -Naur linux-2.6.38-rc5-git2/sound/aoa/soundbus/i2sbus/core.c linux-2.6=
-=2E38-rc5-git2-aoa-PowerMac3,5/sound/aoa/soundbus/i2sbus/core.c
-=2D-- linux-2.6.38-rc5-git2/sound/aoa/soundbus/i2sbus/core.c      2011-01-0=
-5 01:50:19.000000000 +0100
-+++ linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/soundbus/i2sbus/core.c =
-     2011-02-17 18:44:36.000000000 +0100
-@@ -200,7 +200,7 @@
-                         * We probably cannot handle all device-id machines,
-                         * so restrict to those we do handle for now.
-                         */
-=2D                       if (id && (*id =3D=3D 22 || *id =3D=3D 14 || *id =
-=3D=3D 35)) {
-+                       if (id && (*id =3D=3D 22 || *id =3D=3D 21 || *id =
-=3D=3D 14 || *id =3D=3D 35)) {
-                                snprintf(dev->sound.modalias, 32,
-                                         "aoa-device-id-%d", *id);
-                                ok =3D 1;
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 2546f38..8ad335f 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -1047,8 +1047,9 @@ static void sata_fsl_error_intr(struct ata_port *ap)
+ 			iowrite32(dereg, hcr_base + DE);
+ 			iowrite32(cereg, hcr_base + CE);
+ 
+-			if (dereg < ap->nr_pmp_links) {
+-				link = &ap->pmp_link[dereg];
++			if ((ffs(dereg)-1) < ap->nr_pmp_links) {
++				/* array start from 0 */
++				link = &ap->pmp_link[ffs(dereg)-1];
+ 				ehi = &link->eh_info;
+ 				qc = ata_qc_from_tag(ap, link->active_tag);
+ 				/*
+-- 
+1.7.3
