@@ -1,24 +1,23 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 340E3B70AA
+Return-Path: <B32579@freescale.com>
+Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
+	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A5E99B70E1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Feb 2011 19:44:36 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 19465-01 for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Feb 2011 08:44:18 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Fri, 18 Feb 2011 21:00:04 +1100 (EST)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>
 Subject: RE: [PATCH] driver/FSL SATA:Fix wrong Device Error Register usage
-Date: Fri, 18 Feb 2011 08:41:44 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AC57@saturn3.aculab.com>
-In-Reply-To: <1298007298-12511-1-git-send-email-prabhakar@freescale.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Prabhakar Kushwaha" <prabhakar@freescale.com>,
-	<linuxppc-dev@lists.ozlabs.org>
-Cc: Ashish Kalra <B00888@freescale.com>
+Date: Fri, 18 Feb 2011 09:59:39 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F874125270@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1298007298-12511-1-git-send-email-prabhakar@freescale.com>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8AC57@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC57@saturn3.aculab.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Kalra Ashish-B00888 <B00888@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> +			if ((ffs(dereg)-1) < ap->nr_pmp_links) {
-> +				/* array start from 0 */
-> +				link =3D &ap->pmp_link[ffs(dereg)-1];
+Thanks David for review comments!!
 
-I'd only call ffs() once - it could be a slow library function.
-Any comment should note that ffs() returns 0 when no bits
-are set - rather than anything about array indexes.
+Please find my reply in-lined
 
-	David
+> -----Original Message-----
+> From: David Laight [mailto:David.Laight@ACULAB.COM]
+> Sent: Friday, February 18, 2011 2:12 PM
+> To: Kushwaha Prabhakar-B32579; linuxppc-dev@lists.ozlabs.org
+> Cc: Kalra Ashish-B00888
+> Subject: RE: [PATCH] driver/FSL SATA:Fix wrong Device Error Register
+> usage
+>=20
+>=20
+> > +			if ((ffs(dereg)-1) < ap->nr_pmp_links) {
+> > +				/* array start from 0 */
+> > +				link =3D &ap->pmp_link[ffs(dereg)-1];
+>=20
+> I'd only call ffs() once - it could be a slow library function.
+
+This function is called during error handling. So it won't matter.=20
+Anyway, I will update the patch for singe usage of ffs().=20
+
+> Any comment should note that ffs() returns 0 when no bits are set -
+> rather than anything about array indexes.
+>=20
+sata_fsl_error_intr() is called during device error.
+The mentioned scenario will never comes. It can be observed via code:-
+	if (cereg) {   --> cereg is set on command error. Means there is at least =
+1 device present.
+		abort =3D 1;
+		---
+		---
+		---
+		/* find out the offending link and qc */
+		if (ap->nr_pmp_links) {  --> if Port multiplier=20
+			---
+			---
+			if ((ffs(dereg)-1) < ap->nr_pmp_links) {
+		---
+		---
+		} else {  -->  Single device
+			dereg =3D ioread32(hcr_base + DE);
+			iowrite32(dereg, hcr_base + DE);
+			iowrite32(cereg, hcr_base + CE);
