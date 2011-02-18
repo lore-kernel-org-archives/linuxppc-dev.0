@@ -1,23 +1,16 @@
-Return-Path: <B32579@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05BD8B70ED
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [194.2.40.7])
+	by ozlabs.org (Postfix) with ESMTP id 271D0B7100
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Feb 2011 21:17:38 +1100 (EST)
-From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] driver/FSL SATA:Fix wrong Device Error Register usage
-Date: Fri, 18 Feb 2011 10:17:25 +0000
-Message-ID: <071A08F2C6A57E4E94D980ECA553F8741252BE@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1298007298-12511-1-git-send-email-prabhakar@freescale.com>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AC57@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AC57@saturn3.aculab.com>
-Content-Type: text/plain; charset="us-ascii"
+	Sat, 19 Feb 2011 03:00:18 +1100 (EST)
+Message-ID: <4D5E8FA7.3080307@c-s.fr>
+Date: Fri, 18 Feb 2011 16:26:31 +0100
+From: LEROY Christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Cc: Kalra Ashish-B00888 <B00888@freescale.com>
+To: spi-devel-general@lists.sourceforge.net,
+	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: MPC866, Help, SPI blocked at startup
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-Thanks David for review comments!!
+Sometimes (but rather often) I get SPI tasks hanging.
 
-Please find my reply in-lined
+I get the following trace, as if both tasks where blocking each other, 
+or they are waiting for a third task ?
 
-> -----Original Message-----
-> From: David Laight [mailto:David.Laight@ACULAB.COM]
-> Sent: Friday, February 18, 2011 2:12 PM
-> To: Kushwaha Prabhakar-B32579; linuxppc-dev@lists.ozlabs.org
-> Cc: Kalra Ashish-B00888
-> Subject: RE: [PATCH] driver/FSL SATA:Fix wrong Device Error Register=20
-> usage
->=20
->=20
-> > +			if ((ffs(dereg)-1) < ap->nr_pmp_links) {
-> > +				/* array start from 0 */
-> > +				link =3D &ap->pmp_link[ffs(dereg)-1];
->=20
-> I'd only call ffs() once - it could be a slow library function.
+Can someone help or tell what I should look at ?
 
-This function is called during error handling. So it won't matter.=20
-Anyway, I will update the patch for singe usage of ffs().=20
+[ 240.939898] INFO: task ff000a80.spi:197 blocked for more than 120 seconds.
+[ 240.946495] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" 
+disables this message.
+[ 240.954416] ff000a80.spi D 00000000 0 197 2 0x00000000
+[ 240.960474] Call Trace:
+[ 240.962816] [c1961d20] [c009cd80] d_free+0x68/0x7c (unreliable)
+[ 240.968668] [c1961de0] [c00076fc] __switch_to+0x54/0x70
+[ 240.974175] [c1961df0] [c0235c8c] schedule+0x42c/0x4d4
+[ 240.979058] [c1961e40] [c0235fb8] schedule_timeout+0x30/0x1cc
+[ 240.984759] [c1961e80] [c0235714] wait_for_common+0xe0/0x18c
+[ 240.990392] [c1961ec0] [c017a480] mpc8xxx_spi_bufs+0x3d0/0x4c8
+[ 240.996365] [c1961ee0] [c017a6a8] mpc8xxx_spi_work+0x130/0x290
+[ 241.001987] [c1961f50] [c0035240] worker_thread+0x14c/0x200
+[ 241.007713] [c1961fb0] [c003960c] kthread+0x7c/0x80
+[ 241.012755] [c1961ff0] [c000e660] kernel_thread+0x4c/0x68
+[ 241.017947] INFO: task firmware/mcr300:244 blocked for more than 120 
+seconds.
+[ 241.025131] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" 
+disables this message.
+[ 241.032846] firmware/mcr3 D 00000000 0 244 2 0x00000000
+[ 241.038833] Call Trace:
+[ 241.041462] [c198fd90] [0000000f] 0xf (unreliable)
+[ 241.046043] [c198fe50] [c00076fc] __switch_to+0x54/0x70
+[ 241.051198] [c198fe60] [c0235c8c] schedule+0x42c/0x4d4
+[ 241.056253] [c198feb0] [c0235fb8] schedule_timeout+0x30/0x1cc
+[ 241.061957] [c198fef0] [c0235714] wait_for_common+0xe0/0x18c
+[ 241.067797] [c198ff30] [c0178f7c] spi_sync+0x8c/0xb4
+[ 241.072586] [c198ff70] [c0185704] fpga_fw_load+0x15c/0x3b8
+[ 241.077968] [c198ff90] [c015da9c] request_firmware_work_func+0x58/0x84
+[ 241.084434] [c198ffb0] [c003960c] kthread+0x7c/0x80
+[ 241.089228] [c198fff0] [c000e660] kernel_thread+0x4c/0x68
 
-> Any comment should note that ffs() returns 0 when no bits are set -=20
-> rather than anything about array indexes.
->=20
-sata_fsl_error_intr() is called during device error.
-The mentioned scenario will never comes. It can be observed via code:-
-	if (cereg) {   --> cereg is set on command error. Means there is at least =
-1 device present.
-		abort =3D 1;
-		---
-		---
-		---
-		/* find out the offending link and qc */
-		if (ap->nr_pmp_links) {  --> if Port multiplier=20
-			---
-			---
-			if ((ffs(dereg)-1) < ap->nr_pmp_links) {
-		---
-		---
-		} else {  -->  Single device
-			dereg =3D ioread32(hcr_base + DE);
-			iowrite32(dereg, hcr_base + DE);
-			iowrite32(cereg, hcr_base + CE);
+Regards
+C. Leroy
