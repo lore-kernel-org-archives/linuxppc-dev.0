@@ -1,41 +1,20 @@
-Return-Path: <aik@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4F535B70DB
+Return-Path: <prabhakar@freescale.com>
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6F28FB7188
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Feb 2011 13:44:17 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p1L2i7sM023979
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Feb 2011 13:44:07 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p1L2iExa1908920
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Feb 2011 13:44:16 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p1L2iEMI003472
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Feb 2011 13:44:14 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	p1L2iEnZ003469
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Feb 2011 13:44:14 +1100
-Received: from [10.61.2.175] (haven.au.ibm.com [9.190.164.82])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 509D973440
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Feb 2011 13:44:14 +1100 (EST)
-Message-ID: <4D61D17D.2070301@au1.ibm.com>
-Date: Mon, 21 Feb 2011 13:44:13 +1100
-From: Alexey Kardashevskiy <aik@au1.ibm.com>
+	Mon, 21 Feb 2011 14:32:00 +1100 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH][v1] driver/FSL SATA:Fix wrong Device Error Register usage
+Date: Mon, 21 Feb 2011 09:01:36 +0530
+Message-ID: <1298259096-3426-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Per process DSCR + somefixes (try#3)
-References: <4D5B62F2.3020709@au1.ibm.com>
-In-Reply-To: <4D5B62F2.3020709@au1.ibm.com>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Ashish Kalra <B00888@freescale.com>,
+	Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,17 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RHEL6 problem was that it crashed when doing
-echo 3 > /sys/devices/system/cpu/dscr_default
-because access methods for SYSDEV_ATTR and SYSDEV_CLASS_ATTR have 
-different number of parameters in RHEL6. It was not correct for 2.6.36 
-either but the parameters number is the same for both SYSDEV_ATTR and 
-SYSDEV_CLASS_ATTR and 2.6.36 simply forgave me.
+When a single device error is detected, the device under the error is indicated
+by the error bit set in the DER. There is a one to one mapping between register
+bit and devices on Port multiplier(PMP) i.e. bit 0 represents PMP device 0 and
+bit 1 represents PMP device 1 etc.
 
+Current implementation treats Device error register value as device number not
+set of bits representing multiple device on PMP. It is changed to consider bit
+level.
+No need to check for each set bit as all command is going to be aborted.
 
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Ashish Kalra <B00888@freescale.com>
+---
+ git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (branch master)
+
+ Changes for v1: Incorporated David Laight's comment
+ 	- Single usage of ffs()
+
+ drivers/ata/sata_fsl.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index b0214d0..895771c 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -1040,12 +1040,14 @@ static void sata_fsl_error_intr(struct ata_port *ap)
+ 
+ 		/* find out the offending link and qc */
+ 		if (ap->nr_pmp_links) {
++			int dev_num;
+ 			dereg = ioread32(hcr_base + DE);
+ 			iowrite32(dereg, hcr_base + DE);
+ 			iowrite32(cereg, hcr_base + CE);
+ 
+-			if (dereg < ap->nr_pmp_links) {
+-				link = &ap->pmp_link[dereg];
++			dev_num = ffs(dereg)-1;
++			if (dev_num < ap->nr_pmp_links) {
++				link = &ap->pmp_link[dev_num];
+ 				ehi = &link->eh_info;
+ 				qc = ata_qc_from_tag(ap, link->active_tag);
+ 				/*
 -- 
-Alexey Kardashevskiy
-IBM OzLabs, LTC Team
-
-e-mail/sametime: aik@au1.ibm.com
-notes: Alexey Kardashevskiy/Australia/IBM
+1.7.3
