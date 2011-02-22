@@ -1,21 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mjw@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 83A02B6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Feb 2011 09:21:03 +1100 (EST)
-Subject: Re: [PATCH] Add support for PowerMac3,5 in snd-aoa ALSA sound module
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5hd3mlbx6x.wl%tiwai@suse.de>
-References: <201102202238.28517.linuxuser330250@gmx.net>
-	<s5hd3mlbx6x.wl%tiwai@suse.de>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 34ED6B6F12
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2011 07:30:59 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p1MKPeXG013540
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2011 13:25:40 -0700
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id p1MKUlps117564
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2011 13:30:47 -0700
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p1MKUlM4020686
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2011 13:30:47 -0700
+Subject: powerpc/ptrace:  Fix bug in signal handling
+From: Michael Wolf <mjw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Feb 2011 09:20:51 +1100
-Message-ID: <1298326851.8833.75.camel@pasglop>
+Date: Tue, 22 Feb 2011 14:30:45 -0600
+Message-ID: <1298406645.9824.3.camel@w500>
 Mime-Version: 1.0
-Cc: Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org
+Cc: anton@samba.org
+Reply-To: mjw@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,115 +34,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-21 at 09:37 +0100, Takashi Iwai wrote:
-> At Sun, 20 Feb 2011 22:38:28 +0100,
-> Linux User #330250 wrote:
-> > 
-> > Hello again!
-> > 
-> > Sorry for sending the patch three times. (This is the fourth...)
-> > 
-> > About the sign-off: I use the name I've been using since I started
-> > participating. The document $LINUX/Documentation/SubmittingPatches clearly
-> > states that one has to use real names. I'm breaking this rule, but I'm not
-> > ready to reveal my real name here or at any other place at this time. Sorry.
-> > If this patch is not accepted due to this, well… that's life. BTW my real
-> > given name is Andreas.
-> 
-> Well, we need really the full name for sign-off.
-> In general, it's not acceptable with the proper sign-off...
+In some cases during a threaded core dump not all 
+the threads will have a full register set.  This
+will cause problems when the sigkill is sent to
+the thread
+        
+Signed-off-by: Mike Wolf <mjw@linux.vnet.ibm.com>
+-------
 
-So somebody else can just pick the "documentation" that layout ID 21
-works just like 22 for us, and write an "acceptable" patch... 
-
-Cheers,
-Ben.
-
-> 
-> Takashi
-> 
-> 
-> > 
-> > 
-> > So, here's the patch, this time with a (pseudonym) sign-off:
-> > 
-> > This patch makes the snd-aoa ALSA sound module support the TAS3001C codec of 
-> > my Apple Power Mac G4 "Quicksilver" (2001 model). I suppose it will also work 
-> > for the "Quicksilver 2002", since both identify as PowerMac3,5.
-> > 
-> > The patch also changes a few comments to name the exact Power Mac model more 
-> > accurately in sound/aoa/fabrics/layout.c.
-> > 
-> > Signed-off-by: Andreas  aka  Linux User #330250 <linuxuser330250@gmx.net>
-> > 
-> > ---
-> > 
-> > diff -Naur linux-2.6.38-rc5-git2/sound/aoa/fabrics/layout.c linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/fabrics/layout.c
-> > --- linux-2.6.38-rc5-git2/sound/aoa/fabrics/layout.c    2011-01-05 01:50:19.000000000 +0100
-> > +++ linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/fabrics/layout.c    2011-02-17 18:43:26.000000000 +0100
-> > @@ -111,6 +111,7 @@
-> >  MODULE_ALIAS("sound-layout-100");
-> >  
-> >  MODULE_ALIAS("aoa-device-id-14");
-> > +MODULE_ALIAS("aoa-device-id-21");
-> >  MODULE_ALIAS("aoa-device-id-22");
-> >  MODULE_ALIAS("aoa-device-id-35");
-> >  
-> > @@ -333,14 +334,14 @@
-> >                 .connections = topaz_input,
-> >           },
-> >         },
-> > -       /* Quad PowerMac (analog in, analog/digital out) */
-> > +       /* PowerMac11,2 (G5 Dual-Core and Quad) (analog in, analog/digital out) */
-> >         { .layout_id = 68,
-> >           .codecs[0] = {
-> >                 .name = "onyx",
-> >                 .connections = onyx_connections_nomic,
-> >           },
-> >         },
-> > -       /* Quad PowerMac (digital in) */
-> > +       /* PowerMac11,2 (G5 Dual-Core and Quad) (digital in) */
-> >         { .layout_id = 69,
-> >           .codecs[0] = {
-> >                 .name = "topaz",
-> > @@ -521,14 +522,21 @@
-> >                 .connections = onyx_connections_noheadphones,
-> >           },
-> >         },---
-> > -       /* PowerMac3,4 */
-> > +       /* PowerMac3,4 (Digital Audio) */
-> >         { .device_id = 14,
-> >           .codecs[0] = {
-> >                 .name = "tas",
-> >                 .connections = tas_connections_noline,
-> >           },
-> >         },
-> > -       /* PowerMac3,6 */
-> > +       /* PowerMac3,5 (Quicksilver) */
-> > +       { .device_id = 21,
-> > +         .codecs[0] = {
-> > +               .name = "tas",
-> > +               .connections = tas_connections_noline,
-> > +         },
-> > +       },
-> > +       /* PowerMac3,6 (Mirrored Drive Doors) */
-> >         { .device_id = 22,
-> >           .codecs[0] = {
-> >                 .name = "tas",
-> > diff -Naur linux-2.6.38-rc5-git2/sound/aoa/soundbus/i2sbus/core.c linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/soundbus/i2sbus/core.c
-> > --- linux-2.6.38-rc5-git2/sound/aoa/soundbus/i2sbus/core.c      2011-01-05 01:50:19.000000000 +0100
-> > +++ linux-2.6.38-rc5-git2-aoa-PowerMac3,5/sound/aoa/soundbus/i2sbus/core.c      2011-02-17 18:44:36.000000000 +0100
-> > @@ -200,7 +200,7 @@
-> >                          * We probably cannot handle all device-id machines,
-> >                          * so restrict to those we do handle for now.
-> >                          */
-> > -                       if (id && (*id == 22 || *id == 14 || *id == 35)) {
-> > +                       if (id && (*id == 22 || *id == 21 || *id == 14 || *id == 35)) {
-> >                                 snprintf(dev->sound.modalias, 32,
-> >                                          "aoa-device-id-%d", *id);
-> >                                 ok = 1;
-> > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+--- ptrace-signal.orig/arch/powerpc/kernel/ptrace.c	2011-02-20 12:15:57.000000000 -0600
++++ ptrace-signal/arch/powerpc/kernel/ptrace.c	2011-02-21 12:39:17.000000000 -0600
+@@ -234,11 +234,23 @@
+ 	if (target->thread.regs == NULL)
+ 		return -EIO;
+ 
+-	CHECK_FULL_REGS(target->thread.regs);
+ 
+-	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-				  target->thread.regs,
+-				  0, offsetof(struct pt_regs, msr));
++	if (!FULL_REGS(target->thread.regs)) {
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  target->thread.regs,
++					  0, sizeof(long)*PT_R14);
++		if (!ret)
++			ret = user_regset_copyout_poison(&pos, &count, &kbuf, &ubuf,
++						  sizeof(long)*PT_R14, offsetof(struct pt_regs, nip));
++		if (!ret)
++			ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++						  target->thread.regs,
++						  offsetof(struct pt_regs, nip), offsetof(struct pt_regs, msr));
++		
++	} else 
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  target->thread.regs,
++					  0, offsetof(struct pt_regs, msr));
+ 	if (!ret) {
+ 		unsigned long msr = get_user_msr(target);
+ 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &msr,
+@@ -645,11 +657,24 @@
+ 	if (target->thread.regs == NULL)
+ 		return -EIO;
+ 
+-	CHECK_FULL_REGS(target->thread.regs);
+-
+ 	pos /= sizeof(reg);
+ 	count /= sizeof(reg);
+ 
++	if(!FULL_REGS(target->thread.regs)) {
++		if (kbuf) {
++			for (; count > 0 && pos < PT_R14; --count)
++				*k++ = regs[pos++];
++			for (; count > 0 && pos < PT_R31; --count,pos++)
++				*k++ = 0xdeadbeef;
++		} else { 
++			for (; count > 0 && pos < PT_R14; --count)
++				if (__put_user((compat_ulong_t) regs[pos++], u++))
++					return -EFAULT;
++			for (; count > 0 && pos < PT_R31; --count,pos++)
++				if (__put_user((compat_ulong_t) 0xdeadbeef, u++))
++					return -EFAULT;
++		}
++	}
+ 	if (kbuf)
+ 		for (; count > 0 && pos < PT_MSR; --count)
+ 			*k++ = regs[pos++];
+--- ptrace-signal.orig/include/linux/regset.h	2011-02-20 12:15:57.000000000 -0600
++++ ptrace-signal/include/linux/regset.h	2011-02-21 12:39:17.000000000 -0600
+@@ -240,6 +240,32 @@
+ 	}
+ 	return 0;
+ }
++static inline int user_regset_copyout_poison(unsigned int *pos,
++					   unsigned int *count,
++					   void **kbuf, void __user **ubuf,
++					   const int start_pos,
++					   const int end_pos)
++{
++	long poison_data[17] = { [0 ... 16] = 0xdeadbeefdeadbeefUL };
++
++	if (*count == 0)
++		return 0;
++	BUG_ON(*pos < start_pos);
++	if (end_pos < 0 || *pos < end_pos) {
++		unsigned int copy = (end_pos < 0 ? *count
++				     : min(*count, end_pos - *pos));
++		if (*kbuf) {
++			memset(*kbuf, 0xdeadbeef, copy);
++			*kbuf += copy;
++		} else if (__copy_to_user(*ubuf,poison_data, copy))
++			return -EFAULT;
++		else
++			*ubuf += copy;
++		*pos += copy;
++		*count -= copy;
++	}
++	return 0;
++}
+ 
+ static inline int user_regset_copyin(unsigned int *pos, unsigned int *count,
+ 				     const void **kbuf,
