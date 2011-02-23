@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [RFC PATCH 03/15] dt/powerpc: Eliminate users of of_platform_{,
+Subject: [RFC PATCH 04/15] dt/sparc: Eliminate users of of_platform_{,
 	un}register_driver
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	devicetree-discuss@lists.ozlabs.org, sfr@canb.auug.org.au,
 	linux-kernel@vger.kernel.org, davem@davemloft.net
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 22 Feb 2011 21:33:50 -0700
-Message-ID: <20110223043350.20795.78915.stgit@localhost6.localdomain6>
+Date: Tue, 22 Feb 2011 21:33:55 -0700
+Message-ID: <20110223043355.20795.4924.stgit@localhost6.localdomain6>
 In-Reply-To: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
 References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
@@ -22,1167 +22,1182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Get rid of old users of of_platform_driver in arch/powerpc.  Most
+Get rid of old users of of_platform_driver in arch/sparc.  Most
 of_platform_driver users can be converted to use the platform_bus
 directly.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/kernel/of_platform.c             |    7 +++---
- arch/powerpc/platforms/52xx/mpc52xx_gpio.c    |   14 ++++++-------
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |   10 +++------
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |   11 ++++------
- arch/powerpc/platforms/82xx/ep8248e.c         |    7 +++---
- arch/powerpc/platforms/83xx/suspend.c         |   14 ++++++++-----
- arch/powerpc/platforms/cell/axon_msi.c        |   11 ++++------
- arch/powerpc/platforms/pasemi/gpio_mdio.c     |    9 ++++----
- arch/powerpc/sysdev/axonram.c                 |   11 +++++-----
- arch/powerpc/sysdev/bestcomm/bestcomm.c       |    9 ++++----
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c         |    9 ++++----
- arch/powerpc/sysdev/fsl_msi.c                 |   13 +++++++-----
- arch/powerpc/sysdev/fsl_pmc.c                 |    7 +++---
- arch/powerpc/sysdev/fsl_rio.c                 |    7 +++---
- arch/powerpc/sysdev/pmi.c                     |    9 ++++----
- arch/powerpc/sysdev/qe_lib/qe.c               |    7 +++---
- drivers/char/hw_random/pasemi-rng.c           |    9 ++++----
- drivers/crypto/amcc/crypto4xx_core.c          |    9 ++++----
- drivers/dma/fsldma.c                          |   14 +++----------
- drivers/dma/mpc512x_dma.c                     |    9 ++++----
- drivers/dma/ppc4xx/adma.c                     |   11 +++++-----
- drivers/edac/mpc85xx_edac.c                   |   27 +++++++++++--------------
- drivers/edac/ppc4xx_edac.c                    |   23 ++++++---------------
- drivers/macintosh/smu.c                       |    7 +++---
- drivers/macintosh/therm_pm72.c                |    8 ++++---
- drivers/macintosh/therm_windtunnel.c          |    9 ++++----
- 26 files changed, 120 insertions(+), 161 deletions(-)
+ arch/sparc/include/asm/parport.h    |    6 +++---
+ arch/sparc/kernel/apc.c             |    7 +++----
+ arch/sparc/kernel/auxio_64.c        |    7 +++----
+ arch/sparc/kernel/central.c         |   14 ++++++--------
+ arch/sparc/kernel/chmc.c            |   19 ++++++++-----------
+ arch/sparc/kernel/pci_fire.c        |    7 +++----
+ arch/sparc/kernel/pci_psycho.c      |    7 +++----
+ arch/sparc/kernel/pci_sabre.c       |    9 ++++-----
+ arch/sparc/kernel/pci_schizo.c      |   11 ++++++-----
+ arch/sparc/kernel/pci_sun4v.c       |    7 +++----
+ arch/sparc/kernel/pmc.c             |    7 +++----
+ arch/sparc/kernel/power.c           |    6 +++---
+ arch/sparc/kernel/time_32.c         |    6 +++---
+ arch/sparc/kernel/time_64.c         |   18 +++++++++---------
+ drivers/char/hw_random/n2-drv.c     |   16 +++++++++-------
+ drivers/crypto/n2_core.c            |   20 +++++++++-----------
+ drivers/hwmon/ultra45_env.c         |    9 ++++-----
+ drivers/input/misc/sparcspkr.c      |   22 ++++++++++------------
+ drivers/input/serio/i8042-sparcio.h |    8 ++++----
+ drivers/parport/parport_sunbpp.c    |    8 ++++----
+ drivers/sbus/char/bbc_i2c.c         |    9 ++++-----
+ drivers/sbus/char/display7seg.c     |    9 ++++-----
+ drivers/sbus/char/envctrl.c         |    9 ++++-----
+ drivers/sbus/char/flash.c           |    9 ++++-----
+ drivers/sbus/char/uctrl.c           |    9 ++++-----
+ drivers/scsi/qlogicpti.c            |   14 +++++++++-----
+ drivers/scsi/sun_esp.c              |    8 ++++----
+ 27 files changed, 133 insertions(+), 148 deletions(-)
 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 9bd951c..2458218 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -36,8 +36,7 @@
-  * lacking some bits needed here.
-  */
- 
--static int __devinit of_pci_phb_probe(struct platform_device *dev,
--				      const struct of_device_id *match)
-+static int __devinit of_pci_phb_probe(struct platform_device *dev)
- {
- 	struct pci_controller *phb;
- 
-@@ -104,7 +103,7 @@ static struct of_device_id of_pci_phb_ids[] = {
- 	{}
- };
- 
--static struct of_platform_driver of_pci_phb_driver = {
-+static struct platform_driver of_pci_phb_driver = {
- 	.probe = of_pci_phb_probe,
- 	.driver = {
- 		.name = "of-pci",
-@@ -115,7 +114,7 @@ static struct of_platform_driver of_pci_phb_driver = {
- 
- static __init int of_pci_phb_init(void)
- {
--	return of_register_platform_driver(&of_pci_phb_driver);
-+	return platform_driver_register(&of_pci_phb_driver);
+diff --git a/arch/sparc/include/asm/parport.h b/arch/sparc/include/asm/parport.h
+index aa4c826..cb33608 100644
+--- a/arch/sparc/include/asm/parport.h
++++ b/arch/sparc/include/asm/parport.h
+@@ -103,7 +103,7 @@ static inline unsigned int get_dma_residue(unsigned int dmanr)
+ 	return ebus_dma_residue(&sparc_ebus_dmas[dmanr].info);
  }
  
- device_initcall(of_pci_phb_init);
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-index 0dad9a9..1757d1d 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-@@ -147,8 +147,7 @@ mpc52xx_wkup_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int __devinit mpc52xx_wkup_gpiochip_probe(struct platform_device *ofdev,
--					const struct of_device_id *match)
-+static int __devinit mpc52xx_wkup_gpiochip_probe(struct platform_device *ofdev)
+-static int __devinit ecpp_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit ecpp_probe(struct platform_device *op)
  {
- 	struct mpc52xx_gpiochip *chip;
- 	struct mpc52xx_gpio_wkup __iomem *regs;
-@@ -191,7 +190,7 @@ static const struct of_device_id mpc52xx_wkup_gpiochip_match[] = {
- 	{}
- };
- 
--static struct of_platform_driver mpc52xx_wkup_gpiochip_driver = {
-+static struct platform_driver mpc52xx_wkup_gpiochip_driver = {
- 	.driver = {
- 		.name = "gpio_wkup",
- 		.owner = THIS_MODULE,
-@@ -310,8 +309,7 @@ mpc52xx_simple_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int __devinit mpc52xx_simple_gpiochip_probe(struct platform_device *ofdev,
--					const struct of_device_id *match)
-+static int __devinit mpc52xx_simple_gpiochip_probe(struct platform_device *ofdev)
- {
- 	struct mpc52xx_gpiochip *chip;
- 	struct gpio_chip *gc;
-@@ -349,7 +347,7 @@ static const struct of_device_id mpc52xx_simple_gpiochip_match[] = {
- 	{}
- };
- 
--static struct of_platform_driver mpc52xx_simple_gpiochip_driver = {
-+static struct platform_driver mpc52xx_simple_gpiochip_driver = {
- 	.driver = {
- 		.name = "gpio",
- 		.owner = THIS_MODULE,
-@@ -361,10 +359,10 @@ static struct of_platform_driver mpc52xx_simple_gpiochip_driver = {
- 
- static int __init mpc52xx_gpio_init(void)
- {
--	if (of_register_platform_driver(&mpc52xx_wkup_gpiochip_driver))
-+	if (platform_driver_register(&mpc52xx_wkup_gpiochip_driver))
- 		printk(KERN_ERR "Unable to register wakeup GPIO driver\n");
- 
--	if (of_register_platform_driver(&mpc52xx_simple_gpiochip_driver))
-+	if (platform_driver_register(&mpc52xx_simple_gpiochip_driver))
- 		printk(KERN_ERR "Unable to register simple GPIO driver\n");
- 
- 	return 0;
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index e0d703c..859abf1 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -721,8 +721,7 @@ static inline int mpc52xx_gpt_wdt_setup(struct mpc52xx_gpt_priv *gpt,
- /* ---------------------------------------------------------------------
-  * of_platform bus binding code
-  */
--static int __devinit mpc52xx_gpt_probe(struct platform_device *ofdev,
--				       const struct of_device_id *match)
-+static int __devinit mpc52xx_gpt_probe(struct platform_device *ofdev)
- {
- 	struct mpc52xx_gpt_priv *gpt;
- 
-@@ -781,7 +780,7 @@ static const struct of_device_id mpc52xx_gpt_match[] = {
- 	{}
- };
- 
--static struct of_platform_driver mpc52xx_gpt_driver = {
-+static struct platform_driver mpc52xx_gpt_driver = {
- 	.driver = {
- 		.name = "mpc52xx-gpt",
- 		.owner = THIS_MODULE,
-@@ -793,10 +792,7 @@ static struct of_platform_driver mpc52xx_gpt_driver = {
- 
- static int __init mpc52xx_gpt_init(void)
- {
--	if (of_register_platform_driver(&mpc52xx_gpt_driver))
--		pr_err("error registering MPC52xx GPT driver\n");
--
--	return 0;
-+	return platform_driver_register(&mpc52xx_gpt_driver);
- }
- 
- /* Make sure GPIOs and IRQs get set up before anyone tries to use them */
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-index f4ac213..6385d88 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -436,8 +436,7 @@ void mpc52xx_lpbfifo_abort(struct mpc52xx_lpbfifo_request *req)
- }
- EXPORT_SYMBOL(mpc52xx_lpbfifo_abort);
- 
--static int __devinit mpc52xx_lpbfifo_probe(struct platform_device *op,
--					   const struct of_device_id *match)
-+static int __devinit mpc52xx_lpbfifo_probe(struct platform_device *op)
- {
- 	struct resource res;
- 	int rc = -ENOMEM;
-@@ -536,7 +535,7 @@ static struct of_device_id mpc52xx_lpbfifo_match[] __devinitconst = {
+ 	unsigned long base = op->resource[0].start;
+ 	unsigned long config = op->resource[1].start;
+@@ -235,7 +235,7 @@ static const struct of_device_id ecpp_match[] = {
  	{},
  };
  
--static struct of_platform_driver mpc52xx_lpbfifo_driver = {
-+static struct platform_driver mpc52xx_lpbfifo_driver = {
+-static struct of_platform_driver ecpp_driver = {
++static struct platform_driver ecpp_driver = {
  	.driver = {
- 		.name = "mpc52xx-lpbfifo",
+ 		.name = "ecpp",
  		.owner = THIS_MODULE,
-@@ -551,14 +550,12 @@ static struct of_platform_driver mpc52xx_lpbfifo_driver = {
-  */
- static int __init mpc52xx_lpbfifo_init(void)
+@@ -247,7 +247,7 @@ static struct of_platform_driver ecpp_driver = {
+ 
+ static int parport_pc_find_nonpci_ports(int autoirq, int autodma)
  {
--	pr_debug("Registering LocalPlus bus FIFO driver\n");
--	return of_register_platform_driver(&mpc52xx_lpbfifo_driver);
-+	return platform_driver_register(&mpc52xx_lpbfifo_driver);
+-	return of_register_platform_driver(&ecpp_driver);
++	return platform_driver_register(&ecpp_driver);
  }
- module_init(mpc52xx_lpbfifo_init);
  
- static void __exit mpc52xx_lpbfifo_exit(void)
+ #endif /* !(_ASM_SPARC64_PARPORT_H */
+diff --git a/arch/sparc/kernel/apc.c b/arch/sparc/kernel/apc.c
+index 52de4a9..f679c57 100644
+--- a/arch/sparc/kernel/apc.c
++++ b/arch/sparc/kernel/apc.c
+@@ -137,8 +137,7 @@ static const struct file_operations apc_fops = {
+ 
+ static struct miscdevice apc_miscdev = { APC_MINOR, APC_DEVNAME, &apc_fops };
+ 
+-static int __devinit apc_probe(struct platform_device *op,
+-			       const struct of_device_id *match)
++static int __devinit apc_probe(struct platform_device *op)
  {
--	pr_debug("Unregistering LocalPlus bus FIFO driver\n");
--	of_unregister_platform_driver(&mpc52xx_lpbfifo_driver);
-+	platform_driver_unregister(&mpc52xx_lpbfifo_driver);
- }
- module_exit(mpc52xx_lpbfifo_exit);
-diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index 1565e04..10ff526 100644
---- a/arch/powerpc/platforms/82xx/ep8248e.c
-+++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -111,8 +111,7 @@ static struct mdiobb_ctrl ep8248e_mdio_ctrl = {
- 	.ops = &ep8248e_mdio_ops,
- };
+ 	int err;
  
--static int __devinit ep8248e_mdio_probe(struct platform_device *ofdev,
--                                        const struct of_device_id *match)
-+static int __devinit ep8248e_mdio_probe(struct platform_device *ofdev)
- {
- 	struct mii_bus *bus;
- 	struct resource res;
-@@ -167,7 +166,7 @@ static const struct of_device_id ep8248e_mdio_match[] = {
- 	{},
+@@ -174,7 +173,7 @@ static struct of_device_id __initdata apc_match[] = {
  };
+ MODULE_DEVICE_TABLE(of, apc_match);
  
--static struct of_platform_driver ep8248e_mdio_driver = {
-+static struct platform_driver ep8248e_mdio_driver = {
+-static struct of_platform_driver apc_driver = {
++static struct platform_driver apc_driver = {
  	.driver = {
- 		.name = "ep8248e-mdio-bitbang",
+ 		.name = "apc",
  		.owner = THIS_MODULE,
-@@ -308,7 +307,7 @@ static  __initdata struct of_device_id of_bus_ids[] = {
- static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
--	of_register_platform_driver(&ep8248e_mdio_driver);
-+	platform_driver_register(&ep8248e_mdio_driver);
+@@ -185,7 +184,7 @@ static struct of_platform_driver apc_driver = {
  
+ static int __init apc_init(void)
+ {
+-	return of_register_platform_driver(&apc_driver);
++	return platform_driver_register(&apc_driver);
+ }
+ 
+ /* This driver is not critical to the boot process
+diff --git a/arch/sparc/kernel/auxio_64.c b/arch/sparc/kernel/auxio_64.c
+index 3efd3c5..2abace0 100644
+--- a/arch/sparc/kernel/auxio_64.c
++++ b/arch/sparc/kernel/auxio_64.c
+@@ -102,8 +102,7 @@ static struct of_device_id __initdata auxio_match[] = {
+ 
+ MODULE_DEVICE_TABLE(of, auxio_match);
+ 
+-static int __devinit auxio_probe(struct platform_device *dev,
+-				 const struct of_device_id *match)
++static int __devinit auxio_probe(struct platform_device *dev)
+ {
+ 	struct device_node *dp = dev->dev.of_node;
+ 	unsigned long size;
+@@ -132,7 +131,7 @@ static int __devinit auxio_probe(struct platform_device *dev,
  	return 0;
  }
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index fd4f2f2..1882729 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -318,14 +318,18 @@ static const struct platform_suspend_ops mpc83xx_suspend_ops = {
- 	.end = mpc83xx_suspend_end,
- };
  
--static int pmc_probe(struct platform_device *ofdev,
--                     const struct of_device_id *match)
-+static int pmc_probe(struct platform_device *ofdev)
- {
- 	struct device_node *np = ofdev->dev.of_node;
- 	struct resource res;
--	struct pmc_type *type = match->data;
-+	struct pmc_type *type;
- 	int ret = 0;
- 
-+	if (!ofdev->dev.of_match)
-+		return -EINVAL;
-+
-+	type = ofdev->dev.of_match->data;
-+
- 	if (!of_device_is_available(np))
- 		return -ENODEV;
- 
-@@ -422,7 +426,7 @@ static struct of_device_id pmc_match[] = {
- 	{}
- };
- 
--static struct of_platform_driver pmc_driver = {
-+static struct platform_driver pmc_driver = {
+-static struct of_platform_driver auxio_driver = {
++static struct platform_driver auxio_driver = {
+ 	.probe		= auxio_probe,
  	.driver = {
- 		.name = "mpc83xx-pmc",
- 		.owner = THIS_MODULE,
-@@ -434,7 +438,7 @@ static struct of_platform_driver pmc_driver = {
+ 		.name = "auxio",
+@@ -143,7 +142,7 @@ static struct of_platform_driver auxio_driver = {
  
- static int pmc_init(void)
+ static int __init auxio_init(void)
  {
--	return of_register_platform_driver(&pmc_driver);
-+	return platform_driver_register(&pmc_driver);
+-	return of_register_platform_driver(&auxio_driver);
++	return platform_driver_register(&auxio_driver);
  }
  
- module_init(pmc_init);
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index e3e379c..c35099a 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -328,7 +328,7 @@ static struct irq_host_ops msic_host_ops = {
- 	.map	= msic_host_map,
- };
- 
--static int axon_msi_shutdown(struct platform_device *device)
-+static void axon_msi_shutdown(struct platform_device *device)
- {
- 	struct axon_msic *msic = dev_get_drvdata(&device->dev);
- 	u32 tmp;
-@@ -338,12 +338,9 @@ static int axon_msi_shutdown(struct platform_device *device)
- 	tmp  = dcr_read(msic->dcr_host, MSIC_CTRL_REG);
- 	tmp &= ~MSIC_CTRL_ENABLE & ~MSIC_CTRL_IRQ_ENABLE;
- 	msic_dcr_write(msic, MSIC_CTRL_REG, tmp);
--
--	return 0;
- }
- 
--static int axon_msi_probe(struct platform_device *device,
--			  const struct of_device_id *device_id)
-+static int axon_msi_probe(struct platform_device *device)
- {
- 	struct device_node *dn = device->dev.of_node;
- 	struct axon_msic *msic;
-@@ -446,7 +443,7 @@ static const struct of_device_id axon_msi_device_id[] = {
- 	{}
- };
- 
--static struct of_platform_driver axon_msi_driver = {
-+static struct platform_driver axon_msi_driver = {
- 	.probe		= axon_msi_probe,
- 	.shutdown	= axon_msi_shutdown,
- 	.driver = {
-@@ -458,7 +455,7 @@ static struct of_platform_driver axon_msi_driver = {
- 
- static int __init axon_msi_init(void)
- {
--	return of_register_platform_driver(&axon_msi_driver);
-+	return platform_driver_register(&axon_msi_driver);
- }
- subsys_initcall(axon_msi_init);
- 
-diff --git a/arch/powerpc/platforms/pasemi/gpio_mdio.c b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-index a5d907b..9886296 100644
---- a/arch/powerpc/platforms/pasemi/gpio_mdio.c
-+++ b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-@@ -216,8 +216,7 @@ static int gpio_mdio_reset(struct mii_bus *bus)
- }
- 
- 
--static int __devinit gpio_mdio_probe(struct platform_device *ofdev,
--				     const struct of_device_id *match)
-+static int __devinit gpio_mdio_probe(struct platform_device *ofdev)
- {
- 	struct device *dev = &ofdev->dev;
- 	struct device_node *np = ofdev->dev.of_node;
-@@ -299,7 +298,7 @@ static struct of_device_id gpio_mdio_match[] =
- };
- MODULE_DEVICE_TABLE(of, gpio_mdio_match);
- 
--static struct of_platform_driver gpio_mdio_driver =
-+static struct platform_driver gpio_mdio_driver =
- {
- 	.probe		= gpio_mdio_probe,
- 	.remove		= gpio_mdio_remove,
-@@ -326,13 +325,13 @@ int gpio_mdio_init(void)
- 	if (!gpio_regs)
- 		return -ENODEV;
- 
--	return of_register_platform_driver(&gpio_mdio_driver);
-+	return platform_driver_register(&gpio_mdio_driver);
- }
- module_init(gpio_mdio_init);
- 
- void gpio_mdio_exit(void)
- {
--	of_unregister_platform_driver(&gpio_mdio_driver);
-+	platform_driver_unregister(&gpio_mdio_driver);
- 	if (gpio_regs)
- 		iounmap(gpio_regs);
- }
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index 2659a60..27402c7 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -172,10 +172,9 @@ static const struct block_device_operations axon_ram_devops = {
- 
- /**
-  * axon_ram_probe - probe() method for platform driver
-- * @device, @device_id: see of_platform_driver method
-+ * @device: see platform_driver method
-  */
--static int axon_ram_probe(struct platform_device *device,
--			  const struct of_device_id *device_id)
-+static int axon_ram_probe(struct platform_device *device)
- {
- 	static int axon_ram_bank_id = -1;
- 	struct axon_ram_bank *bank;
-@@ -326,7 +325,7 @@ static struct of_device_id axon_ram_device_id[] = {
- 	{}
- };
- 
--static struct of_platform_driver axon_ram_driver = {
-+static struct platform_driver axon_ram_driver = {
- 	.probe		= axon_ram_probe,
- 	.remove		= axon_ram_remove,
- 	.driver = {
-@@ -350,7 +349,7 @@ axon_ram_init(void)
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+diff --git a/arch/sparc/kernel/central.c b/arch/sparc/kernel/central.c
+index cfa2624..136d371 100644
+--- a/arch/sparc/kernel/central.c
++++ b/arch/sparc/kernel/central.c
+@@ -59,8 +59,7 @@ static int __devinit clock_board_calc_nslots(struct clock_board *p)
  	}
- 	azfs_minor = 0;
- 
--	return of_register_platform_driver(&axon_ram_driver);
-+	return platform_driver_register(&axon_ram_driver);
  }
  
- /**
-@@ -359,7 +358,7 @@ axon_ram_init(void)
- static void __exit
- axon_ram_exit(void)
+-static int __devinit clock_board_probe(struct platform_device *op,
+-				       const struct of_device_id *match)
++static int __devinit clock_board_probe(struct platform_device *op)
  {
--	of_unregister_platform_driver(&axon_ram_driver);
-+	platform_driver_unregister(&axon_ram_driver);
- 	unregister_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
- }
- 
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-index 6502561..b3fbb27 100644
---- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-@@ -365,8 +365,7 @@ bcom_engine_cleanup(void)
- /* OF platform driver                                                       */
- /* ======================================================================== */
- 
--static int __devinit mpc52xx_bcom_probe(struct platform_device *op,
--					const struct of_device_id *match)
-+static int __devinit mpc52xx_bcom_probe(struct platform_device *op)
- {
- 	struct device_node *ofn_sram;
- 	struct resource res_bcom;
-@@ -492,7 +491,7 @@ static struct of_device_id mpc52xx_bcom_of_match[] = {
- MODULE_DEVICE_TABLE(of, mpc52xx_bcom_of_match);
- 
- 
--static struct of_platform_driver mpc52xx_bcom_of_platform_driver = {
-+static struct platform_driver mpc52xx_bcom_of_platform_driver = {
- 	.probe		= mpc52xx_bcom_probe,
- 	.remove		= mpc52xx_bcom_remove,
- 	.driver = {
-@@ -510,13 +509,13 @@ static struct of_platform_driver mpc52xx_bcom_of_platform_driver = {
- static int __init
- mpc52xx_bcom_init(void)
- {
--	return of_register_platform_driver(&mpc52xx_bcom_of_platform_driver);
-+	return platform_driver_register(&mpc52xx_bcom_of_platform_driver);
- }
- 
- static void __exit
- mpc52xx_bcom_exit(void)
- {
--	of_unregister_platform_driver(&mpc52xx_bcom_of_platform_driver);
-+	platform_driver_unregister(&mpc52xx_bcom_of_platform_driver);
- }
- 
- /* If we're not a module, we must make sure everything is setup before  */
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index cc8d655..2b9f0c9 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -71,8 +71,7 @@ static int __init get_offset_from_cmdline(char *str)
- __setup("cache-sram-size=", get_size_from_cmdline);
- __setup("cache-sram-offset=", get_offset_from_cmdline);
- 
--static int __devinit mpc85xx_l2ctlr_of_probe(struct platform_device *dev,
--					  const struct of_device_id *match)
-+static int __devinit mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
- {
- 	long rval;
- 	unsigned int rem;
-@@ -204,7 +203,7 @@ static struct of_device_id mpc85xx_l2ctlr_of_match[] = {
+ 	struct clock_board *p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 	int err = -ENOMEM;
+@@ -148,7 +147,7 @@ static struct of_device_id __initdata clock_board_match[] = {
  	{},
  };
  
--static struct of_platform_driver mpc85xx_l2ctlr_of_platform_driver = {
-+static struct platform_driver mpc85xx_l2ctlr_of_platform_driver = {
- 	.driver	= {
- 		.name		= "fsl-l2ctlr",
- 		.owner		= THIS_MODULE,
-@@ -216,12 +215,12 @@ static struct of_platform_driver mpc85xx_l2ctlr_of_platform_driver = {
+-static struct of_platform_driver clock_board_driver = {
++static struct platform_driver clock_board_driver = {
+ 	.probe		= clock_board_probe,
+ 	.driver = {
+ 		.name = "clock_board",
+@@ -157,8 +156,7 @@ static struct of_platform_driver clock_board_driver = {
+ 	},
+ };
  
- static __init int mpc85xx_l2ctlr_of_init(void)
+-static int __devinit fhc_probe(struct platform_device *op,
+-			       const struct of_device_id *match)
++static int __devinit fhc_probe(struct platform_device *op)
  {
--	return of_register_platform_driver(&mpc85xx_l2ctlr_of_platform_driver);
-+	return platform_driver_register(&mpc85xx_l2ctlr_of_platform_driver);
- }
+ 	struct fhc *p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 	int err = -ENOMEM;
+@@ -254,7 +252,7 @@ static struct of_device_id __initdata fhc_match[] = {
+ 	{},
+ };
  
- static void __exit mpc85xx_l2ctlr_of_exit(void)
+-static struct of_platform_driver fhc_driver = {
++static struct platform_driver fhc_driver = {
+ 	.probe		= fhc_probe,
+ 	.driver = {
+ 		.name = "fhc",
+@@ -265,8 +263,8 @@ static struct of_platform_driver fhc_driver = {
+ 
+ static int __init sunfire_init(void)
  {
--	of_unregister_platform_driver(&mpc85xx_l2ctlr_of_platform_driver);
-+	platform_driver_unregister(&mpc85xx_l2ctlr_of_platform_driver);
- }
- 
- subsys_initcall(mpc85xx_l2ctlr_of_init);
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 108d76f..ee6a8a5 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -273,8 +273,7 @@ static int fsl_of_msi_remove(struct platform_device *ofdev)
+-	(void) of_register_platform_driver(&fhc_driver);
+-	(void) of_register_platform_driver(&clock_board_driver);
++	(void) platform_driver_register(&fhc_driver);
++	(void) platform_driver_register(&clock_board_driver);
  	return 0;
  }
  
--static int __devinit fsl_of_msi_probe(struct platform_device *dev,
--				const struct of_device_id *match)
-+static int __devinit fsl_of_msi_probe(struct platform_device *dev)
- {
- 	struct fsl_msi *msi;
- 	struct resource res;
-@@ -282,11 +281,15 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev,
- 	int rc;
- 	int virt_msir;
- 	const u32 *p;
--	struct fsl_msi_feature *features = match->data;
-+	struct fsl_msi_feature *features;
- 	struct fsl_msi_cascade_data *cascade_data = NULL;
- 	int len;
- 	u32 offset;
- 
-+	if (!dev->dev.of_match)
-+		return -EINVAL;
-+	features = dev->dev.of_match->data;
-+
- 	printk(KERN_DEBUG "Setting up Freescale MSI support\n");
- 
- 	msi = kzalloc(sizeof(struct fsl_msi), GFP_KERNEL);
-@@ -411,7 +414,7 @@ static const struct of_device_id fsl_of_msi_ids[] = {
- 	{}
- };
- 
--static struct of_platform_driver fsl_of_msi_driver = {
-+static struct platform_driver fsl_of_msi_driver = {
- 	.driver = {
- 		.name = "fsl-msi",
- 		.owner = THIS_MODULE,
-@@ -423,7 +426,7 @@ static struct of_platform_driver fsl_of_msi_driver = {
- 
- static __init int fsl_of_msi_init(void)
- {
--	return of_register_platform_driver(&fsl_of_msi_driver);
-+	return platform_driver_register(&fsl_of_msi_driver);
+diff --git a/arch/sparc/kernel/chmc.c b/arch/sparc/kernel/chmc.c
+index 08c466e..668c7be 100644
+--- a/arch/sparc/kernel/chmc.c
++++ b/arch/sparc/kernel/chmc.c
+@@ -392,8 +392,7 @@ static void __devinit jbusmc_construct_dimm_groups(struct jbusmc *p,
+ 	}
  }
  
- subsys_initcall(fsl_of_msi_init);
-diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-index e9381bf..f122e89 100644
---- a/arch/powerpc/sysdev/fsl_pmc.c
-+++ b/arch/powerpc/sysdev/fsl_pmc.c
-@@ -58,8 +58,7 @@ static const struct platform_suspend_ops pmc_suspend_ops = {
- 	.enter = pmc_suspend_enter,
+-static int __devinit jbusmc_probe(struct platform_device *op,
+-				  const struct of_device_id *match)
++static int __devinit jbusmc_probe(struct platform_device *op)
+ {
+ 	const struct linux_prom64_registers *mem_regs;
+ 	struct device_node *mem_node;
+@@ -690,8 +689,7 @@ static void chmc_fetch_decode_regs(struct chmc *p)
+ 				      chmc_read_mcreg(p, CHMCTRL_DECODE4));
+ }
+ 
+-static int __devinit chmc_probe(struct platform_device *op,
+-				const struct of_device_id *match)
++static int __devinit chmc_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	unsigned long ver;
+@@ -765,13 +763,12 @@ out_free:
+ 	goto out;
+ }
+ 
+-static int __devinit us3mc_probe(struct platform_device *op,
+-				const struct of_device_id *match)
++static int __devinit us3mc_probe(struct platform_device *op)
+ {
+ 	if (mc_type == MC_TYPE_SAFARI)
+-		return chmc_probe(op, match);
++		return chmc_probe(op);
+ 	else if (mc_type == MC_TYPE_JBUS)
+-		return jbusmc_probe(op, match);
++		return jbusmc_probe(op);
+ 	return -ENODEV;
+ }
+ 
+@@ -810,7 +807,7 @@ static const struct of_device_id us3mc_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, us3mc_match);
+ 
+-static struct of_platform_driver us3mc_driver = {
++static struct platform_driver us3mc_driver = {
+ 	.driver = {
+ 		.name = "us3mc",
+ 		.owner = THIS_MODULE,
+@@ -848,7 +845,7 @@ static int __init us3mc_init(void)
+ 	ret = register_dimm_printer(us3mc_dimm_printer);
+ 
+ 	if (!ret) {
+-		ret = of_register_platform_driver(&us3mc_driver);
++		ret = platform_driver_register(&us3mc_driver);
+ 		if (ret)
+ 			unregister_dimm_printer(us3mc_dimm_printer);
+ 	}
+@@ -859,7 +856,7 @@ static void __exit us3mc_cleanup(void)
+ {
+ 	if (us3mc_platform()) {
+ 		unregister_dimm_printer(us3mc_dimm_printer);
+-		of_unregister_platform_driver(&us3mc_driver);
++		platform_driver_unregister(&us3mc_driver);
+ 	}
+ }
+ 
+diff --git a/arch/sparc/kernel/pci_fire.c b/arch/sparc/kernel/pci_fire.c
+index efb896d..be5e244 100644
+--- a/arch/sparc/kernel/pci_fire.c
++++ b/arch/sparc/kernel/pci_fire.c
+@@ -455,8 +455,7 @@ static int __devinit pci_fire_pbm_init(struct pci_pbm_info *pbm,
+ 	return 0;
+ }
+ 
+-static int __devinit fire_probe(struct platform_device *op,
+-				const struct of_device_id *match)
++static int __devinit fire_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	struct pci_pbm_info *pbm;
+@@ -507,7 +506,7 @@ static struct of_device_id __initdata fire_match[] = {
+ 	{},
  };
  
--static int pmc_probe(struct platform_device *ofdev,
--		     const struct of_device_id *id)
-+static int pmc_probe(struct platform_device *ofdev)
+-static struct of_platform_driver fire_driver = {
++static struct platform_driver fire_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -518,7 +517,7 @@ static struct of_platform_driver fire_driver = {
+ 
+ static int __init fire_init(void)
  {
- 	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
- 	if (!pmc_regs)
-@@ -76,7 +75,7 @@ static const struct of_device_id pmc_ids[] = {
- 	{ },
+-	return of_register_platform_driver(&fire_driver);
++	return platform_driver_register(&fire_driver);
+ }
+ 
+ subsys_initcall(fire_init);
+diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
+index 22eab7c..56ee745 100644
+--- a/arch/sparc/kernel/pci_psycho.c
++++ b/arch/sparc/kernel/pci_psycho.c
+@@ -503,8 +503,7 @@ static struct pci_pbm_info * __devinit psycho_find_sibling(u32 upa_portid)
+ 
+ #define PSYCHO_CONFIGSPACE	0x001000000UL
+ 
+-static int __devinit psycho_probe(struct platform_device *op,
+-				  const struct of_device_id *match)
++static int __devinit psycho_probe(struct platform_device *op)
+ {
+ 	const struct linux_prom64_registers *pr_regs;
+ 	struct device_node *dp = op->dev.of_node;
+@@ -601,7 +600,7 @@ static struct of_device_id __initdata psycho_match[] = {
+ 	{},
  };
+ 
+-static struct of_platform_driver psycho_driver = {
++static struct platform_driver psycho_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -612,7 +611,7 @@ static struct of_platform_driver psycho_driver = {
+ 
+ static int __init psycho_init(void)
+ {
+-	return of_register_platform_driver(&psycho_driver);
++	return platform_driver_register(&psycho_driver);
+ }
+ 
+ subsys_initcall(psycho_init);
+diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
+index 5c3f5ec..2857073 100644
+--- a/arch/sparc/kernel/pci_sabre.c
++++ b/arch/sparc/kernel/pci_sabre.c
+@@ -452,8 +452,7 @@ static void __devinit sabre_pbm_init(struct pci_pbm_info *pbm,
+ 	sabre_scan_bus(pbm, &op->dev);
+ }
+ 
+-static int __devinit sabre_probe(struct platform_device *op,
+-				 const struct of_device_id *match)
++static int __devinit sabre_probe(struct platform_device *op)
+ {
+ 	const struct linux_prom64_registers *pr_regs;
+ 	struct device_node *dp = op->dev.of_node;
+@@ -464,7 +463,7 @@ static int __devinit sabre_probe(struct platform_device *op,
+ 	const u32 *vdma;
+ 	u64 clear_irq;
+ 
+-	hummingbird_p = (match->data != NULL);
++	hummingbird_p = op->dev.of_match && (op->dev.of_match->data != NULL);
+ 	if (!hummingbird_p) {
+ 		struct device_node *cpu_dp;
+ 
+@@ -595,7 +594,7 @@ static struct of_device_id __initdata sabre_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver sabre_driver = {
++static struct platform_driver sabre_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -606,7 +605,7 @@ static struct of_platform_driver sabre_driver = {
+ 
+ static int __init sabre_init(void)
+ {
+-	return of_register_platform_driver(&sabre_driver);
++	return platform_driver_register(&sabre_driver);
+ }
+ 
+ subsys_initcall(sabre_init);
+diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
+index 445a47a..6783410 100644
+--- a/arch/sparc/kernel/pci_schizo.c
++++ b/arch/sparc/kernel/pci_schizo.c
+@@ -1460,10 +1460,11 @@ out_err:
+ 	return err;
+ }
+ 
+-static int __devinit schizo_probe(struct platform_device *op,
+-				  const struct of_device_id *match)
++static int __devinit schizo_probe(struct platform_device *op)
+ {
+-	return __schizo_init(op, (unsigned long) match->data);
++	if (!op->dev.of_match)
++		return -EINVAL;
++	return __schizo_init(op, (unsigned long) op->dev.of_match->data);
+ }
+ 
+ /* The ordering of this table is very important.  Some Tomatillo
+@@ -1490,7 +1491,7 @@ static struct of_device_id __initdata schizo_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver schizo_driver = {
++static struct platform_driver schizo_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -1501,7 +1502,7 @@ static struct of_platform_driver schizo_driver = {
+ 
+ static int __init schizo_init(void)
+ {
+-	return of_register_platform_driver(&schizo_driver);
++	return platform_driver_register(&schizo_driver);
+ }
+ 
+ subsys_initcall(schizo_init);
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 743344a..158cd73 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -918,8 +918,7 @@ static int __devinit pci_sun4v_pbm_init(struct pci_pbm_info *pbm,
+ 	return 0;
+ }
+ 
+-static int __devinit pci_sun4v_probe(struct platform_device *op,
+-				     const struct of_device_id *match)
++static int __devinit pci_sun4v_probe(struct platform_device *op)
+ {
+ 	const struct linux_prom64_registers *regs;
+ 	static int hvapi_negotiated = 0;
+@@ -1008,7 +1007,7 @@ static struct of_device_id __initdata pci_sun4v_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver pci_sun4v_driver = {
++static struct platform_driver pci_sun4v_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -1019,7 +1018,7 @@ static struct of_platform_driver pci_sun4v_driver = {
+ 
+ static int __init pci_sun4v_init(void)
+ {
+-	return of_register_platform_driver(&pci_sun4v_driver);
++	return platform_driver_register(&pci_sun4v_driver);
+ }
+ 
+ subsys_initcall(pci_sun4v_init);
+diff --git a/arch/sparc/kernel/pmc.c b/arch/sparc/kernel/pmc.c
+index 94536a8..93d7b44 100644
+--- a/arch/sparc/kernel/pmc.c
++++ b/arch/sparc/kernel/pmc.c
+@@ -51,8 +51,7 @@ static void pmc_swift_idle(void)
+ #endif
+ }
+ 
+-static int __devinit pmc_probe(struct platform_device *op,
+-			       const struct of_device_id *match)
++static int __devinit pmc_probe(struct platform_device *op)
+ {
+ 	regs = of_ioremap(&op->resource[0], 0,
+ 			  resource_size(&op->resource[0]), PMC_OBPNAME);
+@@ -78,7 +77,7 @@ static struct of_device_id __initdata pmc_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, pmc_match);
  
 -static struct of_platform_driver pmc_driver = {
 +static struct platform_driver pmc_driver = {
  	.driver = {
- 		.name = "fsl-pmc",
+ 		.name = "pmc",
  		.owner = THIS_MODULE,
-@@ -87,6 +86,6 @@ static struct of_platform_driver pmc_driver = {
+@@ -89,7 +88,7 @@ static struct of_platform_driver pmc_driver = {
  
  static int __init pmc_init(void)
  {
 -	return of_register_platform_driver(&pmc_driver);
 +	return platform_driver_register(&pmc_driver);
  }
- device_initcall(pmc_init);
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 8c6cab0..3eff2c3 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1570,8 +1570,7 @@ err_ops:
  
- /* The probe function for RapidIO peer-to-peer network.
-  */
--static int __devinit fsl_of_rio_rpn_probe(struct platform_device *dev,
+ /* This driver is not critical to the boot process
+diff --git a/arch/sparc/kernel/power.c b/arch/sparc/kernel/power.c
+index 2c59f4d..cd725fe 100644
+--- a/arch/sparc/kernel/power.c
++++ b/arch/sparc/kernel/power.c
+@@ -33,7 +33,7 @@ static int __devinit has_button_interrupt(unsigned int irq, struct device_node *
+ 	return 1;
+ }
+ 
+-static int __devinit power_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit power_probe(struct platform_device *op)
+ {
+ 	struct resource *res = &op->resource[0];
+ 	unsigned int irq = op->archdata.irqs[0];
+@@ -59,7 +59,7 @@ static struct of_device_id __initdata power_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver power_driver = {
++static struct platform_driver power_driver = {
+ 	.probe		= power_probe,
+ 	.driver = {
+ 		.name = "power",
+@@ -70,7 +70,7 @@ static struct of_platform_driver power_driver = {
+ 
+ static int __init power_init(void)
+ {
+-	return of_register_platform_driver(&power_driver);
++	return platform_driver_register(&power_driver);
+ }
+ 
+ device_initcall(power_init);
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index 9c743b1..23ccd73 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -142,7 +142,7 @@ static struct platform_device m48t59_rtc = {
+ 	},
+ };
+ 
+-static int __devinit clock_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit clock_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	const char *model = of_get_property(dp, "model", NULL);
+@@ -176,7 +176,7 @@ static struct of_device_id __initdata clock_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver clock_driver = {
++static struct platform_driver clock_driver = {
+ 	.probe		= clock_probe,
+ 	.driver = {
+ 		.name = "rtc",
+@@ -189,7 +189,7 @@ static struct of_platform_driver clock_driver = {
+ /* Probe for the mostek real time clock chip. */
+ static int __init clock_init(void)
+ {
+-	return of_register_platform_driver(&clock_driver);
++	return platform_driver_register(&clock_driver);
+ }
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+  * be before device_initcall() because things like the RTC driver
+diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+index 3bc9c99..e186279 100644
+--- a/arch/sparc/kernel/time_64.c
++++ b/arch/sparc/kernel/time_64.c
+@@ -419,7 +419,7 @@ static struct platform_device rtc_cmos_device = {
+ 	.num_resources	= 1,
+ };
+ 
+-static int __devinit rtc_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit rtc_probe(struct platform_device *op)
+ {
+ 	struct resource *r;
+ 
+@@ -462,7 +462,7 @@ static struct of_device_id __initdata rtc_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver rtc_driver = {
++static struct platform_driver rtc_driver = {
+ 	.probe		= rtc_probe,
+ 	.driver = {
+ 		.name = "rtc",
+@@ -477,7 +477,7 @@ static struct platform_device rtc_bq4802_device = {
+ 	.num_resources	= 1,
+ };
+ 
+-static int __devinit bq4802_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit bq4802_probe(struct platform_device *op)
+ {
+ 
+ 	printk(KERN_INFO "%s: BQ4802 regs at 0x%llx\n",
+@@ -495,7 +495,7 @@ static struct of_device_id __initdata bq4802_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver bq4802_driver = {
++static struct platform_driver bq4802_driver = {
+ 	.probe		= bq4802_probe,
+ 	.driver = {
+ 		.name = "bq4802",
+@@ -534,7 +534,7 @@ static struct platform_device m48t59_rtc = {
+ 	},
+ };
+ 
+-static int __devinit mostek_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit mostek_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 
+@@ -559,7 +559,7 @@ static struct of_device_id __initdata mostek_match[] = {
+ 	{},
+ };
+ 
+-static struct of_platform_driver mostek_driver = {
++static struct platform_driver mostek_driver = {
+ 	.probe		= mostek_probe,
+ 	.driver = {
+ 		.name = "mostek",
+@@ -586,9 +586,9 @@ static int __init clock_init(void)
+ 	if (tlb_type == hypervisor)
+ 		return platform_device_register(&rtc_sun4v_device);
+ 
+-	(void) of_register_platform_driver(&rtc_driver);
+-	(void) of_register_platform_driver(&mostek_driver);
+-	(void) of_register_platform_driver(&bq4802_driver);
++	(void) platform_driver_register(&rtc_driver);
++	(void) platform_driver_register(&mostek_driver);
++	(void) platform_driver_register(&bq4802_driver);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/char/hw_random/n2-drv.c b/drivers/char/hw_random/n2-drv.c
+index a3f5e38..43ac619 100644
+--- a/drivers/char/hw_random/n2-drv.c
++++ b/drivers/char/hw_random/n2-drv.c
+@@ -619,15 +619,17 @@ static void __devinit n2rng_driver_version(void)
+ 		pr_info("%s", version);
+ }
+ 
+-static int __devinit n2rng_probe(struct platform_device *op,
+-				 const struct of_device_id *match)
++static int __devinit n2rng_probe(struct platform_device *op)
+ {
+-	int victoria_falls = (match->data != NULL);
++	int victoria_falls;
+ 	int err = -ENOMEM;
+ 	struct n2rng *np;
+ 
+-	n2rng_driver_version();
++	if (!op->dev.of_match)
++		return -EINVAL;
++	victoria_falls = (op->dev.of_match->data != NULL);
+ 
++	n2rng_driver_version();
+ 	np = kzalloc(sizeof(*np), GFP_KERNEL);
+ 	if (!np)
+ 		goto out;
+@@ -750,7 +752,7 @@ static const struct of_device_id n2rng_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, n2rng_match);
+ 
+-static struct of_platform_driver n2rng_driver = {
++static struct platform_driver n2rng_driver = {
+ 	.driver = {
+ 		.name = "n2rng",
+ 		.owner = THIS_MODULE,
+@@ -762,12 +764,12 @@ static struct of_platform_driver n2rng_driver = {
+ 
+ static int __init n2rng_init(void)
+ {
+-	return of_register_platform_driver(&n2rng_driver);
++	return platform_driver_register(&n2rng_driver);
+ }
+ 
+ static void __exit n2rng_exit(void)
+ {
+-	of_unregister_platform_driver(&n2rng_driver);
++	platform_driver_unregister(&n2rng_driver);
+ }
+ 
+ module_init(n2rng_init);
+diff --git a/drivers/crypto/n2_core.c b/drivers/crypto/n2_core.c
+index 80dc094..2e5b204 100644
+--- a/drivers/crypto/n2_core.c
++++ b/drivers/crypto/n2_core.c
+@@ -2004,8 +2004,7 @@ static void __devinit n2_spu_driver_version(void)
+ 		pr_info("%s", version);
+ }
+ 
+-static int __devinit n2_crypto_probe(struct platform_device *dev,
 -				     const struct of_device_id *match)
-+static int __devinit fsl_of_rio_rpn_probe(struct platform_device *dev)
++static int __devinit n2_crypto_probe(struct platform_device *dev)
  {
- 	int rc;
- 	printk(KERN_INFO "Setting up RapidIO peer-to-peer network %s\n",
-@@ -1594,7 +1593,7 @@ static const struct of_device_id fsl_of_rio_rpn_ids[] = {
- 	{},
+ 	struct mdesc_handle *mdesc;
+ 	const char *full_name;
+@@ -2116,8 +2115,7 @@ static void free_ncp(struct n2_mau *mp)
+ 	kfree(mp);
+ }
+ 
+-static int __devinit n2_mau_probe(struct platform_device *dev,
+-				     const struct of_device_id *match)
++static int __devinit n2_mau_probe(struct platform_device *dev)
+ {
+ 	struct mdesc_handle *mdesc;
+ 	const char *full_name;
+@@ -2211,7 +2209,7 @@ static struct of_device_id n2_crypto_match[] = {
+ 
+ MODULE_DEVICE_TABLE(of, n2_crypto_match);
+ 
+-static struct of_platform_driver n2_crypto_driver = {
++static struct platform_driver n2_crypto_driver = {
+ 	.driver = {
+ 		.name		=	"n2cp",
+ 		.owner		=	THIS_MODULE,
+@@ -2235,7 +2233,7 @@ static struct of_device_id n2_mau_match[] = {
+ 
+ MODULE_DEVICE_TABLE(of, n2_mau_match);
+ 
+-static struct of_platform_driver n2_mau_driver = {
++static struct platform_driver n2_mau_driver = {
+ 	.driver = {
+ 		.name		=	"ncp",
+ 		.owner		=	THIS_MODULE,
+@@ -2247,20 +2245,20 @@ static struct of_platform_driver n2_mau_driver = {
+ 
+ static int __init n2_init(void)
+ {
+-	int err = of_register_platform_driver(&n2_crypto_driver);
++	int err = platform_driver_register(&n2_crypto_driver);
+ 
+ 	if (!err) {
+-		err = of_register_platform_driver(&n2_mau_driver);
++		err = platform_driver_register(&n2_mau_driver);
+ 		if (err)
+-			of_unregister_platform_driver(&n2_crypto_driver);
++			platform_driver_unregister(&n2_crypto_driver);
+ 	}
+ 	return err;
+ }
+ 
+ static void __exit n2_exit(void)
+ {
+-	of_unregister_platform_driver(&n2_mau_driver);
+-	of_unregister_platform_driver(&n2_crypto_driver);
++	platform_driver_unregister(&n2_mau_driver);
++	platform_driver_unregister(&n2_crypto_driver);
+ }
+ 
+ module_init(n2_init);
+diff --git a/drivers/hwmon/ultra45_env.c b/drivers/hwmon/ultra45_env.c
+index d863e13..1f36c63 100644
+--- a/drivers/hwmon/ultra45_env.c
++++ b/drivers/hwmon/ultra45_env.c
+@@ -234,8 +234,7 @@ static const struct attribute_group env_group = {
+ 	.attrs = env_attributes,
  };
  
--static struct of_platform_driver fsl_of_rio_rpn_driver = {
-+static struct platform_driver fsl_of_rio_rpn_driver = {
- 	.driver = {
- 		.name = "fsl-of-rio",
- 		.owner = THIS_MODULE,
-@@ -1605,7 +1604,7 @@ static struct of_platform_driver fsl_of_rio_rpn_driver = {
- 
- static __init int fsl_of_rio_rpn_init(void)
- {
--	return of_register_platform_driver(&fsl_of_rio_rpn_driver);
-+	return platform_driver_register(&fsl_of_rio_rpn_driver);
- }
- 
- subsys_initcall(fsl_of_rio_rpn_init);
-diff --git a/arch/powerpc/sysdev/pmi.c b/arch/powerpc/sysdev/pmi.c
-index 4260f36..8ce4fc3 100644
---- a/arch/powerpc/sysdev/pmi.c
-+++ b/arch/powerpc/sysdev/pmi.c
-@@ -121,8 +121,7 @@ static void pmi_notify_handlers(struct work_struct *work)
- 	spin_unlock(&data->handler_spinlock);
- }
- 
--static int pmi_of_probe(struct platform_device *dev,
--			const struct of_device_id *match)
-+static int pmi_of_probe(struct platform_device *dev)
- {
- 	struct device_node *np = dev->dev.of_node;
- 	int rc;
-@@ -205,7 +204,7 @@ static int pmi_of_remove(struct platform_device *dev)
- 	return 0;
- }
- 
--static struct of_platform_driver pmi_of_platform_driver = {
-+static struct platform_driver pmi_of_platform_driver = {
- 	.probe		= pmi_of_probe,
- 	.remove		= pmi_of_remove,
- 	.driver = {
-@@ -217,13 +216,13 @@ static struct of_platform_driver pmi_of_platform_driver = {
- 
- static int __init pmi_module_init(void)
- {
--	return of_register_platform_driver(&pmi_of_platform_driver);
-+	return platform_driver_register(&pmi_of_platform_driver);
- }
- module_init(pmi_module_init);
- 
- static void __exit pmi_module_exit(void)
- {
--	of_unregister_platform_driver(&pmi_of_platform_driver);
-+	platform_driver_unregister(&pmi_of_platform_driver);
- }
- module_exit(pmi_module_exit);
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 90020de..904c6cb 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -659,8 +659,7 @@ static int qe_resume(struct platform_device *ofdev)
- 	return 0;
- }
- 
--static int qe_probe(struct platform_device *ofdev,
--		    const struct of_device_id *id)
-+static int qe_probe(struct platform_device *ofdev)
- {
- 	return 0;
- }
-@@ -670,7 +669,7 @@ static const struct of_device_id qe_ids[] = {
- 	{ },
- };
- 
--static struct of_platform_driver qe_driver = {
-+static struct platform_driver qe_driver = {
- 	.driver = {
- 		.name = "fsl-qe",
- 		.owner = THIS_MODULE,
-@@ -682,7 +681,7 @@ static struct of_platform_driver qe_driver = {
- 
- static int __init qe_drv_init(void)
- {
--	return of_register_platform_driver(&qe_driver);
-+	return platform_driver_register(&qe_driver);
- }
- device_initcall(qe_drv_init);
- #endif /* defined(CONFIG_SUSPEND) && defined(CONFIG_PPC_85xx) */
-diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
-index a31c830..1d50481 100644
---- a/drivers/char/hw_random/pasemi-rng.c
-+++ b/drivers/char/hw_random/pasemi-rng.c
-@@ -94,8 +94,7 @@ static struct hwrng pasemi_rng = {
- 	.data_read	= pasemi_rng_data_read,
- };
- 
--static int __devinit rng_probe(struct platform_device *ofdev,
+-static int __devinit env_probe(struct platform_device *op,
 -			       const struct of_device_id *match)
-+static int __devinit rng_probe(struct platform_device *ofdev)
++static int __devinit env_probe(struct platform_device *op)
  {
- 	void __iomem *rng_regs;
- 	struct device_node *rng_np = ofdev->dev.of_node;
-@@ -139,7 +138,7 @@ static struct of_device_id rng_match[] = {
- 	{ },
+ 	struct env *p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 	int err = -ENOMEM;
+@@ -299,7 +298,7 @@ static const struct of_device_id env_match[] = {
  };
+ MODULE_DEVICE_TABLE(of, env_match);
  
--static struct of_platform_driver rng_driver = {
-+static struct platform_driver rng_driver = {
+-static struct of_platform_driver env_driver = {
++static struct platform_driver env_driver = {
  	.driver = {
- 		.name = "pasemi-rng",
+ 		.name = "ultra45_env",
  		.owner = THIS_MODULE,
-@@ -151,13 +150,13 @@ static struct of_platform_driver rng_driver = {
+@@ -311,12 +310,12 @@ static struct of_platform_driver env_driver = {
  
- static int __init rng_init(void)
+ static int __init env_init(void)
  {
--	return of_register_platform_driver(&rng_driver);
-+	return platform_driver_register(&rng_driver);
- }
- module_init(rng_init);
- 
- static void __exit rng_exit(void)
- {
--	of_unregister_platform_driver(&rng_driver);
-+	platform_driver_unregister(&rng_driver);
- }
- module_exit(rng_exit);
- 
-diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
-index 2b1baee..1891252 100644
---- a/drivers/crypto/amcc/crypto4xx_core.c
-+++ b/drivers/crypto/amcc/crypto4xx_core.c
-@@ -1150,8 +1150,7 @@ struct crypto4xx_alg_common crypto4xx_alg[] = {
- /**
-  * Module Initialization Routine
-  */
--static int __init crypto4xx_probe(struct platform_device *ofdev,
--				  const struct of_device_id *match)
-+static int __init crypto4xx_probe(struct platform_device *ofdev)
- {
- 	int rc;
- 	struct resource res;
-@@ -1280,7 +1279,7 @@ static const struct of_device_id crypto4xx_match[] = {
- 	{ },
- };
- 
--static struct of_platform_driver crypto4xx_driver = {
-+static struct platform_driver crypto4xx_driver = {
- 	.driver = {
- 		.name = "crypto4xx",
- 		.owner = THIS_MODULE,
-@@ -1292,12 +1291,12 @@ static struct of_platform_driver crypto4xx_driver = {
- 
- static int __init crypto4xx_init(void)
- {
--	return of_register_platform_driver(&crypto4xx_driver);
-+	return platform_driver_register(&crypto4xx_driver);
+-	return of_register_platform_driver(&env_driver);
++	return platform_driver_register(&env_driver);
  }
  
- static void __exit crypto4xx_exit(void)
+ static void __exit env_exit(void)
  {
--	of_unregister_platform_driver(&crypto4xx_driver);
-+	platform_driver_unregister(&crypto4xx_driver);
+-	of_unregister_platform_driver(&env_driver);
++	platform_driver_unregister(&env_driver);
  }
  
- module_init(crypto4xx_init);
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 4de947a..e3854a8 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1281,8 +1281,7 @@ static void fsl_dma_chan_remove(struct fsldma_chan *chan)
- 	kfree(chan);
+ module_init(env_init);
+diff --git a/drivers/input/misc/sparcspkr.c b/drivers/input/misc/sparcspkr.c
+index 8e130bf..0122f53 100644
+--- a/drivers/input/misc/sparcspkr.c
++++ b/drivers/input/misc/sparcspkr.c
+@@ -173,18 +173,16 @@ static int __devinit sparcspkr_probe(struct device *dev)
+ 	return 0;
  }
  
--static int __devinit fsldma_of_probe(struct platform_device *op,
--			const struct of_device_id *match)
-+static int __devinit fsldma_of_probe(struct platform_device *op)
+-static int sparcspkr_shutdown(struct platform_device *dev)
++static void sparcspkr_shutdown(struct platform_device *dev)
  {
- 	struct fsldma_device *fdev;
- 	struct device_node *child;
-@@ -1414,20 +1413,13 @@ static struct of_platform_driver fsldma_of_driver = {
+ 	struct sparcspkr_state *state = dev_get_drvdata(&dev->dev);
+ 	struct input_dev *input_dev = state->input_dev;
  
- static __init int fsldma_init(void)
- {
--	int ret;
+ 	/* turn off the speaker */
+ 	state->event(input_dev, EV_SND, SND_BELL, 0);
 -
- 	pr_info("Freescale Elo / Elo Plus DMA driver\n");
--
--	ret = of_register_platform_driver(&fsldma_of_driver);
--	if (ret)
--		pr_err("fsldma: failed to register platform driver\n");
--
--	return ret;
-+	return platform_driver_register(&fsldma_of_driver);
+-	return 0;
  }
  
- static void __exit fsldma_exit(void)
+-static int __devinit bbc_beep_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit bbc_beep_probe(struct platform_device *op)
  {
--	of_unregister_platform_driver(&fsldma_of_driver);
-+	platform_driver_unregister(&fsldma_of_driver);
- }
- 
- subsys_initcall(fsldma_init);
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 59c2701..4f95d31 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -649,8 +649,7 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
- 	return &mdesc->desc;
- }
- 
--static int __devinit mpc_dma_probe(struct platform_device *op,
--					const struct of_device_id *match)
-+static int __devinit mpc_dma_probe(struct platform_device *op)
- {
- 	struct device_node *dn = op->dev.of_node;
- 	struct device *dev = &op->dev;
-@@ -827,7 +826,7 @@ static struct of_device_id mpc_dma_match[] = {
+ 	struct sparcspkr_state *state;
+ 	struct bbc_beep_info *info;
+@@ -258,7 +256,7 @@ static const struct of_device_id bbc_beep_match[] = {
  	{},
  };
  
--static struct of_platform_driver mpc_dma_driver = {
-+static struct platform_driver mpc_dma_driver = {
- 	.probe		= mpc_dma_probe,
- 	.remove		= __devexit_p(mpc_dma_remove),
+-static struct of_platform_driver bbc_beep_driver = {
++static struct platform_driver bbc_beep_driver = {
  	.driver = {
-@@ -839,13 +838,13 @@ static struct of_platform_driver mpc_dma_driver = {
- 
- static int __init mpc_dma_init(void)
- {
--	return of_register_platform_driver(&mpc_dma_driver);
-+	return platform_driver_register(&mpc_dma_driver);
- }
- module_init(mpc_dma_init);
- 
- static void __exit mpc_dma_exit(void)
- {
--	of_unregister_platform_driver(&mpc_dma_driver);
-+	platform_driver_unregister(&mpc_dma_driver);
- }
- module_exit(mpc_dma_exit);
- 
-diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-index cef5845..3b0247e 100644
---- a/drivers/dma/ppc4xx/adma.c
-+++ b/drivers/dma/ppc4xx/adma.c
-@@ -4393,8 +4393,7 @@ static void ppc440spe_adma_release_irqs(struct ppc440spe_adma_device *adev,
- /**
-  * ppc440spe_adma_probe - probe the asynch device
-  */
--static int __devinit ppc440spe_adma_probe(struct platform_device *ofdev,
--					  const struct of_device_id *match)
-+static int __devinit ppc440spe_adma_probe(struct platform_device *ofdev)
- {
- 	struct device_node *np = ofdev->dev.of_node;
- 	struct resource res;
-@@ -4944,7 +4943,7 @@ static const struct of_device_id ppc440spe_adma_of_match[] __devinitconst = {
- };
- MODULE_DEVICE_TABLE(of, ppc440spe_adma_of_match);
- 
--static struct of_platform_driver ppc440spe_adma_driver = {
-+static struct platform_driver ppc440spe_adma_driver = {
- 	.probe = ppc440spe_adma_probe,
- 	.remove = __devexit_p(ppc440spe_adma_remove),
- 	.driver = {
-@@ -4962,7 +4961,7 @@ static __init int ppc440spe_adma_init(void)
- 	if (ret)
- 		return ret;
- 
--	ret = of_register_platform_driver(&ppc440spe_adma_driver);
-+	ret = platform_driver_register(&ppc440spe_adma_driver);
- 	if (ret) {
- 		pr_err("%s: failed to register platform driver\n",
- 			__func__);
-@@ -4996,7 +4995,7 @@ out_dev:
- 	/* User will not be able to enable h/w RAID-6 */
- 	pr_err("%s: failed to create RAID-6 driver interface\n",
- 		__func__);
--	of_unregister_platform_driver(&ppc440spe_adma_driver);
-+	platform_driver_unregister(&ppc440spe_adma_driver);
- out_reg:
- 	dcr_unmap(ppc440spe_mq_dcr_host, ppc440spe_mq_dcr_len);
- 	kfree(ppc440spe_dma_fifo_buf);
-@@ -5011,7 +5010,7 @@ static void __exit ppc440spe_adma_exit(void)
- 			   &driver_attr_enable);
- 	driver_remove_file(&ppc440spe_adma_driver.driver,
- 			   &driver_attr_devices);
--	of_unregister_platform_driver(&ppc440spe_adma_driver);
-+	platform_driver_unregister(&ppc440spe_adma_driver);
- 	dcr_unmap(ppc440spe_mq_dcr_host, ppc440spe_mq_dcr_len);
- 	kfree(ppc440spe_dma_fifo_buf);
- }
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index b123bb3..ffb5ad0 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -200,8 +200,7 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static int __devinit mpc85xx_pci_err_probe(struct platform_device *op,
--					   const struct of_device_id *match)
-+static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
-@@ -338,7 +337,7 @@ static struct of_device_id mpc85xx_pci_err_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, mpc85xx_pci_err_of_match);
- 
--static struct of_platform_driver mpc85xx_pci_err_driver = {
-+static struct platform_driver mpc85xx_pci_err_driver = {
- 	.probe = mpc85xx_pci_err_probe,
- 	.remove = __devexit_p(mpc85xx_pci_err_remove),
- 	.driver = {
-@@ -503,8 +502,7 @@ static irqreturn_t mpc85xx_l2_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static int __devinit mpc85xx_l2_err_probe(struct platform_device *op,
--					  const struct of_device_id *match)
-+static int __devinit mpc85xx_l2_err_probe(struct platform_device *op)
- {
- 	struct edac_device_ctl_info *edac_dev;
- 	struct mpc85xx_l2_pdata *pdata;
-@@ -656,7 +654,7 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, mpc85xx_l2_err_of_match);
- 
--static struct of_platform_driver mpc85xx_l2_err_driver = {
-+static struct platform_driver mpc85xx_l2_err_driver = {
- 	.probe = mpc85xx_l2_err_probe,
- 	.remove = mpc85xx_l2_err_remove,
- 	.driver = {
-@@ -956,8 +954,7 @@ static void __devinit mpc85xx_init_csrows(struct mem_ctl_info *mci)
- 	}
- }
- 
--static int __devinit mpc85xx_mc_err_probe(struct platform_device *op,
--					  const struct of_device_id *match)
-+static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- {
- 	struct mem_ctl_info *mci;
- 	struct mpc85xx_mc_pdata *pdata;
-@@ -1136,7 +1133,7 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, mpc85xx_mc_err_of_match);
- 
--static struct of_platform_driver mpc85xx_mc_err_driver = {
-+static struct platform_driver mpc85xx_mc_err_driver = {
- 	.probe = mpc85xx_mc_err_probe,
- 	.remove = mpc85xx_mc_err_remove,
- 	.driver = {
-@@ -1171,16 +1168,16 @@ static int __init mpc85xx_mc_init(void)
- 		break;
- 	}
- 
--	res = of_register_platform_driver(&mpc85xx_mc_err_driver);
-+	res = platform_driver_register(&mpc85xx_mc_err_driver);
- 	if (res)
- 		printk(KERN_WARNING EDAC_MOD_STR "MC fails to register\n");
- 
--	res = of_register_platform_driver(&mpc85xx_l2_err_driver);
-+	res = platform_driver_register(&mpc85xx_l2_err_driver);
- 	if (res)
- 		printk(KERN_WARNING EDAC_MOD_STR "L2 fails to register\n");
- 
- #ifdef CONFIG_PCI
--	res = of_register_platform_driver(&mpc85xx_pci_err_driver);
-+	res = platform_driver_register(&mpc85xx_pci_err_driver);
- 	if (res)
- 		printk(KERN_WARNING EDAC_MOD_STR "PCI fails to register\n");
- #endif
-@@ -1212,10 +1209,10 @@ static void __exit mpc85xx_mc_exit(void)
- 	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
- #endif
- #ifdef CONFIG_PCI
--	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
-+	platform_driver_unregister(&mpc85xx_pci_err_driver);
- #endif
--	of_unregister_platform_driver(&mpc85xx_l2_err_driver);
--	of_unregister_platform_driver(&mpc85xx_mc_err_driver);
-+	platform_driver_unregister(&mpc85xx_l2_err_driver);
-+	platform_driver_unregister(&mpc85xx_mc_err_driver);
- }
- 
- module_exit(mpc85xx_mc_exit);
-diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
-index b9f0c20..c1f0045 100644
---- a/drivers/edac/ppc4xx_edac.c
-+++ b/drivers/edac/ppc4xx_edac.c
-@@ -184,8 +184,7 @@ struct ppc4xx_ecc_status {
- 
- /* Function Prototypes */
- 
--static int ppc4xx_edac_probe(struct platform_device *device,
--			     const struct of_device_id *device_id);
-+static int ppc4xx_edac_probe(struct platform_device *device)
- static int ppc4xx_edac_remove(struct platform_device *device);
- 
- /* Global Variables */
-@@ -201,7 +200,7 @@ static struct of_device_id ppc4xx_edac_match[] = {
- 	{ }
+ 		.name = "bbcbeep",
+ 		.owner = THIS_MODULE,
+@@ -269,7 +267,7 @@ static struct of_platform_driver bbc_beep_driver = {
+ 	.shutdown	= sparcspkr_shutdown,
  };
  
--static struct of_platform_driver ppc4xx_edac_driver = {
-+static struct platform_driver ppc4xx_edac_driver = {
- 	.probe			= ppc4xx_edac_probe,
- 	.remove			= ppc4xx_edac_remove,
- 	.driver = {
-@@ -997,9 +996,6 @@ ppc4xx_edac_init_csrows(struct mem_ctl_info *mci, u32 mcopt1)
-  *       initialized.
-  * @op: A pointer to the OpenFirmware device tree node associated
-  *      with the controller this EDAC instance is bound to.
-- * @match: A pointer to the OpenFirmware device tree match
-- *         information associated with the controller this EDAC instance
-- *         is bound to.
-  * @dcr_host: A pointer to the DCR data containing the DCR mapping
-  *            for this controller instance.
-  * @mcopt1: The 32-bit Memory Controller Option 1 register value
-@@ -1015,7 +1011,6 @@ ppc4xx_edac_init_csrows(struct mem_ctl_info *mci, u32 mcopt1)
- static int __devinit
- ppc4xx_edac_mc_init(struct mem_ctl_info *mci,
- 		    struct platform_device *op,
--		    const struct of_device_id *match,
- 		    const dcr_host_t *dcr_host,
- 		    u32 mcopt1)
+-static int __devinit grover_beep_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit grover_beep_probe(struct platform_device *op)
  {
-@@ -1024,7 +1019,7 @@ ppc4xx_edac_mc_init(struct mem_ctl_info *mci,
- 	struct ppc4xx_edac_pdata *pdata = NULL;
- 	const struct device_node *np = op->dev.of_node;
- 
--	if (match == NULL)
-+	if (op->dev.of_match == NULL)
- 		return -EINVAL;
- 
- 	/* Initial driver pointers and private data */
-@@ -1227,9 +1222,6 @@ ppc4xx_edac_map_dcrs(const struct device_node *np, dcr_host_t *dcr_host)
-  * ppc4xx_edac_probe - check controller and bind driver
-  * @op: A pointer to the OpenFirmware device tree node associated
-  *      with the controller being probed for driver binding.
-- * @match: A pointer to the OpenFirmware device tree match
-- *         information associated with the controller being probed
-- *         for driver binding.
-  *
-  * This routine probes a specific ibm,sdram-4xx-ddr2 controller
-  * instance for binding with the driver.
-@@ -1237,8 +1229,7 @@ ppc4xx_edac_map_dcrs(const struct device_node *np, dcr_host_t *dcr_host)
-  * Returns 0 if the controller instance was successfully bound to the
-  * driver; otherwise, < 0 on error.
-  */
--static int __devinit
--ppc4xx_edac_probe(struct platform_device *op, const struct of_device_id *match)
-+static int __devinit ppc4xx_edac_probe(struct platform_device *op)
- {
- 	int status = 0;
- 	u32 mcopt1, memcheck;
-@@ -1304,7 +1295,7 @@ ppc4xx_edac_probe(struct platform_device *op, const struct of_device_id *match)
- 		goto done;
- 	}
- 
--	status = ppc4xx_edac_mc_init(mci, op, match, &dcr_host, mcopt1);
-+	status = ppc4xx_edac_mc_init(mci, op, &dcr_host, mcopt1);
- 
- 	if (status) {
- 		ppc4xx_edac_mc_printk(KERN_ERR, mci,
-@@ -1421,7 +1412,7 @@ ppc4xx_edac_init(void)
- 
- 	ppc4xx_edac_opstate_init();
- 
--	return of_register_platform_driver(&ppc4xx_edac_driver);
-+	return platform_driver_register(&ppc4xx_edac_driver);
- }
- 
- /**
-@@ -1434,7 +1425,7 @@ ppc4xx_edac_init(void)
- static void __exit
- ppc4xx_edac_exit(void)
- {
--	of_unregister_platform_driver(&ppc4xx_edac_driver);
-+	platform_driver_unregister(&ppc4xx_edac_driver);
- }
- 
- module_init(ppc4xx_edac_init);
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index 290cb32..116a49c 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -645,8 +645,7 @@ static void smu_expose_childs(struct work_struct *unused)
- 
- static DECLARE_WORK(smu_expose_childs_work, smu_expose_childs);
- 
--static int smu_platform_probe(struct platform_device* dev,
--			      const struct of_device_id *match)
-+static int smu_platform_probe(struct platform_device* dev)
- {
- 	if (!smu)
- 		return -ENODEV;
-@@ -669,7 +668,7 @@ static const struct of_device_id smu_platform_match[] =
+ 	struct sparcspkr_state *state;
+ 	struct grover_beep_info *info;
+@@ -340,7 +338,7 @@ static const struct of_device_id grover_beep_match[] = {
  	{},
  };
  
--static struct of_platform_driver smu_of_platform_driver =
-+static struct platform_driver smu_of_platform_driver =
- {
+-static struct of_platform_driver grover_beep_driver = {
++static struct platform_driver grover_beep_driver = {
  	.driver = {
- 		.name = "smu",
-@@ -689,7 +688,7 @@ static int __init smu_init_sysfs(void)
- 	 * I'm a bit too far from figuring out how that works with those
- 	 * new chipsets, but that will come back and bite us
+ 		.name = "groverbeep",
+ 		.owner = THIS_MODULE,
+@@ -353,12 +351,12 @@ static struct of_platform_driver grover_beep_driver = {
+ 
+ static int __init sparcspkr_init(void)
+ {
+-	int err = of_register_platform_driver(&bbc_beep_driver);
++	int err = platform_driver_register(&bbc_beep_driver);
+ 
+ 	if (!err) {
+-		err = of_register_platform_driver(&grover_beep_driver);
++		err = platform_driver_register(&grover_beep_driver);
+ 		if (err)
+-			of_unregister_platform_driver(&bbc_beep_driver);
++			platform_driver_unregister(&bbc_beep_driver);
+ 	}
+ 
+ 	return err;
+@@ -366,8 +364,8 @@ static int __init sparcspkr_init(void)
+ 
+ static void __exit sparcspkr_exit(void)
+ {
+-	of_unregister_platform_driver(&bbc_beep_driver);
+-	of_unregister_platform_driver(&grover_beep_driver);
++	platform_driver_unregister(&bbc_beep_driver);
++	platform_driver_unregister(&grover_beep_driver);
+ }
+ 
+ module_init(sparcspkr_init);
+diff --git a/drivers/input/serio/i8042-sparcio.h b/drivers/input/serio/i8042-sparcio.h
+index c5cc450..395a9af 100644
+--- a/drivers/input/serio/i8042-sparcio.h
++++ b/drivers/input/serio/i8042-sparcio.h
+@@ -49,7 +49,7 @@ static inline void i8042_write_command(int val)
+ #define OBP_PS2MS_NAME1		"kdmouse"
+ #define OBP_PS2MS_NAME2		"mouse"
+ 
+-static int __devinit sparc_i8042_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit sparc_i8042_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 
+@@ -95,7 +95,7 @@ static const struct of_device_id sparc_i8042_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, sparc_i8042_match);
+ 
+-static struct of_platform_driver sparc_i8042_driver = {
++static struct platform_driver sparc_i8042_driver = {
+ 	.driver = {
+ 		.name = "i8042",
+ 		.owner = THIS_MODULE,
+@@ -116,7 +116,7 @@ static int __init i8042_platform_init(void)
+ 		if (!kbd_iobase)
+ 			return -ENODEV;
+ 	} else {
+-		int err = of_register_platform_driver(&sparc_i8042_driver);
++		int err = platform_driver_register(&sparc_i8042_driver);
+ 		if (err)
+ 			return err;
+ 
+@@ -140,7 +140,7 @@ static inline void i8042_platform_exit(void)
+ 	struct device_node *root = of_find_node_by_path("/");
+ 
+ 	if (strcmp(root->name, "SUNW,JavaStation-1"))
+-		of_unregister_platform_driver(&sparc_i8042_driver);
++		platform_driver_unregister(&sparc_i8042_driver);
+ }
+ 
+ #else /* !CONFIG_PCI */
+diff --git a/drivers/parport/parport_sunbpp.c b/drivers/parport/parport_sunbpp.c
+index 55ba118..910c5a2 100644
+--- a/drivers/parport/parport_sunbpp.c
++++ b/drivers/parport/parport_sunbpp.c
+@@ -286,7 +286,7 @@ static struct parport_operations parport_sunbpp_ops =
+ 	.owner		= THIS_MODULE,
+ };
+ 
+-static int __devinit bpp_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit bpp_probe(struct platform_device *op)
+ {
+ 	struct parport_operations *ops;
+ 	struct bpp_regs __iomem *regs;
+@@ -381,7 +381,7 @@ static const struct of_device_id bpp_match[] = {
+ 
+ MODULE_DEVICE_TABLE(of, bpp_match);
+ 
+-static struct of_platform_driver bpp_sbus_driver = {
++static struct platform_driver bpp_sbus_driver = {
+ 	.driver = {
+ 		.name = "bpp",
+ 		.owner = THIS_MODULE,
+@@ -393,12 +393,12 @@ static struct of_platform_driver bpp_sbus_driver = {
+ 
+ static int __init parport_sunbpp_init(void)
+ {
+-	return of_register_platform_driver(&bpp_sbus_driver);
++	return platform_driver_register(&bpp_sbus_driver);
+ }
+ 
+ static void __exit parport_sunbpp_exit(void)
+ {
+-	of_unregister_platform_driver(&bpp_sbus_driver);
++	platform_driver_unregister(&bpp_sbus_driver);
+ }
+ 
+ MODULE_AUTHOR("Derrick J Brashear");
+diff --git a/drivers/sbus/char/bbc_i2c.c b/drivers/sbus/char/bbc_i2c.c
+index 614a5e1..5f94d22 100644
+--- a/drivers/sbus/char/bbc_i2c.c
++++ b/drivers/sbus/char/bbc_i2c.c
+@@ -361,8 +361,7 @@ fail:
+ extern int bbc_envctrl_init(struct bbc_i2c_bus *bp);
+ extern void bbc_envctrl_cleanup(struct bbc_i2c_bus *bp);
+ 
+-static int __devinit bbc_i2c_probe(struct platform_device *op,
+-				   const struct of_device_id *match)
++static int __devinit bbc_i2c_probe(struct platform_device *op)
+ {
+ 	struct bbc_i2c_bus *bp;
+ 	int err, index = 0;
+@@ -413,7 +412,7 @@ static const struct of_device_id bbc_i2c_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, bbc_i2c_match);
+ 
+-static struct of_platform_driver bbc_i2c_driver = {
++static struct platform_driver bbc_i2c_driver = {
+ 	.driver = {
+ 		.name = "bbc_i2c",
+ 		.owner = THIS_MODULE,
+@@ -425,12 +424,12 @@ static struct of_platform_driver bbc_i2c_driver = {
+ 
+ static int __init bbc_i2c_init(void)
+ {
+-	return of_register_platform_driver(&bbc_i2c_driver);
++	return platform_driver_register(&bbc_i2c_driver);
+ }
+ 
+ static void __exit bbc_i2c_exit(void)
+ {
+-	of_unregister_platform_driver(&bbc_i2c_driver);
++	platform_driver_unregister(&bbc_i2c_driver);
+ }
+ 
+ module_init(bbc_i2c_init);
+diff --git a/drivers/sbus/char/display7seg.c b/drivers/sbus/char/display7seg.c
+index 55f71ea..740da44 100644
+--- a/drivers/sbus/char/display7seg.c
++++ b/drivers/sbus/char/display7seg.c
+@@ -171,8 +171,7 @@ static struct miscdevice d7s_miscdev = {
+ 	.fops		= &d7s_fops
+ };
+ 
+-static int __devinit d7s_probe(struct platform_device *op,
+-			       const struct of_device_id *match)
++static int __devinit d7s_probe(struct platform_device *op)
+ {
+ 	struct device_node *opts;
+ 	int err = -EINVAL;
+@@ -266,7 +265,7 @@ static const struct of_device_id d7s_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, d7s_match);
+ 
+-static struct of_platform_driver d7s_driver = {
++static struct platform_driver d7s_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -278,12 +277,12 @@ static struct of_platform_driver d7s_driver = {
+ 
+ static int __init d7s_init(void)
+ {
+-	return of_register_platform_driver(&d7s_driver);
++	return platform_driver_register(&d7s_driver);
+ }
+ 
+ static void __exit d7s_exit(void)
+ {
+-	of_unregister_platform_driver(&d7s_driver);
++	platform_driver_unregister(&d7s_driver);
+ }
+ 
+ module_init(d7s_init);
+diff --git a/drivers/sbus/char/envctrl.c b/drivers/sbus/char/envctrl.c
+index 8ce414e..be7b4e5 100644
+--- a/drivers/sbus/char/envctrl.c
++++ b/drivers/sbus/char/envctrl.c
+@@ -1028,8 +1028,7 @@ static int kenvctrld(void *__unused)
+ 	return 0;
+ }
+ 
+-static int __devinit envctrl_probe(struct platform_device *op,
+-				   const struct of_device_id *match)
++static int __devinit envctrl_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp;
+ 	int index, err;
+@@ -1129,7 +1128,7 @@ static const struct of_device_id envctrl_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, envctrl_match);
+ 
+-static struct of_platform_driver envctrl_driver = {
++static struct platform_driver envctrl_driver = {
+ 	.driver = {
+ 		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
+@@ -1141,12 +1140,12 @@ static struct of_platform_driver envctrl_driver = {
+ 
+ static int __init envctrl_init(void)
+ {
+-	return of_register_platform_driver(&envctrl_driver);
++	return platform_driver_register(&envctrl_driver);
+ }
+ 
+ static void __exit envctrl_exit(void)
+ {
+-	of_unregister_platform_driver(&envctrl_driver);
++	platform_driver_unregister(&envctrl_driver);
+ }
+ 
+ module_init(envctrl_init);
+diff --git a/drivers/sbus/char/flash.c b/drivers/sbus/char/flash.c
+index 2b4b4b6..73dd4e7 100644
+--- a/drivers/sbus/char/flash.c
++++ b/drivers/sbus/char/flash.c
+@@ -160,8 +160,7 @@ static const struct file_operations flash_fops = {
+ 
+ static struct miscdevice flash_dev = { FLASH_MINOR, "flash", &flash_fops };
+ 
+-static int __devinit flash_probe(struct platform_device *op,
+-				 const struct of_device_id *match)
++static int __devinit flash_probe(struct platform_device *op)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	struct device_node *parent;
+@@ -207,7 +206,7 @@ static const struct of_device_id flash_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, flash_match);
+ 
+-static struct of_platform_driver flash_driver = {
++static struct platform_driver flash_driver = {
+ 	.driver = {
+ 		.name = "flash",
+ 		.owner = THIS_MODULE,
+@@ -219,12 +218,12 @@ static struct of_platform_driver flash_driver = {
+ 
+ static int __init flash_init(void)
+ {
+-	return of_register_platform_driver(&flash_driver);
++	return platform_driver_register(&flash_driver);
+ }
+ 
+ static void __exit flash_cleanup(void)
+ {
+-	of_unregister_platform_driver(&flash_driver);
++	platform_driver_unregister(&flash_driver);
+ }
+ 
+ module_init(flash_init);
+diff --git a/drivers/sbus/char/uctrl.c b/drivers/sbus/char/uctrl.c
+index 1b345be..ebce963 100644
+--- a/drivers/sbus/char/uctrl.c
++++ b/drivers/sbus/char/uctrl.c
+@@ -348,8 +348,7 @@ static void uctrl_get_external_status(struct uctrl_driver *driver)
+ 	
+ }
+ 
+-static int __devinit uctrl_probe(struct platform_device *op,
+-				 const struct of_device_id *match)
++static int __devinit uctrl_probe(struct platform_device *op)
+ {
+ 	struct uctrl_driver *p;
+ 	int err = -ENOMEM;
+@@ -425,7 +424,7 @@ static const struct of_device_id uctrl_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, uctrl_match);
+ 
+-static struct of_platform_driver uctrl_driver = {
++static struct platform_driver uctrl_driver = {
+ 	.driver = {
+ 		.name = "uctrl",
+ 		.owner = THIS_MODULE,
+@@ -438,12 +437,12 @@ static struct of_platform_driver uctrl_driver = {
+ 
+ static int __init uctrl_init(void)
+ {
+-	return of_register_platform_driver(&uctrl_driver);
++	return platform_driver_register(&uctrl_driver);
+ }
+ 
+ static void __exit uctrl_exit(void)
+ {
+-	of_unregister_platform_driver(&uctrl_driver);
++	platform_driver_unregister(&uctrl_driver);
+ }
+ 
+ module_init(uctrl_init);
+diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
+index 664c957..e2d45c9 100644
+--- a/drivers/scsi/qlogicpti.c
++++ b/drivers/scsi/qlogicpti.c
+@@ -1292,15 +1292,19 @@ static struct scsi_host_template qpti_template = {
+ 	.use_clustering		= ENABLE_CLUSTERING,
+ };
+ 
+-static int __devinit qpti_sbus_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit qpti_sbus_probe(struct platform_device *op)
+ {
+-	struct scsi_host_template *tpnt = match->data;
++	struct scsi_host_template *tpnt;
+ 	struct device_node *dp = op->dev.of_node;
+ 	struct Scsi_Host *host;
+ 	struct qlogicpti *qpti;
+ 	static int nqptis;
+ 	const char *fcode;
+ 
++	if (!op->dev.of_match)
++		return -EINVAL;
++	tpnt = op->dev.of_match->data;
++
+ 	/* Sometimes Antares cards come up not completely
+ 	 * setup, and we get a report of a zero IRQ.
  	 */
--	of_register_platform_driver(&smu_of_platform_driver);
-+	platform_driver_register(&smu_of_platform_driver);
- 	return 0;
- }
- 
-diff --git a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
-index f3a29f2..bca2af2 100644
---- a/drivers/macintosh/therm_pm72.c
-+++ b/drivers/macintosh/therm_pm72.c
-@@ -2210,7 +2210,7 @@ static void fcu_lookup_fans(struct device_node *fcu_node)
- 	}
- }
- 
--static int fcu_of_probe(struct platform_device* dev, const struct of_device_id *match)
-+static int fcu_of_probe(struct platform_device* dev)
- {
- 	state = state_detached;
- 	of_dev = dev;
-@@ -2240,7 +2240,7 @@ static const struct of_device_id fcu_match[] =
+@@ -1457,7 +1461,7 @@ static const struct of_device_id qpti_match[] = {
  };
- MODULE_DEVICE_TABLE(of, fcu_match);
+ MODULE_DEVICE_TABLE(of, qpti_match);
  
--static struct of_platform_driver fcu_of_platform_driver = 
-+static struct platform_driver fcu_of_platform_driver = 
- {
+-static struct of_platform_driver qpti_sbus_driver = {
++static struct platform_driver qpti_sbus_driver = {
  	.driver = {
- 		.name = "temperature",
-@@ -2263,12 +2263,12 @@ static int __init therm_pm72_init(void)
- 	    !rackmac)
- 	    	return -ENODEV;
- 
--	return of_register_platform_driver(&fcu_of_platform_driver);
-+	return platform_driver_register(&fcu_of_platform_driver);
- }
- 
- static void __exit therm_pm72_exit(void)
- {
--	of_unregister_platform_driver(&fcu_of_platform_driver);
-+	platform_driver_unregister(&fcu_of_platform_driver);
- }
- 
- module_init(therm_pm72_init);
-diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
-index c89f396..d37819f 100644
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -443,8 +443,7 @@ static struct i2c_driver g4fan_driver = {
- /*	initialization / cleanup					*/
- /************************************************************************/
- 
--static int
--therm_of_probe( struct platform_device *dev, const struct of_device_id *match )
-+static int therm_of_probe(struct platform_device *dev)
- {
- 	return i2c_add_driver( &g4fan_driver );
- }
-@@ -462,7 +461,7 @@ static const struct of_device_id therm_of_match[] = {{
-     }, {}
- };
- 
--static struct of_platform_driver therm_of_driver = {
-+static struct platform_driver therm_of_driver = {
- 	.driver = {
- 		.name = "temperature",
+ 		.name = "qpti",
  		.owner = THIS_MODULE,
-@@ -509,14 +508,14 @@ g4fan_init( void )
- 		return -ENODEV;
- 	}
+@@ -1469,12 +1473,12 @@ static struct of_platform_driver qpti_sbus_driver = {
  
--	of_register_platform_driver( &therm_of_driver );
-+	platform_driver_register( &therm_of_driver );
- 	return 0;
+ static int __init qpti_init(void)
+ {
+-	return of_register_platform_driver(&qpti_sbus_driver);
++	return platform_driver_register(&qpti_sbus_driver);
  }
  
- static void __exit
- g4fan_exit( void )
+ static void __exit qpti_exit(void)
  {
--	of_unregister_platform_driver( &therm_of_driver );
-+	platform_driver_unregister( &therm_of_driver );
+-	of_unregister_platform_driver(&qpti_sbus_driver);
++	platform_driver_unregister(&qpti_sbus_driver);
+ }
  
- 	if( x.of_dev )
- 		of_device_unregister( x.of_dev );
+ MODULE_DESCRIPTION("QlogicISP SBUS driver");
+diff --git a/drivers/scsi/sun_esp.c b/drivers/scsi/sun_esp.c
+index 193b37b..676fe9a 100644
+--- a/drivers/scsi/sun_esp.c
++++ b/drivers/scsi/sun_esp.c
+@@ -562,7 +562,7 @@ fail:
+ 	return err;
+ }
+ 
+-static int __devinit esp_sbus_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit esp_sbus_probe(struct platform_device *op)
+ {
+ 	struct device_node *dma_node = NULL;
+ 	struct device_node *dp = op->dev.of_node;
+@@ -632,7 +632,7 @@ static const struct of_device_id esp_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, esp_match);
+ 
+-static struct of_platform_driver esp_sbus_driver = {
++static struct platform_driver esp_sbus_driver = {
+ 	.driver = {
+ 		.name = "esp",
+ 		.owner = THIS_MODULE,
+@@ -644,12 +644,12 @@ static struct of_platform_driver esp_sbus_driver = {
+ 
+ static int __init sunesp_init(void)
+ {
+-	return of_register_platform_driver(&esp_sbus_driver);
++	return platform_driver_register(&esp_sbus_driver);
+ }
+ 
+ static void __exit sunesp_exit(void)
+ {
+-	of_unregister_platform_driver(&esp_sbus_driver);
++	platform_driver_unregister(&esp_sbus_driver);
+ }
+ 
+ MODULE_DESCRIPTION("Sun ESP SCSI driver");
