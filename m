@@ -1,24 +1,22 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from blv-smtpout-01.boeing.com (blv-smtpout-01.boeing.com
-	[130.76.32.69])
+Return-Path: <robert.thorhuus@ericsson.com>
+Received: from mailgw9.se.ericsson.net (mailgw9.se.ericsson.net
+	[193.180.251.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "blv-smtpout-01.boeing.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95226B7406
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C071B7400
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Feb 2011 08:07:52 +1100 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 23 Feb 2011 14:54:53 -0600
-Subject: mpc85xx: kexec build broken by "powerpc/kexec: Remove
-	ppc_md.machine_kexec"
-Message-ID: <B87A2622-0006-4FC8-893A-41DBBF0CA170@boeing.com>
+	Thu, 24 Feb 2011 08:34:21 +1100 (EST)
+From: Robert Thorhuus <robert.thorhuus@ericsson.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 23 Feb 2011 22:18:50 +0100
+Subject: Open Firmware and interrupt trigger
+Message-ID: <9081694521850B4D91387C8C2E612B591062A0D5CA@ESESSCMS0361.eemea.ericsson.se>
+References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+	<20110223043345.20795.2936.stgit@localhost6.localdomain6>
+	<4D6551EF.70207@gmail.com>
+In-Reply-To: <4D6551EF.70207@gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Anton Blanchard <anton@samba.org>, "Livingston,
-	John A" <john.a.livingston@boeing.com>,
-	Matthew McClintock <msm@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone,
+Hello!
 
-I just started trying to update some patches for our P2020-based unit to th=
-e latest Linus upstream, hoping to take advantage of the recent mpc85xx kex=
-ec() support.
+I'm quite new to linux and Open Firmware.
 
-Unfortunately I'm getting a compile error:
+I have a PPC processor. To this I have a Compact Flash connected. The Compa=
+ct Flash is using external interrupt 0 of the processor.
+In my DTS file I have specified a Compact Flash node and within it I have a=
+n interrupt element:
+interrupt =3D <0 2 0 0>;
 
-arch/powerpc/platforms/85xx/smp.c:241: error: 'struct machdep_calls' has no=
- member named 'machine_kexec'
+Here I thought the first number was the ID of the interrupt and the second =
+one should be a number indicating how the interrupt is triggered (high, low=
+, raising, falling).
 
-As far as I can tell, "machine_kexec" was removed in commit c9486878 (power=
-pc/kexec: Remove ppc_md.machine_kexec) on Jan 6th, 2011, which claims that =
-it was not used.
+The interrupt is active low.
 
-Unfortunately it looks like it *is* used by the mpc85xx kexec() support (co=
-mmit f933a41e), added on Jul 21, 2010.
+But I could not get it to work which ever value I chose.
 
-Cheers,
-Kyle Moffett
+Looking in the code I found this in function __devinit pata_of_platform_pro=
+be in file pata_of_platform.c:
+
+	ret =3D of_irq_to_resource(dn, 0, &irq_res);
+	if (ret =3D=3D NO_IRQ)
+		irq_res.start =3D irq_res.end =3D 0;
+	else
+		irq_res.flags =3D 0;
+
+Here "flags" will be zero whatever I do in the DTS. As far as I can underst=
+and the flags are defined in interrupts.h:
+#define IRQF_TRIGGER_NONE       0x00000000
+#define IRQF_TRIGGER_RISING     0x00000001
+#define IRQF_TRIGGER_FALLING    0x00000002
+#define IRQF_TRIGGER_HIGH       0x00000004
+#define IRQF_TRIGGER_LOW        0x00000008
+
+So modifying the code to:
+	else
+		irq_res.flags =3D 2;
+
+I get it to work.
+
+Could someone please explain to me why the "flags" parameter is hardcoded z=
+ero or just point in a good direction.
+
+Thank you
+
+BR
+Robert=
