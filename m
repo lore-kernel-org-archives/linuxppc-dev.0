@@ -1,17 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 23 Feb 2011 11:10:42 -0700
+Date: Wed, 23 Feb 2011 11:44:03 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [RFC PATCH 07/15] dt: uartlite: merge platform and of_platform
-	driver bindings
-Message-ID: <20110223181042.GK14597@angua.secretlab.ca>
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [RFC PATCH 02/15] dt: add a match table pointer to struct device
+Message-ID: <20110223184402.GM14597@angua.secretlab.ca>
 References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
-	<20110223043411.20795.57850.stgit@localhost6.localdomain6>
-	<877hcryvom.fsf@macbook.be.48ers.dk>
+	<20110223043345.20795.2936.stgit@localhost6.localdomain6>
+	<4D6551EF.70207@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <877hcryvom.fsf@macbook.be.48ers.dk>
+In-Reply-To: <4D6551EF.70207@gmail.com>
 Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
@@ -24,41 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 23, 2011 at 09:58:01AM +0100, Peter Korsgaard wrote:
-> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+On Wed, Feb 23, 2011 at 12:29:03PM -0600, Rob Herring wrote:
+> Grant,
 > 
->  Grant> of_platform_driver is getting removed, and a single platform_driver
->  Grant> can now support both devicetree and non-devicetree use cases.  This
->  Grant> patch merges the two driver registrations.
+> On 02/22/2011 10:33 PM, Grant Likely wrote:
+> >Add a new .of_match field to struct device which points at the
+> >matching device driver .of_match_table entry when a device is probed
+> >via the device tree
+> >
+> >Signed-off-by: Grant Likely<grant.likely@secretlab.ca>
+> >---
+> >  include/linux/device.h    |    1 +
+> >  include/linux/of_device.h |    5 +++--
+> >  2 files changed, 4 insertions(+), 2 deletions(-)
+> >
+> >diff --git a/include/linux/device.h b/include/linux/device.h
+> >index ca5d252..8d8e267 100644
+> >--- a/include/linux/device.h
+> >+++ b/include/linux/device.h
+> >@@ -441,6 +441,7 @@ struct device {
+> >  	struct dev_archdata	archdata;
+> >
+> >  	struct device_node	*of_node; /* associated device tree node */
+> >+	const struct of_device_id *of_match; /* matching of_device_id from driver */
 > 
-> Wee!
-> 
->  Grant>  static int __devinit ulite_probe(struct platform_device *pdev)
->  Grant>  {
->  Grant>  	struct resource *res, *res2;
->  Grant> +	const __be32 *prop;
->  Grant> +	int id = pdev->id;
->  
->  Grant>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  Grant>  	if (!res)
->  Grant> @@ -583,7 +586,13 @@ static int __devinit ulite_probe(struct platform_device *pdev)
->  Grant>  	if (!res2)
->  Grant>  		return -ENODEV;
->  
->  Grant> -	return ulite_assign(&pdev->dev, pdev->id, res->start, res2->start);
->  Grant> +#ifdef CONFIG_OF
->  Grant> +	prop = of_get_property(pdev->dev.of_node, "port-number", NULL);
->  Grant> +	if (prop)
->  Grant> +		id = be32_to_cpup(prop);
->  Grant> +#endif
->  Grant> +
->  Grant> +	return ulite_assign(&pdev->dev, id, res->start, res2->start);
->  Grant>  }
-> 
-> Isn't this going to give a build warning about prop being unused on
-> !CONFIG_OF builds? Perhaps move it down into the CONFIG_OF conditional?
+> Couldn't of_match/of_match_table be merged into the platform dev/drv
+> id_entry/id_table. Handling MODALIAS for a driver that does both OF
+> style and normal platform device matching may be a problem though.
 
-I'd actually like to be rid of 'port-number' entirely; but that's
-another day's debate.  I'll fix this up.
+.of_match & .of_match_table works on all devices, not just
+platform devices.  It allows the common library of device tree support
+routines to be used with any bus type.
 
 g.
