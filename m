@@ -1,30 +1,17 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2E3DAB728A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Feb 2011 07:18:44 +1100 (EST)
-Received: by fxm11 with SMTP id 11so3803788fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Feb 2011 12:18:40 -0800 (PST)
+Return-Path: <robherring2@gmail.com>
+Message-ID: <4D653C48.4090608@gmail.com>
+Date: Wed, 23 Feb 2011 10:56:40 -0600
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <470DB7CE2CD0944E9436E7ADEFC02FE31370D8@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <470DB7CE2CD0944E9436E7ADEFC02FE31370D8@039-SN1MPN1-003.039d.mgd.msft.net>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Wed, 23 Feb 2011 14:10:34 -0600
-Message-ID: <AANLkTinQtDAo07jHNSo=wE=iRzO8hk1pQbRvBFq40TOB@mail.gmail.com>
-Subject: Re: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
-To: Alessandro Zummo <a.zummo@towertech.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>,
-	"rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>,
-	Jain Priyanka-B32167 <B32167@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	Gupta Maneesh-B18878 <B18878@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC PATCH 14/15] dt: Eliminate of_platform_{,un}register_driver
+References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+	<20110223043447.20795.80653.stgit@localhost6.localdomain6>
+In-Reply-To: <20110223043447.20795.80653.stgit@localhost6.localdomain6>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,24 +21,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 23, 2011 at 4:00 AM, Jain Priyanka-B32167
-<B32167@freescale.com> wrote:
-> Hi,
+Grant,
+
+On 02/22/2011 10:34 PM, Grant Likely wrote:
+> Final step to eliminate of_platform_bus_type.  They're all just
+> platform drivers now.
 >
-> =A0Please review and acknowledge this patch.
+> Signed-off-by: Grant Likely<grant.likely@secretlab.ca>
+> ---
 
-Alessandro,
+snip
 
-Aren't you the RTC maintainer?  Priyanka has been asking for months
-for you to review and ack this patch, and then pick up for the next
-kernel release.  Is there something else that she needs to do to get
-your attention?  You can find it in patchworks here:
+> diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+> index b6ae6e9..132951d 100644
+> --- a/drivers/char/ipmi/ipmi_si_intf.c
+> +++ b/drivers/char/ipmi/ipmi_si_intf.c
+> @@ -2556,8 +2556,7 @@ static struct pci_driver ipmi_pci_driver = {
+>
+>
+>   #ifdef CONFIG_PPC_OF
+> -static int __devinit ipmi_of_probe(struct platform_device *dev,
+> -			 const struct of_device_id *match)
+> +static int __devinit ipmi_of_probe(struct platform_device *dev)
+>   {
+>   	struct smi_info *info;
+>   	struct resource resource;
+> @@ -2568,6 +2567,9 @@ static int __devinit ipmi_of_probe(struct platform_device *dev,
+>
+>   	dev_info(&dev->dev, "probing via device tree\n");
+>
+> +	if (!dev->dev.of_match)
+> +		return -EINVAL;
+> +
+>   	ret = of_address_to_resource(np, 0,&resource);
+>   	if (ret) {
+>   		dev_warn(&dev->dev, PFX "invalid address from OF\n");
+> @@ -2600,7 +2602,7 @@ static int __devinit ipmi_of_probe(struct platform_device *dev,
+>   		return -ENOMEM;
+>   	}
+>
+> -	info->si_type		= (enum si_type) match->data;
+> +	info->si_type		= (enum si_type) dev->dev.of_match->data;
+>   	info->addr_source	= SI_DEVICETREE;
+>   	info->irq_setup		= std_irq_setup;
+>
+> @@ -2652,9 +2654,9 @@ static struct of_device_id ipmi_match[] =
+>   	{},
+>   };
+>
+> -static struct of_platform_driver ipmi_of_platform_driver = {
+> +static struct platform_driver ipmi_of_platform_driver = {
+>   	.driver = {
+> -		.name = "ipmi",
+> +		.name = "of-ipmi",
+>   		.owner = THIS_MODULE,
+>   		.of_match_table = ipmi_match,
+>   	},
+> @@ -3396,7 +3398,7 @@ static int __devinit init_ipmi_si(void)
+>   #endif
+>
+>   #ifdef CONFIG_PPC_OF
+> -	of_register_platform_driver(&ipmi_of_platform_driver);
+> +	platform_driver_register(&ipmi_of_platform_driver);
+>   	of_registered = 1;
+>   #endif
+>
+> @@ -3457,7 +3459,7 @@ static int __devinit init_ipmi_si(void)
+>
+>   #ifdef CONFIG_PPC_OF
+>   		if (of_registered)
+> -			of_unregister_platform_driver(&ipmi_of_platform_driver);
+> +			platform_driver_unregister(&ipmi_of_platform_driver);
+>   #endif
+>   		driver_unregister(&ipmi_driver.driver);
+>   		printk(KERN_WARNING PFX
+> @@ -3558,7 +3560,7 @@ static void __exit cleanup_ipmi_si(void)
+>
+>   #ifdef CONFIG_PPC_OF
+>   	if (of_registered)
+> -		of_unregister_platform_driver(&ipmi_of_platform_driver);
+> +		platform_driver_unregister(&ipmi_of_platform_driver);
+>   #endif
+>
+>   	mutex_lock(&smi_infos_lock);
 
-http://patchwork.ozlabs.org/patch/69206/
+Um, you are doing exactly what you said I should not do. Now the driver 
+has 2 platform drivers defined. I have an updated patch that addresses 
+your previous comments. I will send it out later today.
 
-Notice that it was originally posted back in October, so it could have
-been included in 2.6.38.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+Rob
