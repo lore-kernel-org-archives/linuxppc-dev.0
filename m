@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [RFC PATCH 05/15] leds/leds-gpio: merge platform_driver with
-	of_platform_driver
+Subject: [RFC PATCH 06/15] dt: xilinx_hwicap: merge platform and of_platform
+	driver bindings
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	devicetree-discuss@lists.ozlabs.org, sfr@canb.auug.org.au,
 	linux-kernel@vger.kernel.org, davem@davemloft.net
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 22 Feb 2011 21:34:00 -0700
-Message-ID: <20110223043400.20795.32203.stgit@localhost6.localdomain6>
+Date: Tue, 22 Feb 2011 21:34:06 -0700
+Message-ID: <20110223043405.20795.19903.stgit@localhost6.localdomain6>
 In-Reply-To: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
 References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
@@ -22,296 +22,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both interfaces can be driven with the same driver, and
-of_platform_driver is getting removed.  This patch merges the two
-driver registrations.
+of_platform_driver is getting removed, and a single platform_driver
+can now support both devicetree and non-devicetree use cases.  This
+patch merges the two driver registrations.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/leds/leds-gpio.c |  206 +++++++++++++++++++---------------------------
- 1 files changed, 83 insertions(+), 123 deletions(-)
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |  129 +++++++++++-----------------
+ 1 files changed, 49 insertions(+), 80 deletions(-)
 
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index 4d9fa38..c4efece 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -14,6 +14,8 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/leds.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_gpio.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
- 
-@@ -151,96 +153,34 @@ static void delete_gpio_led(struct gpio_led_data *led)
- 	gpio_free(led->gpio);
+diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+index 9f2272e..a55e877 100644
+--- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
++++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+@@ -714,20 +714,29 @@ static int __devexit hwicap_remove(struct device *dev)
+ 	return 0;		/* success */
  }
  
--#ifdef CONFIG_LEDS_GPIO_PLATFORM
--static int __devinit gpio_led_probe(struct platform_device *pdev)
--{
--	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
--	struct gpio_led_data *leds_data;
--	int i, ret = 0;
--
--	if (!pdata)
--		return -EBUSY;
--
--	leds_data = kzalloc(sizeof(struct gpio_led_data) * pdata->num_leds,
--				GFP_KERNEL);
--	if (!leds_data)
--		return -ENOMEM;
--
--	for (i = 0; i < pdata->num_leds; i++) {
--		ret = create_gpio_led(&pdata->leds[i], &leds_data[i],
--				      &pdev->dev, pdata->gpio_blink_set);
--		if (ret < 0)
--			goto err;
--	}
--
--	platform_set_drvdata(pdev, leds_data);
--
--	return 0;
--
--err:
--	for (i = i - 1; i >= 0; i--)
--		delete_gpio_led(&leds_data[i]);
--
--	kfree(leds_data);
--
--	return ret;
--}
-+struct gpio_leds_priv {
-+	int num_leds;
-+	struct gpio_led_data leds[];
-+};
- 
--static int __devexit gpio_led_remove(struct platform_device *pdev)
-+static inline int sizeof_gpio_leds_priv(int num_leds)
+-static int __devinit hwicap_drv_probe(struct platform_device *pdev)
++#ifdef CONFIG_OF
++static int __devinit hwicap_of_probe(struct platform_device *op)
  {
--	int i;
--	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
--	struct gpio_led_data *leds_data;
--
--	leds_data = platform_get_drvdata(pdev);
--
--	for (i = 0; i < pdata->num_leds; i++)
--		delete_gpio_led(&leds_data[i]);
--
--	kfree(leds_data);
--
--	return 0;
-+	return sizeof(struct gpio_leds_priv) +
-+		(sizeof(struct gpio_led_data) * num_leds);
- }
+-	struct resource *res;
+-	const struct config_registers *regs;
++	struct resource res;
++	const unsigned int *id;
+ 	const char *family;
++	int rc;
++	const struct hwicap_driver_config *config = op->dev.of_match->data;
++	const struct config_registers *regs;
  
--static struct platform_driver gpio_led_driver = {
--	.probe		= gpio_led_probe,
--	.remove		= __devexit_p(gpio_led_remove),
--	.driver		= {
--		.name	= "leds-gpio",
--		.owner	= THIS_MODULE,
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res)
+-		return -ENODEV;
++
++	rc = of_address_to_resource(op->dev.of_node, 0, &res);
++	if (rc) {
++		dev_err(&op->dev, "invalid address\n");
++		return rc;
++	}
++
++	id = of_get_property(op->dev.of_node, "port-number", NULL);
+ 
+ 	/* It's most likely that we're using V4, if the family is not
+ 	   specified */
+ 	regs = &v4_config_registers;
+-	family = pdev->dev.platform_data;
++	family = of_get_property(op->dev.of_node, "xlnx,family", NULL);
+ 
+ 	if (family) {
+ 		if (!strcmp(family, "virtex2p")) {
+@@ -738,54 +747,33 @@ static int __devinit hwicap_drv_probe(struct platform_device *pdev)
+ 			regs = &v5_config_registers;
+ 		}
+ 	}
+-
+-	return hwicap_setup(&pdev->dev, pdev->id, res,
+-			&buffer_icap_config, regs);
++	return hwicap_setup(&op->dev, id ? *id : -1, &res, config,
++			regs);
+ }
+-
+-static int __devexit hwicap_drv_remove(struct platform_device *pdev)
++#else
++static inline int hwicap_of_probe(struct platform_device *op)
+ {
+-	return hwicap_remove(&pdev->dev);
++	return -EINVAL;
+ }
++#endif /* CONFIG_OF */
+ 
+-static struct platform_driver hwicap_platform_driver = {
+-	.probe = hwicap_drv_probe,
+-	.remove = hwicap_drv_remove,
+-	.driver = {
+-		.owner = THIS_MODULE,
+-		.name = DRIVER_NAME,
 -	},
 -};
 -
--MODULE_ALIAS("platform:leds-gpio");
--#endif /* CONFIG_LEDS_GPIO_PLATFORM */
+-/* ---------------------------------------------------------------------
+- * OF bus binding
+- */
 -
- /* Code to create from OpenFirmware platform devices */
- #ifdef CONFIG_LEDS_GPIO_OF
--#include <linux/of_platform.h>
--#include <linux/of_gpio.h>
--
--struct gpio_led_of_platform_data {
--	int num_leds;
--	struct gpio_led_data led_data[];
--};
--
--static int __devinit of_gpio_leds_probe(struct platform_device *ofdev,
--					const struct of_device_id *match)
-+static struct gpio_leds_priv *gpio_leds_create_of(struct platform_device *pdev)
+-#if defined(CONFIG_OF)
+-static int __devinit
+-hwicap_of_probe(struct platform_device *op, const struct of_device_id *match)
++static int __devinit hwicap_drv_probe(struct platform_device *pdev)
  {
- 	struct device_node *np = ofdev->dev.of_node, *child;
--	struct gpio_led_of_platform_data *pdata;
-+	struct gpio_leds_priv *priv;
- 	int count = 0, ret;
+-	struct resource res;
+-	const unsigned int *id;
+-	const char *family;
+-	int rc;
+-	const struct hwicap_driver_config *config = match->data;
++	struct resource *res;
+ 	const struct config_registers *regs;
++	const char *family;
  
--	/* count LEDs defined by this device, so we know how much to allocate */
-+	/* count LEDs in this device, so we know how much to allocate */
- 	for_each_child_of_node(np, child)
- 		count++;
- 	if (!count)
--		return 0; /* or ENODEV? */
-+		return NULL;
+-	dev_dbg(&op->dev, "hwicap_of_probe(%p, %p)\n", op, match);
+-
+-	rc = of_address_to_resource(op->dev.of_node, 0, &res);
+-	if (rc) {
+-		dev_err(&op->dev, "invalid address\n");
+-		return rc;
+-	}
++	if (pdev->dev.of_match)
++		return hwicap_of_probe(pdev);
  
--	pdata = kzalloc(sizeof(*pdata) + sizeof(struct gpio_led_data) * count,
--			GFP_KERNEL);
--	if (!pdata)
--		return -ENOMEM;
-+	priv = kzalloc(sizeof_gpio_leds_priv(count), GFP_KERNEL);
-+	if (!priv)
-+		return NULL;
+-	id = of_get_property(op->dev.of_node, "port-number", NULL);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
  
- 	for_each_child_of_node(np, child) {
- 		struct gpio_led led = {};
-@@ -256,13 +196,13 @@ static int __devinit of_gpio_leds_probe(struct platform_device *ofdev,
- 		if (state) {
- 			if (!strcmp(state, "keep"))
- 				led.default_state = LEDS_GPIO_DEFSTATE_KEEP;
--			else if(!strcmp(state, "on"))
-+			else if (!strcmp(state, "on"))
- 				led.default_state = LEDS_GPIO_DEFSTATE_ON;
- 			else
- 				led.default_state = LEDS_GPIO_DEFSTATE_OFF;
- 		}
+ 	/* It's most likely that we're using V4, if the family is not
+ 	   specified */
+ 	regs = &v4_config_registers;
+-	family = of_get_property(op->dev.of_node, "xlnx,family", NULL);
++	family = pdev->dev.platform_data;
  
--		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
-+		ret = create_gpio_led(&led, &priv->leds[priv->num_leds++],
- 				      &ofdev->dev, NULL);
- 		if (ret < 0) {
- 			of_node_put(child);
-@@ -270,78 +210,98 @@ static int __devinit of_gpio_leds_probe(struct platform_device *ofdev,
+ 	if (family) {
+ 		if (!strcmp(family, "virtex2p")) {
+@@ -796,15 +784,17 @@ hwicap_of_probe(struct platform_device *op, const struct of_device_id *match)
+ 			regs = &v5_config_registers;
  		}
  	}
+-	return hwicap_setup(&op->dev, id ? *id : -1, &res, config,
+-			regs);
++
++	return hwicap_setup(&pdev->dev, pdev->id, res,
++			&buffer_icap_config, regs);
+ }
  
--	dev_set_drvdata(&ofdev->dev, pdata);
--
--	return 0;
-+	return priv;
+-static int __devexit hwicap_of_remove(struct platform_device *op)
++static int __devexit hwicap_drv_remove(struct platform_device *pdev)
+ {
+-	return hwicap_remove(&op->dev);
++	return hwicap_remove(&pdev->dev);
+ }
  
- err:
- 	for (count = pdata->num_leds - 2; count >= 0; count--)
- 		delete_gpio_led(&pdata->led_data[count]);
-+	kfree(priv);
-+	return NULL;
-+}
- 
--	kfree(pdata);
-+static const struct of_device_id of_gpio_leds_match[] = {
-+	{ .compatible = "gpio-leds", },
-+	{},
-+};
++#ifdef CONFIG_OF
+ /* Match table for of_platform binding */
+ static const struct of_device_id __devinitconst hwicap_of_match[] = {
+ 	{ .compatible = "xlnx,opb-hwicap-1.00.b", .data = &buffer_icap_config},
+@@ -812,33 +802,23 @@ static const struct of_device_id __devinitconst hwicap_of_match[] = {
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, hwicap_of_match);
 +#else
-+static struct gpio_leds_priv *gpio_leds_create_of(struct platform_device *pdev)
-+{
-+	return NULL;
-+}
-+#define of_gpio_leds_match NULL
++#define hwicap_of_match NULL
 +#endif
  
--	return ret;
-+
-+static int __devinit gpio_led_probe(struct platform_device *pdev)
-+{
-+	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
-+	struct gpio_leds_priv *priv;
-+	int i, ret = 0;
-+
-+	if (pdata && pdata->num_leds) {
-+		priv = kzalloc(sizeof_gpio_leds_priv(pdata->num_leds),
-+				GFP_KERNEL);
-+		if (!priv)
-+			return -ENOMEM;
-+
-+		priv->num_leds = pdata->num_leds;
-+		for (i = 0; i < priv->num_leds; i++) {
-+			ret = create_gpio_led(&pdata->leds[i],
-+					      &priv->leds[i],
-+					      &pdev->dev, pdata->gpio_blink_set);
-+			if (ret < 0) {
-+				/* On failure: unwind the led creations */
-+				for (i = i - 1; i >= 0; i--)
-+					delete_gpio_led(&priv->leds[i]);
-+				kfree(priv);
-+				return ret;
-+			}
-+		}
-+	} else {
-+		priv = gpio_leds_create_of(pdev);
-+		if (!priv)
-+			return -ENODEV;
-+	}
-+
-+	platform_set_drvdata(pdev, priv);
-+
-+	return 0;
- }
- 
--static int __devexit of_gpio_leds_remove(struct platform_device *ofdev)
-+static int __devexit gpio_led_remove(struct platform_device *pdev)
- {
--	struct gpio_led_of_platform_data *pdata = dev_get_drvdata(&ofdev->dev);
-+	struct gpio_leds_priv *priv = dev_get_drvdata(&pdev->dev);
- 	int i;
- 
--	for (i = 0; i < pdata->num_leds; i++)
--		delete_gpio_led(&pdata->led_data[i]);
--
--	kfree(pdata);
-+	for (i = 0; i < priv->num_leds; i++)
-+		delete_gpio_led(&priv->leds[i]);
- 
--	dev_set_drvdata(&ofdev->dev, NULL);
-+	dev_set_drvdata(&pdev->dev, NULL);
-+	kfree(priv);
- 
- 	return 0;
- }
- 
--static const struct of_device_id of_gpio_leds_match[] = {
--	{ .compatible = "gpio-leds", },
--	{},
--};
--
--static struct of_platform_driver of_gpio_leds_driver = {
--	.driver = {
--		.name = "of_gpio_leds",
--		.owner = THIS_MODULE,
-+static struct platform_driver gpio_led_driver = {
-+	.probe		= gpio_led_probe,
-+	.remove		= __devexit_p(gpio_led_remove),
-+	.driver		= {
-+		.name	= "leds-gpio",
-+		.owner	= THIS_MODULE,
- 		.of_match_table = of_gpio_leds_match,
+-static struct of_platform_driver hwicap_of_driver = {
+-	.probe = hwicap_of_probe,
+-	.remove = __devexit_p(hwicap_of_remove),
++static struct platform_driver hwicap_platform_driver = {
++	.probe = hwicap_drv_probe,
++	.remove = hwicap_drv_remove,
+ 	.driver = {
+-		.name = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
++		.name = DRIVER_NAME,
+ 		.of_match_table = hwicap_of_match,
  	},
--	.probe = of_gpio_leds_probe,
--	.remove = __devexit_p(of_gpio_leds_remove),
  };
--#endif
-+
-+MODULE_ALIAS("platform:leds-gpio");
  
- static int __init gpio_led_init(void)
+-/* Registration helpers to keep the number of #ifdefs to a minimum */
+-static inline int __init hwicap_of_register(void)
+-{
+-	pr_debug("hwicap: calling of_register_platform_driver()\n");
+-	return of_register_platform_driver(&hwicap_of_driver);
+-}
+-
+-static inline void __exit hwicap_of_unregister(void)
+-{
+-	of_unregister_platform_driver(&hwicap_of_driver);
+-}
+-#else /* CONFIG_OF */
+-/* CONFIG_OF not enabled; do nothing helpers */
+-static inline int __init hwicap_of_register(void) { return 0; }
+-static inline void __exit hwicap_of_unregister(void) { }
+-#endif /* CONFIG_OF */
++/* ---------------------------------------------------------------------
++ * OF bus binding
++ */
+ 
+ static int __init hwicap_module_init(void)
  {
--	int ret = 0;
+@@ -856,21 +836,12 @@ static int __init hwicap_module_init(void)
+ 		return retval;
+ 
+ 	retval = platform_driver_register(&hwicap_platform_driver);
 -
--#ifdef CONFIG_LEDS_GPIO_PLATFORM	
--	ret = platform_driver_register(&gpio_led_driver);
--	if (ret)
--		return ret;
--#endif
--#ifdef CONFIG_LEDS_GPIO_OF
--	ret = of_register_platform_driver(&of_gpio_leds_driver);
--#endif
--#ifdef CONFIG_LEDS_GPIO_PLATFORM	
--	if (ret)
--		platform_driver_unregister(&gpio_led_driver);
--#endif
+-	if (retval)
+-		goto failed1;
 -
--	return ret;
-+	return platform_driver_register(&gpio_led_driver);
+-	retval = hwicap_of_register();
+-
+ 	if (retval)
+-		goto failed2;
++		goto failed;
+ 
+ 	return retval;
+ 
+- failed2:
+-	platform_driver_unregister(&hwicap_platform_driver);
+-
+- failed1:
++ failed:
+ 	unregister_chrdev_region(devt, HWICAP_DEVICES);
+ 
+ 	return retval;
+@@ -884,8 +855,6 @@ static void __exit hwicap_module_cleanup(void)
+ 
+ 	platform_driver_unregister(&hwicap_platform_driver);
+ 
+-	hwicap_of_unregister();
+-
+ 	unregister_chrdev_region(devt, HWICAP_DEVICES);
  }
  
- static void __exit gpio_led_exit(void)
- {
--#ifdef CONFIG_LEDS_GPIO_PLATFORM
- 	platform_driver_unregister(&gpio_led_driver);
--#endif
--#ifdef CONFIG_LEDS_GPIO_OF
--	of_unregister_platform_driver(&of_gpio_leds_driver);
--#endif
- }
- 
- module_init(gpio_led_init);
