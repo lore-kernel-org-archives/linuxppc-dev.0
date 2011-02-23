@@ -1,12 +1,15 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [RFC PATCH 00/15] Remove last remains of of_platform_bus_type
+Subject: [RFC PATCH 01/15] dt/powerpc: move of_bus_type infrastructure to
+	ibmebus
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	devicetree-discuss@lists.ozlabs.org, sfr@canb.auug.org.au,
 	linux-kernel@vger.kernel.org, davem@davemloft.net
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 22 Feb 2011 21:33:34 -0700
-Message-ID: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+Date: Tue, 22 Feb 2011 21:33:40 -0700
+Message-ID: <20110223043340.20795.84024.stgit@localhost6.localdomain6>
+In-Reply-To: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -19,197 +22,939 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series finally removes all the remaining users of the
-of_platform_{,un}register_driver() functions that used to be sued with
-the of_platform_bus_type.  All the cool kids are using the platform
-bus now.  At the end of this series the ugly stop-gap shim code is finally
-removed.
+arch/powerpc/kernel/ibmebus.c is the only remaining user of the
+of_bus_type support code for initializing the bus and registering
+drivers.  All others have either been switched to the vanilla platform
+bus or already have their own infrastructure.
 
-g.
+This patch moves the functionality that ibmebus is using out of
+drivers/of/{platform,device}.c and into ibmebus.c where it is actually
+used.  Also renames the moved symbols from of_platform_* to
+ibmebus_bus_* to reflect the actual usage.
 
+This patch is part of moving all of the of_platform_bus_type users
+over to the platform_bus_type.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
+ arch/powerpc/kernel/ibmebus.c |  404 +++++++++++++++++++++++++++++++++++++++++
+ drivers/of/device.c           |   34 ---
+ drivers/of/platform.c         |  393 ----------------------------------------
+ include/linux/of_platform.h   |    6 -
+ 4 files changed, 400 insertions(+), 437 deletions(-)
 
-Grant Likely (15):
-      dt/powerpc: move of_bus_type infrastructure to ibmebus
-      dt: add a match table pointer to struct device
-      dt/powerpc: Eliminate users of of_platform_{,un}register_driver
-      dt/sparc: Eliminate users of of_platform_{,un}register_driver
-      leds/leds-gpio: merge platform_driver with of_platform_driver
-      dt: xilinx_hwicap: merge platform and of_platform driver bindings
-      dt: uartlite: merge platform and of_platform driver bindings
-      dt/spi: Eliminate users of of_platform_{,un}register_driver
-      dt/sound: Eliminate users of of_platform_{,un}register_driver
-      dt/net: Eliminate users of of_platform_{,un}register_driver
-      dt/video: Eliminate users of of_platform_{,un}register_driver
-      dt/usb: Eliminate users of of_platform_{,un}register_driver
-      dt/serial: Eliminate users of of_platform_{,un}register_driver
-      dt: Eliminate of_platform_{,un}register_driver
-      dt: eliminate of_platform_driver shim code
-
-
- arch/powerpc/kernel/ibmebus.c                 |  404 ++++++++++++++++++++++
- arch/powerpc/kernel/of_platform.c             |    7 
- arch/powerpc/platforms/52xx/mpc52xx_gpio.c    |   14 -
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |   10 -
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |   11 -
- arch/powerpc/platforms/82xx/ep8248e.c         |    7 
- arch/powerpc/platforms/83xx/suspend.c         |   14 -
- arch/powerpc/platforms/cell/axon_msi.c        |   11 -
- arch/powerpc/platforms/pasemi/gpio_mdio.c     |    9 
- arch/powerpc/sysdev/axonram.c                 |   11 -
- arch/powerpc/sysdev/bestcomm/bestcomm.c       |    9 
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c         |    9 
- arch/powerpc/sysdev/fsl_msi.c                 |   13 -
- arch/powerpc/sysdev/fsl_pmc.c                 |    7 
- arch/powerpc/sysdev/fsl_rio.c                 |    7 
- arch/powerpc/sysdev/pmi.c                     |    9 
- arch/powerpc/sysdev/qe_lib/qe.c               |    7 
- arch/sparc/include/asm/parport.h              |    6 
- arch/sparc/kernel/apc.c                       |    7 
- arch/sparc/kernel/auxio_64.c                  |    7 
- arch/sparc/kernel/central.c                   |   14 -
- arch/sparc/kernel/chmc.c                      |   19 -
- arch/sparc/kernel/pci_fire.c                  |    7 
- arch/sparc/kernel/pci_psycho.c                |    7 
- arch/sparc/kernel/pci_sabre.c                 |    9 
- arch/sparc/kernel/pci_schizo.c                |   11 -
- arch/sparc/kernel/pci_sun4v.c                 |    7 
- arch/sparc/kernel/pmc.c                       |    7 
- arch/sparc/kernel/power.c                     |    6 
- arch/sparc/kernel/time_32.c                   |    6 
- arch/sparc/kernel/time_64.c                   |   18 -
- drivers/ata/pata_mpc52xx.c                    |    8 
- drivers/ata/pata_of_platform.c                |    9 
- drivers/ata/sata_dwc_460ex.c                  |    9 
- drivers/ata/sata_fsl.c                        |    9 
- drivers/atm/fore200e.c                        |   17 +
- drivers/block/xsysace.c                       |   11 -
- drivers/char/hw_random/n2-drv.c               |   16 -
- drivers/char/hw_random/pasemi-rng.c           |    9 
- drivers/char/ipmi/ipmi_si_intf.c              |   18 +
- drivers/char/xilinx_hwicap/xilinx_hwicap.c    |  129 +++----
- drivers/crypto/amcc/crypto4xx_core.c          |    9 
- drivers/crypto/n2_core.c                      |   20 -
- drivers/crypto/talitos.c                      |    9 
- drivers/dma/fsldma.c                          |   14 -
- drivers/dma/mpc512x_dma.c                     |    9 
- drivers/dma/ppc4xx/adma.c                     |   11 -
- drivers/edac/mpc85xx_edac.c                   |   27 +
- drivers/edac/ppc4xx_edac.c                    |   23 -
- drivers/hwmon/ultra45_env.c                   |    9 
- drivers/i2c/busses/i2c-cpm.c                  |    9 
- drivers/i2c/busses/i2c-ibm_iic.c              |    9 
- drivers/i2c/busses/i2c-mpc.c                  |   22 -
- drivers/input/misc/sparcspkr.c                |   22 +
- drivers/input/serio/i8042-sparcio.h           |    8 
- drivers/input/serio/xilinx_ps2.c              |    9 
- drivers/leds/leds-gpio.c                      |  206 +++++------
- drivers/macintosh/smu.c                       |    7 
- drivers/macintosh/therm_pm72.c                |    8 
- drivers/macintosh/therm_windtunnel.c          |    9 
- drivers/media/video/fsl-viu.c                 |    9 
- drivers/mmc/host/sdhci-of-core.c              |   12 -
- drivers/mtd/maps/physmap_of.c                 |   15 -
- drivers/mtd/maps/sun_uflash.c                 |    8 
- drivers/mtd/nand/fsl_upm.c                    |    9 
- drivers/mtd/nand/mpc5121_nfc.c                |    9 
- drivers/mtd/nand/ndfc.c                       |    9 
- drivers/mtd/nand/pasemi_nand.c                |    9 
- drivers/mtd/nand/socrates_nand.c              |    9 
- drivers/net/can/mscan/mpc5xxx_can.c           |   15 -
- drivers/net/can/sja1000/sja1000_of_platform.c |    9 
- drivers/net/fec_mpc52xx.c                     |   13 -
- drivers/net/fec_mpc52xx.h                     |    2 
- drivers/net/fec_mpc52xx_phy.c                 |    5 
- drivers/net/fs_enet/fs_enet-main.c            |   16 -
- drivers/net/fs_enet/mii-bitbang.c             |    9 
- drivers/net/fs_enet/mii-fec.c                 |   15 -
- drivers/net/fsl_pq_mdio.c                     |    9 
- drivers/net/gianfar.c                         |   12 -
- drivers/net/greth.c                           |    8 
- drivers/net/ibm_newemac/core.c                |    9 
- drivers/net/ibm_newemac/mal.c                 |    9 
- drivers/net/ibm_newemac/rgmii.c               |    9 
- drivers/net/ibm_newemac/tah.c                 |    9 
- drivers/net/ibm_newemac/zmii.c                |    9 
- drivers/net/ll_temac_main.c                   |    9 
- drivers/net/myri_sbus.c                       |    8 
- drivers/net/niu.c                             |   11 -
- drivers/net/phy/mdio-gpio.c                   |    9 
- drivers/net/sunbmac.c                         |    9 
- drivers/net/sunhme.c                          |   14 -
- drivers/net/sunlance.c                        |    8 
- drivers/net/sunqe.c                           |    8 
- drivers/net/ucc_geth.c                        |    8 
- drivers/net/xilinx_emaclite.c                 |    9 
- drivers/of/device.c                           |   34 --
- drivers/of/platform.c                         |  461 -------------------------
- drivers/parport/parport_sunbpp.c              |    8 
- drivers/pcmcia/electra_cf.c                   |    9 
- drivers/pcmcia/m8xx_pcmcia.c                  |    9 
- drivers/rtc/rtc-mpc5121.c                     |    9 
- drivers/sbus/char/bbc_i2c.c                   |    9 
- drivers/sbus/char/display7seg.c               |    9 
- drivers/sbus/char/envctrl.c                   |    9 
- drivers/sbus/char/flash.c                     |    9 
- drivers/sbus/char/uctrl.c                     |    9 
- drivers/scsi/qlogicpti.c                      |   14 -
- drivers/scsi/sun_esp.c                        |    8 
- drivers/spi/mpc512x_psc_spi.c                 |    9 
- drivers/spi/mpc52xx_psc_spi.c                 |    9 
- drivers/spi/mpc52xx_spi.c                     |    9 
- drivers/spi/spi_fsl_espi.c                    |   11 -
- drivers/spi/spi_fsl_lib.c                     |    3 
- drivers/spi/spi_fsl_lib.h                     |    3 
- drivers/spi/spi_fsl_spi.c                     |   11 -
- drivers/spi/spi_ppc4xx.c                      |    9 
- drivers/tty/serial/apbuart.c                  |   11 -
- drivers/tty/serial/cpm_uart/cpm_uart_core.c   |    9 
- drivers/tty/serial/mpc52xx_uart.c             |   13 -
- drivers/tty/serial/of_serial.c                |   14 -
- drivers/tty/serial/sunhv.c                    |    8 
- drivers/tty/serial/sunsab.c                   |    8 
- drivers/tty/serial/sunsu.c                    |    6 
- drivers/tty/serial/sunzilog.c                 |   10 -
- drivers/tty/serial/uartlite.c                 |  103 +-----
- drivers/tty/serial/ucc_uart.c                 |    9 
- drivers/usb/gadget/fsl_qe_udc.c               |   14 -
- drivers/usb/host/ehci-hcd.c                   |   12 -
- drivers/usb/host/ehci-ppc-of.c                |    9 
- drivers/usb/host/ehci-xilinx-of.c             |    6 
- drivers/usb/host/fhci-hcd.c                   |    9 
- drivers/usb/host/isp1760-if.c                 |    9 
- drivers/usb/host/ohci-hcd.c                   |    6 
- drivers/usb/host/ohci-ppc-of.c                |    9 
- drivers/video/bw2.c                           |    8 
- drivers/video/cg14.c                          |    8 
- drivers/video/cg3.c                           |    9 
- drivers/video/cg6.c                           |    9 
- drivers/video/ffb.c                           |    9 
- drivers/video/fsl-diu-fb.c                    |    9 
- drivers/video/leo.c                           |    9 
- drivers/video/mb862xx/mb862xxfb.c             |    9 
- drivers/video/p9100.c                         |    8 
- drivers/video/platinumfb.c                    |    9 
- drivers/video/sunxvr1000.c                    |    9 
- drivers/video/tcx.c                           |    9 
- drivers/video/xilinxfb.c                      |   11 -
- drivers/watchdog/cpwd.c                       |    9 
- drivers/watchdog/gef_wdt.c                    |    9 
- drivers/watchdog/mpc8xxx_wdt.c                |   15 -
- drivers/watchdog/riowd.c                      |    9 
- include/linux/device.h                        |    1 
- include/linux/of_device.h                     |    5 
- include/linux/of_platform.h                   |   18 -
- sound/soc/fsl/fsl_dma.c                       |    9 
- sound/soc/fsl/fsl_ssi.c                       |    9 
- sound/soc/fsl/mpc5200_dma.c                   |   24 +
- sound/soc/fsl/mpc5200_psc_ac97.c              |    9 
- sound/soc/fsl/mpc5200_psc_i2s.c               |    9 
- sound/sparc/amd7930.c                         |    8 
- sound/sparc/cs4231.c                          |   16 -
- sound/sparc/dbri.c                            |    8 
- 162 files changed, 1278 insertions(+), 1627 deletions(-)
-
--- 
-Signature
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index f62efdf..c00d4ca 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -201,13 +201,14 @@ int ibmebus_register_driver(struct of_platform_driver *drv)
+ 	/* If the driver uses devices that ibmebus doesn't know, add them */
+ 	ibmebus_create_devices(drv->driver.of_match_table);
+ 
+-	return of_register_driver(drv, &ibmebus_bus_type);
++	drv->driver.bus = &ibmebus_bus_type;
++	return driver_register(&drv->driver);
+ }
+ EXPORT_SYMBOL(ibmebus_register_driver);
+ 
+ void ibmebus_unregister_driver(struct of_platform_driver *drv)
+ {
+-	of_unregister_driver(drv);
++	driver_unregister(&drv->driver);
+ }
+ EXPORT_SYMBOL(ibmebus_unregister_driver);
+ 
+@@ -308,15 +309,410 @@ static ssize_t ibmebus_store_remove(struct bus_type *bus,
+ 	}
+ }
+ 
++
+ static struct bus_attribute ibmebus_bus_attrs[] = {
+ 	__ATTR(probe, S_IWUSR, NULL, ibmebus_store_probe),
+ 	__ATTR(remove, S_IWUSR, NULL, ibmebus_store_remove),
+ 	__ATTR_NULL
+ };
+ 
++static int ibmebus_bus_bus_match(struct device *dev, struct device_driver *drv)
++{
++	const struct of_device_id *matches = drv->of_match_table;
++
++	if (!matches)
++		return 0;
++
++	return of_match_device(matches, dev) != NULL;
++}
++
++static int ibmebus_bus_device_probe(struct device *dev)
++{
++	int error = -ENODEV;
++	struct of_platform_driver *drv;
++	struct platform_device *of_dev;
++	const struct of_device_id *match;
++
++	drv = to_of_platform_driver(dev->driver);
++	of_dev = to_platform_device(dev);
++
++	if (!drv->probe)
++		return error;
++
++	of_dev_get(of_dev);
++
++	match = of_match_device(drv->driver.of_match_table, dev);
++	if (match)
++		error = drv->probe(of_dev, match);
++	if (error)
++		of_dev_put(of_dev);
++
++	return error;
++}
++
++static int ibmebus_bus_device_remove(struct device *dev)
++{
++	struct platform_device *of_dev = to_platform_device(dev);
++	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
++
++	if (dev->driver && drv->remove)
++		drv->remove(of_dev);
++	return 0;
++}
++
++static void ibmebus_bus_device_shutdown(struct device *dev)
++{
++	struct platform_device *of_dev = to_platform_device(dev);
++	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
++
++	if (dev->driver && drv->shutdown)
++		drv->shutdown(of_dev);
++}
++
++/*
++ * ibmebus_bus_device_attrs
++ */
++static ssize_t devspec_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct platform_device *ofdev;
++
++	ofdev = to_platform_device(dev);
++	return sprintf(buf, "%s\n", ofdev->dev.of_node->full_name);
++}
++
++static ssize_t name_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct platform_device *ofdev;
++
++	ofdev = to_platform_device(dev);
++	return sprintf(buf, "%s\n", ofdev->dev.of_node->name);
++}
++
++static ssize_t modalias_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	ssize_t len = of_device_get_modalias(dev, buf, PAGE_SIZE - 2);
++	buf[len] = '\n';
++	buf[len+1] = 0;
++	return len+1;
++}
++
++struct device_attribute ibmebus_bus_device_attrs[] = {
++	__ATTR_RO(devspec),
++	__ATTR_RO(name),
++	__ATTR_RO(modalias),
++	__ATTR_NULL
++};
++
++#ifdef CONFIG_PM_SLEEP
++static int ibmebus_bus_legacy_suspend(struct device *dev, pm_message_t mesg)
++{
++	struct platform_device *of_dev = to_platform_device(dev);
++	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
++	int ret = 0;
++
++	if (dev->driver && drv->suspend)
++		ret = drv->suspend(of_dev, mesg);
++	return ret;
++}
++
++static int ibmebus_bus_legacy_resume(struct device *dev)
++{
++	struct platform_device *of_dev = to_platform_device(dev);
++	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
++	int ret = 0;
++
++	if (dev->driver && drv->resume)
++		ret = drv->resume(of_dev);
++	return ret;
++}
++
++static int ibmebus_bus_pm_prepare(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm && drv->pm->prepare)
++		ret = drv->pm->prepare(dev);
++
++	return ret;
++}
++
++static void ibmebus_bus_pm_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++}
++
++#ifdef CONFIG_SUSPEND
++
++static int ibmebus_bus_pm_suspend(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->suspend)
++			ret = drv->pm->suspend(dev);
++	} else {
++		ret = ibmebus_bus_legacy_suspend(dev, PMSG_SUSPEND);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_suspend_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->suspend_noirq)
++			ret = drv->pm->suspend_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_resume(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->resume)
++			ret = drv->pm->resume(dev);
++	} else {
++		ret = ibmebus_bus_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_resume_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->resume_noirq)
++			ret = drv->pm->resume_noirq(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_SUSPEND */
++
++#define ibmebus_bus_pm_suspend		NULL
++#define ibmebus_bus_pm_resume		NULL
++#define ibmebus_bus_pm_suspend_noirq	NULL
++#define ibmebus_bus_pm_resume_noirq	NULL
++
++#endif /* !CONFIG_SUSPEND */
++
++#ifdef CONFIG_HIBERNATION
++
++static int ibmebus_bus_pm_freeze(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->freeze)
++			ret = drv->pm->freeze(dev);
++	} else {
++		ret = ibmebus_bus_legacy_suspend(dev, PMSG_FREEZE);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_freeze_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->freeze_noirq)
++			ret = drv->pm->freeze_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_thaw(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->thaw)
++			ret = drv->pm->thaw(dev);
++	} else {
++		ret = ibmebus_bus_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_thaw_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->thaw_noirq)
++			ret = drv->pm->thaw_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_poweroff(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->poweroff)
++			ret = drv->pm->poweroff(dev);
++	} else {
++		ret = ibmebus_bus_legacy_suspend(dev, PMSG_HIBERNATE);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_poweroff_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->poweroff_noirq)
++			ret = drv->pm->poweroff_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_restore(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->restore)
++			ret = drv->pm->restore(dev);
++	} else {
++		ret = ibmebus_bus_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int ibmebus_bus_pm_restore_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->restore_noirq)
++			ret = drv->pm->restore_noirq(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_HIBERNATION */
++
++#define ibmebus_bus_pm_freeze		NULL
++#define ibmebus_bus_pm_thaw		NULL
++#define ibmebus_bus_pm_poweroff		NULL
++#define ibmebus_bus_pm_restore		NULL
++#define ibmebus_bus_pm_freeze_noirq	NULL
++#define ibmebus_bus_pm_thaw_noirq		NULL
++#define ibmebus_bus_pm_poweroff_noirq	NULL
++#define ibmebus_bus_pm_restore_noirq	NULL
++
++#endif /* !CONFIG_HIBERNATION */
++
++static struct dev_pm_ops ibmebus_bus_dev_pm_ops = {
++	.prepare = ibmebus_bus_pm_prepare,
++	.complete = ibmebus_bus_pm_complete,
++	.suspend = ibmebus_bus_pm_suspend,
++	.resume = ibmebus_bus_pm_resume,
++	.freeze = ibmebus_bus_pm_freeze,
++	.thaw = ibmebus_bus_pm_thaw,
++	.poweroff = ibmebus_bus_pm_poweroff,
++	.restore = ibmebus_bus_pm_restore,
++	.suspend_noirq = ibmebus_bus_pm_suspend_noirq,
++	.resume_noirq = ibmebus_bus_pm_resume_noirq,
++	.freeze_noirq = ibmebus_bus_pm_freeze_noirq,
++	.thaw_noirq = ibmebus_bus_pm_thaw_noirq,
++	.poweroff_noirq = ibmebus_bus_pm_poweroff_noirq,
++	.restore_noirq = ibmebus_bus_pm_restore_noirq,
++};
++
++#define IBMEBUS_BUS_PM_OPS_PTR	(&ibmebus_bus_dev_pm_ops)
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define IBMEBUS_BUS_PM_OPS_PTR	NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
+ struct bus_type ibmebus_bus_type = {
++	.name      = "ibmebus",
+ 	.uevent    = of_device_uevent,
+-	.bus_attrs = ibmebus_bus_attrs
++	.bus_attrs = ibmebus_bus_attrs,
++	.match     = ibmebus_bus_bus_match,
++	.probe     = ibmebus_bus_device_probe,
++	.remove    = ibmebus_bus_device_remove,
++	.shutdown  = ibmebus_bus_device_shutdown,
++	.dev_attrs = ibmebus_bus_device_attrs,
++	.pm        = IBMEBUS_BUS_PM_OPS_PTR,
+ };
+ EXPORT_SYMBOL(ibmebus_bus_type);
+ 
+@@ -326,7 +722,7 @@ static int __init ibmebus_bus_init(void)
+ 
+ 	printk(KERN_INFO "IBM eBus Device Driver\n");
+ 
+-	err = of_bus_type_init(&ibmebus_bus_type, "ibmebus");
++	err = bus_register(&ibmebus_bus_type);
+ 	if (err) {
+ 		printk(KERN_ERR "%s: failed to register IBM eBus.\n",
+ 		       __func__);
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index 45d8653..62b4b32 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -47,40 +47,6 @@ void of_dev_put(struct platform_device *dev)
+ }
+ EXPORT_SYMBOL(of_dev_put);
+ 
+-static ssize_t devspec_show(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct platform_device *ofdev;
+-
+-	ofdev = to_platform_device(dev);
+-	return sprintf(buf, "%s\n", ofdev->dev.of_node->full_name);
+-}
+-
+-static ssize_t name_show(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct platform_device *ofdev;
+-
+-	ofdev = to_platform_device(dev);
+-	return sprintf(buf, "%s\n", ofdev->dev.of_node->name);
+-}
+-
+-static ssize_t modalias_show(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	ssize_t len = of_device_get_modalias(dev, buf, PAGE_SIZE - 2);
+-	buf[len] = '\n';
+-	buf[len+1] = 0;
+-	return len+1;
+-}
+-
+-struct device_attribute of_platform_device_attrs[] = {
+-	__ATTR_RO(devspec),
+-	__ATTR_RO(name),
+-	__ATTR_RO(modalias),
+-	__ATTR_NULL
+-};
+-
+ int of_device_add(struct platform_device *ofdev)
+ {
+ 	BUG_ON(ofdev->dev.of_node == NULL);
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index c01cd1a..b71d0cd 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -114,399 +114,6 @@ EXPORT_SYMBOL(of_unregister_platform_driver);
+ #include <asm/dcr.h>
+ #endif
+ 
+-extern struct device_attribute of_platform_device_attrs[];
+-
+-static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+-{
+-	const struct of_device_id *matches = drv->of_match_table;
+-
+-	if (!matches)
+-		return 0;
+-
+-	return of_match_device(matches, dev) != NULL;
+-}
+-
+-static int of_platform_device_probe(struct device *dev)
+-{
+-	int error = -ENODEV;
+-	struct of_platform_driver *drv;
+-	struct platform_device *of_dev;
+-	const struct of_device_id *match;
+-
+-	drv = to_of_platform_driver(dev->driver);
+-	of_dev = to_platform_device(dev);
+-
+-	if (!drv->probe)
+-		return error;
+-
+-	of_dev_get(of_dev);
+-
+-	match = of_match_device(drv->driver.of_match_table, dev);
+-	if (match)
+-		error = drv->probe(of_dev, match);
+-	if (error)
+-		of_dev_put(of_dev);
+-
+-	return error;
+-}
+-
+-static int of_platform_device_remove(struct device *dev)
+-{
+-	struct platform_device *of_dev = to_platform_device(dev);
+-	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
+-
+-	if (dev->driver && drv->remove)
+-		drv->remove(of_dev);
+-	return 0;
+-}
+-
+-static void of_platform_device_shutdown(struct device *dev)
+-{
+-	struct platform_device *of_dev = to_platform_device(dev);
+-	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
+-
+-	if (dev->driver && drv->shutdown)
+-		drv->shutdown(of_dev);
+-}
+-
+-#ifdef CONFIG_PM_SLEEP
+-
+-static int of_platform_legacy_suspend(struct device *dev, pm_message_t mesg)
+-{
+-	struct platform_device *of_dev = to_platform_device(dev);
+-	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
+-	int ret = 0;
+-
+-	if (dev->driver && drv->suspend)
+-		ret = drv->suspend(of_dev, mesg);
+-	return ret;
+-}
+-
+-static int of_platform_legacy_resume(struct device *dev)
+-{
+-	struct platform_device *of_dev = to_platform_device(dev);
+-	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
+-	int ret = 0;
+-
+-	if (dev->driver && drv->resume)
+-		ret = drv->resume(of_dev);
+-	return ret;
+-}
+-
+-static int of_platform_pm_prepare(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (drv && drv->pm && drv->pm->prepare)
+-		ret = drv->pm->prepare(dev);
+-
+-	return ret;
+-}
+-
+-static void of_platform_pm_complete(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-
+-	if (drv && drv->pm && drv->pm->complete)
+-		drv->pm->complete(dev);
+-}
+-
+-#ifdef CONFIG_SUSPEND
+-
+-static int of_platform_pm_suspend(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->suspend)
+-			ret = drv->pm->suspend(dev);
+-	} else {
+-		ret = of_platform_legacy_suspend(dev, PMSG_SUSPEND);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_suspend_noirq(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->suspend_noirq)
+-			ret = drv->pm->suspend_noirq(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_resume(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->resume)
+-			ret = drv->pm->resume(dev);
+-	} else {
+-		ret = of_platform_legacy_resume(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_resume_noirq(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->resume_noirq)
+-			ret = drv->pm->resume_noirq(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-#else /* !CONFIG_SUSPEND */
+-
+-#define of_platform_pm_suspend		NULL
+-#define of_platform_pm_resume		NULL
+-#define of_platform_pm_suspend_noirq	NULL
+-#define of_platform_pm_resume_noirq	NULL
+-
+-#endif /* !CONFIG_SUSPEND */
+-
+-#ifdef CONFIG_HIBERNATION
+-
+-static int of_platform_pm_freeze(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->freeze)
+-			ret = drv->pm->freeze(dev);
+-	} else {
+-		ret = of_platform_legacy_suspend(dev, PMSG_FREEZE);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_freeze_noirq(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->freeze_noirq)
+-			ret = drv->pm->freeze_noirq(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_thaw(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->thaw)
+-			ret = drv->pm->thaw(dev);
+-	} else {
+-		ret = of_platform_legacy_resume(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_thaw_noirq(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->thaw_noirq)
+-			ret = drv->pm->thaw_noirq(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_poweroff(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->poweroff)
+-			ret = drv->pm->poweroff(dev);
+-	} else {
+-		ret = of_platform_legacy_suspend(dev, PMSG_HIBERNATE);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_poweroff_noirq(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->poweroff_noirq)
+-			ret = drv->pm->poweroff_noirq(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_restore(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->restore)
+-			ret = drv->pm->restore(dev);
+-	} else {
+-		ret = of_platform_legacy_resume(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-static int of_platform_pm_restore_noirq(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	int ret = 0;
+-
+-	if (!drv)
+-		return 0;
+-
+-	if (drv->pm) {
+-		if (drv->pm->restore_noirq)
+-			ret = drv->pm->restore_noirq(dev);
+-	}
+-
+-	return ret;
+-}
+-
+-#else /* !CONFIG_HIBERNATION */
+-
+-#define of_platform_pm_freeze		NULL
+-#define of_platform_pm_thaw		NULL
+-#define of_platform_pm_poweroff		NULL
+-#define of_platform_pm_restore		NULL
+-#define of_platform_pm_freeze_noirq	NULL
+-#define of_platform_pm_thaw_noirq		NULL
+-#define of_platform_pm_poweroff_noirq	NULL
+-#define of_platform_pm_restore_noirq	NULL
+-
+-#endif /* !CONFIG_HIBERNATION */
+-
+-static struct dev_pm_ops of_platform_dev_pm_ops = {
+-	.prepare = of_platform_pm_prepare,
+-	.complete = of_platform_pm_complete,
+-	.suspend = of_platform_pm_suspend,
+-	.resume = of_platform_pm_resume,
+-	.freeze = of_platform_pm_freeze,
+-	.thaw = of_platform_pm_thaw,
+-	.poweroff = of_platform_pm_poweroff,
+-	.restore = of_platform_pm_restore,
+-	.suspend_noirq = of_platform_pm_suspend_noirq,
+-	.resume_noirq = of_platform_pm_resume_noirq,
+-	.freeze_noirq = of_platform_pm_freeze_noirq,
+-	.thaw_noirq = of_platform_pm_thaw_noirq,
+-	.poweroff_noirq = of_platform_pm_poweroff_noirq,
+-	.restore_noirq = of_platform_pm_restore_noirq,
+-};
+-
+-#define OF_PLATFORM_PM_OPS_PTR	(&of_platform_dev_pm_ops)
+-
+-#else /* !CONFIG_PM_SLEEP */
+-
+-#define OF_PLATFORM_PM_OPS_PTR	NULL
+-
+-#endif /* !CONFIG_PM_SLEEP */
+-
+-int of_bus_type_init(struct bus_type *bus, const char *name)
+-{
+-	bus->name = name;
+-	bus->match = of_platform_bus_match;
+-	bus->probe = of_platform_device_probe;
+-	bus->remove = of_platform_device_remove;
+-	bus->shutdown = of_platform_device_shutdown;
+-	bus->dev_attrs = of_platform_device_attrs;
+-	bus->pm = OF_PLATFORM_PM_OPS_PTR;
+-	return bus_register(bus);
+-}
+-
+-int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
+-{
+-	/*
+-	 * Temporary: of_platform_bus used to be distinct from the platform
+-	 * bus.  It isn't anymore, and so drivers on the platform bus need
+-	 * to be registered in a special way.
+-	 *
+-	 * After all of_platform_bus_type drivers are converted to
+-	 * platform_drivers, this exception can be removed.
+-	 */
+-	if (bus == &platform_bus_type)
+-		return of_register_platform_driver(drv);
+-
+-	/* register with core */
+-	drv->driver.bus = bus;
+-	return driver_register(&drv->driver);
+-}
+-EXPORT_SYMBOL(of_register_driver);
+-
+-void of_unregister_driver(struct of_platform_driver *drv)
+-{
+-	if (drv->driver.bus == &platform_bus_type)
+-		of_unregister_platform_driver(drv);
+-	else
+-		driver_unregister(&drv->driver);
+-}
+-EXPORT_SYMBOL(of_unregister_driver);
+-
+ #if !defined(CONFIG_SPARC)
+ /*
+  * The following routines scan a subtree and registers a device for
+diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
+index a68716a..048949f 100644
+--- a/include/linux/of_platform.h
++++ b/include/linux/of_platform.h
+@@ -47,10 +47,6 @@ struct of_platform_driver
+ #define	to_of_platform_driver(drv) \
+ 	container_of(drv,struct of_platform_driver, driver)
+ 
+-extern int of_register_driver(struct of_platform_driver *drv,
+-			      struct bus_type *bus);
+-extern void of_unregister_driver(struct of_platform_driver *drv);
+-
+ /* Platform drivers register/unregister */
+ extern int of_register_platform_driver(struct of_platform_driver *drv);
+ extern void of_unregister_platform_driver(struct of_platform_driver *drv);
+@@ -60,8 +56,6 @@ extern struct platform_device *of_device_alloc(struct device_node *np,
+ 					 struct device *parent);
+ extern struct platform_device *of_find_device_by_node(struct device_node *np);
+ 
+-extern int of_bus_type_init(struct bus_type *bus, const char *name);
+-
+ #if !defined(CONFIG_SPARC) /* SPARC has its own device registration method */
+ /* Platform devices and busses creation */
+ extern struct platform_device *of_platform_device_create(struct device_node *np,
