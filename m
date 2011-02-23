@@ -1,13 +1,13 @@
 Return-Path: <robherring2@gmail.com>
-Message-ID: <4D653C48.4090608@gmail.com>
-Date: Wed, 23 Feb 2011 10:56:40 -0600
+Message-ID: <4D6551EF.70207@gmail.com>
+Date: Wed, 23 Feb 2011 12:29:03 -0600
 From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 14/15] dt: Eliminate of_platform_{,un}register_driver
+Subject: Re: [RFC PATCH 02/15] dt: add a match table pointer to struct device
 References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
-	<20110223043447.20795.80653.stgit@localhost6.localdomain6>
-In-Reply-To: <20110223043447.20795.80653.stgit@localhost6.localdomain6>
+	<20110223043345.20795.2936.stgit@localhost6.localdomain6>
+In-Reply-To: <20110223043345.20795.2936.stgit@localhost6.localdomain6>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -23,90 +23,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Grant,
 
-On 02/22/2011 10:34 PM, Grant Likely wrote:
-> Final step to eliminate of_platform_bus_type.  They're all just
-> platform drivers now.
+On 02/22/2011 10:33 PM, Grant Likely wrote:
+> Add a new .of_match field to struct device which points at the
+> matching device driver .of_match_table entry when a device is probed
+> via the device tree
 >
 > Signed-off-by: Grant Likely<grant.likely@secretlab.ca>
 > ---
+>   include/linux/device.h    |    1 +
+>   include/linux/of_device.h |    5 +++--
+>   2 files changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index ca5d252..8d8e267 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -441,6 +441,7 @@ struct device {
+>   	struct dev_archdata	archdata;
+>
+>   	struct device_node	*of_node; /* associated device tree node */
+> +	const struct of_device_id *of_match; /* matching of_device_id from driver */
 
-snip
-
-> diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-> index b6ae6e9..132951d 100644
-> --- a/drivers/char/ipmi/ipmi_si_intf.c
-> +++ b/drivers/char/ipmi/ipmi_si_intf.c
-> @@ -2556,8 +2556,7 @@ static struct pci_driver ipmi_pci_driver = {
->
->
->   #ifdef CONFIG_PPC_OF
-> -static int __devinit ipmi_of_probe(struct platform_device *dev,
-> -			 const struct of_device_id *match)
-> +static int __devinit ipmi_of_probe(struct platform_device *dev)
->   {
->   	struct smi_info *info;
->   	struct resource resource;
-> @@ -2568,6 +2567,9 @@ static int __devinit ipmi_of_probe(struct platform_device *dev,
->
->   	dev_info(&dev->dev, "probing via device tree\n");
->
-> +	if (!dev->dev.of_match)
-> +		return -EINVAL;
-> +
->   	ret = of_address_to_resource(np, 0,&resource);
->   	if (ret) {
->   		dev_warn(&dev->dev, PFX "invalid address from OF\n");
-> @@ -2600,7 +2602,7 @@ static int __devinit ipmi_of_probe(struct platform_device *dev,
->   		return -ENOMEM;
->   	}
->
-> -	info->si_type		= (enum si_type) match->data;
-> +	info->si_type		= (enum si_type) dev->dev.of_match->data;
->   	info->addr_source	= SI_DEVICETREE;
->   	info->irq_setup		= std_irq_setup;
->
-> @@ -2652,9 +2654,9 @@ static struct of_device_id ipmi_match[] =
->   	{},
->   };
->
-> -static struct of_platform_driver ipmi_of_platform_driver = {
-> +static struct platform_driver ipmi_of_platform_driver = {
->   	.driver = {
-> -		.name = "ipmi",
-> +		.name = "of-ipmi",
->   		.owner = THIS_MODULE,
->   		.of_match_table = ipmi_match,
->   	},
-> @@ -3396,7 +3398,7 @@ static int __devinit init_ipmi_si(void)
->   #endif
->
->   #ifdef CONFIG_PPC_OF
-> -	of_register_platform_driver(&ipmi_of_platform_driver);
-> +	platform_driver_register(&ipmi_of_platform_driver);
->   	of_registered = 1;
->   #endif
->
-> @@ -3457,7 +3459,7 @@ static int __devinit init_ipmi_si(void)
->
->   #ifdef CONFIG_PPC_OF
->   		if (of_registered)
-> -			of_unregister_platform_driver(&ipmi_of_platform_driver);
-> +			platform_driver_unregister(&ipmi_of_platform_driver);
->   #endif
->   		driver_unregister(&ipmi_driver.driver);
->   		printk(KERN_WARNING PFX
-> @@ -3558,7 +3560,7 @@ static void __exit cleanup_ipmi_si(void)
->
->   #ifdef CONFIG_PPC_OF
->   	if (of_registered)
-> -		of_unregister_platform_driver(&ipmi_of_platform_driver);
-> +		platform_driver_unregister(&ipmi_of_platform_driver);
->   #endif
->
->   	mutex_lock(&smi_infos_lock);
-
-Um, you are doing exactly what you said I should not do. Now the driver 
-has 2 platform drivers defined. I have an updated patch that addresses 
-your previous comments. I will send it out later today.
+Couldn't of_match/of_match_table be merged into the platform dev/drv 
+id_entry/id_table. Handling MODALIAS for a driver that does both OF 
+style and normal platform device matching may be a problem though.
 
 Rob
