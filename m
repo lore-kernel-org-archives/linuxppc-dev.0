@@ -1,13 +1,23 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 24 Feb 2011 09:46:16 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, msm@freescale.com,
-	john.a.livingston@boeing.com, Kyle.D.Moffett@boeing.com
-Subject: powerpc/kexec: Restore ppc_md.machine_kexec
-Message-ID: <20110224094616.3e498154@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AC713B71A6
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2011 10:24:31 +1100 (EST)
+Received: by iwn3 with SMTP id 3so4445622iwn.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2011 15:24:29 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1298490130.8833.212.camel@pasglop>
+References: <AANLkTinz=CrCTEeAPQjE8B=yjQx+WLs_FKj2u+0-JeAS@mail.gmail.com>
+	<1298490130.8833.212.camel@pasglop>
+Date: Wed, 23 Feb 2011 17:24:28 -0600
+Message-ID: <AANLkTinB+CLhJsiu3SBygC7TW+vnOH3e7==h_7nEGWts@mail.gmail.com>
+Subject: Re: rtc on PowerMac7,3
+From: kevin diggs <diggskevin38@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,44 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Feb 23, 2011 at 1:42 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>> [ =A0 15.014542] rtc-generic rtc-generic: rtc core: registered rtc-gener=
+ic as rtc0
+>
+> rtc-generic should work...
+>
+> Cheers,
+> Ben.
+>
+It probably does on everyone else's 7,3. The 8600 probably infected
+it. ... I hear the two of them out there late at night. Mumbling to
+each other ... plotting ...
 
-Kyle Moffett points out that mpc85xx has started using the
-ppc_md.machine_kexec hook. As such, revert patch c94868788cf2
-(powerpc/kexec: Remove ppc_md.machine_kexec).
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 991d599..fe56a23 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -240,6 +240,12 @@ struct machdep_calls {
- 	 * claims to support kexec.
- 	 */
- 	int (*machine_kexec_prepare)(struct kimage *image);
-+
-+	/* Called to perform the _real_ kexec.
-+	 * Do NOT allocate memory or fail here. We are past the point of
-+	 * no return.
-+	 */
-+	void (*machine_kexec)(struct kimage *image);
- #endif /* CONFIG_KEXEC */
- 
- #ifdef CONFIG_SUSPEND
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 49a170a..a5f8672 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -87,7 +87,10 @@ void machine_kexec(struct kimage *image)
- 
- 	save_ftrace_enabled = __ftrace_enabled_save();
- 
--	default_machine_kexec(image);
-+	if (ppc_md.machine_kexec)
-+		ppc_md.machine_kexec(image);
-+	else
-+		default_machine_kexec(image);
- 
- 	__ftrace_enabled_restore(save_ftrace_enabled);
- 
+kevin
