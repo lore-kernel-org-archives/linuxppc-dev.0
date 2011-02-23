@@ -1,23 +1,23 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Wed, 23 Feb 2011 11:50:07 +0100
-From: Richard Cochran <richardcochran@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V11 0/4] ptp: IEEE 1588 hardware clock support
-Message-ID: <20110223105007.GA31292@riccoc20.at.omicron.at>
-References: <cover.1298447722.git.richard.cochran@omicron.at>
+Return-Path: <eliedebrauwer@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CE978B70B3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Feb 2011 02:19:58 +1100 (EST)
+Received: by wyb28 with SMTP id 28so3332209wyb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 23 Feb 2011 07:19:53 -0800 (PST)
+Message-ID: <4D652596.1060501@gmail.com>
+Date: Wed, 23 Feb 2011 16:19:50 +0100
+From: Elie De Brauwer <eliedebrauwer@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1298447722.git.richard.cochran@omicron.at>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, Russell King <linux@arm.linux.org.uk>,
-	Paul Mackerras <paulus@samba.org>, John Stultz <john.stultz@linaro.org>,
-	linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
-	Mike Frysinger <vapier@gentoo.org>,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Krzysztof Halasa <khc@pm.waw.pl>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: fsl-esdhc on P2020 weird endianess behavior
+References: <4D39B2B0.9050207@gmail.com>
+In-Reply-To: <4D39B2B0.9050207@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Previous Discussions
+On 01/21/11 17:22, Elie De Brauwer wrote:
+> Hello list,
+>
+> I have a P2020 processor on a custom board which uses the embedded
+> fsl-esdhc controller. Hardware-wise this is functional and in u-boot
+> everything seems to behave (mmc part 0 gives the correct partition table
+> and ext2ls/fatls are capable of reading the contents of the sd card).
+>
+> However as soon as I start Linux (2.6.36), I get all sorts of unwanted
+> behavior. Linux is unable to detect the partition layout (but if I do a
+> hexdump of the MBR, I see the endianness is swapped (last 4 bytes are aa
+> 55 00 00). Also when I try to obtain the card registers they show the
+> same behavior:
+> # cat ./devices/soc.0/ff72e000.sdhci/mmc_host/mmc0/mmc0:0001/scr
+> 0000b50200000000
+>
+> While for comparison the same value on my (x86) laptop gives:
+> edb@lapedb:/sys/devices/pci0000:00/0000:00:1e.0/0000:15:00.2/mmc_host/mmc0/mmc0:0001$
+> cat scr
+> 02b5000000000000
+>
+> In my config I have the following set:
+> CONFIG_MMC_SDHCI=y
+> CONFIG_MMC_SDHCI_IO_ACCESSORS=y
+> CONFIG_MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER=y
+> # CONFIG_MMC_SDHCI_PCI is not set
+> CONFIG_MMC_SDHCI_OF=y
+> CONFIG_MMC_SDHCI_OF_ESDHC=y
+>
 
-  This patch set previously appeared on the netdev list. Since V5 of
-  the character device patch set, the discussion has moved to the
-  lkml.
+In the meantime I've 'downgraded' this issue away. Just to share my 
+conclusions with the world (and perhaps somebody has an aha-erlebnis 
+when reading this which can identify the root cause). I did some 
+triaging today and found out the issue was present in 2.6.36 and 
+2.6.36.4 but it was not present in 2.6.35.9.
 
-  - IEEE 1588 hardware clock support [V5]
-    http://lkml.org/lkml/2010/8/16/90
+The CONFIG_MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER is not involved 
+because this relates to the way the registers on the SoC are accessed, 
+these registers are accessed in the correct way. The problem only occurs 
+when accessing data from the SD card (e.g. the SCR which is a card 
+register, but also the MBR).
 
-  - POSIX clock tuning syscall with static clock ids
-    http://lkml.org/lkml/2010/8/23/49
-
-  - POSIX clock tuning syscall with dynamic clock ids
-    http://lkml.org/lkml/2010/9/3/119
-
-  - IEEE 1588 hardware clock support [V6]
-    http://lkml.org/lkml/2010/9/23/310
-
-  - Dynamic clock devices [RFC]
-    http://lkml.org/lkml/2010/11/4/290
-
-  - IEEE 1588 hardware clock support [V7]
-    http://lkml.org/lkml/2010/12/16/195
-
-  - IEEE 1588 hardware clock support [V8]
-    http://lkml.org/lkml/2010/12/31/128
-
-  - IEEE 1588 hardware clock support [V9]
-    http://lkml.org/lkml/2011/1/13/65
-
-  - IEEE 1588 hardware clock support [V10]
-    http://lkml.org/lkml/2011/1/27/71
-
-  - Thomas Gleixner: Rework of the PTP support series core code
-    http://lkml.org/lkml/2011/2/1/137
+-- 
+Elie De Brauwer
