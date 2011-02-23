@@ -1,17 +1,20 @@
-Return-Path: <grant.likely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [RFC PATCH 15/15] dt: eliminate of_platform_driver shim code
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	devicetree-discuss@lists.ozlabs.org, sfr@canb.auug.org.au,
-	linux-kernel@vger.kernel.org, davem@davemloft.net
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 22 Feb 2011 21:34:52 -0700
-Message-ID: <20110223043452.20795.70146.stgit@localhost6.localdomain6>
-In-Reply-To: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+Return-Path: <jacmet@gmail.com>
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC PATCH 07/15] dt: uartlite: merge platform and of_platform
+	driver bindings
 References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+	<20110223043411.20795.57850.stgit@localhost6.localdomain6>
+Date: Wed, 23 Feb 2011 09:58:01 +0100
+In-Reply-To: <20110223043411.20795.57850.stgit@localhost6.localdomain6> (Grant
+	Likely's message of "Tue, 22 Feb 2011 21:34:11 -0700")
+Message-ID: <877hcryvom.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,131 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit eca393016, "of: Merge of_platform_bus_type with
-platform_bus_type" added a shim to allow of_platform_drivers to get
-registers onto the platform bus so that there was time to migrate the
-existing drivers to the platform_bus_type.
+>>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-This patch removes the shim since there are no more users of the old
-interface.
+ Grant> of_platform_driver is getting removed, and a single platform_driver
+ Grant> can now support both devicetree and non-devicetree use cases.  This
+ Grant> patch merges the two driver registrations.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- drivers/of/platform.c       |   68 -------------------------------------------
- include/linux/of_platform.h |   12 +-------
- 2 files changed, 1 insertions(+), 79 deletions(-)
+Wee!
 
-diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index b71d0cd..1ce4c45 100644
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -42,74 +42,6 @@ struct platform_device *of_find_device_by_node(struct device_node *np)
- }
- EXPORT_SYMBOL(of_find_device_by_node);
+ Grant>  static int __devinit ulite_probe(struct platform_device *pdev)
+ Grant>  {
+ Grant>  	struct resource *res, *res2;
+ Grant> +	const __be32 *prop;
+ Grant> +	int id = pdev->id;
  
--static int platform_driver_probe_shim(struct platform_device *pdev)
--{
--	struct platform_driver *pdrv;
--	struct of_platform_driver *ofpdrv;
--	const struct of_device_id *match;
--
--	pdrv = container_of(pdev->dev.driver, struct platform_driver, driver);
--	ofpdrv = container_of(pdrv, struct of_platform_driver, platform_driver);
--
--	/* There is an unlikely chance that an of_platform driver might match
--	 * on a non-OF platform device.  If so, then of_match_device() will
--	 * come up empty.  Return -EINVAL in this case so other drivers get
--	 * the chance to bind. */
--	match = of_match_device(pdev->dev.driver->of_match_table, &pdev->dev);
--	return match ? ofpdrv->probe(pdev, match) : -EINVAL;
--}
--
--static void platform_driver_shutdown_shim(struct platform_device *pdev)
--{
--	struct platform_driver *pdrv;
--	struct of_platform_driver *ofpdrv;
--
--	pdrv = container_of(pdev->dev.driver, struct platform_driver, driver);
--	ofpdrv = container_of(pdrv, struct of_platform_driver, platform_driver);
--	ofpdrv->shutdown(pdev);
--}
--
--/**
-- * of_register_platform_driver
-- */
--int of_register_platform_driver(struct of_platform_driver *drv)
--{
--	char *of_name;
--
--	/* setup of_platform_driver to platform_driver adaptors */
--	drv->platform_driver.driver = drv->driver;
--
--	/* Prefix the driver name with 'of:' to avoid namespace collisions
--	 * and bogus matches.  There are some drivers in the tree that
--	 * register both an of_platform_driver and a platform_driver with
--	 * the same name.  This is a temporary measure until they are all
--	 * cleaned up --gcl July 29, 2010 */
--	of_name = kmalloc(strlen(drv->driver.name) + 5, GFP_KERNEL);
--	if (!of_name)
--		return -ENOMEM;
--	sprintf(of_name, "of:%s", drv->driver.name);
--	drv->platform_driver.driver.name = of_name;
--
--	if (drv->probe)
--		drv->platform_driver.probe = platform_driver_probe_shim;
--	drv->platform_driver.remove = drv->remove;
--	if (drv->shutdown)
--		drv->platform_driver.shutdown = platform_driver_shutdown_shim;
--	drv->platform_driver.suspend = drv->suspend;
--	drv->platform_driver.resume = drv->resume;
--
--	return platform_driver_register(&drv->platform_driver);
--}
--EXPORT_SYMBOL(of_register_platform_driver);
--
--void of_unregister_platform_driver(struct of_platform_driver *drv)
--{
--	platform_driver_unregister(&drv->platform_driver);
--	kfree(drv->platform_driver.driver.name);
--	drv->platform_driver.driver.name = NULL;
--}
--EXPORT_SYMBOL(of_unregister_platform_driver);
--
- #if defined(CONFIG_PPC_DCR)
- #include <asm/dcr.h>
- #endif
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 048949f..17c7e21 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -23,13 +23,7 @@
-  * of_platform_driver - Legacy of-aware driver for platform devices.
-  *
-  * An of_platform_driver driver is attached to a basic platform_device on
-- * ether the "platform bus" (platform_bus_type), or the ibm ebus
-- * (ibmebus_bus_type).
-- *
-- * of_platform_driver is being phased out when used with the platform_bus_type,
-- * and regular platform_drivers should be used instead.  When the transition
-- * is complete, only ibmebus will be using this structure, and the
-- * platform_driver member of this structure will be removed.
-+ * the ibm ebus (ibmebus_bus_type).
-  */
- struct of_platform_driver
- {
-@@ -42,15 +36,11 @@ struct of_platform_driver
- 	int	(*shutdown)(struct platform_device* dev);
+ Grant>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ Grant>  	if (!res)
+ Grant> @@ -583,7 +586,13 @@ static int __devinit ulite_probe(struct platform_device *pdev)
+ Grant>  	if (!res2)
+ Grant>  		return -ENODEV;
  
- 	struct device_driver	driver;
--	struct platform_driver	platform_driver;
- };
- #define	to_of_platform_driver(drv) \
- 	container_of(drv,struct of_platform_driver, driver)
- 
- /* Platform drivers register/unregister */
--extern int of_register_platform_driver(struct of_platform_driver *drv);
--extern void of_unregister_platform_driver(struct of_platform_driver *drv);
--
- extern struct platform_device *of_device_alloc(struct device_node *np,
- 					 const char *bus_id,
- 					 struct device *parent);
+ Grant> -	return ulite_assign(&pdev->dev, pdev->id, res->start, res2->start);
+ Grant> +#ifdef CONFIG_OF
+ Grant> +	prop = of_get_property(pdev->dev.of_node, "port-number", NULL);
+ Grant> +	if (prop)
+ Grant> +		id = be32_to_cpup(prop);
+ Grant> +#endif
+ Grant> +
+ Grant> +	return ulite_assign(&pdev->dev, id, res->start, res2->start);
+ Grant>  }
+
+Isn't this going to give a build warning about prop being unused on
+!CONFIG_OF builds? Perhaps move it down into the CONFIG_OF conditional?
+
+Other than that,
+
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+
+-- 
+Bye, Peter Korsgaard
