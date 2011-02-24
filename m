@@ -1,20 +1,29 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
-	[216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F06DAB70E3
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2011 01:43:52 +1100 (EST)
+Return-Path: <richardcochran@gmail.com>
+Date: Thu, 24 Feb 2011 17:39:44 +0100
+From: Richard Cochran <richardcochran@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH V11 2/4] ptp: Added a clock that uses the eTSEC found
+	on the MPC85xx.
+Message-ID: <20110224163944.GA15234@riccoc20.at.omicron.at>
+References: <cover.1298447722.git.richard.cochran@omicron.at>
+	<be1f5e801e8cd0145dd23aadae7c2055bb3c1d47.1298447722.git.richard.cochran@omicron.at>
+	<20110223165058.GE14597@angua.secretlab.ca>
+	<20110223112612.30071995@schlenkerla>
+	<20110223175459.GH14597@angua.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Flushing data cache on PPC405 in Linux
-Date: Thu, 24 Feb 2011 07:43:45 -0700
-References: <ef11a825-8824-460f-91c0-82cb8029ed81@VA3EHSMHS029.ehs.local>
-	<B5790C8E-AC59-4588-B4C5-A636A4EC1F98@digitaldans.com>
-From: John Linn <John.Linn@xilinx.com>
-To: Dan Malek <ppc6dev@digitaldans.com>
-Message-ID: <119fc163-ae81-4492-955a-94d1234ab6d9@VA3EHSMHS021.ehs.local>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110223175459.GH14597@angua.secretlab.ca>
+Cc: Mike Frysinger <vapier@gentoo.org>, Russell King <linux@arm.linux.org.uk>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
+	linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+	Scott Wood <scottwood@freescale.com>, John Stultz <john.stultz@linaro.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Rodolfo Giometti <giometti@linux.it>,
+	Christoph Lameter <cl@linux.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,89 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: John Linn
-> Sent: Thursday, February 24, 2011 7:15 AM
-> To: 'Dan Malek'
-> Cc: linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca
-> Subject: RE: Flushing data cache on PPC405 in Linux
-> =
+On Wed, Feb 23, 2011 at 10:54:59AM -0700, Grant Likely wrote:
+> On Wed, Feb 23, 2011 at 11:26:12AM -0600, Scott Wood wrote:
 
-> > -----Original Message-----
-> > From: Dan Malek [mailto:ppc6dev@digitaldans.com]
-> > Sent: Wednesday, February 23, 2011 8:39 PM
-> > To: John Linn
-> > Cc: linuxppc-dev@ozlabs.org
-> > Subject: Re: Flushing data cache on PPC405 in Linux
-> >
-> >
-> > Hi John.
-> >
-> > On Feb 23, 2011, at 5:04 PM, John Linn wrote:
-> >
-> > > Any thoughts?
-> >
-> > I can come up with two methods, but before I describe them
-> > ensure you consider the actual implementation of your 405 core.
-> > My comments are based on the "standard" ppc405 processor,
-> > but since you can configure the embedded cores to your liking,
-> > the cache size may be different that the 16K bytes on the old
-> > processor.
-> >
-> > Method one.  Just 'memset()' 16K of data that will replace all cache
-> > lines and push out modified lines.  This 16K must be physically
-> > contiguous, so allocate in your favorite way, with with the cache
-> > coherent DMA functions, bootmem, reserved, whatever.  Just
-> > ensure that this 16K is also cached, as I've implemented
-> > dma_cache_coherent into uncached VM space in the past :-)
-> =
+> > The eTSEC revision is probeable as well, but due the way PTP is described as
+> > a separate node, the driver doesn't have straightforward access to those
+> > registers.
+> 
+> Ignorant question: Should the ptp be described as a separate node?
 
-> Awesome Dan, that seems reasonable to me and much easier than I was
-thinking :)
-> =
+Well, the PTP Hardware Clock function is logically separate from the
+MAC function. PHCs can be implemented in the MAC, in the PHY, or in
+between in an FPGA on MII bus.
 
-> I was obviously making it harder than it had to be as usual. Seems
-like I can just kmalloc the memory
-> then memset it.
+If the PHC is in the MAC, then it might be wise to implement one
+driver that offers both the MAC and the PHC.
 
-It seems like this also depends on that fact that __GFP_COLD will work,
-otherwise some of the data could =
+In the case of gianfar, it is not really necessary to combine the PHC
+into the gianfar driver, since the registers are pretty well
+separated. Also, given the size and complexity (and churn over time)
+of the gianfar driver, I decided to keep the PHC separate.
 
-already be in the cache such that you're not guaranteed to get
-everything out of the cache.
+Right now, the driver correctly handles all the clock revisions in the
+boards that I have (mpc8313, mpc8572, p2020ds, p2020rdb).
 
-Do we know that works on arch/powerpc, or I'm not understanding it
-right?  I'm doing some digging to make sure.
+If checking the revision becomes important, then we can always export
+a function from gianfar to provide this.
 
 Thanks,
-John
 
-> =
-
-> Appreciate the help and suggestions.
-> =
-
-> -- John
-> =
-
-> >
-> > Method two.  Use 'dcread' to read the cache tags.  If the line is
-> > modified, form an EA that will match that line and 'dcbf' the line.
-> > This is a little more tricky because the tags are physical
-addresses,
-> > so you would need to do this with the MMU disabled to ensure
-> > the physical EA you generated also hits the cache.  The upside
-> > is you only perform the actual required flush operations, and you
-> > didn't blow the cache away requiring a refill latency.
-> >
-> > Have fun!
-> >
-> > 	-- Dan
-> >
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Richard
