@@ -1,19 +1,19 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Thu, 24 Feb 2011 17:50:04 +0100
-From: Richard Cochran <richardcochran@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V11 2/4] ptp: Added a clock that uses the eTSEC found
-	on the MPC85xx.
-Message-ID: <20110224165004.GB15234@riccoc20.at.omicron.at>
+Return-Path: <scottwood@freescale.com>
+Date: Thu, 24 Feb 2011 11:08:04 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Richard Cochran <richardcochran@gmail.com>
+Subject: Re: [PATCH V11 2/4] ptp: Added a clock that uses the eTSEC found on
+	the MPC85xx.
+Message-ID: <20110224110804.74b546c0@schlenkerla>
+In-Reply-To: <20110224163944.GA15234@riccoc20.at.omicron.at>
 References: <cover.1298447722.git.richard.cochran@omicron.at>
 	<be1f5e801e8cd0145dd23aadae7c2055bb3c1d47.1298447722.git.richard.cochran@omicron.at>
 	<20110223165058.GE14597@angua.secretlab.ca>
 	<20110223112612.30071995@schlenkerla>
 	<20110223175459.GH14597@angua.secretlab.ca>
-	<20110223132444.65dfdda4@schlenkerla>
+	<20110224163944.GA15234@riccoc20.at.omicron.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110223132444.65dfdda4@schlenkerla>
+Content-Type: text/plain; charset="US-ASCII"
 Cc: Mike Frysinger <vapier@gentoo.org>, Russell King <linux@arm.linux.org.uk>,
 	Arnd Bergmann <arnd@arndb.de>,
 	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
@@ -33,48 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 23, 2011 at 01:24:44PM -0600, Scott Wood wrote:
-> Whatever string is used should be written into a binding document.
+On Thu, 24 Feb 2011 17:39:44 +0100
+Richard Cochran <richardcochran@gmail.com> wrote:
+
+> On Wed, Feb 23, 2011 at 10:54:59AM -0700, Grant Likely wrote:
+> > On Wed, Feb 23, 2011 at 11:26:12AM -0600, Scott Wood wrote:
 > 
-> fsl,etsec-v1.6-ptp seems like it would be just as good for that purpose.
+> > > The eTSEC revision is probeable as well, but due the way PTP is described as
+> > > a separate node, the driver doesn't have straightforward access to those
+> > > registers.
+> > 
+> > Ignorant question: Should the ptp be described as a separate node?
 > 
-> Even just fsl,etsec-ptp will identify the binding, though it's lacking in
-> identifying the hardware (in the absence of access to the eTSEC ID
-> registers).
+> Well, the PTP Hardware Clock function is logically separate from the
+> MAC function.
 
-I read the conversation, and I don't mind admitting that I do not
-understand what you both are arguing/discussing about.
+The eTSEC node doesn't describe the MAC function, it describes the whole
+device (or at least it should... we make an exception for MDIO, which
+should probably have been a subnode instead).
 
-How should I set the strings?  Like this?
+> PHCs can be implemented in the MAC, in the PHY, or in
+> between in an FPGA on MII bus.
+> 
+> If the PHC is in the MAC, then it might be wise to implement one
+> driver that offers both the MAC and the PHC.
+> 
+> In the case of gianfar, it is not really necessary to combine the PHC
+> into the gianfar driver, since the registers are pretty well
+> separated.
 
-arch/powerpc/boot/dts/mpc8313erdb.dts:
-	ptp_clock@24E00 {
-		compatible = "fsl,mpc8313-etsec-ptp";
-	}
-arch/powerpc/boot/dts/mpc8572ds.dts:
-	ptp_clock@24E00 {
-		compatible = "fsl,mpc8572-etsec-ptp";
-	} 
-arch/powerpc/boot/dts/p2020ds.dts:
-	ptp_clock@24E00 {
-		compatible = "fsl,p2020ds-etsec-ptp";
-	} 
-arch/powerpc/boot/dts/p2020rdb.dts:
-	ptp_clock@24E00 {
-		compatible = "fsl,p2020rdb-etsec-ptp";
-	} 
+How the drivers are structured in Linux is a separate concern from how the
+devices are described in the device tree.  The tree is supposed to be an
+OS-independent representation of hardware.
 
-drivers/net/gianfar_ptp.c:
+If Linux has multiple drivers that correspond to portions of one node, a
+toplevel driver can register platform devices for the components, adding
+in any additional information like versioning that it gets from the
+toplevel registers.
 
-static struct of_device_id match_table[] = {
-	{ .compatible = "fsl,mpc8313-etsec-ptp" },
-	{ .compatible = "fsl,mpc8572-etsec-ptp" },
-	{ .compatible = "fsl,p2020ds-etsec-ptp" },
-	{ .compatible = "fsl,p2020rdb-etsec-ptp" },
-	{},
-};
-
-Please let me know if this is what you meant.
-
-Thanks,
-Richard
+-Scott
