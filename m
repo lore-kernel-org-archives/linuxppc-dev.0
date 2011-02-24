@@ -1,21 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F7F5B70AB
+	by ozlabs.org (Postfix) with ESMTPS id 0F4F1B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Feb 2011 08:23:42 +1100 (EST)
+	Fri, 25 Feb 2011 08:26:42 +1100 (EST)
+Received: from canuck.infradead.org ([2001:4978:20e::1])
+	by bombadil.infradead.org with esmtps (Exim 4.72 #1 (Red Hat Linux))
+	id 1Psihr-0002jB-9F
+	for linuxppc-dev@lists.ozlabs.org; Thu, 24 Feb 2011 21:26:39 +0000
+Received: from j77219.upc-j.chello.nl ([24.132.77.219]
+	helo=dyad.programming.kicks-ass.net)
+	by canuck.infradead.org with esmtpsa (Exim 4.72 #1 (Red Hat Linux))
+	id 1Psiho-00073x-Hc
+	for linuxppc-dev@lists.ozlabs.org; Thu, 24 Feb 2011 21:26:36 +0000
 Subject: Re: PowerPC BUG: using smp_processor_id() in preemptible code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1298581675.5226.840.camel@laptop>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1298582606.8833.509.camel@pasglop>
 References: <alpine.LSU.2.00.1012291413360.22939@sister.anvils>
 	<1293705910.17779.60.camel@pasglop>
 	<alpine.LSU.2.00.1102241216420.1708@sister.anvils>
-	<1298581675.5226.840.camel@laptop>
+	<1298581675.5226.840.camel@laptop> <1298582606.8833.509.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Feb 2011 08:23:26 +1100
-Message-ID: <1298582606.8833.509.camel@pasglop>
+Date: Thu, 24 Feb 2011 22:27:55 +0100
+Message-ID: <1298582875.5226.844.camel@laptop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, Jeremy Fitzhardinge <jeremy@goop.org>,
 	Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org
@@ -28,24 +37,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-02-24 at 22:07 +0100, Peter Zijlstra wrote:
+On Fri, 2011-02-25 at 08:23 +1100, Benjamin Herrenschmidt wrote:
 > 
-> Lovely problem :-), benh mentioned it on IRC, but I never got around
-> to
-> finding the email thread, thanks for the CC.
-> 
-> > What would be better for 2.6.38 and 2.6.37-stable?  Moving that call
-> to
-> > vunmap_page_range back under vb->lock, or the partial-Peter-patch
-> below?
-> > And then what should be done for 2.6.39?
-> 
-> I think you'll also need the arch/powerpc/kernel/process.c changes
-> that
-> cause context switches to flush the tlb_batch queues.
+> I don't think that's needed here as there shall be no batching happening
+> on the vmalloc space, but it can't hurt to merge it regardless :-)
 
-I don't think that's needed here as there shall be no batching happening
-on the vmalloc space, but it can't hurt to merge it regardless :-)
-
-Cheers,
-Ben.
+Ah, due to the !batch->active thing? OK, then yeah Hugh's bit is
+sufficient.
