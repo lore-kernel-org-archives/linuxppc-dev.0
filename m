@@ -1,22 +1,21 @@
-Return-Path: <ppc6dev@digitaldans.com>
-Received: from wsl00026.west-datacenter.net (wsl00026.west-datacenter.net
-	[69.36.176.27])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2AA75B7093
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2011 07:15:06 +1100 (EST)
-Message-Id: <D4328E94-C711-4EE3-9651-E69B359B91B6@digitaldans.com>
-From: Dan Malek <ppc6dev@digitaldans.com>
-To: John Linn <John.Linn@xilinx.com>
-In-Reply-To: <119fc163-ae81-4492-955a-94d1234ab6d9@VA3EHSMHS021.ehs.local>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: Flushing data cache on PPC405 in Linux
-Date: Thu, 24 Feb 2011 12:15:03 -0800
-References: <ef11a825-8824-460f-91c0-82cb8029ed81@VA3EHSMHS029.ehs.local>
-	<B5790C8E-AC59-4588-B4C5-A636A4EC1F98@digitaldans.com>
-	<119fc163-ae81-4492-955a-94d1234ab6d9@VA3EHSMHS021.ehs.local>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 8C021B7103
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Feb 2011 07:43:55 +1100 (EST)
+Subject: Re: mpic_alloc: Differences between of_address_to_resource() and
+	of_get_property()+of_translate_address()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
+In-Reply-To: <031BE41A-C26B-419E-A515-F88C0BF4CA5D@boeing.com>
+References: <031BE41A-C26B-419E-A515-F88C0BF4CA5D@boeing.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 25 Feb 2011 07:43:47 +1100
+Message-ID: <1298580227.8833.419.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2011-02-24 at 11:43 -0600, Moffett, Kyle D wrote:
+> Hello everyone,
+> 
+> I'm currently cleaning up a new P2020 (mpc85xx) board port for submission and I was noticing a lot of commonalities between the various ports.
+> 
+> In particular, at least 80% of the mpic_alloc() callers seem to do something like this (with more error-checking):
+> 
+> struct resource r;
+> of_address_to_resource(np, 0, &r);
+> mpic_alloc(np, r.start, [...]);
+> 
+> But mpic_alloc() itself seems to have some logic for digging the base address out of OpenFirmware already:
+> 
+> if (paddr == 0 && !(mpic->flags & MPIC_USES_DCR)) {
+>       const u32 *reg = of_get_property(node, "reg", NULL);
+>       BUG_ON(reg == NULL);
+>       paddr = of_translate_address(node, reg);
+>       BUG_ON(paddr == OF_BAD_ADDR);
+> }
+> 
+> As far as I can tell, the code in mpic_alloc() is a very limited form of of_address_to_resource() without a
+> lot of the special cases, but I can't tell what the effect of those special cases would be on the boards
+> relying on mpic_alloc(np, 0, [...]);
 
-On Feb 24, 2011, at 6:43 AM, John Linn wrote:
+Probably none, ie, it's probably historical and could probably be
+converted.
 
-> It seems like this also depends on that fact that __GFP_COLD will  
-> work,
-> otherwise some of the data could
-> already be in the cache such that you're not guaranteed to get
-> everything out of the cache.
+> I'd like to just convert mpic_alloc() to do the of_address_to_resource() internally (instead of the existing logic),
+> but I'd be afraid of breaking other systems.
+> 
+> Any comments/advice?
 
-I wouldn't count on GFP_COLD as a guarantee the data isn't
-in the cache.  It's likely, but the generic MM functions just
-ensures they are old pages, based on an indication from the
-caller that freed the pages.
+I think it can be tried :-) The risk should be reasonably low.
 
+Cheers,
+Ben.
 
-	-- Dan
+> Cheers,
+> Kyle Moffett
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
