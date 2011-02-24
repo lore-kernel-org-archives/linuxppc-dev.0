@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8C021B7103
+	by ozlabs.org (Postfix) with ESMTPS id 94D7CB6F0B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Feb 2011 07:43:55 +1100 (EST)
-Subject: Re: mpic_alloc: Differences between of_address_to_resource() and
-	of_get_property()+of_translate_address()
+	Fri, 25 Feb 2011 07:47:07 +1100 (EST)
+Subject: Re: Open Firmware and interrupt trigger
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-In-Reply-To: <031BE41A-C26B-419E-A515-F88C0BF4CA5D@boeing.com>
-References: <031BE41A-C26B-419E-A515-F88C0BF4CA5D@boeing.com>
+To: Robert Thorhuus <robert.thorhuus@ericsson.com>
+In-Reply-To: <9081694521850B4D91387C8C2E612B591062A0D5CA@ESESSCMS0361.eemea.ericsson.se>
+References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
+	<20110223043345.20795.2936.stgit@localhost6.localdomain6>
+	<4D6551EF.70207@gmail.com>
+	<9081694521850B4D91387C8C2E612B591062A0D5CA@ESESSCMS0361.eemea.ericsson.se>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Feb 2011 07:43:47 +1100
-Message-ID: <1298580227.8833.419.camel@pasglop>
+Date: Fri, 25 Feb 2011 07:46:58 +1100
+Message-ID: <1298580418.8833.428.camel@pasglop>
 Mime-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,46 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-02-24 at 11:43 -0600, Moffett, Kyle D wrote:
-> Hello everyone,
+On Wed, 2011-02-23 at 22:18 +0100, Robert Thorhuus wrote:
+> Hello!
 > 
-> I'm currently cleaning up a new P2020 (mpc85xx) board port for submission and I was noticing a lot of commonalities between the various ports.
+> I'm quite new to linux and Open Firmware.
 > 
-> In particular, at least 80% of the mpic_alloc() callers seem to do something like this (with more error-checking):
+> I have a PPC processor. To this I have a Compact Flash connected. The Compact Flash is using external interrupt 0 of the processor.
+> In my DTS file I have specified a Compact Flash node and within it I have an interrupt element:
+> interrupt = <0 2 0 0>;
 > 
-> struct resource r;
-> of_address_to_resource(np, 0, &r);
-> mpic_alloc(np, r.start, [...]);
+> Here I thought the first number was the ID of the interrupt and the second one should be a number indicating how the interrupt is triggered (high, low, raising, falling).
 > 
-> But mpic_alloc() itself seems to have some logic for digging the base address out of OpenFirmware already:
+> The interrupt is active low.
 > 
-> if (paddr == 0 && !(mpic->flags & MPIC_USES_DCR)) {
->       const u32 *reg = of_get_property(node, "reg", NULL);
->       BUG_ON(reg == NULL);
->       paddr = of_translate_address(node, reg);
->       BUG_ON(paddr == OF_BAD_ADDR);
-> }
+> But I could not get it to work which ever value I chose.
 > 
-> As far as I can tell, the code in mpic_alloc() is a very limited form of of_address_to_resource() without a
-> lot of the special cases, but I can't tell what the effect of those special cases would be on the boards
-> relying on mpic_alloc(np, 0, [...]);
+> Looking in the code I found this in function __devinit pata_of_platform_probe in file pata_of_platform.c:
+> 
+> 	ret = of_irq_to_resource(dn, 0, &irq_res);
+> 	if (ret == NO_IRQ)
+> 		irq_res.start = irq_res.end = 0;
+> 	else
+> 		irq_res.flags = 0;
+> 
+> Here "flags" will be zero whatever I do in the DTS. As far as I can understand the flags are defined in interrupts.h:
+> #define IRQF_TRIGGER_NONE       0x00000000
+> #define IRQF_TRIGGER_RISING     0x00000001
+> #define IRQF_TRIGGER_FALLING    0x00000002
+> #define IRQF_TRIGGER_HIGH       0x00000004
+> #define IRQF_TRIGGER_LOW        0x00000008
 
-Probably none, ie, it's probably historical and could probably be
-converted.
+Actually, the .dts flags depend on the specific interrupt controller you
+are using. For example, MPIC uses a different mapping scheme (for
+historical reasons). Check booting-without-of.txt.
 
-> I'd like to just convert mpic_alloc() to do the of_address_to_resource() internally (instead of the existing logic),
-> but I'd be afraid of breaking other systems.
+> So modifying the code to:
+> 	else
+> 		irq_res.flags = 2;
 > 
-> Any comments/advice?
+> I get it to work.
+> 
+> Could someone please explain to me why the "flags" parameter is hardcoded zero or just point in a good direction.
 
-I think it can be tried :-) The risk should be reasonably low.
+That does indeed look odd. Might be worth trying to figure out with the
+git history who came up with that code in the first place and ask that
+person. Without answer, I think it's valid to patch that out.
 
 Cheers,
 Ben.
 
-> Cheers,
-> Kyle Moffett
+> Thank you
 > 
+> BR
+> Robert
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@lists.ozlabs.org
