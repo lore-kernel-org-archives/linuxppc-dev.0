@@ -1,18 +1,18 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 995E6B70F0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Feb 2011 05:28:08 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH -mm V2] rapidio: Add new sysfs attributes
-Date: Fri, 25 Feb 2011 13:26:24 -0500
-Message-Id: <1298658385-9842-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
-	Thomas Moll <thomas.moll@sysgo.com>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20110223021221.17638.42707.stgit@localhost6.localdomain6>
+References: <20110223021221.17638.42707.stgit@localhost6.localdomain6>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 25 Feb 2011 12:22:37 -0700
+Message-ID: <AANLkTinx2YxOs3Y-XDHaWe44Bw8HqiMyanouV5Bo3KuX@mail.gmail.com>
+Subject: Re: [PATCH] tty/serial: Relax the device_type restriction from
+	of_serial
+To: devicetree-discuss@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,149 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add new sysfs attributes.
+Hi Arnd and Ben,
 
-1. Routing information required to to reach the RIO device:
-destid - device destination ID (real for for endpoint, route for switch)
-hopcount - hopcount for maintenance requests (switches only)
+I forgot to cc you guys on this patch.  Greg has it in his tree, but I
+wanted to make sure you noticed it.  If you have any objections, let
+me know and I'll ask Greg to drop it.
 
-2. device linking information:
-lprev - name of device that precedes the given device in the enumeration
-        or discovery order (displayed along with of the port to which it
-        is attached).
-lnext - names of devices (with corresponding port numbers) that are
-        attached to the given device as next in the enumeration or
-        discovery order (switches only)
+Thanks,
+g.
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
-Cc: Thomas Moll <thomas.moll@sysgo.com>
-Cc: Micha Nelissen <micha@neli.hopto.org>
----
- Documentation/rapidio/sysfs.txt |   17 +++++++++++++--
- drivers/rapidio/rio-sysfs.c     |   41 ++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 54 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/rapidio/sysfs.txt b/Documentation/rapidio/sysfs.txt
-index d6d986e..97f71ce 100755
---- a/Documentation/rapidio/sysfs.txt
-+++ b/Documentation/rapidio/sysfs.txt
-@@ -36,6 +36,10 @@ device_rev - returns the device revision level
-    asm_did - returns identifier for the assembly containing the device
-    asm_rev - returns revision level of the assembly containing the device
-    asm_vid - returns vendor identifier of the assembly containing the device
-+   destid  - returns device destination ID assigned by the enumeration routine
-+             (see 4.1 for switch specific details)
-+   lprev   - returns name of previous device (switch) on the path to the device
-+             that that owns this attribute
- 
- In addition to the files listed above, each device has a binary attribute file
- that allows read/write access to the device configuration registers using
-@@ -66,9 +70,16 @@ set by the switch initialization routine during enumeration or discovery process
- 
- 4.1 Common Switch Attributes
- 
-- routes - reports switch routing information in "destID port" format. This
--          attribute reports only valid routing table entries, one line for
--          each entry.
-+   routes - reports switch routing information in "destID port" format. This
-+            attribute reports only valid routing table entries, one line for
-+            each entry.
-+   destid - device destination ID that defines a route to the switch
-+ hopcount - number of hops on the path to the switch
-+    lnext - returns names of devices linked to the switch except one of a device
-+            linked to the ingress port (reported as "lprev"). This is an array
-+            names with number of lines equal to number of ports in switch. If
-+            a switch port has no attached device, returns "null" instead of
-+            a device name.
- 
- 4.2 Device-specific Switch Attributes
- 
-diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
-index c04dbc7..4dbe360 100644
---- a/drivers/rapidio/rio-sysfs.c
-+++ b/drivers/rapidio/rio-sysfs.c
-@@ -34,6 +34,8 @@ rio_config_attr(device_rev, "0x%08x\n");
- rio_config_attr(asm_did, "0x%04x\n");
- rio_config_attr(asm_vid, "0x%04x\n");
- rio_config_attr(asm_rev, "0x%04x\n");
-+rio_config_attr(destid, "0x%04x\n");
-+rio_config_attr(hopcount, "0x%02x\n");
- 
- static ssize_t routes_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
-@@ -53,6 +55,35 @@ static ssize_t routes_show(struct device *dev, struct device_attribute *attr, ch
- 	return (str - buf);
- }
- 
-+static ssize_t lprev_show(struct device *dev,
-+			  struct device_attribute *attr, char *buf)
-+{
-+	struct rio_dev *rdev = to_rio_dev(dev);
-+
-+	return sprintf(buf, "%s\n",
-+			(rdev->prev) ? rio_name(rdev->prev) : "root");
-+}
-+
-+static ssize_t lnext_show(struct device *dev,
-+			  struct device_attribute *attr, char *buf)
-+{
-+	struct rio_dev *rdev = to_rio_dev(dev);
-+	char *str = buf;
-+	int i;
-+
-+	if (rdev->pef & RIO_PEF_SWITCH) {
-+		for (i = 0; i < RIO_GET_TOTAL_PORTS(rdev->swpinfo); i++) {
-+			if (rdev->rswitch->nextdev[i])
-+				str += sprintf(str, "%s\n",
-+					rio_name(rdev->rswitch->nextdev[i]));
-+			else
-+				str += sprintf(str, "null\n");
-+		}
-+	}
-+
-+	return str - buf;
-+}
-+
- struct device_attribute rio_dev_attrs[] = {
- 	__ATTR_RO(did),
- 	__ATTR_RO(vid),
-@@ -60,10 +91,14 @@ struct device_attribute rio_dev_attrs[] = {
- 	__ATTR_RO(asm_did),
- 	__ATTR_RO(asm_vid),
- 	__ATTR_RO(asm_rev),
-+	__ATTR_RO(lprev),
-+	__ATTR_RO(destid),
- 	__ATTR_NULL,
- };
- 
- static DEVICE_ATTR(routes, S_IRUGO, routes_show, NULL);
-+static DEVICE_ATTR(lnext, S_IRUGO, lnext_show, NULL);
-+static DEVICE_ATTR(hopcount, S_IRUGO, hopcount_show, NULL);
- 
- static ssize_t
- rio_read_config(struct file *filp, struct kobject *kobj,
-@@ -219,7 +254,9 @@ int rio_create_sysfs_dev_files(struct rio_dev *rdev)
- 	err = device_create_bin_file(&rdev->dev, &rio_config_attr);
- 
- 	if (!err && (rdev->pef & RIO_PEF_SWITCH)) {
--		err = device_create_file(&rdev->dev, &dev_attr_routes);
-+		err |= device_create_file(&rdev->dev, &dev_attr_routes);
-+		err |= device_create_file(&rdev->dev, &dev_attr_lnext);
-+		err |= device_create_file(&rdev->dev, &dev_attr_hopcount);
- 		if (!err && rdev->rswitch->sw_sysfs)
- 			err = rdev->rswitch->sw_sysfs(rdev, RIO_SW_SYSFS_CREATE);
- 	}
-@@ -242,6 +279,8 @@ void rio_remove_sysfs_dev_files(struct rio_dev *rdev)
- 	device_remove_bin_file(&rdev->dev, &rio_config_attr);
- 	if (rdev->pef & RIO_PEF_SWITCH) {
- 		device_remove_file(&rdev->dev, &dev_attr_routes);
-+		device_remove_file(&rdev->dev, &dev_attr_lnext);
-+		device_remove_file(&rdev->dev, &dev_attr_hopcount);
- 		if (rdev->rswitch->sw_sysfs)
- 			rdev->rswitch->sw_sysfs(rdev, RIO_SW_SYSFS_REMOVE);
- 	}
--- 
-1.7.3.1
+On Tue, Feb 22, 2011 at 7:12 PM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> There is no need to test for a device_type property in ns8250
+> compatible serial ports. =A0device_type is an OpenFirmware property that
+> is not required when using the flattened tree representation.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> =A0drivers/tty/serial/of_serial.c | =A0 18 +++++++++---------
+> =A01 files changed, 9 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/tty/serial/of_serial.c b/drivers/tty/serial/of_seria=
+l.c
+> index 5c7abe4..6a18ca6 100644
+> --- a/drivers/tty/serial/of_serial.c
+> +++ b/drivers/tty/serial/of_serial.c
+> @@ -160,17 +160,17 @@ static int of_platform_serial_remove(struct platfor=
+m_device *ofdev)
+> =A0* A few common types, add more as needed.
+> =A0*/
+> =A0static struct of_device_id __devinitdata of_platform_serial_table[] =
+=3D {
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ns8250", =A0 .data =
+=3D (void *)PORT_8250, },
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ns16450", =A0.data =
+=3D (void *)PORT_16450, },
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ns16550a", .data =3D=
+ (void *)PORT_16550A, },
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ns16550", =A0.data =
+=3D (void *)PORT_16550, },
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ns16750", =A0.data =
+=3D (void *)PORT_16750, },
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ns16850", =A0.data =
+=3D (void *)PORT_16850, },
+> + =A0 =A0 =A0 { .compatible =3D "ns8250", =A0 .data =3D (void *)PORT_8250=
+, },
+> + =A0 =A0 =A0 { .compatible =3D "ns16450", =A0.data =3D (void *)PORT_1645=
+0, },
+> + =A0 =A0 =A0 { .compatible =3D "ns16550a", .data =3D (void *)PORT_16550A=
+, },
+> + =A0 =A0 =A0 { .compatible =3D "ns16550", =A0.data =3D (void *)PORT_1655=
+0, },
+> + =A0 =A0 =A0 { .compatible =3D "ns16750", =A0.data =3D (void *)PORT_1675=
+0, },
+> + =A0 =A0 =A0 { .compatible =3D "ns16850", =A0.data =3D (void *)PORT_1685=
+0, },
+> =A0#ifdef CONFIG_SERIAL_OF_PLATFORM_NWPSERIAL
+> - =A0 =A0 =A0 { .type =3D "serial", .compatible =3D "ibm,qpace-nwp-serial=
+",
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 .data =3D (void *)PORT_NWPSERIAL, },
+> + =A0 =A0 =A0 { .compatible =3D "ibm,qpace-nwp-serial",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .data =3D (void *)PORT_NWPSERIAL, },
+> =A0#endif
+> - =A0 =A0 =A0 { .type =3D "serial", =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 .data =3D (void *)PORT_UNKNOWN, },
+> + =A0 =A0 =A0 { .type =3D "serial", =A0 =A0 =A0 =A0 .data =3D (void *)POR=
+T_UNKNOWN, },
+> =A0 =A0 =A0 =A0{ /* end of list */ },
+> =A0};
+>
+>
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
