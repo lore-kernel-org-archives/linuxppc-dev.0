@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 01/15] dt/powerpc: move of_bus_type infrastructure
-	to ibmebus
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <201102241546.48790.arnd@arndb.de>
-References: <20110223043015.20795.37090.stgit@localhost6.localdomain6>
-	<20110223043340.20795.84024.stgit@localhost6.localdomain6>
-	<201102241546.48790.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Feb 2011 19:53:39 +1100
-Message-ID: <1298624019.8833.607.camel@pasglop>
-Mime-Version: 1.0
-Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 66226B70E1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 26 Feb 2011 00:28:03 +1100 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	p1PD1XxB005247
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Feb 2011 14:01:33 +0100
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Resources used by driver ?
+Date: Fri, 25 Feb 2011 14:01:33 +0100
+References: <201102101108.47647.dargaud@lpsc.in2p3.fr>
+	<AANLkTin9zsXJX0QrJ2cAZJjAdbGYnQ-S4QCdpzEbrUF_@mail.gmail.com>
+In-Reply-To: <AANLkTin9zsXJX0QrJ2cAZJjAdbGYnQ-S4QCdpzEbrUF_@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <201102251401.33063.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-02-24 at 15:46 +0100, Arnd Bergmann wrote:
-> On Wednesday 23 February 2011, Grant Likely wrote:
-> > arch/powerpc/kernel/ibmebus.c is the only remaining user of the
-> > of_bus_type support code for initializing the bus and registering
-> > drivers.  All others have either been switched to the vanilla platform
-> > bus or already have their own infrastructure.
-> > 
-> > This patch moves the functionality that ibmebus is using out of
-> > drivers/of/{platform,device}.c and into ibmebus.c where it is actually
-> > used.  Also renames the moved symbols from of_platform_* to
-> > ibmebus_bus_* to reflect the actual usage.
-> > 
-> > This patch is part of moving all of the of_platform_bus_type users
-> > over to the platform_bus_type.
-> > 
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-> The ibmebus is essentially the platform bus of the IBM Power Systems (a.k.a.
-> pSeries a.k.a. System p), I think it would make a lot of sense to convert
-> the two drivers (ehca and ehea) on this bus into platform drivers as well.
-> 
-> The original reason for this bus was to provide a different IOMMU for them
-> than what is used on the PCI devices. This should now be possible in simpler
-> ways.
+On Wednesday 16 February 2011 08:01:10 Srivatsan S wrote:
+> You can use oprofile to profile the functions of your module. Follow the
+> link.
+> http://oprofile.sourceforge.net/ <http://oprofile.sourceforge.net/news/>
 
-Well, it's really the IBM "GX" bus but yeah, it could be converted I
-suppose. The "special" iommu functions mostly derive from the fact that
-the two adapters we are interested in have their own translation
-mechanism built-in. The GX bus sits "above" the TCEs used as an iommu on
-these systems.
+OK, after some wrestling, I got oprofile installed in my OS (buildroot 2011.02-
+rc1) and my kernel (xilinx patches 2.6.35+).
 
-> > +static void ibmebus_bus_device_shutdown(struct device *dev)
-> > +{
-> > +	struct platform_device *of_dev = to_platform_device(dev);
-> > +	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
-> > +
-> > +	if (dev->driver && drv->shutdown)
-> > +		drv->shutdown(of_dev);
-> > +}
-> 
-> neither of the drivers provides a shutdown function.
+When I start oprofile, I get the following:
+# opcontrol --vmlinux=/vmlinux
+The specified file /vmlinux does not seem to be valid
+Make sure you are using the non-compressed image file (e.g. vmlinux not 
+vmlinuz)
 
-Right but they might grow one ... and people will wonder why it doesn't
-work if you remove the above :-)
+# file /vmlinux
+/vmlinux: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), 
+statically linked, with unknown capability 0x41000000 = 0x11676e75, with 
+unknown capability 0x10000 = 0x90402, not stripped
 
- .../...
-
-> These are also unused in the drivers.
-
-Same reasoning, however it becomes moot if we convert them to platform.
-
-Cheers,
-Ben.
+I used the vmlinux generated found in ../linus-2.6-xlnx/vmlinux
+What's wrong with it ?
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
