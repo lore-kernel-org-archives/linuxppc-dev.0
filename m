@@ -1,18 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] tty/serial: Relax the device_type restriction from
-	of_serial
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <AANLkTinx2YxOs3Y-XDHaWe44Bw8HqiMyanouV5Bo3KuX@mail.gmail.com>
-References: <20110223021221.17638.42707.stgit@localhost6.localdomain6>
-	<AANLkTinx2YxOs3Y-XDHaWe44Bw8HqiMyanouV5Bo3KuX@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 26 Feb 2011 08:40:50 +1100
-Message-ID: <1298670050.8833.688.camel@pasglop>
-Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <meador_inge@mentor.com>
+From: Meador Inge <meador_inge@mentor.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 0/2]  powerpc: Open PIC binding and "pic-no-reset"
+Date: Fri, 25 Feb 2011 15:59:35 -0600
+Message-Id: <1298671177-19572-1-git-send-email-meador_inge@mentor.com>
+Cc: devicetree-discuss@lists.ozlabs.org,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,65 +16,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-02-25 at 12:22 -0700, Grant Likely wrote:
-> Hi Arnd and Ben,
-> 
-> I forgot to cc you guys on this patch.  Greg has it in his tree, but I
-> wanted to make sure you noticed it.  If you have any objections, let
-> me know and I'll ask Greg to drop it.
+This patch set provides a binding for Open PIC and implements support for
+a new property, specified by that binding, called "pic-no-reset".
 
-No objection. Device-types are a thing of the past :-)
+v4 - Per Ben's feedback the protected sources implementation was left
+     completely intact.  As such, the DTS cleanup and "protected-sources"
+     removal patches were dropped.
 
-Cheers,
-Ben.
+v3 - the Open PIC binding was changed to be more consistent with existing
+     bindings, several DTS files were cleaned up, "no-reset" was changed to
+     "pic-no-reset", and a check to treat "protected-sources" as a synonym for
+     "pic-no-reset" was added.
 
-> Thanks,
-> g.
-> 
-> 
-> On Tue, Feb 22, 2011 at 7:12 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > There is no need to test for a device_type property in ns8250
-> > compatible serial ports.  device_type is an OpenFirmware property that
-> > is not required when using the flattened tree representation.
-> >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > ---
-> >  drivers/tty/serial/of_serial.c |   18 +++++++++---------
-> >  1 files changed, 9 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/drivers/tty/serial/of_serial.c b/drivers/tty/serial/of_serial.c
-> > index 5c7abe4..6a18ca6 100644
-> > --- a/drivers/tty/serial/of_serial.c
-> > +++ b/drivers/tty/serial/of_serial.c
-> > @@ -160,17 +160,17 @@ static int of_platform_serial_remove(struct platform_device *ofdev)
-> >  * A few common types, add more as needed.
-> >  */
-> >  static struct of_device_id __devinitdata of_platform_serial_table[] = {
-> > -       { .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
-> > -       { .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
-> > -       { .type = "serial", .compatible = "ns16550a", .data = (void *)PORT_16550A, },
-> > -       { .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
-> > -       { .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
-> > -       { .type = "serial", .compatible = "ns16850",  .data = (void *)PORT_16850, },
-> > +       { .compatible = "ns8250",   .data = (void *)PORT_8250, },
-> > +       { .compatible = "ns16450",  .data = (void *)PORT_16450, },
-> > +       { .compatible = "ns16550a", .data = (void *)PORT_16550A, },
-> > +       { .compatible = "ns16550",  .data = (void *)PORT_16550, },
-> > +       { .compatible = "ns16750",  .data = (void *)PORT_16750, },
-> > +       { .compatible = "ns16850",  .data = (void *)PORT_16850, },
-> >  #ifdef CONFIG_SERIAL_OF_PLATFORM_NWPSERIAL
-> > -       { .type = "serial", .compatible = "ibm,qpace-nwp-serial",
-> > -                                       .data = (void *)PORT_NWPSERIAL, },
-> > +       { .compatible = "ibm,qpace-nwp-serial",
-> > +               .data = (void *)PORT_NWPSERIAL, },
-> >  #endif
-> > -       { .type = "serial",                           .data = (void *)PORT_UNKNOWN, },
-> > +       { .type = "serial",         .data = (void *)PORT_UNKNOWN, },
-> >        { /* end of list */ },
-> >  };
-> >
-> >
-> >
-> 
-> 
-> 
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+Meador Inge (2):
+  powerpc: document the Open PIC device tree binding
+  powerpc: make MPIC honor the "pic-no-reset" device tree property
+
+ Documentation/powerpc/dts-bindings/open-pic.txt |   98 +++++++++++++++++++++++
+ arch/powerpc/include/asm/mpic.h                 |    6 ++
+ arch/powerpc/sysdev/mpic.c                      |   67 ++++++++++++----
+ 3 files changed, 155 insertions(+), 16 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/open-pic.txt
