@@ -1,29 +1,16 @@
-Return-Path: <B32167@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
-	[213.199.154.143])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 692BBB7124
+Return-Path: <zhghua0321@163.com>
+Received: from m13-19.163.com (m13-19.163.com [220.181.13.19])
+	by ozlabs.org (Postfix) with ESMTP id 8055EB7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Feb 2011 15:12:20 +1100 (EST)
-From: Jain Priyanka-B32167 <B32167@freescale.com>
-To: Alessandro Zummo <a.zummo@towertech.it>, Paul Gortmaker
-	<p_gortmaker@yahoo.com>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
-Date: Mon, 28 Feb 2011 04:12:09 +0000
-Message-ID: <470DB7CE2CD0944E9436E7ADEFC02FE3138F51@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <470DB7CE2CD0944E9436E7ADEFC02FE31370D8@039-SN1MPN1-003.039d.mgd.msft.net>
-	<AANLkTinQtDAo07jHNSo=wE=iRzO8hk1pQbRvBFq40TOB@mail.gmail.com>
-In-Reply-To: <AANLkTinQtDAo07jHNSo=wE=iRzO8hk1pQbRvBFq40TOB@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+	Mon, 28 Feb 2011 16:37:49 +1100 (EST)
+Date: Mon, 28 Feb 2011 13:22:32 +0800 (CST)
+From: zhghua0321 <zhghua0321@163.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <6d94b0e2.c910.12e6ab7c961.Coremail.zhghua0321@163.com>
+Subject: mpc5200b
 MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
-	Gupta Maneesh-B18878 <B18878@freescale.com>,
-	Timur Tabi <timur.tabi@gmail.com>,
-	"rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_138811_2030749229.1298870552929"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+------=_Part_138811_2030749229.1298870552929
+Content-Type: text/plain; charset=GBK
+Content-Transfer-Encoding: 7bit
 
-I have posted RTC driver patch back in October, 2010 with reminders for rev=
-iew in between but still waiting for review and acknowledgement.
-Linux Maintainer list suggests Alessandro and Paul as maintainer which are =
-already in To-- list.
-Please let me know what else I need to do to get it review and acknowledge.
+Dear All,
 
-Thanks
-Priyanka
+Today I  run mpc5200b for freescale,  When I download the "rootfs.jffs2",  I found some errors:
+
+run flash_jffs2
+
+Error: "flash_jffs2" not defined
+
+Would you please help me about the error
+
+With Best Regards
+Joshua
 
 
 
+--
 
-> -----Original Message-----
-> From: Timur Tabi [mailto:timur.tabi@gmail.com]
-> Sent: Thursday, February 24, 2011 1:41 AM
-> To: Alessandro Zummo
-> Cc: Jain Priyanka-B32167; Paul Gortmaker; rtc-linux@googlegroups.com;
-> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Gupta Maneesh-B18878;
-> Aggrwal Poonam-B10812
-> Subject: Re: [PATCH][v1] RTC driver(Linux) for PT7C4338 chip.
->=20
-> On Wed, Feb 23, 2011 at 4:00 AM, Jain Priyanka-B32167
-> <B32167@freescale.com> wrote:
-> > Hi,
-> >
-> > =A0Please review and acknowledge this patch.
->=20
-> Alessandro,
->=20
-> Aren't you the RTC maintainer?  Priyanka has been asking for months for
-> you to review and ack this patch, and then pick up for the next kernel
-> release.  Is there something else that she needs to do to get your
-> attention?  You can find it in patchworks here:
->=20
-> http://patchwork.ozlabs.org/patch/69206/
->=20
-> Notice that it was originally posted back in October, so it could have
-> been included in 2.6.38.
->=20
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
+------=_Part_138811_2030749229.1298870552929
+Content-Type: text/html; charset=GBK
+Content-Transfer-Encoding: 7bit
+
+Dear All,<br><br>Today I&nbsp; run mpc5200b for freescale,&nbsp; When I download the "rootfs.jffs2",&nbsp; I found some errors:<br><br>run flash_jffs2<br><br>Error: "flash_jffs2" not defined<br><br>Would you please help me about the error<br><br>With Best Regards<br>Joshua<br>        
+<br><br><div>--<br><a href="http://13nian.163.com?from=sgn" target="_blank"><img src="http://mimg.126.net/ggimg/all/img2/110120_13nian.gif" alt="" border="0"></a></div><br><br><span title="neteasefooter"><span id="netease_mail_footer"></span></span>
+------=_Part_138811_2030749229.1298870552929--
