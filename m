@@ -1,22 +1,19 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 97ABF1007ED
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Mar 2011 07:52:23 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/5] RapidIO: Modify configuration to support PCI-SRIO
-	controller
-Date: Mon, 28 Feb 2011 15:51:02 -0500
-Message-Id: <1298926265-5381-3-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1298926265-5381-1-git-send-email-alexandre.bounine@idt.com>
-References: <1298926265-5381-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-	Alexandre Bounine <alexandre.bounine@idt.com>,
-	Ingo Molnar <mingo@redhat.com>, Thomas Moll <thomas.moll@sysgo.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 0B661B716B
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2011 08:11:07 +1100 (EST)
+Date: Mon, 28 Feb 2011 13:11:04 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: [PATCH 0/8] fsldma: lockup fixes
+Message-ID: <20110228211103.GB31428@ovro.caltech.edu>
+References: <4D6BEDCE.3020102@embedded-sol.com>
+	<20110228195350.GA31428@ovro.caltech.edu>
+	<4D6C0275.6000807@embedded-sol.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D6C0275.6000807@embedded-sol.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,133 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-1. Add an option to include RapidIO support if the PCI is available.
-2. Add FSL_RIO configuration option to enable controller selection.
-3. Add RapidIO support option into x86 and MIPS architectures.
+On Mon, Feb 28, 2011 at 10:15:49PM +0200, Felix Radensky wrote:
+> Hi Ira,
+> 
+> > Thank you very much Felix. The dmesg output shows that the controller
+> > never got an interrupt for the second transaction. The patch below has
+> > extra debugging information that may help determine why this happens.
+> > Please apply it and re-run the test.
+> >
+> > The last section of dmesg (after "Freeing unused kernel memory") is all
+> > I need.
+> >
+> 
+> Attached relevant dmesg portion.
+> 
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Ok, try this patch on top of the last one.
+
+It looks like you used the dmatest module in multi-channel mode last
+time. One channel makes it easier to debug:
+
+modprobe dmatest max_channels=1 threads_per_chan=2 iterations=1
+
+Thanks for your help in debugging this. Hopefully this is the last
+patch to test. :)
+
+Ira
+
+
+>From 58bc23c3b68f8db0aa09434fdeb6aef641a5eadd Mon Sep 17 00:00:00 2001
+From: Ira W. Snyder <iws@ovro.caltech.edu>
+Date: Mon, 28 Feb 2011 12:55:55 -0800
+Subject: [PATCH] fsldma: enable end-of-segments interrupt on last descriptor
+
+This is a hack to manually set the end-of-segments interrupt on the last
+descriptor in each chain. It appears that the P2020RDB controller
+doesn't generate the end-of-links interrupt as explained in the
+datasheet.
+
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 ---
- arch/mips/Kconfig            |   10 ++++++++++
- arch/powerpc/Kconfig         |   10 +++++++++-
- arch/powerpc/sysdev/Makefile |    2 +-
- arch/x86/Kconfig             |   10 ++++++++++
- drivers/net/rionet.c         |    4 ++--
- drivers/rapidio/rio-sysfs.c  |    1 +
- 6 files changed, 33 insertions(+), 4 deletions(-)
+ drivers/dma/fsldma.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index f5ecc05..c451163 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2336,6 +2336,16 @@ source "drivers/pcmcia/Kconfig"
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index b82b76e..e4d9d17 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -141,7 +141,7 @@ static void set_ld_eol(struct fsldma_chan *chan, struct fsl_desc_sw *desc)
+ 	u64 snoop_bits;
  
- source "drivers/pci/hotplug/Kconfig"
+ 	snoop_bits = ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_83XX)
+-		? FSL_DMA_SNEN : 0;
++		? FSL_DMA_SNEN : (u64)(0x8);
  
-+config RAPIDIO
-+	bool "RapidIO support"
-+	depends on PCI
-+	default n
-+	help
-+	  If you say Y here, the kernel will include drivers and
-+	  infrastructure code to support RapidIO interconnect devices.
-+
-+source "drivers/rapidio/Kconfig"
-+
- endmenu
- 
- menu "Executable file formats"
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 7d69e9b..9a7628a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -767,11 +767,19 @@ config HAS_RAPIDIO
- 
- config RAPIDIO
- 	bool "RapidIO support"
--	depends on HAS_RAPIDIO
-+	depends on HAS_RAPIDIO || PCI
- 	help
- 	  If you say Y here, the kernel will include drivers and
- 	  infrastructure code to support RapidIO interconnect devices.
- 
-+config FSL_RIO
-+	bool "Freescale Embedded SRIO Controller support"
-+	depends on RAPIDIO && HAS_RAPIDIO
-+	default "n"
-+	---help---
-+	  Include support for RapidIO controller on Freescale embedded
-+	  processors (MPC8548, MPC8641, etc).
-+
- source "drivers/rapidio/Kconfig"
- 
- endmenu
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 9c29734..1e0c933 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -20,7 +20,7 @@ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
- obj-$(CONFIG_MPC8xxx_GPIO)	+= mpc8xxx_gpio.o
- obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
- obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
--obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
-+obj-$(CONFIG_FSL_RIO)		+= fsl_rio.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- obj-$(CONFIG_PPC_BESTCOMM)	+= bestcomm/
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index d5ed94d..11c1dc5 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2104,6 +2104,16 @@ source "drivers/pcmcia/Kconfig"
- 
- source "drivers/pci/hotplug/Kconfig"
- 
-+config RAPIDIO
-+	bool "RapidIO support"
-+	depends on PCI
-+	default n
-+	help
-+	  If you say Y here, the kernel will include drivers and
-+	  infrastructure code to support RapidIO interconnect devices.
-+
-+source "drivers/rapidio/Kconfig"
-+
- endmenu
- 
- 
-diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
-index 44150f2..678e577 100644
---- a/drivers/net/rionet.c
-+++ b/drivers/net/rionet.c
-@@ -382,7 +382,7 @@ static void rionet_remove(struct rio_dev *rdev)
- 	struct rionet_peer *peer, *tmp;
- 
- 	free_pages((unsigned long)rionet_active, rdev->net->hport->sys_size ?
--					__ilog2(sizeof(void *)) + 4 : 0);
-+					__fls(sizeof(void *)) + 4 : 0);
- 	unregister_netdev(ndev);
- 	free_netdev(ndev);
- 
-@@ -450,7 +450,7 @@ static int rionet_setup_netdev(struct rio_mport *mport)
- 	}
- 
- 	rionet_active = (struct rio_dev **)__get_free_pages(GFP_KERNEL,
--			mport->sys_size ? __ilog2(sizeof(void *)) + 4 : 0);
-+			mport->sys_size ? __fls(sizeof(void *)) + 4 : 0);
- 	if (!rionet_active) {
- 		rc = -ENOMEM;
- 		goto out;
-diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
-index 76b4185..e3ebfec 100644
---- a/drivers/rapidio/rio-sysfs.c
-+++ b/drivers/rapidio/rio-sysfs.c
-@@ -14,6 +14,7 @@
- #include <linux/rio.h>
- #include <linux/rio_drv.h>
- #include <linux/stat.h>
-+#include <linux/capability.h>
- 
- #include "rio.h"
- 
+ 	desc->hw.next_ln_addr = CPU_TO_DMA(chan,
+ 		DMA_TO_CPU(chan, desc->hw.next_ln_addr, 64) | FSL_DMA_EOL
+@@ -165,7 +165,6 @@ static void dma_init(struct fsldma_chan *chan)
+ 		 * BWC - Bandwidth sharing among channels
+ 		 */
+ 		DMA_OUT(chan, &chan->regs->mr, FSL_DMA_MR_BWC
+-				| FSL_DMA_MR_EOSIE | FSL_DMA_MR_EOLSIE
+ 				| FSL_DMA_MR_EIE | FSL_DMA_MR_EOLNIE, 32);
+ 		break;
+ 	case FSL_DMA_IP_83XX:
 -- 
-1.7.3.1
+1.7.3.4
