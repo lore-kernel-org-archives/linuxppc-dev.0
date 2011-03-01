@@ -2,10 +2,10 @@ Return-Path: <felix@embedded-sol.com>
 Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1CF1AB7149
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2011 16:45:59 +1100 (EST)
-Message-ID: <4D6C882F.6010509@embedded-sol.com>
-Date: Tue, 01 Mar 2011 07:46:23 +0200
+	by ozlabs.org (Postfix) with ESMTPS id A5F64B714D
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2011 16:52:13 +1100 (EST)
+Message-ID: <4D6C89A7.8010803@embedded-sol.com>
+Date: Tue, 01 Mar 2011 07:52:39 +0200
 From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
 To: "Ira W. Snyder" <iws@ovro.caltech.edu>
@@ -70,9 +70,7 @@ On 03/01/2011 02:21 AM, Ira W. Snyder wrote:
 > behaving as the datasheet explains it should. Are you sure you applied
 > the patch and rebuilt the kernel? (Just checking to be sure. I'm very
 > appreciative of the amount of help you've given me debugging this!)
-
-I've double checked and I'm sure I've applied your patch and rebuilt
-the kernel.
+>
 > Can you run this for me:
 >
 > modprobe dmatest max_channels=1 threads_per_chan=1 iterations=4
@@ -80,77 +78,60 @@ the kernel.
 > Thanks again,
 > Ira
 
-See below.
+Without your patches applied the output of the test above looks
+like this:
 
 __dma_request_channel: success (dma0chan0)
 dmatest: Started 1 threads using dma0chan0
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7000 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7060 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a70c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7120 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7180 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a71e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7240 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a72a0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7300 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7360 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a73c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7420 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7480 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a74e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=0
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=14
-of:fsl-elo-dma ffe0c300.dma: chan0: idle, starting controller
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: stat = 0x8
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: End-of-link INT
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: Exit
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet entry
-of:fsl-elo-dma ffe0c300.dma: chan0: completed_cookie=14
-of:fsl-elo-dma ffe0c300.dma: chan0: no pending LDs
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7000 callback
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7000 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7060 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a70c0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7120 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7180 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a71e0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7240 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a72a0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7300 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7360 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a73c0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7420 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7480 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a74e0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet exit
+of:fsl-elo-dma ffe0c300.dma: irq: channel 0, stat = 0xa
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-segments INT
+of:fsl-elo-dma ffe0c300.dma: irq: clndar 0x2f34d000, nlndar 0x100000000
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-link INT
+of:fsl-elo-dma ffe0c300.dma: no pending LDs
+of:fsl-elo-dma ffe0c300.dma: irq: Exit
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 1
+of:fsl-elo-dma ffe0c300.dma: LD ef34d000 callback
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 1
 dma0chan0-copy0: verifying source buffer...
 dma0chan0-copy0: verifying dest buffer...
-dma0chan0-copy0: #0: No errors with src_off=0x43e dst_off=0x3a5 len=0x3605
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a74e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7480 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=14
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=16
-of:fsl-elo-dma ffe0c300.dma: chan0: idle, starting controller
-dma0chan0-copy0: #1: test timed out
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7420 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a73c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7360 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7300 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=16
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=20
-of:fsl-elo-dma ffe0c300.dma: chan0: DMA controller still busy
-dma0chan0-copy0: #2: test timed out
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a72a0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7240 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a71e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7180 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7120 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a70c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3a7060 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=20
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=27
-of:fsl-elo-dma ffe0c300.dma: chan0: DMA controller still busy
-dma0chan0-copy0: #3: test timed out
-dma0chan0-copy0: terminating after 4 tests, 3 failures (status 0)
+dma0chan0-copy0: #0: No errors with src_off=0xb90 dst_off=0x101c 
+len=0x2aea
+of:fsl-elo-dma ffe0c300.dma: irq: channel 0, stat = 0xa
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-segments INT
+of:fsl-elo-dma ffe0c300.dma: irq: clndar 0x2f34d000, nlndar 0x100000000
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-link INT
+of:fsl-elo-dma ffe0c300.dma: no pending LDs
+of:fsl-elo-dma ffe0c300.dma: irq: Exit
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 2
+of:fsl-elo-dma ffe0c300.dma: LD ef34d000 callback
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 2
+dma0chan0-copy0: verifying source buffer...
+dma0chan0-copy0: verifying dest buffer...
+dma0chan0-copy0: #1: No errors with src_off=0x74a dst_off=0x54d len=0x35f5
+of:fsl-elo-dma ffe0c300.dma: irq: channel 0, stat = 0xa
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-segments INT
+of:fsl-elo-dma ffe0c300.dma: irq: clndar 0x2f34d000, nlndar 0x100000000
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-link INT
+of:fsl-elo-dma ffe0c300.dma: no pending LDs
+of:fsl-elo-dma ffe0c300.dma: irq: Exit
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 3
+of:fsl-elo-dma ffe0c300.dma: LD ef34d000 callback
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 3
+dma0chan0-copy0: verifying source buffer...
+dma0chan0-copy0: verifying dest buffer...
+dma0chan0-copy0: #2: No errors with src_off=0x2ad dst_off=0x557 len=0x35e1
+of:fsl-elo-dma ffe0c300.dma: irq: channel 0, stat = 0xa
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-segments INT
+of:fsl-elo-dma ffe0c300.dma: irq: clndar 0x2f34d000, nlndar 0x100000000
+of:fsl-elo-dma ffe0c300.dma: irq: End-of-link INT
+of:fsl-elo-dma ffe0c300.dma: no pending LDs
+of:fsl-elo-dma ffe0c300.dma: irq: Exit
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 4
+of:fsl-elo-dma ffe0c300.dma: LD ef34d000 callback
+of:fsl-elo-dma ffe0c300.dma: chan completed_cookie = 4
+dma0chan0-copy0: verifying source buffer...
+dma0chan0-copy0: verifying dest buffer...
+dma0chan0-copy0: #3: No errors with src_off=0x0 dst_off=0x0 len=0x4000
+dma0chan0-copy0: terminating after 4 tests, 0 failures (status 0)
 
 Felix.
