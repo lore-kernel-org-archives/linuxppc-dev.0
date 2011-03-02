@@ -1,27 +1,25 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 980811007D2
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Mar 2011 16:49:31 +1100 (EST)
-Message-ID: <4D6DDA85.8070204@embedded-sol.com>
-Date: Wed, 02 Mar 2011 07:49:57 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <B32579@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1outboundpool.messaging.microsoft.com [216.32.181.183])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 81EA2B7063
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  2 Mar 2011 16:38:08 +1100 (EST)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH][v2] driver/FSL SATA:Fix wrong Device Error Register usage
+Date: Wed, 2 Mar 2011 05:22:40 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F87412AB8E@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1298282264-1222-1-git-send-email-prabhakar@freescale.com>
+	<1299036347.8833.819.camel@pasglop>
+In-Reply-To: <1299036347.8833.819.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH 0/8] fsldma: lockup fixes
-References: <4D6BEDCE.3020102@embedded-sol.com>
-	<20110228195350.GA31428@ovro.caltech.edu>
-	<4D6C0275.6000807@embedded-sol.com>
-	<20110228211103.GB31428@ovro.caltech.edu>
-	<4D6C134C.4070407@embedded-sol.com>
-	<20110301002156.GC31428@ovro.caltech.edu>
-	<4D6C89A7.8010803@embedded-sol.com>
-	<20110301165515.GA23403@ovro.caltech.edu>
-	<20110301195208.GC23403@ovro.caltech.edu>
-In-Reply-To: <20110301195208.GC23403@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: "meet2prabhu@gmail.com" <meet2prabhu@gmail.com>,
+	Kalra Ashish-B00888 <B00888@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,160 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ira,
-
-On 03/01/2011 09:52 PM, Ira W. Snyder wrote:
-> On Tue, Mar 01, 2011 at 08:55:15AM -0800, Ira W. Snyder wrote:
->
-> [ big snip ]
->
->
-> I'd still like the bisect if you have a chance. I've re-reviewed the
-> patch series, and found the places that change register writes to the
-> controller.
->
-> The patch below changes the register operations back to the original
-> order. It doesn't make any sense why this would be required, but it is
-> worth a quick try.
->
-> I've added an "XXX" mark where you can comment out a single line if this
-> patch fails. It is highly unlikely to make any difference, but I'm
-> really having a hard time understanding what is wrong.
->
->
-This patch fixes the problem. See below
-
-__dma_request_channel: success (dma0chan0)
-dmatest: Started 1 threads using dma0chan0
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372000 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3720c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372120 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372180 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3721e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=0
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=8
-of:fsl-elo-dma ffe0c300.dma: chan0: idle, starting controller
-of:fsl-elo-dma ffe0c300.dma: chan0: 85xx, running workaround
-of:fsl-elo-dma ffe0c300.dma: chan0: dma_halt mode=0x08000140
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: stat = 0x8
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: End-of-link INT
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: Exit
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet entry
-of:fsl-elo-dma ffe0c300.dma: chan0: completed_cookie=8
-of:fsl-elo-dma ffe0c300.dma: chan0: no pending LDs
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372000 callback
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372000 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3720c0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372120 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372180 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3721e0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet exit
-dma0chan0-copy0: verifying source buffer...
-dma0chan0-copy0: verifying dest buffer...
-dma0chan0-copy0: #0: No errors with src_off=0x10a8 dst_off=0x1914 
-len=0x1dca
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=8
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=10
-of:fsl-elo-dma ffe0c300.dma: chan0: idle, starting controller
-of:fsl-elo-dma ffe0c300.dma: chan0: 85xx, running workaround
-of:fsl-elo-dma ffe0c300.dma: chan0: dma_halt mode=0x08000141
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: stat = 0x8
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: End-of-link INT
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: Exit
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet entry
-of:fsl-elo-dma ffe0c300.dma: chan0: completed_cookie=10
-of:fsl-elo-dma ffe0c300.dma: chan0: no pending LDs
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 callback
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 free
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet exit
-dma0chan0-copy0: verifying source buffer...
-dma0chan0-copy0: verifying dest buffer...
-dma0chan0-copy0: #1: No errors with src_off=0xdb8 dst_off=0xc14 len=0x526
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3721e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372180 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372120 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3720c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=10
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=17
-of:fsl-elo-dma ffe0c300.dma: chan0: idle, starting controller
-of:fsl-elo-dma ffe0c300.dma: chan0: 85xx, running workaround
-of:fsl-elo-dma ffe0c300.dma: chan0: dma_halt mode=0x08000141
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: stat = 0x8
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: End-of-link INT
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: Exit
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet entry
-of:fsl-elo-dma ffe0c300.dma: chan0: completed_cookie=17
-of:fsl-elo-dma ffe0c300.dma: chan0: no pending LDs
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 callback
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3721e0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372180 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372120 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3720c0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 free
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet exit
-dma0chan0-copy0: verifying source buffer...
-dma0chan0-copy0: verifying dest buffer...
-dma0chan0-copy0: #2: No errors with src_off=0xf48 dst_off=0x85d len=0x188f
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3720c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372120 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372180 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3721e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372000 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372300 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372360 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3723c0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372420 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372480 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3724e0 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372540 allocated
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: start=17
-of:fsl-elo-dma ffe0c300.dma: chan0: assign cookies: end=32
-of:fsl-elo-dma ffe0c300.dma: chan0: idle, starting controller
-of:fsl-elo-dma ffe0c300.dma: chan0: 85xx, running workaround
-of:fsl-elo-dma ffe0c300.dma: chan0: dma_halt mode=0x08000141
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: stat = 0x8
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: End-of-link INT
-of:fsl-elo-dma ffe0c300.dma: chan0: irq: Exit
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet entry
-of:fsl-elo-dma ffe0c300.dma: chan0: completed_cookie=32
-of:fsl-elo-dma ffe0c300.dma: chan0: no pending LDs
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 callback
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372060 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3720c0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372120 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372180 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3721e0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3722a0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372240 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372000 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372300 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372360 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3723c0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372420 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372480 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef3724e0 free
-of:fsl-elo-dma ffe0c300.dma: chan0: LD ef372540 free
-of:fsl-elo-dma ffe0c300.dma: chan0: tasklet exit
-dma0chan0-copy0: verifying source buffer...
-dma0chan0-copy0: verifying dest buffer...
-dma0chan0-copy0: #3: No errors with src_off=0x4ff dst_off=0x453 len=0x395d
-dma0chan0-copy0: terminating after 4 tests, 0 failures (status 0)
-
-Felix.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogV2VkbmVz
+ZGF5LCBNYXJjaCAwMiwgMjAxMSA4OjU2IEFNDQo+IFRvOiBLdXNod2FoYSBQcmFiaGFrYXItQjMy
+NTc5DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbWVldDJwcmFiaHVAZ21h
+aWwuY29tOyBLYWxyYSBBc2hpc2gtDQo+IEIwMDg4OA0KPiBTdWJqZWN0OiBSZTogW1BBVENIXVt2
+Ml0gZHJpdmVyL0ZTTCBTQVRBOkZpeCB3cm9uZyBEZXZpY2UgRXJyb3IgUmVnaXN0ZXINCj4gdXNh
+Z2UNCj4gDQo+IE9uIE1vbiwgMjAxMS0wMi0yMSBhdCAxNToyNyArMDUzMCwgUHJhYmhha2FyIEt1
+c2h3YWhhIHdyb3RlOg0KPiA+IFdoZW4gYSBzaW5nbGUgZGV2aWNlIGVycm9yIGlzIGRldGVjdGVk
+LCB0aGUgZGV2aWNlIHVuZGVyIHRoZSBlcnJvciBpcw0KPiA+IGluZGljYXRlZCBieSB0aGUgZXJy
+b3IgYml0IHNldCBpbiB0aGUgREVSLiBUaGVyZSBpcyBhIG9uZSB0byBvbmUNCj4gPiBtYXBwaW5n
+IGJldHdlZW4gcmVnaXN0ZXIgYml0IGFuZCBkZXZpY2VzIG9uIFBvcnQgbXVsdGlwbGllcihQTVAp
+IGkuZS4NCj4gPiBiaXQgMCByZXByZXNlbnRzIFBNUCBkZXZpY2UgMCBhbmQgYml0IDEgcmVwcmVz
+ZW50cyBQTVAgZGV2aWNlIDEgZXRjLg0KPiANCj4gSXQgbWlnaHQgaGVscCB0byBzZW5kIHRob3Nl
+IHBhdGNoZXMgdG8gdGhlIGxpbnV4LWlkZSBtYWlsaW5nIGxpc3QgYW5kDQo+IGFwcHJvcHJpYXRl
+IGxpYmF0YSBtYWludGFpbmVycyBpbiBhZGRpdGlvbiB0byBDQydpbmcgbGludXhwcGMtZGV2Lg0K
+PiANClRoYW5rcyBCZW5qYW1pbiEhDQpJIHdpbGwgdGFrZSBjYXJlIHlvdXIgcG9pbnQgaW4gbmVh
+ciBmdXR1cmUuDQoNCi0tUHJhYmhha2FyDQoNCj4gPiBDdXJyZW50IGltcGxlbWVudGF0aW9uIHRy
+ZWF0cyBEZXZpY2UgZXJyb3IgcmVnaXN0ZXIgdmFsdWUgYXMgZGV2aWNlDQo+ID4gbnVtYmVyIG5v
+dCBzZXQgb2YgYml0cyByZXByZXNlbnRpbmcgbXVsdGlwbGUgZGV2aWNlIG9uIFBNUC4gSXQgaXMN
+Cj4gPiBjaGFuZ2VkIHRvIGNvbnNpZGVyIGJpdCBsZXZlbC4NCj4gPiBObyBuZWVkIHRvIGNoZWNr
+IGZvciBlYWNoIHNldCBiaXQgYXMgYWxsIGNvbW1hbmQgaXMgZ29pbmcgdG8gYmUNCj4gYWJvcnRl
+ZC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFByYWJoYWthciBLdXNod2FoYSA8cHJhYmhha2Fy
+QGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQXNoaXNoIEthbHJhIDxCMDA4ODhA
+ZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3Nj
+bS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5naXQNCj4gPiAoYnJhbmNoIG1h
+c3RlcikNCj4gPg0KPiA+ICBDaGFuZ2VzIGZvciB2MTogSW5jb3Jwb3JhdGVkIERhdmlkIExhaWdo
+dCdzIGNvbW1lbnQNCj4gPiAgCS0gU2luZ2xlIHVzYWdlIG9mIGZmcygpDQo+ID4NCj4gPiAgQ2hh
+bmdlcyBmb3IgdjI6IEluY29ycG9yYXRlZCBEYXZpZCBMYWlnaHQncyBjb21tZW50DQo+ID4gIAkt
+IENoYW5nZWQgdHlwZSBvZiBkZXZfbnVtIHRvIHVuc2lnbmVkDQo+ID4NCj4gPiAgZHJpdmVycy9h
+dGEvc2F0YV9mc2wuYyB8ICAgIDYgKysrKy0tDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgNCBpbnNl
+cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+YXRhL3NhdGFfZnNsLmMgYi9kcml2ZXJzL2F0YS9zYXRhX2ZzbC5jIGluZGV4DQo+ID4gYjAyMTRk
+MC4uODk1NzcxYyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2F0YS9zYXRhX2ZzbC5jDQo+ID4g
+KysrIGIvZHJpdmVycy9hdGEvc2F0YV9mc2wuYw0KPiA+IEBAIC0xMDQwLDEyICsxMDQwLDE0IEBA
+IHN0YXRpYyB2b2lkIHNhdGFfZnNsX2Vycm9yX2ludHIoc3RydWN0DQo+ID4gYXRhX3BvcnQgKmFw
+KQ0KPiA+DQo+ID4gIAkJLyogZmluZCBvdXQgdGhlIG9mZmVuZGluZyBsaW5rIGFuZCBxYyAqLw0K
+PiA+ICAJCWlmIChhcC0+bnJfcG1wX2xpbmtzKSB7DQo+ID4gKwkJCXVuc2lnbmVkIGludCBkZXZf
+bnVtOw0KPiA+ICAJCQlkZXJlZyA9IGlvcmVhZDMyKGhjcl9iYXNlICsgREUpOw0KPiA+ICAJCQlp
+b3dyaXRlMzIoZGVyZWcsIGhjcl9iYXNlICsgREUpOw0KPiA+ICAJCQlpb3dyaXRlMzIoY2VyZWcs
+IGhjcl9iYXNlICsgQ0UpOw0KPiA+DQo+ID4gLQkJCWlmIChkZXJlZyA8IGFwLT5ucl9wbXBfbGlu
+a3MpIHsNCj4gPiAtCQkJCWxpbmsgPSAmYXAtPnBtcF9saW5rW2RlcmVnXTsNCj4gPiArCQkJZGV2
+X251bSA9IGZmcyhkZXJlZyktMTsNCj4gPiArCQkJaWYgKGRldl9udW0gPCBhcC0+bnJfcG1wX2xp
+bmtzKSB7DQo+ID4gKwkJCQlsaW5rID0gJmFwLT5wbXBfbGlua1tkZXZfbnVtXTsNCj4gPiAgCQkJ
+CWVoaSA9ICZsaW5rLT5laF9pbmZvOw0KPiA+ICAJCQkJcWMgPSBhdGFfcWNfZnJvbV90YWcoYXAs
+IGxpbmstPmFjdGl2ZV90YWcpOw0KPiA+ICAJCQkJLyoNCj4gDQo+IA0KDQo=
