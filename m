@@ -1,25 +1,31 @@
-Return-Path: <B32579@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.183])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 81EA2B7063
+Return-Path: <aik@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ED9881007DC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Mar 2011 16:38:08 +1100 (EST)
-From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH][v2] driver/FSL SATA:Fix wrong Device Error Register usage
-Date: Wed, 2 Mar 2011 05:22:40 +0000
-Message-ID: <071A08F2C6A57E4E94D980ECA553F87412AB8E@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1298282264-1222-1-git-send-email-prabhakar@freescale.com>
-	<1299036347.8833.819.camel@pasglop>
-In-Reply-To: <1299036347.8833.819.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+	Wed,  2 Mar 2011 17:15:03 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p2269u5w023789
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2011 17:09:56 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p226F28U2261048
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2011 17:15:02 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p226F2m8020912
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Mar 2011 17:15:02 +1100
+Message-ID: <4D6DE074.5050802@au1.ibm.com>
+Date: Wed, 02 Mar 2011 17:15:16 +1100
+From: Alexey Kardashevskiy <aik@au1.ibm.com>
 MIME-Version: 1.0
-Cc: "meet2prabhu@gmail.com" <meet2prabhu@gmail.com>,
-	Kalra Ashish-B00888 <B00888@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Per process DSCR + somefixes (try#3)
+References: <4D5B62F2.3020709@au1.ibm.com> <1299044868.8833.832.camel@pasglop>
+In-Reply-To: <1299044868.8833.832.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogV2VkbmVz
-ZGF5LCBNYXJjaCAwMiwgMjAxMSA4OjU2IEFNDQo+IFRvOiBLdXNod2FoYSBQcmFiaGFrYXItQjMy
-NTc5DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbWVldDJwcmFiaHVAZ21h
-aWwuY29tOyBLYWxyYSBBc2hpc2gtDQo+IEIwMDg4OA0KPiBTdWJqZWN0OiBSZTogW1BBVENIXVt2
-Ml0gZHJpdmVyL0ZTTCBTQVRBOkZpeCB3cm9uZyBEZXZpY2UgRXJyb3IgUmVnaXN0ZXINCj4gdXNh
-Z2UNCj4gDQo+IE9uIE1vbiwgMjAxMS0wMi0yMSBhdCAxNToyNyArMDUzMCwgUHJhYmhha2FyIEt1
-c2h3YWhhIHdyb3RlOg0KPiA+IFdoZW4gYSBzaW5nbGUgZGV2aWNlIGVycm9yIGlzIGRldGVjdGVk
-LCB0aGUgZGV2aWNlIHVuZGVyIHRoZSBlcnJvciBpcw0KPiA+IGluZGljYXRlZCBieSB0aGUgZXJy
-b3IgYml0IHNldCBpbiB0aGUgREVSLiBUaGVyZSBpcyBhIG9uZSB0byBvbmUNCj4gPiBtYXBwaW5n
-IGJldHdlZW4gcmVnaXN0ZXIgYml0IGFuZCBkZXZpY2VzIG9uIFBvcnQgbXVsdGlwbGllcihQTVAp
-IGkuZS4NCj4gPiBiaXQgMCByZXByZXNlbnRzIFBNUCBkZXZpY2UgMCBhbmQgYml0IDEgcmVwcmVz
-ZW50cyBQTVAgZGV2aWNlIDEgZXRjLg0KPiANCj4gSXQgbWlnaHQgaGVscCB0byBzZW5kIHRob3Nl
-IHBhdGNoZXMgdG8gdGhlIGxpbnV4LWlkZSBtYWlsaW5nIGxpc3QgYW5kDQo+IGFwcHJvcHJpYXRl
-IGxpYmF0YSBtYWludGFpbmVycyBpbiBhZGRpdGlvbiB0byBDQydpbmcgbGludXhwcGMtZGV2Lg0K
-PiANClRoYW5rcyBCZW5qYW1pbiEhDQpJIHdpbGwgdGFrZSBjYXJlIHlvdXIgcG9pbnQgaW4gbmVh
-ciBmdXR1cmUuDQoNCi0tUHJhYmhha2FyDQoNCj4gPiBDdXJyZW50IGltcGxlbWVudGF0aW9uIHRy
-ZWF0cyBEZXZpY2UgZXJyb3IgcmVnaXN0ZXIgdmFsdWUgYXMgZGV2aWNlDQo+ID4gbnVtYmVyIG5v
-dCBzZXQgb2YgYml0cyByZXByZXNlbnRpbmcgbXVsdGlwbGUgZGV2aWNlIG9uIFBNUC4gSXQgaXMN
-Cj4gPiBjaGFuZ2VkIHRvIGNvbnNpZGVyIGJpdCBsZXZlbC4NCj4gPiBObyBuZWVkIHRvIGNoZWNr
-IGZvciBlYWNoIHNldCBiaXQgYXMgYWxsIGNvbW1hbmQgaXMgZ29pbmcgdG8gYmUNCj4gYWJvcnRl
-ZC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFByYWJoYWthciBLdXNod2FoYSA8cHJhYmhha2Fy
-QGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQXNoaXNoIEthbHJhIDxCMDA4ODhA
-ZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3Nj
-bS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5naXQNCj4gPiAoYnJhbmNoIG1h
-c3RlcikNCj4gPg0KPiA+ICBDaGFuZ2VzIGZvciB2MTogSW5jb3Jwb3JhdGVkIERhdmlkIExhaWdo
-dCdzIGNvbW1lbnQNCj4gPiAgCS0gU2luZ2xlIHVzYWdlIG9mIGZmcygpDQo+ID4NCj4gPiAgQ2hh
-bmdlcyBmb3IgdjI6IEluY29ycG9yYXRlZCBEYXZpZCBMYWlnaHQncyBjb21tZW50DQo+ID4gIAkt
-IENoYW5nZWQgdHlwZSBvZiBkZXZfbnVtIHRvIHVuc2lnbmVkDQo+ID4NCj4gPiAgZHJpdmVycy9h
-dGEvc2F0YV9mc2wuYyB8ICAgIDYgKysrKy0tDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgNCBpbnNl
-cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-YXRhL3NhdGFfZnNsLmMgYi9kcml2ZXJzL2F0YS9zYXRhX2ZzbC5jIGluZGV4DQo+ID4gYjAyMTRk
-MC4uODk1NzcxYyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2F0YS9zYXRhX2ZzbC5jDQo+ID4g
-KysrIGIvZHJpdmVycy9hdGEvc2F0YV9mc2wuYw0KPiA+IEBAIC0xMDQwLDEyICsxMDQwLDE0IEBA
-IHN0YXRpYyB2b2lkIHNhdGFfZnNsX2Vycm9yX2ludHIoc3RydWN0DQo+ID4gYXRhX3BvcnQgKmFw
-KQ0KPiA+DQo+ID4gIAkJLyogZmluZCBvdXQgdGhlIG9mZmVuZGluZyBsaW5rIGFuZCBxYyAqLw0K
-PiA+ICAJCWlmIChhcC0+bnJfcG1wX2xpbmtzKSB7DQo+ID4gKwkJCXVuc2lnbmVkIGludCBkZXZf
-bnVtOw0KPiA+ICAJCQlkZXJlZyA9IGlvcmVhZDMyKGhjcl9iYXNlICsgREUpOw0KPiA+ICAJCQlp
-b3dyaXRlMzIoZGVyZWcsIGhjcl9iYXNlICsgREUpOw0KPiA+ICAJCQlpb3dyaXRlMzIoY2VyZWcs
-IGhjcl9iYXNlICsgQ0UpOw0KPiA+DQo+ID4gLQkJCWlmIChkZXJlZyA8IGFwLT5ucl9wbXBfbGlu
-a3MpIHsNCj4gPiAtCQkJCWxpbmsgPSAmYXAtPnBtcF9saW5rW2RlcmVnXTsNCj4gPiArCQkJZGV2
-X251bSA9IGZmcyhkZXJlZyktMTsNCj4gPiArCQkJaWYgKGRldl9udW0gPCBhcC0+bnJfcG1wX2xp
-bmtzKSB7DQo+ID4gKwkJCQlsaW5rID0gJmFwLT5wbXBfbGlua1tkZXZfbnVtXTsNCj4gPiAgCQkJ
-CWVoaSA9ICZsaW5rLT5laF9pbmZvOw0KPiA+ICAJCQkJcWMgPSBhdGFfcWNfZnJvbV90YWcoYXAs
-IGxpbmstPmFjdGl2ZV90YWcpOw0KPiA+ICAJCQkJLyoNCj4gDQo+IA0KDQo=
+On 02/03/11 16:47, Benjamin Herrenschmidt wrote:
+> BTW. I suppose it's an expected behaviour that thread created with a
+> given default value will keep that value even when the default is later
+> changed right ? And their descendents will use the same default as the
+> original thread, not the new default, at least that's how I read your
+> code :-) Maybe that should be documented somewhere...
+>    
+
+That's right. The idea was to let one set of 
+processes-which-do-not-access-dscr-directly to work+fork with one value 
+and other set to work+fork with another value. I have no idea who and 
+how is going to use it though. Hope the HPC team tells me if something 
+is wrong :-)
+
+-- 
+Alexey Kardashevskiy
+IBM OzLabs, LTC Team
+
+e-mail/sametime: aik@au1.ibm.com
+notes: Alexey Kardashevskiy/Australia/IBM
