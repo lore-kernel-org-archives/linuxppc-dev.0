@@ -1,13 +1,15 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 7FAC2B70F2
+	by ozlabs.org (Postfix) with ESMTP id 7D5D9B70EB
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Fri,  4 Mar 2011 04:55:11 +1100 (EST)
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 0/9] fsldma: lockup fixes
-Date: Thu,  3 Mar 2011 09:54:52 -0800
-Message-Id: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
+Subject: [PATCH v3 4/9] fsldma: improve link descriptor debugging
+Date: Thu,  3 Mar 2011 09:54:56 -0800
+Message-Id: <1299174901-16762-5-git-send-email-iws@ovro.caltech.edu>
+In-Reply-To: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
+References: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
 Cc: dan.j.williams@intel.com, linux-kernel@vger.kernel.org,
 	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,63 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone,
+This adds better tracking to link descriptor allocations, callbacks, and
+frees. This makes it much easier to track errors with link descriptors.
 
-I've been chasing random infrequent controller lockups in the fsldma driver
-for a long time. I finally managed to find the problem and fix it. I'm not
-quite sure about the exact sequence of events which causes the race
-condition, but it is related to using the hardware registers to track the
-controller state. See the patch changelogs for more detail.
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/dma/fsldma.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
 
-The problems were quickly found by turning on DMAPOOL_DEBUG inside
-mm/dmapool.c. This poisons memory allocated with the dmapool API.
-
-With dmapool poisoning turned on, the dmatest driver would start producing
-failures within a few seconds. After this patchset has been applied, I have
-run several iterations of the 10 threads per channel, 100000 iterations per
-thread test without any problems. I have also tested it with the CARMA
-drivers (posted at linuxppc-dev previously), which make use of the external
-control features.
-
-While making the previous changes, I noticed that the fsldma driver does
-not respect the automatic DMA unmapping of src and dst buffers. I have
-added support for this feature. This also required a fix to dmatest, which
-was sending incorrect flags.
-
-The "support async_tx dependencies" patch could be split apart from the
-automatic unmapping patch if it is desirable. They both touch the same
-piece of code, so I thought it was ok to combine them. Let me know.
-
-I would really like to see this go into 2.6.39. I think we can get it
-reviewed before then. :)
-
-Much thanks goes to Felix Radensky for testing on a P2020 (85xx DMA IP core).
-I wouldn't have been able to track down the problems on 85xx without his
-dilligent testing.
-
-v2 -> v3:
-- use chan_dbg() and chan_err() macros for channel printk
-
-v1 -> v2:
-- reordered patches (dmatest change is first now)
-- fix problems on 85xx controller
-- only set correct bits for 83xx in dma_halt()
-
-Ira W. Snyder (9):
-  dmatest: fix automatic buffer unmap type
-  fsldma: move related helper functions near each other
-  fsldma: use channel name in printk output
-  fsldma: improve link descriptor debugging
-  fsldma: minor codingstyle and consistency fixes
-  fsldma: fix controller lockups
-  fsldma: support async_tx dependencies and automatic unmapping
-  fsldma: reduce locking during descriptor cleanup
-  fsldma: make halt behave nicely on all supported controllers
-
- drivers/dma/dmatest.c |    7 +-
- drivers/dma/fsldma.c  |  551 +++++++++++++++++++++++++++----------------------
- drivers/dma/fsldma.h  |    6 +-
- 3 files changed, 311 insertions(+), 253 deletions(-)
-
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index e535cd1..82b8e9f 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -420,6 +420,10 @@ static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
+ 	desc->async_tx.tx_submit = fsl_dma_tx_submit;
+ 	desc->async_tx.phys = pdesc;
+ 
++#ifdef FSL_DMA_LD_DEBUG
++	chan_dbg(chan, "LD %p allocated\n", desc);
++#endif
++
+ 	return desc;
+ }
+ 
+@@ -470,6 +474,9 @@ static void fsldma_free_desc_list(struct fsldma_chan *chan,
+ 
+ 	list_for_each_entry_safe(desc, _desc, list, node) {
+ 		list_del(&desc->node);
++#ifdef FSL_DMA_LD_DEBUG
++		chan_dbg(chan, "LD %p free\n", desc);
++#endif
+ 		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+ 	}
+ }
+@@ -481,6 +488,9 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
+ 
+ 	list_for_each_entry_safe_reverse(desc, _desc, list, node) {
+ 		list_del(&desc->node);
++#ifdef FSL_DMA_LD_DEBUG
++		chan_dbg(chan, "LD %p free\n", desc);
++#endif
+ 		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+ 	}
+ }
+@@ -557,9 +567,6 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 			chan_err(chan, "%s\n", msg_ld_oom);
+ 			goto fail;
+ 		}
+-#ifdef FSL_DMA_LD_DEBUG
+-		chan_dbg(chan, "new link desc alloc %p\n", new);
+-#endif
+ 
+ 		copy = min(len, (size_t)FSL_DMA_BCR_MAX_CNT);
+ 
+@@ -645,9 +652,6 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_sg(struct dma_chan *dchan,
+ 			chan_err(chan, "%s\n", msg_ld_oom);
+ 			goto fail;
+ 		}
+-#ifdef FSL_DMA_LD_DEBUG
+-		chan_dbg(chan, "new link desc alloc %p\n", new);
+-#endif
+ 
+ 		set_desc_cnt(chan, &new->hw, len);
+ 		set_desc_src(chan, &new->hw, src);
+@@ -882,13 +886,18 @@ static void fsl_chan_ld_cleanup(struct fsldma_chan *chan)
+ 		callback_param = desc->async_tx.callback_param;
+ 		if (callback) {
+ 			spin_unlock_irqrestore(&chan->desc_lock, flags);
++#ifdef FSL_DMA_LD_DEBUG
+ 			chan_dbg(chan, "LD %p callback\n", desc);
++#endif
+ 			callback(callback_param);
+ 			spin_lock_irqsave(&chan->desc_lock, flags);
+ 		}
+ 
+ 		/* Run any dependencies, then free the descriptor */
+ 		dma_run_dependencies(&desc->async_tx);
++#ifdef FSL_DMA_LD_DEBUG
++		chan_dbg(chan, "LD %p free\n", desc);
++#endif
+ 		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+ 	}
+ 
 -- 
 1.7.3.4
