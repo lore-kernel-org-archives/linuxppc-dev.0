@@ -1,17 +1,36 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id E6D1BB70F2
+Return-Path: <nacc@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8286DB70CF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Mar 2011 04:55:12 +1100 (EST)
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+	Fri,  4 Mar 2011 06:39:33 +1100 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p23JL9tj007774
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Mar 2011 14:21:11 -0500
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C5E356E8038
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  3 Mar 2011 14:39:29 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p23JdTx9210298
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Mar 2011 14:39:29 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p23JdTfj012644
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Mar 2011 14:39:29 -0500
+Received: from arkanoid.localdomain (sig-9-65-41-162.mts.ibm.com [9.65.41.162])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	p23JdRQ0012416
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Mar 2011 14:39:28 -0500
+From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 8/9] fsldma: reduce locking during descriptor cleanup
-Date: Thu,  3 Mar 2011 09:55:00 -0800
-Message-Id: <1299174901-16762-9-git-send-email-iws@ovro.caltech.edu>
-In-Reply-To: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
-References: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
-Cc: dan.j.williams@intel.com, linux-kernel@vger.kernel.org,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: [PATCH 2/2] powerpc/msi: clarify call to check_req_msi{,x}
+Date: Thu,  3 Mar 2011 11:39:24 -0800
+Message-Id: <1299181164-28432-2-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1299181164-28432-1-git-send-email-nacc@us.ibm.com>
+References: <1299181164-28432-1-git-send-email-nacc@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,187 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This merges the fsl_chan_ld_cleanup() function into the dma_do_tasklet()
-function to reduce locking overhead. In the best case, we will be able
-to keep the DMA controller busy while we are freeing used descriptors.
-In all cases, the spinlock is grabbed two times fewer than before on
-each transaction.
+The RTAS IRQ fixup code relies on a less-than-clear edge condition for
+verifying a given device is not using MSI or MSI-X. Make that more clear
+with a comment.
 
-Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: Milton Miller <miltonm@bga.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+
 ---
- drivers/dma/fsldma.c |  108 +++++++++++++++++++++----------------------------
- 1 files changed, 46 insertions(+), 62 deletions(-)
+ arch/powerpc/platforms/pseries/msi.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 526579d..d300de4 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -882,65 +882,15 @@ static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
- }
- 
- /**
-- * fsl_chan_ld_cleanup - Clean up link descriptors
-- * @chan : Freescale DMA channel
-- *
-- * This function is run after the queue of running descriptors has been
-- * executed by the DMA engine. It will run any callbacks, and then free
-- * the descriptors.
-- *
-- * HARDWARE STATE: idle
-- */
--static void fsl_chan_ld_cleanup(struct fsldma_chan *chan)
--{
--	struct fsl_desc_sw *desc, *_desc;
--	LIST_HEAD(ld_cleanup);
--	unsigned long flags;
--
--	spin_lock_irqsave(&chan->desc_lock, flags);
--
--	/* update the cookie if we have some descriptors to cleanup */
--	if (!list_empty(&chan->ld_running)) {
--		dma_cookie_t cookie;
--
--		desc = to_fsl_desc(chan->ld_running.prev);
--		cookie = desc->async_tx.cookie;
--
--		chan->completed_cookie = cookie;
--		chan_dbg(chan, "completed cookie=%d\n", cookie);
--	}
--
--	/*
--	 * move the descriptors to a temporary list so we can drop the lock
--	 * during the entire cleanup operation
--	 */
--	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
--
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
--
--	/* Run the callback for each descriptor, in order */
--	list_for_each_entry_safe(desc, _desc, &ld_cleanup, node) {
--
--		/* Remove from the list of transactions */
--		list_del(&desc->node);
--
--		/* Run all cleanup for this descriptor */
--		fsldma_cleanup_descriptor(chan, desc);
--	}
--}
--
--/**
-  * fsl_chan_xfer_ld_queue - transfer any pending transactions
-  * @chan : Freescale DMA channel
-  *
-  * HARDWARE STATE: idle
-+ * LOCKING: must hold chan->desc_lock
-  */
- static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
- {
- 	struct fsl_desc_sw *desc;
--	unsigned long flags;
--
--	spin_lock_irqsave(&chan->desc_lock, flags);
- 
- 	/*
- 	 * If the list of pending descriptors is empty, then we
-@@ -948,7 +898,7 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
- 	 */
- 	if (list_empty(&chan->ld_pending)) {
- 		chan_dbg(chan, "no pending LDs\n");
--		goto out_unlock;
-+		return;
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 9434576..8c6dbbc 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -455,7 +455,12 @@ static void rtas_msi_pci_irq_fixup(struct pci_dev *pdev)
+ 		return;
  	}
  
- 	/*
-@@ -958,7 +908,7 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
- 	 */
- 	if (!chan->idle) {
- 		chan_dbg(chan, "DMA controller still busy\n");
--		goto out_unlock;
-+		return;
- 	}
- 
- 	/*
-@@ -996,9 +946,6 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
- 
- 	dma_start(chan);
- 	chan->idle = false;
--
--out_unlock:
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
- }
- 
- /**
-@@ -1008,7 +955,11 @@ out_unlock:
- static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
- {
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chan->desc_lock, flags);
- 	fsl_chan_xfer_ld_queue(chan);
-+	spin_unlock_irqrestore(&chan->desc_lock, flags);
- }
- 
- /**
-@@ -1109,20 +1060,53 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
- static void dma_do_tasklet(unsigned long data)
- {
- 	struct fsldma_chan *chan = (struct fsldma_chan *)data;
-+	struct fsl_desc_sw *desc, *_desc;
-+	LIST_HEAD(ld_cleanup);
- 	unsigned long flags;
- 
- 	chan_dbg(chan, "tasklet entry\n");
- 
--	/* run all callbacks, free all used descriptors */
--	fsl_chan_ld_cleanup(chan);
--
--	/* the channel is now idle */
- 	spin_lock_irqsave(&chan->desc_lock, flags);
-+
-+	/* update the cookie if we have some descriptors to cleanup */
-+	if (!list_empty(&chan->ld_running)) {
-+		dma_cookie_t cookie;
-+
-+		desc = to_fsl_desc(chan->ld_running.prev);
-+		cookie = desc->async_tx.cookie;
-+
-+		chan->completed_cookie = cookie;
-+		chan_dbg(chan, "completed_cookie=%d\n", cookie);
-+	}
-+
-+	/*
-+	 * move the descriptors to a temporary list so we can drop the lock
-+	 * during the entire cleanup operation
+-	/* No MSI -> MSIs can't have been assigned by fw, leave LSI */
++	/* 
++	 * No MSI -> MSIs can't have been assigned by fw, leave LSI
++	 * The calls below can only provide one of two responses:
++	 *   < 0: if the device doesn't request MSI or MSI-X
++	 *   0: if the device requests at least 1 MSI/MSI-X vector
 +	 */
-+	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
-+
-+	/* the hardware is now idle and ready for more */
- 	chan->idle = true;
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
- 
--	/* start any pending transactions automatically */
-+	/*
-+	 * Start any pending transactions automatically
-+	 *
-+	 * In the ideal case, we keep the DMA controller busy while we go
-+	 * ahead and free the descriptors below.
-+	 */
- 	fsl_chan_xfer_ld_queue(chan);
-+	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+
-+	/* Run the callback for each descriptor, in order */
-+	list_for_each_entry_safe(desc, _desc, &ld_cleanup, node) {
-+
-+		/* Remove from the list of transactions */
-+		list_del(&desc->node);
-+
-+		/* Run all cleanup for this descriptor */
-+		fsldma_cleanup_descriptor(chan, desc);
-+	}
-+
- 	chan_dbg(chan, "tasklet exit\n");
- }
- 
+ 	if (check_req_msi(pdev, 1) && check_req_msix(pdev, 1)) {
+ 		dev_dbg(&pdev->dev, "rtas_msi: no req#msi/x, nothing to do.\n");
+ 		return;
 -- 
-1.7.3.4
+1.7.1
