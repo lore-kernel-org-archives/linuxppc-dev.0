@@ -1,23 +1,12 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3E58EB70E9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Mar 2011 20:39:17 +1100 (EST)
-Date: Thu, 3 Mar 2011 10:22:39 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] [PATCH] RTC driver(Linux) for PT7C4338 chip.
-Message-ID: <20110303092239.GB3649@pengutronix.de>
-References: <1299124299-26991-1-git-send-email-Priyanka.Jain@freescale.com>
+Return-Path: <dargaud@lpsc.in2p3.fr>
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: vmsplice bad address
+Date: Thu, 3 Mar 2011 14:01:55 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vGgW1X5XWziG23Ko"
-In-Reply-To: <1299124299-26991-1-git-send-email-Priyanka.Jain@freescale.com>
-Cc: a.zummo@towertech.it, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, Priyanka Jain <Priyanka.Jain@freescale.com>,
-	p_gortmaker@yahoo.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <201103031401.55649.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +16,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello all,
+I'm trying to use the vmsplice/splice combination to so socket writes in zero-copy mode since it seems to be the big 
+bottle neck in my application.
 
---vGgW1X5XWziG23Ko
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Here's a simplified code:
 
-Hi,
+// This buffer is actually outside kernel space,
+// in reserved contiguous physical memory (custom kernel compilation)
+#define BUFFER_PHY_BASE 0x7000000
+#define BUFFER_SIZE 0x1000000
+memfd=open("/dev/mem", O_RDWR | O_SYNC)
+Base=(unsigned char*)mmap(0, BUFFER_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, memfd, BUFFER_PHY_BASE);
 
-> +/*
-> + * This file provides Date & Time support (no alarms) for PT7C4338 chip.
-> + *
-> + * This file is based on drivers/rtc/rtc-ds1307.c
+sockfd = socket(AF_INET, SOCK_STREAM, 0)
 
-Please explain why you can't use rtc-ds1307 directly (or with slight
-modifications). I might have missed something but the register-set looks
-identical to me?
+int pfd[2];	pipe(pfd);
 
-Regards,
+struct iovec iov;
+iov.iov_base=Base;
+iov.iov_len=BUFFER_SIZE;
+printf("Pipe %d/%d, base:0x%x, size:0x%x\n", pfd[0], pfd[1], iov.iov_base, iov.iov_len);
+vmsplice(pfd[1], &iov, 1, SPLICE_F_GIFT)
+splice(pfd[0], NULL, sockfd, NULL, BUFFER_SIZE, SPLICE_F_MOVE)
 
-   Wolfram
+I get the following:
+Pipe 6/7, base:0x480cf000, size:0x1000000
+vmsplice: Bad address
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---vGgW1X5XWziG23Ko
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAk1vXd8ACgkQD27XaX1/VRseRACgjYlZl9ofPxQaRxI+j8MDwH9M
-8a4An312eaw0VNM4dTYj+qFaadEybW64
-=ydDS
------END PGP SIGNATURE-----
-
---vGgW1X5XWziG23Ko--
+Any idea what is wrong in my use of vmsplice ?
+Thanks
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
