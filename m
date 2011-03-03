@@ -1,17 +1,17 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9ECA71007D6
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 82142B70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Mar 2011 01:57:43 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] RapidIO: Update MAINTAINERS
-Date: Thu,  3 Mar 2011 09:51:09 -0500
-Message-Id: <1299163869-8001-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+	Fri,  4 Mar 2011 04:55:11 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/9] dmatest: fix automatic buffer unmap type
+Date: Thu,  3 Mar 2011 09:54:53 -0800
+Message-Id: <1299174901-16762-2-git-send-email-iws@ovro.caltech.edu>
+In-Reply-To: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
+References: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
+Cc: dan.j.williams@intel.com, linux-kernel@vger.kernel.org,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The dmatest code relies on the DMAEngine API to automatically call
+dma_unmap_single() on src buffers. The flags it passes are incorrect,
+fix them.
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 ---
- MAINTAINERS |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/dma/dmatest.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6f99e12..f9630d6 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5164,6 +5164,7 @@ F:	drivers/char/random.c
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index 5589358..7e1b0aa 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -285,7 +285,12 @@ static int dmatest_func(void *data)
  
- RAPIDIO SUBSYSTEM
- M:	Matt Porter <mporter@kernel.crashing.org>
-+M:	Alexandre Bounine <alexandre.bounine@idt.com>
- S:	Maintained
- F:	drivers/rapidio/
+ 	set_user_nice(current, 10);
  
+-	flags = DMA_CTRL_ACK | DMA_COMPL_SKIP_DEST_UNMAP | DMA_PREP_INTERRUPT;
++	/*
++	 * src buffers are freed by the DMAEngine code with dma_unmap_single()
++	 * dst buffers are freed by ourselves below
++	 */
++	flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT
++	      | DMA_COMPL_SKIP_DEST_UNMAP | DMA_COMPL_SRC_UNMAP_SINGLE;
+ 
+ 	while (!kthread_should_stop()
+ 	       && !(iterations && total_tests >= iterations)) {
 -- 
-1.7.3.1
+1.7.3.4
