@@ -1,20 +1,14 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 47A33B70CE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  7 Mar 2011 15:44:09 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linux-ide@vger.kernel.org>
-Subject: [PATCH] driver/FSL SATA: Update RX_WATER_MARK for TRANSCFG
-Date: Mon, 7 Mar 2011 09:59:30 +0530
-Message-ID: <1299472170-3580-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: meet2prabhu@gmail.com, jgarzik@pobox.com, linuxppc-dev@lists.ozlabs.org,
-	Prabhakar Kushwaha <prabhakar@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: vmsplice bad address
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+In-Reply-To: <201103031401.55649.dargaud@lpsc.in2p3.fr>
+References: <201103031401.55649.dargaud@lpsc.in2p3.fr>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Mar 2011 20:35:44 +1100
+Message-ID: <1299490544.9759.3.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RX_WATER_MARK sets the number of locations in Rx FIFO that can be used before
-the transport layer instructs the link layer to transmit HOLDS. Note that it
-can take some time for the HOLDs to get to the other end, and that in the
-interim there must be enough room in the FIFO to absorb all data that could
-arrive.
+On Thu, 2011-03-03 at 14:01 +0100, Guillaume Dargaud wrote:
+> Hello all,
+> I'm trying to use the vmsplice/splice combination to so socket writes in zero-copy mode since it seems to be the big 
+> bottle neck in my application.
+> 
+> Here's a simplified code:
+> 
+> // This buffer is actually outside kernel space,
+> // in reserved contiguous physical memory (custom kernel compilation)
+> #define BUFFER_PHY_BASE 0x7000000
+> #define BUFFER_SIZE 0x1000000
+> memfd=open("/dev/mem", O_RDWR | O_SYNC)
+> Base=(unsigned char*)mmap(0, BUFFER_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, memfd, BUFFER_PHY_BASE);
+> 
+> sockfd = socket(AF_INET, SOCK_STREAM, 0)
+> 
+> int pfd[2];	pipe(pfd);
+> 
+> struct iovec iov;
+> iov.iov_base=Base;
+> iov.iov_len=BUFFER_SIZE;
+> printf("Pipe %d/%d, base:0x%x, size:0x%x\n", pfd[0], pfd[1], iov.iov_base, iov.iov_len);
+> vmsplice(pfd[1], &iov, 1, SPLICE_F_GIFT)
+> splice(pfd[0], NULL, sockfd, NULL, BUFFER_SIZE, SPLICE_F_MOVE)
+> 
+> I get the following:
+> Pipe 6/7, base:0x480cf000, size:0x1000000
+> vmsplice: Bad address
+> 
+> 
+> Any idea what is wrong in my use of vmsplice ?
 
-Update the new recommended value to 16.
+I'm not completely surprised ... I wouldn't expect vmsplice to work
+on /dev/mem ... No struct page backing the memory for example.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (branch master)
-
- This patch is already gone through review of linuxppc-dev mail list.
- Making CC linuxppc-dev@lists.ozlabs.org
-
- drivers/ata/sata_fsl.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 895771c..29d2f29 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -186,6 +186,11 @@ enum {
- 	COMMANDSTAT = 0x20,
- };
- 
-+/* TRANSCFG (transport-layer) configuration control */
-+enum {
-+	TRANSCFG_RX_WATER_MARK = (1 << 4),
-+};
-+
- /* PHY (link-layer) configuration control */
- enum {
- 	PHY_BIST_ENABLE = 0x01,
-@@ -1305,6 +1310,7 @@ static int sata_fsl_probe(struct platform_device *ofdev,
- 	struct sata_fsl_host_priv *host_priv = NULL;
- 	int irq;
- 	struct ata_host *host;
-+	u32 temp;
- 
- 	struct ata_port_info pi = sata_fsl_port_info[0];
- 	const struct ata_port_info *ppi[] = { &pi, NULL };
-@@ -1319,6 +1325,12 @@ static int sata_fsl_probe(struct platform_device *ofdev,
- 	ssr_base = hcr_base + 0x100;
- 	csr_base = hcr_base + 0x140;
- 
-+	if (!of_device_is_compatible(ofdev->dev.of_node, "fsl,mpc8315-sata")) {
-+		temp = ioread32(csr_base + TRANSCFG);
-+		temp = temp & 0xffffffe0;
-+		iowrite32(temp | TRANSCFG_RX_WATER_MARK, csr_base + TRANSCFG);
-+	}
-+
- 	DPRINTK("@reset i/o = 0x%x\n", ioread32(csr_base + TRANSCFG));
- 	DPRINTK("sizeof(cmd_desc) = %d\n", sizeof(struct command_desc));
- 	DPRINTK("sizeof(#define cmd_desc) = %d\n", SATA_FSL_CMD_DESC_SIZE);
--- 
-1.7.3
+Ben.
