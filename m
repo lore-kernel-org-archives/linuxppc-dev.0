@@ -2,14 +2,14 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 68C31B74BC
+	by ozlabs.org (Postfix) with ESMTPS id E17C5B7B13
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Mar 2011 10:59:40 +1100 (EST)
-Date: Tue, 8 Mar 2011 00:59:36 +0100
+	Tue,  8 Mar 2011 10:59:44 +1100 (EST)
+Date: Tue, 8 Mar 2011 00:59:40 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/28] powerpc: platforms/iseries irq_data conversion.
-Message-ID: <20110307235936.GP16649@mail.wantstofly.org>
+Subject: [PATCH 12/28] powerpc: platforms/powermac irq_data conversion.
+Message-ID: <20110307235940.GQ16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,128 +25,141 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
- arch/powerpc/platforms/iseries/irq.c |   43 +++++++++++++++++++---------------
- 1 files changed, 24 insertions(+), 19 deletions(-)
+ arch/powerpc/platforms/powermac/pic.c |   48 +++++++++++++++++---------------
+ 1 files changed, 25 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/irq.c b/arch/powerpc/platforms/iseries/irq.c
-index ba446bf..4fb96f0 100644
---- a/arch/powerpc/platforms/iseries/irq.c
-+++ b/arch/powerpc/platforms/iseries/irq.c
-@@ -167,11 +167,11 @@ static void pci_event_handler(struct HvLpEvent *event)
-  * This will be called by device drivers (via enable_IRQ)
-  * to enable INTA in the bridge interrupt status register.
-  */
--static void iseries_enable_IRQ(unsigned int irq)
-+static void iseries_enable_IRQ(struct irq_data *d)
- {
- 	u32 bus, dev_id, function, mask;
- 	const u32 sub_bus = 0;
--	unsigned int rirq = (unsigned int)irq_map[irq].hwirq;
-+	unsigned int rirq = (unsigned int)irq_map[d->irq].hwirq;
- 
- 	/* The IRQ has already been locked by the caller */
- 	bus = REAL_IRQ_TO_BUS(rirq);
-@@ -184,23 +184,23 @@ static void iseries_enable_IRQ(unsigned int irq)
- }
- 
- /* This is called by iseries_activate_IRQs */
--static unsigned int iseries_startup_IRQ(unsigned int irq)
-+static unsigned int iseries_startup_IRQ(struct irq_data *d)
- {
- 	u32 bus, dev_id, function, mask;
- 	const u32 sub_bus = 0;
--	unsigned int rirq = (unsigned int)irq_map[irq].hwirq;
-+	unsigned int rirq = (unsigned int)irq_map[d->irq].hwirq;
- 
- 	bus = REAL_IRQ_TO_BUS(rirq);
- 	function = REAL_IRQ_TO_FUNC(rirq);
- 	dev_id = (REAL_IRQ_TO_IDSEL(rirq) << 4) + function;
- 
- 	/* Link the IRQ number to the bridge */
--	HvCallXm_connectBusUnit(bus, sub_bus, dev_id, irq);
-+	HvCallXm_connectBusUnit(bus, sub_bus, dev_id, d->irq);
- 
- 	/* Unmask bridge interrupts in the FISR */
- 	mask = 0x01010000 << function;
- 	HvCallPci_unmaskFisr(bus, sub_bus, dev_id, mask);
--	iseries_enable_IRQ(irq);
-+	iseries_enable_IRQ(d);
- 	return 0;
- }
- 
-@@ -215,21 +215,26 @@ void __init iSeries_activate_IRQs()
- 
- 	for_each_irq (irq) {
- 		struct irq_desc *desc = irq_to_desc(irq);
-+		struct irq_chip *chip;
- 
--		if (desc && desc->chip && desc->chip->startup) {
-+		if (!desc)
-+			continue;
-+
-+		chip = get_irq_desc_chip(desc);
-+		if (chip && chip->irq_startup) {
- 			raw_spin_lock_irqsave(&desc->lock, flags);
--			desc->chip->startup(irq);
-+			chip->irq_startup(&desc->irq_data);
- 			raw_spin_unlock_irqrestore(&desc->lock, flags);
- 		}
+diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+index 890d5f7..c55812b 100644
+--- a/arch/powerpc/platforms/powermac/pic.c
++++ b/arch/powerpc/platforms/powermac/pic.c
+@@ -82,9 +82,9 @@ static void __pmac_retrigger(unsigned int irq_nr)
  	}
  }
  
- /*  this is not called anywhere currently */
--static void iseries_shutdown_IRQ(unsigned int irq)
-+static void iseries_shutdown_IRQ(struct irq_data *d)
+-static void pmac_mask_and_ack_irq(unsigned int virq)
++static void pmac_mask_and_ack_irq(struct irq_data *d)
  {
- 	u32 bus, dev_id, function, mask;
- 	const u32 sub_bus = 0;
--	unsigned int rirq = (unsigned int)irq_map[irq].hwirq;
-+	unsigned int rirq = (unsigned int)irq_map[d->irq].hwirq;
- 
- 	/* irq should be locked by the caller */
- 	bus = REAL_IRQ_TO_BUS(rirq);
-@@ -248,11 +253,11 @@ static void iseries_shutdown_IRQ(unsigned int irq)
-  * This will be called by device drivers (via disable_IRQ)
-  * to disable INTA in the bridge interrupt status register.
-  */
--static void iseries_disable_IRQ(unsigned int irq)
-+static void iseries_disable_IRQ(struct irq_data *d)
- {
- 	u32 bus, dev_id, function, mask;
- 	const u32 sub_bus = 0;
--	unsigned int rirq = (unsigned int)irq_map[irq].hwirq;
-+	unsigned int rirq = (unsigned int)irq_map[d->irq].hwirq;
- 
- 	/* The IRQ has already been locked by the caller */
- 	bus = REAL_IRQ_TO_BUS(rirq);
-@@ -264,9 +269,9 @@ static void iseries_disable_IRQ(unsigned int irq)
- 	HvCallPci_maskInterrupts(bus, sub_bus, dev_id, mask);
+-	unsigned int src = irq_map[virq].hwirq;
++	unsigned int src = irq_map[d->irq].hwirq;
+         unsigned long bit = 1UL << (src & 0x1f);
+         int i = src >> 5;
+         unsigned long flags;
+@@ -104,9 +104,9 @@ static void pmac_mask_and_ack_irq(unsigned int virq)
+ 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
  }
  
--static void iseries_end_IRQ(unsigned int irq)
-+static void iseries_end_IRQ(struct irq_data *d)
+-static void pmac_ack_irq(unsigned int virq)
++static void pmac_ack_irq(struct irq_data *d)
  {
--	unsigned int rirq = (unsigned int)irq_map[irq].hwirq;
-+	unsigned int rirq = (unsigned int)irq_map[d->irq].hwirq;
+-	unsigned int src = irq_map[virq].hwirq;
++	unsigned int src = irq_map[d->irq].hwirq;
+         unsigned long bit = 1UL << (src & 0x1f);
+         int i = src >> 5;
+         unsigned long flags;
+@@ -149,15 +149,15 @@ static void __pmac_set_irq_mask(unsigned int irq_nr, int nokicklost)
+ /* When an irq gets requested for the first client, if it's an
+  * edge interrupt, we clear any previous one on the controller
+  */
+-static unsigned int pmac_startup_irq(unsigned int virq)
++static unsigned int pmac_startup_irq(struct irq_data *d)
+ {
+ 	unsigned long flags;
+-	unsigned int src = irq_map[virq].hwirq;
++	unsigned int src = irq_map[d->irq].hwirq;
+         unsigned long bit = 1UL << (src & 0x1f);
+         int i = src >> 5;
  
- 	HvCallPci_eoi(REAL_IRQ_TO_BUS(rirq), REAL_IRQ_TO_SUBBUS(rirq),
- 		(REAL_IRQ_TO_IDSEL(rirq) << 4) + REAL_IRQ_TO_FUNC(rirq));
-@@ -274,11 +279,11 @@ static void iseries_end_IRQ(unsigned int irq)
+ 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+-	if ((irq_to_desc(virq)->status & IRQ_LEVEL) == 0)
++	if ((irq_to_desc(d->irq)->status & IRQ_LEVEL) == 0)
+ 		out_le32(&pmac_irq_hw[i]->ack, bit);
+         __set_bit(src, ppc_cached_irq_mask);
+         __pmac_set_irq_mask(src, 0);
+@@ -166,10 +166,10 @@ static unsigned int pmac_startup_irq(unsigned int virq)
+ 	return 0;
+ }
  
- static struct irq_chip iseries_pic = {
- 	.name		= "iSeries",
--	.startup	= iseries_startup_IRQ,
--	.shutdown	= iseries_shutdown_IRQ,
--	.unmask		= iseries_enable_IRQ,
--	.mask		= iseries_disable_IRQ,
--	.eoi		= iseries_end_IRQ
-+	.irq_startup	= iseries_startup_IRQ,
-+	.irq_shutdown	= iseries_shutdown_IRQ,
-+	.irq_unmask	= iseries_enable_IRQ,
-+	.irq_mask	= iseries_disable_IRQ,
-+	.irq_eoi	= iseries_end_IRQ
+-static void pmac_mask_irq(unsigned int virq)
++static void pmac_mask_irq(struct irq_data *d)
+ {
+ 	unsigned long flags;
+-	unsigned int src = irq_map[virq].hwirq;
++	unsigned int src = irq_map[d->irq].hwirq;
+ 
+ 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+         __clear_bit(src, ppc_cached_irq_mask);
+@@ -177,10 +177,10 @@ static void pmac_mask_irq(unsigned int virq)
+ 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ }
+ 
+-static void pmac_unmask_irq(unsigned int virq)
++static void pmac_unmask_irq(struct irq_data *d)
+ {
+ 	unsigned long flags;
+-	unsigned int src = irq_map[virq].hwirq;
++	unsigned int src = irq_map[d->irq].hwirq;
+ 
+ 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	__set_bit(src, ppc_cached_irq_mask);
+@@ -188,24 +188,24 @@ static void pmac_unmask_irq(unsigned int virq)
+ 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ }
+ 
+-static int pmac_retrigger(unsigned int virq)
++static int pmac_retrigger(struct irq_data *d)
+ {
+ 	unsigned long flags;
+ 
+ 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+-	__pmac_retrigger(irq_map[virq].hwirq);
++	__pmac_retrigger(irq_map[d->irq].hwirq);
+ 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ 	return 1;
+ }
+ 
+ static struct irq_chip pmac_pic = {
+ 	.name		= "PMAC-PIC",
+-	.startup	= pmac_startup_irq,
+-	.mask		= pmac_mask_irq,
+-	.ack		= pmac_ack_irq,
+-	.mask_ack	= pmac_mask_and_ack_irq,
+-	.unmask		= pmac_unmask_irq,
+-	.retrigger	= pmac_retrigger,
++	.irq_startup	= pmac_startup_irq,
++	.irq_mask	= pmac_mask_irq,
++	.irq_ack	= pmac_ack_irq,
++	.irq_mask_ack	= pmac_mask_and_ack_irq,
++	.irq_unmask	= pmac_unmask_irq,
++	.irq_retrigger	= pmac_retrigger,
  };
  
- /*
+ static irqreturn_t gatwick_action(int cpl, void *dev_id)
+@@ -472,12 +472,14 @@ int of_irq_map_oldworld(struct device_node *device, int index,
+ 
+ static void pmac_u3_cascade(unsigned int irq, struct irq_desc *desc)
+ {
+-	struct mpic *mpic = desc->handler_data;
+-
++	struct irq_chip *chip = get_irq_desc_chip(desc);
++	struct mpic *mpic = get_irq_desc_data(desc);
+ 	unsigned int cascade_irq = mpic_get_one_irq(mpic);
++
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+-	desc->chip->eoi(irq);
++
++	chip->irq_eoi(&desc->irq_data);
+ }
+ 
+ static void __init pmac_pic_setup_mpic_nmi(struct mpic *mpic)
+@@ -707,7 +709,7 @@ static int pmacpic_resume(struct sys_device *sysdev)
+ 	mb();
+ 	for (i = 0; i < max_real_irqs; ++i)
+ 		if (test_bit(i, sleep_save_mask))
+-			pmac_unmask_irq(i);
++			pmac_unmask_irq(irq_get_irq_data(i));
+ 
+ 	return 0;
+ }
 -- 
 1.7.4
