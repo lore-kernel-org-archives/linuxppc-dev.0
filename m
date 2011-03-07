@@ -2,14 +2,14 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E17C5B7B13
+	by ozlabs.org (Postfix) with ESMTPS id 1EE831008A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Mar 2011 10:59:44 +1100 (EST)
-Date: Tue, 8 Mar 2011 00:59:40 +0100
+	Tue,  8 Mar 2011 10:59:47 +1100 (EST)
+Date: Tue, 8 Mar 2011 00:59:43 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 12/28] powerpc: platforms/powermac irq_data conversion.
-Message-ID: <20110307235940.GQ16649@mail.wantstofly.org>
+Subject: [PATCH 13/28] powerpc: platforms/ps3 irq_data conversion.
+Message-ID: <20110307235942.GR16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,141 +25,135 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
- arch/powerpc/platforms/powermac/pic.c |   48 +++++++++++++++++---------------
- 1 files changed, 25 insertions(+), 23 deletions(-)
+ arch/powerpc/platforms/ps3/interrupt.c |   40 ++++++++++++++++----------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-index 890d5f7..c55812b 100644
---- a/arch/powerpc/platforms/powermac/pic.c
-+++ b/arch/powerpc/platforms/powermac/pic.c
-@@ -82,9 +82,9 @@ static void __pmac_retrigger(unsigned int irq_nr)
- 	}
- }
- 
--static void pmac_mask_and_ack_irq(unsigned int virq)
-+static void pmac_mask_and_ack_irq(struct irq_data *d)
- {
--	unsigned int src = irq_map[virq].hwirq;
-+	unsigned int src = irq_map[d->irq].hwirq;
-         unsigned long bit = 1UL << (src & 0x1f);
-         int i = src >> 5;
-         unsigned long flags;
-@@ -104,9 +104,9 @@ static void pmac_mask_and_ack_irq(unsigned int virq)
- 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
- }
- 
--static void pmac_ack_irq(unsigned int virq)
-+static void pmac_ack_irq(struct irq_data *d)
- {
--	unsigned int src = irq_map[virq].hwirq;
-+	unsigned int src = irq_map[d->irq].hwirq;
-         unsigned long bit = 1UL << (src & 0x1f);
-         int i = src >> 5;
-         unsigned long flags;
-@@ -149,15 +149,15 @@ static void __pmac_set_irq_mask(unsigned int irq_nr, int nokicklost)
- /* When an irq gets requested for the first client, if it's an
-  * edge interrupt, we clear any previous one on the controller
+diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
+index 92290ff..bc8b59b 100644
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -99,16 +99,16 @@ static DEFINE_PER_CPU(struct ps3_private, ps3_private);
+  * Sets ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
   */
--static unsigned int pmac_startup_irq(unsigned int virq)
-+static unsigned int pmac_startup_irq(struct irq_data *d)
+ 
+-static void ps3_chip_mask(unsigned int virq)
++static void ps3_chip_mask(struct irq_data *d)
  {
- 	unsigned long flags;
--	unsigned int src = irq_map[virq].hwirq;
-+	unsigned int src = irq_map[d->irq].hwirq;
-         unsigned long bit = 1UL << (src & 0x1f);
-         int i = src >> 5;
- 
- 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
--	if ((irq_to_desc(virq)->status & IRQ_LEVEL) == 0)
-+	if ((irq_to_desc(d->irq)->status & IRQ_LEVEL) == 0)
- 		out_le32(&pmac_irq_hw[i]->ack, bit);
-         __set_bit(src, ppc_cached_irq_mask);
-         __pmac_set_irq_mask(src, 0);
-@@ -166,10 +166,10 @@ static unsigned int pmac_startup_irq(unsigned int virq)
- 	return 0;
- }
- 
--static void pmac_mask_irq(unsigned int virq)
-+static void pmac_mask_irq(struct irq_data *d)
- {
- 	unsigned long flags;
--	unsigned int src = irq_map[virq].hwirq;
-+	unsigned int src = irq_map[d->irq].hwirq;
- 
- 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
-         __clear_bit(src, ppc_cached_irq_mask);
-@@ -177,10 +177,10 @@ static void pmac_mask_irq(unsigned int virq)
- 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
- }
- 
--static void pmac_unmask_irq(unsigned int virq)
-+static void pmac_unmask_irq(struct irq_data *d)
- {
- 	unsigned long flags;
--	unsigned int src = irq_map[virq].hwirq;
-+	unsigned int src = irq_map[d->irq].hwirq;
- 
- 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
- 	__set_bit(src, ppc_cached_irq_mask);
-@@ -188,24 +188,24 @@ static void pmac_unmask_irq(unsigned int virq)
- 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
- }
- 
--static int pmac_retrigger(unsigned int virq)
-+static int pmac_retrigger(struct irq_data *d)
- {
+-	struct ps3_private *pd = get_irq_chip_data(virq);
++	struct ps3_private *pd = get_irq_chip_data(d->irq);
  	unsigned long flags;
  
- 	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
--	__pmac_retrigger(irq_map[virq].hwirq);
-+	__pmac_retrigger(irq_map[d->irq].hwirq);
- 	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
- 	return 1;
+ 	pr_debug("%s:%d: thread_id %llu, virq %d\n", __func__, __LINE__,
+-		pd->thread_id, virq);
++		pd->thread_id, d->irq);
+ 
+ 	local_irq_save(flags);
+-	clear_bit(63 - virq, &pd->bmp.mask);
++	clear_bit(63 - d->irq, &pd->bmp.mask);
+ 	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
+ 	local_irq_restore(flags);
+ }
+@@ -120,16 +120,16 @@ static void ps3_chip_mask(unsigned int virq)
+  * Clears ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
+  */
+ 
+-static void ps3_chip_unmask(unsigned int virq)
++static void ps3_chip_unmask(struct irq_data *d)
+ {
+-	struct ps3_private *pd = get_irq_chip_data(virq);
++	struct ps3_private *pd = get_irq_chip_data(d->irq);
+ 	unsigned long flags;
+ 
+ 	pr_debug("%s:%d: thread_id %llu, virq %d\n", __func__, __LINE__,
+-		pd->thread_id, virq);
++		pd->thread_id, d->irq);
+ 
+ 	local_irq_save(flags);
+-	set_bit(63 - virq, &pd->bmp.mask);
++	set_bit(63 - d->irq, &pd->bmp.mask);
+ 	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
+ 	local_irq_restore(flags);
+ }
+@@ -141,10 +141,10 @@ static void ps3_chip_unmask(unsigned int virq)
+  * Calls lv1_end_of_interrupt_ext().
+  */
+ 
+-static void ps3_chip_eoi(unsigned int virq)
++static void ps3_chip_eoi(struct irq_data *d)
+ {
+-	const struct ps3_private *pd = get_irq_chip_data(virq);
+-	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, virq);
++	const struct ps3_private *pd = get_irq_chip_data(d->irq);
++	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, d->irq);
  }
  
- static struct irq_chip pmac_pic = {
- 	.name		= "PMAC-PIC",
--	.startup	= pmac_startup_irq,
--	.mask		= pmac_mask_irq,
--	.ack		= pmac_ack_irq,
--	.mask_ack	= pmac_mask_and_ack_irq,
--	.unmask		= pmac_unmask_irq,
--	.retrigger	= pmac_retrigger,
-+	.irq_startup	= pmac_startup_irq,
-+	.irq_mask	= pmac_mask_irq,
-+	.irq_ack	= pmac_ack_irq,
-+	.irq_mask_ack	= pmac_mask_and_ack_irq,
-+	.irq_unmask	= pmac_unmask_irq,
-+	.irq_retrigger	= pmac_retrigger,
+ /**
+@@ -153,9 +153,9 @@ static void ps3_chip_eoi(unsigned int virq)
+ 
+ static struct irq_chip ps3_irq_chip = {
+ 	.name = "ps3",
+-	.mask = ps3_chip_mask,
+-	.unmask = ps3_chip_unmask,
+-	.eoi = ps3_chip_eoi,
++	.irq_mask = ps3_chip_mask,
++	.irq_unmask = ps3_chip_unmask,
++	.irq_eoi = ps3_chip_eoi,
  };
  
- static irqreturn_t gatwick_action(int cpl, void *dev_id)
-@@ -472,12 +472,14 @@ int of_irq_map_oldworld(struct device_node *device, int index,
+ /**
+@@ -202,7 +202,7 @@ static int ps3_virq_setup(enum ps3_cpu_binding cpu, unsigned long outlet,
+ 		goto fail_set;
+ 	}
  
- static void pmac_u3_cascade(unsigned int irq, struct irq_desc *desc)
+-	ps3_chip_mask(*virq);
++	ps3_chip_mask(irq_get_irq_data(*virq));
+ 
+ 	return result;
+ 
+@@ -296,7 +296,7 @@ int ps3_irq_plug_destroy(unsigned int virq)
+ 	pr_debug("%s:%d: ppe_id %llu, thread_id %llu, virq %u\n", __func__,
+ 		__LINE__, pd->ppe_id, pd->thread_id, virq);
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	result = lv1_disconnect_irq_plug_ext(pd->ppe_id, pd->thread_id, virq);
+ 
+@@ -357,7 +357,7 @@ int ps3_event_receive_port_destroy(unsigned int virq)
+ 
+ 	pr_debug(" -> %s:%d virq %u\n", __func__, __LINE__, virq);
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	result = lv1_destruct_event_receive_port(virq_to_hw(virq));
+ 
+@@ -492,7 +492,7 @@ int ps3_io_irq_destroy(unsigned int virq)
+ 	int result;
+ 	unsigned long outlet = virq_to_hw(virq);
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	/*
+ 	 * lv1_destruct_io_irq_outlet() will destroy the IRQ plug,
+@@ -553,7 +553,7 @@ int ps3_vuart_irq_destroy(unsigned int virq)
  {
--	struct mpic *mpic = desc->handler_data;
--
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
-+	struct mpic *mpic = get_irq_desc_data(desc);
- 	unsigned int cascade_irq = mpic_get_one_irq(mpic);
-+
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
--	desc->chip->eoi(irq);
-+
-+	chip->irq_eoi(&desc->irq_data);
- }
+ 	int result;
  
- static void __init pmac_pic_setup_mpic_nmi(struct mpic *mpic)
-@@ -707,7 +709,7 @@ static int pmacpic_resume(struct sys_device *sysdev)
- 	mb();
- 	for (i = 0; i < max_real_irqs; ++i)
- 		if (test_bit(i, sleep_save_mask))
--			pmac_unmask_irq(i);
-+			pmac_unmask_irq(irq_get_irq_data(i));
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 	result = lv1_deconfigure_virtual_uart_irq();
  
- 	return 0;
- }
+ 	if (result) {
+@@ -605,7 +605,7 @@ int ps3_spe_irq_destroy(unsigned int virq)
+ {
+ 	int result;
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	result = ps3_irq_plug_destroy(virq);
+ 	BUG_ON(result);
 -- 
 1.7.4
