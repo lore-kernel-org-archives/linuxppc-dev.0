@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B2DBCB70DC
+Return-Path: <prabhakar@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 20BC0B70CE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  7 Mar 2011 15:09:13 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p27498xC007738
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Mar 2011 22:09:09 -0600
-Subject: [PATCH] powerpc/mm: Move the STAB0 location to 0x8000 to make room
-	in low memory
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Mar 2011 15:09:07 +1100
-Message-ID: <1299470947.8833.1035.camel@pasglop>
-Mime-Version: 1.0
+	Mon,  7 Mar 2011 15:29:37 +1100 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linux-ide@vger.kernel.org>
+Subject: [PATCH] driver/FSL SATA:Fix wrong Device Error Register usage
+Date: Mon, 7 Mar 2011 10:00:21 +0530
+Message-ID: <1299472221-3613-1-git-send-email-prabhakar@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Ashish Kalra <B00888@freescale.com>,
+	jgarzik@pobox.com, linuxppc-dev@lists.ozlabs.org,
+	Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Recent linux-next builds with allmodconfig fail due to lack of space
-between 0x3000 and 0x6000. We have a hard block at 0x7000 but we can
-spare a page by moving the STAB0 from 0x6000 to 0x8000.
+When a single device error is detected, the device under the error is indicated
+by the error bit set in the DER. There is a one to one mapping between register
+bit and devices on Port multiplier(PMP) i.e. bit 0 represents PMP device 0 and
+bit 1 represents PMP device 1 etc.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Current implementation treats Device error register value as device number not
+set of bits representing multiple device on PMP. It is changed to consider bit
+level.
+No need to check for each set bit as all command is going to be aborted.
+
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Ashish Kalra <B00888@freescale.com>
 ---
+ git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (branch master)
 
-Seems to still boot on legacy iSeries...
+ This patch is already gone through review of linuxppc-dev mail list.
+ Making CC linuxppc-dev@lists.ozlabs.org
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index acac35d..ae7b3ef 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -27,7 +27,7 @@
- #define STE_VSID_SHIFT	12
+ drivers/ata/sata_fsl.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index b0214d0..895771c 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -1040,12 +1040,14 @@ static void sata_fsl_error_intr(struct ata_port *ap)
  
- /* Location of cpu0's segment table */
--#define STAB0_PAGE	0x6
-+#define STAB0_PAGE	0x8
- #define STAB0_OFFSET	(STAB0_PAGE << 12)
- #define STAB0_PHYS_ADDR	(STAB0_OFFSET + PHYSICAL_START)
+ 		/* find out the offending link and qc */
+ 		if (ap->nr_pmp_links) {
++			unsigned int dev_num;
+ 			dereg = ioread32(hcr_base + DE);
+ 			iowrite32(dereg, hcr_base + DE);
+ 			iowrite32(cereg, hcr_base + CE);
  
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 8a81799..70f0f99 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -977,20 +977,6 @@ _GLOBAL(do_stab_bolted)
- 	rfid
- 	b	.	/* prevent speculative execution */
- 
--/*
-- * Space for CPU0's segment table.
-- *
-- * On iSeries, the hypervisor must fill in at least one entry before
-- * we get control (with relocate on).  The address is given to the hv
-- * as a page number (see xLparMap below), so this must be at a
-- * fixed address (the linker can't compute (u64)&initial_stab >>
-- * PAGE_SHIFT).
-- */
--	. = STAB0_OFFSET	/* 0x6000 */
--	.globl initial_stab
--initial_stab:
--	.space	4096
--
- #ifdef CONFIG_PPC_PSERIES
- /*
-  * Data area reserved for FWNMI option.
-@@ -1027,3 +1013,18 @@ xLparMap:
- #ifdef CONFIG_PPC_PSERIES
-         . = 0x8000
- #endif /* CONFIG_PPC_PSERIES */
-+
-+/*
-+ * Space for CPU0's segment table.
-+ *
-+ * On iSeries, the hypervisor must fill in at least one entry before
-+ * we get control (with relocate on).  The address is given to the hv
-+ * as a page number (see xLparMap above), so this must be at a
-+ * fixed address (the linker can't compute (u64)&initial_stab >>
-+ * PAGE_SHIFT).
-+ */
-+	. = STAB0_OFFSET	/* 0x8000 */
-+	.globl initial_stab
-+initial_stab:
-+	.space	4096
-+
+-			if (dereg < ap->nr_pmp_links) {
+-				link = &ap->pmp_link[dereg];
++			dev_num = ffs(dereg)-1;
++			if (dev_num < ap->nr_pmp_links) {
++				link = &ap->pmp_link[dev_num];
+ 				ehi = &link->eh_info;
+ 				qc = ata_qc_from_tag(ap, link->active_tag);
+ 				/*
+-- 
+1.7.3
