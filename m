@@ -2,14 +2,14 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FA38B7654
+	by ozlabs.org (Postfix) with ESMTPS id 05040B76DE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Mar 2011 10:59:58 +1100 (EST)
-Date: Tue, 8 Mar 2011 00:59:54 +0100
+	Tue,  8 Mar 2011 11:00:00 +1100 (EST)
+Date: Tue, 8 Mar 2011 00:59:56 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 17/28] powerpc: sysdev/fsl_msi irq_data conversion.
-Message-ID: <20110307235954.GV16649@mail.wantstofly.org>
+Subject: [PATCH 18/28] powerpc: sysdev/i8259 irq_data conversion.
+Message-ID: <20110307235956.GW16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,68 +25,104 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
- arch/powerpc/sysdev/fsl_msi.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
+ arch/powerpc/sysdev/i8259.c |   42 +++++++++++++++++++++---------------------
+ 1 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 108d76f..f6051d7 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -47,14 +47,14 @@ static inline u32 fsl_msi_read(u32 __iomem *base, unsigned int reg)
-  * We do not need this actually. The MSIR register has been read once
-  * in the cascade interrupt. So, this MSI interrupt has been acked
- */
--static void fsl_msi_end_irq(unsigned int virq)
-+static void fsl_msi_end_irq(struct irq_data *d)
- {
+diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
+index 6323e70..aeda4c8 100644
+--- a/arch/powerpc/sysdev/i8259.c
++++ b/arch/powerpc/sysdev/i8259.c
+@@ -78,19 +78,19 @@ unsigned int i8259_irq(void)
+ 	return irq;
  }
  
- static struct irq_chip fsl_msi_chip = {
- 	.irq_mask	= mask_msi_irq,
- 	.irq_unmask	= unmask_msi_irq,
--	.ack		= fsl_msi_end_irq,
-+	.irq_ack	= fsl_msi_end_irq,
- 	.name		= "FSL-MSI",
+-static void i8259_mask_and_ack_irq(unsigned int irq_nr)
++static void i8259_mask_and_ack_irq(struct irq_data *d)
+ {
+ 	unsigned long flags;
+ 
+ 	raw_spin_lock_irqsave(&i8259_lock, flags);
+-	if (irq_nr > 7) {
+-		cached_A1 |= 1 << (irq_nr-8);
++	if (d->irq > 7) {
++		cached_A1 |= 1 << (d->irq-8);
+ 		inb(0xA1); 	/* DUMMY */
+ 		outb(cached_A1, 0xA1);
+ 		outb(0x20, 0xA0);	/* Non-specific EOI */
+ 		outb(0x20, 0x20);	/* Non-specific EOI to cascade */
+ 	} else {
+-		cached_21 |= 1 << irq_nr;
++		cached_21 |= 1 << d->irq;
+ 		inb(0x21); 	/* DUMMY */
+ 		outb(cached_21, 0x21);
+ 		outb(0x20, 0x20);	/* Non-specific EOI */
+@@ -104,42 +104,42 @@ static void i8259_set_irq_mask(int irq_nr)
+ 	outb(cached_21,0x21);
+ }
+ 
+-static void i8259_mask_irq(unsigned int irq_nr)
++static void i8259_mask_irq(struct irq_data *d)
+ {
+ 	unsigned long flags;
+ 
+-	pr_debug("i8259_mask_irq(%d)\n", irq_nr);
++	pr_debug("i8259_mask_irq(%d)\n", d->irq);
+ 
+ 	raw_spin_lock_irqsave(&i8259_lock, flags);
+-	if (irq_nr < 8)
+-		cached_21 |= 1 << irq_nr;
++	if (d->irq < 8)
++		cached_21 |= 1 << d->irq;
+ 	else
+-		cached_A1 |= 1 << (irq_nr-8);
+-	i8259_set_irq_mask(irq_nr);
++		cached_A1 |= 1 << (d->irq-8);
++	i8259_set_irq_mask(d->irq);
+ 	raw_spin_unlock_irqrestore(&i8259_lock, flags);
+ }
+ 
+-static void i8259_unmask_irq(unsigned int irq_nr)
++static void i8259_unmask_irq(struct irq_data *d)
+ {
+ 	unsigned long flags;
+ 
+-	pr_debug("i8259_unmask_irq(%d)\n", irq_nr);
++	pr_debug("i8259_unmask_irq(%d)\n", d->irq);
+ 
+ 	raw_spin_lock_irqsave(&i8259_lock, flags);
+-	if (irq_nr < 8)
+-		cached_21 &= ~(1 << irq_nr);
++	if (d->irq < 8)
++		cached_21 &= ~(1 << d->irq);
+ 	else
+-		cached_A1 &= ~(1 << (irq_nr-8));
+-	i8259_set_irq_mask(irq_nr);
++		cached_A1 &= ~(1 << (d->irq-8));
++	i8259_set_irq_mask(d->irq);
+ 	raw_spin_unlock_irqrestore(&i8259_lock, flags);
+ }
+ 
+ static struct irq_chip i8259_pic = {
+ 	.name		= "i8259",
+-	.mask		= i8259_mask_irq,
+-	.disable	= i8259_mask_irq,
+-	.unmask		= i8259_unmask_irq,
+-	.mask_ack	= i8259_mask_and_ack_irq,
++	.irq_mask	= i8259_mask_irq,
++	.irq_disable	= i8259_mask_irq,
++	.irq_unmask	= i8259_unmask_irq,
++	.irq_mask_ack	= i8259_mask_and_ack_irq,
  };
  
-@@ -183,6 +183,7 @@ out_free:
- 
- static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ static struct resource pic1_iores = {
+@@ -188,7 +188,7 @@ static int i8259_host_map(struct irq_host *h, unsigned int virq,
+ static void i8259_host_unmap(struct irq_host *h, unsigned int virq)
  {
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 	unsigned int cascade_irq;
- 	struct fsl_msi *msi_data;
- 	int msir_index = -1;
-@@ -196,11 +197,11 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 	/* Make sure irq is masked in hardware */
+-	i8259_mask_irq(virq);
++	i8259_mask_irq(irq_get_irq_data(virq));
  
- 	raw_spin_lock(&desc->lock);
- 	if ((msi_data->feature &  FSL_PIC_IP_MASK) == FSL_PIC_IP_IPIC) {
--		if (desc->chip->mask_ack)
--			desc->chip->mask_ack(irq);
-+		if (chip->irq_mask_ack)
-+			chip->irq_mask_ack(&desc->irq_data);
- 		else {
--			desc->chip->mask(irq);
--			desc->chip->ack(irq);
-+			chip->irq_mask(&desc->irq_data);
-+			chip->irq_ack(&desc->irq_data);
- 		}
- 	}
- 
-@@ -238,11 +239,11 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 
- 	switch (msi_data->feature & FSL_PIC_IP_MASK) {
- 	case FSL_PIC_IP_MPIC:
--		desc->chip->eoi(irq);
-+		chip->irq_eoi(&desc->irq_data);
- 		break;
- 	case FSL_PIC_IP_IPIC:
--		if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
--			desc->chip->unmask(irq);
-+		if (!(desc->status & IRQ_DISABLED) && chip->irq_unmask)
-+			chip->irq_unmask(&desc->irq_data);
- 		break;
- 	}
- unlock:
+ 	/* remove chip and handler */
+ 	set_irq_chip_and_handler(virq, NULL, NULL);
 -- 
 1.7.4
