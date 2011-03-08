@@ -2,14 +2,14 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 53ED1B7C84
+	by ozlabs.org (Postfix) with ESMTPS id 61F1CB78BA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Mar 2011 11:00:14 +1100 (EST)
-Date: Tue, 8 Mar 2011 01:00:10 +0100
+	Tue,  8 Mar 2011 11:00:16 +1100 (EST)
+Date: Tue, 8 Mar 2011 01:00:12 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 23/28] powerpc: sysdev/qe_lib/qe_ic irq_data conversion.
-Message-ID: <20110308000010.GB16649@mail.wantstofly.org>
+Subject: [PATCH 24/28] powerpc: sysdev/tsi108_pci irq_data conversion.
+Message-ID: <20110308000012.GC16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,132 +25,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
- arch/powerpc/include/asm/qe_ic.h   |   19 +++++++++++--------
- arch/powerpc/sysdev/qe_lib/qe_ic.c |   20 ++++++++++----------
- 2 files changed, 21 insertions(+), 18 deletions(-)
+ arch/powerpc/sysdev/tsi108_pci.c |   41 +++++++++++++++++--------------------
+ 1 files changed, 19 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/qe_ic.h b/arch/powerpc/include/asm/qe_ic.h
-index cf51966..9e2cb20 100644
---- a/arch/powerpc/include/asm/qe_ic.h
-+++ b/arch/powerpc/include/asm/qe_ic.h
-@@ -81,7 +81,7 @@ int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high);
- static inline void qe_ic_cascade_low_ipic(unsigned int irq,
- 					  struct irq_desc *desc)
+diff --git a/arch/powerpc/sysdev/tsi108_pci.c b/arch/powerpc/sysdev/tsi108_pci.c
+index 0ab9281..02c91db 100644
+--- a/arch/powerpc/sysdev/tsi108_pci.c
++++ b/arch/powerpc/sysdev/tsi108_pci.c
+@@ -343,24 +343,9 @@ static inline unsigned int get_pci_source(void)
+  * Linux descriptor level callbacks
+  */
+ 
+-static void tsi108_pci_irq_enable(u_int irq)
++static void tsi108_pci_irq_unmask(struct irq_data *d)
  {
--	struct qe_ic *qe_ic = desc->handler_data;
-+	struct qe_ic *qe_ic = get_irq_desc_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
+-	tsi108_pci_int_unmask(irq);
+-}
+-
+-static void tsi108_pci_irq_disable(u_int irq)
+-{
+-	tsi108_pci_int_mask(irq);
+-}
+-
+-static void tsi108_pci_irq_ack(u_int irq)
+-{
+-	tsi108_pci_int_mask(irq);
+-}
+-
+-static void tsi108_pci_irq_end(u_int irq)
+-{
+-	tsi108_pci_int_unmask(irq);
++	tsi108_pci_int_unmask(d->irq);
  
- 	if (cascade_irq != NO_IRQ)
-@@ -91,7 +91,7 @@ static inline void qe_ic_cascade_low_ipic(unsigned int irq,
- static inline void qe_ic_cascade_high_ipic(unsigned int irq,
- 					   struct irq_desc *desc)
- {
--	struct qe_ic *qe_ic = desc->handler_data;
-+	struct qe_ic *qe_ic = get_irq_desc_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 
- 	if (cascade_irq != NO_IRQ)
-@@ -101,32 +101,35 @@ static inline void qe_ic_cascade_high_ipic(unsigned int irq,
- static inline void qe_ic_cascade_low_mpic(unsigned int irq,
- 					  struct irq_desc *desc)
- {
--	struct qe_ic *qe_ic = desc->handler_data;
-+	struct qe_ic *qe_ic = get_irq_desc_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
- 
--	desc->chip->eoi(irq);
-+	chip->irq_eoi(&desc->irq_data);
+ 	/* Enable interrupts from PCI block */
+ 	tsi108_write_reg(TSI108_PCI_OFFSET + TSI108_PCI_IRP_ENABLE,
+@@ -370,16 +355,25 @@ static void tsi108_pci_irq_end(u_int irq)
+ 	mb();
  }
  
- static inline void qe_ic_cascade_high_mpic(unsigned int irq,
- 					   struct irq_desc *desc)
- {
--	struct qe_ic *qe_ic = desc->handler_data;
-+	struct qe_ic *qe_ic = get_irq_desc_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
++static void tsi108_pci_irq_mask(struct irq_data *d)
++{
++	tsi108_pci_int_mask(d->irq);
++}
++
++static void tsi108_pci_irq_ack(struct irq_data *d)
++{
++	tsi108_pci_int_mask(d->irq);
++}
++
+ /*
+  * Interrupt controller descriptor for cascaded PCI interrupt controller.
+  */
  
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
- 
--	desc->chip->eoi(irq);
-+	chip->irq_eoi(&desc->irq_data);
- }
- 
- static inline void qe_ic_cascade_muxed_mpic(unsigned int irq,
- 					    struct irq_desc *desc)
- {
--	struct qe_ic *qe_ic = desc->handler_data;
-+	struct qe_ic *qe_ic = get_irq_desc_data(desc);
- 	unsigned int cascade_irq;
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 
- 	cascade_irq = qe_ic_get_high_irq(qe_ic);
- 	if (cascade_irq == NO_IRQ)
-@@ -135,7 +138,7 @@ static inline void qe_ic_cascade_muxed_mpic(unsigned int irq,
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
- 
--	desc->chip->eoi(irq);
-+	chip->irq_eoi(&desc->irq_data);
- }
- 
- #endif /* _ASM_POWERPC_QE_IC_H */
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-index 541ba98..24bfc1e 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-@@ -189,15 +189,15 @@ static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg
- 
- static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
- {
--	return irq_to_desc(virq)->chip_data;
-+	return get_irq_chip_data(virq);
- }
- 
- #define virq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
- 
--static void qe_ic_unmask_irq(unsigned int virq)
-+static void qe_ic_unmask_irq(struct irq_data *d)
- {
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct qe_ic *qe_ic = qe_ic_from_irq(d->irq);
-+	unsigned int src = virq_to_hw(d->irq);
- 	unsigned long flags;
- 	u32 temp;
- 
-@@ -210,10 +210,10 @@ static void qe_ic_unmask_irq(unsigned int virq)
- 	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
- }
- 
--static void qe_ic_mask_irq(unsigned int virq)
-+static void qe_ic_mask_irq(struct irq_data *d)
- {
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct qe_ic *qe_ic = qe_ic_from_irq(d->irq);
-+	unsigned int src = virq_to_hw(d->irq);
- 	unsigned long flags;
- 	u32 temp;
- 
-@@ -238,9 +238,9 @@ static void qe_ic_mask_irq(unsigned int virq)
- 
- static struct irq_chip qe_ic_irq_chip = {
- 	.name = "QEIC",
--	.unmask = qe_ic_unmask_irq,
--	.mask = qe_ic_mask_irq,
--	.mask_ack = qe_ic_mask_irq,
-+	.irq_unmask = qe_ic_unmask_irq,
-+	.irq_mask = qe_ic_mask_irq,
-+	.irq_mask_ack = qe_ic_mask_irq,
+ static struct irq_chip tsi108_pci_irq = {
+ 	.name = "tsi108_PCI_int",
+-	.mask = tsi108_pci_irq_disable,
+-	.ack = tsi108_pci_irq_ack,
+-	.end = tsi108_pci_irq_end,
+-	.unmask = tsi108_pci_irq_enable,
++	.irq_mask = tsi108_pci_irq_mask,
++	.irq_ack = tsi108_pci_irq_ack,
++	.irq_unmask = tsi108_pci_irq_unmask,
  };
  
- static int qe_ic_host_match(struct irq_host *h, struct device_node *node)
+ static int pci_irq_host_xlate(struct irq_host *h, struct device_node *ct,
+@@ -437,8 +431,11 @@ void __init tsi108_pci_int_init(struct device_node *node)
+ 
+ void tsi108_irq_cascade(unsigned int irq, struct irq_desc *desc)
+ {
++	struct irq_chip *chip = get_irq_desc_chip(desc);
+ 	unsigned int cascade_irq = get_pci_source();
++
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+-	desc->chip->eoi(irq);
++
++	chip->irq_eoi(&desc->irq_data);
+ }
 -- 
 1.7.4
