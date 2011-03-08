@@ -2,14 +2,14 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 71180B738D
+	by ozlabs.org (Postfix) with ESMTPS id 53ED1B7C84
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Mar 2011 11:00:10 +1100 (EST)
-Date: Tue, 8 Mar 2011 01:00:06 +0100
+	Tue,  8 Mar 2011 11:00:14 +1100 (EST)
+Date: Tue, 8 Mar 2011 01:00:10 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 22/28] powerpc: sysdev/mv64x60_pic irq_data conversion.
-Message-ID: <20110308000006.GA16649@mail.wantstofly.org>
+Subject: [PATCH 23/28] powerpc: sysdev/qe_lib/qe_ic irq_data conversion.
+Message-ID: <20110308000010.GB16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,133 +25,132 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
- arch/powerpc/sysdev/mv64x60_pic.c |   46 ++++++++++++++++++------------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/qe_ic.h   |   19 +++++++++++--------
+ arch/powerpc/sysdev/qe_lib/qe_ic.c |   20 ++++++++++----------
+ 2 files changed, 21 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mv64x60_pic.c b/arch/powerpc/sysdev/mv64x60_pic.c
-index 485b924..bc61ebb 100644
---- a/arch/powerpc/sysdev/mv64x60_pic.c
-+++ b/arch/powerpc/sysdev/mv64x60_pic.c
-@@ -76,9 +76,9 @@ static struct irq_host *mv64x60_irq_host;
-  * mv64x60_chip_low functions
-  */
- 
--static void mv64x60_mask_low(unsigned int virq)
-+static void mv64x60_mask_low(struct irq_data *d)
+diff --git a/arch/powerpc/include/asm/qe_ic.h b/arch/powerpc/include/asm/qe_ic.h
+index cf51966..9e2cb20 100644
+--- a/arch/powerpc/include/asm/qe_ic.h
++++ b/arch/powerpc/include/asm/qe_ic.h
+@@ -81,7 +81,7 @@ int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high);
+ static inline void qe_ic_cascade_low_ipic(unsigned int irq,
+ 					  struct irq_desc *desc)
  {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
- 	unsigned long flags;
+-	struct qe_ic *qe_ic = desc->handler_data;
++	struct qe_ic *qe_ic = get_irq_desc_data(desc);
+ 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
  
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -89,9 +89,9 @@ static void mv64x60_mask_low(unsigned int virq)
- 	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO);
+ 	if (cascade_irq != NO_IRQ)
+@@ -91,7 +91,7 @@ static inline void qe_ic_cascade_low_ipic(unsigned int irq,
+ static inline void qe_ic_cascade_high_ipic(unsigned int irq,
+ 					   struct irq_desc *desc)
+ {
+-	struct qe_ic *qe_ic = desc->handler_data;
++	struct qe_ic *qe_ic = get_irq_desc_data(desc);
+ 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
+ 
+ 	if (cascade_irq != NO_IRQ)
+@@ -101,32 +101,35 @@ static inline void qe_ic_cascade_high_ipic(unsigned int irq,
+ static inline void qe_ic_cascade_low_mpic(unsigned int irq,
+ 					  struct irq_desc *desc)
+ {
+-	struct qe_ic *qe_ic = desc->handler_data;
++	struct qe_ic *qe_ic = get_irq_desc_data(desc);
+ 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
++	struct irq_chip *chip = get_irq_desc_chip(desc);
+ 
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+ 
+-	desc->chip->eoi(irq);
++	chip->irq_eoi(&desc->irq_data);
  }
  
--static void mv64x60_unmask_low(unsigned int virq)
-+static void mv64x60_unmask_low(struct irq_data *d)
+ static inline void qe_ic_cascade_high_mpic(unsigned int irq,
+ 					   struct irq_desc *desc)
  {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
+-	struct qe_ic *qe_ic = desc->handler_data;
++	struct qe_ic *qe_ic = get_irq_desc_data(desc);
+ 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
++	struct irq_chip *chip = get_irq_desc_chip(desc);
+ 
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+ 
+-	desc->chip->eoi(irq);
++	chip->irq_eoi(&desc->irq_data);
+ }
+ 
+ static inline void qe_ic_cascade_muxed_mpic(unsigned int irq,
+ 					    struct irq_desc *desc)
+ {
+-	struct qe_ic *qe_ic = desc->handler_data;
++	struct qe_ic *qe_ic = get_irq_desc_data(desc);
+ 	unsigned int cascade_irq;
++	struct irq_chip *chip = get_irq_desc_chip(desc);
+ 
+ 	cascade_irq = qe_ic_get_high_irq(qe_ic);
+ 	if (cascade_irq == NO_IRQ)
+@@ -135,7 +138,7 @@ static inline void qe_ic_cascade_muxed_mpic(unsigned int irq,
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+ 
+-	desc->chip->eoi(irq);
++	chip->irq_eoi(&desc->irq_data);
+ }
+ 
+ #endif /* _ASM_POWERPC_QE_IC_H */
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+index 541ba98..24bfc1e 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+@@ -189,15 +189,15 @@ static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg
+ 
+ static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
+ {
+-	return irq_to_desc(virq)->chip_data;
++	return get_irq_chip_data(virq);
+ }
+ 
+ #define virq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
+ 
+-static void qe_ic_unmask_irq(unsigned int virq)
++static void qe_ic_unmask_irq(struct irq_data *d)
+ {
+-	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
++	struct qe_ic *qe_ic = qe_ic_from_irq(d->irq);
++	unsigned int src = virq_to_hw(d->irq);
  	unsigned long flags;
+ 	u32 temp;
  
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -104,18 +104,18 @@ static void mv64x60_unmask_low(unsigned int virq)
+@@ -210,10 +210,10 @@ static void qe_ic_unmask_irq(unsigned int virq)
+ 	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
+ }
  
- static struct irq_chip mv64x60_chip_low = {
- 	.name		= "mv64x60_low",
--	.mask		= mv64x60_mask_low,
--	.mask_ack	= mv64x60_mask_low,
--	.unmask		= mv64x60_unmask_low,
-+	.irq_mask	= mv64x60_mask_low,
-+	.irq_mask_ack	= mv64x60_mask_low,
-+	.irq_unmask	= mv64x60_unmask_low,
+-static void qe_ic_mask_irq(unsigned int virq)
++static void qe_ic_mask_irq(struct irq_data *d)
+ {
+-	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
++	struct qe_ic *qe_ic = qe_ic_from_irq(d->irq);
++	unsigned int src = virq_to_hw(d->irq);
+ 	unsigned long flags;
+ 	u32 temp;
+ 
+@@ -238,9 +238,9 @@ static void qe_ic_mask_irq(unsigned int virq)
+ 
+ static struct irq_chip qe_ic_irq_chip = {
+ 	.name = "QEIC",
+-	.unmask = qe_ic_unmask_irq,
+-	.mask = qe_ic_mask_irq,
+-	.mask_ack = qe_ic_mask_irq,
++	.irq_unmask = qe_ic_unmask_irq,
++	.irq_mask = qe_ic_mask_irq,
++	.irq_mask_ack = qe_ic_mask_irq,
  };
  
- /*
-  * mv64x60_chip_high functions
-  */
- 
--static void mv64x60_mask_high(unsigned int virq)
-+static void mv64x60_mask_high(struct irq_data *d)
- {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -126,9 +126,9 @@ static void mv64x60_mask_high(unsigned int virq)
- 	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI);
- }
- 
--static void mv64x60_unmask_high(unsigned int virq)
-+static void mv64x60_unmask_high(struct irq_data *d)
- {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -141,18 +141,18 @@ static void mv64x60_unmask_high(unsigned int virq)
- 
- static struct irq_chip mv64x60_chip_high = {
- 	.name		= "mv64x60_high",
--	.mask		= mv64x60_mask_high,
--	.mask_ack	= mv64x60_mask_high,
--	.unmask		= mv64x60_unmask_high,
-+	.irq_mask	= mv64x60_mask_high,
-+	.irq_mask_ack	= mv64x60_mask_high,
-+	.irq_unmask	= mv64x60_unmask_high,
- };
- 
- /*
-  * mv64x60_chip_gpp functions
-  */
- 
--static void mv64x60_mask_gpp(unsigned int virq)
-+static void mv64x60_mask_gpp(struct irq_data *d)
- {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -163,9 +163,9 @@ static void mv64x60_mask_gpp(unsigned int virq)
- 	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK);
- }
- 
--static void mv64x60_mask_ack_gpp(unsigned int virq)
-+static void mv64x60_mask_ack_gpp(struct irq_data *d)
- {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -178,9 +178,9 @@ static void mv64x60_mask_ack_gpp(unsigned int virq)
- 	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE);
- }
- 
--static void mv64x60_unmask_gpp(unsigned int virq)
-+static void mv64x60_unmask_gpp(struct irq_data *d)
- {
--	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
-+	int level2 = irq_map[d->irq].hwirq & MV64x60_LEVEL2_MASK;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&mv64x60_lock, flags);
-@@ -193,9 +193,9 @@ static void mv64x60_unmask_gpp(unsigned int virq)
- 
- static struct irq_chip mv64x60_chip_gpp = {
- 	.name		= "mv64x60_gpp",
--	.mask		= mv64x60_mask_gpp,
--	.mask_ack	= mv64x60_mask_ack_gpp,
--	.unmask		= mv64x60_unmask_gpp,
-+	.irq_mask	= mv64x60_mask_gpp,
-+	.irq_mask_ack	= mv64x60_mask_ack_gpp,
-+	.irq_unmask	= mv64x60_unmask_gpp,
- };
- 
- /*
+ static int qe_ic_host_match(struct irq_host *h, struct device_node *node)
 -- 
 1.7.4
