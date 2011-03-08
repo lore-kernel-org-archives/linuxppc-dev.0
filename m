@@ -1,27 +1,26 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com",
+	(Client CN "e23smtp01.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 54503B6F06
+	by ozlabs.org (Postfix) with ESMTPS id 68048B6EEB
 	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2011 17:37:40 +1100 (EST)
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286W3gp001530
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:32:03 +1100
+	by e23smtp01.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286Xq93024941
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:33:52 +1100
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
 	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p286bdIE1781924
+	p286bd732302038
 	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:39 +1100
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
 	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p286bcl7005158
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:39 +1100
+	p286bcsC005134
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:38 +1100
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/18] powerpc/pmac/smp: Consolidate 32-bit and 64-bit
-	PowerMac cpu_die in one file
-Date: Tue,  8 Mar 2011 17:37:21 +1100
-Message-Id: <1299566250-10516-10-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 06/18] powerpc/pmac/smp: Fix 32-bit PowerMac cpu_die
+Date: Tue,  8 Mar 2011 17:37:18 +1100
+Message-Id: <1299566250-10516-7-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
 References: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,185 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Use generic cpu_state, call idle_task_exit() properly, and
+remove smp_core99_cpu_die() which isn't useful, the generic
+function does the job just fine.
 ---
- arch/powerpc/platforms/powermac/pmac.h  |    1 -
- arch/powerpc/platforms/powermac/setup.c |   56 -----------------------------
- arch/powerpc/platforms/powermac/smp.c   |   58 +++++++++++++++++++++++++++++--
- 3 files changed, 55 insertions(+), 60 deletions(-)
+ arch/powerpc/include/asm/smp.h        |    1 +
+ arch/powerpc/platforms/powermac/smp.c |   25 +++++--------------------
+ 2 files changed, 6 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/platforms/powermac/pmac.h
-index f0bc08f..20468f4 100644
---- a/arch/powerpc/platforms/powermac/pmac.h
-+++ b/arch/powerpc/platforms/powermac/pmac.h
-@@ -33,7 +33,6 @@ extern void pmac_setup_pci_dma(void);
- extern void pmac_check_ht_link(void);
- 
- extern void pmac_setup_smp(void);
--extern void pmac32_cpu_die(void);
- extern void low_cpu_die(void) __attribute__((noreturn));
- 
- extern int pmac_nvram_init(void);
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index d5aceb7..aa45281 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -650,51 +650,6 @@ static int pmac_pci_probe_mode(struct pci_bus *bus)
- 		return PCI_PROBE_NORMAL;
- 	return PCI_PROBE_DEVTREE;
- }
--
--#ifdef CONFIG_HOTPLUG_CPU
--/* access per cpu vars from generic smp.c */
--DECLARE_PER_CPU(int, cpu_state);
--
--static void pmac64_cpu_die(void)
--{
--	/*
--	 * turn off as much as possible, we'll be
--	 * kicked out as this will only be invoked
--	 * on core99 platforms for now ...
--	 */
--
--	printk(KERN_INFO "CPU#%d offline\n", smp_processor_id());
--	__get_cpu_var(cpu_state) = CPU_DEAD;
--	smp_wmb();
--
--	/*
--	 * during the path that leads here preemption is disabled,
--	 * reenable it now so that when coming up preempt count is
--	 * zero correctly
--	 */
--	preempt_enable();
--
--	/*
--	 * hard-disable interrupts for the non-NAP case, the NAP code
--	 * needs to re-enable interrupts (but soft-disables them)
--	 */
--	hard_irq_disable();
--
--	while (1) {
--		/* let's not take timer interrupts too often ... */
--		set_dec(0x7fffffff);
--
--		/* should always be true at this point */
--		if (cpu_has_feature(CPU_FTR_CAN_NAP))
--			power4_cpu_offline_powersave();
--		else {
--			HMT_low();
--			HMT_very_low();
--		}
--	}
--}
--#endif /* CONFIG_HOTPLUG_CPU */
--
- #endif /* CONFIG_PPC64 */
- 
- define_machine(powermac) {
-@@ -726,15 +681,4 @@ define_machine(powermac) {
- 	.pcibios_after_init	= pmac_pcibios_after_init,
- 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index a629b6f..9fe5597 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -45,6 +45,7 @@ extern void fixup_irqs(const struct cpumask *map);
+ int generic_cpu_disable(void);
+ void generic_cpu_die(unsigned int cpu);
+ void generic_mach_cpu_die(void);
++DECLARE_PER_CPU(int, cpu_state);
  #endif
--#ifdef CONFIG_HOTPLUG_CPU
--#ifdef CONFIG_PPC64
--	.cpu_die		= pmac64_cpu_die,
--#endif
--#ifdef CONFIG_PPC32
--	.cpu_die		= pmac32_cpu_die,
--#endif
--#endif
--#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
--	.cpu_die		= generic_mach_cpu_die,
--#endif
- };
+ 
+ #ifdef CONFIG_PPC64
 diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index eda4709..50e15b4 100644
+index ebd2b7e..e0ac7bb 100644
 --- a/arch/powerpc/platforms/powermac/smp.c
 +++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -865,7 +865,7 @@ static void __devinit smp_core99_setup_cpu(int cpu_nr)
- }
- 
- 
--#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
-+#ifdef CONFIG_HOTPLUG_CPU
- 
- static int smp_core99_cpu_disable(void)
- {
-@@ -878,7 +878,9 @@ static int smp_core99_cpu_disable(void)
+@@ -880,31 +880,17 @@ int smp_core99_cpu_disable(void)
  	return 0;
  }
  
--void pmac32_cpu_die(void)
-+#ifdef CONFIG_PPC32
-+
-+static void pmac_cpu_die(void)
+-static int cpu_dead[NR_CPUS];
+-
+ void pmac32_cpu_die(void)
  {
  	local_irq_disable();
- 	idle_task_exit();
-@@ -889,7 +891,52 @@ void pmac32_cpu_die(void)
+-	cpu_dead[smp_processor_id()] = 1;
++	idle_task_exit();
++	printk(KERN_DEBUG "CPU%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) = CPU_DEAD;
++	smp_wmb();
+ 	mb();
  	low_cpu_die();
  }
  
--#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
-+#else /* CONFIG_PPC32 */
-+
-+static void pmac_cpu_die(void)
-+{
-+	local_irq_disable();
-+	idle_task_exit();
-+
-+	/*
-+	 * turn off as much as possible, we'll be
-+	 * kicked out as this will only be invoked
-+	 * on core99 platforms for now ...
-+	 */
-+
-+	printk(KERN_INFO "CPU#%d offline\n", smp_processor_id());
-+	__get_cpu_var(cpu_state) = CPU_DEAD;
-+	smp_wmb();
-+
-+	/*
-+	 * during the path that leads here preemption is disabled,
-+	 * reenable it now so that when coming up preempt count is
-+	 * zero correctly
-+	 */
-+	preempt_enable();
-+
-+	/*
-+	 * hard-disable interrupts for the non-NAP case, the NAP code
-+	 * needs to re-enable interrupts (but soft-disables them)
-+	 */
-+	hard_irq_disable();
-+
-+	while (1) {
-+		/* let's not take timer interrupts too often ... */
-+		set_dec(0x7fffffff);
-+
-+		/* should always be true at this point */
-+		if (cpu_has_feature(CPU_FTR_CAN_NAP))
-+			power4_cpu_offline_powersave();
-+		else {
-+			HMT_low();
-+			HMT_very_low();
-+		}
-+	}
-+}
-+
-+#endif /* else CONFIG_PPC32 */
-+#endif /* CONFIG_HOTPLUG_CPU */
+-void smp_core99_cpu_die(unsigned int cpu)
+-{
+-	int timeout;
+-
+-	timeout = 1000;
+-	while (!cpu_dead[cpu]) {
+-		if (--timeout == 0) {
+-			printk("CPU %u refused to die!\n", cpu);
+-			break;
+-		}
+-		msleep(1);
+-	}
+-	cpu_dead[cpu] = 0;
+-}
+-
+ #endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
  
  /* Core99 Macs (dual G4s and G5s) */
- struct smp_ops_t core99_smp_ops = {
-@@ -933,5 +980,10 @@ void __init pmac_setup_smp(void)
- 		smp_ops = &psurge_smp_ops;
- 	}
- #endif /* CONFIG_PPC32 */
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	ppc_md.cpu_die = pmac_cpu_die;
-+#endif
- }
+@@ -918,12 +904,11 @@ struct smp_ops_t core99_smp_ops = {
+ #if defined(CONFIG_HOTPLUG_CPU)
+ # if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+-	.cpu_die	= smp_core99_cpu_die,
+ # endif
+ # if defined(CONFIG_PPC64)
+ 	.cpu_disable	= generic_cpu_disable,
+-	.cpu_die	= generic_cpu_die,
+ # endif
++	.cpu_die	= generic_cpu_die,
+ #endif
+ };
  
-+
 -- 
 1.7.1
