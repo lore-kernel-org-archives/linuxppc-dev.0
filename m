@@ -1,18 +1,14 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
-	[213.199.154.206])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 033F9B6EF0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 562ECB70EA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 09:14:23 +1100 (EST)
-Date: Tue, 8 Mar 2011 15:56:30 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Wed,  9 Mar 2011 10:14:14 +1100 (EST)
 Subject: Re: RFC: x86: kill binutils 2.16.x?
-Message-ID: <20110308155630.1eb6f67d@schlenkerla>
-In-Reply-To: <1299619716.22236.32.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle Moffett <kyle@moffetthome.net>
+In-Reply-To: <AANLkTikAnb39XhR0hdZAzTKGJ-P1rH+ZxtD+Dea7-364@mail.gmail.com>
 References: <4D6E8932.1010405@zytor.com>
 	<alpine.LFD.2.00.1103022152420.2701@localhost6.localdomain6>
 	<4D6EB07C.5040004@zytor.com>
@@ -20,16 +16,18 @@ References: <4D6E8932.1010405@zytor.com>
 	<4D6ECBDB.6090307@zytor.com> <20110303083035.GB14854@elte.hu>
 	<AANLkTik4aTN8+Ob_GVwF17v6pDNGg2DEZJubBazs2e3L@mail.gmail.com>
 	<1299619716.22236.32.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Kyle Moffett <kyle@moffetthome.net>,
+	<AANLkTikAnb39XhR0hdZAzTKGJ-P1rH+ZxtD+Dea7-364@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Mar 2011 10:13:28 +1100
+Message-ID: <1299626008.22236.47.camel@pasglop>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-kbuild <linux-kbuild@vger.kernel.org>,
 	Kumar Gala <kumar.gala@freescale.com>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Kyle Moffett <Kyle.D.Moffett@boeing.com>, "H. Peter Anvin" <hpa@zytor.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+	Kyle Moffett <Kyle.D.Moffett@boeing.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,43 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 9 Mar 2011 08:28:36 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Tue, 2011-03-08 at 14:57 -0500, Kyle Moffett wrote:
-> > 
-> > Specifically the e500 doesn't have a normal PowerPC FPU, it has a
-> > custom FPU built using extended integer registers instead, and it
-> > happens to borrow the AltiVec opcode range to do it.
-> > 
-> > When trying to port Debian to the platform we were getting SIGILL's
-> > all over the place until binutils got updated to reject all of the
-> > unsupported opcodes on this particular platform.  Now of course we get
-> > build errors, but that's a lot easier to debug and fix. :-D
-> > 
-> > Basically, binutils no longer supports "-many" (because too many
-> > opcodes conflict), and the test itself would fail anyways (because
-> > "dssall" is not valid on "any" PowerPC). 
+On Tue, 2011-03-08 at 16:59 -0500, Kyle Moffett wrote:
 > 
-> Note that this freescale "SPE" fiasco is just that ... a fiasco :-) I
-> don't think there's that many cases of opcode overlap outside of it.
+> The problem is not with the kernel compile itself, but with the 2.12
+> "dssall" binutils test.  Basically, recent binutils treats e500 as
+> effectively a separate architecture that happens to share *most* of
+> the opcodes with regular PowerPC. 
+
+This is bogus. Newer e500 don't have that SPE crap afaik and BookI and
+II of the architecture have been converged. In fact, Scott, don't newer
+FSL chips also support real lwsync ?
+
+>  Any opcode which is not understood
+> by the e500 chip is either convert to an equivalent opcode which is
+> understood (IE: lwsync => sync), or failed with an error.  This means
+> that the kernel compile aborts early telling me to upgrade to a newer
+> version of binutils.
+
+This is more bogosity in binutils. lwsync is designed to fallback as
+sync if not supported in -HW-, binutils shouldn't silently swallow it.
+
+Or is it that FSL failed on the original e500 and make lwsync actually
+trap ?
+
+> This was *critical* for getting an actual Debian distribution
+> bootstrapped on the e500 cores, because so much software assumes
+> PowerPC == altivec (ffmpeg), hardcodes 'asm("lwsync")' for memory
+> barriers (80+ packages in Debian), or includes hand-coded
+> floating-point ASM instructions (libffi).  Noisy build errors are
+> better than silent runtime failures any day of the week.
 > 
-> Now regarding the kernel, the best is probably for nasty cases like that
-> to use hand coded opcodes (see ppc-opcodes.h) and stick to a more
-> "generic" setting for binutils, since it should be possible to build
-> kernels that support multiple types of BookE CPUs with different
-> floating point units.
+> At the very least that test needs to be turned off if
+> CONFIG_ALTIVEC=n, because the kernel builds and runs fine otherwise.
 
-Combined kernels between e500v1/2 and e500mc are currently not supported
-for other reasons (current kconfig doesn't prohibit it, but it doesn't
-work), such as a cache line size difference (a hardcoded L1_CACHE_BYTES is
-used in various places for loops), an inability to enable SPE when e500mc
-is enabled, etc.
+I think the right thing is to keep that as e500-legacy or something,
+because afaik, newer e500's don't have most of these issues and could be
+treated as "normal" powerpc again.
 
-Kumar recently internally said we're not going to bother making it work.
-I'm inclined to agree, given you can't even run the same userspace (unless
-you don't use hard floating point at all).  It's one thing to not want to
-require a separate kernel for each board, but there's a point of
-diminishing returns.
-
--Scott
+Cheers,
+Ben.
