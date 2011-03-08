@@ -2,14 +2,14 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64842B7E3C
+	by ozlabs.org (Postfix) with ESMTPS id 4C333B7E91
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Mar 2011 11:00:22 +1100 (EST)
-Date: Tue, 8 Mar 2011 01:00:18 +0100
+	Tue,  8 Mar 2011 11:00:24 +1100 (EST)
+Date: Tue, 8 Mar 2011 01:00:20 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 26/28] powerpc: sysdev/xilinx_intc irq_data conversion.
-Message-ID: <20110308000018.GE16649@mail.wantstofly.org>
+Subject: [PATCH 27/28] powerpc: core irq_data conversion.
+Message-ID: <20110308000020.GF16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,117 +25,115 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
- arch/powerpc/sysdev/xilinx_intc.c |   48 +++++++++++++++++++-----------------
- 1 files changed, 25 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/irq.c           |   23 ++++++++++++++++-------
+ arch/powerpc/kernel/machine_kexec.c |   21 ++++++++++++---------
+ 2 files changed, 28 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index 1e0ccfa..0512f58 100644
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -69,17 +69,17 @@ static unsigned char xilinx_intc_map_senses[] = {
-  *
-  * IRQ Chip common (across level and edge) operations
-  */
--static void xilinx_intc_mask(unsigned int virq)
-+static void xilinx_intc_mask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void * regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void * regs = get_irq_chip_data(d->irq);
- 	pr_debug("mask: %d\n", irq);
- 	out_be32(regs + XINTC_CIE, 1 << irq);
- }
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index ce557f6..4a9fa84 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -237,6 +237,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 	int i = *(loff_t *) v, j, prec;
+ 	struct irqaction *action;
+ 	struct irq_desc *desc;
++	struct irq_chip *chip;
  
--static int xilinx_intc_set_type(unsigned int virq, unsigned int flow_type)
-+static int xilinx_intc_set_type(struct irq_data *d, unsigned int flow_type)
- {
--	struct irq_desc *desc = irq_to_desc(virq);
-+	struct irq_desc *desc = irq_to_desc(d->irq);
+ 	if (i > nr_irqs)
+ 		return 0;
+@@ -270,8 +271,9 @@ int show_interrupts(struct seq_file *p, void *v)
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
  
- 	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
- 	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
-@@ -91,10 +91,10 @@ static int xilinx_intc_set_type(unsigned int virq, unsigned int flow_type)
- /*
-  * IRQ Chip level operations
-  */
--static void xilinx_intc_level_unmask(unsigned int virq)
-+static void xilinx_intc_level_unmask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void * regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void * regs = get_irq_chip_data(d->irq);
- 	pr_debug("unmask: %d\n", irq);
- 	out_be32(regs + XINTC_SIE, 1 << irq);
+-	if (desc->chip)
+-		seq_printf(p, "  %-16s", desc->chip->name);
++	chip = get_irq_desc_chip(desc);
++	if (chip)
++		seq_printf(p, "  %-16s", chip->name);
+ 	else
+ 		seq_printf(p, "  %-16s", "None");
+ 	seq_printf(p, " %-8s", (desc->status & IRQ_LEVEL) ? "Level" : "Edge");
+@@ -313,6 +315,8 @@ void fixup_irqs(const struct cpumask *map)
+ 	alloc_cpumask_var(&mask, GFP_KERNEL);
  
-@@ -107,37 +107,37 @@ static void xilinx_intc_level_unmask(unsigned int virq)
- 
- static struct irq_chip xilinx_intc_level_irqchip = {
- 	.name = "Xilinx Level INTC",
--	.mask = xilinx_intc_mask,
--	.mask_ack = xilinx_intc_mask,
--	.unmask = xilinx_intc_level_unmask,
--	.set_type = xilinx_intc_set_type,
-+	.irq_mask = xilinx_intc_mask,
-+	.irq_mask_ack = xilinx_intc_mask,
-+	.irq_unmask = xilinx_intc_level_unmask,
-+	.irq_set_type = xilinx_intc_set_type,
- };
- 
- /*
-  * IRQ Chip edge operations
-  */
--static void xilinx_intc_edge_unmask(unsigned int virq)
-+static void xilinx_intc_edge_unmask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void *regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void *regs = get_irq_chip_data(d->irq);
- 	pr_debug("unmask: %d\n", irq);
- 	out_be32(regs + XINTC_SIE, 1 << irq);
- }
- 
--static void xilinx_intc_edge_ack(unsigned int virq)
-+static void xilinx_intc_edge_ack(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void * regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void * regs = get_irq_chip_data(d->irq);
- 	pr_debug("ack: %d\n", irq);
- 	out_be32(regs + XINTC_IAR, 1 << irq);
- }
- 
- static struct irq_chip xilinx_intc_edge_irqchip = {
- 	.name = "Xilinx Edge  INTC",
--	.mask = xilinx_intc_mask,
--	.unmask = xilinx_intc_edge_unmask,
--	.ack = xilinx_intc_edge_ack,
--	.set_type = xilinx_intc_set_type,
-+	.irq_mask = xilinx_intc_mask,
-+	.irq_unmask = xilinx_intc_edge_unmask,
-+	.irq_ack = xilinx_intc_edge_ack,
-+	.irq_set_type = xilinx_intc_set_type,
- };
- 
- /*
-@@ -229,12 +229,14 @@ int xilinx_intc_get_irq(void)
-  */
- static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
- {
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 	unsigned int cascade_irq = i8259_irq();
+ 	for_each_irq(irq) {
++		struct irq_chip *chip;
 +
- 	if (cascade_irq)
- 		generic_handle_irq(cascade_irq);
+ 		desc = irq_to_desc(irq);
+ 		if (!desc)
+ 			continue;
+@@ -320,13 +324,15 @@ void fixup_irqs(const struct cpumask *map)
+ 		if (desc->status & IRQ_PER_CPU)
+ 			continue;
  
- 	/* Let xilinx_intc end the interrupt */
--	desc->chip->unmask(irq);
-+	chip->irq_unmask(&desc->irq_data);
+-		cpumask_and(mask, desc->affinity, map);
++		chip = get_irq_desc_chip(desc);
++
++		cpumask_and(mask, desc->irq_data.affinity, map);
+ 		if (cpumask_any(mask) >= nr_cpu_ids) {
+ 			printk("Breaking affinity for irq %i\n", irq);
+ 			cpumask_copy(mask, map);
+ 		}
+-		if (desc->chip->set_affinity)
+-			desc->chip->set_affinity(irq, mask);
++		if (chip->irq_set_affinity)
++			chip->irq_set_affinity(&desc->irq_data, mask, true);
+ 		else if (desc->action && !(warned++))
+ 			printk("Cannot set affinity for irq %i\n", irq);
+ 	}
+@@ -1159,11 +1165,14 @@ static int virq_debug_show(struct seq_file *m, void *private)
+ 		raw_spin_lock_irqsave(&desc->lock, flags);
+ 
+ 		if (desc->action && desc->action->handler) {
++			struct irq_chip *chip;
++
+ 			seq_printf(m, "%5d  ", i);
+ 			seq_printf(m, "0x%05lx  ", virq_to_hw(i));
+ 
+-			if (desc->chip && desc->chip->name)
+-				p = desc->chip->name;
++			chip = get_irq_desc_chip(desc);
++			if (chip && chip->name)
++				p = chip->name;
+ 			else
+ 				p = none;
+ 			seq_printf(m, "%-15s  ", p);
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index a5f8672..bd1e1ff 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -26,20 +26,23 @@ void machine_kexec_mask_interrupts(void) {
+ 
+ 	for_each_irq(i) {
+ 		struct irq_desc *desc = irq_to_desc(i);
++		struct irq_chip *chip;
+ 
+-		if (!desc || !desc->chip)
++		if (!desc)
+ 			continue;
+ 
+-		if (desc->chip->eoi &&
+-		    desc->status & IRQ_INPROGRESS)
+-			desc->chip->eoi(i);
++		chip = get_irq_desc_chip(desc);
++		if (!chip)
++			continue;
++
++		if (chip->irq_eoi && desc->status & IRQ_INPROGRESS)
++			chip->irq_eoi(&desc->irq_data);
+ 
+-		if (desc->chip->mask)
+-			desc->chip->mask(i);
++		if (chip->irq_mask)
++			chip->irq_mask(&desc->irq_data);
+ 
+-		if (desc->chip->disable &&
+-		    !(desc->status & IRQ_DISABLED))
+-			desc->chip->disable(i);
++		if (chip->irq_disable && !(desc->status & IRQ_DISABLED))
++			chip->irq_disable(&desc->irq_data);
+ 	}
  }
  
- static void __init xilinx_i8259_setup_cascade(void)
 -- 
 1.7.4
