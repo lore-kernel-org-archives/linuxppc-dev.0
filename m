@@ -3,24 +3,24 @@ Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e23smtp03.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C1F9BB6EF7
+	by ozlabs.org (Postfix) with ESMTPS id C4521B6F0B
 	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2011 17:37:39 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286X250021854
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286X2Ww021853
 	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:33:02 +1100
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p286bcWh2191434
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p286bcHP1671324
 	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:38 +1100
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
 	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p286bcj4005128
+	p286bcIo005124
 	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:38 +1100
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/18] powerpc/smp: Remove unused smp_ops->cpu_enable()
-Date: Tue,  8 Mar 2011 17:37:17 +1100
-Message-Id: <1299566250-10516-6-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 04/18] powerpc/smp: Remove unused generic_cpu_enable()
+Date: Tue,  8 Mar 2011 17:37:16 +1100
+Message-Id: <1299566250-10516-5-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
 References: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,66 +32,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the last remnants of cpu_enable(), everybody uses the normal
-__cpu_up() path now
+Nobody uses it, besides we should always use the normal __cpu_up
+path anyways
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/machdep.h    |    1 -
- arch/powerpc/kernel/smp.c             |   10 ----------
- arch/powerpc/platforms/powermac/smp.c |    2 --
- 3 files changed, 0 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/smp.h |    1 -
+ arch/powerpc/kernel/smp.c      |   22 ----------------------
+ 2 files changed, 0 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index fe56a23..bcfc0da 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -37,7 +37,6 @@ struct smp_ops_t {
- 	void  (*setup_cpu)(int nr);
- 	void  (*take_timebase)(void);
- 	void  (*give_timebase)(void);
--	int   (*cpu_enable)(unsigned int nr);
- 	int   (*cpu_disable)(void);
- 	void  (*cpu_die)(unsigned int nr);
- 	int   (*cpu_bootable)(unsigned int nr);
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 1de0e97..a629b6f 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -43,7 +43,6 @@ DECLARE_PER_CPU(unsigned int, cpu_pvr);
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern void fixup_irqs(const struct cpumask *map);
+ int generic_cpu_disable(void);
+-int generic_cpu_enable(unsigned int cpu);
+ void generic_cpu_die(unsigned int cpu);
+ void generic_mach_cpu_die(void);
+ #endif
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 19d0c25..be7d728 100644
+index 3c0fab5..19d0c25 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -350,21 +350,11 @@ void generic_mach_cpu_die(void)
+@@ -322,28 +322,6 @@ int generic_cpu_disable(void)
+ 	return 0;
  }
- #endif
  
--static int __devinit cpu_enable(unsigned int cpu)
+-int generic_cpu_enable(unsigned int cpu)
 -{
--	if (smp_ops && smp_ops->cpu_enable)
--		return smp_ops->cpu_enable(cpu);
+-	/* Do the normal bootup if we haven't
+-	 * already bootstrapped. */
+-	if (system_state != SYSTEM_RUNNING)
+-		return -ENOSYS;
 -
--	return -ENOSYS;
+-	/* get the target out of it's holding state */
+-	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
+-	smp_wmb();
+-
+-	while (!cpu_online(cpu))
+-		cpu_relax();
+-
+-#ifdef CONFIG_PPC64
+-	fixup_irqs(cpu_online_mask);
+-	/* counter the irq disable in fixup_irqs */
+-	local_irq_enable();
+-#endif
+-	return 0;
 -}
 -
- int __cpuinit __cpu_up(unsigned int cpu)
+ void generic_cpu_die(unsigned int cpu)
  {
- 	int c;
- 
- 	secondary_ti = current_set[cpu];
--	if (!cpu_enable(cpu))
--		return 0;
- 
- 	if (smp_ops == NULL ||
- 	    (smp_ops->cpu_bootable && !smp_ops->cpu_bootable(cpu)))
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index c95215f..ebd2b7e 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -923,8 +923,6 @@ struct smp_ops_t core99_smp_ops = {
- # if defined(CONFIG_PPC64)
- 	.cpu_disable	= generic_cpu_disable,
- 	.cpu_die	= generic_cpu_die,
--	/* intentionally do *NOT* assign cpu_enable,
--	 * the generic code will use kick_cpu then! */
- # endif
- #endif
- };
+ 	int i;
 -- 
 1.7.1
