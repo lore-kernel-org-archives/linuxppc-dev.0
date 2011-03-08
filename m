@@ -3,24 +3,25 @@ Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e23smtp04.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2621B6EEB
+	by ozlabs.org (Postfix) with ESMTPS id C2311B6F06
 	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2011 17:37:39 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286W64l023930
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:32:06 +1100
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286W7iL023935
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:32:07 +1100
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p286bcBP2506888
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:38 +1100
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p286bdHk2183326
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:39 +1100
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
 	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p286bcj6005121
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:38 +1100
+	p286bcRT005144
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:39 +1100
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/18] powerpc/smp: Fix generic_mach_cpu_die()
-Date: Tue,  8 Mar 2011 17:37:15 +1100
-Message-Id: <1299566250-10516-4-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 08/18] powerpc/pmac/smp: Fixup smp_core99_cpu_disable() and
+	use it on 64-bit
+Date: Tue,  8 Mar 2011 17:37:20 +1100
+Message-Id: <1299566250-10516-9-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
 References: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,35 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is used by some "soft" hotplug implementations. I needs to
-call idle_task_exit() when the CPU is going away, and we remove
-the now no-longer needed set_cpu_online() and local_irq_enable()
-which are handled by the return to start_secondary
+Use the generic code, just add the MPIC priority setting,
+
+I don't see any use in mucking around with the decrementer,
+as 32-bit will have EE off all along, and 64-bit will be able
+to deal with it.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/smp.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powermac/smp.c |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 1c9956c..3c0fab5 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -362,14 +362,13 @@ void generic_mach_cpu_die(void)
- 	unsigned int cpu;
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index e0ac7bb..eda4709 100644
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -867,16 +867,14 @@ static void __devinit smp_core99_setup_cpu(int cpu_nr)
  
- 	local_irq_disable();
-+	idle_task_exit();
- 	cpu = smp_processor_id();
- 	printk(KERN_DEBUG "CPU%d offline\n", cpu);
- 	__get_cpu_var(cpu_state) = CPU_DEAD;
- 	smp_wmb();
- 	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE)
- 		cpu_relax();
--	set_cpu_online(cpu, true);
--	local_irq_enable();
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
+ 
+-int smp_core99_cpu_disable(void)
++static int smp_core99_cpu_disable(void)
+ {
+-	set_cpu_online(smp_processor_id(), false);
++	int rc = generic_cpu_disable();
++	if (rc)
++		return rc;
+ 
+-	/* XXX reset cpu affinity here */
+ 	mpic_cpu_set_priority(0xf);
+-	asm volatile("mtdec %0" : : "r" (0x7fffffff));
+-	mb();
+-	udelay(20);
+-	asm volatile("mtdec %0" : : "r" (0x7fffffff));
++
+ 	return 0;
  }
- #endif
  
+@@ -902,12 +900,7 @@ struct smp_ops_t core99_smp_ops = {
+ 	.give_timebase	= smp_core99_give_timebase,
+ 	.take_timebase	= smp_core99_take_timebase,
+ #if defined(CONFIG_HOTPLUG_CPU)
+-# if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+-# endif
+-# if defined(CONFIG_PPC64)
+-	.cpu_disable	= generic_cpu_disable,
+-# endif
+ 	.cpu_die	= generic_cpu_die,
+ #endif
+ };
 -- 
 1.7.1
