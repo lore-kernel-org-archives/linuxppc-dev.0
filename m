@@ -1,28 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CE871B71DE
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2011 17:37:42 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp01.au.ibm.com (8.14.4/8.13.1) with ESMTP id p286Xr1Y024950
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:33:53 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p286bdqp2343026
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:39 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p286bdqq005180
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Mar 2011 17:37:39 +1100
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <bounces@nabble.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41676B719D
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2011 15:28:37 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by sam.nabble.com with esmtp (Exim 4.69)
+	(envelope-from <bounces@nabble.com>) id 1PwoXA-0008Eb-MZ
+	for linuxppc-dev@ozlabs.org; Mon, 07 Mar 2011 20:28:32 -0800
+Message-ID: <31094242.post@talk.nabble.com>
+Date: Mon, 7 Mar 2011 20:28:32 -0800 (PST)
+From: Vasanth Ragavendran <ragavendrapec@yahoo.co.in>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 11/18] powerpc/pmac/smp: Properly NAP offlined CPU on G5
-Date: Tue,  8 Mar 2011 17:37:23 +1100
-Message-Id: <1299566250-10516-12-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
-References: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
+Subject: Re: Mpc8315erdb openvpn segmentation fault
+In-Reply-To: <20110307142207.6e879798@schlenkerla>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <31086738.post@talk.nabble.com>
+	<20110307142207.6e879798@schlenkerla>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,114 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current code soft-disables, and then goes to NAP mode which
-turns interrupts on. That means that if an interrupt occurs, we
-will hit the masked interrupt code path which isn't what we want,
-as it will return with EE off, which will either get us out of
-NAP mode, or fail to enter it (according to spec).
 
-Instead, let's just rely on the fact that it is safe to take
-decrementer interrupts on an offline CPU and leave interrupts
-enabled. We can also get rid of the special case in asm for
-power4_cpu_offline_powersave() and just use power4_idle().
+Thanks a ton Scott. Actually i was working with the same version of the
+kernel on both the boards.
+it was 2.6.29.6. neither i changed the u-boot. it was the same in both.
+however i recompiled the kernel and i installed on both the boards and it
+worked fine! :) thanks again for responding. however i've another question.
+my filesystem in the board is non-persistent i.e. the files i create are
+erased after i reboot i know the files are getting stored in RAM and i wish
+to make them persistent. what do i need to do for this? should i create a
+separate partition in the flash and load certain files into that partition?
+or how should i make it persistent so that files stay beyond reboot! thanks
+again! eagerly awaiting your response.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/machdep.h    |    1 -
- arch/powerpc/kernel/head_64.S         |    7 +++++++
- arch/powerpc/kernel/idle_power4.S     |   21 ---------------------
- arch/powerpc/platforms/powermac/smp.c |   14 ++++++++------
- 4 files changed, 15 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index bcfc0da..578d330 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -266,7 +266,6 @@ struct machdep_calls {
- 
- extern void e500_idle(void);
- extern void power4_idle(void);
--extern void power4_cpu_offline_powersave(void);
- extern void ppc6xx_idle(void);
- extern void book3e_idle(void);
- 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 782f23d..271140b 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -536,6 +536,13 @@ _GLOBAL(pmac_secondary_start)
- 	add	r13,r13,r4		/* for this processor.		*/
- 	mtspr	SPRN_SPRG_PACA,r13	/* Save vaddr of paca in an SPRG*/
- 
-+	/* Mark interrupts soft and hard disabled (they might be enabled
-+	 * in the PACA when doing hotplug)
-+	 */
-+	li	r0,0
-+	stb	r0,PACASOFTIRQEN(r13)
-+	stb	r0,PACAHARDIRQEN(r13)
-+
- 	/* Create a temp kernel stack for use before relocation is on.	*/
- 	ld	r1,PACAEMERGSP(r13)
- 	subi	r1,r1,STACK_FRAME_OVERHEAD
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index 5328709..ba31954 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -53,24 +53,3 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	isync
- 	b	1b
- 
--_GLOBAL(power4_cpu_offline_powersave)
--	/* Go to NAP now */
--	mfmsr	r7
--	rldicl	r0,r7,48,1
--	rotldi	r0,r0,16
--	mtmsrd	r0,1			/* hard-disable interrupts */
--	li	r0,1
--	li	r6,0
--	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
--	stb	r6,PACASOFTIRQEN(r13)	/* soft-disable irqs */
--BEGIN_FTR_SECTION
--	DSSALL
--	sync
--END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--	ori	r7,r7,MSR_EE
--	oris	r7,r7,MSR_POW@h
--	sync
--	isync
--	mtmsrd	r7
--	isync
--	blr
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index 53bee66..837989e 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -916,18 +916,20 @@ static void pmac_cpu_die(void)
- 	preempt_enable();
- 
- 	/*
--	 * hard-disable interrupts for the non-NAP case, the NAP code
--	 * needs to re-enable interrupts (but soft-disables them)
-+	 * Re-enable interrupts. The NAP code needs to enable them
-+	 * anyways, do it now so we deal with the case where one already
-+	 * happened while soft-disabled.
-+	 * We shouldn't get any external interrupts, only decrementer, and the
-+	 * decrementer handler is safe for use on offline CPUs
- 	 */
--	hard_irq_disable();
-+	local_irq_enable();
- 
- 	while (1) {
- 		/* let's not take timer interrupts too often ... */
- 		set_dec(0x7fffffff);
- 
--		/* should always be true at this point */
--		if (cpu_has_feature(CPU_FTR_CAN_NAP))
--			power4_cpu_offline_powersave();
-+		/* Enter NAP mode */
-+		power4_idle();
- 	}
- }
- 
+Scott Wood-2 wrote:
+> 
+> On Mon, 7 Mar 2011 03:09:27 -0800
+> Vasanth Ragavendran <ragavendrapec@yahoo.co.in> wrote:
+> 
+>> 
+>> i'm facing a problem. i've installed openvpn on mpc8315erdb board and
+>> when i
+>> give the command
+>> 
+>> openvpn --mktun --dev tap0 i get the error
+>> 
+>>  
+>> 
+>> [root@mpc8315erdb /]# openvpn --mktun --dev tap0
+>> Sat Jan  1 01:04:21 2000 OpenVPNUnable to handle kernel paging request
+>> for
+>> data
+>> at address 0x00000000
+>>  2.0.9 ppc-rpm-lFaulting instruction address: 0xc90a208c
+>> inux-gnu [SSL] [Oops: Kernel access of bad area, sig: 11 [#1]
+>> MPC831x RDB
+>> Modules linked in: tun
+>> **bleep**: c90a208c LR: c90a2068 CTR: c0288e58
+>> REGS: c294fd80 TRAP: 0300   Not tainted  (2.6.29.6)
+>> MSR: 00009032 <EE,ME,IR,DR>  CR: 24002424  XER: 20000000
+>> DAR: 00000000, DSISR: 20000000
+>> TASK = c70b6440[1635] 'openvpn' THREAD: c294e000
+>> GPR00: 00000001 c294fe30 c70b6440 c03ebcf4 bfafa0d4 0000001c c294fe58
+>> 0fd8dc58
+>> GPR08: 00000000 00000001 ffffffe7 00000000 84002428 100787e0 07ff9000
+>> 00000004
+>> GPR16: 00000000 00000000 bfafa930 00010000 00010000 ffffffff 00000005
+>> 3b9aca00
+>> GPR24: c7023d20 c294fe3c bfafa0b8 c653e6e0 00000000 c040baf4 bfafa0b8
+>> 800454ca
+>> Call Trace:
+>> [c294fe30] [c90a2068] 0xc90a2068 (unreliable)
+>> [c294fe90] [c008054c] 0xc008054c
+>> [c294fea0] [c00809c4] 0xc00809c4
+>> [c294ff10] [c0080c9c] 0xc0080c9c
+>> [c294ff40] [c001141c] 0xc001141c
+>> --- Exception: c01 at 0xfce8268
+>>     LR = 0xfd6bdec
+>> Instruction dump:
+>> 4bfffecc 9b81001b 480008ed 3d20c90a 38000001 8129306c 81620308 2f890000
+>> 830201a4 83ab0014 817d0124 419e0014 <800b0000> 7c090010 7c000110 7c0000d0
+>> LZO] [EPOLL] bui---[ end trace 54eee2a93ccf53d1 ]---
+>> lt on Mar  2 2011
+>> Sat Jan  1 01:04:21 2000 IMPORTANT: OpenVPN's default port number is now
+>> 1194, b
+>> ased on an official port number assignment by IANA.  OpenVPN 2.0-beta16
+>> and
+>> earl
+>> ier used 5000 as the default port.
+>> Sat Jan  1 01:04:21 2000 ******* WARNING *******: all encryption and
+>> authenticat
+>> ion features disabled -- all data will be tunnelled as cleartext
+>> Segmentation fault
+>> 
+>>  
+>> 
+>> Some one plz help me out! wat does this mean? Coz with the same kernel
+>> image
+>> and the same settings  i'm able to successfully run the above command on
+>> another mpc8315erdb board. but it fails on one of the board! any ideas
+>> would
+>> be of great help to me!! plz!
+> 
+> Please turn on CONFIG_KALLSYMS, so that symbols will be reported in the
+> crash dump, and let us know which kernel you're using.
+> 
+> Are the other boards where it does not fail running the same kernel?  Same
+> userspace?  Same U-Boot?  Anything else different?
+> 
+> -Scott
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> 
+
 -- 
-1.7.1
+View this message in context: http://old.nabble.com/Mpc8315erdb-openvpn-segmentation-fault-tp31086738p31094242.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
