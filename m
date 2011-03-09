@@ -1,14 +1,21 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 9 Mar 2011 14:38:42 +1100
-From: Anton Blanchard <anton@samba.org>
-To: paulus@samba.org, a.p.zijlstra@chello.nl, mingo@elte.hu,
-	acme@ghostprotocols.net, benh@kernel.crashing.org
-Subject: [PATCH] powerpc: perf: Handle events that raise an exception
-	without overflowing
-Message-ID: <20110309143842.6c22845e@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 39854B70B4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Mar 2011 15:23:05 +1100 (EST)
+Subject: Re: [PATCH 01/28] powerpc: mpic irq_data conversion.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+In-Reply-To: <20110307235902.GF16649@mail.wantstofly.org>
+References: <cover.1299541392.git.buytenh@wantstofly.org>
+	<20110307235902.GF16649@mail.wantstofly.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Mar 2011 14:22:55 +1100
+Message-ID: <1299640975.22236.263.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,71 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2011-03-08 at 00:59 +0100, Lennert Buytenhek wrote:
 
-Events on POWER7 can roll back if a speculative event doesn't
-eventually complete. Unfortunately in some rare cases they will
-raise a performance monitor exception. We need to catch this to
-ensure we reset the PMC. In all cases the PMC will be 256 or less
-cycles from overflow.
+> -static void mpic_unmask_ht_irq(unsigned int irq)
+> +static void mpic_unmask_ht_irq(struct irq_data *d)
+>  {
+> -	struct mpic *mpic = mpic_from_irq(irq);
+> -	unsigned int src = mpic_irq_to_hw(irq);
+> +	struct mpic *mpic = mpic_from_irq(d->irq);
+> +	unsigned int src = mpic_irq_to_hw(d->irq);
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@kernel.org
----
+It's a bit sad to have a pointerm turn it back to a irq number, look it
+up just to get back the chip data in there :-)
 
-I would prefer not to add the PVR check, but I think we want to limit
-this workaround to POWER7. Would a cpu feature be preferable?
-
-Index: linux-2.6/arch/powerpc/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/perf_event.c	2011-03-08 20:11:38.029800971 +1100
-+++ linux-2.6/arch/powerpc/kernel/perf_event.c	2011-03-09 14:19:18.756143799 +1100
-@@ -1269,6 +1269,28 @@ unsigned long perf_instruction_pointer(s
- 	return ip;
- }
+Either we should create an mpic_from_irqdata() which itself uses
+irq_data_get_irq_chip_data() or just change mpic_from_irq() if we decide
+we can always call it with "data" instead of "irq"
  
-+static bool pmc_overflow(unsigned long val)
-+{
-+	if ((int)val < 0)
-+		return true;
-+
-+	/*
-+	 * Events on POWER7 can roll back if a speculative event doesn't
-+	 * eventually complete. Unfortunately in some rare cases they will
-+	 * raise a performance monitor exception. We need to catch this to
-+	 * ensure we reset the PMC. In all cases the PMC will be 256 or less
-+	 * cycles from overflow.
-+	 *
-+	 * We only do this if the first pass fails to find any overflowing
-+	 * PMCs because a user might set a period of less than 256 and we
-+	 * don't want to mistakenly reset them.
-+	 */
-+	if (__is_processor(PV_POWER7) && ((0x80000000 - val) <= 256))
-+		return true;
-+
-+	return false;
-+}
-+
- /*
-  * Performance monitor interrupt stuff
-  */
-@@ -1316,7 +1338,7 @@ static void perf_event_interrupt(struct
- 			if (is_limited_pmc(i + 1))
- 				continue;
- 			val = read_pmc(i + 1);
--			if ((int)val < 0)
-+			if (pmc_overflow(val))
- 				write_pmc(i + 1, 0);
- 		}
- 	}
-Index: linux-2.6/arch/powerpc/include/asm/reg.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/reg.h	2011-03-08 20:11:38.019800609 +1100
-+++ linux-2.6/arch/powerpc/include/asm/reg.h	2011-03-09 14:13:56.674461835 +1100
-@@ -880,6 +880,7 @@
- #define PV_970		0x0039
- #define PV_POWER5	0x003A
- #define PV_POWER5p	0x003B
-+#define PV_POWER7	0x003F
- #define PV_970FX	0x003C
- #define PV_630		0x0040
- #define PV_630p	0x0041
+> -	mpic_unmask_irq(irq);
+> +	mpic_unmask_irq(d);
+>  
+> -	if (irq_to_desc(irq)->status & IRQ_LEVEL)
+> +	if (irq_to_desc(d->irq)->status & IRQ_LEVEL)
+>  		mpic_ht_end_irq(mpic, src);
+>  }
+
+Do we really need that gymnastic to get to desc->status from irq_data ?
+
+Again, we're going back to a number and then looking it up again... bad.
+
+I don't see off hand a data -> desc accessor, but it also looks like it
+should be trivial to add. Thomas, what do you reckon ?
+
+> -static unsigned int mpic_startup_ht_irq(unsigned int irq)
+> +static unsigned int mpic_startup_ht_irq(struct irq_data *d)
+>  {
+> -	struct mpic *mpic = mpic_from_irq(irq);
+> -	unsigned int src = mpic_irq_to_hw(irq);
+> +	struct mpic *mpic = mpic_from_irq(d->irq);
+> +	unsigned int src = mpic_irq_to_hw(d->irq);
+>  
+> -	mpic_unmask_irq(irq);
+> -	mpic_startup_ht_interrupt(mpic, src, irq_to_desc(irq)->status);
+> +	mpic_unmask_irq(d);
+> +	mpic_startup_ht_interrupt(mpic, src, irq_to_desc(d->irq)->status);
+>  
+>  	return 0;
+>  }
+
+Similar.
+
+Cheers,
+Ben.
