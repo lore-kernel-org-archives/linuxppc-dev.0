@@ -1,24 +1,18 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from cc-smtpout2.netcologne.de (cc-smtpout2.netcologne.de
-	[89.1.8.212]) by ozlabs.org (Postfix) with ESMTP id 00B53B6F86
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Mar 2011 07:46:04 +1100 (EST)
-Received: from cc-smtpin1.netcologne.de (cc-smtpin1.netcologne.de [89.1.8.201])
-	by cc-smtpout2.netcologne.de (Postfix) with ESMTP id 123EA12820
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2011 21:46:01 +0100 (CET)
-Received: from antares (xdsl-89-0-94-220.netcologne.de [89.0.94.220])
-	by cc-smtpin1.netcologne.de (Postfix) with ESMTPSA id 08B3B11E89
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2011 21:46:00 +0100 (CET)
-Received: from antares (antares [127.0.0.1])
-	by antares (Postfix) with ESMTPS id D87CCBA032
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2011 21:45:59 +0100 (CET)
-Date: Wed, 09 Mar 2011 21:45:51 +0100
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: [5200B/slightly ot] MPC52xx LPB FIFO memory requirements
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Message-Id: <1299703559.1817.3@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-JLOKofaZ1Ed9C+gUcK9R"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 32462B6F8B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Mar 2011 10:00:33 +1100 (EST)
+Subject: [PATCH] powerpc/pseries: Disable VPNH feature
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 10 Mar 2011 10:00:14 +1100
+Message-ID: <1299711614.22236.392.camel@pasglop>
+Mime-Version: 1.0
+Cc: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-JLOKofaZ1Ed9C+gUcK9R
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This feature triggers nasty races in the scheduler between the
+rebuilding of the topology and the load balancing code, causing
+the machine to hang.
 
-Hi all,
+Disable it for now until the races are fixed.
 
-I have a slightly off-topic question regarding the use of mpc52xx_lpbfifo_s=
-ubmit() & friends...
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-In struct mpc52xx_lpbfifo_request, the element 'data' (with address 'data_p=
-hys') is apparently the chunk of data which is transferred through bestcomm=
-, right?  Dumb question: has this chunk of memory to be DMA mem (i.e. alloc=
-ated via dma_alloc_coherent), or is "normal" kernel memory (kmalloc) suffic=
-ient?
+Jesse: I'm sending that to Linus now. We'll sort things out for the
+next release.
 
-Thanks,
-Albrecht.
-
---=-JLOKofaZ1Ed9C+gUcK9R
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.14 (GNU/Linux)
-
-iD8DBQBNd+cHn/9unNAn/9ERAkLRAJ94YosA2jVOHoO1DQu336gUeatOGgCeOZLD
-HUeiiRxQkvySH9ZaUEF6EfA=
-=PLRD
------END PGP SIGNATURE-----
-
---=-JLOKofaZ1Ed9C+gUcK9R--
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index fd48123..74f1baa 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1516,6 +1516,7 @@ int start_topology_update(void)
+ {
+ 	int rc = 0;
+ 
++#if 0 /* Disabled until races with load balancing are fixed */
+ 	if (firmware_has_feature(FW_FEATURE_VPHN) &&
+ 	    get_lppaca()->shared_proc) {
+ 		vphn_enabled = 1;
+@@ -1524,6 +1525,7 @@ int start_topology_update(void)
+ 		set_topology_timer();
+ 		rc = 1;
+ 	}
++#endif
+ 
+ 	return rc;
+ }
