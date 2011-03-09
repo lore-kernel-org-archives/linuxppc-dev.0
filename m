@@ -2,19 +2,19 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 674481007DF
+	by ozlabs.org (Postfix) with ESMTPS id EFDE4100A63
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 19:26:51 +1100 (EST)
-Date: Wed, 9 Mar 2011 09:26:47 +0100
+	Wed,  9 Mar 2011 19:26:54 +1100 (EST)
+Date: Wed, 9 Mar 2011 09:26:50 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 03/28] powerpc: platforms/52xx irq_data conversion.
-Message-ID: <20110309082647.GN16649@mail.wantstofly.org>
+Subject: [PATCH v2 04/28] powerpc: platforms/82xx irq_data conversion.
+Message-ID: <20110309082650.GO16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
-	<20110307235914.GH16649@mail.wantstofly.org>
+	<20110307235917.GI16649@mail.wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110307235914.GH16649@mail.wantstofly.org>
+In-Reply-To: <20110307235917.GI16649@mail.wantstofly.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,375 +29,66 @@ Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
 v2: get_irq_chip_data(d->irq) => irq_data_get_irq_chip_data(d)
 
- arch/powerpc/platforms/52xx/media5200.c   |   21 ++++----
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c |   26 +++++-----
- arch/powerpc/platforms/52xx/mpc52xx_pic.c |   80 ++++++++++++++--------------
- 3 files changed, 64 insertions(+), 63 deletions(-)
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |   27 ++++++++++++-------------
+ 1 files changed, 13 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
-index 2c7780c..2bd1e6c 100644
---- a/arch/powerpc/platforms/52xx/media5200.c
-+++ b/arch/powerpc/platforms/52xx/media5200.c
-@@ -49,45 +49,46 @@ struct media5200_irq {
- };
- struct media5200_irq media5200_irq;
+diff --git a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+index 5a55d87..926dfda 100644
+--- a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
++++ b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+@@ -39,10 +39,10 @@ struct pq2ads_pci_pic {
  
--static void media5200_irq_unmask(unsigned int virq)
-+static void media5200_irq_unmask(struct irq_data *d)
+ #define NUM_IRQS 32
+ 
+-static void pq2ads_pci_mask_irq(unsigned int virq)
++static void pq2ads_pci_mask_irq(struct irq_data *d)
  {
- 	unsigned long flags;
- 	u32 val;
+-	struct pq2ads_pci_pic *priv = get_irq_chip_data(virq);
+-	int irq = NUM_IRQS - virq_to_hw(virq) - 1;
++	struct pq2ads_pci_pic *priv = irq_data_get_irq_chip_data(d);
++	int irq = NUM_IRQS - virq_to_hw(d->irq) - 1;
  
- 	spin_lock_irqsave(&media5200_irq.lock, flags);
- 	val = in_be32(media5200_irq.regs + MEDIA5200_IRQ_ENABLE);
--	val |= 1 << (MEDIA5200_IRQ_SHIFT + irq_map[virq].hwirq);
-+	val |= 1 << (MEDIA5200_IRQ_SHIFT + irq_map[d->irq].hwirq);
- 	out_be32(media5200_irq.regs + MEDIA5200_IRQ_ENABLE, val);
- 	spin_unlock_irqrestore(&media5200_irq.lock, flags);
+ 	if (irq != -1) {
+ 		unsigned long flags;
+@@ -55,10 +55,10 @@ static void pq2ads_pci_mask_irq(unsigned int virq)
+ 	}
  }
  
--static void media5200_irq_mask(unsigned int virq)
-+static void media5200_irq_mask(struct irq_data *d)
+-static void pq2ads_pci_unmask_irq(unsigned int virq)
++static void pq2ads_pci_unmask_irq(struct irq_data *d)
  {
- 	unsigned long flags;
- 	u32 val;
+-	struct pq2ads_pci_pic *priv = get_irq_chip_data(virq);
+-	int irq = NUM_IRQS - virq_to_hw(virq) - 1;
++	struct pq2ads_pci_pic *priv = irq_data_get_irq_chip_data(d);
++	int irq = NUM_IRQS - virq_to_hw(d->irq) - 1;
  
- 	spin_lock_irqsave(&media5200_irq.lock, flags);
- 	val = in_be32(media5200_irq.regs + MEDIA5200_IRQ_ENABLE);
--	val &= ~(1 << (MEDIA5200_IRQ_SHIFT + irq_map[virq].hwirq));
-+	val &= ~(1 << (MEDIA5200_IRQ_SHIFT + irq_map[d->irq].hwirq));
- 	out_be32(media5200_irq.regs + MEDIA5200_IRQ_ENABLE, val);
- 	spin_unlock_irqrestore(&media5200_irq.lock, flags);
- }
+ 	if (irq != -1) {
+ 		unsigned long flags;
+@@ -71,18 +71,17 @@ static void pq2ads_pci_unmask_irq(unsigned int virq)
  
- static struct irq_chip media5200_irq_chip = {
- 	.name = "Media5200 FPGA",
--	.unmask = media5200_irq_unmask,
--	.mask = media5200_irq_mask,
--	.mask_ack = media5200_irq_mask,
-+	.irq_unmask = media5200_irq_unmask,
-+	.irq_mask = media5200_irq_mask,
-+	.irq_mask_ack = media5200_irq_mask,
- };
- 
- void media5200_irq_cascade(unsigned int virq, struct irq_desc *desc)
- {
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 	int sub_virq, val;
- 	u32 status, enable;
- 
- 	/* Mask off the cascaded IRQ */
- 	raw_spin_lock(&desc->lock);
--	desc->chip->mask(virq);
-+	chip->irq_mask(&desc->irq_data);
- 	raw_spin_unlock(&desc->lock);
- 
- 	/* Ask the FPGA for IRQ status.  If 'val' is 0, then no irqs
-@@ -105,9 +106,9 @@ void media5200_irq_cascade(unsigned int virq, struct irq_desc *desc)
- 
- 	/* Processing done; can reenable the cascade now */
- 	raw_spin_lock(&desc->lock);
--	desc->chip->ack(virq);
-+	chip->irq_ack(&desc->irq_data);
- 	if (!(desc->status & IRQ_DISABLED))
--		desc->chip->unmask(virq);
-+		chip->irq_unmask(&desc->irq_data);
- 	raw_spin_unlock(&desc->lock);
- }
- 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index e0d703c..c9290d8 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -135,9 +135,9 @@ DEFINE_MUTEX(mpc52xx_gpt_list_mutex);
-  * Cascaded interrupt controller hooks
-  */
- 
--static void mpc52xx_gpt_irq_unmask(unsigned int virq)
-+static void mpc52xx_gpt_irq_unmask(struct irq_data *d)
- {
--	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
-+	struct mpc52xx_gpt_priv *gpt = irq_data_get_irq_chip_data(d);
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpt->lock, flags);
-@@ -145,9 +145,9 @@ static void mpc52xx_gpt_irq_unmask(unsigned int virq)
- 	spin_unlock_irqrestore(&gpt->lock, flags);
- }
- 
--static void mpc52xx_gpt_irq_mask(unsigned int virq)
-+static void mpc52xx_gpt_irq_mask(struct irq_data *d)
- {
--	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
-+	struct mpc52xx_gpt_priv *gpt = irq_data_get_irq_chip_data(d);
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpt->lock, flags);
-@@ -155,20 +155,20 @@ static void mpc52xx_gpt_irq_mask(unsigned int virq)
- 	spin_unlock_irqrestore(&gpt->lock, flags);
- }
- 
--static void mpc52xx_gpt_irq_ack(unsigned int virq)
-+static void mpc52xx_gpt_irq_ack(struct irq_data *d)
- {
--	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
-+	struct mpc52xx_gpt_priv *gpt = irq_data_get_irq_chip_data(d);
- 
- 	out_be32(&gpt->regs->status, MPC52xx_GPT_STATUS_IRQMASK);
- }
- 
--static int mpc52xx_gpt_irq_set_type(unsigned int virq, unsigned int flow_type)
-+static int mpc52xx_gpt_irq_set_type(struct irq_data *d, unsigned int flow_type)
- {
--	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
-+	struct mpc52xx_gpt_priv *gpt = irq_data_get_irq_chip_data(d);
- 	unsigned long flags;
- 	u32 reg;
- 
--	dev_dbg(gpt->dev, "%s: virq=%i type=%x\n", __func__, virq, flow_type);
-+	dev_dbg(gpt->dev, "%s: virq=%i type=%x\n", __func__, d->irq, flow_type);
- 
- 	spin_lock_irqsave(&gpt->lock, flags);
- 	reg = in_be32(&gpt->regs->mode) & ~MPC52xx_GPT_MODE_ICT_MASK;
-@@ -184,10 +184,10 @@ static int mpc52xx_gpt_irq_set_type(unsigned int virq, unsigned int flow_type)
- 
- static struct irq_chip mpc52xx_gpt_irq_chip = {
- 	.name = "MPC52xx GPT",
--	.unmask = mpc52xx_gpt_irq_unmask,
--	.mask = mpc52xx_gpt_irq_mask,
--	.ack = mpc52xx_gpt_irq_ack,
--	.set_type = mpc52xx_gpt_irq_set_type,
-+	.irq_unmask = mpc52xx_gpt_irq_unmask,
-+	.irq_mask = mpc52xx_gpt_irq_mask,
-+	.irq_ack = mpc52xx_gpt_irq_ack,
-+	.irq_set_type = mpc52xx_gpt_irq_set_type,
+ static struct irq_chip pq2ads_pci_ic = {
+ 	.name = "PQ2 ADS PCI",
+-	.end = pq2ads_pci_unmask_irq,
+-	.mask = pq2ads_pci_mask_irq,
+-	.mask_ack = pq2ads_pci_mask_irq,
+-	.ack = pq2ads_pci_mask_irq,
+-	.unmask = pq2ads_pci_unmask_irq,
+-	.enable = pq2ads_pci_unmask_irq,
+-	.disable = pq2ads_pci_mask_irq
++	.irq_mask = pq2ads_pci_mask_irq,
++	.irq_mask_ack = pq2ads_pci_mask_irq,
++	.irq_ack = pq2ads_pci_mask_irq,
++	.irq_unmask = pq2ads_pci_unmask_irq,
++	.irq_enable = pq2ads_pci_unmask_irq,
++	.irq_disable = pq2ads_pci_mask_irq
  };
  
- void mpc52xx_gpt_irq_cascade(unsigned int virq, struct irq_desc *desc)
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-index 4bf4bf7..9f3ed58 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-@@ -155,47 +155,47 @@ static inline void io_be_clrbit(u32 __iomem *addr, int bitno)
- /*
-  * IRQ[0-3] interrupt irq_chip
-  */
--static void mpc52xx_extirq_mask(unsigned int virq)
-+static void mpc52xx_extirq_mask(struct irq_data *d)
+ static void pq2ads_pci_irq_demux(unsigned int irq, struct irq_desc *desc)
  {
- 	int irq;
- 	int l2irq;
+-	struct pq2ads_pci_pic *priv = desc->handler_data;
++	struct pq2ads_pci_pic *priv = get_irq_desc_data(desc);
+ 	u32 stat, mask, pend;
+ 	int bit;
  
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_clrbit(&intr->ctrl, 11 - l2irq);
- }
- 
--static void mpc52xx_extirq_unmask(unsigned int virq)
-+static void mpc52xx_extirq_unmask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_setbit(&intr->ctrl, 11 - l2irq);
- }
- 
--static void mpc52xx_extirq_ack(unsigned int virq)
-+static void mpc52xx_extirq_ack(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_setbit(&intr->ctrl, 27-l2irq);
- }
- 
--static int mpc52xx_extirq_set_type(unsigned int virq, unsigned int flow_type)
-+static int mpc52xx_extirq_set_type(struct irq_data *d, unsigned int flow_type)
- {
- 	u32 ctrl_reg, type;
- 	int irq;
- 	int l2irq;
- 	void *handler = handle_level_irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	pr_debug("%s: irq=%x. l2=%d flow_type=%d\n", __func__, irq, l2irq, flow_type);
-@@ -214,44 +214,44 @@ static int mpc52xx_extirq_set_type(unsigned int virq, unsigned int flow_type)
- 	ctrl_reg |= (type << (22 - (l2irq * 2)));
- 	out_be32(&intr->ctrl, ctrl_reg);
- 
--	__set_irq_handler_unlocked(virq, handler);
-+	__set_irq_handler_unlocked(d->irq, handler);
- 
- 	return 0;
- }
- 
- static struct irq_chip mpc52xx_extirq_irqchip = {
- 	.name = "MPC52xx External",
--	.mask = mpc52xx_extirq_mask,
--	.unmask = mpc52xx_extirq_unmask,
--	.ack = mpc52xx_extirq_ack,
--	.set_type = mpc52xx_extirq_set_type,
-+	.irq_mask = mpc52xx_extirq_mask,
-+	.irq_unmask = mpc52xx_extirq_unmask,
-+	.irq_ack = mpc52xx_extirq_ack,
-+	.irq_set_type = mpc52xx_extirq_set_type,
- };
- 
- /*
-  * Main interrupt irq_chip
-  */
--static int mpc52xx_null_set_type(unsigned int virq, unsigned int flow_type)
-+static int mpc52xx_null_set_type(struct irq_data *d, unsigned int flow_type)
- {
- 	return 0; /* Do nothing so that the sense mask will get updated */
- }
- 
--static void mpc52xx_main_mask(unsigned int virq)
-+static void mpc52xx_main_mask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_setbit(&intr->main_mask, 16 - l2irq);
- }
- 
--static void mpc52xx_main_unmask(unsigned int virq)
-+static void mpc52xx_main_unmask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_clrbit(&intr->main_mask, 16 - l2irq);
-@@ -259,32 +259,32 @@ static void mpc52xx_main_unmask(unsigned int virq)
- 
- static struct irq_chip mpc52xx_main_irqchip = {
- 	.name = "MPC52xx Main",
--	.mask = mpc52xx_main_mask,
--	.mask_ack = mpc52xx_main_mask,
--	.unmask = mpc52xx_main_unmask,
--	.set_type = mpc52xx_null_set_type,
-+	.irq_mask = mpc52xx_main_mask,
-+	.irq_mask_ack = mpc52xx_main_mask,
-+	.irq_unmask = mpc52xx_main_unmask,
-+	.irq_set_type = mpc52xx_null_set_type,
- };
- 
- /*
-  * Peripherals interrupt irq_chip
-  */
--static void mpc52xx_periph_mask(unsigned int virq)
-+static void mpc52xx_periph_mask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_setbit(&intr->per_mask, 31 - l2irq);
- }
- 
--static void mpc52xx_periph_unmask(unsigned int virq)
-+static void mpc52xx_periph_unmask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_clrbit(&intr->per_mask, 31 - l2irq);
-@@ -292,43 +292,43 @@ static void mpc52xx_periph_unmask(unsigned int virq)
- 
- static struct irq_chip mpc52xx_periph_irqchip = {
- 	.name = "MPC52xx Peripherals",
--	.mask = mpc52xx_periph_mask,
--	.mask_ack = mpc52xx_periph_mask,
--	.unmask = mpc52xx_periph_unmask,
--	.set_type = mpc52xx_null_set_type,
-+	.irq_mask = mpc52xx_periph_mask,
-+	.irq_mask_ack = mpc52xx_periph_mask,
-+	.irq_unmask = mpc52xx_periph_unmask,
-+	.irq_set_type = mpc52xx_null_set_type,
- };
- 
- /*
-  * SDMA interrupt irq_chip
-  */
--static void mpc52xx_sdma_mask(unsigned int virq)
-+static void mpc52xx_sdma_mask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_setbit(&sdma->IntMask, l2irq);
- }
- 
--static void mpc52xx_sdma_unmask(unsigned int virq)
-+static void mpc52xx_sdma_unmask(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	io_be_clrbit(&sdma->IntMask, l2irq);
- }
- 
--static void mpc52xx_sdma_ack(unsigned int virq)
-+static void mpc52xx_sdma_ack(struct irq_data *d)
- {
- 	int irq;
- 	int l2irq;
- 
--	irq = irq_map[virq].hwirq;
-+	irq = irq_map[d->irq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	out_be32(&sdma->IntPend, 1 << l2irq);
-@@ -336,10 +336,10 @@ static void mpc52xx_sdma_ack(unsigned int virq)
- 
- static struct irq_chip mpc52xx_sdma_irqchip = {
- 	.name = "MPC52xx SDMA",
--	.mask = mpc52xx_sdma_mask,
--	.unmask = mpc52xx_sdma_unmask,
--	.ack = mpc52xx_sdma_ack,
--	.set_type = mpc52xx_null_set_type,
-+	.irq_mask = mpc52xx_sdma_mask,
-+	.irq_unmask = mpc52xx_sdma_unmask,
-+	.irq_ack = mpc52xx_sdma_ack,
-+	.irq_set_type = mpc52xx_null_set_type,
- };
- 
- /**
 -- 
 1.7.4
