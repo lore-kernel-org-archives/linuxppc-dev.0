@@ -2,19 +2,19 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 12D991007FF
+	by ozlabs.org (Postfix) with ESMTPS id 11DB010088A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 19:27:02 +1100 (EST)
-Date: Wed, 9 Mar 2011 09:26:58 +0100
+	Wed,  9 Mar 2011 19:27:01 +1100 (EST)
+Date: Wed, 9 Mar 2011 09:26:56 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 21/28] powerpc: sysdev/mpc8xxx_gpio irq_data conversion.
-Message-ID: <20110309082658.GR16649@mail.wantstofly.org>
+Subject: [PATCH v2 13/28] powerpc: platforms/ps3 irq_data conversion.
+Message-ID: <20110309082656.GQ16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
-	<20110308000004.GZ16649@mail.wantstofly.org>
+	<20110307235942.GR16649@mail.wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110308000004.GZ16649@mail.wantstofly.org>
+In-Reply-To: <20110307235942.GR16649@mail.wantstofly.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,123 +29,135 @@ Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
 v2: get_irq_chip_data(d->irq) => irq_data_get_irq_chip_data(d)
 
- arch/powerpc/sysdev/mpc8xxx_gpio.c |   42 ++++++++++++++++++------------------
- 1 files changed, 21 insertions(+), 21 deletions(-)
+ arch/powerpc/platforms/ps3/interrupt.c |   40 ++++++++++++++++----------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpc8xxx_gpio.c b/arch/powerpc/sysdev/mpc8xxx_gpio.c
-index c48cd81..11fb518 100644
---- a/arch/powerpc/sysdev/mpc8xxx_gpio.c
-+++ b/arch/powerpc/sysdev/mpc8xxx_gpio.c
-@@ -155,43 +155,43 @@ static void mpc8xxx_gpio_irq_cascade(unsigned int irq, struct irq_desc *desc)
- 						     32 - ffs(mask)));
- }
+diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
+index 92290ff..3988c86 100644
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -99,16 +99,16 @@ static DEFINE_PER_CPU(struct ps3_private, ps3_private);
+  * Sets ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
+  */
  
--static void mpc8xxx_irq_unmask(unsigned int virq)
-+static void mpc8xxx_irq_unmask(struct irq_data *d)
+-static void ps3_chip_mask(unsigned int virq)
++static void ps3_chip_mask(struct irq_data *d)
  {
--	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
-+	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
- 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+-	struct ps3_private *pd = get_irq_chip_data(virq);
++	struct ps3_private *pd = irq_data_get_irq_chip_data(d);
  	unsigned long flags;
  
- 	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ 	pr_debug("%s:%d: thread_id %llu, virq %d\n", __func__, __LINE__,
+-		pd->thread_id, virq);
++		pd->thread_id, d->irq);
  
--	setbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(virq)));
-+	setbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
- 
- 	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+ 	local_irq_save(flags);
+-	clear_bit(63 - virq, &pd->bmp.mask);
++	clear_bit(63 - d->irq, &pd->bmp.mask);
+ 	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
+ 	local_irq_restore(flags);
  }
+@@ -120,16 +120,16 @@ static void ps3_chip_mask(unsigned int virq)
+  * Clears ps3_bmp.mask and calls lv1_did_update_interrupt_mask().
+  */
  
--static void mpc8xxx_irq_mask(unsigned int virq)
-+static void mpc8xxx_irq_mask(struct irq_data *d)
+-static void ps3_chip_unmask(unsigned int virq)
++static void ps3_chip_unmask(struct irq_data *d)
  {
--	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
-+	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
- 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+-	struct ps3_private *pd = get_irq_chip_data(virq);
++	struct ps3_private *pd = irq_data_get_irq_chip_data(d);
  	unsigned long flags;
  
- 	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ 	pr_debug("%s:%d: thread_id %llu, virq %d\n", __func__, __LINE__,
+-		pd->thread_id, virq);
++		pd->thread_id, d->irq);
  
--	clrbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(virq)));
-+	clrbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
+ 	local_irq_save(flags);
+-	set_bit(63 - virq, &pd->bmp.mask);
++	set_bit(63 - d->irq, &pd->bmp.mask);
+ 	lv1_did_update_interrupt_mask(pd->ppe_id, pd->thread_id);
+ 	local_irq_restore(flags);
+ }
+@@ -141,10 +141,10 @@ static void ps3_chip_unmask(unsigned int virq)
+  * Calls lv1_end_of_interrupt_ext().
+  */
  
- 	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+-static void ps3_chip_eoi(unsigned int virq)
++static void ps3_chip_eoi(struct irq_data *d)
+ {
+-	const struct ps3_private *pd = get_irq_chip_data(virq);
+-	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, virq);
++	const struct ps3_private *pd = irq_data_get_irq_chip_data(d);
++	lv1_end_of_interrupt_ext(pd->ppe_id, pd->thread_id, d->irq);
  }
  
--static void mpc8xxx_irq_ack(unsigned int virq)
-+static void mpc8xxx_irq_ack(struct irq_data *d)
- {
--	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
-+	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
- 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+ /**
+@@ -153,9 +153,9 @@ static void ps3_chip_eoi(unsigned int virq)
  
--	out_be32(mm->regs + GPIO_IER, mpc8xxx_gpio2mask(virq_to_hw(virq)));
-+	out_be32(mm->regs + GPIO_IER, mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
- }
- 
--static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
-+static int mpc8xxx_irq_set_type(struct irq_data *d, unsigned int flow_type)
- {
--	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
-+	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
- 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
- 	unsigned long flags;
- 
-@@ -199,14 +199,14 @@ static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
- 	case IRQ_TYPE_EDGE_FALLING:
- 		spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
- 		setbits32(mm->regs + GPIO_ICR,
--			  mpc8xxx_gpio2mask(virq_to_hw(virq)));
-+			  mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
- 		spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
- 		break;
- 
- 	case IRQ_TYPE_EDGE_BOTH:
- 		spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
- 		clrbits32(mm->regs + GPIO_ICR,
--			  mpc8xxx_gpio2mask(virq_to_hw(virq)));
-+			  mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
- 		spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
- 		break;
- 
-@@ -217,11 +217,11 @@ static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
- 	return 0;
- }
- 
--static int mpc512x_irq_set_type(unsigned int virq, unsigned int flow_type)
-+static int mpc512x_irq_set_type(struct irq_data *d, unsigned int flow_type)
- {
--	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
-+	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
- 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
--	unsigned long gpio = virq_to_hw(virq);
-+	unsigned long gpio = virq_to_hw(d->irq);
- 	void __iomem *reg;
- 	unsigned int shift;
- 	unsigned long flags;
-@@ -264,10 +264,10 @@ static int mpc512x_irq_set_type(unsigned int virq, unsigned int flow_type)
- 
- static struct irq_chip mpc8xxx_irq_chip = {
- 	.name		= "mpc8xxx-gpio",
--	.unmask		= mpc8xxx_irq_unmask,
--	.mask		= mpc8xxx_irq_mask,
--	.ack		= mpc8xxx_irq_ack,
--	.set_type	= mpc8xxx_irq_set_type,
-+	.irq_unmask	= mpc8xxx_irq_unmask,
-+	.irq_mask	= mpc8xxx_irq_mask,
-+	.irq_ack	= mpc8xxx_irq_ack,
-+	.irq_set_type	= mpc8xxx_irq_set_type,
+ static struct irq_chip ps3_irq_chip = {
+ 	.name = "ps3",
+-	.mask = ps3_chip_mask,
+-	.unmask = ps3_chip_unmask,
+-	.eoi = ps3_chip_eoi,
++	.irq_mask = ps3_chip_mask,
++	.irq_unmask = ps3_chip_unmask,
++	.irq_eoi = ps3_chip_eoi,
  };
  
- static int mpc8xxx_gpio_irq_map(struct irq_host *h, unsigned int virq,
-@@ -276,7 +276,7 @@ static int mpc8xxx_gpio_irq_map(struct irq_host *h, unsigned int virq,
- 	struct mpc8xxx_gpio_chip *mpc8xxx_gc = h->host_data;
+ /**
+@@ -202,7 +202,7 @@ static int ps3_virq_setup(enum ps3_cpu_binding cpu, unsigned long outlet,
+ 		goto fail_set;
+ 	}
  
- 	if (mpc8xxx_gc->of_dev_id_data)
--		mpc8xxx_irq_chip.set_type = mpc8xxx_gc->of_dev_id_data;
-+		mpc8xxx_irq_chip.irq_set_type = mpc8xxx_gc->of_dev_id_data;
+-	ps3_chip_mask(*virq);
++	ps3_chip_mask(irq_get_irq_data(*virq));
  
- 	set_irq_chip_data(virq, h->host_data);
- 	set_irq_chip_and_handler(virq, &mpc8xxx_irq_chip, handle_level_irq);
+ 	return result;
+ 
+@@ -296,7 +296,7 @@ int ps3_irq_plug_destroy(unsigned int virq)
+ 	pr_debug("%s:%d: ppe_id %llu, thread_id %llu, virq %u\n", __func__,
+ 		__LINE__, pd->ppe_id, pd->thread_id, virq);
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	result = lv1_disconnect_irq_plug_ext(pd->ppe_id, pd->thread_id, virq);
+ 
+@@ -357,7 +357,7 @@ int ps3_event_receive_port_destroy(unsigned int virq)
+ 
+ 	pr_debug(" -> %s:%d virq %u\n", __func__, __LINE__, virq);
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	result = lv1_destruct_event_receive_port(virq_to_hw(virq));
+ 
+@@ -492,7 +492,7 @@ int ps3_io_irq_destroy(unsigned int virq)
+ 	int result;
+ 	unsigned long outlet = virq_to_hw(virq);
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	/*
+ 	 * lv1_destruct_io_irq_outlet() will destroy the IRQ plug,
+@@ -553,7 +553,7 @@ int ps3_vuart_irq_destroy(unsigned int virq)
+ {
+ 	int result;
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 	result = lv1_deconfigure_virtual_uart_irq();
+ 
+ 	if (result) {
+@@ -605,7 +605,7 @@ int ps3_spe_irq_destroy(unsigned int virq)
+ {
+ 	int result;
+ 
+-	ps3_chip_mask(virq);
++	ps3_chip_mask(irq_get_irq_data(virq));
+ 
+ 	result = ps3_irq_plug_destroy(virq);
+ 	BUG_ON(result);
 -- 
 1.7.4
