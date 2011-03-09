@@ -1,21 +1,23 @@
-Return-Path: <buytenh@wantstofly.org>
-Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9AEE100F9F
+	by ozlabs.org (Postfix) with ESMTPS id DC78CB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 19:27:10 +1100 (EST)
-Date: Wed, 9 Mar 2011 09:27:07 +0100
-From: Lennert Buytenhek <buytenh@wantstofly.org>
+	Wed,  9 Mar 2011 21:20:15 +1100 (EST)
+Subject: Re: [BUG] rebuild_sched_domains considered dangerous
+From: Peter Zijlstra <peterz@infradead.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 26/28] powerpc: sysdev/xilinx_intc irq_data conversion.
-Message-ID: <20110309082706.GU16649@mail.wantstofly.org>
-References: <cover.1299541392.git.buytenh@wantstofly.org>
-	<20110308000018.GE16649@mail.wantstofly.org>
+In-Reply-To: <1299639487.22236.256.camel@pasglop>
+References: <1299639487.22236.256.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Mar 2011 11:19:58 +0100
+Message-ID: <1299665998.2308.2753.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110308000018.GE16649@mail.wantstofly.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,121 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
----
-v2: get_irq_chip_data(d->irq) => irq_data_get_irq_chip_data(d)
+On Wed, 2011-03-09 at 13:58 +1100, Benjamin Herrenschmidt wrote:
+> So I've been experiencing hangs shortly after boot with recent kernels
+> on a Power7 machine. I was testing with PREEMPT & HZ=3D1024 which might
+> increase the frequency of the problem but I don't think they are
+> necessary to expose it.
+>=20
+> From what I've figured out, when the machine hangs, it's essentially
+> looping forever in update_sd_lb_stats(), due to a corrupted sd->groups
+> list (in my cases, the list contains a loop that doesn't loop back
+> the the first element).
+>=20
+> It appears that this corresponds to one CPU deciding to rebuild the
+> sched domains. There's various reasons why that can happen, the typical
+> one in our case is the new VPNH feature where the hypervisor informs us
+> of a change in node affinity of our virtual processors. s390 has a
+> similar feature and should be affected as well.
 
- arch/powerpc/sysdev/xilinx_intc.c |   48 +++++++++++++++++++-----------------
- 1 files changed, 25 insertions(+), 23 deletions(-)
+Ahh, so that's triggering it :-), just curious, how often does the HV do
+that to you?
 
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index 1e0ccfa..7436f3e 100644
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -69,17 +69,17 @@ static unsigned char xilinx_intc_map_senses[] = {
-  *
-  * IRQ Chip common (across level and edge) operations
-  */
--static void xilinx_intc_mask(unsigned int virq)
-+static void xilinx_intc_mask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void * regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void * regs = irq_data_get_irq_chip_data(d);
- 	pr_debug("mask: %d\n", irq);
- 	out_be32(regs + XINTC_CIE, 1 << irq);
- }
- 
--static int xilinx_intc_set_type(unsigned int virq, unsigned int flow_type)
-+static int xilinx_intc_set_type(struct irq_data *d, unsigned int flow_type)
- {
--	struct irq_desc *desc = irq_to_desc(virq);
-+	struct irq_desc *desc = irq_to_desc(d->irq);
- 
- 	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
- 	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
-@@ -91,10 +91,10 @@ static int xilinx_intc_set_type(unsigned int virq, unsigned int flow_type)
- /*
-  * IRQ Chip level operations
-  */
--static void xilinx_intc_level_unmask(unsigned int virq)
-+static void xilinx_intc_level_unmask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void * regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void * regs = irq_data_get_irq_chip_data(d);
- 	pr_debug("unmask: %d\n", irq);
- 	out_be32(regs + XINTC_SIE, 1 << irq);
- 
-@@ -107,37 +107,37 @@ static void xilinx_intc_level_unmask(unsigned int virq)
- 
- static struct irq_chip xilinx_intc_level_irqchip = {
- 	.name = "Xilinx Level INTC",
--	.mask = xilinx_intc_mask,
--	.mask_ack = xilinx_intc_mask,
--	.unmask = xilinx_intc_level_unmask,
--	.set_type = xilinx_intc_set_type,
-+	.irq_mask = xilinx_intc_mask,
-+	.irq_mask_ack = xilinx_intc_mask,
-+	.irq_unmask = xilinx_intc_level_unmask,
-+	.irq_set_type = xilinx_intc_set_type,
- };
- 
- /*
-  * IRQ Chip edge operations
-  */
--static void xilinx_intc_edge_unmask(unsigned int virq)
-+static void xilinx_intc_edge_unmask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void *regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void *regs = irq_data_get_irq_chip_data(d);
- 	pr_debug("unmask: %d\n", irq);
- 	out_be32(regs + XINTC_SIE, 1 << irq);
- }
- 
--static void xilinx_intc_edge_ack(unsigned int virq)
-+static void xilinx_intc_edge_ack(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void * regs = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void * regs = irq_data_get_irq_chip_data(d);
- 	pr_debug("ack: %d\n", irq);
- 	out_be32(regs + XINTC_IAR, 1 << irq);
- }
- 
- static struct irq_chip xilinx_intc_edge_irqchip = {
- 	.name = "Xilinx Edge  INTC",
--	.mask = xilinx_intc_mask,
--	.unmask = xilinx_intc_edge_unmask,
--	.ack = xilinx_intc_edge_ack,
--	.set_type = xilinx_intc_set_type,
-+	.irq_mask = xilinx_intc_mask,
-+	.irq_unmask = xilinx_intc_edge_unmask,
-+	.irq_ack = xilinx_intc_edge_ack,
-+	.irq_set_type = xilinx_intc_set_type,
- };
- 
- /*
-@@ -229,12 +229,14 @@ int xilinx_intc_get_irq(void)
-  */
- static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
- {
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 	unsigned int cascade_irq = i8259_irq();
-+
- 	if (cascade_irq)
- 		generic_handle_irq(cascade_irq);
- 
- 	/* Let xilinx_intc end the interrupt */
--	desc->chip->unmask(irq);
-+	chip->irq_unmask(&desc->irq_data);
- }
- 
- static void __init xilinx_i8259_setup_cascade(void)
--- 
-1.7.4
+> I suspect the problem could be reproduced on x86 by hammering the sysfs
+> file that can be used to trigger a rebuild as well on a sufficently
+> large machine.
+
+Should, yeah, regular hotplug is racy too.
+
+> From what I can tell, there's some missing locking here between
+> rebuilding the domains and find_busiest_group.=20
+
+init_sched_build_groups() races against pretty much all sched_group
+iterations, like the one in update_sd_lb_stats() which is the most
+common one and the one you're getting stuck in.
+
+> I haven't quite got my
+> head around how that -should- be done, though, as I an really not very
+> familiar with that code.=20
+
+:-)
+
+> For example, I don't quite get when domains are
+> attached to an rq, and whether code like build_numa_sched_groups() which
+> allocates groups and attach them to sched domains sd->groups does it on
+> a "live" domain or not (in that case, there's a problem since it kmalloc
+> and attaches the uninitialized result immediately).
+
+No, the domain stuff is good, we allocate new domains and have a
+synchronize_sched() between us installing the new ones and freeing the
+old ones.
+
+But the sched_group list is as said rather icky.
+
+> I don't believe I understand enough of the scheduler to fix that quickly
+> and I'm really bogged down with some other urgent stuff, so I would very
+> much appreciate if you could provide some assistance here, even if it's
+> just in the form of suggestions/hints.
+
+Yeah, sched_group rebuild is racy as hell, I haven't really managed to
+come up with a sane fix yet, will poke at it.
