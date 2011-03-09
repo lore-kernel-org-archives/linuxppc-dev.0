@@ -2,19 +2,19 @@ Return-Path: <buytenh@wantstofly.org>
 Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA65F100AD3
+	by ozlabs.org (Postfix) with ESMTPS id 12D991007FF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 19:26:57 +1100 (EST)
-Date: Wed, 9 Mar 2011 09:26:53 +0100
+	Wed,  9 Mar 2011 19:27:02 +1100 (EST)
+Date: Wed, 9 Mar 2011 09:26:58 +0100
 From: Lennert Buytenhek <buytenh@wantstofly.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 10/28] powerpc: platforms/embedded6xx irq_data conversion.
-Message-ID: <20110309082653.GP16649@mail.wantstofly.org>
+Subject: [PATCH v2 21/28] powerpc: sysdev/mpc8xxx_gpio irq_data conversion.
+Message-ID: <20110309082658.GR16649@mail.wantstofly.org>
 References: <cover.1299541392.git.buytenh@wantstofly.org>
-	<20110307235933.GO16649@mail.wantstofly.org>
+	<20110308000004.GZ16649@mail.wantstofly.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110307235933.GO16649@mail.wantstofly.org>
+In-Reply-To: <20110308000004.GZ16649@mail.wantstofly.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,174 +29,123 @@ Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
 ---
 v2: get_irq_chip_data(d->irq) => irq_data_get_irq_chip_data(d)
 
- arch/powerpc/platforms/embedded6xx/flipper-pic.c |   32 ++++++++--------
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c    |   41 +++++++++++----------
- 2 files changed, 37 insertions(+), 36 deletions(-)
+ arch/powerpc/sysdev/mpc8xxx_gpio.c |   42 ++++++++++++++++++------------------
+ 1 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.c b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-index c278bd3..0aca0e2 100644
---- a/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-@@ -46,10 +46,10 @@
-  *
-  */
- 
--static void flipper_pic_mask_and_ack(unsigned int virq)
-+static void flipper_pic_mask_and_ack(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
- 	u32 mask = 1 << irq;
- 
- 	clrbits32(io_base + FLIPPER_IMR, mask);
-@@ -57,27 +57,27 @@ static void flipper_pic_mask_and_ack(unsigned int virq)
- 	out_be32(io_base + FLIPPER_ICR, mask);
+diff --git a/arch/powerpc/sysdev/mpc8xxx_gpio.c b/arch/powerpc/sysdev/mpc8xxx_gpio.c
+index c48cd81..11fb518 100644
+--- a/arch/powerpc/sysdev/mpc8xxx_gpio.c
++++ b/arch/powerpc/sysdev/mpc8xxx_gpio.c
+@@ -155,43 +155,43 @@ static void mpc8xxx_gpio_irq_cascade(unsigned int irq, struct irq_desc *desc)
+ 						     32 - ffs(mask)));
  }
  
--static void flipper_pic_ack(unsigned int virq)
-+static void flipper_pic_ack(struct irq_data *d)
+-static void mpc8xxx_irq_unmask(unsigned int virq)
++static void mpc8xxx_irq_unmask(struct irq_data *d)
  {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
+-	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
+ 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+ 	unsigned long flags;
  
- 	/* this is at least needed for RSW */
- 	out_be32(io_base + FLIPPER_ICR, 1 << irq);
+ 	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ 
+-	setbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(virq)));
++	setbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
+ 
+ 	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
  }
  
--static void flipper_pic_mask(unsigned int virq)
-+static void flipper_pic_mask(struct irq_data *d)
+-static void mpc8xxx_irq_mask(unsigned int virq)
++static void mpc8xxx_irq_mask(struct irq_data *d)
  {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
+-	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
+ 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+ 	unsigned long flags;
  
- 	clrbits32(io_base + FLIPPER_IMR, 1 << irq);
+ 	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ 
+-	clrbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(virq)));
++	clrbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
+ 
+ 	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
  }
  
--static void flipper_pic_unmask(unsigned int virq)
-+static void flipper_pic_unmask(struct irq_data *d)
+-static void mpc8xxx_irq_ack(unsigned int virq)
++static void mpc8xxx_irq_ack(struct irq_data *d)
  {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
+-	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
+ 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
  
- 	setbits32(io_base + FLIPPER_IMR, 1 << irq);
+-	out_be32(mm->regs + GPIO_IER, mpc8xxx_gpio2mask(virq_to_hw(virq)));
++	out_be32(mm->regs + GPIO_IER, mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
  }
-@@ -85,10 +85,10 @@ static void flipper_pic_unmask(unsigned int virq)
  
- static struct irq_chip flipper_pic = {
- 	.name		= "flipper-pic",
--	.ack		= flipper_pic_ack,
--	.mask_ack	= flipper_pic_mask_and_ack,
--	.mask		= flipper_pic_mask,
--	.unmask		= flipper_pic_unmask,
-+	.irq_ack	= flipper_pic_ack,
-+	.irq_mask_ack	= flipper_pic_mask_and_ack,
-+	.irq_mask	= flipper_pic_mask,
-+	.irq_unmask	= flipper_pic_unmask,
+-static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
++static int mpc8xxx_irq_set_type(struct irq_data *d, unsigned int flow_type)
+ {
+-	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
+ 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+ 	unsigned long flags;
+ 
+@@ -199,14 +199,14 @@ static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
+ 	case IRQ_TYPE_EDGE_FALLING:
+ 		spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ 		setbits32(mm->regs + GPIO_ICR,
+-			  mpc8xxx_gpio2mask(virq_to_hw(virq)));
++			  mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
+ 		spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+ 		break;
+ 
+ 	case IRQ_TYPE_EDGE_BOTH:
+ 		spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ 		clrbits32(mm->regs + GPIO_ICR,
+-			  mpc8xxx_gpio2mask(virq_to_hw(virq)));
++			  mpc8xxx_gpio2mask(virq_to_hw(d->irq)));
+ 		spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+ 		break;
+ 
+@@ -217,11 +217,11 @@ static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
+ 	return 0;
+ }
+ 
+-static int mpc512x_irq_set_type(unsigned int virq, unsigned int flow_type)
++static int mpc512x_irq_set_type(struct irq_data *d, unsigned int flow_type)
+ {
+-	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = irq_data_get_irq_chip_data(d);
+ 	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
+-	unsigned long gpio = virq_to_hw(virq);
++	unsigned long gpio = virq_to_hw(d->irq);
+ 	void __iomem *reg;
+ 	unsigned int shift;
+ 	unsigned long flags;
+@@ -264,10 +264,10 @@ static int mpc512x_irq_set_type(unsigned int virq, unsigned int flow_type)
+ 
+ static struct irq_chip mpc8xxx_irq_chip = {
+ 	.name		= "mpc8xxx-gpio",
+-	.unmask		= mpc8xxx_irq_unmask,
+-	.mask		= mpc8xxx_irq_mask,
+-	.ack		= mpc8xxx_irq_ack,
+-	.set_type	= mpc8xxx_irq_set_type,
++	.irq_unmask	= mpc8xxx_irq_unmask,
++	.irq_mask	= mpc8xxx_irq_mask,
++	.irq_ack	= mpc8xxx_irq_ack,
++	.irq_set_type	= mpc8xxx_irq_set_type,
  };
  
- /*
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index a771f91..35e448b 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -41,36 +41,36 @@
-  *
-  */
+ static int mpc8xxx_gpio_irq_map(struct irq_host *h, unsigned int virq,
+@@ -276,7 +276,7 @@ static int mpc8xxx_gpio_irq_map(struct irq_host *h, unsigned int virq,
+ 	struct mpc8xxx_gpio_chip *mpc8xxx_gc = h->host_data;
  
--static void hlwd_pic_mask_and_ack(unsigned int virq)
-+static void hlwd_pic_mask_and_ack(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
- 	u32 mask = 1 << irq;
+ 	if (mpc8xxx_gc->of_dev_id_data)
+-		mpc8xxx_irq_chip.set_type = mpc8xxx_gc->of_dev_id_data;
++		mpc8xxx_irq_chip.irq_set_type = mpc8xxx_gc->of_dev_id_data;
  
- 	clrbits32(io_base + HW_BROADWAY_IMR, mask);
- 	out_be32(io_base + HW_BROADWAY_ICR, mask);
- }
- 
--static void hlwd_pic_ack(unsigned int virq)
-+static void hlwd_pic_ack(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
- 
- 	out_be32(io_base + HW_BROADWAY_ICR, 1 << irq);
- }
- 
--static void hlwd_pic_mask(unsigned int virq)
-+static void hlwd_pic_mask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
- 
- 	clrbits32(io_base + HW_BROADWAY_IMR, 1 << irq);
- }
- 
--static void hlwd_pic_unmask(unsigned int virq)
-+static void hlwd_pic_unmask(struct irq_data *d)
- {
--	int irq = virq_to_hw(virq);
--	void __iomem *io_base = get_irq_chip_data(virq);
-+	int irq = virq_to_hw(d->irq);
-+	void __iomem *io_base = irq_data_get_irq_chip_data(d);
- 
- 	setbits32(io_base + HW_BROADWAY_IMR, 1 << irq);
- }
-@@ -78,10 +78,10 @@ static void hlwd_pic_unmask(unsigned int virq)
- 
- static struct irq_chip hlwd_pic = {
- 	.name		= "hlwd-pic",
--	.ack		= hlwd_pic_ack,
--	.mask_ack	= hlwd_pic_mask_and_ack,
--	.mask		= hlwd_pic_mask,
--	.unmask		= hlwd_pic_unmask,
-+	.irq_ack	= hlwd_pic_ack,
-+	.irq_mask_ack	= hlwd_pic_mask_and_ack,
-+	.irq_mask	= hlwd_pic_mask,
-+	.irq_unmask	= hlwd_pic_unmask,
- };
- 
- /*
-@@ -129,11 +129,12 @@ static unsigned int __hlwd_pic_get_irq(struct irq_host *h)
- static void hlwd_pic_irq_cascade(unsigned int cascade_virq,
- 				      struct irq_desc *desc)
- {
-+	struct irq_chip *chip = get_irq_desc_chip(desc);
- 	struct irq_host *irq_host = get_irq_data(cascade_virq);
- 	unsigned int virq;
- 
- 	raw_spin_lock(&desc->lock);
--	desc->chip->mask(cascade_virq); /* IRQ_LEVEL */
-+	chip->irq_mask(&desc->irq_data); /* IRQ_LEVEL */
- 	raw_spin_unlock(&desc->lock);
- 
- 	virq = __hlwd_pic_get_irq(irq_host);
-@@ -143,9 +144,9 @@ static void hlwd_pic_irq_cascade(unsigned int cascade_virq,
- 		pr_err("spurious interrupt!\n");
- 
- 	raw_spin_lock(&desc->lock);
--	desc->chip->ack(cascade_virq); /* IRQ_LEVEL */
--	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
--		desc->chip->unmask(cascade_virq);
-+	chip->irq_ack(&desc->irq_data); /* IRQ_LEVEL */
-+	if (!(desc->status & IRQ_DISABLED) && chip->irq_unmask)
-+		chip->irq_unmask(&desc->irq_data);
- 	raw_spin_unlock(&desc->lock);
- }
- 
+ 	set_irq_chip_data(virq, h->host_data);
+ 	set_irq_chip_and_handler(virq, &mpc8xxx_irq_chip, handle_level_irq);
 -- 
 1.7.4
