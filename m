@@ -1,38 +1,23 @@
-Return-Path: <kyle@moffetthome.net>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ED987B7102
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DFD85B70F0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 10:44:19 +1100 (EST)
-Received: by eyg5 with SMTP id 5so2089636eyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 08 Mar 2011 15:44:15 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1299626008.22236.47.camel@pasglop>
-References: <4D6E8932.1010405@zytor.com>
-	<alpine.LFD.2.00.1103022152420.2701@localhost6.localdomain6>
-	<4D6EB07C.5040004@zytor.com>
-	<alpine.LFD.2.00.1103022216180.2701@localhost6.localdomain6>
-	<4D6ECBDB.6090307@zytor.com> <20110303083035.GB14854@elte.hu>
-	<AANLkTik4aTN8+Ob_GVwF17v6pDNGg2DEZJubBazs2e3L@mail.gmail.com>
-	<1299619716.22236.32.camel@pasglop>
-	<AANLkTikAnb39XhR0hdZAzTKGJ-P1rH+ZxtD+Dea7-364@mail.gmail.com>
-	<1299626008.22236.47.camel@pasglop>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Tue, 8 Mar 2011 18:43:54 -0500
-Message-ID: <AANLkTi=A8DM+CHAYx+ud2y5-Mj6wPfv+zduJ_JekP-o_@mail.gmail.com>
-Subject: Re: RFC: x86: kill binutils 2.16.x?
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kbuild <linux-kbuild@vger.kernel.org>,
-	Kumar Gala <kumar.gala@freescale.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kyle Moffett <Kyle.D.Moffett@boeing.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+	Wed,  9 Mar 2011 11:31:42 +1100 (EST)
+Date: Tue, 8 Mar 2011 16:31:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Priyanka Jain <Priyanka.Jain@freescale.com>
+Subject: Re: [PATCH] RTC driver(Linux) for PT7C4338 chip.
+Message-Id: <20110308163105.1a6cb533.akpm@linux-foundation.org>
+In-Reply-To: <1299039150-21063-1-git-send-email-Priyanka.Jain@freescale.com>
+References: <1299039150-21063-1-git-send-email-Priyanka.Jain@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: a.zummo@towertech.it, linuxppc-dev@lists.ozlabs.org,
+	rtc-linux@googlegroups.com, p_gortmaker@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,97 +27,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 8, 2011 at 18:13, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2011-03-08 at 16:59 -0500, Kyle Moffett wrote:
->>
->> The problem is not with the kernel compile itself, but with the 2.12
->> "dssall" binutils test. =C2=A0Basically, recent binutils treats e500 as
->> effectively a separate architecture that happens to share *most* of
->> the opcodes with regular PowerPC.
->
-> This is bogus. Newer e500 don't have that SPE crap afaik and BookI and
-> II of the architecture have been converged. In fact, Scott, don't newer
-> FSL chips also support real lwsync ?
+On Wed, 2 Mar 2011 09:42:30 +0530
+Priyanka Jain <Priyanka.Jain@freescale.com> wrote:
 
-When I'm talking about "e500" I'm specifically referring to the SPE
-stuff.  The "e500mc" cores are a whole different beast with a regular
-FPU, but those have their own Kconfig option: "PPC_E500MC".
+> PT7C4338 chip is being manufactured by Pericom Technology Inc.
+> It is a serial real-time clock which provides:
+> 1)Low-power clock/calendar.
+> 2)Programmable square-wave output.
+> It has 56 bytes of nonvolatile RAM.
+> 
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> ---
+>  PT7C4338 RTC driver is verified on Freescale P1010RDB. 
+>  Please pick this patch for 2.6.39
+> 
+>  drivers/rtc/Kconfig        |    9 ++
+>  drivers/rtc/Makefile       |    1 +
+>  drivers/rtc/rtc-pt7c4338.c |  215 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 225 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/rtc/rtc-pt7c4338.c
+> 
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 10ba12c..6ff0901 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -324,6 +324,15 @@ config RTC_DRV_RX8025
+>  	  This driver can also be built as a module. If so, the module
+>  	  will be called rtc-rx8025.
+>  
+> +config RTC_DRV_PT7C4338
+> +	tristate "Pericom Technology Inc. PT7C4338 RTC"
+> +	help
+> +	  If you say yes here you get support for the Pericom Technology
+> +	  Inc. PT7C4338 RTC chip.
+> +
+> +	  This driver can also be built as a module. If so, the module
+> +	  will be called rtc-pt7c4338.
+> +
 
-Actually, looking at it again, the "PPC_E500MC" depends on "E500", it
-should select "PPC_FSL_BOOK3E" instead.  There are probably bugs
-lurking here.
+This means that the driver is available on all architectures, not just
+powerpc.
 
-There really is fundamentally no good way to build a single system
-image that supports both E500 (spe-based) and E500MC (classic FPU).
-You can sort-of run classic FPU emulation on the E500, but the
-performance is terrifyingly bad.
+This is a good thing and a bad thing.  Bad because it makes non-ppc
+people possibly build and install a driver which they will never use
+(correct?).  And good because it means that more people do compilation
+test coverage.
 
-The naming confusion really is really bad too, IMO.
-
->> =C2=A0Any opcode which is not understood
->> by the e500 chip is either convert to an equivalent opcode which is
->> understood (IE: lwsync =3D> sync), or failed with an error. =C2=A0This m=
-eans
->> that the kernel compile aborts early telling me to upgrade to a newer
->> version of binutils.
->
-> This is more bogosity in binutils. lwsync is designed to fallback as
-> sync if not supported in -HW-, binutils shouldn't silently swallow it.
->
-> Or is it that FSL failed on the original e500 and make lwsync actually
-> trap ?
-
-Yeah... for some reason FreeScale made the "lwsync" operation trap on
-e500 (again, only talking about "e500" with SPE, not "e500mc").
-
-Unfortunately it's used frequently enough that there's a very
-noticeable performance gain (~5% for some programs) by substituting it
-in binutils, so that's what happens.
+Speaking of which:
 
 
->> This was *critical* for getting an actual Debian distribution
->> bootstrapped on the e500 cores, because so much software assumes
->> PowerPC =3D=3D altivec (ffmpeg), hardcodes 'asm("lwsync")' for memory
->> barriers (80+ packages in Debian), or includes hand-coded
->> floating-point ASM instructions (libffi). =C2=A0Noisy build errors are
->> better than silent runtime failures any day of the week.
->>
->> At the very least that test needs to be turned off if
->> CONFIG_ALTIVEC=3Dn, because the kernel builds and runs fine otherwise.
->
-> I think the right thing is to keep that as e500-legacy or something,
-> because afaik, newer e500's don't have most of these issues and could be
-> treated as "normal" powerpc again.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-There is a separate "-me500mc" option for GAS that does the right
-thing, but the kernel currently does not seem to use it.
+include slab.h, remove unused local
 
-arch/powerpc/Makefile has this:
-    cpu-as-$(CONFIG_4xx) +=3D -Wa,-m405
-    cpu-as-$(CONFIG_6xx) +=3D -Wa,-maltivec
-    cpu-as-$(CONFIG_POWER4) +=3D -Wa,-maltivec
-    cpu-as-$(CONFIG_E500) +=3D -Wa,-me500
-    cpu-as-$(CONFIG_E200) +=3D -Wa,-me200
+drivers/rtc/rtc-pt7c4338.c: In function 'pt7c4338_probe':
+drivers/rtc/rtc-pt7c4338.c:159: error: implicit declaration of function 'kzalloc'
+drivers/rtc/rtc-pt7c4338.c:159: warning: assignment makes pointer from integer without a cast
+drivers/rtc/rtc-pt7c4338.c:176: error: implicit declaration of function 'kfree'
+drivers/rtc/rtc-pt7c4338.c:156: warning: unused variable 'adapter'
 
-As it is, I strongly suspect that the kernel is broken for
-CONFIG_E500MC with current development releases of binutils.
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <galak@gate.crashing.org>
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-The real "solution" is that "e500" needs to be treated as an almost
-entirely different architecture from "all other powerpc (including
-e500mc)".  Userspace is only ABI-compatible if you use "-msoft-float"
-on both sides.
+ drivers/rtc/rtc-pt7c4338.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I've been dealing with it for a while now, it really is a fiasco all around=
-...
-
-After a month of wrestling with the official Debian "powerpc" port we
-gave up and created a new port "powerpcspe" specifically for the
-"e500" SPE-based chips.  Then we tripped over 3 relatively major GCC
-bugs which had been lurking since e500 support was initially added.
-
-See http://wiki.debian.org/PowerPCSPEPort for a very out-of-date
-status on that whole thing.
-
-Cheers,
-Kyle Moffett
+diff -puN drivers/rtc/Kconfig~rtc-driver-for-pt7c4338-chip-fix drivers/rtc/Kconfig
+diff -puN drivers/rtc/Makefile~rtc-driver-for-pt7c4338-chip-fix drivers/rtc/Makefile
+diff -puN drivers/rtc/rtc-pt7c4338.c~rtc-driver-for-pt7c4338-chip-fix drivers/rtc/rtc-pt7c4338.c
+--- a/drivers/rtc/rtc-pt7c4338.c~rtc-driver-for-pt7c4338-chip-fix
++++ a/drivers/rtc/rtc-pt7c4338.c
+@@ -35,6 +35,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/i2c.h>
+ #include <linux/rtc.h>
+@@ -153,7 +154,6 @@ static int pt7c4338_probe(struct i2c_cli
+ 		const struct i2c_device_id *id)
+ {
+ 	struct pt7c4338 *pt7c4338;
+-	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+ 	int ret;
+ 
+ 	pt7c4338 = kzalloc(sizeof(struct pt7c4338), GFP_KERNEL);
+_
