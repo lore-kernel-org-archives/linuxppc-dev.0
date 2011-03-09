@@ -1,21 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A6BD91007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Mar 2011 13:58:32 +1100 (EST)
-Subject: [BUG] rebuild_sched_domains considered dangerous
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Mar 2011 13:58:07 +1100
-Message-ID: <1299639487.22236.256.camel@pasglop>
+Return-Path: <anton@samba.org>
+Date: Wed, 9 Mar 2011 14:38:42 +1100
+From: Anton Blanchard <anton@samba.org>
+To: paulus@samba.org, a.p.zijlstra@chello.nl, mingo@elte.hu,
+	acme@ghostprotocols.net, benh@kernel.crashing.org
+Subject: [PATCH] powerpc: perf: Handle events that raise an exception
+	without overflowing
+Message-ID: <20110309143842.6c22845e@kryten>
 Mime-Version: 1.0
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So I've been experiencing hangs shortly after boot with recent kernels
-on a Power7 machine. I was testing with PREEMPT & HZ=1024 which might
-increase the frequency of the problem but I don't think they are
-necessary to expose it.
 
->From what I've figured out, when the machine hangs, it's essentially
-looping forever in update_sd_lb_stats(), due to a corrupted sd->groups
-list (in my cases, the list contains a loop that doesn't loop back
-the the first element).
+Events on POWER7 can roll back if a speculative event doesn't
+eventually complete. Unfortunately in some rare cases they will
+raise a performance monitor exception. We need to catch this to
+ensure we reset the PMC. In all cases the PMC will be 256 or less
+cycles from overflow.
 
-It appears that this corresponds to one CPU deciding to rebuild the
-sched domains. There's various reasons why that can happen, the typical
-one in our case is the new VPNH feature where the hypervisor informs us
-of a change in node affinity of our virtual processors. s390 has a
-similar feature and should be affected as well.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
+---
 
-I suspect the problem could be reproduced on x86 by hammering the sysfs
-file that can be used to trigger a rebuild as well on a sufficently
-large machine.
+I would prefer not to add the PVR check, but I think we want to limit
+this workaround to POWER7. Would a cpu feature be preferable?
 
->From what I can tell, there's some missing locking here between
-rebuilding the domains and find_busiest_group. I haven't quite got my
-head around how that -should- be done, though, as I an really not very
-familiar with that code. For example, I don't quite get when domains are
-attached to an rq, and whether code like build_numa_sched_groups() which
-allocates groups and attach them to sched domains sd->groups does it on
-a "live" domain or not (in that case, there's a problem since it kmalloc
-and attaches the uninitialized result immediately).
-
-I don't believe I understand enough of the scheduler to fix that quickly
-and I'm really bogged down with some other urgent stuff, so I would very
-much appreciate if you could provide some assistance here, even if it's
-just in the form of suggestions/hints.
-
-Cheers,
-Ben.
+Index: linux-2.6/arch/powerpc/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/perf_event.c	2011-03-08 20:11:38.029800971 +1100
++++ linux-2.6/arch/powerpc/kernel/perf_event.c	2011-03-09 14:19:18.756143799 +1100
+@@ -1269,6 +1269,28 @@ unsigned long perf_instruction_pointer(s
+ 	return ip;
+ }
+ 
++static bool pmc_overflow(unsigned long val)
++{
++	if ((int)val < 0)
++		return true;
++
++	/*
++	 * Events on POWER7 can roll back if a speculative event doesn't
++	 * eventually complete. Unfortunately in some rare cases they will
++	 * raise a performance monitor exception. We need to catch this to
++	 * ensure we reset the PMC. In all cases the PMC will be 256 or less
++	 * cycles from overflow.
++	 *
++	 * We only do this if the first pass fails to find any overflowing
++	 * PMCs because a user might set a period of less than 256 and we
++	 * don't want to mistakenly reset them.
++	 */
++	if (__is_processor(PV_POWER7) && ((0x80000000 - val) <= 256))
++		return true;
++
++	return false;
++}
++
+ /*
+  * Performance monitor interrupt stuff
+  */
+@@ -1316,7 +1338,7 @@ static void perf_event_interrupt(struct
+ 			if (is_limited_pmc(i + 1))
+ 				continue;
+ 			val = read_pmc(i + 1);
+-			if ((int)val < 0)
++			if (pmc_overflow(val))
+ 				write_pmc(i + 1, 0);
+ 		}
+ 	}
+Index: linux-2.6/arch/powerpc/include/asm/reg.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/reg.h	2011-03-08 20:11:38.019800609 +1100
++++ linux-2.6/arch/powerpc/include/asm/reg.h	2011-03-09 14:13:56.674461835 +1100
+@@ -880,6 +880,7 @@
+ #define PV_970		0x0039
+ #define PV_POWER5	0x003A
+ #define PV_POWER5p	0x003B
++#define PV_POWER7	0x003F
+ #define PV_970FX	0x003C
+ #define PV_630		0x0040
+ #define PV_630p	0x0041
