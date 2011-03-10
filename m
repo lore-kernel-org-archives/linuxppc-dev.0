@@ -1,26 +1,23 @@
-Return-Path: <B32167@freescale.com>
-Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
-	[216.32.180.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D8625B6F0B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Mar 2011 14:24:13 +1100 (EST)
-From: Jain Priyanka-B32167 <B32167@freescale.com>
-To: Wolfram Sang <w.sang@pengutronix.de>, "rtc-linux@googlegroups.com"
-	<rtc-linux@googlegroups.com>
-Subject: RE: [rtc-linux] [PATCH] RTC driver(Linux) for PT7C4338 chip.
-Date: Thu, 10 Mar 2011 03:23:57 +0000
-Message-ID: <470DB7CE2CD0944E9436E7ADEFC02FE313B1C2@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1299124299-26991-1-git-send-email-Priyanka.Jain@freescale.com>
-	<20110303092239.GB3649@pengutronix.de>
-In-Reply-To: <20110303092239.GB3649@pengutronix.de>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "a.zummo@towertech.it" <a.zummo@towertech.it>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"p_gortmaker@yahoo.com" <p_gortmaker@yahoo.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: disable MSI using new interface if possible
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Joe Perches <joe@perches.com>
+In-Reply-To: <1299716903.20104.134.camel@Joe-Laptop>
+References: <1299200729.3630.52.camel@concordia>
+	<1299202862-10682-1-git-send-email-nacc@us.ibm.com>
+	<1299208016.3630.81.camel@concordia>
+	<1299209359.4338.220.camel@Joe-Laptop>
+	<1299712336.6272.22.camel@concordia>
+	<1299716903.20104.134.camel@Joe-Laptop>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ll6aBs3rQ5POM5lDhff9"
+Date: Thu, 10 Mar 2011 14:35:21 +1100
+Message-ID: <1299728121.6272.46.camel@concordia>
+Mime-Version: 1.0
+Cc: Nishanth Aravamudan <nacc@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	Florian Mickler <florian@mickler.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Wolfram,
 
-Though register-set looks identical but features were different. And also m=
-anufacturer is different.
-But still it might be possible that we can reuse ds1307.c with some modific=
-ation.
-But if I look at the drivers present in drivers/rtc folder. Most of them lo=
-oks similar but still there are different drivers for different chips.
+--=-ll6aBs3rQ5POM5lDhff9
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Please suggest which way is more preferred: modifying existing drivers(of d=
-ifferent manufacturer) or writing new driver.=20
+On Wed, 2011-03-09 at 16:28 -0800, Joe Perches wrote:
+> On Thu, 2011-03-10 at 10:12 +1100, Michael Ellerman wrote:
+> > True my last patch may have been two years ago, but I _wrote the entire
+> > file_, and essentially no one else has ever touched it.
+> >=20
+> > > $ ./scripts/get_maintainer.pl -f arch/powerpc/platforms/pseries/msi.c
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FO=
+R POWERPC...)
+> > > Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC...)
+> > > Grant Likely <grant.likely@secretlab.ca> (maintainer:OPEN FIRMWARE AN=
+D...)
+> > > linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...)
+> > > linux-kernel@vger.kernel.org (open list)
+> > > devicetree-discuss@lists.ozlabs.org (open list:OPEN FIRMWARE AND...)
+> > >=20
+> > > If you don't like how it currently works, suggest
+> > > improvements.
+> >=20
+> > I think I was suggesting that I should be in that list :)
+>=20
+> $ ./scripts/get_maintainer.pl -f --git-blame arch/powerpc/platforms/pseri=
+es/msi.c
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR PO=
+WERPC...,commits:8/11=3D73%)
+> Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC...,commits=
+:4/11=3D36%)
+> Grant Likely <grant.likely@secretlab.ca> (maintainer:OPEN FIRMWARE AND...=
+)
+> Michael Ellerman <michael@ellerman.id.au> (authored lines:481/481=3D100%,=
+commits:11/11=3D100%)
+> Linas Vepstas <linas@austin.ibm.com> (commits:1/11=3D9%)
+> linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...)
+> linux-kernel@vger.kernel.org (open list)
+> devicetree-discuss@lists.ozlabs.org (open list:OPEN FIRMWARE AND...)
 
-Thanks
-Priyanka
+That's awesome. But it's not the default, so hardly anyone will ever use
+it :)
 
-> -----Original Message-----
-> From: Wolfram Sang [mailto:w.sang@pengutronix.de]
-> Sent: Thursday, March 03, 2011 2:53 PM
-> To: rtc-linux@googlegroups.com
-> Cc: linuxppc-dev@lists.ozlabs.org; a.zummo@towertech.it;
-> p_gortmaker@yahoo.com; akpm@linux-foundation.org; Jain Priyanka-B32167
-> Subject: Re: [rtc-linux] [PATCH] RTC driver(Linux) for PT7C4338 chip.
->=20
-> Hi,
->=20
-> > +/*
-> > + * This file provides Date & Time support (no alarms) for PT7C4338
-> chip.
-> > + *
-> > + * This file is based on drivers/rtc/rtc-ds1307.c
->=20
-> Please explain why you can't use rtc-ds1307 directly (or with slight
-> modifications). I might have missed something but the register-set looks
-> identical to me?
->=20
-> Regards,
->=20
->    Wolfram
->=20
-> --
-> Pengutronix e.K.                           | Wolfram Sang
-> |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/
-> |
+cheers
+
+--=-ll6aBs3rQ5POM5lDhff9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAk14RvkACgkQdSjSd0sB4dJ1UACfbEC22dY4uK3v0lN6UoZ/Quv2
+fMwAoKhphVZiJtMcdVPuJO2XfiF7uMxr
+=AlZ8
+-----END PGP SIGNATURE-----
+
+--=-ll6aBs3rQ5POM5lDhff9--
