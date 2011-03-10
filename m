@@ -1,24 +1,28 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3E17DB6EEB
+Return-Path: <ak@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+	by ozlabs.org (Postfix) with ESMTP id 4C5FBB6F94
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Mar 2011 01:10:30 +1100 (EST)
-Subject: Re: [BUG] rebuild_sched_domains considered dangerous
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1299675674.2308.2924.camel@twins>
-References: <1299639487.22236.256.camel@pasglop>
-	<1299665998.2308.2753.camel@twins> <1299675674.2308.2924.camel@twins>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Mar 2011 15:10:11 +0100
-Message-ID: <1299766211.2308.4468.camel@twins>
-Mime-Version: 1.0
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+	Fri, 11 Mar 2011 03:10:54 +1100 (EST)
+Date: Thu, 10 Mar 2011 08:00:32 -0800
+From: Andi Kleen <ak@linux.intel.com>
+To: Stephen Wilson <wilsons@start.ca>
+Subject: Re: [PATCH 0/5] make *_gate_vma accept mm_struct instead of
+	task_struct
+Message-ID: <20110310160032.GA20504@alboin.amr.corp.intel.com>
+References: <1299630721-4337-1-git-send-email-wilsons@start.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1299630721-4337-1-git-send-email-wilsons@start.ca>
+Cc: linux-s390@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	linux-sh@vger.kernel.org, x86@kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Michel Lespinasse <walken@google.com>, linuxppc-dev@lists.ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-03-09 at 14:01 +0100, Peter Zijlstra wrote:
-> On Wed, 2011-03-09 at 11:19 +0100, Peter Zijlstra wrote:
-> > No, the domain stuff is good, we allocate new domains and have a
-> > synchronize_sched() between us installing the new ones and freeing the
-> > old ones.=20
->=20
-> Gah, if only..
+On Tue, Mar 08, 2011 at 07:31:56PM -0500, Stephen Wilson wrote:
+> 
+> Morally, the question of whether an address lies in a gate vma should be asked
+> with respect to an mm, not a particular task.
+> 
+> Practically, dropping the dependency on task_struct will help make current and
+> future operations on mm's more flexible and convenient.  In particular, it
+> allows some code paths to avoid the need to hold task_lock.
+> 
+> The only architecture this change impacts in any significant way is x86_64.
+> The principle change on that architecture is to mirror TIF_IA32 via
+> a new flag in mm_context_t. 
 
-OK, so for hotplug and cpusets it works because they change the doms_cur
-set, when the old and the new set don't match it destroys the current
-sched_domain/sched_group sets for the relevant cpus and then calls
-synchronize_sched() to wait for any current activity to go away.
+The problem is -- you're adding a likely cache miss on mm_struct for
+every 32bit compat syscall now, even if they don't need mm_struct
+currently (and a lot of them do not) Unless there's a very good
+justification to make up for this performance issue elsewhere
+(including numbers) this seems like a bad idea.
 
-Only then does it rebuild stuff for the new set, reusing the static
-allocated sched_domain and sched_group data.
+> This is the first of a two part series that implements safe writes to
+> /proc/pid/mem.  I will be posting the second series to lkml shortly.  These
 
-Now, supposedly when your new and old domain set is the same it should
-be a nop, unless arch_update_cpu_topology() returns true in which case
-it will do a full destroy and rebuild.
+Making every syscall slower for /proc/pid/mem doesn't seem like a good
+tradeoff to me. Please solve this in some other way.
 
-So I'm not quite sure what power does to make it go bang..
-
-Anyway, I'm now rewriting the sched_domain creation stuff because I've
-utterly had it with that code..
-
-Also, still waiting to hear from the Power7 folks on how often they
-think to rebuild the topology and how they think that makes sense,
-afaict Power7 does have actual NUMA nodes unlike s390, so I'm still not
-seeing how that's going to work properly at all.
+-Andi
