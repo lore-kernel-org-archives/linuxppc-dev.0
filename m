@@ -1,18 +1,34 @@
-Return-Path: <meador_inge@mentor.com>
-Message-ID: <4D790901.9000701@mentor.com>
-Date: Thu, 10 Mar 2011 11:23:13 -0600
-From: Meador Inge <meador_inge@mentor.com>
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EC650100990
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 11 Mar 2011 04:23:37 +1100 (EST)
+References: <1299630721-4337-1-git-send-email-wilsons@start.ca>
+	<20110310160032.GA20504@alboin.amr.corp.intel.com>
+	<20110310163809.GA20675@alboin.amr.corp.intel.com>
+	<20110310165414.GA6431@fibrous.localdomain>
+In-Reply-To: <20110310165414.GA6431@fibrous.localdomain>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 2/2] powerpc: make MPIC honor the "pic-no-reset" device
-	tree property
-References: <1298671177-19572-1-git-send-email-meador_inge@mentor.com>	
-	<1298671177-19572-3-git-send-email-meador_inge@mentor.com>
-	<1299036140.8833.818.camel@pasglop>
-In-Reply-To: <1299036140.8833.818.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Hollis Blanchard <hollis_blanchard@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----V09616JKR7L2B0NB8391YYHI8HKF8V"
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_0/5=5D_make_*=5Fgate=5Fvma_accep?=
+	=?US-ASCII?Q?t_mm=5Fstruct_instead_of=09task=5Fstruct_II?=
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Thu, 10 Mar 2011 09:22:48 -0800
+To: Stephen Wilson <wilsons@start.ca>, Andi Kleen <ak@linux.intel.com>
+Message-ID: <37e280c3-7f6b-4f1e-9589-68f4a67e4c0a@email.android.com>
+Cc: linux-s390@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	linux-sh@vger.kernel.org, x86@kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Michel Lespinasse <walken@google.com>, linuxppc-dev@lists.ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,117 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/01/2011 09:22 PM, Benjamin Herrenschmidt wrote:
->
->> diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
->> index e000cce..7e1be12 100644
->> --- a/arch/powerpc/include/asm/mpic.h
->> +++ b/arch/powerpc/include/asm/mpic.h
->> @@ -325,6 +325,8 @@ struct mpic
->>   #ifdef CONFIG_PM
->>   	struct mpic_irq_save	*save_data;
->>   #endif
->> +
->> +	int cpu;
->>   };
->
-> Why ? The MPIC isn't specifically associated with a CPU and whatever we
-> pick as default during boot isn't relevant later on, so I don't see why
-> we should have global permanent state here.
+------V09616JKR7L2B0NB8391YYHI8HKF8V
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-I agree.  I shouldn't have cached that.  We should probably introduce a 
-helper function to get the cpuid, though.  The:
+Sorry... I confused them too. It's TS_COMPAT which is problematic.
+-- 
+Sent from my mobile phone. Please pardon any lack of formatting.
 
-	unsigned int cpu = 0;
+Stephen Wilson <wilsons@start.ca> wrote:
 
-	if (mpic->flags & MPIC_PRIMARY)
-		cpu = hard_smp_processor_id();
+On Thu, Mar 10, 2011 at 08:38:09AM -0800, Andi Kleen wrote: > On Thu, Mar 10, 2011 at 08:00:32AM -0800, Andi Kleen wrote: > > On Tue, Mar 08, 2011 at 07:31:56PM -0500, Stephen Wilson wrote: > > > The only architecture this change impacts in any significant way is x86_64. > > > The principle change on that architecture is to mirror TIF_IA32 via > > > a new flag in mm_context_t. > > > > The problem is -- you're adding a likely cache miss on mm_struct for > > every 32bit compat syscall now, even if they don't need mm_struct > > currently (and a lot of them do not) Unless there's a very good > > justification to make up for this performance issue elsewhere > > (including numbers) this seems like a bad idea. > > Hmm I see you're only setting it on exec time actually on rereading > the patches. I thought you were changing TS_COMPAT which is in > the syscall path. > > Never mind. I have no problems with doing such a change on exec > time. OK. Great! Does this mean I have your ACK'e!
+ d by or
+reviewed by? Thanks for taking a look! -- steve 
 
-code is scattered in three places: '_mpic_cpu_write', '_mpic_cpu_read', 
-and 'mpic_init'.
 
->>   /* Check if we have one of those nice broken MPICs with a flipped endian on
->> @@ -622,6 +631,14 @@ static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int irq)
->>   	return (src>= mpic->ipi_vecs[0]&&  src<= mpic->ipi_vecs[3]);
->>   }
->>
->> +/* Determine if the linux irq is a timer interrupt */
->> +static unsigned int mpic_is_timer_interrupt(struct mpic *mpic, unsigned int irq)
->> +{
->> +	unsigned int src = mpic_irq_to_hw(irq);
->> +
->> +	return (src>= mpic->timer_vecs[0]&&  src<= mpic->timer_vecs[3]);
->> +}
->> +
->>
->>   /* Convert a cpu mask from logical to physical cpu numbers. */
->>   static inline u32 mpic_physmask(u32 cpumask)
->> @@ -967,6 +984,15 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
->>   	if (hw>= mpic->irq_count)
->>   		return -EINVAL;
->>
->> +	/* If the MPIC was reset, then all vectors have already been
->> +	 * initialized.  Otherwise, the appropriate vector needs to be
->> +	 * initialized here to ensure that only used sources are setup with
->> +	 * a vector.
->> +	 */
->> +	if (mpic->flags&  MPIC_NO_RESET)
->> +		if (!(mpic_is_ipi(mpic, hw) || mpic_is_timer_interrupt(mpic, hw)))
->> +			mpic_init_vector(mpic, hw);
->> +
->
-> The above isn't useful. Of those two registers you want to initialize,
-> afaik, one (the destination) will be initialized by the core calling
-> into set_affinity when the interrupt is requested, and the other one is
+------V09616JKR7L2B0NB8391YYHI8HKF8V
+Content-Type: text/html;
+ charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-AFAIK, we can't rely on 'set_affinity' always being called.  I don't 
-think it is called at all when !defined(CONFIG_SMP) and if it was, then 
-that would be an error:
+<html><head></head><body>Sorry... I confused them too.  It&#39;s TS_COMPAT which is problematic.<br>
+-- <br>
+Sent from my mobile phone.  Please pardon any lack of formatting.<br><br><div class="gmail_quote">Stephen Wilson &lt;wilsons@start.ca&gt; wrote:<blockquote class="gmail_quote" style="margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
+<div style="white-space: pre-wrap; word-wrap:break-word; ">
+On Thu, Mar 10, 2011 at 08:38:09AM -0800, Andi Kleen wrote:
+&gt; On Thu, Mar 10, 2011 at 08:00:32AM -0800, Andi Kleen wrote:
+&gt; &gt; On Tue, Mar 08, 2011 at 07:31:56PM -0500, Stephen Wilson wrote:
+&gt; &gt; &gt; The only architecture this change impacts in any significant way is x86_64.
+&gt; &gt; &gt; The principle change on that architecture is to mirror TIF_IA32 via
+&gt; &gt; &gt; a new flag in mm_context_t. 
+&gt; &gt; 
+&gt; &gt; The problem is -- you're adding a likely cache miss on mm_struct for
+&gt; &gt; every 32bit compat syscall now, even if they don't need mm_struct
+&gt; &gt; currently (and a lot of them do not) Unless there's a very good
+&gt; &gt; justification to make up for this performance issue elsewhere
+&gt; &gt; (including numbers) this seems like a bad idea.
+&gt; 
+&gt; Hmm I see you're only setting it on exec time actually on rereading
+&gt; the patches. I thought you were changing TS_COMPAT which is in
+&gt; the syscall path.
+&gt; 
+&gt; Never mind.  I have no problems with doing such a change on exec
+&gt; time.
 
-	/* include/linux/irq.h */
+OK.  Great!  Does this mean I have your ACK'ed by or reviewed by?
 
-	#else /* CONFIG_SMP */
 
-	static inline int irq_set_affinity(unsigned int irq,
-		const struct cpumask *m)
-	{
-		return -EINVAL;
-	}
-
-> partially initialized in set_type, I'd say just modify set_type to
-> initialize the source as well, and problem solved, no ?
-
-The priority has to be initialized as well.  They could both be done in 
-'mpic_set_irq_type', but that seems like a weird place since it has 
-nothing to do with actually setting the type.
-
-Since we already have 'mpic_irq_set_priority' and 'mpic_set_vector', 
-perhaps a better option is to add 'mpic_set_destination' and put the 
-following in 'mpic_host_map' (using the cpuid helper function suggested 
-above):
-
-	/* Lazy source init when MPIC_NO_RESET */
-	if (!mpic_is_ipi(mpic, hw) && (mpic->flags & MPIC_NO_RESET)) {
-		mpic_set_vector(virq, hw);
-		mpic_set_destination(virq, mpic_cpuid(mpic));
-		mpic_irq_set_priority(virq, 8);
-	}
-
-It is more overhead, but it reads well.  Thoughts?
-
-> Or is there a chance that the interrupt was left unmasked ?
-
-There shouldn't be.  The original idea was that either the boot program 
-would leave it masked or one of the AMP OSes would boot without 
-'pic-no-reset', which would mask everything.  Most likely the boot program.
-
-> I think it would be kosher to mask it in set_type unconditionally, I don't think it's ever supposed
-> to be called for an enabled interrupt.
-
-I will look into that.
-
-Thanks,
+Thanks for taking a look!
 
 -- 
-Meador Inge     | meador_inge AT mentor.com
-Mentor Embedded | http://www.mentor.com/embedded-software
+steve
+
+</div></blockquote></div></body></html>
+------V09616JKR7L2B0NB8391YYHI8HKF8V--
