@@ -1,19 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 01/18] powerpc: Make decrementer interrupt robust
-	against offlined CPUs
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1299566250-10516-2-git-send-email-benh@kernel.crashing.org>
-References: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
-	<1299566250-10516-2-git-send-email-benh@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-Ljvsphoi5SOGnDgyhoAJ"
-Date: Thu, 10 Mar 2011 19:01:08 +1100
-Message-ID: <1299744068.6272.186.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 02B65B6F9D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Mar 2011 19:54:28 +1100 (EST)
+Date: Thu, 10 Mar 2011 09:54:14 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Jain Priyanka-B32167 <B32167@freescale.com>
+Subject: Re: [rtc-linux] [PATCH] RTC driver(Linux) for PT7C4338 chip.
+Message-ID: <20110310085414.GA4460@pengutronix.de>
+References: <1299124299-26991-1-git-send-email-Priyanka.Jain@freescale.com>
+	<20110303092239.GB3649@pengutronix.de>
+	<470DB7CE2CD0944E9436E7ADEFC02FE313B1C2@039-SN1MPN1-003.039d.mgd.msft.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+In-Reply-To: <470DB7CE2CD0944E9436E7ADEFC02FE313B1C2@039-SN1MPN1-003.039d.mgd.msft.net>
+Cc: "a.zummo@towertech.it" <a.zummo@towertech.it>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>,
+	"p_gortmaker@yahoo.com" <p_gortmaker@yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +32,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-Ljvsphoi5SOGnDgyhoAJ
-Content-Type: text/plain; charset="UTF-8"
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2011-03-08 at 17:37 +1100, Benjamin Herrenschmidt wrote:
-> With some implementations, it is possible that a timer interrupt
-> occurs every few seconds on an offline CPU. In this case, just
-> re-arm the decrementer and return immediately
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/kernel/time.c |   15 +++++++++++----
->  1 files changed, 11 insertions(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 09d31db..ecebc7c 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -577,14 +577,21 @@ void timer_interrupt(struct pt_regs * regs)
->  	struct clock_event_device *evt =3D &decrementer->event;
->  	u64 now;
-> =20
-> +	/* Ensure a positive value is written to the decrementer, or else
-> +	 * some CPUs will continuue to take decrementer exceptions
-                                  ^
+Hi Priyanka,
 
-Seeing as you're moving it anyway, and maybe a full-stop.
+> Though register-set looks identical but features were different.
 
-cheers
+Can you tell what exactly is different?
 
+> And also manufacturer is different.
 
---=-Ljvsphoi5SOGnDgyhoAJ
+That does not matter. If you look at ds_type, there are already
+different manufacturers. They will be correctly distinguished by
+i2c_device_id. The name of the driver itself is, well, just a name.
+
+> But still it might be possible that we can reuse ds1307.c with some
+> modification.
+
+I agree. The driver already supports some variants. Adding one more
+should not hurt. See 97f902b7be4dd6ba03c6aa8d3400783ed687ebd1 for an
+example which added ds3231 support.
+
+> But if I look at the drivers present in drivers/rtc folder. Most of
+> them looks similar but still there are different drivers for different
+> chips.
+
+Yes, it probably could be cleaned up if somebody had the time/hardware.
+
+> Please suggest which way is more preferred: modifying existing
+> drivers(of different manufacturer) or writing new driver.=20
+
+Ususally avoiding code duplication is good, it reduces maintenance
+burden. However, if adding the support turns out to make the original
+code unreadable or hard to follow, a new driver might be justified. This
+is why it is important to understand the differences of the chip as a
+first step. (I have the feeling, that modifying is the way to go here,
+though).
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--HlL+5n6rz5pIUxbD
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAk14hUQACgkQdSjSd0sB4dJWQgCdF0IwDFlyHUeAASDxdiiaLMeS
-RssAoK4qWR9IP8Fi/Si5UNkQVW8NCfoV
-=G1FU
+iEYEARECAAYFAk14kbYACgkQD27XaX1/VRvn0ACgowh2MQ2seXXDjQWZKldLOgvz
+bAsAniHelMFY/2+1diJdpauIybBz9+Tx
+=9dwF
 -----END PGP SIGNATURE-----
 
---=-Ljvsphoi5SOGnDgyhoAJ--
+--HlL+5n6rz5pIUxbD--
