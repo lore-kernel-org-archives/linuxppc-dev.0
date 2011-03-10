@@ -1,33 +1,26 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0F25D1007D1
+Return-Path: <mlcreech@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E38D2B6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Mar 2011 05:07:01 +1100 (EST)
-References: <1299630721-4337-1-git-send-email-wilsons@start.ca>
-	<20110310160032.GA20504@alboin.amr.corp.intel.com>
-	<20110310164022.GA6242@fibrous.localdomain>
-In-Reply-To: <20110310164022.GA6242@fibrous.localdomain>
+	Fri, 11 Mar 2011 05:46:33 +1100 (EST)
+Received: by wyj26 with SMTP id 26so1696972wyj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Mar 2011 10:46:29 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----3X4K0B2TLOA62KIFLERUUQW17HJVJU"
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_0/5=5D_make_*=5Fgate=5Fvma_acc?=
-	=?US-ASCII?Q?ept_mm=5Fstruct_instead_of=09task=5Fstruct?=
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Thu, 10 Mar 2011 09:15:56 -0800
-To: Stephen Wilson <wilsons@start.ca>, Andi Kleen <ak@linux.intel.com>
-Message-ID: <bba01c29-0f31-4e3b-9839-4048b47bbd17@email.android.com>
-Cc: linux-s390@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-	linux-sh@vger.kernel.org, x86@kernel.org,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Michel Lespinasse <walken@google.com>, linuxppc-dev@lists.ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <AANLkTikvPOak6mamoeBrDBS5j_M3KuPmQi6DR5Ng6vki@mail.gmail.com>
+References: <AANLkTikaH6=8JgX6wfqLu0fCFBO0A1hHDTpw7Xb64uKS@mail.gmail.com>
+	<20110219095253.39540a57@wker>
+	<AANLkTikvPOak6mamoeBrDBS5j_M3KuPmQi6DR5Ng6vki@mail.gmail.com>
+Date: Thu, 10 Mar 2011 13:46:29 -0500
+Message-ID: <AANLkTi=B4O7u3S3qsa_zfDKWp33hXw3Yp5j6szRXDgfJ@mail.gmail.com>
+Subject: Re: fsl_udc_core not initializing properly?
+From: "Matthew L. Creech" <mlcreech@gmail.com>
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,67 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------3X4K0B2TLOA62KIFLERUUQW17HJVJU
-Content-Type: text/plain;
- charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On Sat, Feb 19, 2011 at 1:01 PM, Matthew L. Creech <mlcreech@gmail.com> wro=
+te:
+>
+> Yes, it's there. =A0Here's the DTS entry in case anything else sticks out=
+:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0usb@23000 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl-usb2-d=
+r";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x23000 0x1000>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <1>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <0>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D <&ipi=
+c>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <38 0x8>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0phy_type =3D "utmi_wide";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dr_mode =3D "peripheral";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0sleep =3D <&pmc 0x00300000=
+>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>
 
-TIF_IA32 is set during the execution of a 32-bit system call - so touched on each compat system call. Is this the actual flag you want? A 32-bit address space flag is different from TIF_IA32.
--- 
-Sent from my mobile phone. Please pardon any lack of formatting.
+Hi Anatolij,
 
-Stephen Wilson <wilsons@start.ca> wrote:
+I tracked the problem down to a change made in September, which
+happens to be yours:
 
-On Thu, Mar 10, 2011 at 08:00:32AM -0800, Andi Kleen wrote: > On Tue, Mar 08, 2011 at 07:31:56PM -0500, Stephen Wilson wrote: > > > > Morally, the question of whether an address lies in a gate vma should be asked > > with respect to an mm, not a particular task. > > > > Practically, dropping the dependency on task_struct will help make current and > > future operations on mm's more flexible and convenient. In particular, it > > allows some code paths to avoid the need to hold task_lock. > > > > The only architecture this change impacts in any significant way is x86_64. > > The principle change on that architecture is to mirror TIF_IA32 via > > a new flag in mm_context_t. > > The problem is -- you're adding a likely cache miss on mm_struct for > every 32bit compat syscall now, even if they don't need mm_struct > currently (and a lot of them do not) Unless there's a very good > justification to make up for this performance issue elsewhere > (including numbers) this seems like !
- a bad
-idea. I do not think this will result in cache misses on the scale you suggest. I am simply mirroring the *state* of the TIF_IA32 flag in mm_struct, not testing/accessing it in the same way. The only place where this flag is accessed (outside the exec() syscall path) is in x86/mm/init_64.c, get_gate_vma(), which in turn is needed by a few, relatively heavy weight, page locking/pinning routines on the mm side (get_user_pages, for example). Patches 3 and 4 in the series show the extent of the change. Or am I missing something? > > /proc/pid/mem. I will be posting the second series to lkml shortly. These > > Making every syscall slower for /proc/pid/mem doesn't seem like a good > tradeoff to me. Please solve this in some other way. > > -Andi -- steve 
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3D126512e3f274802ca65ebeca8660237f0361ad48
 
+When I roll this back, everything works fine again.
 
-------3X4K0B2TLOA62KIFLERUUQW17HJVJU
-Content-Type: text/html;
- charset=utf-8
-Content-Transfer-Encoding: 8bit
+First of all, I noticed that fsl-mph-dr-of.c isn't even compiling for
+me (even though I have the option enabled in my .config), because it's
+been placed in "usb/host/", and I'm only using device/gadget-mode USB.
 
-<html><head></head><body>TIF_IA32 is set during the execution of a 32-bit system call - so touched on each compat system call. Is this the actual flag you want? A 32-bit address space flag is different from TIF_IA32.<br>
--- <br>
-Sent from my mobile phone.  Please pardon any lack of formatting.<br><br><div class="gmail_quote">Stephen Wilson &lt;wilsons@start.ca&gt; wrote:<blockquote class="gmail_quote" style="margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
-<div style="white-space: pre-wrap; word-wrap:break-word; ">
-On Thu, Mar 10, 2011 at 08:00:32AM -0800, Andi Kleen wrote:
-&gt; On Tue, Mar 08, 2011 at 07:31:56PM -0500, Stephen Wilson wrote:
-&gt; &gt; 
-&gt; &gt; Morally, the question of whether an address lies in a gate vma should be asked
-&gt; &gt; with respect to an mm, not a particular task.
-&gt; &gt; 
-&gt; &gt; Practically, dropping the dependency on task_struct will help make current and
-&gt; &gt; future operations on mm's more flexible and convenient.  In particular, it
-&gt; &gt; allows some code paths to avoid the need to hold task_lock.
-&gt; &gt; 
-&gt; &gt; The only architecture this change impacts in any significant way is x86_64.
-&gt; &gt; The principle change on that architecture is to mirror TIF_IA32 via
-&gt; &gt; a new flag in mm_context_t. 
-&gt; 
-&gt; The problem is -- you're adding a likely cache miss on mm_struct for
-&gt; every 32bit compat syscall now, even if they don't need mm_struct
-&gt; currently (and a lot of them do not) Unless there's a very good
-&gt; justification to make up for this performance issue elsewhere
-&gt; (including numbers) this seems like a bad idea.
+I edited the top-level Makefile to just force it into "usb/host/", and
+that makes sure that your driver gets built (and it's probed just fine
+at runtime).  But that still didn't solve the problem - as before,
+fsl_udc_probe() is never being called.
 
-I do not think this will result in cache misses on the scale you suggest.  I am simply mirroring the *state* of the TIF_IA32 flag in mm_struct, not testing/accessing it in the same way.
+Did you test this change in device mode?  I'm wondering if there's
+something different about my configuration that prevents it from
+working.  My config is uploaded here if it helps:
 
-The only place where this flag is accessed (outside the exec() syscall path) is in x86/mm/init_64.c, get_gate_vma(),  which in turn is needed by a few, relatively heavy weight, page locking/pinning routines on the mm side (get_user_pages, for example).  Patches 3 and 4 in the series show the extent of the change.
+http://mcreech.com/work/linux.config
 
-Or am I missing something?
+Thanks!
 
-
-&gt; &gt; /proc/pid/mem.  I will be posting the second series to lkml shortly.  These
-&gt; 
-&gt; Making every syscall slower for /proc/pid/mem doesn't seem like a good
-&gt; tradeoff to me. Please solve this in some other way.
-&gt; 
-&gt; -Andi
-
--- 
-steve
-
-</div></blockquote></div></body></html>
-------3X4K0B2TLOA62KIFLERUUQW17HJVJU--
+--=20
+Matthew L. Creech
