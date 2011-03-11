@@ -1,21 +1,20 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB058B6FBD
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1E48B6FC0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Mar 2011 05:04:20 +1100 (EST)
-Received: by iym7 with SMTP id 7so3033356iym.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Mar 2011 10:04:17 -0800 (PST)
+	Sat, 12 Mar 2011 07:26:03 +1100 (EST)
+Message-ID: <56564.94.211.195.167.1299875156.squirrel@gate.crashing.org>
+In-Reply-To: <AANLkTinfxdckX=sYk5fX4vRhnmJNTHnytWkUW0w_HMj4@mail.gmail.com>
+References: <AANLkTinfxdckX=sYk5fX4vRhnmJNTHnytWkUW0w_HMj4@mail.gmail.com>
+Date: Fri, 11 Mar 2011 21:25:56 +0100 (CET)
+Subject: Re: ongoing mesh saga ...
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "kevin diggs" <diggskevin38@gmail.com>
 MIME-Version: 1.0
-Date: Fri, 11 Mar 2011 12:04:17 -0600
-Message-ID: <AANLkTinfxdckX=sYk5fX4vRhnmJNTHnytWkUW0w_HMj4@mail.gmail.com>
-Subject: ongoing mesh saga ...
-From: kevin diggs <diggskevin38@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+> Is there any chance someone with a compiler newer than 4.3.5 would be
+> willing to get me -S output from a mesh compile (preferably not a
+> module unless it does not make any difference) for 2.6.36. Using:
+>
+> head -1 <top>/drivers/scsi/.mesh.o.cmd
+>
+> you can get a command line which can then be edited to get a script to
+> do a -S compile (watch out for the '\#' in KBUILD_STR(s)).
 
-While trying to figure out why the MESH SCSI controller will not work
-with the 4.3.5 compiler but will work when compiled with 4.1.2, I
-noticed some ... unfortunate behavior from the 4.3.5 compiler. Before
-I try to see if I can fix it (i.e. the compiler), it would be nice to
-see if the "issue" still exists.
+make drivers/scsi/mesh.s
 
-Is there any chance someone with a compiler newer than 4.3.5 would be
-willing to get me -S output from a mesh compile (preferably not a
-module unless it does not make any difference) for 2.6.36. Using:
+File sent separately, I doubt the list wants to see it.
 
-head -1 <top>/drivers/scsi/.mesh.o.cmd
 
-you can get a command line which can then be edited to get a script to
-do a -S compile (watch out for the '\#' in KBUILD_STR(s)).
-
-Thanks!
-
-kevin
+Segher
