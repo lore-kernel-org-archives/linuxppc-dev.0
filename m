@@ -1,27 +1,20 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E38EB6FAF
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 95994B6F81
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Mar 2011 12:43:15 +1100 (EST)
-Received: by iwc10 with SMTP id 10so3373099iwc.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Mar 2011 17:43:12 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <56927.94.211.195.167.1299893950.squirrel@gate.crashing.org>
-References: <AANLkTinfxdckX=sYk5fX4vRhnmJNTHnytWkUW0w_HMj4@mail.gmail.com>
-	<56564.94.211.195.167.1299875156.squirrel@gate.crashing.org>
-	<AANLkTinzpvV3Y7FXTPo8yPrE69CA1C1ejBMqC+O5o9zZ@mail.gmail.com>
-	<56927.94.211.195.167.1299893950.squirrel@gate.crashing.org>
-Date: Fri, 11 Mar 2011 19:43:12 -0600
-Message-ID: <AANLkTikGEGTWzfETpzV982upPgxxkj1Em9VkJnakQbdb@mail.gmail.com>
-Subject: Re: ongoing mesh saga ...
-From: kevin diggs <diggskevin38@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat, 12 Mar 2011 16:11:35 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p2C5BTiQ029557
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2011 23:11:30 -0600
+Subject: Anybody with a PowerBook3,3 or PowerBook3,4 ?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 12 Mar 2011 16:11:28 +1100
+Message-ID: <1299906688.22236.667.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+If anybody is around with one of these machines, any chance they
+can send me a tarball of /proc/device-tree ?
 
-Good to know. I just tried this on an x86 laptop. It was NOT happy!
-And, obviously, I am not using a mesh SCSI controller on my Toshiba
-A75.
+Thanks !
 
-And thanks again for your time!
-
-kevin
-
-On Fri, Mar 11, 2011 at 7:39 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->>> make drivers/scsi/mesh.s
->>>
->> ??? I thought I have tried this in the past and it did not work? The
->> make <path>/<file>.s thing?
->>
->> Thanks for the tip!
->
-> You need to have the driver in your kernel config, or things will
-> go weird.
->
->
-> Segher
->
+Cheers,
+Ben.
