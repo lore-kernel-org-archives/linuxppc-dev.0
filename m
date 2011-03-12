@@ -1,21 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0830B6F74
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0E38EB6FAF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Mar 2011 12:39:16 +1100 (EST)
-Message-ID: <56927.94.211.195.167.1299893950.squirrel@gate.crashing.org>
-In-Reply-To: <AANLkTinzpvV3Y7FXTPo8yPrE69CA1C1ejBMqC+O5o9zZ@mail.gmail.com>
+	Sat, 12 Mar 2011 12:43:15 +1100 (EST)
+Received: by iwc10 with SMTP id 10so3373099iwc.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 11 Mar 2011 17:43:12 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <56927.94.211.195.167.1299893950.squirrel@gate.crashing.org>
 References: <AANLkTinfxdckX=sYk5fX4vRhnmJNTHnytWkUW0w_HMj4@mail.gmail.com>
 	<56564.94.211.195.167.1299875156.squirrel@gate.crashing.org>
 	<AANLkTinzpvV3Y7FXTPo8yPrE69CA1C1ejBMqC+O5o9zZ@mail.gmail.com>
-Date: Sat, 12 Mar 2011 02:39:10 +0100 (CET)
+	<56927.94.211.195.167.1299893950.squirrel@gate.crashing.org>
+Date: Fri, 11 Mar 2011 19:43:12 -0600
+Message-ID: <AANLkTikGEGTWzfETpzV982upPgxxkj1Em9VkJnakQbdb@mail.gmail.com>
 Subject: Re: ongoing mesh saga ...
-From: "Segher Boessenkool" <segher@kernel.crashing.org>
-To: "kevin diggs" <diggskevin38@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+From: kevin diggs <diggskevin38@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,15 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> make drivers/scsi/mesh.s
+Hi,
+
+Good to know. I just tried this on an x86 laptop. It was NOT happy!
+And, obviously, I am not using a mesh SCSI controller on my Toshiba
+A75.
+
+And thanks again for your time!
+
+kevin
+
+On Fri, Mar 11, 2011 at 7:39 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+>>> make drivers/scsi/mesh.s
+>>>
+>> ??? I thought I have tried this in the past and it did not work? The
+>> make <path>/<file>.s thing?
 >>
-> ??? I thought I have tried this in the past and it did not work? The
-> make <path>/<file>.s thing?
+>> Thanks for the tip!
 >
-> Thanks for the tip!
-
-You need to have the driver in your kernel config, or things will
-go weird.
-
-
-Segher
+> You need to have the driver in your kernel config, or things will
+> go weird.
+>
+>
+> Segher
+>
