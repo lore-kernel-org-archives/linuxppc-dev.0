@@ -1,15 +1,25 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Date: Sun, 13 Mar 2011 16:55:04 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH] crypto: add support for the Freescale SEC4/CAAM
-Message-ID: <20110313085504.GA12392@gondor.apana.org.au>
-References: <20110308193421.67e2aea6.kim.phillips@freescale.com>
+Return-Path: <khc@pm.waw.pl>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Richard Cochran <richardcochran@gmail.com>
+Subject: Re: [PATCH V12 3/4] ptp: Added a clock driver for the IXP46x.
+References: <cover.1298878618.git.richard.cochran@omicron.at>
+	<cd6ddff0dcca60ac88b35660505d7bf54ad32405.1298878618.git.richard.cochran@omicron.at>
+Date: Mon, 14 Mar 2011 00:40:48 +0100
+In-Reply-To: <cd6ddff0dcca60ac88b35660505d7bf54ad32405.1298878618.git.richard.cochran@omicron.at>
+	(Richard Cochran's message of "Mon, 28 Feb 2011 08:58:27 +0100")
+Message-ID: <m3ei6azj0f.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110308193421.67e2aea6.kim.phillips@freescale.com>
-Cc: Steve Cornelius <sec@pobox.com>, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Rodolfo Giometti <giometti@linux.it>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
+	John Stultz <john.stultz@linaro.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+	Mike Frysinger <vapier@gentoo.org>,
+	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,28 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 08, 2011 at 07:34:21PM -0600, Kim Phillips wrote:
-> The SEC4 supercedes the SEC2.x/3.x as Freescale's
-> Integrated Security Engine.  Its programming model is
-> incompatible with all prior versions of the SEC (talitos).
-> 
-> The SEC4 is also known as the Cryptographic Accelerator
-> and Assurance Module (CAAM); this driver is named caam.
-> 
-> This initial submission does not include support for Data Path
-> mode operation - AEAD descriptors are submitted via the job
-> ring interface, while the Queue Interface (QI) is enabled
-> for use by others.  Only AEAD algorithms are implemented
-> at this time, for use with IPsec.
-> 
-> Many thanks to the Freescale STC team for their contributions
-> to this driver.
-> 
-> Signed-off-by: Steve Cornelius <sec@pobox.com>
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Richard Cochran <richardcochran@gmail.com> writes:
 
-Patch applied.  Thanks a lot!
+> This patch adds a driver for the hardware time stamping unit found on the
+> IXP465. The basic clock operations and an external trigger are implemented.
+>
+> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
+> Acked-by: John Stultz <johnstul@us.ibm.com>
+> ---
+>  arch/arm/mach-ixp4xx/include/mach/ixp46x_ts.h |   78 ++++++
+>  drivers/net/arm/ixp4xx_eth.c                  |  192 ++++++++++++++-
+>  drivers/ptp/Kconfig                           |   13 +
+>  drivers/ptp/Makefile                          |    1 +
+>  drivers/ptp/ptp_ixp46x.c                      |  332 +++++++++++++++++++++++++
+
+I can't see any obvious problem in this code, though I don't have IXP46x
+hardware.
+
+Acked-by: Krzysztof Halasa <khc@pm.waw.pl>
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Krzysztof Halasa
