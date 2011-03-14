@@ -1,25 +1,25 @@
-Return-Path: <lars.ellenberg@linbit.com>
-Received: from mail09.linbit.com (mail09.linbit.com [212.69.161.110])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.linbit.com",
-	Issuer "StartCom Class 2 Primary Intermediate Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4635CB6F7F
+Return-Path: <B32579@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 813ECB6F78
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Mar 2011 19:40:52 +1100 (EST)
-Date: Mon, 14 Mar 2011 09:33:22 +0100
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Jens Axboe <axboe@kernel.dk>
-Subject: Re: linux-next: build failure after merge of the final tree (block
-	tree  related)
-Message-ID: <20110314083322.GA11932@barkeeper1-xen.linbit>
-References: <20110311175830.29a387b2.sfr@canb.auug.org.au>
-	<4D79CB66.2020302@kernel.dk>
+	Mon, 14 Mar 2011 21:34:04 +1100 (EST)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+	"jgarzik@pobox.com" <jgarzik@pobox.com>
+Subject: RE: [PATCH][v3] driver/FSL SATA:Fix wrong Device Error Register usage
+Date: Mon, 14 Mar 2011 04:12:17 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F874131E79@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1299655038-727-1-git-send-email-prabhakar@freescale.com>
+In-Reply-To: <1299655038-727-1-git-send-email-prabhakar@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D79CB66.2020302@kernel.dk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>,
-	linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: "meet2prabhu@gmail.com" <meet2prabhu@gmail.com>,
+	Kalra Ashish-B00888 <B00888@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 11, 2011 at 08:12:38AM +0100, Jens Axboe wrote:
-> On 2011-03-11 07:58, Stephen Rothwell wrote:
-> > Hi all,
-> > 
-> > After merging the final tree, today's linux-next build (powerpc
-> > allyesconfig) failed like this:
-> > 
-> > drivers/char/tpm/tpm_tis.c:96: warning: 'is_itpm' defined but not used
-> > drivers/block/drbd/drbd_bitmap.c: In function '__bm_change_bits_to':
-> > drivers/block/drbd/drbd_bitmap.c:1287: error: implicit declaration of function 'generic___test_and_set_le_bit'
-> > drivers/block/drbd/drbd_bitmap.c:1289: error: implicit declaration of function 'generic___test_and_clear_le_bit'
-> > drivers/block/drbd/drbd_bitmap.c: In function 'drbd_bm_test_bit':
-> > drivers/block/drbd/drbd_bitmap.c:1438: error: implicit declaration of function 'generic_test_le_bit'
-> > 
-> > Caused by commit 4b0715f09655 ("drbd: allow petabyte storage on 64bit
-> > arch").
-> > 
-> > I have applied this patch for today (surely there is a better way):
-> 
-> Thanks for not dropping it, I'll let the drbd guys send in a proper fix
-> and get it committed.
+Hi Jeff,
 
-Should that be fixed by adding
-#include <asm-generic/bitops/le.h>
-to 
-arch/powerpc/include/asm/bitops.h
-(and arch/s390/include/asm/bitops.h, possibly others?)
+I am not finding any new comments on this.
 
-Or are we expected to include that ourselves, directly?
+Could you please ACK this patch so that it can be applied on external list.=
+=20
 
-We probably need to select CONFIG_GENERIC_FIND_NEXT_BIT
-from our Kconfig as well?
+--Prabhakar
 
-	Lars
+
+> -----Original Message-----
+> From: Kushwaha Prabhakar-B32579
+> Sent: Wednesday, March 09, 2011 12:47 PM
+> To: linux-ide@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org; jgarzik@pobox.com;
+> meet2prabhu@gmail.com; Kushwaha Prabhakar-B32579; Kalra Ashish-B00888
+> Subject: [PATCH][v3] driver/FSL SATA:Fix wrong Device Error Register
+> usage
+>=20
+> When a single device error is detected, the device under the error is
+> indicated by the error bit set in the DER. There is a one to one mapping
+> between register bit and devices on Port multiplier(PMP) i.e. bit 0
+> represents PMP device 0 and bit 1 represents PMP device 1 etc.
+>=20
+> Current implementation treats Device error register value as device
+> number not set of bits representing multiple device on PMP. It is changed
+> to consider bit level.
+> No need to check for each set bit as all command is going to be aborted.
+>=20
+> Signed-off-by: Ashish Kalra <B00888@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> ---
+>=20
+>  git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> (branch master)
+>=20
+>  This patch is already gone through review of linuxppc-dev mail list.
+>  Making CC linuxppc-dev@lists.ozlabs.org
+>=20
+>  Changes for v2: Incorporated Sergei Shtylyov's comment
+> 	- Put space after -
+> 	- added a line
+>  Changes for v3: Incorporated David Laight's comment
+>  	- Condition check for dereg 0 for hardware error
+>=20
+>  drivers/ata/sata_fsl.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c index
+> b0214d0..ad84ddc 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -1040,12 +1040,15 @@ static void sata_fsl_error_intr(struct ata_port
+> *ap)
+>=20
+>  		/* find out the offending link and qc */
+>  		if (ap->nr_pmp_links) {
+> +			unsigned int dev_num;
+> +
+>  			dereg =3D ioread32(hcr_base + DE);
+>  			iowrite32(dereg, hcr_base + DE);
+>  			iowrite32(cereg, hcr_base + CE);
+>=20
+> -			if (dereg < ap->nr_pmp_links) {
+> -				link =3D &ap->pmp_link[dereg];
+> +			dev_num =3D ffs(dereg) - 1;
+> +			if (dev_num < ap->nr_pmp_links && dereg !=3D 0) {
+> +				link =3D &ap->pmp_link[dev_num];
+>  				ehi =3D &link->eh_info;
+>  				qc =3D ata_qc_from_tag(ap, link->active_tag);
+>  				/*
+> --
+> 1.7.3
