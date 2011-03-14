@@ -1,32 +1,23 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 969C4B6FCF
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EA69BB6FBD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Mar 2011 07:36:19 +1100 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p2EKGshj022512
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2011 16:16:54 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 604CE38C8038
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Mar 2011 16:36:12 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p2EKaFPb346540
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2011 16:36:15 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p2EKaEbm006779
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2011 16:36:15 -0400
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] cxgb4: use pgprot_writecombine() on powerpc
-Date: Mon, 14 Mar 2011 13:36:11 -0700
-Message-Id: <1300134971-16752-1-git-send-email-nacc@us.ibm.com>
-Cc: Steve Wise <swise@opengridcomputing.com>, linuxppc-dev@lists.ozlabs.org,
-	Anton Blanchard <anton@samba.org>
+	Tue, 15 Mar 2011 07:38:15 +1100 (EST)
+Subject: Re: linux-next: build failure after merge of the final tree
+	(powerpc tree related)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20110314203827.4b61818e.sfr@canb.auug.org.au>
+References: <20110314203827.4b61818e.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Mar 2011 07:37:54 +1100
+Message-ID: <1300135074.22236.788.camel@pasglop>
+Mime-Version: 1.0
+Cc: Lennert Buytenhek <buytenh@secretlab.ca>, linux-kernel@vger.kernel.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,39 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit fe3cc0d99de6a9bf99b6c279a8afb5833888c1f7 ("powerpc: Add
-pgprot_writecombine") in benh's tree exposes the pgprot_writecombine()
-API to drivers on powerpc. cxgb4 has an open-coded version of the same,
-so use the common API now that it's available.
+On Mon, 2011-03-14 at 20:38 +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> After merging the final tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> drivers/gpio/langwell_gpio.c: In function 'lnw_irq_handler':
+> drivers/gpio/langwell_gpio.c:210: error: 'struct irq_desc' has no member named 'chip'
+> drivers/gpio/langwell_gpio.c:211: error: 'struct irq_desc' has no member named 'chip'
+> 
+> Caused by commit 17b9f9e2653a ("powerpc: Enable
+> GENERIC_HARDIRQS_NO_DEPRECATED") enabling
+> CONFIG_GENERIC_HARDIRQS_NO_DEPRECATED for powerpc without previously
+> fixing up the above driver.
+> 
+> I have reverted that commit for today.
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Steve Wise <swise@opengridcomputing.com>
-Cc: Anton Blanchard <anton@samba.org>
+Except that the above driver has nothing to do with powerpc, it's some
+Intel Moorestown stuff...
 
----
+It should be fixed regardless I suppose, CC'ing Thomas.
 
-Given that this depends on a patch in Ben's tree, should this go in via
-the powerpc tree? Presuming Steve acks it, of course.
-
- drivers/infiniband/hw/cxgb4/t4.h |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/infiniband/hw/cxgb4/t4.h b/drivers/infiniband/hw/cxgb4/t4.h
-index 7000442..2fce083 100644
---- a/drivers/infiniband/hw/cxgb4/t4.h
-+++ b/drivers/infiniband/hw/cxgb4/t4.h
-@@ -269,11 +269,8 @@ struct t4_swsqe {
- 
- static inline pgprot_t t4_pgprot_wc(pgprot_t prot)
- {
--#if defined(__i386__) || defined(__x86_64__)
-+#if defined(__i386__) || defined(__x86_64__) || defined(CONFIG_PPC64)
- 	return pgprot_writecombine(prot);
--#elif defined(CONFIG_PPC64)
--	return __pgprot((pgprot_val(prot) | _PAGE_NO_CACHE) &
--			~(pgprot_t)_PAGE_GUARDED);
- #else
- 	return pgprot_noncached(prot);
- #endif
--- 
-1.7.1
+Cheers,
+Ben.
