@@ -1,19 +1,11 @@
-Return-Path: <swise@opengridcomputing.com>
-Received: from smtp.opengridcomputing.com (smtp.opengridcomputing.com
-	[209.198.142.2]) by ozlabs.org (Postfix) with ESMTP id B8E1DB6FA0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Mar 2011 06:01:27 +1100 (EST)
-Message-ID: <4D7E5FF9.3030702@opengridcomputing.com>
-Date: Mon, 14 Mar 2011 13:35:37 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-MIME-Version: 1.0
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: [PATCH] powerpc: Add pgprot_writecombine
-References: <20110301170047.601c83b7@kryten> <20110314183300.GA2932@us.ibm.com>
-In-Reply-To: <20110314183300.GA2932@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
-	swise@chelsio.com
+Return-Path: <meador_inge@mentor.com>
+From: Meador Inge <meador_inge@mentor.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 0/3] powerpc: Open PIC binding and "pic-no-reset"
+Date: Mon, 14 Mar 2011 15:01:04 -0500
+Message-Id: <1300132867-4840-1-git-send-email-meador_inge@mentor.com>
+Cc: devicetree-discuss@lists.ozlabs.org,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +15,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch set provides a binding for Open PIC and implements support for
+a new property, specified by that binding, called "pic-no-reset".
 
-On 03/14/2011 01:33 PM, Nishanth Aravamudan wrote:
-> On 01.03.2011 [17:00:47 +1100], Anton Blanchard wrote:
->> A number of drivers are using pgprot_writecombine() to enable write
->> combining on userspace mappings. Implement it on powerpc.
-> Given this patch, should drivers/infiniband/hw/cxgb4/t4.h
->
-> be updated?:
->
+v5 - Moved the Open PIC binding to its rightful home of
+     ".../Documentation/devicetree/bindings/".  Also, fixed up
+     the lazy reset code to take better advantage of existing
+     functions.  Finally, did some minor refactoring to put
+     cpu id fetching in its own helper function.
 
-Yes.
+v4 - Per Ben's feedback the protected sources implementation was left
+     completely intact.  As such, the DTS cleanup and "protected-sources"
+     removal patches were dropped.
 
-> static inline pgprot_t t4_pgprot_wc(pgprot_t prot)
-> {
-> #if defined(__i386__) || defined(__x86_64__)
->          return pgprot_writecombine(prot);
-> #elif defined(CONFIG_PPC64)
->          return __pgprot((pgprot_val(prot) | _PAGE_NO_CACHE)&
->                          ~(pgprot_t)_PAGE_GUARDED);
-> #else
->          return pgprot_noncached(prot);
-> #endif
-> }
->
-> Thanks,
-> Nish
->
->> Signed-off-by: Anton Blanchard<anton@samba.org>
->> ---
->>
->> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
->> index 89f1587..88b0bd9 100644
->> --- a/arch/powerpc/include/asm/pgtable.h
->> +++ b/arch/powerpc/include/asm/pgtable.h
->> @@ -170,6 +170,7 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
->>   #define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot)&  ~_PAGE_CACHE_CTL) | \
->>   				            _PAGE_COHERENT | _PAGE_WRITETHRU))
->>
->> +#define pgprot_writecombine pgprot_noncached_wc
->>
->>   struct file;
->>   extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+v3 - the Open PIC binding was changed to be more consistent with existing
+     bindings, several DTS files were cleaned up, "no-reset" was changed to
+     "pic-no-reset", and a check to treat "protected-sources" as a synonym for
+     "pic-no-reset" was added.
+
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
+
+Meador Inge (3):
+  powerpc: document the Open PIC device tree binding
+  powerpc: make MPIC honor the "pic-no-reset" device tree property
+  powerpc: factoring mpic cpu id fetching into a function
+
+ Documentation/devicetree/bindings/open-pic.txt |   98 ++++++++++++++++++++++++
+ arch/powerpc/include/asm/mpic.h                |    4 +
+ arch/powerpc/sysdev/mpic.c                     |   85 +++++++++++++++-----
+ 3 files changed, 165 insertions(+), 22 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/open-pic.txt
