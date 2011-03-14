@@ -1,24 +1,15 @@
-Return-Path: <buytenh@wantstofly.org>
-Received: from mail.wantstofly.org (fw.wantstofly.org [80.101.37.227])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35156B72F5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Mar 2011 08:21:30 +1100 (EST)
-Date: Mon, 14 Mar 2011 22:21:25 +0100
-From: Lennert Buytenhek <buytenh@secretlab.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: linux-next: build failure after merge of the final tree (powerpc
-	tree related)
-Message-ID: <20110314212125.GA9616@mail.wantstofly.org>
-References: <20110314203827.4b61818e.sfr@canb.auug.org.au>
-	<1300135074.22236.788.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1300135074.22236.788.camel@pasglop>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <R1AAHA@freescale.com>
+Date: Mon, 14 Mar 2011 17:42:47 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+	<devicetree-discuss@lists.ozlabs.org>, <linux-crypto@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] crypto: caam - standardize device tree naming convention to
+	utilize '-vX.Y'
+Message-ID: <20110314174247.e5515448.kim.phillips@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Steve Cornelius <sec@pobox.com>, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +19,395 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2011 at 07:37:54AM +1100, Benjamin Herrenschmidt wrote:
+Help clarify that the number trailing in compatible nomenclature
+is the version number of the device, i.e., change:
 
-> > Hi all,
-> > 
-> > After merging the final tree, today's linux-next build (powerpc
-> > allyesconfig) failed like this:
-> > 
-> > drivers/gpio/langwell_gpio.c: In function 'lnw_irq_handler':
-> > drivers/gpio/langwell_gpio.c:210: error: 'struct irq_desc' has no member named 'chip'
-> > drivers/gpio/langwell_gpio.c:211: error: 'struct irq_desc' has no member named 'chip'
-> > 
-> > Caused by commit 17b9f9e2653a ("powerpc: Enable
-> > GENERIC_HARDIRQS_NO_DEPRECATED") enabling
-> > CONFIG_GENERIC_HARDIRQS_NO_DEPRECATED for powerpc without previously
-> > fixing up the above driver.
-> > 
-> > I have reverted that commit for today.
-> 
-> Except that the above driver has nothing to do with powerpc, it's some
-> Intel Moorestown stuff...
+"fsl,p4080-sec4.0", "fsl,sec4.0";
 
-I sent this this morning:
+to:
 
-	http://marc.info/?l=linux-kernel&m=130009963219374&w=2
+"fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
+
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Cc: Kumar Gala <kumar.gala@freescale.com>
+Cc: Steve Cornelius <sec@pobox.com>
+---
+ .../devicetree/bindings/crypto/fsl-sec4.txt        |   68 ++++++++++----------
+ arch/powerpc/boot/dts/p4080ds.dts                  |   41 ++++++------
+ drivers/crypto/caam/caamalg.c                      |    4 +-
+ drivers/crypto/caam/ctrl.c                         |    6 +-
+ 4 files changed, 60 insertions(+), 59 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+index fce16a8..568aa3c 100644
+--- a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
++++ b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+@@ -53,7 +53,7 @@ PROPERTIES
+    - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec4.0","fsl,sec-4.0"
++      Definition: Must include "fsl,p4080-sec-v4.0","fsl,sec-v4.0"
+ 
+    - #address-cells
+        Usage: required
+@@ -72,7 +72,7 @@ PROPERTIES
+       Usage: required
+       Value type: <prop-encoded-array>
+       Definition: A standard property.  Specifies the physical
+-          address and length of the SEC4.0 configuration registers.
++          address and length of the SEC4 configuration registers.
+           registers
+ 
+    - ranges
+@@ -105,7 +105,7 @@ PROPERTIES
+ 
+ EXAMPLE
+ 	crypto@300000 {
+-		compatible = "fsl,p4080-sec4.0", "fsl,sec4.0";
++		compatible = "fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		reg = <0x300000 0x10000>;
+@@ -127,7 +127,7 @@ P4080 Job Ring (JR) Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec4.0-job-ring","fsl,sec4.0-job-ring"
++      Definition: Must include "fsl,p4080-sec-v4.0-job-ring","fsl,sec-v4.0-job-ring"
+ 
+   - reg
+       Usage: required
+@@ -163,8 +163,8 @@ P4080 Job Ring (JR) Node
+ 
+ EXAMPLE
+ 	jr@1000 {
+-		compatible = "fsl,p4080-sec4.0-job-ring",
+-			     "fsl,sec4.0-job-ring";
++		compatible = "fsl,p4080-sec-v4.0-job-ring",
++			     "fsl,sec-v4.0-job-ring";
+ 		reg = <0x1000 0x1000>;
+ 		fsl,liodn = <0x081>;
+ 		interrupt-parent = <&mpic>;
+@@ -186,7 +186,7 @@ P4080 Run Time Integrity Check (RTIC) Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec4.0-rtic","fsl,sec4.0-rtic".
++      Definition: Must include "fsl,p4080-sec-v4.0-rtic","fsl,sec-v4.0-rtic".
+ 
+    - #address-cells
+        Usage: required
+@@ -219,8 +219,8 @@ P4080 Run Time Integrity Check (RTIC) Node
+ 
+ EXAMPLE
+ 	rtic@6000 {
+-		compatible = "fsl,p4080-sec4.0-rtic",
+-			     "fsl,sec4.0-rtic";
++		compatible = "fsl,p4080-sec-v4.0-rtic",
++			     "fsl,sec-v4.0-rtic";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		reg = <0x6000 0x100>;
+@@ -238,7 +238,7 @@ P4080 Run Time Integrity Check (RTIC) Memory Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec4.0-rtic-memory","fsl,sec4.0-rtic-memory".
++      Definition: Must include "fsl,p4080-sec-v4.0-rtic-memory","fsl,sec-v4.0-rtic-memory".
+ 
+   - reg
+       Usage: required
+@@ -270,8 +270,8 @@ P4080 Run Time Integrity Check (RTIC) Memory Node
+ 
+ EXAMPLE
+ 	rtic-a@0 {
+-		compatible = "fsl,p4080-sec4.0-rtic-memory",
+-			     "fsl,sec4.0-rtic-memory";
++		compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++			     "fsl,sec-v4.0-rtic-memory";
+ 		reg = <0x00 0x20 0x100 0x80>;
+ 		fsl,liodn   = <0x03c>;
+ 		fsl,rtic-region  = <0x12345678 0x12345678 0x12345678>;
+@@ -288,7 +288,7 @@ P4080 Secure Non-Volatile Storage (SNVS) Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec4.0-mon", "fsl,sec4.0-mon".
++      Definition: Must include "fsl,p4080-sec-v4.0-mon", "fsl,sec-v4.0-mon".
+ 
+   - reg
+       Usage: required
+@@ -315,7 +315,7 @@ P4080 Secure Non-Volatile Storage (SNVS) Node
+ 
+ EXAMPLE
+ 	sec_mon@314000 {
+-		compatible = "fsl,p4080-sec4.0-mon", "fsl,sec4.0-mon";
++		compatible = "fsl,p4080-sec-v4.0-mon", "fsl,sec-v4.0-mon";
+ 		reg = <0x314000 0x1000>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <93 2>;
+@@ -325,7 +325,7 @@ EXAMPLE
+ FULL EXAMPLE
+ 
+ 	crypto: crypto@300000 {
+-		compatible = "fsl,p4080-sec4.0", "fsl,sec4.0";
++		compatible = "fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		reg = <0x300000 0x10000>;
+@@ -334,73 +334,73 @@ FULL EXAMPLE
+ 		interrupts = <92 2>;
+ 
+ 		sec_jr0: jr@1000 {
+-			compatible = "fsl,p4080-sec4.0-job-ring",
+-				     "fsl,sec4.0-job-ring";
++			compatible = "fsl,p4080-sec-v4.0-job-ring",
++				     "fsl,sec-v4.0-job-ring";
+ 			reg = <0x1000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <88 2>;
+ 		};
+ 
+ 		sec_jr1: jr@2000 {
+-			compatible = "fsl,p4080-sec4.0-job-ring",
+-				     "fsl,sec4.0-job-ring";
++			compatible = "fsl,p4080-sec-v4.0-job-ring",
++				     "fsl,sec-v4.0-job-ring";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <89 2>;
+ 		};
+ 
+ 		sec_jr2: jr@3000 {
+-			compatible = "fsl,p4080-sec4.0-job-ring",
+-				     "fsl,sec4.0-job-ring";
++			compatible = "fsl,p4080-sec-v4.0-job-ring",
++				     "fsl,sec-v4.0-job-ring";
+ 			reg = <0x3000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <90 2>;
+ 		};
+ 
+ 		sec_jr3: jr@4000 {
+-			compatible = "fsl,p4080-sec4.0-job-ring",
+-				     "fsl,sec4.0-job-ring";
++			compatible = "fsl,p4080-sec-v4.0-job-ring",
++				     "fsl,sec-v4.0-job-ring";
+ 			reg = <0x4000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <91 2>;
+ 		};
+ 
+ 		rtic@6000 {
+-			compatible = "fsl,p4080-sec4.0-rtic",
+-				     "fsl,sec4.0-rtic";
++			compatible = "fsl,p4080-sec-v4.0-rtic",
++				     "fsl,sec-v4.0-rtic";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			reg = <0x6000 0x100>;
+ 			ranges = <0x0 0x6100 0xe00>;
+ 
+ 			rtic_a: rtic-a@0 {
+-				compatible = "fsl,p4080-sec4.0-rtic-memory",
+-					     "fsl,sec4.0-rtic-memory";
++				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x00 0x20 0x100 0x80>;
+ 			};
+ 
+ 			rtic_b: rtic-b@20 {
+-				compatible = "fsl,p4080-sec4.0-rtic-memory",
+-					     "fsl,sec4.0-rtic-memory";
++				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x20 0x20 0x200 0x80>;
+ 			};
+ 
+ 			rtic_c: rtic-c@40 {
+-				compatible = "fsl,p4080-sec4.0-rtic-memory",
+-					     "fsl,sec4.0-rtic-memory";
++				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x40 0x20 0x300 0x80>;
+ 			};
+ 
+ 			rtic_d: rtic-d@60 {
+-				compatible = "fsl,p4080-sec4.0-rtic-memory",
+-					     "fsl,sec4.0-rtic-memory";
++				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++					     "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x60 0x20 0x500 0x80>;
+ 			};
+ 		};
+ 	};
+ 
+ 	sec_mon: sec_mon@314000 {
+-		compatible = "fsl,p4080-sec4.0-mon", "fsl,sec4.0-mon";
++		compatible = "fsl,p4080-sec-v4.0-mon", "fsl,sec-v4.0-mon";
+ 		reg = <0x314000 0x1000>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <93 2>;
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index c78e801..0430d24 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -423,7 +423,7 @@
+ 		};
+ 
+ 		crypto: crypto@300000 {
+-			compatible = "fsl,p4080-sec4.0", "fsl,sec4.0";
++			compatible = "fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			reg = <0x300000 0x10000>;
+@@ -432,73 +432,74 @@
+ 			interrupts = <92 2>;
+ 
+ 			sec_jr0: jr@1000 {
+-				compatible = "fsl,p4080-sec4.0-job-ring",
+-					     "fsl,sec4.0-job-ring";
++				compatible = "fsl,p4080-sec-v4.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
+ 				reg = <0x1000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <88 2>;
+ 			};
+ 
+ 			sec_jr1: jr@2000 {
+-				compatible = "fsl,p4080-sec4.0-job-ring",
+-					     "fsl,sec4.0-job-ring";
++				compatible = "fsl,p4080-sec-v4.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
+ 				reg = <0x2000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <89 2>;
+ 			};
+ 
+ 			sec_jr2: jr@3000 {
+-				compatible = "fsl,p4080-sec4.0-job-ring",
+-					     "fsl,sec4.0-job-ring";
++				compatible = "fsl,p4080-sec-v4.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
+ 				reg = <0x3000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <90 2>;
+ 			};
+ 
+ 			sec_jr3: jr@4000 {
+-				compatible = "fsl,p4080-sec4.0-job-ring",
+-					     "fsl,sec4.0-job-ring";
++				compatible = "fsl,p4080-sec-v4.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
+ 				reg = <0x4000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <91 2>;
+ 			};
+ 
+ 			rtic@6000 {
+-				compatible = "fsl,p4080-sec4.0-rtic",
+-					     "fsl,sec4.0-rtic";
++				compatible = "fsl,p4080-sec-v4.0-rtic",
++					     "fsl,sec-v4.0-rtic";
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 				reg = <0x6000 0x100>;
+ 				ranges = <0x0 0x6100 0xe00>;
+ 
+ 				rtic_a: rtic-a@0 {
+-					compatible = "fsl,p4080-sec4.0-rtic-memory",
+-						     "fsl,sec4.0-rtic-memory";
++					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++						     "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x00 0x20 0x100 0x80>;
+ 				};
+ 
+ 				rtic_b: rtic-b@20 {
+-					compatible = "fsl,p4080-sec4.0-rtic-memory",
+-						     "fsl,sec4.0-rtic-memory";
++					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++						     "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x20 0x20 0x200 0x80>;
+ 				};
+ 
+ 				rtic_c: rtic-c@40 {
+-					compatible = "fsl,p4080-sec4.0-rtic-memory",
+-						     "fsl,sec4.0-rtic-memory";
++					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++						     "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x40 0x20 0x300 0x80>;
+ 				};
+ 
+ 				rtic_d: rtic-d@60 {
+-					compatible = "fsl,p4080-sec4.0-rtic-memory",
+-						     "fsl,sec4.0-rtic-memory";
++					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
++						     "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x60 0x20 0x500 0x80>;
+ 				};
+ 			};
+ 		};
+ 
+ 		sec_mon: sec_mon@314000 {
+-			compatible = "fsl,p4080-sec4.0-mon", "fsl,sec4.0-mon";
++			compatible = "fsl,p4080-sec-v4.0-mon",
++				     "fsl,sec-v4.0-mon";
+ 			reg = <0x314000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <93 2>;
+diff --git a/drivers/crypto/caam/caamalg.c b/drivers/crypto/caam/caamalg.c
+index d7fe3d3..1403434 100644
+--- a/drivers/crypto/caam/caamalg.c
++++ b/drivers/crypto/caam/caamalg.c
+@@ -1020,7 +1020,7 @@ static void __exit caam_algapi_exit(void)
+ 	struct caam_crypto_alg *t_alg, *n;
+ 	int i, err;
+ 
+-	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec4.0");
++	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec-v4.0");
+ 	if (!dev_node)
+ 		return;
+ 
+@@ -1094,7 +1094,7 @@ static int __init caam_algapi_init(void)
+ 	struct caam_drv_private *priv;
+ 	int i = 0, err = 0;
+ 
+-	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec4.0");
++	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec-v4.0");
+ 	if (!dev_node)
+ 		return -ENODEV;
+ 
+diff --git a/drivers/crypto/caam/ctrl.c b/drivers/crypto/caam/ctrl.c
+index aa22161..59aae4e 100644
+--- a/drivers/crypto/caam/ctrl.c
++++ b/drivers/crypto/caam/ctrl.c
+@@ -108,7 +108,7 @@ static int caam_probe(struct platform_device *pdev,
+ 	 * for all, then go probe each one.
+ 	 */
+ 	rspec = 0;
+-	for_each_compatible_node(np, NULL, "fsl,sec4.0-job-ring")
++	for_each_compatible_node(np, NULL, "fsl,sec-v4.0-job-ring")
+ 		rspec++;
+ 	ctrlpriv->jrdev = kzalloc(sizeof(struct device *) * rspec, GFP_KERNEL);
+ 	if (ctrlpriv->jrdev == NULL) {
+@@ -118,7 +118,7 @@ static int caam_probe(struct platform_device *pdev,
+ 
+ 	ring = 0;
+ 	ctrlpriv->total_jobrs = 0;
+-	for_each_compatible_node(np, NULL, "fsl,sec4.0-job-ring") {
++	for_each_compatible_node(np, NULL, "fsl,sec-v4.0-job-ring") {
+ 		caam_jr_probe(pdev, np, ring);
+ 		ctrlpriv->total_jobrs++;
+ 		ring++;
+@@ -236,7 +236,7 @@ static int caam_probe(struct platform_device *pdev,
+ 
+ static struct of_device_id caam_match[] = {
+ 	{
+-		.compatible = "fsl,sec4.0",
++		.compatible = "fsl,sec-v4.0",
+ 	},
+ 	{},
+ };
+-- 
+1.7.4.1
