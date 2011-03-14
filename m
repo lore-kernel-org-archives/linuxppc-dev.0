@@ -1,39 +1,35 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <nacc@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 93152B6F76
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 05:13:25 +1100 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp07.in.ibm.com (8.14.4/8.13.1) with ESMTP id p2EIDKZe006044
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Mar 2011 23:43:20 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p2EIDJPB4059266
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Mar 2011 23:43:20 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p2EIDJ4u006104
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 05:13:19 +1100
-Date: Mon, 14 Mar 2011 23:43:15 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
-	overridden
-Message-ID: <20110314181315.GA16075@in.ibm.com>
-References: <20100825002258.GD28360@kryten> <m139u37cii.fsf@fess.ebiederm.org>
-	<4D771EE6.5050404@linux.vnet.ibm.com>
-	<20110309122046.GC16951@cr0.redhat.com>
-	<20110309234657.264d3080@kryten>
-	<20110309142108.GD16951@cr0.redhat.com>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 024C0B6F84
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Mar 2011 05:33:31 +1100 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p2EI85Uh005267
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2011 14:08:05 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8B72A38C8038
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 14 Mar 2011 14:33:03 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p2EIX6WR356392
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2011 14:33:06 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p2EIX6PM028207
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Mar 2011 15:33:06 -0300
+Date: Mon, 14 Mar 2011 11:33:00 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Add pgprot_writecombine
+Message-ID: <20110314183300.GA2932@us.ibm.com>
+References: <20110301170047.601c83b7@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20110309142108.GD16951@cr0.redhat.com>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-	akpm@linux-foundation.org, Anton Blanchard <anton@samba.org>
-Reply-To: mahesh@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110301170047.601c83b7@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org, swise@chelsio.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,52 +39,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 09, 2011 at 10:21:08PM +0800, Américo Wang wrote:
-> On Wed, Mar 09, 2011 at 11:46:57PM +1100, Anton Blanchard wrote:
-> >
-> >Hi,
-> >
-> >> The crashkernel region is specified via kernel cmdline, so why
-> >> not just drop a failure when it overlaps with RMO region?
-> >> Am I missing something?
-> >
-> >Unfortunately a ppc64 kernel requires a chunk of RMO memory. We would
-> >need the ability to specify multiple crashkernel regions - about 32MB
-> >in the RMO and the rest can be anywhere. That sounds pretty fragile for
-> >a user to configure successfully on the cmdline.
-> >
-> >Thats why the ppc64 crashkernel region begins mid way through the RMO
-> >region. It means both kernels get a chunk of RMO and we only have to
-> >deal with one crashkernel reservation in all the tools and
-> >documentation.
-> >
+On 01.03.2011 [17:00:47 +1100], Anton Blanchard wrote:
 > 
-> So, when I specify 128M in cmdline, 32M of them are RMO, and the
-> rest 96M are normal memory? And when I want to free all of them,
-> actually the 32M RMO will never be freed?
+> A number of drivers are using pgprot_writecombine() to enable write
+> combining on userspace mappings. Implement it on powerpc.
 
-In ppc64 implementation the crashkernel region begins mid way through
-the RMO and spans across into the normal memory. For e.g. on power system
-with 128M RMO size, when user specifies 128M in cmdline, the crashkernel
-starts from default offset 64M through 192M. Which means 64M in RMO region
-and rest beyond RMO.
+Given this patch, should drivers/infiniband/hw/cxgb4/t4.h
 
- <-------------------RMO--------------->
-                             <---rtas-->
-0                    64M               128M                     End
-|=====================|=================|===========|============|
-           Crash_start|<------------128M----------->| Crash End
+be updated?:
 
-During free we do free all of them including RMO region. But since the rtas
-region is always on top of RMO, crashkernel memory overlaps rtas region and
-we endup freeing that even, which is causing the crash.
+static inline pgprot_t t4_pgprot_wc(pgprot_t prot)
+{
+#if defined(__i386__) || defined(__x86_64__)
+        return pgprot_writecombine(prot);
+#elif defined(CONFIG_PPC64)
+        return __pgprot((pgprot_val(prot) | _PAGE_NO_CACHE) &
+                        ~(pgprot_t)_PAGE_GUARDED);
+#else
+        return pgprot_noncached(prot);
+#endif
+}
 
+Thanks,
+Nish
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
 > 
+> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+> index 89f1587..88b0bd9 100644
+> --- a/arch/powerpc/include/asm/pgtable.h
+> +++ b/arch/powerpc/include/asm/pgtable.h
+> @@ -170,6 +170,7 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
+>  #define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+>  				            _PAGE_COHERENT | _PAGE_WRITETHRU))
 > 
+> +#define pgprot_writecombine pgprot_noncached_wc
+> 
+>  struct file;
+>  extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 > _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
 -- 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
