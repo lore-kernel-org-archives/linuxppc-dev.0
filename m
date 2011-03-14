@@ -1,21 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 90DD2B6F77
+Return-Path: <lars.ellenberg@linbit.com>
+Received: from mail09.linbit.com (mail09.linbit.com [212.69.161.110])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.linbit.com",
+	Issuer "StartCom Class 2 Primary Intermediate Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4635CB6F7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Mar 2011 20:38:37 +1100 (EST)
-Date: Mon, 14 Mar 2011 20:38:27 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the final tree (powerpc
-	tree related)
-Message-Id: <20110314203827.4b61818e.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__14_Mar_2011_20_38_27_+1100_yTURHjo3lFb5miaK"
-Cc: linux-next@vger.kernel.org, Lennert Buytenhek <buytenh@secretlab.ca>,
-	linux-kernel@vger.kernel.org
+	Mon, 14 Mar 2011 19:40:52 +1100 (EST)
+Date: Mon, 14 Mar 2011 09:33:22 +0100
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Jens Axboe <axboe@kernel.dk>
+Subject: Re: linux-next: build failure after merge of the final tree (block
+	tree  related)
+Message-ID: <20110314083322.GA11932@barkeeper1-xen.linbit>
+References: <20110311175830.29a387b2.sfr@canb.auug.org.au>
+	<4D79CB66.2020302@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D79CB66.2020302@kernel.dk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>,
+	linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__14_Mar_2011_20_38_27_+1100_yTURHjo3lFb5miaK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Mar 11, 2011 at 08:12:38AM +0100, Jens Axboe wrote:
+> On 2011-03-11 07:58, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > After merging the final tree, today's linux-next build (powerpc
+> > allyesconfig) failed like this:
+> > 
+> > drivers/char/tpm/tpm_tis.c:96: warning: 'is_itpm' defined but not used
+> > drivers/block/drbd/drbd_bitmap.c: In function '__bm_change_bits_to':
+> > drivers/block/drbd/drbd_bitmap.c:1287: error: implicit declaration of function 'generic___test_and_set_le_bit'
+> > drivers/block/drbd/drbd_bitmap.c:1289: error: implicit declaration of function 'generic___test_and_clear_le_bit'
+> > drivers/block/drbd/drbd_bitmap.c: In function 'drbd_bm_test_bit':
+> > drivers/block/drbd/drbd_bitmap.c:1438: error: implicit declaration of function 'generic_test_le_bit'
+> > 
+> > Caused by commit 4b0715f09655 ("drbd: allow petabyte storage on 64bit
+> > arch").
+> > 
+> > I have applied this patch for today (surely there is a better way):
+> 
+> Thanks for not dropping it, I'll let the drbd guys send in a proper fix
+> and get it committed.
 
-Hi all,
+Should that be fixed by adding
+#include <asm-generic/bitops/le.h>
+to 
+arch/powerpc/include/asm/bitops.h
+(and arch/s390/include/asm/bitops.h, possibly others?)
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+Or are we expected to include that ourselves, directly?
 
-drivers/gpio/langwell_gpio.c: In function 'lnw_irq_handler':
-drivers/gpio/langwell_gpio.c:210: error: 'struct irq_desc' has no member na=
-med 'chip'
-drivers/gpio/langwell_gpio.c:211: error: 'struct irq_desc' has no member na=
-med 'chip'
+We probably need to select CONFIG_GENERIC_FIND_NEXT_BIT
+from our Kconfig as well?
 
-Caused by commit 17b9f9e2653a ("powerpc: Enable
-GENERIC_HARDIRQS_NO_DEPRECATED") enabling
-CONFIG_GENERIC_HARDIRQS_NO_DEPRECATED for powerpc without previously
-fixing up the above driver.
-
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__14_Mar_2011_20_38_27_+1100_yTURHjo3lFb5miaK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJNfeITAAoJEDMEi1NhKgbsAUMH/0rAq0y/tCFW/d9TzFcxiUVJ
-ZJZc/GHE/QkohpRXrwoBg0KYTTYL3qUk+oW8R0u6fywoQiKX3D5cdlgtQaXkemC8
-BKWeWubR+SFeMEKRvUj7w0JRcpQ9LhQinJ6bnAvqc48kc99ziErv8H6ZDNkHXa6z
-4WkGSGpT/bJD6Fq+ltTNEX0MWrtMu8vGrFJYN3iLx6CGHa0ZSs7ZeaVHlFpSZoqg
-oTFd0GJWA8+RxzzJKig8i4TQ/NQNoCIRbq7fPjxl4B/mL4q9PZPJIlhnM9EqB4db
-gu80ayl0ShO3syfOu8LMZX4zEdFhD9uQJ6xyLLB5yo1NHEikAjJX7PGyoNVJMJQ=
-=myUI
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Mar_2011_20_38_27_+1100_yTURHjo3lFb5miaK--
+	Lars
