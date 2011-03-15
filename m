@@ -1,30 +1,34 @@
-Return-Path: <xiyou.wangcong@gmail.com>
-Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
-	[209.85.210.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 40F11B6FF1
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 18:52:42 +1100 (EST)
-Received: by iyb12 with SMTP id 12so452774iyb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 00:52:39 -0700 (PDT)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B31E6B700D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Mar 2011 00:05:48 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p2FCoZOU015070
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2011 06:50:35 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	p2FD5ikf094470
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2011 07:05:44 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p2FD5hK0001781
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2011 07:05:44 -0600
+Date: Tue, 15 Mar 2011 09:05:46 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/6] powerpc: Move udbg_early_init() after
+	early_init_devtree()
+Message-ID: <20110315130546.GF3662@zod.rchland.ibm.com>
+References: <1297292893-30241-1-git-send-email-shaggy@linux.vnet.ibm.com>
+	<1297292893-30241-2-git-send-email-shaggy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20110314181315.GA16075@in.ibm.com>
-References: <20100825002258.GD28360@kryten> <m139u37cii.fsf@fess.ebiederm.org>
-	<4D771EE6.5050404@linux.vnet.ibm.com>
-	<20110309122046.GC16951@cr0.redhat.com>
-	<20110309234657.264d3080@kryten>
-	<20110309142108.GD16951@cr0.redhat.com>
-	<20110314181315.GA16075@in.ibm.com>
-Date: Tue, 15 Mar 2011 15:52:38 +0800
-Message-ID: <AANLkTi=aDzCaa7_=5XTrnJCzmZPrDy3omXwDarEF8XmH@mail.gmail.com>
-Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
-	overridden
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: mahesh@linux.vnet.ibm.com
-Content-Type: text/plain; charset=UTF-8
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-	akpm@linux-foundation.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1297292893-30241-2-git-send-email-shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2011 at 2:13 AM, Mahesh J Salgaonkar
-<mahesh@linux.vnet.ibm.com> wrote:
+On Wed, Feb 09, 2011 at 05:08:08PM -0600, Dave Kleikamp wrote:
+>so that it can use information from the device tree.
 >
-> During free we do free all of them including RMO region. But since the rtas
-> region is always on top of RMO, crashkernel memory overlaps rtas region and
-> we endup freeing that even, which is causing the crash.
+>Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+>Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>Cc: linuxppc-dev@lists.ozlabs.org
+>---
+
+Ben, you want this patch dropped, right?
+
+josh
+
+> arch/powerpc/kernel/setup_32.c |    6 +++---
+> 1 files changed, 3 insertions(+), 3 deletions(-)
 >
-
-Okay, but with this patch applied, we will just ignore rtas region, right?
-Thus, when I echo 0 to free all the 128M crashkernel memory, the final
-result will be 32M left, which means crash_size will still show 32M.
-This looks odd.
-
-How about skipping the 32M as a whole? I mean once the region being freed
-has overlap with this rtas region, skip the whole rtas region, and let
-crash_size
-show 0?
-
-Thanks.
+>diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+>index 1d2fbc9..d1ca976 100644
+>--- a/arch/powerpc/kernel/setup_32.c
+>+++ b/arch/powerpc/kernel/setup_32.c
+>@@ -120,12 +120,12 @@ notrace void __init machine_init(unsigned long dt_ptr)
+> {
+> 	lockdep_init();
+>
+>-	/* Enable early debugging if any specified (see udbg.h) */
+>-	udbg_early_init();
+>-
+> 	/* Do some early initialization based on the flat device tree */
+> 	early_init_devtree(__va(dt_ptr));
+>
+>+	/* Enable early debugging if any specified (see udbg.h) */
+>+	udbg_early_init();
+>+
+> 	probe_machine();
+>
+> 	setup_kdump_trampoline();
+>-- 
+>1.7.3.4
+>
