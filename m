@@ -1,22 +1,25 @@
-Return-Path: <B11780@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.183])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2CA0DB7069
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 02:55:08 +1100 (EST)
-Subject: Re: [PATCH 1/2] ATA: Add FSL sata v2 controller support
-MIME-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1295428050-21934-1-git-send-email-B33228@freescale.com>
-Date: Tue, 15 Mar 2011 10:39:46 -0500
-Message-ID: <F1C7AE8B-477C-478D-953A-064FD13CF859@freescale.com>
-References: <1295428050-21934-1-git-send-email-B33228@freescale.com>
-To: Xulei <B33228@freescale.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, jgarzik@pobox.com
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9C510B70E4
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 02:57:04 +1100 (EST)
+Received: by fxm1 with SMTP id 1so865131fxm.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 08:57:00 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <D9BF0938-44B1-4BB8-BF3C-0A9CB44B9CC5@kernel.crashing.org>
+References: <1292830654-7056-1-git-send-email-B33228@freescale.com>
+	<20101220145954.GA1126@trinity.fluff.org>
+	<D9BF0938-44B1-4BB8-BF3C-0A9CB44B9CC5@kernel.crashing.org>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Tue, 15 Mar 2011 10:56:07 -0500
+Message-ID: <AANLkTim0_ttjDPJvx71B-=Ze5dRTrKXfpavx7gxvYr5p@mail.gmail.com>
+Subject: Re: [PATCH] I2C: Add support for 64bit system.
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Xulei <B33228@freescale.com>, linux-i2c@vger.kernel.org,
+	Ben Dooks <ben-i2c@fluff.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Mar 15, 2011 at 10:44 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Dec 20, 2010, at 8:59 AM, Ben Dooks wrote:
+>
+>> On Mon, Dec 20, 2010 at 03:37:34PM +0800, Xulei wrote:
+>>> Currently I2C_MPC supports 32bit system only, then this
+>>> modification makes it support 32bit and 64bit system both.
+>>>
+>>> Signed-off-by: Xulei <B33228@freescale.com>
+>>
+>> This been build or run tested?
+>
+> Yes, Any issues with me applying this via the powerpc.git tree?
 
-On Jan 19, 2011, at 3:07 AM, Xulei wrote:
+I'm concerned about the fact that we have to have two defines to
+declare code that is 32-bit and 64-bit clean.  Technically speaking,
+all drivers should work in both environments.  It seems silly to have
+"PPC32 || PPC64" for everything.  Isn't there a generic "PPC" config
+option that covers this?
 
-> In FSL sata v2 block, the snoop bit of PRDT Word3 description
-> information is at bit28 instead of bit22.
-> 
-> This patch adds FSL sata v2 probe and resolve this difference.
-> 
-> Signed-off-by: Lei Xu <B33228@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> Acked-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
-> drivers/ata/sata_fsl.c |   25 ++++++++++++++++++-------
-> 1 files changed, 18 insertions(+), 7 deletions(-)
-
-applied
-
-- k
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
