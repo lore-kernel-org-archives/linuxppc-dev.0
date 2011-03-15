@@ -1,22 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7B97B6FE1
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 05:47:50 +1100 (EST)
-Subject: Re: [PATCH] [v2] watchdog: booke_wdt: clean up status messages
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110315181904.GM1751@infomag.iguana.be>
-Date: Tue, 15 Mar 2011 13:47:36 -0500
-Message-Id: <549F1CAB-A423-4509-BBC0-677E6144D098@kernel.crashing.org>
-References: <1297208386-15010-1-git-send-email-timur@freescale.com>
-	<C8B1E427-5A9D-4ED2-9C39-C1D8201E636E@kernel.crashing.org>
-	<20110315181904.GM1751@infomag.iguana.be>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: linux-watchdog@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <B08248@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F2ACEB7090
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 05:54:33 +1100 (EST)
+Received: from mail38-db3 (localhost.localdomain [127.0.0.1])	by
+	mail38-db3-R.bigfish.com (Postfix) with ESMTP id 1A74D670372	for
+	<linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 18:39:21 +0000 (UTC)
+Received: from DB3EHSMHS006.bigfish.com (unknown [10.3.81.248])	by
+	mail38-db3.bigfish.com (Postfix) with ESMTP id C7DA51B30055	for
+	<linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 18:39:20 +0000 (UTC)
+From: Stuart Yoder <stuart.yoder@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] update name of pic-no-reset property
+Date: Tue, 15 Mar 2011 12:37:58 -0600
+Message-ID: <1300214278-1588-1-git-send-email-stuart.yoder@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Stuart Yoder <stuart.yoder@freescale.com>
 
-On Mar 15, 2011, at 1:19 PM, Wim Van Sebroeck wrote:
+-changed name from 'no-reset' to 'pic-not-reset' be consisent with
+ Meador Inge's open pic binding patch
+-update definition
 
-> Hi Kumar,
->=20
-> I allready had it in the watchdog tree for a couple of weeks (and thus =
-also in linux-next).
-> Are you going to sent it of to Linus or will I sent it over via the =
-watchdog tree?
->=20
-> Thanks in advance,
-> Wim.
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
+ Documentation/powerpc/dts-bindings/fsl/mpic.txt |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-I'll drop it from my tree.
-
-- k=
+diff --git a/Documentation/powerpc/dts-bindings/fsl/mpic.txt b/Documentation/powerpc/dts-bindings/fsl/mpic.txt
+index fdf97c5..8b76e0f 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/mpic.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/mpic.txt
+@@ -44,7 +44,7 @@ PROPERTIES
+       Value type: <u32>
+       Definition: Shall be 0.
+ 
+-  - no-reset
++  - pic-no-reset
+       Usage: optional
+       Value type: <empty>
+       Definition: The presence of this property specifies that the
+@@ -53,7 +53,10 @@ PROPERTIES
+           configuration registers to a sane state-- masked or
+           directed at other cores.  This ensures that the client
+           program will not receive interrupts for sources not belonging
+-          to the client.
++          to the client.  The presence of this property also mandates
++          that any initialization related to interrupt sources shall
++          be limited to sources explicitly referenced in the device tree.
++
+ 
+ INTERRUPT SPECIFIER DEFINITION
+ 
+-- 
+1.7.2.2
