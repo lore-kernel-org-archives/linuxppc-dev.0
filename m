@@ -1,14 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH][v2] define binding for fsl mpic interrupt controllers
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1295476214-27698-1-git-send-email-stuart.yoder@freescale.com>
-Date: Tue, 15 Mar 2011 11:06:18 -0500
-Message-Id: <0856EC0E-61E6-47EA-B62A-A5066E1DC101@kernel.crashing.org>
-References: <1295476214-27698-1-git-send-email-stuart.yoder@freescale.com>
-To: Stuart yoder <stuart.yoder@freescale.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B11780@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 52B71B6FD7
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 03:19:06 +1100 (EST)
+Received: from mail163-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail163-tx2-R.bigfish.com (Postfix) with ESMTP id 967849D8383	for
+	<linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 16:19:02 +0000 (UTC)
+Received: from TX2EHSMHS047.bigfish.com (unknown [10.9.14.250])	by
+	mail163-tx2.bigfish.com (Postfix) with ESMTP id D6DA5CC00D0	for
+	<linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2011 16:17:50 +0000 (UTC)
+Received: from udp114135uds.am.freescale.net (udp114135uds.am.freescale.net
+	[10.82.243.198])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP
+	id p2FGHhHT007947	for <linuxppc-dev@ozlabs.org>;
+	Tue, 15 Mar 2011 11:17:43 -0500 (CDT)
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0 (Apple Message framework v1082)
+Subject: Re: [PATCH 1/3] powerpc/fsl: 85xx: document cache sram bindings
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1260257477-21942-1-git-send-email-vivek.mahajan@freescale.com>
+Date: Tue, 15 Mar 2011 11:17:42 -0500
+Message-ID: <9C374EBA-A972-4DD1-AD61-DA8440EC6FB4@freescale.com>
+References: <1260257477-21942-1-git-send-email-vivek.mahajan@freescale.com>
+To: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,29 +34,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 19, 2011, at 4:30 PM, Stuart yoder wrote:
+On Dec 8, 2009, at 1:31 AM, Vivek Mahajan wrote:
 
-> From: Stuart Yoder <stuart.yoder@freescale.com>
+> Adds binding documentation for cache sram for the PQ3 and
+> some QorIQ based platforms.
 >=20
-> define the binding for compatible =3D "fsl,mpic", including
-> the definition of 4-cell interrupt specifiers.  The
-> 3rd and 4th cells are needed to define additional
-> types of interrupt source outside the "normal"
-> external and internal interrupts in FSL SoCs.  Define
-> error interrupt, IPIs, and PIC timer sources.
->=20
-> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
 > ---
-> -version 2
->   -fix some typos
->   -move defintion of interrupt number to the interrupt
->    type 0
->   -defined no-reset property
->   -added some examples
->=20
-> Documentation/powerpc/dts-bindings/fsl/mpic.txt |  251 =
-+++++++++++++++++++----
-> 1 files changed, 209 insertions(+), 42 deletions(-)
+> .../powerpc/dts-bindings/fsl/85xx_cache_sram.txt   |   20 =
+++++++++++++++++++++
+> 1 files changed, 20 insertions(+), 0 deletions(-)
+> create mode 100644 =
+Documentation/powerpc/dts-bindings/fsl/85xx_cache_sram.txt
 
 applied
 
