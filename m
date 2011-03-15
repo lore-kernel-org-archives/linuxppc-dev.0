@@ -1,24 +1,19 @@
-Return-Path: <B11780@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4F461B6FE1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 02:40:04 +1100 (EST)
-Subject: Re: [PATCH 2/2] dts: Update sata controller compatible for p1022ds
-	board
-MIME-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1295428050-21934-2-git-send-email-B33228@freescale.com>
-Date: Tue, 15 Mar 2011 10:39:54 -0500
-Message-ID: <D20B8B05-5AF1-4410-BA2D-A93B7C0ACD78@freescale.com>
-References: <1295428050-21934-1-git-send-email-B33228@freescale.com>
-	<1295428050-21934-2-git-send-email-B33228@freescale.com>
-To: Xulei <B33228@freescale.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, jgarzik@pobox.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00401B6FD2
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 02:42:53 +1100 (EST)
+Subject: Re: [PATCH] [v2] watchdog: booke_wdt: clean up status messages
+Mime-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1297208386-15010-1-git-send-email-timur@freescale.com>
+Date: Tue, 15 Mar 2011 10:42:42 -0500
+Message-Id: <C8B1E427-5A9D-4ED2-9C39-C1D8201E636E@kernel.crashing.org>
+References: <1297208386-15010-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: wim@iguana.be, linux-watchdog@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +24,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 19, 2011, at 3:07 AM, Xulei wrote:
+On Feb 8, 2011, at 5:39 PM, Timur Tabi wrote:
 
-> Update p1022 sata compatible to "fsl,p1022-sata", "fsl,pq-sata-v2".
-> p1022ds sata controller is v2 version comparing previous FSL sata
-> controller, for example, mpc8536.
-> 
-> Signed-off-by: Lei Xu <B33228@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Improve the status messages that are displayed during some operations =
+of the
+> PowerPC watchdog timer driver.  When the watchdog is enabled, the =
+timeout is
+> displayed as a number of seconds, instead of an obscure "period".  The =
+"period"
+> is the position of a bit in a 64-bit timer register.  The higher the =
+value,
+> the quicker the watchdog timeout occurs.  Some people chose a high =
+"period"
+> value for the timer and get confused as to why the board resets within =
+a
+> few seconds.
+>=20
+> Messages displayed during open and close are now debug messages, so =
+that they
+> don't clutter the console by default.  Finally, printk() is replaced =
+with the
+> pr_xxx() equivalent.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/boot/dts/p1022ds.dts |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
+> drivers/watchdog/booke_wdt.c |   19 +++++++++----------
+> 1 files changed, 9 insertions(+), 10 deletions(-)
 
 applied
 
-- k
+- k=
