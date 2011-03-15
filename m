@@ -1,18 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: sysdev: fix signedness bug
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2FE95B731F
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 06:23:57 +1100 (EST)
+Subject: Re: [PATCH] powerpc/fsl-booke: Add e500mc smp defconfig
 Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1287327102-9068-1-git-send-email-segooon@gmail.com>
-Date: Tue, 15 Mar 2011 14:19:23 -0500
-Message-Id: <EA2A84CF-6A11-4CEC-B4FD-96F1262ED9AF@kernel.crashing.org>
-References: <1287327102-9068-1-git-send-email-segooon@gmail.com>
-To: Vasiliy Kulikov <segooon@gmail.com>
-Cc: Harninder Rai <harninder.rai@freescale.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	Vivek Mahajan <vivek.mahajan@freescale.com>
+In-Reply-To: <AANLkTinJq78ZQbW_r0mJqA884-Mt+a_m6pJSLn-PAGuT@mail.gmail.com>
+Date: Tue, 15 Mar 2011 14:23:52 -0500
+Message-Id: <6D420108-4C51-47C0-896F-80C69F2C725F@kernel.crashing.org>
+References: <1287062710-8621-1-git-send-email-galak@kernel.crashing.org>
+	<AANLkTinJq78ZQbW_r0mJqA884-Mt+a_m6pJSLn-PAGuT@mail.gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +25,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 17, 2010, at 9:51 AM, Vasiliy Kulikov wrote:
+On Oct 14, 2010, at 8:51 AM, Timur Tabi wrote:
 
-> sram_params.sram_size and sram_params.sram_offset were unsigned.
-> If get_cache_sram_size() or get_cache_sram_offset() returns error code
-> then it is not seen to the caller.  Made sram_size and sram_offset signed.
-> 
-> Signed-off-by: Vasiliy Kulikov <segooon@gmail.com>
-> ---
-> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
+> On Thu, Oct 14, 2010 at 8:25 AM, Kumar Gala =
+<galak@kernel.crashing.org> wrote:
+>=20
+>> +CONFIG_MATH_EMULATION=3Dy
+>=20
+> Don't these chips have hardware FP?
 
-applied
+removed.
 
-- k
+>=20
+>> +CONFIG_E1000=3Dy
+>> +CONFIG_E1000E=3Dy
+>=20
+> Are you sure you want these on by default?  We may use the E1000 cards
+> in-house, but I don't know if our customers do.
+
+leaving, customers can always disable
+
+>> +CONFIG_MSDOS_FS=3Dm
+>> +CONFIG_VFAT_FS=3Dy
+>> +CONFIG_NTFS_FS=3Dy
+
+leaving since we deal with USB flashes and MMC cards which could be =
+MSDOS, VFAT, etc.
+
+- k=
