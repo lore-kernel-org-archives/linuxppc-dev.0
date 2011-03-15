@@ -1,40 +1,41 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <ibr@radix50.net>
+Received: from almaty.kz-easy.com (almaty.radix50.net [85.214.25.173])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0392AB705F
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 03:52:28 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id p2FGqPBB001342
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 03:52:25 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p2FGqPq62056382
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 03:52:25 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p2FGqOma015816
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 03:52:25 +1100
-Date: Tue, 15 Mar 2011 22:22:19 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
-	overridden
-Message-ID: <20110315165219.GA22509@in.ibm.com>
-References: <20100825002258.GD28360@kryten> <m139u37cii.fsf@fess.ebiederm.org>
-	<4D771EE6.5050404@linux.vnet.ibm.com>
-	<20110309122046.GC16951@cr0.redhat.com>
-	<20110309234657.264d3080@kryten>
-	<20110309142108.GD16951@cr0.redhat.com>
-	<20110314181315.GA16075@in.ibm.com>
-	<AANLkTi=aDzCaa7_=5XTrnJCzmZPrDy3omXwDarEF8XmH@mail.gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6C871B703C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Mar 2011 04:01:47 +1100 (EST)
+Received: from alatau.radix50.net (dslb-092-074-056-154.pools.arcor-ip.net
+	[92.74.56.154]) (authenticated bits=0)
+	by almaty.kz-easy.com (8.14.3/8.14.3/Debian-5+lenny1) with ESMTP id
+	p2FGstJ9031994
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2011 17:54:56 +0100
+Received: from medeu.radix50.net (root@medeu [192.168.0.3])
+	by alatau.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
+	p2FGseh0007236
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2011 17:54:41 +0100
+Received: from medeu.radix50.net (ibr@localhost [127.0.0.1])
+	by medeu.radix50.net (8.14.3/8.14.3/Debian-5) with ESMTP id
+	p2FGseV4013518
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Mar 2011 17:54:40 +0100
+Received: (from ibr@localhost)
+	by medeu.radix50.net (8.14.3/8.14.3/Submit) id p2FGseVn013517
+	for linuxppc-dev@lists.ozlabs.org; Tue, 15 Mar 2011 17:54:40 +0100
+Date: Tue, 15 Mar 2011 17:54:40 +0100
+From: Baurzhan Ismagulov <ibr@radix50.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
+Message-ID: <20110315165440.GC4841@radix50.net>
+References: <AANLkTimJwBfz=RksRtuj3M2VQoMjj1msUb78s1H=GfJM@mail.gmail.com>
+	<AANLkTikKWrEqKH-4f2aMFnVUy-xCLnvxhtjF-pKUuC6e@mail.gmail.com>
+	<AANLkTinOo9tJ5=WWF2WJEZn3VwAUOa+SOYE0txNm-moM@mail.gmail.com>
+	<AANLkTim6urK-1-0MXrXZPTDWifZsi+7QEH_c8S-vzWSL@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <AANLkTi=aDzCaa7_=5XTrnJCzmZPrDy3omXwDarEF8XmH@mail.gmail.com>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	akpm@linux-foundation.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Reply-To: mahesh@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTim6urK-1-0MXrXZPTDWifZsi+7QEH_c8S-vzWSL@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,36 +45,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2011 at 03:52:38PM +0800, Américo Wang wrote:
-> On Tue, Mar 15, 2011 at 2:13 AM, Mahesh J Salgaonkar
-> <mahesh@linux.vnet.ibm.com> wrote:
-> >
-> > During free we do free all of them including RMO region. But since the rtas
-> > region is always on top of RMO, crashkernel memory overlaps rtas region and
-> > we endup freeing that even, which is causing the crash.
-> >
-> 
-> Okay, but with this patch applied, we will just ignore rtas region, right?
-Correct.
-> Thus, when I echo 0 to free all the 128M crashkernel memory, the final
-> result will be 32M left, which means crash_size will still show 32M.
-> This looks odd.
-> 
-> How about skipping the 32M as a whole? I mean once the region being freed
-> has overlap with this rtas region, skip the whole rtas region, and let
-> crash_size
-> show 0?
-The existing code from crash_shrink_memory() function reduces the crash
-size to 0 when echo'ed 0. I did test this patchset and verified that
-/sys/kernel/kexec_crash_size show 0 value.
+On Tue, Mar 15, 2011 at 05:44:49PM +0100, nello martuscielli wrote:
+> But if someone is capable (i don't have this skill) here what it
+> happens reading from serial debug console untill it freezes with
+> linux-2.6.36.4
 
-Thanks,
--Mahesh.
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+What is the last kernel version working on that machine? If you have a
+working kernel and can build kernels, you could try bisecting to
+identify the change that led to that. Perhaps then someone could have
+some ideas.
 
+With kind regards,
 -- 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Baurzhan Ismagulov
+http://www.kz-easy.com/
