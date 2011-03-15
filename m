@@ -1,17 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 07784B7107
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 08:04:17 +1100 (EST)
-Date: Tue, 15 Mar 2011 16:04:09 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <alpine.LFD.2.00.1103151602560.19745@right.am.freescale.net>
+Return-Path: <R1AAHA@freescale.com>
+Date: Tue, 15 Mar 2011 16:52:20 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<devicetree-discuss@lists.ozlabs.org>
+Subject: [PATCH] crypto: caam - de-CHIP-ify device tree compatibles
+Message-ID: <20110315165220.d4fb60bc.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Scott Wood <scottwood@freescale.com>, Steve Cornelius <sec@pobox.com>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,83 +19,360 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit 964a29962c278ddff8a199f23d7c9ef35152a0fe:
+- all the integration parameters have been captured by the binding.
+- the block name really uniquely identifies this hardware.
 
-  powerpc/pseries: Disable MSI using new interface if possible (2011-03-11 14:18:24 +1100)
+Some advocate putting SoC names everywhere in case software needs
+to work around some chip-specific bug, but more precise SoC
+information already exists in SVR, and board information already
+exists in the top-level device tree node.
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+Note that sometimes the SoC name is a worse identifier than the
+block version, as the block version can change between revisions
+of the same SoC.
 
-Anatolij Gustschin (1):
-      powerpc/mpc8xxx_gpio: simplify searching for 'fsl, qoriq-gpio' compatiable
+As a matter of historical reference, neither SEC versions 2.x
+nor 3.x (driven by talitos) ever needed CHIP references.
 
-Holger Brunck (3):
-      powerpc/83xx: rename and update kmeter1
-      powerpc/82xx: rename and update mgcoge board support
-      powerpc/8xx: remove obsolete mgsuvd board
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Cc: Kumar Gala <kumar.gala@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>
+---
+ .../devicetree/bindings/crypto/fsl-sec4.txt        |   64 ++++++++------------
+ arch/powerpc/boot/dts/p4080ds.dts                  |   32 ++++-------
+ 2 files changed, 37 insertions(+), 59 deletions(-)
 
-Julia Lawall (1):
-      drivers/serial/ucc_uart.c: Add of_node_put to avoid memory leak
-
-Kumar Gala (1):
-      powerpc/85xx: Fix writing to spin table 'cpu-release-addr' on ppc64e
-
-Liu Yu (1):
-      powerpc/85xx: Workaroudn e500 CPU erratum A005
-
-Prabhakar Kushwaha (1):
-      powerpc/fsl_pci: Add support for FSL PCIe controllers v2.x
-
-Scott Wood (1):
-      powerpc/fsl_msi: Handle msi-available-ranges better
-
-Shan Hai (1):
-      powerpc/85xx: Fix SPE float to integer conversion failure
-
-Stuart Yoder (1):
-      powerpc/fsl: define binding for fsl mpic interrupt controllers
-
-Vasiliy Kulikov (1):
-      powerpc/85xx: Fix signedness bug in cache-sram
-
-Vivek Mahajan (1):
-      powerpc/fsl: 85xx: document cache sram bindings
-
-Xulei (2):
-      ATA: Add FSL sata v2 controller support
-      powerpc/85xx: Update sata controller compatible for p1022ds board
-
- .../devicetree/bindings/powerpc/fsl/cache_sram.txt |   20 ++
- .../devicetree/bindings/powerpc/fsl/mpic.txt       |  253 ++++++++++++++++----
- .../devicetree/bindings/powerpc/fsl/msi-pic.txt    |    9 +-
- arch/powerpc/boot/dts/kmeter1.dts                  |   69 +++---
- arch/powerpc/boot/dts/mgcoge.dts                   |   47 ++--
- arch/powerpc/boot/dts/mgsuvd.dts                   |  163 -------------
- arch/powerpc/boot/dts/p1022ds.dts                  |    4 +-
- arch/powerpc/configs/83xx/kmeter1_defconfig        |    7 +-
- arch/powerpc/configs/mgcoge_defconfig              |    9 +-
- arch/powerpc/configs/mgsuvd_defconfig              |   81 -------
- arch/powerpc/include/asm/reg.h                     |    2 +
- arch/powerpc/math-emu/math_efp.c                   |   65 +++++-
- arch/powerpc/platforms/82xx/Makefile               |    2 +-
- arch/powerpc/platforms/82xx/{mgcoge.c => km82xx.c} |   62 ++++--
- arch/powerpc/platforms/83xx/Makefile               |    2 +-
- .../powerpc/platforms/83xx/{kmeter1.c => km83xx.c} |   46 +++--
- arch/powerpc/platforms/85xx/smp.c                  |    6 +-
- arch/powerpc/platforms/8xx/Kconfig                 |    6 -
- arch/powerpc/platforms/8xx/Makefile                |    1 -
- arch/powerpc/platforms/8xx/mgsuvd.c                |   92 -------
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c              |    4 +-
- arch/powerpc/sysdev/fsl_msi.c                      |   92 +++++---
- arch/powerpc/sysdev/fsl_pci.c                      |   15 +-
- arch/powerpc/sysdev/fsl_pci.h                      |   17 +-
- arch/powerpc/sysdev/mpc8xxx_gpio.c                 |    4 +-
- drivers/ata/sata_fsl.c                             |   25 ++-
- drivers/tty/serial/ucc_uart.c                      |   67 +++---
- 27 files changed, 584 insertions(+), 586 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/cache_sram.txt
- delete mode 100644 arch/powerpc/boot/dts/mgsuvd.dts
- delete mode 100644 arch/powerpc/configs/mgsuvd_defconfig
- rename arch/powerpc/platforms/82xx/{mgcoge.c => km82xx.c} (69%)
- rename arch/powerpc/platforms/83xx/{kmeter1.c => km83xx.c} (80%)
- delete mode 100644 arch/powerpc/platforms/8xx/mgsuvd.c
+diff --git a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+index 568aa3c..bf57ecd 100644
+--- a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
++++ b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
+@@ -38,7 +38,7 @@ in the memory partition devoted to a particular core.  The P4080 has 4 JRs, so
+ up to 4 JRs can be configured; and all 4 JRs process requests in parallel.
+ 
+ =====================================================================
+-P4080 SEC 4 Node
++SEC 4 Node
+ 
+ Description
+ 
+@@ -53,7 +53,7 @@ PROPERTIES
+    - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec-v4.0","fsl,sec-v4.0"
++      Definition: Must include "fsl,sec-v4.0"
+ 
+    - #address-cells
+        Usage: required
+@@ -105,7 +105,7 @@ PROPERTIES
+ 
+ EXAMPLE
+ 	crypto@300000 {
+-		compatible = "fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
++		compatible = "fsl,sec-v4.0";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		reg = <0x300000 0x10000>;
+@@ -115,7 +115,7 @@ EXAMPLE
+ 	};
+ 
+ =====================================================================
+-P4080 Job Ring (JR) Node
++Job Ring (JR) Node
+ 
+     Child of the crypto node defines data processing interface to SEC 4
+     across the peripheral bus for purposes of processing
+@@ -127,7 +127,7 @@ P4080 Job Ring (JR) Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec-v4.0-job-ring","fsl,sec-v4.0-job-ring"
++      Definition: Must include "fsl,sec-v4.0-job-ring"
+ 
+   - reg
+       Usage: required
+@@ -163,8 +163,7 @@ P4080 Job Ring (JR) Node
+ 
+ EXAMPLE
+ 	jr@1000 {
+-		compatible = "fsl,p4080-sec-v4.0-job-ring",
+-			     "fsl,sec-v4.0-job-ring";
++		compatible = "fsl,sec-v4.0-job-ring";
+ 		reg = <0x1000 0x1000>;
+ 		fsl,liodn = <0x081>;
+ 		interrupt-parent = <&mpic>;
+@@ -173,7 +172,7 @@ EXAMPLE
+ 
+ 
+ =====================================================================
+-P4080 Run Time Integrity Check (RTIC) Node
++Run Time Integrity Check (RTIC) Node
+ 
+   Child node of the crypto node.  Defines a register space that
+   contains up to 5 sets of addresses and their lengths (sizes) that
+@@ -186,7 +185,7 @@ P4080 Run Time Integrity Check (RTIC) Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec-v4.0-rtic","fsl,sec-v4.0-rtic".
++      Definition: Must include "fsl,sec-v4.0-rtic".
+ 
+    - #address-cells
+        Usage: required
+@@ -219,8 +218,7 @@ P4080 Run Time Integrity Check (RTIC) Node
+ 
+ EXAMPLE
+ 	rtic@6000 {
+-		compatible = "fsl,p4080-sec-v4.0-rtic",
+-			     "fsl,sec-v4.0-rtic";
++		compatible = "fsl,sec-v4.0-rtic";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		reg = <0x6000 0x100>;
+@@ -228,7 +226,7 @@ EXAMPLE
+ 	};
+ 
+ =====================================================================
+-P4080 Run Time Integrity Check (RTIC) Memory Node
++Run Time Integrity Check (RTIC) Memory Node
+   A child node that defines individual RTIC memory regions that are used to
+   perform run-time integrity check of memory areas that should not modified.
+   The node defines a register that contains the memory address &
+@@ -238,7 +236,7 @@ P4080 Run Time Integrity Check (RTIC) Memory Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec-v4.0-rtic-memory","fsl,sec-v4.0-rtic-memory".
++      Definition: Must include "fsl,sec-v4.0-rtic-memory".
+ 
+   - reg
+       Usage: required
+@@ -270,15 +268,14 @@ P4080 Run Time Integrity Check (RTIC) Memory Node
+ 
+ EXAMPLE
+ 	rtic-a@0 {
+-		compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-			     "fsl,sec-v4.0-rtic-memory";
++		compatible = "fsl,sec-v4.0-rtic-memory";
+ 		reg = <0x00 0x20 0x100 0x80>;
+ 		fsl,liodn   = <0x03c>;
+ 		fsl,rtic-region  = <0x12345678 0x12345678 0x12345678>;
+ 	};
+ 
+ =====================================================================
+-P4080 Secure Non-Volatile Storage (SNVS) Node
++Secure Non-Volatile Storage (SNVS) Node
+ 
+     Node defines address range and the associated
+     interrupt for the SNVS function.  This function
+@@ -288,7 +285,7 @@ P4080 Secure Non-Volatile Storage (SNVS) Node
+   - compatible
+       Usage: required
+       Value type: <string>
+-      Definition: Must include "fsl,p4080-sec-v4.0-mon", "fsl,sec-v4.0-mon".
++      Definition: Must include "fsl,sec-v4.0-mon".
+ 
+   - reg
+       Usage: required
+@@ -315,7 +312,7 @@ P4080 Secure Non-Volatile Storage (SNVS) Node
+ 
+ EXAMPLE
+ 	sec_mon@314000 {
+-		compatible = "fsl,p4080-sec-v4.0-mon", "fsl,sec-v4.0-mon";
++		compatible = "fsl,sec-v4.0-mon";
+ 		reg = <0x314000 0x1000>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <93 2>;
+@@ -325,7 +322,7 @@ EXAMPLE
+ FULL EXAMPLE
+ 
+ 	crypto: crypto@300000 {
+-		compatible = "fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
++		compatible = "fsl,sec-v4.0";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		reg = <0x300000 0x10000>;
+@@ -334,73 +331,64 @@ FULL EXAMPLE
+ 		interrupts = <92 2>;
+ 
+ 		sec_jr0: jr@1000 {
+-			compatible = "fsl,p4080-sec-v4.0-job-ring",
+-				     "fsl,sec-v4.0-job-ring";
++			compatible = "fsl,sec-v4.0-job-ring";
+ 			reg = <0x1000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <88 2>;
+ 		};
+ 
+ 		sec_jr1: jr@2000 {
+-			compatible = "fsl,p4080-sec-v4.0-job-ring",
+-				     "fsl,sec-v4.0-job-ring";
++			compatible = "fsl,sec-v4.0-job-ring";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <89 2>;
+ 		};
+ 
+ 		sec_jr2: jr@3000 {
+-			compatible = "fsl,p4080-sec-v4.0-job-ring",
+-				     "fsl,sec-v4.0-job-ring";
++			compatible = "fsl,sec-v4.0-job-ring";
+ 			reg = <0x3000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <90 2>;
+ 		};
+ 
+ 		sec_jr3: jr@4000 {
+-			compatible = "fsl,p4080-sec-v4.0-job-ring",
+-				     "fsl,sec-v4.0-job-ring";
++			compatible = "fsl,sec-v4.0-job-ring";
+ 			reg = <0x4000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <91 2>;
+ 		};
+ 
+ 		rtic@6000 {
+-			compatible = "fsl,p4080-sec-v4.0-rtic",
+-				     "fsl,sec-v4.0-rtic";
++			compatible = "fsl,sec-v4.0-rtic";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			reg = <0x6000 0x100>;
+ 			ranges = <0x0 0x6100 0xe00>;
+ 
+ 			rtic_a: rtic-a@0 {
+-				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-					     "fsl,sec-v4.0-rtic-memory";
++				compatible = "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x00 0x20 0x100 0x80>;
+ 			};
+ 
+ 			rtic_b: rtic-b@20 {
+-				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-					     "fsl,sec-v4.0-rtic-memory";
++				compatible = "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x20 0x20 0x200 0x80>;
+ 			};
+ 
+ 			rtic_c: rtic-c@40 {
+-				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-					     "fsl,sec-v4.0-rtic-memory";
++				compatible = "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x40 0x20 0x300 0x80>;
+ 			};
+ 
+ 			rtic_d: rtic-d@60 {
+-				compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-					     "fsl,sec-v4.0-rtic-memory";
++				compatible = "fsl,sec-v4.0-rtic-memory";
+ 				reg = <0x60 0x20 0x500 0x80>;
+ 			};
+ 		};
+ 	};
+ 
+ 	sec_mon: sec_mon@314000 {
+-		compatible = "fsl,p4080-sec-v4.0-mon", "fsl,sec-v4.0-mon";
++		compatible = "fsl,sec-v4.0-mon";
+ 		reg = <0x314000 0x1000>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <93 2>;
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index 0430d24..927f94d 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -423,7 +423,7 @@
+ 		};
+ 
+ 		crypto: crypto@300000 {
+-			compatible = "fsl,p4080-sec-v4.0", "fsl,sec-v4.0";
++			compatible = "fsl,sec-v4.0";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			reg = <0x300000 0x10000>;
+@@ -432,74 +432,64 @@
+ 			interrupts = <92 2>;
+ 
+ 			sec_jr0: jr@1000 {
+-				compatible = "fsl,p4080-sec-v4.0-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
++				compatible = "fsl,sec-v4.0-job-ring";
+ 				reg = <0x1000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <88 2>;
+ 			};
+ 
+ 			sec_jr1: jr@2000 {
+-				compatible = "fsl,p4080-sec-v4.0-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
++				compatible = "fsl,sec-v4.0-job-ring";
+ 				reg = <0x2000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <89 2>;
+ 			};
+ 
+ 			sec_jr2: jr@3000 {
+-				compatible = "fsl,p4080-sec-v4.0-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
++				compatible = "fsl,sec-v4.0-job-ring";
+ 				reg = <0x3000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <90 2>;
+ 			};
+ 
+ 			sec_jr3: jr@4000 {
+-				compatible = "fsl,p4080-sec-v4.0-job-ring",
+-					     "fsl,sec-v4.0-job-ring";
++				compatible = "fsl,sec-v4.0-job-ring";
+ 				reg = <0x4000 0x1000>;
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <91 2>;
+ 			};
+ 
+ 			rtic@6000 {
+-				compatible = "fsl,p4080-sec-v4.0-rtic",
+-					     "fsl,sec-v4.0-rtic";
++				compatible = "fsl,sec-v4.0-rtic";
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 				reg = <0x6000 0x100>;
+ 				ranges = <0x0 0x6100 0xe00>;
+ 
+ 				rtic_a: rtic-a@0 {
+-					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
++					compatible = "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x00 0x20 0x100 0x80>;
+ 				};
+ 
+ 				rtic_b: rtic-b@20 {
+-					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
++					compatible = "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x20 0x20 0x200 0x80>;
+ 				};
+ 
+ 				rtic_c: rtic-c@40 {
+-					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
++					compatible = "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x40 0x20 0x300 0x80>;
+ 				};
+ 
+ 				rtic_d: rtic-d@60 {
+-					compatible = "fsl,p4080-sec-v4.0-rtic-memory",
+-						     "fsl,sec-v4.0-rtic-memory";
++					compatible = "fsl,sec-v4.0-rtic-memory";
+ 					reg = <0x60 0x20 0x500 0x80>;
+ 				};
+ 			};
+ 		};
+ 
+ 		sec_mon: sec_mon@314000 {
+-			compatible = "fsl,p4080-sec-v4.0-mon",
+-				     "fsl,sec-v4.0-mon";
++			compatible = "fsl,sec-v4.0-mon";
+ 			reg = <0x314000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <93 2>;
+-- 
+1.7.4.1
