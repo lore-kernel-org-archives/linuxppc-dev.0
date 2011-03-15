@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55BE1B6FE5
+Return-Path: <B11780@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4F461B6FE1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 02:32:07 +1100 (EST)
-Subject: Re: [PATCH] powerpc/mpc8xxx_gpio: simplify searching for 'fsl,
-	qoriq-gpio' compatiable
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1294501876-9331-1-git-send-email-agust@denx.de>
-Date: Tue, 15 Mar 2011 10:32:00 -0500
-Message-Id: <A922BB0D-7F52-4286-9BA2-4E66D59D45FA@kernel.crashing.org>
-References: <1294501876-9331-1-git-send-email-agust@denx.de>
-To: Anatolij Gustschin <agust@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Wed, 16 Mar 2011 02:40:04 +1100 (EST)
+Subject: Re: [PATCH 2/2] dts: Update sata controller compatible for p1022ds
+	board
+MIME-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1295428050-21934-2-git-send-email-B33228@freescale.com>
+Date: Tue, 15 Mar 2011 10:39:54 -0500
+Message-ID: <D20B8B05-5AF1-4410-BA2D-A93B7C0ACD78@freescale.com>
+References: <1295428050-21934-1-git-send-email-B33228@freescale.com>
+	<1295428050-21934-2-git-send-email-B33228@freescale.com>
+To: Xulei <B33228@freescale.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +29,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 8, 2011, at 9:51 AM, Anatolij Gustschin wrote:
+On Jan 19, 2011, at 3:07 AM, Xulei wrote:
 
-> Commit da3ed89e7ce272ebcc918487e2a28736ca0dd6bb added
-> 'fsl,qoriq-gpio' compatiable searching in the old way
-> using for_each_compatible_node(). But the driver have
-> previously been changed to use a struct of_device_id
-> compatible list passed to for_each_matching_node().
+> Update p1022 sata compatible to "fsl,p1022-sata", "fsl,pq-sata-v2".
+> p1022ds sata controller is v2 version comparing previous FSL sata
+> controller, for example, mpc8536.
 > 
-> Add 'fsl,qoriq-gpio' compatiable to the existing
-> compatible list instead of adding another
-> for_each_compatible_node() loop.
-> 
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Signed-off-by: Lei Xu <B33228@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 > ---
-> arch/powerpc/sysdev/mpc8xxx_gpio.c |    4 +---
-> 1 files changed, 1 insertions(+), 3 deletions(-)
+> arch/powerpc/boot/dts/p1022ds.dts |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
 
 applied
 
