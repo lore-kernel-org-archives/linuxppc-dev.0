@@ -1,22 +1,17 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
-	by ozlabs.org (Postfix) with SMTP id 1439DB6FF6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 07:09:00 +1100 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Tue, 15 Mar 2011 21:08:55 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <20110315174924.GA24001@z-innov.com>
-Message-ID: <20110315200855.240730@gmx.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 07784B7107
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 08:04:17 +1100 (EST)
+Date: Tue, 15 Mar 2011 16:04:09 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git next branch
+Message-ID: <alpine.LFD.2.00.1103151602560.19745@right.am.freescale.net>
 MIME-Version: 1.0
-References: <AANLkTimJwBfz=RksRtuj3M2VQoMjj1msUb78s1H=GfJM@mail.gmail.com>
-	<AANLkTikKWrEqKH-4f2aMFnVUy-xCLnvxhtjF-pKUuC6e@mail.gmail.com>
-	<AANLkTinOo9tJ5=WWF2WJEZn3VwAUOa+SOYE0txNm-moM@mail.gmail.com>
-	<AANLkTim6urK-1-0MXrXZPTDWifZsi+7QEH_c8S-vzWSL@mail.gmail.com>
-	<20110315171448.100300@gmx.net> <20110315174924.GA24001@z-innov.com>
-Subject: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
-To: Sven Luther <sven@z-innov.com>
-Cc: ppc.addon@gmail.com, linuxppc-dev@lists.ozlabs.org, acrux_it@libero.it
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +21,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The following changes since commit 964a29962c278ddff8a199f23d7c9ef35152a0fe:
 
--------- Original-Nachricht --------
-> Datum: Tue, 15 Mar 2011 18:49:24 +0100
-> Von: Sven Luther <sven@z-innov.com>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: nello martuscielli <ppc.addon@gmail.com>, linuxppc-dev@lists.ozlabs.org, acrux_it@libero.it
-> Betreff: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
+  powerpc/pseries: Disable MSI using new interface if possible (2011-03-11 14:18:24 +1100)
 
-> On Tue, Mar 15, 2011 at 06:14:48PM +0100, Gerhard Pircher wrote:
-[...]
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-> > On the other side you mentioned this workaround in
-> > arch/ppc/kernel/prom_init.c to me some time ago:
-> > 
-> > unsigned long __init prom_init(int r3, int r4, prom_entry pp) :
-> > >        node = call_prom("finddevice", 1, 1, "/");
-> > >        rc = call_prom("getprop", 4, 1, node, "model", model,
-> sizeof(model));
-> > >        if (rc > 0 && !strncmp (model, "Pegasos", 7)
-> > >                && strncmp (model, "Pegasos2", 8)) {
-> > >                /* Pegasos 1 has a broken translate method in the OF,
-> > >                 * and furthermore the BATs are mapped 1:1 so the phys
-> > >                 * address calculated above is correct, so let's use
-> > >                 * it directly.
-> > >                 */
-> > >        } else if (offset == 0) {
-> > >                /* If we are already running at 0xc0000000, we assume
-> we were
-> > >                 * loaded by an OF bootloader which did set a BAT for
-> us.
-> > >                 * This breaks OF translate so we force phys to be 0.
-> > >                 */
-> > >                prom_print("(already at 0xc0000000) phys=0\n");
-> > >                phys = 0;
-> > >        } else if (call_prom("getprop", 4, 1, prom_chosen, "mmu",
-> > >                             &prom_mmu, sizeof(prom_mmu)) <= 0) {
-> > >                prom_print(" no MMU found\n");
-> > >        } else if (call_prom_ret("call-method", 4, 4, result,
-> "translate",
-> > >                                 prom_mmu, &_stext, 1) != 0) {
-> > >                prom_print(" (translate failed)\n");
-> > >        } else {
-> > >                /* We assume the phys. address size is 3 cells */
-> > >                phys = result[2];
-> > >        }
-> > 
-> > Can anybody comment, if this "broken translate method in the OF" would
-> > still be needed for arch/powerpc?
-> 
-> Well, since this is long dead hardware not produced anymore, i don't see
-> how the OF could have unbroken itself by moving to powerpc.
-> 
-> It has been age since i looked into this, but to the best of my knowledge
-> (and i wrote the above code or at least the earlier versions) it should
-> be still broken.
-Any idea then, how the workaround can be ported to arch/powerpc/ or if
-there is a better one available?
+Anatolij Gustschin (1):
+      powerpc/mpc8xxx_gpio: simplify searching for 'fsl, qoriq-gpio' compatiable
 
-regards,
-Gerhard
--- 
-Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
-belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
+Holger Brunck (3):
+      powerpc/83xx: rename and update kmeter1
+      powerpc/82xx: rename and update mgcoge board support
+      powerpc/8xx: remove obsolete mgsuvd board
+
+Julia Lawall (1):
+      drivers/serial/ucc_uart.c: Add of_node_put to avoid memory leak
+
+Kumar Gala (1):
+      powerpc/85xx: Fix writing to spin table 'cpu-release-addr' on ppc64e
+
+Liu Yu (1):
+      powerpc/85xx: Workaroudn e500 CPU erratum A005
+
+Prabhakar Kushwaha (1):
+      powerpc/fsl_pci: Add support for FSL PCIe controllers v2.x
+
+Scott Wood (1):
+      powerpc/fsl_msi: Handle msi-available-ranges better
+
+Shan Hai (1):
+      powerpc/85xx: Fix SPE float to integer conversion failure
+
+Stuart Yoder (1):
+      powerpc/fsl: define binding for fsl mpic interrupt controllers
+
+Vasiliy Kulikov (1):
+      powerpc/85xx: Fix signedness bug in cache-sram
+
+Vivek Mahajan (1):
+      powerpc/fsl: 85xx: document cache sram bindings
+
+Xulei (2):
+      ATA: Add FSL sata v2 controller support
+      powerpc/85xx: Update sata controller compatible for p1022ds board
+
+ .../devicetree/bindings/powerpc/fsl/cache_sram.txt |   20 ++
+ .../devicetree/bindings/powerpc/fsl/mpic.txt       |  253 ++++++++++++++++----
+ .../devicetree/bindings/powerpc/fsl/msi-pic.txt    |    9 +-
+ arch/powerpc/boot/dts/kmeter1.dts                  |   69 +++---
+ arch/powerpc/boot/dts/mgcoge.dts                   |   47 ++--
+ arch/powerpc/boot/dts/mgsuvd.dts                   |  163 -------------
+ arch/powerpc/boot/dts/p1022ds.dts                  |    4 +-
+ arch/powerpc/configs/83xx/kmeter1_defconfig        |    7 +-
+ arch/powerpc/configs/mgcoge_defconfig              |    9 +-
+ arch/powerpc/configs/mgsuvd_defconfig              |   81 -------
+ arch/powerpc/include/asm/reg.h                     |    2 +
+ arch/powerpc/math-emu/math_efp.c                   |   65 +++++-
+ arch/powerpc/platforms/82xx/Makefile               |    2 +-
+ arch/powerpc/platforms/82xx/{mgcoge.c => km82xx.c} |   62 ++++--
+ arch/powerpc/platforms/83xx/Makefile               |    2 +-
+ .../powerpc/platforms/83xx/{kmeter1.c => km83xx.c} |   46 +++--
+ arch/powerpc/platforms/85xx/smp.c                  |    6 +-
+ arch/powerpc/platforms/8xx/Kconfig                 |    6 -
+ arch/powerpc/platforms/8xx/Makefile                |    1 -
+ arch/powerpc/platforms/8xx/mgsuvd.c                |   92 -------
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c              |    4 +-
+ arch/powerpc/sysdev/fsl_msi.c                      |   92 +++++---
+ arch/powerpc/sysdev/fsl_pci.c                      |   15 +-
+ arch/powerpc/sysdev/fsl_pci.h                      |   17 +-
+ arch/powerpc/sysdev/mpc8xxx_gpio.c                 |    4 +-
+ drivers/ata/sata_fsl.c                             |   25 ++-
+ drivers/tty/serial/ucc_uart.c                      |   67 +++---
+ 27 files changed, 584 insertions(+), 586 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/cache_sram.txt
+ delete mode 100644 arch/powerpc/boot/dts/mgsuvd.dts
+ delete mode 100644 arch/powerpc/configs/mgsuvd_defconfig
+ rename arch/powerpc/platforms/82xx/{mgcoge.c => km82xx.c} (69%)
+ rename arch/powerpc/platforms/83xx/{kmeter1.c => km83xx.c} (80%)
+ delete mode 100644 arch/powerpc/platforms/8xx/mgsuvd.c
