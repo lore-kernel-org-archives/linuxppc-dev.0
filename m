@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2822B7416
+	by ozlabs.org (Postfix) with ESMTPS id 6B855B7011
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 02:07:24 +1100 (EST)
-Subject: Re: [PATCH] e500: Erratum cpu a005 workaround
+	Wed, 16 Mar 2011 02:12:09 +1100 (EST)
+Subject: Re: [PATCH] ppc, 8xx: remove obsolete mgsuvd board
 Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1295935333-13045-1-git-send-email-yu.liu@freescale.com>
-Date: Tue, 15 Mar 2011 10:07:18 -0500
-Message-Id: <518DEEA6-64ED-441C-B795-BCAC9913CDB4@kernel.crashing.org>
-References: <1295935333-13045-1-git-send-email-yu.liu@freescale.com>
-To: Liu Yu <yu.liu@freescale.com>
-Cc: B11780@freescale.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4D2EEBEF.2010005@keymile.com>
+Date: Tue, 15 Mar 2011 10:11:57 -0500
+Message-Id: <16283DF9-5AFE-4553-B0CF-DE25DE3D1E66@kernel.crashing.org>
+References: <4D2EEBEF.2010005@keymile.com>
+To: Holger Brunck <holger.brunck@keymile.com>
+Cc: Heiko Schocher <hs@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 25, 2011, at 12:02 AM, Liu Yu wrote:
+On Jan 13, 2011, at 6:11 AM, Holger Brunck wrote:
 
-> This errata can occur if a single-precision floating-point, =
-double-precision
-> floating-point or vector floating-point instruction on a mispredicted =
-branch
-> path signals one of the floating-point data interrupts which are =
-enabled by the
-> SPEFSCR (FINVE, FDBZE, FUNFE or FOVFE bits).  This interrupt must be =
-recorded
-> in a one-cycle window when the misprediction is resolved.  If this =
-extremely
-> rare event should occur, the result could be:
+> The MPC852 based mgsuvd board from Keymile was initially ported,
+> but later on not developed further. This patch removes the respective
+> files to decrease merging conflicts and unneeded maintenance.
 >=20
-> The SPE Data Exception from the mispredicted path may be reported
-> erroneously if a single-precision floating-point, double-precision
-> floating-point or vector floating-point instruction is the second =
-instruction
-> on the correct branch path.
->=20
-> According to errata description, some efp instructions
-> which are not supposed to trigger SPE exceptions
-> can trigger the exceptions in this case.
-> However, as we haven't emulated these instructions here,
-> a signal will send to userspace, and userspace application would exit.
->=20
-> This patch re-issue the efp instruction that we haven't emulated,
-> so that hardware can properly execute it again if this case happen.
->=20
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+> Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
+> Acked-by: Heiko Schocher<hs@denx.de>
+> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+> Cc: Marcelo Tosatti <marcelo@kvack.org>
 > ---
-> This is an erratum workaround patch.
-> It would be better if the patch can go into 2.6.38.
->=20
-> arch/powerpc/include/asm/reg.h   |    2 +
-> arch/powerpc/math-emu/math_efp.c |   53 =
-+++++++++++++++++++++++++++++++++++++-
-> 2 files changed, 54 insertions(+), 1 deletions(-)
+> arch/powerpc/boot/dts/mgsuvd.dts      |  163 =
+---------------------------------
+> arch/powerpc/configs/mgsuvd_defconfig |   81 ----------------
+> arch/powerpc/platforms/8xx/Kconfig    |    6 -
+> arch/powerpc/platforms/8xx/Makefile   |    1 -
+> arch/powerpc/platforms/8xx/mgsuvd.c   |   92 ------------------
+> 5 files changed, 0 insertions(+), 343 deletions(-)
+> delete mode 100644 arch/powerpc/boot/dts/mgsuvd.dts
+> delete mode 100644 arch/powerpc/configs/mgsuvd_defconfig
+> delete mode 100644 arch/powerpc/platforms/8xx/mgsuvd.c
 
 applied
 
