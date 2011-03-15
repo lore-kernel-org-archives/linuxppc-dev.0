@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6B855B7011
+	by ozlabs.org (Postfix) with ESMTPS id 55BE1B6FE5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 02:12:09 +1100 (EST)
-Subject: Re: [PATCH] ppc, 8xx: remove obsolete mgsuvd board
+	Wed, 16 Mar 2011 02:32:07 +1100 (EST)
+Subject: Re: [PATCH] powerpc/mpc8xxx_gpio: simplify searching for 'fsl,
+	qoriq-gpio' compatiable
 Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4D2EEBEF.2010005@keymile.com>
-Date: Tue, 15 Mar 2011 10:11:57 -0500
-Message-Id: <16283DF9-5AFE-4553-B0CF-DE25DE3D1E66@kernel.crashing.org>
-References: <4D2EEBEF.2010005@keymile.com>
-To: Holger Brunck <holger.brunck@keymile.com>
-Cc: Heiko Schocher <hs@denx.de>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1294501876-9331-1-git-send-email-agust@denx.de>
+Date: Tue, 15 Mar 2011 10:32:00 -0500
+Message-Id: <A922BB0D-7F52-4286-9BA2-4E66D59D45FA@kernel.crashing.org>
+References: <1294501876-9331-1-git-send-email-agust@denx.de>
+To: Anatolij Gustschin <agust@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +26,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 13, 2011, at 6:11 AM, Holger Brunck wrote:
+On Jan 8, 2011, at 9:51 AM, Anatolij Gustschin wrote:
 
-> The MPC852 based mgsuvd board from Keymile was initially ported,
-> but later on not developed further. This patch removes the respective
-> files to decrease merging conflicts and unneeded maintenance.
->=20
-> Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
-> Acked-by: Heiko Schocher<hs@denx.de>
-> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-> Cc: Marcelo Tosatti <marcelo@kvack.org>
+> Commit da3ed89e7ce272ebcc918487e2a28736ca0dd6bb added
+> 'fsl,qoriq-gpio' compatiable searching in the old way
+> using for_each_compatible_node(). But the driver have
+> previously been changed to use a struct of_device_id
+> compatible list passed to for_each_matching_node().
+> 
+> Add 'fsl,qoriq-gpio' compatiable to the existing
+> compatible list instead of adding another
+> for_each_compatible_node() loop.
+> 
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
 > ---
-> arch/powerpc/boot/dts/mgsuvd.dts      |  163 =
----------------------------------
-> arch/powerpc/configs/mgsuvd_defconfig |   81 ----------------
-> arch/powerpc/platforms/8xx/Kconfig    |    6 -
-> arch/powerpc/platforms/8xx/Makefile   |    1 -
-> arch/powerpc/platforms/8xx/mgsuvd.c   |   92 ------------------
-> 5 files changed, 0 insertions(+), 343 deletions(-)
-> delete mode 100644 arch/powerpc/boot/dts/mgsuvd.dts
-> delete mode 100644 arch/powerpc/configs/mgsuvd_defconfig
-> delete mode 100644 arch/powerpc/platforms/8xx/mgsuvd.c
+> arch/powerpc/sysdev/mpc8xxx_gpio.c |    4 +---
+> 1 files changed, 1 insertions(+), 3 deletions(-)
 
 applied
 
-- k=
+- k
