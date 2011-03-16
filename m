@@ -1,21 +1,28 @@
-Return-Path: <vooon341@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <ppc.addon@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 733F6B6FE3
+	by ozlabs.org (Postfix) with ESMTPS id B8ECDB7004
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Mar 2011 10:29:34 +1100 (EST)
-Received: by bwz10 with SMTP id 10so1875348bwz.38
+	Thu, 17 Mar 2011 10:39:04 +1100 (EST)
+Received: by yxp4 with SMTP id 4so965137yxp.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 16:29:28 -0700 (PDT)
-Subject: [PATCH 1/4] powerpc/mpc512x: Add initial support for TWR-MPC5125
-From: Vladimir Ermakov <vooon341@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Mar 2011 02:29:23 +0300
-Message-ID: <1300318163.12970.66.camel@desinto>
-Mime-Version: 1.0
+	Wed, 16 Mar 2011 16:39:00 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20110315171448.100300@gmx.net>
+References: <AANLkTimJwBfz=RksRtuj3M2VQoMjj1msUb78s1H=GfJM@mail.gmail.com>
+	<AANLkTikKWrEqKH-4f2aMFnVUy-xCLnvxhtjF-pKUuC6e@mail.gmail.com>
+	<AANLkTinOo9tJ5=WWF2WJEZn3VwAUOa+SOYE0txNm-moM@mail.gmail.com>
+	<AANLkTim6urK-1-0MXrXZPTDWifZsi+7QEH_c8S-vzWSL@mail.gmail.com>
+	<20110315171448.100300@gmx.net>
+Date: Thu, 17 Mar 2011 00:39:00 +0100
+Message-ID: <AANLkTimpJBX5LjrKj5f5CgKx5dy-4bfReZ+awVSp3hQb@mail.gmail.com>
+Subject: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
+From: nello martuscielli <ppc.addon@gmail.com>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, acrux_it@libero.it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,701 +32,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds Freescale TWR-MPC5125 device tree and platform code.
-    
-Currently following is supported:
- - NAND
- - FEC1 and FEC2
- - RTC
- - PSC UART
+hi all,
 
-Signed-off-by: Vladimir Ermakov <vooon341@gmail.com>
----
+here instead the log from serial debug console booting the last
+working kernel i.e. linux-2.16.62 compiled with arch=ppc .
 
-diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
-new file mode 100644
-index 0000000..54f568f
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc5125twr.dts
-@@ -0,0 +1,394 @@
-+/*
-+ * STx/Freescale ADS5125 MPC5125 silicon
-+ *
-+ * Copyright (C) 2009 Freescale Semiconductor Inc. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "mpc5125ads";
-+	compatible = "fsl,mpc5125ads";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,5125@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <0x20>;	// 32 bytes
-+			i-cache-line-size = <0x20>;	// 32 bytes
-+			d-cache-size = <0x8000>;	// L1, 32K
-+			i-cache-size = <0x8000>;	// L1, 32K
-+			timebase-frequency = <49500000>;// 49.5 MHz (csb/4)
-+			bus-frequency = <198000000>;	// 198 MHz csb bus
-+			clock-frequency = <396000000>;	// 396 MHz ppc core
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x10000000>;	// 256MB at 0
-+	};
-+
-+	sram@30000000 {
-+		compatible = "fsl,mpc5121-sram";
-+		reg = <0x30000000 0x08000>;		// 32K at 0x30000000
-+	};
-+
-+	nfc@40000000 {
-+		compatible = "fsl,mpc5125-nfc";
-+		reg = <0x40000000 0x100000>;	// 1M at 0x40000000
-+		interrupts = <6 0x8>;
-+		interrupt-parent = < &ipic >;
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		bank-width = <1>;
-+		write-size = <4096>;
-+		spare-size = <128>;
-+		chips = <1>;
-+		// NOTE: partition map different than in BSP
-+		nand-spl@0 {
-+			label = "loader";
-+			reg = <0x00000000 0x00100000>;
-+			read-only;
-+		};
-+		uboot@100000 {
-+			label = "uboot";
-+			reg = <0x00100000 0x00100000>;
-+			read-only;
-+		};
-+		uboot-env@200000 {
-+			label = "uboot-env";
-+			reg = <0x00200000 0x00100000>;
-+			read-only;
-+		};
-+		kernel300000 {
-+			label = "kernel";
-+			reg = <0x00300000 0x00800000>;
-+		};
-+		device-tree00000 {
-+			label = "device-tree";
-+			reg = <0x00b00000 0x00100000>;
-+		};
-+		ramboot-rootfs@c00000 {
-+			label = "ramboot-rootfs";
-+			reg = <0x00c00000 0x00800000>;
-+		};
-+		rootfs@1400000 {
-+			label = "rootfs";
-+			reg = <0x01400000 0x01400000>;
-+		};
-+		user@2800000 {
-+			label = "user";
-+			reg = <0x02800000 0x01400000>;
-+		};
-+		SRAM@4200000 {
-+			label = "SRAM"; // NVRAM emul
-+			reg = <0x04200000 0x01400000>;
-+		};
-+		prom@5600000 {
-+			label = "prom";
-+			reg = <0x05600000 0x01400000>;
-+		};
-+		//data@2800000 {
-+		//	label = "data";
-+		//	reg = <0x28000000 0xeac00000>;
-+		//};
-+	};
-+
-+	soc@80000000 {
-+		compatible = "fsl,mpc5121-immr";
-+		device_type = "soc";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		ranges = <0x0 0x80000000 0x400000>;
-+		reg = <0x80000000 0x400000>;
-+		bus-frequency = <66000000>;	// 66 MHz ips bus
-+
-+
-+		// IPIC
-+		// interrupts cell = <intr #, sense>
-+		// sense values match linux IORESOURCE_IRQ_* defines:
-+		// sense == 8: Level, low assertion
-+		// sense == 2: Edge, high-to-low change
-+		//
-+		ipic: interrupt-controller@c00 {
-+			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0xc00 0x100>;
-+		};
-+
-+		rtc@a00 {	// Real time clock
-+			compatible = "fsl,mpc5121-rtc";
-+			reg = <0xa00 0x100>;
-+			interrupts = <79 0x8 80 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		reset@e00 {	// Reset module
-+			compatible = "fsl,mpc5121-reset";
-+			reg = <0xe00 0x100>;
-+		};
-+
-+		clock@f00 {	// Clock control
-+			compatible = "fsl,mpc5121rev2-clock", "fsl,mpc5121-clock";
-+			reg = <0xf00 0x100>;
-+		};
-+
-+		pmc@1000{  // Power Management Controller
-+			compatible = "fsl,mpc5121-pmc";
-+			reg = <0x1000 0x100>;
-+			interrupts = <83 0x2>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		gpio@1100 {
-+			compatible = "fsl,mpc5125-gpio";
-+			cell-index = <0>;
-+			reg = <0x1100 0x080>;
-+			interrupts = <78 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		gpio@1180 {
-+			compatible = "fsl,mpc5125-gpio1";
-+			cell-index = <1>;
-+			reg = <0x1180 0x080>;
-+			interrupts = <78 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		can@1300 { // CAN rev.2
-+			compatible = "fsl,mpc5121-mscan";
-+			cell-index = <0>;
-+			interrupts = <12 0x8>;
-+			interrupt-parent = < &ipic >;
-+			reg = <0x1300 0x80>;
-+		};
-+
-+		can@1380 {
-+			compatible = "fsl,mpc5121-mscan";
-+			cell-index = <1>;
-+			interrupts = <13 0x8>;
-+			interrupt-parent = < &ipic >;
-+			reg = <0x1380 0x80>;
-+		};
-+
-+		sdhc@1500 {
-+			compatible = "fsl,mpc5125-sdhc";
-+			interrupts = <8 0x8>;
-+			interrupt-parent = < &ipic >;
-+			reg = <0x1500 0x100>;
-+		};
-+
-+		i2c@1700 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-i2c";
-+			cell-index = <0>;
-+			reg = <0x1700 0x20>;
-+			interrupts = <0x9 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1720 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-i2c";
-+			cell-index = <1>;
-+			reg = <0x1720 0x20>;
-+			interrupts = <0xa 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1740 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-i2c";
-+			cell-index = <2>;
-+			reg = <0x1740 0x20>;
-+			interrupts = <0xb 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2ccontrol@1760 {
-+			compatible = "fsl,mpc5121-i2c-ctrl";
-+			reg = <0x1760 0x8>;
-+		};
-+
-+		//diu@2100 {
-+		//	device_type = "display";
-+		//	compatible = "fsl-diu";
-+		//	reg = <0x2100 0x100>;
-+		//	interrupts = <64 0x8>;
-+		//	interrupt-parent = < &ipic >;
-+		//};
-+
-+		// MPC5125e has two more CAN ports
-+		// but they are not used on ADS5125
-+		//can@2300 {
-+		//	compatible = "fsl,mpc5121-mscan";
-+		//	cell-index = <2>;
-+		//	interrupts = <90 0x8>;
-+		//	interrupt-parent = < &ipic >;
-+		//	reg = <0x2300 0x80>;
-+		//};
-+
-+		//can@2380 {
-+		//	compatible = "fsl,mpc5121-mscan";
-+		//	cell-index = <3>;
-+		//	interrupts = <91 0x8>;
-+		//	interrupt-parent = < &ipic >;
-+		//	reg = <0x2380 0x80>;
-+		//};
-+
-+		mdio@2800 {
-+			device_type = "mdio";
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x2800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy0: ethernet-phy@0 {
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@2800 {
-+			device_type = "network";
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x2800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <4 0x8>;
-+			interrupt-parent = < &ipic >;
-+			phy-handle = < &phy0 >;
-+		};
-+
-+		// USB ULPI1
-+		//usb@3000 {
-+		//	device_type = "usb";
-+		//	compatible = "fsl-usb2-dr";
-+		//	reg = <0x3000 0x400>;
-+		//	#address-cells = <1>;
-+		//	#size-cells = <0>;
-+		//	interrupt-parent = < &ipic >;
-+		//	interrupts = <43 0x8>;
-+		//	dr_mode = "host";
-+		//	phy_type = "ulpi";
-+		//	big-endian-regs;
-+		//};
-+
-+		// USB ULPI2
-+		//usb@4000 {
-+		//	device_type = "usb";
-+		//	compatible = "fsl-usb2-dr";
-+		//	reg = <0x4000 0x400>;
-+		//	#address-cells = <1>;
-+		//	#size-cells = <0>;
-+		//	interrupt-parent = < &ipic >;
-+		//	interrupts = <44 0x8>;
-+		//	dr_mode = "otg";
-+		//	phy_type = "ulpi";
-+		//	big-endian-regs;
-+		//};
-+
-+		mdio@4800 {
-+			device_type = "mdio";
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x4800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy1: ethernet-phy@0 {
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@4800 {
-+			device_type = "network";
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x4800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <5 0x8>;
-+			interrupt-parent = < &ipic >;
-+			phy-handle = < &phy1 >;
-+		};
-+
-+		// IO control
-+		ioctl@a000 {
-+			compatible = "fsl,mpc5125-ioctl";
-+			reg = <0xA000 0x1000>;
-+		};
-+
-+		// PSC0 in ac97 mode
-+		//ac97@11000 {
-+		//	device_type = "sound";
-+		//	compatible = "fsl,mpc5125-psc-ac97", "fsl,mpc5125-psc";
-+		//	cell-index = <0>;
-+		//	reg = <0x11000 0x100>;
-+		//	interrupts = <40 0x8>;
-+		//	interrupt-parent = < &ipic >;
-+		//	fsl,mode = "ac97-slave";
-+		//	rx-fifo-size = <384>;
-+		//	tx-fifo-size = <384>;
-+		//};
-+
-+		// 5125 PSCs are not 52xx or 5121 PSC compatible
-+		// PSC1 uart0 aka ttyPSC0
-+		serial@11100 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5125-psc-uart", "fsl,mpc5125-psc";
-+			port-number = <0>;
-+			cell-index = <1>;
-+			reg = <0x11100 0x100>;
-+			interrupts = <40 0x8 71 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+			nodcd;
-+		};
-+
-+		// PSC9 uart1 aka ttyPSC1
-+		serial@11900 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5125-psc-uart", "fsl,mpc5125-psc";
-+			port-number = <1>;
-+			cell-index = <9>;
-+			reg = <0x11900 0x100>;
-+			interrupts = <40 0x8 32 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+			nodcd;
-+		};
-+
-+		pscfifo@11f00 {
-+			compatible = "fsl,mpc5121-psc-fifo";
-+			reg = <0x11f00 0x100>;
-+			interrupts = <40 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		dma@14000 {
-+			compatible = "fsl,mpc5121-dma"; // old name: "mpc512x-dma2"
-+			reg = <0x14000 0x1800>;
-+			interrupts = <65 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index 27b0651..0dde4b0 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -26,6 +26,20 @@ config MPC5121_GENERIC
- 	  Compatible boards include:  Protonic LVT base boards (ZANMCU
- 	  and VICVT2).
- 
-+config PPC_MPC5125
-+	bool "Generic support for MPC5125 based boards"
-+	depends on PPC_MPC512x
-+	select DEFAULT_UIMAGE
-+	select PPC_INDIRECT_PCI
-+	default n
-+
-+config MPC5125_TWR
-+	bool "Freescale MPC5125 Tower system"
-+	depends on PPC_MPC512x
-+	select PPC_MPC5125
-+	help
-+	  This option enables support for the MPC5125 TWR board.
-+
- config PDM360NG
- 	bool "ifm PDM360NG board"
- 	depends on PPC_MPC512x
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 4efc1c4..5c17561 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -5,3 +5,4 @@ obj-y				+= clock.o mpc512x_shared.o
- obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
- obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
- obj-$(CONFIG_PDM360NG)		+= pdm360ng.o
-+obj-$(CONFIG_MPC5125_TWR)	+= mpc5125_twr.o
-diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
-index 3dc2a8d..962c0ba 100644
---- a/arch/powerpc/platforms/512x/clock.c
-+++ b/arch/powerpc/platforms/512x/clock.c
-@@ -669,6 +669,13 @@ static void psc_calc_rate(struct clk *clk, int pscnum, struct device_node *np)
- 	clk->rate = mclk_src / mclk_div;
- }
- 
-+
-+#ifdef CONFIG_PPC_MPC5125
-+#define PSC_PREFIX "mpc5125"
-+#else
-+#define PSC_PREFIX "mpc5121"
-+#endif
-+
- /*
-  * Find all psc nodes in device tree and assign a clock
-  * with name "psc%d_mclk" and dev pointing at the device
-@@ -680,7 +687,7 @@ static void psc_clks_init(void)
- 	const u32 *cell_index;
- 	struct platform_device *ofdev;
- 
--	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
-+	for_each_compatible_node(np, NULL, "fsl," PSC_PREFIX "-psc") {
- 		cell_index = of_get_property(np, "cell-index", NULL);
- 		if (cell_index) {
- 			int pscnum = *cell_index;
-diff --git a/arch/powerpc/platforms/512x/mpc5125_twr.c b/arch/powerpc/platforms/512x/mpc5125_twr.c
-new file mode 100644
-index 0000000..c35b0d8
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5125_twr.c
-@@ -0,0 +1,162 @@
-+/*
-+ * Copyright (C) 2010 LimePC Multimedia Technologies Co., Limited
-+ * Copyright (C) 2011 Vladimir Ermakov <vooon341@gmail.com>
-+ *
-+ * Based on original Freescale Semiconductor BSP
-+ * written by Cloudy Chen <chen_yunsong@mtcera.com>
-+ *
-+ * MPC5125 Tower board setup
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+#include <linux/bootmem.h>
-+#include <asm/rheap.h>
-+
-+#include "mpc512x.h"
-+
-+static void mpc5125_psc_iopad_init(void __iomem *ioctl, char *name)
-+{
-+	struct device_node *np;
-+	const u32 *cell_index;
-+	char *default_psc = "fsl,mpc5125-psc";
-+	char *psc_name;
-+
-+	if (name)
-+		psc_name = name;
-+	else
-+		psc_name = default_psc;
-+
-+	for_each_compatible_node(np, NULL, psc_name) {
-+		cell_index = of_get_property(np, "cell-index", NULL);
-+		if (cell_index) {
-+			u8 __iomem *pscioctl;
-+			int psc_num = *cell_index;
-+			if (psc_num > 1)
-+				continue;
-+
-+			pscioctl = ioctl + 0x76 + 5 * psc_num;
-+			out_8(pscioctl++, 0x07);
-+			out_8(pscioctl++, 0x03);
-+			out_8(pscioctl++, 0x03);
-+			out_8(pscioctl++, 0x03);
-+			out_8(pscioctl++, 0x03);
-+		}
-+	}
-+}
-+
-+static void mpc5125_fec2_usb_io_init(void __iomem *ioctl, int isusb)
-+{
-+#define FEC2_INIT 0
-+#define USB_INIT  1
-+	int i;
-+	const u8 offset[12] = {
-+		0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a,
-+		0x6b, 0x6c, 0x6d, 0x6e
-+	};
-+	const u8 init[2][12] = {
-+		[FEC2_INIT] = {
-+			0x43, 0x43, 0x43, 0x43, 0x43, 0x43, 0x43, 0x43,
-+			0x43, 0x43, 0x43, 0x43},
-+		[USB_INIT] = {
-+			0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-+			0x03, 0x03, 0x03, 0x03}
-+	};
-+
-+	isusb = (isusb) ? USB_INIT : FEC2_INIT;
-+	for (i = 0; i < ARRAY_SIZE(offset); i++)
-+		out_8(ioctl + offset[i], init[isusb][i]);
-+#undef FEC2_INIT
-+#undef USB_INIT
-+}
-+
-+static void __init mpc5125_board_setup(void)
-+{
-+	struct device_node *np;
-+
-+	/*
-+	 * io pad config
-+	 */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5125-ioctl");
-+	if (np) {
-+		void __iomem *ioctl = of_iomap(np, 0);
-+
-+		mpc5125_psc_iopad_init(ioctl, NULL);
-+		mpc5125_fec2_usb_io_init(ioctl, 0);
-+
-+		of_node_put(np);
-+		iounmap(ioctl);
-+	}
-+}
-+
-+static void __init mpc5125_ads_setup_arch(void)
-+{
-+	printk(KERN_INFO "MPC5125 ADS board from Freescale Semiconductor\n");
-+
-+	mpc5125_board_setup();
-+}
-+
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{},
-+};
-+
-+static void __init mpc5125_ads_declare_of_platform_devices(void)
-+{
-+	struct device_node *np;
-+
-+	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while probing of_platform bus\n");
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5125-nfc");
-+	if (np) {
-+		of_platform_device_create(np, NULL, NULL);
-+		of_node_put(np);
-+	}
-+}
-+
-+static void __init mpc5125_ads_init(void)
-+{
-+	mpc5125_ads_declare_of_platform_devices();
-+	mpc5121_clk_init();
-+	mpc512x_restart_init();
-+	mpc512x_psc_fifo_init("fsl,mpc5125-psc");
-+}
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init mpc5125_ads_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,mpc5125ads");
-+}
-+
-+define_machine(mpc5125_ads) {
-+	.name			= "MPC5125 ADS",
-+	.probe			= mpc5125_ads_probe,
-+	.setup_arch		= mpc5125_ads_setup_arch,
-+	.init			= mpc5125_ads_init,
-+	.init_IRQ		= mpc512x_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.restart		= mpc512x_restart,
-+};
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index 1ab6d11..70c66c6 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -13,8 +13,10 @@
- #define __MPC512X_H__
- extern void __init mpc512x_init_IRQ(void);
- extern void __init mpc512x_init(void);
-+extern void __init mpc512x_restart_init(void);
- extern int __init mpc5121_clk_init(void);
--void __init mpc512x_declare_of_platform_devices(void);
-+extern void __init mpc512x_declare_of_platform_devices(void);
-+extern void __init mpc512x_psc_fifo_init(char *psc_name);
- extern void mpc512x_restart(char *cmd);
- extern void mpc512x_init_diu(void);
- extern void mpc512x_setup_diu(void);
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index e41ebbd..411fc9d 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -32,7 +32,7 @@
- 
- static struct mpc512x_reset_module __iomem *reset_module_base;
- 
--static void __init mpc512x_restart_init(void)
-+void __init mpc512x_restart_init(void)
- {
- 	struct device_node *np;
- 
-@@ -401,15 +401,19 @@ static unsigned int __init get_fifo_size(struct device_node *np,
- 		    ((u32)(_base) + sizeof(struct mpc52xx_psc)))
- 
- /* Init PSC FIFO space for TX and RX slices */
--void __init mpc512x_psc_fifo_init(void)
-+void __init mpc512x_psc_fifo_init(char *psc_name)
- {
- 	struct device_node *np;
- 	void __iomem *psc;
- 	unsigned int tx_fifo_size;
- 	unsigned int rx_fifo_size;
-+	char *default_psc = "fsl,mpc5121-psc";
- 	int fifobase = 0; /* current fifo address in 32 bit words */
- 
--	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
-+	if (!psc_name)
-+		psc_name = default_psc;
-+
-+	for_each_compatible_node(np, NULL, psc_name) {
- 		tx_fifo_size = get_fifo_size(np, "fsl,tx-fifo-size");
- 		rx_fifo_size = get_fifo_size(np, "fsl,rx-fifo-size");
- 
-@@ -461,5 +465,5 @@ void __init mpc512x_init(void)
- 	mpc512x_declare_of_platform_devices();
- 	mpc5121_clk_init();
- 	mpc512x_restart_init();
--	mpc512x_psc_fifo_init();
-+	mpc512x_psc_fifo_init(NULL);
- }
+
+[...]
+do_load: dev="/ide/disk:0" dlen=11 args="CRUX root=/dev/hdb
+video=radeonfb:800x600" alen=41
+do_load: alstr=""
+try_load: dev="/ide/disk:0" dlen=11 args="CRUX root=/dev/hdb
+video=radeonfb:800x600" alen=41
+create_well_formed_chain: pkg=0xFD57D58 parent=0xFD53B90
+currpkg=0xFD53B90 inst=0xFE6EE50
+        pkg=/pci@80000000 parent=/ currpkg=/ currinst=/
+create_well_formed_chain: pkg=0xFD53B90 parent=0x0 currpkg=0xFD53B90
+inst=0xFE6EE50
+        pkg=/ parent= currpkg=/ currinst=/
+        pkg=0xFD57D58:/pci@80000000 parent=0xFE6EE50:/
+inst=0xFE6EEA8:/pci@80000000 instparent=0xFE6EE50
+ata_disk_open: pkg=0xFD5B870 parent=0xFD5B2C8
+ata_disk_open: CTLR=0x0 ID=0x0
+ata_disk_open: args="0"
+deblocker open
+ata_disk_max_transfer: 512
+deblocker open: block-size=0x200 max-transfer=0x200
+deblocker open: return 0
+open-package: ret=0:no error r=-1
+ata_disk_open: $open-package deblocker ret=0
+ata_disk_open: deblocker=0xFE6EFC8
+disk-label open
+disk-label open: self=0xFE702B0 s->buf=0xFE71000
+disk-label open: return 0
+open-package: ret=0:no error r=-1
+ata_disk_open: $open-package disk-label ret=0
+ata_disk_open: disklabel=0xFE70258
+disk-label load: addr=0x400000 loadargs=CRUX root=/dev/hdb
+video=radeonfb:800x600 args=0,CRUX root=/dev/hdb
+video=radeonfb:800x600
+file_system: e=0xFD00008 disk=0xFE6EF58 loc=0x0 start=0x0
+path=0xFE703C0 buf=0xFE71000 size=512
+file_system: probing filesys dos-partition
+
+dos_partition: enter
+dos-partition: boot_sect_sig0/1=0x55.0xAA jump=0x0 boot_signature=0x0
+drive_number=0x0
+dos_partition: partition=0 size=0x32F8E start=0x3F typ=0x6
+        flag=0x80 shd=0x1 ssect=0x1 scyl=0x0 ehd=0xFE esect=0x3F ecyl=0xC
+file_system: e=0xFD00008 disk=0xFE6EF58 loc=0x7E00 start=0x3F
+path=0xFE703C2 buf=0xFE71000 size=512
+file_system: probing filesys dos-partition
+file_system: probing filesys dos-fat
+file_system: return end (-4089)
+file_system: return end (-4089)
+disk-label return len=1782093 ret=end (-4089)
+ata_disk_close
+disk-label close:
+checking exec type Fcode
+fcode_is_exec: load=0x400000 loadlen=1782093
+checking exec type Forth
+checking exec type ELF
+f_go:
+checking exec type Fcode
+fcode_is_exec: load=0x400000 loadlen=1782093
+checking exec type Forth
+checking exec type ELF
+alloc_aligned: a 0xFD548E8 align 0xFD5491C size 0xFD54918 addr 0xFD54914
+alloc_constrained: min 0x0, max 0xFFFFFFFF, align 0x1000, mask
+0xFFFFFFFF, size 0x7E0000, addr 0x300000
+alloc_constrained: acells 0x1 scells 0x1 t1 0xC t2 0xFD5490C u1
+0xFD54910 u2 0xFD54914 u3 0xFD54918
+alloc_constrained: allocator_block 0xFD54930, next 0x0 addr 0x300000
+size 0xFD00000
+alloc_constrained: fsblock 0x0
+alloc_constrained: addr[] 0x300000
+alloc_constrained: bsize[] 0xFD00000
+alloc_constrained: passed min check
+alloc_constrained: addr 0x300000, align 0xFFF, off 0x69696969
+sum 0x0
+alloc_constrained: passed align check
+alloc_constrained: passed max check
+alloc_constrained: passed mask check
+alloc_constrained: passed full size check
+alloc_constrained: passed size check
+
+
+i'm not an expert but from a quick logs comparison I saw two times the
+alloc_aligned,alloc_constrained section instead in the working one i
+see it only one time.
+Maybe it's an usefull observation.
+
+
+cheers,
+Nell
+--
+1861 - 2011: 150 years of Italian Unity
