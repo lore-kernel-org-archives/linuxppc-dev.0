@@ -1,28 +1,21 @@
-Return-Path: <ppc.addon@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <vooon341@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B8ECDB7004
+	by ozlabs.org (Postfix) with ESMTPS id BC188B7004
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Mar 2011 10:39:04 +1100 (EST)
-Received: by yxp4 with SMTP id 4so965137yxp.38
+	Thu, 17 Mar 2011 10:46:18 +1100 (EST)
+Received: by bwz10 with SMTP id 10so1883133bwz.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 16:39:00 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20110315171448.100300@gmx.net>
-References: <AANLkTimJwBfz=RksRtuj3M2VQoMjj1msUb78s1H=GfJM@mail.gmail.com>
-	<AANLkTikKWrEqKH-4f2aMFnVUy-xCLnvxhtjF-pKUuC6e@mail.gmail.com>
-	<AANLkTinOo9tJ5=WWF2WJEZn3VwAUOa+SOYE0txNm-moM@mail.gmail.com>
-	<AANLkTim6urK-1-0MXrXZPTDWifZsi+7QEH_c8S-vzWSL@mail.gmail.com>
-	<20110315171448.100300@gmx.net>
-Date: Thu, 17 Mar 2011 00:39:00 +0100
-Message-ID: <AANLkTimpJBX5LjrKj5f5CgKx5dy-4bfReZ+awVSp3hQb@mail.gmail.com>
-Subject: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
-From: nello martuscielli <ppc.addon@gmail.com>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, acrux_it@libero.it
+	Wed, 16 Mar 2011 16:46:14 -0700 (PDT)
+Subject: [PATCH 2/4] serial: Add initial support for TWR-MPC5125
+From: Vladimir Ermakov <vooon341@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Mar 2011 02:33:47 +0300
+Message-ID: <1300318427.12970.70.camel@desinto>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,99 +25,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi all,
+Adds PSC UART support for MPC5125 SoC.
+    
+MPC5125 has different registers than in MPC5121.
 
-here instead the log from serial debug console booting the last
-working kernel i.e. linux-2.16.62 compiled with arch=ppc .
+Signed-off-by: Vladimir Ermakov <vooon341@gmail.com>
+---
 
-
-[...]
-do_load: dev="/ide/disk:0" dlen=11 args="CRUX root=/dev/hdb
-video=radeonfb:800x600" alen=41
-do_load: alstr=""
-try_load: dev="/ide/disk:0" dlen=11 args="CRUX root=/dev/hdb
-video=radeonfb:800x600" alen=41
-create_well_formed_chain: pkg=0xFD57D58 parent=0xFD53B90
-currpkg=0xFD53B90 inst=0xFE6EE50
-        pkg=/pci@80000000 parent=/ currpkg=/ currinst=/
-create_well_formed_chain: pkg=0xFD53B90 parent=0x0 currpkg=0xFD53B90
-inst=0xFE6EE50
-        pkg=/ parent= currpkg=/ currinst=/
-        pkg=0xFD57D58:/pci@80000000 parent=0xFE6EE50:/
-inst=0xFE6EEA8:/pci@80000000 instparent=0xFE6EE50
-ata_disk_open: pkg=0xFD5B870 parent=0xFD5B2C8
-ata_disk_open: CTLR=0x0 ID=0x0
-ata_disk_open: args="0"
-deblocker open
-ata_disk_max_transfer: 512
-deblocker open: block-size=0x200 max-transfer=0x200
-deblocker open: return 0
-open-package: ret=0:no error r=-1
-ata_disk_open: $open-package deblocker ret=0
-ata_disk_open: deblocker=0xFE6EFC8
-disk-label open
-disk-label open: self=0xFE702B0 s->buf=0xFE71000
-disk-label open: return 0
-open-package: ret=0:no error r=-1
-ata_disk_open: $open-package disk-label ret=0
-ata_disk_open: disklabel=0xFE70258
-disk-label load: addr=0x400000 loadargs=CRUX root=/dev/hdb
-video=radeonfb:800x600 args=0,CRUX root=/dev/hdb
-video=radeonfb:800x600
-file_system: e=0xFD00008 disk=0xFE6EF58 loc=0x0 start=0x0
-path=0xFE703C0 buf=0xFE71000 size=512
-file_system: probing filesys dos-partition
-
-dos_partition: enter
-dos-partition: boot_sect_sig0/1=0x55.0xAA jump=0x0 boot_signature=0x0
-drive_number=0x0
-dos_partition: partition=0 size=0x32F8E start=0x3F typ=0x6
-        flag=0x80 shd=0x1 ssect=0x1 scyl=0x0 ehd=0xFE esect=0x3F ecyl=0xC
-file_system: e=0xFD00008 disk=0xFE6EF58 loc=0x7E00 start=0x3F
-path=0xFE703C2 buf=0xFE71000 size=512
-file_system: probing filesys dos-partition
-file_system: probing filesys dos-fat
-file_system: return end (-4089)
-file_system: return end (-4089)
-disk-label return len=1782093 ret=end (-4089)
-ata_disk_close
-disk-label close:
-checking exec type Fcode
-fcode_is_exec: load=0x400000 loadlen=1782093
-checking exec type Forth
-checking exec type ELF
-f_go:
-checking exec type Fcode
-fcode_is_exec: load=0x400000 loadlen=1782093
-checking exec type Forth
-checking exec type ELF
-alloc_aligned: a 0xFD548E8 align 0xFD5491C size 0xFD54918 addr 0xFD54914
-alloc_constrained: min 0x0, max 0xFFFFFFFF, align 0x1000, mask
-0xFFFFFFFF, size 0x7E0000, addr 0x300000
-alloc_constrained: acells 0x1 scells 0x1 t1 0xC t2 0xFD5490C u1
-0xFD54910 u2 0xFD54914 u3 0xFD54918
-alloc_constrained: allocator_block 0xFD54930, next 0x0 addr 0x300000
-size 0xFD00000
-alloc_constrained: fsblock 0x0
-alloc_constrained: addr[] 0x300000
-alloc_constrained: bsize[] 0xFD00000
-alloc_constrained: passed min check
-alloc_constrained: addr 0x300000, align 0xFFF, off 0x69696969
-sum 0x0
-alloc_constrained: passed align check
-alloc_constrained: passed max check
-alloc_constrained: passed mask check
-alloc_constrained: passed full size check
-alloc_constrained: passed size check
-
-
-i'm not an expert but from a quick logs comparison I saw two times the
-alloc_aligned,alloc_constrained section instead in the working one i
-see it only one time.
-Maybe it's an usefull observation.
-
-
-cheers,
-Nell
---
-1861 - 2011: 150 years of Italian Unity
+diff --git a/arch/powerpc/include/asm/mpc52xx_psc.h b/arch/powerpc/include/asm/mpc52xx_psc.h
+index 2966df6..7bff52f 100644
+--- a/arch/powerpc/include/asm/mpc52xx_psc.h
++++ b/arch/powerpc/include/asm/mpc52xx_psc.h
+@@ -150,6 +150,51 @@
+ 
+ /* Structure of the hardware registers */
+ struct mpc52xx_psc {
++#ifdef CONFIG_PPC_MPC5125
++	u8		mr1;		/* PSC + 0x00 */
++	u8		reserved0[3];
++	u8		mr2;		/* PSC + 0x04 */
++	u8		reserved1[3];
++	u16		mpc52xx_psc_status; /* PSC + 0x08 */
++	u8		reserved2[2];
++	u8		mpc52xx_psc_clock_select; /* PSC + 0x0c */
++	u8		reserved3[3];
++	u8		command;	/* PSC + 0x10 */
++	u8		reserved4[3];
++	union {				/* PSC + 0x14 */
++		u8	buffer_8;
++		u16	buffer_16;
++		u32	buffer_32;
++	} buffer;
++#define mpc52xx_psc_buffer_8	buffer.buffer_8
++#define mpc52xx_psc_buffer_16	buffer.buffer_16
++#define mpc52xx_psc_buffer_32	buffer.buffer_32
++	u8		mpc52xx_psc_ipcr;	/* PSC + 0x18 */
++	u8		reserved5[3];
++	u8		mpc52xx_psc_acr;	/* PSC + 0x1c */
++	u8		reserved6[3];
++	u16		mpc52xx_psc_isr;	/* PSC + 0x20 */
++	u8		reserved7[2];
++	u16		mpc52xx_psc_imr;	/* PSC + 0x24 */
++	u8		reserved8[2];
++	u8		ctur;			/* PSC + 0x28 */
++	u8		reserved9[3];
++	u8		ctlr;			/* PSC + 0x2c */
++	u8		reserved10[3];
++	u32             ccr;            	/* PSC + 0x30 */
++	u32             ac97slots;      	/* PSC + 0x34 */
++	u32             ac97cmd;        	/* PSC + 0x38 */
++	u32             ac97data;       	/* PSC + 0x3c */
++	u8		reserved11[4];
++	u8		ip;			/* PSC + 0x44 */
++	u8		reserved12[3];
++	u8		op1;			/* PSC + 0x48 */
++	u8		reserved13[3];
++	u8		op0;			/* PSC + 0x4c */
++	u8		reserved14[3];
++	u32		sicr;			/* PSC + 0x50 */
++	u8		reserved15[4];
++#else
+ 	u8		mode;		/* PSC + 0x00 */
+ 	u8		reserved0[3];
+ 	union {				/* PSC + 0x04 */
+@@ -212,6 +257,7 @@ struct mpc52xx_psc {
+ 	u8		reserved16[3];
+ 	u8		irfdr;		/* PSC + 0x54 */
+ 	u8		reserved17[3];
++#endif
+ };
+ 
+ struct mpc52xx_psc_fifo {
+diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
+index a0bcd8a..8e4c6b0 100644
+--- a/drivers/tty/serial/mpc52xx_uart.c
++++ b/drivers/tty/serial/mpc52xx_uart.c
+@@ -128,7 +128,11 @@ static inline void mpc52xx_set_divisor(struct mpc52xx_psc __iomem *psc,
+ 				       u16 prescaler, unsigned int divisor)
+ {
+ 	/* select prescaler */
++#ifdef CONFIG_PPC_MPC5125
++	out_8(&psc->mpc52xx_psc_clock_select, prescaler >> 8);
++#else
+ 	out_be16(&psc->mpc52xx_psc_clock_select, prescaler);
++#endif
+ 	out_8(&psc->ctur, divisor >> 8);
+ 	out_8(&psc->ctlr, divisor & 0xff);
+ }
+@@ -345,7 +349,11 @@ static unsigned int psc_fifoc_irq;
+ static void mpc512x_psc_fifo_init(struct uart_port *port)
+ {
+ 	/* /32 prescaler */
++#ifdef CONFIG_PPC_MPC5125
++	out_8(&PSC(port)->mpc52xx_psc_clock_select, 0xdd);
++#else
+ 	out_be16(&PSC(port)->mpc52xx_psc_clock_select, 0xdd00);
++#endif
+ 
+ 	out_be32(&FIFO_512x(port)->txcmd, MPC512x_PSC_FIFO_RESET_SLICE);
+ 	out_be32(&FIFO_512x(port)->txcmd, MPC512x_PSC_FIFO_ENABLE_SLICE);
+@@ -816,9 +824,14 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
+ 	out_8(&psc->command, MPC52xx_PSC_RST_TX);
+ 
+ 	/* Send new mode settings */
++#ifdef CONFIG_PPC_MPC5125
++	out_8(&psc->mr1, mr1);
++	out_8(&psc->mr2, mr2);
++#else
+ 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
+ 	out_8(&psc->mode, mr1);
+ 	out_8(&psc->mode, mr2);
++#endif
+ 	baud = psc_ops->set_baudrate(port, new, old);
+ 
+ 	/* Update the per-port timeout */
+@@ -1107,8 +1120,12 @@ mpc52xx_console_get_options(struct uart_port *port,
+ 	pr_debug("mpc52xx_console_get_options(port=%p)\n", port);
+ 
+ 	/* Read the mode registers */
++#ifdef CONFIG_PPC_MPC5125
++	mr1 = in_8(&psc->mr1);
++#else
+ 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
+ 	mr1 = in_8(&psc->mode);
++#endif
+ 
+ 	/* CT{U,L}R are write-only ! */
+ 	*baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
+@@ -1296,9 +1313,13 @@ static struct of_device_id mpc52xx_uart_of_match[] = {
+ 	/* binding used by efika: */
+ 	{ .compatible = "mpc5200-serial", .data = &mpc52xx_psc_ops, },
+ #endif
+-#ifdef CONFIG_PPC_MPC512x
++#if defined(CONFIG_PPC_MPC512x) && !defined(CONFIG_PPC_MPC5125)
+ 	{ .compatible = "fsl,mpc5121-psc-uart", .data = &mpc512x_psc_ops, },
+ #endif
++#ifdef CONFIG_PPC_MPC5125
++	{ .compatible = "fsl,mpc5125-psc-uart", .data = &mpc512x_psc_ops, },
++#endif
++
+ 	{},
+ };
+ 
