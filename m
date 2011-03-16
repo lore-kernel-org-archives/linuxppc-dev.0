@@ -1,26 +1,23 @@
-Return-Path: <sven@z-innov.com>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id 0A317B7005
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1790B6FFC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 19:14:05 +1100 (EST)
-Date: Wed, 16 Mar 2011 09:14:02 +0100
-From: Sven Luther <sven.luther@z-innov.com>
-To: acrux <acrux_it@libero.it>
-Subject: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
-Message-ID: <20110316081402.GA12779@z-innov.com>
-References: <AANLkTimJwBfz=RksRtuj3M2VQoMjj1msUb78s1H=GfJM@mail.gmail.com>
-	<AANLkTikKWrEqKH-4f2aMFnVUy-xCLnvxhtjF-pKUuC6e@mail.gmail.com>
-	<AANLkTinOo9tJ5=WWF2WJEZn3VwAUOa+SOYE0txNm-moM@mail.gmail.com>
-	<AANLkTim6urK-1-0MXrXZPTDWifZsi+7QEH_c8S-vzWSL@mail.gmail.com>
-	<20110315171448.100300@gmx.net>
-	<20110315174924.GA24001@z-innov.com>
-	<20110315200855.240730@gmx.net>
-	<20110315214149.GA26249@z-innov.com>
-	<20110316012319.b436ee11.acrux_it@libero.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110316012319.b436ee11.acrux_it@libero.it>
-Cc: Sven Luther <sven.luther@z-innov.com>, ppc.addon@gmail.com,
+	Wed, 16 Mar 2011 21:15:23 +1100 (EST)
+Subject: Re: linux-next: build failure after merge of the final tree (ubi
+	tree related)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Artem.Bityutskiy@nokia.com
+In-Reply-To: <1300260170.2817.4.camel@localhost>
+References: <20110316175041.67c4f371.sfr@canb.auug.org.au>
+	<1300260170.2817.4.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Mar 2011 21:15:08 +1100
+Message-ID: <1300270508.22236.1168.camel@pasglop>
+Mime-Version: 1.0
+Cc: ext Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,55 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 16, 2011 at 01:23:19AM +0100, acrux wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> On Tue, 15 Mar 2011 22:41:49 +0100
-> Sven Luther <sven.luther@z-innov.com> wrote:
-> 
-> > On Tue, Mar 15, 2011 at 09:08:55PM +0100, Gerhard Pircher wrote:
-> > > 
-> > > > Well, since this is long dead hardware not produced anymore, i
-> > > > don't see how the OF could have unbroken itself by moving to
-> > > > powerpc.
-> > > > 
-> > > > It has been age since i looked into this, but to the best of my
-> > > > knowledge (and i wrote the above code or at least the earlier
-> > > > versions) it should be still broken.
-> > > Any idea then, how the workaround can be ported to arch/powerpc/ or
-> > > if there is a better one available?
+On Wed, 2011-03-16 at 09:22 +0200, Artem Bityutskiy wrote:
+> On Wed, 2011-03-16 at 17:50 +1100, ext Stephen Rothwell wrote:
+> > Hi all,
 > > 
-> > Sorry, it has been years since i looked these parts of the linux
-> > kernel, so i don't really know how the arch/powerpc code handles this
-> > differently. Your best guess is to hunt for the code yourself, and
-> > find the place. I don't remember though if debugging at that time is
-> > easily possible though.
+> > After merging the final tree, today's linux-next build (powerpc
+> > allyesconfig) failed like this:
 > > 
+> > drivers/mtd/ubi/io.c: In function 'ubi_dbg_check_write':
+> > drivers/mtd/ubi/io.c:1348: error: 'PAGE_KERNEL' undeclared (first use in this function)
+> > drivers/mtd/ubi/io.c: In function 'ubi_dbg_check_all_ff':
+> > drivers/mtd/ubi/io.c:1412: error: 'PAGE_KERNEL' undeclared (first use in this function)
+> > 
+> > Caused by commit 823ed5091113 ("UBI: allocate write checking buffer on demand").
+> > 
+> > I don't know how to fix this, so I have left it for today.
 > 
-> if chrp support doesn't anymore include Pegasos1 it could be nice to
-> remove all that dead code. Albeit it's fun that nobody cared about for
-> it during the  ppc=>powerpc switch as Pegasos1 was retired in 2003
-> and linux-2.6.17 was released in 2006... about three years.
+> Hmm, strange, include <linux/vmalloc.h> should be enough to use
+> __vmalloc with 'PAGE_KERNEL' AFAICS, and we have this include... I'll
+> try to look better.
 
-Also, the Pegasos2 OF implementation corrected these issues.
+Try adding asm/pgtable.h 
 
-Notice that 2006 was also the year that debian sabotaged all powerpc work, 
-and had me expulsed because some people in the debian-installer team didn't 
-support technical critics and had more political pull inside debian than
-myself. This happening after almost a decade of me giving my time to debian, 
-i kind of lost interest at that point, and nobody stepped up to take over my 
-work.
-
-And on top of that, Franz Pop commited suicide last year, which could possibly
-have been avoided if debian's leadership would have showed more maturity and
-responsability back then. 
-
-Sorry for the off topic rant, but this is something which did take a really
-long time for me to get over, and i believe that the debian folk are still not
-ready to let it go. I am still censored on debian mailing lists today and probably
-banned from irc channels.
-
-Sadly,
-
-Sven Luther
+Cheers,
+Ben.
