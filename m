@@ -1,24 +1,20 @@
-Return-Path: <Artem.Bityutskiy@nokia.com>
-Received: from mgw-da01.nokia.com (smtp.nokia.com [147.243.128.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.nokia.com",
-	Issuer "VeriSign Class 3 International Server CA - G3" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9833DB701B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 22:52:23 +1100 (EST)
-Subject: Re: linux-next: build failure after merge of the final tree (ubi
-	tree related)
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20110316175041.67c4f371.sfr@canb.auug.org.au>
-References: <20110316175041.67c4f371.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Mar 2011 13:48:39 +0200
-Message-ID: <1300276119.2817.9.camel@localhost>
-Mime-Version: 1.0
-Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: Artem.Bityutskiy@nokia.com
+Return-Path: <bounces@nabble.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F2978B7016
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 23:25:26 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by sam.nabble.com with esmtp (Exim 4.69)
+	(envelope-from <bounces@nabble.com>) id 1Pzpn0-0006Gl-PH
+	for linuxppc-dev@ozlabs.org; Wed, 16 Mar 2011 05:25:22 -0700
+Message-ID: <31162962.post@talk.nabble.com>
+Date: Wed, 16 Mar 2011 05:25:22 -0700 (PDT)
+From: Vasanth Ragavendran <ragavendrapec@yahoo.co.in>
+To: linuxppc-dev@ozlabs.org
+Subject: Powerpc gcc error for mpc8315erdb board
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-03-16 at 17:50 +1100, Stephen Rothwell wrote:
-> After merging the final tree, today's linux-next build (powerpc
-> allyesconfig) failed like this:
-> 
-> drivers/mtd/ubi/io.c: In function 'ubi_dbg_check_write':
-> drivers/mtd/ubi/io.c:1348: error: 'PAGE_KERNEL' undeclared (first use in this function)
-> drivers/mtd/ubi/io.c: In function 'ubi_dbg_check_all_ff':
-> drivers/mtd/ubi/io.c:1412: error: 'PAGE_KERNEL' undeclared (first use in this function)
-> 
-> Caused by commit 823ed5091113 ("UBI: allocate write checking buffer on demand").
-> 
-> I don't know how to fix this, so I have left it for today.
 
-Fixed, sorry for the hassle and thank you!
+Hi
 
+I am facing a problem with my powerpc gcc. Actually i am using a ltib to
+configure the kernel and the file system for my mpc8315erdb board from linux
+2.6 host machine. and the installation of kernel and filesystem is
+successful. i don't have "make" installed in the board and i wanted to
+compile cgic library  (an ANSI C library for cgi) for the board, hence i
+compiled it on the linux host machine itself but instead of using gcc i used
+powerpc-e300c3-linux-gnu-gcc which corresponds to the gcc of the mpc8315erdb
+board. however i get an error saying 
+
+powerpc-e300c3-linux-gnu-gcc: error trying to exec 'cc1': execvp: No such
+file or directory
+
+however powerpc-e300c3-linux-gnu-gcc is present in /usr/local/bin on the
+linux host machine and this directory is part of the path. so powerpc does
+exist on the host machine. 
+
+if the error comes on the host linux then i would look for
+/usr/libexec/gcc/i486-slackware-linux/4.2.4/ but how do i rectify in this
+scenario. the makefile for the cgic was modified according to the powerpc
+architecture and i am attaching here. Kindly help! plz!
+http://old.nabble.com/file/p31162962/Makefile Makefile 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+View this message in context: http://old.nabble.com/Powerpc-gcc-error-for-mpc8315erdb-board-tp31162962p31162962.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
