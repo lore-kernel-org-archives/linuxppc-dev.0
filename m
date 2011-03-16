@@ -1,20 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 261C7B6F9E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2011 23:27:44 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by sam.nabble.com with esmtp (Exim 4.69)
-	(envelope-from <bounces@nabble.com>) id 1PzppF-0006Uk-CX
-	for linuxppc-dev@ozlabs.org; Wed, 16 Mar 2011 05:27:41 -0700
-Message-ID: <31162979.post@talk.nabble.com>
-Date: Wed, 16 Mar 2011 05:27:41 -0700 (PDT)
-From: Vasanth Ragavendran <ragavendrapec@yahoo.co.in>
-To: linuxppc-dev@ozlabs.org
-Subject: Powerpc gcc error for mpc8315erdb board
+	by ozlabs.org (Postfix) with ESMTPS id 3E99DB6FAB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Mar 2011 23:51:30 +1100 (EST)
+Date: Wed, 16 Mar 2011 13:50:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: perf: Handle events that raise an exception
+	without overflowing
+Message-ID: <20110316125053.GA7387@elte.hu>
+References: <20110309143842.6c22845e@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110309143842.6c22845e@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, a.p.zijlstra@chello.nl,
+	acme@ghostprotocols.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +27,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Hi
+* Anton Blanchard <anton@samba.org> wrote:
 
-I am facing a problem with my powerpc gcc. Actually i am using a ltib to
-configure the kernel and the file system for my mpc8315erdb board from linux
-2.6 host machine. and the installation of kernel and filesystem is
-successful. i don't have "make" installed in the board and i wanted to
-compile cgic library  (an ANSI C library for cgi) for the board, hence i
-compiled it on the linux host machine itself but instead of using gcc i used
-powerpc-e300c3-linux-gnu-gcc which corresponds to the gcc of the mpc8315erdb
-board. however i get an error saying
+> 
+> Events on POWER7 can roll back if a speculative event doesn't
+> eventually complete. Unfortunately in some rare cases they will
+> raise a performance monitor exception. We need to catch this to
+> ensure we reset the PMC. In all cases the PMC will be 256 or less
+> cycles from overflow.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Cc: stable@kernel.org
+> ---
+> 
+> I would prefer not to add the PVR check, but I think we want to limit
+> this workaround to POWER7. Would a cpu feature be preferable?
 
-powerpc-e300c3-linux-gnu-gcc: error trying to exec 'cc1': execvp: No such
-file or directory
+There was no objection from the PowerPC folks so i'll send this fix Linuswards, ok?
 
-however powerpc-e300c3-linux-gnu-gcc is present in /usr/local/bin on the
-linux host machine and this directory is part of the path. so powerpc does
-exist on the host machine.
+Thanks,
 
-if the error comes on the host linux then i would look for
-/usr/libexec/gcc/i486-slackware-linux/4.2.4/ but how do i rectify in this
-scenario. the makefile for the cgic was modified according to the powerpc
-architecture and i am attaching here below. Kindly help! plz!
-
-http://old.nabble.com/file/p31162979/Makefile Makefile 
-
-
--- 
-View this message in context: http://old.nabble.com/Powerpc-gcc-error-for-mpc8315erdb-board-tp31162979p31162979.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+	Ingo
