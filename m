@@ -3,18 +3,18 @@ Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
 	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BC188B7004
+	by ozlabs.org (Postfix) with ESMTPS id 04A7EB70FC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Mar 2011 10:46:18 +1100 (EST)
-Received: by bwz10 with SMTP id 10so1883133bwz.38
+	Thu, 17 Mar 2011 10:46:21 +1100 (EST)
+Received: by bwz10 with SMTP id 10so1883161bwz.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Mar 2011 16:46:14 -0700 (PDT)
-Subject: [PATCH 2/4] serial: Add initial support for TWR-MPC5125
+	Wed, 16 Mar 2011 16:46:17 -0700 (PDT)
+Subject: [PATCH 3/4] fs_enet: Add initial support for TWR-MPC5125
 From: Vladimir Ermakov <vooon341@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Mar 2011 02:33:47 +0300
-Message-ID: <1300318427.12970.70.camel@desinto>
+Date: Thu, 17 Mar 2011 02:37:23 +0300
+Message-ID: <1300318643.12970.73.camel@desinto>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,145 +25,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds PSC UART support for MPC5125 SoC.
+Add PHY interface selection.
     
-MPC5125 has different registers than in MPC5121.
+On TWR-MPC5125 PHY2 connected through RMII.
 
 Signed-off-by: Vladimir Ermakov <vooon341@gmail.com>
 ---
 
-diff --git a/arch/powerpc/include/asm/mpc52xx_psc.h b/arch/powerpc/include/asm/mpc52xx_psc.h
-index 2966df6..7bff52f 100644
---- a/arch/powerpc/include/asm/mpc52xx_psc.h
-+++ b/arch/powerpc/include/asm/mpc52xx_psc.h
-@@ -150,6 +150,51 @@
- 
- /* Structure of the hardware registers */
- struct mpc52xx_psc {
-+#ifdef CONFIG_PPC_MPC5125
-+	u8		mr1;		/* PSC + 0x00 */
-+	u8		reserved0[3];
-+	u8		mr2;		/* PSC + 0x04 */
-+	u8		reserved1[3];
-+	u16		mpc52xx_psc_status; /* PSC + 0x08 */
-+	u8		reserved2[2];
-+	u8		mpc52xx_psc_clock_select; /* PSC + 0x0c */
-+	u8		reserved3[3];
-+	u8		command;	/* PSC + 0x10 */
-+	u8		reserved4[3];
-+	union {				/* PSC + 0x14 */
-+		u8	buffer_8;
-+		u16	buffer_16;
-+		u32	buffer_32;
-+	} buffer;
-+#define mpc52xx_psc_buffer_8	buffer.buffer_8
-+#define mpc52xx_psc_buffer_16	buffer.buffer_16
-+#define mpc52xx_psc_buffer_32	buffer.buffer_32
-+	u8		mpc52xx_psc_ipcr;	/* PSC + 0x18 */
-+	u8		reserved5[3];
-+	u8		mpc52xx_psc_acr;	/* PSC + 0x1c */
-+	u8		reserved6[3];
-+	u16		mpc52xx_psc_isr;	/* PSC + 0x20 */
-+	u8		reserved7[2];
-+	u16		mpc52xx_psc_imr;	/* PSC + 0x24 */
-+	u8		reserved8[2];
-+	u8		ctur;			/* PSC + 0x28 */
-+	u8		reserved9[3];
-+	u8		ctlr;			/* PSC + 0x2c */
-+	u8		reserved10[3];
-+	u32             ccr;            	/* PSC + 0x30 */
-+	u32             ac97slots;      	/* PSC + 0x34 */
-+	u32             ac97cmd;        	/* PSC + 0x38 */
-+	u32             ac97data;       	/* PSC + 0x3c */
-+	u8		reserved11[4];
-+	u8		ip;			/* PSC + 0x44 */
-+	u8		reserved12[3];
-+	u8		op1;			/* PSC + 0x48 */
-+	u8		reserved13[3];
-+	u8		op0;			/* PSC + 0x4c */
-+	u8		reserved14[3];
-+	u32		sicr;			/* PSC + 0x50 */
-+	u8		reserved15[4];
-+#else
- 	u8		mode;		/* PSC + 0x00 */
- 	u8		reserved0[3];
- 	union {				/* PSC + 0x04 */
-@@ -212,6 +257,7 @@ struct mpc52xx_psc {
- 	u8		reserved16[3];
- 	u8		irfdr;		/* PSC + 0x54 */
- 	u8		reserved17[3];
-+#endif
- };
- 
- struct mpc52xx_psc_fifo {
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index a0bcd8a..8e4c6b0 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -128,7 +128,11 @@ static inline void mpc52xx_set_divisor(struct mpc52xx_psc __iomem *psc,
- 				       u16 prescaler, unsigned int divisor)
- {
- 	/* select prescaler */
-+#ifdef CONFIG_PPC_MPC5125
-+	out_8(&psc->mpc52xx_psc_clock_select, prescaler >> 8);
-+#else
- 	out_be16(&psc->mpc52xx_psc_clock_select, prescaler);
-+#endif
- 	out_8(&psc->ctur, divisor >> 8);
- 	out_8(&psc->ctlr, divisor & 0xff);
- }
-@@ -345,7 +349,11 @@ static unsigned int psc_fifoc_irq;
- static void mpc512x_psc_fifo_init(struct uart_port *port)
- {
- 	/* /32 prescaler */
-+#ifdef CONFIG_PPC_MPC5125
-+	out_8(&PSC(port)->mpc52xx_psc_clock_select, 0xdd);
-+#else
- 	out_be16(&PSC(port)->mpc52xx_psc_clock_select, 0xdd00);
-+#endif
- 
- 	out_be32(&FIFO_512x(port)->txcmd, MPC512x_PSC_FIFO_RESET_SLICE);
- 	out_be32(&FIFO_512x(port)->txcmd, MPC512x_PSC_FIFO_ENABLE_SLICE);
-@@ -816,9 +824,14 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
- 	out_8(&psc->command, MPC52xx_PSC_RST_TX);
- 
- 	/* Send new mode settings */
-+#ifdef CONFIG_PPC_MPC5125
-+	out_8(&psc->mr1, mr1);
-+	out_8(&psc->mr2, mr2);
-+#else
- 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
- 	out_8(&psc->mode, mr1);
- 	out_8(&psc->mode, mr2);
-+#endif
- 	baud = psc_ops->set_baudrate(port, new, old);
- 
- 	/* Update the per-port timeout */
-@@ -1107,8 +1120,12 @@ mpc52xx_console_get_options(struct uart_port *port,
- 	pr_debug("mpc52xx_console_get_options(port=%p)\n", port);
- 
- 	/* Read the mode registers */
-+#ifdef CONFIG_PPC_MPC5125
-+	mr1 = in_8(&psc->mr1);
-+#else
- 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
- 	mr1 = in_8(&psc->mode);
-+#endif
- 
- 	/* CT{U,L}R are write-only ! */
- 	*baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
-@@ -1296,9 +1313,13 @@ static struct of_device_id mpc52xx_uart_of_match[] = {
- 	/* binding used by efika: */
- 	{ .compatible = "mpc5200-serial", .data = &mpc52xx_psc_ops, },
- #endif
--#ifdef CONFIG_PPC_MPC512x
-+#if defined(CONFIG_PPC_MPC512x) && !defined(CONFIG_PPC_MPC5125)
- 	{ .compatible = "fsl,mpc5121-psc-uart", .data = &mpc512x_psc_ops, },
- #endif
-+#ifdef CONFIG_PPC_MPC5125
-+	{ .compatible = "fsl,mpc5125-psc-uart", .data = &mpc512x_psc_ops, },
-+#endif
+diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
+index fc073b5..132966b 100644
+--- a/drivers/net/fs_enet/Kconfig
++++ b/drivers/net/fs_enet/Kconfig
+@@ -32,3 +32,16 @@ config FS_ENET_MDIO_FCC
+ 	tristate "MDIO driver for FCC"
+ 	depends on FS_ENET && CPM2
+ 	select MDIO_BITBANG
 +
- 	{},
- };
++choice FS_ENET_RCNTRL
++	prompt "PHY connection interface"
++	default FS_ENET_MII
++	depends on FS_ENET_MPC5121_FEC
++
++config FS_ENET_RCNTRL_MII
++	bool "MII"
++
++config FS_ENET_RCNTRL_RMII
++	bool "RMII"
++
++endchoice
+diff --git a/drivers/net/fs_enet/fec.h b/drivers/net/fs_enet/fec.h
+index e980527..468be6e 100644
+--- a/drivers/net/fs_enet/fec.h
++++ b/drivers/net/fs_enet/fec.h
+@@ -26,6 +26,7 @@
+ #define FEC_RCNTRL_BC_REJ	0x00000010
+ #define FEC_RCNTRL_PROM		0x00000008
+ #define FEC_RCNTRL_MII_MODE	0x00000004
++#define FEC_RCNTRL_RMII_MODE	0x00000124
+ #define FEC_RCNTRL_DRT		0x00000002
+ #define FEC_RCNTRL_LOOP		0x00000001
  
+@@ -33,6 +34,11 @@
+ #define FEC_TCNTRL_HBC		0x00000002
+ #define FEC_TCNTRL_GTS		0x00000001
+ 
++#ifdef CONFIG_FS_ENET_RCNTRL_MII
++#define FEC_RCNTRL_PHY_MODE FEC_RCNTRL_MII_MODE
++#else /* CONFIG_FS_ENET_RCNTRL_RMII */
++#define FEC_RCNTRL_PHY_MODE FEC_RCNTRL_RMII_MODE
++#endif
+ 
+ 
+ /*
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index 61035fc..d43e56d 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -319,13 +319,13 @@ static void restart(struct net_device *dev)
+ #ifndef CONFIG_FS_ENET_MPC5121_FEC
+ 	FW(fecp, ivec, (virq_to_hw(fep->interrupt) / 2) << 29);
+ 
+-	FW(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
++	FW(fecp, r_cntrl, FEC_RCNTRL_PHY_MODE);	/* MII/RMII enable */
+ #else
+ 	/*
+-	 * Only set MII mode - do not touch maximum frame length
++	 * Only set MII/RMII mode - do not touch maximum frame length
+ 	 * configured before.
+ 	 */
+-	FS(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);
++	FS(fecp, r_cntrl, FEC_RCNTRL_PHY_MODE);
+ #endif
+ 	/*
+ 	 * adjust to duplex mode
+@@ -381,7 +381,7 @@ static void stop(struct net_device *dev)
+ 
+ 	/* shut down FEC1? that's where the mii bus is */
+ 	if (fpi->has_phy) {
+-		FS(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
++		FS(fecp, r_cntrl, FEC_RCNTRL_PHY_MODE);	/* MII/RMII enable */
+ 		FS(fecp, ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_ETHER_EN);
+ 		FW(fecp, ievent, FEC_ENET_MII);
+ 		FW(fecp, mii_speed, feci->mii_speed);
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index 7e840d3..bb61ff6 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -161,7 +161,7 @@ static int __devinit fs_enet_mdio_probe(struct platform_device *ofdev)
+ 
+ 	fec->mii_speed = speed << 1;
+ 
+-	setbits32(&fec->fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
++	setbits32(&fec->fecp->fec_r_cntrl, FEC_RCNTRL_PHY_MODE);
+ 	setbits32(&fec->fecp->fec_ecntrl, FEC_ECNTRL_PINMUX |
+ 	                                  FEC_ECNTRL_ETHER_EN);
+ 	out_be32(&fec->fecp->fec_ievent, FEC_ENET_MII);
