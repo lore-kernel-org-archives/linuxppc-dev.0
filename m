@@ -1,23 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0A64FB6F7C
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8E64BB6FB5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Mar 2011 07:34:45 +1100 (EST)
-Subject: Re: [PATCH] powerpc: perf: Handle events that raise an exception
-	without overflowing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20110316125053.GA7387@elte.hu>
-References: <20110309143842.6c22845e@kryten> <20110316125053.GA7387@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Mar 2011 07:34:26 +1100
-Message-ID: <1300307666.22236.1179.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
-	Anton Blanchard <anton@samba.org>, acme@ghostprotocols.net,
-	a.p.zijlstra@chello.nl
+	Thu, 17 Mar 2011 08:25:57 +1100 (EST)
+Received: by wwb28 with SMTP id 28so2128754wwb.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Mar 2011 14:25:52 -0700 (PDT)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: Re: [PATCH v2 21/28] powerpc: sysdev/mpc8xxx_gpio irq_data conversion.
+References: <cover.1299541392.git.buytenh@wantstofly.org>
+	<20110308000004.GZ16649@mail.wantstofly.org>
+	<20110309082658.GR16649@mail.wantstofly.org>
+Date: Wed, 16 Mar 2011 22:25:48 +0100
+In-Reply-To: <20110309082658.GR16649@mail.wantstofly.org> (Lennert Buytenhek's
+	message of "Wed, 9 Mar 2011 09:26:58 +0100")
+Message-ID: <87aagun4f7.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +32,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-03-16 at 13:50 +0100, Ingo Molnar wrote:
-> * Anton Blanchard <anton@samba.org> wrote:
-> 
-> > 
-> > Events on POWER7 can roll back if a speculative event doesn't
-> > eventually complete. Unfortunately in some rare cases they will
-> > raise a performance monitor exception. We need to catch this to
-> > ensure we reset the PMC. In all cases the PMC will be 256 or less
-> > cycles from overflow.
-> > 
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> > Cc: stable@kernel.org
-> > ---
-> > 
-> > I would prefer not to add the PVR check, but I think we want to limit
-> > this workaround to POWER7. Would a cpu feature be preferable?
-> 
-> There was no objection from the PowerPC folks so i'll send this fix Linuswards, ok?
+>>>>> "Lennert" == Lennert Buytenhek <buytenh@wantstofly.org> writes:
 
-Ah yes.
+ Lennert> Signed-off-by: Lennert Buytenhek <buytenh@secretlab.ca>
+ Lennert> ---
+ Lennert> v2: get_irq_chip_data(d->irq) => irq_data_get_irq_chip_data(d)
 
-Ack.
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-Cheers,
-Ben.
+-- 
+Bye, Peter Korsgaard
