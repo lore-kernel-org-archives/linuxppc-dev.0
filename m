@@ -1,25 +1,34 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8C22CB6FDE
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2011 23:49:09 +1100 (EST)
-Received: by wyb34 with SMTP id 34so3597039wyb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2011 05:49:05 -0700 (PDT)
-Message-ID: <4D8202EA.1030405@ru.mvista.com>
-Date: Thu, 17 Mar 2011 15:47:38 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <glikely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Thu, 17 Mar 2011 13:21:16 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Richard Cochran <richardcochran@gmail.com>
+Subject: Re: [PATCH V11 2/4] ptp: Added a clock that uses the eTSEC found on
+	the MPC85xx.
+Message-ID: <20110317192116.GC12824@angua.secretlab.ca>
+References: <cover.1298447722.git.richard.cochran@omicron.at>
+	<be1f5e801e8cd0145dd23aadae7c2055bb3c1d47.1298447722.git.richard.cochran@omicron.at>
+	<20110223165058.GE14597@angua.secretlab.ca>
+	<20110223112612.30071995@schlenkerla>
+	<20110223175459.GH14597@angua.secretlab.ca>
+	<20110223132444.65dfdda4@schlenkerla>
+	<20110224165004.GB15234@riccoc20.at.omicron.at>
+	<20110224112731.2d9bf080@schlenkerla>
+	<20110225075320.GA4032@riccoc20.at.omicron.at>
 MIME-Version: 1.0
-To: Valentin Longchamp <valentin.longchamp@keymile.com>
-Subject: Re: [PATCH 1/1] fsl_qe_udc: send ZLP when zero flag and length %
-	maxpacket == 0
-References: <1300357858-1288-1-git-send-email-valentin.longchamp@keymile.com>
-In-Reply-To: <1300357858-1288-1-git-send-email-valentin.longchamp@keymile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: dbrownell@users.sourceforge.net, stefan.bigler@keymile.com,
-	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	holger.brunck@keymile.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110225075320.GA4032@riccoc20.at.omicron.at>
+Cc: John Stultz <john.stultz@linaro.org>, Christoph Lameter <cl@linux.com>,
+	Russell King <linux@arm.linux.org.uk>,
+	Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+	Scott Wood <scottwood@freescale.com>, Mike Frysinger <vapier@gentoo.org>,
+	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,66 +38,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Fri, Feb 25, 2011 at 08:53:20AM +0100, Richard Cochran wrote:
+> On Thu, Feb 24, 2011 at 11:27:31AM -0600, Scott Wood wrote:
+> 
+> > My vote, if it goes in a separate node at all, is "fsl,etsec-ptp",
+> 
+> So, that is what the patch does.
+> 
+> > and let the driver use SVR.
+> 
+> What is SVR?
 
-On 17-03-2011 13:30, Valentin Longchamp wrote:
+An on chip register that provides the exact version of the SoC.  (As
+opposed to PVR which is the version of the cpu core).
 
-> The driver did not take the zero flag in the USB request. If the
-> request length is the same as the endpoint's maxpacket, an additional
-> ZLP with no data has to be transmitted.
-
-> The method used here is inspired to what is done in fsl_udc_core.c
-> (and pxa27x_udc.c and at91_udc.c) where this is supported.
-
-> This is the first version of the patch, it may still contain mistakes,
-> but I send it as a RFC since there already was a discussion about this
-> topic with people from Keymile:
-
-> http://thread.gmane.org/gmane.linux.usb.general/38951
-
-> Signed-off-by: Valentin Longchamp<valentin.longchamp@keymile.com>
-> ---
->   drivers/usb/gadget/fsl_qe_udc.c |   28 +++++++++++++++++++++++-----
->   1 files changed, 23 insertions(+), 5 deletions(-)
-
-> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-> index 8dc15da..08538f5 100644
-> --- a/drivers/usb/gadget/fsl_qe_udc.c
-> +++ b/drivers/usb/gadget/fsl_qe_udc.c
-[...]
-> @@ -1158,13 +1164,24 @@ static int txcomplete(struct qe_ep *ep, unsigned char restart)
->   			ep->last = 0;
->   		}
->
-> +		/* zlp needed when req->re.zero is set */
-> +		if (req->req.zero) {
-> +			if (last_len == 0 ||
-> +				(req->req.length % ep->ep.maxpacket) != 0)
-> +				zlp = 0;
-> +			else
-> +				zlp = 1;
-> +		} else
-> +			zlp = 0;
-> +
->   		/* a request already were transmitted completely */
->   		if ((ep->tx_req->req.length - ep->sent) <= 0) {
-> -			ep->tx_req->req.actual = (unsigned int)ep->sent;
-> -			done(ep, ep->tx_req, 0);
-> -			ep->tx_req = NULL;
-> -			ep->last = 0;
-> -			ep->sent = 0;
-> +			if (!zlp) {
-
-    This *if* could be collapsed into previous *if*, and so the subsequest 
-indentation level not changed.
-
-> +				done(ep, ep->tx_req, 0);
-> +				ep->tx_req = NULL;
-> +				ep->last = 0;
-> +				ep->sent = 0;
-> +			}
->   		}
->   	}
->
-
-WBR, Sergei
+g.
