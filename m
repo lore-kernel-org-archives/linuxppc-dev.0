@@ -1,21 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 7C5BAB6F1E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Mar 2011 09:14:33 +1100 (EST)
-Date: Fri, 18 Mar 2011 15:15:09 -0700 (PDT)
-Message-Id: <20110318.151509.241430327.davem@davemloft.net>
-To: oakad@yahoo.com
-Subject: Re: [PATCH v2] gianfar: Fall back to software tcp/udp checksum on
-	older controllers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <598461.73809.qm@web37603.mail.mud.yahoo.com>
-References: <598461.73809.qm@web37603.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, mlcreech@gmail.com
+Return-Path: <slightlyunconventional@gmail.com>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7FACAB6F2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2011 10:48:11 +1100 (EST)
+Received: by gyb11 with SMTP id 11so2629425gyb.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2011 16:48:07 -0700 (PDT)
+MIME-Version: 1.0
+Sender: slightlyunconventional@gmail.com
+In-Reply-To: <1300427072.22236.1277.camel@pasglop>
+References: <1300427072.22236.1277.camel@pasglop>
+Date: Fri, 18 Mar 2011 16:48:06 -0700
+Message-ID: <AANLkTi=FJaapiP+ujJezePD33UxYm0nVVtL9_tR9UoKf@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: meador_inge@mentor.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alex Dubov <oakad@yahoo.com>
-Date: Wed, 16 Mar 2011 20:57:13 -0700 (PDT)
+On Thu, Mar 17, 2011 at 10:44 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Hi Linus !
+>
+> Here are the changes for this merge window for powerpc. One highlight
+> is irq data conversion so we can get rid of the legacy stuff. The new
+> Dynamic DMA windows for pSeries should also improve performances for
+> some devices nicely on more recent machines/firmwares. Plus a little
+> pack of embedded things.
 
-> As specified by errata eTSEC49 of MPC8548 and errata eTSEC12 of MPC83xx,
-> older revisions of gianfar controllers will be unable to calculate a TCP/UDP
-> packet checksum for some alignments of the appropriate FCB. This patch checks
-> for FCB alignment on such controllers and falls back to software checksumming
-> if the alignment is known to be bad.
-> 
-> Signed-off-by: Alex Dubov <oakad@yahoo.com>
+Ben, you missed the patches from Meador:
 
-Applied.
+http://patchwork.ozlabs.org/patch/86804/
+http://patchwork.ozlabs.org/patch/86805/
+http://patchwork.ozlabs.org/patch/86806/
+
+Please commit.
+
+-Hollis
