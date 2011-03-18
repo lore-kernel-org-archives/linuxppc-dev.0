@@ -1,23 +1,22 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1C15EB6F73
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Mar 2011 07:53:51 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH -mm] RapidIO,powerpc/85xx: Fix configuration option
-Date: Fri, 18 Mar 2011 13:53:08 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201A587FE@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <8E8332C6-1F17-4EC1-BD04-7B93D7B49640@kernel.crashing.org>
-References: <1300468735-1158-1-git-send-email-alexandre.bounine@idt.com>
-	<8E8332C6-1F17-4EC1-BD04-7B93D7B49640@kernel.crashing.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 65D7FB6ED0
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2011 08:49:18 +1100 (EST)
+Subject: Re: [git pull] Please pull powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <AANLkTinLb0sg1H6GDbZiddqGQ4a0=GRLYFJbL0G1Kv62@mail.gmail.com>
+References: <1300427072.22236.1277.camel@pasglop>
+	<AANLkTinLb0sg1H6GDbZiddqGQ4a0=GRLYFJbL0G1Kv62@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 19 Mar 2011 08:48:54 +1100
+Message-ID: <1300484934.22236.1285.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch has to be applied to -mm tree. Andrew already has set of
-patches that change RapidIO configuration.
-I think it will be better if it goes into -mm to keep things aligned
-properly.
+On Fri, 2011-03-18 at 06:34 -0700, Linus Torvalds wrote:
+> > Here are the changes for this merge window for powerpc. One highlight
+> > is irq data conversion so we can get rid of the legacy stuff. The new
+> > Dynamic DMA windows for pSeries should also improve performances for
+> > some devices nicely on more recent machines/firmwares. Plus a little
+> > pack of embedded things.
+> 
+> Ok, I got a conflict with the of_platform_driver() removal which
+> looked pretty trivial, but since I don't have a ppc cross-compile
+> thing I couldn't even test-compile the end result. Please take a look
+> to see that it went ok..
 
-Alex.
+Ok, I'll have a look later today.
 
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: Friday, March 18, 2011 4:49 PM
-To: Bounine, Alexandre
-Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
-linuxppc-dev@lists.ozlabs.org; Matt Porter; Li Yang; Thomas Moll
-Subject: Re: [PATCH -mm] RapidIO,powerpc/85xx: Fix configuration option
-
-
-On Mar 18, 2011, at 12:18 PM, Alexandre Bounine wrote:
-
-> Follows set of patches in -mm tree. Replaces configuration option
-> missed in previous patches.
->=20
-> Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-> ---
-> arch/powerpc/kernel/cpu_setup_fsl_booke.S |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
-
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-Alex, I can push this via the powerpc.git tree route if you want.
-
-- k
+Thanks,
+Ben.
