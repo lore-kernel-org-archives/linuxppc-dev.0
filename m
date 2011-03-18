@@ -1,27 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0DD47B6FDA
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
+	by ozlabs.org (Postfix) with SMTP id 53A0CB6FD9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Mar 2011 02:51:07 +1100 (EST)
-Received: by iym7 with SMTP id 7so4304057iym.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Mar 2011 08:51:05 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Fri, 18 Mar 2011 09:51:02 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 1/1] SPI: dw_spi, fix PPC build
-Message-ID: <20110318155102.GA22790@angua.secretlab.ca>
-References: <1300441277-23961-1-git-send-email-jslaby@suse.cz>
+	Sat, 19 Mar 2011 03:12:01 +1100 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Fri, 18 Mar 2011 17:11:50 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20110318161150.25940@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1300441277-23961-1-git-send-email-jslaby@suse.cz>
-Cc: dbrownell@users.sourceforge.net, jirislaby@gmail.com,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+Subject: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
+To: nello martuscielli <ppc.addon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, acrux_it@libero.it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +20,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 18, 2011 at 10:41:17AM +0100, Jiri Slaby wrote:
-> Currently, build on PPC dies with:
-> In file included from drivers/spi/dw_spi_mmio.c:16:
-> include/linux/spi/dw_spi.h:147: error: field ‘tx_sgl’ has incomplete type
-> include/linux/spi/dw_spi.h:149: error: field ‘rx_sgl’ has incomplete type
-> 
-> Add linux/scatterlist.h include to dw_spi.h, because we need to know
-> the contents of the structure.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
+-------- Original-Nachricht --------
+> Datum: Thu, 17 Mar 2011 00:39:00 +0100
+> Von: nello martuscielli <ppc.addon@gmail.com>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: acrux_it@libero.it, linuxppc-dev@lists.ozlabs.org
+> Betreff: Re: any chance to use a modern linux kernel on Pegasos1 G3 ?
 
-Applied, thanks.
+> hi all,
+> 
+> here instead the log from serial debug console booting the last
+> working kernel i.e. linux-2.16.62 compiled with arch=ppc .
+> 
+> 
+> [...]
+> do_load: dev="/ide/disk:0" dlen=11 args="CRUX root=/dev/hdb
+> video=radeonfb:800x600" alen=41
+> do_load: alstr=""
+> try_load: dev="/ide/disk:0" dlen=11 args="CRUX root=/dev/hdb
+> video=radeonfb:800x600" alen=41
+> create_well_formed_chain: pkg=0xFD57D58 parent=0xFD53B90
+> currpkg=0xFD53B90 inst=0xFE6EE50
+>         pkg=/pci@80000000 parent=/ currpkg=/ currinst=/
+> create_well_formed_chain: pkg=0xFD53B90 parent=0x0 currpkg=0xFD53B90
+> inst=0xFE6EE50
+>         pkg=/ parent= currpkg=/ currinst=/
+>         pkg=0xFD57D58:/pci@80000000 parent=0xFE6EE50:/
+> inst=0xFE6EEA8:/pci@80000000 instparent=0xFE6EE50
+> ata_disk_open: pkg=0xFD5B870 parent=0xFD5B2C8
+> ata_disk_open: CTLR=0x0 ID=0x0
+> ata_disk_open: args="0"
+> deblocker open
+> ata_disk_max_transfer: 512
+> deblocker open: block-size=0x200 max-transfer=0x200
+> deblocker open: return 0
+> open-package: ret=0:no error r=-1
+> ata_disk_open: $open-package deblocker ret=0
+> ata_disk_open: deblocker=0xFE6EFC8
+> disk-label open
+> disk-label open: self=0xFE702B0 s->buf=0xFE71000
+> disk-label open: return 0
+> open-package: ret=0:no error r=-1
+> ata_disk_open: $open-package disk-label ret=0
+> ata_disk_open: disklabel=0xFE70258
+> disk-label load: addr=0x400000 loadargs=CRUX root=/dev/hdb
+> video=radeonfb:800x600 args=0,CRUX root=/dev/hdb
+> video=radeonfb:800x600
+> file_system: e=0xFD00008 disk=0xFE6EF58 loc=0x0 start=0x0
+> path=0xFE703C0 buf=0xFE71000 size=512
+> file_system: probing filesys dos-partition
+> 
+> dos_partition: enter
+> dos-partition: boot_sect_sig0/1=0x55.0xAA jump=0x0 boot_signature=0x0
+> drive_number=0x0
+> dos_partition: partition=0 size=0x32F8E start=0x3F typ=0x6
+>         flag=0x80 shd=0x1 ssect=0x1 scyl=0x0 ehd=0xFE esect=0x3F ecyl=0xC
+> file_system: e=0xFD00008 disk=0xFE6EF58 loc=0x7E00 start=0x3F
+> path=0xFE703C2 buf=0xFE71000 size=512
+> file_system: probing filesys dos-partition
+> file_system: probing filesys dos-fat
+> file_system: return end (-4089)
+> file_system: return end (-4089)
+> disk-label return len=1782093 ret=end (-4089)
+> ata_disk_close
+> disk-label close:
+> checking exec type Fcode
+> fcode_is_exec: load=0x400000 loadlen=1782093
+> checking exec type Forth
+> checking exec type ELF
+> f_go:
+> checking exec type Fcode
+> fcode_is_exec: load=0x400000 loadlen=1782093
+> checking exec type Forth
+> checking exec type ELF
+> alloc_aligned: a 0xFD548E8 align 0xFD5491C size 0xFD54918 addr 0xFD54914
+> alloc_constrained: min 0x0, max 0xFFFFFFFF, align 0x1000, mask
+> 0xFFFFFFFF, size 0x7E0000, addr 0x300000
+> alloc_constrained: acells 0x1 scells 0x1 t1 0xC t2 0xFD5490C u1
+> 0xFD54910 u2 0xFD54914 u3 0xFD54918
+> alloc_constrained: allocator_block 0xFD54930, next 0x0 addr 0x300000
+> size 0xFD00000
+> alloc_constrained: fsblock 0x0
+> alloc_constrained: addr[] 0x300000
+> alloc_constrained: bsize[] 0xFD00000
+> alloc_constrained: passed min check
+> alloc_constrained: addr 0x300000, align 0xFFF, off 0x69696969
+> sum 0x0
+> alloc_constrained: passed align check
+> alloc_constrained: passed max check
+> alloc_constrained: passed mask check
+> alloc_constrained: passed full size check
+> alloc_constrained: passed size check
+> 
+> 
+> i'm not an expert but from a quick logs comparison I saw two times the
+> alloc_aligned,alloc_constrained section instead in the working one i
+> see it only one time.
+> Maybe it's an usefull observation.
 
-g.
+Well, I never put my hands on an OpenFirmware machine, but I could
+imagine that this is an image loading problem.
+Various PPC Linux related websites suggest to set a different load base
+for the kernel image on Pegasos machines:
 
-> ---
->  include/linux/spi/dw_spi.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/spi/dw_spi.h b/include/linux/spi/dw_spi.h
-> index 6cd10f6..fb0bce5 100644
-> --- a/include/linux/spi/dw_spi.h
-> +++ b/include/linux/spi/dw_spi.h
-> @@ -2,6 +2,7 @@
->  #define DW_SPI_HEADER_H
->  
->  #include <linux/io.h>
-> +#include <linux/scatterlist.h>
->  
->  /* Bit fields in CTRLR0 */
->  #define SPI_DFS_OFFSET			0
-> -- 
-> 1.7.4.1
-> 
-> 
+setenv load-base 0x4000000
+
+Does that work on the Pegasos1?
+
+BTW do you get any debug output from a recent kernel on serial port
+(with udbg)?
+
+regards,
+Gerhard
+-- 
+NEU: FreePhone - kostenlos mobil telefonieren und surfen!			
+Jetzt informieren: http://www.gmx.net/de/go/freephone
