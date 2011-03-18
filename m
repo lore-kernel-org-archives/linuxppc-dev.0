@@ -1,35 +1,21 @@
-Return-Path: <prasadjoshi124@gmail.com>
-Received: from mail-ww0-f41.google.com (mail-ww0-f41.google.com [74.125.82.41])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1BC9FB6F44
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 850F9B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Mar 2011 06:57:19 +1100 (EST)
-Received: by wwi18 with SMTP id 18so1518076wwi.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Mar 2011 12:57:14 -0700 (PDT)
-Date: Fri, 18 Mar 2011 19:57:54 +0000
-From: Prasad Joshi <prasadjoshi124@gmail.com>
-To: benh@kernel.crashing.org, paulus@samba.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	prasadjoshi124@gmail.com, mitra@kqinfotech.com
-Subject: Re: [RFC][PATCH v3 10/22] mm, powerpc: add gfp flags variant of
-	pud, pte, and pte allocations
-Message-ID: <20110318195754.GK4746@prasad-kvm>
-References: <20110318194135.GA4746@prasad-kvm>
-	<20110318194341.GB4746@prasad-kvm>
-	<20110318194600.GC4746@prasad-kvm>
-	<20110318194740.GD4746@prasad-kvm>
-	<20110318194929.GE4746@prasad-kvm>
-	<20110318195035.GF4746@prasad-kvm>
-	<20110318195141.GG4746@prasad-kvm>
-	<20110318195307.GH4746@prasad-kvm>
-	<20110318195507.GI4746@prasad-kvm>
-	<20110318195643.GJ4746@prasad-kvm>
-MIME-Version: 1.0
+	Sat, 19 Mar 2011 07:49:55 +1100 (EST)
+Subject: Re: [PATCH -mm] RapidIO,powerpc/85xx: Fix configuration option
+Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110318195643.GJ4746@prasad-kvm>
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1300468735-1158-1-git-send-email-alexandre.bounine@idt.com>
+Date: Fri, 18 Mar 2011 15:49:00 -0500
+Message-Id: <8E8332C6-1F17-4EC1-BD04-7B93D7B49640@kernel.crashing.org>
+References: <1300468735-1158-1-git-send-email-alexandre.bounine@idt.com>
+To: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,140 +26,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-changes for 32 bit architecture
- - Added __pte_alloc_one_kernel() to allocated zeroed page using
-   allocation flag passed as an argument. If the slab allocator is not
-   initialized the allocation flag is not passed down the call hierarchy.
-   i.e. the call to early_get_page() is not modified.
+On Mar 18, 2011, at 12:18 PM, Alexandre Bounine wrote:
 
-- Changed pte_alloc_one_kernel() to call __pte_alloc_one_kernel() passing
-  correct gfp_t flags.
+> Follows set of patches in -mm tree. Replaces configuration option
+> missed in previous patches.
+> 
+> Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+> ---
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
 
-changes for 64 bit architecture
-- Added __pud_alloc_one() which is similar to pud_alloc_one(). This newly
-  added function accepts allocation flag as a parameter and does the PUD
-  allocation using this GFP flag.
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-- The function pud_alloc_one() is changed to call __pud_alloc_one() passing
-  GFP_KERNEL | __GFP_REPEAT allocation flags.
+Alex, I can push this via the powerpc.git tree route if you want.
 
-- Similar changes for pmd (cache) and pte (page) allocations.
-
-- The changes for both architectures help in fixing Bug 30702
-
-Signed-off-by: Prasad Joshi <prasadjoshi124@gmail.com>
-Signed-off-by: Anand Mitra <mitra@kqinfotech.com>
----
- arch/powerpc/include/asm/pgalloc-32.h |    2 ++
- arch/powerpc/include/asm/pgalloc-64.h |   27 ++++++++++++++++++++++-----
- arch/powerpc/mm/pgtable_32.c          |   10 ++++++++--
- 3 files changed, 32 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/pgalloc-32.h
-index 580cf73..21b7a94 100644
---- a/arch/powerpc/include/asm/pgalloc-32.h
-+++ b/arch/powerpc/include/asm/pgalloc-32.h
-@@ -35,6 +35,8 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
- #endif
- 
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
-+extern pte_t *__pte_alloc_one_kernel(struct mm_struct *, unsigned long, gfp_t);
-+
- extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
- 
- static inline void pgtable_free(void *table, unsigned index_size)
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index 292725c..e5ea650 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -51,10 +51,15 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- 
- #define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, PUD)
- 
-+static inline pud_t *
-+__pud_alloc_one(struct mm_struct *mm, unsigned long addr, gfp_t gfp_mask)
-+{
-+	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE), gfp_mask);
-+}
-+
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
--				GFP_KERNEL|__GFP_REPEAT);
-+	return __pud_alloc_one(mm, addr, GFP_KERNEL | __GFP_REPEAT);
- }
- 
- static inline void pud_free(struct mm_struct *mm, pud_t *pud)
-@@ -89,10 +94,15 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- 
- #endif /* CONFIG_PPC_64K_PAGES */
- 
-+static inline pmd_t *
-+__pmd_alloc_one(struct mm_struct *mm, unsigned long addr, gfp_t gfp_mask)
-+{
-+	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE), gfp_mask);
-+}
-+
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
--				GFP_KERNEL|__GFP_REPEAT);
-+	return __pmd_alloc_one(mm, addr, GFP_KERNEL | __GFP_REPEAT);
- }
- 
- static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
-@@ -100,10 +110,17 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
- }
- 
-+static inline pte_t *
-+__pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address, 
-+		gfp_t gfp_mask)
-+{
-+        return (pte_t *)__get_free_page(gfp_mask | __GFP_ZERO);
-+}
-+
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
- 					  unsigned long address)
- {
--        return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
-+	return __pte_alloc_one_kernel(mm, address, GFP_KERNEL | __GFP_REPEAT);
- }
- 
- static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 8dc41c0..736593f 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -95,14 +95,15 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- #endif
- }
- 
--__init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
-+__init_refok pte_t *
-+__pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address, gfp_t gfp_mask)
- {
- 	pte_t *pte;
- 	extern int mem_init_done;
- 	extern void *early_get_page(void);
- 
- 	if (mem_init_done) {
--		pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO);
-+		pte = (pte_t *)__get_free_page(gfp_mask | __GFP_ZERO);
- 	} else {
- 		pte = (pte_t *)early_get_page();
- 		if (pte)
-@@ -111,6 +112,11 @@ __init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long add
- 	return pte;
- }
- 
-+__init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
-+{
-+	return __pte_alloc_one_kernel(mm, address, GFP_KERNEL | __GFP_REPEAT);
-+}
-+
- pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
- {
- 	struct page *ptepage;
--- 
-1.7.0.4
+- k
