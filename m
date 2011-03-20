@@ -1,23 +1,28 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Sat, 19 Mar 2011 11:14:12 +0100
-From: Richard Cochran <richardcochran@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V12 0/4] ptp: IEEE 1588 hardware clock support
-Message-ID: <20110319101412.GA14207@riccoc20.at.omicron.at>
-References: <cover.1298878618.git.richard.cochran@omicron.at>
+Return-Path: <hughd@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.67])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E60F5B6F11
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 20 Mar 2011 14:41:26 +1100 (EST)
+Received: from hpaq1.eem.corp.google.com (hpaq1.eem.corp.google.com
+	[172.25.149.1]) by smtp-out.google.com with ESMTP id p2K3fJY9023288
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2011 20:41:19 -0700
+Received: from iwn34 (iwn34.prod.google.com [10.241.68.98])
+	by hpaq1.eem.corp.google.com with ESMTP id p2K3fB8s001232
+	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Mar 2011 20:41:18 -0700
+Received: by iwn34 with SMTP id 34so6643920iwn.33
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 19 Mar 2011 20:41:18 -0700 (PDT)
+Date: Sat, 19 Mar 2011 20:41:02 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: powerpc/pci sysdata batch hangs G5 boot
+Message-ID: <alpine.LSU.2.00.1103192023140.1592@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1298878618.git.richard.cochran@omicron.at>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rodolfo Giometti <giometti@linux.it>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, Russell King <linux@arm.linux.org.uk>,
-	Paul Mackerras <paulus@samba.org>, John Stultz <john.stultz@linaro.org>,
-	linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
-	Mike Frysinger <vapier@gentoo.org>,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For all those interested in the user space aspect, I have posted some
-patches to ptpd project showing how the API works.
+Hi Grant,
 
-https://sourceforge.net/tracker/?group_id=139814&atid=744634
+I've been unable to boot mmotm on the G5 for a few weeks; and now that
+the problem has reached Linus, I've bisected and it converges on your:
 
-3225599 [PATCH 1/3] Convert to POSIX clock API.
-3225603 [PATCH 2/3] Adapted to use the Linux PTP Hardware Clock API.
-3225607 [PATCH 3/3] Adapted to use the newer SO_TIMESTAMPING Linux API.
+commit b5d937de0367d26f65b9af1aef5f2c34c1939be0
+    powerpc/pci: Make both ppc32 and ppc64 use sysdata for pci_controller
+   
+    Currently, ppc32 uses sysdata for the pci_controller pointer, and
+    ppc64 uses it to hold the device_node pointer.  This patch moves the
+    of_node pointer into (struct pci_bus*)->dev.of_node and
+    (struct pci_dev*)->dev.of_node so that sysdata can be converted to always
+    use the pci_controller pointer instead.  It also fixes up the
+    allocating of pci devices so that the of_node pointer gets assigned
+    consistently and increments the ref count.
 
-Enjoy,
+The last message I see on screen when booting is
+mpic: ISU size: 124, shift: 7, mask: 7f
 
-Richard
+Usually that would be followed by
+mpic: Initializing for 124 sources
+
+but with your commit it just hangs; revert that commit,
+from mmotm or from Linus's current git, and all is fine.
+
+Config available privately on request.  Noticing that patch is a
+PPC OF PCI thing, and that I have CONFIG_PPC_OF_PLATFORM_PCI off,
+I did try switching that on, but it made no difference.
+
+Thanks,
+Hugh
