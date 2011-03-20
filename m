@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8234BB6F1E
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1C86EB6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 20 Mar 2011 20:10:25 +1100 (EST)
-Subject: Re: powerpc/pci sysdata batch hangs G5 boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <AANLkTikMbMqSRpt9gCrHgzpJuRCGL7rfLAs6erJL0Qjc@mail.gmail.com>
-References: <alpine.LSU.2.00.1103192023140.1592@sister.anvils>
-	<AANLkTikMbMqSRpt9gCrHgzpJuRCGL7rfLAs6erJL0Qjc@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 20 Mar 2011 20:10:10 +1100
-Message-ID: <1300612210.2402.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Hugh Dickins <hughd@google.com>
+	Mon, 21 Mar 2011 10:52:37 +1100 (EST)
+Received: by fxm6 with SMTP id 6so4848936fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 20 Mar 2011 16:52:32 -0700 (PDT)
+MIME-Version: 1.0
+Date: Sun, 20 Mar 2011 18:52:32 -0500
+Message-ID: <AANLkTikRU9W61m7EcNONx9=Uinj-F7escWBCOTTdh==N@mail.gmail.com>
+Subject: PowerMac7,3 dvd drive?
+From: kevin diggs <diggskevin38@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-03-20 at 00:25 -0600, Grant Likely wrote:
-> On Sat, Mar 19, 2011 at 9:41 PM, Hugh Dickins <hughd@google.com> wrote:
-> > Hi Grant,
-> >
-> > I've been unable to boot mmotm on the G5 for a few weeks; and now that
-> > the problem has reached Linus, I've bisected and it converges on your:
-> >
-> > commit b5d937de0367d26f65b9af1aef5f2c34c1939be0
-> >    powerpc/pci: Make both ppc32 and ppc64 use sysdata for pci_controller
-> 
-> Hi Hugh,
-> 
-> Thanks for the testing.  I don't have access to a G5 unfortunately.
-> Are you able to capture the good/bad console output and send it to me?
->  A digital photo would be fine if you can't grab the raw text.  Add
-> #define DEBUG to the top of arch/powerpc/kernel/pci-common.c above the
-> #includes too if you don't mind.
-> 
-> I'm investigating on my end.  I suspect that I've messed up retrieval
-> of the hose pointer.
+Hi,
 
-Hrm, you merged that already ? I would have liked to have a chance to at
-least test and review properly...
+I am seeing ... issues with the optical drive (hda) under 2.6.36. I
+can't mount disks:
 
-Oh well, I have G5's here, I'll see if I can find what's wrong tomorrow.
+[root@PowerMacG5 ~]# mount -r /dev/hda /mnt/cdrom
+mount: /dev/hda already mounted or /mnt/cdrom busy
 
-Cheers,
-Ben.
+The log has:
+
+[  239.922268] hda: irq timeout: status=0xd0 { Busy }
+[  239.922485] hda: possibly failed opcode: 0xa0
+
+eject hda will hang ... longer than my patience.
+
+At first I thought the drive was going south. But I don't see this (at
+least so far) on 2.6.28.
+
+Thanks!
+
+kevin
