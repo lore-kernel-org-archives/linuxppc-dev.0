@@ -1,17 +1,22 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 10E87B6F72
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 808F1B6F74
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Mar 2011 08:38:08 +1100 (EST)
-From: Milton Miller <miltonm@bga.com>
-Subject: [PATCH 1/2] powerpc: xics: fix numberspace mismatch from irq_desc
-	conversion
-To: linuxppc-dev@lists.ozlabs.org
-Message-id: <xics-mask-irq-desc-fix@mdm.bga.com>
-In-Reply-To: <patches-for-39-rc1@mdm.bga.com>
-References: <patches-for-39-rc1@mdm.bga.com>
-Date: Mon, 21 Mar 2011 15:38:02 -0600
-Cc: Lennert Buytenhek <buytenh@secretlab.ca>
+	Tue, 22 Mar 2011 09:53:11 +1100 (EST)
+Subject: Re: mmotm threatens ppc preemption again
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <4D873571.702@goop.org>
+References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
+	<1300665188.2402.64.camel@pasglop>  <4D873571.702@goop.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Mar 2011 09:52:22 +1100
+Message-ID: <1300747942.2402.262.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,90 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 79f26c268ebad29bd75d078cfc09d3d82b30ccbd (powerpc:
-platforms/pseries irq_data conversion) pushed irq_desc down into many
-functions, dererencing the descriptor irq field as late as possible.
+On Mon, 2011-03-21 at 11:24 +0000, Jeremy Fitzhardinge wrote:
+> 
+> I'm very sorry about that, I didn't realize power was also using that
+> interface.  Unfortunately, the "no preemption" definition was an error,
+> and had to be changed to match the pre-existing locking rules.
+> 
+> Could you implement a similar "flush batched pte updates on context
+> switch" as x86? 
 
-But it incorrectly passed a linix virtural irq number to RTAS,
-resulting in the interrupt not being disabled and possibly
-other bad things, such as another interrupt being disabled and/or
-a checkstop.  
+Well, we already do that for -rt & co.
 
-In addition this missed the point of xics_mask_unknown_vec and
-the seperation of xics_mask_real_irq from xics_mask_irq.  When
-xics_mask_unknown_vec is called it's because the hardware delivered an
-irq source for which we have no linux irq allocated, and thefore we can
-not have an irq_desc allocated.
+However, we have another issue which is the reason we used those
+lazy_mmu hooks to do our flushing.
 
-Revert xics_mask_real_irq to its prior version, naming the argument
-hwirq to highlight the difference.
+Our PTEs eventually get faulted into a hash table which is what the real
+MMU uses. We must never (ever) allow that hash table to contain a
+duplicate entry for a given virtual address.
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
+When we do a batch, we remove things from the linux PTE, and keep a
+reference in our batch structure, and only update the hash table at the
+end of the batch.
 
+That means that we must not allow a hash fault to populate the hash with
+a "new" PTE value prior to the old one having been flushed out (which is
+possible if they different in protection attributes for example). For
+that to happen, we must basically not allow a page fault to re-populate
+a PTE invalidated by a batch before that batch has completed.
 
---
+That translates to batches must only happen within a PTE lock section.
 
-Lennert can you please review the other patches for similar problems?
-
-Any reference to irq_map[x].hwirq is in a different number domain.
-
-I initially saw the problem pushing irq_desc through unknown_vec
-found this due to my knowledge of the split (I added that function)
-and only realized the wrong number space when preparing to test the fix.
-In fact I tried without the patch and my firmware checkstops the machine
-(hardware stops executing instructions)!
-
-
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index 01fea46..5686db9 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -250,26 +250,26 @@ static unsigned int xics_startup(struct irq_data *d)
- 	return 0;
- }
- 
--static void xics_mask_real_irq(struct irq_data *d)
-+static void xics_mask_real_irq(unsigned int hwirq)
- {
- 	int call_status;
- 
--	if (d->irq == XICS_IPI)
-+	if (hwirq == XICS_IPI)
- 		return;
- 
--	call_status = rtas_call(ibm_int_off, 1, 1, NULL, d->irq);
-+	call_status = rtas_call(ibm_int_off, 1, 1, NULL, hwirq);
- 	if (call_status != 0) {
- 		printk(KERN_ERR "%s: ibm_int_off irq=%u returned %d\n",
--			__func__, d->irq, call_status);
-+			__func__, hwirq, call_status);
- 		return;
- 	}
- 
- 	/* Have to set XIVE to 0xff to be able to remove a slot */
--	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, d->irq,
-+	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, hwirq,
- 				default_server, 0xff);
- 	if (call_status != 0) {
- 		printk(KERN_ERR "%s: ibm_set_xive(0xff) irq=%u returned %d\n",
--			__func__, d->irq, call_status);
-+			__func__, hwirq, call_status);
- 		return;
- 	}
- }
-@@ -283,13 +283,13 @@ static void xics_mask_irq(struct irq_data *d)
- 	irq = (unsigned int)irq_map[d->irq].hwirq;
- 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
- 		return;
--	xics_mask_real_irq(d);
-+	xics_mask_real_irq(irq);
- }
- 
- static void xics_mask_unknown_vec(unsigned int vec)
- {
- 	printk(KERN_ERR "Interrupt %u (real) is invalid, disabling it.\n", vec);
--	xics_mask_real_irq(irq_get_irq_data(vec));
-+	xics_mask_real_irq(vec);
- }
- 
- static inline unsigned int xics_xirr_vector(unsigned int xirr)
+Cheers,
+Ben.
