@@ -1,22 +1,14 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4BD7EB6F2B
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 0B273B6F74
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Mar 2011 22:30:16 +1100 (EST)
-Message-ID: <4D873571.702@goop.org>
-Date: Mon, 21 Mar 2011 11:24:33 +0000
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-MIME-Version: 1.0
+	Tue, 22 Mar 2011 05:28:39 +1100 (EST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: mmotm threatens ppc preemption again
-References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
-	<1300665188.2402.64.camel@pasglop>
-In-Reply-To: <1300665188.2402.64.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Milton Miller <miltonm@bga.com>
+Message-id: <patches-for-39-rc1@mdm.bga.com>
+Subject: [PATCH 0/3] xics mask_irq fix and other patches
+Date: Mon, 21 Mar 2011 12:12:13 -0600
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +18,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/20/2011 11:53 PM, Benjamin Herrenschmidt wrote:
-> On Sat, 2011-03-19 at 21:11 -0700, Hugh Dickins wrote:
->> As I warned a few weeks ago, Jeremy has vmalloc apply_to_pte_range
->> patches in mmotm, which again assault PowerPC's expectations, and
->> cause lots of noise with CONFIG_PREEMPT=y CONFIG_PREEMPT_DEBUG=y.
->>
->> This time in vmalloc as well as vfree; and Peter's fix to the last
->> lot, which went into 2.6.38, doesn't protect against these ones.
->> Here's what I now see when I swapon and swapoff:
-> Right. And we said from day one we had the HARD WIRED assumption that
-> arch_enter/leave_lazy_mmu_mode() was ALWAYS going to be called within
-> a PTE lock section, and we did get reassurance that it was going to
-> remain so.
->
-> So why is it ok for them to change those and break us like that ?
+Hi Ben.
 
-In general, the pagetable's locking rules are that all *usermode* pte
-updates have to be done under a pte lock, but kernel mode ones do not;
-they generally have some kind of per-subsystem ad-hoc locking where
-needed, which may or may not be no-preempt.
+I've submitted the fix for the xics mask real irq I mentioned.
+During testing I realized current code is passing rtas a linux irq,
+which means no interrupt (at least those above NR_IRQs) is being disabled.
 
-Originally the enter/leave_lazy_mmu_mode did require preemption to be
-disabled for the whole time, but that was incompatible with the above
-locking rules, and resulted in preemption being disabled for long
-periods when using lazy mode which wouldn't normally happen.  This
-raised a number of complaints.
+I also created a patch to rename irq to hwirq in xics to try to make
+the distiction more clear.  For your consideration, I don't care if you
+don't merge it especially with the upcoming rewrite.
 
-To address this, I changed the x86 implementation to deal with
-preemption in lazy mode by dropping out for lazy mode at context switch
-time (and recording the fact that we were in lazy mode with a TIF flag
-and re-entering on the next context switch).
+Also, I am sending a printk to printk_once patch that affects BML.
+
+Thanks,
+milton
 
 
-> Seriously, this is going out of control. If we can't even rely on
-> fundamental locking assumptions in the VM to remain reasonably stable
-> or at least get some amount of -care- from who changes them as to
-> whether they break others and work with us to fix them, wtf ?
->
-> I don't know what the right way to fix that is. We have an absolute
-> requirement that the batching we start within a lazy MMU section
-> is complete and flushed before any other PTE in that section can be
-> touched by anything else. Do we -at least- keep that guarantee ?
->
-> If yes, then maybe preempt_disable/enable() around
-> arch_enter/leave_lazy_mmu_mode() in apply_to_pte_range() would do... 
->
-> Or maybe I should just prevent any batching  of init_mm :-(
+MAIL FROM: <miltonm@bga.com>
+RCPT TO: <miltonm@bga.com>
+RCPT TO: <linuxppc-dev@lists.ozlabs.org>
+RCPT TO: <buytenh@secretlab.ca>
+DATA
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH 1/2] powerpc: xics: fix numberspace mismatch from irq_desc conversion
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Lennert Buytenhek <buytenh@secretlab.ca>
+Message-id: <xics-mask-irq-desc-fix@mdm.bga.com>
+In-Reply-To: <patches-for-39-rc1@mdm.bga.com>
+References: <patches-for-39-rc1@mdm.bga.com>
 
-I'm very sorry about that, I didn't realize power was also using that
-interface.  Unfortunately, the "no preemption" definition was an error,
-and had to be changed to match the pre-existing locking rules.
+commit 79f26c268ebad29bd75d078cfc09d3d82b30ccbd (powerpc:
+platforms/pseries irq_data conversion) pushed irq_desc down into many
+functions, dererencing the descriptor irq field as late as possible.
 
-Could you implement a similar "flush batched pte updates on context
-switch" as x86?
+But it incorrectly passed a linix virtural irq number to RTAS,
+resulting in the interrupt not being disabled and possibly
+other bad things, such as another interrupt being disabled and/or
+a checkstop.  
 
-    J
+In addition this missed the point of xics_mask_unknown_vec and
+the seperation of xics_mask_real_irq from xics_mask_irq.  When
+xics_mask_unknown_vec is called it's because the hardware delivered an
+irq source for which we have no linux irq allocated, and thefore we can
+not have an irq_desc allocated.
+
+Revert xics_mask_real_irq to its prior version, naming the argument
+hwirq to highlight the difference.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+
+
+--
+
+Lennert can you please review the other patches for similar problems?
+
+Any reference to irq_map[x].hwirq is in a different number domain.
+
+I initially saw the problem pushing irq_desc through unknown_vec
+found this due to my knowledge of the split (I added that function)
+and only realized the wrong number space when preparing to test the fix.
+In fact I tried without the patch and my firmware checkstops the machine
+(hardware stops executing instructions)!
+
+
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index 01fea46..5686db9 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -250,26 +250,26 @@ static unsigned int xics_startup(struct irq_data *d)
+ 	return 0;
+ }
+ 
+-static void xics_mask_real_irq(struct irq_data *d)
++static void xics_mask_real_irq(unsigned int hwirq)
+ {
+ 	int call_status;
+ 
+-	if (d->irq == XICS_IPI)
++	if (hwirq == XICS_IPI)
+ 		return;
+ 
+-	call_status = rtas_call(ibm_int_off, 1, 1, NULL, d->irq);
++	call_status = rtas_call(ibm_int_off, 1, 1, NULL, hwirq);
+ 	if (call_status != 0) {
+ 		printk(KERN_ERR "%s: ibm_int_off irq=%u returned %d\n",
+-			__func__, d->irq, call_status);
++			__func__, hwirq, call_status);
+ 		return;
+ 	}
+ 
+ 	/* Have to set XIVE to 0xff to be able to remove a slot */
+-	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, d->irq,
++	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, hwirq,
+ 				default_server, 0xff);
+ 	if (call_status != 0) {
+ 		printk(KERN_ERR "%s: ibm_set_xive(0xff) irq=%u returned %d\n",
+-			__func__, d->irq, call_status);
++			__func__, hwirq, call_status);
+ 		return;
+ 	}
+ }
+@@ -283,13 +283,13 @@ static void xics_mask_irq(struct irq_data *d)
+ 	irq = (unsigned int)irq_map[d->irq].hwirq;
+ 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
+ 		return;
+-	xics_mask_real_irq(d);
++	xics_mask_real_irq(irq);
+ }
+ 
+ static void xics_mask_unknown_vec(unsigned int vec)
+ {
+ 	printk(KERN_ERR "Interrupt %u (real) is invalid, disabling it.\n", vec);
+-	xics_mask_real_irq(irq_get_irq_data(vec));
++	xics_mask_real_irq(vec);
+ }
+ 
+ static inline unsigned int xics_xirr_vector(unsigned int xirr)
