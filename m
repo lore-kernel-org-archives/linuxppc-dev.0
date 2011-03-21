@@ -1,19 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A7F6B6F14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Mar 2011 11:24:14 +1100 (EST)
-Subject: Re: PowerMac7,3 dvd drive?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kevin diggs <diggskevin38@gmail.com>
-In-Reply-To: <AANLkTikRU9W61m7EcNONx9=Uinj-F7escWBCOTTdh==N@mail.gmail.com>
-References: <AANLkTikRU9W61m7EcNONx9=Uinj-F7escWBCOTTdh==N@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Mar 2011 11:24:04 +1100
-Message-ID: <1300667044.2402.102.camel@pasglop>
+Return-Path: <anton@samba.org>
+Date: Mon, 21 Mar 2011 12:28:03 +1100
+From: Anton Blanchard <anton@samba.org>
+To: paulus@samba.org, benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix accounting of softirq time when idle
+Message-ID: <20110321122803.114d50c4@kryten>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,28 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-03-20 at 18:52 -0500, kevin diggs wrote:
-> I am seeing ... issues with the optical drive (hda) under 2.6.36. I
-> can't mount disks:
-> 
-> [root@PowerMacG5 ~]# mount -r /dev/hda /mnt/cdrom
-> mount: /dev/hda already mounted or /mnt/cdrom busy
-> 
-> The log has:
-> 
-> [  239.922268] hda: irq timeout: status=0xd0 { Busy }
-> [  239.922485] hda: possibly failed opcode: 0xa0
-> 
-> eject hda will hang ... longer than my patience.
-> 
-> At first I thought the drive was going south. But I don't see this (at
-> least so far) on 2.6.28.
 
-Do you see something similar if you use the new libata based driver
-(macio-ata) instead of the old IDE driver ?
+commit cf9efce0ce31 (powerpc: Account time using timebase rather
+than PURR) used in_irq() to detect if the time was spent in
+interrupt processing. This only catches hardirq context so if we
+are in softirq context and in the idle loop we end up accounting it
+as idle time. If we instead use in_interrupt() we catch both softirq
+and hardirq time.
 
-It does look like the drive itself is crashing tho. Maybe something the
-IDE CDROM driver does upsets it...
+The issue was found when running a network intensive workload. top
+showed the following:
 
-Cheers,
-Ben.
+0.0%us,  1.1%sy,  0.0%ni, 85.7%id,  0.0%wa,  9.9%hi,  3.3%si,  0.0%st
+
+85.7% idle. But this was wildly different to the perf events data.
+To confirm the suspicion I ran something to keep the core busy:
+
+# yes > /dev/null &
+
+8.2%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa, 10.3%hi, 81.4%si,  0.0%st
+
+We only got 8.2% of the CPU for the userspace task and softirq has
+shot up to 81.4%.
+
+With the patch below top shows the correct stats:
+
+0.0%us,  0.0%sy,  0.0%ni,  5.3%id,  0.0%wa, 13.3%hi, 81.3%si,  0.0%st
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
+---
+
+Index: linux-2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/time.c	2011-03-21 12:05:12.056482258 +1100
++++ linux-2.6/arch/powerpc/kernel/time.c	2011-03-21 12:05:18.516721851 +1100
+@@ -356,7 +356,7 @@ void account_system_vtime(struct task_st
+ 	}
+ 	get_paca()->user_time_scaled += user_scaled;
+ 
+-	if (in_irq() || idle_task(smp_processor_id()) != tsk) {
++	if (in_interrupt() || idle_task(smp_processor_id()) != tsk) {
+ 		account_system_time(tsk, 0, delta, sys_scaled);
+ 		if (stolen)
+ 			account_steal_time(stolen);
