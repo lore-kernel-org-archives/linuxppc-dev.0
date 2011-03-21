@@ -1,30 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4A418B6F11
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 10E87B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Mar 2011 05:32:08 +1100 (EST)
-Received: by iwc10 with SMTP id 10so7043146iwc.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Mar 2011 11:32:05 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <AANLkTikgG5JHimq5a2OsgsH+z+WsHO3MO6OU1q6_DzgH@mail.gmail.com>
-References: <201103170129.p2H1TXG5031586@hera.kernel.org>
-	<1300661524.2402.19.camel@pasglop>
-	<AANLkTikgG5JHimq5a2OsgsH+z+WsHO3MO6OU1q6_DzgH@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Mar 2011 12:31:45 -0600
-Message-ID: <AANLkTi=gdksERWfFJTfXG2GebXKq9BU0BNCZ=FdZL6Qk@mail.gmail.com>
-Subject: Re: powerpc/pci: Make both ppc32 and ppc64 use sysdata for
-	pci_controller
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Hugh Dickins <hughd@google.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Tue, 22 Mar 2011 08:38:08 +1100 (EST)
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH 1/2] powerpc: xics: fix numberspace mismatch from irq_desc
+	conversion
+To: linuxppc-dev@lists.ozlabs.org
+Message-id: <xics-mask-irq-desc-fix@mdm.bga.com>
+In-Reply-To: <patches-for-39-rc1@mdm.bga.com>
+References: <patches-for-39-rc1@mdm.bga.com>
+Date: Mon, 21 Mar 2011 15:38:02 -0600
+Cc: Lennert Buytenhek <buytenh@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +21,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[reposting part of private email exchange as penance for my sins...]
+commit 79f26c268ebad29bd75d078cfc09d3d82b30ccbd (powerpc:
+platforms/pseries irq_data conversion) pushed irq_desc down into many
+functions, dererencing the descriptor irq field as late as possible.
 
-On Mon, Mar 21, 2011 at 12:22 PM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> On Sun, Mar 20, 2011 at 4:52 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->> Grant, what in hell makes you believe that this patch was ok to
->> merge upstream without even my Ack ?
->>
->> Yes, I told you I agree with the -principle-, but I also need to -test-
->> and review it properly which I haven't had a chance to do (and it does
->> break G5s at least it seems from the reports we are getting). In any
->> case this is clearly -NOT- within the boundaries of your devicetree
->> "tree" and should have gone through powerpc-next.
->
-> Sorry Ben, I did not intend to merge that patch. =A0Quite simply I
-> accidentally included it in my devicetree/next branch when I pushed
-> out a bunch of other PCI related patches in February, and I overlooked
-> that it was still in there when I sent Linus the pull request. =A0It was
-> a complete failure on my part. =A0I apologize and submit myself for the
-> required flogging.
+But it incorrectly passed a linix virtural irq number to RTAS,
+resulting in the interrupt not being disabled and possibly
+other bad things, such as another interrupt being disabled and/or
+a checkstop.  
 
-A flogging schedule will be posted on the bulletin board in the lunch
-room.  Sorry for the trouble.
+In addition this missed the point of xics_mask_unknown_vec and
+the seperation of xics_mask_real_irq from xics_mask_irq.  When
+xics_mask_unknown_vec is called it's because the hardware delivered an
+irq source for which we have no linux irq allocated, and thefore we can
+not have an irq_desc allocated.
 
-g.
+Revert xics_mask_real_irq to its prior version, naming the argument
+hwirq to highlight the difference.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+
+
+--
+
+Lennert can you please review the other patches for similar problems?
+
+Any reference to irq_map[x].hwirq is in a different number domain.
+
+I initially saw the problem pushing irq_desc through unknown_vec
+found this due to my knowledge of the split (I added that function)
+and only realized the wrong number space when preparing to test the fix.
+In fact I tried without the patch and my firmware checkstops the machine
+(hardware stops executing instructions)!
+
+
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index 01fea46..5686db9 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -250,26 +250,26 @@ static unsigned int xics_startup(struct irq_data *d)
+ 	return 0;
+ }
+ 
+-static void xics_mask_real_irq(struct irq_data *d)
++static void xics_mask_real_irq(unsigned int hwirq)
+ {
+ 	int call_status;
+ 
+-	if (d->irq == XICS_IPI)
++	if (hwirq == XICS_IPI)
+ 		return;
+ 
+-	call_status = rtas_call(ibm_int_off, 1, 1, NULL, d->irq);
++	call_status = rtas_call(ibm_int_off, 1, 1, NULL, hwirq);
+ 	if (call_status != 0) {
+ 		printk(KERN_ERR "%s: ibm_int_off irq=%u returned %d\n",
+-			__func__, d->irq, call_status);
++			__func__, hwirq, call_status);
+ 		return;
+ 	}
+ 
+ 	/* Have to set XIVE to 0xff to be able to remove a slot */
+-	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, d->irq,
++	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, hwirq,
+ 				default_server, 0xff);
+ 	if (call_status != 0) {
+ 		printk(KERN_ERR "%s: ibm_set_xive(0xff) irq=%u returned %d\n",
+-			__func__, d->irq, call_status);
++			__func__, hwirq, call_status);
+ 		return;
+ 	}
+ }
+@@ -283,13 +283,13 @@ static void xics_mask_irq(struct irq_data *d)
+ 	irq = (unsigned int)irq_map[d->irq].hwirq;
+ 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
+ 		return;
+-	xics_mask_real_irq(d);
++	xics_mask_real_irq(irq);
+ }
+ 
+ static void xics_mask_unknown_vec(unsigned int vec)
+ {
+ 	printk(KERN_ERR "Interrupt %u (real) is invalid, disabling it.\n", vec);
+-	xics_mask_real_irq(irq_get_irq_data(vec));
++	xics_mask_real_irq(vec);
+ }
+ 
+ static inline unsigned int xics_xirr_vector(unsigned int xirr)
