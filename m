@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39A82B6EEA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Mar 2011 10:54:04 +1100 (EST)
-Subject: Re: mmotm threatens ppc preemption again
+	by ozlabs.org (Postfix) with ESMTPS id 9F1EFB6F14
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2011 11:16:09 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc/ptrace: remove BUG_ON when full register
+	set not available
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>
-In-Reply-To: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
-References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
+To: mjw@us.ibm.com
+In-Reply-To: <1300282642.15145.2.camel@w500>
+References: <1300282642.15145.2.camel@w500>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Mar 2011 10:53:08 +1100
-Message-ID: <1300665188.2402.64.camel@pasglop>
+Date: Mon, 21 Mar 2011 11:15:54 +1100
+Message-ID: <1300666554.2402.88.camel@pasglop>
 Mime-Version: 1.0
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linuxppc-dev@lists.ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2011-03-19 at 21:11 -0700, Hugh Dickins wrote:
+On Wed, 2011-03-16 at 08:37 -0500, Michael Wolf wrote:
+> In some cases during a threaded core dump not all 
+> the threads will have a full register set.  This
+> will cause problems when the sigkill is sent to
+> the thread.  To solve this problem a poison value
+> (0xdeadbeef) will be placed in the buffer in place 
+> of the actual register values.  This will affect
+> gpr14 to gpr31.
 > 
-> As I warned a few weeks ago, Jeremy has vmalloc apply_to_pte_range
-> patches in mmotm, which again assault PowerPC's expectations, and
-> cause lots of noise with CONFIG_PREEMPT=y CONFIG_PREEMPT_DEBUG=y.
-> 
-> This time in vmalloc as well as vfree; and Peter's fix to the last
-> lot, which went into 2.6.38, doesn't protect against these ones.
-> Here's what I now see when I swapon and swapoff:
+> Signed-off-by: Mike Wolf <mjw@linux.vnet.ibm.com>
 
-Right. And we said from day one we had the HARD WIRED assumption that
-arch_enter/leave_lazy_mmu_mode() was ALWAYS going to be called within
-a PTE lock section, and we did get reassurance that it was going to
-remain so.
-
-So why is it ok for them to change those and break us like that ?
-
-Seriously, this is going out of control. If we can't even rely on
-fundamental locking assumptions in the VM to remain reasonably stable
-or at least get some amount of -care- from who changes them as to
-whether they break others and work with us to fix them, wtf ?
-
-I don't know what the right way to fix that is. We have an absolute
-requirement that the batching we start within a lazy MMU section
-is complete and flushed before any other PTE in that section can be
-touched by anything else. Do we -at least- keep that guarantee ?
-
-If yes, then maybe preempt_disable/enable() around
-arch_enter/leave_lazy_mmu_mode() in apply_to_pte_range() would do... 
-
-Or maybe I should just prevent any batching  of init_mm :-(
+Patch is busted on ppc32 (you add  #define's in the middle of a
+multi-line macro) and of doubtful stylistic value :-) I'll merge
+a slightly reworked variant that includes a new cset comment
+with Paulus explanation in it.
 
 Cheers,
 Ben.
+
+> ----------
+> --- linux-2.6.32-71.el6.ppc64.orig/arch/powerpc/include/asm/ptrace.h	2010-08-31 23:56:50.000000000 -0500
+> +++ linux-2.6.32-71.el6.ppc64/arch/powerpc/include/asm/ptrace.h	2011-03-14 11:43:33.176667099 -0500
+> @@ -123,8 +123,14 @@ extern int ptrace_put_reg(struct task_st
+>  #define TRAP(regs)		((regs)->trap & ~0xF)
+>  #ifdef __powerpc64__
+>  #define CHECK_FULL_REGS(regs)	BUG_ON(regs->trap & 1)
+> +#define PARTIAL_REG_FILL	0xdeadbeefdeadbeefUL
+> +#define PARTIAL_REG_START	14
+> +#define PARTIAL_REG_END		31
+>  #else
+>  #define CHECK_FULL_REGS(regs)						      \
+> +#define PARTIAL_REG_FILL	0xdeadbeef
+> +#define PARTIAL_REG_START	14
+> +#define PARTIAL_REG_END		31
+>  do {									      \
+>  	if ((regs)->trap & 1)						      \
+>  		printk(KERN_CRIT "%s: partial register set\n", __func__); \
+> --- linux-2.6.32-71.el6.ppc64.orig/arch/powerpc/kernel/ptrace.c	2009-12-02 21:51:21.000000000 -0600
+> +++ linux-2.6.32-71.el6.ppc64/arch/powerpc/kernel/ptrace.c	2011-03-14 13:01:51.955586126 -0500
+> @@ -125,11 +125,16 @@ static int gpr_get(struct task_struct *t
+>  		   void *kbuf, void __user *ubuf)
+>  {
+>  	int ret;
+> +	int partial_reg;
+>  
+>  	if (target->thread.regs == NULL)
+>  		return -EIO;
+>  
+> -	CHECK_FULL_REGS(target->thread.regs);
+> +	if (!FULL_REGS(target->thread.regs))
+> +	   /* We have a partial register set.  Fill 14-31 with bogus values */
+> +	   for(partial_reg=PARTIAL_REG_START;partial_reg <= PARTIAL_REG_END;
+> +		partial_reg++)
+> +           	target->thread.regs->gpr[partial_reg] = PARTIAL_REG_FILL; 
+>  
+>  	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+>  				  target->thread.regs,
+> @@ -536,11 +541,16 @@ static int gpr32_get(struct task_struct 
+>  	compat_ulong_t *k = kbuf;
+>  	compat_ulong_t __user *u = ubuf;
+>  	compat_ulong_t reg;
+> +	int partial_reg;
+>  
+>  	if (target->thread.regs == NULL)
+>  		return -EIO;
+>  
+> -	CHECK_FULL_REGS(target->thread.regs);
+> +	if (!FULL_REGS(target->thread.regs))
+> +	   /* We have a partial register set.  Fill 14-31 with bogus values */
+> +	   for(partial_reg=PARTIAL_REG_START;partial_reg <= PARTIAL_REG_END;
+> +		partial_reg++)
+> +           	target->thread.regs->gpr[partial_reg] = PARTIAL_REG_FILL; 
+>  
+>  	pos /= sizeof(reg);
+>  	count /= sizeof(reg);
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
