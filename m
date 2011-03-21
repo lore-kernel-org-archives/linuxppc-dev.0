@@ -1,36 +1,22 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
-	by ozlabs.org (Postfix) with ESMTP id BF8D6B6F75
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2011 14:35:13 +1100 (EST)
-Received: from list by lo.gmane.org with local (Exim 4.69)
-	(envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
-	id 1Q1Vf2-0002EB-T1
-	for linuxppc-dev@ozlabs.org; Mon, 21 Mar 2011 04:20:04 +0100
-Received: from 219.144.238.61 ([219.144.238.61])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2011 04:20:04 +0100
-Received: from xiyou.wangcong by 219.144.238.61 with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2011 04:20:04 +0100
-To: linuxppc-dev@ozlabs.org
-From: WANG Cong <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
-	overridden
-Date: Mon, 21 Mar 2011 03:10:26 +0000 (UTC)
-Message-ID: <im6fj2$576$1@dough.gmane.org>
-References: <20100825002258.GD28360@kryten> <m139u37cii.fsf@fess.ebiederm.org>
-	<4D771EE6.5050404@linux.vnet.ibm.com>
-	<20110309122046.GC16951@cr0.redhat.com>
-	<20110309234657.264d3080@kryten>
-	<20110309142108.GD16951@cr0.redhat.com>
-	<20110314181315.GA16075@in.ibm.com>
-	<AANLkTi=aDzCaa7_=5XTrnJCzmZPrDy3omXwDarEF8XmH@mail.gmail.com>
-	<20110315165219.GA22509@in.ibm.com>
-Mime-Version: 1.0
+Return-Path: <jeremy@goop.org>
+Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4BD7EB6F2B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 21 Mar 2011 22:30:16 +1100 (EST)
+Message-ID: <4D873571.702@goop.org>
+Date: Mon, 21 Mar 2011 11:24:33 +0000
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: mmotm threatens ppc preemption again
+References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
+	<1300665188.2402.64.camel@pasglop>
+In-Reply-To: <1300665188.2402.64.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,35 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 15 Mar 2011 22:22:19 +0530, Mahesh J Salgaonkar wrote:
+On 03/20/2011 11:53 PM, Benjamin Herrenschmidt wrote:
+> On Sat, 2011-03-19 at 21:11 -0700, Hugh Dickins wrote:
+>> As I warned a few weeks ago, Jeremy has vmalloc apply_to_pte_range
+>> patches in mmotm, which again assault PowerPC's expectations, and
+>> cause lots of noise with CONFIG_PREEMPT=y CONFIG_PREEMPT_DEBUG=y.
+>>
+>> This time in vmalloc as well as vfree; and Peter's fix to the last
+>> lot, which went into 2.6.38, doesn't protect against these ones.
+>> Here's what I now see when I swapon and swapoff:
+> Right. And we said from day one we had the HARD WIRED assumption that
+> arch_enter/leave_lazy_mmu_mode() was ALWAYS going to be called within
+> a PTE lock section, and we did get reassurance that it was going to
+> remain so.
+>
+> So why is it ok for them to change those and break us like that ?
 
-> On Tue, Mar 15, 2011 at 03:52:38PM +0800, Américo Wang wrote:
->> On Tue, Mar 15, 2011 at 2:13 AM, Mahesh J Salgaonkar
->> <mahesh@linux.vnet.ibm.com> wrote:
->> >
->> > During free we do free all of them including RMO region. But since
->> > the rtas region is always on top of RMO, crashkernel memory overlaps
->> > rtas region and we endup freeing that even, which is causing the
->> > crash.
->> >
->> >
->> Okay, but with this patch applied, we will just ignore rtas region,
->> right?
-> Correct.
->> Thus, when I echo 0 to free all the 128M crashkernel memory, the final
->> result will be 32M left, which means crash_size will still show 32M.
->> This looks odd.
->> 
->> How about skipping the 32M as a whole? I mean once the region being
->> freed has overlap with this rtas region, skip the whole rtas region,
->> and let crash_size
->> show 0?
-> The existing code from crash_shrink_memory() function reduces the crash
-> size to 0 when echo'ed 0. I did test this patchset and verified that
-> /sys/kernel/kexec_crash_size show 0 value.
+In general, the pagetable's locking rules are that all *usermode* pte
+updates have to be done under a pte lock, but kernel mode ones do not;
+they generally have some kind of per-subsystem ad-hoc locking where
+needed, which may or may not be no-preempt.
 
-Oh, ok.
+Originally the enter/leave_lazy_mmu_mode did require preemption to be
+disabled for the whole time, but that was incompatible with the above
+locking rules, and resulted in preemption being disabled for long
+periods when using lazy mode which wouldn't normally happen.  This
+raised a number of complaints.
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+To address this, I changed the x86 implementation to deal with
+preemption in lazy mode by dropping out for lazy mode at context switch
+time (and recording the fact that we were in lazy mode with a TIF flag
+and re-entering on the next context switch).
 
-Thanks.
+
+> Seriously, this is going out of control. If we can't even rely on
+> fundamental locking assumptions in the VM to remain reasonably stable
+> or at least get some amount of -care- from who changes them as to
+> whether they break others and work with us to fix them, wtf ?
+>
+> I don't know what the right way to fix that is. We have an absolute
+> requirement that the batching we start within a lazy MMU section
+> is complete and flushed before any other PTE in that section can be
+> touched by anything else. Do we -at least- keep that guarantee ?
+>
+> If yes, then maybe preempt_disable/enable() around
+> arch_enter/leave_lazy_mmu_mode() in apply_to_pte_range() would do... 
+>
+> Or maybe I should just prevent any batching  of init_mm :-(
+
+I'm very sorry about that, I didn't realize power was also using that
+interface.  Unfortunately, the "no preemption" definition was an error,
+and had to be changed to match the pre-existing locking rules.
+
+Could you implement a similar "flush batched pte updates on context
+switch" as x86?
+
+    J
