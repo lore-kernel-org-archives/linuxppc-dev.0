@@ -1,22 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 808F1B6F74
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C2F86B6EFE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Mar 2011 09:53:11 +1100 (EST)
-Subject: Re: mmotm threatens ppc preemption again
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <4D873571.702@goop.org>
-References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
-	<1300665188.2402.64.camel@pasglop>  <4D873571.702@goop.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Mar 2011 09:52:22 +1100
-Message-ID: <1300747942.2402.262.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Tue, 22 Mar 2011 11:49:58 +1100 (EST)
+Received: by wyj26 with SMTP id 26so5958871wyj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 21 Mar 2011 17:49:53 -0700 (PDT)
+MIME-Version: 1.0
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <1299174901-16762-4-git-send-email-iws@ovro.caltech.edu>
+References: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
+	<1299174901-16762-4-git-send-email-iws@ovro.caltech.edu>
+Date: Mon, 21 Mar 2011 17:49:49 -0700
+Message-ID: <AANLkTim07cvTwm+KfY=Fh6SofQWyPV_3ns7qKAjzpN=d@mail.gmail.com>
+Subject: Re: [PATCH v3 3/9] fsldma: use channel name in printk output
+From: Dan Williams <dan.j.williams@intel.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-03-21 at 11:24 +0000, Jeremy Fitzhardinge wrote:
-> 
-> I'm very sorry about that, I didn't realize power was also using that
-> interface.  Unfortunately, the "no preemption" definition was an error,
-> and had to be changed to match the pre-existing locking rules.
-> 
-> Could you implement a similar "flush batched pte updates on context
-> switch" as x86? 
+On Thu, Mar 3, 2011 at 9:54 AM, Ira W. Snyder <iws@ovro.caltech.edu> wrote:
+> This makes debugging the driver much easier when multiple channels are
+> running concurrently. In addition, you can see how much descriptor
+> memory each channel has allocated via the dmapool API in sysfs.
+>
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+> ---
+> =A0drivers/dma/fsldma.c | =A0 69 +++++++++++++++++++++++++---------------=
+---------
+> =A0drivers/dma/fsldma.h | =A0 =A01 +
+> =A02 files changed, 36 insertions(+), 34 deletions(-)
+>
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 2e1af45..e535cd1 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -37,7 +37,12 @@
+>
+> =A0#include "fsldma.h"
+>
+> -static const char msg_ld_oom[] =3D "No free memory for link descriptor\n=
+";
+> +#define chan_dbg(chan, fmt, arg...) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 dev_dbg(chan->dev, "%s: " fmt, chan->name, ##arg)
+> +#define chan_err(chan, fmt, arg...) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 dev_err(chan->dev, "%s: " fmt, chan->name, ##arg)
+> +
 
-Well, we already do that for -rt & co.
+I already have this applied, but if you want to send an incremental
+cleanup patch you could achieve a similar effect without increasing
+the size of fsldma_chan by using the class device that is created by
+dma_async_device_register.
 
-However, we have another issue which is the reason we used those
-lazy_mmu hooks to do our flushing.
+Something like:
 
-Our PTEs eventually get faulted into a hash table which is what the real
-MMU uses. We must never (ever) allow that hash table to contain a
-duplicate entry for a given virtual address.
+#define to_chan_dev(chan) (&chan->common.dev->device)
+#define chan_err(chan, fmt, arg...) \
+   dev_err(chan->dev, "%s: " fmt, dev_name(to_chan_dev(chan)), ##arg)
 
-When we do a batch, we remove things from the linux PTE, and keep a
-reference in our batch structure, and only update the hash table at the
-end of the batch.
+...where dev_name() returns something like "dma0chan0".
 
-That means that we must not allow a hash fault to populate the hash with
-a "new" PTE value prior to the old one having been flushed out (which is
-possible if they different in protection attributes for example). For
-that to happen, we must basically not allow a page fault to re-populate
-a PTE invalidated by a batch before that batch has completed.
-
-That translates to batches must only happen within a PTE lock section.
-
-Cheers,
-Ben.
+--
+Dan
