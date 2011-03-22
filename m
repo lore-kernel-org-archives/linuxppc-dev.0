@@ -1,26 +1,25 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C2F86B6EFE
+Return-Path: <B32579@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D622FB6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Mar 2011 11:49:58 +1100 (EST)
-Received: by wyj26 with SMTP id 26so5958871wyj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Mar 2011 17:49:53 -0700 (PDT)
+	Tue, 22 Mar 2011 15:19:07 +1100 (EST)
+Received: from mail71-db3 (localhost.localdomain [127.0.0.1])	by
+	mail71-db3-R.bigfish.com (Postfix) with ESMTP id D079C1683F4	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2011 04:18:59 +0000 (UTC)
+Received: from DB3EHSMHS009.bigfish.com (unknown [10.3.81.245])	by
+	mail71-db3.bigfish.com (Postfix) with ESMTP id 803841208052	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 22 Mar 2011 04:18:59 +0000 (UTC)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Query: PCIe range entry at pcie@0 in dts files
+Date: Tue, 22 Mar 2011 04:18:56 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F874150769@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <1299174901-16762-4-git-send-email-iws@ovro.caltech.edu>
-References: <1299174901-16762-1-git-send-email-iws@ovro.caltech.edu>
-	<1299174901-16762-4-git-send-email-iws@ovro.caltech.edu>
-Date: Mon, 21 Mar 2011 17:49:49 -0700
-Message-ID: <AANLkTim07cvTwm+KfY=Fh6SofQWyPV_3ns7qKAjzpN=d@mail.gmail.com>
-Subject: Re: [PATCH v3 3/9] fsldma: use channel name in printk output
-From: Dan Williams <dan.j.williams@intel.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +29,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 3, 2011 at 9:54 AM, Ira W. Snyder <iws@ovro.caltech.edu> wrote:
-> This makes debugging the driver much easier when multiple channels are
-> running concurrently. In addition, you can see how much descriptor
-> memory each channel has allocated via the dmapool API in sysfs.
->
-> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
-> ---
-> =A0drivers/dma/fsldma.c | =A0 69 +++++++++++++++++++++++++---------------=
----------
-> =A0drivers/dma/fsldma.h | =A0 =A01 +
-> =A02 files changed, 36 insertions(+), 34 deletions(-)
->
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 2e1af45..e535cd1 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -37,7 +37,12 @@
->
-> =A0#include "fsldma.h"
->
-> -static const char msg_ld_oom[] =3D "No free memory for link descriptor\n=
-";
-> +#define chan_dbg(chan, fmt, arg...) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
-> + =A0 =A0 =A0 dev_dbg(chan->dev, "%s: " fmt, chan->name, ##arg)
-> +#define chan_err(chan, fmt, arg...) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
-> + =A0 =A0 =A0 dev_err(chan->dev, "%s: " fmt, chan->name, ##arg)
-> +
+Hi all,
 
-I already have this applied, but if you want to send an incremental
-cleanup patch you could achieve a similar effect without increasing
-the size of fsldma_chan by using the class device that is created by
-dma_async_device_register.
+ I have query about usage of range field at pcie@0 under PCIe controller. P=
+lease find snap shot from mpc8536_36.dts..
 
-Something like:
+	pci3: pcie@fffe0b000 {
+		compatible =3D "fsl,mpc8548-pcie";
+		device_type =3D "pci";
+		#interrupt-cells =3D <1>;
+		#size-cells =3D <2>;
+		#address-cells =3D <3>;
+		reg =3D <0xf 0xffe0b000 0 0x1000>;
+		bus-range =3D <0 0xff>;
+		ranges =3D <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x20000000
+			  0x01000000 0 0x00000000 0xf 0xffc30000 0 0x00010000>;
+		clock-frequency =3D <33333333>;
+		interrupt-parent =3D <&mpic>;
+		interrupts =3D <27 0x2>;
+		interrupt-map-mask =3D <0xf800 0 0 7>;
+		interrupt-map =3D <
+			/* IDSEL 0x0 */
+			0000 0 0 1 &mpic 8 1
+			0000 0 0 2 &mpic 9 1
+			0000 0 0 3 &mpic 10 1
+			0000 0 0 4 &mpic 11 1
+			>;
 
-#define to_chan_dev(chan) (&chan->common.dev->device)
-#define chan_err(chan, fmt, arg...) \
-   dev_err(chan->dev, "%s: " fmt, dev_name(to_chan_dev(chan)), ##arg)
+		pcie@0 {
+			reg =3D <0 0 0 0 0>;
+			#size-cells =3D <2>;
+			#address-cells =3D <3>;
+			device_type =3D "pci";
+			ranges =3D <0x02000000 0 0xe0000000 --> child/port start address
+				  0x02000000 0 0xe0000000 --> Parent bus address
+				  0 0x20000000
 
-...where dev_name() returns something like "dma0chan0".
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00100000>;
+		};
+	};
 
---
-Dan
+Question:
+A) is ranges filed of pcie@0 really required?
+	 I just went through the code and found scan_OF_for_pci_dev() called from =
+pci_busdev_to_OF_node() touches pcie@0 node. But, It does not even uses ran=
+ge filed.=20
+
+	static struct device_node *scan_OF_for_pci_dev(struct device_node *parent,=
+unsigned int devfn) {
+		 ---
+       	---
+		for_each_child_of_node(parent, np) {
+			reg =3D of_get_property(np, "reg", &psize);=20
+     =20
+		  ---
+		  ---
+            	    if (!strcmp(np->name, "multifunc-device")) {=20
+	     =20
+	}
+
+   I also checked "Power_ePAPR_APPROVED_v1.0.pdf". It never say range filed=
+ required for child bus.
+
+B) if range field of pcie@0 required. why does child/port start address sam=
+e as Parent bus address?  Range property provides mapping of port address t=
+o parent address space.
+So the value should be 0x00000000. Means port's address starting from 0x000=
+00000 to size 0x20000000 is mapped parent's 0xe0000000.
+
+			ranges =3D <0x02000000 0 0x00000000  --> Child/port's start address
+				  0x02000000 0 0xe0000000    --> Parent bus address
+				  0 0x20000000
+
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00100000>;
+
+
+--Prabhakar
