@@ -1,29 +1,22 @@
 Return-Path: <vooon341@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CFB64B6F0D
+	by ozlabs.org (Postfix) with ESMTPS id E0CFDB6F11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Mar 2011 01:05:14 +1100 (EST)
-Received: by iwc10 with SMTP id 10so7990715iwc.38
+	Wed, 23 Mar 2011 01:07:52 +1100 (EST)
+Received: by iym7 with SMTP id 7so8034104iym.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Mar 2011 07:05:10 -0700 (PDT)
+	Tue, 22 Mar 2011 07:07:49 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <AANLkTimDDpCHf7Cpjt5mi=d18OpX2Q4yiwNDK_26j0kD@mail.gmail.com>
-References: <1300318163.12970.66.camel@desinto>
-	<20110317212542.GB29231@pengutronix.de>
-	<AANLkTimy3Qu=KiPp8mhAiuL=GzqUHuNLTZ3cwmNKkrF7@mail.gmail.com>
-	<20110318123637.GB2155@pengutronix.de>
-	<AANLkTimDDpCHf7Cpjt5mi=d18OpX2Q4yiwNDK_26j0kD@mail.gmail.com>
 From: "vooon341@gmail.com" <vooon341@gmail.com>
-Date: Tue, 22 Mar 2011 17:03:25 +0300
-Message-ID: <AANLkTin-d9T=VsMw+tnok1TPzHSUmhi4HE03eAu17ews@mail.gmail.com>
-Subject: Re: [PATCH 1/3,
-	v4] powerpc/mpc512x: Add initial support for TWR-MPC5125
+Date: Tue, 22 Mar 2011 17:07:29 +0300
+Message-ID: <AANLkTi=DvJZ18fr2F84Hb4c8HE9HsaL0Kvgvi0cyvARG@mail.gmail.com>
+Subject: Re: [PATCH 2/3,v2] serial: Add PSC UART support for MPC5125 SoC
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Cc: Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,711 +26,649 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds Freescale TWR-MPC5125 device tree and platform code.
+Adds PSC UART support for MPC5125 SoC.
 
-Currently following is supported:
- - NAND
- - FEC1 and FEC2
- - RTC
- - PSC UART
-
-NAND flash controller require more tests, so it will be later.
+MPC5125 has different register map than in MPC5121.
 
 Signed-off-by: Vladimir Ermakov <vooon341@gmail.com>
 ---
 v2:
- - add PSC compat string selection
- - add ioctl defines
-
-v3:
- - less verbose interrupt-parent
- - move mpc512x_select_psc_compat() to mpc512x_shared.c
- - remove unneded mpc5125_psc_iopad_init()
- - fix board prefixes
-
-v4:
- - remove device_type from ethernet nodes
- - add aliases for ethernet nodes
- - add phy-connection-type
- - extend size of rootfs partition
+ - Replace hack with replacing struct mpc52xx_psc to proper code.
 ---
- arch/powerpc/boot/dts/mpc5125twr.dts         |  376 ++++++++++++++++++++++++++
- arch/powerpc/platforms/512x/Kconfig          |   14 +
- arch/powerpc/platforms/512x/Makefile         |    1 +
- arch/powerpc/platforms/512x/clock.c          |    9 +-
- arch/powerpc/platforms/512x/mpc5125_twr.c    |  142 ++++++++++
- arch/powerpc/platforms/512x/mpc512x.h        |    5 +-
- arch/powerpc/platforms/512x/mpc512x_shared.c |   26 ++-
- 7 files changed, 569 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/mpc52xx_psc.h |   49 ++++
+ drivers/tty/serial/mpc52xx_uart.c      |  406 ++++++++++++++++++++++++++++----
+ 2 files changed, 414 insertions(+), 41 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts
-b/arch/powerpc/boot/dts/mpc5125twr.dts
-new file mode 100644
-index 0000000..ca3851d
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc5125twr.dts
-@@ -0,0 +1,376 @@
-+/*
-+ * STx/Freescale ADS5125 MPC5125 silicon
-+ *
-+ * Copyright (C) 2009 Freescale Semiconductor Inc. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "mpc5125twr"; // In BSP "mpc5125ads"
-+	compatible = "fsl,mpc5125ads";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	interrupt-parent = <&ipic>;
-+
-+	aliases {
-+		ethernet0 = &eth0;
-+		ethernet1 = &eth1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,5125@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <0x20>;	// 32 bytes
-+			i-cache-line-size = <0x20>;	// 32 bytes
-+			d-cache-size = <0x8000>;	// L1, 32K
-+			i-cache-size = <0x8000>;	// L1, 32K
-+			timebase-frequency = <49500000>;// 49.5 MHz (csb/4)
-+			bus-frequency = <198000000>;	// 198 MHz csb bus
-+			clock-frequency = <396000000>;	// 396 MHz ppc core
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x10000000>;	// 256MB at 0
-+	};
-+
-+	sram@30000000 {
-+		compatible = "fsl,mpc5121-sram";
-+		reg = <0x30000000 0x08000>;		// 32K at 0x30000000
-+	};
-+
-+	nfc@40000000 {
-+		compatible = "fsl,mpc5125-nfc";
-+		reg = <0x40000000 0x100000>;	// 1M at 0x40000000
-+		interrupts = <6 0x8>;
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		bank-width = <1>;
-+		write-size = <4096>;
-+		spare-size = <128>;
-+		chips = <1>;
-+		// NOTE: partition map different than in BSP
-+		// First three is the same as in BSP, other differ.
-+		nand-spl@0 {
-+			label = "loader";
-+			reg = <0x00000000 0x00100000>;
-+			read-only;
-+		};
-+		uboot@100000 {
-+			label = "uboot";
-+			reg = <0x00100000 0x00100000>;
-+			read-only;
-+		};
-+		uboot-env@200000 {
-+			label = "uboot-env";
-+			reg = <0x00200000 0x00100000>;
-+			read-only;
-+		};
-+		kernel@300000 {
-+			label = "kernel";
-+			reg = <0x00300000 0x00800000>;
-+		};
-+		device-tree@b00000 {
-+			label = "device-tree";
-+			reg = <0x00b00000 0x00100000>;
-+		};
-+		ramboot-rootfs@c00000 {
-+			label = "ramboot-rootfs";
-+			reg = <0x00c00000 0x00800000>;
-+		};
-+		rootfs@1400000 {
-+			label = "rootfs";
-+			reg = <0x01400000 0x02800000>;
-+		};
-+		user@2800000 {
-+			label = "user";
-+			reg = <0x03C00000 0x01400000>;
-+		};
-+		SRAM@4200000 {
-+			label = "SRAM"; // NVRAM emul
-+			reg = <0x05000000 0x01400000>;
-+		};
-+		prom@5600000 {
-+			label = "prom";
-+			reg = <0x06400000 0x01400000>;
-+		};
-+		//data@2800000 {
-+		//	label = "data";
-+		//	reg = <0x28000000 0xeac00000>;
-+		//};
-+	};
-+
-+	soc@80000000 {
-+		compatible = "fsl,mpc5121-immr";
-+		device_type = "soc";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		ranges = <0x0 0x80000000 0x400000>;
-+		reg = <0x80000000 0x400000>;
-+		bus-frequency = <66000000>;	// 66 MHz ips bus
-+
-+		// IPIC
-+		// interrupts cell = <intr #, sense>
-+		// sense values match linux IORESOURCE_IRQ_* defines:
-+		// sense == 8: Level, low assertion
-+		// sense == 2: Edge, high-to-low change
-+		//
-+		ipic: interrupt-controller@c00 {
-+			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0xc00 0x100>;
-+		};
-+
-+		rtc@a00 {	// Real time clock
-+			compatible = "fsl,mpc5121-rtc";
-+			reg = <0xa00 0x100>;
-+			interrupts = <79 0x8 80 0x8>;
-+		};
-+
-+		reset@e00 {	// Reset module
-+			compatible = "fsl,mpc5121-reset";
-+			reg = <0xe00 0x100>;
-+		};
-+
-+		clock@f00 {	// Clock control
-+			compatible = "fsl,mpc5121rev2-clock", "fsl,mpc5121-clock";
-+			reg = <0xf00 0x100>;
-+		};
-+
-+		pmc@1000{  // Power Management Controller
-+			compatible = "fsl,mpc5121-pmc";
-+			reg = <0x1000 0x100>;
-+			interrupts = <83 0x2>;
-+		};
-+
-+		gpio@1100 {
-+			compatible = "fsl,mpc5125-gpio";
-+			cell-index = <0>;
-+			reg = <0x1100 0x080>;
-+			interrupts = <78 0x8>;
-+		};
-+
-+		gpio@1180 {
-+			compatible = "fsl,mpc5125-gpio1";
-+			cell-index = <1>;
-+			reg = <0x1180 0x080>;
-+			interrupts = <78 0x8>;
-+		};
-+
-+		can@1300 { // CAN rev.2
-+			compatible = "fsl,mpc5121-mscan";
-+			cell-index = <0>;
-+			interrupts = <12 0x8>;
-+			reg = <0x1300 0x80>;
-+		};
-+
-+		can@1380 {
-+			compatible = "fsl,mpc5121-mscan";
-+			cell-index = <1>;
-+			interrupts = <13 0x8>;
-+			reg = <0x1380 0x80>;
-+		};
-+
-+		sdhc@1500 {
-+			compatible = "fsl,mpc5125-sdhc";
-+			interrupts = <8 0x8>;
-+			reg = <0x1500 0x100>;
-+		};
-+
-+		i2c@1700 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-i2c";
-+			cell-index = <0>;
-+			reg = <0x1700 0x20>;
-+			interrupts = <0x9 0x8>;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1720 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-i2c";
-+			cell-index = <1>;
-+			reg = <0x1720 0x20>;
-+			interrupts = <0xa 0x8>;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1740 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-i2c";
-+			cell-index = <2>;
-+			reg = <0x1740 0x20>;
-+			interrupts = <0xb 0x8>;
-+			fsl5200-clocking;
-+		};
-+
-+		i2ccontrol@1760 {
-+			compatible = "fsl,mpc5121-i2c-ctrl";
-+			reg = <0x1760 0x8>;
-+		};
-+
-+		//diu@2100 {
-+		//	device_type = "display";
-+		//	compatible = "fsl-diu";
-+		//	reg = <0x2100 0x100>;
-+		//	interrupts = <64 0x8>;
-+		//};
-+
-+		// MPC5125e has two more CAN ports
-+		// but they are not used on ADS5125
-+		//can@2300 {
-+		//	compatible = "fsl,mpc5121-mscan";
-+		//	cell-index = <2>;
-+		//	interrupts = <90 0x8>;
-+		//	reg = <0x2300 0x80>;
-+		//};
-+
-+		//can@2380 {
-+		//	compatible = "fsl,mpc5121-mscan";
-+		//	cell-index = <3>;
-+		//	interrupts = <91 0x8>;
-+		//	reg = <0x2380 0x80>;
-+		//};
-+
-+		mdio@2800 {
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x2800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy0: ethernet-phy@0 {
-+				compatible = "smsc,lan8710";
-+				reg = <1>;
-+			};
-+		};
-+
-+		eth0: ethernet@2800 {
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x2800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <4 0x8>;
-+			phy-handle = < &phy0 >;
-+			phy-connection-type = "rmii";
-+		};
-+
-+		// USB ULPI1
-+		//usb@3000 {
-+		//	device_type = "usb";
-+		//	compatible = "fsl-usb2-dr";
-+		//	reg = <0x3000 0x400>;
-+		//	#address-cells = <1>;
-+		//	#size-cells = <0>;
-+		//	interrupts = <43 0x8>;
-+		//	dr_mode = "host";
-+		//	phy_type = "ulpi";
-+		//	big-endian-regs;
-+		//};
-+
-+		// USB ULPI2
-+		//usb@4000 {
-+		//	device_type = "usb";
-+		//	compatible = "fsl-usb2-dr";
-+		//	reg = <0x4000 0x400>;
-+		//	#address-cells = <1>;
-+		//	#size-cells = <0>;
-+		//	interrupts = <44 0x8>;
-+		//	dr_mode = "otg";
-+		//	phy_type = "ulpi";
-+		//	big-endian-regs;
-+		//};
-+
-+		mdio@4800 {
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x4800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy1: ethernet-phy@0 {
-+				compatible = "micrel,ksz8041";
-+				reg = <1>;
-+			};
-+		};
-+
-+		eth1: ethernet@4800 {
-+			device_type = "network";
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x4800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <5 0x8>;
-+			phy-handle = < &phy1 >;
-+			phy-connection-type = "rmii";
-+		};
-+
-+		// IO control
-+		ioctl@a000 {
-+			compatible = "fsl,mpc5125-ioctl";
-+			reg = <0xA000 0x1000>;
-+		};
-+
-+		// PSC0 in ac97 mode
-+		//ac97@11000 {
-+		//	device_type = "sound";
-+		//	compatible = "fsl,mpc5125-psc-ac97", "fsl,mpc5125-psc";
-+		//	cell-index = <0>;
-+		//	reg = <0x11000 0x100>;
-+		//	interrupts = <40 0x8>;
-+		//	fsl,mode = "ac97-slave";
-+		//	rx-fifo-size = <384>;
-+		//	tx-fifo-size = <384>;
-+		//};
-+
-+		// 5125 PSCs are not 52xx or 5121 PSC compatible
-+		// PSC1 uart0 aka ttyPSC0
-+		serial@11100 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5125-psc-uart", "fsl,mpc5125-psc";
-+			port-number = <0>;
-+			cell-index = <1>;
-+			reg = <0x11100 0x100>;
-+			interrupts = <40 0x8 71 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+			nodcd;
-+		};
-+
-+		// PSC9 uart1 aka ttyPSC1
-+		serial@11900 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5125-psc-uart", "fsl,mpc5125-psc";
-+			port-number = <1>;
-+			cell-index = <9>;
-+			reg = <0x11900 0x100>;
-+			interrupts = <40 0x8 32 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+			nodcd;
-+		};
-+
-+		pscfifo@11f00 {
-+			compatible = "fsl,mpc5121-psc-fifo";
-+			reg = <0x11f00 0x100>;
-+			interrupts = <40 0x8>;
-+		};
-+
-+		dma@14000 {
-+			compatible = "fsl,mpc5121-dma"; // BSP name: "mpc512x-dma2"
-+			reg = <0x14000 0x1800>;
-+			interrupts = <65 0x8>;
-+		};
-+	};
+diff --git a/arch/powerpc/include/asm/mpc52xx_psc.h
+b/arch/powerpc/include/asm/mpc52xx_psc.h
+index 2966df6..d0ece25 100644
+--- a/arch/powerpc/include/asm/mpc52xx_psc.h
++++ b/arch/powerpc/include/asm/mpc52xx_psc.h
+@@ -299,4 +299,53 @@ struct mpc512x_psc_fifo {
+ #define rxdata_32 rxdata.rxdata_32
+ };
+
++struct mpc5125_psc {
++	u8		mr1;			/* PSC + 0x00 */
++	u8		reserved0[3];
++	u8		mr2;			/* PSC + 0x04 */
++	u8		reserved1[3];
++	struct {
++		u16		status;		/* PSC + 0x08 */
++		u8		reserved2[2];
++		u8		clock_select;	/* PSC + 0x0c */
++		u8		reserved3[3];
++	} sr_csr;
++	u8		command;		/* PSC + 0x10 */
++	u8		reserved4[3];
++	union {					/* PSC + 0x14 */
++		u8		buffer_8;
++		u16		buffer_16;
++		u32		buffer_32;
++	} buffer;
++	struct {
++		u8		ipcr;		/* PSC + 0x18 */
++		u8		reserved5[3];
++		u8		acr;		/* PSC + 0x1c */
++		u8		reserved6[3];
++	} ipcr_acr;
++	struct {
++		u16		isr;		/* PSC + 0x20 */
++		u8		reserved7[2];
++		u16		imr;		/* PSC + 0x24 */
++		u8		reserved8[2];
++	} isr_imr;
++	u8		ctur;			/* PSC + 0x28 */
++	u8		reserved9[3];
++	u8		ctlr;			/* PSC + 0x2c */
++	u8		reserved10[3];
++	u32		ccr;			/* PSC + 0x30 */
++	u32		ac97slots;		/* PSC + 0x34 */
++	u32		ac97cmd;		/* PSC + 0x38 */
++	u32		ac97data;		/* PSC + 0x3c */
++	u8		reserved11[4];
++	u8		ip;			/* PSC + 0x44 */
++	u8		reserved12[3];
++	u8		op1;			/* PSC + 0x48 */
++	u8		reserved13[3];
++	u8		op0;			/* PSC + 0x4c */
++	u8		reserved14[3];
++	u32		sicr;			/* PSC + 0x50 */
++	u8		reserved15[4];	/* make eq. sizeof(mpc52xx_psc) */
 +};
-diff --git a/arch/powerpc/platforms/512x/Kconfig
-b/arch/powerpc/platforms/512x/Kconfig
-index 27b0651..0dde4b0 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -26,6 +26,20 @@ config MPC5121_GENERIC
- 	  Compatible boards include:  Protonic LVT base boards (ZANMCU
- 	  and VICVT2).
++
+ #endif  /* __ASM_MPC52xx_PSC_H__ */
+diff --git a/drivers/tty/serial/mpc52xx_uart.c
+b/drivers/tty/serial/mpc52xx_uart.c
+index a0bcd8a..b53c03a 100644
+--- a/drivers/tty/serial/mpc52xx_uart.c
++++ b/drivers/tty/serial/mpc52xx_uart.c
+@@ -121,6 +121,15 @@ struct psc_ops {
+ 	void		(*fifoc_uninit)(void);
+ 	void		(*get_irq)(struct uart_port *, struct device_node *);
+ 	irqreturn_t	(*handle_irq)(struct uart_port *port);
++	u16		(*get_status)(struct uart_port *port);
++	u8		(*get_ipcr)(struct uart_port *port);
++	void		(*command)(struct uart_port *port, u8 cmd);
++	void		(*set_mode)(struct uart_port *port, u8 mr1, u8 mr2);
++	void		(*set_rts)(struct uart_port *port, int state);
++	void		(*enable_ms)(struct uart_port *port);
++	void		(*set_sicr)(struct uart_port *port, u32 val);
++	void		(*set_imr)(struct uart_port *port, u16 val);
++	u8		(*get_mr1)(struct uart_port *port);
+ };
 
-+config PPC_MPC5125
-+	bool "Generic support for MPC5125 based boards"
-+	depends on PPC_MPC512x
-+	select DEFAULT_UIMAGE
-+	select PPC_INDIRECT_PCI
-+	default n
-+
-+config MPC5125_TWR
-+	bool "Freescale MPC5125 Tower system"
-+	depends on PPC_MPC512x
-+	select PPC_MPC5125
-+	help
-+	  This option enables support for the MPC5125 TWR board.
-+
- config PDM360NG
- 	bool "ifm PDM360NG board"
- 	depends on PPC_MPC512x
-diff --git a/arch/powerpc/platforms/512x/Makefile
-b/arch/powerpc/platforms/512x/Makefile
-index 4efc1c4..5c17561 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -5,3 +5,4 @@ obj-y				+= clock.o mpc512x_shared.o
- obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
- obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
- obj-$(CONFIG_PDM360NG)		+= pdm360ng.o
-+obj-$(CONFIG_MPC5125_TWR)	+= mpc5125_twr.o
-diff --git a/arch/powerpc/platforms/512x/clock.c
-b/arch/powerpc/platforms/512x/clock.c
-index 3dc2a8d..07e0bc0 100644
---- a/arch/powerpc/platforms/512x/clock.c
-+++ b/arch/powerpc/platforms/512x/clock.c
-@@ -27,6 +27,8 @@
- #include <asm/mpc5xxx.h>
- #include <asm/clk_interface.h>
+ /* setting the prescaler and divisor reg is common for all chips */
+@@ -133,6 +142,74 @@ static inline void mpc52xx_set_divisor(struct
+mpc52xx_psc __iomem *psc,
+ 	out_8(&psc->ctlr, divisor & 0xff);
+ }
 
-+#include "mpc512x.h"
-+
- #undef CLK_DEBUG
-
- static int clocks_initialized;
-@@ -679,8 +681,13 @@ static void psc_clks_init(void)
- 	struct device_node *np;
- 	const u32 *cell_index;
- 	struct platform_device *ofdev;
-+	char *psc_compat;
-+
-+	psc_compat = mpc512x_select_psc_compat();
-+	if (!psc_compat)
-+		return;
-
--	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
-+	for_each_compatible_node(np, NULL, psc_compat) {
- 		cell_index = of_get_property(np, "cell-index", NULL);
- 		if (cell_index) {
- 			int pscnum = *cell_index;
-diff --git a/arch/powerpc/platforms/512x/mpc5125_twr.c
-b/arch/powerpc/platforms/512x/mpc5125_twr.c
-new file mode 100644
-index 0000000..7c7facf
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5125_twr.c
-@@ -0,0 +1,142 @@
-+/*
-+ * Copyright (C) 2010 LimePC Multimedia Technologies Co., Limited
-+ * Copyright (C) 2011 Vladimir Ermakov <vooon341@gmail.com>
-+ *
-+ * Based on original Freescale Semiconductor BSP
-+ * written by Cloudy Chen <chen_yunsong@mtcera.com>
-+ *
-+ * MPC5125 Tower board setup
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+#include <linux/bootmem.h>
-+#include <asm/rheap.h>
-+
-+#include "mpc512x.h"
-+
-+/* IOCTL registers for USB1/FEC2 */
-+#define IOCTL_USB1_DATA0	0x63
-+#define IOCTL_USB1_DATA1	0x64
-+#define IOCTL_USB1_DATA2	0x65
-+#define IOCTL_USB1_DATA3	0x66
-+#define IOCTL_USB1_DATA4	0x67
-+#define IOCTL_USB1_DATA5	0x68
-+#define IOCTL_USB1_DATA6	0x69
-+#define IOCTL_USB1_DATA7	0x6A
-+#define IOCTL_USB1_STOP		0x6B
-+#define IOCTL_USB1_CLK		0x6C
-+#define IOCTL_USB1_NEXT		0x6D
-+#define IOCTL_USB1_DIR		0x6E
-+
-+/* Pin modes */
-+#define IOCTL_DEFAULT_MODE	0x03 /* FUNCMUX=0, PUD=0, PUE=0, DS=3 */
-+#define IOCTL_FEC2_MODE		0x43 /* FUNCMUX=2, PUD=0, PUE=0, DS=3 */
-+
-+/* Select mode of USB1 pads.
-+ * They could be configured as USB (default), FEC2
-+ * and several PSC's and/or GPIO's.
-+ * Board specific. It can be platform specific in the future.
-+ */
-+static void mpc5125_twr_fec2_usb_iopad_init(void __iomem *ioctl, int isusb)
++static inline void mpc5125_set_divisor(struct mpc5125_psc __iomem *psc,
++		u8 prescaler, unsigned int divisor)
 +{
-+	int i;
-+	const u8 offset[12] = {
-+		IOCTL_USB1_DATA0, IOCTL_USB1_DATA1,
-+		IOCTL_USB1_DATA2, IOCTL_USB1_DATA3,
-+		IOCTL_USB1_DATA4, IOCTL_USB1_DATA5,
-+		IOCTL_USB1_DATA6, IOCTL_USB1_DATA7,
-+		IOCTL_USB1_STOP, IOCTL_USB1_CLK,
-+		IOCTL_USB1_NEXT, IOCTL_USB1_DIR
-+	};
-+	u8 mode;
-+
-+	mode = (isusb) ? IOCTL_DEFAULT_MODE : IOCTL_FEC2_MODE;
-+	for (i = 0; i < ARRAY_SIZE(offset); i++)
-+		out_8(ioctl + offset[i], mode);
++	/* select prescaler */
++	out_8(&psc->mpc52xx_psc_clock_select, prescaler);
++	out_8(&psc->ctur, divisor >> 8);
++	out_8(&psc->ctlr, divisor & 0xff);
 +}
 +
-+static void __init mpc5125_twr_setup_arch(void)
++static u16 mpc52xx_psc_get_status(struct uart_port *port)
 +{
-+	struct device_node *np;
++	return in_be16(&PSC(port)->mpc52xx_psc_status);
++}
 +
-+	printk(KERN_INFO "TWR-MPC5125 board from Freescale Semiconductor\n");
++static u8 mpc52xx_psc_get_ipcr(struct uart_port *port)
++{
++	return in_8(&PSC(port)->mpc52xx_psc_ipcr);
++}
++
++static void mpc52xx_psc_command(struct uart_port *port, u8 cmd)
++{
++	out_8(&PSC(port)->command, cmd);
++}
++
++static void mpc52xx_psc_set_mode(struct uart_port *port, u8 mr1, u8 mr2)
++{
++	out_8(&PSC(port)->command, MPC52xx_PSC_SEL_MODE_REG_1);
++	out_8(&PSC(port)->mode, mr1);
++	out_8(&PSC(port)->mode, mr2);
++}
++
++static void mpc52xx_psc_set_rts(struct uart_port *port, int state)
++{
++	if (state)
++		out_8(&PSC(port)->op1, MPC52xx_PSC_OP_RTS);
++	else
++		out_8(&PSC(port)->op0, MPC52xx_PSC_OP_RTS);
++}
++
++static void mpc52xx_psc_enable_ms(struct uart_port *port)
++{
++	struct mpc52xx_psc __iomem *psc = PSC(port);
++
++	/* clear D_*-bits by reading them */
++	in_8(&psc->mpc52xx_psc_ipcr);
++	/* enable CTS and DCD as IPC interrupts */
++	out_8(&psc->mpc52xx_psc_acr, MPC52xx_PSC_IEC_CTS | MPC52xx_PSC_IEC_DCD);
++
++	port->read_status_mask |= MPC52xx_PSC_IMR_IPC;
++	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
++}
++
++static void mpc52xx_psc_set_sicr(struct uart_port *port, u32 val)
++{
++	out_be32(&PSC(port)->sicr, val);
++}
++
++static void mpc52xx_psc_set_imr(struct uart_port *port, u16 val)
++{
++	out_be16(&PSC(port)->mpc52xx_psc_imr, val);
++}
++
++static u8 mpc52xx_psc_get_mr1(struct uart_port *port)
++{
++	out_8(&PSC(port)->command, MPC52xx_PSC_SEL_MODE_REG_1);
++	return in_8(&PSC(port)->mode);
++}
++
+ #ifdef CONFIG_PPC_MPC52xx
+ #define FIFO_52xx(port) ((struct mpc52xx_psc_fifo __iomem *)(PSC(port)+1))
+ static void mpc52xx_psc_fifo_init(struct uart_port *port)
+@@ -302,6 +379,15 @@ static struct psc_ops mpc52xx_psc_ops = {
+ 	.set_baudrate = mpc5200_psc_set_baudrate,
+ 	.get_irq = mpc52xx_psc_get_irq,
+ 	.handle_irq = mpc52xx_psc_handle_irq,
++	.get_status = mpc52xx_psc_get_status,
++	.get_ipcr = mpc52xx_psc_get_ipcr,
++	.command = mpc52xx_psc_command,
++	.set_mode = mpc52xx_psc_set_mode,
++	.set_rts = mpc52xx_psc_set_rts,
++	.enable_ms = mpc52xx_psc_enable_ms,
++	.set_sicr = mpc52xx_psc_set_sicr,
++	.set_imr = mpc52xx_psc_set_imr,
++	.get_mr1 = mpc52xx_psc_get_mr1,
+ };
+
+ static struct psc_ops mpc5200b_psc_ops = {
+@@ -323,6 +409,15 @@ static struct psc_ops mpc5200b_psc_ops = {
+ 	.set_baudrate = mpc5200b_psc_set_baudrate,
+ 	.get_irq = mpc52xx_psc_get_irq,
+ 	.handle_irq = mpc52xx_psc_handle_irq,
++	.get_status = mpc52xx_psc_get_status,
++	.get_ipcr = mpc52xx_psc_get_ipcr,
++	.command = mpc52xx_psc_command,
++	.set_mode = mpc52xx_psc_set_mode,
++	.set_rts = mpc52xx_psc_set_rts,
++	.enable_ms = mpc52xx_psc_enable_ms,
++	.set_sicr = mpc52xx_psc_set_sicr,
++	.set_imr = mpc52xx_psc_set_imr,
++	.get_mr1 = mpc52xx_psc_get_mr1,
+ };
+
+ #endif /* CONFIG_MPC52xx */
+@@ -593,9 +688,253 @@ static struct psc_ops mpc512x_psc_ops = {
+ 	.fifoc_uninit = mpc512x_psc_fifoc_uninit,
+ 	.get_irq = mpc512x_psc_get_irq,
+ 	.handle_irq = mpc512x_psc_handle_irq,
++	.get_status = mpc52xx_psc_get_status,
++	.get_ipcr = mpc52xx_psc_get_ipcr,
++	.command = mpc52xx_psc_command,
++	.set_mode = mpc52xx_psc_set_mode,
++	.set_rts = mpc52xx_psc_set_rts,
++	.enable_ms = mpc52xx_psc_enable_ms,
++	.set_sicr = mpc52xx_psc_set_sicr,
++	.set_imr = mpc52xx_psc_set_imr,
++	.get_mr1 = mpc52xx_psc_get_mr1,
+ };
+ #endif
+
++#if defined(CONFIG_PPC_MPC5125) && defined(CONFIG_PPC_MPC512x)
++#define PSC_5125(port) ((struct mpc5125_psc __iomem *)((port)->membase))
++#define FIFO_5125(port) ((struct mpc512x_psc_fifo __iomem *)(PSC_5125(port)+1))
++
++static void mpc5125_psc_fifo_init(struct uart_port *port)
++{
++	/* /32 prescaler */
++	out_8(&PSC_5125(port)->mpc52xx_psc_clock_select, 0xdd);
++
++	out_be32(&FIFO_5125(port)->txcmd, MPC512x_PSC_FIFO_RESET_SLICE);
++	out_be32(&FIFO_5125(port)->txcmd, MPC512x_PSC_FIFO_ENABLE_SLICE);
++	out_be32(&FIFO_5125(port)->txalarm, 1);
++	out_be32(&FIFO_5125(port)->tximr, 0);
++
++	out_be32(&FIFO_5125(port)->rxcmd, MPC512x_PSC_FIFO_RESET_SLICE);
++	out_be32(&FIFO_5125(port)->rxcmd, MPC512x_PSC_FIFO_ENABLE_SLICE);
++	out_be32(&FIFO_5125(port)->rxalarm, 1);
++	out_be32(&FIFO_5125(port)->rximr, 0);
++
++	out_be32(&FIFO_5125(port)->tximr, MPC512x_PSC_FIFO_ALARM);
++	out_be32(&FIFO_5125(port)->rximr, MPC512x_PSC_FIFO_ALARM);
++}
++
++static int mpc5125_psc_raw_rx_rdy(struct uart_port *port)
++{
++	return !(in_be32(&FIFO_5125(port)->rxsr) & MPC512x_PSC_FIFO_EMPTY);
++}
++
++static int mpc5125_psc_raw_tx_rdy(struct uart_port *port)
++{
++	return !(in_be32(&FIFO_5125(port)->txsr) & MPC512x_PSC_FIFO_FULL);
++}
++
++static int mpc5125_psc_rx_rdy(struct uart_port *port)
++{
++	return in_be32(&FIFO_5125(port)->rxsr)
++	    & in_be32(&FIFO_5125(port)->rximr)
++	    & MPC512x_PSC_FIFO_ALARM;
++}
++
++static int mpc5125_psc_tx_rdy(struct uart_port *port)
++{
++	return in_be32(&FIFO_5125(port)->txsr)
++	    & in_be32(&FIFO_5125(port)->tximr)
++	    & MPC512x_PSC_FIFO_ALARM;
++}
++
++static int mpc5125_psc_tx_empty(struct uart_port *port)
++{
++	return in_be32(&FIFO_5125(port)->txsr)
++	    & MPC512x_PSC_FIFO_EMPTY;
++}
++
++static void mpc5125_psc_stop_rx(struct uart_port *port)
++{
++	unsigned long rx_fifo_imr;
++
++	rx_fifo_imr = in_be32(&FIFO_5125(port)->rximr);
++	rx_fifo_imr &= ~MPC512x_PSC_FIFO_ALARM;
++	out_be32(&FIFO_5125(port)->rximr, rx_fifo_imr);
++}
++
++static void mpc5125_psc_start_tx(struct uart_port *port)
++{
++	unsigned long tx_fifo_imr;
++
++	tx_fifo_imr = in_be32(&FIFO_5125(port)->tximr);
++	tx_fifo_imr |= MPC512x_PSC_FIFO_ALARM;
++	out_be32(&FIFO_5125(port)->tximr, tx_fifo_imr);
++}
++
++static void mpc5125_psc_stop_tx(struct uart_port *port)
++{
++	unsigned long tx_fifo_imr;
++
++	tx_fifo_imr = in_be32(&FIFO_5125(port)->tximr);
++	tx_fifo_imr &= ~MPC512x_PSC_FIFO_ALARM;
++	out_be32(&FIFO_5125(port)->tximr, tx_fifo_imr);
++}
++
++static void mpc5125_psc_rx_clr_irq(struct uart_port *port)
++{
++	out_be32(&FIFO_5125(port)->rxisr, in_be32(&FIFO_5125(port)->rxisr));
++}
++
++static void mpc5125_psc_tx_clr_irq(struct uart_port *port)
++{
++	out_be32(&FIFO_5125(port)->txisr, in_be32(&FIFO_5125(port)->txisr));
++}
++
++static void mpc5125_psc_write_char(struct uart_port *port, unsigned char c)
++{
++	out_8(&FIFO_5125(port)->txdata_8, c);
++}
++
++static unsigned char mpc5125_psc_read_char(struct uart_port *port)
++{
++	return in_8(&FIFO_5125(port)->rxdata_8);
++}
++
++static void mpc5125_psc_cw_disable_ints(struct uart_port *port)
++{
++	port->read_status_mask =
++		in_be32(&FIFO_5125(port)->tximr) << 16 |
++		in_be32(&FIFO_5125(port)->rximr);
++	out_be32(&FIFO_5125(port)->tximr, 0);
++	out_be32(&FIFO_5125(port)->rximr, 0);
++}
++
++static void mpc5125_psc_cw_restore_ints(struct uart_port *port)
++{
++	out_be32(&FIFO_5125(port)->tximr,
++		(port->read_status_mask >> 16) & 0x7f);
++	out_be32(&FIFO_5125(port)->rximr, port->read_status_mask & 0x7f);
++}
++
++static unsigned int mpc5125_psc_set_baudrate(struct uart_port *port,
++					     struct ktermios *new,
++					     struct ktermios *old)
++{
++	unsigned int baud;
++	unsigned int divisor;
 +
 +	/*
-+	 * io pad config
++	 * Calculate with a /16 prescaler here.
 +	 */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5125-ioctl");
-+	if (np) {
-+		void __iomem *ioctl = of_iomap(np, 0);
 +
-+		mpc5125_twr_fec2_usb_iopad_init(ioctl, 0);
++	/* uartclk contains the ips freq */
++	baud = uart_get_baud_rate(port, new, old,
++				  port->uartclk / (16 * 0xffff) + 1,
++				  port->uartclk / 16);
++	divisor = (port->uartclk + 8 * baud) / (16 * baud);
 +
-+		of_node_put(np);
-+		iounmap(ioctl);
-+	}
++	/* enable the /16 prescaler and set the divisor */
++	mpc5125_set_divisor(PSC_5125(port), 0xdd, divisor);
++	return baud;
 +}
 +
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{},
-+};
-+
-+static void __init mpc5125_twr_declare_of_platform_devices(void)
-+{
-+	struct device_node *np;
-+
-+	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while probing of_platform bus\n");
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5125-nfc");
-+	if (np) {
-+		of_platform_device_create(np, NULL, NULL);
-+		of_node_put(np);
-+	}
-+}
-+
-+static void __init mpc5125_twr_init(void)
-+{
-+	mpc5125_twr_declare_of_platform_devices();
-+	mpc5121_clk_init();
-+	mpc512x_restart_init();
-+	mpc512x_psc_fifo_init();
-+}
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
++/* MPC5125 have compatible PSC FIFO Controller.
++ * Special init not needed.
 + */
-+static int __init mpc5125_twr_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
 +
-+	return of_flat_dt_is_compatible(root, "fsl,mpc5125ads");
++static u16 mpc5125_psc_get_status(struct uart_port *port)
++{
++	return in_be16(&PSC_5125(port)->mpc52xx_psc_status);
 +}
 +
-+define_machine(mpc5125_twr) {
-+	.name			= "TWR-MPC5125",
-+	.probe			= mpc5125_twr_probe,
-+	.setup_arch		= mpc5125_twr_setup_arch,
-+	.init			= mpc5125_twr_init,
-+	.init_IRQ		= mpc512x_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.restart		= mpc512x_restart,
++static u8 mpc5125_psc_get_ipcr(struct uart_port *port)
++{
++	return in_8(&PSC_5125(port)->mpc52xx_psc_ipcr);
++}
++
++static void mpc5125_psc_command(struct uart_port *port, u8 cmd)
++{
++	out_8(&PSC_5125(port)->command, cmd);
++}
++
++static void mpc5125_psc_set_mode(struct uart_port *port, u8 mr1, u8 mr2)
++{
++	out_8(&PSC_5125(port)->mr1, mr1);
++	out_8(&PSC_5125(port)->mr2, mr2);
++}
++
++static void mpc5125_psc_set_rts(struct uart_port *port, int state)
++{
++	if (state & TIOCM_RTS)
++		out_8(&PSC_5125(port)->op1, MPC52xx_PSC_OP_RTS);
++	else
++		out_8(&PSC_5125(port)->op0, MPC52xx_PSC_OP_RTS);
++}
++
++static void
++mpc5125_psc_enable_ms(struct uart_port *port)
++{
++	struct mpc5125_psc __iomem *psc = PSC_5125(port);
++
++	/* clear D_*-bits by reading them */
++	in_8(&psc->mpc52xx_psc_ipcr);
++	/* enable CTS and DCD as IPC interrupts */
++	out_8(&psc->mpc52xx_psc_acr, MPC52xx_PSC_IEC_CTS | MPC52xx_PSC_IEC_DCD);
++
++	port->read_status_mask |= MPC52xx_PSC_IMR_IPC;
++	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
++}
++
++static void mpc5125_psc_set_sicr(struct uart_port *port, u32 val)
++{
++	out_be32(&PSC_5125(port)->sicr, val);
++}
++
++static void mpc5125_psc_set_imr(struct uart_port *port, u16 val)
++{
++	out_be16(&PSC_5125(port)->mpc52xx_psc_imr, val);
++}
++
++static u8 mpc5125_psc_get_mr1(struct uart_port *port)
++{
++	return in_8(&PSC_5125(port)->mr1);
++}
++
++static struct psc_ops mpc5125_psc_ops = {
++	.fifo_init = mpc5125_psc_fifo_init,
++	.raw_rx_rdy = mpc5125_psc_raw_rx_rdy,
++	.raw_tx_rdy = mpc5125_psc_raw_tx_rdy,
++	.rx_rdy = mpc5125_psc_rx_rdy,
++	.tx_rdy = mpc5125_psc_tx_rdy,
++	.tx_empty = mpc5125_psc_tx_empty,
++	.stop_rx = mpc5125_psc_stop_rx,
++	.start_tx = mpc5125_psc_start_tx,
++	.stop_tx = mpc5125_psc_stop_tx,
++	.rx_clr_irq = mpc5125_psc_rx_clr_irq,
++	.tx_clr_irq = mpc5125_psc_tx_clr_irq,
++	.write_char = mpc5125_psc_write_char,
++	.read_char = mpc5125_psc_read_char,
++	.cw_disable_ints = mpc5125_psc_cw_disable_ints,
++	.cw_restore_ints = mpc5125_psc_cw_restore_ints,
++	.set_baudrate = mpc5125_psc_set_baudrate,
++	.clock = mpc512x_psc_clock,
++	.fifoc_init = mpc512x_psc_fifoc_init,
++	.fifoc_uninit = mpc512x_psc_fifoc_uninit,
++	.get_irq = mpc512x_psc_get_irq,
++	.handle_irq = mpc512x_psc_handle_irq,
++	.get_status = mpc5125_psc_get_status,
++	.get_ipcr = mpc5125_psc_get_ipcr,
++	.command = mpc5125_psc_command,
++	.set_mode = mpc5125_psc_set_mode,
++	.set_rts = mpc5125_psc_set_rts,
++	.enable_ms = mpc5125_psc_enable_ms,
++	.set_sicr = mpc5125_psc_set_sicr,
++	.set_imr = mpc5125_psc_set_imr,
++	.get_mr1 = mpc5125_psc_get_mr1,
 +};
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h
-b/arch/powerpc/platforms/512x/mpc512x.h
-index 1ab6d11..91c903f 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -13,8 +13,11 @@
- #define __MPC512X_H__
- extern void __init mpc512x_init_IRQ(void);
- extern void __init mpc512x_init(void);
-+extern void __init mpc512x_restart_init(void);
- extern int __init mpc5121_clk_init(void);
--void __init mpc512x_declare_of_platform_devices(void);
-+extern void __init mpc512x_declare_of_platform_devices(void);
-+extern void __init mpc512x_psc_fifo_init(void);
-+extern char *mpc512x_select_psc_compat(void);
- extern void mpc512x_restart(char *cmd);
- extern void mpc512x_init_diu(void);
- extern void mpc512x_setup_diu(void);
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c
-b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index e41ebbd..e79d8ae 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -32,7 +32,7 @@
++#endif /* CONFIG_PPC_MPC5125 */
++
++
+ static struct psc_ops *psc_ops;
 
- static struct mpc512x_reset_module __iomem *reset_module_base;
-
--static void __init mpc512x_restart_init(void)
-+void __init mpc512x_restart_init(void)
+ /* ======================================================================== */
+@@ -611,17 +950,14 @@ mpc52xx_uart_tx_empty(struct uart_port *port)
+ static void
+ mpc52xx_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
  {
- 	struct device_node *np;
+-	if (mctrl & TIOCM_RTS)
+-		out_8(&PSC(port)->op1, MPC52xx_PSC_OP_RTS);
+-	else
+-		out_8(&PSC(port)->op0, MPC52xx_PSC_OP_RTS);
++	psc_ops->set_rts(port, mctrl & TIOCM_RTS);
+ }
 
-@@ -382,6 +382,21 @@ void __init mpc512x_declare_of_platform_devices(void)
-
- #define DEFAULT_FIFO_SIZE 16
-
-+char *mpc512x_select_psc_compat(void)
-+{
-+	char *psc_compats[] = {
-+		"fsl,mpc5121-psc",
-+		"fsl,mpc5125-psc"
-+	};
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(psc_compats); i++)
-+		if (of_find_compatible_node(NULL, NULL, psc_compats[i]))
-+			return psc_compats[i];
-+
-+	return NULL;
-+}
-+
- static unsigned int __init get_fifo_size(struct device_node *np,
- 					 char *prop_name)
+ static unsigned int
+ mpc52xx_uart_get_mctrl(struct uart_port *port)
  {
-@@ -407,9 +422,16 @@ void __init mpc512x_psc_fifo_init(void)
- 	void __iomem *psc;
- 	unsigned int tx_fifo_size;
- 	unsigned int rx_fifo_size;
-+	char *psc_compat;
- 	int fifobase = 0; /* current fifo address in 32 bit words */
+ 	unsigned int ret = TIOCM_DSR;
+-	u8 status = in_8(&PSC(port)->mpc52xx_psc_ipcr);
++	u8 status = psc_ops->get_ipcr(port);
 
--	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
-+	psc_compat = mpc512x_select_psc_compat();
-+	if (!psc_compat) {
-+		pr_err("%s: no compatible devices found\n", __func__);
-+		return;
-+	}
+ 	if (!(status & MPC52xx_PSC_CTS))
+ 		ret |= TIOCM_CTS;
+@@ -671,15 +1007,7 @@ mpc52xx_uart_stop_rx(struct uart_port *port)
+ static void
+ mpc52xx_uart_enable_ms(struct uart_port *port)
+ {
+-	struct mpc52xx_psc __iomem *psc = PSC(port);
+-
+-	/* clear D_*-bits by reading them */
+-	in_8(&psc->mpc52xx_psc_ipcr);
+-	/* enable CTS and DCD as IPC interrupts */
+-	out_8(&psc->mpc52xx_psc_acr, MPC52xx_PSC_IEC_CTS | MPC52xx_PSC_IEC_DCD);
+-
+-	port->read_status_mask |= MPC52xx_PSC_IMR_IPC;
+-	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->enable_ms(port);
+ }
+
+ static void
+@@ -689,9 +1017,9 @@ mpc52xx_uart_break_ctl(struct uart_port *port, int ctl)
+ 	spin_lock_irqsave(&port->lock, flags);
+
+ 	if (ctl == -1)
+-		out_8(&PSC(port)->command, MPC52xx_PSC_START_BRK);
++		psc_ops->command(port, MPC52xx_PSC_START_BRK);
+ 	else
+-		out_8(&PSC(port)->command, MPC52xx_PSC_STOP_BRK);
++		psc_ops->command(port, MPC52xx_PSC_STOP_BRK);
+
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ }
+@@ -699,7 +1027,6 @@ mpc52xx_uart_break_ctl(struct uart_port *port, int ctl)
+ static int
+ mpc52xx_uart_startup(struct uart_port *port)
+ {
+-	struct mpc52xx_psc __iomem *psc = PSC(port);
+ 	int ret;
+
+ 	if (psc_ops->clock) {
+@@ -715,15 +1042,15 @@ mpc52xx_uart_startup(struct uart_port *port)
+ 		return ret;
+
+ 	/* Reset/activate the port, clear and enable interrupts */
+-	out_8(&psc->command, MPC52xx_PSC_RST_RX);
+-	out_8(&psc->command, MPC52xx_PSC_RST_TX);
++	psc_ops->command(port, MPC52xx_PSC_RST_RX);
++	psc_ops->command(port, MPC52xx_PSC_RST_TX);
+
+-	out_be32(&psc->sicr, 0);	/* UART mode DCD ignored */
++	psc_ops->set_sicr(port, 0);	/* UART mode DCD ignored */
+
+ 	psc_ops->fifo_init(port);
+
+-	out_8(&psc->command, MPC52xx_PSC_TX_ENABLE);
+-	out_8(&psc->command, MPC52xx_PSC_RX_ENABLE);
++	psc_ops->command(port, MPC52xx_PSC_TX_ENABLE);
++	psc_ops->command(port, MPC52xx_PSC_RX_ENABLE);
+
+ 	return 0;
+ }
+@@ -731,15 +1058,13 @@ mpc52xx_uart_startup(struct uart_port *port)
+ static void
+ mpc52xx_uart_shutdown(struct uart_port *port)
+ {
+-	struct mpc52xx_psc __iomem *psc = PSC(port);
+-
+ 	/* Shut down the port.  Leave TX active if on a console port */
+-	out_8(&psc->command, MPC52xx_PSC_RST_RX);
++	psc_ops->command(port, MPC52xx_PSC_RST_RX);
+ 	if (!uart_console(port))
+-		out_8(&psc->command, MPC52xx_PSC_RST_TX);
++		psc_ops->command(port, MPC52xx_PSC_RST_TX);
+
+ 	port->read_status_mask = 0;
+-	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->set_imr(port, port->read_status_mask);
+
+ 	if (psc_ops->clock)
+ 		psc_ops->clock(port, 0);
+@@ -752,7 +1077,6 @@ static void
+ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
+ 			 struct ktermios *old)
+ {
+-	struct mpc52xx_psc __iomem *psc = PSC(port);
+ 	unsigned long flags;
+ 	unsigned char mr1, mr2;
+ 	unsigned int j;
+@@ -812,13 +1136,11 @@ mpc52xx_uart_set_termios(struct uart_port
+*port, struct ktermios *new,
+ 			"Some chars may have been lost.\n");
+
+ 	/* Reset the TX & RX */
+-	out_8(&psc->command, MPC52xx_PSC_RST_RX);
+-	out_8(&psc->command, MPC52xx_PSC_RST_TX);
++	psc_ops->command(port, MPC52xx_PSC_RST_RX);
++	psc_ops->command(port, MPC52xx_PSC_RST_TX);
+
+ 	/* Send new mode settings */
+-	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
+-	out_8(&psc->mode, mr1);
+-	out_8(&psc->mode, mr2);
++	psc_ops->set_mode(port, mr1, mr2);
+ 	baud = psc_ops->set_baudrate(port, new, old);
+
+ 	/* Update the per-port timeout */
+@@ -828,8 +1150,8 @@ mpc52xx_uart_set_termios(struct uart_port *port,
+struct ktermios *new,
+ 		mpc52xx_uart_enable_ms(port);
+
+ 	/* Reenable TX & RX */
+-	out_8(&psc->command, MPC52xx_PSC_TX_ENABLE);
+-	out_8(&psc->command, MPC52xx_PSC_RX_ENABLE);
++	psc_ops->command(port, MPC52xx_PSC_TX_ENABLE);
++	psc_ops->command(port, MPC52xx_PSC_RX_ENABLE);
+
+ 	/* We're all set, release the lock */
+ 	spin_unlock_irqrestore(&port->lock, flags);
+@@ -957,7 +1279,7 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 		flag = TTY_NORMAL;
+ 		port->icount.rx++;
+
+-		status = in_be16(&PSC(port)->mpc52xx_psc_status);
++		status = psc_ops->get_status(port);
+
+ 		if (status & (MPC52xx_PSC_SR_PE |
+ 			      MPC52xx_PSC_SR_FE |
+@@ -977,7 +1299,7 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 			}
+
+ 			/* Clear error condition */
+-			out_8(&PSC(port)->command, MPC52xx_PSC_RST_ERR_STAT);
++			psc_ops->command(port, MPC52xx_PSC_RST_ERR_STAT);
+
+ 		}
+ 		tty_insert_flip_char(tty, ch, flag);
+@@ -1060,7 +1382,7 @@ mpc5xxx_uart_process_int(struct uart_port *port)
+ 		if (psc_ops->tx_rdy(port))
+ 			keepgoing |= mpc52xx_uart_int_tx_chars(port);
+
+-		status = in_8(&PSC(port)->mpc52xx_psc_ipcr);
++		status = psc_ops->get_ipcr(port);
+ 		if (status & MPC52xx_PSC_D_DCD)
+ 			uart_handle_dcd_change(port, !(status & MPC52xx_PSC_DCD));
+
+@@ -1101,14 +1423,12 @@ static void __init
+ mpc52xx_console_get_options(struct uart_port *port,
+ 			    int *baud, int *parity, int *bits, int *flow)
+ {
+-	struct mpc52xx_psc __iomem *psc = PSC(port);
+ 	unsigned char mr1;
+
+ 	pr_debug("mpc52xx_console_get_options(port=%p)\n", port);
+
+ 	/* Read the mode registers */
+-	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
+-	mr1 = in_8(&psc->mode);
++	mr1 = psc_ops->get_mr1(port);
+
+ 	/* CT{U,L}R are write-only ! */
+ 	*baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
+@@ -1299,6 +1619,10 @@ static struct of_device_id mpc52xx_uart_of_match[] = {
+ #ifdef CONFIG_PPC_MPC512x
+ 	{ .compatible = "fsl,mpc5121-psc-uart", .data = &mpc512x_psc_ops, },
+ #endif
++#ifdef CONFIG_PPC_MPC5125
++	{ .compatible = "fsl,mpc5125-psc-uart", .data = &mpc5125_psc_ops, },
++#endif
 +
-+	for_each_compatible_node(np, NULL, psc_compat) {
- 		tx_fifo_size = get_fifo_size(np, "fsl,tx-fifo-size");
- 		rx_fifo_size = get_fifo_size(np, "fsl,rx-fifo-size");
+ 	{},
+ };
 
 -- 
 1.7.1
