@@ -1,31 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F304B6F75
+Return-Path: <jeremy@goop.org>
+Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 633ECB6F73
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Mar 2011 07:58:33 +1100 (EST)
-Received: by iym7 with SMTP id 7so8433656iym.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Mar 2011 13:58:30 -0700 (PDT)
+	Wed, 23 Mar 2011 12:23:39 +1100 (EST)
+Message-ID: <4D88A560.8080405@goop.org>
+Date: Tue, 22 Mar 2011 13:34:24 +0000
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1300782452-528-1-git-send-email-hs@denx.de>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
-	<1300782452-528-1-git-send-email-hs@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 22 Mar 2011 14:58:09 -0600
-Message-ID: <AANLkTi=Da06s2WeA0+9fshBV2ME-ADHPBWxZ5iL6rM_T@mail.gmail.com>
-Subject: Re: [PATCH v6 0/6] powerpc, 52xx: add charon board support
-To: Heiko Schocher <hs@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
-	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
-	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
-	Randy Dunlap <rdunlap@xenotime.net>,
-	Paul Mundt <lethal@linux-sh.org>, linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: mmotm threatens ppc preemption again
+References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>	
+	<1300665188.2402.64.camel@pasglop> <4D873571.702@goop.org>
+	<1300747942.2402.262.camel@pasglop>
+In-Reply-To: <1300747942.2402.262.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 22, 2011 at 2:27 AM, Heiko Schocher <hs@denx.de> wrote:
-> cc: Wolfram Sang <w.sang@pengutronix.de>
-> cc: Grant Likely <grant.likely@secretlab.ca>
-> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> cc: linux-fbdev@vger.kernel.org
-> cc: devicetree-discuss@ozlabs.org
-> cc: Ben Dooks <ben@simtec.co.uk>
-> cc: Vincent Sanders <vince@simtec.co.uk>
-> cc: Samuel Ortiz <sameo@linux.intel.com>
-> cc: linux-kernel@vger.kernel.org
-> cc: Randy Dunlap <rdunlap@xenotime.net>
-> cc: Wolfgang Denk <wd@denx.de>
-> cc: Paul Mundt <lethal@linux-sh.org>
+On 03/21/2011 10:52 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-03-21 at 11:24 +0000, Jeremy Fitzhardinge wrote:
+>> I'm very sorry about that, I didn't realize power was also using that
+>> interface.  Unfortunately, the "no preemption" definition was an error,
+>> and had to be changed to match the pre-existing locking rules.
+>>
+>> Could you implement a similar "flush batched pte updates on context
+>> switch" as x86? 
+> Well, we already do that for -rt & co.
 >
-> changes since v5:
-> - repost complete patchseries, as Paul Mundt suggested
-> - rebased against current head
-> - add Acked-by from Samuel Ortiz (MFD parts)
-> =A0http://www.spinics.net/lists/linux-fbdev/msg02550.html
-> =A0http://linux.derkeiler.com/Mailing-Lists/Kernel/2011-01/msg11798.html
+> However, we have another issue which is the reason we used those
+> lazy_mmu hooks to do our flushing.
 >
-> =A0and Benjamin Herrenschmidt (DTS parts)
-> =A0http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-February/088279.ht=
-ml
-> - removed patch
-> =A0"powerpc, mpc5200: update mpc5200_defconfig to fit for charon board."
-> =A0therefore added
-> =A0"powerpc, tqm5200: update tqm5200_defconfig to fit for charon board."
+> Our PTEs eventually get faulted into a hash table which is what the real
+> MMU uses. We must never (ever) allow that hash table to contain a
+> duplicate entry for a given virtual address.
+>
+> When we do a batch, we remove things from the linux PTE, and keep a
+> reference in our batch structure, and only update the hash table at the
+> end of the batch.
 
-Why?  As Wolfram mentioned, I'd rather see mpc5200 defconfig used.
-Eventually I'd like to remove tqm5200_defconfig
+Wouldn't implicitly ending a batch on context switch get the same effect?
 
-I'll look through the rest of the patches soon.
+> That means that we must not allow a hash fault to populate the hash with
+> a "new" PTE value prior to the old one having been flushed out (which is
+> possible if they different in protection attributes for example). For
+> that to happen, we must basically not allow a page fault to re-populate
+> a PTE invalidated by a batch before that batch has completed.
 
-g.
+Kernel ptes are not generally populated on fault though, unless there's
+something in power?  On x86 it can happen when syncing a process's
+kernel pmd with the init_mm one, but that shouldn't happen in the middle
+of an update since you'd deadlock anyway.  If a particular kernel
+subsystem has its own locks to manage the ptes for a kernel mapping,
+then that should prevent any nested updates within a batch shouldn't it?
+
+> That translates to batches must only happen within a PTE lock section.
+
+Well, in that case, I guess your best bet is to disable batching for
+kernel pagetable updates.  These apply_to_page_range() changes are the
+first time any attempt to batch kernel pagetable updates has been made
+(otherwise you would have seen this problem earlier), so not batching
+them will not be a regression for you.
+
+But I'm not sure what the proper fix to get batching in your case will
+be.  But the assumption that there's a pte lock for kernel ptes is not
+valid.
+
+    J
