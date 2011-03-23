@@ -1,17 +1,21 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Date: Wed, 23 Mar 2011 21:24:09 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] crypto: caam - de-CHIP-ify device tree compatibles
-Message-ID: <20110323132409.GD4374@gondor.apana.org.au>
-References: <20110315165220.d4fb60bc.kim.phillips@freescale.com>
-	<20110316005951.GA18791@angua.secretlab.ca>
+Return-Path: <bdebug@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C3315B6F72
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Mar 2011 07:44:56 +1100 (EST)
+Received: by iym7 with SMTP id 7so9663672iym.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 23 Mar 2011 13:44:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110316005951.GA18791@angua.secretlab.ca>
-Cc: Steve Cornelius <sec@pobox.com>, devicetree-discuss@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 23 Mar 2011 16:44:52 -0400
+Message-ID: <AANLkTik+5L0P2uWff3D9XuBGnfjOSrJi=r6jOBAeXaN4@mail.gmail.com>
+Subject: mpc8250 kernel booting
+From: suresh chandra <bdebug@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary=002215048dc7c71c38049f2c6e2a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +25,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2011 at 06:59:51PM -0600, Grant Likely wrote:
-> On Tue, Mar 15, 2011 at 04:52:20PM -0500, Kim Phillips wrote:
-> > - all the integration parameters have been captured by the binding.
-> > - the block name really uniquely identifies this hardware.
-> > 
-> > Some advocate putting SoC names everywhere in case software needs
-> > to work around some chip-specific bug, but more precise SoC
-> > information already exists in SVR, and board information already
-> > exists in the top-level device tree node.
-> > 
-> > Note that sometimes the SoC name is a worse identifier than the
-> > block version, as the block version can change between revisions
-> > of the same SoC.
-> > 
-> > As a matter of historical reference, neither SEC versions 2.x
-> > nor 3.x (driven by talitos) ever needed CHIP references.
-> > 
-> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> 
-> <sigh>  Very well.  As long as some level of versioning is used on the
-> compatible values, I guess I can live with it.
-> 
-> Acked-off-by: Grant Likely <grant.likely@secretlab.ca>
+--002215048dc7c71c38049f2c6e2a
+Content-Type: multipart/alternative; boundary=002215048dc7c71c30049f2c6e28
 
-Patch applied.  Thanks!
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--002215048dc7c71c30049f2c6e28
+Content-Type: text/plain; charset=ISO-8859-1
+
+Hi All,
+I am having a strange serial console issue while booting Linux 2.6.38 and
+Linux 2.6.34.8
+
+We are using customized board based on MPC8250 , Console on  SCC 1 and root
+file system on ramdisk.
+We are using U-boot for loading Linux.
+Soon after u-boot handles control over to kernel, nothing comes on serial
+port until I hit <ENTER> key
+Then once again kernel pauses at "NET:Registered protocol family 17" and
+proceeds after hitting  <ENTER> key.
+One more time Kernel pauses at "Freeing unused kernel memory: 156k init"
+until I hit <ENTER> key.
+I attached serial capture for your reference.
+
+I want my board to boot with out user intervention. Please help me in
+finding a solution.
+
+Thanks,
+Suresh
+
+--002215048dc7c71c30049f2c6e28
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi All,<br>I am having a strange serial console issue while booting Linux 2=
+.6.38 and Linux 2.6.34.8<br><br>We are using customized board based on MPC8=
+250 , Console on=A0 SCC 1 and root file system on ramdisk.<br>We are using =
+U-boot for loading Linux.<br>
+Soon after u-boot handles control over to kernel, nothing comes on serial p=
+ort until I hit &lt;ENTER&gt; key <br>Then once again kernel pauses at &quo=
+t;NET:Registered protocol family 17&quot; and proceeds after hitting=A0 &lt=
+;ENTER&gt; key.<br>
+One more time Kernel pauses at &quot;Freeing unused kernel memory: 156k ini=
+t&quot; until I hit &lt;ENTER&gt; key.<br>I attached serial capture for you=
+r reference.<br><br>I want my board to boot with out user intervention. Ple=
+ase help me in finding a solution.<br>
+<br>Thanks,<br>Suresh<br><br><br>
+
+--002215048dc7c71c30049f2c6e28--
+
+--002215048dc7c71c38049f2c6e2a
+Content-Type: text/plain; name="capture1.txt"
+Content-Disposition: attachment; filename="capture1.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gln9sux30
+
+VS1Cb290IDIwMDguMTAgKE1hciAyMiAyMDExIC0gMDM6Mjk6NTApCgpNUEM4MjUwIFJlc2V0IFN0
+YXR1czogRXh0ZXJuYWwgU29mdCwgRXh0ZXJuYWwgSGFyZAoKTVBDODI1MCBDbG9jayBDb25maWd1
+cmF0aW9uCiAtIEJ1cy10by1Db3JlIE11bHQgNHgsIFZDTyBEaXYgMiwgNjB4IEJ1cyBGcmVxICAy
+NS03NSAsIENvcmUgRnJlcSAxMDAtMzAwCiAtIGRmYnJnIDAsIGNvcmVjbmYgMHgxYSwgYnVzZGYg
+MywgY3BtZGYgMSwgcGxsZGYgMCwgcGxsbWYgMSwgcGNpZGYgMwogLSB2Y29fb3V0ICAyNjY2NjY2
+NjQsIHNjY19jbGsgICA2NjY2NjY2NiwgYnJnX2NsayAgIDY2NjY2NjY2CiAtIGNwdV9jbGsgIDI2
+NjY2NjY2NCwgY3BtX2NsayAgMTMzMzMzMzMyLCBidXNfY2xrICAgNjY2NjY2NjYKCkNQVTogICBN
+UEM4MjUwIChIaVA0IFJldiAxNCwgTWFzayBDLjAgNUsyNUEpIGF0IDI2Ni42NjcgTUh6CkJvYXJk
+OiBDb3JuZXQgSVBHQVRFCkRSQU06ICAoNjB4OjEwQ09MKSAxMjggTUIKRkxBU0g6IDI1NiBNQgpJ
+bjogICAgc2VyaWFsCk91dDogICBzZXJpYWwKRXJyOiAgIHNlcmlhbApOZXQ6ICAgRkNDMSBFVEhF
+Uk5FVCwgRkNDMiBFVEhFUk5FVApQcmVzcyBhbnkga2V5IHRvIGludGVycnVwdCBhdXRvYm9vdDog
+IDIgCAgIIDEgCAgIIDAgCklQR0FURT0+IGJvb3QKVXNpbmcgRkNDMSBFVEhFUk5FVCBkZXZpY2UK
+VEZUUCBmcm9tIHNlcnZlciAxOTIuMTY4LjIzNS42MDsgb3VyIElQIGFkZHJlc3MgaXMgMTkyLjE2
+OC4yMzUuMjIKRmlsZW5hbWUgJ3VJbWFnZScuCkxvYWQgYWRkcmVzczogMHgxMDAwMDAwCkxvYWRp
+bmc6ICoIIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMKCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjCmRvbmUKQnl0ZXMgdHJhbnNmZXJyZWQgPSAxNTgxMzgwICgxODIxNDQgaGV4KQpVc2luZyBG
+Q0MxIEVUSEVSTkVUIGRldmljZQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMjM1LjYwOyBvdXIg
+SVAgYWRkcmVzcyBpcyAxOTIuMTY4LjIzNS4yMgpGaWxlbmFtZSAndGVzdCcuCkxvYWQgYWRkcmVz
+czogMHgyMDAwMDAwCkxvYWRpbmc6ICoIIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJICMjIyMjIyMjIyMj
+IyMjIyMjCmRvbmUKQnl0ZXMgdHJhbnNmZXJyZWQgPSAyMTQ4NDk1ICgyMGM4OGYgaGV4KQpVc2lu
+ZyBGQ0MxIEVUSEVSTkVUIGRldmljZQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMjM1LjYwOyBv
+dXIgSVAgYWRkcmVzcyBpcyAxOTIuMTY4LjIzNS4yMgpGaWxlbmFtZSAnZHRiJy4KTG9hZCBhZGRy
+ZXNzOiAweDMwMDAwMDAKTG9hZGluZzogKggjIwpkb25lCkJ5dGVzIHRyYW5zZmVycmVkID0gMjAw
+MDAgKDRlMjAgaGV4KQojIyBCb290aW5nIGtlcm5lbCBmcm9tIExlZ2FjeSBJbWFnZSBhdCAwMTAw
+MDAwMCAuLi4KICAgSW1hZ2UgTmFtZTogICBMaW51eC0yLjYuMzQuOAogICBJbWFnZSBUeXBlOiAg
+IFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQpCiAgIERhdGEgU2l6
+ZTogICAgMTU4MTMxNiBCeXRlcyA9ICAxLjUgTUIKICAgTG9hZCBBZGRyZXNzOiAwMDAwMDAwMAog
+ICBFbnRyeSBQb2ludDogIDAwMDAwMDAwCiAgIFZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sKIyMg
+TG9hZGluZyBpbml0IFJhbWRpc2sgZnJvbSBMZWdhY3kgSW1hZ2UgYXQgMDIwMDAwMDAgLi4uCiAg
+IEltYWdlIE5hbWU6ICAgUkFNRElTSyBJbWFnZQogICBJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGlu
+dXggUkFNRGlzayBJbWFnZSAoZ3ppcCBjb21wcmVzc2VkKQogICBEYXRhIFNpemU6ICAgIDIxNDg0
+MzEgQnl0ZXMgPSAgMiBNQgogICBMb2FkIEFkZHJlc3M6IDA1MDAwMDAwCiAgIEVudHJ5IFBvaW50
+OiAgMDUwMDAwMDAKICAgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSwojIyBGbGF0dGVuZWQgRGV2
+aWNlIFRyZWUgYmxvYiBhdCAwMzAwMDAwMAogICBCb290aW5nIHVzaW5nIHRoZSBmZHQgYmxvYiBh
+dCAweDMwMDAwMDAKICAgVW5jb21wcmVzc2luZyBLZXJuZWwgSW1hZ2UgLi4uIE9LCiAgIExvYWRp
+bmcgUmFtZGlzayB0byAwN2Q5NTAwMCwgZW5kIDA3ZmExODRmIC4uLiBPSwogICBMb2FkaW5nIERl
+dmljZSBUcmVlIHRvIDAwN2Y4MDAwLCBlbmQgMDA3ZmZlMWYgLi4uIE9LCgo8SGF2ZSB0byBwcmVz
+cyA8RU5URVI+IFNlcmlhbCBjb25zb2xlPgoKY29uc29sZSBbdHR5Q1BNMF0gZW5hYmxlZCwgYm9v
+dGNvbnNvbGUgZGlzYWJsZWQKDU1vdW50LWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNTEyCg1O
+RVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2Cg1iaW86IGNyZWF0ZSBzbGFiIDxiaW8t
+MD4gYXQgMAoNU3dpdGNoaW5nIHRvIGNsb2Nrc291cmNlIHRpbWViYXNlCg1ORVQ6IFJlZ2lzdGVy
+ZWQgcHJvdG9jb2wgZmFtaWx5IDIKDUlQIHJvdXRlIGNhY2hlIGhhc2ggdGFibGUgZW50cmllczog
+MTAyNCAob3JkZXI6IDAsIDQwOTYgYnl0ZXMpCg1UQ1AgZXN0YWJsaXNoZWQgaGFzaCB0YWJsZSBl
+bnRyaWVzOiA0MDk2IChvcmRlcjogMywgMzI3NjggYnl0ZXMpCg1UQ1AgYmluZCBoYXNoIHRhYmxl
+IGVudHJpZXM6IDQwOTYgKG9yZGVyOiAyLCAxNjM4NCBieXRlcykKDVRDUDogSGFzaCB0YWJsZXMg
+Y29uZmlndXJlZCAoZXN0YWJsaXNoZWQgNDA5NiBiaW5kIDQwOTYpCg1UQ1AgcmVubyByZWdpc3Rl
+cmVkCg1VRFAgaGFzaCB0YWJsZSBlbnRyaWVzOiAyNTYgKG9yZGVyOiAwLCA0MDk2IGJ5dGVzKQoN
+VURQLUxpdGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAyNTYgKG9yZGVyOiAwLCA0MDk2IGJ5dGVzKQoN
+TkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxCg1SUEM6IFJlZ2lzdGVyZWQgdWRwIHRy
+YW5zcG9ydCBtb2R1bGUuCg1SUEM6IFJlZ2lzdGVyZWQgdGNwIHRyYW5zcG9ydCBtb2R1bGUuCg1S
+UEM6IFJlZ2lzdGVyZWQgdGNwIE5GU3Y0LjEgYmFja2NoYW5uZWwgdHJhbnNwb3J0IG1vZHVsZS4K
+DVRyeWluZyB0byB1bnBhY2sgcm9vdGZzIGltYWdlIGFzIGluaXRyYW1mcy4uLgoNcm9vdGZzIGlt
+YWdlIGlzIG5vdCBpbml0cmFtZnMgKG5vIGNwaW8gbWFnaWMpOyBsb29rcyBsaWtlIGFuIGluaXRy
+ZAoNRnJlZWluZyBpbml0cmQgbWVtb3J5OiAyMDk4ayBmcmVlZAoNSW5zdGFsbGluZyBrbmZzZCAo
+Y29weXJpZ2h0IChDKSAxOTk2IG9raXJAbW9uYWQuc3diLmRlKS4KDW1zZ21uaSBoYXMgYmVlbiBz
+ZXQgdG8gMjQ3Cg1hbGc6IE5vIHRlc3QgZm9yIHN0ZHJuZyAoa3JuZykKDUJsb2NrIGxheWVyIFND
+U0kgZ2VuZXJpYyAoYnNnKSBkcml2ZXIgdmVyc2lvbiAwLjQgbG9hZGVkIChtYWpvciAyNTQpCg1p
+byBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkCg1pbyBzY2hlZHVsZXIgZGVhZGxpbmUgcmVnaXN0
+ZXJlZAoNaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkIChkZWZhdWx0KQoNZjAxMWEwMC5zZXJp
+YWw6IHR0eUNQTTAgYXQgTU1JTyAweGM5MDA4YTAwIChpcnEgPSA0MCkgaXMgYSBDUE0gVUFSVAoN
+ZjAxMWEyMC5zZXJpYWw6IHR0eUNQTTEgYXQgTU1JTyAweGM5MDBjYTIwIChpcnEgPSA0MSkgaXMg
+YSBDUE0gVUFSVAoNZjAxMWE0MC5zZXJpYWw6IHR0eUNQTTIgYXQgTU1JTyAweGM5MDE0YTQwIChp
+cnEgPSA0MikgaXMgYSBDUE0gVUFSVAoNZjAxMWE2MC5zZXJpYWw6IHR0eUNQTTMgYXQgTU1JTyAw
+eGM5MDFjYTYwIChpcnEgPSA0MykgaXMgYSBDUE0gVUFSVAoNZjAxMWE4MC5zZXJpYWw6IHR0eUNQ
+TTQgYXQgTU1JTyAweGM5MDI0YTgwIChpcnEgPSAxNikgaXMgYSBDUE0gVUFSVAoNZjAxMWE5MC5z
+ZXJpYWw6IHR0eUNQTTUgYXQgTU1JTyAweGM5MDJjYTkwIChpcnEgPSAxNykgaXMgYSBDUE0gVUFS
+VAoNYnJkOiBtb2R1bGUgbG9hZGVkCg1sb29wOiBtb2R1bGUgbG9hZGVkCg1uYmQ6IHJlZ2lzdGVy
+ZWQgZGV2aWNlIGF0IG1ham9yIDQzCg1QUFAgZ2VuZXJpYyBkcml2ZXIgdmVyc2lvbiAyLjQuMgoN
+UFBQIERlZmxhdGUgQ29tcHJlc3Npb24gbW9kdWxlIHJlZ2lzdGVyZWQKDXR1bjogVW5pdmVyc2Fs
+IFRVTi9UQVAgZGV2aWNlIGRyaXZlciwgMS42Cg10dW46IChDKSAxOTk5LTIwMDQgTWF4IEtyYXNu
+eWFuc2t5IDxtYXhrQHF1YWxjb21tLmNvbT4KDWV0aDA6IGZzX2VuZXQ6IDA4OjAwOjA4OjE1OmNh
+OmZlCg1ldGgxOiBmc19lbmV0OiAwODowMDowODoxNTpjYTpjZQoNQ1BNMiBCaXRiYW5nZWQgTUlJ
+OiBwcm9iZWQKDUNQTTIgQml0YmFuZ2VkIE1JSTogcHJvYmVkCg1taWNlOiBQUy8yIG1vdXNlIGRl
+dmljZSBjb21tb24gZm9yIGFsbCBtaWNlCg1UQ1AgY3ViaWMgcmVnaXN0ZXJlZAoNTkVUOiBSZWdp
+c3RlcmVkIHByb3RvY29sIGZhbWlseSAxMAoNSVB2NiBvdmVyIElQdjQgdHVubmVsaW5nIGRyaXZl
+cgoNTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxNwoKPEhhdmUgdG8gcHJlc3MgPEVO
+VEVSPiBTZXJpYWwgY29uc29sZT4KCgoNUkFNRElTSzogZ3ppcCBpbWFnZSBmb3VuZCBhdCBibG9j
+ayAwCgoKVkZTOiBNb3VudGVkIHJvb3QgKGV4dDIgZmlsZXN5c3RlbSkgb24gZGV2aWNlIDE6MC4K
+DUZyZWVpbmcgdW51c2VkIGtlcm5lbCBtZW1vcnk6IDE1NmsgaW5pdAoKPEhhdmUgdG8gcHJlc3Mg
+PEVOVEVSPiBTZXJpYWwgY29uc29sZT4KCkFERFJDT05GKE5FVERFVl9VUCk6IGV0aDA6IGxpbmsg
+aXMgbm90IHJlYWR5Cg1+ICMgCn4gIyAKfiAjIAp+ICMgQUREUkNPTkYoTkVUREVWX0NIQU5HRSk6
+IGV0aDA6IGxpbmsgYmVjb21lcyByZWFkeQoK
+--002215048dc7c71c38049f2c6e2a--
