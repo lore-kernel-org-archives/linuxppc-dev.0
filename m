@@ -1,21 +1,25 @@
-Return-Path: <bdebug@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C3315B6F72
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Mar 2011 07:44:56 +1100 (EST)
-Received: by iym7 with SMTP id 7so9663672iym.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Mar 2011 13:44:52 -0700 (PDT)
-MIME-Version: 1.0
-Date: Wed, 23 Mar 2011 16:44:52 -0400
-Message-ID: <AANLkTik+5L0P2uWff3D9XuBGnfjOSrJi=r6jOBAeXaN4@mail.gmail.com>
-Subject: mpc8250 kernel booting
-From: suresh chandra <bdebug@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/mixed; boundary=002215048dc7c71c38049f2c6e2a
+Return-Path: <john.stultz@linaro.org>
+Subject: Re: [PATCH V12 1/4] ptp: Added a brand new class driver for ptp
+	clocks.
+From: John Stultz <john.stultz@linaro.org>
+To: Richard Cochran <richardcochran@gmail.com>
+In-Reply-To: <bf964489f4c6ee51bd8a2ab818cd6a5e2f544627.1298878618.git.richard.cochran@omicron.at>
+References: <cover.1298878618.git.richard.cochran@omicron.at>
+	<bf964489f4c6ee51bd8a2ab818cd6a5e2f544627.1298878618.git.richard.cochran@omicron.at>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Mar 2011 14:19:20 -0700
+Message-ID: <1300915160.848.33.camel@work-vm>
+Mime-Version: 1.0
+Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
+	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+	Mike Frysinger <vapier@gentoo.org>,
+	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,142 +29,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---002215048dc7c71c38049f2c6e2a
-Content-Type: multipart/alternative; boundary=002215048dc7c71c30049f2c6e28
+On Mon, 2011-02-28 at 08:57 +0100, Richard Cochran wrote:
+> This patch adds an infrastructure for hardware clocks that implement
+> IEEE 1588, the Precision Time Protocol (PTP). A class driver offers a
+> registration method to particular hardware clock drivers. Each clock is
+> presented as a standard POSIX clock.
+> 
+> The ancillary clock features are exposed in two different ways, via
+> the sysfs and by a character device.
+> 
+> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
 
---002215048dc7c71c30049f2c6e28
-Content-Type: text/plain; charset=ISO-8859-1
+I think this looks mostly ok. I've got one concern on the locking and
+there are a few minor nits that might need extra commenting below. 
 
-Hi All,
-I am having a strange serial console issue while booting Linux 2.6.38 and
-Linux 2.6.34.8
+thanks
+-john
 
-We are using customized board based on MPC8250 , Console on  SCC 1 and root
-file system on ramdisk.
-We are using U-boot for loading Linux.
-Soon after u-boot handles control over to kernel, nothing comes on serial
-port until I hit <ENTER> key
-Then once again kernel pauses at "NET:Registered protocol family 17" and
-proceeds after hitting  <ENTER> key.
-One more time Kernel pauses at "Freeing unused kernel memory: 156k init"
-until I hit <ENTER> key.
-I attached serial capture for your reference.
+> --- /dev/null
+> +++ b/Documentation/ptp/testptp.c
+[snip]
+> +	if (0x7fffffff != adjfreq) {
+> +		memset(&tx, 0, sizeof(tx));
+> +		tx.modes = ADJ_FREQUENCY;
+> +		tx.freq = (long) (adjfreq * 65.536);
 
-I want my board to boot with out user intervention. Please help me in
-finding a solution.
+So, 65.536... I understand you're converting ppb to ppm << 16 (which is
+what adjtime takes), but I'm not sure if anyone else will. I'd either
+wrap that in a commented conversion function/macro or just do the
+conversion explicitly (freq = (adjfreq << 16)/1000;  although this has
+potential overflow risks with large ppb values) with a comment about
+what is going on.
 
-Thanks,
-Suresh
+> --- /dev/null
+> +++ b/drivers/ptp/ptp_clock.c
+> @@ -0,0 +1,320 @@
+[snip]
+> +static void enqueue_external_timestamp(struct timestamp_event_queue *queue,
+> +				       struct ptp_clock_event *src)
+> +{
+> +	struct ptp_extts_event *dst;
+> +	unsigned long flags;
+> +	u32 remainder;
+> +
+> +	dst = &queue->buf[queue->tail];
 
---002215048dc7c71c30049f2c6e28
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Doesn't the lock need to happen before you access the
+queue->buf[queue->tail] ? 
 
-Hi All,<br>I am having a strange serial console issue while booting Linux 2=
-.6.38 and Linux 2.6.34.8<br><br>We are using customized board based on MPC8=
-250 , Console on=A0 SCC 1 and root file system on ramdisk.<br>We are using =
-U-boot for loading Linux.<br>
-Soon after u-boot handles control over to kernel, nothing comes on serial p=
-ort until I hit &lt;ENTER&gt; key <br>Then once again kernel pauses at &quo=
-t;NET:Registered protocol family 17&quot; and proceeds after hitting=A0 &lt=
-;ENTER&gt; key.<br>
-One more time Kernel pauses at &quot;Freeing unused kernel memory: 156k ini=
-t&quot; until I hit &lt;ENTER&gt; key.<br>I attached serial capture for you=
-r reference.<br><br>I want my board to boot with out user intervention. Ple=
-ase help me in finding a solution.<br>
-<br>Thanks,<br>Suresh<br><br><br>
+For example: What happens if two cpus enter the function at the same
+time, both get the same tail index, one overwrite the other's data, then
+both take turns bumping up the tail pointer?
 
---002215048dc7c71c30049f2c6e28--
 
---002215048dc7c71c38049f2c6e2a
-Content-Type: text/plain; name="capture1.txt"
-Content-Disposition: attachment; filename="capture1.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_gln9sux30
+> +	dst->index = src->index;
+> +	dst->t.sec = div_u64_rem(src->timestamp, 1000000000, &remainder);
+> +	dst->t.nsec = remainder;
+> +
+> +	spin_lock_irqsave(&queue->lock, flags);
+> +
+> +	if (!queue_free(queue))
+> +		queue->head = (queue->head + 1) % PTP_MAX_TIMESTAMPS;
+> +
+> +	queue->tail = (queue->tail + 1) % PTP_MAX_TIMESTAMPS;
+> +
+> +	spin_unlock_irqrestore(&queue->lock, flags);
+> +}
+[snip]
+> +static int ptp_clock_adjtime(struct posix_clock *pc, struct timex *tx)
+> +{
+> +	struct ptp_clock *ptp = container_of(pc, struct ptp_clock, clock);
+> +	struct ptp_clock_info *ops;
+> +	int err = -EOPNOTSUPP;
+> +
+> +	ops = ptp->info;
+> +
+> +	if (tx->modes & ADJ_SETOFFSET) {
+> +		struct timespec ts;
+> +		ktime_t kt;
+> +		s64 delta;
+> +
+> +		ts.tv_sec  = tx->time.tv_sec;
+> +		ts.tv_nsec = tx->time.tv_usec;
+> +
+> +		if (!(tx->modes & ADJ_NANO))
+> +			ts.tv_nsec *= 1000;
+> +
+> +		if ((unsigned long) ts.tv_nsec >= NSEC_PER_SEC)
+> +			return -EINVAL;
+> +
+> +		kt = timespec_to_ktime(ts);
+> +		delta = ktime_to_ns(kt);
+> +		err = ops->adjtime(ops, delta);
+> +
+> +	} else if (tx->modes & ADJ_FREQUENCY) {
+> +		s64 ppb = 1 + tx->freq;
+> +		ppb *= 125;
+> +		ppb >>= 13;
 
-VS1Cb290IDIwMDguMTAgKE1hciAyMiAyMDExIC0gMDM6Mjk6NTApCgpNUEM4MjUwIFJlc2V0IFN0
-YXR1czogRXh0ZXJuYWwgU29mdCwgRXh0ZXJuYWwgSGFyZAoKTVBDODI1MCBDbG9jayBDb25maWd1
-cmF0aW9uCiAtIEJ1cy10by1Db3JlIE11bHQgNHgsIFZDTyBEaXYgMiwgNjB4IEJ1cyBGcmVxICAy
-NS03NSAsIENvcmUgRnJlcSAxMDAtMzAwCiAtIGRmYnJnIDAsIGNvcmVjbmYgMHgxYSwgYnVzZGYg
-MywgY3BtZGYgMSwgcGxsZGYgMCwgcGxsbWYgMSwgcGNpZGYgMwogLSB2Y29fb3V0ICAyNjY2NjY2
-NjQsIHNjY19jbGsgICA2NjY2NjY2NiwgYnJnX2NsayAgIDY2NjY2NjY2CiAtIGNwdV9jbGsgIDI2
-NjY2NjY2NCwgY3BtX2NsayAgMTMzMzMzMzMyLCBidXNfY2xrICAgNjY2NjY2NjYKCkNQVTogICBN
-UEM4MjUwIChIaVA0IFJldiAxNCwgTWFzayBDLjAgNUsyNUEpIGF0IDI2Ni42NjcgTUh6CkJvYXJk
-OiBDb3JuZXQgSVBHQVRFCkRSQU06ICAoNjB4OjEwQ09MKSAxMjggTUIKRkxBU0g6IDI1NiBNQgpJ
-bjogICAgc2VyaWFsCk91dDogICBzZXJpYWwKRXJyOiAgIHNlcmlhbApOZXQ6ICAgRkNDMSBFVEhF
-Uk5FVCwgRkNDMiBFVEhFUk5FVApQcmVzcyBhbnkga2V5IHRvIGludGVycnVwdCBhdXRvYm9vdDog
-IDIgCAgIIDEgCAgIIDAgCklQR0FURT0+IGJvb3QKVXNpbmcgRkNDMSBFVEhFUk5FVCBkZXZpY2UK
-VEZUUCBmcm9tIHNlcnZlciAxOTIuMTY4LjIzNS42MDsgb3VyIElQIGFkZHJlc3MgaXMgMTkyLjE2
-OC4yMzUuMjIKRmlsZW5hbWUgJ3VJbWFnZScuCkxvYWQgYWRkcmVzczogMHgxMDAwMDAwCkxvYWRp
-bmc6ICoIIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMKCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjCmRvbmUKQnl0ZXMgdHJhbnNmZXJyZWQgPSAxNTgxMzgwICgxODIxNDQgaGV4KQpVc2luZyBG
-Q0MxIEVUSEVSTkVUIGRldmljZQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMjM1LjYwOyBvdXIg
-SVAgYWRkcmVzcyBpcyAxOTIuMTY4LjIzNS4yMgpGaWxlbmFtZSAndGVzdCcuCkxvYWQgYWRkcmVz
-czogMHgyMDAwMDAwCkxvYWRpbmc6ICoIIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJICMjIyMjIyMjIyMj
-IyMjIyMjCmRvbmUKQnl0ZXMgdHJhbnNmZXJyZWQgPSAyMTQ4NDk1ICgyMGM4OGYgaGV4KQpVc2lu
-ZyBGQ0MxIEVUSEVSTkVUIGRldmljZQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMjM1LjYwOyBv
-dXIgSVAgYWRkcmVzcyBpcyAxOTIuMTY4LjIzNS4yMgpGaWxlbmFtZSAnZHRiJy4KTG9hZCBhZGRy
-ZXNzOiAweDMwMDAwMDAKTG9hZGluZzogKggjIwpkb25lCkJ5dGVzIHRyYW5zZmVycmVkID0gMjAw
-MDAgKDRlMjAgaGV4KQojIyBCb290aW5nIGtlcm5lbCBmcm9tIExlZ2FjeSBJbWFnZSBhdCAwMTAw
-MDAwMCAuLi4KICAgSW1hZ2UgTmFtZTogICBMaW51eC0yLjYuMzQuOAogICBJbWFnZSBUeXBlOiAg
-IFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQpCiAgIERhdGEgU2l6
-ZTogICAgMTU4MTMxNiBCeXRlcyA9ICAxLjUgTUIKICAgTG9hZCBBZGRyZXNzOiAwMDAwMDAwMAog
-ICBFbnRyeSBQb2ludDogIDAwMDAwMDAwCiAgIFZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sKIyMg
-TG9hZGluZyBpbml0IFJhbWRpc2sgZnJvbSBMZWdhY3kgSW1hZ2UgYXQgMDIwMDAwMDAgLi4uCiAg
-IEltYWdlIE5hbWU6ICAgUkFNRElTSyBJbWFnZQogICBJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGlu
-dXggUkFNRGlzayBJbWFnZSAoZ3ppcCBjb21wcmVzc2VkKQogICBEYXRhIFNpemU6ICAgIDIxNDg0
-MzEgQnl0ZXMgPSAgMiBNQgogICBMb2FkIEFkZHJlc3M6IDA1MDAwMDAwCiAgIEVudHJ5IFBvaW50
-OiAgMDUwMDAwMDAKICAgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSwojIyBGbGF0dGVuZWQgRGV2
-aWNlIFRyZWUgYmxvYiBhdCAwMzAwMDAwMAogICBCb290aW5nIHVzaW5nIHRoZSBmZHQgYmxvYiBh
-dCAweDMwMDAwMDAKICAgVW5jb21wcmVzc2luZyBLZXJuZWwgSW1hZ2UgLi4uIE9LCiAgIExvYWRp
-bmcgUmFtZGlzayB0byAwN2Q5NTAwMCwgZW5kIDA3ZmExODRmIC4uLiBPSwogICBMb2FkaW5nIERl
-dmljZSBUcmVlIHRvIDAwN2Y4MDAwLCBlbmQgMDA3ZmZlMWYgLi4uIE9LCgo8SGF2ZSB0byBwcmVz
-cyA8RU5URVI+IFNlcmlhbCBjb25zb2xlPgoKY29uc29sZSBbdHR5Q1BNMF0gZW5hYmxlZCwgYm9v
-dGNvbnNvbGUgZGlzYWJsZWQKDU1vdW50LWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNTEyCg1O
-RVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2Cg1iaW86IGNyZWF0ZSBzbGFiIDxiaW8t
-MD4gYXQgMAoNU3dpdGNoaW5nIHRvIGNsb2Nrc291cmNlIHRpbWViYXNlCg1ORVQ6IFJlZ2lzdGVy
-ZWQgcHJvdG9jb2wgZmFtaWx5IDIKDUlQIHJvdXRlIGNhY2hlIGhhc2ggdGFibGUgZW50cmllczog
-MTAyNCAob3JkZXI6IDAsIDQwOTYgYnl0ZXMpCg1UQ1AgZXN0YWJsaXNoZWQgaGFzaCB0YWJsZSBl
-bnRyaWVzOiA0MDk2IChvcmRlcjogMywgMzI3NjggYnl0ZXMpCg1UQ1AgYmluZCBoYXNoIHRhYmxl
-IGVudHJpZXM6IDQwOTYgKG9yZGVyOiAyLCAxNjM4NCBieXRlcykKDVRDUDogSGFzaCB0YWJsZXMg
-Y29uZmlndXJlZCAoZXN0YWJsaXNoZWQgNDA5NiBiaW5kIDQwOTYpCg1UQ1AgcmVubyByZWdpc3Rl
-cmVkCg1VRFAgaGFzaCB0YWJsZSBlbnRyaWVzOiAyNTYgKG9yZGVyOiAwLCA0MDk2IGJ5dGVzKQoN
-VURQLUxpdGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAyNTYgKG9yZGVyOiAwLCA0MDk2IGJ5dGVzKQoN
-TkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxCg1SUEM6IFJlZ2lzdGVyZWQgdWRwIHRy
-YW5zcG9ydCBtb2R1bGUuCg1SUEM6IFJlZ2lzdGVyZWQgdGNwIHRyYW5zcG9ydCBtb2R1bGUuCg1S
-UEM6IFJlZ2lzdGVyZWQgdGNwIE5GU3Y0LjEgYmFja2NoYW5uZWwgdHJhbnNwb3J0IG1vZHVsZS4K
-DVRyeWluZyB0byB1bnBhY2sgcm9vdGZzIGltYWdlIGFzIGluaXRyYW1mcy4uLgoNcm9vdGZzIGlt
-YWdlIGlzIG5vdCBpbml0cmFtZnMgKG5vIGNwaW8gbWFnaWMpOyBsb29rcyBsaWtlIGFuIGluaXRy
-ZAoNRnJlZWluZyBpbml0cmQgbWVtb3J5OiAyMDk4ayBmcmVlZAoNSW5zdGFsbGluZyBrbmZzZCAo
-Y29weXJpZ2h0IChDKSAxOTk2IG9raXJAbW9uYWQuc3diLmRlKS4KDW1zZ21uaSBoYXMgYmVlbiBz
-ZXQgdG8gMjQ3Cg1hbGc6IE5vIHRlc3QgZm9yIHN0ZHJuZyAoa3JuZykKDUJsb2NrIGxheWVyIFND
-U0kgZ2VuZXJpYyAoYnNnKSBkcml2ZXIgdmVyc2lvbiAwLjQgbG9hZGVkIChtYWpvciAyNTQpCg1p
-byBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkCg1pbyBzY2hlZHVsZXIgZGVhZGxpbmUgcmVnaXN0
-ZXJlZAoNaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkIChkZWZhdWx0KQoNZjAxMWEwMC5zZXJp
-YWw6IHR0eUNQTTAgYXQgTU1JTyAweGM5MDA4YTAwIChpcnEgPSA0MCkgaXMgYSBDUE0gVUFSVAoN
-ZjAxMWEyMC5zZXJpYWw6IHR0eUNQTTEgYXQgTU1JTyAweGM5MDBjYTIwIChpcnEgPSA0MSkgaXMg
-YSBDUE0gVUFSVAoNZjAxMWE0MC5zZXJpYWw6IHR0eUNQTTIgYXQgTU1JTyAweGM5MDE0YTQwIChp
-cnEgPSA0MikgaXMgYSBDUE0gVUFSVAoNZjAxMWE2MC5zZXJpYWw6IHR0eUNQTTMgYXQgTU1JTyAw
-eGM5MDFjYTYwIChpcnEgPSA0MykgaXMgYSBDUE0gVUFSVAoNZjAxMWE4MC5zZXJpYWw6IHR0eUNQ
-TTQgYXQgTU1JTyAweGM5MDI0YTgwIChpcnEgPSAxNikgaXMgYSBDUE0gVUFSVAoNZjAxMWE5MC5z
-ZXJpYWw6IHR0eUNQTTUgYXQgTU1JTyAweGM5MDJjYTkwIChpcnEgPSAxNykgaXMgYSBDUE0gVUFS
-VAoNYnJkOiBtb2R1bGUgbG9hZGVkCg1sb29wOiBtb2R1bGUgbG9hZGVkCg1uYmQ6IHJlZ2lzdGVy
-ZWQgZGV2aWNlIGF0IG1ham9yIDQzCg1QUFAgZ2VuZXJpYyBkcml2ZXIgdmVyc2lvbiAyLjQuMgoN
-UFBQIERlZmxhdGUgQ29tcHJlc3Npb24gbW9kdWxlIHJlZ2lzdGVyZWQKDXR1bjogVW5pdmVyc2Fs
-IFRVTi9UQVAgZGV2aWNlIGRyaXZlciwgMS42Cg10dW46IChDKSAxOTk5LTIwMDQgTWF4IEtyYXNu
-eWFuc2t5IDxtYXhrQHF1YWxjb21tLmNvbT4KDWV0aDA6IGZzX2VuZXQ6IDA4OjAwOjA4OjE1OmNh
-OmZlCg1ldGgxOiBmc19lbmV0OiAwODowMDowODoxNTpjYTpjZQoNQ1BNMiBCaXRiYW5nZWQgTUlJ
-OiBwcm9iZWQKDUNQTTIgQml0YmFuZ2VkIE1JSTogcHJvYmVkCg1taWNlOiBQUy8yIG1vdXNlIGRl
-dmljZSBjb21tb24gZm9yIGFsbCBtaWNlCg1UQ1AgY3ViaWMgcmVnaXN0ZXJlZAoNTkVUOiBSZWdp
-c3RlcmVkIHByb3RvY29sIGZhbWlseSAxMAoNSVB2NiBvdmVyIElQdjQgdHVubmVsaW5nIGRyaXZl
-cgoNTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxNwoKPEhhdmUgdG8gcHJlc3MgPEVO
-VEVSPiBTZXJpYWwgY29uc29sZT4KCgoNUkFNRElTSzogZ3ppcCBpbWFnZSBmb3VuZCBhdCBibG9j
-ayAwCgoKVkZTOiBNb3VudGVkIHJvb3QgKGV4dDIgZmlsZXN5c3RlbSkgb24gZGV2aWNlIDE6MC4K
-DUZyZWVpbmcgdW51c2VkIGtlcm5lbCBtZW1vcnk6IDE1NmsgaW5pdAoKPEhhdmUgdG8gcHJlc3Mg
-PEVOVEVSPiBTZXJpYWwgY29uc29sZT4KCkFERFJDT05GKE5FVERFVl9VUCk6IGV0aDA6IGxpbmsg
-aXMgbm90IHJlYWR5Cg1+ICMgCn4gIyAKfiAjIAp+ICMgQUREUkNPTkYoTkVUREVWX0NIQU5HRSk6
-IGV0aDA6IGxpbmsgYmVjb21lcyByZWFkeQoK
---002215048dc7c71c38049f2c6e2a--
+((1 + freq) *125)>>13 == magic :)
+Needs a clear comment.
+
+> +		err = ops->adjfreq(ops, (s32)ppb);
+> +	}
+> +
+> +	return err;
+> +}
+
+[snip]
+
+> diff --git a/drivers/ptp/ptp_private.h b/drivers/ptp/ptp_private.h
+> new file mode 100644
+> index 0000000..2f76266
+> --- /dev/null
+> +++ b/drivers/ptp/ptp_private.h
+> @@ -0,0 +1,86 @@
+> +/*
+> + * PTP 1588 clock support - private declarations for the core module.
+> + *
+> + * Copyright (C) 2010 OMICRON electronics GmbH
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; if not, write to the Free Software
+> + *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +#ifndef _PTP_PRIVATE_H_
+> +#define _PTP_PRIVATE_H_
+> +
+> +#include <linux/cdev.h>
+> +#include <linux/device.h>
+> +#include <linux/mutex.h>
+> +#include <linux/posix-clock.h>
+> +#include <linux/ptp_clock.h>
+> +#include <linux/ptp_clock_kernel.h>
+> +#include <linux/time.h>
+> +
+> +#define PTP_MAX_TIMESTAMPS 128
+> +#define PTP_BUF_TIMESTAMPS 30
+> +
+> +struct timestamp_event_queue {
+> +	struct ptp_extts_event buf[PTP_MAX_TIMESTAMPS];
+> +	int head;
+> +	int tail;
+> +	spinlock_t lock;
+> +};
+> +
+> +struct ptp_clock {
+> +	struct posix_clock clock;
+> +	struct device *dev;
+> +	struct ptp_clock_info *info;
+> +	dev_t devid;
+> +	int index; /* index into clocks.map */
+> +	struct pps_device *pps_source;
+> +	struct timestamp_event_queue tsevq; /* simple fifo for time stamps */
+> +	struct mutex tsevq_mux; /* one process at a time reading the fifo */
+> +	wait_queue_head_t tsev_wq;
+> +};
+> +
+> +static inline int queue_cnt(struct timestamp_event_queue *q)
+> +{
+> +	int cnt = q->tail - q->head;
+> +	return cnt < 0 ? PTP_MAX_TIMESTAMPS + cnt : cnt;
+> +}
+
+q->tail and head access probably need to happen only when locked. 
+
+So probably need a comment that queue_cnt must be called only when
+holding the proper lock.
+
+
+thanks
+-john
