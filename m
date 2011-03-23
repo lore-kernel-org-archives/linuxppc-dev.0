@@ -1,13 +1,14 @@
 Return-Path: <john.stultz@linaro.org>
-Subject: Re: [PATCH V12 3/4] ptp: Added a clock driver for the IXP46x.
+Subject: Re: [PATCH V12 4/4] ptp: Added a clock driver for the National
+	Semiconductor PHYTER.
 From: John Stultz <john.stultz@linaro.org>
 To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <cd6ddff0dcca60ac88b35660505d7bf54ad32405.1298878618.git.richard.cochran@omicron.at>
+In-Reply-To: <f8af215ebe32a8c0f4b3a82b8ee7e8008b4feb1e.1298878618.git.richard.cochran@omicron.at>
 References: <cover.1298878618.git.richard.cochran@omicron.at>
-	<cd6ddff0dcca60ac88b35660505d7bf54ad32405.1298878618.git.richard.cochran@omicron.at>
+	<f8af215ebe32a8c0f4b3a82b8ee7e8008b4feb1e.1298878618.git.richard.cochran@omicron.at>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Mar 2011 14:43:00 -0700
-Message-ID: <1300916580.848.51.camel@work-vm>
+Date: Wed, 23 Mar 2011 14:46:25 -0700
+Message-ID: <1300916785.848.54.camel@work-vm>
 Mime-Version: 1.0
 Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
 	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
@@ -29,29 +30,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2011-02-28 at 08:58 +0100, Richard Cochran wrote:
-> This patch adds a driver for the hardware time stamping unit found on the
-> IXP465. The basic clock operations and an external trigger are implemented.
-> 
-> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
-> Acked-by: John Stultz <johnstul@us.ibm.com>
+> This patch adds support for the PTP clock found on the DP83640.
+> The basic clock operations and one external time stamp have
+> been implemented.
 
-My ack is still fine, but found a few more nits to consider on another
-pass... 
+Just locking rule comment nits here.
 
+> +static int tdr_write(int bc, struct phy_device *dev,
+> +		     const struct timespec *ts, u16 cmd)
+> +{
+> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_nsec & 0xffff);/* ns[15:0]  */
+> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_nsec >> 16);   /* ns[31:16] */
+> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_sec & 0xffff); /* sec[15:0] */
+> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_sec >> 16);    /* sec[31:16]*/
+> +
+> +	ext_write(bc, dev, PAGE4, PTP_CTL, cmd);
+> +
+> +	return 0;
+> +}
 
-> +static int match(struct sk_buff *skb, u16 uid_hi, u32 uid_lo, u16 seq)
-[snip]
-> +static void do_rx_timestamp(struct port *port, struct sk_buff *skb)
-[snip]
-> +static u64 sys_time_read(struct ixp46x_ts_regs *regs)
-[snip]
-> +static void sys_time_write(struct ixp46x_ts_regs *regs, u64 ns)
+The above needs to hold the extreg_lock, and should be commented as
+such.
 
-I know these are static, but these function names are sort of generic
-names, and make grep/cscoping for similar sounding functions a little
-noisy. 
-
-Maybe add a ipx_ prefix just to be more obvious?
+And again, the function names are sort of generic, and could use a
+dp83640_ prefix or something.
 
 thanks
 -john
