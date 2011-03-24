@@ -1,23 +1,16 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B0EAAB6F8A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 02:05:36 +1100 (EST)
-Received: by bwz10 with SMTP id 10so129279bwz.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Mar 2011 08:05:30 -0700 (PDT)
-Date: Thu, 24 Mar 2011 16:05:17 +0100
-From: Richard Cochran <richardcochran@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: add clock_adjtime for powerpc
-Message-ID: <20110324150517.GA6710@riccoc20.at.omicron.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 2BDB01007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Mar 2011 02:14:41 +1100 (EST)
+From: Milton Miller <miltonm@bga.com>
+Message-id: <hvc-kick-notask@mdm.bga.com>
+Subject: Re: hvc_console: Don't access hvc_task if not initialised
+To: Amit Shah <amit.shah@redhat.com>
+References: <df8ea6d65c1ceeb25b0a3fdfc66995b8a8273ea5.1300951793.git.amit.shah@redhat.com>
+In-Reply-To: <df8ea6d65c1ceeb25b0a3fdfc66995b8a8273ea5.1300951793.git.amit.shah@redhat.com>
+Date: Thu, 24 Mar 2011 08:58:04 -0600
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, greg@kroah.com, Amit Shah <amit.shah@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the clock_adjtime system call to the powerpc architecture.
+[removed stable list from discussion]
 
-The call was introduced in f1f1d5ebd10ffa4242bce7a90a56a222d6b7bc77
+On Thu, 24 Mar 2011 07:29:58 -0000, Amit Shah wrote:
+> hvc_open() can be called without having any backing device.  This
+> results in a call to hvc_kick() which calls wake_up_process on a NULL
+> pointer.  
 
-Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
----
- arch/powerpc/include/asm/systbl.h |    1 +
- arch/powerpc/include/asm/unistd.h |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletions(-)
+How is hvc_open called without a hvc_driver registered to the tty layer?
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index aa0f1eb..6a1152c 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -348,3 +348,4 @@ COMPAT_SYS_SPU(sendmsg)
- COMPAT_SYS_SPU(recvmsg)
- COMPAT_SYS_SPU(recvmmsg)
- SYSCALL_SPU(accept4)
-+COMPAT_SYS_SPU(clock_adjtime)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 6151937..386de07 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -367,10 +367,11 @@
- #define __NR_recvmsg		342
- #define __NR_recvmmsg		343
- #define __NR_accept4		344
-+#define __NR_clock_adjtime	345
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		345
-+#define __NR_syscalls		346
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
--- 
-1.7.0.4
+> Ensure hvc is initialised by checking for a non-NULL hvc_task
+> before waking up the hvc thread.
+
+No if the task is missing the subsystem is really stuck.  Put a check
+in open and refuse to open.
+
+> 
+> This was found by an autotest run for virtio_console without having a
+> console backend.
+> 
+
+stack trace please
+
+> CC: stable@kernel.org
+> Signed-off-by: Amit Shah <amit.shah@redhat.com>
+> 
+> ---
+> drivers/tty/hvc/hvc_console.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+> index e9cba13..b2cb5cc 100644
+> --- a/drivers/tty/hvc/hvc_console.c
+> +++ b/drivers/tty/hvc/hvc_console.c
+> @@ -286,6 +286,9 @@ EXPORT_SYMBOL_GPL(hvc_instantiate);
+>  /* Wake the sleeping khvcd */
+>  void hvc_kick(void)
+>  {
+> +	if (!hvc_task)
+> +		return;
+> +
+>  	hvc_kicked = 1;
+>  	wake_up_process(hvc_task);
+>  }
