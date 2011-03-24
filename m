@@ -1,19 +1,12 @@
 Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B10B41007E3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 08:51:26 +1100 (EST)
-Date: Thu, 24 Mar 2011 16:51:19 -0500
+Date: Thu, 24 Mar 2011 16:43:15 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: ARCH_PFN_OFFSET should be unsigned long
-Message-ID: <20110324215119.GB9632@schlenkerla.am.freescale.net>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 1/4] powerpc: Add fsl mpic timer binding
+Message-ID: <20110324214315.GA9502@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +16,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pfns are unsigned long, but MEMORY_START is phys_addr_t.  This leads
-to page_to_pfn() returning phys_addr_t, and thus type mismatches in a few
-print statements.
+Update the existing example in the general mpic binding to have a
+separate TCRx region.  Currently the example doesn't describe TCRx at
+all.  The one upstream device tree with an mpic timer node (p1022ds)
+uses one large reg region to describe both, even though there are other
+unrelated registers in between.  That device tree also contains a bogus
+interrupt specifier, and there's no upstream software that uses this yet,
+so changing this shouldn't be a problem.
+
+Add a full binding for the MPIC timer node, not just an example of
+4-cell interrupts in the MPIC binding.
+
+Add fsl,available-ranges, similar to msi-available-ranges.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/include/asm/page.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ .../devicetree/bindings/powerpc/fsl/mpic-timer.txt |   38 ++++++++++++++++++++
+ .../devicetree/bindings/powerpc/fsl/mpic.txt       |    2 +-
+ 2 files changed, 39 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index da4b200..2cd664e 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -100,7 +100,7 @@ extern phys_addr_t kernstart_addr;
- #endif
- 
- #ifdef CONFIG_FLATMEM
--#define ARCH_PFN_OFFSET		(MEMORY_START >> PAGE_SHIFT)
-+#define ARCH_PFN_OFFSET		((unsigned long)(MEMORY_START >> PAGE_SHIFT))
- #define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
- #endif
- 
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
+new file mode 100644
+index 0000000..df41958
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
+@@ -0,0 +1,38 @@
++* Freescale MPIC timers
++
++Required properties:
++- compatible: "fsl,mpic-global-timer"
++
++- reg : Contains two regions.  The first is the main timer register bank
++  (GTCCRxx, GTBCRxx, GTVPRxx, GTDRxx).  The second is the timer control
++  register (TCRx) for the group.
++
++- fsl,available-ranges: use <start count> style section to define which
++  timer interrupts can be used.  This property is optional; without this,
++  all timers within the group can be used.
++
++- interrupts: one interrupt per timer in the group, in order, starting
++  with timer zero.  If timer-available-ranges is present, only the
++  interrupts that correspond to available timers shall be present.
++
++Example:
++	/* Note that this requires #interrupt-cells to be 4 */
++	timer0: timer@41100 {
++		compatible = "fsl,mpic-global-timer";
++		reg = <0x41100 0x100 0x41300 4>;
++
++		/* Another AMP partition is using timers 0 and 1 */
++		fsl,available-ranges = <2 2>;
++
++		interrupts = <2 0 3 0
++		              3 0 3 0>;
++	};
++
++	timer1: timer@42100 {
++		compatible = "fsl,mpic-global-timer";
++		reg = <0x42100 0x100 0x42300 4>;
++		interrupts = <4 0 3 0
++		              5 0 3 0
++		              6 0 3 0
++		              7 0 3 0>;
++	};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
+index 8aa10f4..6af4b64 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
+@@ -190,7 +190,7 @@ EXAMPLE 4
+ 	 */
+ 	timer0: timer@41100 {
+ 		compatible = "fsl,mpic-global-timer";
+-		reg = <0x41100 0x100>;
++		reg = <0x41100 0x100 0x41300 4>;
+ 		interrupts = <0 0 3 0
+ 		              1 0 3 0
+ 		              2 0 3 0
 -- 
 1.7.1
