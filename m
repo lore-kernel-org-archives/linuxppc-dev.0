@@ -1,21 +1,13 @@
-Return-Path: <r.goyet@gmail.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0978CB6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 07:23:43 +1100 (EST)
-Received: by qwb8 with SMTP id 8so232442qwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Mar 2011 13:23:39 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Date: Thu, 24 Mar 2011 16:43:54 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 3/4] powerpc/mpic: parse 4-cell intspec types other than zero
+Message-ID: <20110324214354.GB9524@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
-Date: Thu, 24 Mar 2011 21:23:39 +0100
-Message-ID: <AANLkTikbd0S6MGK4p7=_0q8c6nbk=k1TmLcM+Mc52=FW@mail.gmail.com>
-Subject: High load average (~2.0) on an idle PowerPC 64 machine
-From: Romain Goyet <r.goyet@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20110324214315.GA9502@schlenkerla.am.freescale.net>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +17,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I there,
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/include/asm/mpic.h |    2 ++
+ arch/powerpc/sysdev/mpic.c      |   37 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 38 insertions(+), 1 deletions(-)
 
- I've this Quad G5 machine that's sitting pretty much idle with the
-latest Debian stable installed, and yet it's got an abnormaly high
-load average.
-I've detailed the situation over here, maybe you guys will find it
-interesting or have something to say :
-http://serverfault.com/questions/251299/high-load-average-over-2-0-on-an-idle-machine
-
-The machine doesn't seem to be actually slowed down, it looks more
-like an incorrect measurement.
-
-Thank you very much for any help !
-
- - Romain
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index 7005ee0..25a0cb3 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -371,6 +371,8 @@ struct mpic
+  * NOTE: This flag trumps MPIC_WANTS_RESET.
+  */
+ #define MPIC_NO_RESET			0x00004000
++/* Freescale MPIC (compatible includes "fsl,mpic") */
++#define MPIC_FSL			0x00008000
+ 
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 0f7c671..69f96ec 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -6,6 +6,7 @@
+  *  with various broken implementations of this HW.
+  *
+  *  Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
++ *  Copyright 2010-2011 Freescale Semiconductor, Inc.
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License.  See the file COPYING in the main directory of this archive
+@@ -1030,6 +1031,7 @@ static int mpic_host_xlate(struct irq_host *h, struct device_node *ct,
+ 			   irq_hw_number_t *out_hwirq, unsigned int *out_flags)
+ 
+ {
++	struct mpic *mpic = h->host_data;
+ 	static unsigned char map_mpic_senses[4] = {
+ 		IRQ_TYPE_EDGE_RISING,
+ 		IRQ_TYPE_LEVEL_LOW,
+@@ -1038,7 +1040,38 @@ static int mpic_host_xlate(struct irq_host *h, struct device_node *ct,
+ 	};
+ 
+ 	*out_hwirq = intspec[0];
+-	if (intsize > 1) {
++	if (intsize >= 4 && (mpic->flags & MPIC_FSL)) {
++		/*
++		 * Freescale MPIC with extended intspec:
++		 * First two cells are as usual.  Third specifies
++		 * an "interrupt type".  Fourth is type-specific data.
++		 *
++		 * See Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
++		 */
++		switch (intspec[2]) {
++		case 0:
++		case 1: /* no EISR/EIMR support for now, treat as shared IRQ */
++			break;
++		case 2:
++			if (intspec[0] >= ARRAY_SIZE(mpic->ipi_vecs))
++				return -EINVAL;
++
++			*out_hwirq = mpic->ipi_vecs[intspec[0]];
++			break;
++		case 3:
++			if (intspec[0] >= ARRAY_SIZE(mpic->timer_vecs))
++				return -EINVAL;
++
++			*out_hwirq = mpic->timer_vecs[intspec[0]];
++			break;
++		default:
++			pr_debug("%s: unknown irq type %u\n",
++				 __func__, intspec[2]);
++			return -EINVAL;
++		}
++
++		*out_flags = map_mpic_senses[intspec[1] & 3];
++	} else if (intsize > 1) {
+ 		u32 mask = 0x3;
+ 
+ 		/* Apple invented a new race of encoding on machines with
+@@ -1137,6 +1170,8 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	/* Check for "big-endian" in device-tree */
+ 	if (node && of_get_property(node, "big-endian", NULL) != NULL)
+ 		mpic->flags |= MPIC_BIG_ENDIAN;
++	if (node && of_device_is_compatible(node, "fsl,mpic"))
++		mpic->flags |= MPIC_FSL;
+ 
+ 	/* Look for protected sources */
+ 	if (node) {
+-- 
+1.7.1
