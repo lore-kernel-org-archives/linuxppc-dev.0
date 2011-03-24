@@ -1,25 +1,24 @@
-Return-Path: <john.stultz@linaro.org>
-Subject: Re: [PATCH V12 4/4] ptp: Added a clock driver for the National
-	Semiconductor PHYTER.
-From: John Stultz <john.stultz@linaro.org>
-To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <f8af215ebe32a8c0f4b3a82b8ee7e8008b4feb1e.1298878618.git.richard.cochran@omicron.at>
-References: <cover.1298878618.git.richard.cochran@omicron.at>
-	<f8af215ebe32a8c0f4b3a82b8ee7e8008b4feb1e.1298878618.git.richard.cochran@omicron.at>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Mar 2011 14:46:25 -0700
-Message-ID: <1300916785.848.54.camel@work-vm>
-Mime-Version: 1.0
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
-	Mike Frysinger <vapier@gentoo.org>,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <B32579@freescale.com>
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2C50E1007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Mar 2011 14:21:07 +1100 (EST)
+Received: from mail115-va3 (localhost.localdomain [127.0.0.1])	by
+	mail115-va3-R.bigfish.com (Postfix) with ESMTP id 5A8D7FE0145	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2011 03:20:59 +0000 (UTC)
+Received: from VA3EHSMHS023.bigfish.com (unknown [10.7.14.239])	by
+	mail115-va3.bigfish.com (Postfix) with ESMTP id 1A61D7C004F	for
+	<linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2011 03:20:59 +0000 (UTC)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Query: PCIe range entry at pcie@0 in dts files
+Date: Thu, 24 Mar 2011 03:20:45 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F874154CD3@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-28 at 08:58 +0100, Richard Cochran wrote:
-> This patch adds support for the PTP clock found on the DP83640.
-> The basic clock operations and one external time stamp have
-> been implemented.
 
-Just locking rule comment nits here.
+Hi all,
 
-> +static int tdr_write(int bc, struct phy_device *dev,
-> +		     const struct timespec *ts, u16 cmd)
-> +{
-> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_nsec & 0xffff);/* ns[15:0]  */
-> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_nsec >> 16);   /* ns[31:16] */
-> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_sec & 0xffff); /* sec[15:0] */
-> +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_sec >> 16);    /* sec[31:16]*/
-> +
-> +	ext_write(bc, dev, PAGE4, PTP_CTL, cmd);
-> +
-> +	return 0;
-> +}
+ I have query about usage of range field at pcie@0 under PCIe controller. P=
+lease find snap shot from mpc8536_36.dts..
 
-The above needs to hold the extreg_lock, and should be commented as
-such.
+	pci3: pcie@fffe0b000 {
+		compatible =3D "fsl,mpc8548-pcie";
+		device_type =3D "pci";
+		#interrupt-cells =3D <1>;
+		#size-cells =3D <2>;
+		#address-cells =3D <3>;
+		reg =3D <0xf 0xffe0b000 0 0x1000>;
+		bus-range =3D <0 0xff>;
+		ranges =3D <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x20000000
+			  0x01000000 0 0x00000000 0xf 0xffc30000 0 0x00010000>;
+		clock-frequency =3D <33333333>;
+		interrupt-parent =3D <&mpic>;
+		interrupts =3D <27 0x2>;
+		interrupt-map-mask =3D <0xf800 0 0 7>;
+		interrupt-map =3D <
+			/* IDSEL 0x0 */
+			0000 0 0 1 &mpic 8 1
+			0000 0 0 2 &mpic 9 1
+			0000 0 0 3 &mpic 10 1
+			0000 0 0 4 &mpic 11 1
+			>;
 
-And again, the function names are sort of generic, and could use a
-dp83640_ prefix or something.
+		pcie@0 {
+			reg =3D <0 0 0 0 0>;
+			#size-cells =3D <2>;
+			#address-cells =3D <3>;
+			device_type =3D "pci";
+			ranges =3D <0x02000000 0 0xe0000000 --> child/port start address
+				  0x02000000 0 0xe0000000 --> Parent bus address
+				  0 0x20000000
 
-thanks
--john
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00100000>;
+		};
+	};
+
+Question:
+A) is ranges filed of pcie@0 really required?
+	 I just went through the code and found scan_OF_for_pci_dev() called from =
+pci_busdev_to_OF_node() touches pcie@0 node. But, It does not even uses ran=
+ge filed.=20
+
+	static struct device_node *scan_OF_for_pci_dev(struct device_node *parent,=
+unsigned int devfn) {
+		 ---
+       	---
+		for_each_child_of_node(parent, np) {
+			reg =3D of_get_property(np, "reg", &psize);=20
+     =20
+		  ---
+		  ---
+            	    if (!strcmp(np->name, "multifunc-device")) {=20
+	     =20
+	}
+
+   I also checked "Power_ePAPR_APPROVED_v1.0.pdf". It never say range filed=
+ required for child bus.
+
+B) if range field of pcie@0 required. why does child/port start address sam=
+e as Parent bus address?  Range property provides mapping of port address t=
+o parent address space.
+So the value should be 0x00000000. Means port's address starting from 0x000=
+00000 to size 0x20000000 is mapped parent's 0xe0000000.
+
+			ranges =3D <0x02000000 0 0x00000000  --> Child/port's start address
+				  0x02000000 0 0xe0000000    --> Parent bus address
+				  0 0x20000000
+
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00100000>;
+
+
+--Prabhakar
