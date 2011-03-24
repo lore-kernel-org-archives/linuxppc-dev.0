@@ -1,14 +1,25 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 72DC4B6F1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2011 18:30:17 +1100 (EST)
-From: Amit Shah <amit.shah@redhat.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] hvc_console: Don't access hvc_task if not initialised
-Date: Thu, 24 Mar 2011 12:59:58 +0530
-Message-Id: <df8ea6d65c1ceeb25b0a3fdfc66995b8a8273ea5.1300951793.git.amit.shah@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-	greg@kroah.com, Amit Shah <amit.shah@redhat.com>, stable@kernel.org
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2D5EDB6F7D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Mar 2011 01:34:25 +1100 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	p2OEYIIn007740
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2011 15:34:19 +0100
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: vmsplice bad address
+Date: Thu, 24 Mar 2011 15:34:18 +0100
+References: <201103031401.55649.dargaud@lpsc.in2p3.fr>
+	<1299490544.9759.3.camel@pasglop>
+In-Reply-To: <1299490544.9759.3.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201103241534.18570.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,33 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hvc_open() can be called without having any backing device.  This
-results in a call to hvc_kick() which calls wake_up_process on a NULL
-pointer.  Ensure hvc is initialised by checking for a non-NULL hvc_task
-before waking up the hvc thread.
+On Monday 07 March 2011 10:35:44 Benjamin Herrenschmidt wrote:
 
-This was found by an autotest run for virtio_console without having a
-console backend.
+> I'm not completely surprised ... I wouldn't expect vmsplice to work
+> on /dev/mem ... No struct page backing the memory for example.
 
-CC: stable@kernel.org
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
----
- drivers/tty/hvc/hvc_console.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index e9cba13..b2cb5cc 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -286,6 +286,9 @@ EXPORT_SYMBOL_GPL(hvc_instantiate);
- /* Wake the sleeping khvcd */
- void hvc_kick(void)
- {
-+	if (!hvc_task)
-+		return;
-+
- 	hvc_kicked = 1;
- 	wake_up_process(hvc_task);
- }
+So how would that work to do zero-copy ? 
+Somebody gave me a hint of marking the memory regions as iomem, do a ioremap then mmap and vmsplice but that's a 
+mouthful...
 -- 
-1.7.4
+Guillaume Dargaud
+http://www.gdargaud.net/
