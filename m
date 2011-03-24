@@ -1,25 +1,21 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <r.goyet@gmail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 81E63B6F8A
+	by ozlabs.org (Postfix) with ESMTPS id 0978CB6EE9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 02:17:34 +1100 (EST)
-Received: by bwz10 with SMTP id 10so140205bwz.38
+	Fri, 25 Mar 2011 07:23:43 +1100 (EST)
+Received: by qwb8 with SMTP id 8so232442qwb.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Mar 2011 08:17:30 -0700 (PDT)
-Date: Thu, 24 Mar 2011 16:17:19 +0100
-From: Richard Cochran <richardcochran@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: add clock_adjtime for powerpc
-Message-ID: <20110324151719.GA6738@riccoc20.at.omicron.at>
-References: <20110324150517.GA6710@riccoc20.at.omicron.at>
+	Thu, 24 Mar 2011 13:23:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110324150517.GA6710@riccoc20.at.omicron.at>
-Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Date: Thu, 24 Mar 2011 21:23:39 +0100
+Message-ID: <AANLkTikbd0S6MGK4p7=_0q8c6nbk=k1TmLcM+Mc52=FW@mail.gmail.com>
+Subject: High load average (~2.0) on an idle PowerPC 64 machine
+From: Romain Goyet <r.goyet@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 24, 2011 at 04:05:17PM +0100, Richard Cochran wrote:
-> This patch adds the clock_adjtime system call to the powerpc architecture.
+I there,
 
-Never mind this patch.
+ I've this Quad G5 machine that's sitting pretty much idle with the
+latest Debian stable installed, and yet it's got an abnormaly high
+load average.
+I've detailed the situation over here, maybe you guys will find it
+interesting or have something to say :
+http://serverfault.com/questions/251299/high-load-average-over-2-0-on-an-idle-machine
 
-Stephen Rothwell already posted a patch on linuxppc-dev adding this
-syscall eariler today.
+The machine doesn't seem to be actually slowed down, it looks more
+like an incorrect measurement.
 
-Thanks,
-Richard
+Thank you very much for any help !
+
+ - Romain
