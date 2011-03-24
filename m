@@ -1,24 +1,29 @@
-Return-Path: <B32579@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2C50E1007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Mar 2011 14:21:07 +1100 (EST)
-Received: from mail115-va3 (localhost.localdomain [127.0.0.1])	by
-	mail115-va3-R.bigfish.com (Postfix) with ESMTP id 5A8D7FE0145	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2011 03:20:59 +0000 (UTC)
-Received: from VA3EHSMHS023.bigfish.com (unknown [10.7.14.239])	by
-	mail115-va3.bigfish.com (Postfix) with ESMTP id 1A61D7C004F	for
-	<linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2011 03:20:59 +0000 (UTC)
-From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Query: PCIe range entry at pcie@0 in dts files
-Date: Thu, 24 Mar 2011 03:20:45 +0000
-Message-ID: <071A08F2C6A57E4E94D980ECA553F874154CD3@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 14BE2B6F83
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2011 15:33:47 +1100 (EST)
+Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
+	overridden
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <im6fj2$576$1@dough.gmane.org>
+References: <20100825002258.GD28360@kryten> <m139u37cii.fsf@fess.ebiederm.org>
+	<4D771EE6.5050404@linux.vnet.ibm.com>
+	<20110309122046.GC16951@cr0.redhat.com>
+	<20110309234657.264d3080@kryten>
+	<20110309142108.GD16951@cr0.redhat.com>
+	<20110314181315.GA16075@in.ibm.com>
+	<AANLkTi=aDzCaa7_=5XTrnJCzmZPrDy3omXwDarEF8XmH@mail.gmail.com>
+	<20110315165219.GA22509@in.ibm.com>  <im6fj2$576$1@dough.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 24 Mar 2011 15:33:30 +1100
+Message-ID: <1300941210.2402.414.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
+	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+	WANG Cong <xiyou.wangcong@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,84 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2011-03-21 at 03:10 +0000, WANG Cong wrote:
+> On Tue, 15 Mar 2011 22:22:19 +0530, Mahesh J Salgaonkar wrote:
 
-Hi all,
+> >> Okay, but with this patch applied, we will just ignore rtas region,
+> >> right?
+> > Correct.
+> >> Thus, when I echo 0 to free all the 128M crashkernel memory, the final
+> >> result will be 32M left, which means crash_size will still show 32M.
+> >> This looks odd.
+> >> 
+> >> How about skipping the 32M as a whole? I mean once the region being
+> >> freed has overlap with this rtas region, skip the whole rtas region,
+> >> and let crash_size
+> >> show 0?
+> > The existing code from crash_shrink_memory() function reduces the crash
+> > size to 0 when echo'ed 0. I did test this patchset and verified that
+> > /sys/kernel/kexec_crash_size show 0 value.
+> 
+> Oh, ok.
+> 
+> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
- I have query about usage of range field at pcie@0 under PCIe controller. P=
-lease find snap shot from mpc8536_36.dts..
+So Eric, what's the right approach to get that merged ? This is a bug
+gating an important delivery for us, and the patch doesn't appear
+terribly invasive ? :-)
 
-	pci3: pcie@fffe0b000 {
-		compatible =3D "fsl,mpc8548-pcie";
-		device_type =3D "pci";
-		#interrupt-cells =3D <1>;
-		#size-cells =3D <2>;
-		#address-cells =3D <3>;
-		reg =3D <0xf 0xffe0b000 0 0x1000>;
-		bus-range =3D <0 0xff>;
-		ranges =3D <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x20000000
-			  0x01000000 0 0x00000000 0xf 0xffc30000 0 0x00010000>;
-		clock-frequency =3D <33333333>;
-		interrupt-parent =3D <&mpic>;
-		interrupts =3D <27 0x2>;
-		interrupt-map-mask =3D <0xf800 0 0 7>;
-		interrupt-map =3D <
-			/* IDSEL 0x0 */
-			0000 0 0 1 &mpic 8 1
-			0000 0 0 2 &mpic 9 1
-			0000 0 0 3 &mpic 10 1
-			0000 0 0 4 &mpic 11 1
-			>;
+I can send it to Linus myself if you prefer and give me your Ack.
 
-		pcie@0 {
-			reg =3D <0 0 0 0 0>;
-			#size-cells =3D <2>;
-			#address-cells =3D <3>;
-			device_type =3D "pci";
-			ranges =3D <0x02000000 0 0xe0000000 --> child/port start address
-				  0x02000000 0 0xe0000000 --> Parent bus address
-				  0 0x20000000
-
-				  0x01000000 0 0x00000000
-				  0x01000000 0 0x00000000
-				  0 0x00100000>;
-		};
-	};
-
-Question:
-A) is ranges filed of pcie@0 really required?
-	 I just went through the code and found scan_OF_for_pci_dev() called from =
-pci_busdev_to_OF_node() touches pcie@0 node. But, It does not even uses ran=
-ge filed.=20
-
-	static struct device_node *scan_OF_for_pci_dev(struct device_node *parent,=
-unsigned int devfn) {
-		 ---
-       	---
-		for_each_child_of_node(parent, np) {
-			reg =3D of_get_property(np, "reg", &psize);=20
-     =20
-		  ---
-		  ---
-            	    if (!strcmp(np->name, "multifunc-device")) {=20
-	     =20
-	}
-
-   I also checked "Power_ePAPR_APPROVED_v1.0.pdf". It never say range filed=
- required for child bus.
-
-B) if range field of pcie@0 required. why does child/port start address sam=
-e as Parent bus address?  Range property provides mapping of port address t=
-o parent address space.
-So the value should be 0x00000000. Means port's address starting from 0x000=
-00000 to size 0x20000000 is mapped parent's 0xe0000000.
-
-			ranges =3D <0x02000000 0 0x00000000  --> Child/port's start address
-				  0x02000000 0 0xe0000000    --> Parent bus address
-				  0 0x20000000
-
-				  0x01000000 0 0x00000000
-				  0x01000000 0 0x00000000
-				  0 0x00100000>;
-
-
---Prabhakar
+Cheers,
+Ben.
