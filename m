@@ -1,9 +1,17 @@
 Return-Path: <B07421@freescale.com>
-Date: Thu, 24 Mar 2011 16:43:55 -0500
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4B7631008E0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Mar 2011 08:44:25 +1100 (EST)
+Date: Thu, 24 Mar 2011 16:43:52 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: <galak@kernel.crashing.org>
-Subject: [PATCH 4/4] powerpc/mpic: add the mpic global timer support
-Message-ID: <20110324214355.GC9524@schlenkerla.am.freescale.net>
+Subject: [PATCH 2/4] powerpc/p1022ds: fix broken mpic timer node
+Message-ID: <20110324214352.GA9524@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20110324214315.GA9502@schlenkerla.am.freescale.net>
@@ -17,210 +25,365 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for MPIC timers as requestable interrupt sources.
+There is no hardware interrupt 0xf7.  But now we can express the timer
+interrupt using 4-cell interrupts.  This requires converting all of the
+other interrupt specifiers in the tree as well.
 
-Based on http://patchwork.ozlabs.org/patch/20941/ by Dave Liu.
+Also add the second timer group, and fix the reg property to only
+describe the timer registers.
 
-Signed-off-by: Dave Liu <daveliu@freescale.com>
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/include/asm/mpic.h |    3 +-
- arch/powerpc/sysdev/mpic.c      |   92 ++++++++++++++++++++++++++++++++++++---
- 2 files changed, 88 insertions(+), 7 deletions(-)
+ arch/powerpc/boot/dts/p1022ds.dts |  106 ++++++++++++++++++++----------------
+ 1 files changed, 59 insertions(+), 47 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index 25a0cb3..664bee6 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -263,6 +263,7 @@ struct mpic
- #ifdef CONFIG_SMP
- 	struct irq_chip		hc_ipi;
- #endif
-+	struct irq_chip		hc_tm;
- 	const char		*name;
- 	/* Flags */
- 	unsigned int		flags;
-@@ -281,7 +282,7 @@ struct mpic
+diff --git a/arch/powerpc/boot/dts/p1022ds.dts b/arch/powerpc/boot/dts/p1022ds.dts
+index 59ef405..4f685a7 100644
+--- a/arch/powerpc/boot/dts/p1022ds.dts
++++ b/arch/powerpc/boot/dts/p1022ds.dts
+@@ -52,7 +52,7 @@
+ 		#size-cells = <1>;
+ 		compatible = "fsl,p1022-elbc", "fsl,elbc", "simple-bus";
+ 		reg = <0 0xffe05000 0 0x1000>;
+-		interrupts = <19 2>;
++		interrupts = <19 2 0 0>;
  
- 	/* vector numbers used for internal sources (ipi/timers) */
- 	unsigned int		ipi_vecs[4];
--	unsigned int		timer_vecs[4];
-+	unsigned int		timer_vecs[8];
+ 		ranges = <0x0 0x0 0xf 0xe8000000 0x08000000
+ 			  0x1 0x0 0xf 0xe0000000 0x08000000
+@@ -157,7 +157,7 @@
+ 			 * IRQ8 is generated if the "EVENT" switch is pressed
+ 			 * and PX_CTL[EVESEL] is set to 00.
+ 			 */
+-			interrupts = <8 8>;
++			interrupts = <8 8 0 0>;
+ 		};
+ 	};
  
- 	/* Spurious vector to program into unused sources */
- 	unsigned int		spurious_vec;
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 69f96ec..c173e67 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -219,6 +219,28 @@ static inline void _mpic_ipi_write(struct mpic *mpic, unsigned int ipi, u32 valu
- 	_mpic_write(mpic->reg_type, &mpic->gregs, offset, value);
- }
+@@ -178,13 +178,13 @@
+ 		ecm@1000 {
+ 			compatible = "fsl,p1022-ecm", "fsl,ecm";
+ 			reg = <0x1000 0x1000>;
+-			interrupts = <16 2>;
++			interrupts = <16 2 0 0>;
+ 		};
  
-+static inline u32 _mpic_tm_read(struct mpic *mpic, unsigned int tm)
-+{
-+	unsigned int offset = MPIC_INFO(TIMER_VECTOR_PRI) +
-+			      ((tm & 3) * MPIC_INFO(TIMER_STRIDE));
-+
-+	if (tm >= 4)
-+		offset += 0x1000 / 4;
-+
-+	return _mpic_read(mpic->reg_type, &mpic->tmregs, offset);
-+}
-+
-+static inline void _mpic_tm_write(struct mpic *mpic, unsigned int tm, u32 value)
-+{
-+	unsigned int offset = MPIC_INFO(TIMER_VECTOR_PRI) +
-+			      ((tm & 3) * MPIC_INFO(TIMER_STRIDE));
-+
-+	if (tm >= 4)
-+		offset += 0x1000 / 4;
-+
-+	_mpic_write(mpic->reg_type, &mpic->tmregs, offset, value);
-+}
-+
- static inline u32 _mpic_cpu_read(struct mpic *mpic, unsigned int reg)
- {
- 	unsigned int cpu = mpic_processor_id(mpic);
-@@ -269,6 +291,8 @@ static inline void _mpic_irq_write(struct mpic *mpic, unsigned int src_no,
- #define mpic_write(b,r,v)	_mpic_write(mpic->reg_type,&(b),(r),(v))
- #define mpic_ipi_read(i)	_mpic_ipi_read(mpic,(i))
- #define mpic_ipi_write(i,v)	_mpic_ipi_write(mpic,(i),(v))
-+#define mpic_tm_read(i)		_mpic_tm_read(mpic,(i))
-+#define mpic_tm_write(i,v)	_mpic_tm_write(mpic,(i),(v))
- #define mpic_cpu_read(i)	_mpic_cpu_read(mpic,(i))
- #define mpic_cpu_write(i,v)	_mpic_cpu_write(mpic,(i),(v))
- #define mpic_irq_read(s,r)	_mpic_irq_read(mpic,(s),(r))
-@@ -628,6 +652,13 @@ static unsigned int mpic_is_ipi(struct mpic *mpic, unsigned int irq)
- 	return (src >= mpic->ipi_vecs[0] && src <= mpic->ipi_vecs[3]);
- }
+ 		memory-controller@2000 {
+ 			compatible = "fsl,p1022-memory-controller";
+ 			reg = <0x2000 0x1000>;
+-			interrupts = <16 2>;
++			interrupts = <16 2 0 0>;
+ 		};
  
-+/* Determine if the linux irq is a timer */
-+static unsigned int mpic_is_tm(struct mpic *mpic, unsigned int irq)
-+{
-+	unsigned int src = mpic_irq_to_hw(irq);
+ 		i2c@3000 {
+@@ -193,7 +193,7 @@
+ 			cell-index = <0>;
+ 			compatible = "fsl-i2c";
+ 			reg = <0x3000 0x100>;
+-			interrupts = <43 2>;
++			interrupts = <43 2 0 0>;
+ 			dfsrr;
+ 		};
+ 
+@@ -203,7 +203,7 @@
+ 			cell-index = <1>;
+ 			compatible = "fsl-i2c";
+ 			reg = <0x3100 0x100>;
+-			interrupts = <43 2>;
++			interrupts = <43 2 0 0>;
+ 			dfsrr;
+ 
+ 			wm8776:codec@1a {
+@@ -220,7 +220,7 @@
+ 			compatible = "ns16550";
+ 			reg = <0x4500 0x100>;
+ 			clock-frequency = <0>;
+-			interrupts = <42 2>;
++			interrupts = <42 2 0 0>;
+ 		};
+ 
+ 		serial1: serial@4600 {
+@@ -229,7 +229,7 @@
+ 			compatible = "ns16550";
+ 			reg = <0x4600 0x100>;
+ 			clock-frequency = <0>;
+-			interrupts = <42 2>;
++			interrupts = <42 2 0 0>;
+ 		};
+ 
+ 		spi@7000 {
+@@ -238,7 +238,7 @@
+ 			#size-cells = <0>;
+ 			compatible = "fsl,espi";
+ 			reg = <0x7000 0x1000>;
+-			interrupts = <59 0x2>;
++			interrupts = <59 0x2 0 0>;
+ 			espi,num-ss-bits = <4>;
+ 			mode = "cpu";
+ 
+@@ -275,7 +275,7 @@
+ 			compatible = "fsl,mpc8610-ssi";
+ 			cell-index = <0>;
+ 			reg = <0x15000 0x100>;
+-			interrupts = <75 2>;
++			interrupts = <75 2 0 0>;
+ 			fsl,mode = "i2s-slave";
+ 			codec-handle = <&wm8776>;
+ 			fsl,playback-dma = <&dma00>;
+@@ -294,25 +294,25 @@
+ 				compatible = "fsl,ssi-dma-channel";
+ 				reg = <0x0 0x80>;
+ 				cell-index = <0>;
+-				interrupts = <76 2>;
++				interrupts = <76 2 0 0>;
+ 			};
+ 			dma01: dma-channel@80 {
+ 				compatible = "fsl,ssi-dma-channel";
+ 				reg = <0x80 0x80>;
+ 				cell-index = <1>;
+-				interrupts = <77 2>;
++				interrupts = <77 2 0 0>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,eloplus-dma-channel";
+ 				reg = <0x100 0x80>;
+ 				cell-index = <2>;
+-				interrupts = <78 2>;
++				interrupts = <78 2 0 0>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,eloplus-dma-channel";
+ 				reg = <0x180 0x80>;
+ 				cell-index = <3>;
+-				interrupts = <79 2>;
++				interrupts = <79 2 0 0>;
+ 			};
+ 		};
+ 
+@@ -320,7 +320,7 @@
+ 			#gpio-cells = <2>;
+ 			compatible = "fsl,mpc8572-gpio";
+ 			reg = <0xf000 0x100>;
+-			interrupts = <47 0x2>;
++			interrupts = <47 0x2 0 0>;
+ 			gpio-controller;
+ 		};
+ 
+@@ -329,7 +329,7 @@
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x40000>; // L2, 256K
+-			interrupts = <16 2>;
++			interrupts = <16 2 0 0>;
+ 		};
+ 
+ 		dma@21300 {
+@@ -343,25 +343,25 @@
+ 				compatible = "fsl,eloplus-dma-channel";
+ 				reg = <0x0 0x80>;
+ 				cell-index = <0>;
+-				interrupts = <20 2>;
++				interrupts = <20 2 0 0>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,eloplus-dma-channel";
+ 				reg = <0x80 0x80>;
+ 				cell-index = <1>;
+-				interrupts = <21 2>;
++				interrupts = <21 2 0 0>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,eloplus-dma-channel";
+ 				reg = <0x100 0x80>;
+ 				cell-index = <2>;
+-				interrupts = <22 2>;
++				interrupts = <22 2 0 0>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,eloplus-dma-channel";
+ 				reg = <0x180 0x80>;
+ 				cell-index = <3>;
+-				interrupts = <23 2>;
++				interrupts = <23 2 0 0>;
+ 			};
+ 		};
+ 
+@@ -370,7 +370,7 @@
+ 			#size-cells = <0>;
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <0x22000 0x1000>;
+-			interrupts = <28 0x2>;
++			interrupts = <28 0x2 0 0>;
+ 			phy_type = "ulpi";
+ 		};
+ 
+@@ -381,11 +381,11 @@
+ 			reg = <0x24000 0x1000 0xb0030 0x4>;
+ 
+ 			phy0: ethernet-phy@0 {
+-				interrupts = <3 1>;
++				interrupts = <3 1 0 0>;
+ 				reg = <0x1>;
+ 			};
+ 			phy1: ethernet-phy@1 {
+-				interrupts = <9 1>;
++				interrupts = <9 1 0 0>;
+ 				reg = <0x2>;
+ 			};
+ 		};
+@@ -416,13 +416,13 @@
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 				reg = <0xB0000 0x1000>;
+-				interrupts = <29 2 30 2 34 2>;
++				interrupts = <29 2 0 0 30 2 0 0 34 2 0 0>;
+ 			};
+ 			queue-group@1{
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 				reg = <0xB4000 0x1000>;
+-				interrupts = <17 2 18 2 24 2>;
++				interrupts = <17 2 0 0 18 2 0 0 24 2 0 0>;
+ 			};
+ 		};
+ 
+@@ -443,20 +443,20 @@
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 				reg = <0xB1000 0x1000>;
+-				interrupts = <35 2 36 2 40 2>;
++				interrupts = <35 2 0 0 36 2 0 0 40 2 0 0>;
+ 			};
+ 			queue-group@1{
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 				reg = <0xB5000 0x1000>;
+-				interrupts = <51 2 52 2 67 2>;
++				interrupts = <51 2 0 0 52 2 0 0 67 2 0 0>;
+ 			};
+ 		};
+ 
+ 		sdhci@2e000 {
+ 			compatible = "fsl,p1022-esdhc", "fsl,esdhc";
+ 			reg = <0x2e000 0x1000>;
+-			interrupts = <72 0x2>;
++			interrupts = <72 0x2 0 0>;
+ 			fsl,sdhci-auto-cmd12;
+ 			/* Filled in by U-Boot */
+ 			clock-frequency = <0>;
+@@ -467,7 +467,7 @@
+ 				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
+ 				     "fsl,sec2.0";
+ 			reg = <0x30000 0x10000>;
+-			interrupts = <45 2 58 2>;
++			interrupts = <45 2 0 0 58 2 0 0>;
+ 			fsl,num-channels = <4>;
+ 			fsl,channel-fifo-len = <24>;
+ 			fsl,exec-units-mask = <0x97c>;
+@@ -478,14 +478,14 @@
+ 			compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
+ 			reg = <0x18000 0x1000>;
+ 			cell-index = <1>;
+-			interrupts = <74 0x2>;
++			interrupts = <74 0x2 0 0>;
+ 		};
+ 
+ 		sata@19000 {
+ 			compatible = "fsl,p1022-sata", "fsl,pq-sata-v2";
+ 			reg = <0x19000 0x1000>;
+ 			cell-index = <2>;
+-			interrupts = <41 0x2>;
++			interrupts = <41 0x2 0 0>;
+ 		};
+ 
+ 		power@e0070{
+@@ -496,21 +496,33 @@
+ 		display@10000 {
+ 			compatible = "fsl,diu", "fsl,p1022-diu";
+ 			reg = <0x10000 1000>;
+-			interrupts = <64 2>;
++			interrupts = <64 2 0 0>;
+ 		};
+ 
+ 		timer@41100 {
+ 			compatible = "fsl,mpic-global-timer";
+-			reg = <0x41100 0x204>;
+-			interrupts = <0xf7 0x2>;
++			reg = <0x41100 0x100 0x41300 4>;
++			interrupts = <0 0 3 0
++			              1 0 3 0
++			              2 0 3 0
++			              3 0 3 0>;
++		};
 +
-+	return (src >= mpic->timer_vecs[0] && src <= mpic->timer_vecs[7]);
-+}
++		timer@42100 {
++			compatible = "fsl,mpic-global-timer";
++			reg = <0x42100 0x100 0x42300 4>;
++			interrupts = <4 0 3 0
++			              5 0 3 0
++			              6 0 3 0
++			              7 0 3 0>;
+ 		};
  
- /* Convert a cpu mask from logical to physical cpu numbers. */
- static inline u32 mpic_physmask(u32 cpumask)
-@@ -814,6 +845,25 @@ static void mpic_end_ipi(struct irq_data *d)
+ 		mpic: pic@40000 {
+ 			interrupt-controller;
+ 			#address-cells = <0>;
+-			#interrupt-cells = <2>;
++			#interrupt-cells = <4>;
+ 			reg = <0x40000 0x40000>;
+-			compatible = "chrp,open-pic";
++			compatible = "fsl,mpic";
+ 			device_type = "open-pic";
+ 		};
  
- #endif /* CONFIG_SMP */
+@@ -519,14 +531,14 @@
+ 			reg = <0x41600 0x80>;
+ 			msi-available-ranges = <0 0x100>;
+ 			interrupts = <
+-				0xe0 0
+-				0xe1 0
+-				0xe2 0
+-				0xe3 0
+-				0xe4 0
+-				0xe5 0
+-				0xe6 0
+-				0xe7 0>;
++				0xe0 0 0 0
++				0xe1 0 0 0
++				0xe2 0 0 0
++				0xe3 0 0 0
++				0xe4 0 0 0
++				0xe5 0 0 0
++				0xe6 0 0 0
++				0xe7 0 0 0>;
+ 		};
  
-+static void mpic_unmask_tm(struct irq_data *d)
-+{
-+	struct mpic *mpic = mpic_from_irq_data(d);
-+	unsigned int src = mpic_irq_to_hw(d->irq) - mpic->timer_vecs[0];
-+
-+	DBG("%s: enable_tm: %d (tm %d)\n", mpic->name, irq, src);
-+	mpic_tm_write(src, mpic_tm_read(src) & ~MPIC_VECPRI_MASK);
-+	mpic_tm_read(src);
-+}
-+
-+static void mpic_mask_tm(struct irq_data *d)
-+{
-+	struct mpic *mpic = mpic_from_irq_data(d);
-+	unsigned int src = mpic_irq_to_hw(d->irq) - mpic->timer_vecs[0];
-+
-+	mpic_tm_write(src, mpic_tm_read(src) | MPIC_VECPRI_MASK);
-+	mpic_tm_read(src);
-+}
-+
- int mpic_set_affinity(struct irq_data *d, const struct cpumask *cpumask,
- 		      bool force)
- {
-@@ -948,6 +998,12 @@ static struct irq_chip mpic_ipi_chip = {
- };
- #endif /* CONFIG_SMP */
- 
-+static struct irq_chip mpic_tm_chip = {
-+	.irq_mask	= mpic_mask_tm,
-+	.irq_unmask	= mpic_unmask_tm,
-+	.irq_eoi	= mpic_end_irq,
-+};
-+
- #ifdef CONFIG_MPIC_U3_HT_IRQS
- static struct irq_chip mpic_irq_ht_chip = {
- 	.irq_startup	= mpic_startup_ht_irq,
-@@ -991,6 +1047,16 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- 	}
- #endif /* CONFIG_SMP */
- 
-+	if (hw >= mpic->timer_vecs[0] && hw <= mpic->timer_vecs[7]) {
-+		WARN_ON(!(mpic->flags & MPIC_PRIMARY));
-+
-+		DBG("mpic: mapping as timer\n");
-+		set_irq_chip_data(virq, mpic);
-+		set_irq_chip_and_handler(virq, &mpic->hc_tm,
-+					 handle_fasteoi_irq);
-+		return 0;
-+	}
-+
- 	if (hw >= mpic->irq_count)
- 		return -EINVAL;
- 
-@@ -1147,6 +1213,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic->hc_ipi.name = name;
- #endif /* CONFIG_SMP */
- 
-+	mpic->hc_tm = mpic_tm_chip;
-+	mpic->hc_tm.name = name;
-+
- 	mpic->flags = flags;
- 	mpic->isu_size = isu_size;
- 	mpic->irq_count = irq_count;
-@@ -1157,10 +1226,14 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	else
- 		intvec_top = 255;
- 
--	mpic->timer_vecs[0] = intvec_top - 8;
--	mpic->timer_vecs[1] = intvec_top - 7;
--	mpic->timer_vecs[2] = intvec_top - 6;
--	mpic->timer_vecs[3] = intvec_top - 5;
-+	mpic->timer_vecs[0] = intvec_top - 12;
-+	mpic->timer_vecs[1] = intvec_top - 11;
-+	mpic->timer_vecs[2] = intvec_top - 10;
-+	mpic->timer_vecs[3] = intvec_top - 9;
-+	mpic->timer_vecs[4] = intvec_top - 8;
-+	mpic->timer_vecs[5] = intvec_top - 7;
-+	mpic->timer_vecs[6] = intvec_top - 6;
-+	mpic->timer_vecs[7] = intvec_top - 5;
- 	mpic->ipi_vecs[0]   = intvec_top - 4;
- 	mpic->ipi_vecs[1]   = intvec_top - 3;
- 	mpic->ipi_vecs[2]   = intvec_top - 2;
-@@ -1363,15 +1436,17 @@ void __init mpic_init(struct mpic *mpic)
- 	/* Set current processor priority to max */
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
- 
--	/* Initialize timers: just disable them all */
-+	/* Initialize timers to our reserved vectors and mask them for now */
- 	for (i = 0; i < 4; i++) {
- 		mpic_write(mpic->tmregs,
- 			   i * MPIC_INFO(TIMER_STRIDE) +
--			   MPIC_INFO(TIMER_DESTINATION), 0);
-+			   MPIC_INFO(TIMER_DESTINATION),
-+			   1 << hard_smp_processor_id());
- 		mpic_write(mpic->tmregs,
- 			   i * MPIC_INFO(TIMER_STRIDE) +
- 			   MPIC_INFO(TIMER_VECTOR_PRI),
- 			   MPIC_VECPRI_MASK |
-+			   (9 << MPIC_VECPRI_PRIORITY_SHIFT) |
- 			   (mpic->timer_vecs[0] + i));
- 	}
- 
-@@ -1480,6 +1555,11 @@ void mpic_irq_set_priority(unsigned int irq, unsigned int pri)
- 			~MPIC_VECPRI_PRIORITY_MASK;
- 		mpic_ipi_write(src - mpic->ipi_vecs[0],
- 			       reg | (pri << MPIC_VECPRI_PRIORITY_SHIFT));
-+	} else if (mpic_is_tm(mpic, irq)) {
-+		reg = mpic_tm_read(src - mpic->timer_vecs[0]) &
-+			~MPIC_VECPRI_PRIORITY_MASK;
-+		mpic_tm_write(src - mpic->timer_vecs[0],
-+			      reg | (pri << MPIC_VECPRI_PRIORITY_SHIFT));
- 	} else {
- 		reg = mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI))
- 			& ~MPIC_VECPRI_PRIORITY_MASK;
+ 		global-utilities@e0000 {	//global utilities block
+@@ -547,7 +559,7 @@
+ 		ranges = <0x2000000 0x0 0xa0000000 0xc 0x20000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+-		interrupts = <16 2>;
++		interrupts = <16 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+@@ -582,7 +594,7 @@
+ 		ranges = <0x2000000 0x0 0xc0000000 0xc 0x40000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0xf 0xffc20000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+-		interrupts = <16 2>;
++		interrupts = <16 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+@@ -618,7 +630,7 @@
+ 		ranges = <0x2000000 0x0 0x80000000 0xc 0x00000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+-		interrupts = <16 2>;
++		interrupts = <16 2 0 0>;
+ 		interrupt-map-mask = <0xf800 0 0 7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
 -- 
 1.7.1
