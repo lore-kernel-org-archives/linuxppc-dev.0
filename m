@@ -1,29 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 14BE2B6F83
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Mar 2011 15:33:47 +1100 (EST)
-Subject: Re: [PATCH 1/2] kdump: Allow shrinking of kdump region to be
-	overridden
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <im6fj2$576$1@dough.gmane.org>
-References: <20100825002258.GD28360@kryten> <m139u37cii.fsf@fess.ebiederm.org>
-	<4D771EE6.5050404@linux.vnet.ibm.com>
-	<20110309122046.GC16951@cr0.redhat.com>
-	<20110309234657.264d3080@kryten>
-	<20110309142108.GD16951@cr0.redhat.com>
-	<20110314181315.GA16075@in.ibm.com>
-	<AANLkTi=aDzCaa7_=5XTrnJCzmZPrDy3omXwDarEF8XmH@mail.gmail.com>
-	<20110315165219.GA22509@in.ibm.com>  <im6fj2$576$1@dough.gmane.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 24 Mar 2011 15:33:30 +1100
-Message-ID: <1300941210.2402.414.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 61FD4B6F82
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Mar 2011 15:40:49 +1100 (EST)
+Date: Thu, 24 Mar 2011 15:40:47 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: wire up new syscalls
+Message-Id: <20110324154047.b96bfe46.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	WANG Cong <xiyou.wangcong@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-03-21 at 03:10 +0000, WANG Cong wrote:
-> On Tue, 15 Mar 2011 22:22:19 +0530, Mahesh J Salgaonkar wrote:
+These syscalls have been added recently:
+	name_to_handle_at
+	open_by_handle_at
+	clock_adjtime
+	syncfs
 
-> >> Okay, but with this patch applied, we will just ignore rtas region,
-> >> right?
-> > Correct.
-> >> Thus, when I echo 0 to free all the 128M crashkernel memory, the final
-> >> result will be 32M left, which means crash_size will still show 32M.
-> >> This looks odd.
-> >> 
-> >> How about skipping the 32M as a whole? I mean once the region being
-> >> freed has overlap with this rtas region, skip the whole rtas region,
-> >> and let crash_size
-> >> show 0?
-> > The existing code from crash_shrink_memory() function reduces the crash
-> > size to 0 when echo'ed 0. I did test this patchset and verified that
-> > /sys/kernel/kexec_crash_size show 0 value.
-> 
-> Oh, ok.
-> 
-> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/systbl.h |    4 ++++
+ arch/powerpc/include/asm/unistd.h |    6 +++++-
+ 2 files changed, 9 insertions(+), 1 deletions(-)
 
-So Eric, what's the right approach to get that merged ? This is a bug
-gating an important delivery for us, and the patch doesn't appear
-terribly invasive ? :-)
+I have test built this for pseries_defconfig and pmac32_deconfig both
+with and without CONFIG_FHANDLE.
 
-I can send it to Linus myself if you prefer and give me your Ack.
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index aa0f1eb..60f64b1 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -348,3 +348,7 @@ COMPAT_SYS_SPU(sendmsg)
+ COMPAT_SYS_SPU(recvmsg)
+ COMPAT_SYS_SPU(recvmmsg)
+ SYSCALL_SPU(accept4)
++SYSCALL_SPU(name_to_handle_at)
++COMPAT_SYS_SPU(open_by_handle_at)
++COMPAT_SYS_SPU(clock_adjtime)
++SYSCALL_SPU(syncfs)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 6151937..3c21564 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -367,10 +367,14 @@
+ #define __NR_recvmsg		342
+ #define __NR_recvmmsg		343
+ #define __NR_accept4		344
++#define __NR_name_to_handle_at	345
++#define __NR_open_by_handle_at	346
++#define __NR_clock_adjtime	347
++#define __NR_syncfs		348
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		345
++#define __NR_syscalls		349
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.7.4.1
 
+-- 
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
