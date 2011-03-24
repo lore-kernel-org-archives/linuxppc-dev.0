@@ -1,12 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Date: Thu, 24 Mar 2011 16:43:15 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH 1/4] powerpc: Add fsl mpic timer binding
-Message-ID: <20110324214315.GA9502@schlenkerla.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B741FB6FCF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Mar 2011 09:17:00 +1100 (EST)
+Subject: [BUG] pgprot_noncached() is -NOT- safe for mapping vmalloc buffers
+	into userspace
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: tiwai@suse.de
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 25 Mar 2011 09:16:48 +1100
+Message-ID: <1301005008.2402.453.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Matthew Evans <matt.evans@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,82 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the existing example in the general mpic binding to have a
-separate TCRx region.  Currently the example doesn't describe TCRx at
-all.  The one upstream device tree with an mpic timer node (p1022ds)
-uses one large reg region to describe both, even though there are other
-unrelated registers in between.  That device tree also contains a bogus
-interrupt specifier, and there's no upstream software that uses this yet,
-so changing this shouldn't be a problem.
+Hi Takashi !
 
-Add a full binding for the MPIC timer node, not just an example of
-4-cell interrupts in the MPIC binding.
+While working on endian-fixing xHCI with Matt (CC), we discovered the
+source of our problems with usb-audio on a board we were working on.
 
-Add fsl,available-ranges, similar to msi-available-ranges.
+c32d977b8157bf67cdf47729ce7dd054a26eb534
+"ALSA: pcm - Call pgprot_noncached() for vmalloc'ed buffers"
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- .../devicetree/bindings/powerpc/fsl/mpic-timer.txt |   38 ++++++++++++++++++++
- .../devicetree/bindings/powerpc/fsl/mpic.txt       |    2 +-
- 2 files changed, 39 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
+I'm afraid that this is totally bogus :-)
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
-new file mode 100644
-index 0000000..df41958
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
-@@ -0,0 +1,38 @@
-+* Freescale MPIC timers
-+
-+Required properties:
-+- compatible: "fsl,mpic-global-timer"
-+
-+- reg : Contains two regions.  The first is the main timer register bank
-+  (GTCCRxx, GTBCRxx, GTVPRxx, GTDRxx).  The second is the timer control
-+  register (TCRx) for the group.
-+
-+- fsl,available-ranges: use <start count> style section to define which
-+  timer interrupts can be used.  This property is optional; without this,
-+  all timers within the group can be used.
-+
-+- interrupts: one interrupt per timer in the group, in order, starting
-+  with timer zero.  If timer-available-ranges is present, only the
-+  interrupts that correspond to available timers shall be present.
-+
-+Example:
-+	/* Note that this requires #interrupt-cells to be 4 */
-+	timer0: timer@41100 {
-+		compatible = "fsl,mpic-global-timer";
-+		reg = <0x41100 0x100 0x41300 4>;
-+
-+		/* Another AMP partition is using timers 0 and 1 */
-+		fsl,available-ranges = <2 2>;
-+
-+		interrupts = <2 0 3 0
-+		              3 0 3 0>;
-+	};
-+
-+	timer1: timer@42100 {
-+		compatible = "fsl,mpic-global-timer";
-+		reg = <0x42100 0x100 0x42300 4>;
-+		interrupts = <4 0 3 0
-+		              5 0 3 0
-+		              6 0 3 0
-+		              7 0 3 0>;
-+	};
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-index 8aa10f4..6af4b64 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-@@ -190,7 +190,7 @@ EXAMPLE 4
- 	 */
- 	timer0: timer@41100 {
- 		compatible = "fsl,mpic-global-timer";
--		reg = <0x41100 0x100>;
-+		reg = <0x41100 0x100 0x41300 4>;
- 		interrupts = <0 0 3 0
- 		              1 0 3 0
- 		              2 0 3 0
--- 
-1.7.1
+I don't know on what arch it is safe to have the same memory be mapped
+cachable in the kernel (and accessed via this cached mapping) and
+non-cachable in userspace, but I can confidently say that wherever it
+works it does so by accident.
+
+In the case of usb-audio, what we observed is that the user application
+was writing samples using an uncached mapping, so directly to memory,
+which does -not- invalidate conflicting cache lines on the way, an the
+kernel would then memcpy those data to the USB buffers using a cached
+mapping (vmalloc) and essentially get stale stuff from the cache instead
+of the real samples.
+
+Worse, on some processors, it's actually -illegal- to create (and even
+more to -access-) a conflicting mapping of a page of memory, ie, have it
+mapped cached somewhere and uncached somewhere else. It will lockup some
+processors and afaik, some x86 as well.
+
+In fact, cache coherent architectures often don't support mapping memory
+uncached -at-all- so something like snd_pcm_lib_mmap_noncached()
+shouldn't exist, or at least be under arch control. There's no case
+where it's "always safe". There will almost always be a cache alias in
+the linear mapping unless special arch specific sauce has been applied.
+
+Now, there's another problem on top of that, which is that
+snd_pcm_default_mmap() will not work properly the "other way around" on
+powerpc, where the mapping -needs- to be uncached bcs you are running on
+a non cache coherent embedded CPU and trying to mmap DMA memory, but
+that's something that needs fixing inside powerpc by properly defining
+dma_mmap_coherent() & ARCH_HAS_DMA_MMAP_COHERENT (I thought we had added
+it a while back but it's not upstream, patch must have got lost). We
+must also make sure we don't go down that path for vmalloc memory
+though.
+
+Cheers,
+Ben.
