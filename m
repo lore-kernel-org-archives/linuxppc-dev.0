@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C99FFB6EF0
+Return-Path: <B32579@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A0C6AB6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 15:21:06 +1100 (EST)
-Subject: Re: Query: PCIe range entry at pcie@0 in dts files
-Mime-Version: 1.0 (Apple Message framework v1082)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <071A08F2C6A57E4E94D980ECA553F874154CD3@039-SN1MPN1-004.039d.mgd.msft.net>
-Date: Thu, 24 Mar 2011 23:20:56 -0500
-Message-Id: <013F9859-851E-4D61-BB7C-F6987DBECFF8@kernel.crashing.org>
-References: <071A08F2C6A57E4E94D980ECA553F874154CD3@039-SN1MPN1-004.039d.mgd.msft.net>
-To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	Fri, 25 Mar 2011 15:46:53 +1100 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/dts:Update PCIe memory maps to match u-boot of
+	Px020RDB
+Date: Fri, 25 Mar 2011 10:17:45 +0530
+Message-ID: <1301028465-3897-1-git-send-email-prabhakar@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,99 +25,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+PCIe memory address space is 1:1 mapped with u-boot.
 
-On Mar 23, 2011, at 10:20 PM, Kushwaha Prabhakar-B32579 wrote:
+Update dts of Px020RDB i.e. P1020RDB and P2020RDB to match the address map
+changes in u-boot.
 
->=20
-> Hi all,
->=20
-> I have query about usage of range field at pcie@0 under PCIe =
-controller. Please find snap shot from mpc8536_36.dts..
->=20
-> 	pci3: pcie@fffe0b000 {
-> 		compatible =3D "fsl,mpc8548-pcie";
-> 		device_type =3D "pci";
-> 		#interrupt-cells =3D <1>;
-> 		#size-cells =3D <2>;
-> 		#address-cells =3D <3>;
-> 		reg =3D <0xf 0xffe0b000 0 0x1000>;
-> 		bus-range =3D <0 0xff>;
-> 		ranges =3D <0x02000000 0 0xe0000000 0xc 0x20000000 0 =
-0x20000000
-> 			  0x01000000 0 0x00000000 0xf 0xffc30000 0 =
-0x00010000>;
-> 		clock-frequency =3D <33333333>;
-> 		interrupt-parent =3D <&mpic>;
-> 		interrupts =3D <27 0x2>;
-> 		interrupt-map-mask =3D <0xf800 0 0 7>;
-> 		interrupt-map =3D <
-> 			/* IDSEL 0x0 */
-> 			0000 0 0 1 &mpic 8 1
-> 			0000 0 0 2 &mpic 9 1
-> 			0000 0 0 3 &mpic 10 1
-> 			0000 0 0 4 &mpic 11 1
-> 			>;
->=20
-> 		pcie@0 {
-> 			reg =3D <0 0 0 0 0>;
-> 			#size-cells =3D <2>;
-> 			#address-cells =3D <3>;
-> 			device_type =3D "pci";
-> 			ranges =3D <0x02000000 0 0xe0000000 --> =
-child/port start address
-> 				  0x02000000 0 0xe0000000 --> Parent bus =
-address
-> 				  0 0x20000000
->=20
-> 				  0x01000000 0 0x00000000
-> 				  0x01000000 0 0x00000000
-> 				  0 0x00100000>;
-> 		};
-> 	};
->=20
-> Question:
-> A) is ranges filed of pcie@0 really required?
-> 	 I just went through the code and found scan_OF_for_pci_dev() =
-called from pci_busdev_to_OF_node() touches pcie@0 node. But, It does =
-not even uses range filed.=20
->=20
-> 	static struct device_node *scan_OF_for_pci_dev(struct =
-device_node *parent,unsigned int devfn) {
-> 		 ---
->       	---
-> 		for_each_child_of_node(parent, np) {
-> 			reg =3D of_get_property(np, "reg", &psize);=20
->=20
-> 		  ---
-> 		  ---
->            	    if (!strcmp(np->name, "multifunc-device")) {=20
-> 	     =20
-> 	}
->=20
->   I also checked "Power_ePAPR_APPROVED_v1.0.pdf". It never say range =
-filed required for child bus.
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Acked-by: Kumar Gala <kumar.gala@freescale.com>
+---
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (Branch master)
 
-Part of the reason for the range is to match PCIe semantics of RC having =
-a transparent bridge.
+ arch/powerpc/boot/dts/p1020rdb.dts            |   12 ++++++------
+ arch/powerpc/boot/dts/p2020rdb.dts            |   12 ++++++------
+ arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 ++--
+ arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |   10 +++++-----
+ 4 files changed, 19 insertions(+), 19 deletions(-)
 
->=20
-> B) if range field of pcie@0 required. why does child/port start =
-address same as Parent bus address?  Range property provides mapping of =
-port address to parent address space.
-> So the value should be 0x00000000. Means port's address starting from =
-0x00000000 to size 0x20000000 is mapped parent's 0xe0000000.
->=20
-> 			ranges =3D <0x02000000 0 0x00000000  --> =
-Child/port's start address
-> 				  0x02000000 0 0xe0000000    --> Parent =
-bus address
-> 				  0 0x20000000
->=20
-> 				  0x01000000 0 0x00000000
-> 				  0x01000000 0 0x00000000
-> 				  0 0x00100000>;
-
-
-because the bridge is transparent.
-
-- k=
+diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
+index 22f64b6..e0668f8 100644
+--- a/arch/powerpc/boot/dts/p1020rdb.dts
++++ b/arch/powerpc/boot/dts/p1020rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P1020 RDB Device Tree Source
+  *
+- * Copyright 2009 Freescale Semiconductor Inc.
++ * Copyright 2009-2011 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -553,7 +553,7 @@
+ 		reg = <0 0xffe09000 0 0x1000>;
+ 		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
++			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <16 2>;
+@@ -580,8 +580,8 @@
+ 		#address-cells = <3>;
+ 		reg = <0 0xffe0a000 0 0x1000>;
+ 		bus-range = <0 255>;
+-		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
++		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <16 2>;
+@@ -590,8 +590,8 @@
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+ 			device_type = "pci";
+-			ranges = <0x2000000 0x0 0xc0000000
+-				  0x2000000 0x0 0xc0000000
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+index da4cb0d..e2d48fd 100644
+--- a/arch/powerpc/boot/dts/p2020rdb.dts
++++ b/arch/powerpc/boot/dts/p2020rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P2020 RDB Device Tree Source
+  *
+- * Copyright 2009 Freescale Semiconductor Inc.
++ * Copyright 2009-2011 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -537,7 +537,7 @@
+ 		reg = <0 0xffe09000 0 0x1000>;
+ 		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
++			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <25 2>;
+@@ -564,8 +564,8 @@
+ 		#address-cells = <3>;
+ 		reg = <0 0xffe0a000 0 0x1000>;
+ 		bus-range = <0 255>;
+-		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
++		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <26 2>;
+@@ -574,8 +574,8 @@
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+ 			device_type = "pci";
+-			ranges = <0x2000000 0x0 0xc0000000
+-				  0x2000000 0x0 0xc0000000
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+index 0fe93d0..b69c3a5 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+@@ -6,7 +6,7 @@
+  * This dts file allows core0 to have memory, l2, i2c, spi, gpio, dma1, usb,
+  * eth1, eth2, sdhc, crypto, global-util, pci0.
+  *
+- * Copyright 2009 Freescale Semiconductor Inc.
++ * Copyright 2009-2011 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -342,7 +342,7 @@
+ 		reg = <0 0xffe09000 0 0x1000>;
+ 		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
++			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <25 2>;
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+index e95a512..7a31d46c 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+@@ -7,7 +7,7 @@
+  *
+  * Please note to add "-b 1" for core1's dts compiling.
+  *
+- * Copyright 2009 Freescale Semiconductor Inc.
++ * Copyright 2009-2011 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -162,8 +162,8 @@
+ 		#address-cells = <3>;
+ 		reg = <0 0xffe0a000 0 0x1000>;
+ 		bus-range = <0 255>;
+-		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+-			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
++		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <26 2>;
+@@ -172,8 +172,8 @@
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+ 			device_type = "pci";
+-			ranges = <0x2000000 0x0 0xc0000000
+-				  0x2000000 0x0 0xc0000000
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+-- 
+1.7.3
