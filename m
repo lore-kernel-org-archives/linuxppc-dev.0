@@ -1,23 +1,18 @@
-Return-Path: <emunson@mgebm.net>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
-	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 772F5B6EE8
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-pb-sasl-sd.pobox.com [64.74.157.62])
+	by ozlabs.org (Postfix) with ESMTP id 62DEFB6F88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Mar 2011 00:28:25 +1100 (EST)
-Received: by qyk7 with SMTP id 7so764211qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 06:28:21 -0700 (PDT)
-From: Eric B Munson <emunson@mgebm.net>
-To: benh@kernel.crashing.org
-Subject: [PATCH] POWER: perf_event: Skip updating kernel counters if register
-	value shrinks
-Date: Fri, 25 Mar 2011 09:28:09 -0400
-Message-Id: <1301059689-4556-1-git-send-email-emunson@mgebm.net>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
-	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
-	linuxppc-dev@lists.ozlabs.org, Eric B Munson <emunson@mgebm.net>
+	Sat, 26 Mar 2011 00:52:39 +1100 (EST)
+Subject: Re: High load average (~2.0) on an idle PowerPC 64 machine
+From: Nathan Lynch <ntl@pobox.com>
+To: David Laight <David.Laight@ACULAB.COM>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ACA1@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8ACA1@saturn3.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 25 Mar 2011 08:46:57 -0500
+Message-ID: <1301060817.5967.2.camel@tp-t61>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,83 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is possible on POWER7 for some perf events to have values decrease.  This
-causes a problem with the way the kernel counters are updated.  Deltas are
-computed and then stored in a 64 bit value while the registers are 32 bits
-wide so if new value is smaller than previous value, the delta is a very
-large positive value.  As a work around this patch skips updating the kernel
-counter in when the new value is smaller than the previous.  This can lead to
-a lack of precision in the coutner values, but from my testing the value is
-typcially fewer than 10 samples at a time.
+On Fri, 2011-03-25 at 09:23 +0000, David Laight wrote:
+> We also have the related fubar (on x64/amd64) of the
+> kernel generating stack traces for processes that are
+> sleeping uninterruptibly for long periods.
 
-Signed-off-by: Eric B Munson <emunson@mgebm.net>
----
- arch/powerpc/kernel/perf_event.c |   26 +++++++++++++++++++++-----
- 1 files changed, 21 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
-index 97e0ae4..6752dc1 100644
---- a/arch/powerpc/kernel/perf_event.c
-+++ b/arch/powerpc/kernel/perf_event.c
-@@ -416,6 +416,15 @@ static void power_pmu_read(struct perf_event *event)
- 		prev = local64_read(&event->hw.prev_count);
- 		barrier();
- 		val = read_pmc(event->hw.idx);
-+		/*
-+		 * POWER7 can roll back counter values, if the new value is
-+		 * smaller than the previous value it will cause the delta
-+		 * and the counter to have bogus values.  If this is the
-+		 * case skip updating anything until the counter grows again.
-+		 * This can lead to a small lack of precision in the counters.
-+		 */
-+		if (val < prev)
-+			return;
- 	} while (local64_cmpxchg(&event->hw.prev_count, prev, val) != prev);
- 
- 	/* The counters are only 32 bits wide */
-@@ -449,8 +458,10 @@ static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
- 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
- 		prev = local64_read(&event->hw.prev_count);
- 		event->hw.idx = 0;
--		delta = (val - prev) & 0xfffffffful;
--		local64_add(delta, &event->count);
-+		if (val >= prev) {
-+			delta = (val - prev) & 0xfffffffful;
-+			local64_add(delta, &event->count);
-+		}
- 	}
- }
- 
-@@ -458,14 +469,16 @@ static void thaw_limited_counters(struct cpu_hw_events *cpuhw,
- 				  unsigned long pmc5, unsigned long pmc6)
- {
- 	struct perf_event *event;
--	u64 val;
-+	u64 val, prev;
- 	int i;
- 
- 	for (i = 0; i < cpuhw->n_limited; ++i) {
- 		event = cpuhw->limited_counter[i];
- 		event->hw.idx = cpuhw->limited_hwidx[i];
- 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
--		local64_set(&event->hw.prev_count, val);
-+		prev = local64_read(&event->hw.prev_count);
-+		if (val > prev)
-+			local64_set(&event->hw.prev_count, val);
- 		perf_event_update_userpage(event);
- 	}
- }
-@@ -1197,7 +1210,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 
- 	/* we don't have to worry about interrupts here */
- 	prev = local64_read(&event->hw.prev_count);
--	delta = (val - prev) & 0xfffffffful;
-+	if (val < prev)
-+		delta = 0;
-+	else
-+		delta = (val - prev) & 0xfffffffful;
- 	local64_add(delta, &event->count);
- 
- 	/*
--- 
-1.7.1
+Turn off CONFIG_DETECT_HUNG_TASK?
