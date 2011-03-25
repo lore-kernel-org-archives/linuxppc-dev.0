@@ -1,22 +1,20 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C3D6FB6F7C
+	by ozlabs.org (Postfix) with ESMTPS id 32CCFB6F91
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 19:50:27 +1100 (EST)
-Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
-	p2P8oKur019813
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2011 09:50:20 +0100
-From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Early kernel debugging
-Date: Fri, 25 Mar 2011 09:50:20 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <201103250950.20423.dargaud@lpsc.in2p3.fr>
+	Fri, 25 Mar 2011 20:12:09 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Implement dma_mmap_coherent()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <s5h62r7vd2w.wl%tiwai@suse.de>
+References: <1301035806.2402.470.camel@pasglop> <s5h62r7vd2w.wl%tiwai@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 25 Mar 2011 20:11:57 +1100
+Message-ID: <1301044317.2402.475.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,14 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello all,
-what can you do when the kernel you try to run stops before printing anything on the console ?
+On Fri, 2011-03-25 at 09:06 +0100, Takashi Iwai wrote:
+> > @@ -52,6 +53,7 @@ extern void __dma_sync_page(struct page *page,
+> unsigned long offset,
+> >  #define __dma_free_coherent(size, addr)              ((void)0)
+> >  #define __dma_sync(addr, size, rw)           ((void)0)
+> >  #define __dma_sync_page(pg, off, sz, rw)     ((void)0)
+> > +#define __dma_get_coherent_pfn(cpu_addr)     (0)
+> 
+> Just nitpicking: shouldn't we define some real thing like
+>         page_to_pfn(virt_to_page(cpu_addr))
+> or put something to trigger an error?  Setting a bogus zero can be
+> easily overlooked, I'm afraid.
 
-I tried enabling the 'early printk' option, but still I get nothing.
+Yes, all those variants are bogus if you noticed :-) The trick is that
+they aren't actually called when CONFIG_NOT_COHERENT_CACHE is not set
+anyways, with the exception of __dma_sync(), so I want to just remove
+them all. But I'll do that in a separate patch.
 
-I posted something about it in the 'Booting with ramdisk in kernel' message and I haven't improved the situation since 
-then, although I found the CONFIG_BLK_DEV_RAM option.
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
-    "Freedom is just chaos, with better lighting."
+Cheers,
+Ben.
