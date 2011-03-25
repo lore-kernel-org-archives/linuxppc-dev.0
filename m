@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A0B6B6EE9
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id E9E72B6FE3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 20:20:41 +1100 (EST)
-Subject: Re: High load average (~2.0) on an idle PowerPC 64 machine
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Romain Goyet <r.goyet@gmail.com>
-In-Reply-To: <AANLkTikbd0S6MGK4p7=_0q8c6nbk=k1TmLcM+Mc52=FW@mail.gmail.com>
-References: <AANLkTikbd0S6MGK4p7=_0q8c6nbk=k1TmLcM+Mc52=FW@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Mar 2011 20:20:33 +1100
-Message-ID: <1301044833.2402.482.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri, 25 Mar 2011 20:23:47 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 28294-04 for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Mar 2011 09:23:36 +0000 (GMT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: High load average (~2.0) on an idle PowerPC 64 machine
+Date: Fri, 25 Mar 2011 09:23:27 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ACA1@saturn3.aculab.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-03-24 at 21:23 +0100, Romain Goyet wrote:
-> I there,
-> 
->  I've this Quad G5 machine that's sitting pretty much idle with the
+> I've this Quad G5 machine that's sitting pretty much idle with the
 > latest Debian stable installed, and yet it's got an abnormaly high
 > load average.
-> I've detailed the situation over here, maybe you guys will find it
-> interesting or have something to say :
-> http://serverfault.com/questions/251299/high-load-average-over-2-0-on-an-idle-machine
-> 
-> The machine doesn't seem to be actually slowed down, it looks more
-> like an incorrect measurement.
-> 
-> Thank you very much for any help !
 
->From memory, this can be due to the thermal control driver's kernel
-thread, which essentially does uninterruptible sleeps all the time,
-either when waiting for request completion from SMU or i2c.
+The 'load average' value is rather useless since it seems to
+contain any process that is sleeping uninterruptibly, and
+IIRC any process that has run at all (for however short a
+period) in the current schedule epoch (or whatever period
+is relevant).
 
-Since it's pretty much constantly talking to these, it causes an
-increase load (they can take time to respond). So in effect it's not
-actually hogging the CPU.
+I can easily generate a linux system that is 99.9% idle
+but has a 'load average' of 20 or more.
+It would still be 99.9% idle even if the idle time
+were based of the actual time outside the scheduler
+idle loop (as NetBSD doe) rather than where timer
+ticks interrupted.
 
-I don't know if there's a clean way to fix that.
+We also have the related fubar (on x64/amd64) of the
+kernel generating stack traces for processes that are
+sleeping uninterruptibly for long periods.
 
-Now it's possible that there's a different cause, that's just talking
-from some vague memories, so some investigations would be useful
-regardless.
-
-Cheers,
-Ben.
+	David
