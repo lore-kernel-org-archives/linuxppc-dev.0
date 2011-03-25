@@ -2,14 +2,14 @@ Return-Path: <tglx@linutronix.de>
 Received: from linutronix.de (www.linutronix.de [62.245.132.108])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17BAA1007EF
+	by ozlabs.org (Postfix) with ESMTPS id 317CC1009B7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Mar 2011 09:08:36 +1100 (EST)
-Message-Id: <20110325164141.138179365@linutronix.de>
-Date: Fri, 25 Mar 2011 21:36:17 -0000
+	Sat, 26 Mar 2011 09:08:40 +1100 (EST)
+Message-Id: <20110325164142.002913929@linutronix.de>
+Date: Fri, 25 Mar 2011 21:36:25 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 05/14] powerpc: cpm2_pic: Cleanup flow type handling
+Subject: [patch 14/14] powerpc: Use generic show_interrupts()
 References: <20110325164049.138289403@linutronix.de>
 Cc: Lennert Buytenhek <buytenh@secretlab.ca>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,67 +21,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The core irq_set_type() function updates the flow type when the chip
-callback returns 0. So setting the type is bogus.
-
-The new core code allows to update the type in irq_data and return
-IRQ_SET_MASK_OK_NOCOPY, so the core code will not touch it, except for
-setting the IRQ_LEVEL flag.
-
-Use the proper accessors for setting the irq handlers.
-
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/sysdev/cpm2_pic.c |   18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ arch/powerpc/Kconfig      |    2 +
+ arch/powerpc/kernel/irq.c |   61 ----------------------------------------------
+ 2 files changed, 3 insertions(+), 60 deletions(-)
 
-Index: linux-2.6-tip/arch/powerpc/sysdev/cpm2_pic.c
+Index: linux-2.6-tip/arch/powerpc/Kconfig
 ===================================================================
---- linux-2.6-tip.orig/arch/powerpc/sysdev/cpm2_pic.c
-+++ linux-2.6-tip/arch/powerpc/sysdev/cpm2_pic.c
-@@ -140,7 +140,6 @@ static void cpm2_end_irq(struct irq_data
- static int cpm2_set_irq_type(struct irq_data *d, unsigned int flow_type)
+--- linux-2.6-tip.orig/arch/powerpc/Kconfig
++++ linux-2.6-tip/arch/powerpc/Kconfig
+@@ -135,6 +135,8 @@ config PPC
+ 	select HAVE_SPARSE_IRQ
+ 	select IRQ_PER_CPU
+ 	select GENERIC_HARDIRQS_NO_DEPRECATED
++	select GENERIC_IRQ_SHOW
++	select GENERIC_IRQ_SHOW_LEVEL
+ 
+ config EARLY_PRINTK
+ 	bool
+Index: linux-2.6-tip/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-2.6-tip.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6-tip/arch/powerpc/kernel/irq.c
+@@ -195,7 +195,7 @@ notrace void arch_local_irq_restore(unsi
+ EXPORT_SYMBOL(arch_local_irq_restore);
+ #endif /* CONFIG_PPC64 */
+ 
+-static int show_other_interrupts(struct seq_file *p, int prec)
++int arch_show_interrupts(struct seq_file *p, int prec)
  {
- 	unsigned int src = virq_to_hw(d->irq);
--	struct irq_desc *desc = irq_to_desc(d->irq);
- 	unsigned int vold, vnew, edibit;
+ 	int j;
  
- 	/* Port C interrupts are either IRQ_TYPE_EDGE_FALLING or
-@@ -162,13 +161,11 @@ static int cpm2_set_irq_type(struct irq_
- 			goto err_sense;
- 	}
+@@ -231,65 +231,6 @@ static int show_other_interrupts(struct 
+ 	return 0;
+ }
  
--	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
--	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
--	if (flow_type & IRQ_TYPE_LEVEL_LOW)  {
--		desc->status |= IRQ_LEVEL;
--		desc->handle_irq = handle_level_irq;
--	} else
--		desc->handle_irq = handle_edge_irq;
-+	irqd_set_trigger_type(d, flow_type);
-+	if (flow_type & IRQ_TYPE_LEVEL_LOW)
-+		__set_irq_handler_unlocked(d->irq, handle_level_irq);
-+	else
-+		__set_irq_handler_unlocked(d->irq, handle_edge_irq);
- 
- 	/* internal IRQ senses are LEVEL_LOW
- 	 * EXT IRQ and Port C IRQ senses are programmable
-@@ -179,7 +176,8 @@ static int cpm2_set_irq_type(struct irq_
- 		if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
- 			edibit = (31 - (CPM2_IRQ_PORTC0 - src));
- 		else
--			return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 : -EINVAL;
-+			return (flow_type & IRQ_TYPE_LEVEL_LOW) ?
-+				IRQ_SET_MASK_OK_NOCOPY : -EINVAL;
- 
- 	vold = in_be32(&cpm2_intctl->ic_siexr);
- 
-@@ -190,7 +188,7 @@ static int cpm2_set_irq_type(struct irq_
- 
- 	if (vold != vnew)
- 		out_be32(&cpm2_intctl->ic_siexr, vnew);
+-int show_interrupts(struct seq_file *p, void *v)
+-{
+-	unsigned long flags, any_count = 0;
+-	int i = *(loff_t *) v, j, prec;
+-	struct irqaction *action;
+-	struct irq_desc *desc;
+-	struct irq_chip *chip;
+-
+-	if (i > nr_irqs)
+-		return 0;
+-
+-	for (prec = 3, j = 1000; prec < 10 && j <= nr_irqs; ++prec)
+-		j *= 10;
+-
+-	if (i == nr_irqs)
+-		return show_other_interrupts(p, prec);
+-
+-	/* print header */
+-	if (i == 0) {
+-		seq_printf(p, "%*s", prec + 8, "");
+-		for_each_online_cpu(j)
+-			seq_printf(p, "CPU%-8d", j);
+-		seq_putc(p, '\n');
+-	}
+-
+-	desc = irq_to_desc(i);
+-	if (!desc)
+-		return 0;
+-
+-	raw_spin_lock_irqsave(&desc->lock, flags);
+-	for_each_online_cpu(j)
+-		any_count |= kstat_irqs_cpu(i, j);
+-	action = desc->action;
+-	if (!action && !any_count)
+-		goto out;
+-
+-	seq_printf(p, "%*d: ", prec, i);
+-	for_each_online_cpu(j)
+-		seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
+-
+-	chip = get_irq_desc_chip(desc);
+-	if (chip)
+-		seq_printf(p, "  %-16s", chip->name);
+-	else
+-		seq_printf(p, "  %-16s", "None");
+-	seq_printf(p, " %-8s", (irqd_is_level_type(&desc->irq_data) ? "Level" : "Edge");
+-
+-	if (action) {
+-		seq_printf(p, "     %s", action->name);
+-		while ((action = action->next) != NULL)
+-			seq_printf(p, ", %s", action->name);
+-	}
+-
+-	seq_putc(p, '\n');
+-out:
+-	raw_spin_unlock_irqrestore(&desc->lock, flags);
 -	return 0;
-+	return IRQ_SET_MASK_OK_NOCOPY;
- 
- err_sense:
- 	pr_err("CPM2 PIC: sense type 0x%x not supported\n", flow_type);
+-}
+-
+ /*
+  * /proc/stat helpers
+  */
