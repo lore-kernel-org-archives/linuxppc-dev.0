@@ -1,19 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7F4EB6F11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 17:52:04 +1100 (EST)
-Subject: ALSA: vmalloc buffers should use normal mmap
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Takashi Iwai <tiwai@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Mar 2011 17:51:54 +1100
-Message-ID: <1301035914.2402.472.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4D8C47B0.1050104@ozlabs.org>
+Date: Fri, 25 Mar 2011 18:43:44 +1100
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: sarah.a.sharp@linux.intel.com
+Subject: [PATCH 0/5] Make xHCI driver endian-safe, add a barrier, some debug
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +16,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's a big no-no to use pgprot_noncached() when mmap'ing such buffers
-into userspace since they are mapped cachable in kernel space.
+Hi Sarah,
 
-This can cause all sort of interesting things ranging from to garbled
-sound to lockups on various architectures. I've observed that usb-audio
-is broken on powerpc 4xx for example because of that.
 
-Also remove the now unused snd_pcm_lib_mmap_noncached(). It's
-an arch business to know when to use uncached mappings, there's
-already hacks for MIPS inside snd_pcm_default_mmap() and other
-archs are supposed to use dma_mmap_coherent().
+This series addresses the endian issues with the xHCI driver, and has brought
+lovely USB 3 to PPC. :-)  I've tested various types of traffic on ppc4xx and
+POWER7 and (some sound driver bugs notwithstanding) all seems fine.  Also
+addresses an ordering problem we found and the recursive nature of the event
+handling, plus the addition of some debug.
 
-(See my separate patch that adds dma_mmap_coherent() to powerpc)
+This should apply to 2.6.38/Linus' tree.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Takashi Iwai <tiwai@suse.de>
----
- include/sound/pcm.h     |    4 +---
- sound/core/pcm_native.c |    9 ---------
- 2 files changed, 1 insertions(+), 12 deletions(-)
 
-diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-index 430a9cc..e1bad11 100644
---- a/include/sound/pcm.h
-+++ b/include/sound/pcm.h
-@@ -1031,9 +1031,7 @@ int snd_pcm_lib_mmap_iomem(struct snd_pcm_substream *substream, struct vm_area_s
- #define snd_pcm_lib_mmap_iomem	NULL
- #endif
- 
--int snd_pcm_lib_mmap_noncached(struct snd_pcm_substream *substream,
--			       struct vm_area_struct *area);
--#define snd_pcm_lib_mmap_vmalloc	snd_pcm_lib_mmap_noncached
-+#define snd_pcm_lib_mmap_vmalloc NULL
- 
- static inline void snd_pcm_limit_isa_dma_size(int dma, size_t *max)
- {
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 2d99c37..7639407 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -3194,15 +3194,6 @@ int snd_pcm_lib_mmap_iomem(struct snd_pcm_substream *substream,
- EXPORT_SYMBOL(snd_pcm_lib_mmap_iomem);
- #endif /* SNDRV_PCM_INFO_MMAP */
- 
--/* mmap callback with pgprot_noncached */
--int snd_pcm_lib_mmap_noncached(struct snd_pcm_substream *substream,
--			       struct vm_area_struct *area)
--{
--	area->vm_page_prot = pgprot_noncached(area->vm_page_prot);
--	return snd_pcm_default_mmap(substream, area);
--}
--EXPORT_SYMBOL(snd_pcm_lib_mmap_noncached);
--
- /*
-  * mmap DMA buffer
-  */
+Thanks!
+
+
+Matt
