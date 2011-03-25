@@ -1,11 +1,10 @@
 Return-Path: <matt@ozlabs.org>
-Message-ID: <4D8C47CD.3020108@ozlabs.org>
-Date: Fri, 25 Mar 2011 18:44:13 +1100
+Message-ID: <4D8C47D2.9010501@ozlabs.org>
+Date: Fri, 25 Mar 2011 18:44:18 +1100
 From: Matt Evans <matt@ozlabs.org>
 MIME-Version: 1.0
 To: sarah.a.sharp@linux.intel.com
-Subject: [PATCH 3/5] xhci: Add rmb() between reading event validity & event
-	data access.
+Subject: [PATCH 4/5] xhci: Add an assertion to check for virt_dev=0 bug.
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,26 +16,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On weakly-ordered systems, the reading of an event's content must occur
-after reading the event's validity.
+During a "plug-unplug" stress test on an NEC xHCI card, a null pointer
+dereference was observed.  xhci_address_device() dereferenced a null
+virt_dev (possibly an erroneous udev->slot_id?); this patch adds a WARN_ON &
+message to aid debug if it can be recreated.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 ---
- drivers/usb/host/xhci-ring.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/usb/host/xhci.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-index 45f3b77..b46efd9 100644
---- a/drivers/usb/host/xhci-ring.c
-+++ b/drivers/usb/host/xhci-ring.c
-@@ -2151,7 +2151,7 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
- 		return;
- 	}
- 	xhci_dbg(xhci, "%s - OS owns TRB\n", __func__);
--
-+	rmb();
- 	/* FIXME: Handle more event types. */
- 	switch ((le32_to_cpu(event->event_cmd.flags) & TRB_TYPE_BITMASK)) {
- 	case TRB_TYPE(TRB_COMPLETION):
+diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+index 88e6298..7d43456 100644
+--- a/drivers/usb/host/xhci.c
++++ b/drivers/usb/host/xhci.c
+@@ -2542,6 +2542,17 @@ int xhci_address_device(struct usb_hcd *hcd, struct usb_device *udev)
+ 
+ 	virt_dev = xhci->devs[udev->slot_id];
+ 
++	if (WARN_ON(!virt_dev)) {
++		/*
++		 * In plug/unplug torture test with an NEC controller,
++		 * a zero-dereference was observed once due to virt_dev = 0.
++		 * Print useful debug rather than crash if it is observed again!
++		 */
++		xhci_warn(xhci, "Virt dev invalid for slot_id 0x%x!\n",
++			udev->slot_id);
++		return -EINVAL;
++	}
++
+ 	slot_ctx = xhci_get_slot_ctx(xhci, virt_dev->in_ctx);
+ 	/*
+ 	 * If this is the first Set Address since device plug-in or
 -- 
 1.7.0.4
