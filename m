@@ -1,21 +1,18 @@
-Return-Path: <B32579@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A0C6AB6F7C
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3B445B6F87
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 15:46:53 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/dts:Update PCIe memory maps to match u-boot of
-	Px020RDB
-Date: Fri, 25 Mar 2011 10:17:45 +0530
-Message-ID: <1301028465-3897-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: meet2prabhu@gmail.com, Prabhakar Kushwaha <prabhakar@freescale.com>
+	Fri, 25 Mar 2011 17:50:16 +1100 (EST)
+Subject: [PATCH] powerpc: Implement dma_mmap_coherent()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 25 Mar 2011 17:50:06 +1100
+Message-ID: <1301035806.2402.470.camel@pasglop>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,166 +22,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCIe memory address space is 1:1 mapped with u-boot.
+This is used by Alsa to mmap buffers allocated with dma_alloc_coherent()
+into userspace. We need a special variant to handle machines with
+non-coherent DMAs as those buffers have "special" virt addresses and
+require non-cachable mappings
 
-Update dts of Px020RDB i.e. P1020RDB and P2020RDB to match the address map
-changes in u-boot.
-
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-Acked-by: Kumar Gala <kumar.gala@freescale.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (Branch master)
 
- arch/powerpc/boot/dts/p1020rdb.dts            |   12 ++++++------
- arch/powerpc/boot/dts/p2020rdb.dts            |   12 ++++++------
- arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 ++--
- arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |   10 +++++-----
- 4 files changed, 19 insertions(+), 19 deletions(-)
+Dunno if anybody with CONFIG_NOT_COHERENT_CACHE has some audio device
+that uses dma buffers (ie not usb-audio) and wants to try that out...
+should fix a long standing problem.
 
-diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
-index 22f64b6..e0668f8 100644
---- a/arch/powerpc/boot/dts/p1020rdb.dts
-+++ b/arch/powerpc/boot/dts/p1020rdb.dts
-@@ -1,7 +1,7 @@
+ arch/powerpc/include/asm/dma-mapping.h |    7 +++++++
+ arch/powerpc/kernel/dma.c              |   18 ++++++++++++++++++
+ arch/powerpc/mm/dma-noncoherent.c      |   20 ++++++++++++++++++++
+ 3 files changed, 45 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 6d2416a..41e0eb7 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -42,6 +42,7 @@ extern void __dma_free_coherent(size_t size, void *vaddr);
+ extern void __dma_sync(void *vaddr, size_t size, int direction);
+ extern void __dma_sync_page(struct page *page, unsigned long offset,
+ 				 size_t size, int direction);
++extern unsigned long __dma_get_coherent_pfn(void *cpu_addr);
+ 
+ #else /* ! CONFIG_NOT_COHERENT_CACHE */
  /*
-  * P1020 RDB Device Tree Source
-  *
-- * Copyright 2009 Freescale Semiconductor Inc.
-+ * Copyright 2009-2011 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -553,7 +553,7 @@
- 		reg = <0 0xffe09000 0 0x1000>;
- 		bus-range = <0 255>;
- 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <16 2>;
-@@ -580,8 +580,8 @@
- 		#address-cells = <3>;
- 		reg = <0 0xffe0a000 0 0x1000>;
- 		bus-range = <0 255>;
--		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <16 2>;
-@@ -590,8 +590,8 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
--			ranges = <0x2000000 0x0 0xc0000000
--				  0x2000000 0x0 0xc0000000
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
+@@ -52,6 +53,7 @@ extern void __dma_sync_page(struct page *page, unsigned long offset,
+ #define __dma_free_coherent(size, addr)		((void)0)
+ #define __dma_sync(addr, size, rw)		((void)0)
+ #define __dma_sync_page(pg, off, sz, rw)	((void)0)
++#define __dma_get_coherent_pfn(cpu_addr)	(0)
  
- 				  0x1000000 0x0 0x0
-diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
-index da4cb0d..e2d48fd 100644
---- a/arch/powerpc/boot/dts/p2020rdb.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb.dts
-@@ -1,7 +1,7 @@
- /*
-  * P2020 RDB Device Tree Source
-  *
-- * Copyright 2009 Freescale Semiconductor Inc.
-+ * Copyright 2009-2011 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -537,7 +537,7 @@
- 		reg = <0 0xffe09000 0 0x1000>;
- 		bus-range = <0 255>;
- 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <25 2>;
-@@ -564,8 +564,8 @@
- 		#address-cells = <3>;
- 		reg = <0 0xffe0a000 0 0x1000>;
- 		bus-range = <0 255>;
--		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <26 2>;
-@@ -574,8 +574,8 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
--			ranges = <0x2000000 0x0 0xc0000000
--				  0x2000000 0x0 0xc0000000
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
+ #endif /* ! CONFIG_NOT_COHERENT_CACHE */
  
- 				  0x1000000 0x0 0x0
-diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-index 0fe93d0..b69c3a5 100644
---- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-@@ -6,7 +6,7 @@
-  * This dts file allows core0 to have memory, l2, i2c, spi, gpio, dma1, usb,
-  * eth1, eth2, sdhc, crypto, global-util, pci0.
-  *
-- * Copyright 2009 Freescale Semiconductor Inc.
-+ * Copyright 2009-2011 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -342,7 +342,7 @@
- 		reg = <0 0xffe09000 0 0x1000>;
- 		bus-range = <0 255>;
- 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <25 2>;
-diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-index e95a512..7a31d46c 100644
---- a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-@@ -7,7 +7,7 @@
-  *
-  * Please note to add "-b 1" for core1's dts compiling.
-  *
-- * Copyright 2009 Freescale Semiconductor Inc.
-+ * Copyright 2009-2011 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -162,8 +162,8 @@
- 		#address-cells = <3>;
- 		reg = <0 0xffe0a000 0 0x1000>;
- 		bus-range = <0 255>;
--		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <26 2>;
-@@ -172,8 +172,8 @@
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
--			ranges = <0x2000000 0x0 0xc0000000
--				  0x2000000 0x0 0xc0000000
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
+@@ -198,6 +200,11 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+ #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
  
- 				  0x1000000 0x0 0x0
--- 
-1.7.3
++extern int dma_mmap_coherent(struct device *, struct vm_area_struct *,
++			     void *, dma_addr_t, size_t);
++#define ARCH_HAS_DMA_MMAP_COHERENT
++
++
+ static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 		enum dma_data_direction direction)
+ {
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index cf02cad..0f52235 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -179,3 +179,21 @@ static int __init dma_init(void)
+        return 0;
+ }
+ fs_initcall(dma_init);
++
++int dma_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
++		      void *cpu_addr, dma_addr_t handle, size_t size)
++{
++	unsigned long pfn;
++
++#ifdef CONFIG_NOT_COHERENT_CACHE
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++	pfn = __dma_get_coherent_pfn(cpu_addr);
++#else
++	pfn = page_to_pfn(virt_to_page(cpu_addr));
++#endif
++	return remap_pfn_range(vma, vma->vm_start,
++			       pfn + vma->vm_pgoff,
++			       vma->vm_end - vma->vm_start,
++			       vma->vm_page_prot);
++}
++
+diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+index 757c0be..174b10a 100644
+--- a/arch/powerpc/mm/dma-noncoherent.c
++++ b/arch/powerpc/mm/dma-noncoherent.c
+@@ -399,3 +399,23 @@ void __dma_sync_page(struct page *page, unsigned long offset,
+ #endif
+ }
+ EXPORT_SYMBOL(__dma_sync_page);
++
++/*
++ * Return the PFN for a given cpu virtual address returned by
++ * __dma_alloc_coherent. This is used by dma_mmap_coherent()
++ */
++unsigned long __dma_get_coherent_pfn(void *cpu_addr)
++{	
++	/* This should always be populated, so we don't test every
++	 * level. If that fails, we'll have a nice crash which
++	 * will be as good as a BUG_ON()
++	 */
++	pgd_t *pgd = pgd_offset_k(cpu_addr);
++	pud_t *pud = pud_offset(pgd, cpu_addr);
++	pmd_t *pmd = pmd_offset(pud, cpu_addr);
++	pte_t *ptep = pte_offset_kernel(pmd, cpu_addr);
++
++	if (pte_none(*ptep) || !pte_present(*ptep))
++		return 0;
++	return pte_pfn(*ptep);	
++}
