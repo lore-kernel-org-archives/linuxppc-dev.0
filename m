@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3B445B6F87
+	by ozlabs.org (Postfix) with ESMTPS id D7F4EB6F11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 17:50:16 +1100 (EST)
-Subject: [PATCH] powerpc: Implement dma_mmap_coherent()
+	Fri, 25 Mar 2011 17:52:04 +1100 (EST)
+Subject: ALSA: vmalloc buffers should use normal mmap
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Takashi Iwai <tiwai@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Mar 2011 17:50:06 +1100
-Message-ID: <1301035806.2402.470.camel@pasglop>
+Date: Fri, 25 Mar 2011 17:51:54 +1100
+Message-ID: <1301035914.2402.472.camel@pasglop>
 Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,106 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is used by Alsa to mmap buffers allocated with dma_alloc_coherent()
-into userspace. We need a special variant to handle machines with
-non-coherent DMAs as those buffers have "special" virt addresses and
-require non-cachable mappings
+It's a big no-no to use pgprot_noncached() when mmap'ing such buffers
+into userspace since they are mapped cachable in kernel space.
+
+This can cause all sort of interesting things ranging from to garbled
+sound to lockups on various architectures. I've observed that usb-audio
+is broken on powerpc 4xx for example because of that.
+
+Also remove the now unused snd_pcm_lib_mmap_noncached(). It's
+an arch business to know when to use uncached mappings, there's
+already hacks for MIPS inside snd_pcm_default_mmap() and other
+archs are supposed to use dma_mmap_coherent().
+
+(See my separate patch that adds dma_mmap_coherent() to powerpc)
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Takashi Iwai <tiwai@suse.de>
 ---
+ include/sound/pcm.h     |    4 +---
+ sound/core/pcm_native.c |    9 ---------
+ 2 files changed, 1 insertions(+), 12 deletions(-)
 
-Dunno if anybody with CONFIG_NOT_COHERENT_CACHE has some audio device
-that uses dma buffers (ie not usb-audio) and wants to try that out...
-should fix a long standing problem.
-
- arch/powerpc/include/asm/dma-mapping.h |    7 +++++++
- arch/powerpc/kernel/dma.c              |   18 ++++++++++++++++++
- arch/powerpc/mm/dma-noncoherent.c      |   20 ++++++++++++++++++++
- 3 files changed, 45 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 6d2416a..41e0eb7 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -42,6 +42,7 @@ extern void __dma_free_coherent(size_t size, void *vaddr);
- extern void __dma_sync(void *vaddr, size_t size, int direction);
- extern void __dma_sync_page(struct page *page, unsigned long offset,
- 				 size_t size, int direction);
-+extern unsigned long __dma_get_coherent_pfn(void *cpu_addr);
- 
- #else /* ! CONFIG_NOT_COHERENT_CACHE */
- /*
-@@ -52,6 +53,7 @@ extern void __dma_sync_page(struct page *page, unsigned long offset,
- #define __dma_free_coherent(size, addr)		((void)0)
- #define __dma_sync(addr, size, rw)		((void)0)
- #define __dma_sync_page(pg, off, sz, rw)	((void)0)
-+#define __dma_get_coherent_pfn(cpu_addr)	(0)
- 
- #endif /* ! CONFIG_NOT_COHERENT_CACHE */
- 
-@@ -198,6 +200,11 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
- 
-+extern int dma_mmap_coherent(struct device *, struct vm_area_struct *,
-+			     void *, dma_addr_t, size_t);
-+#define ARCH_HAS_DMA_MMAP_COHERENT
-+
-+
- static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 		enum dma_data_direction direction)
- {
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index cf02cad..0f52235 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -179,3 +179,21 @@ static int __init dma_init(void)
-        return 0;
- }
- fs_initcall(dma_init);
-+
-+int dma_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
-+		      void *cpu_addr, dma_addr_t handle, size_t size)
-+{
-+	unsigned long pfn;
-+
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+	pfn = __dma_get_coherent_pfn(cpu_addr);
-+#else
-+	pfn = page_to_pfn(virt_to_page(cpu_addr));
-+#endif
-+	return remap_pfn_range(vma, vma->vm_start,
-+			       pfn + vma->vm_pgoff,
-+			       vma->vm_end - vma->vm_start,
-+			       vma->vm_page_prot);
-+}
-+
-diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-index 757c0be..174b10a 100644
---- a/arch/powerpc/mm/dma-noncoherent.c
-+++ b/arch/powerpc/mm/dma-noncoherent.c
-@@ -399,3 +399,23 @@ void __dma_sync_page(struct page *page, unsigned long offset,
+diff --git a/include/sound/pcm.h b/include/sound/pcm.h
+index 430a9cc..e1bad11 100644
+--- a/include/sound/pcm.h
++++ b/include/sound/pcm.h
+@@ -1031,9 +1031,7 @@ int snd_pcm_lib_mmap_iomem(struct snd_pcm_substream *substream, struct vm_area_s
+ #define snd_pcm_lib_mmap_iomem	NULL
  #endif
- }
- EXPORT_SYMBOL(__dma_sync_page);
-+
-+/*
-+ * Return the PFN for a given cpu virtual address returned by
-+ * __dma_alloc_coherent. This is used by dma_mmap_coherent()
-+ */
-+unsigned long __dma_get_coherent_pfn(void *cpu_addr)
-+{	
-+	/* This should always be populated, so we don't test every
-+	 * level. If that fails, we'll have a nice crash which
-+	 * will be as good as a BUG_ON()
-+	 */
-+	pgd_t *pgd = pgd_offset_k(cpu_addr);
-+	pud_t *pud = pud_offset(pgd, cpu_addr);
-+	pmd_t *pmd = pmd_offset(pud, cpu_addr);
-+	pte_t *ptep = pte_offset_kernel(pmd, cpu_addr);
-+
-+	if (pte_none(*ptep) || !pte_present(*ptep))
-+		return 0;
-+	return pte_pfn(*ptep);	
-+}
+ 
+-int snd_pcm_lib_mmap_noncached(struct snd_pcm_substream *substream,
+-			       struct vm_area_struct *area);
+-#define snd_pcm_lib_mmap_vmalloc	snd_pcm_lib_mmap_noncached
++#define snd_pcm_lib_mmap_vmalloc NULL
+ 
+ static inline void snd_pcm_limit_isa_dma_size(int dma, size_t *max)
+ {
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 2d99c37..7639407 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3194,15 +3194,6 @@ int snd_pcm_lib_mmap_iomem(struct snd_pcm_substream *substream,
+ EXPORT_SYMBOL(snd_pcm_lib_mmap_iomem);
+ #endif /* SNDRV_PCM_INFO_MMAP */
+ 
+-/* mmap callback with pgprot_noncached */
+-int snd_pcm_lib_mmap_noncached(struct snd_pcm_substream *substream,
+-			       struct vm_area_struct *area)
+-{
+-	area->vm_page_prot = pgprot_noncached(area->vm_page_prot);
+-	return snd_pcm_default_mmap(substream, area);
+-}
+-EXPORT_SYMBOL(snd_pcm_lib_mmap_noncached);
+-
+ /*
+  * mmap DMA buffer
+  */
