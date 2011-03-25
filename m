@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B741FB6FCF
+	by ozlabs.org (Postfix) with ESMTPS id C99FFB6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Mar 2011 09:17:00 +1100 (EST)
-Subject: [BUG] pgprot_noncached() is -NOT- safe for mapping vmalloc buffers
-	into userspace
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: tiwai@suse.de
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Mar 2011 09:16:48 +1100
-Message-ID: <1301005008.2402.453.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Matthew Evans <matt.evans@au1.ibm.com>
+	Fri, 25 Mar 2011 15:21:06 +1100 (EST)
+Subject: Re: Query: PCIe range entry at pcie@0 in dts files
+Mime-Version: 1.0 (Apple Message framework v1082)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <071A08F2C6A57E4E94D980ECA553F874154CD3@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Thu, 24 Mar 2011 23:20:56 -0500
+Message-Id: <013F9859-851E-4D61-BB7C-F6987DBECFF8@kernel.crashing.org>
+References: <071A08F2C6A57E4E94D980ECA553F874154CD3@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Takashi !
 
-While working on endian-fixing xHCI with Matt (CC), we discovered the
-source of our problems with usb-audio on a board we were working on.
+On Mar 23, 2011, at 10:20 PM, Kushwaha Prabhakar-B32579 wrote:
 
-c32d977b8157bf67cdf47729ce7dd054a26eb534
-"ALSA: pcm - Call pgprot_noncached() for vmalloc'ed buffers"
+>=20
+> Hi all,
+>=20
+> I have query about usage of range field at pcie@0 under PCIe =
+controller. Please find snap shot from mpc8536_36.dts..
+>=20
+> 	pci3: pcie@fffe0b000 {
+> 		compatible =3D "fsl,mpc8548-pcie";
+> 		device_type =3D "pci";
+> 		#interrupt-cells =3D <1>;
+> 		#size-cells =3D <2>;
+> 		#address-cells =3D <3>;
+> 		reg =3D <0xf 0xffe0b000 0 0x1000>;
+> 		bus-range =3D <0 0xff>;
+> 		ranges =3D <0x02000000 0 0xe0000000 0xc 0x20000000 0 =
+0x20000000
+> 			  0x01000000 0 0x00000000 0xf 0xffc30000 0 =
+0x00010000>;
+> 		clock-frequency =3D <33333333>;
+> 		interrupt-parent =3D <&mpic>;
+> 		interrupts =3D <27 0x2>;
+> 		interrupt-map-mask =3D <0xf800 0 0 7>;
+> 		interrupt-map =3D <
+> 			/* IDSEL 0x0 */
+> 			0000 0 0 1 &mpic 8 1
+> 			0000 0 0 2 &mpic 9 1
+> 			0000 0 0 3 &mpic 10 1
+> 			0000 0 0 4 &mpic 11 1
+> 			>;
+>=20
+> 		pcie@0 {
+> 			reg =3D <0 0 0 0 0>;
+> 			#size-cells =3D <2>;
+> 			#address-cells =3D <3>;
+> 			device_type =3D "pci";
+> 			ranges =3D <0x02000000 0 0xe0000000 --> =
+child/port start address
+> 				  0x02000000 0 0xe0000000 --> Parent bus =
+address
+> 				  0 0x20000000
+>=20
+> 				  0x01000000 0 0x00000000
+> 				  0x01000000 0 0x00000000
+> 				  0 0x00100000>;
+> 		};
+> 	};
+>=20
+> Question:
+> A) is ranges filed of pcie@0 really required?
+> 	 I just went through the code and found scan_OF_for_pci_dev() =
+called from pci_busdev_to_OF_node() touches pcie@0 node. But, It does =
+not even uses range filed.=20
+>=20
+> 	static struct device_node *scan_OF_for_pci_dev(struct =
+device_node *parent,unsigned int devfn) {
+> 		 ---
+>       	---
+> 		for_each_child_of_node(parent, np) {
+> 			reg =3D of_get_property(np, "reg", &psize);=20
+>=20
+> 		  ---
+> 		  ---
+>            	    if (!strcmp(np->name, "multifunc-device")) {=20
+> 	     =20
+> 	}
+>=20
+>   I also checked "Power_ePAPR_APPROVED_v1.0.pdf". It never say range =
+filed required for child bus.
 
-I'm afraid that this is totally bogus :-)
+Part of the reason for the range is to match PCIe semantics of RC having =
+a transparent bridge.
 
-I don't know on what arch it is safe to have the same memory be mapped
-cachable in the kernel (and accessed via this cached mapping) and
-non-cachable in userspace, but I can confidently say that wherever it
-works it does so by accident.
+>=20
+> B) if range field of pcie@0 required. why does child/port start =
+address same as Parent bus address?  Range property provides mapping of =
+port address to parent address space.
+> So the value should be 0x00000000. Means port's address starting from =
+0x00000000 to size 0x20000000 is mapped parent's 0xe0000000.
+>=20
+> 			ranges =3D <0x02000000 0 0x00000000  --> =
+Child/port's start address
+> 				  0x02000000 0 0xe0000000    --> Parent =
+bus address
+> 				  0 0x20000000
+>=20
+> 				  0x01000000 0 0x00000000
+> 				  0x01000000 0 0x00000000
+> 				  0 0x00100000>;
 
-In the case of usb-audio, what we observed is that the user application
-was writing samples using an uncached mapping, so directly to memory,
-which does -not- invalidate conflicting cache lines on the way, an the
-kernel would then memcpy those data to the USB buffers using a cached
-mapping (vmalloc) and essentially get stale stuff from the cache instead
-of the real samples.
 
-Worse, on some processors, it's actually -illegal- to create (and even
-more to -access-) a conflicting mapping of a page of memory, ie, have it
-mapped cached somewhere and uncached somewhere else. It will lockup some
-processors and afaik, some x86 as well.
+because the bridge is transparent.
 
-In fact, cache coherent architectures often don't support mapping memory
-uncached -at-all- so something like snd_pcm_lib_mmap_noncached()
-shouldn't exist, or at least be under arch control. There's no case
-where it's "always safe". There will almost always be a cache alias in
-the linear mapping unless special arch specific sauce has been applied.
-
-Now, there's another problem on top of that, which is that
-snd_pcm_default_mmap() will not work properly the "other way around" on
-powerpc, where the mapping -needs- to be uncached bcs you are running on
-a non cache coherent embedded CPU and trying to mmap DMA memory, but
-that's something that needs fixing inside powerpc by properly defining
-dma_mmap_coherent() & ARCH_HAS_DMA_MMAP_COHERENT (I thought we had added
-it a while back but it's not upstream, patch must have got lost). We
-must also make sure we don't go down that path for vmalloc memory
-though.
-
-Cheers,
-Ben.
+- k=
