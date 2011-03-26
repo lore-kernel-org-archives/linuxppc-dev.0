@@ -1,26 +1,20 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Sat, 26 Mar 2011 14:40:59 +0100
-From: Richard Cochran <richardcochran@gmail.com>
-To: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH V12 4/4] ptp: Added a clock driver for the National
-	Semiconductor PHYTER.
-Message-ID: <20110326134059.GC23260@riccoc20.at.omicron.at>
-References: <cover.1298878618.git.richard.cochran@omicron.at>
-	<f8af215ebe32a8c0f4b3a82b8ee7e8008b4feb1e.1298878618.git.richard.cochran@omicron.at>
-	<1300916785.848.54.camel@work-vm>
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A413BB6F8C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 27 Mar 2011 06:58:04 +1100 (EST)
+Date: Sat, 26 Mar 2011 20:57:51 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc: restore some misc devices to our configs
+Message-ID: <20110326195751.GA30481@pengutronix.de>
+References: <20110326181129.2b578a57.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1300916785.848.54.camel@work-vm>
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
-	Mike Frysinger <vapier@gentoo.org>,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20110326181129.2b578a57.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 23, 2011 at 02:46:25PM -0700, John Stultz wrote:
-> On Mon, 2011-02-28 at 08:58 +0100, Richard Cochran wrote:
-> > +static int tdr_write(int bc, struct phy_device *dev,
-> > +		     const struct timespec *ts, u16 cmd)
-> > +{
-> > +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_nsec & 0xffff);/* ns[15:0]  */
-> > +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_nsec >> 16);   /* ns[31:16] */
-> > +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_sec & 0xffff); /* sec[15:0] */
-> > +	ext_write(bc, dev, PAGE4, PTP_TDR, ts->tv_sec >> 16);    /* sec[31:16]*/
-> > +
-> > +	ext_write(bc, dev, PAGE4, PTP_CTL, cmd);
-> > +
-> > +	return 0;
-> > +}
+Hello,
+
+On Sat, Mar 26, 2011 at 06:11:29PM +1100, Stephen Rothwell wrote:
+> Uwe Kleine-König reported:
 > 
-> The above needs to hold the extreg_lock, and should be commented as
-> such.
+> 	while working on an defconfig (arm/mx27) I noticed that just updating
+> 	it[1] results in removing CONFIG_EEPROM_AT24=y.  The reason is that
+> 	since commit
+> 
+> 		v2.6.36-5965-g5f2365d (misc devices: do not enable by default)
+> 
+> 	MISC_DEVICES isn't enabled anymore by default.  So all defconfigs that
+> 	have CONFIG_SOME_SYMBOL=y (or =m) (with SOME_SYMBOL depending on
+> 	MISC_DEVICES) but not CONFIG_MISC_DEVICES=y suffer from the same
+> 	problem.
+> 
+> This restores those misc devices to the powerpc defconfigs.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Cc: Uwe Kleine-König <u.kleine-koenig@pengutronix.de
+> ---
+>  arch/powerpc/configs/44x/warp_defconfig          |    1 +
+>  arch/powerpc/configs/52xx/motionpro_defconfig    |    1 +
+>  arch/powerpc/configs/86xx/gef_ppc9a_defconfig    |    1 +
+>  arch/powerpc/configs/86xx/gef_sbc310_defconfig   |    1 +
+>  arch/powerpc/configs/86xx/gef_sbc610_defconfig   |    1 +
+>  arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig |    1 +
+>  arch/powerpc/configs/e55xx_smp_defconfig         |    1 +
+>  arch/powerpc/configs/linkstation_defconfig       |    1 +
+>  arch/powerpc/configs/mpc512x_defconfig           |    1 +
+>  arch/powerpc/configs/mpc5200_defconfig           |    1 +
+>  arch/powerpc/configs/mpc85xx_defconfig           |    1 +
+>  arch/powerpc/configs/mpc85xx_smp_defconfig       |    1 +
+>  arch/powerpc/configs/mpc86xx_defconfig           |    1 +
+>  arch/powerpc/configs/pasemi_defconfig            |    1 +
+>  arch/powerpc/configs/ppc6xx_defconfig            |    1 +
+>  15 files changed, 15 insertions(+), 0 deletions(-)
+These are exactly the files I reported for powerpc, so
 
-Okay, will do.
+Acked-by: Uwe Kleine-König
 
-> And again, the function names are sort of generic, and could use a
-> dp83640_ prefix or something.
+Thanks
+Uwe
 
-So, I will rename the IXP functions in the other driver to make them
-more unique, but in this case I really prefer to keep the short names
-for the sake of readability.
-
-Just about every operation on this PHY requires four 16-bit writes,
-where each write can really mean two writes, with the first one to set
-a "page" register for the following write.
-
-Keeping the tabular style (shown above) makes it much more clear what
-is going on, IMHO. If the function names become longer, that would
-force line breaks and spoil the nice formatting.
-
-Also, these names are not in use anywhere else in the kernel's eight
-million LOC.
-
-Thanks,
-
-Richard
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
