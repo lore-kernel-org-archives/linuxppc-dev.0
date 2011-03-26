@@ -1,20 +1,12 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A413BB6F8C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Mar 2011 06:58:04 +1100 (EST)
-Date: Sat, 26 Mar 2011 20:57:51 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] powerpc: restore some misc devices to our configs
-Message-ID: <20110326195751.GA30481@pengutronix.de>
-References: <20110326181129.2b578a57.sfr@canb.auug.org.au>
+Return-Path: <bdebug@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20110326181129.2b578a57.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Sat, 26 Mar 2011 18:02:43 -0400
+Message-ID: <AANLkTi=ufuv8Gd3pxfo2zwWSkkqQas7yk1+pYXaKn1oU@mail.gmail.com>
+Subject: mpc8250 device tree 2.6.38
+From: suresh chandra <bdebug@gmail.com>
+To: devicetree-discuss@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary=002215045bdbb44e6f049f69de90
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +16,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+--002215045bdbb44e6f049f69de90
+Content-Type: multipart/alternative; boundary=002215045bdbb44e62049f69de8e
 
-On Sat, Mar 26, 2011 at 06:11:29PM +1100, Stephen Rothwell wrote:
-> Uwe Kleine-König reported:
-> 
-> 	while working on an defconfig (arm/mx27) I noticed that just updating
-> 	it[1] results in removing CONFIG_EEPROM_AT24=y.  The reason is that
-> 	since commit
-> 
-> 		v2.6.36-5965-g5f2365d (misc devices: do not enable by default)
-> 
-> 	MISC_DEVICES isn't enabled anymore by default.  So all defconfigs that
-> 	have CONFIG_SOME_SYMBOL=y (or =m) (with SOME_SYMBOL depending on
-> 	MISC_DEVICES) but not CONFIG_MISC_DEVICES=y suffer from the same
-> 	problem.
-> 
-> This restores those misc devices to the powerpc defconfigs.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Cc: Uwe Kleine-König <u.kleine-koenig@pengutronix.de
-> ---
->  arch/powerpc/configs/44x/warp_defconfig          |    1 +
->  arch/powerpc/configs/52xx/motionpro_defconfig    |    1 +
->  arch/powerpc/configs/86xx/gef_ppc9a_defconfig    |    1 +
->  arch/powerpc/configs/86xx/gef_sbc310_defconfig   |    1 +
->  arch/powerpc/configs/86xx/gef_sbc610_defconfig   |    1 +
->  arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig |    1 +
->  arch/powerpc/configs/e55xx_smp_defconfig         |    1 +
->  arch/powerpc/configs/linkstation_defconfig       |    1 +
->  arch/powerpc/configs/mpc512x_defconfig           |    1 +
->  arch/powerpc/configs/mpc5200_defconfig           |    1 +
->  arch/powerpc/configs/mpc85xx_defconfig           |    1 +
->  arch/powerpc/configs/mpc85xx_smp_defconfig       |    1 +
->  arch/powerpc/configs/mpc86xx_defconfig           |    1 +
->  arch/powerpc/configs/pasemi_defconfig            |    1 +
->  arch/powerpc/configs/ppc6xx_defconfig            |    1 +
->  15 files changed, 15 insertions(+), 0 deletions(-)
-These are exactly the files I reported for powerpc, so
+--002215045bdbb44e62049f69de8e
+Content-Type: text/plain; charset=ISO-8859-1
 
-Acked-by: Uwe Kleine-König
+Hi All,
 
-Thanks
-Uwe
+I am trying to boot Linux-2.6.38 on custom build MPC8250 board with all
+SCC's and SMC's configured as UART's.
+As device tree file for 8250 is not available I referred mpc8272ads file and
+created the one attached.
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+I could able to use SMC1 or SCC1 as serial port in u-boot.
+
+I could get Linux serial console on SCC1 but not on SMC1. Port configuration
+has been set correctly in Linux.
+
+For some reasons Linux serial console on SCC requires user to press <ENTER>
+key to  enter the console and also to mount root file system.
+
+One more strange problem is, console won't come up if I pass boot argument
+console=ttyCPM0,115200 through u-boot.
+I am passing stdout-path through device tree file for serial console
+
+I am not sure where I am doing mistake.
+I set the  cpm-muram-data to <0 4000>. Rest of the DPRAM is reserved.
+
+I request you to go through device tree file and suggest a solution. I need
+SMC1 to work as serial console.
+
+Thanks,
+Suresh
+
+--002215045bdbb44e62049f69de8e
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi All,<br><br>I am trying to boot Linux-2.6.38 on custom build MPC8250 boa=
+rd with all SCC&#39;s and SMC&#39;s configured as UART&#39;s. <br>As device=
+ tree file for 8250 is not available I referred mpc8272ads file and created=
+ the one attached.<br>
+<br>I could able to use SMC1 or SCC1 as serial port in u-boot.<br><br>I cou=
+ld get Linux serial console on SCC1 but not on SMC1. Port configuration has=
+ been set correctly in Linux.<br><br>For some reasons Linux serial console =
+on SCC requires user to press &lt;ENTER&gt; key to=A0 enter the console and=
+ also to mount root file system.<br>
+<br>One more strange problem is, console won&#39;t come up if I pass boot a=
+rgument console=3DttyCPM0,115200 through u-boot. <br>I am passing stdout-pa=
+th through device tree file for serial console<br><br>I am not sure where I=
+ am doing mistake. <br>
+I set the=A0 cpm-muram-data to &lt;0 4000&gt;. Rest of the DPRAM is reserve=
+d.<br><br>I request you to go through device tree file and suggest a soluti=
+on. I need SMC1 to work as serial console.<br><br>Thanks,<br>Suresh<br>
+
+--002215045bdbb44e62049f69de8e--
+
+--002215045bdbb44e6f049f69de90
+Content-Type: application/octet-stream; name="ipgate_8250.dts"
+Content-Disposition: attachment; filename="ipgate_8250.dts"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_glrmjvyk0
+
+LyoKICogTVBDODI1MCBBRFMgRGV2aWNlIFRyZWUgU291cmNlCiAqCiAqIENvcHlyaWdodCAyMDA1
+LDIwMDggRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLgogKgogKiBUaGlzIHByb2dyYW0gaXMg
+ZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgIGl0IGFuZC9vciBtb2RpZnkgaXQK
+ICogdW5kZXIgIHRoZSB0ZXJtcyBvZiAgdGhlIEdOVSBHZW5lcmFsICBQdWJsaWMgTGljZW5zZSBh
+cyBwdWJsaXNoZWQgYnkgdGhlCiAqIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbjsgIGVpdGhlciB2
+ZXJzaW9uIDIgb2YgdGhlICBMaWNlbnNlLCBvciAoYXQgeW91cgogKiBvcHRpb24pIGFueSBsYXRl
+ciB2ZXJzaW9uLgogKi8KCi9kdHMtdjEvOwoKLyB7Cgltb2RlbCA9ICJNUEM4MjUwQURTIjsKCWNv
+bXBhdGlibGUgPSAiZnNsLG1wYzgyNTBhZHMiOwoJI2FkZHJlc3MtY2VsbHMgPSA8MT47Cgkjc2l6
+ZS1jZWxscyA9IDwxPjsKCWFsaWFzZXMgewoJCWV0aGVybmV0MCA9ICZldGgwOwoJCWV0aGVybmV0
+MSA9ICZldGgxOwoJCXNlcmlhbDAgPSAmc2NjMTsKCQlzZXJpYWwxID0gJnNjYzI7CgkJc2VyaWFs
+MiA9ICZzY2MzOwoJCXNlcmlhbDMgPSAmc2NjNDsKCQlzZXJpYWw0ID0gJnNtYzE7CgkJc2VyaWFs
+NSA9ICZzbWMyOwoJfTsKCgljcHVzIHsKCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKCQkjc2l6ZS1j
+ZWxscyA9IDwwPjsKCgkJY3B1QDAgewoJCQlkZXZpY2VfdHlwZSA9ICJjcHUiOwoJCQlyZWcgPSA8
+MHgwPjsKCQkJZC1jYWNoZS1saW5lLXNpemUgPSA8MzI+OwoJCQlpLWNhY2hlLWxpbmUtc2l6ZSA9
+IDwzMj47CgkJCWQtY2FjaGUtc2l6ZSA9IDwxNjM4ND47CgkJCWktY2FjaGUtc2l6ZSA9IDwxNjM4
+ND47CgkJCXRpbWViYXNlLWZyZXF1ZW5jeSA9IDwwPjsKCQkJYnVzLWZyZXF1ZW5jeSA9IDwwPjsK
+CQkJY2xvY2stZnJlcXVlbmN5ID0gPDA+OwoJCX07Cgl9OwoKCW1lbW9yeSB7CgkJZGV2aWNlX3R5
+cGUgPSAibWVtb3J5IjsKCQlyZWcgPSA8MHgwIDB4MD47Cgl9OwoKCWxvY2FsYnVzQGMwMDEwMTAw
+IHsKCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwLWxvY2FsYnVzIiwKCQkgICAgICAgICAgICAg
+ImZzbCxwcTItbG9jYWxidXMiOwoJCSNhZGRyZXNzLWNlbGxzID0gPDI+OwoJCSNzaXplLWNlbGxz
+ID0gPDE+OwoJCXJlZyA9IDwweGMwMDEwMTAwIDB4NjA+OwoKCQlyYW5nZXMgPSA8MHgwIDB4MCAw
+eGYwMDAwMDAwIDB4MTAwMDAwMDA+OwoKCQlmbGFzaEAwLDAgewoJCQljb21wYXRpYmxlID0gImpl
+ZGVjLWZsYXNoIjsKCQkJcmVnID0gPDB4MCAweDAgMHgxMDAwMDAwMD47CgkJCWJhbmstd2lkdGgg
+PSA8ND47CgkJCWRldmljZS13aWR0aCA9IDwxPjsKCQl9OwoKCX07CgoKCXNvY0AwYzAwMDAwMCB7
+CgkJI2FkZHJlc3MtY2VsbHMgPSA8MT47CgkJI3NpemUtY2VsbHMgPSA8MT47CgkJZGV2aWNlX3R5
+cGUgPSAic29jIjsKCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwIiwgImZzbCxwcTItc29jIjsK
+CQlyYW5nZXMgPSA8MHgwIDB4YzAwMDAwMDAgMHg1MzAwMD47CgoJCS8vIFRlbXBvcmFyeSAtLSB3
+aWxsIGdvIGF3YXkgb25jZSBrZXJuZWwgdXNlcyByYW5nZXMgZm9yIGdldF9pbW1yYmFzZSgpLgoJ
+CXJlZyA9IDwweGMwMDAwMDAwIDB4NTMwMDA+OwoKCQljcG1AMTE5YzAgewoJCQkjYWRkcmVzcy1j
+ZWxscyA9IDwxPjsKCQkJI3NpemUtY2VsbHMgPSA8MT47CgkJCSNpbnRlcnJ1cHQtY2VsbHMgPSA8
+Mj47CgkJCWNvbXBhdGlibGUgPSAiZnNsLG1wYzgyNTAtY3BtIiwgImZzbCxjcG0yIjsKCQkJcmVn
+ID0gPDB4MTE5YzAgMHgzMD47CgkJCXJhbmdlczsKCgkJCW11cmFtQDAgewoJCQkJI2FkZHJlc3Mt
+Y2VsbHMgPSA8MT47CgkJCQkjc2l6ZS1jZWxscyA9IDwxPjsKCQkJCXJhbmdlcyA9IDwweDAgMHgw
+IDB4MTAwMDA+OwoKCQkJCWRhdGFAMCB7CgkJCQkJY29tcGF0aWJsZSA9ICJmc2wsY3BtLW11cmFt
+LWRhdGEiOwoJCQkJCXJlZyA9IDwweDAgMHg0MDAwPjsKCQkJCQkKCQkJCX07CgkJCX07CgoJCQli
+cmdAMTE5ZjAgewoJCQkJY29tcGF0aWJsZSA9ICJmc2wsbXBjODI1MC1icmciLAoJCQkJICAgICAg
+ICAgICAgICJmc2wsY3BtMi1icmciLAoJCQkJICAgICAgICAgICAgICJmc2wsY3BtLWJyZyI7CgkJ
+CQlyZWcgPSA8MHgxMTlmMCAweDEwIDB4MTE1ZjAgMHgxMD47CgkJCX07CgoJCQkvKiBNb25pdG9y
+IHBvcnQvU0NDMSAqLwoKCQkJc2NjMTogc2VyaWFsQDExYTAwIHsKCQkJCWRldmljZV90eXBlID0g
+InNlcmlhbCI7CgkJCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwLXNjYy11YXJ0IiwKCQkJCSAg
+ICAgICAgICAgICAiZnNsLGNwbTItc2NjLXVhcnQiOwoJCQkJcmVnID0gPDB4MTFhMDAgMHgyMCAw
+eDgwMDAgMHgxMDA+OwoJCQkJaW50ZXJydXB0cyA9IDw0MCA4PjsKCQkJCWludGVycnVwdC1wYXJl
+bnQgPSA8JlBJQz47CgkJCQlmc2wsY3BtLWJyZyA9IDwxPjsKCQkJCWZzbCxjcG0tY29tbWFuZCA9
+IDwweDgwMDAwMD47CiAgICAgICAgICAgIGN1cnJlbnQtc3BlZWQgPSA8MD47IC8qIEZpbGxlZCBp
+biBieSBVLUJvb3QgKi8KCQkJfTsKCQkJCS8qIFNDQyAyICovCgkJCXNjYzI6c2VyaWFsQDExYTIw
+IHsKCQkJCWRldmljZV90eXBlID0gInNlcmlhbCI7CgkJCQljb21wYXRpYmxlID0gImZzbCxtcGM4
+MjUwLXNjYy11YXJ0IiwKCQkJCSAgICAgICAgICAgICAiZnNsLGNwbTItc2NjLXVhcnQiOwoJCQkJ
+cmVnID0gPDB4MTFhMjAgMHgyMCAweDgxMDAgMHgxMDA+OwoJCQkJaW50ZXJydXB0cyA9IDw0MSA4
+PjsKCQkJCWludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47CgkJCQlmc2wsY3BtLWJyZyA9IDwyPjsK
+CQkJCWZzbCxjcG0tY29tbWFuZCA9IDwweDRhMDAwMDA+OwoJCQl9OwoKICAgICAgIC8qIFNDQyAz
+ICovCiAgICAgICAgIHNjYzM6IHNlcmlhbEAxMWE0MCB7CiAgICAgICAgICAgIGRldmljZV90eXBl
+ID0gInNlcmlhbCI7CiAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgyNTAtc2NjLXVh
+cnQiLAogICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0yLXNjYy11YXJ0IjsKICAgICAg
+ICAgICAgcmVnID0gPDB4MTFhNDAgMHgyMCAweDgyMDAgMHgxMDA+OwogICAgICAgICAgICBpbnRl
+cnJ1cHRzID0gPDQyIDg+OwogICAgICAgICAgICBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+Owog
+ICAgICAgICAgICBmc2wsY3BtLWJyZyA9IDwzPjsKICAgICAgICAgICAgZnNsLGNwbS1jb21tYW5k
+ID0gPDB4OGMwMDAwMD47CiAgICAgICAgIH07CgoKCQkJCS8qIFNDQyA0ICovCgkJCXNjYzQ6IHNl
+cmlhbEAxMWE2MCB7CgkJCQlkZXZpY2VfdHlwZSA9ICJzZXJpYWwiOwoJCQkJY29tcGF0aWJsZSA9
+ICJmc2wsbXBjODI1MC1zY2MtdWFydCIsCgkJCQkgICAgICAgICAgICAgImZzbCxjcG0yLXNjYy11
+YXJ0IjsKCQkJCXJlZyA9IDwweDExYTYwIDB4MjAgMHg4MzAwIDB4MTAwPjsKCQkJCWludGVycnVw
+dHMgPSA8NDMgOD47CgkJCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+OwoJCQkJZnNsLGNwbS1i
+cmcgPSA8ND47CgkJCQlmc2wsY3BtLWNvbW1hbmQgPSA8MHhjZTAwMDAwPjsKCQkJfTsKCgoJCS8q
+IFNNQzEgKi8KICAgICAgICAgc21jMTogc2VyaWFsQDExYTgwIHsKICAgICAgICAgICAgZGV2aWNl
+X3R5cGUgPSAic2VyaWFsIjsKICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsbXBjODI1MC1z
+bWMtdWFydCIsCiAgICAgICAgICAgICAgICAgICAgICAgICAiZnNsLGNwbTItc21jLXVhcnQiOwog
+ICAgICAgICAgICByZWcgPSA8MHgxMWE4MCAweDIwIDB4ODdmYyAyPjsKICAgICAgICAgICAgaW50
+ZXJydXB0cyA9IDw0IDg+OwogICAgICAgICAgICBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+Owog
+ICAgICAgICAgICBmc2wsY3BtLWJyZyA9IDw3PjsKICAgICAgICAgICAgZnNsLGNwbS1jb21tYW5k
+ID0gPDB4MWQwMDAwMDA+OwogICAgICAgICAgICBjdXJyZW50LXNwZWVkID0gPDA+OyAvKiBGaWxs
+ZWQgaW4gYnkgVS1Cb290ICovCiAgICAgICAgIH07CgoJCS8qIFNNQzIgKi8KICAgICAgICAgc21j
+Mjogc2VyaWFsQDExYTkwIHsKICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAic2VyaWFsIjsKICAg
+ICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsbXBjODI1MC1zbWMtdWFydCIsCiAgICAgICAgICAg
+ICAgICAgICAgICAgICAiZnNsLGNwbTItc21jLXVhcnQiOwogICAgICAgICAgICByZWcgPSA8MHgx
+MWE5MCAweDIwIDB4ODhmYyAweDAyPjsKICAgICAgICAgICAgaW50ZXJydXB0cyA9IDw1IDg+Owog
+ICAgICAgICAgICBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+OwogICAgICAgICAgICBmc2wsY3Bt
+LWJyZyA9IDw4PjsKICAgICAgICAgICAgZnNsLGNwbS1jb21tYW5kID0gPDB4MjEyMDAwMDA+Owog
+ICAgICAgICB9OwoKCQkJbWRpbzE6IG1kaW9AMTBkMDAgewoJCQkJZGV2aWNlX3R5cGUgPSAibWRp
+byI7CgkJCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwYWRzLW1kaW8tYml0YmFuZyIsCgkJCQkg
+ICAgICAgICAgICAgImZzbCxtcGM4MjUwLW1kaW8tYml0YmFuZyIsCgkJCQkgICAgICAgICAgICAg
+ImZzbCxjcG0yLW1kaW8tYml0YmFuZyI7CgkJCQlyZWcgPSA8MHgxMGQwMCAweDE0PjsKCQkJCSNh
+ZGRyZXNzLWNlbGxzID0gPDE+OwoJCQkJI3NpemUtY2VsbHMgPSA8MD47CgkJCQlmc2wsbWRpby1w
+aW4gPSA8MjI+OwoJCQkJZnNsLG1kYy1waW4gPSA8MjM+OwoKCQkJCVBIWTE6IGV0aGVybmV0LXBo
+eUAxIHsKCQkJCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+OwoJCQkJCWludGVycnVwdHMgPSA8
+MjMgOD47CgkJCQkJcmVnID0gPDB4MT47CgkJCQkJZGV2aWNlX3R5cGUgPSAiZXRoZXJuZXQtcGh5
+IjsKCQkJCX07CgoJCQl9OwoJCQltZGlvMjogbWRpb0AxMGQ2MCB7CgkJCQlkZXZpY2VfdHlwZSA9
+ICJtZGlvIjsKCQkJCWNvbXBhdGlibGUgPSAiZnNsLG1wYzgyNTBhZHMtbWRpby1iaXRiYW5nIiwK
+CQkJCSAgICAgICAgICAgICAiZnNsLG1wYzgyNTAtbWRpby1iaXRiYW5nIiwKCQkJCSAgICAgICAg
+ICAgICAiZnNsLGNwbTItbWRpby1iaXRiYW5nIjsKCQkJCXJlZyA9IDwweDEwZDYwIDB4MTQ+OwoJ
+CQkJI2FkZHJlc3MtY2VsbHMgPSA8MT47CgkJCQkjc2l6ZS1jZWxscyA9IDwwPjsKCQkJCWZzbCxt
+ZGlvLXBpbiA9IDwxMj47CgkJCQlmc2wsbWRjLXBpbiA9IDwxMz47CgoJCQkJUEhZMjogZXRoZXJu
+ZXQtcGh5QDEgewoJCQkJCWludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47CgkJCQkJaW50ZXJydXB0
+cyA9IDwyMyA4PjsKCQkJCQlyZWcgPSA8MHgxPjsKCQkJCQlkZXZpY2VfdHlwZSA9ICJldGhlcm5l
+dC1waHkiOwoJCQkJfTsKCgkJCX07Ci8qCgkJCW1kaW8zOnNkaW9AMTBkNjAgewoJCQkJZGV2aWNl
+X3R5cGUgPSAibWRpbyI7CgkJCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwYWRzLW1kaW8tYml0
+YmFuZyIsCgkJCQkgICAgICAgICAgICAgImZzbCxtcGM4MjUwLW1kaW8tYml0YmFuZyIsCgkJCQkg
+ICAgICAgICAgICAgImZzbCxjcG0yLW1kaW8tYml0YmFuZyI7CgkJCQlyZWcgPSA8MHgxMGQ2MCAw
+eDE0PjsKCQkJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwoJCQkJI3NpemUtY2VsbHMgPSA8MD47CgkJ
+CQlmc2wsbWRpby1waW4gPSA8MTc+OwoJCQkJZnNsLG1kYy1waW4gPSA8MTY+OwoKCQkJCVBIWTI6
+IGV0aGVybmV0LXBoeUAwIHsKCQkJCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+OwoJCQkJCWlu
+dGVycnVwdHMgPSA8MjMgOD47CgkJCQkJcmVnID0gPDB4MT47CgkJCQkJZGV2aWNlX3R5cGUgPSAi
+ZXRoZXJuZXQtcGh5IjsKCQkJCX07CgoJCQl9OwoqLwoKCQkJZXRoMDogZXRoZXJuZXRAMTEzMDAg
+ewoJCQkJZGV2aWNlX3R5cGUgPSAibmV0d29yayI7CgkJCQljb21wYXRpYmxlID0gImZzbCxtcGM4
+MjUwLWZjYy1lbmV0IiwKCQkJCSAgICAgICAgICAgICAiZnNsLGNwbTItZmNjLWVuZXQiOwoJCQkJ
+cmVnID0gPDB4MTEzMDAgMHgyMCAweDg0MDAgMHgxMDAgMHgxMTM5MCAweDE+OwoJCQkJbG9jYWwt
+bWFjLWFkZHJlc3MgPSBbIDAwIDAwIDAwIDAwIDAwIDAwIF07CgkJCQlpbnRlcnJ1cHRzID0gPDMy
+IDg+OwoJCQkJaW50ZXJydXB0LXBhcmVudCA9IDwmUElDPjsKCQkJCXBoeS1oYW5kbGUgPSA8JlBI
+WTE+OwoJCQkJbGludXgsbmV0d29yay1pbmRleCA9IDwwPjsKCQkJCWZzbCxjcG0tY29tbWFuZCA9
+IDwweDEyMDAwMzAwPjsKCQkJfTsKCgoJCQkKCQkJZXRoMTogZXRoZXJuZXRAMTEzMjAgewoJCQkJ
+ZGV2aWNlX3R5cGUgPSAibmV0d29yayI7CgkJCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwLWZj
+Yy1lbmV0IiwKCQkJCSAgICAgICAgICAgICAiZnNsLGNwbTItZmNjLWVuZXQiOwoJCQkJcmVnID0g
+PDB4MTEzMjAgMHgyMCAweDg1MDAgMHgxMDAgMHgxMTNiMCAxPjsKCQkJCWxvY2FsLW1hYy1hZGRy
+ZXNzID0gWyAwMCAwMCAwMCAwMCAwMCAwMCBdOwoJCQkJaW50ZXJydXB0cyA9IDwzMyA4PjsKCQkJ
+CWludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47CgkJCQlwaHktaGFuZGxlID0gPCZQSFkyPjsKCQkJ
+CWxpbnV4LG5ldHdvcmstaW5kZXggPSA8MT47CgkJCQlmc2wsY3BtLWNvbW1hbmQgPSA8MHgxNjIw
+MDMwMD47CgkJCX07CgoKCQlQSUM6IGludGVycnVwdC1jb250cm9sbGVyQDEwYzAwIHsKCQkJI2lu
+dGVycnVwdC1jZWxscyA9IDwyPjsKCQkJaW50ZXJydXB0LWNvbnRyb2xsZXI7CgkJCXJlZyA9IDww
+eDEwYzAwIDB4ODA+OwoJCQljb21wYXRpYmxlID0gImZzbCxtcGM4MjUwLXBpYyIsICJmc2wsY3Bt
+Mi1waWMiOwoJCX07Cgl9Owp9OwoKLyoKIGNob3NlbiB7CiAgICAgIGJvb3RhcmdzID0gInJvb3Q9
+L2Rldi9yYW0gcnciOwoJCWxpbnV4LHN0ZG91dC1wYXRoID0gIi9zb2MvY3BtL3NlcmlhbEAxMWEw
+MCI7CiAgIH07CgoKCiovCgljaG9zZW4gewoJCWxpbnV4LHN0ZG91dC1wYXRoID0gIi9zb2MvY3Bt
+L3NlcmlhbEAxMWEwMCI7Cgl9OwoKfTsK
+--002215045bdbb44e6f049f69de90--
