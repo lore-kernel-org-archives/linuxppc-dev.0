@@ -1,16 +1,15 @@
 Return-Path: <matt@ozlabs.org>
-Message-ID: <4D901429.5010807@ozlabs.org>
-Date: Mon, 28 Mar 2011 15:52:57 +1100
+Message-ID: <4D90142C.4050206@ozlabs.org>
+Date: Mon, 28 Mar 2011 15:53:00 +1100
 From: Matt Evans <matt@ozlabs.org>
 MIME-Version: 1.0
 To: sarah.a.sharp@linux.intel.com
-Subject: [PATCH v2 3/5] xhci: Add rmb() between reading event validity & event
-	data access.
-References: <4D8C47CD.3020108@ozlabs.org>
-	<61164.94.211.195.167.1301094709.squirrel@gate.crashing.org>
-In-Reply-To: <61164.94.211.195.167.1301094709.squirrel@gate.crashing.org>
+Subject: [PATCH v2 5/5] xhci: Remove recursive call to xhci_handle_event
+References: <4D8C47D8.4020901@ozlabs.org> <4D8C8F2B.9090808@ru.mvista.com>
+In-Reply-To: <4D8C8F2B.9090808@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+	Sergei Shtylyov <sshtylyov@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +19,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On weakly-ordered systems, the reading of an event's content must occur
-after reading the event's validity.
+Make the caller loop while there are events to handle, instead.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 ---
-Segher, thanks for the comment; explanation added.
+1 byte smaller after Sergei's suggestion.
 
- drivers/usb/host/xhci-ring.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/usb/host/xhci-ring.c |   16 +++++++++-------
+ 1 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-index 45f3b77..d6aa880 100644
+index d6aa880..9c51d69 100644
 --- a/drivers/usb/host/xhci-ring.c
 +++ b/drivers/usb/host/xhci-ring.c
-@@ -2152,6 +2152,11 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
+@@ -2131,7 +2131,7 @@ cleanup:
+  * This function handles all OS-owned events on the event ring.  It may drop
+  * xhci->lock between event processing (e.g. to pass up port status changes).
+  */
+-static void xhci_handle_event(struct xhci_hcd *xhci)
++static int xhci_handle_event(struct xhci_hcd *xhci)
+ {
+ 	union xhci_trb *event;
+ 	int update_ptrs = 1;
+@@ -2140,7 +2140,7 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
+ 	xhci_dbg(xhci, "In %s\n", __func__);
+ 	if (!xhci->event_ring || !xhci->event_ring->dequeue) {
+ 		xhci->error_bitmask |= 1 << 1;
+-		return;
++		return 0;
+ 	}
+ 
+ 	event = xhci->event_ring->dequeue;
+@@ -2148,7 +2148,7 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
+ 	if ((le32_to_cpu(event->event_cmd.flags) & TRB_CYCLE) !=
+ 	    xhci->event_ring->cycle_state) {
+ 		xhci->error_bitmask |= 1 << 2;
+-		return;
++		return 0;
  	}
  	xhci_dbg(xhci, "%s - OS owns TRB\n", __func__);
  
-+	/*
-+	 * Barrier between reading the TRB_CYCLE (valid) flag above and any
-+	 * speculative reads of the event's flags/data below.
+@@ -2192,15 +2192,17 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
+ 	if (xhci->xhc_state & XHCI_STATE_DYING) {
+ 		xhci_dbg(xhci, "xHCI host dying, returning from "
+ 				"event handler.\n");
+-		return;
++		return 0;
+ 	}
+ 
+ 	if (update_ptrs)
+ 		/* Update SW event ring dequeue pointer */
+ 		inc_deq(xhci, xhci->event_ring, true);
+ 
+-	/* Are there more items on the event ring? */
+-	xhci_handle_event(xhci);
++	/* Are there more items on the event ring?  Caller will call us again to
++	 * check.
 +	 */
-+	rmb();
- 	/* FIXME: Handle more event types. */
- 	switch ((le32_to_cpu(event->event_cmd.flags) & TRB_TYPE_BITMASK)) {
- 	case TRB_TYPE(TRB_COMPLETION):
++	return 1;
+ }
+ 
+ /*
+@@ -2282,7 +2284,7 @@ hw_died:
+ 	/* FIXME this should be a delayed service routine
+ 	 * that clears the EHB.
+ 	 */
+-	xhci_handle_event(xhci);
++	while (xhci_handle_event(xhci)) {}
+ 
+ 	temp_64 = xhci_read_64(xhci, &xhci->ir_set->erst_dequeue);
+ 	/* If necessary, update the HW's version of the event ring deq ptr. */
 -- 
 1.7.0.4
