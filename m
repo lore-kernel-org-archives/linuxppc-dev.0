@@ -1,16 +1,16 @@
 Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3F8B4B7274
+	by ozlabs.org (Postfix) with ESMTPS id 953D6100AE0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 06:26:13 +1100 (EST)
-Date: Mon, 28 Mar 2011 14:25:58 -0500
+	Tue, 29 Mar 2011 06:27:00 +1100 (EST)
+Date: Mon, 28 Mar 2011 14:25:56 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: <agraf@suse.de>
-Subject: [PATCH 3/4] KVM: PPC: e500: Introduce msr_block for e500v2
-Message-ID: <20110328192558.GB11104@schlenkerla.am.freescale.net>
+Subject: [PATCH 2/4] KVM: PPC: booke: Wrap __kvmppc_vcpu_run()
+Message-ID: <20110328192556.GA11104@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20110328192454.GA11064@schlenkerla.am.freescale.net>
@@ -26,116 +26,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: yu liu <yu.liu@freescale.com>
 
-In order to use lazy SPE register save/restore, we need to
-know when the guest is using MSR[SPE].  In order to do that, we
-need to control the actual MSR[SPE] separately from the guest's
-notion of MSR[SPE].
-
-Only bits set in msr_block can be changed by the guest in the real MSR.
+We need to save/restore SPE environment on e500 core.
+Wrap __kvmppc_vcpu_run() so that we can put the SPE code in
+e500.c.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/include/asm/kvm_host.h |    3 +++
- arch/powerpc/kernel/asm-offsets.c   |    3 +++
- arch/powerpc/kvm/booke.h            |   17 +++++++++++++++++
- arch/powerpc/kvm/booke_interrupts.S |    6 +++++-
- arch/powerpc/kvm/e500.c             |    3 +++
- 5 files changed, 31 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h  |    1 +
+ arch/powerpc/kvm/44x.c              |    5 +++++
+ arch/powerpc/kvm/book3s.c           |    1 -
+ arch/powerpc/kvm/booke_interrupts.S |    2 +-
+ arch/powerpc/kvm/e500.c             |    5 +++++
+ 5 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index bba3b9b..c376f6b 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -217,6 +217,9 @@ struct kvm_vcpu_arch {
- 	ulong xer;
- 	u32 cr;
- #endif
-+#ifdef CONFIG_FSL_BOOKE
-+	ulong msr_block;
-+#endif
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index ecb3bc7..4e7a1be 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -42,6 +42,7 @@ enum emulation_result {
+ 	EMULATE_AGAIN,        /* something went wrong. go again */
+ };
  
- #ifdef CONFIG_PPC_BOOK3S
- 	ulong shadow_msr;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 23e6a93..75b72c7 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -403,6 +403,9 @@ int main(void)
- 	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
- 	DEFINE(VCPU_SHARED_MSR, offsetof(struct kvm_vcpu_arch_shared, msr));
++extern int __kvmppc_vcpu_entry(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+ extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+ extern char kvmppc_handlers_start[];
+ extern unsigned long kvmppc_handler_len;
+diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+index 74d0e74..3d2e7d2 100644
+--- a/arch/powerpc/kvm/44x.c
++++ b/arch/powerpc/kvm/44x.c
+@@ -147,6 +147,11 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+ }
  
-+#ifdef CONFIG_FSL_BOOKE
-+	DEFINE(VCPU_MSR_BLOCK, offsetof(struct kvm_vcpu, arch.msr_block));
-+#endif
- 	/* book3s */
- #ifdef CONFIG_PPC_BOOK3S
- 	DEFINE(VCPU_HOST_RETIP, offsetof(struct kvm_vcpu, arch.host_retip));
-diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
-index 492bb70..303a415 100644
---- a/arch/powerpc/kvm/booke.h
-+++ b/arch/powerpc/kvm/booke.h
-@@ -52,6 +52,23 @@
- 
- extern unsigned long kvmppc_booke_handlers;
- 
-+#ifdef CONFIG_FSL_BOOKE
-+static inline bool kvmppc_msr_block_has(struct kvm_vcpu *vcpu, u32 block_bit)
++int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
 +{
-+	return !(vcpu->arch.msr_block & block_bit);
++	return __kvmppc_vcpu_entry(kvm_run, vcpu);
 +}
 +
-+static inline void kvmppc_set_msr_block(struct kvm_vcpu *vcpu, u32 block_bit)
-+{
-+	vcpu->arch.msr_block &= ~block_bit;
-+}
-+
-+static inline void kvmppc_clr_msr_block(struct kvm_vcpu *vcpu, u32 block_bit)
-+{
-+	vcpu->arch.msr_block |= block_bit;
-+}
-+#endif
-+
- /* Helper function for "full" MSR writes. No need to call this if only EE is
-  * changing. */
- static inline void kvmppc_set_msr(struct kvm_vcpu *vcpu, u32 new_msr)
+ static int __init kvmppc_44x_init(void)
+ {
+ 	int r;
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index c961de4..fb12853 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -1379,7 +1379,6 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	vfree(vcpu_book3s);
+ }
+ 
+-extern int __kvmppc_vcpu_entry(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+ int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ {
+ 	int ret;
 diff --git a/arch/powerpc/kvm/booke_interrupts.S b/arch/powerpc/kvm/booke_interrupts.S
-index ab29f5f..92193c7 100644
+index 1cc471f..ab29f5f 100644
 --- a/arch/powerpc/kvm/booke_interrupts.S
 +++ b/arch/powerpc/kvm/booke_interrupts.S
-@@ -409,7 +409,6 @@ lightweight_exit:
- 	mtctr	r3
- 	lwz	r3, VCPU_CR(r4)
- 	mtcr	r3
--	lwz	r5, VCPU_GPR(r5)(r4)
- 	lwz	r6, VCPU_GPR(r6)(r4)
- 	lwz	r7, VCPU_GPR(r7)(r4)
- 	lwz	r8, VCPU_GPR(r8)(r4)
-@@ -419,6 +418,11 @@ lightweight_exit:
- 	lwz	r3, (VCPU_SHARED_MSR + 4)(r3)
- 	oris	r3, r3, KVMPPC_MSR_MASK@h
- 	ori	r3, r3, KVMPPC_MSR_MASK@l
-+#ifdef CONFIG_FSL_BOOKE
-+	lwz	r5, VCPU_MSR_BLOCK(r4)
-+	and	r3, r3, r5
-+#endif
-+	lwz	r5, VCPU_GPR(r5)(r4)
- 	mtsrr1	r3
+@@ -293,7 +293,7 @@ heavyweight_exit:
+  *  r3: kvm_run pointer
+  *  r4: vcpu pointer
+  */
+-_GLOBAL(__kvmppc_vcpu_run)
++_GLOBAL(__kvmppc_vcpu_entry)
+ 	stwu	r1, -HOST_STACK_SIZE(r1)
+ 	stw	r1, VCPU_HOST_STACK(r4)	/* Save stack pointer to vcpu. */
  
- 	/* Clear any debug events which occurred since we disabled MSR[DE].
 diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index e762634..acfe052 100644
+index e3768ee..e762634 100644
 --- a/arch/powerpc/kvm/e500.c
 +++ b/arch/powerpc/kvm/e500.c
-@@ -67,6 +67,9 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
- 	/* Since booke kvm only support one core, update all vcpus' PIR to 0 */
- 	vcpu->vcpu_id = 0;
- 
-+	/* Unblock all msr bits */
-+	kvmppc_clr_msr_block(vcpu, ~0UL);
-+
+@@ -70,6 +70,11 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
  	return 0;
  }
  
++int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
++{
++	return __kvmppc_vcpu_entry(kvm_run, vcpu);
++}
++
+ /* 'linear_address' is actually an encoding of AS|PID|EADDR . */
+ int kvmppc_core_vcpu_translate(struct kvm_vcpu *vcpu,
+                                struct kvm_translation *tr)
 -- 
 1.7.1
