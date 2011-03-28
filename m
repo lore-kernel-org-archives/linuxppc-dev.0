@@ -1,13 +1,14 @@
 Return-Path: <sarah.a.sharp@linux.intel.com>
-Date: Mon, 28 Mar 2011 15:23:36 -0700
+Date: Mon, 28 Mar 2011 15:16:05 -0700
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 To: Matt Evans <matt@ozlabs.org>
-Subject: Re: [PATCH 4/5] xhci: Add an assertion to check for virt_dev=0 bug.
-Message-ID: <20110328222336.GE8065@xanatos>
-References: <4D8C47D2.9010501@ozlabs.org>
+Subject: Re: [PATCH 0/5] Make xHCI driver endian-safe, add a barrier, some
+	debug
+Message-ID: <20110328221605.GB8065@xanatos>
+References: <4D8C47B0.1050104@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D8C47D2.9010501@ozlabs.org>
+In-Reply-To: <4D8C47B0.1050104@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,45 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 25, 2011 at 06:44:18PM +1100, Matt Evans wrote:
-> During a "plug-unplug" stress test on an NEC xHCI card, a null pointer
-> dereference was observed.  xhci_address_device() dereferenced a null
-> virt_dev (possibly an erroneous udev->slot_id?); this patch adds a WARN_ON &
-> message to aid debug if it can be recreated.
+On Fri, Mar 25, 2011 at 06:43:44PM +1100, Matt Evans wrote:
+> Hi Sarah,
+> 
+> 
+> This series addresses the endian issues with the xHCI driver, and has brought
+> lovely USB 3 to PPC. :-)  I've tested various types of traffic on ppc4xx and
+> POWER7 and (some sound driver bugs notwithstanding) all seems fine.  Also
+> addresses an ordering problem we found and the recursive nature of the event
+> handling, plus the addition of some debug.
 
-Hmm, that's interesting.  I haven't seen any null pointer dereferences
-during my tests, but perhaps I'm not being ADDH enough about randomly
-unplugging devices. :)  Let me know if you trigger this again.
+Thanks for doing this work, Matt!  I appreciate it.
+
+> This should apply to 2.6.38/Linus' tree.
+
+You say that these apply against 2.6.38, but recently a lot of xHCI
+changes went into Linus' tree to support USB 3.0 hubs in 2.6.39.  Will
+these patches still apply against Linus' latest tree?  If not, I suggest
+you base your patches against Greg KH's usb-linus branch, as that's my
+tree base:
+
+http://git.kernel.org/?p=linux/kernel/git/gregkh/usb-2.6.git;a=shortlog;h=refs/heads/usb-linus
+
+Also, I haven't read too far into the patches, but the first patch seems
+to have several one or two letter variable names, like "f" and "di".
+Can you make those variable names more descriptive?  Thanks.
 
 Sarah Sharp
-
-> Signed-off-by: Matt Evans <matt@ozlabs.org>
-> ---
->  drivers/usb/host/xhci.c |   11 +++++++++++
->  1 files changed, 11 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-> index 88e6298..7d43456 100644
-> --- a/drivers/usb/host/xhci.c
-> +++ b/drivers/usb/host/xhci.c
-> @@ -2542,6 +2542,17 @@ int xhci_address_device(struct usb_hcd *hcd, struct usb_device *udev)
->  
->  	virt_dev = xhci->devs[udev->slot_id];
->  
-> +	if (WARN_ON(!virt_dev)) {
-> +		/*
-> +		 * In plug/unplug torture test with an NEC controller,
-> +		 * a zero-dereference was observed once due to virt_dev = 0.
-> +		 * Print useful debug rather than crash if it is observed again!
-> +		 */
-> +		xhci_warn(xhci, "Virt dev invalid for slot_id 0x%x!\n",
-> +			udev->slot_id);
-> +		return -EINVAL;
-> +	}
-> +
->  	slot_ctx = xhci_get_slot_ctx(xhci, virt_dev->in_ctx);
->  	/*
->  	 * If this is the first Set Address since device plug-in or
-> -- 
-> 1.7.0.4
-> 
