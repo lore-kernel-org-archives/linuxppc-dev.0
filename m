@@ -1,13 +1,13 @@
 Return-Path: <sarah.a.sharp@linux.intel.com>
-Date: Mon, 28 Mar 2011 15:19:31 -0700
+Date: Mon, 28 Mar 2011 15:23:36 -0700
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 To: Matt Evans <matt@ozlabs.org>
-Subject: Re: [PATCH 2/5] xhci: Extend debug messages
-Message-ID: <20110328221931.GC8065@xanatos>
-References: <4D8C47BF.8010701@ozlabs.org>
+Subject: Re: [PATCH 4/5] xhci: Add an assertion to check for virt_dev=0 bug.
+Message-ID: <20110328222336.GE8065@xanatos>
+References: <4D8C47D2.9010501@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D8C47BF.8010701@ozlabs.org>
+In-Reply-To: <4D8C47D2.9010501@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,71 +18,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 25, 2011 at 06:43:59PM +1100, Matt Evans wrote:
-> Add more debug to print queued transfers, show control intentions and
-> modify an existing message to hexify address output.
+On Fri, Mar 25, 2011 at 06:44:18PM +1100, Matt Evans wrote:
+> During a "plug-unplug" stress test on an NEC xHCI card, a null pointer
+> dereference was observed.  xhci_address_device() dereferenced a null
+> virt_dev (possibly an erroneous udev->slot_id?); this patch adds a WARN_ON &
+> message to aid debug if it can be recreated.
 
-Are these new debug messages really necessary?  I feel like the xHCI
-driver has way too many debugging messages already.  I'd like to switch
-it over to the event tracer infrastructure eventually, and every new
-debug message makes that work harder to do...
-
-The queue_trb debug message is going to be especially noticeable, since
-it will be triggered on every URB submission (sometimes more than once
-per URB).
+Hmm, that's interesting.  I haven't seen any null pointer dereferences
+during my tests, but perhaps I'm not being ADDH enough about randomly
+unplugging devices. :)  Let me know if you trigger this again.
 
 Sarah Sharp
 
 > Signed-off-by: Matt Evans <matt@ozlabs.org>
 > ---
->  drivers/usb/host/xhci-dbg.c  |    2 +-
->  drivers/usb/host/xhci-hub.c  |    3 +++
->  drivers/usb/host/xhci-ring.c |    5 +++++
->  3 files changed, 9 insertions(+), 1 deletions(-)
+>  drivers/usb/host/xhci.c |   11 +++++++++++
+>  1 files changed, 11 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/usb/host/xhci-dbg.c b/drivers/usb/host/xhci-dbg.c
-> index 2e04861..905f3bf 100644
-> --- a/drivers/usb/host/xhci-dbg.c
-> +++ b/drivers/usb/host/xhci-dbg.c
-> @@ -278,7 +278,7 @@ void xhci_debug_trb(struct xhci_hcd *xhci, union xhci_trb *trb)
->  		 * FIXME: look at flags to figure out if it's an address or if
->  		 * the data is directly in the buffer field.
->  		 */
-> -		xhci_dbg(xhci, "DMA address or buffer contents= %llu\n", address);
-> +		xhci_dbg(xhci, "DMA address or buffer contents= 0x%llx\n", address);
->  		break;
->  	case TRB_TYPE(TRB_COMPLETION):
->  		address = le64_to_cpu(trb->event_cmd.cmd_trb);
-> diff --git a/drivers/usb/host/xhci-hub.c b/drivers/usb/host/xhci-hub.c
-> index ae1d24c..768fd6e 100644
-> --- a/drivers/usb/host/xhci-hub.c
-> +++ b/drivers/usb/host/xhci-hub.c
-> @@ -389,6 +389,9 @@ int xhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
->  	}
->  	bus_state = &xhci->bus_state[hcd_index(hcd)];
+> diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+> index 88e6298..7d43456 100644
+> --- a/drivers/usb/host/xhci.c
+> +++ b/drivers/usb/host/xhci.c
+> @@ -2542,6 +2542,17 @@ int xhci_address_device(struct usb_hcd *hcd, struct usb_device *udev)
 >  
-> +	xhci_dbg(xhci, "%s(%04x, %04x, %04x, %p, %04x);\n", __func__,
-> +		 typeReq, wValue, wIndex, buf, wLength);
-> +
->  	spin_lock_irqsave(&xhci->lock, flags);
->  	switch (typeReq) {
->  	case GetHubStatus:
-> diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-> index 3898f22..45f3b77 100644
-> --- a/drivers/usb/host/xhci-ring.c
-> +++ b/drivers/usb/host/xhci-ring.c
-> @@ -2336,6 +2336,11 @@ static void queue_trb(struct xhci_hcd *xhci, struct xhci_ring *ring,
->  	trb->field[1] = cpu_to_le32(field2);
->  	trb->field[2] = cpu_to_le32(field3);
->  	trb->field[3] = cpu_to_le32(field4);
-> +
-> +	xhci_dbg(xhci, "queue_trb @%llx %08x %08x %08x %08x\n",
-> +		 xhci_trb_virt_to_dma(ring->enq_seg, ring->enqueue),
-> +		 le32_to_cpu(trb->field[0]), le32_to_cpu(trb->field[1]),
-> +		 le32_to_cpu(trb->field[2]), le32_to_cpu(trb->field[3]));
->  	inc_enq(xhci, ring, consumer, more_trbs_coming);
->  }
+>  	virt_dev = xhci->devs[udev->slot_id];
 >  
+> +	if (WARN_ON(!virt_dev)) {
+> +		/*
+> +		 * In plug/unplug torture test with an NEC controller,
+> +		 * a zero-dereference was observed once due to virt_dev = 0.
+> +		 * Print useful debug rather than crash if it is observed again!
+> +		 */
+> +		xhci_warn(xhci, "Virt dev invalid for slot_id 0x%x!\n",
+> +			udev->slot_id);
+> +		return -EINVAL;
+> +	}
+> +
+>  	slot_ctx = xhci_get_slot_ctx(xhci, virt_dev->in_ctx);
+>  	/*
+>  	 * If this is the first Set Address since device plug-in or
 > -- 
 > 1.7.0.4
 > 
