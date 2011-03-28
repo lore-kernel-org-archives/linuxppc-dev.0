@@ -1,26 +1,16 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <tmarri@amcc.com>
+Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 80AC31007D1
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3F754B6F8E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 05:41:32 +1100 (EST)
-Date: Mon, 28 Mar 2011 11:39:14 -0700
-From: Greg KH <greg@kroah.com>
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Subject: Re: [PATCH V9 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
-	configuration and Makefile
-Message-ID: <20110328183914.GA5072@kroah.com>
-References: <1297119242-28562-1-git-send-email-tmarri@apm.com>
-	<4D518B2D.3090603@ru.mvista.com>
-	<5540911d2e000414054d989bbdc32f2c@mail.gmail.com>
-	<4D90C78C.3050607@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D90C78C.3050607@ru.mvista.com>
-Cc: Tirumala Marri <tmarri@apm.com>, Mark Miesfeld <mmiesfeld@apm.com>,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>
+	Tue, 29 Mar 2011 05:58:47 +1100 (EST)
+From: tmarri@apm.com
+To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v10 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
+Date: Mon, 28 Mar 2011 11:27:36 -0700
+Message-Id: <1301336856-1802-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +20,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 28, 2011 at 09:38:20PM +0400, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Tirumala Marri wrote:
-> 
-> >>>+config DWC_DEVICE_ONLY
-> >>>+	bool "DWC Device Only Mode"
-> >>>+	select USB_GADGET_SELECTED
-> >>>+
-> >>>+endchoice
-> 
-> >>    So this is tri-modal driver after all... how come we place it in
-> >>drivers/usb/otg/dwc/, while the same tri-modal MUSB driver was placed in
-> >>drivers/usb/musb/?
-> 
->    You still have quoting broken in your mailer -- I've fixed it up by hand...
-> 
-> >[Marri] Initially this was how the patch created. Greg KH, suggested to
-> >move under OTG.
-> 
->    Well, I know that. So this was a question to Greg...
+From: Tirumala Marri <tmarri@apm.com>
 
-Well, if that's not the right place to put it, Sergei, where do you
-suggest that it go?  drivers/usb/dwc/ ?
+v10:
+ 1. Change address argument type from u32 to ulong to
+    make it arch independent.
+ 2. Cleaning un-necasary changes from Kconfig.
+ 
+v9:
+ 1. Move the source under usb/otg/dwc.
+ 2. Rename the source files with out dwc_otg prefix.
+ 3. Remove unused read/write modify functions.
+ 4. Including changes related to register base print.
 
-thanks,
+Tirumala Marri (10):
+  USB/ppc4xx: Add Synopsys DWC OTG Register definitions
+  USB/ppc4xx: Add Synopsys DWC OTG driver framework
+  USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer (CIL)
+  USB/ppc4xx: Add Synopsys DWC OTG HCD function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
+  USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
+  USB/ppc4xx: Add Synopsys DWC OTG PCD function
+  USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
+  USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
+  USB ppc4xx: Add Synopsys DWC OTG driver kernel configuration and
+    Makefile
 
-greg k-h
+ drivers/Makefile                  |    1 +
+ drivers/usb/Kconfig               |    2 +
+ drivers/usb/gadget/Kconfig        |   22 +
+ drivers/usb/gadget/gadget_chips.h |    9 +
+ drivers/usb/otg/dwc/Kconfig       |   88 ++
+ drivers/usb/otg/dwc/Makefile      |   19 +
+ drivers/usb/otg/dwc/apmppc.c      |  414 +++++++
+ drivers/usb/otg/dwc/cil.c         |  972 +++++++++++++++
+ drivers/usb/otg/dwc/cil.h         | 1177 ++++++++++++++++++
+ drivers/usb/otg/dwc/cil_intr.c    |  616 +++++++++
+ drivers/usb/otg/dwc/driver.h      |   76 ++
+ drivers/usb/otg/dwc/hcd.c         | 2465 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/hcd.h         |  416 +++++++
+ drivers/usb/otg/dwc/hcd_intr.c    | 1477 ++++++++++++++++++++++
+ drivers/usb/otg/dwc/hcd_queue.c   |  696 +++++++++++
+ drivers/usb/otg/dwc/param.c       |  180 +++
+ drivers/usb/otg/dwc/pcd.c         | 1766 ++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/pcd.h         |  139 +++
+ drivers/usb/otg/dwc/pcd_intr.c    | 2311 ++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/regs.h        | 1326 ++++++++++++++++++++
+ 20 files changed, 14172 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc/Kconfig
+ create mode 100644 drivers/usb/otg/dwc/Makefile
+ create mode 100644 drivers/usb/otg/dwc/apmppc.c
+ create mode 100644 drivers/usb/otg/dwc/cil.c
+ create mode 100644 drivers/usb/otg/dwc/cil.h
+ create mode 100644 drivers/usb/otg/dwc/cil_intr.c
+ create mode 100644 drivers/usb/otg/dwc/driver.h
+ create mode 100644 drivers/usb/otg/dwc/hcd.c
+ create mode 100644 drivers/usb/otg/dwc/hcd.h
+ create mode 100644 drivers/usb/otg/dwc/hcd_intr.c
+ create mode 100644 drivers/usb/otg/dwc/hcd_queue.c
+ create mode 100644 drivers/usb/otg/dwc/param.c
+ create mode 100644 drivers/usb/otg/dwc/pcd.c
+ create mode 100644 drivers/usb/otg/dwc/pcd.h
+ create mode 100644 drivers/usb/otg/dwc/pcd_intr.c
+ create mode 100644 drivers/usb/otg/dwc/regs.h
