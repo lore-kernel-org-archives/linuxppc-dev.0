@@ -1,16 +1,13 @@
 Return-Path: <sarah.a.sharp@linux.intel.com>
-Date: Mon, 28 Mar 2011 15:20:23 -0700
+Date: Mon, 28 Mar 2011 15:19:31 -0700
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 To: Matt Evans <matt@ozlabs.org>
-Subject: Re: [PATCH v2 3/5] xhci: Add rmb() between reading event validity
-	& event data access.
-Message-ID: <20110328222023.GD8065@xanatos>
-References: <4D8C47CD.3020108@ozlabs.org>
-	<61164.94.211.195.167.1301094709.squirrel@gate.crashing.org>
-	<4D901429.5010807@ozlabs.org>
+Subject: Re: [PATCH 2/5] xhci: Extend debug messages
+Message-ID: <20110328221931.GC8065@xanatos>
+References: <4D8C47BF.8010701@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D901429.5010807@ozlabs.org>
+In-Reply-To: <4D8C47BF.8010701@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,37 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch looks fine, thanks!
+On Fri, Mar 25, 2011 at 06:43:59PM +1100, Matt Evans wrote:
+> Add more debug to print queued transfers, show control intentions and
+> modify an existing message to hexify address output.
+
+Are these new debug messages really necessary?  I feel like the xHCI
+driver has way too many debugging messages already.  I'd like to switch
+it over to the event tracer infrastructure eventually, and every new
+debug message makes that work harder to do...
+
+The queue_trb debug message is going to be especially noticeable, since
+it will be triggered on every URB submission (sometimes more than once
+per URB).
 
 Sarah Sharp
 
-On Mon, Mar 28, 2011 at 03:52:57PM +1100, Matt Evans wrote:
-> On weakly-ordered systems, the reading of an event's content must occur
-> after reading the event's validity.
-> 
 > Signed-off-by: Matt Evans <matt@ozlabs.org>
 > ---
-> Segher, thanks for the comment; explanation added.
-> 
+>  drivers/usb/host/xhci-dbg.c  |    2 +-
+>  drivers/usb/host/xhci-hub.c  |    3 +++
 >  drivers/usb/host/xhci-ring.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+>  3 files changed, 9 insertions(+), 1 deletions(-)
 > 
+> diff --git a/drivers/usb/host/xhci-dbg.c b/drivers/usb/host/xhci-dbg.c
+> index 2e04861..905f3bf 100644
+> --- a/drivers/usb/host/xhci-dbg.c
+> +++ b/drivers/usb/host/xhci-dbg.c
+> @@ -278,7 +278,7 @@ void xhci_debug_trb(struct xhci_hcd *xhci, union xhci_trb *trb)
+>  		 * FIXME: look at flags to figure out if it's an address or if
+>  		 * the data is directly in the buffer field.
+>  		 */
+> -		xhci_dbg(xhci, "DMA address or buffer contents= %llu\n", address);
+> +		xhci_dbg(xhci, "DMA address or buffer contents= 0x%llx\n", address);
+>  		break;
+>  	case TRB_TYPE(TRB_COMPLETION):
+>  		address = le64_to_cpu(trb->event_cmd.cmd_trb);
+> diff --git a/drivers/usb/host/xhci-hub.c b/drivers/usb/host/xhci-hub.c
+> index ae1d24c..768fd6e 100644
+> --- a/drivers/usb/host/xhci-hub.c
+> +++ b/drivers/usb/host/xhci-hub.c
+> @@ -389,6 +389,9 @@ int xhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
+>  	}
+>  	bus_state = &xhci->bus_state[hcd_index(hcd)];
+>  
+> +	xhci_dbg(xhci, "%s(%04x, %04x, %04x, %p, %04x);\n", __func__,
+> +		 typeReq, wValue, wIndex, buf, wLength);
+> +
+>  	spin_lock_irqsave(&xhci->lock, flags);
+>  	switch (typeReq) {
+>  	case GetHubStatus:
 > diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-> index 45f3b77..d6aa880 100644
+> index 3898f22..45f3b77 100644
 > --- a/drivers/usb/host/xhci-ring.c
 > +++ b/drivers/usb/host/xhci-ring.c
-> @@ -2152,6 +2152,11 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
->  	}
->  	xhci_dbg(xhci, "%s - OS owns TRB\n", __func__);
+> @@ -2336,6 +2336,11 @@ static void queue_trb(struct xhci_hcd *xhci, struct xhci_ring *ring,
+>  	trb->field[1] = cpu_to_le32(field2);
+>  	trb->field[2] = cpu_to_le32(field3);
+>  	trb->field[3] = cpu_to_le32(field4);
+> +
+> +	xhci_dbg(xhci, "queue_trb @%llx %08x %08x %08x %08x\n",
+> +		 xhci_trb_virt_to_dma(ring->enq_seg, ring->enqueue),
+> +		 le32_to_cpu(trb->field[0]), le32_to_cpu(trb->field[1]),
+> +		 le32_to_cpu(trb->field[2]), le32_to_cpu(trb->field[3]));
+>  	inc_enq(xhci, ring, consumer, more_trbs_coming);
+>  }
 >  
-> +	/*
-> +	 * Barrier between reading the TRB_CYCLE (valid) flag above and any
-> +	 * speculative reads of the event's flags/data below.
-> +	 */
-> +	rmb();
->  	/* FIXME: Handle more event types. */
->  	switch ((le32_to_cpu(event->event_cmd.flags) & TRB_TYPE_BITMASK)) {
->  	case TRB_TYPE(TRB_COMPLETION):
 > -- 
 > 1.7.0.4
 > 
