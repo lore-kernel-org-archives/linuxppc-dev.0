@@ -1,15 +1,21 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4D90142C.4050206@ozlabs.org>
-Date: Mon, 28 Mar 2011 15:53:00 +1100
-From: Matt Evans <matt@ozlabs.org>
+Return-Path: <zhj.bmw@gmail.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F63FB6FC1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 28 Mar 2011 17:44:00 +1100 (EST)
+Received: by wwi36 with SMTP id 36so2343751wwi.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 27 Mar 2011 23:43:55 -0700 (PDT)
 MIME-Version: 1.0
-To: sarah.a.sharp@linux.intel.com
-Subject: [PATCH v2 5/5] xhci: Remove recursive call to xhci_handle_event
-References: <4D8C47D8.4020901@ozlabs.org> <4D8C8F2B.9090808@ru.mvista.com>
-In-Reply-To: <4D8C8F2B.9090808@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Sergei Shtylyov <sshtylyov@mvista.com>
+Date: Mon, 28 Mar 2011 14:43:54 +0800
+Message-ID: <AANLkTikeCgomu+fytCDd7kryvnvVxW-MNSqThDKk_=i8@mail.gmail.com>
+Subject: Linux MCC driver in SS7 mode for MPC8270
+From: =?GB2312?B?1cW66b2o?= <zhj.bmw@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0016e68e8d286f96f9049f854475
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,75 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make the caller loop while there are events to handle, instead.
+--0016e68e8d286f96f9049f854475
+Content-Type: text/plain; charset=ISO-8859-1
 
-Signed-off-by: Matt Evans <matt@ozlabs.org>
----
-1 byte smaller after Sergei's suggestion.
+Hi All,
+        I am trying to develop Linux MCC driver in SS7 mode for MPC8270.
+        In the driver,I want to config MCC as SS7 controller,and execute SS7
+ROM microcode in the CPM.
+        I have taken the 8260 MCC driver in HDLC mode published in the
+sourceforge.net as reference and trying to develop the driver for SS7 mode.
+        In the SI router,channel 128~159 connect to the 32 slots of
+TDMA2,but only use the even channel.
+        The driver is loaded sucessfully.The MCC's RINT0 interruption and
+RXF interruption generate all the time,but only occur RXB interrupttion several
+times.
+        How to solve this problem???
+        Expecting your help in this regard.
 
- drivers/usb/host/xhci-ring.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+        Thanks & Regards,
 
-diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-index d6aa880..9c51d69 100644
---- a/drivers/usb/host/xhci-ring.c
-+++ b/drivers/usb/host/xhci-ring.c
-@@ -2131,7 +2131,7 @@ cleanup:
-  * This function handles all OS-owned events on the event ring.  It may drop
-  * xhci->lock between event processing (e.g. to pass up port status changes).
-  */
--static void xhci_handle_event(struct xhci_hcd *xhci)
-+static int xhci_handle_event(struct xhci_hcd *xhci)
- {
- 	union xhci_trb *event;
- 	int update_ptrs = 1;
-@@ -2140,7 +2140,7 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
- 	xhci_dbg(xhci, "In %s\n", __func__);
- 	if (!xhci->event_ring || !xhci->event_ring->dequeue) {
- 		xhci->error_bitmask |= 1 << 1;
--		return;
-+		return 0;
- 	}
- 
- 	event = xhci->event_ring->dequeue;
-@@ -2148,7 +2148,7 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
- 	if ((le32_to_cpu(event->event_cmd.flags) & TRB_CYCLE) !=
- 	    xhci->event_ring->cycle_state) {
- 		xhci->error_bitmask |= 1 << 2;
--		return;
-+		return 0;
- 	}
- 	xhci_dbg(xhci, "%s - OS owns TRB\n", __func__);
- 
-@@ -2192,15 +2192,17 @@ static void xhci_handle_event(struct xhci_hcd *xhci)
- 	if (xhci->xhc_state & XHCI_STATE_DYING) {
- 		xhci_dbg(xhci, "xHCI host dying, returning from "
- 				"event handler.\n");
--		return;
-+		return 0;
- 	}
- 
- 	if (update_ptrs)
- 		/* Update SW event ring dequeue pointer */
- 		inc_deq(xhci, xhci->event_ring, true);
- 
--	/* Are there more items on the event ring? */
--	xhci_handle_event(xhci);
-+	/* Are there more items on the event ring?  Caller will call us again to
-+	 * check.
-+	 */
-+	return 1;
- }
- 
- /*
-@@ -2282,7 +2284,7 @@ hw_died:
- 	/* FIXME this should be a delayed service routine
- 	 * that clears the EHB.
- 	 */
--	xhci_handle_event(xhci);
-+	while (xhci_handle_event(xhci)) {}
- 
- 	temp_64 = xhci_read_64(xhci, &xhci->ir_set->erst_dequeue);
- 	/* If necessary, update the HW's version of the event ring deq ptr. */
--- 
-1.7.0.4
+--0016e68e8d286f96f9049f854475
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
+
+<div>Hi All,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I am trying to develop=
+ Linux MCC driver in SS7 mode for MPC8270.</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In the driver,I want to con=
+fig MCC as SS7 controller,and execute SS7 ROM microcode in the CPM.</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I have taken the 8260 MCC d=
+river in HDLC mode published in the <a href=3D"http://sourceforge.net/" tar=
+get=3D"_blank">sourceforge.net</a> as reference and trying to develop the d=
+river for SS7 mode.</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In the SI router,chann=
+el 128~159 connect to the 32 slots of TDMA2,but only use the even channel.<=
+/div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The driver is loaded sucess=
+fully.The MCC&#39;s RINT0 interruption and RXF interruption generate all th=
+e time,but only occur RXB interrupttion s<span lang=3D"en"><span title=3D"=
+=B5=E3=BB=F7=BF=C9=CF=D4=CA=BE=C6=E4=CB=FB=B7=AD=D2=EB">everal times.</span=
+></span></div>
+
+<div><span lang=3D"en"><span title=3D"=B5=E3=BB=F7=BF=C9=CF=D4=CA=BE=C6=E4=
+=CB=FB=B7=AD=D2=EB">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; How to solve=
+ this problem???</span></span></div>
+<div><span lang=3D"en"><span title=3D"=B5=E3=BB=F7=BF=C9=CF=D4=CA=BE=C6=E4=
+=CB=FB=B7=AD=D2=EB">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Expecting yo=
+ur help in this regard.<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T=
+hanks &amp; Regards,<br></span></span></div>
+
+--0016e68e8d286f96f9049f854475--
