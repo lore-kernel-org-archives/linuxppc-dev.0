@@ -1,25 +1,26 @@
-Return-Path: <john.stultz@linaro.org>
-Subject: Re: [PATCH V13 4/4] ptp: Added a clock driver for the National
-	Semiconductor PHYTER.
-From: John Stultz <john.stultz@linaro.org>
-To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <3ecd2d805a96324a04d3b231b16f21e2b5cda0e6.1301206090.git.richard.cochran@omicron.at>
-References: <cover.1301206090.git.richard.cochran@omicron.at>
-	<3ecd2d805a96324a04d3b231b16f21e2b5cda0e6.1301206090.git.richard.cochran@omicron.at>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Mar 2011 11:08:27 -0700
-Message-ID: <1301335707.21829.3.camel@work-vm>
-Mime-Version: 1.0
-Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
-	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
-	Mike Frysinger <vapier@gentoo.org>,
-	Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 80AC31007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Mar 2011 05:41:32 +1100 (EST)
+Date: Mon, 28 Mar 2011 11:39:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Sergei Shtylyov <sshtylyov@mvista.com>
+Subject: Re: [PATCH V9 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
+	configuration and Makefile
+Message-ID: <20110328183914.GA5072@kroah.com>
+References: <1297119242-28562-1-git-send-email-tmarri@apm.com>
+	<4D518B2D.3090603@ru.mvista.com>
+	<5540911d2e000414054d989bbdc32f2c@mail.gmail.com>
+	<4D90C78C.3050607@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D90C78C.3050607@ru.mvista.com>
+Cc: Tirumala Marri <tmarri@apm.com>, Mark Miesfeld <mmiesfeld@apm.com>,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,11 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-03-27 at 08:39 +0200, Richard Cochran wrote:
-> This patch adds support for the PTP clock found on the DP83640.
-> The basic clock operations and one external time stamp have
-> been implemented.
+On Mon, Mar 28, 2011 at 09:38:20PM +0400, Sergei Shtylyov wrote:
+> Hello.
 > 
-> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
+> Tirumala Marri wrote:
+> 
+> >>>+config DWC_DEVICE_ONLY
+> >>>+	bool "DWC Device Only Mode"
+> >>>+	select USB_GADGET_SELECTED
+> >>>+
+> >>>+endchoice
+> 
+> >>    So this is tri-modal driver after all... how come we place it in
+> >>drivers/usb/otg/dwc/, while the same tri-modal MUSB driver was placed in
+> >>drivers/usb/musb/?
+> 
+>    You still have quoting broken in your mailer -- I've fixed it up by hand...
+> 
+> >[Marri] Initially this was how the patch created. Greg KH, suggested to
+> >move under OTG.
+> 
+>    Well, I know that. So this was a question to Greg...
 
-Acked-by: John Stultz <john.stultz@linaro.org>
+Well, if that's not the right place to put it, Sergei, where do you
+suggest that it go?  drivers/usb/dwc/ ?
+
+thanks,
+
+greg k-h
