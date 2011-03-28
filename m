@@ -2,15 +2,17 @@ Return-Path: <tmarri@amcc.com>
 Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F754B6F8E
+	by ozlabs.org (Postfix) with ESMTPS id 1925EB6F8E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 05:58:47 +1100 (EST)
+	Tue, 29 Mar 2011 05:58:49 +1100 (EST)
 From: tmarri@apm.com
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-Date: Mon, 28 Mar 2011 11:27:36 -0700
-Message-Id: <1301336856-1802-1-git-send-email-tmarri@apm.com>
-Cc: tmarri@apm.com, greg@kroah.com
+Subject: [PATCH v10 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
+	support
+Date: Mon, 28 Mar 2011 11:28:12 -0700
+Message-Id: <1301336892-2268-1-git-send-email-tmarri@apm.com>
+Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,64 +24,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tirumala Marri <tmarri@apm.com>
 
-v10:
- 1. Change address argument type from u32 to ulong to
-    make it arch independent.
- 2. Cleaning un-necasary changes from Kconfig.
+Enable gadget support
+
+Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+Signed-off-by: Fushen Chen <fchen@apm.com>
+Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+---
+ drivers/usb/gadget/Kconfig        |   22 ++++++++++++++++++++++
+ drivers/usb/gadget/gadget_chips.h |    9 +++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index bc5123c..61aca75 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
+ 	  This OTG-capable silicon IP is used in dual designs including
+ 	  the TI DaVinci, OMAP 243x, OMAP 343x, TUSB 6010, and ADI Blackfin
  
-v9:
- 1. Move the source under usb/otg/dwc.
- 2. Rename the source files with out dwc_otg prefix.
- 3. Remove unused read/write modify functions.
- 4. Including changes related to register base print.
-
-Tirumala Marri (10):
-  USB/ppc4xx: Add Synopsys DWC OTG Register definitions
-  USB/ppc4xx: Add Synopsys DWC OTG driver framework
-  USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer (CIL)
-  USB/ppc4xx: Add Synopsys DWC OTG HCD function
-  USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
-  USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
-  USB/ppc4xx: Add Synopsys DWC OTG PCD function
-  USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
-  USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
-  USB ppc4xx: Add Synopsys DWC OTG driver kernel configuration and
-    Makefile
-
- drivers/Makefile                  |    1 +
- drivers/usb/Kconfig               |    2 +
- drivers/usb/gadget/Kconfig        |   22 +
- drivers/usb/gadget/gadget_chips.h |    9 +
- drivers/usb/otg/dwc/Kconfig       |   88 ++
- drivers/usb/otg/dwc/Makefile      |   19 +
- drivers/usb/otg/dwc/apmppc.c      |  414 +++++++
- drivers/usb/otg/dwc/cil.c         |  972 +++++++++++++++
- drivers/usb/otg/dwc/cil.h         | 1177 ++++++++++++++++++
- drivers/usb/otg/dwc/cil_intr.c    |  616 +++++++++
- drivers/usb/otg/dwc/driver.h      |   76 ++
- drivers/usb/otg/dwc/hcd.c         | 2465 +++++++++++++++++++++++++++++++++++++
- drivers/usb/otg/dwc/hcd.h         |  416 +++++++
- drivers/usb/otg/dwc/hcd_intr.c    | 1477 ++++++++++++++++++++++
- drivers/usb/otg/dwc/hcd_queue.c   |  696 +++++++++++
- drivers/usb/otg/dwc/param.c       |  180 +++
- drivers/usb/otg/dwc/pcd.c         | 1766 ++++++++++++++++++++++++++
- drivers/usb/otg/dwc/pcd.h         |  139 +++
- drivers/usb/otg/dwc/pcd_intr.c    | 2311 ++++++++++++++++++++++++++++++++++
- drivers/usb/otg/dwc/regs.h        | 1326 ++++++++++++++++++++
- 20 files changed, 14172 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/otg/dwc/Kconfig
- create mode 100644 drivers/usb/otg/dwc/Makefile
- create mode 100644 drivers/usb/otg/dwc/apmppc.c
- create mode 100644 drivers/usb/otg/dwc/cil.c
- create mode 100644 drivers/usb/otg/dwc/cil.h
- create mode 100644 drivers/usb/otg/dwc/cil_intr.c
- create mode 100644 drivers/usb/otg/dwc/driver.h
- create mode 100644 drivers/usb/otg/dwc/hcd.c
- create mode 100644 drivers/usb/otg/dwc/hcd.h
- create mode 100644 drivers/usb/otg/dwc/hcd_intr.c
- create mode 100644 drivers/usb/otg/dwc/hcd_queue.c
- create mode 100644 drivers/usb/otg/dwc/param.c
- create mode 100644 drivers/usb/otg/dwc/pcd.c
- create mode 100644 drivers/usb/otg/dwc/pcd.h
- create mode 100644 drivers/usb/otg/dwc/pcd_intr.c
- create mode 100644 drivers/usb/otg/dwc/regs.h
++# dwc_otg builds in ../dwc_otg along with host support
++config USB_GADGET_DWC_HDRC
++	boolean "DesignWare USB Peripheral"
++	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
++	select USB_GADGET_DUALSPEED
++	select USB_GADGET_SELECTED
++	select USB_GADGET_DWC_OTG
++	help
++	This OTG-capable Designware USB IP
++
++config USB_GADGET_DWC_OTG
++	boolean "OTG Support"
++	depends on USB_GADGET_DWC_HDRC
++	help
++	The most notable feature of USB OTG is support for a
++	"Dual-Role" device, which can act as either a device
++	or a host.  The initial role choice can be changed
++	later, when two dual-role devices talk to each other.
++	Select this only if your board has a Mini-AB connector.
++
++
++
+ config USB_GADGET_M66592
+ 	boolean "Renesas M66592 USB Peripheral Controller"
+ 	select USB_GADGET_DUALSPEED
+diff --git a/drivers/usb/gadget/gadget_chips.h b/drivers/usb/gadget/gadget_chips.h
+index e896f63..d1fab43 100644
+--- a/drivers/usb/gadget/gadget_chips.h
++++ b/drivers/usb/gadget/gadget_chips.h
+@@ -136,6 +136,12 @@
+ #define gadget_is_s3c_hsotg(g)    0
+ #endif
+ 
++#if defined(CONFIG_DWC_OTG_MODE) || defined(CONFIG_DWC_DEVICE_ONLY)
++#define gadget_is_dwc_otg_pcd(g)	(!strcmp("dwc_otg_pcd", (g)->name))
++#else
++#define gadget_is_dwc_otg_pcd(g)	0
++#endif
++
+ #ifdef CONFIG_USB_GADGET_EG20T
+ #define	gadget_is_pch(g)	(!strcmp("pch_udc", (g)->name))
+ #else
+@@ -207,6 +213,9 @@ static inline int usb_gadget_controller_number(struct usb_gadget *gadget)
+ 		return 0x27;
+ 	else if (gadget_is_ci13xxx_msm(gadget))
+ 		return 0x28;
++	else if (gadget_is_dwc_otg_pcd(gadget))
++		return 0x29;
++
+ 	return -ENOENT;
+ }
+ 
+-- 
+1.6.1.rc3
