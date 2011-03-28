@@ -1,14 +1,13 @@
 Return-Path: <john.stultz@linaro.org>
-Subject: Re: [PATCH V13 2/4] ptp: Added a clock that uses the eTSEC found
-	on the MPC85xx.
+Subject: Re: [PATCH V13 3/4] ptp: Added a clock driver for the IXP46x.
 From: John Stultz <john.stultz@linaro.org>
 To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <120e586f678230c5f7d6dcfe70aa4483c2d50bf5.1301206090.git.richard.cochran@omicron.at>
+In-Reply-To: <706adc379f5f64dfad665cb8f831f44050b59eae.1301206090.git.richard.cochran@omicron.at>
 References: <cover.1301206090.git.richard.cochran@omicron.at>
-	<120e586f678230c5f7d6dcfe70aa4483c2d50bf5.1301206090.git.richard.cochran@omicron.at>
+	<706adc379f5f64dfad665cb8f831f44050b59eae.1301206090.git.richard.cochran@omicron.at>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Mar 2011 11:07:18 -0700
-Message-ID: <1301335638.21829.1.camel@work-vm>
+Date: Mon, 28 Mar 2011 11:07:54 -0700
+Message-ID: <1301335674.21829.2.camel@work-vm>
 Mime-Version: 1.0
 Cc: Rodolfo Giometti <giometti@linux.it>, Arnd Bergmann <arnd@arndb.de>,
 	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
@@ -29,10 +28,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-03-27 at 08:38 +0200, Richard Cochran wrote:
-> The eTSEC includes a PTP clock with quite a few features. This patch adds
-> support for the basic clock adjustment functions, plus two external time
-> stamps, one alarm, and the PPS callback.
+On Sun, 2011-03-27 at 08:39 +0200, Richard Cochran wrote:
+> This patch adds a driver for the hardware time stamping unit found on the
+> IXP465. The basic clock operations and an external trigger are implemented.
 > 
 > Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
 
