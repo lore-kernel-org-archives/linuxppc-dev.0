@@ -1,30 +1,19 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E1D281007EE
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 72567B6F8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 06:09:49 +1100 (EST)
-Received: by wyg36 with SMTP id 36so2751125wyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Mar 2011 12:09:45 -0700 (PDT)
-Message-ID: <4D90DC8D.7020409@ru.mvista.com>
-Date: Mon, 28 Mar 2011 23:07:57 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+	Tue, 29 Mar 2011 06:25:14 +1100 (EST)
+Date: Mon, 28 Mar 2011 14:24:54 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <agraf@suse.de>
+Subject: [PATCH 1/4] powerpc/e500v2: Save SPEFCSR in flush_spe_to_thread()
+Message-ID: <20110328192454.GA11064@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH V9 10/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
-	configuration and Makefile
-References: <1297119242-28562-1-git-send-email-tmarri@apm.com>
-	<4D518B2D.3090603@ru.mvista.com>
-	<5540911d2e000414054d989bbdc32f2c@mail.gmail.com>
-	<4D90C78C.3050607@ru.mvista.com> <20110328183914.GA5072@kroah.com>
-In-Reply-To: <20110328183914.GA5072@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Sergei Shtylyov <sshtylyov@mvista.com>, Tirumala Marri <tmarri@apm.com>,
-	linux-usb@vger.kernel.org, Mark Miesfeld <mmiesfeld@apm.com>,
-	linuxppc-dev@lists.ozlabs.org, Fushen Chen <fchen@apm.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+From: yu liu <yu.liu@freescale.com>
 
-Greg KH wrote:
+giveup_spe() saves the SPE state which is protected by MSR[SPE].
+However, modifying SPEFSCR does not trap when MSR[SPE]=0.
+And since SPEFSCR is already saved/restored in _switch(),
+not all the callers want to save SPEFSCR again.
+Thus, saving SPEFSCR should not belong to giveup_spe().
 
->>>>> +config DWC_DEVICE_ONLY
->>>>> +	bool "DWC Device Only Mode"
->>>>> +	select USB_GADGET_SELECTED
->>>>> +
->>>>> +endchoice
+This patch moves SPEFSCR saving to flush_spe_to_thread(),
+and cleans up the caller that needs to save SPEFSCR accordingly.
 
->>>>    So this is tri-modal driver after all... how come we place it in
->>>> drivers/usb/otg/dwc/, while the same tri-modal MUSB driver was placed in
->>>> drivers/usb/musb/?
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Kumar, could you ack this to go via the KVM tree, since the KVM
+SPE save/restore patches depend on it?
 
->>    You still have quoting broken in your mailer -- I've fixed it up by hand...
+ arch/powerpc/kernel/head_fsl_booke.S |    2 --
+ arch/powerpc/kernel/process.c        |    1 +
+ arch/powerpc/kernel/traps.c          |    5 +----
+ 3 files changed, 2 insertions(+), 6 deletions(-)
 
->>> [Marri] Initially this was how the patch created. Greg KH, suggested to
->>> move under OTG.
-
->>    Well, I know that. So this was a question to Greg...
-
-> Well, if that's not the right place to put it, Sergei, where do you
-> suggest that it go?  drivers/usb/dwc/ ?
-
-    Exactly.
-
-> thanks,
-
-> greg k-h
-
-WBR, Sergei
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 3e02710..b84fc5e 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -792,8 +792,6 @@ _GLOBAL(giveup_spe)
+ 	evmwumiaa evr6, evr6, evr6	/* evr6 <- ACC = 0 * 0 + ACC */
+ 	li	r4,THREAD_ACC
+ 	evstddx	evr6, r4, r3		/* save off accumulator */
+-	mfspr	r6,SPRN_SPEFSCR
+-	stw	r6,THREAD_SPEFSCR(r3)	/* save spefscr register value */
+ 	beq	1f
+ 	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+ 	lis	r3,MSR_SPE@h
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index f74f355..138e7dd 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -213,6 +213,7 @@ void flush_spe_to_thread(struct task_struct *tsk)
+ #ifdef CONFIG_SMP
+ 			BUG_ON(tsk != current);
+ #endif
++			tsk->thread.spefscr = mfspr(SPRN_SPEFSCR);
+ 			giveup_spe(tsk);
+ 		}
+ 		preempt_enable();
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index bd74fac..0ed23d1 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1356,10 +1356,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+ 	int code = 0;
+ 	int err;
+ 
+-	preempt_disable();
+-	if (regs->msr & MSR_SPE)
+-		giveup_spe(current);
+-	preempt_enable();
++	flush_spe_to_thread(current);
+ 
+ 	spefscr = current->thread.spefscr;
+ 	fpexc_mode = current->thread.fpexc_mode;
+-- 
+1.7.1
