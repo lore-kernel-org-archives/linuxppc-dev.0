@@ -1,29 +1,19 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from rcsinet14.oracle.com (rcsinet14.oracle.com [148.87.113.126])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rcsinet14.oracle.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD94AB6EDF
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
+	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AE36CB6F7A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 06:45:13 +1100 (EST)
-Received: from rcsinet10.oracle.com (rcsinet10.oracle.com [148.87.113.121])
-	by rcsinet14.oracle.com (Switch-3.4.2/Switch-3.4.1) with ESMTP id
-	p2SJ2ki0003575
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2011 19:02:46 GMT
-Date: Mon, 28 Mar 2011 12:02:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: tmarri@apm.com
-Subject: Re: [PATCH v10 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable
-	gadget support
-Message-Id: <20110328120230.9e15eaca.randy.dunlap@oracle.com>
-In-Reply-To: <1301336892-2268-1-git-send-email-tmarri@apm.com>
-References: <1301336892-2268-1-git-send-email-tmarri@apm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>
+	Tue, 29 Mar 2011 06:59:34 +1100 (EST)
+Date: Mon, 28 Mar 2011 14:59:23 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <agraf@suse.de>
+Subject: [PATCH v2 1/4] powerpc/e500v2: Save SPEFCSR in flush_spe_to_thread()
+Message-ID: <20110328195923.GA25659@schlenkerla.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: yu liu <yu.liu@freescale.com>
 
-> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-> index bc5123c..61aca75 100644
-> --- a/drivers/usb/gadget/Kconfig
-> +++ b/drivers/usb/gadget/Kconfig
-> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
->  	  This OTG-capable silicon IP is used in dual designs including
->  	  the TI DaVinci, OMAP 243x, OMAP 343x, TUSB 6010, and ADI Blackfin
->  
-> +# dwc_otg builds in ../dwc_otg along with host support
-> +config USB_GADGET_DWC_HDRC
-> +	boolean "DesignWare USB Peripheral"
-> +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
-> +	select USB_GADGET_DUALSPEED
-> +	select USB_GADGET_SELECTED
-> +	select USB_GADGET_DWC_OTG
-> +	help
-> +	This OTG-capable Designware USB IP
+giveup_spe() saves the SPE state which is protected by MSR[SPE].
+However, modifying SPEFSCR does not trap when MSR[SPE]=0.
+And since SPEFSCR is already saved/restored in _switch(),
+not all the callers want to save SPEFSCR again.
+Thus, saving SPEFSCR should not belong to giveup_spe().
 
-missing complete help text.
+This patch moves SPEFSCR saving to flush_spe_to_thread(),
+and cleans up the caller that needs to save SPEFSCR accordingly.
 
-> +
-> +config USB_GADGET_DWC_OTG
-> +	boolean "OTG Support"
-> +	depends on USB_GADGET_DWC_HDRC
-> +	help
-> +	The most notable feature of USB OTG is support for a
-> +	"Dual-Role" device, which can act as either a device
-> +	or a host.  The initial role choice can be changed
-> +	later, when two dual-role devices talk to each other.
-> +	Select this only if your board has a Mini-AB connector.
-> +
-> +
-> +
->  config USB_GADGET_M66592
->  	boolean "Renesas M66592 USB Peripheral Controller"
->  	select USB_GADGET_DUALSPEED
-
-
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+v2: added kvm-ppc (sorry for the resend)
+
+Kumar, could you ack this to go via the KVM tree, since the KVM
+SPE save/restore patches depend on it?
+
+ arch/powerpc/kernel/head_fsl_booke.S |    2 --
+ arch/powerpc/kernel/process.c        |    1 +
+ arch/powerpc/kernel/traps.c          |    5 +----
+ 3 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 3e02710..b84fc5e 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -792,8 +792,6 @@ _GLOBAL(giveup_spe)
+ 	evmwumiaa evr6, evr6, evr6	/* evr6 <- ACC = 0 * 0 + ACC */
+ 	li	r4,THREAD_ACC
+ 	evstddx	evr6, r4, r3		/* save off accumulator */
+-	mfspr	r6,SPRN_SPEFSCR
+-	stw	r6,THREAD_SPEFSCR(r3)	/* save spefscr register value */
+ 	beq	1f
+ 	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+ 	lis	r3,MSR_SPE@h
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index f74f355..138e7dd 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -213,6 +213,7 @@ void flush_spe_to_thread(struct task_struct *tsk)
+ #ifdef CONFIG_SMP
+ 			BUG_ON(tsk != current);
+ #endif
++			tsk->thread.spefscr = mfspr(SPRN_SPEFSCR);
+ 			giveup_spe(tsk);
+ 		}
+ 		preempt_enable();
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index bd74fac..0ed23d1 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1356,10 +1356,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+ 	int code = 0;
+ 	int err;
+ 
+-	preempt_disable();
+-	if (regs->msr & MSR_SPE)
+-		giveup_spe(current);
+-	preempt_enable();
++	flush_spe_to_thread(current);
+ 
+ 	spefscr = current->thread.spefscr;
+ 	fpexc_mode = current->thread.fpexc_mode;
+-- 
+1.7.1
