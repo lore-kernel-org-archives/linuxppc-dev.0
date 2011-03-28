@@ -2,14 +2,14 @@ Return-Path: <tmarri@amcc.com>
 Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6C0BC1008A0
+	by ozlabs.org (Postfix) with ESMTPS id A5D8B1008E9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 05:58:53 +1100 (EST)
+	Tue, 29 Mar 2011 05:58:55 +1100 (EST)
 From: tmarri@apm.com
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10 06/10] USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
-Date: Mon, 28 Mar 2011 11:28:01 -0700
-Message-Id: <1301336881-2156-1-git-send-email-tmarri@apm.com>
+Subject: [PATCH v10 02/10] USB/ppc4xx: Add Synopsys DWC OTG driver framework
+Date: Mon, 28 Mar 2011 11:27:43 -0700
+Message-Id: <1301336863-1886-1-git-send-email-tmarri@apm.com>
 Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,23 +23,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tirumala Marri <tmarri@apm.com>
 
-Implements functions to manage Queue Heads and Queue
-Transfer Descriptors of DWC USB OTG Controller.
+Platform probing is in dwc_otg_apmppc.c.
+Driver parameter and parameter checking are in dwc_otg_param.c.
 
 Signed-off-by: Tirumala R Marri <tmarri@apm.com>
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/usb/otg/dwc/hcd_queue.c |  696 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 696 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/otg/dwc/hcd_queue.c
+ drivers/usb/otg/dwc/apmppc.c |  414 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/driver.h |   76 ++++++++
+ drivers/usb/otg/dwc/param.c  |  180 ++++++++++++++++++
+ 3 files changed, 670 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc/apmppc.c
+ create mode 100644 drivers/usb/otg/dwc/driver.h
+ create mode 100644 drivers/usb/otg/dwc/param.c
 
-diff --git a/drivers/usb/otg/dwc/hcd_queue.c b/drivers/usb/otg/dwc/hcd_queue.c
+diff --git a/drivers/usb/otg/dwc/apmppc.c b/drivers/usb/otg/dwc/apmppc.c
 new file mode 100644
-index 0000000..1f99573
+index 0000000..ffbe6dd
 --- /dev/null
-+++ b/drivers/usb/otg/dwc/hcd_queue.c
-@@ -0,0 +1,696 @@
++++ b/drivers/usb/otg/dwc/apmppc.c
+@@ -0,0 +1,414 @@
 +/*
 + * DesignWare HS OTG controller driver
 + * Copyright (C) 2006 Synopsys, Inc.
@@ -62,7 +66,6 @@ index 0000000..1f99573
 + * Based on Synopsys driver version 2.60a
 + * Modified by Mark Miesfeld <mmiesfeld@apm.com>
 + * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
-+ * Modified by Chuck Meade <chuck@theptrgroup.com>
 + *
 + * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 + * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
@@ -78,663 +81,650 @@ index 0000000..1f99573
 + */
 +
 +/*
-+ * This file contains the functions to manage Queue Heads and Queue
-+ * Transfer Descriptors.
-+ */
-+
-+#include "hcd.h"
-+
-+static inline int is_fs_ls(enum usb_device_speed speed)
-+{
-+	return speed == USB_SPEED_FULL || speed == USB_SPEED_LOW;
-+}
-+
-+/* Allocates memory for a QH structure. */
-+static inline struct dwc_qh *dwc_otg_hcd_qh_alloc(void)
-+{
-+	return kmalloc(sizeof(struct dwc_qh), GFP_ATOMIC);
-+}
-+
-+/**
-+ * Initializes a QH structure to initialize the QH.
-+ */
-+#define SCHEDULE_SLOP 10
-+static void dwc_otg_hcd_qh_init(struct dwc_hcd *hcd, struct dwc_qh *qh,
-+				struct urb *urb)
-+{
-+	memset(qh, 0, sizeof(struct dwc_qh));
-+
-+	/* Initialize QH */
-+	switch (usb_pipetype(urb->pipe)) {
-+	case PIPE_CONTROL:
-+		qh->ep_type = USB_ENDPOINT_XFER_CONTROL;
-+		break;
-+	case PIPE_BULK:
-+		qh->ep_type = USB_ENDPOINT_XFER_BULK;
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		qh->ep_type = USB_ENDPOINT_XFER_ISOC;
-+		break;
-+	case PIPE_INTERRUPT:
-+		qh->ep_type = USB_ENDPOINT_XFER_INT;
-+		break;
-+	}
-+
-+	qh->ep_is_in = usb_pipein(urb->pipe) ? 1 : 0;
-+	qh->data_toggle = DWC_OTG_HC_PID_DATA0;
-+	qh->maxp = usb_maxpacket(urb->dev, urb->pipe, !(usb_pipein(urb->pipe)));
-+
-+	INIT_LIST_HEAD(&qh->qtd_list);
-+	INIT_LIST_HEAD(&qh->qh_list_entry);
-+
-+	qh->channel = NULL;
-+	qh->speed = urb->dev->speed;
-+
-+	/*
-+	 * FS/LS Enpoint on HS Hub NOT virtual root hub
-+	 */
-+	qh->do_split = 0;
-+	if (is_fs_ls(urb->dev->speed) && urb->dev->tt && urb->dev->tt->hub &&
-+	    urb->dev->tt->hub->devnum != 1)
-+		qh->do_split = 1;
-+
-+	if (qh->ep_type == USB_ENDPOINT_XFER_INT ||
-+	    qh->ep_type == USB_ENDPOINT_XFER_ISOC) {
-+		/* Compute scheduling parameters once and save them. */
-+		u32 hprt;
-+		int bytecount = dwc_hb_mult(qh->maxp) *
-+		    dwc_max_packet(qh->maxp);
-+
-+		qh->usecs = NS_TO_US(usb_calc_bus_time(urb->dev->speed,
-+						       usb_pipein(urb->pipe),
-+						       (qh->ep_type ==
-+							USB_ENDPOINT_XFER_ISOC),
-+						       bytecount));
-+
-+		/* Start in a slightly future (micro)frame. */
-+		qh->sched_frame = dwc_frame_num_inc(hcd->frame_number,
-+						    SCHEDULE_SLOP);
-+		qh->interval = urb->interval;
-+
-+		hprt = dwc_read32(hcd->core_if->host_if->hprt0);
-+		if (DWC_HPRT0_PRT_SPD_RD(hprt) == DWC_HPRT0_PRTSPD_HIGH_SPEED &&
-+		    is_fs_ls(urb->dev->speed)) {
-+			qh->interval *= 8;
-+			qh->sched_frame |= 0x7;
-+			qh->start_split_frame = qh->sched_frame;
-+		}
-+	}
-+}
-+
-+/**
-+ * This function allocates and initializes a QH.
-+ */
-+static struct dwc_qh *dwc_otg_hcd_qh_create(struct dwc_hcd *hcd,
-+					    struct urb *urb)
-+{
-+	struct dwc_qh *qh;
-+
-+	/* Allocate memory */
-+	qh = dwc_otg_hcd_qh_alloc();
-+	if (qh == NULL)
-+		return NULL;
-+
-+	dwc_otg_hcd_qh_init(hcd, qh, urb);
-+	return qh;
-+}
-+
-+/**
-+ * Free each QTD in the QH's QTD-list then free the QH.  QH should already be
-+ * removed from a list.  QTD list should already be empty if called from URB
-+ * Dequeue.
-+ */
-+void dwc_otg_hcd_qh_free(struct dwc_qh *qh)
-+{
-+	struct dwc_qtd *qtd;
-+	struct list_head *pos, *temp;
-+
-+	/* Free each QTD in the QTD list */
-+	list_for_each_safe(pos, temp, &qh->qtd_list) {
-+		list_del(pos);
-+		qtd = dwc_list_to_qtd(pos);
-+		dwc_otg_hcd_qtd_free(qtd);
-+	}
-+	kfree(qh);
-+}
-+
-+/**
-+ * Microframe scheduler
-+ * track the total use in hcd->frame_usecs
-+ * keep each qh use in qh->frame_usecs
-+ * when surrendering the qh then donate the time back
-+ */
-+static const u16 max_uframe_usecs[] = { 100, 100, 100, 100, 100, 100, 30, 0 };
-+
-+/*
-+ * called from dwc_otg_hcd.c:dwc_otg_hcd_init
-+ */
-+int init_hcd_usecs(struct dwc_hcd *hcd)
-+{
-+	int i;
-+
-+	for (i = 0; i < 8; i++)
-+		hcd->frame_usecs[i] = max_uframe_usecs[i];
-+
-+	return 0;
-+}
-+
-+static int find_single_uframe(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	int i;
-+	u16 utime;
-+	int t_left;
-+	int ret;
-+	int done;
-+
-+	ret = -1;
-+	utime = qh->usecs;
-+	t_left = utime;
-+	i = 0;
-+	done = 0;
-+	while (done == 0) {
-+		/* At the start hcd->frame_usecs[i] = max_uframe_usecs[i]; */
-+		if (utime <= hcd->frame_usecs[i]) {
-+			hcd->frame_usecs[i] -= utime;
-+			qh->frame_usecs[i] += utime;
-+			t_left -= utime;
-+			ret = i;
-+			done = 1;
-+			return ret;
-+		} else {
-+			i++;
-+			if (i == 8) {
-+				done = 1;
-+				ret = -1;
-+			}
-+		}
-+	}
-+	return ret;
-+}
-+
-+/*
-+ * use this for FS apps that can span multiple uframes
-+ */
-+static int find_multi_uframe(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	int i;
-+	int j;
-+	u16 utime;
-+	int t_left;
-+	int ret;
-+	int done;
-+	u16 xtime;
-+
-+	ret = -1;
-+	utime = qh->usecs;
-+	t_left = utime;
-+	i = 0;
-+	done = 0;
-+loop:
-+	while (done == 0) {
-+		if (hcd->frame_usecs[i] <= 0) {
-+			i++;
-+			if (i == 8) {
-+				done = 1;
-+				ret = -1;
-+			}
-+			goto loop;
-+		}
-+
-+		/*
-+		 * We need n consequtive slots so use j as a start slot.
-+		 * j plus j+1 must be enough time (for now)
-+		 */
-+		xtime = hcd->frame_usecs[i];
-+		for (j = i + 1; j < 8; j++) {
-+			/*
-+			 * if we add this frame remaining time to xtime we may
-+			 * be OK, if not we need to test j for a complete frame.
-+			 */
-+			if ((xtime + hcd->frame_usecs[j]) < utime) {
-+				if (hcd->frame_usecs[j] < max_uframe_usecs[j]) {
-+					j = 8;
-+					ret = -1;
-+					continue;
-+				}
-+			}
-+			if (xtime >= utime) {
-+				ret = i;
-+				j = 8;	/* stop loop with a good value ret */
-+				continue;
-+			}
-+			/* add the frame time to x time */
-+			xtime += hcd->frame_usecs[j];
-+			/* we must have a fully available next frame or break */
-+			if ((xtime < utime) &&
-+			    (hcd->frame_usecs[j] == max_uframe_usecs[j])) {
-+				ret = -1;
-+				j = 8;	/* stop loop with a bad value ret */
-+				continue;
-+			}
-+		}
-+		if (ret >= 0) {
-+			t_left = utime;
-+			for (j = i; (t_left > 0) && (j < 8); j++) {
-+				t_left -= hcd->frame_usecs[j];
-+				if (t_left <= 0) {
-+					qh->frame_usecs[j] +=
-+					    hcd->frame_usecs[j] + t_left;
-+					hcd->frame_usecs[j] = -t_left;
-+					ret = i;
-+					done = 1;
-+				} else {
-+					qh->frame_usecs[j] +=
-+					    hcd->frame_usecs[j];
-+					hcd->frame_usecs[j] = 0;
-+				}
-+			}
-+		} else {
-+			i++;
-+			if (i == 8) {
-+				done = 1;
-+				ret = -1;
-+			}
-+		}
-+	}
-+	return ret;
-+}
-+
-+static int find_uframe(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	int ret = -1;
-+
-+	if (qh->speed == USB_SPEED_HIGH)
-+		/* if this is a hs transaction we need a full frame */
-+		ret = find_single_uframe(hcd, qh);
-+	else
-+		/* FS transaction may need a sequence of frames */
-+		ret = find_multi_uframe(hcd, qh);
-+
-+	return ret;
-+}
-+
-+/**
-+ * Checks that the max transfer size allowed in a host channel is large enough
-+ * to handle the maximum data transfer in a single (micro)frame for a periodic
-+ * transfer.
-+ */
-+static int check_max_xfer_size(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	int status = 0;
-+	u32 max_xfer_size;
-+	u32 max_channel_xfer_size;
-+
-+	max_xfer_size = dwc_max_packet(qh->maxp) * dwc_hb_mult(qh->maxp);
-+	max_channel_xfer_size = hcd->core_if->core_params->max_transfer_size;
-+
-+	if (max_xfer_size > max_channel_xfer_size) {
-+		pr_notice("%s: Periodic xfer length %d > max xfer "
-+			  "length for channel %d\n", __func__, max_xfer_size,
-+			  max_channel_xfer_size);
-+		status = -ENOSPC;
-+	}
-+
-+	return status;
-+}
-+
-+/**
-+ * Schedules an interrupt or isochronous transfer in the periodic schedule.
-+ */
-+static int schedule_periodic(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	int status;
-+	struct usb_bus *bus = hcd_to_bus(dwc_otg_hcd_to_hcd(hcd));
-+	int frame;
-+
-+	status = find_uframe(hcd, qh);
-+	frame = -1;
-+	if (status == 0) {
-+		frame = 7;
-+	} else {
-+		if (status > 0)
-+			frame = status - 1;
-+	}
-+	/* Set the new frame up */
-+	if (frame > -1) {
-+		qh->sched_frame &= ~0x7;
-+		qh->sched_frame |= (frame & 7);
-+	}
-+	if (status != -1)
-+		status = 0;
-+	if (status) {
-+		pr_notice("%s: Insufficient periodic bandwidth for "
-+			  "periodic transfer.\n", __func__);
-+		return status;
-+	}
-+	status = check_max_xfer_size(hcd, qh);
-+	if (status) {
-+		pr_notice("%s: Channel max transfer size too small "
-+			  "for periodic transfer.\n", __func__);
-+		return status;
-+	}
-+	/* Always start in the inactive schedule. */
-+	list_add_tail(&qh->qh_list_entry, &hcd->periodic_sched_inactive);
-+
-+	/* Update claimed usecs per (micro)frame. */
-+	hcd->periodic_usecs += qh->usecs;
-+
-+	/*
-+	 * Update average periodic bandwidth claimed and # periodic reqs for
-+	 * usbfs.
-+	 */
-+	bus->bandwidth_allocated += qh->usecs / qh->interval;
-+
-+	if (qh->ep_type == USB_ENDPOINT_XFER_INT)
-+		bus->bandwidth_int_reqs++;
-+	else
-+		bus->bandwidth_isoc_reqs++;
-+
-+	return status;
-+}
-+
-+/**
-+ * This function adds a QH to either the non periodic or periodic schedule if
-+ * it is not already in the schedule. If the QH is already in the schedule, no
-+ * action is taken.
-+ */
-+static int dwc_otg_hcd_qh_add(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	int status = 0;
-+
-+	/* QH may already be in a schedule. */
-+	if (!list_empty(&qh->qh_list_entry))
-+		goto done;
-+	/*
-+	 * Add the new QH to the appropriate schedule. For non-periodic, always
-+	 * start in the inactive schedule.
-+	 */
-+	if (dwc_qh_is_non_per(qh))
-+		list_add_tail(&qh->qh_list_entry,
-+			      &hcd->non_periodic_sched_inactive);
-+	else
-+		status = schedule_periodic(hcd, qh);
-+
-+done:
-+	return status;
-+}
-+
-+/**
-+ * This function adds a QH to the non periodic deferred schedule.
++ * The dwc_otg module provides the initialization and cleanup entry
++ * points for the dwcotg driver. This module will be dynamically installed
++ * after Linux is booted using the insmod command. When the module is
++ * installed, the dwc_otg_driver_init function is called. When the module is
++ * removed (using rmmod), the dwc_otg_driver_cleanup function is called.
 + *
-+ * @return 0 if successful, negative error code otherwise.
++ * This module also defines a data structure for the dwc_otg driver, which is
++ * used in conjunction with the standard device structure. These
++ * structures allow the OTG driver to comply with the standard Linux driver
++ * model in which devices and drivers are registered with a bus driver. This
++ * has the benefit that Linux can expose attributes of the driver and device
++ * in its special sysfs file system. Users can then read or write files in
++ * this file system to perform diagnostics on the driver components or the
++ * device.
 + */
-+static int dwc_otg_hcd_qh_add_deferred(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	if (!list_empty(&qh->qh_list_entry))
-+		/* QH already in a schedule. */
-+		goto done;
 +
-+	/* Add the new QH to the non periodic deferred schedule */
-+	if (dwc_qh_is_non_per(qh))
-+		list_add_tail(&qh->qh_list_entry,
-+			      &hcd->non_periodic_sched_deferred);
-+done:
++#include <linux/of_platform.h>
++
++#include "driver.h"
++
++#define DWC_DRIVER_VERSION		"1.05"
++#define DWC_DRIVER_DESC			"HS OTG USB Controller driver"
++static const char dwc_driver_name[] = "dwc_otg";
++
++/**
++ * This function is the top level interrupt handler for the Common
++ * (Device and host modes) interrupts.
++ */
++static irqreturn_t dwc_otg_common_irq(int _irq, void *dev)
++{
++	struct dwc_otg_device *dwc_dev = dev;
++	int retval;
++
++	retval = dwc_otg_handle_common_intr(dwc_dev->core_if);
++	return IRQ_RETVAL(retval);
++}
++
++/**
++ * This function is the interrupt handler for the OverCurrent condition
++ * from the external charge pump (if enabled)
++ */
++static irqreturn_t dwc_otg_externalchgpump_irq(int _irq, void *dev)
++{
++	struct dwc_otg_device *dwc_dev = dev;
++
++	if (dwc_otg_is_host_mode(dwc_dev->core_if)) {
++		struct dwc_hcd *dwc_hcd;
++		u32 hprt0 = 0;
++
++		dwc_hcd = dwc_dev->hcd;
++		spin_lock(&dwc_hcd->lock);
++		dwc_hcd->flags.b.port_over_current_change = 1;
++
++		hprt0 = DWC_HPRT0_PRT_PWR_RW(hprt0, 0);
++		dwc_write32(dwc_dev->core_if->host_if->hprt0, hprt0);
++		spin_unlock(&dwc_hcd->lock);
++	} else {
++		/* Device mode - This int is n/a for device mode */
++		dev_dbg(dev, "DeviceMode: OTG OverCurrent Detected\n");
++	}
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * This function is called when a device is unregistered with the
++ * dwc_otg_driver. This happens, for example, when the rmmod command is
++ * executed. The device may or may not be electrically present. If it is
++ * present, the driver stops device processing. Any resources used on behalf
++ * of this device are freed.
++ */
++static int __devexit dwc_otg_driver_remove(struct platform_device *ofdev)
++{
++	struct device *dev = &ofdev->dev;
++	struct dwc_otg_device *dwc_dev = dev_get_drvdata(dev);
++
++	/* Memory allocation for dwc_otg_device may have failed. */
++	if (!dwc_dev)
++		return 0;
++
++	/* Free the IRQ */
++	if (dwc_dev->common_irq_installed)
++		free_irq(dwc_dev->irq, dwc_dev);
++
++	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
++		if (dwc_dev->hcd) {
++			if (dwc_dev->hcd->cp_irq_installed)
++				free_irq(dwc_dev->hcd->cp_irq, dwc_dev);
++			dwc_otg_hcd_remove(dev);
++		}
++	}
++
++	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
++		if (dwc_dev->pcd)
++			dwc_otg_pcd_remove(dev);
++	}
++
++	if (dwc_dev->core_if)
++		dwc_otg_cil_remove(dwc_dev->core_if);
++
++	/* Return the memory. */
++	if (dwc_dev->base)
++		iounmap(dwc_dev->base);
++
++	if (dwc_dev->phys_addr)
++		release_mem_region(dwc_dev->phys_addr, dwc_dev->base_len);
++
++	if (dwc_dev->core_if->xceiv) {
++		otg_put_transceiver(dwc_dev->core_if->xceiv);
++		dwc_dev->core_if->xceiv = NULL;
++		usb_nop_xceiv_unregister();
++	}
++
++	kfree(dwc_dev);
++
++	/* Clear the drvdata pointer. */
++	dev_set_drvdata(dev, NULL);
 +	return 0;
 +}
 +
 +/**
-+ * Removes an interrupt or isochronous transfer from the periodic schedule.
++ * This function is called when an device is bound to a
++ * dwc_otg_driver. It creates the driver components required to
++ * control the device (CIL, HCD, and PCD) and it initializes the
++ * device. The driver components are stored in a dwc_otg_device
++ * structure. A reference to the dwc_otg_device is saved in the
++ * device. This allows the driver to access the dwc_otg_device
++ * structure on subsequent calls to driver methods for this device.
 + */
-+static void deschedule_periodic(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static int __devinit dwc_otg_driver_probe(struct platform_device *ofdev)
 +{
-+	struct usb_bus *bus = hcd_to_bus(dwc_otg_hcd_to_hcd(hcd));
-+	int i;
++	int retval;
++	struct dwc_otg_device *dwc_dev;
++	struct device *dev = &ofdev->dev;
++	struct resource res;
++	ulong gusbcfg_addr;
++	u32 usbcfg = 0;
 +
-+	list_del_init(&qh->qh_list_entry);
-+	/* Update claimed usecs per (micro)frame. */
-+	hcd->periodic_usecs -= qh->usecs;
-+	for (i = 0; i < 8; i++) {
-+		hcd->frame_usecs[i] += qh->frame_usecs[i];
-+		qh->frame_usecs[i] = 0;
-+	}
-+	/*
-+	 * Update average periodic bandwidth claimed and # periodic reqs for
-+	 * usbfs.
-+	 */
-+	bus->bandwidth_allocated -= qh->usecs / qh->interval;
++	dev_dbg(dev, "dwc_otg_driver_probe(%p)\n", dev);
 +
-+	if (qh->ep_type == USB_ENDPOINT_XFER_INT)
-+		bus->bandwidth_int_reqs--;
-+	else
-+		bus->bandwidth_isoc_reqs--;
-+}
-+
-+/**
-+ * Removes a QH from either the non-periodic or periodic schedule.  Memory is
-+ * not freed.
-+ */
-+void dwc_otg_hcd_qh_remove(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	/* Do nothing if QH is not in a schedule */
-+	if (list_empty(&qh->qh_list_entry))
-+		return;
-+
-+	if (dwc_qh_is_non_per(qh)) {
-+		if (hcd->non_periodic_qh_ptr == &qh->qh_list_entry)
-+			hcd->non_periodic_qh_ptr =
-+			    hcd->non_periodic_qh_ptr->next;
-+		list_del_init(&qh->qh_list_entry);
-+	} else {
-+		deschedule_periodic(hcd, qh);
-+	}
-+}
-+
-+/**
-+ * Defers a QH. For non-periodic QHs, removes the QH from the active
-+ * non-periodic schedule. The QH is added to the deferred non-periodic
-+ * schedule if any QTDs are still attached to the QH.
-+ */
-+int dwc_otg_hcd_qh_deferr(struct dwc_hcd *hcd, struct dwc_qh *qh, int delay)
-+{
-+	int deact = 1;
-+
-+	if (dwc_qh_is_non_per(qh)) {
-+		qh->sched_frame = dwc_frame_num_inc(hcd->frame_number, delay);
-+		qh->channel = NULL;
-+		qh->qtd_in_process = NULL;
-+		deact = 0;
-+		dwc_otg_hcd_qh_remove(hcd, qh);
-+		if (!list_empty(&qh->qtd_list))
-+			/* Add back to deferred non-periodic schedule. */
-+			dwc_otg_hcd_qh_add_deferred(hcd, qh);
-+	}
-+	return deact;
-+}
-+
-+/**
-+ *  Schedule the next continuing periodic split transfer
-+ */
-+static void sched_next_per_split_xfr(struct dwc_qh *qh, u16 fr_num,
-+				     int sched_split)
-+{
-+	if (sched_split) {
-+		qh->sched_frame = fr_num;
-+		if (dwc_frame_num_le(fr_num,
-+				     dwc_frame_num_inc(qh->start_split_frame,
-+						       1))) {
-+			/*
-+			 * Allow one frame to elapse after start split
-+			 * microframe before scheduling complete split, but DONT
-+			 * if we are doing the next start split in the
-+			 * same frame for an ISOC out.
-+			 */
-+			if (qh->ep_type != USB_ENDPOINT_XFER_ISOC ||
-+			    qh->ep_is_in)
-+				qh->sched_frame =
-+				    dwc_frame_num_inc(qh->sched_frame, 1);
-+		}
-+	} else {
-+		qh->sched_frame = dwc_frame_num_inc(qh->start_split_frame,
-+						    qh->interval);
-+
-+		if (dwc_frame_num_le(qh->sched_frame, fr_num))
-+			qh->sched_frame = fr_num;
-+		qh->sched_frame |= 0x7;
-+		qh->start_split_frame = qh->sched_frame;
-+	}
-+}
-+
-+/**
-+ * Deactivates a periodic QH.  The QH is removed from the periodic queued
-+ * schedule. If there are any QTDs still attached to the QH, the QH is added to
-+ * either the periodic inactive schedule or the periodic ready schedule and its
-+ * next scheduled frame is calculated. The QH is placed in the ready schedule if
-+ * the scheduled frame has been reached already. Otherwise it's placed in the
-+ * inactive schedule. If there are no QTDs attached to the QH, the QH is
-+ * completely removed from the periodic schedule.
-+ */
-+static void deactivate_periodic_qh(struct dwc_hcd *hcd, struct dwc_qh *qh,
-+				   int sched_next_split)
-+{
-+	/* unsigned long flags; */
-+	u16 fr_num = dwc_otg_hcd_get_frame_number(dwc_otg_hcd_to_hcd(hcd));
-+
-+	if (qh->do_split) {
-+		sched_next_per_split_xfr(qh, fr_num, sched_next_split);
-+	} else {
-+		qh->sched_frame = dwc_frame_num_inc(qh->sched_frame,
-+						    qh->interval);
-+		if (dwc_frame_num_le(qh->sched_frame, fr_num))
-+			qh->sched_frame = fr_num;
++	dwc_dev = kzalloc(sizeof(*dwc_dev), GFP_KERNEL);
++	if (!dwc_dev) {
++		dev_err(dev, "kmalloc of dwc_otg_device failed\n");
++		retval = -ENOMEM;
++		goto fail_dwc_dev;
 +	}
 +
-+	if (list_empty(&qh->qtd_list)) {
-+		dwc_otg_hcd_qh_remove(hcd, qh);
-+	} else {
-+		/*
-+		 * Remove from periodic_sched_queued and move to appropriate
-+		 * queue.
-+		 */
-+		if (qh->sched_frame == fr_num)
-+			list_move(&qh->qh_list_entry,
-+				  &hcd->periodic_sched_ready);
-+		else
-+			list_move(&qh->qh_list_entry,
-+				  &hcd->periodic_sched_inactive);
++	/* Retrieve the memory and IRQ resources. */
++	dwc_dev->irq = irq_of_parse_and_map(ofdev->dev.of_node, 0);
++	if (dwc_dev->irq == NO_IRQ) {
++		dev_err(dev, "no device irq\n");
++		retval = -ENODEV;
++		goto fail_of_irq;
 +	}
-+}
++	dev_dbg(dev, "OTG - device irq: %d\n", dwc_dev->irq);
 +
-+/**
-+ * Deactivates a non-periodic QH.  Removes the QH from the active non-periodic
-+ * schedule. The QH is added to the inactive non-periodic schedule if any QTDs
-+ * are still attached to the QH.
-+ */
-+static void deactivate_non_periodic_qh(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	dwc_otg_hcd_qh_remove(hcd, qh);
-+	if (!list_empty(&qh->qtd_list))
-+		dwc_otg_hcd_qh_add(hcd, qh);
-+}
++	if (of_address_to_resource(ofdev->dev.of_node, 0, &res)) {
++		dev_err(dev, "%s: Can't get USB-OTG register address\n",
++			__func__);
++		retval = -ENOMEM;
++		goto fail_of_irq;
++	}
++	dev_dbg(dev, "OTG - ioresource_mem start0x%llx: end:0x%llx\n",
++		(unsigned long long)res.start, (unsigned long long)res.end);
 +
-+/**
-+ * Deactivates a QH.  Determines if the QH is periodic or non-periodic and takes
-+ * the appropriate action.
-+ */
-+void dwc_otg_hcd_qh_deactivate(struct dwc_hcd *hcd, struct dwc_qh *qh,
-+			       int sched_next_periodic_split)
-+{
-+	if (dwc_qh_is_non_per(qh))
-+		deactivate_non_periodic_qh(hcd, qh);
-+	else
-+		deactivate_periodic_qh(hcd, qh, sched_next_periodic_split);
-+}
-+
-+/**
-+ * Initializes a QTD structure.
-+ */
-+static void dwc_otg_hcd_qtd_init(struct dwc_qtd *qtd, struct urb *urb)
-+{
-+	memset(qtd, 0, sizeof(struct dwc_qtd));
-+	qtd->urb = urb;
-+
-+	if (usb_pipecontrol(urb->pipe)) {
-+		/*
-+		 * The only time the QTD data toggle is used is on the data
-+		 * phase of control transfers. This phase always starts with
-+		 * DATA1.
-+		 */
-+		qtd->data_toggle = DWC_OTG_HC_PID_DATA1;
-+		qtd->control_phase = DWC_OTG_CONTROL_SETUP;
++	dwc_dev->phys_addr = res.start;
++	dwc_dev->base_len = res.end - res.start + 1;
++	if (!request_mem_region(dwc_dev->phys_addr,
++				dwc_dev->base_len, dwc_driver_name)) {
++		dev_err(dev, "request_mem_region failed\n");
++		retval = -EBUSY;
++		goto fail_of_irq;
 +	}
 +
-+	/* start split */
-+	qtd->complete_split = 0;
-+	qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_ALL;
-+	qtd->isoc_split_offset = 0;
-+
-+	/* Store the qtd ptr in the urb to reference what QTD. */
-+	urb->hcpriv = qtd;
-+
-+	INIT_LIST_HEAD(&qtd->qtd_list_entry);
-+	return;
-+}
-+
-+/* Allocates memory for a QTD structure. */
-+static inline struct dwc_qtd *dwc_otg_hcd_qtd_alloc(gfp_t _mem_flags)
-+{
-+	return kmalloc(sizeof(struct dwc_qtd), _mem_flags);
-+}
-+
-+/**
-+ * This function allocates and initializes a QTD.
-+ */
-+struct dwc_qtd *dwc_otg_hcd_qtd_create(struct urb *urb, gfp_t _mem_flags)
-+{
-+	struct dwc_qtd *qtd = dwc_otg_hcd_qtd_alloc(_mem_flags);
-+
-+	if (!qtd)
-+		return NULL;
-+
-+	dwc_otg_hcd_qtd_init(qtd, urb);
-+	return qtd;
-+}
-+
-+/**
-+ * This function adds a QTD to the QTD-list of a QH.  It will find the correct
-+ * QH to place the QTD into.  If it does not find a QH, then it will create a
-+ * new QH. If the QH to which the QTD is added is not currently scheduled, it
-+ * is placed into the proper schedule based on its EP type.
-+ *
-+ */
-+int dwc_otg_hcd_qtd_add(struct dwc_qtd *qtd, struct dwc_hcd *hcd)
-+{
-+	struct usb_host_endpoint *ep;
-+	struct dwc_qh *qh;
-+	int retval = 0;
-+	struct urb *urb = qtd->urb;
++	/* Map the DWC_otg Core memory into virtual address space. */
++	dwc_dev->base = ioremap(dwc_dev->phys_addr, dwc_dev->base_len);
++	if (!dwc_dev->base) {
++		dev_err(dev, "ioremap() failed\n");
++		retval = -ENOMEM;
++		goto fail_ioremap;
++	}
++	dev_dbg(dev, "mapped base=0x%08x\n", (__force u32)dwc_dev->base);
 +
 +	/*
-+	 * Get the QH which holds the QTD-list to insert to. Create QH if it
-+	 * doesn't exist.
++	 * Initialize driver data to point to the global DWC_otg
++	 * Device structure.
 +	 */
-+	ep = dwc_urb_to_endpoint(urb);
++	dev_set_drvdata(dev, dwc_dev);
 +
-+	qh = (struct dwc_qh *)ep->hcpriv;
-+	if (!qh) {
-+		qh = dwc_otg_hcd_qh_create(hcd, urb);
-+		if (!qh) {
-+			retval = -1;
-+			goto done;
-+		}
-+		ep->hcpriv = qh;
++	dwc_dev->core_if =
++	    dwc_otg_cil_init(dwc_dev->base, &dwc_otg_module_params);
++	if (!dwc_dev->core_if) {
++		dev_err(dev, "CIL initialization failed!\n");
++		retval = -ENOMEM;
++		goto fail_cil_init;
 +	}
-+	qtd->qtd_qh_ptr = qh;
-+	retval = dwc_otg_hcd_qh_add(hcd, qh);
-+	if (!retval)
-+		list_add_tail(&qtd->qtd_list_entry, &qh->qtd_list);
 +
-+done:
++	/*
++	 * Validate parameter values after dwc_otg_cil_init.
++	 */
++	if (check_parameters(dwc_dev->core_if)) {
++		retval = -EINVAL;
++		goto fail_check_param;
++	}
++
++	usb_nop_xceiv_register();
++	dwc_dev->core_if->xceiv = otg_get_transceiver();
++	if (!dwc_dev->core_if->xceiv) {
++		retval = -ENODEV;
++		goto fail_xceiv;
++	}
++	dwc_set_feature(dwc_dev->core_if);
++
++	/* Initialize the DWC_otg core. */
++	dwc_otg_core_init(dwc_dev->core_if);
++
++	/*
++	 * Disable the global interrupt until all the interrupt
++	 * handlers are installed.
++	 */
++	dwc_otg_disable_global_interrupts(dwc_dev->core_if);
++
++	/*
++	 * Install the interrupt handler for the common interrupts before
++	 * enabling common interrupts in core_init below.
++	 */
++	retval = request_irq(dwc_dev->irq, dwc_otg_common_irq,
++			     IRQF_SHARED, "dwc_otg", dwc_dev);
++	if (retval) {
++		dev_err(dev, "request of irq%d failed retval: %d\n",
++			dwc_dev->irq, retval);
++		retval = -EBUSY;
++		goto fail_req_irq;
++	} else {
++		dwc_dev->common_irq_installed = 1;
++	}
++
++	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
++		/* Initialize the PCD */
++		retval = dwc_otg_pcd_init(dev);
++		if (retval) {
++			dev_err(dev, "dwc_otg_pcd_init failed\n");
++			dwc_dev->pcd = NULL;
++			goto fail_req_irq;
++		}
++	}
++
++	gusbcfg_addr = (ulong) (dwc_dev->core_if->core_global_regs)
++		+ DWC_GUSBCFG;
++	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
++		/* Initialize the HCD and force_host_mode */
++		usbcfg = dwc_read32(gusbcfg_addr);
++		usbcfg |= DWC_USBCFG_FRC_HST_MODE;
++		dwc_write32(gusbcfg_addr, usbcfg);
++
++		retval = dwc_otg_hcd_init(dev, dwc_dev);
++		if (retval) {
++			dev_err(dev, "dwc_otg_hcd_init failed\n");
++			dwc_dev->hcd = NULL;
++			goto fail_hcd;
++		}
++		/* configure chargepump interrupt */
++		dwc_dev->hcd->cp_irq = irq_of_parse_and_map(ofdev->dev.of_node,
++							    3);
++		if (dwc_dev->hcd->cp_irq) {
++			retval = request_irq(dwc_dev->hcd->cp_irq,
++					     dwc_otg_externalchgpump_irq,
++					     IRQF_SHARED,
++					     "dwc_otg_ext_chg_pump", dwc_dev);
++			if (retval) {
++				dev_err(dev,
++					"request of irq failed retval: %d\n",
++					retval);
++				retval = -EBUSY;
++				goto fail_hcd;
++			} else {
++				dev_dbg(dev, "%s: ExtChgPump Detection "
++					"IRQ registered\n", dwc_driver_name);
++				dwc_dev->hcd->cp_irq_installed = 1;
++			}
++		}
++	}
++	/*
++	 * Enable the global interrupt after all the interrupt
++	 * handlers are installed.
++	 */
++	dwc_otg_enable_global_interrupts(dwc_dev->core_if);
++
++	usbcfg = dwc_read32(gusbcfg_addr);
++	usbcfg &= ~DWC_USBCFG_FRC_HST_MODE;
++	dwc_write32(gusbcfg_addr, usbcfg);
++
++	return 0;
++fail_hcd:
++	free_irq(dwc_dev->irq, dwc_dev);
++	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
++		if (dwc_dev->pcd)
++			dwc_otg_pcd_remove(dev);
++	}
++fail_req_irq:
++	otg_put_transceiver(dwc_dev->core_if->xceiv);
++fail_xceiv:
++	usb_nop_xceiv_unregister();
++fail_check_param:
++	dwc_otg_cil_remove(dwc_dev->core_if);
++fail_cil_init:
++	dev_set_drvdata(dev, NULL);
++	iounmap(dwc_dev->base);
++fail_ioremap:
++	release_mem_region(dwc_dev->phys_addr, dwc_dev->base_len);
++fail_of_irq:
++	kfree(dwc_dev);
++fail_dwc_dev:
 +	return retval;
 +}
++
++/*
++ * This structure defines the methods to be called by a bus driver
++ * during the lifecycle of a device on that bus. Both drivers and
++ * devices are registered with a bus driver. The bus driver matches
++ * devices to drivers based on information in the device and driver
++ * structures.
++ *
++ * The probe function is called when the bus driver matches a device
++ * to this driver. The remove function is called when a device is
++ * unregistered with the bus driver.
++ */
++static const struct of_device_id dwc_otg_match[] = {
++	{.compatible = "amcc,dwc-otg",},
++	{}
++};
++
++MODULE_DEVICE_TABLE(of, dwc_otg_match);
++
++static struct platform_driver dwc_otg_driver = {
++	.probe = dwc_otg_driver_probe,
++	.remove = __devexit_p(dwc_otg_driver_remove),
++	.driver = {
++		   .name = "dwc_otg",
++		   .owner = THIS_MODULE,
++		   .of_match_table = dwc_otg_match,
++		   },
++};
++
++/**
++ * This function is called when the dwc_otg_driver is installed with the
++ * insmod command. It registers the dwc_otg_driver structure with the
++ * appropriate bus driver. This will cause the dwc_otg_driver_probe function
++ * to be called. In addition, the bus driver will automatically expose
++ * attributes defined for the device and driver in the special sysfs file
++ * system.
++ */
++static int __init dwc_otg_driver_init(void)
++{
++
++	pr_info("%s: version %s\n", dwc_driver_name, DWC_DRIVER_VERSION);
++	return platform_driver_register(&dwc_otg_driver);
++}
++
++module_init(dwc_otg_driver_init);
++
++/**
++ * This function is called when the driver is removed from the kernel
++ * with the rmmod command. The driver unregisters itself with its bus
++ * driver.
++ *
++ */
++static void __exit dwc_otg_driver_cleanup(void)
++{
++	platform_driver_unregister(&dwc_otg_driver);
++}
++
++module_exit(dwc_otg_driver_cleanup);
++
++MODULE_DESCRIPTION(DWC_DRIVER_DESC);
++MODULE_AUTHOR("Mark Miesfeld <mmiesfeld@apm.com");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/usb/otg/dwc/driver.h b/drivers/usb/otg/dwc/driver.h
+new file mode 100644
+index 0000000..a86532b
+--- /dev/null
++++ b/drivers/usb/otg/dwc/driver.h
+@@ -0,0 +1,76 @@
++/*
++ * DesignWare HS OTG controller driver
++ * Copyright (C) 2006 Synopsys, Inc.
++ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
++ *
++ * This program is free software: you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License version 2 for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see http://www.gnu.org/licenses
++ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
++ * Suite 500, Boston, MA 02110-1335 USA.
++ *
++ * Based on Synopsys driver version 2.60a
++ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
++ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ */
++
++#if !defined(__DWC_OTG_DRIVER_H__)
++#define __DWC_OTG_DRIVER_H__
++
++/*
++ * This file contains the interface to the Linux driver.
++ */
++#include "cil.h"
++
++/*
++ * This structure is a wrapper that encapsulates the driver components used to
++ * manage a single DWC_otg controller.
++ */
++struct dwc_otg_device {
++	/* Base address returned from ioremap() */
++	__iomem void *base;
++
++	/* Pointer to the core interface structure. */
++	struct core_if *core_if;
++
++	/* Pointer to the PCD structure. */
++	struct dwc_pcd *pcd;
++
++	/* Pointer to the HCD structure. */
++	struct dwc_hcd *hcd;
++
++	/* Flag to indicate whether the common IRQ handler is installed. */
++	u8 common_irq_installed;
++
++	/* Interrupt request number. */
++	unsigned int irq;
++
++	/*
++	 * Physical address of Control and Status registers, used by
++	 * release_mem_region().
++	 */
++	resource_size_t phys_addr;
++
++	/* Length of memory region, used by release_mem_region(). */
++	unsigned long base_len;
++};
++#endif
+diff --git a/drivers/usb/otg/dwc/param.c b/drivers/usb/otg/dwc/param.c
+new file mode 100644
+index 0000000..523f0db
+--- /dev/null
++++ b/drivers/usb/otg/dwc/param.c
+@@ -0,0 +1,180 @@
++/*
++ * DesignWare HS OTG controller driver
++ * Copyright (C) 2006 Synopsys, Inc.
++ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
++ *
++ * This program is free software: you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License version 2 for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see http://www.gnu.org/licenses
++ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
++ * Suite 500, Boston, MA 02110-1335 USA.
++ *
++ * Based on Synopsys driver version 2.60a
++ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
++ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ */
++
++/*
++ * This file provides dwc_otg driver parameter and parameter checking.
++ */
++
++#include "cil.h"
++
++/*
++ * Encapsulate the module parameter settings
++ */
++struct core_params dwc_otg_module_params = {
++	.otg_cap = -1,
++	.dma_enable = -1,
++	.dma_burst_size = -1,
++	.speed = -1,
++	.host_support_fs_ls_low_power = -1,
++	.host_ls_low_power_phy_clk = -1,
++	.enable_dynamic_fifo = -1,
++	.dev_rx_fifo_size = -1,
++	.dev_nperio_tx_fifo_size = -1,
++	.dev_perio_tx_fifo_size = {-1, -1, -1, -1, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1},	/* 15 */
++	.host_rx_fifo_size = -1,
++	.host_nperio_tx_fifo_size = -1,
++	.host_perio_tx_fifo_size = -1,
++	.max_transfer_size = -1,
++	.max_packet_count = -1,
++	.host_channels = -1,
++	.dev_endpoints = -1,
++	.phy_type = -1,
++	.phy_utmi_width = -1,
++	.phy_ulpi_ddr = -1,
++	.phy_ulpi_ext_vbus = -1,
++	.i2c_enable = -1,
++	.ulpi_fs_ls = -1,
++	.ts_dline = -1,
++	.en_multiple_tx_fifo = -1,
++	.dev_tx_fifo_size = {-1, -1, -1, -1, -1, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1},	/* 15 */
++	.thr_ctl = -1,
++	.tx_thr_length = -1,
++	.rx_thr_length = -1,
++};
++
++/**
++ * Checks that parameter settings for the periodic Tx FIFO sizes are correct
++ * according to the hardware configuration. Sets the size to the hardware
++ * configuration if an incorrect size is detected.
++ */
++static int set_valid_perio_tx_fifo_sizes(struct core_if *core_if)
++{
++	ulong regs = (u32) core_if->core_global_regs;
++	u32 *param_size = &dwc_otg_module_params.dev_perio_tx_fifo_size[0];
++	u32 i, size;
++
++	for (i = 0; i < MAX_PERIO_FIFOS; i++, param_size++) {
++		size = dwc_read32(regs + DWC_DPTX_FSIZ_DIPTXF(i));
++		*param_size = size;
++	}
++	return 0;
++}
++
++/**
++ * Checks that parameter settings for the Tx FIFO sizes are correct according to
++ * the hardware configuration.  Sets the size to the hardware configuration if
++ * an incorrect size is detected.
++ */
++static int set_valid_tx_fifo_sizes(struct core_if *core_if)
++{
++	ulong regs = (u32) core_if->core_global_regs;
++	u32 *param_size = &dwc_otg_module_params.dev_tx_fifo_size[0];
++	u32 i, size;
++
++	for (i = 0; i < MAX_TX_FIFOS; i++, param_size) {
++		size = dwc_read32(regs + DWC_DPTX_FSIZ_DIPTXF(i));
++		*param_size = size;
++	}
++	return 0;
++}
++
++/**
++ * This function is called during module intialization to verify that
++ * the module parameters are in a valid state.
++ */
++int __devinit check_parameters(struct core_if *core_if)
++{
++	/* Default values */
++	dwc_otg_module_params.otg_cap = dwc_param_otg_cap_default;
++	dwc_otg_module_params.dma_enable = dwc_param_dma_enable_default;
++	dwc_otg_module_params.speed = dwc_param_speed_default;
++	dwc_otg_module_params.host_support_fs_ls_low_power =
++	    dwc_param_host_support_fs_ls_low_power_default;
++	dwc_otg_module_params.host_ls_low_power_phy_clk =
++	    dwc_param_host_ls_low_power_phy_clk_default;
++	dwc_otg_module_params.phy_type = dwc_param_phy_type_default;
++	dwc_otg_module_params.phy_ulpi_ddr = dwc_param_phy_ulpi_ddr_default;
++	dwc_otg_module_params.phy_ulpi_ext_vbus =
++	    dwc_param_phy_ulpi_ext_vbus_default;
++	dwc_otg_module_params.i2c_enable = dwc_param_i2c_enable_default;
++	dwc_otg_module_params.ulpi_fs_ls = dwc_param_ulpi_fs_ls_default;
++	dwc_otg_module_params.ts_dline = dwc_param_ts_dline_default;
++
++	dwc_otg_module_params.dma_burst_size = dwc_param_dma_burst_size_default;
++	dwc_otg_module_params.phy_utmi_width = dwc_param_phy_utmi_width_default;
++	dwc_otg_module_params.thr_ctl = dwc_param_thr_ctl_default;
++	dwc_otg_module_params.tx_thr_length = dwc_param_tx_thr_length_default;
++	dwc_otg_module_params.rx_thr_length = dwc_param_rx_thr_length_default;
++
++	/*
++	 * Hardware configurations of the OTG core.
++	 */
++	dwc_otg_module_params.enable_dynamic_fifo =
++	    DWC_HWCFG2_DYN_FIFO_RD(core_if->hwcfg2);
++	dwc_otg_module_params.dev_rx_fifo_size =
++	    dwc_read32(core_if->core_global_regs + DWC_GRXFSIZ);
++	dwc_otg_module_params.dev_nperio_tx_fifo_size =
++	    dwc_read32(core_if->core_global_regs + DWC_GNPTXFSIZ) >> 16;
++
++	dwc_otg_module_params.host_rx_fifo_size =
++	    dwc_read32(core_if->core_global_regs + DWC_GRXFSIZ);
++	dwc_otg_module_params.host_nperio_tx_fifo_size =
++	    dwc_read32(core_if->core_global_regs + DWC_GNPTXFSIZ) >> 16;
++	dwc_otg_module_params.host_perio_tx_fifo_size =
++	    dwc_read32(core_if->core_global_regs + DWC_HPTXFSIZ) >> 16;
++	dwc_otg_module_params.max_transfer_size =
++	    (1 << (DWC_HWCFG3_XFERSIZE_CTR_WIDTH_RD(core_if->hwcfg3) + 11))
++	    - 1;
++	dwc_otg_module_params.max_packet_count =
++	    (1 << (DWC_HWCFG3_PKTSIZE_CTR_WIDTH_RD(core_if->hwcfg3) + 4))
++	    - 1;
++
++	dwc_otg_module_params.host_channels =
++	    DWC_HWCFG2_NO_HST_CHAN_RD(core_if->hwcfg2) + 1;
++	dwc_otg_module_params.dev_endpoints =
++	    DWC_HWCFG2_NO_DEV_EP_RD(core_if->hwcfg2);
++	dwc_otg_module_params.en_multiple_tx_fifo =
++	    (DWC_HWCFG4_DED_FIFO_ENA_RD(core_if->hwcfg4) == 0)
++	    ? 0 : 1, 0;
++	set_valid_perio_tx_fifo_sizes(core_if);
++	set_valid_tx_fifo_sizes(core_if);
++
++	return 0;
++}
++
++module_param_named(dma_enable, dwc_otg_module_params.dma_enable, bool, 0444);
++MODULE_PARM_DESC(dma_enable, "DMA Mode 0=Slave 1=DMA enabled");
 -- 
 1.6.1.rc3
