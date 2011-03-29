@@ -1,17 +1,19 @@
-Return-Path: <sarah.a.sharp@linux.intel.com>
-Date: Tue, 29 Mar 2011 11:34:34 -0700
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 5/5] xhci: Remove recursive call to xhci_handle_event
-Message-ID: <20110329183434.GA5720@xanatos>
-References: <4D8C47D8.4020901@ozlabs.org> <4D8C8F2B.9090808@ru.mvista.com>
-	<4D90142C.4050206@ozlabs.org> <20110328223424.GF8065@xanatos>
-	<1301356734.2402.657.camel@pasglop>
+Return-Path: <dmitry.torokhov@gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Matt Evans <matt@ozlabs.org>
+Subject: Re: [PATCH v2 3/5] xhci: Add rmb() between reading event validity &
+	event data access.
+Date: Tue, 29 Mar 2011 11:56:47 -0700
+References: <4D8C47CD.3020108@ozlabs.org>
+	<61164.94.211.195.167.1301094709.squirrel@gate.crashing.org>
+	<4D901429.5010807@ozlabs.org>
+In-Reply-To: <4D901429.5010807@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1301356734.2402.657.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Sergei Shtylyov <sshtylyov@mvista.com>, Matt Evans <matt@ozlabs.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201103291156.47822.dmitry.torokhov@gmail.com>
+Cc: sarah.a.sharp@linux.intel.com, linuxppc-dev@ozlabs.org,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,38 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 29, 2011 at 10:58:54AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2011-03-28 at 15:34 -0700, Sarah Sharp wrote:
-> > 
-> > What I'd like to do is take out the read of the status register out of
-> > the interrupt handler (which is killing performance), and make it only
-> > check the status register when xhci_handle_event() returns a negative
-> > error status.  If the status register shows the host controller has a
-> > critical error, the driver should call usb_hcd_died().
+On Sunday, March 27, 2011 09:52:57 pm Matt Evans wrote:
+> On weakly-ordered systems, the reading of an event's content must occur
+> after reading the event's validity.
 > 
-> Be careful with removing that read...
+> Signed-off-by: Matt Evans <matt@ozlabs.org>
+> ---
+> Segher, thanks for the comment; explanation added.
 > 
-> Without MSIs, that read is what guarantees that all pending DMA writes
-> by the xHCI have been "flushed" before you start poking at memory.
+>  drivers/usb/host/xhci-ring.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
 > 
-> IE. If the chip writes an event and sends an LSI, without that read, you
-> might get the interrupt before the writes to memory have completed and
-> your driver will "miss" the event.
+> diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
+> index 45f3b77..d6aa880 100644
+> --- a/drivers/usb/host/xhci-ring.c
+> +++ b/drivers/usb/host/xhci-ring.c
+> @@ -2152,6 +2152,11 @@ static void xhci_handle_event(struct xhci_hcd
+> *xhci) }
+>  	xhci_dbg(xhci, "%s - OS owns TRB\n", __func__);
 > 
-> With MSIs (provided they are not broken on your PCI host bridge of
-> course, this is typically the #1 cause of MSI breakage), you don't need
-> that as the MSI itself is a DMA store by the device which is ordered
-> after the stores done to update the event. So by the time you get the
-> MSI interrupt, you -should- have all the updates visible in memory.
-> 
-> But that means that your PCI host bridge is doing the right thing, by
-> ensuring whatever queues to the coherency domain it has have been
-> properly flushed before it signals the interrupts caused by the MSI to
-> the processors. Hopefully most systems get that right nowadays.
-> 
-> Point is: you need to keep that read if MSIs aren't enabled.
+> +	/*
+> +	 * Barrier between reading the TRB_CYCLE (valid) flag above and any
+> +	 * speculative reads of the event's flags/data below.
+> +	 */
+> +	rmb();
+>  	/* FIXME: Handle more event types. */
+>  	switch ((le32_to_cpu(event->event_cmd.flags) & TRB_TYPE_BITMASK)) {
 
-Sorry for the sloppy language, yes, I understand I still need the status
-register read if only legacy IRQs are enabled.
+Isn't it the same memory that is being read the first time around? How 
+reordering could happen here?
 
-Sarah Sharp
+Thanks.
+
+
+-- 
+Dmitry
