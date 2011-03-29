@@ -1,24 +1,21 @@
-Return-Path: <emunson@mgebm.net>
-Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
-	[209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06FE9B6EF2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Mar 2011 01:51:50 +1100 (EST)
-Received: by qyk29 with SMTP id 29so2218496qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 07:51:47 -0700 (PDT)
-From: Eric B Munson <emunson@mgebm.net>
-To: benh@kernel.crashing.org
-Subject: [PATCH V2] POWER: perf_event: Skip updating kernel counters if
-	register value shrinks
-Date: Tue, 29 Mar 2011 10:51:42 -0400
-Message-Id: <1301410302-7270-1-git-send-email-emunson@mgebm.net>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
-	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
-	linuxppc-dev@lists.ozlabs.org, stable@kernel.org,
-	Eric B Munson <emunson@mgebm.net>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "localhost", Issuer "localhost" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1D1E5B6F0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2011 03:27:31 +1100 (EST)
+Message-ID: <4D92071E.3060906@matrix-vision.de>
+Date: Tue, 29 Mar 2011 18:21:50 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: How to define an I2C-to-SPI bridge device ?
+References: <1283502979.17812.22.camel@swa-m460>	<20100903120858.GA19380@oksana.dev.rtsoft.ru>	<4C84D334.6060008@matrix-vision.de>
+	<c843f864-2a5a-4146-bd95-13c2fb91f430@email.android.com>
+	<4D8C603F.6060501@matrix-vision.de>
+In-Reply-To: <4D8C603F.6060501@matrix-vision.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,111 +25,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because of speculative event roll back, it is possible for some event coutners
-to decrease between reads on POWER7.  This causes a problem with the way that
-counters are updated.  Delta calues are calculated in a 64 bit value and the
-top 32 bits are masked.  If the register value has decreased, this leaves us
-with a very large positive value added to the kernel counters.  This patch
-protects against this by skipping the update if the delta would be negative.
-This can lead to a lack of precision in the coutner values, but from my testing
-the value is typcially fewer than 10 samples at a time.
+On 03/25/2011 10:28 AM, Andre Schwarz wrote:
+> Grant, Anton,
 
-Signed-off-by: Eric B Munson <emunson@mgebm.net>
-Cc: stable@kernel.org
----
-Changes from V1:
- Updated patch leader
- Added stable CC
- Use an s32 to hold delta values and discard any values that are less than 0
+got it.
+providing modalis = "spidev" within spi_board_info works like a charme ...
 
- arch/powerpc/kernel/perf_event.c |   34 +++++++++++++++++++++++++++-------
- 1 files changed, 27 insertions(+), 7 deletions(-)
+Cheers,
+André
 
-diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
-index 97e0ae4..0a5178f 100644
---- a/arch/powerpc/kernel/perf_event.c
-+++ b/arch/powerpc/kernel/perf_event.c
-@@ -416,6 +416,15 @@ static void power_pmu_read(struct perf_event *event)
- 		prev = local64_read(&event->hw.prev_count);
- 		barrier();
- 		val = read_pmc(event->hw.idx);
-+		/*
-+		 * POWER7 can roll back counter values, if the new value is
-+		 * smaller than the previous value it will cause the delta
-+		 * and the counter to have bogus values.  If this is the
-+		 * case skip updating anything until the counter grows again.
-+		 * This can lead to a small lack of precision in the counters.
-+		 */
-+		if (val < prev)
-+			return;
- 	} while (local64_cmpxchg(&event->hw.prev_count, prev, val) != prev);
- 
- 	/* The counters are only 32 bits wide */
-@@ -439,7 +448,8 @@ static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
- 				    unsigned long pmc5, unsigned long pmc6)
- {
- 	struct perf_event *event;
--	u64 val, prev, delta;
-+	u64 val, prev;
-+	s32 delta;
- 	int i;
- 
- 	for (i = 0; i < cpuhw->n_limited; ++i) {
-@@ -449,8 +459,13 @@ static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
- 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
- 		prev = local64_read(&event->hw.prev_count);
- 		event->hw.idx = 0;
--		delta = (val - prev) & 0xfffffffful;
--		local64_add(delta, &event->count);
-+		/*
-+		 * The PerfMon registers are only 32 bits wide so the
-+		 * delta should not overflow.
-+		 */
-+		delta = val - prev;
-+		if (delta > 0)
-+			local64_add(delta, &event->count);
- 	}
- }
- 
-@@ -458,14 +473,16 @@ static void thaw_limited_counters(struct cpu_hw_events *cpuhw,
- 				  unsigned long pmc5, unsigned long pmc6)
- {
- 	struct perf_event *event;
--	u64 val;
-+	u64 val, prev;
- 	int i;
- 
- 	for (i = 0; i < cpuhw->n_limited; ++i) {
- 		event = cpuhw->limited_counter[i];
- 		event->hw.idx = cpuhw->limited_hwidx[i];
- 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
--		local64_set(&event->hw.prev_count, val);
-+		prev = local64_read(&event->hw.prev_count);
-+		if (val > prev)
-+			local64_set(&event->hw.prev_count, val);
- 		perf_event_update_userpage(event);
- 	}
- }
-@@ -1187,7 +1204,8 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 			       struct pt_regs *regs, int nmi)
- {
- 	u64 period = event->hw.sample_period;
--	s64 prev, delta, left;
-+	s64 prev, left;
-+	s32 delta;
- 	int record = 0;
- 
- 	if (event->hw.state & PERF_HES_STOPPED) {
-@@ -1197,7 +1215,9 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 
- 	/* we don't have to worry about interrupts here */
- 	prev = local64_read(&event->hw.prev_count);
--	delta = (val - prev) & 0xfffffffful;
-+	delta = val - prev;
-+	if (delta < 0)
-+		delta = 0;
- 	local64_add(delta, &event->count);
- 
- 	/*
--- 
-1.7.1
+>
+>>>> we're about to get new MPC8377 based hardware with various 
+>>>> peripherals.
+>>>>> There are two I2C-to-SPI bridge devices (NXP SC18IS602) and I'm 
+>>>>> not sure
+>>>>> how to define a proper dts...
+>>>>>
+>>>>> Of course it's an easy thing creating 2 child nodes on the CPU's I2C
+>>>>> device - but how can I represent the created SPI bus ?
+>>>> Um.. the same as the other SPI buses? I.e.
+>>>>
+>>>> i2c-controller {  /* SOC I2C controller */
+>>>>     spi-controller {  /* The I2C-to-SPI bridge */
+>>>>         spi-device@0 {
+>>>>         };
+>>>>         spi-device@1 {
+>>>>         };
+>>>>     };
+>>>> };
+>>>>
+>>> ok , thanks - looks straight forward.
+>>> Is this any more than plain definition, i.e. will this trigger any I2C
+>>> or SPI device registration/linking ?
+>>>>> Is the (possibly) required driver (of_sc18is60x_spi ?) supposed to 
+>>>>> be an
+>>>>> I2C slave or an SPI host driver ?
+>>>> It should be an I2C driver that registers an SPI master (i.e.
+>>>> calls spi_alloc_master() and spi_register_master()).
+>>> hmm - ok. Will have to do it manually then ...
+>> Yes, but this is the case for non-of drivers too.  The i2c to spi 
+>> device driver must always create (and trigger population of) the spi 
+>> bus instance.
+>>
+>
+> I've kicked that I2C-to-SPI stuff completely because it's been too slow.
+> We've connected the SPI busses to the FPGA controlling almost 
+> everything now.
+>
+> Unfortunately there are some questions left :
+>
+> Following Anton's suggestion I've had a look at /drivers/mfd (sm501.c) 
+> and implemented a pci driver for the FPGA using
+> subdevices for additional functionality it exports - besides others we 
+> now have 2 SPI masters.
+>
+> For both SPI masters I have created and registered a platform_device.
+> pdev->dev is then fed into spi_alloc_master() and the resulting master 
+> goes into spi_register_master().
+>
+> master->bus_num is set to 0 and 1, i.e. no dynamic numbering.
+> master->chipselect = 8;
+>
+> Since I can probe the SPI device using FPGA intrinsic information I 
+> decided to register the client
+> devices on runtime using a "struct spi_board_info" which is fed into 
+> spi_new_device().
+>
+> The current design has 2 clients on SPI-0 and 5 clients on SPI-1.
+>
+> static struct spi_board_info mergerbox_spi_boardinfo[] = {
+>         {       .bus_num = 0,
+>                 .chip_select = 0,
+>                 .max_speed_hz = 4<<20, },
+>         {       .bus_num = 0,
+>                 .chip_select = 1,
+>                 .max_speed_hz = 4<<20, },
+>         {       .bus_num = 1,
+>                 .chip_select = 0,
+>                 .max_speed_hz = 4<<20, },
+> .....
+>
+>
+> After loading my module I get :
+>
+> #> ls /sys/devices/platform/AlteraSPI.0/
+> /sys/devices/platform/AlteraSPI.0/modalias
+> /sys/devices/platform/AlteraSPI.0/spi0.0/
+> /sys/devices/platform/AlteraSPI.0/spi0.1/
+> /sys/devices/platform/AlteraSPI.0/spi_master/
+> /sys/devices/platform/AlteraSPI.0/subsystem/
+> /sys/devices/platform/AlteraSPI.0/uevent
+>
+> #> ls /sys/devices/platform/AlteraSPI.1/
+> /sys/devices/platform/AlteraSPI.1/modalias
+> /sys/devices/platform/AlteraSPI.1/spi1.0/
+> /sys/devices/platform/AlteraSPI.1/spi1.1/
+> /sys/devices/platform/AlteraSPI.1/spi1.2/
+> /sys/devices/platform/AlteraSPI.1/spi1.3/
+> /sys/devices/platform/AlteraSPI.1/spi1.4/
+> /sys/devices/platform/AlteraSPI.1/spi_master/
+> /sys/devices/platform/AlteraSPI.1/subsystem/
+> /sys/devices/platform/AlteraSPI.1/uevent
+>
+> What I'm missing are the /dev/spi* entries.
+>
+> There's also a spi_mpc8xxx driver using the CPU's SPI controller.
+> It is configured by dts (2 devices) and uses dynamic bus numbering:
+>
+> #> ls /sys/bus/spi/devices/
+> spi0.0      spi1.0      spi1.2      spi1.4      spi32766.1
+> spi0.1      spi1.1      spi1.3      spi32766.0
+>
+> This devices are processed by spidev and proper entries are created 
+> ready for use :
+>
+> #> ls /dev/spi*
+> /dev/spidev32766.0  /dev/spidev32766.1
+>
+>
+> Am I missing somehting obvious ?
+>
+> Since there's no driver registration we don't have a probe function - 
+> is this a problem regarding device binding ?
+>
+> Do I need to use the .modalias in "struct spi_board_info" ?
+>
+>
+> Any help is welcome.
+>
+> Regards,
+> André
+
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
