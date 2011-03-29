@@ -1,16 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 5/5] xhci: Remove recursive call to xhci_handle_event
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 39229B6FA2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Mar 2011 11:30:14 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Implement dma_mmap_coherent()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-In-Reply-To: <20110328223424.GF8065@xanatos>
-References: <4D8C47D8.4020901@ozlabs.org> <4D8C8F2B.9090808@ru.mvista.com>
-	<4D90142C.4050206@ozlabs.org>  <20110328223424.GF8065@xanatos>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1301035806.2402.470.camel@pasglop>
+References: <1301035806.2402.470.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 29 Mar 2011 10:58:54 +1100
-Message-ID: <1301356734.2402.657.camel@pasglop>
+Date: Tue, 29 Mar 2011 11:30:06 +1100
+Message-ID: <1301358606.2402.663.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Sergei Shtylyov <sshtylyov@mvista.com>, Matt Evans <matt@ozlabs.org>
+Cc: Takashi Iwai <tiwai@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +24,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-03-28 at 15:34 -0700, Sarah Sharp wrote:
-> 
-> What I'd like to do is take out the read of the status register out of
-> the interrupt handler (which is killing performance), and make it only
-> check the status register when xhci_handle_event() returns a negative
-> error status.  If the status register shows the host controller has a
-> critical error, the driver should call usb_hcd_died().
+On Fri, 2011-03-25 at 17:50 +1100, Benjamin Herrenschmidt wrote:
+> This is used by Alsa to mmap buffers allocated with dma_alloc_coherent()
+> into userspace. We need a special variant to handle machines with
+> non-coherent DMAs as those buffers have "special" virt addresses and
+> require non-cachable mappings
 
-Be careful with removing that read...
-
-Without MSIs, that read is what guarantees that all pending DMA writes
-by the xHCI have been "flushed" before you start poking at memory.
-
-IE. If the chip writes an event and sends an LSI, without that read, you
-might get the interrupt before the writes to memory have completed and
-your driver will "miss" the event.
-
-With MSIs (provided they are not broken on your PCI host bridge of
-course, this is typically the #1 cause of MSI breakage), you don't need
-that as the MSI itself is a DMA store by the device which is ordered
-after the stores done to update the event. So by the time you get the
-MSI interrupt, you -should- have all the updates visible in memory.
-
-But that means that your PCI host bridge is doing the right thing, by
-ensuring whatever queues to the coherency domain it has have been
-properly flushed before it signals the interrupts caused by the MSI to
-the processors. Hopefully most systems get that right nowadays.
-
-Point is: you need to keep that read if MSIs aren't enabled.
+Missing an EXPORT_SYMBOL_GPL... will fix that up before I merge.
 
 Cheers,
 Ben.
+
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Dunno if anybody with CONFIG_NOT_COHERENT_CACHE has some audio device
+> that uses dma buffers (ie not usb-audio) and wants to try that out...
+> should fix a long standing problem.
+> 
+>  arch/powerpc/include/asm/dma-mapping.h |    7 +++++++
+>  arch/powerpc/kernel/dma.c              |   18 ++++++++++++++++++
+>  arch/powerpc/mm/dma-noncoherent.c      |   20 ++++++++++++++++++++
+>  3 files changed, 45 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index 6d2416a..41e0eb7 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -42,6 +42,7 @@ extern void __dma_free_coherent(size_t size, void *vaddr);
+>  extern void __dma_sync(void *vaddr, size_t size, int direction);
+>  extern void __dma_sync_page(struct page *page, unsigned long offset,
+>  				 size_t size, int direction);
+> +extern unsigned long __dma_get_coherent_pfn(void *cpu_addr);
+>  
+>  #else /* ! CONFIG_NOT_COHERENT_CACHE */
+>  /*
+> @@ -52,6 +53,7 @@ extern void __dma_sync_page(struct page *page, unsigned long offset,
+>  #define __dma_free_coherent(size, addr)		((void)0)
+>  #define __dma_sync(addr, size, rw)		((void)0)
+>  #define __dma_sync_page(pg, off, sz, rw)	((void)0)
+> +#define __dma_get_coherent_pfn(cpu_addr)	(0)
+>  
+>  #endif /* ! CONFIG_NOT_COHERENT_CACHE */
+>  
+> @@ -198,6 +200,11 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+>  #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+>  #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+>  
+> +extern int dma_mmap_coherent(struct device *, struct vm_area_struct *,
+> +			     void *, dma_addr_t, size_t);
+> +#define ARCH_HAS_DMA_MMAP_COHERENT
+> +
+> +
+>  static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+>  		enum dma_data_direction direction)
+>  {
+> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> index cf02cad..0f52235 100644
+> --- a/arch/powerpc/kernel/dma.c
+> +++ b/arch/powerpc/kernel/dma.c
+> @@ -179,3 +179,21 @@ static int __init dma_init(void)
+>         return 0;
+>  }
+>  fs_initcall(dma_init);
+> +
+> +int dma_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
+> +		      void *cpu_addr, dma_addr_t handle, size_t size)
+> +{
+> +	unsigned long pfn;
+> +
+> +#ifdef CONFIG_NOT_COHERENT_CACHE
+> +	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+> +	pfn = __dma_get_coherent_pfn(cpu_addr);
+> +#else
+> +	pfn = page_to_pfn(virt_to_page(cpu_addr));
+> +#endif
+> +	return remap_pfn_range(vma, vma->vm_start,
+> +			       pfn + vma->vm_pgoff,
+> +			       vma->vm_end - vma->vm_start,
+> +			       vma->vm_page_prot);
+> +}
+> +
+> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+> index 757c0be..174b10a 100644
+> --- a/arch/powerpc/mm/dma-noncoherent.c
+> +++ b/arch/powerpc/mm/dma-noncoherent.c
+> @@ -399,3 +399,23 @@ void __dma_sync_page(struct page *page, unsigned long offset,
+>  #endif
+>  }
+>  EXPORT_SYMBOL(__dma_sync_page);
+> +
+> +/*
+> + * Return the PFN for a given cpu virtual address returned by
+> + * __dma_alloc_coherent. This is used by dma_mmap_coherent()
+> + */
+> +unsigned long __dma_get_coherent_pfn(void *cpu_addr)
+> +{	
+> +	/* This should always be populated, so we don't test every
+> +	 * level. If that fails, we'll have a nice crash which
+> +	 * will be as good as a BUG_ON()
+> +	 */
+> +	pgd_t *pgd = pgd_offset_k(cpu_addr);
+> +	pud_t *pud = pud_offset(pgd, cpu_addr);
+> +	pmd_t *pmd = pmd_offset(pud, cpu_addr);
+> +	pte_t *ptep = pte_offset_kernel(pmd, cpu_addr);
+> +
+> +	if (pte_none(*ptep) || !pte_present(*ptep))
+> +		return 0;
+> +	return pte_pfn(*ptep);	
+> +}
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
