@@ -1,24 +1,27 @@
-Return-Path: <keshava_mgowda@ti.com>
-Received: from na3sys009aog115.obsmtp.com (na3sys009aog115.obsmtp.com
-	[74.125.149.238])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FEB4B6EED
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 31CE5B6F12
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 21:58:54 +1100 (EST)
-Received: by bwz14 with SMTP id 14so89548bwz.30
+	Tue, 29 Mar 2011 22:55:02 +1100 (EST)
+Received: by wwi36 with SMTP id 36so70839wwi.14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 03:58:50 -0700 (PDT)
-From: Keshava Munegowda <keshava_mgowda@ti.com>
-References: <1301336856-1802-1-git-send-email-tmarri@apm.com>
+	Tue, 29 Mar 2011 04:54:57 -0700 (PDT)
+Message-ID: <4D91C834.3050104@ru.mvista.com>
+Date: Tue, 29 Mar 2011 15:53:24 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-In-Reply-To: <1301336856-1802-1-git-send-email-tmarri@apm.com>
-Date: Tue, 29 Mar 2011 16:28:43 +0530
-Message-ID: <3a04648a22d8cb5be414fe90b2bd0d84@mail.gmail.com>
-Subject: RE: [PATCH v10 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
-To: tmarri@apm.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com
+To: tmarri@apm.com
+Subject: Re: [PATCH v10 09/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
+	support
+References: <1301336892-2268-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1301336892-2268-1-git-send-email-tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +31,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linux-usb-owner@vger.kernel.org
-[mailto:linux-usb-owner@vger.kernel.org] On Behalf Of
-> tmarri@apm.com
-> Sent: Monday, March 28, 2011 11:58 PM
-> To: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Cc: greg@kroah.com; tmarri@apm.com
-> Subject: [PATCH v10 00/10] Add-Synopsys-DesignWare-HS-USB-OTG-driver
->
+Hello.
+
+On 28-03-2011 22:28, tmarri@apm.com wrote:
+
 > From: Tirumala Marri <tmarri@apm.com>
->
-> v10:
->  1. Change address argument type from u32 to ulong to
->     make it arch independent.
->  2. Cleaning un-necasary changes from Kconfig.
->
-> v9:
->  1. Move the source under usb/otg/dwc.
->  2. Rename the source files with out dwc_otg prefix.
->  3. Remove unused read/write modify functions.
->  4. Including changes related to register base print.
->
-> Tirumala Marri (10):
->   USB/ppc4xx: Add Synopsys DWC OTG Register definitions
->   USB/ppc4xx: Add Synopsys DWC OTG driver framework
->   USB/ppc4xx: Add Synopsys DWC OTG Core Interface Layer (CIL)
->   USB/ppc4xx: Add Synopsys DWC OTG HCD function
->   USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt function
->   USB/ppc4xx: Add Synopsys DWC OTG HCD queue function
->   USB/ppc4xx: Add Synopsys DWC OTG PCD function
->   USB ppc4xx: Add Synopsys DWC OTG PCD interrupt function
->   USB/ppc4xx:Synopsys DWC OTG driver enable gadget support
->   USB ppc4xx: Add Synopsys DWC OTG driver kernel configuration and
->     Makefile
->
->  drivers/Makefile                  |    1 +
->  drivers/usb/Kconfig               |    2 +
->  drivers/usb/gadget/Kconfig        |   22 +
->  drivers/usb/gadget/gadget_chips.h |    9 +
->  drivers/usb/otg/dwc/Kconfig       |   88 ++
->  drivers/usb/otg/dwc/Makefile      |   19 +
->  drivers/usb/otg/dwc/apmppc.c      |  414 +++++++
->  drivers/usb/otg/dwc/cil.c         |  972 +++++++++++++++
->  drivers/usb/otg/dwc/cil.h         | 1177 ++++++++++++++++++
->  drivers/usb/otg/dwc/cil_intr.c    |  616 +++++++++
->  drivers/usb/otg/dwc/driver.h      |   76 ++
->  drivers/usb/otg/dwc/hcd.c         | 2465
-+++++++++++++++++++++++++++++++++++++
->  drivers/usb/otg/dwc/hcd.h         |  416 +++++++
->  drivers/usb/otg/dwc/hcd_intr.c    | 1477 ++++++++++++++++++++++
->  drivers/usb/otg/dwc/hcd_queue.c   |  696 +++++++++++
->  drivers/usb/otg/dwc/param.c       |  180 +++
->  drivers/usb/otg/dwc/pcd.c         | 1766 ++++++++++++++++++++++++++
->  drivers/usb/otg/dwc/pcd.h         |  139 +++
->  drivers/usb/otg/dwc/pcd_intr.c    | 2311
-++++++++++++++++++++++++++++++++++
->  drivers/usb/otg/dwc/regs.h        | 1326 ++++++++++++++++++++
->  20 files changed, 14172 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/usb/otg/dwc/Kconfig
->  create mode 100644 drivers/usb/otg/dwc/Makefile
->  create mode 100644 drivers/usb/otg/dwc/apmppc.c
->  create mode 100644 drivers/usb/otg/dwc/cil.c
->  create mode 100644 drivers/usb/otg/dwc/cil.h
->  create mode 100644 drivers/usb/otg/dwc/cil_intr.c
->  create mode 100644 drivers/usb/otg/dwc/driver.h
->  create mode 100644 drivers/usb/otg/dwc/hcd.c
->  create mode 100644 drivers/usb/otg/dwc/hcd.h
->  create mode 100644 drivers/usb/otg/dwc/hcd_intr.c
->  create mode 100644 drivers/usb/otg/dwc/hcd_queue.c
->  create mode 100644 drivers/usb/otg/dwc/param.c
->  create mode 100644 drivers/usb/otg/dwc/pcd.c
->  create mode 100644 drivers/usb/otg/dwc/pcd.h
->  create mode 100644 drivers/usb/otg/dwc/pcd_intr.c
->  create mode 100644 drivers/usb/otg/dwc/regs.h
->
-> --
 
-Just a cosmetic review comment: you need to Tabify the declarations of in
-the functions, at least when you are declaring variable of different data
-types
+> Enable gadget support
 
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+[...]
 
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> index bc5123c..61aca75 100644
+> --- a/drivers/usb/gadget/Kconfig
+> +++ b/drivers/usb/gadget/Kconfig
+> @@ -365,6 +365,28 @@ config USB_GADGET_MUSB_HDRC
+>   	  This OTG-capable silicon IP is used in dual designs including
+>   	  the TI DaVinci, OMAP 243x, OMAP 343x, TUSB 6010, and ADI Blackfin
+>
+> +# dwc_otg builds in ../dwc_otg along with host support
+
+    There's no ../dwc_otg any longer.
+
+> +config USB_GADGET_DWC_HDRC
+> +	boolean "DesignWare USB Peripheral"
+> +	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
+> +	select USB_GADGET_DUALSPEED
+> +	select USB_GADGET_SELECTED
+> +	select USB_GADGET_DWC_OTG
+> +	help
+> +	This OTG-capable Designware USB IP
+> +
+> +config USB_GADGET_DWC_OTG
+> +	boolean "OTG Support"
+> +	depends on USB_GADGET_DWC_HDRC
+
+    Not on DWC_OTG_MODE? How this option is different from DWC_OTG_MODE?
+
+> +	help
+> +	The most notable feature of USB OTG is support for a
+> +	"Dual-Role" device, which can act as either a device
+> +	or a host.  The initial role choice can be changed
+> +	later, when two dual-role devices talk to each other.
+> +	Select this only if your board has a Mini-AB connector.
+> +
+> +
+> +
+
+     Too many empty lines.
+
+>   config USB_GADGET_M66592
+>   	boolean "Renesas M66592 USB Peripheral Controller"
+>   	select USB_GADGET_DUALSPEED
+
+WBR, Sergei
