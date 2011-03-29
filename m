@@ -1,25 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DB5E2B6F9F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 11:32:53 +1100 (EST)
-Subject: Re: minimum guaranteed alignment of dma_alloc_coherent?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <4D500C28.7000704@freescale.com>
-References: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
-	<2A5A3DDA-94B3-48E3-9E49-6A5260BE1484@digitaldans.com>
-	<4D4CB038.9020602@freescale.com>
-	<9E25355F-62B4-46A3-9991-FDE89FB6B862@digitaldans.com>
-	<4D500C28.7000704@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 29 Mar 2011 11:32:39 +1100
-Message-ID: <1301358759.2402.665.camel@pasglop>
-Mime-Version: 1.0
-Cc: Dan Malek <ppc6dev@digitaldans.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4D914123.2060801@ozlabs.org>
+Date: Tue, 29 Mar 2011 13:17:07 +1100
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Subject: Re: [PATCH 0/5] Make xHCI driver endian-safe, add a barrier, some
+	debug
+References: <4D8C47B0.1050104@ozlabs.org> <20110328221605.GB8065@xanatos>
+In-Reply-To: <20110328221605.GB8065@xanatos>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-02-07 at 09:13 -0600, Timur Tabi wrote:
-> > This behavior is modified if you specify a restricted DMA
-> > mask for the device.  In this case, dma_alloc_coherent
-> > will force GFP_DMA on your behalf (on PowerPC).
+On 29/03/11 09:16, Sarah Sharp wrote:
+> On Fri, Mar 25, 2011 at 06:43:44PM +1100, Matt Evans wrote:
+>> Hi Sarah,
+>>
+>>
+>> This series addresses the endian issues with the xHCI driver, and has brought
+>> lovely USB 3 to PPC. :-)  I've tested various types of traffic on ppc4xx and
+>> POWER7 and (some sound driver bugs notwithstanding) all seems fine.  Also
+>> addresses an ordering problem we found and the recursive nature of the event
+>> handling, plus the addition of some debug.
 > 
-> Isn't it required for all callers of dma_alloc_coherent to specify a
-> mask (via
-> dma_set_mask) first?
+> Thanks for doing this work, Matt!  I appreciate it.
 
-GFP_DMA historically means ISA DMA memory on x86 :-) Other platforms had
-different "use" for it but basically it's old style drivers.
+Hey, no worries!  I've got some $3 USB speakers I wanted to connect to the
+$15,000 POWER server, you know how it goes.
 
-The problem with dma_set_mask() is that there's no way without an iommu
-that the implementation of dma_alloc_coherent() can satisfy arbitrary
-masks since you don't control where the page allocator gets you the
-pages from ... unless you have zones. That's what ZONE_DMA and
-ZONE_DMA32 are for.
+>> This should apply to 2.6.38/Linus' tree.
+> 
+> You say that these apply against 2.6.38, but recently a lot of xHCI
+> changes went into Linus' tree to support USB 3.0 hubs in 2.6.39.  Will
+> these patches still apply against Linus' latest tree?  If not, I suggest
+> you base your patches against Greg KH's usb-linus branch, as that's my
+> tree base:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/gregkh/usb-2.6.git;a=shortlog;h=refs/heads/usb-linus
+
+Sorry, I wasn't too explicit about that; I'd meant "Linus' tree as of todayish"
+and I believe I caught said USB 3.0 changes, but I'll rebase from usb-linus
+anyway to make sure we're fine.
+
+> Also, I haven't read too far into the patches, but the first patch seems
+> to have several one or two letter variable names, like "f" and "di".
+> Can you make those variable names more descriptive?  Thanks.
+
+Sure; they were single-use throwaways to break long RMW lines but I've rejiggled
+& removed them.
+
+Thanks for looking, I'll repost v3 with tidyups.
+
 
 Cheers,
-Ben.
+
+
+Matt
