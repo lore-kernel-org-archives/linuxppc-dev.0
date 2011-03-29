@@ -2,19 +2,22 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5C820B6EEC
+	by ozlabs.org (Postfix) with ESMTPS id B36E7B6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 20:47:58 +1100 (EST)
-Subject: Re: [PATCH 4/4] KVM: PPC: e500: SPE switch between guest and host
+	Tue, 29 Mar 2011 20:48:41 +1100 (EST)
+Subject: Re: [PATCH 2/4] KVM: PPC: booke: Wrap __kvmppc_vcpu_run()
 Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20110328192559.GC11104@schlenkerla.am.freescale.net>
-Date: Tue, 29 Mar 2011 11:47:51 +0200
-Message-Id: <6785E5D0-DEE9-4661-88A4-B35A99DB3C66@suse.de>
-References: <20110328192559.GC11104@schlenkerla.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <FBDE6FBB4662C043AC9EECB95F62CDDE185985@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Tue, 29 Mar 2011 11:48:36 +0200
+Message-Id: <BA27A243-5ED4-4B88-96CF-4449A64ED5AC@suse.de>
+References: <20110328192556.GA11104@schlenkerla.am.freescale.net>
+	<3A85D702-7EA1-48A2-B285-D4507CC48DBC@suse.de>
+	<FBDE6FBB4662C043AC9EECB95F62CDDE185985@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Liu Yu-B13201 <B13201@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,95 +28,137 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 28.03.2011, at 21:25, Scott Wood wrote:
+On 29.03.2011, at 11:36, Liu Yu-B13201 wrote:
 
-> From: yu liu <yu.liu@freescale.com>
->=20
-> This patch provide a lazy way to do SPE switch.
-> The SPE save/restore will be done only if it's needed.
->=20
-> Linux already switches SPEFSCR on context switch (non-lazily), so the
-> only remaining bit is to save it between qemu and the guest.
->=20
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> arch/powerpc/include/asm/kvm_host.h |    6 +++
-> arch/powerpc/kernel/asm-offsets.c   |    6 +++
-> arch/powerpc/kvm/booke.c            |   15 +++++++-
-> arch/powerpc/kvm/booke_interrupts.S |   62 =
-+++++++++++++++++++++++++++++++++++
-> arch/powerpc/kvm/e500.c             |   45 ++++++++++++++++++++++++-
-> 5 files changed, 130 insertions(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_host.h =
-b/arch/powerpc/include/asm/kvm_host.h
-> index c376f6b..171cd85 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -195,6 +195,12 @@ struct kvm_vcpu_arch {
-> 	u64 fpr[32];
-> 	u64 fpscr;
->=20
-> +#ifdef CONFIG_SPE
-> +	ulong evr[32];
-> +	ulong spefscr;
-> +	ulong host_spefscr;
-> +	u64 acc;
-> +#endif
-> #ifdef CONFIG_ALTIVEC
-> 	vector128 vr[32];
-> 	vector128 vscr;
-> diff --git a/arch/powerpc/kernel/asm-offsets.c =
-b/arch/powerpc/kernel/asm-offsets.c
-> index 75b72c7..554f4d6 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -497,6 +497,12 @@ int main(void)
-> 	DEFINE(TLBCAM_MAS3, offsetof(struct tlbcam, MAS3));
-> 	DEFINE(TLBCAM_MAS7, offsetof(struct tlbcam, MAS7));
-> #endif
-> +#ifdef CONFIG_SPE
-> +	DEFINE(VCPU_EVR, offsetof(struct kvm_vcpu, arch.evr[0]));
-> +	DEFINE(VCPU_ACC, offsetof(struct kvm_vcpu, arch.acc));
-> +	DEFINE(VCPU_SPEFSCR, offsetof(struct kvm_vcpu, arch.spefscr));
-> +	DEFINE(VCPU_HOST_SPEFSCR, offsetof(struct kvm_vcpu, =
-arch.host_spefscr));
-> +#endif /* CONFIG_SPE */
->=20
-> #ifdef CONFIG_KVM_EXIT_TIMING
-> 	DEFINE(VCPU_TIMING_EXIT_TBU, offsetof(struct kvm_vcpu,
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index ef76acb..4e9c1a9 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -13,6 +13,7 @@
->  * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  =
-02110-1301, USA.
->  *
->  * Copyright IBM Corp. 2007
-> + * Copyright (C) 2010 Freescale Semiconductor, Inc.
->  *
->  * Authors: Hollis Blanchard <hollisb@us.ibm.com>
->  *          Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> @@ -344,10 +345,19 @@ int kvmppc_handle_exit(struct kvm_run *run, =
-struct kvm_vcpu *vcpu,
-> 		r =3D RESUME_GUEST;
-> 		break;
->=20
-> -	case BOOKE_INTERRUPT_SPE_UNAVAIL:
-> -		kvmppc_booke_queue_irqprio(vcpu, =
-BOOKE_IRQPRIO_SPE_UNAVAIL);
-> +#ifdef CONFIG_SPE
-> +	case BOOKE_INTERRUPT_SPE_UNAVAIL: {
+> 
+> 
+>> -----Original Message-----
+>> From: 
+>> linuxppc-dev-bounces+b13201=freescale.com@lists.ozlabs.org 
+>> [mailto:linuxppc-dev-bounces+b13201=freescale.com@lists.ozlabs
+>> .org] On Behalf Of Alexander Graf
+>> Sent: Tuesday, March 29, 2011 5:32 PM
+>> To: Wood Scott-B07421
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Subject: Re: [PATCH 2/4] KVM: PPC: booke: Wrap __kvmppc_vcpu_run()
+>> 
+>> 
+>> On 28.03.2011, at 21:25, Scott Wood wrote:
+>> 
+>>> From: yu liu <yu.liu@freescale.com>
+>>> 
+>>> We need to save/restore SPE environment on e500 core.
+>>> Wrap __kvmppc_vcpu_run() so that we can put the SPE code in
+>>> e500.c.
+>>> 
+>>> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+>>> Signed-off-by: Scott Wood <scottwood@freescale.com>
+>>> ---
+>>> arch/powerpc/include/asm/kvm_ppc.h  |    1 +
+>>> arch/powerpc/kvm/44x.c              |    5 +++++
+>>> arch/powerpc/kvm/book3s.c           |    1 -
+>>> arch/powerpc/kvm/booke_interrupts.S |    2 +-
+>>> arch/powerpc/kvm/e500.c             |    5 +++++
+>>> 5 files changed, 12 insertions(+), 2 deletions(-)
+>>> 
+>>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h 
+>> b/arch/powerpc/include/asm/kvm_ppc.h
+>>> index ecb3bc7..4e7a1be 100644
+>>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>>> @@ -42,6 +42,7 @@ enum emulation_result {
+>>> 	EMULATE_AGAIN,        /* something went wrong. go again */
+>>> };
+>>> 
+>>> +extern int __kvmppc_vcpu_entry(struct kvm_run *kvm_run, 
+>> struct kvm_vcpu *vcpu);
+>>> extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, 
+>> struct kvm_vcpu *vcpu);
+>>> extern char kvmppc_handlers_start[];
+>>> extern unsigned long kvmppc_handler_len;
+>>> diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+>>> index 74d0e74..3d2e7d2 100644
+>>> --- a/arch/powerpc/kvm/44x.c
+>>> +++ b/arch/powerpc/kvm/44x.c
+>>> @@ -147,6 +147,11 @@ void kvmppc_core_vcpu_free(struct 
+>> kvm_vcpu *vcpu)
+>>> 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+>>> }
+>>> 
+>>> +int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct 
+>> kvm_vcpu *vcpu)
+>>> +{
+>>> +	return __kvmppc_vcpu_entry(kvm_run, vcpu);
+>> 
+>> 440 calls _entry on _run
+>> 
+>>> +}
+>>> +
+>>> static int __init kvmppc_44x_init(void)
+>>> {
+>>> 	int r;
+>>> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+>>> index c961de4..fb12853 100644
+>>> --- a/arch/powerpc/kvm/book3s.c
+>>> +++ b/arch/powerpc/kvm/book3s.c
+>>> @@ -1379,7 +1379,6 @@ void kvmppc_core_vcpu_free(struct 
+>> kvm_vcpu *vcpu)
+>>> 	vfree(vcpu_book3s);
+>>> }
+>>> 
+>>> -extern int __kvmppc_vcpu_entry(struct kvm_run *kvm_run, 
+>> struct kvm_vcpu *vcpu);
+>> 
+>> BookS loses its _entry reference?
+>> 
+>>> int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct 
+>> kvm_vcpu *vcpu)
+>>> {
+>>> 	int ret;
+>>> diff --git a/arch/powerpc/kvm/booke_interrupts.S 
+>> b/arch/powerpc/kvm/booke_interrupts.S
+>>> index 1cc471f..ab29f5f 100644
+>>> --- a/arch/powerpc/kvm/booke_interrupts.S
+>>> +++ b/arch/powerpc/kvm/booke_interrupts.S
+>>> @@ -293,7 +293,7 @@ heavyweight_exit:
+>>> *  r3: kvm_run pointer
+>>> *  r4: vcpu pointer
+>>> */
+>>> -_GLOBAL(__kvmppc_vcpu_run)
+>>> +_GLOBAL(__kvmppc_vcpu_entry)
+>> 
+>> BookE calls _run _entry now
+>> 
+>>> 	stwu	r1, -HOST_STACK_SIZE(r1)
+>>> 	stw	r1, VCPU_HOST_STACK(r4)	/* Save stack pointer 
+>> to vcpu. */
+>>> 
+>>> diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+>>> index e3768ee..e762634 100644
+>>> --- a/arch/powerpc/kvm/e500.c
+>>> +++ b/arch/powerpc/kvm/e500.c
+>>> @@ -70,6 +70,11 @@ int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu)
+>>> 	return 0;
+>>> }
+>>> 
+>>> +int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct 
+>> kvm_vcpu *vcpu)
+>>> +{
+>>> +	return __kvmppc_vcpu_entry(kvm_run, vcpu);
+>>> +}
+>> 
+>> e500 calls _entry on _run
+>> 
+>> 
+>> So you're basically adding a C wrapper around _entry. That's 
+>> fine for me, but what is the BookS change about?
+>> 
+> 
+> Hi Alex,
+> 
+> The declaration for Book3S is moved to global header.
 
-This means that on non-SPE enabled host kernels you'll get a KVM fatal =
-error when the guest triggers SPE_UNAVAIL, as the exit simply isn't =
-handled and triggers:
-
-        default:
-                printk(KERN_EMERG "exit_nr %d\n", exit_nr);
-                BUG();
+Ah, I missed the first chunk :). Thanks!
 
 
 Alex
