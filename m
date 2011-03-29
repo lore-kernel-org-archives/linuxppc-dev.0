@@ -1,18 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 15/18] powerpc/smp: Don't expose per-cpu "cpu_state" array
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1299566250-10516-16-git-send-email-benh@kernel.crashing.org>
-References: <1299566250-10516-1-git-send-email-benh@kernel.crashing.org>
-	<1299566250-10516-16-git-send-email-benh@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-DEhCck1VH+pqZdQHJFpV"
-Date: Tue, 29 Mar 2011 16:37:20 +1100
-Message-ID: <1301377040.32738.14.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6516DB6F0B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Mar 2011 17:04:24 +1100 (EST)
+Subject: Re: [PATCH] POWER: perf_event: Skip updating kernel counters if
+	register value shrinks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eric B Munson <emunson@mgebm.net>
+In-Reply-To: <1301059689-4556-1-git-send-email-emunson@mgebm.net>
+References: <1301059689-4556-1-git-send-email-emunson@mgebm.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 29 Mar 2011 17:03:57 +1100
+Message-ID: <1301378637.2402.671.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
+	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,57 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2011-03-25 at 09:28 -0400, Eric B Munson wrote:
+> It is possible on POWER7 for some perf events to have values decrease.  This
+> causes a problem with the way the kernel counters are updated.  Deltas are
+> computed and then stored in a 64 bit value while the registers are 32 bits
+> wide so if new value is smaller than previous value, the delta is a very
+> large positive value.  As a work around this patch skips updating the kernel
+> counter in when the new value is smaller than the previous.  This can lead to
+> a lack of precision in the coutner values, but from my testing the value is
+> typcially fewer than 10 samples at a time.
 
---=-DEhCck1VH+pqZdQHJFpV
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Unfortunately the patch isn't 100% correct I believe:
 
-On Tue, 2011-03-08 at 17:37 +1100, Benjamin Herrenschmidt wrote:
-> Instead, keep it static, expose an accessor and use that from
-> the PowerMac code. Avoids easy namespace collisions and will
-> make it easier to consolidate with other implementations.
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/include/asm/smp.h        |    2 +-
->  arch/powerpc/kernel/smp.c             |    7 ++++++-
->  arch/powerpc/platforms/powermac/smp.c |   12 ++++++++----
->  3 files changed, 15 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/sm=
-p.h
-> index 7e99771..a902a0d 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -45,7 +45,7 @@ extern void migrate_irqs(void);
->  int generic_cpu_disable(void);
->  void generic_cpu_die(unsigned int cpu);
->  void generic_mach_cpu_die(void);
-> -DECLARE_PER_CPU(int, cpu_state);
-> +void generic_set_cpu_dead(unsigned int cpu);
+I think you don't deal with the rollover of the counters. The new value
+could be smaller than the previous one simply because the counter just
+rolled over.
 
-Takes a cpu parameter ..
+In cases like this:
 
-> +void generic_set_cpu_dead(unsigned int cpu)
-> +{
-> +	__get_cpu_var(cpu_state) =3D CPU_DEAD;
-> +}
+> @@ -449,8 +458,10 @@ static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
+>  		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+>  		prev = local64_read(&event->hw.prev_count);
+>  		event->hw.idx = 0;
+> -		delta = (val - prev) & 0xfffffffful;
+> -		local64_add(delta, &event->count);
+> +		if (val >= prev) {
+> +			delta = (val - prev) & 0xfffffffful;
+> +			local64_add(delta, &event->count);
+> +		}
+>  	}
+>  }
 
-But doesn't use it.
+I wonder if it isn't easier to just define delta to be a s32, get rid
+of the mask and test if delta is positive, something like:
 
-cheers
+		delta =  val - prev;
+		if (delta > 0)
+			local64_add(delta, &event->count);
 
+Wouldn't that be simpler ? Or do I miss a reason why it wouldn't work ?
 
---=-DEhCck1VH+pqZdQHJFpV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAk2RcA8ACgkQdSjSd0sB4dIjrACfaZkmdXNZ0CK5o5tTRF59uuyO
-22sAnis9BxmQNGQxikpDAWizlkZ/9PFb
-=1O8q
------END PGP SIGNATURE-----
-
---=-DEhCck1VH+pqZdQHJFpV--
+Cheers,
+Ben.
