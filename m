@@ -1,23 +1,17 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AADB3B6F06
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Mar 2011 04:27:54 +1100 (EST)
-Date: Tue, 29 Mar 2011 12:26:40 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 3/4] KVM: PPC: e500: Introduce msr_block for e500v2
-Message-ID: <20110329122640.075f416d@schlenkerla.am.freescale.net>
-In-Reply-To: <76DF6B63-BCFC-4B8D-80A8-6C1578C6A22C@suse.de>
-References: <20110328192558.GB11104@schlenkerla.am.freescale.net>
-	<76DF6B63-BCFC-4B8D-80A8-6C1578C6A22C@suse.de>
+Return-Path: <sarah.a.sharp@linux.intel.com>
+Date: Tue, 29 Mar 2011 11:34:34 -0700
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 5/5] xhci: Remove recursive call to xhci_handle_event
+Message-ID: <20110329183434.GA5720@xanatos>
+References: <4D8C47D8.4020901@ozlabs.org> <4D8C8F2B.9090808@ru.mvista.com>
+	<4D90142C.4050206@ozlabs.org> <20110328223424.GF8065@xanatos>
+	<1301356734.2402.657.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1301356734.2402.657.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+	Sergei Shtylyov <sshtylyov@mvista.com>, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 29 Mar 2011 11:37:44 +0200
-Alexander Graf <agraf@suse.de> wrote:
-
-> 
-> On 28.03.2011, at 21:25, Scott Wood wrote:
-> 
-> > From: yu liu <yu.liu@freescale.com>
+On Tue, Mar 29, 2011 at 10:58:54AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-03-28 at 15:34 -0700, Sarah Sharp wrote:
 > > 
-> > In order to use lazy SPE register save/restore, we need to
-> > know when the guest is using MSR[SPE].  In order to do that, we
-> > need to control the actual MSR[SPE] separately from the guest's
-> > notion of MSR[SPE].
+> > What I'd like to do is take out the read of the status register out of
+> > the interrupt handler (which is killing performance), and make it only
+> > check the status register when xhci_handle_event() returns a negative
+> > error status.  If the status register shows the host controller has a
+> > critical error, the driver should call usb_hcd_died().
 > 
-> Please make this generic for BookE. There's no reason to have FSL ifdefs in the code.
+> Be careful with removing that read...
+> 
+> Without MSIs, that read is what guarantees that all pending DMA writes
+> by the xHCI have been "flushed" before you start poking at memory.
+> 
+> IE. If the chip writes an event and sends an LSI, without that read, you
+> might get the interrupt before the writes to memory have completed and
+> your driver will "miss" the event.
+> 
+> With MSIs (provided they are not broken on your PCI host bridge of
+> course, this is typically the #1 cause of MSI breakage), you don't need
+> that as the MSI itself is a DMA store by the device which is ordered
+> after the stores done to update the event. So by the time you get the
+> MSI interrupt, you -should- have all the updates visible in memory.
+> 
+> But that means that your PCI host bridge is doing the right thing, by
+> ensuring whatever queues to the coherency domain it has have been
+> properly flushed before it signals the interrupts caused by the MSI to
+> the processors. Hopefully most systems get that right nowadays.
+> 
+> Point is: you need to keep that read if MSIs aren't enabled.
 
-Yeah, I was wondering about that too.  Will respin.
+Sorry for the sloppy language, yes, I understand I still need the status
+register read if only legacy IRQs are enabled.
 
--Scott
+Sarah Sharp
