@@ -2,19 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39229B6FA2
+	by ozlabs.org (Postfix) with ESMTPS id DB5E2B6F9F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Mar 2011 11:30:14 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Implement dma_mmap_coherent()
+	Tue, 29 Mar 2011 11:32:53 +1100 (EST)
+Subject: Re: minimum guaranteed alignment of dma_alloc_coherent?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <1301035806.2402.470.camel@pasglop>
-References: <1301035806.2402.470.camel@pasglop>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <4D500C28.7000704@freescale.com>
+References: <AANLkTi=1VkJM6hJH44jeUmYwoEtJj22d6WyKVDitg=KY@mail.gmail.com>
+	<2A5A3DDA-94B3-48E3-9E49-6A5260BE1484@digitaldans.com>
+	<4D4CB038.9020602@freescale.com>
+	<9E25355F-62B4-46A3-9991-FDE89FB6B862@digitaldans.com>
+	<4D500C28.7000704@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 29 Mar 2011 11:30:06 +1100
-Message-ID: <1301358606.2402.663.camel@pasglop>
+Date: Tue, 29 Mar 2011 11:32:39 +1100
+Message-ID: <1301358759.2402.665.camel@pasglop>
 Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Dan Malek <ppc6dev@digitaldans.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,119 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-03-25 at 17:50 +1100, Benjamin Herrenschmidt wrote:
-> This is used by Alsa to mmap buffers allocated with dma_alloc_coherent()
-> into userspace. We need a special variant to handle machines with
-> non-coherent DMAs as those buffers have "special" virt addresses and
-> require non-cachable mappings
+On Mon, 2011-02-07 at 09:13 -0600, Timur Tabi wrote:
+> > This behavior is modified if you specify a restricted DMA
+> > mask for the device.  In this case, dma_alloc_coherent
+> > will force GFP_DMA on your behalf (on PowerPC).
+> 
+> Isn't it required for all callers of dma_alloc_coherent to specify a
+> mask (via
+> dma_set_mask) first?
 
-Missing an EXPORT_SYMBOL_GPL... will fix that up before I merge.
+GFP_DMA historically means ISA DMA memory on x86 :-) Other platforms had
+different "use" for it but basically it's old style drivers.
+
+The problem with dma_set_mask() is that there's no way without an iommu
+that the implementation of dma_alloc_coherent() can satisfy arbitrary
+masks since you don't control where the page allocator gets you the
+pages from ... unless you have zones. That's what ZONE_DMA and
+ZONE_DMA32 are for.
 
 Cheers,
 Ben.
-
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Dunno if anybody with CONFIG_NOT_COHERENT_CACHE has some audio device
-> that uses dma buffers (ie not usb-audio) and wants to try that out...
-> should fix a long standing problem.
-> 
->  arch/powerpc/include/asm/dma-mapping.h |    7 +++++++
->  arch/powerpc/kernel/dma.c              |   18 ++++++++++++++++++
->  arch/powerpc/mm/dma-noncoherent.c      |   20 ++++++++++++++++++++
->  3 files changed, 45 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 6d2416a..41e0eb7 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -42,6 +42,7 @@ extern void __dma_free_coherent(size_t size, void *vaddr);
->  extern void __dma_sync(void *vaddr, size_t size, int direction);
->  extern void __dma_sync_page(struct page *page, unsigned long offset,
->  				 size_t size, int direction);
-> +extern unsigned long __dma_get_coherent_pfn(void *cpu_addr);
->  
->  #else /* ! CONFIG_NOT_COHERENT_CACHE */
->  /*
-> @@ -52,6 +53,7 @@ extern void __dma_sync_page(struct page *page, unsigned long offset,
->  #define __dma_free_coherent(size, addr)		((void)0)
->  #define __dma_sync(addr, size, rw)		((void)0)
->  #define __dma_sync_page(pg, off, sz, rw)	((void)0)
-> +#define __dma_get_coherent_pfn(cpu_addr)	(0)
->  
->  #endif /* ! CONFIG_NOT_COHERENT_CACHE */
->  
-> @@ -198,6 +200,11 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
->  #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
->  #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
->  
-> +extern int dma_mmap_coherent(struct device *, struct vm_area_struct *,
-> +			     void *, dma_addr_t, size_t);
-> +#define ARCH_HAS_DMA_MMAP_COHERENT
-> +
-> +
->  static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
->  		enum dma_data_direction direction)
->  {
-> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index cf02cad..0f52235 100644
-> --- a/arch/powerpc/kernel/dma.c
-> +++ b/arch/powerpc/kernel/dma.c
-> @@ -179,3 +179,21 @@ static int __init dma_init(void)
->         return 0;
->  }
->  fs_initcall(dma_init);
-> +
-> +int dma_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
-> +		      void *cpu_addr, dma_addr_t handle, size_t size)
-> +{
-> +	unsigned long pfn;
-> +
-> +#ifdef CONFIG_NOT_COHERENT_CACHE
-> +	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> +	pfn = __dma_get_coherent_pfn(cpu_addr);
-> +#else
-> +	pfn = page_to_pfn(virt_to_page(cpu_addr));
-> +#endif
-> +	return remap_pfn_range(vma, vma->vm_start,
-> +			       pfn + vma->vm_pgoff,
-> +			       vma->vm_end - vma->vm_start,
-> +			       vma->vm_page_prot);
-> +}
-> +
-> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-> index 757c0be..174b10a 100644
-> --- a/arch/powerpc/mm/dma-noncoherent.c
-> +++ b/arch/powerpc/mm/dma-noncoherent.c
-> @@ -399,3 +399,23 @@ void __dma_sync_page(struct page *page, unsigned long offset,
->  #endif
->  }
->  EXPORT_SYMBOL(__dma_sync_page);
-> +
-> +/*
-> + * Return the PFN for a given cpu virtual address returned by
-> + * __dma_alloc_coherent. This is used by dma_mmap_coherent()
-> + */
-> +unsigned long __dma_get_coherent_pfn(void *cpu_addr)
-> +{	
-> +	/* This should always be populated, so we don't test every
-> +	 * level. If that fails, we'll have a nice crash which
-> +	 * will be as good as a BUG_ON()
-> +	 */
-> +	pgd_t *pgd = pgd_offset_k(cpu_addr);
-> +	pud_t *pud = pud_offset(pgd, cpu_addr);
-> +	pmd_t *pmd = pmd_offset(pud, cpu_addr);
-> +	pte_t *ptep = pte_offset_kernel(pmd, cpu_addr);
-> +
-> +	if (pte_none(*ptep) || !pte_present(*ptep))
-> +		return 0;
-> +	return pte_pfn(*ptep);	
-> +}
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
