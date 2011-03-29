@@ -1,21 +1,22 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from mail1.matrix-vision.com (mail1.matrix-vision.com [78.47.19.71])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "localhost", Issuer "localhost" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1D1E5B6F0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2011 03:27:31 +1100 (EST)
-Message-ID: <4D92071E.3060906@matrix-vision.de>
-Date: Tue, 29 Mar 2011 18:21:50 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 32DACB6F0B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Mar 2011 04:25:23 +1100 (EST)
+Date: Tue, 29 Mar 2011 12:25:14 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 4/4] KVM: PPC: e500: SPE switch between guest and host
+Message-ID: <20110329122514.32c767ca@schlenkerla.am.freescale.net>
+In-Reply-To: <6785E5D0-DEE9-4661-88A4-B35A99DB3C66@suse.de>
+References: <20110328192559.GC11104@schlenkerla.am.freescale.net>
+	<6785E5D0-DEE9-4661-88A4-B35A99DB3C66@suse.de>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: How to define an I2C-to-SPI bridge device ?
-References: <1283502979.17812.22.camel@swa-m460>	<20100903120858.GA19380@oksana.dev.rtsoft.ru>	<4C84D334.6060008@matrix-vision.de>
-	<c843f864-2a5a-4146-bd95-13c2fb91f430@email.android.com>
-	<4D8C603F.6060501@matrix-vision.de>
-In-Reply-To: <4D8C603F.6060501@matrix-vision.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,138 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/25/2011 10:28 AM, Andre Schwarz wrote:
-> Grant, Anton,
+On Tue, 29 Mar 2011 11:47:51 +0200
+Alexander Graf <agraf@suse.de> wrote:
 
-got it.
-providing modalis = "spidev" within spi_board_info works like a charme ...
+> On 28.03.2011, at 21:25, Scott Wood wrote:
+> 
+> > @@ -344,10 +345,19 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> > 		r = RESUME_GUEST;
+> > 		break;
+> > 
+> > -	case BOOKE_INTERRUPT_SPE_UNAVAIL:
+> > -		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SPE_UNAVAIL);
+> > +#ifdef CONFIG_SPE
+> > +	case BOOKE_INTERRUPT_SPE_UNAVAIL: {
+> 
+> This means that on non-SPE enabled host kernels you'll get a KVM fatal error when the guest triggers SPE_UNAVAIL, as the exit simply isn't handled and triggers:
+> 
+>         default:
+>                 printk(KERN_EMERG "exit_nr %d\n", exit_nr);
+>                 BUG();
 
-Cheers,
-André
+Right, thanks for spotting -- will have it send an illegal instruction trap
+to the guest in that case.
 
->
->>>> we're about to get new MPC8377 based hardware with various 
->>>> peripherals.
->>>>> There are two I2C-to-SPI bridge devices (NXP SC18IS602) and I'm 
->>>>> not sure
->>>>> how to define a proper dts...
->>>>>
->>>>> Of course it's an easy thing creating 2 child nodes on the CPU's I2C
->>>>> device - but how can I represent the created SPI bus ?
->>>> Um.. the same as the other SPI buses? I.e.
->>>>
->>>> i2c-controller {  /* SOC I2C controller */
->>>>     spi-controller {  /* The I2C-to-SPI bridge */
->>>>         spi-device@0 {
->>>>         };
->>>>         spi-device@1 {
->>>>         };
->>>>     };
->>>> };
->>>>
->>> ok , thanks - looks straight forward.
->>> Is this any more than plain definition, i.e. will this trigger any I2C
->>> or SPI device registration/linking ?
->>>>> Is the (possibly) required driver (of_sc18is60x_spi ?) supposed to 
->>>>> be an
->>>>> I2C slave or an SPI host driver ?
->>>> It should be an I2C driver that registers an SPI master (i.e.
->>>> calls spi_alloc_master() and spi_register_master()).
->>> hmm - ok. Will have to do it manually then ...
->> Yes, but this is the case for non-of drivers too.  The i2c to spi 
->> device driver must always create (and trigger population of) the spi 
->> bus instance.
->>
->
-> I've kicked that I2C-to-SPI stuff completely because it's been too slow.
-> We've connected the SPI busses to the FPGA controlling almost 
-> everything now.
->
-> Unfortunately there are some questions left :
->
-> Following Anton's suggestion I've had a look at /drivers/mfd (sm501.c) 
-> and implemented a pci driver for the FPGA using
-> subdevices for additional functionality it exports - besides others we 
-> now have 2 SPI masters.
->
-> For both SPI masters I have created and registered a platform_device.
-> pdev->dev is then fed into spi_alloc_master() and the resulting master 
-> goes into spi_register_master().
->
-> master->bus_num is set to 0 and 1, i.e. no dynamic numbering.
-> master->chipselect = 8;
->
-> Since I can probe the SPI device using FPGA intrinsic information I 
-> decided to register the client
-> devices on runtime using a "struct spi_board_info" which is fed into 
-> spi_new_device().
->
-> The current design has 2 clients on SPI-0 and 5 clients on SPI-1.
->
-> static struct spi_board_info mergerbox_spi_boardinfo[] = {
->         {       .bus_num = 0,
->                 .chip_select = 0,
->                 .max_speed_hz = 4<<20, },
->         {       .bus_num = 0,
->                 .chip_select = 1,
->                 .max_speed_hz = 4<<20, },
->         {       .bus_num = 1,
->                 .chip_select = 0,
->                 .max_speed_hz = 4<<20, },
-> .....
->
->
-> After loading my module I get :
->
-> #> ls /sys/devices/platform/AlteraSPI.0/
-> /sys/devices/platform/AlteraSPI.0/modalias
-> /sys/devices/platform/AlteraSPI.0/spi0.0/
-> /sys/devices/platform/AlteraSPI.0/spi0.1/
-> /sys/devices/platform/AlteraSPI.0/spi_master/
-> /sys/devices/platform/AlteraSPI.0/subsystem/
-> /sys/devices/platform/AlteraSPI.0/uevent
->
-> #> ls /sys/devices/platform/AlteraSPI.1/
-> /sys/devices/platform/AlteraSPI.1/modalias
-> /sys/devices/platform/AlteraSPI.1/spi1.0/
-> /sys/devices/platform/AlteraSPI.1/spi1.1/
-> /sys/devices/platform/AlteraSPI.1/spi1.2/
-> /sys/devices/platform/AlteraSPI.1/spi1.3/
-> /sys/devices/platform/AlteraSPI.1/spi1.4/
-> /sys/devices/platform/AlteraSPI.1/spi_master/
-> /sys/devices/platform/AlteraSPI.1/subsystem/
-> /sys/devices/platform/AlteraSPI.1/uevent
->
-> What I'm missing are the /dev/spi* entries.
->
-> There's also a spi_mpc8xxx driver using the CPU's SPI controller.
-> It is configured by dts (2 devices) and uses dynamic bus numbering:
->
-> #> ls /sys/bus/spi/devices/
-> spi0.0      spi1.0      spi1.2      spi1.4      spi32766.1
-> spi0.1      spi1.1      spi1.3      spi32766.0
->
-> This devices are processed by spidev and proper entries are created 
-> ready for use :
->
-> #> ls /dev/spi*
-> /dev/spidev32766.0  /dev/spidev32766.1
->
->
-> Am I missing somehting obvious ?
->
-> Since there's no driver registration we don't have a probe function - 
-> is this a problem regarding device binding ?
->
-> Do I need to use the .modalias in "struct spi_board_info" ?
->
->
-> Any help is welcome.
->
-> Regards,
-> André
-
-
-MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
-Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+-Scott
