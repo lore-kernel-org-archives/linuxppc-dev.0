@@ -1,19 +1,16 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Matt Evans <matt@ozlabs.org>
-Subject: Re: [PATCH v2 3/5] xhci: Add rmb() between reading event validity &
-	event data access.
-Date: Tue, 29 Mar 2011 11:56:47 -0700
-References: <4D8C47CD.3020108@ozlabs.org>
-	<61164.94.211.195.167.1301094709.squirrel@gate.crashing.org>
-	<4D901429.5010807@ozlabs.org>
-In-Reply-To: <4D901429.5010807@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201103291156.47822.dmitry.torokhov@gmail.com>
-Cc: sarah.a.sharp@linux.intel.com, linuxppc-dev@ozlabs.org,
-	linux-usb@vger.kernel.org
+Return-Path: <tglx@linutronix.de>
+Received: from linutronix.de (www.linutronix.de [62.245.132.108])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1801AB6F07
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Mar 2011 07:37:34 +1100 (EST)
+Message-Id: <20110329203313.963157647@linutronix.de>
+Date: Tue, 29 Mar 2011 20:37:28 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [patch 1/1] powerpc: cell: Use handle_edge_eoi_irq for real
+Cc: mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday, March 27, 2011 09:52:57 pm Matt Evans wrote:
-> On weakly-ordered systems, the reading of an event's content must occur
-> after reading the event's validity.
-> 
-> Signed-off-by: Matt Evans <matt@ozlabs.org>
-> ---
-> Segher, thanks for the comment; explanation added.
-> 
->  drivers/usb/host/xhci-ring.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-> index 45f3b77..d6aa880 100644
-> --- a/drivers/usb/host/xhci-ring.c
-> +++ b/drivers/usb/host/xhci-ring.c
-> @@ -2152,6 +2152,11 @@ static void xhci_handle_event(struct xhci_hcd
-> *xhci) }
->  	xhci_dbg(xhci, "%s - OS owns TRB\n", __func__);
-> 
-> +	/*
-> +	 * Barrier between reading the TRB_CYCLE (valid) flag above and any
-> +	 * speculative reads of the event's flags/data below.
-> +	 */
-> +	rmb();
->  	/* FIXME: Handle more event types. */
->  	switch ((le32_to_cpu(event->event_cmd.flags) & TRB_TYPE_BITMASK)) {
+Missed one instance when moving that to the core code.
 
-Isn't it the same memory that is being read the first time around? How 
-reordering could happen here?
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: michael@ellerman.id.au
+Cc: mingo@elte.hu
+---
+ arch/powerpc/platforms/cell/interrupt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks.
-
-
--- 
-Dmitry
+Index: linux-2.6-tip/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- linux-2.6-tip.orig/arch/powerpc/platforms/cell/interrupt.c
++++ linux-2.6-tip/arch/powerpc/platforms/cell/interrupt.c
+@@ -244,7 +244,7 @@ static int iic_host_map(struct irq_host 
+ 		break;
+ 	case IIC_IRQ_TYPE_IOEXC:
+ 		irq_set_chip_and_handler(virq, &iic_ioexc_chip,
+-					 handle_iic_irq);
++					 handle_edge_eoi_irq);
+ 		break;
+ 	default:
+ 		irq_set_chip_and_handler(virq, &iic_chip, handle_edge_eoi_irq);
