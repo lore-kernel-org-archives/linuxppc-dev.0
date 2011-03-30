@@ -1,13 +1,13 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8B3A8B6F44
+	by ozlabs.org (Postfix) with ESMTP id 0CD0A10083B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Mar 2011 11:00:33 +1100 (EST)
-Date: Wed, 30 Mar 2011 11:00:27 +1100
+	Wed, 30 Mar 2011 11:00:46 +1100 (EST)
+Date: Wed, 30 Mar 2011 11:00:45 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Linus <torvalds@linux-foundation.org>
 Subject: linux-next: build failure after merge of the Linus' tree
-Message-Id: <20110330110027.b83a1d20.sfr@canb.auug.org.au>
+Message-Id: <20110330110045.48fb0ccf.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
@@ -26,46 +26,37 @@ Hi all,
 After merging the Linus' tree, today's linux-next build (powerpc
 ppc64_defconfig) failed like this:
 
-kernel/irq/chip.c: In function 'handle_edge_eoi_irq':
-kernel/irq/chip.c:517: warning: label 'out_unlock' defined but not used
-kernel/irq/chip.c:503: error: label 'out_eoi' used but not defined
+arch/powerpc/platforms/cell/interrupt.c: In function 'iic_host_map':
+arch/powerpc/platforms/cell/interrupt.c:247: error: 'handle_iic_irq' undeclared (first use in this function)
 
-Caused by commit 0521c8fbb3da ("genirq: Provide edge_eoi flow handler")
-which was clearly not even built with CONFIG_IRQ_EDGE_EOI_HANDLER defined.
+Caused by commit f9ba4475f95b ("powerpc: cell: Use the core flow handler").
 
-I applied this fixup patch:
+I applied the following patch:
 
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 30 Mar 2011 10:55:12 +1100
-Subject: [PATCH] genirq: fix CONFIG_IRQ_EDGE_EOI_HANDLER build
-
-Fixes these errors:
-
-kernel/irq/chip.c: In function 'handle_edge_eoi_irq':
-kernel/irq/chip.c:517: warning: label 'out_unlock' defined but not used
-kernel/irq/chip.c:503: error: label 'out_eoi' used but not defined
+Date: Wed, 30 Mar 2011 10:48:28 +1100
+Subject: [PATCH] powerpc/cell: fixup for removal of handle_iic_irq
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- kernel/irq/chip.c |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 616ec1c..1dafc86 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -514,7 +514,7 @@ void handle_edge_eoi_irq(unsigned int irq, struct irq_desc *desc)
- 	} while ((desc->istate & IRQS_PENDING) &&
- 		 !irqd_irq_disabled(&desc->irq_data));
- 
--out_unlock:
-+out_eoi:
- 	chip->irq_eoi(&desc->irq_data);
- 	raw_spin_unlock(&desc->lock);
- }
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index a19bec0..44cfd1b 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -244,7 +244,7 @@ static int iic_host_map(struct irq_host *h, unsigned int virq,
+ 		break;
+ 	case IIC_IRQ_TYPE_IOEXC:
+ 		irq_set_chip_and_handler(virq, &iic_ioexc_chip,
+-					 handle_iic_irq);
++					 handle_edge_eoi_irq);
+ 		break;
+ 	default:
+ 		irq_set_chip_and_handler(virq, &iic_chip, handle_edge_eoi_irq);
 -- 
 1.7.4.1
-
 
 -- 
 Cheers,
