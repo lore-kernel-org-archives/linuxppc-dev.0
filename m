@@ -2,21 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D962DB6F76
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Mar 2011 12:57:45 +1100 (EST)
-Subject: Re: linux-next: build failure after merge of the Linus' tree
+	by ozlabs.org (Postfix) with ESMTPS id 35982B6F75
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2011 13:08:54 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20110330110027.b83a1d20.sfr@canb.auug.org.au>
-References: <20110330110027.b83a1d20.sfr@canb.auug.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Mar 2011 12:56:43 +1100
-Message-ID: <1301450203.2402.716.camel@pasglop>
+Date: Wed, 30 Mar 2011 13:08:42 +1100
+Message-ID: <1301450922.2402.729.camel@pasglop>
 Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-	Linus <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +23,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-03-30 at 11:00 +1100, Stephen Rothwell wrote:
-> Hi all,
-> 
-> After merging the Linus' tree, today's linux-next build (powerpc
-> ppc64_defconfig) failed like this:
-> 
-> kernel/irq/chip.c: In function 'handle_edge_eoi_irq':
-> kernel/irq/chip.c:517: warning: label 'out_unlock' defined but not used
-> kernel/irq/chip.c:503: error: label 'out_eoi' used but not defined
+Hi Linus !
 
-There's a fix in tip/irq/urgent ...
+Here are a few post -rc1 fixes for powerpc.
+
+Mostly some more fallout from the irq core rework, new syscalls wireup,
+defconfig fixes and minor bits. The only feature-esque thing in there
+would be me adding dma_mmap_coherent(), it fixes various audio devices
+on our older non cache-coherent embedded platforms.
+
+Freescale folks: I've manually added two patches to fix some FSL 8xx and
+QE irq build problems caused by the upstream irq rework to the branch.
+Please verify that it's all correct and if not send followup patches.
+
+Linus: I didn't wait for hera to sync to the mirrors before sending this
+email (I usually do but I have to run and it's very slow today).
+
+The following changes since commit 0ce790e7d736cedc563e1fb4e998babf5a4dbc3d:
+
+  Linux 2.6.39-rc1 (2011-03-29 12:09:47 -0700)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git ..BRANCH.NOT.VERIFIED..
+
+Anton Blanchard (2):
+      powerpc: Fix accounting of softirq time when idle
+      powerpc/pseries: Enable Chelsio network and iWARP drivers
+
+Benjamin Herrenschmidt (4):
+      powerpc: Implement dma_mmap_coherent()
+      powerpc/mm: Move the STAB0 location to 0x8000 to make room in low memory
+      powerpc/8xx: Fix another breakage from the irq_data conversion
+      powerpc/qe_ic: Fix another breakage from the irq_data conversion
+
+Jim Keniston (1):
+      powerpc/nvram: Don't overwrite oops/panic report on normal shutdown
+
+Milton Miller (3):
+      powerpc/xics: Fix numberspace mismatch from irq_desc conversion
+      powerpc/xics: Use hwirq for xics domain irq number
+      powerpc/pseries/smp: query-cpu-stopped-state support won't change
+
+Scott Wood (1):
+      powerpc: ARCH_PFN_OFFSET should be unsigned long
+
+Stephen Rothwell (2):
+      powerpc: Restore some misc devices to our configs
+      powerpc: Wire up new syscalls
+
+Thomas Gleixner (1):
+      powerpc/cell: Use handle_edge_eoi_irq for real
+
+Varun Sethi (1):
+      powerpc/booke: Correct the SPRN_MAS5 definition.
+
+ arch/powerpc/configs/44x/warp_defconfig          |    1 +
+ arch/powerpc/configs/52xx/motionpro_defconfig    |    1 +
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig    |    1 +
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig   |    1 +
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig   |    1 +
+ arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig |    1 +
+ arch/powerpc/configs/e55xx_smp_defconfig         |    1 +
+ arch/powerpc/configs/linkstation_defconfig       |    1 +
+ arch/powerpc/configs/mpc512x_defconfig           |    1 +
+ arch/powerpc/configs/mpc5200_defconfig           |    1 +
+ arch/powerpc/configs/mpc85xx_defconfig           |    1 +
+ arch/powerpc/configs/mpc85xx_smp_defconfig       |    1 +
+ arch/powerpc/configs/mpc86xx_defconfig           |    1 +
+ arch/powerpc/configs/pasemi_defconfig            |    1 +
+ arch/powerpc/configs/ppc6xx_defconfig            |    1 +
+ arch/powerpc/configs/pseries_defconfig           |    3 +
+ arch/powerpc/include/asm/dma-mapping.h           |    6 ++
+ arch/powerpc/include/asm/mmu-hash64.h            |    2 +-
+ arch/powerpc/include/asm/page.h                  |    2 +-
+ arch/powerpc/include/asm/qe_ic.h                 |   16 +++---
+ arch/powerpc/include/asm/reg_booke.h             |    2 +-
+ arch/powerpc/include/asm/systbl.h                |    4 +
+ arch/powerpc/include/asm/unistd.h                |    6 ++-
+ arch/powerpc/kernel/dma.c                        |   18 ++++++
+ arch/powerpc/kernel/exceptions-64s.S             |   28 ++++----
+ arch/powerpc/kernel/time.c                       |    2 +-
+ arch/powerpc/mm/dma-noncoherent.c                |   20 ++++++
+ arch/powerpc/platforms/cell/interrupt.c          |    2 +-
+ arch/powerpc/platforms/pseries/nvram.c           |   24 +++++++
+ arch/powerpc/platforms/pseries/smp.c             |    4 +-
+ arch/powerpc/platforms/pseries/xics.c            |   71 +++++++++++-----------
+ arch/powerpc/sysdev/mpc8xx_pic.c                 |    2 +-
+ 32 files changed, 161 insertions(+), 66 deletions(-)
 
 Cheers,
 Ben.
 
-> Caused by commit 0521c8fbb3da ("genirq: Provide edge_eoi flow handler")
-> which was clearly not even built with CONFIG_IRQ_EDGE_EOI_HANDLER defined.
-> 
-> I applied this fixup patch:
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Wed, 30 Mar 2011 10:55:12 +1100
-> Subject: [PATCH] genirq: fix CONFIG_IRQ_EDGE_EOI_HANDLER build
-> 
-> Fixes these errors:
-> 
-> kernel/irq/chip.c: In function 'handle_edge_eoi_irq':
-> kernel/irq/chip.c:517: warning: label 'out_unlock' defined but not used
-> kernel/irq/chip.c:503: error: label 'out_eoi' used but not defined
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  kernel/irq/chip.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-> index 616ec1c..1dafc86 100644
-> --- a/kernel/irq/chip.c
-> +++ b/kernel/irq/chip.c
-> @@ -514,7 +514,7 @@ void handle_edge_eoi_irq(unsigned int irq, struct irq_desc *desc)
->  	} while ((desc->istate & IRQS_PENDING) &&
->  		 !irqd_irq_disabled(&desc->irq_data));
->  
-> -out_unlock:
-> +out_eoi:
->  	chip->irq_eoi(&desc->irq_data);
->  	raw_spin_unlock(&desc->lock);
->  }
-> -- 
-> 1.7.4.1
-> 
-> 
+
+ 
