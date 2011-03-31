@@ -1,28 +1,17 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id A8474B6EF2
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 85670B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Apr 2011 04:21:29 +1100 (EST)
-Message-ID: <4D94B810.4000107@goop.org>
-Date: Thu, 31 Mar 2011 10:21:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: mmotm threatens ppc preemption again
-References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>	
-	<1300665188.2402.64.camel@pasglop>	
-	<alpine.LSU.2.00.1103201814320.7035@sister.anvils>	
-	<1300672207.2402.205.camel@pasglop>	
-	<alpine.LSU.2.00.1103201901340.7257@sister.anvils>	
-	<1300674150.2402.207.camel@pasglop>	
-	<20110330135332.9c322e40.akpm@linux-foundation.org>	
-	<4D939B88.5020707@goop.org> <1301532729.2407.16.camel@pasglop>
-In-Reply-To: <1301532729.2407.16.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Fri,  1 Apr 2011 06:00:06 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/kexec: Fix mismatched ifdefs for PPC64/SMP.
+Date: Thu, 31 Mar 2011 13:27:20 -0400
+Message-Id: <1301592440-30012-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/30/2011 05:52 PM, Benjamin Herrenschmidt wrote:
-> We deal with preemption already since the PTL turns into a mutex on -rt,
-> so we could bring that patch into mainline. The easiest approach however
-> for now would be to not do the kernel batched updates on kernel
-> (solution 4), and I can sort it out later if I want to enable it.
->
-> The problem is that it's hard for me to "fix" that with the current
-> accessors as arch_enter_lazy_mmu_mode() don't get any argument that
-> could point me to which mm is being operated on.
->
-> Jeremy, I haven't had a chance to look at your patches in detail, do
-> you just use those accessors or do you create new ones for batching
-> kernel updates in which case powerpc could just make them do nothing ?
->
-> Else, we could have one patch that adds an mm argument accross the tree,
-> it shouldn't be too hard.
+Commit b3df895aebe091b1657 "powerpc/kexec: Add support for FSL-BookE"
+introduced the original PPC_STD_MMU_64 checks around the function
+crash_kexec_wait_realmode().   Then commit c2be05481f61252
+"powerpc: Fix default_machine_crash_shutdown #ifdef botch" changed
+the ifdef around the calling site to add a check on SMP, but the
+ifdef around the function itself was left unchanged, leaving an
+unused function for PPC_STD_MMU_64=y and SMP=n
 
-No, its the same accessors for both, since the need to distinguish them
-hasn't really come up.  Could you put a "if (preemptable()) return;"
-guard in your implementations?
+Rather than have two ifdefs that can get out of sync like this,
+simply put the corrected conditional around the function and use
+a stub to get rid of one set of ifdefs completely.
 
-Otherwise I have no objections to passing the mm in (we'll probably just
-continue to ignore the arg in x86-land).
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/kernel/crash.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Thanks,
-    J
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 3d569e2..3d3d416 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -163,7 +163,7 @@ static void crash_kexec_prepare_cpus(int cpu)
+ }
+ 
+ /* wait for all the CPUs to hit real mode but timeout if they don't come in */
+-#ifdef CONFIG_PPC_STD_MMU_64
++#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
+ static void crash_kexec_wait_realmode(int cpu)
+ {
+ 	unsigned int msecs;
+@@ -188,6 +188,8 @@ static void crash_kexec_wait_realmode(int cpu)
+ 	}
+ 	mb();
+ }
++#else
++static inline void crash_kexec_wait_realmode(int cpu) {}
+ #endif
+ 
+ /*
+@@ -344,9 +346,7 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
+ 	crash_save_cpu(regs, crashing_cpu);
+ 	crash_kexec_prepare_cpus(crashing_cpu);
+ 	cpu_set(crashing_cpu, cpus_in_crash);
+-#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
+ 	crash_kexec_wait_realmode(crashing_cpu);
+-#endif
+ 
+ 	machine_kexec_mask_interrupts();
+ 
+-- 
+1.7.3.3
