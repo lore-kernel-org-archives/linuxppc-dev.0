@@ -1,19 +1,21 @@
-Return-Path: <B32579@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5DA5FB6F75
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BDD0CB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 31 Mar 2011 18:01:15 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Don't add disabled PCIe devices
-Date: Thu, 31 Mar 2011 12:31:09 +0530
-Message-ID: <1301554869-31037-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: meet2prabhu@gmail.com, Prabhakar Kushwaha <prabhakar@freescale.com>
+	Thu, 31 Mar 2011 19:23:07 +1100 (EST)
+Subject: Re: [PATCH] powerpc/dts:Update PCIe memory maps to match u-boot of
+	Px020RDB
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1301028465-3897-1-git-send-email-prabhakar@freescale.com>
+Date: Thu, 31 Mar 2011 03:22:57 -0500
+Message-Id: <38B7F1DC-21FC-4723-AF41-E66E04DF0B1F@kernel.crashing.org>
+References: <1301028465-3897-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: meet2prabhu@gmail.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCIe nodes with the property status="disabled" are not usable and so
-avoid adding "disabled" PCIe bridge with the system.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-Acked-by: Kumar Gala <kumar.gala@freescale.com>
----
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
+On Mar 24, 2011, at 11:47 PM, Prabhakar Kushwaha wrote:
 
- arch/powerpc/sysdev/fsl_pci.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+> PCIe memory address space is 1:1 mapped with u-boot.
+>=20
+> Update dts of Px020RDB i.e. P1020RDB and P2020RDB to match the address =
+map
+> changes in u-boot.
+>=20
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> Acked-by: Kumar Gala <kumar.gala@freescale.com>
+> ---
+> Based upon =
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git =
+(Branch master)
+>=20
+> arch/powerpc/boot/dts/p1020rdb.dts            |   12 ++++++------
+> arch/powerpc/boot/dts/p2020rdb.dts            |   12 ++++++------
+> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 ++--
+> arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |   10 +++++-----
+> 4 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index f8f7f28..68ca929 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -324,6 +324,11 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	struct resource rsrc;
- 	const int *bus_range;
- 
-+	if (!of_device_is_available(dev)) {
-+		pr_warning("%s: disabled\n", dev->full_name);
-+		return -ENODEV;
-+	}
-+
- 	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
- 
- 	/* Fetch host bridge registers address */
--- 
-1.7.3
+applied to 'merge'
+
+- k=
