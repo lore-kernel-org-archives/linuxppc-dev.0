@@ -1,16 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 468E5B6F7D
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2011 09:23:28 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] edac/mpc85xx: Limit setting/clearing of HID1[RFXE] to
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8C5F9B6F44
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2011 09:42:14 +1100 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p2VMVtt2020551
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 18:31:55 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A0FA56E8036
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 18:42:11 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p2VMgBm42633796
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 18:42:11 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p2VMgAWt015993
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 19:42:11 -0300
+Date: Thu, 31 Mar 2011 15:42:08 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] edac/mpc85xx: Limit setting/clearing of HID1[RFXE] to
 	e500v1/v2 cores
-Date: Thu, 31 Mar 2011 17:23:14 -0500
-Message-Id: <1301610194-29971-1-git-send-email-galak@kernel.crashing.org>
-Cc: bluesmoke-devel@lists.sourceforge.net, dougthompson@xmission.com
+Message-ID: <20110331224208.GA30426@us.ibm.com>
+References: <1301610194-29971-1-git-send-email-galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1301610194-29971-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	dougthompson@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,105 +39,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only the e500v1/v2 cores have HID1[RXFE] so we should attempt to set or
-clear this register bit on them.  Otherwise we get crashes like:
+On 31.03.2011 [17:23:14 -0500], Kumar Gala wrote:
+> Only the e500v1/v2 cores have HID1[RXFE] so we should attempt to set or
+> clear this register bit on them.  Otherwise we get crashes like:
 
-NIP: c0579f84 LR: c006d550 CTR: c0579f84
-REGS: ef857ec0 TRAP: 0700   Not tainted  (2.6.38.2-00072-gf15ba3c)
-MSR: 00021002 <ME,CE>  CR: 22044022  XER: 00000000
-TASK = ef8559c0[1] 'swapper' THREAD: ef856000 CPU: 0
-GPR00: c006d538 ef857f70 ef8559c0 00000000 00000004 00000000 00000000 00000000
-GPR08: c0590000 c30170a8 00000000 c30170a8 00000001 0fffe000 00000000 00000000
-GPR16: 00000000 7ffa0e60 00000000 00000000 7ffb0bd8 7ff3b844 c05be000 00000000
-GPR24: 00000000 00000000 c05c28b0 c0579fac 00000000 00029002 00000000 c0579f84
-NIP [c0579f84] mpc85xx_mc_clear_rfxe+0x0/0x28
-LR [c006d550] on_each_cpu+0x34/0x50
-Call Trace:
-[ef857f70] [c006d538] on_each_cpu+0x1c/0x50 (unreliable)
-[ef857f90] [c057a070] mpc85xx_mc_init+0xc4/0xdc
-[ef857fa0] [c0001cd4] do_one_initcall+0x34/0x1a8
-[ef857fd0] [c055d9d8] kernel_init+0x17c/0x218
-[ef857ff0] [c000cda4] kernel_thread+0x4c/0x68
-Instruction dump:
-40be0018 3c60c052 3863c70c 4be9baad 3be0ffed 4bd7c99d 80010014 7fe3fb78
-83e1000c 38210010 7c0803a6 4e800020 <7c11faa6> 54290024 81290008
-3d60c06e
-Oops: Exception in kernel mode, sig: 4 [#2]
----[ end trace 49ff3b8f93efde1a ]---
+<snip>
 
-Also use the HID1_RFXE define rather than a magic number.
+> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+> index b123bb3..5aef2ed 100644
+> --- a/drivers/edac/mpc85xx_edac.c
+> +++ b/drivers/edac/mpc85xx_edac.c
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+<snip>
 
-Doug, unless otherwise told I plan on pushing this via the powerpc.git tree
+> @@ -1209,10 +1215,15 @@ static void __exit mpc85xx_mc_restore_hid1(void *data)
+>  static void __exit mpc85xx_mc_exit(void)
+>  {
+>  #ifdef CONFIG_FSL_SOC_BOOKE
+> -	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+> +	u32 pvr = mfspr(SPRN_PVR);
+> +
+> +	if ((PVR_VER(pvr) == PVR_VER_E500V1) ||
+> +	    (PVR_VER(pvr) == PVR_VER_E500V2)) {
+> +		on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+> +	}
+>  #endif
+>  #ifdef CONFIG_PCI
+> -	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
+> +	of_unregistr_platform_driver(&mpc85xx_pci_err_driver);
 
-- k
+Unintended change?
 
- drivers/edac/mpc85xx_edac.c |   29 ++++++++++++++++++++---------
- 1 files changed, 20 insertions(+), 9 deletions(-)
+Thanks,
+Nish
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index b123bb3..5aef2ed 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -1150,13 +1150,14 @@ static struct of_platform_driver mpc85xx_mc_err_driver = {
- static void __init mpc85xx_mc_clear_rfxe(void *data)
- {
- 	orig_hid1[smp_processor_id()] = mfspr(SPRN_HID1);
--	mtspr(SPRN_HID1, (orig_hid1[smp_processor_id()] & ~0x20000));
-+	mtspr(SPRN_HID1, (orig_hid1[smp_processor_id()] & ~HID1_RFXE));
- }
- #endif
- 
- static int __init mpc85xx_mc_init(void)
- {
- 	int res = 0;
-+	u32 pvr = 0;
- 
- 	printk(KERN_INFO "Freescale(R) MPC85xx EDAC driver, "
- 	       "(C) 2006 Montavista Software\n");
-@@ -1186,12 +1187,17 @@ static int __init mpc85xx_mc_init(void)
- #endif
- 
- #ifdef CONFIG_FSL_SOC_BOOKE
--	/*
--	 * need to clear HID1[RFXE] to disable machine check int
--	 * so we can catch it
--	 */
--	if (edac_op_state == EDAC_OPSTATE_INT)
--		on_each_cpu(mpc85xx_mc_clear_rfxe, NULL, 0);
-+	pvr = mfspr(SPRN_PVR);
-+
-+	if ((PVR_VER(pvr) == PVR_VER_E500V1) ||
-+	    (PVR_VER(pvr) == PVR_VER_E500V2)) {
-+		/*
-+		 * need to clear HID1[RFXE] to disable machine check int
-+		 * so we can catch it
-+		 */
-+		if (edac_op_state == EDAC_OPSTATE_INT)
-+			on_each_cpu(mpc85xx_mc_clear_rfxe, NULL, 0);
-+	}
- #endif
- 
- 	return 0;
-@@ -1209,10 +1215,15 @@ static void __exit mpc85xx_mc_restore_hid1(void *data)
- static void __exit mpc85xx_mc_exit(void)
- {
- #ifdef CONFIG_FSL_SOC_BOOKE
--	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
-+	u32 pvr = mfspr(SPRN_PVR);
-+
-+	if ((PVR_VER(pvr) == PVR_VER_E500V1) ||
-+	    (PVR_VER(pvr) == PVR_VER_E500V2)) {
-+		on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
-+	}
- #endif
- #ifdef CONFIG_PCI
--	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
-+	of_unregistr_platform_driver(&mpc85xx_pci_err_driver);
- #endif
- 	of_unregister_platform_driver(&mpc85xx_l2_err_driver);
- 	of_unregister_platform_driver(&mpc85xx_mc_err_driver);
 -- 
-1.7.3.4
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
