@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BDD0CB6F07
+Return-Path: <sachin.solanki.nitb@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 892DFB6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 31 Mar 2011 19:23:07 +1100 (EST)
-Subject: Re: [PATCH] powerpc/dts:Update PCIe memory maps to match u-boot of
-	Px020RDB
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1301028465-3897-1-git-send-email-prabhakar@freescale.com>
-Date: Thu, 31 Mar 2011 03:22:57 -0500
-Message-Id: <38B7F1DC-21FC-4723-AF41-E66E04DF0B1F@kernel.crashing.org>
-References: <1301028465-3897-1-git-send-email-prabhakar@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Cc: meet2prabhu@gmail.com, linuxppc-dev@lists.ozlabs.org
+	Thu, 31 Mar 2011 20:43:00 +1100 (EST)
+Received: by wyg36 with SMTP id 36so1988080wyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 31 Mar 2011 02:42:55 -0700 (PDT)
+MIME-Version: 1.0
+Date: Thu, 31 Mar 2011 15:12:55 +0530
+Message-ID: <AANLkTikHqqdJPpKRG3dLn_R3HSsxdRtrNJvCXe_QH1vw@mail.gmail.com>
+Subject: configure FPGA
+From: SACHIN SOLANKI <sachin.solanki.nitb@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+hi sir,
 
-On Mar 24, 2011, at 11:47 PM, Prabhakar Kushwaha wrote:
-
-> PCIe memory address space is 1:1 mapped with u-boot.
->=20
-> Update dts of Px020RDB i.e. P1020RDB and P2020RDB to match the address =
-map
-> changes in u-boot.
->=20
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> Acked-by: Kumar Gala <kumar.gala@freescale.com>
-> ---
-> Based upon =
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git =
-(Branch master)
->=20
-> arch/powerpc/boot/dts/p1020rdb.dts            |   12 ++++++------
-> arch/powerpc/boot/dts/p2020rdb.dts            |   12 ++++++------
-> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 ++--
-> arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |   10 +++++-----
-> 4 files changed, 19 insertions(+), 19 deletions(-)
-
-applied to 'merge'
-
-- k=
+i want to store some bit stream to compect flesh in diffrenrt memory
+location.is it possible  through powerPC control  programing that we
+can select sinrgle bit stream from complect flesh card and configure
+fpga.
+looking forward for reply....
