@@ -1,29 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 74483B6F01
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
+	by ozlabs.org (Postfix) with SMTP id 6830FB6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Apr 2011 07:39:02 +1100 (EST)
-Subject: Re: mmotm threatens ppc preemption again
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <4D94B810.4000107@goop.org>
-References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>
-	<1300665188.2402.64.camel@pasglop>
-	<alpine.LSU.2.00.1103201814320.7035@sister.anvils>
-	<1300672207.2402.205.camel@pasglop>
-	<alpine.LSU.2.00.1103201901340.7257@sister.anvils>
-	<1300674150.2402.207.camel@pasglop>
-	<20110330135332.9c322e40.akpm@linux-foundation.org>
-	<4D939B88.5020707@goop.org> <1301532729.2407.16.camel@pasglop>
-	<4D94B810.4000107@goop.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Apr 2011 07:38:38 +1100
-Message-ID: <1301603918.2407.70.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Fri,  1 Apr 2011 07:39:29 +1100 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Thu, 31 Mar 2011 22:39:21 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20110331203921.56030@gmx.net>
+MIME-Version: 1.0
+Subject: Re: [PATCH] powerpc: Implement dma_mmap_coherent()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.ozlabs.org
+Cc: tiwai@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,16 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-03-31 at 10:21 -0700, Jeremy Fitzhardinge wrote:
+-------- Original-Nachricht --------
+> Datum: Fri, 25 Mar 2011 17:50:06 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+> CC: Takashi Iwai <tiwai@suse.de>
+> Betreff: [PATCH] powerpc: Implement dma_mmap_coherent()
+
+> This is used by Alsa to mmap buffers allocated with dma_alloc_coherent()
+> into userspace. We need a special variant to handle machines with
+> non-coherent DMAs as those buffers have "special" virt addresses and
+> require non-cachable mappings
 > 
-> No, its the same accessors for both, since the need to distinguish them
-> hasn't really come up.  Could you put a "if (preemptable()) return;"
-> guard in your implementations?
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Dunno if anybody with CONFIG_NOT_COHERENT_CACHE has some audio device
+> that uses dma buffers (ie not usb-audio) and wants to try that out...
+> should fix a long standing problem.
 
-That would be a band-aid but would probably do the trick for now
-for !-rt, tho it wouldn't do the right thing for -rt... 
+Compilation fails here with these error messages:
 
-> Otherwise I have no objections to passing the mm in (we'll probably just
-> continue to ignore the arg in x86-land).
+>   CC      arch/powerpc/mm/dma-noncoherent.o
+> arch/powerpc/mm/dma-noncoherent.c: In function ‘__dma_get_coherent_pfn’:
+> arch/powerpc/mm/dma-noncoherent.c:413: error: invalid operands to binary >> (have ‘void *’ and ‘int’)
+> cc1: warnings being treated as errors
+> arch/powerpc/mm/dma-noncoherent.c:414: error: passing argument 2 of ‘pud_offset’ makes integer from pointer without a cast
+> arch/powerpc/mm/dma-noncoherent.c:415: error: passing argument 2 of ‘pmd_offset’ makes integer from pointer without a cast
+> arch/powerpc/mm/dma-noncoherent.c:416: error: invalid operands to binary >> (have ‘void *’ and ‘int’)
+> make[1]: *** [arch/powerpc/mm/dma-noncoherent.o] Fehler 1
+> make: *** [arch/powerpc/mm] Fehler 2
 
-Ben.
+Anyway, it compiles with explicit type casts and I could test it on my
+semi-noncoherent AmigaOne. So far it works just fine with the VIA onboard
+sound and a Soundblaster Live PCI card.
+
+Thanks a lot for the fix!
+
+regards,
+Gerhard
+
+-- 
+NEU: FreePhone - kostenlos mobil telefonieren und surfen!			
+Jetzt informieren: http://www.gmx.net/de/go/freephone
