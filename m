@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E2741007FF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Apr 2011 16:33:14 +1100 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p315X95Q028453
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2011 00:33:10 -0500
-Subject: [PATCH] powerpc/pseries: Fix build without CONFIG_HOTPLUG_CPU
+	by ozlabs.org (Postfix) with ESMTPS id 50FD7B6F82
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2011 16:37:22 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Apr 2011 16:33:08 +1100
-Message-ID: <1301635988.2549.20.camel@pasglop>
+Date: Fri, 01 Apr 2011 16:36:40 +1100
+Message-ID: <1301636200.2549.25.camel@pasglop>
 Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,79 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Matt Evans <matt@ozlabs.au.ibm.com>
+Hi Linus !
 
-Signed-off-by: Matt Evans <matt@ozlabs.au.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/pseries/smp.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+Some more powerpc bits for you.
 
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index 0317cce..5fe1ad6 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -112,10 +112,10 @@ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
- 
- 	/* Fixup atomic count: it exited inside IRQ handler. */
- 	task_thread_info(paca[lcpu].__current)->preempt_count	= 0;
--
-+#ifdef CONFIG_HOTPLUG_CPU
- 	if (get_cpu_current_state(lcpu) == CPU_STATE_INACTIVE)
- 		goto out;
--
-+#endif
- 	/* 
- 	 * If the RTAS start-cpu token does not exist then presume the
- 	 * cpu is already spinning.
-@@ -130,7 +130,9 @@ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
- 		return 0;
- 	}
- 
-+#ifdef CONFIG_HOTPLUG_CPU
- out:
-+#endif
- 	return 1;
- }
- 
-@@ -144,16 +146,15 @@ static void __devinit smp_xics_setup_cpu(int cpu)
- 		vpa_init(cpu);
- 
- 	cpumask_clear_cpu(cpu, of_spin_mask);
-+#ifdef CONFIG_HOTPLUG_CPU
- 	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
- 	set_default_offline_state(cpu);
--
-+#endif
- }
- #endif /* CONFIG_XICS */
- 
- static void __devinit smp_pSeries_kick_cpu(int nr)
- {
--	long rc;
--	unsigned long hcpuid;
- 	BUG_ON(nr < 0 || nr >= NR_CPUS);
- 
- 	if (!smp_startup_cpu(nr))
-@@ -165,16 +166,20 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
- 	 * the processor will continue on to secondary_start
- 	 */
- 	paca[nr].cpu_start = 1;
--
-+#ifdef CONFIG_HOTPLUG_CPU
- 	set_preferred_offline_state(nr, CPU_STATE_ONLINE);
- 
- 	if (get_cpu_current_state(nr) == CPU_STATE_INACTIVE) {
-+		long rc;
-+		unsigned long hcpuid;
-+
- 		hcpuid = get_hard_smp_processor_id(nr);
- 		rc = plpar_hcall_norets(H_PROD, hcpuid);
- 		if (rc != H_SUCCESS)
- 			printk(KERN_ERR "Error: Prod to wake up processor %d "
- 						"Ret= %ld\n", nr, rc);
- 	}
-+#endif
- }
- 
- static int smp_pSeries_cpu_bootable(unsigned int nr)
+One is actually a change from Anton to the generic kexec to make a
+function weak so powerpc can override it.
+
+It has been around for ever, there were initial objections I think
+mostly due to a misunderstanding of the problem.
+
+Since then, it's been a deafening silence to our responses/expanations
+and no answers from Eric so I think it should go in as the powerpc
+counterpart that implements our version of that weak function is already
+(and has been for a while as d72e063bb32c06c6c1cec14f6857b7c37ba62d7a)
+and it fixes a real nasty bug.
+
+The rest is a series of fixes to our CPU hotplug code that I've been
+sitting on for a little while (by myself) and was originally thinking
+about putting in for the next release.
+
+I eventually changed my mind, there is no point in sitting on them any
+longer since they fix some real issues on some machines (such as G5's
+crashing on re-plug) and brings us in line with what other archs do for
+setting up and re-initializing the idle threads.
+
+Cheers,
+Ben.
+
+The following changes since commit ecb78ab6f30106ab72a575a25b1cdfd1633b7ca2:
+
+  Merge branch 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6 (2011-03-30 12:22:15 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Blanchard (1):
+      kdump: Allow shrinking of kdump region to be overridden
+
+Benjamin Herrenschmidt (18):
+      powerpc: Make decrementer interrupt robust against offlined CPUs
+      powerpc/smp: soft-replugged CPUs must go back to start_secondary
+      powerpc/smp: Fix generic_mach_cpu_die()
+      powerpc/smp: Remove unused generic_cpu_enable()
+      powerpc/smp: Remove unused smp_ops->cpu_enable()
+      powerpc/pmac/smp: Fix 32-bit PowerMac cpu_die
+      powerpc/pmac/smp: Rename fixup_irqs() to migrate_irqs() and use it on ppc32
+      powerpc/pmac/smp: Fixup smp_core99_cpu_disable() and use it on 64-bit
+      powerpc/pmac/smp: Consolidate 32-bit and 64-bit PowerMac cpu_die in one file
+      powerpc/pmac/smp: Remove HMT changes for PowerMac offline code
+      powerpc/pmac/smp: Properly NAP offlined CPU on G5
+      powerpc/pmac: Rename cpu_state in therm_pm72 to avoid collision
+      powerpc/smp: Add a smp_ops->bringup_up() done callback
+      powerpc/pmac/smp: Fix CPU hotplug crashes on some machines
+      powerpc/smp: Don't expose per-cpu "cpu_state" array
+      powerpc/smp: Create idle threads on demand and properly reset them
+      powerpc/smp: Increase vdso_data->processorCount, not just decrease it
+      powerpc/pmac/smp: Remove no-longer needed preempt workaround
+
+ arch/powerpc/include/asm/machdep.h              |    3 +-
+ arch/powerpc/include/asm/smp.h                  |    5 +-
+ arch/powerpc/kernel/head_32.S                   |    9 ++
+ arch/powerpc/kernel/head_64.S                   |    7 +
+ arch/powerpc/kernel/idle_power4.S               |   21 ---
+ arch/powerpc/kernel/irq.c                       |    3 +-
+ arch/powerpc/kernel/smp.c                       |  153 ++++++++++++++--------
+ arch/powerpc/kernel/time.c                      |   15 ++-
+ arch/powerpc/platforms/powermac/pmac.h          |    1 -
+ arch/powerpc/platforms/powermac/setup.c         |   56 --------
+ arch/powerpc/platforms/powermac/smp.c           |  154 ++++++++++++++++-------
+ arch/powerpc/platforms/pseries/offline_states.h |    2 -
+ drivers/macintosh/therm_pm72.c                  |   60 +++++-----
+ include/linux/kexec.h                           |    1 +
+ kernel/kexec.c                                  |    5 +-
+ 15 files changed, 272 insertions(+), 223 deletions(-)
