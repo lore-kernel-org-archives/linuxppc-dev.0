@@ -1,17 +1,26 @@
-Return-Path: <tmarri@amcc.com>
-Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D78A100893
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2E0E4B6F77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Apr 2011 06:05:50 +1100 (EST)
-From: tmarri@apm.com
-To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v11 10/10] USB/ppc4xx:Synopsys DWC OTG driver enable gadget
-	support
-Date: Fri,  1 Apr 2011 12:05:43 -0700
-Message-Id: <1301684743-17687-1-git-send-email-tmarri@apm.com>
-Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
+	Sat,  2 Apr 2011 06:22:30 +1100 (EST)
+Received: by wyg36 with SMTP id 36so3472346wyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 01 Apr 2011 12:22:26 -0700 (PDT)
+Message-ID: <4D962588.9050800@ru.mvista.com>
+Date: Fri, 01 Apr 2011 23:20:40 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+MIME-Version: 1.0
+To: tmarri@apm.com
+Subject: Re: [PATCH v11 09/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
+	configuration and Makefile
+References: <1301684736-17647-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1301684736-17647-1-git-send-email-tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,66 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tirumala Marri <tmarri@apm.com>
+tmarri@apm.com wrote:
 
-Enable gadget support
+> From: Tirumala Marri <tmarri@apm.com>
 
-Signed-off-by: Tirumala R Marri <tmarri@apm.com>
-Signed-off-by: Fushen Chen <fchen@apm.com>
-Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
----
- drivers/usb/gadget/Kconfig        |   11 +++++++++++
- drivers/usb/gadget/gadget_chips.h |    9 +++++++++
- 2 files changed, 20 insertions(+), 0 deletions(-)
+> Add Synopsys DesignWare HS USB OTG driver kernel configuration.
+> Synopsys OTG driver may operate in  host only, device only, or OTG mode.
+> The driver also allows user configure the core to use its internal DMA
+> or Slave (PIO) mode.
 
-diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-index bc5123c..02eb5d5 100644
---- a/drivers/usb/gadget/Kconfig
-+++ b/drivers/usb/gadget/Kconfig
-@@ -365,6 +365,17 @@ config USB_GADGET_MUSB_HDRC
- 	  This OTG-capable silicon IP is used in dual designs including
- 	  the TI DaVinci, OMAP 243x, OMAP 343x, TUSB 6010, and ADI Blackfin
- 
-+# dwc_otg builds in ../otg/dwc along with host support
-+config USB_GADGET_DWC_HDRC
-+	boolean "DesignWare USB Peripheral"
-+	depends on DWC_OTG_MODE || DWC_DEVICE_ONLY
-+	select USB_GADGET_DUALSPEED
-+	select USB_GADGET_SELECTED
-+	select USB_GADGET_DWC_OTG
-+	help
-+	  This OTG-capable Designware USB IP which has host and device
-+	  modes.
-+
- config USB_GADGET_M66592
- 	boolean "Renesas M66592 USB Peripheral Controller"
- 	select USB_GADGET_DUALSPEED
-diff --git a/drivers/usb/gadget/gadget_chips.h b/drivers/usb/gadget/gadget_chips.h
-index e896f63..d1fab43 100644
---- a/drivers/usb/gadget/gadget_chips.h
-+++ b/drivers/usb/gadget/gadget_chips.h
-@@ -136,6 +136,12 @@
- #define gadget_is_s3c_hsotg(g)    0
- #endif
- 
-+#if defined(CONFIG_DWC_OTG_MODE) || defined(CONFIG_DWC_DEVICE_ONLY)
-+#define gadget_is_dwc_otg_pcd(g)	(!strcmp("dwc_otg_pcd", (g)->name))
-+#else
-+#define gadget_is_dwc_otg_pcd(g)	0
-+#endif
-+
- #ifdef CONFIG_USB_GADGET_EG20T
- #define	gadget_is_pch(g)	(!strcmp("pch_udc", (g)->name))
- #else
-@@ -207,6 +213,9 @@ static inline int usb_gadget_controller_number(struct usb_gadget *gadget)
- 		return 0x27;
- 	else if (gadget_is_ci13xxx_msm(gadget))
- 		return 0x28;
-+	else if (gadget_is_dwc_otg_pcd(gadget))
-+		return 0x29;
-+
- 	return -ENOENT;
- }
- 
--- 
-1.6.1.rc3
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+[...]
+
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index a125e0b..500e08f 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -65,6 +65,7 @@ obj-$(CONFIG_PARIDE) 		+= block/paride/
+>  obj-$(CONFIG_TC)		+= tc/
+>  obj-$(CONFIG_UWB)		+= uwb/
+>  obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
+> +obj-$(CONFIG_USB_DWC_OTG)	+= usb/otg/dwc/
+
+    Haven't we recently agreed with Greg on drivers/usb/dwc/?
+
+WBR, Sergei
