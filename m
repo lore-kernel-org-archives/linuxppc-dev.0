@@ -2,15 +2,14 @@ Return-Path: <tmarri@amcc.com>
 Received: from denmail01.apm.com (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EDB9AB6F91
+	by ozlabs.org (Postfix) with ESMTPS id BC00E10089A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Apr 2011 06:05:26 +1100 (EST)
+	Sat,  2 Apr 2011 06:05:33 +1100 (EST)
 From: tmarri@apm.com
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v11 05/10] USB/ppc4xx: Add Synopsys DWC OTG HCD interrupt
-	function
-Date: Fri,  1 Apr 2011 12:05:18 -0700
-Message-Id: <1301684718-17453-1-git-send-email-tmarri@apm.com>
+Subject: [PATCH v11 07/10] USB/ppc4xx: Add Synopsys DWC OTG PCD function
+Date: Fri,  1 Apr 2011 12:05:25 -0700
+Message-Id: <1301684725-17527-1-git-send-email-tmarri@apm.com>
 Cc: tmarri@apm.com, greg@kroah.com, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,22 +23,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tirumala Marri <tmarri@apm.com>
 
-Implements DWC OTG USB HCD interrupt service routine.
+The PCD is responsible for translating requests from the gadget driver
+to appropriate actions on the DWC OTG controller.
 
 Signed-off-by: Tirumala R Marri <tmarri@apm.com>
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/usb/otg/dwc/hcd_intr.c | 1477 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 1477 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/otg/dwc/hcd_intr.c
+ drivers/usb/otg/dwc/pcd.c | 1766 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc/pcd.h |  139 ++++
+ 2 files changed, 1905 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc/pcd.c
+ create mode 100644 drivers/usb/otg/dwc/pcd.h
 
-diff --git a/drivers/usb/otg/dwc/hcd_intr.c b/drivers/usb/otg/dwc/hcd_intr.c
+diff --git a/drivers/usb/otg/dwc/pcd.c b/drivers/usb/otg/dwc/pcd.c
 new file mode 100644
-index 0000000..26079a6
+index 0000000..04a0a4a
 --- /dev/null
-+++ b/drivers/usb/otg/dwc/hcd_intr.c
-@@ -0,0 +1,1477 @@
++++ b/drivers/usb/otg/dwc/pcd.c
+@@ -0,0 +1,1766 @@
 +/*
 + * DesignWare HS OTG controller driver
 + * Copyright (C) 2006 Synopsys, Inc.
@@ -62,7 +64,6 @@ index 0000000..26079a6
 + * Based on Synopsys driver version 2.60a
 + * Modified by Mark Miesfeld <mmiesfeld@apm.com>
 + * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
-+ * Modified by Chuck Meade <chuck@theptrgroup.com>
 + *
 + * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 + * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
@@ -77,1445 +78,1880 @@ index 0000000..26079a6
 + *
 + */
 +
-+#include "hcd.h"
++/*
++ * This file implements the Peripheral Controller Driver.
++ *
++ * The Peripheral Controller Driver (PCD) is responsible for
++ * translating requests from the Function Driver into the appropriate
++ * actions on the DWC_otg controller. It isolates the Function Driver
++ * from the specifics of the controller by providing an API to the
++ * Function Driver.
++ *
++ * The Peripheral Controller Driver for Linux will implement the
++ * Gadget API, so that the existing Gadget drivers can be used.
++ * (Gadget Driver is the Linux terminology for a Function Driver.)
++ *
++ * The Linux Gadget API is defined in the header file linux/usb/gadget.h. The
++ * USB EP operations API is defined in the structure usb_ep_ops and the USB
++ * Controller API is defined in the structure usb_gadget_ops
++ *
++ * An important function of the PCD is managing interrupts generated
++ * by the DWC_otg controller. The implementation of the DWC_otg device
++ * mode interrupt service routines is in dwc_otg_pcd_intr.c.
++ */
 +
-+/* This file contains the implementation of the HCD Interrupt handlers.	*/
-+static const int erratum_usb09_patched;
-+static const int deferral_on = 1;
-+static const int nak_deferral_delay = 8;
-+static const int nyet_deferral_delay = 1;
++#include <linux/dma-mapping.h>
++#include <linux/delay.h>
++
++#include "pcd.h"
++
++/*
++ * Static PCD pointer for use in usb_gadget_register_driver and
++ * usb_gadget_unregister_driver.  Initialized in dwc_otg_pcd_init.
++ */
++static struct dwc_pcd *s_pcd;
++
++static inline int need_stop_srp_timer(struct core_if *core_if)
++{
++	if (core_if->core_params->phy_type != DWC_PHY_TYPE_PARAM_FS ||
++	    !core_if->core_params->i2c_enable)
++		return core_if->srp_timer_started ? 1 : 0;
++	return 0;
++}
 +
 +/**
-+ * Handles the start-of-frame interrupt in host mode. Non-periodic
-+ * transactions may be queued to the DWC_otg controller for the current
-+ * (micro)frame. Periodic transactions may be queued to the controller for the
-+ * next (micro)frame.
++ * Tests if the module is set to FS or if the PHY_TYPE is FS. If so, then the
++ * gadget should not report as dual-speed capable.
 + */
-+static int dwc_otg_hcd_handle_sof_intr(struct dwc_hcd *hcd)
++static inline int check_is_dual_speed(struct core_if *core_if)
 +{
-+	u32 hfnum = 0;
-+	struct list_head *qh_entry;
-+	struct dwc_qh *qh;
-+	enum dwc_transaction_type tr_type;
-+	u32 gintsts = 0;
++	if (core_if->core_params->speed == DWC_SPEED_PARAM_FULL ||
++	    (DWC_HWCFG2_HS_PHY_TYPE_RD(core_if->hwcfg2) == 2 &&
++	     DWC_HWCFG2_P_2_P_RD(core_if->hwcfg2) == 1 &&
++	     core_if->core_params->ulpi_fs_ls))
++		return 0;
++	return 1;
++}
 +
-+	hfnum =
-+	    dwc_read32(hcd->core_if->host_if->host_global_regs +
-+		       DWC_HFNUM);
++/**
++ * Tests if driver is OTG capable.
++ */
++static inline int check_is_otg(struct core_if *core_if)
++{
++	if (DWC_HWCFG2_OP_MODE_RD(core_if->hwcfg2) ==
++	    DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE ||
++	    DWC_HWCFG2_OP_MODE_RD(core_if->hwcfg2) ==
++	    DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST ||
++	    DWC_HWCFG2_OP_MODE_RD(core_if->hwcfg2) ==
++	    DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE ||
++	    DWC_HWCFG2_OP_MODE_RD(core_if->hwcfg2) ==
++	    DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST)
++		return 0;
++	return 1;
++}
 +
-+	hcd->frame_number = DWC_HFNUM_FRNUM_RD(hfnum);
++/**
++ * This function completes a request. It calls the request call back.
++ */
++void request_done(struct pcd_ep *ep, struct pcd_request *req, int status)
++{
++	unsigned stopped = ep->stopped;
 +
-+	/* Determine whether any periodic QHs should be executed. */
-+	qh_entry = hcd->periodic_sched_inactive.next;
-+	while (qh_entry != &hcd->periodic_sched_inactive) {
-+		qh = list_entry(qh_entry, struct dwc_qh, qh_list_entry);
-+		qh_entry = qh_entry->next;
++	list_del_init(&req->queue);
++	if (req->req.status == -EINPROGRESS)
++		req->req.status = status;
++	else
++		status = req->req.status;
 +
-+		/*
-+		 * If needed, move QH to the ready list to be executed next
-+		 * (micro)frame.
-+		 */
-+		if (dwc_frame_num_le(qh->sched_frame, hcd->frame_number))
-+			list_move(&qh->qh_list_entry,
-+				  &hcd->periodic_sched_ready);
++	if (GET_CORE_IF(ep->pcd)->dma_enable) {
++		if (req->mapped) {
++			dma_unmap_single(ep->pcd->gadget.dev.parent,
++					 req->req.dma, req->req.length,
++					 ep->dwc_ep.is_in ? DMA_TO_DEVICE :
++					 DMA_FROM_DEVICE);
++			req->req.dma = DMA_ADDR_INVALID;
++			req->mapped = 0;
++		} else {
++			dma_sync_single_for_cpu(ep->pcd->gadget.dev.parent,
++						req->req.dma, req->req.length,
++						ep->dwc_ep.
++						is_in ? DMA_TO_DEVICE :
++						DMA_FROM_DEVICE);
++		}
 +	}
 +
-+	tr_type = dwc_otg_hcd_select_transactions(hcd);
-+	if (tr_type != DWC_OTG_TRANSACTION_NONE)
-+		dwc_otg_hcd_queue_transactions(hcd, tr_type);
++	/* don't modify queue heads during completion callback */
++	ep->stopped = 1;
++	spin_unlock(&ep->pcd->lock);
++	req->req.complete(&ep->ep, &req->req);
++	spin_lock(&ep->pcd->lock);
 +
-+	/* Clear interrupt */
-+	gintsts |= DWC_INTMSK_STRT_OF_FRM;
-+	dwc_write32(gintsts_reg(hcd), gintsts);
-+	return 1;
-+}
-+
-+/**
-+ * Handles the Rx Status Queue Level Interrupt, which indicates that there is at
-+ * least one packet in the Rx FIFO.  The packets are moved from the FIFO to
-+ * memory if the DWC_otg controller is operating in Slave mode.
-+ */
-+static int dwc_otg_hcd_handle_rx_status_q_level_intr(struct dwc_hcd *hcd)
-+{
-+	u32 grxsts;
-+	struct dwc_hc *hc;
-+
-+	grxsts = dwc_read32(hcd->core_if->core_global_regs + DWC_GRXSTSP);
-+	hc = hcd->hc_ptr_array[grxsts & DWC_HM_RXSTS_CHAN_NUM_RD(grxsts)];
-+
-+	/* Packet Status */
-+	switch (DWC_HM_RXSTS_PKT_STS_RD(grxsts)) {
-+	case DWC_GRXSTS_PKTSTS_IN:
-+		/* Read the data into the host buffer. */
-+		if (DWC_HM_RXSTS_BYTE_CNT_RD(grxsts) > 0) {
-+			dwc_otg_read_packet(hcd->core_if, hc->xfer_buff,
-+					    DWC_HM_RXSTS_BYTE_CNT_RD(grxsts));
-+			/* Update the HC fields for the next packet received. */
-+			hc->xfer_count += DWC_HM_RXSTS_BYTE_CNT_RD(grxsts);
-+			hc->xfer_buff += DWC_HM_RXSTS_BYTE_CNT_RD(grxsts);
-+		}
-+	case DWC_GRXSTS_PKTSTS_IN_XFER_COMP:
-+	case DWC_GRXSTS_PKTSTS_DATA_TOGGLE_ERR:
-+	case DWC_GRXSTS_PKTSTS_CH_HALTED:
-+		/* Handled in interrupt, just ignore data */
-+		break;
-+	default:
-+		pr_err("RX_STS_Q Interrupt: Unknown status %d\n",
-+		       DWC_HM_RXSTS_PKT_STS_RD(grxsts));
-+		break;
-+	}
-+	return 1;
-+}
-+
-+/**
-+ * This interrupt occurs when the non-periodic Tx FIFO is half-empty. More
-+ * data packets may be written to the FIFO for OUT transfers. More requests
-+ * may be written to the non-periodic request queue for IN transfers. This
-+ * interrupt is enabled only in Slave mode.
-+ */
-+static int dwc_otg_hcd_handle_np_tx_fifo_empty_intr(struct dwc_hcd *hcd)
-+{
-+	dwc_otg_hcd_queue_transactions(hcd, DWC_OTG_TRANSACTION_NON_PERIODIC);
-+	return 1;
-+}
-+
-+/**
-+ * This interrupt occurs when the periodic Tx FIFO is half-empty. More data
-+ * packets may be written to the FIFO for OUT transfers. More requests may be
-+ * written to the periodic request queue for IN transfers. This interrupt is
-+ * enabled only in Slave mode.
-+ */
-+static int dwc_otg_hcd_handle_perio_tx_fifo_empty_intr(struct dwc_hcd *hcd)
-+{
-+	dwc_otg_hcd_queue_transactions(hcd, DWC_OTG_TRANSACTION_PERIODIC);
-+	return 1;
-+}
-+
-+/**
-+ * When the port changes to enabled it may be necessary to adjust the phy clock
-+ * speed.
-+ */
-+static int adjusted_phy_clock_speed(struct dwc_hcd *hcd, u32 hprt0)
-+{
-+	int adjusted = 0;
-+	u32 usbcfg;
-+	ulong global_regs = hcd->core_if->core_global_regs;
-+	struct core_params *params = hcd->core_if->core_params;
-+	ulong h_regs = hcd->core_if->host_if->host_global_regs;
-+
-+	usbcfg = dwc_read32(global_regs + DWC_GUSBCFG);
-+
-+	if (DWC_HPRT0_PRT_SPD_RD(hprt0) == DWC_HPRT0_PRTSPD_LOW_SPEED ||
-+	    DWC_HPRT0_PRT_SPD_RD(hprt0) == DWC_HPRT0_PRTSPD_FULL_SPEED) {
-+		/* Low power */
-+		u32 hcfg;
-+
-+		if (!(usbcfg & DWC_USBCFG_PHYLPWRCLKSEL)) {
-+			/* Set PHY low power clock select for FS/LS devices */
-+			usbcfg |= DWC_USBCFG_PHYLPWRCLKSEL;
-+			dwc_write32(global_regs + DWC_GUSBCFG, usbcfg);
-+			adjusted = 1;
-+		}
-+
-+		hcfg = dwc_read32(h_regs + DWC_HCFG);
-+		if (DWC_HPRT0_PRT_SPD_RD(hprt0) == DWC_HPRT0_PRTSPD_LOW_SPEED &&
-+		    params->host_ls_low_power_phy_clk ==
-+		    DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_6MHZ) {
-+			/* 6 MHZ, check for 6 MHZ clock select */
-+			if (DWC_HCFG_FSLSP_CLK_RD(hcfg) != DWC_HCFG_6_MHZ) {
-+				hcfg = DWC_HCFG_FSLSP_CLK_RW(hcfg,
-+							     DWC_HCFG_6_MHZ);
-+				dwc_write32(h_regs + DWC_HCFG, hcfg);
-+				adjusted = 1;
-+			}
-+		} else if (DWC_HCFG_FSLSP_CLK_RD(hcfg) != DWC_HCFG_48_MHZ) {
-+			/* 48 MHZ and clock select is not 48 MHZ */
-+			hcfg = DWC_HCFG_FSLSP_CLK_RW(hcfg, DWC_HCFG_48_MHZ);
-+			dwc_write32(h_regs + DWC_HCFG, hcfg);
-+			adjusted = 1;
-+		}
-+	} else if (usbcfg & DWC_USBCFG_PHYLPWRCLKSEL) {
-+		usbcfg &= ~((u32) DWC_USBCFG_PHYLPWRCLKSEL);
-+		dwc_write32(global_regs + DWC_GUSBCFG, usbcfg);
-+		adjusted = 1;
-+	}
-+	if (adjusted)
-+		schedule_work(&hcd->usb_port_reset);
-+
-+	return adjusted;
-+}
-+
-+/**
-+ * Helper function to handle the port enable changed interrupt when the port
-+ * becomes enabled.  Checks if we need to adjust the PHY clock speed for low
-+ * power and  adjusts it if needed.
-+ */
-+static void port_enabled(struct dwc_hcd *hcd, u32 hprt0)
-+{
-+	if (hcd->core_if->core_params->host_support_fs_ls_low_power)
-+		if (!adjusted_phy_clock_speed(hcd, hprt0))
-+			hcd->flags.b.port_reset_change = 1;
-+}
-+
-+/**
-+ * There are multiple conditions that can cause a port interrupt. This function
-+ * determines which interrupt conditions have occurred and handles them
-+ * appropriately.
-+ */
-+static int dwc_otg_hcd_handle_port_intr(struct dwc_hcd *hcd)
-+{
-+	int retval = 0;
-+	u32 hprt0;
-+	u32 hprt0_modify;
-+
-+	hprt0 = dwc_read32(hcd->core_if->host_if->hprt0);
-+	hprt0_modify = dwc_read32(hcd->core_if->host_if->hprt0);
++	if (ep->pcd->request_pending > 0)
++		--ep->pcd->request_pending;
++	ep->stopped = stopped;
 +
 +	/*
-+	 * Clear appropriate bits in HPRT0 to clear the interrupt bit in
-+	 * GINTSTS
++	 * Added-sr: 2007-07-26
++	 *
++	 * Finally, when the current request is done, mark this endpoint
++	 * as not active, so that new requests can be processed.
 +	 */
-+	hprt0_modify = DWC_HPRT0_PRT_ENA_RW(hprt0_modify, 0);
-+	hprt0_modify = DWC_HPRT0_PRT_CONN_DET_RW(hprt0_modify, 0);
-+	hprt0_modify = DWC_HPRT0_PRT_ENA_DIS_CHG_RW(hprt0_modify, 0);
-+	hprt0_modify = DWC_HPRT0_PRT_OVRCURR_CHG_RW(hprt0_modify, 0);
-+
-+	/* Port connect detected interrupt */
-+	if (DWC_HPRT0_PRT_CONN_DET_RD(hprt0)) {
-+		/* Set the status flags and clear interrupt */
-+		hcd->flags.b.port_connect_status_change = 1;
-+		hcd->flags.b.port_connect_status = 1;
-+		hprt0_modify = DWC_HPRT0_PRT_CONN_DET_RW(hprt0_modify, 1);
-+
-+		/* B-Device has connected, Delete the connection timer. */
-+		del_timer_sync(&hcd->conn_timer);
-+
-+		/*
-+		 * The Hub driver asserts a reset when it sees port connect
-+		 * status change flag
-+		 */
-+		retval |= 1;
-+	}
-+
-+	/* Port enable changed interrupt */
-+	if (DWC_HPRT0_PRT_ENA_DIS_CHG_RD(hprt0)) {
-+		/* Set the internal flag if the port was disabled */
-+		if (DWC_HPRT0_PRT_ENA_RD(hprt0))
-+			port_enabled(hcd, hprt0);
-+		else
-+			hcd->flags.b.port_enable_change = 1;
-+
-+		/* Clear the interrupt */
-+		hprt0_modify = DWC_HPRT0_PRT_ENA_DIS_CHG_RW(hprt0_modify, 1);
-+		retval |= 1;
-+	}
-+
-+	/* Overcurrent change interrupt */
-+	if (DWC_HPRT0_PRT_OVRCURR_CHG_RD(hprt0)) {
-+		hcd->flags.b.port_over_current_change = 1;
-+		hprt0_modify = DWC_HPRT0_PRT_OVRCURR_CHG_RW(hprt0_modify, 1);
-+		retval |= 1;
-+	}
-+
-+	/* Clear the port interrupts */
-+	dwc_write32(hcd->core_if->host_if->hprt0, hprt0_modify);
-+	return retval;
++	if (dwc_has_feature(GET_CORE_IF(ep->pcd), DWC_LIMITED_XFER))
++		ep->dwc_ep.active = 0;
 +}
 +
 +/**
-+ * Gets the actual length of a transfer after the transfer halts. halt_status
-+ * holds the reason for the halt.
-+ *
-+ * For IN transfers where halt_status is DWC_OTG_HC_XFER_COMPLETE, _short_read
-+ * is set to 1 upon return if less than the requested number of bytes were
-+ * transferred. Otherwise, _short_read is set to 0 upon return. _short_read may
-+ * also be NULL on entry, in which case it remains unchanged.
++ * This function terminates all the requsts in the EP request queue.
 + */
-+static u32 get_actual_xfer_length(struct dwc_hc *hc, ulong regs,
-+				  struct dwc_qtd *qtd,
-+				  enum dwc_halt_status halt_status,
-+				  int *_short_read)
++void request_nuke(struct pcd_ep *ep)
 +{
-+	u32 hctsiz = 0;
-+	u32 length;
++	struct pcd_request *req;
 +
-+	if (_short_read)
-+		*_short_read = 0;
++	ep->stopped = 1;
 +
-+	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
-+	if (halt_status == DWC_OTG_HC_XFER_COMPLETE) {
-+		if (hc->ep_is_in) {
-+			length = hc->xfer_len - DWC_HCTSIZ_XFER_SIZE_RD(hctsiz);
-+			if (_short_read)
-+				*_short_read =
-+				    (DWC_HCTSIZ_XFER_SIZE_RD(hctsiz) != 0);
-+		} else if (hc->qh->do_split) {
-+			length = qtd->ssplit_out_xfer_count;
-+		} else {
-+			length = hc->xfer_len;
-+		}
-+	} else {
-+		/*
-+		 * Must use the hctsiz.pktcnt field to determine how much data
-+		 * has been transferred. This field reflects the number of
-+		 * packets that have been transferred via the USB. This is
-+		 * always an integral number of packets if the transfer was
-+		 * halted before its normal completion. (Can't use the
-+		 * hctsiz.xfersize field because that reflects the number of
-+		 * bytes transferred via the AHB, not the USB).
-+		 */
-+		length = (hc->start_pkt_count - DWC_HCTSIZ_PKT_CNT_RD(hctsiz)) *
-+		    hc->max_packet;
++	/* called with irqs blocked?? */
++	while (!list_empty(&ep->queue)) {
++		req = list_entry(ep->queue.next, struct pcd_request, queue);
++		request_done(ep, req, -ESHUTDOWN);
 +	}
-+	return length;
-+}
-+
-+/**
-+ * Updates the state of the URB after a Transfer Complete interrupt on the
-+ * host channel. Updates the actual_length field of the URB based on the
-+ * number of bytes transferred via the host channel. Sets the URB status
-+ * if the data transfer is finished.
-+ */
-+static int update_urb_state_xfer_comp(struct dwc_hc *hc,
-+				      ulong regs, struct urb *urb,
-+				      struct dwc_qtd *qtd, int *status)
-+{
-+	int xfer_done = 0;
-+	int short_read = 0;
-+
-+	urb->actual_length += get_actual_xfer_length(hc, regs, qtd,
-+						     DWC_OTG_HC_XFER_COMPLETE,
-+						     &short_read);
-+
-+	if (short_read || urb->actual_length == urb->transfer_buffer_length) {
-+		xfer_done = 1;
-+		if (short_read && (urb->transfer_flags & URB_SHORT_NOT_OK))
-+			*status = -EREMOTEIO;
-+		else
-+			*status = 0;
-+	}
-+	return xfer_done;
 +}
 +
 +/*
-+ * Save the starting data toggle for the next transfer. The data toggle is
-+ * saved in the QH for non-control transfers and it's saved in the QTD for
-+ * control transfers.
-+ */
-+static void save_data_toggle(struct dwc_hc *hc, ulong regs, struct dwc_qtd *qtd)
-+{
-+	u32 hctsiz = 0;
-+	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
-+
-+	if (hc->ep_type != DWC_OTG_EP_TYPE_CONTROL) {
-+		struct dwc_qh *qh = hc->qh;
-+
-+		if (DWC_HCTSIZ_PKT_PID_RD(hctsiz) == DWC_HCTSIZ_DATA0)
-+			qh->data_toggle = DWC_OTG_HC_PID_DATA0;
-+		else
-+			qh->data_toggle = DWC_OTG_HC_PID_DATA1;
-+	} else {
-+		if (DWC_HCTSIZ_PKT_PID_RD(hctsiz) == DWC_HCTSIZ_DATA0)
-+			qtd->data_toggle = DWC_OTG_HC_PID_DATA0;
-+		else
-+			qtd->data_toggle = DWC_OTG_HC_PID_DATA1;
-+	}
-+}
-+
-+/**
-+ * Frees the first QTD in the QH's list if free_qtd is 1. For non-periodic
-+ * QHs, removes the QH from the active non-periodic schedule. If any QTDs are
-+ * still linked to the QH, the QH is added to the end of the inactive
-+ * non-periodic schedule. For periodic QHs, removes the QH from the periodic
-+ * schedule if no more QTDs are linked to the QH.
-+ */
-+static void deactivate_qh(struct dwc_hcd *hcd, struct dwc_qh *qh, int free_qtd)
-+{
-+	int continue_split = 0;
-+	struct dwc_qtd *qtd;
-+
-+	qtd = list_entry(qh->qtd_list.next, struct dwc_qtd, qtd_list_entry);
-+	if (qtd->complete_split)
-+		continue_split = 1;
-+	else if (qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_MID ||
-+		 qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_END)
-+		continue_split = 1;
-+
-+	if (free_qtd) {
-+		dwc_otg_hcd_qtd_remove(qtd);
-+		continue_split = 0;
-+	}
-+
-+	qh->channel = NULL;
-+	qh->qtd_in_process = NULL;
-+	dwc_otg_hcd_qh_deactivate(hcd, qh, continue_split);
-+}
-+
-+/**
-+ * Updates the state of an Isochronous URB when the transfer is stopped for
-+ * any reason. The fields of the current entry in the frame descriptor array
-+ * are set based on the transfer state and the input status. Completes the
-+ * Isochronous URB if all the URB frames have been completed.
-+ */
-+static enum dwc_halt_status update_isoc_urb_state(struct dwc_hcd *hcd,
-+						  struct dwc_hc *hc, u32 regs,
-+						  struct dwc_qtd *qtd,
-+						  enum dwc_halt_status status)
-+{
-+	struct urb *urb = qtd->urb;
-+	enum dwc_halt_status ret_val = status;
-+	struct usb_iso_packet_descriptor *frame_desc;
-+	frame_desc = &urb->iso_frame_desc[qtd->isoc_frame_index];
-+
-+	switch (status) {
-+	case DWC_OTG_HC_XFER_COMPLETE:
-+		frame_desc->status = 0;
-+		frame_desc->actual_length =
-+		    get_actual_xfer_length(hc, regs, qtd, status, NULL);
-+		break;
-+	case DWC_OTG_HC_XFER_FRAME_OVERRUN:
-+		urb->error_count++;
-+		if (hc->ep_is_in)
-+			frame_desc->status = -ENOSR;
-+		else
-+			frame_desc->status = -ECOMM;
-+
-+		frame_desc->actual_length = 0;
-+		break;
-+	case DWC_OTG_HC_XFER_BABBLE_ERR:
-+		/* Don't need to update actual_length in this case. */
-+		urb->error_count++;
-+		frame_desc->status = -EOVERFLOW;
-+		break;
-+	case DWC_OTG_HC_XFER_XACT_ERR:
-+		urb->error_count++;
-+		frame_desc->status = -EPROTO;
-+		frame_desc->actual_length =
-+		    get_actual_xfer_length(hc, regs, qtd, status, NULL);
-+	default:
-+		pr_err("%s: Unhandled halt_status (%d)\n", __func__, status);
-+		BUG();
-+		break;
-+	}
-+
-+	if (++qtd->isoc_frame_index == urb->number_of_packets) {
-+		/*
-+		 * urb->status is not used for isoc transfers.
-+		 * The individual frame_desc statuses are used instead.
-+		 */
-+		dwc_otg_hcd_complete_urb(hcd, urb, 0);
-+		ret_val = DWC_OTG_HC_XFER_URB_COMPLETE;
-+	} else {
-+		ret_val = DWC_OTG_HC_XFER_COMPLETE;
-+	}
-+	return ret_val;
-+}
-+
-+/**
-+ * Releases a host channel for use by other transfers. Attempts to select and
-+ * queue more transactions since at least one host channel is available.
-+ */
-+static void release_channel(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+			    struct dwc_qtd *qtd,
-+			    enum dwc_halt_status halt_status, int *must_free)
-+{
-+	enum dwc_transaction_type tr_type;
-+	int free_qtd;
-+	int deact = 1;
-+	struct dwc_qh *qh;
-+	int retry_delay = 1;
-+
-+	switch (halt_status) {
-+	case DWC_OTG_HC_XFER_NYET:
-+	case DWC_OTG_HC_XFER_NAK:
-+		if (halt_status == DWC_OTG_HC_XFER_NYET)
-+			retry_delay = nyet_deferral_delay;
-+		else
-+			retry_delay = nak_deferral_delay;
-+		free_qtd = 0;
-+		if (deferral_on && hc->do_split) {
-+			qh = hc->qh;
-+			if (qh)
-+				deact = dwc_otg_hcd_qh_deferr(hcd, qh,
-+							      retry_delay);
-+		}
-+		break;
-+	case DWC_OTG_HC_XFER_URB_COMPLETE:
-+		free_qtd = 1;
-+		break;
-+	case DWC_OTG_HC_XFER_AHB_ERR:
-+	case DWC_OTG_HC_XFER_STALL:
-+	case DWC_OTG_HC_XFER_BABBLE_ERR:
-+		free_qtd = 1;
-+		break;
-+	case DWC_OTG_HC_XFER_XACT_ERR:
-+		if (qtd->error_count >= 3) {
-+			free_qtd = 1;
-+			dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPROTO);
-+		} else {
-+			free_qtd = 0;
-+		}
-+		break;
-+	case DWC_OTG_HC_XFER_URB_DEQUEUE:
-+		/*
-+		 * The QTD has already been removed and the QH has been
-+		 * deactivated. Don't want to do anything except release the
-+		 * host channel and try to queue more transfers.
-+		 */
-+		goto cleanup;
-+	case DWC_OTG_HC_XFER_NO_HALT_STATUS:
-+		pr_err("%s: No halt_status, channel %d\n", __func__,
-+		       hc->hc_num);
-+		free_qtd = 0;
-+		break;
-+	default:
-+		free_qtd = 0;
-+		break;
-+	}
-+	if (free_qtd)
-+		/* must_free pre-initialized to zero */
-+		*must_free = 1;
-+	if (deact)
-+		deactivate_qh(hcd, hc->qh, free_qtd);
-+
-+cleanup:
-+	/*
-+	 * Release the host channel for use by other transfers. The cleanup
-+	 * function clears the channel interrupt enables and conditions, so
-+	 * there's no need to clear the Channel Halted interrupt separately.
-+	 */
-+	dwc_otg_hc_cleanup(hcd->core_if, hc);
-+	list_add_tail(&hc->hc_list_entry, &hcd->free_hc_list);
-+	hcd->available_host_channels++;
-+	/* Try to queue more transfers now that there's a free channel. */
-+	if (!erratum_usb09_patched) {
-+		tr_type = dwc_otg_hcd_select_transactions(hcd);
-+		if (tr_type != DWC_OTG_TRANSACTION_NONE)
-+			dwc_otg_hcd_queue_transactions(hcd, tr_type);
-+	}
-+}
-+
-+/**
-+ * Halts a host channel. If the channel cannot be halted immediately because
-+ * the request queue is full, this function ensures that the FIFO empty
-+ * interrupt for the appropriate queue is enabled so that the halt request can
-+ * be queued when there is space in the request queue.
++ * The following sections briefly describe the behavior of the Gadget
++ * API endpoint operations implemented in the DWC_otg driver
++ * software. Detailed descriptions of the generic behavior of each of
++ * these functions can be found in the Linux header file
++ * include/linux/usb_gadget.h.
 + *
-+ * This function may also be called in DMA mode. In that case, the channel is
-+ * simply released since the core always halts the channel automatically in
-+ * DMA mode.
++ * The Gadget API provides wrapper functions for each of the function
++ * pointers defined in usb_ep_ops. The Gadget Driver calls the wrapper
++ * function, which then calls the underlying PCD function. The
++ * following sections are named according to the wrapper
++ * functions. Within each section, the corresponding DWC_otg PCD
++ * function name is specified.
++ *
 + */
-+static void halt_channel(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+			 struct dwc_qtd *qtd, enum dwc_halt_status halt_status,
-+			 int *must_free)
++
++/**
++ * This function assigns periodic Tx FIFO to an periodic EP in shared Tx FIFO
++ * mode
++ */
++static u32 assign_perio_tx_fifo(struct core_if *core_if)
 +{
-+	if (hcd->core_if->dma_enable) {
-+		release_channel(hcd, hc, qtd, halt_status, must_free);
++	u32 mask = 1;
++	u32 i;
++
++	for (i = 0; i < DWC_HWCFG4_NUM_DEV_PERIO_IN_EP_RD(core_if->hwcfg4);
++			++i) {
++		if (!(mask & core_if->p_tx_msk)) {
++			core_if->p_tx_msk |= mask;
++			return i + 1;
++		}
++		mask <<= 1;
++	}
++	return 0;
++}
++
++/**
++ * This function releases periodic Tx FIFO in shared Tx FIFO mode
++ */
++static void release_perio_tx_fifo(struct core_if *core_if, u32 fifo_num)
++{
++	core_if->p_tx_msk = (core_if->p_tx_msk & (1 << (fifo_num - 1)))
++	    ^ core_if->p_tx_msk;
++}
++
++/**
++ * This function assigns periodic Tx FIFO to an periodic EP in shared Tx FIFO
++ * mode
++ */
++static u32 assign_tx_fifo(struct core_if *core_if)
++{
++	u32 mask = 1;
++	u32 i;
++
++	for (i = 0; i < DWC_HWCFG4_NUM_IN_EPS_RD(core_if->hwcfg4); ++i) {
++		if (!(mask & core_if->tx_msk)) {
++			core_if->tx_msk |= mask;
++			return i + 1;
++		}
++		mask <<= 1;
++	}
++	return 0;
++}
++
++/**
++ * This function releases periodic Tx FIFO in shared Tx FIFO mode
++ */
++static void release_tx_fifo(struct core_if *core_if, u32 fifo_num)
++{
++	core_if->tx_msk = (core_if->tx_msk & (1 << (fifo_num - 1)))
++	    ^ core_if->tx_msk;
++}
++
++/**
++ * Sets an in endpoint's tx fifo based on the hardware configuration.
++ */
++static void set_in_ep_tx_fifo(struct dwc_pcd *pcd, struct pcd_ep *ep,
++			      const struct usb_endpoint_descriptor *desc)
++{
++	if (pcd->otg_dev->core_if->en_multiple_tx_fifo) {
++		ep->dwc_ep.tx_fifo_num = assign_tx_fifo(pcd->otg_dev->core_if);
++	} else {
++		ep->dwc_ep.tx_fifo_num = 0;
++
++		/* If ISOC EP then assign a Periodic Tx FIFO. */
++		if ((desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
++		    USB_ENDPOINT_XFER_ISOC)
++			ep->dwc_ep.tx_fifo_num =
++			    assign_perio_tx_fifo(pcd->otg_dev->core_if);
++	}
++}
++
++/**
++ * This function activates an EP.  The Device EP control register for
++ * the EP is configured as defined in the ep structure.  Note: This function is
++ * not used for EP0.
++ */
++void dwc_otg_ep_activate(struct core_if *core_if, struct dwc_ep *ep)
++{
++	struct device_if *dev_if = core_if->dev_if;
++	u32 depctl = 0;
++	ulong addr;
++	u32 daintmsk = 0;
++
++	/* Read DEPCTLn register */
++	if (ep->is_in == 1) {
++		addr = dev_if->in_ep_regs[ep->num] + DWC_DIEPCTL;
++		daintmsk = DWC_DAINTMSK_IN_EP_RW(daintmsk, ep->num);
++	} else {
++		addr = dev_if->out_ep_regs[ep->num] + DWC_DOEPCTL;
++		daintmsk = DWC_DAINTMSK_OUT_EP_RW(daintmsk, ep->num);
++	}
++
++	/* If the EP is already active don't change the EP Control register */
++	depctl = dwc_read32(addr);
++	if (!DWC_DEPCTL_ACT_EP_RD(depctl)) {
++		depctl = DWC_DEPCTL_MPS_RW(depctl, ep->maxpacket);
++		depctl = DWC_DEPCTL_EP_TYPE_RW(depctl, ep->type);
++		depctl = DWC_DEPCTL_TX_FIFO_NUM_RW(depctl, ep->tx_fifo_num);
++		depctl = DWC_DEPCTL_SET_DATA0_PID_RW(depctl, 1);
++		depctl = DWC_DEPCTL_ACT_EP_RW(depctl, 1);
++		dwc_write32(addr, depctl);
++	}
++
++	/* Enable the Interrupt for this EP */
++	dwc_modify32(dev_if->dev_global_regs + DWC_DAINTMSK, 0, daintmsk);
++
++	ep->stall_clear_flag = 0;
++}
++
++/**
++ * This function is called by the Gadget Driver for each EP to be
++ * configured for the current configuration (SET_CONFIGURATION).
++ *
++ * This function initializes the dwc_otg_ep_t data structure, and then
++ * calls dwc_otg_ep_activate.
++ */
++static int dwc_otg_pcd_ep_enable(struct usb_ep *_ep,
++				 const struct usb_endpoint_descriptor *desc)
++{
++	struct pcd_ep *ep;
++	struct dwc_pcd *pcd;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || !desc || ep->desc || desc->bDescriptorType !=
++	    USB_DT_ENDPOINT) {
++		pr_warning("%s, bad ep or descriptor\n", __func__);
++		return -EINVAL;
++	}
++
++	if (ep == &ep->pcd->ep0) {
++		pr_warning("%s, bad ep(0)\n", __func__);
++		return -EINVAL;
++	}
++
++	/* Check FIFO size */
++	if (!desc->wMaxPacketSize) {
++		pr_warning("%s, bad %s maxpacket\n", __func__, _ep->name);
++		return -ERANGE;
++	}
++
++	pcd = ep->pcd;
++	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
++		pr_warning("%s, bogus device state\n", __func__);
++		return -ESHUTDOWN;
++	}
++
++	spin_lock_irqsave(&pcd->lock, flags);
++	ep->desc = desc;
++	ep->ep.maxpacket = le16_to_cpu(desc->wMaxPacketSize);
++
++	/* Activate the EP */
++	ep->stopped = 0;
++	ep->wedged = 0;
++	ep->dwc_ep.is_in = (USB_DIR_IN & desc->bEndpointAddress) != 0;
++	ep->dwc_ep.maxpacket = ep->ep.maxpacket;
++	ep->dwc_ep.type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
++
++	if (ep->dwc_ep.is_in)
++		set_in_ep_tx_fifo(pcd, ep, desc);
++
++	/* Set initial data PID. */
++	if ((desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
++	    USB_ENDPOINT_XFER_BULK)
++		ep->dwc_ep.data_pid_start = 0;
++
++	dwc_otg_ep_activate(GET_CORE_IF(pcd), &ep->dwc_ep);
++	spin_unlock_irqrestore(&pcd->lock, flags);
++	return 0;
++}
++
++/**
++ * This function deactivates an EP.  This is done by clearing the USB Active EP
++ * bit in the Device EP control register.  Note: This function is not used for
++ * EP0. EP0 cannot be deactivated.
++ */
++static void dwc_otg_ep_deactivate(struct core_if *core_if, struct dwc_ep *ep)
++{
++	u32 depctl = 0;
++	ulong addr;
++	u32 daintmsk = 0;
++
++	/* Read DEPCTLn register */
++	if (ep->is_in == 1) {
++		addr = core_if->dev_if->in_ep_regs[ep->num] + DWC_DIEPCTL;
++		daintmsk = DWC_DAINTMSK_IN_EP_RW(daintmsk, ep->num);
++	} else {
++		addr =
++		    core_if->dev_if->out_ep_regs[ep->num] + DWC_DOEPCTL;
++		daintmsk = DWC_DAINTMSK_OUT_EP_RW(daintmsk, ep->num);
++	}
++
++	depctl = DWC_DEPCTL_ACT_EP_RW(depctl, 0);
++	dwc_write32(addr, depctl);
++
++	/* Disable the Interrupt for this EP */
++	dwc_modify32(core_if->dev_if->dev_global_regs + DWC_DAINTMSK,
++		     daintmsk, 0);
++}
++
++/**
++ * This function is called when an EP is disabled due to disconnect or
++ * change in configuration. Any pending requests will terminate with a
++ * status of -ESHUTDOWN.
++ *
++ * This function modifies the dwc_otg_ep_t data structure for this EP,
++ * and then calls dwc_otg_ep_deactivate.
++ */
++static int dwc_otg_pcd_ep_disable(struct usb_ep *_ep)
++{
++	struct pcd_ep *ep;
++	struct core_if *core_if;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || !ep->desc)
++		return -EINVAL;
++
++	core_if = ep->pcd->otg_dev->core_if;
++
++	spin_lock_irqsave(&ep->pcd->lock, flags);
++
++	request_nuke(ep);
++	dwc_otg_ep_deactivate(core_if, &ep->dwc_ep);
++
++	ep->desc = NULL;
++	ep->stopped = 1;
++	if (ep->dwc_ep.is_in) {
++		release_perio_tx_fifo(core_if, ep->dwc_ep.tx_fifo_num);
++		release_tx_fifo(core_if, ep->dwc_ep.tx_fifo_num);
++	}
++
++	spin_unlock_irqrestore(&ep->pcd->lock, flags);
++
++	return 0;
++}
++
++/**
++ * This function allocates a request object to use with the specified
++ * endpoint.
++ */
++static struct usb_request *dwc_otg_pcd_alloc_request(struct usb_ep *_ep,
++						     gfp_t gfp_flags)
++{
++	struct pcd_request *req;
++
++	if (!_ep) {
++		pr_warning("%s() Invalid EP\n", __func__);
++		return NULL;
++	}
++
++	req = kzalloc(sizeof(struct pcd_request), gfp_flags);
++	if (!req) {
++		pr_warning("%s() request allocation failed\n", __func__);
++		return NULL;
++	}
++
++	req->req.dma = DMA_ADDR_INVALID;
++	INIT_LIST_HEAD(&req->queue);
++
++	return &req->req;
++}
++
++/**
++ * This function frees a request object.
++ */
++static void dwc_otg_pcd_free_request(struct usb_ep *_ep,
++				     struct usb_request *_req)
++{
++	struct pcd_request *req;
++
++	if (!_ep || !_req) {
++		pr_warning("%s() nvalid ep or req argument\n", __func__);
 +		return;
 +	}
 +
-+	/* Slave mode processing... */
-+	dwc_otg_hc_halt(hcd->core_if, hc, halt_status);
-+	if (hc->halt_on_queue) {
-+		u32 gintmsk = 0;
++	req = container_of(_req, struct pcd_request, req);
++	kfree(req);
++}
 +
-+		if (hc->ep_type == DWC_OTG_EP_TYPE_CONTROL ||
-+		    hc->ep_type == DWC_OTG_EP_TYPE_BULK) {
-+			/*
-+			 * Make sure the Non-periodic Tx FIFO empty interrupt
-+			 * is enabled so that the non-periodic schedule will
-+			 * be processed.
-+			 */
-+			gintmsk |= DWC_INTMSK_NP_TXFIFO_EMPT;
-+			dwc_modify32(gintmsk_reg(hcd), 0, gintmsk);
++/*
++ * In dedicated Tx FIFO mode, enable the Non-Periodic Tx FIFO empty interrupt.
++ * Otherwise, enable the Tx FIFO epmty interrupt. The data will be written into
++ * the fifo by the ISR.
++ */
++static void enable_tx_fifo_empty_intr(struct core_if *c_if, struct dwc_ep *ep)
++{
++	u32 intr_mask = 0;
++	struct device_if *d_if = c_if->dev_if;
++	ulong global_regs = c_if->core_global_regs;
++
++	if (!c_if->en_multiple_tx_fifo) {
++		intr_mask |= DWC_INTMSK_NP_TXFIFO_EMPT;
++		dwc_modify32(global_regs + DWC_GINTSTS, intr_mask, 0);
++		dwc_modify32(global_regs + DWC_GINTMSK, intr_mask, intr_mask);
++	} else if (ep->xfer_len) {
++		/* Enable the Tx FIFO Empty Interrupt for this EP */
++		u32 fifoemptymsk = 1 << ep->num;
++		dwc_modify32(d_if->dev_global_regs +
++			     DWC_DTKNQR4FIFOEMPTYMSK, 0, fifoemptymsk);
++	}
++}
++
++static void set_next_ep(struct device_if *dev_if, u8 num)
++{
++	u32 depctl = 0;
++
++	depctl = dwc_read32(dev_if->in_ep_regs[0]) + DWC_DIEPCTL;
++	depctl = DWC_DEPCTL_NXT_EP_RW(depctl, num);
++
++	dwc_write32((dev_if->in_ep_regs[0]) + DWC_DIEPCTL, depctl);
++}
++
++/**
++ * This function does the setup for a data transfer for an EP and
++ * starts the transfer.  For an IN transfer, the packets will be loaded into the
++ * appropriate Tx FIFO in the ISR. For OUT transfers, the packets are unloaded
++ * from the Rx FIFO in the ISR.
++ *
++ */
++void dwc_otg_ep_start_transfer(struct core_if *c_if, struct dwc_ep *ep)
++{
++	u32 depctl = 0;
++	u32 deptsiz = 0;
++	struct device_if *d_if = c_if->dev_if;
++	ulong glbl_regs = c_if->core_global_regs;
++
++	if (ep->is_in) {
++		ulong in_regs = d_if->in_ep_regs[ep->num];
++		u32 gtxstatus;
++
++		gtxstatus = dwc_read32(glbl_regs + DWC_GNPTXSTS);
++		if (!c_if->en_multiple_tx_fifo
++		    && !DWC_GNPTXSTS_NPTXQSPCAVAIL_RD(gtxstatus))
++			return;
++
++		depctl = dwc_read32(in_regs + DWC_DIEPCTL);
++		deptsiz = dwc_read32(in_regs + DWC_DIEPTSIZ);
++
++		/* Zero Length Packet? */
++		if (!ep->xfer_len) {
++			deptsiz = DWC_DEPTSIZ_XFER_SIZ_RW(deptsiz, 0);
++			deptsiz = DWC_DEPTSIZ_PKT_CNT_RW(deptsiz, 1);
 +		} else {
 +			/*
-+			 * Move the QH from the periodic queued schedule to
-+			 * the periodic assigned schedule. This allows the
-+			 * halt to be queued when the periodic schedule is
-+			 * processed.
++			 * Program the transfer size and packet count as
++			 * follows:
++			 *
++			 * xfersize = N * maxpacket + short_packet
++			 * pktcnt = N + (short_packet exist ? 1 : 0)
 +			 */
-+			list_move(&hc->qh->qh_list_entry,
-+				  &hcd->periodic_sched_assigned);
 +
 +			/*
-+			 * Make sure the Periodic Tx FIFO Empty interrupt is
-+			 * enabled so that the periodic schedule will be
-+			 * processed.
++			 * Added-sr: 2007-07-26
++			 *
++			 * Since the 405EZ (Ultra) only support 2047 bytes as
++			 * max transfer size, we have to split up bigger
++			 * transfers into multiple transfers of 1024 bytes sized
++			 * messages. I happens often, that transfers of 4096
++			 * bytes are required (zero-gadget,
++			 * file_storage-gadget).
 +			 */
-+			gintmsk |= DWC_INTMSK_P_TXFIFO_EMPTY;
-+			dwc_modify32(gintmsk_reg(hcd), 0, gintmsk);
++			if (dwc_has_feature(c_if, DWC_LIMITED_XFER)) {
++				if (ep->xfer_len > MAX_XFER_LEN) {
++					ep->bytes_pending = ep->xfer_len
++					    - MAX_XFER_LEN;
++					ep->xfer_len = MAX_XFER_LEN;
++				}
++			}
++
++			deptsiz =
++			    DWC_DEPTSIZ_XFER_SIZ_RW(deptsiz, ep->xfer_len);
++			deptsiz =
++			    DWC_DEPTSIZ_PKT_CNT_RW(deptsiz,
++						   ((ep->xfer_len - 1 +
++						     ep->maxpacket) /
++						    ep->maxpacket));
 +		}
-+	}
-+}
++		dwc_write32(in_regs + DWC_DIEPTSIZ, deptsiz);
 +
-+/**
-+ * Performs common cleanup for non-periodic transfers after a Transfer
-+ * Complete interrupt. This function should be called after any endpoint type
-+ * specific handling is finished to release the host channel.
-+ */
-+static void complete_non_periodic_xfer(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				       ulong regs, struct dwc_qtd *qtd,
-+				       enum dwc_halt_status halt_status,
-+				       int *must_free)
-+{
-+	u32 hcint;
++		if (c_if->dma_enable)
++			dwc_write32(in_regs + DWC_DIEPDMA, ep->dma_addr);
++		else if (ep->type != DWC_OTG_EP_TYPE_ISOC)
++			enable_tx_fifo_empty_intr(c_if, ep);
 +
-+	qtd->error_count = 0;
-+	hcint = dwc_read32(regs + DWC_HCINT);
-+	if (DWC_HCINT_NYET_RESP_REC_RD(hcint)) {
-+		u32 hcint_clear = 0;
++		/* EP enable, IN data in FIFO */
++		depctl = DWC_DEPCTL_CLR_NAK_RW(depctl, 1);
++		depctl = DWC_DEPCTL_EPENA_RW(depctl, 1);
++		dwc_write32(in_regs + DWC_DIEPCTL, depctl);
 +
-+		hcint_clear = DWC_HCINT_NYET_RESP_REC_RW(hcint_clear, 1);
-+		/*
-+		 * Got a NYET on the last transaction of the transfer. This
-+		 * means that the endpoint should be in the PING state at the
-+		 * beginning of the next transfer.
-+		 */
-+		hc->qh->ping_state = 1;
-+		dwc_write32((regs + DWC_HCINT), hcint_clear);
-+	}
-+
-+	/*
-+	 * Always halt and release the host channel to make it available for
-+	 * more transfers. There may still be more phases for a control
-+	 * transfer or more data packets for a bulk transfer at this point,
-+	 * but the host channel is still halted. A channel will be reassigned
-+	 * to the transfer when the non-periodic schedule is processed after
-+	 * the channel is released. This allows transactions to be queued
-+	 * properly via dwc_otg_hcd_queue_transactions, which also enables the
-+	 * Tx FIFO Empty interrupt if necessary.
-+	 *
-+	 * IN transfers in Slave mode require an explicit disable to
-+	 * halt the channel. (In DMA mode, this call simply releases
-+	 * the channel.)
-+	 *
-+	 * The channel is automatically disabled by the core for OUT
-+	 * transfers in Slave mode.
-+	 */
-+	if (hc->ep_is_in)
-+		halt_channel(hcd, hc, qtd, halt_status, must_free);
-+	else
-+		release_channel(hcd, hc, qtd, halt_status, must_free);
-+}
-+
-+/**
-+ * Performs common cleanup for periodic transfers after a Transfer Complete
-+ * interrupt. This function should be called after any endpoint type specific
-+ * handling is finished to release the host channel.
-+ */
-+static void complete_periodic_xfer(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				   ulong regs, struct dwc_qtd *qtd,
-+				   enum dwc_halt_status halt_status,
-+				   int *must_free)
-+{
-+	u32 hctsiz = 0;
-+
-+	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
-+	qtd->error_count = 0;
-+
-+	/*
-+	 * For OUT transfers and 0 packet count, the Core halts the channel,
-+	 * otherwise, Flush any outstanding requests from the Tx queue.
-+	 */
-+	if (!hc->ep_is_in || (DWC_HCTSIZ_PKT_CNT_RD(hctsiz) == 0))
-+		release_channel(hcd, hc, qtd, halt_status, must_free);
-+	else
-+		halt_channel(hcd, hc, qtd, halt_status, must_free);
-+}
-+
-+/**
-+ * Handles a host channel Transfer Complete interrupt. This handler may be
-+ * called in either DMA mode or Slave mode.
-+ */
-+static int handle_hc_xfercomp_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				   ulong regs, struct dwc_qtd *qtd,
-+				   int *must_free)
-+{
-+	int urb_xfer_done;
-+	enum dwc_halt_status halt_status = DWC_OTG_HC_XFER_COMPLETE;
-+	struct urb *urb = qtd->urb;
-+	int pipe_type = usb_pipetype(urb->pipe);
-+	int status = -EINPROGRESS;
-+	u32 hcintmsk = 0;
-+
-+	/* Handle xfer complete on CSPLIT. */
-+	if (hc->qh->do_split)
-+		qtd->complete_split = 0;
-+
-+	/* Update the QTD and URB states. */
-+	switch (pipe_type) {
-+	case PIPE_CONTROL:
-+		switch (qtd->control_phase) {
-+		case DWC_OTG_CONTROL_SETUP:
-+			if (urb->transfer_buffer_length > 0)
-+				qtd->control_phase = DWC_OTG_CONTROL_DATA;
-+			else
-+				qtd->control_phase = DWC_OTG_CONTROL_STATUS;
-+			halt_status = DWC_OTG_HC_XFER_COMPLETE;
-+			break;
-+		case DWC_OTG_CONTROL_DATA:
-+			urb_xfer_done = update_urb_state_xfer_comp(hc, regs,
-+								   urb, qtd,
-+								   &status);
-+			if (urb_xfer_done)
-+				qtd->control_phase = DWC_OTG_CONTROL_STATUS;
-+			else
-+				save_data_toggle(hc, regs, qtd);
-+			halt_status = DWC_OTG_HC_XFER_COMPLETE;
-+			break;
-+		case DWC_OTG_CONTROL_STATUS:
-+			if (status == -EINPROGRESS)
-+				status = 0;
-+			dwc_otg_hcd_complete_urb(hcd, urb, status);
-+			halt_status = DWC_OTG_HC_XFER_URB_COMPLETE;
-+			break;
-+		}
-+		complete_non_periodic_xfer(hcd, hc, regs, qtd,
-+					   halt_status, must_free);
-+		break;
-+	case PIPE_BULK:
-+		urb_xfer_done = update_urb_state_xfer_comp(hc, regs, urb, qtd,
-+							   &status);
-+		if (urb_xfer_done) {
-+			dwc_otg_hcd_complete_urb(hcd, urb, status);
-+			halt_status = DWC_OTG_HC_XFER_URB_COMPLETE;
-+		} else {
-+			halt_status = DWC_OTG_HC_XFER_COMPLETE;
-+		}
-+
-+		save_data_toggle(hc, regs, qtd);
-+		complete_non_periodic_xfer(hcd, hc, regs, qtd,
-+					   halt_status, must_free);
-+		break;
-+	case PIPE_INTERRUPT:
-+		update_urb_state_xfer_comp(hc, regs, urb, qtd, &status);
-+		/*
-+		 * Interrupt URB is done on the first transfer complete
-+		 * interrupt.
-+		 */
-+		dwc_otg_hcd_complete_urb(hcd, urb, status);
-+		save_data_toggle(hc, regs, qtd);
-+		complete_periodic_xfer(hcd, hc, regs, qtd,
-+				       DWC_OTG_HC_XFER_URB_COMPLETE, must_free);
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		if (qtd->isoc_split_pos == DWC_HCSPLIT_XACTPOS_ALL) {
-+			halt_status = update_isoc_urb_state(hcd, hc, regs, qtd,
-+						    DWC_OTG_HC_XFER_COMPLETE);
-+		}
-+		complete_periodic_xfer(hcd, hc, regs, qtd,
-+				       halt_status, must_free);
-+		break;
-+	}
-+
-+	/* disable xfercompl */
-+	hcintmsk = DWC_HCINTMSK_TXFER_CMPL_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
-+}
-+
-+/**
-+ * Handles a host channel STALL interrupt. This handler may be called in
-+ * either DMA mode or Slave mode.
-+ */
-+static int handle_hc_stall_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				u32 regs, struct dwc_qtd *qtd, int *must_free)
-+{
-+	struct urb *urb = qtd->urb;
-+	int pipe_type = usb_pipetype(urb->pipe);
-+	u32 hcintmsk = 0;
-+
-+	if (pipe_type == PIPE_CONTROL)
-+		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPIPE);
-+
-+	if (pipe_type == PIPE_BULK || pipe_type == PIPE_INTERRUPT) {
-+		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EPIPE);
-+		/*
-+		 * USB protocol requires resetting the data toggle for bulk
-+		 * and interrupt endpoints when a CLEAR_FEATURE(ENDPOINT_HALT)
-+		 * setup command is issued to the endpoint. Anticipate the
-+		 * CLEAR_FEATURE command since a STALL has occurred and reset
-+		 * the data toggle now.
-+		 */
-+		hc->qh->data_toggle = 0;
-+	}
-+
-+	halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_STALL, must_free);
-+	/* disable stall */
-+	hcintmsk = DWC_HCINTMSK_STALL_RESP_REC_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
-+}
-+
-+/**
-+ * Updates the state of the URB when a transfer has been stopped due to an
-+ * abnormal condition before the transfer completes. Modifies the
-+ * actual_length field of the URB to reflect the number of bytes that have
-+ * actually been transferred via the host channel.
-+ */
-+static void update_urb_state_xfer_intr(struct dwc_hc *hc,
-+				       u32 regs, struct urb *urb,
-+				       struct dwc_qtd *qtd,
-+				       enum dwc_halt_status sts)
-+{
-+	u32 xfr_len = get_actual_xfer_length(hc, regs, qtd, sts, NULL);
-+	urb->actual_length += xfr_len;
-+}
-+
-+/**
-+ * Handles a host channel NAK interrupt. This handler may be called in either
-+ * DMA mode or Slave mode.
-+ */
-+static int handle_hc_nak_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+			      u32 regs, struct dwc_qtd *qtd, int *must_free)
-+{
-+	u32 hcintmsk = 0;
-+
-+	/*
-+	 * Handle NAK for IN/OUT SSPLIT/CSPLIT transfers, bulk, control, and
-+	 * interrupt.  Re-start the SSPLIT transfer.
-+	 */
-+	if (hc->do_split) {
-+		if (hc->complete_split)
-+			qtd->error_count = 0;
-+
-+		qtd->complete_split = 0;
-+		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
-+		goto handle_nak_done;
-+	}
-+	switch (usb_pipetype(qtd->urb->pipe)) {
-+	case PIPE_CONTROL:
-+	case PIPE_BULK:
-+		if (hcd->core_if->dma_enable && hc->ep_is_in) {
-+			/*
-+			 * NAK interrupts are enabled on bulk/control IN
-+			 * transfers in DMA mode for the sole purpose of
-+			 * resetting the error count after a transaction error
-+			 * occurs. The core will continue transferring data.
-+			 */
-+			qtd->error_count = 0;
-+			goto handle_nak_done;
-+		}
-+
-+		/*
-+		 * NAK interrupts normally occur during OUT transfers in DMA
-+		 * or Slave mode. For IN transfers, more requests will be
-+		 * queued as request queue space is available.
-+		 */
-+		qtd->error_count = 0;
-+		if (!hc->qh->ping_state) {
-+			update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
-+						   DWC_OTG_HC_XFER_NAK);
-+
-+			save_data_toggle(hc, regs, qtd);
-+			if (qtd->urb->dev->speed == USB_SPEED_HIGH)
-+				hc->qh->ping_state = 1;
-+		}
-+
-+		/*
-+		 * Halt the channel so the transfer can be re-started from
-+		 * the appropriate point or the PING protocol will
-+		 * start/continue.
-+		 */
-+		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
-+		break;
-+	case PIPE_INTERRUPT:
-+		qtd->error_count = 0;
-+		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NAK, must_free);
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		/* Should never get called for isochronous transfers. */
-+		BUG();
-+		break;
-+	}
-+
-+handle_nak_done:
-+	/* disable nak */
-+	hcintmsk = DWC_HCINTMSK_NAK_RESP_REC_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
-+}
-+
-+/**
-+ * Helper function for handle_hc_ack_intr().  Sets the split values for an ACK
-+ * on SSPLIT for ISOC OUT.
-+ */
-+static void set_isoc_out_vals(struct dwc_hc *hc, struct dwc_qtd *qtd)
-+{
-+	struct usb_iso_packet_descriptor *frame_desc;
-+
-+	switch (hc->xact_pos) {
-+	case DWC_HCSPLIT_XACTPOS_ALL:
-+		break;
-+	case DWC_HCSPLIT_XACTPOS_END:
-+		qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_ALL;
-+		qtd->isoc_split_offset = 0;
-+		break;
-+	case DWC_HCSPLIT_XACTPOS_BEGIN:
-+	case DWC_HCSPLIT_XACTPOS_MID:
-+		/*
-+		 * For BEGIN or MID, calculate the length for the next
-+		 * microframe to determine the correct SSPLIT token, either MID
-+		 * or END.
-+		 */
-+		frame_desc = &qtd->urb->iso_frame_desc[qtd->isoc_frame_index];
-+		qtd->isoc_split_offset += 188;
-+
-+		if ((frame_desc->length - qtd->isoc_split_offset) <= 188)
-+			qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_END;
-+		else
-+			qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_MID;
-+
-+		break;
-+	}
-+}
-+
-+/**
-+ * Handles a host channel ACK interrupt. This interrupt is enabled when
-+ * performing the PING protocol in Slave mode, when errors occur during
-+ * either Slave mode or DMA mode, and during Start Split transactions.
-+ */
-+static int handle_hc_ack_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+			      u32 regs, struct dwc_qtd *qtd, int *must_free)
-+{
-+	u32 hcintmsk = 0;
-+
-+	if (hc->do_split) {
-+		/* Handle ACK on SSPLIT. ACK should not occur in CSPLIT. */
-+		if (!hc->ep_is_in && hc->data_pid_start != DWC_OTG_HC_PID_SETUP)
-+			qtd->ssplit_out_xfer_count = hc->xfer_len;
-+
-+		/* Don't need complete for isochronous out transfers. */
-+		if (!(hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in))
-+			qtd->complete_split = 1;
-+
-+		if (hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in)
-+			set_isoc_out_vals(hc, qtd);
-+		else
-+			halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_ACK,
-+				     must_free);
++		if (c_if->dma_enable)
++			set_next_ep(d_if, ep->num);
 +	} else {
-+		qtd->error_count = 0;
-+		if (hc->qh->ping_state) {
-+			hc->qh->ping_state = 0;
++		u32 out_regs = d_if->out_ep_regs[ep->num];
 +
-+			/*
-+			 * Halt the channel so the transfer can be re-started
-+			 * from the appropriate point. This only happens in
-+			 * Slave mode. In DMA mode, the ping_state is cleared
-+			 * when the transfer is started because the core
-+			 * automatically executes the PING, then the transfer.
-+			 */
-+			halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_ACK,
-+				     must_free);
++		depctl = dwc_read32(out_regs + DWC_DOEPCTL);
++		deptsiz = dwc_read32(out_regs + DWC_DOEPTSIZ);
++
++		/*
++		 * Program the transfer size and packet count as follows:
++		 *
++		 * pktcnt = N
++		 * xfersize = N * maxpacket
++		 */
++		if (!ep->xfer_len) {
++			deptsiz =
++			    DWC_DEPTSIZ_XFER_SIZ_RW(deptsiz, ep->maxpacket);
++			deptsiz = DWC_DEPTSIZ_PKT_CNT_RW(deptsiz, 1);
++		} else {
++			deptsiz = DWC_DEPTSIZ_PKT_CNT_RW(deptsiz,
++							 ((ep->xfer_len +
++							   ep->maxpacket -
++							   1) / ep->maxpacket));
++			deptsiz =
++			    DWC_DEPTSIZ_XFER_SIZ_RW(deptsiz,
++						    DWC_DEPTSIZ_PKT_CNT_RD
++						    (deptsiz) * ep->maxpacket);
 +		}
++		dwc_write32(out_regs + DWC_DOEPTSIZ, deptsiz);
++
++		if (c_if->dma_enable)
++			dwc_write32(out_regs + DWC_DOEPDMA, ep->dma_addr);
++
++		if (ep->type == DWC_OTG_EP_TYPE_ISOC) {
++			if (ep->even_odd_frame)
++				depctl = DWC_DEPCTL_SET_DATA1_PID_RW(depctl, 1);
++			else
++				depctl = DWC_DEPCTL_SET_DATA0_PID_RW(depctl, 1);
++		}
++
++		/* EP enable */
++		depctl = DWC_DEPCTL_CLR_NAK_RW(depctl, 1);
++		depctl = DWC_DEPCTL_EPENA_RW(depctl, 1);
++		dwc_write32(out_regs + DWC_DOEPCTL, depctl);
 +	}
-+
-+	/*
-+	 * If the ACK occurred when _not_ in the PING state, let the channel
-+	 * continue transferring data after clearing the error count.
-+	 */
-+	/* disable ack */
-+	hcintmsk = DWC_HCINTMSK_ACK_RESP_REC_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
 +}
 +
 +/**
-+ * Handles a host channel NYET interrupt. This interrupt should only occur on
-+ * Bulk and Control OUT endpoints and for complete split transactions. If a
-+ * NYET occurs at the same time as a Transfer Complete interrupt, it is
-+ * handled in the xfercomp interrupt handler, not here. This handler may be
-+ * called in either DMA mode or Slave mode.
++ * This function does the setup for a data transfer for EP0 and starts
++ * the transfer.  For an IN transfer, the packets will be loaded into
++ * the appropriate Tx FIFO in the ISR. For OUT transfers, the packets are
++ * unloaded from the Rx FIFO in the ISR.
 + */
-+static int handle_hc_nyet_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+			       u32 regs, struct dwc_qtd *qtd, int *must_free)
++void dwc_otg_ep0_start_transfer(struct core_if *c_if, struct dwc_ep *ep)
 +{
-+	u32 hcintmsk = 0;
-+	u32 hcint_clear = 0;
++	u32 depctl = 0;
++	u32 deptsiz = 0;
++	struct device_if *d_if = c_if->dev_if;
++	ulong glbl_regs = c_if->core_global_regs;
++
++	ep->total_len = ep->xfer_len;
++
++	if (ep->is_in) {
++		ulong in_regs = d_if->in_ep_regs[0];
++		u32 gtxstatus;
++
++		gtxstatus = dwc_read32(glbl_regs + DWC_GNPTXSTS);
++
++		if (!c_if->en_multiple_tx_fifo
++		    && !DWC_GNPTXSTS_NPTXQSPCAVAIL_RD(gtxstatus))
++			return;
++
++		depctl = dwc_read32(in_regs + DWC_DIEPCTL);
++		deptsiz = dwc_read32(in_regs + DWC_DIEPTSIZ);
++
++		/* Zero Length Packet? */
++		if (!ep->xfer_len) {
++			deptsiz = DWC_DEPTSIZ0_XFER_SIZ_RW(deptsiz, 0);
++			deptsiz = DWC_DEPTSIZ0_PKT_CNT_RW(deptsiz, 1);
++		} else {
++			/*
++			 * Program the transfer size and packet count  as
++			 * follows:
++			 *
++			 *  xfersize = N * maxpacket + short_packet
++			 *  pktcnt = N + (short_packet exist ? 1 : 0)
++			 */
++			if (ep->xfer_len > ep->maxpacket) {
++				ep->xfer_len = ep->maxpacket;
++				deptsiz = DWC_DEPTSIZ0_XFER_SIZ_RW(deptsiz,
++								   ep->
++								   maxpacket);
++			} else {
++				deptsiz = DWC_DEPTSIZ0_XFER_SIZ_RW(deptsiz,
++								   ep->
++								   xfer_len);
++			}
++			deptsiz = DWC_DEPTSIZ0_PKT_CNT_RW(deptsiz, 1);
++		}
++		dwc_write32(in_regs + DWC_DIEPTSIZ, deptsiz);
++
++		if (c_if->dma_enable)
++			dwc_write32(in_regs + DWC_DIEPDMA, ep->dma_addr);
++
++		/* EP enable, IN data in FIFO */
++		depctl = DWC_DEPCTL_CLR_NAK_RW(depctl, 1);
++		depctl = DWC_DEPCTL_EPENA_RW(depctl, 1);
++		dwc_write32(in_regs + DWC_DIEPCTL, depctl);
++
++		if (!c_if->dma_enable)
++			enable_tx_fifo_empty_intr(c_if, ep);
++	} else {
++		ulong out_regs = d_if->out_ep_regs[ep->num];
++
++		depctl = dwc_read32(out_regs + DWC_DOEPCTL);
++		deptsiz = dwc_read32(out_regs + DWC_DOEPTSIZ);
++
++		/*
++		 * Program the transfer size and packet count as follows:
++		 *
++		 * xfersize = N * (maxpacket + 4 - (maxpacket % 4))
++		 * pktcnt = N
++		 */
++		if (!ep->xfer_len) {
++			deptsiz = DWC_DEPTSIZ0_XFER_SIZ_RW(deptsiz,
++							   ep->maxpacket);
++			deptsiz = DWC_DEPTSIZ0_PKT_CNT_RW(deptsiz, 1);
++		} else {
++			deptsiz = DWC_DEPTSIZ0_PKT_CNT_RW(deptsiz,
++							  (ep->xfer_len +
++							   ep->maxpacket -
++							   1) / ep->maxpacket);
++			deptsiz =
++			    DWC_DEPTSIZ0_XFER_SIZ_RW(deptsiz,
++						     DWC_DEPTSIZ_PKT_CNT_RD
++						     (deptsiz) * ep->maxpacket);
++		}
++		dwc_write32(out_regs + DWC_DOEPTSIZ, deptsiz);
++
++		if (c_if->dma_enable)
++			dwc_write32(out_regs + DWC_DOEPDMA, ep->dma_addr);
++
++		/* EP enable */
++		depctl = DWC_DEPCTL_CLR_NAK_RW(depctl, 1);
++		depctl = DWC_DEPCTL_EPENA_RW(depctl, 1);
++		dwc_write32(out_regs + DWC_DOEPCTL, depctl);
++	}
++}
++
++/**
++ * This function is used to submit an I/O Request to an EP.
++ *
++ *	- When the request completes the request's completion callback
++ *	  is called to return the request to the driver.
++ *	- An EP, except control EPs, may have multiple requests
++ *	  pending.
++ *	- Once submitted the request cannot be examined or modified.
++ *	- Each request is turned into one or more packets.
++ *	- A BULK EP can queue any amount of data; the transfer is
++ *	  packetized.
++ *	- Zero length Packets are specified with the request 'zero'
++ *	  flag.
++ */
++static int dwc_otg_pcd_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
++				gfp_t gfp_flags)
++{
++	int prevented = 0;
++	struct pcd_request *req;
++	struct pcd_ep *ep;
++	struct dwc_pcd *pcd;
++	struct core_if *core_if;
++	unsigned long flags = 0;
++
++	req = container_of(_req, struct pcd_request, req);
++	if (!_req || !_req->complete || !_req->buf ||
++			!list_empty(&req->queue)) {
++		pr_warning("%s, bad params\n", __func__);
++		return -EINVAL;
++	}
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || (!ep->desc && ep->dwc_ep.num != 0)) {
++		pr_warning("%s, bad ep\n", __func__);
++		return -EINVAL;
++	}
++
++	pcd = ep->pcd;
++	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
++		pr_warning("%s, bogus device state\n", __func__);
++		return -ESHUTDOWN;
++	}
++	core_if = pcd->otg_dev->core_if;
++
++	if (GET_CORE_IF(pcd)->dma_enable) {
++		if (_req->dma == DMA_ADDR_INVALID) {
++			_req->dma = dma_map_single(pcd->gadget.dev.parent,
++						   _req->buf, _req->length,
++						   ep->dwc_ep.
++						   is_in ? DMA_TO_DEVICE :
++						   DMA_FROM_DEVICE);
++			req->mapped = 1;
++		} else {
++			dma_sync_single_for_device(pcd->gadget.dev.parent,
++						   _req->dma, _req->length,
++						   ep->dwc_ep.
++						   is_in ? DMA_TO_DEVICE :
++						   DMA_FROM_DEVICE);
++			req->mapped = 0;
++		}
++	}
++
++	spin_lock_irqsave(&ep->pcd->lock, flags);
++
++	_req->status = -EINPROGRESS;
++	_req->actual = 0;
++
++	/* Start the transfer */
++	if (list_empty(&ep->queue) && !ep->stopped) {
++		/* EP0 Transfer? */
++		if (ep->dwc_ep.num == 0) {
++			switch (pcd->ep0state) {
++			case EP0_IN_DATA_PHASE:
++				break;
++			case EP0_OUT_DATA_PHASE:
++				if (pcd->request_config) {
++					/* Complete STATUS PHASE */
++					ep->dwc_ep.is_in = 1;
++					pcd->ep0state = EP0_STATUS;
++				}
++				break;
++			default:
++				spin_unlock_irqrestore(&pcd->lock, flags);
++				return -EL2HLT;
++			}
++
++			ep->dwc_ep.dma_addr = _req->dma;
++			ep->dwc_ep.start_xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_len = _req->length;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = ep->dwc_ep.xfer_len;
++
++			dwc_otg_ep0_start_transfer(core_if, &ep->dwc_ep);
++		} else {
++			/* Setup and start the Transfer */
++			ep->dwc_ep.dma_addr = _req->dma;
++			ep->dwc_ep.start_xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_len = _req->length;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = ep->dwc_ep.xfer_len;
++
++			dwc_otg_ep_start_transfer(core_if, &ep->dwc_ep);
++		}
++	}
++
++	if (req || prevented) {
++		++pcd->request_pending;
++		list_add_tail(&req->queue, &ep->queue);
++
++		if (ep->dwc_ep.is_in && ep->stopped && !core_if->dma_enable) {
++			/*
++			 *  Device IN endpoint interrupt mask register is laid
++			 *  out exactly the same as the device IN endpoint
++			 *  interrupt register.
++			 */
++			u32 diepmsk = 0;
++			diepmsk = DWC_DIEPMSK_IN_TKN_TX_EMPTY_RW(diepmsk, 1);
++
++			dwc_modify32(core_if->dev_if->dev_global_regs +
++				     DWC_DIEPMSK, 0, diepmsk);
++		}
++	}
++
++	spin_unlock_irqrestore(&pcd->lock, flags);
++	return 0;
++}
++
++/**
++ * This function cancels an I/O request from an EP.
++ */
++static int dwc_otg_pcd_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
++{
++	struct pcd_request *req;
++	struct pcd_ep *ep;
++	struct dwc_pcd *pcd;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || !_req || (!ep->desc && ep->dwc_ep.num != 0)) {
++		pr_warning("%s, bad argument\n", __func__);
++		return -EINVAL;
++	}
++
++	pcd = ep->pcd;
++	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
++		pr_warning("%s, bogus device state\n", __func__);
++		return -ESHUTDOWN;
++	}
++
++	spin_lock_irqsave(&pcd->lock, flags);
++
++	/* make sure it's actually queued on this endpoint */
++	list_for_each_entry(req, &ep->queue, queue)
++	    if (&req->req == _req)
++		break;
++
++	if (&req->req != _req) {
++		spin_unlock_irqrestore(&pcd->lock, flags);
++		return -EINVAL;
++	}
++
++	if (!list_empty(&req->queue))
++		request_done(ep, req, -ECONNRESET);
++	else
++		req = NULL;
++
++	spin_unlock_irqrestore(&pcd->lock, flags);
++
++	return req ? 0 : -EOPNOTSUPP;
++}
++
++/**
++ * Set the EP STALL.
++ */
++void dwc_otg_ep_set_stall(struct core_if *core_if, struct dwc_ep *ep)
++{
++	u32 depctl = 0;
++	ulong depctl_addr;
++
++	if (ep->is_in) {
++		depctl_addr =
++		    (core_if->dev_if->in_ep_regs[ep->num]) + DWC_DIEPCTL;
++		depctl = dwc_read32(depctl_addr);
++
++		/* set the disable and stall bits */
++		if (DWC_DEPCTL_EPENA_RD(depctl))
++			depctl = DWC_DEPCTL_EPDIS_RW(depctl, 1);
++		depctl = DWC_DEPCTL_STALL_HNDSHK_RW(depctl, 1);
++		dwc_write32(depctl_addr, depctl);
++	} else {
++		depctl_addr =
++		    (core_if->dev_if->out_ep_regs[ep->num] + DWC_DOEPCTL);
++		depctl = dwc_read32(depctl_addr);
++
++		/* set the stall bit */
++		depctl = DWC_DEPCTL_STALL_HNDSHK_RW(depctl, 1);
++		dwc_write32(depctl_addr, depctl);
++	}
++}
++
++/**
++ * Clear the EP STALL.
++ */
++void dwc_otg_ep_clear_stall(struct core_if *core_if, struct dwc_ep *ep)
++{
++	u32 depctl = 0;
++	ulong depctl_addr;
++
++	if (ep->is_in == 1)
++		depctl_addr =
++		    (core_if->dev_if->in_ep_regs[ep->num]) + DWC_DIEPCTL;
++	else
++		depctl_addr =
++		    (core_if->dev_if->out_ep_regs[ep->num]) + DWC_DOEPCTL;
++
++	depctl = dwc_read32(depctl_addr);
++
++	/* clear the stall bits */
++	depctl = DWC_DEPCTL_STALL_HNDSHK_RW(depctl, 0);
 +
 +	/*
-+	 * NYET on CSPLIT
-+	 * re-do the CSPLIT immediately on non-periodic
++	 * USB Spec 9.4.5: For endpoints using data toggle, regardless
++	 * of whether an endpoint has the Halt feature set, a
++	 * ClearFeature(ENDPOINT_HALT) request always results in the
++	 * data toggle being reinitialized to DATA0.
 +	 */
-+	if (hc->do_split && hc->complete_split) {
-+		if (hc->ep_type == DWC_OTG_EP_TYPE_INTR ||
-+		    hc->ep_type == DWC_OTG_EP_TYPE_ISOC) {
-+			int frnum =
-+			    dwc_otg_hcd_get_frame_number(dwc_otg_hcd_to_hcd
-+							 (hcd));
-+			if (dwc_full_frame_num(frnum) !=
-+			    dwc_full_frame_num(hc->qh->sched_frame)) {
-+				qtd->complete_split = 0;
-+				halt_channel(hcd, hc, qtd,
-+					     DWC_OTG_HC_XFER_XACT_ERR,
-+					     must_free);
-+				goto handle_nyet_done;
++	if (ep->type == DWC_OTG_EP_TYPE_INTR ||
++	    ep->type == DWC_OTG_EP_TYPE_BULK)
++		depctl = DWC_DEPCTL_SET_DATA0_PID_RW(depctl, 1);
++
++	dwc_write32(depctl_addr, depctl);
++}
++
++/**
++ * usb_ep_set_halt stalls an endpoint.
++ *
++ * usb_ep_clear_halt clears an endpoint halt and resets its data
++ * toggle.
++ *
++ * Both of these functions are implemented with the same underlying
++ * function. The behavior depends on the val argument:
++ *	- 0 means clear_halt.
++ *	- 1 means set_halt,
++ *	- 2 means clear stall lock flag.
++ *	- 3 means set  stall lock flag.
++ */
++static int dwc_otg_pcd_ep_set_halt_wedge(struct usb_ep *_ep,
++		int val, int wedged)
++{
++	int retval = 0;
++	unsigned long flags;
++	struct pcd_ep *ep;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || (!ep->desc && ep != &ep->pcd->ep0) ||
++	    ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
++		pr_warning("%s, bad ep\n", __func__);
++		return -EINVAL;
++	}
++
++	spin_lock_irqsave(&ep->pcd->lock, flags);
++
++	if (ep->dwc_ep.is_in && !list_empty(&ep->queue)) {
++		pr_warning("%s() %s XFer In process\n", __func__, _ep->name);
++		retval = -EAGAIN;
++	} else if (val == 0) {
++		ep->wedged = 0;
++		dwc_otg_ep_clear_stall(ep->pcd->otg_dev->core_if, &ep->dwc_ep);
++	} else if (val == 1) {
++		if (ep->dwc_ep.num == 0)
++			ep->pcd->ep0state = EP0_STALL;
++		if (wedged)
++			ep->wedged = 1;
++
++		ep->stopped = 1;
++		dwc_otg_ep_set_stall(ep->pcd->otg_dev->core_if, &ep->dwc_ep);
++	} else if (val == 2) {
++		ep->dwc_ep.stall_clear_flag = 0;
++	} else if (val == 3) {
++		ep->dwc_ep.stall_clear_flag = 1;
++	}
++
++	spin_unlock_irqrestore(&ep->pcd->lock, flags);
++	return retval;
++}
++static int dwc_otg_pcd_ep_set_halt(struct usb_ep *_ep, int val)
++{
++	return dwc_otg_pcd_ep_set_halt_wedge(_ep, val, 0);
++}
++static int dwc_otg_pcd_ep_set_wedge(struct usb_ep *_ep)
++{
++	return dwc_otg_pcd_ep_set_halt_wedge(_ep, 1, 1);
++}
++
++static struct usb_ep_ops dwc_otg_pcd_ep_ops = {
++	.enable = dwc_otg_pcd_ep_enable,
++	.disable = dwc_otg_pcd_ep_disable,
++	.alloc_request = dwc_otg_pcd_alloc_request,
++	.free_request = dwc_otg_pcd_free_request,
++	.queue = dwc_otg_pcd_ep_queue,
++	.dequeue = dwc_otg_pcd_ep_dequeue,
++	.set_halt = dwc_otg_pcd_ep_set_halt,
++	.set_wedge = dwc_otg_pcd_ep_set_wedge,
++	.fifo_status = NULL,
++	.fifo_flush = NULL,
++};
++
++/**
++ * Gets the current USB frame number from the DTS register. This is the frame
++ * number from the last SOF packet.
++ */
++static u32 dwc_otg_get_frame_number(struct core_if *core_if)
++{
++	u32 dsts;
++
++	dsts = dwc_read32(core_if->dev_if->dev_global_regs + DWC_DSTS);
++	return DWC_DSTS_SOFFN_RD(dsts);
++}
++
++/**
++ * The following gadget operations will be implemented in the DWC_otg
++ * PCD. Functions in the API that are not described below are not
++ * implemented.
++ *
++ * The Gadget API provides wrapper functions for each of the function
++ * pointers defined in usb_gadget_ops. The Gadget Driver calls the
++ * wrapper function, which then calls the underlying PCD function. The
++ * following sections are named according to the wrapper functions
++ * (except for ioctl, which doesn't have a wrapper function). Within
++ * each section, the corresponding DWC_otg PCD function name is
++ * specified.
++ *
++ */
++
++/**
++ *Gets the USB Frame number of the last SOF.
++ */
++static int dwc_otg_pcd_get_frame(struct usb_gadget *_gadget)
++{
++	if (!_gadget) {
++		return -ENODEV;
++	} else {
++		struct dwc_pcd *pcd;
++
++		pcd = container_of(_gadget, struct dwc_pcd, gadget);
++		dwc_otg_get_frame_number(GET_CORE_IF(pcd));
++	}
++
++	return 0;
++}
++
++/**
++ * This function is called when the SRP timer expires.  The SRP should complete
++ * within 6 seconds.
++ */
++static void srp_timeout(unsigned long data)
++{
++	u32 gotgctl;
++	struct dwc_pcd *pcd = (struct dwc_pcd *)data;
++	struct core_if *core_if = pcd->otg_dev->core_if;
++	ulong addr = otg_ctl_reg(pcd);
++
++	gotgctl = dwc_read32(addr);
++	core_if->srp_timer_started = 0;
++
++	if (core_if->core_params->phy_type == DWC_PHY_TYPE_PARAM_FS &&
++	    core_if->core_params->i2c_enable) {
++		pr_info("SRP Timeout\n");
++
++		if (core_if->srp_success && (gotgctl &
++					DWC_GCTL_BSESSION_VALID)) {
++			if (core_if->pcd_cb && core_if->pcd_cb->resume_wakeup)
++				core_if->pcd_cb->resume_wakeup(core_if->pcd_cb->
++							       p);
++
++			/* Clear Session Request */
++			gotgctl = 0;
++			gotgctl |= DWC_GCTL_SES_REQ;
++			dwc_modify32(addr, gotgctl, 0);
++
++			core_if->srp_success = 0;
++		} else {
++			pr_err("Device not connected/responding\n");
++			gotgctl &= ~DWC_GCTL_SES_REQ;
++			dwc_write32(addr, gotgctl);
++		}
++	} else if (gotgctl & DWC_GCTL_SES_REQ) {
++		pr_info("SRP Timeout\n");
++		pr_err("Device not connected/responding\n");
++
++		gotgctl &= ~DWC_GCTL_SES_REQ;
++		dwc_write32(addr, gotgctl);
++	} else {
++		pr_info(" SRP GOTGCTL=%0x\n", gotgctl);
++	}
++}
++
++/**
++ * Start the SRP timer to detect when the SRP does not complete within
++ * 6 seconds.
++ */
++static void dwc_otg_pcd_start_srp_timer(struct dwc_pcd *pcd)
++{
++	struct timer_list *srp_timer = &pcd->srp_timer;
++
++	GET_CORE_IF(pcd)->srp_timer_started = 1;
++	init_timer(srp_timer);
++	srp_timer->function = srp_timeout;
++	srp_timer->data = (unsigned long)pcd;
++	srp_timer->expires = jiffies + (HZ * 6);
++
++	add_timer(srp_timer);
++}
++
++static void dwc_otg_pcd_initiate_srp(struct dwc_pcd *pcd)
++{
++	u32 mem;
++	u32 val;
++	ulong addr = otg_ctl_reg(pcd);
++
++	val = dwc_read32(addr);
++	if (val & DWC_GCTL_SES_REQ) {
++		pr_err("Session Request Already active!\n");
++		return;
++	}
++
++	pr_notice("Session Request Initated\n");
++	mem = dwc_read32(addr);
++	mem |= DWC_GCTL_SES_REQ;
++	dwc_write32(addr, mem);
++
++	/* Start the SRP timer */
++	dwc_otg_pcd_start_srp_timer(pcd);
++	return;
++}
++
++static void dwc_otg_pcd_remote_wakeup(struct dwc_pcd *pcd, int set)
++{
++	u32 dctl = 0;
++	ulong addr = dev_ctl_reg(pcd);
++
++	if (dwc_otg_is_device_mode(GET_CORE_IF(pcd))) {
++		if (pcd->remote_wakeup_enable) {
++			if (set) {
++				dctl = DEC_DCTL_REMOTE_WAKEUP_SIG(dctl, 1);
++				dwc_modify32(addr, 0, dctl);
++				msleep(20);
++				dwc_modify32(addr, dctl, 0);
 +			}
 +		}
-+		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NYET, must_free);
-+		goto handle_nyet_done;
 +	}
-+	hc->qh->ping_state = 1;
-+	qtd->error_count = 0;
-+	update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
-+				   DWC_OTG_HC_XFER_NYET);
-+	save_data_toggle(hc, regs, qtd);
-+	/*
-+	 * Halt the channel and re-start the transfer so the PING
-+	 * protocol will start.
-+	 */
-+	halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_NYET, must_free);
-+
-+handle_nyet_done:
-+	/* disable nyet */
-+	hcintmsk = DWC_HCINTMSK_NYET_RESP_REC_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+	/* clear nyet */
-+	hcint_clear = DWC_HCINT_NYET_RESP_REC_RW(hcint_clear, 1);
-+	dwc_write32((regs + DWC_HCINT), hcint_clear);
-+	return 1;
 +}
 +
 +/**
-+ * Handles a host channel babble interrupt. This handler may be called in
-+ * either DMA mode or Slave mode.
++ * Initiates Session Request Protocol (SRP) to wakeup the host if no
++ * session is in progress. If a session is already in progress, but
++ * the device is suspended, remote wakeup signaling is started.
++ *
 + */
-+static int handle_hc_babble_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				 u32 regs, struct dwc_qtd *qtd, int *must_free)
++static int dwc_otg_pcd_wakeup(struct usb_gadget *_gadget)
 +{
-+	u32 hcintmsk = 0;
++	unsigned long flags;
++	struct dwc_pcd *pcd;
++	u32 dsts;
++	u32 gotgctl;
 +
-+	if (hc->ep_type != DWC_OTG_EP_TYPE_ISOC) {
-+		dwc_otg_hcd_complete_urb(hcd, qtd->urb, -EOVERFLOW);
-+		halt_channel(hcd, hc, qtd, DWC_OTG_HC_XFER_BABBLE_ERR,
-+			     must_free);
-+	} else {
-+		enum dwc_halt_status halt_status;
-+		halt_status = update_isoc_urb_state(hcd, hc, regs, qtd,
-+						    DWC_OTG_HC_XFER_BABBLE_ERR);
-+		halt_channel(hcd, hc, qtd, halt_status, must_free);
-+	}
-+	/* disable bblerr */
-+	hcintmsk = DWC_HCINTMSK_BBL_ERR_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+	return 1;
-+}
-+
-+/**
-+ * Handles a host channel AHB error interrupt. This handler is only called in
-+ * DMA mode.
-+ */
-+static int handle_hc_ahberr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				 u32 regs, struct dwc_qtd *qtd)
-+{
-+	u32 hcchar;
-+	u32 hcsplt;
-+	u32 hctsiz = 0;
-+	u32 hcdma;
-+	struct urb *urb = qtd->urb;
-+	u32 hcintmsk = 0;
-+
-+	hcchar = dwc_read32(regs + DWC_HCCHAR);
-+	hcsplt = dwc_read32(regs + DWC_HCSPLT);
-+	hctsiz = dwc_read32(regs + DWC_HCTSIZ);
-+	hcdma = dwc_read32(regs + DWC_HCDMA);
-+
-+	pr_err("AHB ERROR, Channel %d\n", hc->hc_num);
-+	pr_err("  hcchar 0x%08x, hcsplt 0x%08x\n", hcchar, hcsplt);
-+	pr_err("  hctsiz 0x%08x, hcdma 0x%08x\n", hctsiz, hcdma);
-+
-+	pr_err("  Device address: %d\n", usb_pipedevice(urb->pipe));
-+	pr_err("  Endpoint: %d, %s\n", usb_pipeendpoint(urb->pipe),
-+	       (usb_pipein(urb->pipe) ? "IN" : "OUT"));
-+
-+	pr_err("  Endpoint type: %s\n", pipetype_str(urb->pipe));
-+	pr_err("  Speed: %s\n", dev_speed_str(urb->dev->speed));
-+	pr_err("  Max packet size: %d\n",
-+	       usb_maxpacket(urb->dev, urb->pipe, usb_pipeout(urb->pipe)));
-+	pr_err("  Data buffer length: %d\n", urb->transfer_buffer_length);
-+	pr_err("  Transfer buffer: %p, Transfer DMA: %p\n",
-+	       urb->transfer_buffer, (void *)(u32) urb->transfer_dma);
-+	pr_err("  Setup buffer: %p, Setup DMA: %p\n",
-+	       urb->setup_packet, (void *)(u32) urb->setup_dma);
-+	pr_err("  Interval: %d\n", urb->interval);
-+
-+	dwc_otg_hcd_complete_urb(hcd, urb, -EIO);
-+
-+	/*
-+	 * Force a channel halt. Don't call halt_channel because that won't
-+	 * write to the HCCHARn register in DMA mode to force the halt.
-+	 */
-+	dwc_otg_hc_halt(hcd->core_if, hc, DWC_OTG_HC_XFER_AHB_ERR);
-+	/* disable ahberr */
-+	hcintmsk = DWC_HCINTMSK_AHB_ERR_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
-+}
-+
-+/**
-+ * Handles a host channel transaction error interrupt. This handler may be
-+ * called in either DMA mode or Slave mode.
-+ */
-+static int handle_hc_xacterr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				  u32 regs, struct dwc_qtd *qtd, int *must_free)
-+{
-+	enum dwc_halt_status status = DWC_OTG_HC_XFER_XACT_ERR;
-+	u32 hcintmsk = 0;
-+
-+	switch (usb_pipetype(qtd->urb->pipe)) {
-+	case PIPE_CONTROL:
-+	case PIPE_BULK:
-+		qtd->error_count++;
-+		if (!hc->qh->ping_state) {
-+			update_urb_state_xfer_intr(hc, regs, qtd->urb, qtd,
-+						   status);
-+			save_data_toggle(hc, regs, qtd);
-+
-+			if (!hc->ep_is_in && qtd->urb->dev->speed ==
-+			    USB_SPEED_HIGH)
-+				hc->qh->ping_state = 1;
-+		}
-+		/*
-+		 * Halt the channel so the transfer can be re-started from
-+		 * the appropriate point or the PING protocol will start.
-+		 */
-+		halt_channel(hcd, hc, qtd, status, must_free);
-+		break;
-+	case PIPE_INTERRUPT:
-+		qtd->error_count++;
-+		if (hc->do_split && hc->complete_split)
-+			qtd->complete_split = 0;
-+
-+		halt_channel(hcd, hc, qtd, status, must_free);
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		status = update_isoc_urb_state(hcd, hc, regs, qtd, status);
-+		halt_channel(hcd, hc, qtd, status, must_free);
-+		break;
-+	}
-+	/* Disable xacterr */
-+	hcintmsk = DWC_HCINTMSK_TRANS_ERR_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
-+}
-+
-+/**
-+ * Handles a host channel frame overrun interrupt. This handler may be called
-+ * in either DMA mode or Slave mode.
-+ */
-+static int handle_hc_frmovrun_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				   u32 regs, struct dwc_qtd *qtd,
-+				   int *must_free)
-+{
-+	enum dwc_halt_status status = DWC_OTG_HC_XFER_FRAME_OVERRUN;
-+	u32 hcintmsk = 0;
-+
-+	switch (usb_pipetype(qtd->urb->pipe)) {
-+	case PIPE_CONTROL:
-+	case PIPE_BULK:
-+		break;
-+	case PIPE_INTERRUPT:
-+		halt_channel(hcd, hc, qtd, status, must_free);
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		status = update_isoc_urb_state(hcd, hc, regs, qtd, status);
-+		halt_channel(hcd, hc, qtd, status, must_free);
-+		break;
-+	}
-+	/* Disable frmovrun */
-+	hcintmsk = DWC_HCINTMSK_FRAME_OVERN_ERR_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
-+
-+	return 1;
-+}
-+
-+/**
-+ * Handles a host channel data toggle error interrupt. This handler may be
-+ * called in either DMA mode or Slave mode.
-+ */
-+static int handle_hc_datatglerr_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				     u32 regs, struct dwc_qtd *qtd)
-+{
-+	u32 hcintmsk = 0;
-+
-+	if (hc->ep_is_in)
-+		qtd->error_count = 0;
++	if (!_gadget)
++		return -ENODEV;
 +	else
-+		pr_err("Data Toggle Error on OUT transfer, channel "
-+		       "%d\n", hc->hc_num);
++		pcd = container_of(_gadget, struct dwc_pcd, gadget);
 +
-+	/* disable datatglerr */
-+	hcintmsk = DWC_HCINTMSK_DATA_TOG_ERR_RW(hcintmsk, 1);
-+	dwc_modify32(regs + DWC_HCINTMSK, hcintmsk, 0);
++	spin_lock_irqsave(&pcd->lock, flags);
 +
-+	return 1;
++	/*
++	 * This function starts the Protocol if no session is in progress. If
++	 * a session is already in progress, but the device is suspended,
++	 * remote wakeup signaling is started.
++	 */
++
++	/* Check if valid session */
++	gotgctl = dwc_read32(otg_ctl_reg(pcd));
++	if (gotgctl & DWC_GCTL_BSESSION_VALID) {
++		/* Check if suspend state */
++		dsts = dwc_read32(dev_sts_reg(pcd));
++		if (DWC_DSTS_SUSP_STS_RD(dsts))
++			dwc_otg_pcd_remote_wakeup(pcd, 1);
++	} else {
++		dwc_otg_pcd_initiate_srp(pcd);
++	}
++
++	spin_unlock_irqrestore(&pcd->lock, flags);
++	return 0;
 +}
 +
-+/**
-+ * Handles a host Channel Halted interrupt in DMA mode. This handler
-+ * determines the reason the channel halted and proceeds accordingly.
-+ */
-+static void handle_hc_chhltd_intr_dma(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+				      ulong regs, struct dwc_qtd *qtd,
-+				      int *must_free)
-+{
-+	u32 hcint;
-+	u32 hcintmsk = 0;
++static const struct usb_gadget_ops dwc_otg_pcd_ops = {
++	.get_frame = dwc_otg_pcd_get_frame,
++	.wakeup = dwc_otg_pcd_wakeup,
++	/* not selfpowered */
++};
 +
-+	if (hc->halt_status == DWC_OTG_HC_XFER_URB_DEQUEUE ||
-+	    hc->halt_status == DWC_OTG_HC_XFER_AHB_ERR) {
-+		/*
-+		 * Just release the channel. A dequeue can happen on a
-+		 * transfer timeout. In the case of an AHB Error, the channel
-+		 * was forced to halt because there's no way to gracefully
-+		 * recover.
-+		 */
-+		release_channel(hcd, hc, qtd, hc->halt_status, must_free);
++/**
++ * This function updates the otg values in the gadget structure.
++ */
++void dwc_otg_pcd_update_otg(struct dwc_pcd *pcd, const unsigned reset)
++{
++	if (!pcd->gadget.is_otg)
 +		return;
++
++	if (reset) {
++		pcd->b_hnp_enable = 0;
++		pcd->a_hnp_support = 0;
++		pcd->a_alt_hnp_support = 0;
 +	}
 +
-+	/* Read the HCINTn register to determine the cause for the halt. */
-+	hcint = dwc_read32(regs + DWC_HCINT);
-+	hcintmsk = dwc_read32(regs + DWC_HCINTMSK);
-+	if (DWC_HCINT_TXFER_CMPL_RD(hcint)) {
-+		/*
-+		 * This is here because of a possible hardware bug.  Spec
-+		 * says that on SPLIT-ISOC OUT transfers in DMA mode that a HALT
-+		 * interrupt w/ACK bit set should occur, but I only see the
-+		 * XFERCOMP bit, even with it masked out.  This is a workaround
-+		 * for that behavior.  Should fix this when hardware is fixed.
-+		 */
-+		if (hc->ep_type == DWC_OTG_EP_TYPE_ISOC && !hc->ep_is_in)
-+			handle_hc_ack_intr(hcd, hc, regs, qtd, must_free);
-+
-+		handle_hc_xfercomp_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_STALL_RESP_REC_RD(hcint)) {
-+		handle_hc_stall_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_TRANS_ERR_RD(hcint)) {
-+		/*
-+		 * Must handle xacterr before nak or ack. Could get a xacterr
-+		 * at the same time as either of these on a BULK/CONTROL OUT
-+		 * that started with a PING. The xacterr takes precedence.
-+		 */
-+		handle_hc_xacterr_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_NYET_RESP_REC_RD(hcint)) {
-+		/*
-+		 * Must handle nyet before nak or ack. Could get a nyet at the
-+		 * same time as either of those on a BULK/CONTROL OUT that
-+		 * started with a PING. The nyet takes precedence.
-+		 */
-+		handle_hc_nyet_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_BBL_ERR_RD(hcint)) {
-+		handle_hc_babble_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_FRAME_OVERN_ERR_RD(hcint)) {
-+		handle_hc_frmovrun_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_DATA_TOG_ERR_RD(hcint)) {
-+		handle_hc_datatglerr_intr(hcd, hc, regs, qtd);
-+		hc->qh->data_toggle = 0;
-+		halt_channel(hcd, hc, qtd, hc->halt_status, must_free);
-+	} else if (DWC_HCINT_NAK_RESP_REC_RD(hcint) &&
-+		   !DWC_HCINTMSK_NAK_RESP_REC_RD(hcintmsk)) {
-+		/*
-+		 * If nak is not masked, it's because a non-split IN transfer
-+		 * is in an error state. In that case, the nak is handled by
-+		 * the nak interrupt handler, not here. Handle nak here for
-+		 * BULK/CONTROL OUT transfers, which halt on a NAK to allow
-+		 * rewinding the buffer pointer.
-+		 */
-+		handle_hc_nak_intr(hcd, hc, regs, qtd, must_free);
-+	} else if (DWC_HCINT_ACK_RESP_REC_RD(hcint) &&
-+		   !DWC_HCINTMSK_ACK_RESP_REC_RD(hcintmsk)) {
-+		/*
-+		 * If ack is not masked, it's because a non-split IN transfer
-+		 * is in an error state. In that case, the ack is handled by
-+		 * the ack interrupt handler, not here. Handle ack here for
-+		 * split transfers. Start splits halt on ACK.
-+		 */
-+		handle_hc_ack_intr(hcd, hc, regs, qtd, must_free);
-+	} else {
-+		if (hc->ep_type == DWC_OTG_EP_TYPE_INTR ||
-+		    hc->ep_type == DWC_OTG_EP_TYPE_ISOC) {
-+			/*
-+			 * A periodic transfer halted with no other channel
-+			 * interrupts set. Assume it was halted by the core
-+			 * because it could not be completed in its scheduled
-+			 * (micro)frame.
-+			 */
-+			halt_channel(hcd, hc, qtd,
-+				     DWC_OTG_HC_XFER_PERIODIC_INCOMPLETE,
-+				     must_free);
-+		} else {
-+			pr_err("%s: Channel %d, DMA Mode -- ChHltd "
-+			       "set, but reason for halting is unknown, "
-+			       "hcint 0x%08x, intsts 0x%08x\n",
-+			       __func__, hc->hc_num, hcint,
-+			       dwc_read32(gintsts_reg(hcd)));
-+		}
-+	}
++	pcd->gadget.b_hnp_enable = pcd->b_hnp_enable;
++	pcd->gadget.a_hnp_support = pcd->a_hnp_support;
++	pcd->gadget.a_alt_hnp_support = pcd->a_alt_hnp_support;
 +}
 +
 +/**
-+ * Handles a host channel Channel Halted interrupt.
-+ *
-+ * In slave mode, this handler is called only when the driver specifically
-+ * requests a halt. This occurs during handling other host channel interrupts
-+ * (e.g. nak, xacterr, stall, nyet, etc.).
-+ *
-+ * In DMA mode, this is the interrupt that occurs when the core has finished
-+ * processing a transfer on a channel. Other host channel interrupts (except
-+ * ahberr) are disabled in DMA mode.
++ * This function is the top level PCD interrupt handler.
 + */
-+static int handle_hc_chhltd_intr(struct dwc_hcd *hcd, struct dwc_hc *hc,
-+		ulong regs, struct dwc_qtd *qtd, int *must_free)
++static irqreturn_t dwc_otg_pcd_irq(int _irq, void *dev)
 +{
-+	if (hcd->core_if->dma_enable)
-+		handle_hc_chhltd_intr_dma(hcd, hc, regs, qtd, must_free);
-+	else
-+		release_channel(hcd, hc, qtd, hc->halt_status, must_free);
++	struct dwc_pcd *pcd = dev;
++	int retval;
++
++	retval = dwc_otg_pcd_handle_intr(pcd);
++	return IRQ_RETVAL(retval);
++}
++
++/**
++ * PCD Callback function for initializing the PCD when switching to
++ * device mode.
++ */
++static int dwc_otg_pcd_start_cb(void *_p)
++{
++	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
++
++	/* Initialize the Core for Device mode. */
++	if (dwc_otg_is_device_mode(GET_CORE_IF(pcd)))
++		dwc_otg_core_dev_init(GET_CORE_IF(pcd));
 +
 +	return 1;
 +}
 +
-+/* Handles interrupt for a specific Host Channel */
-+static int dwc_otg_hcd_handle_hc_n_intr(struct dwc_hcd *hcd, u32 num)
++/**
++ * PCD Callback function for stopping the PCD when switching to Host
++ * mode.
++ */
++static int dwc_otg_pcd_stop_cb(void *_p)
 +{
-+	int must_free = 0;
-+	int retval = 0;
-+	u32 hcint;
-+	u32 hcintmsk = 0;
-+	struct dwc_hc *hc;
-+	ulong hc_regs;
-+	struct dwc_qtd *qtd;
++	dwc_otg_pcd_stop((struct dwc_pcd *)_p);
++	return 1;
++}
 +
-+	hc = hcd->hc_ptr_array[num];
-+	hc_regs = hcd->core_if->host_if->hc_regs[num];
-+	qtd = list_entry(hc->qh->qtd_list.next, struct dwc_qtd, qtd_list_entry);
++/**
++ * PCD Callback function for notifying the PCD when resuming from
++ * suspend.
++ *
++ * @param _p void pointer to the <code>struct dwc_pcd</code>
++ */
++static int dwc_otg_pcd_suspend_cb(void *_p)
++{
++	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
 +
-+	hcint = dwc_read32(hc_regs + DWC_HCINT);
-+	hcintmsk = dwc_read32(hc_regs + DWC_HCINTMSK);
++	if (pcd->driver && pcd->driver->suspend) {
++		spin_unlock(&pcd->lock);
++		pcd->driver->suspend(&pcd->gadget);
++		spin_lock(&pcd->lock);
++	}
++	return 1;
++}
 +
-+	hcint = hcint & hcintmsk;
-+	if (!hcd->core_if->dma_enable && DWC_HCINT_CHAN_HALTED_RD(hcint)
-+	    && hcint != 0x2)
-+		hcint = DWC_HCINT_CHAN_HALTED_RW(hcint, 0);
++/**
++ * PCD Callback function for notifying the PCD when resuming from
++ * suspend.
++ */
++static int dwc_otg_pcd_resume_cb(void *_p)
++{
++	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
++	struct core_if *core_if = pcd->otg_dev->core_if;
 +
-+	if (DWC_HCINT_TXFER_CMPL_RD(hcint)) {
-+		retval |= handle_hc_xfercomp_intr(hcd, hc, hc_regs,
-+						  qtd, &must_free);
-+		/*
-+		 * If NYET occurred at same time as Xfer Complete, the NYET is
-+		 * handled by the Xfer Complete interrupt handler. Don't want
-+		 * to call the NYET interrupt handler in this case.
-+		 */
-+		hcint = DWC_HCINT_NYET_RESP_REC_RW(hcint, 0);
++	if (pcd->driver && pcd->driver->resume) {
++		spin_unlock(&pcd->lock);
++		pcd->driver->resume(&pcd->gadget);
++		spin_lock(&pcd->lock);
 +	}
 +
-+	if (DWC_HCINT_CHAN_HALTED_RD(hcint))
-+		retval |= handle_hc_chhltd_intr(hcd, hc, hc_regs,
-+						qtd, &must_free);
-+	if (DWC_HCINT_AHB_ERR_RD(hcint))
-+		retval |= handle_hc_ahberr_intr(hcd, hc, hc_regs, qtd);
-+	if (DWC_HCINT_STALL_RESP_REC_RD(hcint))
-+		retval |= handle_hc_stall_intr(hcd, hc, hc_regs,
-+					       qtd, &must_free);
-+	if (DWC_HCINT_NAK_RESP_REC_RD(hcint))
-+		retval |= handle_hc_nak_intr(hcd, hc, hc_regs, qtd, &must_free);
-+	if (DWC_HCINT_ACK_RESP_REC_RD(hcint))
-+		retval |= handle_hc_ack_intr(hcd, hc, hc_regs, qtd, &must_free);
-+	if (DWC_HCINT_NYET_RESP_REC_RD(hcint))
-+		retval |= handle_hc_nyet_intr(hcd, hc, hc_regs,
-+					      qtd, &must_free);
-+	if (DWC_HCINT_TRANS_ERR_RD(hcint))
-+		retval |= handle_hc_xacterr_intr(hcd, hc, hc_regs,
-+						 qtd, &must_free);
-+	if (DWC_HCINT_BBL_ERR_RD(hcint))
-+		retval |= handle_hc_babble_intr(hcd, hc, hc_regs,
-+						qtd, &must_free);
-+	if (DWC_HCINT_FRAME_OVERN_ERR_RD(hcint))
-+		retval |= handle_hc_frmovrun_intr(hcd, hc, hc_regs,
-+						  qtd, &must_free);
-+	if (DWC_HCINT_DATA_TOG_ERR_RD(hcint))
-+		retval |= handle_hc_datatglerr_intr(hcd, hc, hc_regs, qtd);
-+
-+	if (must_free)
-+		/* Free the qtd here now that we are done using it. */
-+		dwc_otg_hcd_qtd_free(qtd);
-+	return retval;
++	/* Maybe stop the SRP timeout timer. */
++	if (need_stop_srp_timer(core_if)) {
++		core_if->srp_timer_started = 0;
++		del_timer_sync(&pcd->srp_timer);
++	}
++	return 1;
 +}
 +
 +/**
-+ * This function returns the Host All Channel Interrupt register
++ * PCD Callback structure for handling mode switching.
 + */
-+static inline u32 dwc_otg_read_host_all_channels_intr(struct core_if
-+						      *core_if)
-+{
-+	return dwc_read32(core_if->host_if->host_global_regs + DWC_HAINT);
-+}
++static struct cil_callbacks pcd_callbacks = {
++	.start = dwc_otg_pcd_start_cb,
++	.stop = dwc_otg_pcd_stop_cb,
++	.suspend = dwc_otg_pcd_suspend_cb,
++	.resume_wakeup = dwc_otg_pcd_resume_cb,
++	.p = NULL,			/* Set at registration */
++};
 +
 +/**
-+ * This interrupt indicates that one or more host channels has a pending
-+ * interrupt. There are multiple conditions that can cause each host channel
-+ * interrupt. This function determines which conditions have occurred for each
-+ * host channel interrupt and handles them appropriately.
++ * Tasklet
++ *
 + */
-+static int dwc_otg_hcd_handle_hc_intr(struct dwc_hcd *hcd)
++static void start_xfer_tasklet_func(unsigned long data)
 +{
++	struct dwc_pcd *pcd = (struct dwc_pcd *)data;
++	u32 diepctl = 0;
++	int num = pcd->otg_dev->core_if->dev_if->num_in_eps;
 +	u32 i;
-+	int retval = 0;
-+	u32 haint;
++	unsigned long flags;
 +
-+	/*
-+	 * Clear appropriate bits in HCINTn to clear the interrupt bit in
-+	 *  GINTSTS
-+	 */
-+	haint = dwc_otg_read_host_all_channels_intr(hcd->core_if);
-+	for (i = 0; i < hcd->core_if->core_params->host_channels; i++)
-+		if (DWC_HAINT_RD(haint) & (1 << i))
-+			retval |= dwc_otg_hcd_handle_hc_n_intr(hcd, i);
++	spin_lock_irqsave(&pcd->lock, flags);
++	diepctl = dwc_read32(in_ep_ctl_reg(pcd, 0));
 +
++	if (pcd->ep0.queue_sof) {
++		pcd->ep0.queue_sof = 0;
++		start_next_request(&pcd->ep0);
++	}
++
++	for (i = 0; i < num; i++) {
++		u32 diepctl = 0;
++
++		diepctl = dwc_read32(in_ep_ctl_reg(pcd, i));
++		if (pcd->in_ep[i].queue_sof) {
++			pcd->in_ep[i].queue_sof = 0;
++			start_next_request(&pcd->in_ep[i]);
++		}
++	}
++	spin_unlock_irqrestore(&pcd->lock, flags);
++}
++
++static struct tasklet_struct start_xfer_tasklet = {
++	.next = NULL,
++	.state = 0,
++	.count = ATOMIC_INIT(0),
++	.func = start_xfer_tasklet_func,
++	.data = 0,
++};
++
++/**
++ * This function initialized the pcd Dp structures to there default
++ * state.
++ */
++static void __devinit dwc_otg_pcd_reinit(struct dwc_pcd *pcd)
++{
++	static const char *names[] = {
++		"ep0", "ep1in", "ep2in", "ep3in", "ep4in", "ep5in",
++		"ep6in", "ep7in", "ep8in", "ep9in", "ep10in", "ep11in",
++		"ep12in", "ep13in", "ep14in", "ep15in", "ep1out", "ep2out",
++		"ep3out", "ep4out", "ep5out", "ep6out", "ep7out", "ep8out",
++		"ep9out", "ep10out", "ep11out", "ep12out", "ep13out",
++		"ep14out", "ep15out"
++	};
++	u32 i;
++	int in_ep_cntr, out_ep_cntr;
++	u32 hwcfg1;
++	u32 num_in_eps = (GET_CORE_IF(pcd))->dev_if->num_in_eps;
++	u32 num_out_eps = (GET_CORE_IF(pcd))->dev_if->num_out_eps;
++	struct pcd_ep *ep;
++
++	INIT_LIST_HEAD(&pcd->gadget.ep_list);
++	pcd->gadget.ep0 = &pcd->ep0.ep;
++	pcd->gadget.speed = USB_SPEED_UNKNOWN;
++	INIT_LIST_HEAD(&pcd->gadget.ep0->ep_list);
++
++	/* Initialize the EP0 structure. */
++	ep = &pcd->ep0;
++
++	/* Init EP structure */
++	ep->desc = NULL;
++	ep->pcd = pcd;
++	ep->stopped = 1;
++
++	/* Init DWC ep structure */
++	ep->dwc_ep.num = 0;
++	ep->dwc_ep.active = 0;
++	ep->dwc_ep.tx_fifo_num = 0;
++
++	/* Control until ep is actvated */
++	ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++	ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
++	ep->dwc_ep.dma_addr = 0;
++	ep->dwc_ep.start_xfer_buff = NULL;
++	ep->dwc_ep.xfer_buff = NULL;
++	ep->dwc_ep.xfer_len = 0;
++	ep->dwc_ep.xfer_count = 0;
++	ep->dwc_ep.sent_zlp = 0;
++	ep->dwc_ep.total_len = 0;
++	ep->queue_sof = 0;
++
++	/* Init the usb_ep structure. */
++	ep->ep.name = names[0];
++	ep->ep.ops = &dwc_otg_pcd_ep_ops;
++
++	ep->ep.maxpacket = MAX_PACKET_SIZE;
++	list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
++	INIT_LIST_HEAD(&ep->queue);
++
++	/* Initialize the EP structures. */
++	in_ep_cntr = 0;
++	hwcfg1 = (GET_CORE_IF(pcd))->hwcfg1 >> 3;
++
++	for (i = 1; in_ep_cntr < num_in_eps; i++) {
++		if (!(hwcfg1 & 0x1)) {
++			struct pcd_ep *ep = &pcd->in_ep[in_ep_cntr];
++
++			in_ep_cntr++;
++			/* Init EP structure */
++			ep->desc = NULL;
++			ep->pcd = pcd;
++			ep->stopped = 1;
++
++			/* Init DWC ep structure */
++			ep->dwc_ep.is_in = 1;
++			ep->dwc_ep.num = i;
++			ep->dwc_ep.active = 0;
++			ep->dwc_ep.tx_fifo_num = 0;
++
++			/* Control until ep is actvated */
++			ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++			ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
++			ep->dwc_ep.dma_addr = 0;
++			ep->dwc_ep.start_xfer_buff = NULL;
++			ep->dwc_ep.xfer_buff = NULL;
++			ep->dwc_ep.xfer_len = 0;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = 0;
++			ep->queue_sof = 0;
++
++			ep->ep.name = names[i];
++			ep->ep.ops = &dwc_otg_pcd_ep_ops;
++
++			ep->ep.maxpacket = MAX_PACKET_SIZE;
++			list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
++			INIT_LIST_HEAD(&ep->queue);
++		}
++		hwcfg1 >>= 2;
++	}
++
++	out_ep_cntr = 0;
++	hwcfg1 = (GET_CORE_IF(pcd))->hwcfg1 >> 2;
++	for (i = 1; out_ep_cntr < num_out_eps; i++) {
++		if (!(hwcfg1 & 0x1)) {
++			struct pcd_ep *ep = &pcd->out_ep[out_ep_cntr];
++
++			out_ep_cntr++;
++			/* Init EP structure */
++			ep->desc = NULL;
++			ep->pcd = pcd;
++			ep->stopped = 1;
++
++			/* Init DWC ep structure */
++			ep->dwc_ep.is_in = 0;
++			ep->dwc_ep.num = i;
++			ep->dwc_ep.active = 0;
++			ep->dwc_ep.tx_fifo_num = 0;
++
++			/* Control until ep is actvated */
++			ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++			ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
++			ep->dwc_ep.dma_addr = 0;
++			ep->dwc_ep.start_xfer_buff = NULL;
++			ep->dwc_ep.xfer_buff = NULL;
++			ep->dwc_ep.xfer_len = 0;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = 0;
++			ep->queue_sof = 0;
++
++			ep->ep.name = names[15 + i];
++			ep->ep.ops = &dwc_otg_pcd_ep_ops;
++
++			ep->ep.maxpacket = MAX_PACKET_SIZE;
++			list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
++			INIT_LIST_HEAD(&ep->queue);
++		}
++		hwcfg1 >>= 2;
++	}
++
++	/* remove ep0 from the list.  There is a ep0 pointer. */
++	list_del_init(&pcd->ep0.ep.ep_list);
++
++	pcd->ep0state = EP0_DISCONNECT;
++	pcd->ep0.ep.maxpacket = MAX_EP0_SIZE;
++	pcd->ep0.dwc_ep.maxpacket = MAX_EP0_SIZE;
++	pcd->ep0.dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++}
++
++/**
++ * This function releases the Gadget device.
++ * required by device_unregister().
++ */
++static void dwc_otg_pcd_gadget_release(struct device *dev)
++{
++	pr_info("%s(%p)\n", __func__, dev);
++}
++
++/**
++ * Allocates the buffers for the setup packets when the PCD portion of the
++ * driver is first initialized.
++ */
++static int __devinit init_pkt_buffs(struct device *dev, struct dwc_pcd *pcd)
++{
++	if (pcd->otg_dev->core_if->dma_enable) {
++		pcd->dwc_pool = dma_pool_create("dwc_otg_pcd", dev,
++						sizeof(*pcd->setup_pkt) * 5, 32,
++						0);
++		if (!pcd->dwc_pool)
++			return -ENOMEM;
++		pcd->setup_pkt = dma_pool_alloc(pcd->dwc_pool, GFP_KERNEL,
++						&pcd->setup_pkt_dma_handle);
++		if (!pcd->setup_pkt)
++			goto error;
++		pcd->status_buf = dma_pool_alloc(pcd->dwc_pool, GFP_KERNEL,
++						 &pcd->status_buf_dma_handle);
++		if (!pcd->status_buf)
++			goto error1;
++	} else {
++		pcd->setup_pkt = kmalloc(sizeof(*pcd->setup_pkt) * 5,
++					 GFP_KERNEL);
++		if (!pcd->setup_pkt)
++			return -ENOMEM;
++		pcd->status_buf = kmalloc(sizeof(u16), GFP_KERNEL);
++		if (!pcd->status_buf) {
++			kfree(pcd->setup_pkt);
++			return -ENOMEM;
++		}
++	}
++	return 0;
++
++error1:
++	dma_pool_free(pcd->dwc_pool, pcd->setup_pkt, pcd->setup_pkt_dma_handle);
++error:
++	dma_pool_destroy(pcd->dwc_pool);
++	return -ENOMEM;
++}
++
++/**
++ * This function initializes the PCD portion of the driver.
++ */
++int __devinit dwc_otg_pcd_init(struct device *dev)
++{
++	static const char pcd_name[] = "dwc_otg_pcd";
++	struct dwc_pcd *pcd;
++	struct dwc_otg_device *otg_dev = dev_get_drvdata(dev);
++	struct core_if *core_if = otg_dev->core_if;
++	int retval;
++
++	/* Allocate PCD structure */
++	pcd = kzalloc(sizeof(*pcd), GFP_KERNEL);
++	if (!pcd) {
++		retval = -ENOMEM;
++		goto err;
++	}
++
++	spin_lock_init(&pcd->lock);
++
++	otg_dev->pcd = pcd;
++	s_pcd = pcd;
++	pcd->gadget.name = pcd_name;
++
++	dev_set_name(&pcd->gadget.dev, "gadget");
++	pcd->otg_dev = otg_dev;
++	pcd->gadget.dev.parent = dev;
++	pcd->gadget.dev.release = dwc_otg_pcd_gadget_release;
++	pcd->gadget.ops = &dwc_otg_pcd_ops;
++
++	if (DWC_HWCFG4_DED_FIFO_ENA_RD(core_if->hwcfg4))
++		pr_info("Dedicated Tx FIFOs mode\n");
++	else
++		pr_info("Shared Tx FIFO mode\n");
++
++	pcd->gadget.is_dualspeed = check_is_dual_speed(core_if);
++	pcd->gadget.is_otg = check_is_otg(core_if);
++
++	/* Register the gadget device */
++	retval = device_register(&pcd->gadget.dev);
++
++	/* Initialized the Core for Device mode. */
++	if (dwc_otg_is_device_mode(core_if))
++		dwc_otg_core_dev_init(core_if);
++
++	/*  Initialize EP structures */
++	dwc_otg_pcd_reinit(pcd);
++
++	/* Register the PCD Callbacks. */
++	dwc_otg_cil_register_pcd_callbacks(core_if, &pcd_callbacks, pcd);
++
++	/* Setup interupt handler */
++	retval = request_irq(otg_dev->irq, dwc_otg_pcd_irq, IRQF_SHARED,
++			     pcd->gadget.name, pcd);
++	if (retval) {
++		pr_err("request of irq%d failed\n", otg_dev->irq);
++		retval = -EBUSY;
++		goto err_cleanup;
++	}
++
++	/* Initialize the DMA buffer for SETUP packets */
++	retval = init_pkt_buffs(dev, pcd);
++	if (retval)
++		goto err_cleanup;
++
++	/* Initialize tasklet */
++	start_xfer_tasklet.data = (unsigned long)pcd;
++	pcd->start_xfer_tasklet = &start_xfer_tasklet;
++	return 0;
++
++err_cleanup:
++	kfree(pcd);
++	otg_dev->pcd = NULL;
++	s_pcd = NULL;
++
++err:
 +	return retval;
 +}
 +
-+/* This function handles interrupts for the HCD.*/
-+int dwc_otg_hcd_handle_intr(struct dwc_hcd *hcd)
++/**
++ * Cleanup the PCD.
++ */
++void __devexit dwc_otg_pcd_remove(struct device *dev)
 +{
-+	int ret = 0;
-+	struct core_if *core_if = hcd->core_if;
-+	u32 gintsts;
++	struct dwc_otg_device *otg_dev = dev_get_drvdata(dev);
++	struct dwc_pcd *pcd = otg_dev->pcd;
 +
-+	/* Check if HOST Mode */
-+	if (dwc_otg_is_host_mode(core_if)) {
-+		spin_lock(&hcd->lock);
-+		gintsts = dwc_otg_read_core_intr(core_if);
-+		if (!gintsts) {
-+			spin_unlock(&hcd->lock);
-+			return IRQ_NONE;
-+		}
++	/* Free the IRQ */
++	free_irq(otg_dev->irq, pcd);
 +
-+		if (gintsts & DWC_INTMSK_STRT_OF_FRM)
-+			ret |= dwc_otg_hcd_handle_sof_intr(hcd);
-+		if (gintsts & DWC_INTMSK_RXFIFO_NOT_EMPT)
-+			ret |= dwc_otg_hcd_handle_rx_status_q_level_intr(hcd);
-+		if (gintsts & DWC_INTMSK_NP_TXFIFO_EMPT)
-+			ret |= dwc_otg_hcd_handle_np_tx_fifo_empty_intr(hcd);
-+		if (gintsts & DWC_INTMSK_HST_PORT)
-+			ret |= dwc_otg_hcd_handle_port_intr(hcd);
-+		if (gintsts & DWC_INTMSK_HST_CHAN)
-+			ret |= dwc_otg_hcd_handle_hc_intr(hcd);
-+		if (gintsts & DWC_INTMSK_P_TXFIFO_EMPTY)
-+			ret |= dwc_otg_hcd_handle_perio_tx_fifo_empty_intr(hcd);
-+
-+		spin_unlock(&hcd->lock);
++	/* start with the driver above us */
++	if (pcd->driver) {
++		/* should have been done already by driver model core */
++		pr_warning("driver '%s' is still registered\n",
++			   pcd->driver->driver.name);
++		usb_gadget_unregister_driver(pcd->driver);
 +	}
-+	return ret;
++	if (pcd->start_xfer_tasklet)
++		tasklet_kill(pcd->start_xfer_tasklet);
++	tasklet_kill(&pcd->test_mode_tasklet);
++
++	device_unregister(&pcd->gadget.dev);
++	if (GET_CORE_IF(pcd)->dma_enable) {
++		dma_pool_free(pcd->dwc_pool, pcd->setup_pkt,
++			      pcd->setup_pkt_dma_handle);
++		dma_pool_free(pcd->dwc_pool, pcd->status_buf,
++			      pcd->status_buf_dma_handle);
++		dma_pool_destroy(pcd->dwc_pool);
++	} else {
++		kfree(pcd->setup_pkt);
++		kfree(pcd->status_buf);
++	}
++	kfree(pcd);
++	otg_dev->pcd = NULL;
 +}
++
++/**
++ * This function registers a gadget driver with the PCD.
++ *
++ * When a driver is successfully registered, it will receive control
++ * requests including set_configuration(), which enables non-control
++ * requests.  then usb traffic follows until a disconnect is reported.
++ * then a host may connect again, or the driver might get unbound.
++ */
++int usb_gadget_probe_driver(struct usb_gadget_driver *driver,
++			    int (*bind) (struct usb_gadget *))
++{
++	int retval;
++
++	if (!driver || driver->speed == USB_SPEED_UNKNOWN || !bind ||
++	    !driver->unbind || !driver->disconnect || !driver->setup)
++		return -EINVAL;
++
++	if (s_pcd == NULL)
++		return -ENODEV;
++
++	if (s_pcd->driver != NULL)
++		return -EBUSY;
++
++	/* hook up the driver */
++	s_pcd->driver = driver;
++	s_pcd->gadget.dev.driver = &driver->driver;
++
++	retval = bind(&s_pcd->gadget);
++	if (retval) {
++		struct core_if *core_if;
++
++		pr_err("bind to driver %s --> error %d\n",
++		       driver->driver.name, retval);
++		core_if = s_pcd->otg_dev->core_if;
++		otg_set_peripheral(core_if->xceiv, &s_pcd->gadget);
++		s_pcd->driver = NULL;
++		s_pcd->gadget.dev.driver = NULL;
++		return retval;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(usb_gadget_probe_driver);
++
++/**
++ * This function unregisters a gadget driver
++ */
++int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
++{
++	struct core_if *core_if;
++
++	if (!s_pcd)
++		return -ENODEV;
++	if (!driver || driver != s_pcd->driver)
++		return -EINVAL;
++
++	core_if = s_pcd->otg_dev->core_if;
++	core_if->xceiv->state = OTG_STATE_UNDEFINED;
++	otg_set_peripheral(core_if->xceiv, NULL);
++
++	driver->unbind(&s_pcd->gadget);
++	s_pcd->driver = NULL;
++
++	return 0;
++}
++EXPORT_SYMBOL(usb_gadget_unregister_driver);
+diff --git a/drivers/usb/otg/dwc/pcd.h b/drivers/usb/otg/dwc/pcd.h
+new file mode 100644
+index 0000000..e1dea51
+--- /dev/null
++++ b/drivers/usb/otg/dwc/pcd.h
+@@ -0,0 +1,139 @@
++/*
++ * DesignWare HS OTG controller driver
++ * Copyright (C) 2006 Synopsys, Inc.
++ * Portions Copyright (C) 2010 Applied Micro Circuits Corporation.
++ *
++ * This program is free software: you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License version 2 for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see http://www.gnu.org/licenses
++ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
++ * Suite 500, Boston, MA 02110-1335 USA.
++ *
++ * Based on Synopsys driver version 2.60a
++ * Modified by Mark Miesfeld <mmiesfeld@apm.com>
++ * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL SYNOPSYS, INC. BE LIABLE FOR ANY DIRECT,
++ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ */
++
++#if !defined(__DWC_PCD_H__)
++#define __DWC_PCD_H__
++
++#include "driver.h"
++
++/*
++ * This file contains the structures, constants, and interfaces for
++ * the Perpherial Contoller Driver (PCD).
++ *
++ * The Peripheral Controller Driver (PCD) for Linux will implement the
++ * Gadget API, so that the existing Gadget drivers can be used.	 For
++ * the Mass Storage Function driver the File-backed USB Storage Gadget
++ * (FBS) driver will be used.  The FBS driver supports the
++ * Control-Bulk (CB), Control-Bulk-Interrupt (CBI), and Bulk-Only
++ * transports.
++ *
++ */
++
++/* Invalid DMA Address */
++#define DMA_ADDR_INVALID			(~(dma_addr_t) 0)
++/* Maxpacket size for EP0 */
++#define MAX_EP0_SIZE				64
++/* Maxpacket size for any EP */
++#define MAX_PACKET_SIZE				1024
++
++/*
++ * Get the pointer to the core_if from the pcd pointer.
++ */
++#define GET_CORE_IF(_pcd) (_pcd->otg_dev->core_if)
++
++/*
++ * DWC_otg request structure.
++ * This structure is a list of requests.
++ */
++struct pcd_request {
++	struct usb_request req;	/* USB Request. */
++	struct list_head queue;	/* queue of these requests. */
++	unsigned mapped:1;
++};
++
++static inline ulong in_ep_int_reg(struct dwc_pcd *pd, int i)
++{
++	return GET_CORE_IF(pd)->dev_if->in_ep_regs[i] + DWC_DIEPINT;
++}
++static inline ulong out_ep_int_reg(struct dwc_pcd *pd, int i)
++{
++	return GET_CORE_IF(pd)->dev_if->out_ep_regs[i] + DWC_DOEPINT;
++}
++static inline ulong in_ep_ctl_reg(struct dwc_pcd *pd, int i)
++{
++	return GET_CORE_IF(pd)->dev_if->in_ep_regs[i] + DWC_DIEPCTL;
++}
++
++static inline ulong out_ep_ctl_reg(struct dwc_pcd *pd, int i)
++{
++	return GET_CORE_IF(pd)->dev_if->out_ep_regs[i] + DWC_DOEPCTL;
++}
++
++static inline ulong dev_ctl_reg(struct dwc_pcd *pd)
++{
++	return GET_CORE_IF(pd)->dev_if->dev_global_regs +
++		      DWC_DCTL;
++}
++
++static inline ulong dev_diepmsk_reg(struct dwc_pcd *pd)
++{
++	return GET_CORE_IF(pd)->dev_if->dev_global_regs +
++		      DWC_DIEPMSK;
++}
++
++static inline ulong dev_sts_reg(struct dwc_pcd *pd)
++{
++	return GET_CORE_IF(pd)->dev_if->dev_global_regs +
++		      DWC_DSTS;
++}
++
++static inline ulong otg_ctl_reg(struct dwc_pcd *pd)
++{
++	return GET_CORE_IF(pd)->core_global_regs + DWC_GOTGCTL;
++}
++
++extern int __init dwc_otg_pcd_init(struct device *dev);
++
++/*
++ * The following functions support managing the DWC_otg controller in device
++ * mode.
++ */
++extern void dwc_otg_ep_activate(struct core_if *core_if, struct dwc_ep *ep);
++extern void dwc_otg_ep_start_transfer(struct core_if *_if, struct dwc_ep *ep);
++extern void dwc_otg_ep_set_stall(struct core_if *core_if, struct dwc_ep *ep);
++extern void dwc_otg_ep_clear_stall(struct core_if *core_if, struct dwc_ep *ep);
++extern void dwc_otg_pcd_remove(struct device *dev);
++extern int dwc_otg_pcd_handle_intr(struct dwc_pcd *pcd);
++extern void dwc_otg_pcd_stop(struct dwc_pcd *pcd);
++extern void request_nuke(struct pcd_ep *ep);
++extern void dwc_otg_pcd_update_otg(struct dwc_pcd *pcd, const unsigned reset);
++extern void dwc_otg_ep0_start_transfer(struct core_if *_if, struct dwc_ep *ep);
++
++extern void request_done(struct pcd_ep *ep, struct pcd_request *req,
++			 int _status);
++
++extern void start_next_request(struct pcd_ep *ep);
++#endif
 -- 
 1.6.1.rc3
