@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B312FB6F85
+	by ozlabs.org (Postfix) with ESMTPS id F02A9B6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Apr 2011 15:59:48 +1100 (EST)
+	Fri,  1 Apr 2011 16:33:08 +1100 (EST)
 Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p314nknE007374
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2011 23:49:46 -0500
-Subject: [PATCH] powerpc/pseries: Don't register global initcall
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p315X3Rf028410
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Apr 2011 00:33:04 -0500
+Subject: [PATCH] powerpc: Set nr_cpu_ids early and use it to free PACAs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Apr 2011 15:49:45 +1100
-Message-ID: <1301633385.2549.3.camel@pasglop>
+Date: Fri, 01 Apr 2011 16:33:02 +1100
+Message-ID: <1301635982.2549.19.camel@pasglop>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,21 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Ryan Grimm <grimm@us.ibm.com>
+
+Without this, "holes" in the CPU numbering can cause us to
+free too many PACAs
+
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/paca.c         |    2 +-
+ arch/powerpc/kernel/setup-common.c |    3 +++
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 82f632e..0e5e91a 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -377,7 +377,7 @@ static int __init pSeries_init_panel(void)
- 
- 	return 0;
- }
--arch_initcall(pSeries_init_panel);
-+machine_arch_initcall(pseries, pSeries_init_panel);
- 
- static int pseries_set_dabr(unsigned long dabr)
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index f4adf89..10f0aad 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -203,7 +203,7 @@ void __init free_unused_pacas(void)
  {
+ 	int new_size;
+ 
+-	new_size = PAGE_ALIGN(sizeof(struct paca_struct) * num_possible_cpus());
++	new_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
+ 
+ 	if (new_size >= paca_size)
+ 		return;
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 9d4882a..21f30cb 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -509,6 +509,9 @@ void __init smp_setup_cpu_maps(void)
+ 	 */
+ 	cpu_init_thread_core_maps(nthreads);
+ 
++	/* Now that possible cpus are set, set nr_cpu_ids for later use */
++	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
++
+ 	free_unused_pacas();
+ }
+ #endif /* CONFIG_SMP */
