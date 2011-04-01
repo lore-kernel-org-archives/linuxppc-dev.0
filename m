@@ -1,21 +1,22 @@
-Return-Path: <sachin.solanki.nitb@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4DD33B6F8D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Apr 2011 18:07:58 +1100 (EST)
-Received: by wyg36 with SMTP id 36so2888515wyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Apr 2011 00:07:54 -0700 (PDT)
-MIME-Version: 1.0
-Date: Fri, 1 Apr 2011 12:37:54 +0530
-Message-ID: <AANLkTim5s06cAScH24gmppdudK31XuqjHr2oxiv77J23@mail.gmail.com>
-Subject: configuration from flash PROM
-From: SACHIN SOLANKI <sachin.solanki.nitb@gmail.com>
-To: brandon@xilinx.com, prasanna@xilinx.com, mcmillan@xilinx.com
-Content-Type: multipart/alternative; boundary=e0cb4e43ce699d2545049fd61108
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 751A8B6F8F
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Apr 2011 00:04:09 +1100 (EST)
+Subject: Re: [PATCH] edac/mpc85xx: Limit setting/clearing of HID1[RFXE] to
+	e500v1/v2 cores
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110331224208.GA30426@us.ibm.com>
+Date: Fri, 1 Apr 2011 08:03:56 -0500
+Message-Id: <94F1D25E-6F38-42E5-A097-C4AB23E58D78@kernel.crashing.org>
+References: <1301610194-29971-1-git-send-email-galak@kernel.crashing.org>
+	<20110331224208.GA30426@us.ibm.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	dougthompson@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---e0cb4e43ce699d2545049fd61108
-Content-Type: text/plain; charset=ISO-8859-1
 
-Respected sir,
-                        i am a M.tech. student form national institute of
-technology bhopal, india.I try to configure FPGA from flash prom memory
-virtex II pro.i think to put diffrent .bit file to flash PROM and by some
-how method configure FPGA by selecting specific .bit file.i don't have any
-idea how is it possible to configure FPGA by selecting diffrent diffrent
-.bit file from Flash PTROM.i do have xilinx 9.1i, EDK 9.1i & VIRTEX II PRO
-XUP2PV BOARD.
-sir please guide me in this matter...
+On Mar 31, 2011, at 5:42 PM, Nishanth Aravamudan wrote:
 
-thanks
+> On 31.03.2011 [17:23:14 -0500], Kumar Gala wrote:
+>> Only the e500v1/v2 cores have HID1[RXFE] so we should attempt to set =
+or
+>> clear this register bit on them.  Otherwise we get crashes like:
+>=20
+> <snip>
+>=20
+>> diff --git a/drivers/edac/mpc85xx_edac.c =
+b/drivers/edac/mpc85xx_edac.c
+>> index b123bb3..5aef2ed 100644
+>> --- a/drivers/edac/mpc85xx_edac.c
+>> +++ b/drivers/edac/mpc85xx_edac.c
+>=20
+> <snip>
+>=20
+>> @@ -1209,10 +1215,15 @@ static void __exit =
+mpc85xx_mc_restore_hid1(void *data)
+>> static void __exit mpc85xx_mc_exit(void)
+>> {
+>> #ifdef CONFIG_FSL_SOC_BOOKE
+>> -	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+>> +	u32 pvr =3D mfspr(SPRN_PVR);
+>> +
+>> +	if ((PVR_VER(pvr) =3D=3D PVR_VER_E500V1) ||
+>> +	    (PVR_VER(pvr) =3D=3D PVR_VER_E500V2)) {
+>> +		on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+>> +	}
+>> #endif
+>> #ifdef CONFIG_PCI
+>> -	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
+>> +	of_unregistr_platform_driver(&mpc85xx_pci_err_driver);
+>=20
+> Unintended change?
 
+Yep, thanks for catching.
 
-sachin kumar solanki
-N.I.T. BHOPAL
-INDIA
-
---e0cb4e43ce699d2545049fd61108
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Respected sir,<br>=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0 i am a M.tech. student form national institute of technology b=
-hopal, india.I try to configure FPGA from flash prom memory virtex II pro.i=
- think to put diffrent .bit file to flash PROM and by some how method confi=
-gure FPGA by selecting specific .bit file.i don&#39;t have any idea how is =
-it possible to configure FPGA by selecting diffrent diffrent .bit file from=
- Flash PTROM.i do have xilinx 9.1i, EDK 9.1i &amp; VIRTEX II PRO XUP2PV BOA=
-RD.<br>
-sir please guide me in this matter...<br><br>thanks<br><br><br>sachin kumar=
- solanki<br>N.I.T. BHOPAL<br>INDIA<br>
-
---e0cb4e43ce699d2545049fd61108--
+- k=
