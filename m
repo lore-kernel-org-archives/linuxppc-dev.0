@@ -1,35 +1,20 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8C5F9B6F44
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2011 09:42:14 +1100 (EST)
-Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p2VMVtt2020551
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 18:31:55 -0400
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A0FA56E8036
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 18:42:11 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p2VMgBm42633796
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 18:42:11 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p2VMgAWt015993
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2011 19:42:11 -0300
-Date: Thu, 31 Mar 2011 15:42:08 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] edac/mpc85xx: Limit setting/clearing of HID1[RFXE] to
-	e500v1/v2 cores
-Message-ID: <20110331224208.GA30426@us.ibm.com>
-References: <1301610194-29971-1-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1301610194-29971-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	dougthompson@xmission.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7601BB6F81
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  1 Apr 2011 15:47:23 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p314lIIm006160
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2011 23:47:19 -0500
+Subject: [PATCH] powerpc: Set nr_cpu_ids early and use it to free PACAs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 01 Apr 2011 15:47:16 +1100
+Message-ID: <1301633237.2549.0.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,40 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31.03.2011 [17:23:14 -0500], Kumar Gala wrote:
-> Only the e500v1/v2 cores have HID1[RXFE] so we should attempt to set or
-> clear this register bit on them.  Otherwise we get crashes like:
+From: Ryan Grimm <grimm@us.ibm.com>
 
-<snip>
+Without this, "holes" in the CPU numbering can cause us to
+free too many PACAs
 
-> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-> index b123bb3..5aef2ed 100644
-> --- a/drivers/edac/mpc85xx_edac.c
-> +++ b/drivers/edac/mpc85xx_edac.c
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/paca.c         |    2 +-
+ arch/powerpc/kernel/setup-common.c |    3 +++
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-<snip>
-
-> @@ -1209,10 +1215,15 @@ static void __exit mpc85xx_mc_restore_hid1(void *data)
->  static void __exit mpc85xx_mc_exit(void)
->  {
->  #ifdef CONFIG_FSL_SOC_BOOKE
-> -	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
-> +	u32 pvr = mfspr(SPRN_PVR);
-> +
-> +	if ((PVR_VER(pvr) == PVR_VER_E500V1) ||
-> +	    (PVR_VER(pvr) == PVR_VER_E500V2)) {
-> +		on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
-> +	}
->  #endif
->  #ifdef CONFIG_PCI
-> -	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
-> +	of_unregistr_platform_driver(&mpc85xx_pci_err_driver);
-
-Unintended change?
-
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index f4adf89..10f0aad 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -203,7 +203,7 @@ void __init free_unused_pacas(void)
+ {
+ 	int new_size;
+ 
+-	new_size = PAGE_ALIGN(sizeof(struct paca_struct) * num_possible_cpus());
++	new_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
+ 
+ 	if (new_size >= paca_size)
+ 		return;
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 9d4882a..21f30cb 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -509,6 +509,9 @@ void __init smp_setup_cpu_maps(void)
+ 	 */
+ 	cpu_init_thread_core_maps(nthreads);
+ 
++	/* Now that possible cpus are set, set nr_cpu_ids for later use */
++	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
++
+ 	free_unused_pacas();
+ }
+ #endif /* CONFIG_SMP */
