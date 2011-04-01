@@ -1,20 +1,20 @@
 Return-Path: <tmarri@apm.com>
-Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
-	by ozlabs.org (Postfix) with SMTP id 184BAB6EFF
+Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
+	by ozlabs.org (Postfix) with SMTP id 02830B6F7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Apr 2011 04:30:27 +1100 (EST)
-Received: by gwj21 with SMTP id 21so1834643gwj.2
+	Sat,  2 Apr 2011 04:35:51 +1100 (EST)
+Received: by gyg13 with SMTP id 13so1741970gyg.13
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Apr 2011 10:30:24 -0700 (PDT)
+	Fri, 01 Apr 2011 10:35:49 -0700 (PDT)
 From: Tirumala Marri <tmarri@apm.com>
-References: <1301336863-1886-1-git-send-email-tmarri@apm.com>
-	<f0313241cc289cd316831ee445935465@mail.gmail.com>
-In-Reply-To: <f0313241cc289cd316831ee445935465@mail.gmail.com>
+References: <1301336866-1915-1-git-send-email-tmarri@apm.com>
+	<3569ce83abe4f1f3ab1699c2beee1f35@mail.gmail.com>
+In-Reply-To: <3569ce83abe4f1f3ab1699c2beee1f35@mail.gmail.com>
 MIME-Version: 1.0
-Date: Fri, 1 Apr 2011 10:30:23 -0700
-Message-ID: <5eb399c8b8073bc76e4ededa2ba5968d@mail.gmail.com>
-Subject: RE: [PATCH v10 02/10] USB/ppc4xx: Add Synopsys DWC OTG driver
-	framework
+Date: Fri, 1 Apr 2011 10:35:48 -0700
+Message-ID: <712525e420e78daeb3f43bf1ebc53e23@mail.gmail.com>
+Subject: RE: [PATCH v10 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core Interface
+	Layer (CIL)
 To: Keshava Munegowda <keshava_mgowda@ti.com>, linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
@@ -29,21 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------Original Message-----
-From: Keshava Munegowda [mailto:keshava_mgowda@ti.com]
-Sent: Tuesday, March 29, 2011 3:46 AM
-To: tmarri@apm.com; linux-usb@vger.kernel.org;
-linuxppc-dev@lists.ozlabs.org
-Cc: greg@kroah.com; Fushen Chen; Mark Miesfeld
-Subject: RE: [PATCH v10 02/10] USB/ppc4xx: Add Synopsys DWC OTG driver
-framework
-
-> +static irqreturn_t dwc_otg_common_irq(int _irq, void *dev)
+> +void dwc_otg_core_init(struct core_if *core_if)
 > +{
-> +	struct dwc_otg_device *dwc_dev = dev;
-> +	int retval;
+> +	u32 i;
+> +	ulong global_reg = core_if->core_global_regs;
+> +	struct device_if *dev_if = core_if->dev_if;
+> +	u32 ahbcfg = 0;
+> +	u32 i2cctl = 0;
+> +	u32 gusbcfg;
 
-Tabify the declarations;
-
-[Marri] I wonder what tool do use. I did not see warnings with
-checkpatch.pl.
+Tabify the declarations ;
+[Marri] When I checked again in my source, I do see the tabs added before
+declarations.
