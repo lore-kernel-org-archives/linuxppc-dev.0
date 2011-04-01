@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50FD7B6F82
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2011 16:37:22 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Apr 2011 16:36:40 +1100
-Message-ID: <1301636200.2549.25.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <sachin.solanki.nitb@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4DD33B6F8D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  1 Apr 2011 18:07:58 +1100 (EST)
+Received: by wyg36 with SMTP id 36so2888515wyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 01 Apr 2011 00:07:54 -0700 (PDT)
+MIME-Version: 1.0
+Date: Fri, 1 Apr 2011 12:37:54 +0530
+Message-ID: <AANLkTim5s06cAScH24gmppdudK31XuqjHr2oxiv77J23@mail.gmail.com>
+Subject: configuration from flash PROM
+From: SACHIN SOLANKI <sachin.solanki.nitb@gmail.com>
+To: brandon@xilinx.com, prasanna@xilinx.com, mcmillan@xilinx.com
+Content-Type: multipart/alternative; boundary=e0cb4e43ce699d2545049fd61108
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,78 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+--e0cb4e43ce699d2545049fd61108
+Content-Type: text/plain; charset=ISO-8859-1
 
-Some more powerpc bits for you.
+Respected sir,
+                        i am a M.tech. student form national institute of
+technology bhopal, india.I try to configure FPGA from flash prom memory
+virtex II pro.i think to put diffrent .bit file to flash PROM and by some
+how method configure FPGA by selecting specific .bit file.i don't have any
+idea how is it possible to configure FPGA by selecting diffrent diffrent
+.bit file from Flash PTROM.i do have xilinx 9.1i, EDK 9.1i & VIRTEX II PRO
+XUP2PV BOARD.
+sir please guide me in this matter...
 
-One is actually a change from Anton to the generic kexec to make a
-function weak so powerpc can override it.
+thanks
 
-It has been around for ever, there were initial objections I think
-mostly due to a misunderstanding of the problem.
 
-Since then, it's been a deafening silence to our responses/expanations
-and no answers from Eric so I think it should go in as the powerpc
-counterpart that implements our version of that weak function is already
-(and has been for a while as d72e063bb32c06c6c1cec14f6857b7c37ba62d7a)
-and it fixes a real nasty bug.
+sachin kumar solanki
+N.I.T. BHOPAL
+INDIA
 
-The rest is a series of fixes to our CPU hotplug code that I've been
-sitting on for a little while (by myself) and was originally thinking
-about putting in for the next release.
+--e0cb4e43ce699d2545049fd61108
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I eventually changed my mind, there is no point in sitting on them any
-longer since they fix some real issues on some machines (such as G5's
-crashing on re-plug) and brings us in line with what other archs do for
-setting up and re-initializing the idle threads.
+Respected sir,<br>=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0 i am a M.tech. student form national institute of technology b=
+hopal, india.I try to configure FPGA from flash prom memory virtex II pro.i=
+ think to put diffrent .bit file to flash PROM and by some how method confi=
+gure FPGA by selecting specific .bit file.i don&#39;t have any idea how is =
+it possible to configure FPGA by selecting diffrent diffrent .bit file from=
+ Flash PTROM.i do have xilinx 9.1i, EDK 9.1i &amp; VIRTEX II PRO XUP2PV BOA=
+RD.<br>
+sir please guide me in this matter...<br><br>thanks<br><br><br>sachin kumar=
+ solanki<br>N.I.T. BHOPAL<br>INDIA<br>
 
-Cheers,
-Ben.
-
-The following changes since commit ecb78ab6f30106ab72a575a25b1cdfd1633b7ca2:
-
-  Merge branch 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6 (2011-03-30 12:22:15 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Anton Blanchard (1):
-      kdump: Allow shrinking of kdump region to be overridden
-
-Benjamin Herrenschmidt (18):
-      powerpc: Make decrementer interrupt robust against offlined CPUs
-      powerpc/smp: soft-replugged CPUs must go back to start_secondary
-      powerpc/smp: Fix generic_mach_cpu_die()
-      powerpc/smp: Remove unused generic_cpu_enable()
-      powerpc/smp: Remove unused smp_ops->cpu_enable()
-      powerpc/pmac/smp: Fix 32-bit PowerMac cpu_die
-      powerpc/pmac/smp: Rename fixup_irqs() to migrate_irqs() and use it on ppc32
-      powerpc/pmac/smp: Fixup smp_core99_cpu_disable() and use it on 64-bit
-      powerpc/pmac/smp: Consolidate 32-bit and 64-bit PowerMac cpu_die in one file
-      powerpc/pmac/smp: Remove HMT changes for PowerMac offline code
-      powerpc/pmac/smp: Properly NAP offlined CPU on G5
-      powerpc/pmac: Rename cpu_state in therm_pm72 to avoid collision
-      powerpc/smp: Add a smp_ops->bringup_up() done callback
-      powerpc/pmac/smp: Fix CPU hotplug crashes on some machines
-      powerpc/smp: Don't expose per-cpu "cpu_state" array
-      powerpc/smp: Create idle threads on demand and properly reset them
-      powerpc/smp: Increase vdso_data->processorCount, not just decrease it
-      powerpc/pmac/smp: Remove no-longer needed preempt workaround
-
- arch/powerpc/include/asm/machdep.h              |    3 +-
- arch/powerpc/include/asm/smp.h                  |    5 +-
- arch/powerpc/kernel/head_32.S                   |    9 ++
- arch/powerpc/kernel/head_64.S                   |    7 +
- arch/powerpc/kernel/idle_power4.S               |   21 ---
- arch/powerpc/kernel/irq.c                       |    3 +-
- arch/powerpc/kernel/smp.c                       |  153 ++++++++++++++--------
- arch/powerpc/kernel/time.c                      |   15 ++-
- arch/powerpc/platforms/powermac/pmac.h          |    1 -
- arch/powerpc/platforms/powermac/setup.c         |   56 --------
- arch/powerpc/platforms/powermac/smp.c           |  154 ++++++++++++++++-------
- arch/powerpc/platforms/pseries/offline_states.h |    2 -
- drivers/macintosh/therm_pm72.c                  |   60 +++++-----
- include/linux/kexec.h                           |    1 +
- kernel/kexec.c                                  |    5 +-
- 15 files changed, 272 insertions(+), 223 deletions(-)
+--e0cb4e43ce699d2545049fd61108--
