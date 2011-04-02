@@ -1,19 +1,27 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id E2174B6F77
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DC201B6F99
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Apr 2011 17:53:15 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Evan Lavelle <sa212+lppc@cyconix.com>
-Subject: Re: halt/reset on assert?
-References: <4D966C5C.9030409__15236.8285613649$1301704900$gmane$org@cyconix.com>
-Date: Sat, 02 Apr 2011 08:53:13 +0200
-In-Reply-To: <4D966C5C.9030409__15236.8285613649$1301704900$gmane$org@cyconix.com>
-	(Evan Lavelle's message of "Sat, 02 Apr 2011 01:22:52 +0100")
-Message-ID: <m2sju1uoti.fsf@igel.home>
+	Sun,  3 Apr 2011 00:00:16 +1100 (EST)
+Received: by wwi36 with SMTP id 36so4121883wwi.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 02 Apr 2011 06:00:12 -0700 (PDT)
+Message-ID: <4D971D7E.2010900@ru.mvista.com>
+Date: Sat, 02 Apr 2011 16:58:38 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+To: tmarri@apm.com
+Subject: Re: [PATCH v12 09/10] USB ppc4xx: Add Synopsys DWC OTG driver kernel
+	configuration and Makefile
+References: <1301694975-604-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1301694975-604-1-git-send-email-tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Evan Lavelle <sa212+lppc@cyconix.com> writes:
+Hello.
 
-> I'd like to use an assert macro in a device driver for an MPC870 using
-> ppcboot; something like:
->
-> #define MY_ASSERT(expr)                                         \
->    do {                                                         \
->       if(!(expr)) {                                             \
->          printk(                                                \
->             KERN_EMERG                                          \
->             "assertion failure: %s, line %d\n",                 \
->             __FILE__, __LINE__);                                \
->          asm(--ppc halt/reset?)                                 \
->       }                                                         \
->    } while(0)
->
-> However, I've got no idea how to halt or reset the processor here. Anyone
-> happen to know?
+On 02-04-2011 1:56, tmarri@apm.com wrote:
 
-#define MY_ASSERT(expr) BUG_ON(!(expr))
+> From: Tirumala Marri <tmarri@apm.com>
 
-Andreas.
+> Add Synopsys DesignWare HS USB OTG driver kernel configuration.
+> Synopsys OTG driver may operate in  host only, device only, or OTG mode.
+> The driver also allows user configure the core to use its internal DMA
+> or Slave (PIO) mode.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+[...]
+
+> diff --git a/drivers/usb/dwc/Kconfig b/drivers/usb/dwc/Kconfig
+> new file mode 100644
+> index 0000000..a8f22cb
+> --- /dev/null
+> +++ b/drivers/usb/dwc/Kconfig
+> @@ -0,0 +1,88 @@
+> +#
+> +# USB Dual Role (OTG-ready) Controller Drivers
+> +# for silicon based on Synopsys DesignWare IP
+> +#
+[...]
+> +# enable peripheral support (including with OTG)
+> +config USB_GADGET_DWC_HDRC
+> +	bool
+> +	depends on USB_DWC_OTG&&  (DWC_DEVICE_ONLY || USB_DWC_OTG)
+> +
+
+    I've already told you not to redefine it.
+
+WBR, Sergei
