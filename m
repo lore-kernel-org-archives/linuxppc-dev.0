@@ -2,17 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E838B6FB6
+	by ozlabs.org (Postfix) with ESMTPS id EC891B6F95
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Apr 2011 12:05:54 +1000 (EST)
-Subject: [RFC/PATCH] of: Match PCI devices to OF nodes generically
+	Mon,  4 Apr 2011 13:27:27 +1000 (EST)
+Subject: Re: [RFC/PATCH] of: Match PCI devices to OF nodes generically
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linux-arch@vger.kernel.org
+In-Reply-To: <1301882694.2549.53.camel@pasglop>
+References: <1301882694.2549.53.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Apr 2011 12:04:54 +1000
-Message-ID: <1301882694.2549.53.camel@pasglop>
+Date: Mon, 04 Apr 2011 13:27:10 +1000
+Message-ID: <1301887630.2549.71.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
 	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,44 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc has two different ways of matching PCI devices to their
-corresponding OF node (if any) for historical reasons. The ppc64 one
-does a scan looking for matching bus/dev/fn, while the ppc32 one does a
-scan looking only for matching dev/fn on each level in order to be
-agnostic to busses being renumbered (which Linux does on some
-platforms).
+On Mon, 2011-04-04 at 12:04 +1000, Benjamin Herrenschmidt wrote:
+> powerpc has two different ways of matching PCI devices to their
+> corresponding OF node (if any) for historical reasons. The ppc64 one
+> does a scan looking for matching bus/dev/fn, while the ppc32 one does a
+> scan looking only for matching dev/fn on each level in order to be
+> agnostic to busses being renumbered (which Linux does on some
+> platforms).
+> 
+> This removes both and instead moves the matching code to the PCI core
+> itself. It's the most logical place to do it: when a pci_dev is created,
+> we know the parent and thus can do a single level scan for the matching
+> device_node (if any).
+> 
+> The benefit is that all archs now get the matching for free. There's one
+> hook the arch might want to provide to match a PHB bus to its device
+> node. A default weak implementation is provided that looks for the
+> parent device device node, but it's not entirely reliable on powerpc for
+> various reasons so powerpc provides its own.
+> 
+> Dave, I don't think I broke anything in sparc land but I haven't tested
+> (and have to admit haven't build-tested yet either).
+> 
+> Not-signed-off-yet. Tested on a few ppc's but not the whole range yet
+> either, mostly posted for comments.
 
-This removes both and instead moves the matching code to the PCI core
-itself. It's the most logical place to do it: when a pci_dev is created,
-we know the parent and thus can do a single level scan for the matching
-device_node (if any).
-
-The benefit is that all archs now get the matching for free. There's one
-hook the arch might want to provide to match a PHB bus to its device
-node. A default weak implementation is provided that looks for the
-parent device device node, but it's not entirely reliable on powerpc for
-various reasons so powerpc provides its own.
-
-Dave, I don't think I broke anything in sparc land but I haven't tested
-(and have to admit haven't build-tested yet either).
-
-Not-signed-off-yet. Tested on a few ppc's but not the whole range yet
-either, mostly posted for comments.
-
- arch/powerpc/include/asm/pci-bridge.h |   31 +++++-----------------
- arch/powerpc/include/asm/pci.h        |    3 --
- arch/powerpc/include/asm/prom.h       |    1 
- arch/powerpc/kernel/pci-common.c      |   11 +++++--
- arch/powerpc/kernel/pci_32.c          |    6 ----
- arch/powerpc/kernel/pci_dn.c          |   47
-----------------------------------
- arch/powerpc/kernel/pci_of_scan.c     |    9 ++----
- arch/sparc/kernel/pci.c               |    2 -
- drivers/pci/Makefile                  |    2 +
- drivers/pci/hotplug/rpadlpar_core.c   |    2 -
- drivers/pci/probe.c                   |    8 +++++
- include/linux/pci.h                   |   17 ++++++++++++
- 12 files changed, 46 insertions(+), 93 deletions(-)
+Nice, looks like I forgot to add the new drivers/pci/of.c file :-)
+Here's a new patch. Also added linux-pci to the CC list.
 
 diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
 index 5e156e0..a4c8e4a 100644
@@ -335,6 +327,99 @@ index 0830347..1d002b1 100644
  
  	/* Map IO space for child bus, which may or may not succeed */
  	pcibios_map_io_space(dev->subordinate);
+diff --git a/drivers/pci/of.c b/drivers/pci/of.c
+new file mode 100644
+index 0000000..306d852
+--- /dev/null
++++ b/drivers/pci/of.c
+@@ -0,0 +1,87 @@
++/*
++ * PCI <-> OF mapping helpers
++ *
++ * Copyright 2011 IBM Corp.
++ * 
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include "pci.h"
++
++static int pci_check_one_of_node(struct pci_dev *dev, struct device_node *node)
++{
++	unsigned int size;
++	const __be32 *reg = of_get_property(node, "reg", &size);
++
++	if (reg && size >= 4 && ((reg[0] >> 8) & 0xff) == dev->devfn) {
++		dev->dev.of_node = of_node_get(node);
++		return 1;
++	}
++	return 0;
++}
++
++void pci_set_of_node(struct pci_dev *dev)
++{
++	struct device_node *parent, *node, *node2;
++
++	parent = dev->bus->dev.of_node;
++	if (!parent)
++		return;
++	for_each_child_of_node(parent, node) {
++		if (pci_check_one_of_node(dev, node))
++			return;
++		/*
++		 * Some OFs create a parent node "multifunc-device" as
++		 * a fake root for all functions of a multi-function
++		 * device we go down them as well.
++		 */
++                if (!strcmp(node->name, "multifunc-device")) {
++			for_each_child_of_node(node, node2) {
++				if (pci_check_one_of_node(dev, node2))
++					return;
++			}
++                }
++	}
++}
++
++void pci_release_of_node(struct pci_dev *dev)
++{
++	of_node_put(dev->dev.of_node);
++	dev->dev.of_node = NULL;
++}
++
++void pci_set_bus_of_node(struct pci_bus *bus)
++{
++	if (bus->self == NULL)
++		bus->dev.of_node = pcibios_get_phb_of_node(bus);
++	else
++		bus->dev.of_node = of_node_get(bus->self->dev.of_node);
++}
++
++void pci_release_bus_of_node(struct pci_bus *bus)
++{
++	of_node_put(bus->dev.of_node);
++	bus->dev.of_node = NULL;
++}
++
++struct device_node * __weak pcibios_get_phb_of_node(struct pci_bus *bus)
++{
++	/* This should only be called for PHBs */
++	if (WARN_ON(bus->self || bus->parent))
++		return NULL;
++
++	/* Look for a node pointer in either the intermediary device we
++	 * create above the root bus or it's own parent. Normally only
++	 * the later is populated.
++	 */
++	if (bus->bridge->of_node)
++		return of_node_get(bus->bridge->of_node);
++	if (bus->bridge->parent->of_node)
++		return of_node_get(bus->bridge->parent->of_node);
++	return NULL;
++}
 diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
 index 44cbbba..347349b 100644
 --- a/drivers/pci/probe.c
