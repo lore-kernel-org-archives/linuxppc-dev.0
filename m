@@ -1,36 +1,27 @@
-Return-Path: <bhelgaas@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.67])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35F48B6FB8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Apr 2011 01:25:47 +1000 (EST)
-Received: from hpaq5.eem.corp.google.com (hpaq5.eem.corp.google.com
-	[172.25.149.5]) by smtp-out.google.com with ESMTP id p34FPfaA015286
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2011 08:25:41 -0700
-Received: from vws2 (vws2.prod.google.com [10.241.21.130])
-	by hpaq5.eem.corp.google.com with ESMTP id p34FPNhc001196
-	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Apr 2011 08:25:40 -0700
-Received: by vws2 with SMTP id 2so6341083vws.34
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 04 Apr 2011 08:25:40 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
+	[209.85.210.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 26BCEB6F88
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2011 06:54:46 +1000 (EST)
+Received: by iyb12 with SMTP id 12so7711207iyb.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 04 Apr 2011 13:54:43 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Mon, 4 Apr 2011 14:54:40 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Ayman El-Khashab <ayman@elkhashab.com>
+Subject: Re: problem PCIe LSI detected at 32 device addresses (ppc460ex)
+Message-ID: <20110404205440.GB25557@ponder.secretlab.ca>
+References: <20110401162619.GA20132@crust.elkhashab.com>
+	<20110401225903.GA27320@crust.elkhashab.com>
+	<1301867559.2549.32.camel@pasglop>
+	<BANLkTikTeAgc2dg3-M7yM185pg7FAdbAGw@mail.gmail.com>
+	<20110403232213.GA28042@crust.elkhashab.com>
 MIME-Version: 1.0
-In-Reply-To: <1301902664.2549.76.camel@pasglop>
-References: <1301882694.2549.53.camel@pasglop>
-	<1301887630.2549.71.camel@pasglop>
-	<1301902664.2549.76.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 4 Apr 2011 09:25:20 -0600
-Message-ID: <BANLkTimBD=NfFKGpy0ZTnT9Dcu=dkTHxZg@mail.gmail.com>
-Subject: Re: [RFC/PATCH] of: Match PCI devices to OF nodes generically
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110403232213.GA28042@crust.elkhashab.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,24 +31,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 4, 2011 at 1:37 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
+On Sun, Apr 03, 2011 at 06:22:13PM -0500, Ayman El-Khashab wrote:
+> 
+> On Sun, Apr 03, 2011 at 04:09:26PM -0600, Grant Likely wrote:
+> > On Sun, Apr 3, 2011 at 3:52 PM, Benjamin Herrenschmidt
+> > <benh@kernel.crashing.org> wrote:
+> > >
+> > >> Ok, I've narrowed the scope of the problem some. ?I moved forward
+> > >> to a more recent kernel (2.6.31 to 2.6.36) and that resolved the
+> > >> problem of the controller showing up as every device on the bus.
+> > >> However, from 2.6.37 to the current HEAD, I have not been able to
+> > >> build a kernel to run on the 460EX. ?I tried 2.6.37, 2.6.38, and
+> > >> the HEAD and all result in the following kernel panic. ?I am not
+> > >> sure how to proceed here. ?I suppose we can stick with 2.6.36 since
+> > >> it works, but I'd like to understand what it might take to remedy
+> > >> this.
+> > >
+> > > Smells like somebody changed something with the OF flash code... Josh,
+> > > Grant, any idea what's up there ?
+> > 
+> > Not sure, more information would be helpful.
+> > 
+> > Ayman, if you do a 'git log v2.6.36.. drivers/mtd/maps/physmap_of.c',
+> > then you'll see a list of commits touching the mtd driver.  Would you
+> > be able to do a 'git checkout <sha1-id>' on each of those are report
+> > back on at what point things stop working?  Actually, a full bisect
+> > between 2.6.36 and 2.6.37 would be best, but this is a good start if
+> > you're limited on time.  Once you find the first commit where it
+> > fails, do a 'git checkout <sha1>~1' to confirm that it is in fact the
+> > commit that causes the breakage.
+> 
+> I can try to find the commit tomorrow.  In the interim, i've pasted
+> the dts below.  The board was originally based on the canyonlands, but
+> we've made some changes, mostly to the pcie.  we run the 1-l port in 
+> endpoint mode, we have a chain of plx switches and devices on the 4-l 
+> port.  One item that I don't think would matter, but is not too common 
+> is that we are booting these over the pci bus from another PPCs memory.
+> I only mention this since this failure is during boot, though everything
+> should by local to the cpu by this time.
+> 
+> > 
+> > Can you also post your device tree please?
+> 
+> Here is the device tree for our custom board.
 
-> powerpc has two different ways of matching PCI devices to their
-> corresponding OF node (if any) for historical reasons. The ppc64 one
-> does a scan looking for matching bus/dev/fn, while the ppc32 one does a
-> scan looking only for matching dev/fn on each level in order to be
-> agnostic to busses being renumbered (which Linux does on some
-> platforms).
->
-> This removes both and instead moves the matching code to the PCI core
-> itself. It's the most logical place to do it: when a pci_dev is created,
-> we know the parent and thus can do a single level scan for the matching
-> device_node (if any).
+Hmmm, considering that there is no device node for NAND in this tree,
+something is definitely wrong.  The NAND driver should not be getting
+probed.  If you can do a git bisect on the kernel it will go a long
+way to figuring out what is wrong.
 
-Some of this is reminiscent of the ACPI/PCI binding we do on x86/ia64,
-e.g., acpi_get_pci_dev() and the stuff in drivers/acpi/glue.c.  Have
-you looked at that to see if there's any hope of covering both OF and
-ACPI with something more generic?
+I suspect that it is related to merging of_platform_bus_type into the
+platform_bus_type.  It looks like a device is getting incorrectly
+matched to the driver, but I don't know why.
 
-Bjorn
+It would also help to add this code to 2.6.38 and send me the log
+output:
+
+g.
+
+
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index c01cd1a..e9ac215 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -56,6 +56,8 @@ static int platform_driver_probe_shim(struct platform_device *pdev)
+ 	 * come up empty.  Return -EINVAL in this case so other drivers get
+ 	 * the chance to bind. */
+ 	match = of_match_device(pdev->dev.driver->of_match_table, &pdev->dev);
++	dev_info(&pdev->dev, "match to of_platform_driver, node:%s\n",
++		pdev->dev.of_node ? pdev->dev.of_node->full_name : "!none!");
+ 	return match ? ofpdrv->probe(pdev, match) : -EINVAL;
+ }
+ 
