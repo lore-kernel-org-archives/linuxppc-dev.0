@@ -1,23 +1,24 @@
 Return-Path: <balbi@ti.com>
-Received: from na3sys009aog113.obsmtp.com (na3sys009aog113.obsmtp.com
-	[74.125.149.209])
+Received: from na3sys009aog117.obsmtp.com (na3sys009aog117.obsmtp.com
+	[74.125.149.242])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33DC5B6F7D
+	by ozlabs.org (Postfix) with ESMTPS id 5543FB6FAE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Apr 2011 23:54:17 +1000 (EST)
-Received: by ewy28 with SMTP id 28so2181234ewy.11
+	Mon,  4 Apr 2011 23:59:35 +1000 (EST)
+Received: by eya28 with SMTP id 28so1616788eya.7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 04 Apr 2011 06:54:12 -0700 (PDT)
-Date: Mon, 4 Apr 2011 16:54:10 +0300
+	Mon, 04 Apr 2011 06:59:31 -0700 (PDT)
+Date: Mon, 4 Apr 2011 16:59:28 +0300
 From: Felipe Balbi <balbi@ti.com>
 To: tmarri@apm.com
-Subject: Re: [PATCH v13 07/10] USB/ppc4xx: Add Synopsys DWC OTG PCD function
-Message-ID: <20110404135408.GO2461@legolas.emea.dhcp.ti.com>
-References: <1301872630-2980-1-git-send-email-tmarri@apm.com>
+Subject: Re: [PATCH v13 09/10] USB ppc4xx: Add Synopsys DWC OTG driver
+	kernel configuration and Makefile
+Message-ID: <20110404135927.GQ2461@legolas.emea.dhcp.ti.com>
+References: <1301872644-3074-1-git-send-email-tmarri@apm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1301872630-2980-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1301872644-3074-1-git-send-email-tmarri@apm.com>
 Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
 	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	Fushen Chen <fchen@apm.com>
@@ -31,18 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Sun, Apr 03, 2011 at 04:17:24PM -0700, tmarri@apm.com wrote:
+> From: Tirumala Marri <tmarri@apm.com>
+> 
+> Add Synopsys DesignWare HS USB OTG driver kernel configuration.
+> Synopsys OTG driver may operate in  host only, device only, or OTG mode.
+> The driver also allows user configure the core to use its internal DMA
+> or Slave (PIO) mode.
+> 
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+> ---
+>  drivers/Makefile         |    1 +
+>  drivers/usb/Kconfig      |    2 +
+>  drivers/usb/dwc/Kconfig  |   84 ++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/usb/dwc/Makefile |   19 ++++++++++
+>  4 files changed, 106 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/usb/dwc/Kconfig
+>  create mode 100644 drivers/usb/dwc/Makefile
+> 
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index a125e0b..d4133a6 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -65,6 +65,7 @@ obj-$(CONFIG_PARIDE) 		+= block/paride/
+>  obj-$(CONFIG_TC)		+= tc/
+>  obj-$(CONFIG_UWB)		+= uwb/
+>  obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
+> +obj-$(CONFIG_USB_DWC_OTG)	+= usb/dwc/
 
-On Sun, Apr 03, 2011 at 04:17:10PM -0700, tmarri@apm.com wrote:
-> +static const struct usb_gadget_ops dwc_otg_pcd_ops = {
-> +	.get_frame = dwc_otg_pcd_get_frame,
-> +	.wakeup = dwc_otg_pcd_wakeup,
-> +	/* not selfpowered */
+another one ? Greg, I know MUSB is also wrong, but can we avoid adding
+more guys to drivers/Makefile and use drivers/usb/Makefile instead ?
 
-will you really have a board running this top operating system which is
-Bus powered ? Unless you're forcing all your boards to come with USB
-charging I guess you should implement set_selfpowered.
-
+Promise I'll send a patch to MUSB for next merge window :-)
 
 -- 
 balbi
