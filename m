@@ -1,17 +1,26 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 7EEFCB6FCC
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 92D71B6F0B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Apr 2011 09:53:08 +1000 (EST)
-Date: Tue, 5 Apr 2011 01:52:59 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Greg KH <greg@kroah.com>
-Subject: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-Message-ID: <20110404235259.GA30132@iram.es>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+	Tue,  5 Apr 2011 09:58:20 +1000 (EST)
+Subject: Re: [RFC/PATCH] of: Match PCI devices to OF nodes generically
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+In-Reply-To: <BANLkTimBD=NfFKGpy0ZTnT9Dcu=dkTHxZg@mail.gmail.com>
+References: <1301882694.2549.53.camel@pasglop>
+	<1301887630.2549.71.camel@pasglop> <1301902664.2549.76.camel@pasglop>
+	<BANLkTimBD=NfFKGpy0ZTnT9Dcu=dkTHxZg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Apr 2011 09:58:08 +1000
+Message-ID: <1301961488.2549.105.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,56 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Hi,
+On Mon, 2011-04-04 at 09:25 -0600, Bjorn Helgaas wrote:
+> Some of this is reminiscent of the ACPI/PCI binding we do on x86/ia64,
+> e.g., acpi_get_pci_dev() and the stuff in drivers/acpi/glue.c.  Have
+> you looked at that to see if there's any hope of covering both OF and
+> ACPI with something more generic?
 
-I've had the following funny crashes on PPC machines, with
-cataleptic X server as a consequence:
+Hrm, the ACPI stuff is quite different (to some extent akin to what
+power used to do) form what I can tell. You basically traverse the ACPI
+tree do perform a matching after the fact.
 
-kernel: [drm] Setting GART location based on new memory map
-kernel: Oops: Exception in kernel mode, sig: 4 [#1]
-kernel: CHRP
-kernel: last sysfs file: /sys/devices/pci0001:01/0001:01:08.0/resource
-kernel: NIP: c05648fc LR: c0226f58 CTR: 00000008
-kernel: REGS: ddb53d20 TRAP: 0700   Not tainted  (2.6.38)
-kernel: MSR: 00089032 <EE,ME,IR,DR>  CR: 48044482  XER: 00000000
-kernel: TASK = ddab12b0[3040] 'Xorg' THREAD: ddb52000
-kernel: GPR00: c0226f34 ddb53dd0 ddab12b0 00000000 c0509e6c 00000000 00000000 00000000 
-kernel: GPR08: 00000000 00000000 00000000 00000000 28044488 101f3d8c bf8166b4 00002c00 
-kernel: GPR16: 101b9458 1006f1a0 101ebe0c 00000001 101ebe08 00000000 df9efc20 df9efc00 
-kernel: GPR24: c0591e54 80546440 ddacf660 df9efc00 c0506048 c0480210 00a00000 df9ef800 
-kernel: NIP [c05648fc] platform_device_register_resndata+0x4/0xa4
-kernel: LR [c0226f58] radeon_cp_init+0xd08/0x10c4
-kernel: Call Trace:
-kernel: [ddb53dd0] [c0226f34] radeon_cp_init+0xce4/0x10c4 (unreliable)
-kernel: [ddb53df0] [c020801c] drm_ioctl+0x2c0/0x3e4
-kernel: [ddb53eb0] [c0091264] do_vfs_ioctl+0x674/0x710
-kernel: [ddb53f10] [c0091340] sys_ioctl+0x40/0x70
-kernel: [ddb53f40] [c00111a8] ret_from_syscall+0x0/0x38
-kernel: --- Exception: c01 at 0xfc54a78
-kernel:     LR = 0xfc549dc
-kernel: Instruction dump:
-kernel: 736f2e31 32002f75 73722f6c 69622f6c 6962786b 6c617669 65722e73 6f2e3132 
-kernel: 006c6962 786b6266 696c652e 736f2e31 <002f7573> 722f6c69 622f6c69 62786b62 
-kernel: ---[ end trace ed79daba161e31d9 ]---
+The idea with my patch is really to populate things as they get
+discovered, which makes the code much simpler. Since we have the pointer
+to the OF device node in the generic struct device nowadays, if we
+populate things that way, by the time we discover a device we already
+have at hand the OF device node of the parent bus, so it's a
+single/simpler one level search to locate the device itself and populate
+it's node as well, done once for all.
 
-As you can see, the processor is trying to execute ASCII strings like
-"/usr/lib/libxkb" and has trouble digesting them :-) 
+I suppose you could do something similar for ACPI, but I wouldn't try to
+make a "common infrastructure" at that point, especially since there is
+the possibility on x86 to have both OF device-trees and ACPI :-)
 
-The backtrace is actually missing radeon_cp_init_microcode and radeon_do_init_cp
-which are inlined inside radeon_cp_init.
+Note that I don't really provide a direct/good equivalent of your
+acpi_get_pci_dev() ... the matching is mostly used the other way around,
+ie a driver for a pci_dev wanting to peek a some properties in the
+corresponding OF device_node. ppc32 has some reverse mapping stuff but
+it's pretty crappy (and on my to-fixup list for after that patch goes
+in) and in fact it would be reasonably easy from now on to implement it
+as well, but so far there is no real demand.
 
-The trouble is that radeon_cp_init_microcode calls platform_device_register_simple
-which is a simple inline wrapper around platform_device_register_resndata, which
-happens to be already freed and overwritten with something looking like a list
-of filenames, since I have a non modular kernel.
-
-For now I have locally reverted 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8
-which simply added an _init_or_module section attribute to 
-platform_device_register_resndata, and X is up again... 
-
-Now it may be that it is the ioctl that does not have the right to do
-this. Actually I thought that the name radeon_cp that is registered there
-would appear somwhere under /sys (or /proc) but failed to find it...
-
-	Regards,
-	Gabriel
+Cheers,
+Ben.
