@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EC891B6F95
+	by ozlabs.org (Postfix) with ESMTPS id A4366B6F8B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Apr 2011 13:27:27 +1000 (EST)
+	Mon,  4 Apr 2011 17:38:01 +1000 (EST)
 Subject: Re: [RFC/PATCH] of: Match PCI devices to OF nodes generically
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linux-arch@vger.kernel.org
-In-Reply-To: <1301882694.2549.53.camel@pasglop>
+In-Reply-To: <1301887630.2549.71.camel@pasglop>
 References: <1301882694.2549.53.camel@pasglop>
+	<1301887630.2549.71.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Apr 2011 13:27:10 +1000
-Message-ID: <1301887630.2549.71.camel@pasglop>
+Date: Mon, 04 Apr 2011 17:37:44 +1000
+Message-ID: <1301902664.2549.76.camel@pasglop>
 Mime-Version: 1.0
 Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -27,39 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-04-04 at 12:04 +1000, Benjamin Herrenschmidt wrote:
-> powerpc has two different ways of matching PCI devices to their
-> corresponding OF node (if any) for historical reasons. The ppc64 one
-> does a scan looking for matching bus/dev/fn, while the ppc32 one does a
-> scan looking only for matching dev/fn on each level in order to be
-> agnostic to busses being renumbered (which Linux does on some
-> platforms).
-> 
-> This removes both and instead moves the matching code to the PCI core
-> itself. It's the most logical place to do it: when a pci_dev is created,
-> we know the parent and thus can do a single level scan for the matching
-> device_node (if any).
-> 
-> The benefit is that all archs now get the matching for free. There's one
-> hook the arch might want to provide to match a PHB bus to its device
-> node. A default weak implementation is provided that looks for the
-> parent device device node, but it's not entirely reliable on powerpc for
-> various reasons so powerpc provides its own.
-> 
-> Dave, I don't think I broke anything in sparc land but I haven't tested
-> (and have to admit haven't build-tested yet either).
-> 
-> Not-signed-off-yet. Tested on a few ppc's but not the whole range yet
-> either, mostly posted for comments.
 
-Nice, looks like I forgot to add the new drivers/pci/of.c file :-)
-Here's a new patch. Also added linux-pci to the CC list.
+> Nice, looks like I forgot to add the new drivers/pci/of.c file :-)
+> Here's a new patch. Also added linux-pci to the CC list.
+
+And this one removes a lot more cruft from the powermac code while at
+it, and moves the core matching logic to drivers/of/of_pci.c...
+
+>From 917ea61d6afcf443ca467d0a6ffa00d5c6e21bb3 Mon Sep 17 00:00:00 2001
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 4 Apr 2011 14:38:13 +1000
+Subject: [PATCH] of: Match PCI devices to OF nodes dynamically
+
+powerpc has two different ways of matching PCI devices to their
+corresponding OF node (if any) for historical reasons. The ppc64 one
+does a scan looking for matching bus/dev/fn, while the ppc32 one does a
+scan looking only for matching dev/fn on each level in order to be
+agnostic to busses being renumbered (which Linux does on some
+platforms).
+
+This removes both and instead moves the matching code to the PCI core
+itself. It's the most logical place to do it: when a pci_dev is created,
+we know the parent and thus can do a single level scan for the matching
+device_node (if any).
+
+The benefit is that all archs now get the matching for free. There's one
+hook the arch might want to provide to match a PHB bus to its device
+node. A default weak implementation is provided that looks for the
+parent device device node, but it's not entirely reliable on powerpc for
+various reasons so powerpc provides its own.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/pci-bridge.h |   35 +++------
+ arch/powerpc/include/asm/pci.h        |    3 +-
+ arch/powerpc/include/asm/prom.h       |   14 ---
+ arch/powerpc/kernel/pci-common.c      |   11 ++-
+ arch/powerpc/kernel/pci_32.c          |  148 +++------------------------------
+ arch/powerpc/kernel/pci_dn.c          |   47 -----------
+ arch/powerpc/kernel/pci_of_scan.c     |    9 +--
+ arch/powerpc/platforms/powermac/pci.c |    3 +-
+ arch/sparc/kernel/pci.c               |    2 +-
+ drivers/of/of_pci.c                   |   36 ++++++++
+ drivers/pci/Makefile                  |    2 +
+ drivers/pci/hotplug/rpadlpar_core.c   |    2 +-
+ drivers/pci/of.c                      |   60 +++++++++++++
+ drivers/pci/probe.c                   |    8 ++-
+ include/linux/of_pci.h                |    5 +
+ include/linux/pci.h                   |   17 ++++
+ 16 files changed, 165 insertions(+), 237 deletions(-)
+ create mode 100644 drivers/pci/of.c
 
 diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 5e156e0..a4c8e4a 100644
+index 5e156e0..6912c45 100644
 --- a/arch/powerpc/include/asm/pci-bridge.h
 +++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -169,18 +169,18 @@ static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
+@@ -169,18 +169,22 @@ static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
  	return bus->sysdata;
  }
  
@@ -82,10 +106,14 @@ index 5e156e0..a4c8e4a 100644
  
 +#ifndef CONFIG_PPC64
 +
++extern int pci_device_from_OF_node(struct device_node *node,
++				   u8* bus, u8* devfn);
++extern void pci_create_OF_bus_map(void);
++
  static inline int isa_vaddr_is_ioport(void __iomem *address)
  {
  	/* No specific ISA handling on ppc32 at this stage, it
-@@ -223,17 +223,8 @@ struct pci_dn {
+@@ -223,17 +227,8 @@ struct pci_dn {
  /* Get the pointer to a device_node's pci_dn */
  #define PCI_DN(dn)	((struct pci_dn *) (dn)->data)
  
@@ -103,7 +131,7 @@ index 5e156e0..a4c8e4a 100644
  static inline int pci_device_from_OF_node(struct device_node *np,
  					  u8 *bus, u8 *devfn)
  {
-@@ -244,14 +235,6 @@ static inline int pci_device_from_OF_node(struct device_node *np,
+@@ -244,14 +239,6 @@ static inline int pci_device_from_OF_node(struct device_node *np,
  	return 0;
  }
  
@@ -133,17 +161,30 @@ index 7d77909..1f52268 100644
  extern void of_scan_bus(struct device_node *node, struct pci_bus *bus);
  extern void of_rescan_bus(struct device_node *node, struct pci_bus *bus);
 diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index c189aa5..2b888cc 100644
+index c189aa5..b823536 100644
 --- a/arch/powerpc/include/asm/prom.h
 +++ b/arch/powerpc/include/asm/prom.h
-@@ -32,7 +32,6 @@ struct pci_dev;
- extern int pci_device_from_OF_node(struct device_node *node,
- 				   u8* bus, u8* devfn);
- extern struct device_node* pci_busdev_to_OF_node(struct pci_bus *, int);
--extern struct device_node* pci_device_to_OF_node(struct pci_dev *);
- extern void pci_create_OF_bus_map(void);
- #endif
+@@ -22,20 +22,6 @@
  
+ #define HAVE_ARCH_DEVTREE_FIXUPS
+ 
+-#ifdef CONFIG_PPC32
+-/*
+- * PCI <-> OF matching functions
+- * (XXX should these be here?)
+- */
+-struct pci_bus;
+-struct pci_dev;
+-extern int pci_device_from_OF_node(struct device_node *node,
+-				   u8* bus, u8* devfn);
+-extern struct device_node* pci_busdev_to_OF_node(struct pci_bus *, int);
+-extern struct device_node* pci_device_to_OF_node(struct pci_dev *);
+-extern void pci_create_OF_bus_map(void);
+-#endif
+-
+ /*
+  * OF address retreival & translation
+  */
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
 index 893af2a..47c516b 100644
 --- a/arch/powerpc/kernel/pci-common.c
@@ -181,22 +222,172 @@ index 893af2a..47c516b 100644
  	hose->bus = bus;
  
 diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index bedb370..700a826 100644
+index bedb370..ca6bcb7 100644
 --- a/arch/powerpc/kernel/pci_32.c
 +++ b/arch/powerpc/kernel/pci_32.c
-@@ -276,12 +276,6 @@ pci_busdev_to_OF_node(struct pci_bus *bus, int devfn)
+@@ -167,150 +167,26 @@ pcibios_make_OF_bus_map(void)
+ #endif
  }
- EXPORT_SYMBOL(pci_busdev_to_OF_node);
  
+-typedef int (*pci_OF_scan_iterator)(struct device_node* node, void* data);
+-
+-static struct device_node*
+-scan_OF_pci_childs(struct device_node *parent, pci_OF_scan_iterator filter, void* data)
+-{
+-	struct device_node *node;
+-	struct device_node* sub_node;
+-
+-	for_each_child_of_node(parent, node) {
+-		const unsigned int *class_code;
+-	
+-		if (filter(node, data)) {
+-			of_node_put(node);
+-			return node;
+-		}
+-
+-		/* For PCI<->PCI bridges or CardBus bridges, we go down
+-		 * Note: some OFs create a parent node "multifunc-device" as
+-		 * a fake root for all functions of a multi-function device,
+-		 * we go down them as well.
+-		 */
+-		class_code = of_get_property(node, "class-code", NULL);
+-		if ((!class_code || ((*class_code >> 8) != PCI_CLASS_BRIDGE_PCI &&
+-			(*class_code >> 8) != PCI_CLASS_BRIDGE_CARDBUS)) &&
+-			strcmp(node->name, "multifunc-device"))
+-			continue;
+-		sub_node = scan_OF_pci_childs(node, filter, data);
+-		if (sub_node) {
+-			of_node_put(node);
+-			return sub_node;
+-		}
+-	}
+-	return NULL;
+-}
+-
+-static struct device_node *scan_OF_for_pci_dev(struct device_node *parent,
+-					       unsigned int devfn)
+-{
+-	struct device_node *np, *cnp;
+-	const u32 *reg;
+-	unsigned int psize;
+-
+-	for_each_child_of_node(parent, np) {
+-		reg = of_get_property(np, "reg", &psize);
+-                if (reg && psize >= 4 && ((reg[0] >> 8) & 0xff) == devfn)
+-			return np;
+-
+-		/* Note: some OFs create a parent node "multifunc-device" as
+-		 * a fake root for all functions of a multi-function device,
+-		 * we go down them as well. */
+-                if (!strcmp(np->name, "multifunc-device")) {
+-                        cnp = scan_OF_for_pci_dev(np, devfn);
+-                        if (cnp)
+-                                return cnp;
+-                }
+-	}
+-	return NULL;
+-}
+-
+-
+-static struct device_node *scan_OF_for_pci_bus(struct pci_bus *bus)
+-{
+-	struct device_node *parent, *np;
+-
+-	/* Are we a root bus ? */
+-	if (bus->self == NULL || bus->parent == NULL) {
+-		struct pci_controller *hose = pci_bus_to_host(bus);
+-		if (hose == NULL)
+-			return NULL;
+-		return of_node_get(hose->dn);
+-	}
+-
+-	/* not a root bus, we need to get our parent */
+-	parent = scan_OF_for_pci_bus(bus->parent);
+-	if (parent == NULL)
+-		return NULL;
+-
+-	/* now iterate for children for a match */
+-	np = scan_OF_for_pci_dev(parent, bus->self->devfn);
+-	of_node_put(parent);
+-
+-	return np;
+-}
+-
+-/*
+- * Scans the OF tree for a device node matching a PCI device
+- */
+-struct device_node *
+-pci_busdev_to_OF_node(struct pci_bus *bus, int devfn)
+-{
+-	struct device_node *parent, *np;
+-
+-	pr_debug("pci_busdev_to_OF_node(%d,0x%x)\n", bus->number, devfn);
+-	parent = scan_OF_for_pci_bus(bus);
+-	if (parent == NULL)
+-		return NULL;
+-	pr_debug(" parent is %s\n", parent ? parent->full_name : "<NULL>");
+-	np = scan_OF_for_pci_dev(parent, devfn);
+-	of_node_put(parent);
+-	pr_debug(" result is %s\n", np ? np->full_name : "<NULL>");
+-
+-	/* XXX most callers don't release the returned node
+-	 * mostly because ppc64 doesn't increase the refcount,
+-	 * we need to fix that.
+-	 */
+-	return np;
+-}
+-EXPORT_SYMBOL(pci_busdev_to_OF_node);
+-
 -struct device_node*
 -pci_device_to_OF_node(struct pci_dev *dev)
 -{
 -	return pci_busdev_to_OF_node(dev->bus, dev->devfn);
 -}
 -EXPORT_SYMBOL(pci_device_to_OF_node);
+-
+-static int
+-find_OF_pci_device_filter(struct device_node* node, void* data)
+-{
+-	return ((void *)node == data);
+-}
  
- static int
- find_OF_pci_device_filter(struct device_node* node, void* data)
+ /*
+  * Returns the PCI device matching a given OF node
+  */
+-int
+-pci_device_from_OF_node(struct device_node* node, u8* bus, u8* devfn)
++int pci_device_from_OF_node(struct device_node* node, u8* bus, u8* devfn)
+ {
+-	const unsigned int *reg;
+-	struct pci_controller* hose;
+ 	struct pci_dev* dev = NULL;
+-	
+-	/* Make sure it's really a PCI device */
+-	hose = pci_find_hose_for_OF_device(node);
+-	if (!hose || !hose->dn)
+-		return -ENODEV;
+-	if (!scan_OF_pci_childs(hose->dn,
+-			find_OF_pci_device_filter, (void *)node))
++	const __be32 *reg;
++	int size;
++
++	/* Check if it might have a chance to be a PCI device */
++	if (!pci_find_hose_for_OF_device(node))
+ 		return -ENODEV;
+-	reg = of_get_property(node, "reg", NULL);
+-	if (!reg)
++
++	reg = of_get_property(node, "reg", &size);
++	if (!reg || size < 5 * sizeof(u32))
+ 		return -ENODEV;
+-	*bus = (reg[0] >> 16) & 0xff;
+-	*devfn = ((reg[0] >> 8) & 0xff);
++	
++	*bus = (be32_to_cpup(&reg[0]) >> 16) & 0xff;
++	*devfn = (be32_to_cpup(&reg[0]) >> 8) & 0xff;
+ 
+ 	/* Ok, here we need some tweak. If we have already renumbered
+ 	 * all busses, we can't rely on the OF bus number any more.
 diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
 index d225d99..8cb66a2 100644
 --- a/arch/powerpc/kernel/pci_dn.c
@@ -290,6 +481,27 @@ index 1e89a72..fe0a5ad 100644
  		}
  	}
  }
+diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+index ab68989..68a18da 100644
+--- a/arch/powerpc/platforms/powermac/pci.c
++++ b/arch/powerpc/platforms/powermac/pci.c
+@@ -17,6 +17,7 @@
+ #include <linux/init.h>
+ #include <linux/bootmem.h>
+ #include <linux/irq.h>
++#include <linux/of_pci.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/io.h>
+@@ -235,7 +236,7 @@ static int chaos_validate_dev(struct pci_bus *bus, int devfn, int offset)
+ 
+ 	if (offset >= 0x100)
+ 		return  PCIBIOS_BAD_REGISTER_NUMBER;
+-	np = pci_busdev_to_OF_node(bus, devfn);
++	np = of_pci_find_child_device(bus->dev.of_node, devfn);
+ 	if (np == NULL)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
 diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
 index 713dc91..e539d23 100644
 --- a/arch/sparc/kernel/pci.c
@@ -303,6 +515,50 @@ index 713dc91..e539d23 100644
  	dev->devfn = devfn;
  	dev->multifunction = 0;		/* maybe a lie? */
  	set_pcie_port_type(dev);
+diff --git a/drivers/of/of_pci.c b/drivers/of/of_pci.c
+index ac1ec54..9d179c4 100644
+--- a/drivers/of/of_pci.c
++++ b/drivers/of/of_pci.c
+@@ -90,3 +90,39 @@ int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
+ 	return of_irq_map_raw(ppnode, &lspec_be, 1, laddr, out_irq);
+ }
+ EXPORT_SYMBOL_GPL(of_irq_map_pci);
++
++
++static inline int __of_pci_pci_compare(struct device_node *node, unsigned int devfn)
++{
++	unsigned int size;
++	const __be32 *reg = of_get_property(node, "reg", &size);
++
++	if (!reg || size < 5 * sizeof(__be32))
++		return 0;
++	return ((be32_to_cpup(&reg[0]) >> 8) & 0xff) == devfn;
++}
++
++struct device_node *of_pci_find_child_device(struct device_node *parent,
++					     unsigned int devfn)
++{
++	struct device_node *node, *node2;
++	
++	for_each_child_of_node(parent, node) {
++		if (__of_pci_pci_compare(node, devfn))
++			return node;
++		/*
++		 * Some OFs create a parent node "multifunc-device" as
++		 * a fake root for all functions of a multi-function
++		 * device we go down them as well.
++		 */
++                if (!strcmp(node->name, "multifunc-device")) {
++			for_each_child_of_node(node, node2) {
++				if (__of_pci_pci_compare(node2, devfn)) {
++					of_node_put(node);
++					return node2;
++				}
++			}
++                }
++	}
++	return NULL;
++}
 diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
 index 98d61c8..d5c3cb9 100644
 --- a/drivers/pci/Makefile
@@ -329,10 +585,10 @@ index 0830347..1d002b1 100644
  	pcibios_map_io_space(dev->subordinate);
 diff --git a/drivers/pci/of.c b/drivers/pci/of.c
 new file mode 100644
-index 0000000..306d852
+index 0000000..fff7270
 --- /dev/null
 +++ b/drivers/pci/of.c
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,60 @@
 +/*
 + * PCI <-> OF mapping helpers
 + *
@@ -346,42 +602,15 @@ index 0000000..306d852
 +
 +#include <linux/kernel.h>
 +#include <linux/pci.h>
++#include <linux/of_pci.h>
 +#include "pci.h"
-+
-+static int pci_check_one_of_node(struct pci_dev *dev, struct device_node *node)
-+{
-+	unsigned int size;
-+	const __be32 *reg = of_get_property(node, "reg", &size);
-+
-+	if (reg && size >= 4 && ((reg[0] >> 8) & 0xff) == dev->devfn) {
-+		dev->dev.of_node = of_node_get(node);
-+		return 1;
-+	}
-+	return 0;
-+}
 +
 +void pci_set_of_node(struct pci_dev *dev)
 +{
-+	struct device_node *parent, *node, *node2;
-+
-+	parent = dev->bus->dev.of_node;
-+	if (!parent)
++	if (!dev->bus->dev.of_node)
 +		return;
-+	for_each_child_of_node(parent, node) {
-+		if (pci_check_one_of_node(dev, node))
-+			return;
-+		/*
-+		 * Some OFs create a parent node "multifunc-device" as
-+		 * a fake root for all functions of a multi-function
-+		 * device we go down them as well.
-+		 */
-+                if (!strcmp(node->name, "multifunc-device")) {
-+			for_each_child_of_node(node, node2) {
-+				if (pci_check_one_of_node(dev, node2))
-+					return;
-+			}
-+                }
-+	}
++	dev->dev.of_node = of_pci_find_child_device(dev->bus->dev.of_node,
++						    dev->devfn);
 +}
 +
 +void pci_release_of_node(struct pci_dev *dev)
@@ -474,6 +703,20 @@ index 44cbbba..347349b 100644
  
  	if (!parent)
  		set_dev_node(b->bridge, pcibus_to_node(b));
+diff --git a/include/linux/of_pci.h b/include/linux/of_pci.h
+index 85a27b6..f93e217 100644
+--- a/include/linux/of_pci.h
++++ b/include/linux/of_pci.h
+@@ -6,4 +6,9 @@
+ struct pci_dev;
+ struct of_irq;
+ int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
++
++struct device_node;
++struct device_node *of_pci_find_child_device(struct device_node *parent,
++					     unsigned int devfn);
++
+ #endif
 diff --git a/include/linux/pci.h b/include/linux/pci.h
 index 96f70d7..e5111da 100644
 --- a/include/linux/pci.h
