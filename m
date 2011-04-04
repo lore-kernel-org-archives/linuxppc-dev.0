@@ -1,24 +1,23 @@
 Return-Path: <balbi@ti.com>
-Received: from na3sys009aog117.obsmtp.com (na3sys009aog117.obsmtp.com
-	[74.125.149.242])
+Received: from na3sys009aog113.obsmtp.com (na3sys009aog113.obsmtp.com
+	[74.125.149.209])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 78D9BB6EEE
+	by ozlabs.org (Postfix) with ESMTPS id 33DC5B6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Apr 2011 23:43:12 +1000 (EST)
-Received: by mail-ey0-f181.google.com with SMTP id 5so1853981eyh.40
+	Mon,  4 Apr 2011 23:54:17 +1000 (EST)
+Received: by ewy28 with SMTP id 28so2181234ewy.11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 04 Apr 2011 06:43:07 -0700 (PDT)
-Date: Mon, 4 Apr 2011 16:43:04 +0300
+	Mon, 04 Apr 2011 06:54:12 -0700 (PDT)
+Date: Mon, 4 Apr 2011 16:54:10 +0300
 From: Felipe Balbi <balbi@ti.com>
 To: tmarri@apm.com
-Subject: Re: [PATCH v13 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
-	Interface Layer (CIL)
-Message-ID: <20110404134303.GN2461@legolas.emea.dhcp.ti.com>
-References: <1301872613-2825-1-git-send-email-tmarri@apm.com>
+Subject: Re: [PATCH v13 07/10] USB/ppc4xx: Add Synopsys DWC OTG PCD function
+Message-ID: <20110404135408.GO2461@legolas.emea.dhcp.ti.com>
+References: <1301872630-2980-1-git-send-email-tmarri@apm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1301872613-2825-1-git-send-email-tmarri@apm.com>
+In-Reply-To: <1301872630-2980-1-git-send-email-tmarri@apm.com>
 Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
 	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	Fushen Chen <fchen@apm.com>
@@ -34,19 +33,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi,
 
-On Sun, Apr 03, 2011 at 04:16:53PM -0700, tmarri@apm.com wrote:
-> +const char *op_state_str(enum usb_otg_state state)
+On Sun, Apr 03, 2011 at 04:17:10PM -0700, tmarri@apm.com wrote:
+> +static const struct usb_gadget_ops dwc_otg_pcd_ops = {
+> +	.get_frame = dwc_otg_pcd_get_frame,
+> +	.wakeup = dwc_otg_pcd_wakeup,
+> +	/* not selfpowered */
 
-please don't introduce yet another version of this. Make the ones
-available generic. Place a static inline const char
-*otg_state_string(struct otg_transceiver *x) on include/linux/usb/otg.h
+will you really have a board running this top operating system which is
+Bus powered ? Unless you're forcing all your boards to come with USB
+charging I guess you should implement set_selfpowered.
 
-> +/**
-> + * This function enables the controller's Global Interrupt in the AHB Config
-> + * register.
-> + */
-
-useless comments :-) or convert to kerneldoc.
 
 -- 
 balbi
