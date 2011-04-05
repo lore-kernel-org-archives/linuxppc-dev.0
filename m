@@ -1,10 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <3cf2e447f50f85da004b145ea87cdace4b4352cc.1301986643.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/nohash: Allocate stale_map[cpu] on CPU_UP_PREPARE not
-	CPU_ONLINE
-Date: Tue,  5 Apr 2011 16:57:27 +1000 (EST)
+Return-Path: <keshava_mgowda@ti.com>
+Received: from na3sys009aog111.obsmtp.com (na3sys009aog111.obsmtp.com
+	[74.125.149.205])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2F1F4B6F8E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Apr 2011 17:08:24 +1000 (EST)
+Received: by mail-bw0-f43.google.com with SMTP id 14so101371bwz.30
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 05 Apr 2011 00:08:20 -0700 (PDT)
+From: Keshava Munegowda <keshava_mgowda@ti.com>
+References: <1301336866-1915-1-git-send-email-tmarri@apm.com>
+	<3569ce83abe4f1f3ab1699c2beee1f35@mail.gmail.com>
+	<712525e420e78daeb3f43bf1ebc53e23@mail.gmail.com>
+	<4D961FBA.8090107@ru.mvista.com>
+MIME-Version: 1.0
+In-Reply-To: <4D961FBA.8090107@ru.mvista.com>
+Date: Tue, 5 Apr 2011 12:38:03 +0530
+Message-ID: <b284084fc5fc0d15e13cbfaf926ee1ce@mail.gmail.com>
+Subject: RE: [PATCH v10 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core Interface
+	Layer (CIL)
+To: Sergei Shtylyov <sshtylyov@mvista.com>, Tirumala Marri <tmarri@apm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mark Miesfeld <mmiesfeld@apm.com>, greg@kroah.com,
+	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,40 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we allocate the stale_map for a cpu when it comes online,
-this leaves open a small window where a process can be scheduled
-on the cpu before the stale_map is allocated. Instead allocate
-the stale_map at CPU_UP_PREPARE time, that way it will be always
-available before tasks start running.
+> -----Original Message-----
+> From: Sergei Shtylyov [mailto:sshtylyov@mvista.com]
+> Sent: Saturday, April 02, 2011 12:26 AM
+> To: Tirumala Marri
+> Cc: Keshava Munegowda; linux-usb@vger.kernel.org;
+linuxppc-dev@lists.ozlabs.org; greg@kroah.com;
+> Fushen Chen; Mark Miesfeld
+> Subject: Re: [PATCH v10 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
+Interface Layer (CIL)
+>
+> Hello.
+>
+> Tirumala Marri wrote:
+>
+> >>> +void dwc_otg_core_init(struct core_if *core_if)
+> >>> +{
+> >>> +	u32 i;
+> >>> +	ulong global_reg = core_if->core_global_regs;
+> >>> +	struct device_if *dev_if = core_if->dev_if;
+> >>> +	u32 ahbcfg = 0;
+> >>> +	u32 i2cctl = 0;
+> >>> +	u32 gusbcfg;
+>
+> >> Tabify the declarations ;
+>
+> > [Marri] When I checked again in my source, I do see the tabs added
+before
+> > declarations.
+>
+>     He means that tabs should be between the variable's type and name,
+but
+> there's no such requirement actually.
 
-It is possible the cpu fails to come up, in which case we should free
-the stale_map, so add a CPU_UP_CANCELED case to do that.
+I am sorry if there is no such requirement, since I had such comments and
+I fixed it and
+Now I have commented.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/mm/mmu_context_nohash.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index c0aab52..4d8fa91 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -338,12 +338,14 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
- 		return NOTIFY_OK;
- 
- 	switch (action) {
--	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
- 		pr_devel("MMU: Allocating stale context map for CPU %d\n", cpu);
- 		stale_map[cpu] = kzalloc(CTX_MAP_SIZE, GFP_KERNEL);
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		pr_devel("MMU: Freeing stale context map for CPU %d\n", cpu);
--- 
-1.7.1
+Keshava Munegowda
