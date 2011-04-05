@@ -1,20 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A770B6F8B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Apr 2011 16:18:46 +1000 (EST)
-Subject: Re: [PATCH] powerpc/85xx: Don't add disabled PCIe devices
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1301554869-31037-1-git-send-email-prabhakar@freescale.com>
-Date: Tue, 5 Apr 2011 01:18:34 -0500
-Message-Id: <A554F759-1D74-4FD8-A1CF-29B912C44F4F@kernel.crashing.org>
-References: <1301554869-31037-1-git-send-email-prabhakar@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Cc: meet2prabhu@gmail.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linux-kernel@vger.kernel.org>
+Message-Id: <c4f5166f98cb703742191eb74f583bb8011f9cdf.1301984663.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] mm: Check we have the right vma in access_process_vm()
+Date: Tue,  5 Apr 2011 16:24:31 +1000 (EST)
+Cc: aarcange@redhat.com, Andrew Morton <akpm@osdl.org>, riel@redhat.com,
+	linuxppc-dev@ozlabs.org, hughd@google.com, linux-mm@kvack.org,
+	walken@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +16,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In access_process_vm() we need to check that we have found the right
+vma, not the following vma, before we try to access it. Otherwise
+we might call the vma's access routine with an address which does
+not fall inside the vma.
 
-On Mar 31, 2011, at 2:01 AM, Prabhakar Kushwaha wrote:
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ mm/memory.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> PCIe nodes with the property status=3D"disabled" are not usable and so
-> avoid adding "disabled" PCIe bridge with the system.
->=20
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> Acked-by: Kumar Gala <kumar.gala@freescale.com>
-> ---
-> Based upon =
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branc=
-h master)
->=20
-> arch/powerpc/sysdev/fsl_pci.c |    5 +++++
-> 1 files changed, 5 insertions(+), 0 deletions(-)
-
-applied to merge
-
-- k=
+diff --git a/mm/memory.c b/mm/memory.c
+index 5823698..7e6f17b 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3619,7 +3619,7 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
+ 			 */
+ #ifdef CONFIG_HAVE_IOREMAP_PROT
+ 			vma = find_vma(mm, addr);
+-			if (!vma)
++			if (!vma || vma->vm_start > addr)
+ 				break;
+ 			if (vma->vm_ops && vma->vm_ops->access)
+ 				ret = vma->vm_ops->access(vma, addr, buf,
+-- 
+1.7.1
