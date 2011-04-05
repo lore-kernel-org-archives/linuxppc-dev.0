@@ -1,21 +1,20 @@
-Return-Path: <mr.scada@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DF0B6B6EFE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 09:35:15 +1000 (EST)
-Received: by bwz10 with SMTP id 10so764330bwz.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Apr 2011 16:35:10 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 5 Apr 2011 16:35:10 -0700
-Message-ID: <BANLkTim=oxHcW-HV5Z062r2p2D1nTL8mcQ@mail.gmail.com>
-Subject: Combining multiple NAND MTDs
-From: Barry G <mr.scada@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E396CB6EF0
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2011 09:39:21 +1000 (EST)
+Subject: Re: [PATCH] powerpc/book3e: Fix extlb size
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <F4D669C2-BAD4-4B79-BE24-FB5AD2961160@kernel.crashing.org>
+References: <a0ae014cf06639bb9aea24149c24e51acbaf2598.1301984934.git.michael@ellerman.id.au>
+	<F4D669C2-BAD4-4B79-BE24-FB5AD2961160@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Apr 2011 09:39:09 +1000
+Message-ID: <1302046749.2549.186.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, 2011-04-05 at 07:41 -0500, Kumar Gala wrote:
+> > Rework it to make it a bit clearer, and also correct. We want 3 save
+> > areas, each EX_TLB_SIZE _bytes_.
+> 
+> Where does the 3 come from?  I have a guess, and think its possible we
+> (FSL) want 4?
 
-I have an 8308 using the fsl_elbc_nand NAND controller.  I have
-chip selects 2 & 3 hooked up to a single die multiple chip select NAND
-chip.  I have programmed u-boot and the kernel correctly and the
-NAND "chips" are found:
-NAND device: Manufacturer ID: 0xec, Chip ID: 0xd3 (Samsung NAND 1GiB
-3,3V 8-bit)
-eLBC NAND device at 0xe0600000, bank 1
-NAND device: Manufacturer ID: 0xec, Chip ID: 0xd3 (Samsung NAND 1GiB
-3,3V 8-bit)
-eLBC NAND device at 0xe0608000, bank 2
+Wrong guess :-) It's not about exception levels. It's about how much
+the handler can re-enter (2 with E.PT, 3 with virtual linear)
 
-The nand chips are correctly show up:
-# cat /proc/mtd
-dev:    size   erasesize  name
-mtd0: 02000000 00020000 "fe000000.flash"
-mtd1: 40000000 00020000 "e0600000.flash"
-mtd2: 40000000 00020000 "e0608000.flash"
+For MC's, CRITs etc... which we don't support on Book3E 64-bit at this
+stage, you'll have to probably backup the whole area... that or move
+the TLB frame pointer SPR to a separate set of 3 levels, but then you'd
+have to fix the code that makes assumption about level 0 being at a
+fixed offset in the PACA and instead use alignment tricks. We need that
+because that's how we "reset" the TLB frame when a second level finds
+a fault.
 
-(mtd0 is unrelated NOR part).
-
-I want to run UBIFS on the combined 2 gigs of flash.  Whats the best
-way to do this?
-
-I tried using the mtdconcat stuff and wrote a small driver
-but I am not sure how to populate the mtd_info structure since do_probe_map
-doesn't work with NAND AFAIK.
-
-I see that fsl_elbc_select_chip says "hardware does not seem to support this".
-Not sure if this is related.
-
-I see some comments in mtd-physmap.txt about using multiple reg ranges?
-Does this work with NAND?
-
-Thanks for any pointers,
-
-Barry
+Cheers,
+Ben.
