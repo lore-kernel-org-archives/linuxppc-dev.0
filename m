@@ -1,25 +1,37 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE001.bigfish.com (db3ehsobe001.messaging.microsoft.com
-	[213.199.154.139])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 13577B6F06
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 19AABB6F98
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 04:15:52 +1000 (EST)
-Date: Tue, 5 Apr 2011 13:15:04 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [RFC 2/5]arch:powerpc:sysdev:Makefile Remove unused config in
-	the Makefile.
-Message-ID: <20110405131504.1d182da4@schlenkerla.am.freescale.net>
-In-Reply-To: <1302022702-24541-2-git-send-email-justinmattock@gmail.com>
-References: <1302022702-24541-1-git-send-email-justinmattock@gmail.com>
-	<1302022702-24541-2-git-send-email-justinmattock@gmail.com>
+	Wed,  6 Apr 2011 01:51:09 +1000 (EST)
+Date: Tue, 5 Apr 2011 08:49:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Marek <mmarek@suse.cz>
+Subject: Re: [PATCH 00/34] Make kernel build deterministic
+Message-ID: <20110405154918.GA31337@suse.de>
+References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, trivial@kernel.org,
-	linux-kernel@vger.kernel.org, Harninder Rai <harninder.rai@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
+Cc: anil_ravindranath@pmc-sierra.com, mchehab@redhat.com, x86@kernel.org,
+	mac@melware.de, aacraid@adaptec.com,
+	linux-mtd@lists.infradead.org, allan.stephens@windriver.com,
+	hpa@zytor.com, netdev@vger.kernel.org, t.sailer@alumni.ethz.ch,
+	gwingerde@gmail.com, IvDoorn@gmail.com, elf@buici.com,
+	cluster-devel@redhat.com, ccaulfie@redhat.com, mingo@redhat.com,
+	dougthompson@xmission.com, linux-media@vger.kernel.org,
+	arnaud.giersch@free.fr, linux-kbuild@vger.kernel.org,
+	teigland@redhat.com, tony.olech@elandigitalsystems.com,
+	apw@canonical.com, linux-hams@vger.kernel.org,
+	tglx@linutronix.de, swhiteho@redhat.com,
+	linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
+	jon.maloy@ericsson.com, linux-scsi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
+	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+	bluesmoke-devel@lists.sourceforge.net, James.Bottomley@suse.de,
+	tipc-discussion@lists.sourceforge.net, chuanxiao.dong@intel.com,
+	paulus@samba.org, dwmw2@infradead.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +41,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 5 Apr 2011 09:58:19 -0700
-"Justin P. Mattock" <justinmattock@gmail.com> wrote:
-
-> The patch below removes an unused config variable found by using a kernel
-> cleanup script.
-> Note: I did try to cross compile these but hit erros while doing so..
-> (gcc is not setup to cross compile) and am unsure if anymore needs to be done.
-> Please have a look if/when anybody has free time.
+On Tue, Apr 05, 2011 at 04:58:47PM +0200, Michal Marek wrote:
 > 
-> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: linuxppc-dev@lists.ozlabs.org
+> Hi,
 > 
-> ---
->  arch/powerpc/sysdev/Makefile |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> index 1e0c933..243b6ad 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -18,7 +18,6 @@ obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
->  obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
->  obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
->  obj-$(CONFIG_MPC8xxx_GPIO)	+= mpc8xxx_gpio.o
-> -obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
->  obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
->  obj-$(CONFIG_FSL_RIO)		+= fsl_rio.o
->  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+> this series makes it possible to build bit-identical kernel image and
+> modules from identical sources. Of course the build is already
+> deterministic in terms of behavior of the code, but the various
+> timestamps embedded in the object files make it hard to compare two
+> builds, for instance to verify that a makefile cleanup didn't
+> accidentally change something. A prime example is /proc/config.gz, which
+> has both a timestamp in the gzip header and a timestamp in the payload
+> data. With this series applied, a script like this will produce
+> identical kernels each time:
 
-Those files do exist, and aren't pulled in by any other means I can see.
-It was introduced by commit 6db92cc9d07db9f713da8554b4bcdfc8e54ad386, whose
-changelog says:
-	Drivers can do the following in Kconfig to use these APIs "select
-FSL_85XX_CACHE_SRAM if MPC85xx"
+Very nice stuff.  Do you want to take the individual patches through one
+of your trees, or do you mind if the subsystem maintainers take them
+through theirs?
 
-Now, the absence of such a kconfig option[1] is a problem, but I don't think
-outright removal (labelled "trivial cleanup") is appropriate, unless nobody
-fixes it after the problem is pointed out.  And if it is removed, the files
-should go with it.
+thanks,
 
--Scott
-
-[1] and of any drivers that select it, though this was added fairly
-recently -- perhaps such a driver change is on its way?
+greg k-h
