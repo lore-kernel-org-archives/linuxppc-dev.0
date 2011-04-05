@@ -1,17 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@kernel.crashing.org>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B6AD9B6F12
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2011 16:14:18 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id p356EHbc018890
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:17 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p356EHBp1523938
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:17 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p356EHp3024331
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:17 +1000
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	p356EHIs024328
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:17 +1000
+Received: from grosgo.ozlabs.ibm.com (haven.au.ibm.com [9.190.164.82])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 04118B6FA9
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2011 14:31:04 +1000 (EST)
-Date: Mon, 4 Apr 2011 23:30:58 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <alpine.LFD.2.00.1104042330380.19519@right.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 5994B73A42
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2011 16:14:17 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCHES] Bits and pieces for Power7 support in HV mode
+Date: Tue,  5 Apr 2011 16:13:56 +1000
+Message-Id: <1301984051-18413-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit c0bb9e45f3a7f67fc358946727bc3d5f23d0f55d:
+Here's a patch series which adds bits and pieces (and in some case
+not directly related cleanups that will be useful for the upcoming
+platform that uses that stuff) to allow running a recent CPU in
+hypervisor mode.
 
-  kdump: Allow shrinking of kdump region to be overridden (2011-04-01 16:14:30 +1100)
+It applies on top of the few cleanups and the XICS rewrite I've
+already posted and is a pre-requisite for the upcoming KVM support
+and the "non-virtualized" platform (still brewing).
 
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+I've also put them in my "test" branch
 
-Kumar Gala (1):
-      edac/mpc85xx: Limit setting/clearing of HID1[RFXE] to e500v1/v2 cores
-
-Prabhakar Kushwaha (1):
-      powerpc/85xx: Update dts for PCIe memory maps to match u-boot of Px020RDB
-
- arch/powerpc/boot/dts/p1020rdb.dts            |   12 +++++-----
- arch/powerpc/boot/dts/p2020rdb.dts            |   12 +++++-----
- arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    4 +-
- arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |   10 ++++----
- drivers/edac/mpc85xx_edac.c                   |   27 +++++++++++++++++-------
- 5 files changed, 38 insertions(+), 27 deletions(-)
+Cheers,
+Ben.
