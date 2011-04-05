@@ -1,38 +1,28 @@
-Return-Path: <mchehab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 22625B6FB0
+Return-Path: <carlos.moratelli@digitel.com.br>
+Received: from atena.digitel.com.br (ares.digitel.com.br [200.198.105.40])
+	by ozlabs.org (Postfix) with ESMTP id 9862DB6F0B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 04:31:16 +1000 (EST)
-Message-ID: <4D9B5F7F.6090609@redhat.com>
-Date: Tue, 05 Apr 2011 15:29:19 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH 00/34] Make kernel build deterministic
-References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>	
-	<20110405154918.GA31337@suse.de>
-	<1302027412.2924.7.camel@mulgrave.site>
-In-Reply-To: <1302027412.2924.7.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8
-Cc: anil_ravindranath@pmc-sierra.com, x86@kernel.org, mac@melware.de,
-	aacraid@adaptec.com, linux-mtd@lists.infradead.org,
-	allan.stephens@windriver.com, hpa@zytor.com,
-	netdev@vger.kernel.org, t.sailer@alumni.ethz.ch,
-	gwingerde@gmail.com, IvDoorn@gmail.com, elf@buici.com,
-	cluster-devel@redhat.com, ccaulfie@redhat.com, mingo@redhat.com,
-	dougthompson@xmission.com, linux-media@vger.kernel.org,
-	jon.maloy@ericsson.com, arnaud.giersch@free.fr,
-	linux-kbuild@vger.kernel.org, teigland@redhat.com,
-	tony.olech@elandigitalsystems.com, apw@canonical.com,
-	linux-hams@vger.kernel.org, tglx@linutronix.de,
-	swhiteho@redhat.com, linux-arm-kernel@lists.infradead.org,
-	linux-edac@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
-	linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	bluesmoke-devel@lists.sourceforge.net, linux-usb@vger.kernel.org,
-	tipc-discussion@lists.sourceforge.net, chuanxiao.dong@intel.com,
-	paulus@samba.org, dwmw2@infradead.org, davem@davemloft.net
+	Wed,  6 Apr 2011 04:48:26 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by atena.digitel.com.br (Postfix) with ESMTP id 33C3B32E800D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Apr 2011 15:44:37 -0300 (BRT)
+Received: from atena.digitel.com.br ([127.0.0.1])
+	by localhost (atena.digitel.com.br [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id n3OpA2W5KF56 for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Apr 2011 15:44:34 -0300 (BRT)
+Received: from [192.168.20.131] (unknown [192.168.20.131])
+	by atena.digitel.com.br (Postfix) with ESMTP id 2B8EF32E8002
+	for <linuxppc-dev@lists.ozlabs.org.>;
+	Tue,  5 Apr 2011 15:44:34 -0300 (BRT)
+Subject: sdhc/mpc8536 - SDCard always detected like read-only
+From: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Apr 2011 15:39:56 -0300
+Message-ID: <1302028796.10112.59.camel@moratelli-host.digitel.com.br>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em 05-04-2011 15:16, James Bottomley escreveu:
-> On Tue, 2011-04-05 at 08:49 -0700, Greg KH wrote:
->> On Tue, Apr 05, 2011 at 04:58:47PM +0200, Michal Marek wrote:
->>>
->>> Hi,
->>>
->>> this series makes it possible to build bit-identical kernel image and
->>> modules from identical sources. Of course the build is already
->>> deterministic in terms of behavior of the code, but the various
->>> timestamps embedded in the object files make it hard to compare two
->>> builds, for instance to verify that a makefile cleanup didn't
->>> accidentally change something. A prime example is /proc/config.gz, which
->>> has both a timestamp in the gzip header and a timestamp in the payload
->>> data. With this series applied, a script like this will produce
->>> identical kernels each time:
->>
->> Very nice stuff.  Do you want to take the individual patches through one
->> of your trees, or do you mind if the subsystem maintainers take them
->> through theirs?
-> 
-> I'm happy for this to go through a single tree.
+Hello,
 
-Me too.
+I am working in a MPC8536e custom board. Our custom board has a slot to 
+SDCards conected to the MPC8536e's eSDHC controller. We are using just
+4-serial data pins of eSDHC controller.
 
-With respect to the patches I was c/c (patches 13, 14, 31):
+My kernel is 2.6.35.7 and I am using buildroot to build the root system
+with uClib.
 
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+I can mount and read the data from SDCards in the slot. But I am facing
+errors when I try write something in the card. 
 
-Thanks,
-Mauro.
+I am testing two SDcards: Kingston and a LG, both with 2GB capacity. I
+tryed ext3 and fat32 filesystems with the same results.
+
+When the card is detected the log is (observe the ro flag in the first
+line):
+
+mmcblk0: mmc0:57f7 SD02G 1.83 GiB (ro)
+mmcblk0:
+mmc0: starting CMD18 arg 00000000 flags 000000b5
+mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
+mmc0:     CMD12 arg 00000000 flags 0000049d
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x0000000a
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+mmc0: req done (CMD18): 0: 00000900 00000000 00000000 00000000
+mmc0:     4096 bytes transferred: 0
+mmc0:     (CMD12): 0: 00000b00 00000000 00000000 00000000
+p1
+
+I am sure the write protection mechanism on SDCard is in the unlock
+position, but the kernel drivers detects the card like read-only.
+
+Has someone idea why this happen?
+
+Every idea or tip is apreciated.
+
+Regards,
+
+Moratelli.
