@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <a0ae014cf06639bb9aea24149c24e51acbaf2598.1301984934.git.michael@ellerman.id.au>
+Message-Id: <ec654e72aedba49af13f2ea0c076be22b962c801.1301984955.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/book3e: Fix extlb size
-Date: Tue,  5 Apr 2011 16:28:58 +1000 (EST)
+Subject: [PATCH] powerpc/nohash: Allocate stale_map[cpu] on CPU_UP_PREPARE not
+	CPU_ONLINE
+Date: Tue,  5 Apr 2011 16:29:18 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,29 +14,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The calculation of the size for the exception save area of the TLB
-miss handler is wrong, luckily it's too big not too small.
-
-Rework it to make it a bit clearer, and also correct. We want 3 save
-areas, each EX_TLB_SIZE _bytes_.
+Currently we allocate the stale_map for a cpu when it comes online,
+this leaves open a small window where a process can be scheduled
+on the cpu before the stale_map is allocated. Instead allocate
+the stale_map at CPU_UP_PREPARE time, that way it will be always
+available before tasks start running.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/paca.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/mm/mmu_context_nohash.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index ec57540..f7aa4fd 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -106,7 +106,7 @@ struct paca_struct {
- 	pgd_t *pgd;			/* Current PGD */
- 	pgd_t *kernel_pgd;		/* Kernel PGD */
- 	u64 exgen[8] __attribute__((aligned(0x80)));
--	u64 extlb[EX_TLB_SIZE*3] __attribute__((aligned(0x80)));
-+	u64 extlb[3][EX_TLB_SIZE / sizeof(u64)] __attribute__((aligned(0x80)));
- 	u64 exmc[8];		/* used for machine checks */
- 	u64 excrit[8];		/* used for crit interrupts */
- 	u64 exdbg[8];		/* used for debug interrupts */
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index c0aab52..1bde0e8 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -338,8 +338,8 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+ 		return NOTIFY_OK;
+ 
+ 	switch (action) {
+-	case CPU_ONLINE:
+-	case CPU_ONLINE_FROZEN:
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
+ 		pr_devel("MMU: Allocating stale context map for CPU %d\n", cpu);
+ 		stale_map[cpu] = kzalloc(CTX_MAP_SIZE, GFP_KERNEL);
+ 		break;
 -- 
 1.7.1
