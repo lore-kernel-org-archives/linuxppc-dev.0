@@ -1,33 +1,13 @@
-Return-Path: <balbi@ti.com>
-Received: from na3sys009aog113.obsmtp.com (na3sys009aog113.obsmtp.com
-	[74.125.149.209])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44F3AB6F99
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Apr 2011 18:12:29 +1000 (EST)
-Received: by eyg24 with SMTP id 24so43741eyg.11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 05 Apr 2011 01:12:25 -0700 (PDT)
-Date: Tue, 5 Apr 2011 11:12:22 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Keshava Munegowda <keshava_mgowda@ti.com>
-Subject: Re: [PATCH v10 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
-	Interface Layer (CIL)
-Message-ID: <20110405081221.GE2176@legolas.emea.dhcp.ti.com>
-References: <1301336866-1915-1-git-send-email-tmarri@apm.com>
-	<3569ce83abe4f1f3ab1699c2beee1f35@mail.gmail.com>
-	<712525e420e78daeb3f43bf1ebc53e23@mail.gmail.com>
-	<4D961FBA.8090107@ru.mvista.com>
-	<b284084fc5fc0d15e13cbfaf926ee1ce@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b284084fc5fc0d15e13cbfaf926ee1ce@mail.gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@mvista.com>, Tirumala Marri <tmarri@apm.com>,
-	greg@kroah.com, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, linuxppc-dev@lists.ozlabs.org,
-	Fushen Chen <fchen@apm.com>
-Reply-To: balbi@ti.com
+Return-Path: <anton@samba.org>
+Date: Tue, 5 Apr 2011 19:56:18 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au
+Subject: [PATCH] powerpc: Replace open coded instruction patching with
+	patch_instruction/patch_branch
+Message-ID: <20110405195618.2fb40ad5@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,47 +17,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 05, 2011 at 12:38:03PM +0530, Keshava Munegowda wrote:
-> > -----Original Message-----
-> > From: Sergei Shtylyov [mailto:sshtylyov@mvista.com]
-> > Sent: Saturday, April 02, 2011 12:26 AM
-> > To: Tirumala Marri
-> > Cc: Keshava Munegowda; linux-usb@vger.kernel.org;
-> linuxppc-dev@lists.ozlabs.org; greg@kroah.com;
-> > Fushen Chen; Mark Miesfeld
-> > Subject: Re: [PATCH v10 03/10] USB/ppc4xx: Add Synopsys DWC OTG Core
-> Interface Layer (CIL)
-> >
-> > Hello.
-> >
-> > Tirumala Marri wrote:
-> >
-> > >>> +void dwc_otg_core_init(struct core_if *core_if)
-> > >>> +{
-> > >>> +	u32 i;
-> > >>> +	ulong global_reg = core_if->core_global_regs;
-> > >>> +	struct device_if *dev_if = core_if->dev_if;
-> > >>> +	u32 ahbcfg = 0;
-> > >>> +	u32 i2cctl = 0;
-> > >>> +	u32 gusbcfg;
-> >
-> > >> Tabify the declarations ;
-> >
-> > > [Marri] When I checked again in my source, I do see the tabs added
-> before
-> > > declarations.
-> >
-> >     He means that tabs should be between the variable's type and name,
-> but
-> > there's no such requirement actually.
-> 
-> I am sorry if there is no such requirement, since I had such comments and
-> I fixed it and
-> Now I have commented.
 
-it's true we don't have that requirement, but it does look better when
-we have many local variables. IMHO, whatever we can do to go easy on the
-eyes, we should.
+There are a few places we patch instructions without using
+patch_instruction and patch_branch, probably because they
+predated it. Fix it.
+ 
+Signed-off-by: Anton Blanchard <anton@samba.org> 
+---
 
--- 
-balbi
+Index: powerpc.git/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/mm/hash_utils_64.c	2011-02-25 14:15:49.972437235 +1100
++++ powerpc.git/arch/powerpc/mm/hash_utils_64.c	2011-04-05 18:43:33.860987967 +1000
+@@ -53,6 +53,7 @@
+ #include <asm/sections.h>
+ #include <asm/spu.h>
+ #include <asm/udbg.h>
++#include <asm/code-patching.h>
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+@@ -547,15 +548,7 @@ int remove_section_mapping(unsigned long
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+-static inline void make_bl(unsigned int *insn_addr, void *func)
+-{
+-	unsigned long funcp = *((unsigned long *)func);
+-	int offset = funcp - (unsigned long)insn_addr;
+-
+-	*insn_addr = (unsigned int)(0x48000001 | (offset & 0x03fffffc));
+-	flush_icache_range((unsigned long)insn_addr, 4+
+-			   (unsigned long)insn_addr);
+-}
++#define FUNCTION_TEXT(A)	((*(unsigned long *)(A)))
+ 
+ static void __init htab_finish_init(void)
+ {
+@@ -570,16 +563,33 @@ static void __init htab_finish_init(void
+ 	extern unsigned int *ht64_call_hpte_remove;
+ 	extern unsigned int *ht64_call_hpte_updatepp;
+ 
+-	make_bl(ht64_call_hpte_insert1, ppc_md.hpte_insert);
+-	make_bl(ht64_call_hpte_insert2, ppc_md.hpte_insert);
+-	make_bl(ht64_call_hpte_remove, ppc_md.hpte_remove);
+-	make_bl(ht64_call_hpte_updatepp, ppc_md.hpte_updatepp);
++	patch_branch(ht64_call_hpte_insert1,
++		FUNCTION_TEXT(ppc_md.hpte_insert),
++		BRANCH_SET_LINK);
++	patch_branch(ht64_call_hpte_insert2,
++		FUNCTION_TEXT(ppc_md.hpte_insert),
++		BRANCH_SET_LINK);
++	patch_branch(ht64_call_hpte_remove,
++		FUNCTION_TEXT(ppc_md.hpte_remove),
++		BRANCH_SET_LINK);
++	patch_branch(ht64_call_hpte_updatepp,
++		FUNCTION_TEXT(ppc_md.hpte_updatepp),
++		BRANCH_SET_LINK);
++
+ #endif /* CONFIG_PPC_HAS_HASH_64K */
+ 
+-	make_bl(htab_call_hpte_insert1, ppc_md.hpte_insert);
+-	make_bl(htab_call_hpte_insert2, ppc_md.hpte_insert);
+-	make_bl(htab_call_hpte_remove, ppc_md.hpte_remove);
+-	make_bl(htab_call_hpte_updatepp, ppc_md.hpte_updatepp);
++	patch_branch(htab_call_hpte_insert1,
++		FUNCTION_TEXT(ppc_md.hpte_insert),
++		BRANCH_SET_LINK);
++	patch_branch(htab_call_hpte_insert2,
++		FUNCTION_TEXT(ppc_md.hpte_insert),
++		BRANCH_SET_LINK);
++	patch_branch(htab_call_hpte_remove,
++		FUNCTION_TEXT(ppc_md.hpte_remove),
++		BRANCH_SET_LINK);
++	patch_branch(htab_call_hpte_updatepp,
++		FUNCTION_TEXT(ppc_md.hpte_updatepp),
++		BRANCH_SET_LINK);
+ }
+ 
+ static void __init htab_initialize(void)
+Index: powerpc.git/arch/powerpc/mm/slb.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/mm/slb.c	2011-02-25 14:15:49.952435267 +1100
++++ powerpc.git/arch/powerpc/mm/slb.c	2011-04-05 18:42:27.018630388 +1000
+@@ -24,6 +24,7 @@
+ #include <asm/firmware.h>
+ #include <linux/compiler.h>
+ #include <asm/udbg.h>
++#include <asm/code-patching.h>
+ 
+ 
+ extern void slb_allocate_realmode(unsigned long ea);
+@@ -249,9 +250,8 @@ void switch_slb(struct task_struct *tsk,
+ static inline void patch_slb_encoding(unsigned int *insn_addr,
+ 				      unsigned int immed)
+ {
+-	*insn_addr = (*insn_addr & 0xffff0000) | immed;
+-	flush_icache_range((unsigned long)insn_addr, 4+
+-			   (unsigned long)insn_addr);
++	int insn = (*insn_addr & 0xffff0000) | immed;
++	patch_instruction(insn_addr, insn);
+ }
+ 
+ void slb_set_size(u16 size)
