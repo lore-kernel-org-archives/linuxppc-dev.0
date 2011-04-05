@@ -1,21 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B5690100896
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2011 16:54:02 +1000 (EST)
-Subject: Re: [PATCH 15/15] powerpc: Improve prom_printf()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <56030.94.211.195.167.1301986049.squirrel@gate.crashing.org>
-References: <1301984051-18413-1-git-send-email-benh@kernel.crashing.org>
-	<1301984051-18413-16-git-send-email-benh@kernel.crashing.org>
-	<56030.94.211.195.167.1301986049.squirrel@gate.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 05 Apr 2011 16:53:54 +1000
-Message-ID: <1301986434.2549.144.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <3cf2e447f50f85da004b145ea87cdace4b4352cc.1301986643.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/nohash: Allocate stale_map[cpu] on CPU_UP_PREPARE not
+	CPU_ONLINE
+Date: Tue,  5 Apr 2011 16:57:27 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +14,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-04-05 at 08:47 +0200, Segher Boessenkool wrote:
-> Hi Ben,
-> 
-> > +		case 'd':
-> > +			++q;
-> > +			vs = va_arg(args, long);
-> 
-> 'd' takes an int, not a long.
+Currently we allocate the stale_map for a cpu when it comes online,
+this leaves open a small window where a process can be scheduled
+on the cpu before the stale_map is allocated. Instead allocate
+the stale_map at CPU_UP_PREPARE time, that way it will be always
+available before tasks start running.
 
-Oops :-) Indeed ... copy/lpaste bogon I think
+It is possible the cpu fails to come up, in which case we should free
+the stale_map, so add a CPU_UP_CANCELED case to do that.
 
-> > +			if (vs < 0) {
-> > +				prom_print("-");
-> 
-> RELOC()?
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/mm/mmu_context_nohash.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Interesting, I had that bug and fixed it in the "ld" case and not the
-"d" case :-)
-
-Thanks !
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index c0aab52..4d8fa91 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -338,12 +338,14 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+ 		return NOTIFY_OK;
+ 
+ 	switch (action) {
+-	case CPU_ONLINE:
+-	case CPU_ONLINE_FROZEN:
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
+ 		pr_devel("MMU: Allocating stale context map for CPU %d\n", cpu);
+ 		stale_map[cpu] = kzalloc(CTX_MAP_SIZE, GFP_KERNEL);
+ 		break;
+ #ifdef CONFIG_HOTPLUG_CPU
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+ 		pr_devel("MMU: Freeing stale context map for CPU %d\n", cpu);
+-- 
+1.7.1
