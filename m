@@ -1,27 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com",
+	(Client CN "e23smtp05.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3A5A8B6FD2
+	by ozlabs.org (Postfix) with ESMTPS id B24B5B6FF6
 	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2011 16:14:21 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp01.au.ibm.com (8.14.4/8.13.1) with ESMTP id p356AQvb023677
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:10:26 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id p3568Z7U004442
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:08:35 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p356EKrB1155076
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:20 +1000
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p356ELs22109536
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:21 +1000
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
 	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p356EK7j011066
+	p356EKPr011084
 	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2011 16:14:20 +1000
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/15] powerpc/xics: Make sure we have a sensible default
-	distribution server
-Date: Tue,  5 Apr 2011 16:13:59 +1000
-Message-Id: <1301984051-18413-4-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 09/15] powerpc: Initialize LPCR:DPFD on power7 to a sane
+	default
+Date: Tue,  5 Apr 2011 16:14:05 +1000
+Message-Id: <1301984051-18413-10-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1301984051-18413-1-git-send-email-benh@kernel.crashing.org>
 References: <1301984051-18413-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,61 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Even when nothing is specified in the device tree, and despite the
-fact that we don't setup links properly yet, we still need a reasonable
-value in there or some interrupts won't be setup properly to point to
-an existing processor.
+This sets the default data stream prefetch size for operating
+systems that don't set their own value in DSCR. We use 4 which
+is "medium".
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/xics/xics-common.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/cpu_setup_power7.S |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index ac26866..7c9cba3 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -57,7 +57,9 @@ void xics_update_irq_servers(void)
- 	BUG_ON(!np);
- 
- 	hcpuid = get_hard_smp_processor_id(boot_cpuid);
--	xics_default_server = hcpuid;
-+	xics_default_server = xics_default_distrib_server = hcpuid;
-+
-+	pr_devel("xics: xics_default_server = 0x%x\n", xics_default_server);
- 
- 	ireg = of_get_property(np, "ibm,ppc-interrupt-gserver#s", &ilen);
- 	if (!ireg) {
-@@ -75,9 +77,11 @@ void xics_update_irq_servers(void)
- 	for (j = 0; j < i; j += 2) {
- 		if (ireg[j] == hcpuid) {
- 			xics_default_distrib_server = ireg[j+1];
-+			break;
- 		}
- 	}
--
-+	pr_devel("xics: xics_default_distrib_server = 0x%x\n",
-+		 xics_default_distrib_server);
- 	of_node_put(np);
- }
- 
-@@ -113,7 +117,7 @@ void xics_mask_unknown_vec(unsigned int vec)
- {
- 	struct ics *ics;
- 
--	pr_err("Interrupt %u (real) is invalid, disabling it.\n", vec);
-+	pr_err("Interrupt 0x%x (real) is invalid, disabling it.\n", vec);
- 
- 	list_for_each_entry(ics, &ics_list, link)
- 		ics->mask_unknown(ics, vec);
-@@ -293,6 +297,8 @@ unlock:
-  * If not we set it to the first cpu in the mask, even if multiple cpus
-  * are set. This is so things like irqbalance (which set core and package
-  * wide affinities) do the right thing.
-+ *
-+ * We need to fix this to implement support for the links
-  */
- int xics_get_irq_server(unsigned int virq, const struct cpumask *cpumask,
- 			unsigned int strict_check)
+diff --git a/arch/powerpc/kernel/cpu_setup_power7.S b/arch/powerpc/kernel/cpu_setup_power7.S
+index e801ef1..2390f6f 100644
+--- a/arch/powerpc/kernel/cpu_setup_power7.S
++++ b/arch/powerpc/kernel/cpu_setup_power7.S
+@@ -54,6 +54,7 @@ __init_LPCR:
+ 	 *
+ 	 *   LPES = 0b01 (HSRR0/1 used for 0x500)
+ 	 *   PECE = 0b111
++	 *   DPFD = 4
+ 	 *
+ 	 * Other bits untouched for now
+ 	 */
+@@ -61,6 +62,12 @@ __init_LPCR:
+ 	ori	r3,r3,(LPCR_LPES0|LPCR_LPES1)
+ 	xori	r3,r3, LPCR_LPES0
+ 	ori	r3,r3,(LPCR_PECE0|LPCR_PECE1|LPCR_PECE2)
++	li	r5,7
++	sldi	r5,r5,LPCR_DPFD_SH
++	andc	r3,r3,r5
++	li	r5,4
++	sldi	r5,r5,LPCR_DPFD_SH
++	or	r3,r3,r5
+ 	mtspr	SPRN_LPCR,r3
+ 	isync
+ 	blr
 -- 
 1.7.1
