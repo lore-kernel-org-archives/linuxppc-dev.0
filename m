@@ -1,12 +1,9 @@
 Return-Path: <michael@ozlabs.org>
-To: <linux-kernel@vger.kernel.org>
-Message-Id: <c4f5166f98cb703742191eb74f583bb8011f9cdf.1301984663.git.michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <a0ae014cf06639bb9aea24149c24e51acbaf2598.1301984934.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] mm: Check we have the right vma in access_process_vm()
-Date: Tue,  5 Apr 2011 16:24:31 +1000 (EST)
-Cc: aarcange@redhat.com, Andrew Morton <akpm@osdl.org>, riel@redhat.com,
-	linuxppc-dev@ozlabs.org, hughd@google.com, linux-mm@kvack.org,
-	walken@google.com
+Subject: [PATCH] powerpc/book3e: Fix extlb size
+Date: Tue,  5 Apr 2011 16:28:58 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,28 +13,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In access_process_vm() we need to check that we have found the right
-vma, not the following vma, before we try to access it. Otherwise
-we might call the vma's access routine with an address which does
-not fall inside the vma.
+The calculation of the size for the exception save area of the TLB
+miss handler is wrong, luckily it's too big not too small.
+
+Rework it to make it a bit clearer, and also correct. We want 3 save
+areas, each EX_TLB_SIZE _bytes_.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- mm/memory.c |    2 +-
+ arch/powerpc/include/asm/paca.h |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 5823698..7e6f17b 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3619,7 +3619,7 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
- 			 */
- #ifdef CONFIG_HAVE_IOREMAP_PROT
- 			vma = find_vma(mm, addr);
--			if (!vma)
-+			if (!vma || vma->vm_start > addr)
- 				break;
- 			if (vma->vm_ops && vma->vm_ops->access)
- 				ret = vma->vm_ops->access(vma, addr, buf,
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index ec57540..f7aa4fd 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -106,7 +106,7 @@ struct paca_struct {
+ 	pgd_t *pgd;			/* Current PGD */
+ 	pgd_t *kernel_pgd;		/* Kernel PGD */
+ 	u64 exgen[8] __attribute__((aligned(0x80)));
+-	u64 extlb[EX_TLB_SIZE*3] __attribute__((aligned(0x80)));
++	u64 extlb[3][EX_TLB_SIZE / sizeof(u64)] __attribute__((aligned(0x80)));
+ 	u64 exmc[8];		/* used for machine checks */
+ 	u64 excrit[8];		/* used for crit interrupts */
+ 	u64 exdbg[8];		/* used for debug interrupts */
 -- 
 1.7.1
