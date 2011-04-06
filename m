@@ -1,22 +1,19 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 9579BB6F7C
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 50AB2B6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 06:43:39 +1000 (EST)
-Date: Wed, 6 Apr 2011 22:43:27 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Dave Airlie <airlied@gmail.com>
-Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-Message-ID: <20110406204327.GA11148@iram.es>
-References: <20110404235259.GA30132@iram.es>
-	<20110406084101.GB13963@pengutronix.de>
-	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
+	Thu,  7 Apr 2011 06:49:32 +1000 (EST)
+Message-ID: <4D9CD1D6.6030600@embedded-sol.com>
+Date: Wed, 06 Apr 2011 23:49:26 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: linuxppc-dev@lists.ozlabs.org, leon.woestenberg@gmail.com
+Subject: Re: known working sata_sil24.c setup on powerpc platforms?
+References: <BANLkTinjn5nt4-0cSo6nUfG8Vt1UrL2Q0g@mail.gmail.com>
+In-Reply-To: <BANLkTinjn5nt4-0cSo6nUfG8Vt1UrL2Q0g@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,83 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 06, 2011 at 06:46:55PM +1000, Dave Airlie wrote:
-> 2011/4/6 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> > Hi Gabriel,
-> >
-> > On Tue, Apr 05, 2011 at 01:52:59AM +0200, Gabriel Paubert wrote:
-> >> I've had the following funny crashes on PPC machines, with
-> >> cataleptic X server as a consequence:
-> >>
-> >> kernel: [drm] Setting GART location based on new memory map
-> >> kernel: Oops: Exception in kernel mode, sig: 4 [#1]
-> >> kernel: CHRP
-> >> kernel: last sysfs file: /sys/devices/pci0001:01/0001:01:08.0/resource
-> >> kernel: NIP: c05648fc LR: c0226f58 CTR: 00000008
-> >> kernel: REGS: ddb53d20 TRAP: 0700   Not tainted  (2.6.38)
-> >> kernel: MSR: 00089032 <EE,ME,IR,DR>  CR: 48044482  XER: 00000000
-> >> kernel: TASK = ddab12b0[3040] 'Xorg' THREAD: ddb52000
-> >> kernel: GPR00: c0226f34 ddb53dd0 ddab12b0 00000000 c0509e6c 00000000 00000000 00000000
-> >> kernel: GPR08: 00000000 00000000 00000000 00000000 28044488 101f3d8c bf8166b4 00002c00
-> >> kernel: GPR16: 101b9458 1006f1a0 101ebe0c 00000001 101ebe08 00000000 df9efc20 df9efc00
-> >> kernel: GPR24: c0591e54 80546440 ddacf660 df9efc00 c0506048 c0480210 00a00000 df9ef800
-> >> kernel: NIP [c05648fc] platform_device_register_resndata+0x4/0xa4
-> >> kernel: LR [c0226f58] radeon_cp_init+0xd08/0x10c4
-> >> kernel: Call Trace:
-> >> kernel: [ddb53dd0] [c0226f34] radeon_cp_init+0xce4/0x10c4 (unreliable)
-> >> kernel: [ddb53df0] [c020801c] drm_ioctl+0x2c0/0x3e4
-> >> kernel: [ddb53eb0] [c0091264] do_vfs_ioctl+0x674/0x710
-> >> kernel: [ddb53f10] [c0091340] sys_ioctl+0x40/0x70
-> >> kernel: [ddb53f40] [c00111a8] ret_from_syscall+0x0/0x38
-> >> kernel: --- Exception: c01 at 0xfc54a78
-> >> kernel:     LR = 0xfc549dc
-> >> kernel: Instruction dump:
-> >> kernel: 736f2e31 32002f75 73722f6c 69622f6c 6962786b 6c617669 65722e73 6f2e3132
-> >> kernel: 006c6962 786b6266 696c652e 736f2e31 <002f7573> 722f6c69 622f6c69 62786b62
-> >> kernel: ---[ end trace ed79daba161e31d9 ]---
-> >>
-> >> As you can see, the processor is trying to execute ASCII strings like
-> >> "/usr/lib/libxkb" and has trouble digesting them :-)
-> >>
-> >> The backtrace is actually missing radeon_cp_init_microcode and radeon_do_init_cp
-> >> which are inlined inside radeon_cp_init.
-> >>
-> >> The trouble is that radeon_cp_init_microcode calls platform_device_register_simple
-> >> which is a simple inline wrapper around platform_device_register_resndata, which
-> >> happens to be already freed and overwritten with something looking like a list
-> >> of filenames, since I have a non modular kernel.
-> >>
-> >> For now I have locally reverted 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8
-> >> which simply added an _init_or_module section attribute to
-> >> platform_device_register_resndata, and X is up again...
-> >>
-> >> Now it may be that it is the ioctl that does not have the right to do
-> >> this. Actually I thought that the name radeon_cp that is registered there
-> >> would appear somwhere under /sys (or /proc) but failed to find it...
-> > I don't know for sure, but it looks strange to me that an ioctl can
-> > register a device. But the fear for such code in the kernel made me
-> > choose not to squash 737a3bb941 into 44f28bdea094. So my POV is that if
-> > the maintainer of the radeon driver thinks registering the device is OK,
-> > reverting 737a3bb9416 is fine for me.
-> 
-> This is the old DRM driver for radeon, which relies on userspace to
-> start X then calls the kernel
-> to initialise the hardware. Due to this model, there is no device we
-> can hang off (the PCI device
-> might already be bound to fbdev), so we are forced to create a
-> platform device to load the firmware.
-> 
-> So its ugly, unless someone can suggest a better device to hang things
-> off I don't know of another way.
-> 
+Hi Leon,
 
-The probem is that, at least on one of my machines, the new driver
-does not work: the system hangs (apparently solid, but it's before
-networking starts up and I've not yet hooked up a serial console), 
-after the "radeon: ib pool ready" message.
+I think there's a hardware problem with mini PCI-E slot
+on P2020RDB related to legacy IRQ routing. See this
+thread for details
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg40037.html
 
-With the old driver, I've found some combinations of configuration
-options that works. They all fail when DRM_RADEON_KMS is enabled.
+You may have better luck with PCI-E slot and mini PCI-E to
+PCI-E adapter.
 
-	Gabriel
-> Dave.
+Felix.
