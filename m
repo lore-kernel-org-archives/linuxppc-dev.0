@@ -1,18 +1,21 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 09477B6F07
+Return-Path: <carlos.moratelli@digitel.com.br>
+Received: from atena.digitel.com.br (ares.digitel.com.br [200.198.105.40])
+	by ozlabs.org (Postfix) with ESMTP id 5485EB6F01
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 03:16:30 +1000 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] RapidIO/mpc85xx: Fix possible mport registration problems.
-Date: Wed,  6 Apr 2011 13:16:00 -0400
-Message-Id: <1302110160-13763-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
-	Thomas Moll <thomas.moll@sysgo.com>
+	Thu,  7 Apr 2011 03:18:53 +1000 (EST)
+Subject: Re: sdhc/mpc8536 - SDCard always detected like read-only
+From: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
+To: Wolfram Sang <w.sang@pengutronix.de>
+In-Reply-To: <20110405234824.GB5611@pengutronix.de>
+References: <1302028796.10112.59.camel@moratelli-host.digitel.com.br>
+	<20110405190204.GB12723@pengutronix.de>
+	<1302031171.10112.66.camel@moratelli-host.digitel.com.br>
+	<20110405234824.GB5611@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Apr 2011 14:18:58 -0300
+Message-ID: <1302110338.2647.21.camel@moratelli-host.digitel.com.br>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +25,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix possible problem with mport registration left non cleared after
-fsl_rio_setup() exits on link error. Abort mport initialization
-if registration failed.
+I will try address the issue in details.
 
-This patch is applicable to 2.6.39-rc1 only. The problem does not exists
-for earlier versions.
+When I insert the SDCard, the same is detect like read-only:
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
-Cc: Thomas Moll <thomas.moll@sysgo.com>
----
- arch/powerpc/sysdev/fsl_rio.c |    4 +++-
- drivers/rapidio/rio.c         |    5 +++--
- include/linux/rio.h           |    2 +-
- 3 files changed, 7 insertions(+), 4 deletions(-)
+mmcblk0: mmc0:b368 NCard 966 MiB (ro)
+mmcblk0:
+mmc0: starting CMD18 arg 00000000 flags 000000b5
+mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
+mmc0:     CMD12 arg 00000000 flags 0000049d
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x0000000a
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+mmc0: req done (CMD18): 0: 00000900 00000000 00000000 00000000
+mmc0:     4096 bytes transferred: 0
+mmc0:     (CMD12): 0: 00000b00 00000000 00000000 00000000
+p1
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 14232d5..4979853 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1457,7 +1457,6 @@ int fsl_rio_setup(struct platform_device *dev)
- 	port->ops = ops;
- 	port->priv = priv;
- 	port->phys_efptr = 0x100;
--	rio_register_mport(port);
- 
- 	priv->regs_win = ioremap(regs.start, regs.end - regs.start + 1);
- 	rio_regs_win = priv->regs_win;
-@@ -1504,6 +1503,9 @@ int fsl_rio_setup(struct platform_device *dev)
- 	dev_info(&dev->dev, "RapidIO Common Transport System size: %d\n",
- 			port->sys_size ? 65536 : 256);
- 
-+	if (rio_register_mport(port))
-+		goto err;
-+
- 	if (port->host_deviceid >= 0)
- 		out_be32(priv->regs_win + RIO_GCCSR, RIO_PORT_GEN_HOST |
- 			RIO_PORT_GEN_MASTER | RIO_PORT_GEN_DISCOVERED);
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index c29719c..86c9a09 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -1171,16 +1171,17 @@ static int rio_hdid_setup(char *str)
- 
- __setup("riohdid=", rio_hdid_setup);
- 
--void rio_register_mport(struct rio_mport *port)
-+int rio_register_mport(struct rio_mport *port)
- {
- 	if (next_portid >= RIO_MAX_MPORTS) {
- 		pr_err("RIO: reached specified max number of mports\n");
--		return;
-+		return 1;
- 	}
- 
- 	port->id = next_portid++;
- 	port->host_deviceid = rio_get_hdid(port->id);
- 	list_add_tail(&port->node, &rio_mports);
-+	return 0;
- }
- 
- EXPORT_SYMBOL_GPL(rio_local_get_device_id);
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index 4e37a7c..4d50611 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -396,7 +396,7 @@ union rio_pw_msg {
- };
- 
- /* Architecture and hardware-specific functions */
--extern void rio_register_mport(struct rio_mport *);
-+extern int rio_register_mport(struct rio_mport *);
- extern int rio_open_inb_mbox(struct rio_mport *, void *, int, int);
- extern void rio_close_inb_mbox(struct rio_mport *, int);
- extern int rio_open_outb_mbox(struct rio_mport *, void *, int, int);
--- 
-1.7.3.1
+So, I just can mount the filesystem read-only. I can read the fat32
+without problems.
+
+I tested your sugestion. I used sdhci,wp-inverted in my dtb. This
+changed the behavior. Now the SDCard is detected without the read-only
+flag:
+
+mmcblk0: mmc0:b368 NCard 966 MiB 
+mmcblk0:
+mmc0: starting CMD18 arg 00000000 flags 000000b5
+mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
+mmc0:     CMD12 arg 00000000 flags 0000049d
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x0000000a
+sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+mmc0: req done (CMD18): 0: 00000900 00000000 00000000 00000000
+mmc0:     4096 bytes transferred: 0
+mmc0:     (CMD12): 0: 00000b00 00000000 00000000 00000000
+p1
+
+And, I can mount a rw filesystem:
+
+#mount  /dev/mmcblock1 /mnt
+#cat /proc/mounts
+...
+/dev/mmcblock1 /mnt vfat
+rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+...
+
+So, I can copy files to the mounted SDCard. But, When I try to umount I
+see the following error mensagens:
+
+#cp /etc/shadow /mnt
+#ls /mnt
+shadow
+#umount /mnt
+mmc0: Timeout waiting for hardware interrupt.
+mmcblk0: error -110 transferring data, sector 5944, nr 1, card status
+0x900
+end_request: I/O error, dev mmcblk0, sector 5944
+mmc0: Timeout waiting for hardware interrupt.
+mmcblk0: error -110 transferring data, sector 5936, nr 1, card status
+0x900
+end_request: I/O error, dev mmcblk0, sector 5936
+Buffer I/O error on device mmcblk0p1, logical block 3888
+mmc0: Timeout waiting for hardware interrupt.
+mmcblk0: error -110 transferring data, sector 2049, nr 1, card status
+0x900
+end_request: I/O error, dev mmcblk0, sector 2049
+Buffer I/O error on device mmcblk0p1, logical block 1
+mmc0: Timeout waiting for hardware interrupt.
+mmcblk0: error -110 transferring data, sector 2080, nr 1, card status
+0x900
+end_request: I/O error, dev mmcblk0, sector 2080
+...
+
+I think I need the sdhci,wp-inverted in my dtb. But, it appears that
+more something is necessary.
+
+Has someone faced this situation?
+
+Thanks by the help until here.
+
+Regards,
+
+Moratelli
+
+
+
+Em Qua, 2011-04-06 às 01:48 +0200, Wolfram Sang escreveu:
+> > 		sdhci@2e000 {
+> > 			compatible = "fsl,mpc8536-esdhc", "fsl,esdhc";
+> > 			reg = <0x2e000 0x1000>;
+> > 			interrupts = <72 0x2>;
+> > 			interrupt-parent = <&mpic>;
+> > 			/* Filled in by U-Boot */
+> > 			clock-frequency = <0>;
+> > 		};
+> 
+> Hmm, I am not too familiar with those SoCs, yet some 83xx needed
+> 
+> 	sdhci,wp-inverted;
+> 
+> here. Maybe yours, too? Would fit the symptoms.
+> 
+> Regards,
+> 
+>    Wolfram
+> 
