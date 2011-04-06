@@ -1,20 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D95271007D1
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2011 04:03:06 +1000 (EST)
-Date: Wed, 6 Apr 2011 13:02:57 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/book3e: Fix CPU feature handling on 64-bit e5500
-Message-ID: <20110406130257.2d31beaa@schlenkerla.am.freescale.net>
-In-Reply-To: <1302092943-10586-1-git-send-email-galak@kernel.crashing.org>
-References: <1302092943-10586-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <jgpobox@gmail.com>
+Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
+	[209.85.216.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B662B6EEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2011 04:12:54 +1000 (EST)
+Received: by qwi4 with SMTP id 4so1462213qwi.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Apr 2011 11:12:51 -0700 (PDT)
+Sender: Jeff Garzik <jgpobox@gmail.com>
+Message-ID: <4D9CAD1F.6060500@garzik.org>
+Date: Wed, 06 Apr 2011 14:12:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+To: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
+Subject: Re: known working sata_sil24.c setup on powerpc platforms?
+References: <BANLkTimXgi26RHHxyBLoN8YqaDy_PL-hGQ@mail.gmail.com>
+	<C3A1EF35-6CB6-4674-8B0B-44CD1657FE87@boeing.com>
+In-Reply-To: <C3A1EF35-6CB6-4674-8B0B-44CD1657FE87@boeing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
+	Linux PPC <linuxppc-dev@ozlabs.org>, Tejun Heo <htejun@gmail.com>,
+	"linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Apr 2011 07:29:03 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On 04/06/2011 01:48 PM, Moffett, Kyle D wrote:
+> On Apr 06, 2011, at 13:00, Leon Woestenberg wrote:
+>> after investigating problems with sata_sil24.c on a freescale p2020
+>> soc, I wonder if this driver works on powerpc at all?
+>>
+>> Does anyone know of a working setup of sata_sil24 on a big endian
+>> powerpc system?
+>
+> Our P2020 boards work fine with legacy PCI interrupts (I think it's a sil3124 over PCI-E); the only deficiency is that MSI does not seem to work.
+>
+> I know our MSI *does* work in general because we have an Intel 82571EB chipset also attached via PCI-E with working MSI.
 
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index be3cdf9..9028a9e 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -386,6 +386,10 @@ extern const char *powerpc_base_platform;
->  	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
->  	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
->  	    CPU_FTR_DBELL)
-> +#define CPU_FTRS_E5500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
-> +	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
+We've definitely had issues with sata_sil24 + MSI, also...
 
-E5500 cannot doze or nap in the way meant by existing code (MSR[WE]).
+sata_sil24 does work on big endian in general.
 
--Scott
+	Jeff
