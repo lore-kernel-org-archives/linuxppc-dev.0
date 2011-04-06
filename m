@@ -1,23 +1,22 @@
-Return-Path: <Kyle.D.Moffett@boeing.com>
-Received: from slb-smtpout-01.boeing.com (slb-smtpout-01.boeing.com
-	[130.76.64.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "slb-smtpout-01.boeing.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6935BB6EEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2011 04:42:57 +1000 (EST)
-From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Date: Wed, 6 Apr 2011 12:48:27 -0500
-Subject: Re: known working sata_sil24.c setup on powerpc platforms?
-Message-ID: <C3A1EF35-6CB6-4674-8B0B-44CD1657FE87@boeing.com>
-References: <BANLkTimXgi26RHHxyBLoN8YqaDy_PL-hGQ@mail.gmail.com>
-In-Reply-To: <BANLkTimXgi26RHHxyBLoN8YqaDy_PL-hGQ@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D9E2B6F2B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  7 Apr 2011 04:49:04 +1000 (EST)
+Date: Wed, 6 Apr 2011 13:47:50 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Barry G <mr.scada@gmail.com>
+Subject: Re: Combining multiple NAND MTDs
+Message-ID: <20110406134750.489e2ba6@schlenkerla.am.freescale.net>
+In-Reply-To: <BANLkTim=oxHcW-HV5Z062r2p2D1nTL8mcQ@mail.gmail.com>
+References: <BANLkTim=oxHcW-HV5Z062r2p2D1nTL8mcQ@mail.gmail.com>
 MIME-Version: 1.0
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Tejun Heo <htejun@gmail.com>,
-	Jeff Garzik <jeff@garzik.org>,
-	"linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Apr 06, 2011, at 13:00, Leon Woestenberg wrote:
-> after investigating problems with sata_sil24.c on a freescale p2020
-> soc, I wonder if this driver works on powerpc at all?
->=20
-> Does anyone know of a working setup of sata_sil24 on a big endian
-> powerpc system?
+On Tue, 5 Apr 2011 16:35:10 -0700
+Barry G <mr.scada@gmail.com> wrote:
 
-Our P2020 boards work fine with legacy PCI interrupts (I think it's a sil31=
-24 over PCI-E); the only deficiency is that MSI does not seem to work.
+> I want to run UBIFS on the combined 2 gigs of flash.  Whats the best
+> way to do this?
+> 
+> I tried using the mtdconcat stuff and wrote a small driver
+> but I am not sure how to populate the mtd_info structure since do_probe_map
+> doesn't work with NAND AFAIK.
+> 
+> I see that fsl_elbc_select_chip says "hardware does not seem to support this".
+> Not sure if this is related.
 
-I know our MSI *does* work in general because we have an Intel 82571EB chip=
-set also attached via PCI-E with working MSI.
+It's not related -- it's talking about a single physical chip with
+multiple chip selects, not a logical concatenation of multiple separate
+devices.
 
-Cheers,
-Kyle Moffett
+> I see some comments in mtd-physmap.txt about using multiple reg ranges?
+> Does this work with NAND?
+
+No.
+
+I don't know of an out-of-the-box configuration step you can take to do
+mtdconcat of eLBC NAND, but you could try creating a custom map driver that
+glues things together as you wish.  Or if you want to be more ambitious,
+perhaps a kernel command line (or other dynamic config) option that lets you
+glue arbitrary MTD devices together.
+
+-Scott
