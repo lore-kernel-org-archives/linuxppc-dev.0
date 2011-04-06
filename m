@@ -1,23 +1,21 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1FB86B6EF0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 09:48:30 +1000 (EST)
-Date: Wed, 6 Apr 2011 01:48:24 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
-Subject: Re: sdhc/mpc8536 - SDCard always detected like read-only
-Message-ID: <20110405234824.GB5611@pengutronix.de>
-References: <1302028796.10112.59.camel@moratelli-host.digitel.com.br>
-	<20110405190204.GB12723@pengutronix.de>
-	<1302031171.10112.66.camel@moratelli-host.digitel.com.br>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oC1+HKm2/end4ao3"
-In-Reply-To: <1302031171.10112.66.camel@moratelli-host.digitel.com.br>
-Cc: linuxppc-dev@lists.ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 954FBB6EEE
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2011 11:46:03 +1000 (EST)
+Subject: Re: [PATCH] powerpc/book3e: Fix extlb size
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1302046749.2549.186.camel@pasglop>
+Date: Tue, 5 Apr 2011 20:45:48 -0500
+Message-Id: <52FDCC6C-2F2F-47CC-8E6D-02A65FD21BCF@kernel.crashing.org>
+References: <a0ae014cf06639bb9aea24149c24e51acbaf2598.1301984934.git.michael@ellerman.id.au>
+	<F4D669C2-BAD4-4B79-BE24-FB5AD2961160@kernel.crashing.org>
+	<1302046749.2549.186.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +26,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---oC1+HKm2/end4ao3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Apr 5, 2011, at 6:39 PM, Benjamin Herrenschmidt wrote:
 
-> 		sdhci@2e000 {
-> 			compatible =3D "fsl,mpc8536-esdhc", "fsl,esdhc";
-> 			reg =3D <0x2e000 0x1000>;
-> 			interrupts =3D <72 0x2>;
-> 			interrupt-parent =3D <&mpic>;
-> 			/* Filled in by U-Boot */
-> 			clock-frequency =3D <0>;
-> 		};
+> On Tue, 2011-04-05 at 07:41 -0500, Kumar Gala wrote:
+>>> Rework it to make it a bit clearer, and also correct. We want 3 save
+>>> areas, each EX_TLB_SIZE _bytes_.
+>> 
+>> Where does the 3 come from?  I have a guess, and think its possible we
+>> (FSL) want 4?
+> 
+> Wrong guess :-) It's not about exception levels. It's about how much
+> the handler can re-enter (2 with E.PT, 3 with virtual linear)
+> 
+> For MC's, CRITs etc... which we don't support on Book3E 64-bit at this
+> stage, you'll have to probably backup the whole area... that or move
+> the TLB frame pointer SPR to a separate set of 3 levels, but then you'd
+> have to fix the code that makes assumption about level 0 being at a
+> fixed offset in the PACA and instead use alignment tricks. We need that
+> because that's how we "reset" the TLB frame when a second level finds
+> a fault.
+> 
+> Cheers,
+> Ben.
 
-Hmm, I am not too familiar with those SoCs, yet some 83xx needed
+Gotcha, can we add a comment here about what the '3' is about.
 
-	sdhci,wp-inverted;
-
-here. Maybe yours, too? Would fit the symptoms.
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---oC1+HKm2/end4ao3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAk2bqkgACgkQD27XaX1/VRts4wCghSpYMhIyC202Hh742g+AkOiP
-dj4Ani2JWiUNhmHwNWczQpNrgRp67m1S
-=bgZW
------END PGP SIGNATURE-----
-
---oC1+HKm2/end4ao3--
+- k
