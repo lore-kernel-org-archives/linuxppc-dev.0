@@ -1,22 +1,33 @@
-Return-Path: <carlos.moratelli@digitel.com.br>
-Received: from atena.digitel.com.br (ares.digitel.com.br [200.198.105.40])
-	by ozlabs.org (Postfix) with ESMTP id 77CB11007D1
+Return-Path: <rlary@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D2E08B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 07:57:32 +1000 (EST)
-Subject: Re: sdhc/mpc8536 - SDCard always detected like read-only - SOLVED.
-From: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <1302110338.2647.21.camel@moratelli-host.digitel.com.br>
-References: <1302028796.10112.59.camel@moratelli-host.digitel.com.br>
-	<20110405190204.GB12723@pengutronix.de>
-	<1302031171.10112.66.camel@moratelli-host.digitel.com.br>
-	<20110405234824.GB5611@pengutronix.de>
-	<1302110338.2647.21.camel@moratelli-host.digitel.com.br>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 Apr 2011 18:57:45 -0300
-Message-ID: <1302127065.2647.60.camel@moratelli-host.digitel.com.br>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu,  7 Apr 2011 08:50:56 +1000 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p36MTBp4020402
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2011 18:29:11 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9F5F86E8036
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  6 Apr 2011 18:50:53 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p36MorJP2322686
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2011 18:50:53 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p36Moq7w021344
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2011 19:50:52 -0300
+Message-ID: <4D9CEE45.9000904@linux.vnet.ibm.com>
+Date: Wed, 06 Apr 2011 15:50:45 -0700
+From: Richard A Lary <rlary@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1]  powerpc/eeh: Add support for ibm,configure-pe RTAS call
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: rlary@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,128 +37,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfram,
+From: Richard A. Lary <rlary@linux.vnet.ibm.com>
 
-Reading the MPC8536E Chip Errata I saw the SDHC_WP signal polarity is 
-reversed to the silicon revision 1.0.
+Added support for ibm,configure-pe RTAS call introduced with
+PAPR 2.2.
 
-Unfortunately my prototype board  is using revision 1.0. So, I asked to
-my hardware team workaround putting an extra inverter for the SDHC_WP
-signal.
+Signed-off-by: Richard A. Lary <rlary@linux.vnet.ibm.com>
+---
+  arch/powerpc/platforms/pseries/eeh.c |   13 	12 +	1 -	0 !
+  1 file changed, 12 insertions(+), 1 deletion(-)
 
-Now its working fine!
+Index: b/arch/powerpc/platforms/pseries/eeh.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -95,6 +95,7 @@ static int ibm_slot_error_detail;
+  static int ibm_get_config_addr_info;
+  static int ibm_get_config_addr_info2;
+  static int ibm_configure_bridge;
++static int ibm_configure_pe;
 
-Thanks,
+  int eeh_subsystem_enabled;
+  EXPORT_SYMBOL(eeh_subsystem_enabled);
+@@ -263,6 +264,8 @@ void eeh_slot_error_detail(struct pci_dn
+  	pci_regs_buf[0] = 0;
 
-Moratelli
+  	rtas_pci_enable(pdn, EEH_THAW_MMIO);
++	rtas_configure_bridge(pdn);
++	eeh_restore_bars(pdn);
+  	loglen = gather_pci_data(pdn, pci_regs_buf, EEH_PCI_REGS_LOG_LEN);
 
+  	rtas_slot_error_detail(pdn, severity, pci_regs_buf, loglen);
+@@ -896,6 +899,7 @@ void
+  rtas_configure_bridge(struct pci_dn *pdn)
+  {
+  	int config_addr;
++	int token;
+  	int rc;
 
+  	/* Use PE configuration address, if present */
+@@ -903,7 +907,13 @@ rtas_configure_bridge(struct pci_dn *pdn
+  	if (pdn->eeh_pe_config_addr)
+  		config_addr = pdn->eeh_pe_config_addr;
 
-Em Qua, 2011-04-06 às 14:18 -0300, Carlos Roberto Moratelli escreveu:
-> I will try address the issue in details.
-> 
-> When I insert the SDCard, the same is detect like read-only:
-> 
-> mmcblk0: mmc0:b368 NCard 966 MiB (ro)
-> mmcblk0:
-> mmc0: starting CMD18 arg 00000000 flags 000000b5
-> mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
-> mmc0:     CMD12 arg 00000000 flags 0000049d
-> sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
-> sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x0000000a
-> sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
-> mmc0: req done (CMD18): 0: 00000900 00000000 00000000 00000000
-> mmc0:     4096 bytes transferred: 0
-> mmc0:     (CMD12): 0: 00000b00 00000000 00000000 00000000
-> p1
-> 
-> So, I just can mount the filesystem read-only. I can read the fat32
-> without problems.
-> 
-> I tested your sugestion. I used sdhci,wp-inverted in my dtb. This
-> changed the behavior. Now the SDCard is detected without the read-only
-> flag:
-> 
-> mmcblk0: mmc0:b368 NCard 966 MiB 
-> mmcblk0:
-> mmc0: starting CMD18 arg 00000000 flags 000000b5
-> mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
-> mmc0:     CMD12 arg 00000000 flags 0000049d
-> sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
-> sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x0000000a
-> sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
-> mmc0: req done (CMD18): 0: 00000900 00000000 00000000 00000000
-> mmc0:     4096 bytes transferred: 0
-> mmc0:     (CMD12): 0: 00000b00 00000000 00000000 00000000
-> p1
-> 
-> And, I can mount a rw filesystem:
-> 
-> #mount  /dev/mmcblock1 /mnt
-> #cat /proc/mounts
-> ...
-> /dev/mmcblock1 /mnt vfat
-> rw,relatime,fmask=0000,dmask=0000,allow_utime=0022,codepage=cp437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
-> ...
-> 
-> So, I can copy files to the mounted SDCard. But, When I try to umount I
-> see the following error mensagens:
-> 
-> #cp /etc/shadow /mnt
-> #ls /mnt
-> shadow
-> #umount /mnt
-> mmc0: Timeout waiting for hardware interrupt.
-> mmcblk0: error -110 transferring data, sector 5944, nr 1, card status
-> 0x900
-> end_request: I/O error, dev mmcblk0, sector 5944
-> mmc0: Timeout waiting for hardware interrupt.
-> mmcblk0: error -110 transferring data, sector 5936, nr 1, card status
-> 0x900
-> end_request: I/O error, dev mmcblk0, sector 5936
-> Buffer I/O error on device mmcblk0p1, logical block 3888
-> mmc0: Timeout waiting for hardware interrupt.
-> mmcblk0: error -110 transferring data, sector 2049, nr 1, card status
-> 0x900
-> end_request: I/O error, dev mmcblk0, sector 2049
-> Buffer I/O error on device mmcblk0p1, logical block 1
-> mmc0: Timeout waiting for hardware interrupt.
-> mmcblk0: error -110 transferring data, sector 2080, nr 1, card status
-> 0x900
-> end_request: I/O error, dev mmcblk0, sector 2080
-> ...
-> 
-> I think I need the sdhci,wp-inverted in my dtb. But, it appears that
-> more something is necessary.
-> 
-> Has someone faced this situation?
-> 
-> Thanks by the help until here.
-> 
-> Regards,
-> 
-> Moratelli
-> 
-> 
-> 
-> Em Qua, 2011-04-06 às 01:48 +0200, Wolfram Sang escreveu:
-> > > 		sdhci@2e000 {
-> > > 			compatible = "fsl,mpc8536-esdhc", "fsl,esdhc";
-> > > 			reg = <0x2e000 0x1000>;
-> > > 			interrupts = <72 0x2>;
-> > > 			interrupt-parent = <&mpic>;
-> > > 			/* Filled in by U-Boot */
-> > > 			clock-frequency = <0>;
-> > > 		};
-> > 
-> > Hmm, I am not too familiar with those SoCs, yet some 83xx needed
-> > 
-> > 	sdhci,wp-inverted;
-> > 
-> > here. Maybe yours, too? Would fit the symptoms.
-> > 
-> > Regards,
-> > 
-> >    Wolfram
-> > 
-> 
+-	rc = rtas_call(ibm_configure_bridge,3,1, NULL,
++	/* Use new configure-pe function, if supported */
++	if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE)
++		token = ibm_configure_pe;
++	else
++		token = ibm_configure_bridge;
++
++	rc = rtas_call(token, 3, 1, NULL,
+  	               config_addr,
+  	               BUID_HI(pdn->phb->buid),
+  	               BUID_LO(pdn->phb->buid));
+@@ -1079,6 +1089,7 @@ void __init eeh_init(void)
+  	ibm_get_config_addr_info = rtas_token("ibm,get-config-addr-info");
+  	ibm_get_config_addr_info2 = rtas_token("ibm,get-config-addr-info2");
+  	ibm_configure_bridge = rtas_token ("ibm,configure-bridge");
++	ibm_configure_pe = rtas_token("ibm,configure-pe");
+
+  	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE)
+  		return;
