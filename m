@@ -1,26 +1,40 @@
-Return-Path: <airlied@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 21AE91007D1
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 36E63B6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 18:47:00 +1000 (EST)
-Received: by wyg36 with SMTP id 36so1145020wyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 06 Apr 2011 01:46:55 -0700 (PDT)
+	Wed,  6 Apr 2011 19:00:43 +1000 (EST)
+Date: Wed, 6 Apr 2011 10:57:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH 00/34] Make kernel build deterministic
+Message-ID: <20110406085712.GA16597@elte.hu>
+References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
+	<20110405154918.GA31337@suse.de> <1302031447.2608.41.camel@koala>
 MIME-Version: 1.0
-In-Reply-To: <20110406084101.GB13963@pengutronix.de>
-References: <20110404235259.GA30132@iram.es>
-	<20110406084101.GB13963@pengutronix.de>
-Date: Wed, 6 Apr 2011 18:46:55 +1000
-Message-ID: <BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
-Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-From: Dave Airlie <airlied@gmail.com>
-To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1302031447.2608.41.camel@koala>
+Cc: anil_ravindranath@pmc-sierra.com, mchehab@redhat.com, mac@melware.de,
+	aacraid@adaptec.com, linux-mtd@lists.infradead.org,
+	allan.stephens@windriver.com, hpa@zytor.com,
+	t.sailer@alumni.ethz.ch, gwingerde@gmail.com, x86@kernel.org,
+	elf@buici.com, cluster-devel@redhat.com, ccaulfie@redhat.com,
+	mingo@redhat.com, dougthompson@xmission.com,
+	tipc-discussion@lists.sourceforge.net, dwmw2@infradead.org,
+	linux-media@vger.kernel.org, jon.maloy@ericsson.com,
+	arnaud.giersch@free.fr, linux-kbuild@vger.kernel.org,
+	IvDoorn@gmail.com, teigland@redhat.com,
+	tony.olech@elandigitalsystems.com, apw@canonical.com,
+	linux-hams@vger.kernel.org, tglx@linutronix.de,
+	swhiteho@redhat.com, linux-arm-kernel@lists.infradead.org,
+	linux-edac@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
+	linux-scsi@vger.kernel.org, netdev@vger.kernel.org,
+	Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
+	linux-kernel@vger.kernel.org, davem@davemloft.net,
+	linux-usb@vger.kernel.org, James.Bottomley@suse.de,
+	chuanxiao.dong@intel.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,83 +44,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/4/6 Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>:
-> Hi Gabriel,
->
-> On Tue, Apr 05, 2011 at 01:52:59AM +0200, Gabriel Paubert wrote:
->> I've had the following funny crashes on PPC machines, with
->> cataleptic X server as a consequence:
->>
->> kernel: [drm] Setting GART location based on new memory map
->> kernel: Oops: Exception in kernel mode, sig: 4 [#1]
->> kernel: CHRP
->> kernel: last sysfs file: /sys/devices/pci0001:01/0001:01:08.0/resource
->> kernel: NIP: c05648fc LR: c0226f58 CTR: 00000008
->> kernel: REGS: ddb53d20 TRAP: 0700 =A0 Not tainted =A0(2.6.38)
->> kernel: MSR: 00089032 <EE,ME,IR,DR> =A0CR: 48044482 =A0XER: 00000000
->> kernel: TASK =3D ddab12b0[3040] 'Xorg' THREAD: ddb52000
->> kernel: GPR00: c0226f34 ddb53dd0 ddab12b0 00000000 c0509e6c 00000000 000=
-00000 00000000
->> kernel: GPR08: 00000000 00000000 00000000 00000000 28044488 101f3d8c bf8=
-166b4 00002c00
->> kernel: GPR16: 101b9458 1006f1a0 101ebe0c 00000001 101ebe08 00000000 df9=
-efc20 df9efc00
->> kernel: GPR24: c0591e54 80546440 ddacf660 df9efc00 c0506048 c0480210 00a=
-00000 df9ef800
->> kernel: NIP [c05648fc] platform_device_register_resndata+0x4/0xa4
->> kernel: LR [c0226f58] radeon_cp_init+0xd08/0x10c4
->> kernel: Call Trace:
->> kernel: [ddb53dd0] [c0226f34] radeon_cp_init+0xce4/0x10c4 (unreliable)
->> kernel: [ddb53df0] [c020801c] drm_ioctl+0x2c0/0x3e4
->> kernel: [ddb53eb0] [c0091264] do_vfs_ioctl+0x674/0x710
->> kernel: [ddb53f10] [c0091340] sys_ioctl+0x40/0x70
->> kernel: [ddb53f40] [c00111a8] ret_from_syscall+0x0/0x38
->> kernel: --- Exception: c01 at 0xfc54a78
->> kernel: =A0 =A0 LR =3D 0xfc549dc
->> kernel: Instruction dump:
->> kernel: 736f2e31 32002f75 73722f6c 69622f6c 6962786b 6c617669 65722e73 6=
-f2e3132
->> kernel: 006c6962 786b6266 696c652e 736f2e31 <002f7573> 722f6c69 622f6c69=
- 62786b62
->> kernel: ---[ end trace ed79daba161e31d9 ]---
->>
->> As you can see, the processor is trying to execute ASCII strings like
->> "/usr/lib/libxkb" and has trouble digesting them :-)
->>
->> The backtrace is actually missing radeon_cp_init_microcode and radeon_do=
-_init_cp
->> which are inlined inside radeon_cp_init.
->>
->> The trouble is that radeon_cp_init_microcode calls platform_device_regis=
-ter_simple
->> which is a simple inline wrapper around platform_device_register_resndat=
-a, which
->> happens to be already freed and overwritten with something looking like =
-a list
->> of filenames, since I have a non modular kernel.
->>
->> For now I have locally reverted 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8
->> which simply added an _init_or_module section attribute to
->> platform_device_register_resndata, and X is up again...
->>
->> Now it may be that it is the ioctl that does not have the right to do
->> this. Actually I thought that the name radeon_cp that is registered ther=
-e
->> would appear somwhere under /sys (or /proc) but failed to find it...
-> I don't know for sure, but it looks strange to me that an ioctl can
-> register a device. But the fear for such code in the kernel made me
-> choose not to squash 737a3bb941 into 44f28bdea094. So my POV is that if
-> the maintainer of the radeon driver thinks registering the device is OK,
-> reverting 737a3bb9416 is fine for me.
 
-This is the old DRM driver for radeon, which relies on userspace to
-start X then calls the kernel
-to initialise the hardware. Due to this model, there is no device we
-can hang off (the PCI device
-might already be bound to fbdev), so we are forced to create a
-platform device to load the firmware.
+* Artem Bityutskiy <dedekind1@gmail.com> wrote:
 
-So its ugly, unless someone can suggest a better device to hang things
-off I don't know of another way.
+> On Tue, 2011-04-05 at 08:49 -0700, Greg KH wrote:
+> > On Tue, Apr 05, 2011 at 04:58:47PM +0200, Michal Marek wrote:
+> > > 
+> > > Hi,
+> > > 
+> > > this series makes it possible to build bit-identical kernel image and
+> > > modules from identical sources. Of course the build is already
+> > > deterministic in terms of behavior of the code, but the various
+> > > timestamps embedded in the object files make it hard to compare two
+> > > builds, for instance to verify that a makefile cleanup didn't
+> > > accidentally change something. A prime example is /proc/config.gz, which
+> > > has both a timestamp in the gzip header and a timestamp in the payload
+> > > data. With this series applied, a script like this will produce
+> > > identical kernels each time:
+> > 
+> > Very nice stuff.  Do you want to take the individual patches through one
+> > of your trees, or do you mind if the subsystem maintainers take them
+> > through theirs?
+> 
+> But unfortunately, it is very easy to break this and for sure it'll be
+> broken very soon.
+> 
+> So additionally, I'd suggest:
+> 1. Instrument checkpatch.pl and make it err or warn on timestamps.
 
-Dave.
+See the grandparent mail:
+
+  checkpatch: Warn about usage of __DATE__, __TIME__ and __TIMESTAMP__
+
+Thanks,
+
+	Ingo
