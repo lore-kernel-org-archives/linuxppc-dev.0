@@ -1,38 +1,38 @@
 Return-Path: <mmarek@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id D4A62B6EFF
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 25FC8B6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 19:07:44 +1000 (EST)
-Message-ID: <4D9C2D56.70700@suse.cz>
-Date: Wed, 06 Apr 2011 11:07:34 +0200
+	Wed,  6 Apr 2011 19:23:49 +1000 (EST)
+Message-ID: <4D9C311C.4080008@suse.cz>
+Date: Wed, 06 Apr 2011 11:23:40 +0200
 From: Michal Marek <mmarek@suse.cz>
 MIME-Version: 1.0
-To: dedekind1@gmail.com
+To: Greg KH <gregkh@suse.de>
 Subject: Re: [PATCH 00/34] Make kernel build deterministic
-References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>	
-	<20110405154918.GA31337@suse.de> <1302031447.2608.41.camel@koala>
-In-Reply-To: <1302031447.2608.41.camel@koala>
-Content-Type: text/plain; charset=UTF-8
-Cc: anil_ravindranath@pmc-sierra.com, mchehab@redhat.com, mac@melware.de,
-	aacraid@adaptec.com, linux-mtd@lists.infradead.org,
-	allan.stephens@windriver.com, hpa@zytor.com,
-	t.sailer@alumni.ethz.ch, gwingerde@gmail.com, x86@kernel.org,
-	elf@buici.com, cluster-devel@redhat.com, ccaulfie@redhat.com,
-	mingo@redhat.com, dougthompson@xmission.com,
-	tipc-discussion@lists.sourceforge.net, dwmw2@infradead.org,
-	linux-media@vger.kernel.org, arnaud.giersch@free.fr,
-	linux-kbuild@vger.kernel.org, IvDoorn@gmail.com,
+References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
+	<20110405154918.GA31337@suse.de>
+In-Reply-To: <20110405154918.GA31337@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: anil_ravindranath@pmc-sierra.com, mchehab@redhat.com, x86@kernel.org,
+	mac@melware.de, aacraid@adaptec.com,
+	linux-mtd@lists.infradead.org, allan.stephens@windriver.com,
+	hpa@zytor.com, netdev@vger.kernel.org, t.sailer@alumni.ethz.ch,
+	gwingerde@gmail.com, IvDoorn@gmail.com, elf@buici.com,
+	cluster-devel@redhat.com, ccaulfie@redhat.com, mingo@redhat.com,
+	dougthompson@xmission.com, linux-media@vger.kernel.org,
+	arnaud.giersch@free.fr, linux-kbuild@vger.kernel.org,
 	teigland@redhat.com, tony.olech@elandigitalsystems.com,
 	apw@canonical.com, linux-hams@vger.kernel.org,
 	tglx@linutronix.de, swhiteho@redhat.com,
 	linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
 	jon.maloy@ericsson.com, linux-scsi@vger.kernel.org,
-	netdev@vger.kernel.org, Greg KH <gregkh@suse.de>,
+	linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
 	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-	davem@davemloft.net, linux-usb@vger.kernel.org,
-	James.Bottomley@suse.de, chuanxiao.dong@intel.com,
-	paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
-	bluesmoke-devel@lists.sourceforge.net
+	bluesmoke-devel@lists.sourceforge.net, James.Bottomley@suse.de,
+	tipc-discussion@lists.sourceforge.net, chuanxiao.dong@intel.com,
+	paulus@samba.org, dwmw2@infradead.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,45 +42,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5.4.2011 21:24, Artem Bityutskiy wrote:
-> On Tue, 2011-04-05 at 08:49 -0700, Greg KH wrote:
->> On Tue, Apr 05, 2011 at 04:58:47PM +0200, Michal Marek wrote:
->>>
->>> Hi,
->>>
->>> this series makes it possible to build bit-identical kernel image and
->>> modules from identical sources. Of course the build is already
->>> deterministic in terms of behavior of the code, but the various
->>> timestamps embedded in the object files make it hard to compare two
->>> builds, for instance to verify that a makefile cleanup didn't
->>> accidentally change something. A prime example is /proc/config.gz, which
->>> has both a timestamp in the gzip header and a timestamp in the payload
->>> data. With this series applied, a script like this will produce
->>> identical kernels each time:
->>
->> Very nice stuff.  Do you want to take the individual patches through one
->> of your trees, or do you mind if the subsystem maintainers take them
->> through theirs?
-> 
-> But unfortunately, it is very easy to break this and for sure it'll be
-> broken very soon.
+On 5.4.2011 17:49, Greg KH wrote:
+> Very nice stuff.  Do you want to take the individual patches through one
+> of your trees, or do you mind if the subsystem maintainers take them
+> through theirs?
 
-I'm not so pessimistic. 34 patches and 57 files might sound like a lot,
-but given that this has been accumulating since day one, the cleanup
-should last for some time.
-
-
-> So additionally, I'd suggest:
-> 1. Instrument checkpatch.pl and make it err or warn on timestamps.
-
-This is patch 34/34 in this series: https://lkml.org/lkml/2011/4/5/198
-
-
-> 2. Probably instrument linux-next to rise a warning when people break
->    this.
-
-I'm not sure if Stephen has that much spare time, and I don't think it
-is necessary. I think the checkpatch check is sufficient and I'll check
-myself occasionally.
+I'd leave it up to the subsystem maintainers. I'll check once the merge
+window opens and send the remaining patches to Linus directly.
 
 Michal
