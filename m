@@ -1,25 +1,22 @@
-Return-Path: <jgpobox@gmail.com>
-Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
-	[209.85.216.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B662B6EEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2011 04:12:54 +1000 (EST)
-Received: by qwi4 with SMTP id 4so1462213qwi.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Apr 2011 11:12:51 -0700 (PDT)
-Sender: Jeff Garzik <jgpobox@gmail.com>
-Message-ID: <4D9CAD1F.6060500@garzik.org>
-Date: Wed, 06 Apr 2011 14:12:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
+Return-Path: <Kyle.D.Moffett@boeing.com>
+Received: from slb-smtpout-01.boeing.com (slb-smtpout-01.boeing.com
+	[130.76.64.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "slb-smtpout-01.boeing.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6935BB6EEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2011 04:42:57 +1000 (EST)
+From: "Moffett, Kyle D" <Kyle.D.Moffett@boeing.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Date: Wed, 6 Apr 2011 12:48:27 -0500
 Subject: Re: known working sata_sil24.c setup on powerpc platforms?
+Message-ID: <C3A1EF35-6CB6-4674-8B0B-44CD1657FE87@boeing.com>
 References: <BANLkTimXgi26RHHxyBLoN8YqaDy_PL-hGQ@mail.gmail.com>
-	<C3A1EF35-6CB6-4674-8B0B-44CD1657FE87@boeing.com>
-In-Reply-To: <C3A1EF35-6CB6-4674-8B0B-44CD1657FE87@boeing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
-	Linux PPC <linuxppc-dev@ozlabs.org>, Tejun Heo <htejun@gmail.com>,
+In-Reply-To: <BANLkTimXgi26RHHxyBLoN8YqaDy_PL-hGQ@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Tejun Heo <htejun@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>,
 	"linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,20 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/06/2011 01:48 PM, Moffett, Kyle D wrote:
-> On Apr 06, 2011, at 13:00, Leon Woestenberg wrote:
->> after investigating problems with sata_sil24.c on a freescale p2020
->> soc, I wonder if this driver works on powerpc at all?
->>
->> Does anyone know of a working setup of sata_sil24 on a big endian
->> powerpc system?
->
-> Our P2020 boards work fine with legacy PCI interrupts (I think it's a sil3124 over PCI-E); the only deficiency is that MSI does not seem to work.
->
-> I know our MSI *does* work in general because we have an Intel 82571EB chipset also attached via PCI-E with working MSI.
+On Apr 06, 2011, at 13:00, Leon Woestenberg wrote:
+> after investigating problems with sata_sil24.c on a freescale p2020
+> soc, I wonder if this driver works on powerpc at all?
+>=20
+> Does anyone know of a working setup of sata_sil24 on a big endian
+> powerpc system?
 
-We've definitely had issues with sata_sil24 + MSI, also...
+Our P2020 boards work fine with legacy PCI interrupts (I think it's a sil31=
+24 over PCI-E); the only deficiency is that MSI does not seem to work.
 
-sata_sil24 does work on big endian in general.
+I know our MSI *does* work in general because we have an Intel 82571EB chip=
+set also attached via PCI-E with working MSI.
 
-	Jeff
+Cheers,
+Kyle Moffett
