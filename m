@@ -2,39 +2,37 @@ Return-Path: <mingo@elte.hu>
 Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 36E63B6EF0
+	by ozlabs.org (Postfix) with ESMTPS id 3A8F5B6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  6 Apr 2011 19:00:43 +1000 (EST)
-Date: Wed, 6 Apr 2011 10:57:12 +0200
+	Wed,  6 Apr 2011 19:04:52 +1000 (EST)
+Date: Wed, 6 Apr 2011 11:01:19 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Artem Bityutskiy <dedekind1@gmail.com>
+To: Michal Marek <mmarek@suse.cz>
 Subject: Re: [PATCH 00/34] Make kernel build deterministic
-Message-ID: <20110406085712.GA16597@elte.hu>
+Message-ID: <20110406090119.GB16597@elte.hu>
 References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
-	<20110405154918.GA31337@suse.de> <1302031447.2608.41.camel@koala>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1302031447.2608.41.camel@koala>
-Cc: anil_ravindranath@pmc-sierra.com, mchehab@redhat.com, mac@melware.de,
-	aacraid@adaptec.com, linux-mtd@lists.infradead.org,
-	allan.stephens@windriver.com, hpa@zytor.com,
-	t.sailer@alumni.ethz.ch, gwingerde@gmail.com, x86@kernel.org,
-	elf@buici.com, cluster-devel@redhat.com, ccaulfie@redhat.com,
-	mingo@redhat.com, dougthompson@xmission.com,
-	tipc-discussion@lists.sourceforge.net, dwmw2@infradead.org,
-	linux-media@vger.kernel.org, jon.maloy@ericsson.com,
-	arnaud.giersch@free.fr, linux-kbuild@vger.kernel.org,
-	IvDoorn@gmail.com, teigland@redhat.com,
+In-Reply-To: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
+Cc: anil_ravindranath@pmc-sierra.com, mchehab@redhat.com, x86@kernel.org,
+	mac@melware.de, aacraid@adaptec.com,
+	linux-mtd@lists.infradead.org, allan.stephens@windriver.com,
+	hpa@zytor.com, netdev@vger.kernel.org, t.sailer@alumni.ethz.ch,
+	gwingerde@gmail.com, IvDoorn@gmail.com, elf@buici.com,
+	cluster-devel@redhat.com, ccaulfie@redhat.com, mingo@redhat.com,
+	dougthompson@xmission.com, linux-usb@vger.kernel.org,
+	linux-media@vger.kernel.org, arnaud.giersch@free.fr,
+	linux-kbuild@vger.kernel.org, teigland@redhat.com,
 	tony.olech@elandigitalsystems.com, apw@canonical.com,
 	linux-hams@vger.kernel.org, tglx@linutronix.de,
 	swhiteho@redhat.com, linux-arm-kernel@lists.infradead.org,
-	linux-edac@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
-	linux-scsi@vger.kernel.org, netdev@vger.kernel.org,
-	Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, davem@davemloft.net,
-	linux-usb@vger.kernel.org, James.Bottomley@suse.de,
-	chuanxiao.dong@intel.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
-	bluesmoke-devel@lists.sourceforge.net
+	linux-edac@vger.kernel.org, jon.maloy@ericsson.com,
+	linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	gregkh@suse.de, linux-wireless@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	bluesmoke-devel@lists.sourceforge.net, James.Bottomley@suse.de,
+	tipc-discussion@lists.sourceforge.net, chuanxiao.dong@intel.com,
+	paulus@samba.org, dwmw2@infradead.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,36 +43,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Artem Bityutskiy <dedekind1@gmail.com> wrote:
+* Michal Marek <mmarek@suse.cz> wrote:
 
-> On Tue, 2011-04-05 at 08:49 -0700, Greg KH wrote:
-> > On Tue, Apr 05, 2011 at 04:58:47PM +0200, Michal Marek wrote:
-> > > 
-> > > Hi,
-> > > 
-> > > this series makes it possible to build bit-identical kernel image and
-> > > modules from identical sources. Of course the build is already
-> > > deterministic in terms of behavior of the code, but the various
-> > > timestamps embedded in the object files make it hard to compare two
-> > > builds, for instance to verify that a makefile cleanup didn't
-> > > accidentally change something. A prime example is /proc/config.gz, which
-> > > has both a timestamp in the gzip header and a timestamp in the payload
-> > > data. With this series applied, a script like this will produce
-> > > identical kernels each time:
-> > 
-> > Very nice stuff.  Do you want to take the individual patches through one
-> > of your trees, or do you mind if the subsystem maintainers take them
-> > through theirs?
 > 
-> But unfortunately, it is very easy to break this and for sure it'll be
-> broken very soon.
+> Hi,
 > 
-> So additionally, I'd suggest:
-> 1. Instrument checkpatch.pl and make it err or warn on timestamps.
+> this series makes it possible to build bit-identical kernel image and
+> modules from identical sources. Of course the build is already
+> deterministic in terms of behavior of the code, but the various
+> timestamps embedded in the object files make it hard to compare two
+> builds, for instance to verify that a makefile cleanup didn't
+> accidentally change something. A prime example is /proc/config.gz, which
+> has both a timestamp in the gzip header and a timestamp in the payload
+> data. With this series applied, a script like this will produce
+> identical kernels each time:
+> 
+> #!/bin/bash
+> rm -rf /dev/shm/{source,build}{,1,2}
+> export KCONFIG_NOTIMESTAMP=1
+> export KBUILD_BUILD_TIMESTAMP='Sun May  1 12:00:00 CEST 2011'
+> export KBUILD_BUILD_USER=user
+> export KBUILD_BUILD_HOST=host
+> export ROOT_DEV=FLOPPY
+> for i in 1 2; do
+> 	mkdir /dev/shm/source
+> 	# randomize the inode order just for fun
+> 	git ls-tree -r -z --name-only HEAD | sort -R -z | xargs -0 \
+> 		cp --parents --target=/dev/shm/source
+> 	pushd /dev/shm/source
+> 	mkdir /dev/shm/build
+> 	>/dev/shm/build/all.config
+> 	for opt in GCOV_KERNEL UBIFS_FS_DEBUG; do
+> 		echo "# CONFIG_$opt is not set" >>"/dev/shm/build"/all.config
+> 	done
+> 	make O="/dev/shm/build" KCONFIG_ALLCONFIG=1 allmodconfig
+> 	make O="/dev/shm/build" -j64
+> 	popd
+> 	mv /dev/shm/source /dev/shm/source$i
+> 	mv /dev/shm/build /dev/shm/build$i
+> done
+> diff -rq /dev/shm/build{1,2}
 
-See the grandparent mail:
+Nice!
 
-  checkpatch: Warn about usage of __DATE__, __TIME__ and __TIMESTAMP__
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+> Unfortunatelly, this cannot be used to validate indentation-only
+> patches, even if CONFIG_DEBUG_INFO is turned off. This is because of the
+> __FILE__ and __LINE__ macros used in many places. For the same reason,
+> the source and build directory needs to be the same, otherwise the
+> results will differ.
+
+Nor can it be used to validate untrusted patches in general: a subtle change 
+might be introduced in a piece of code that is dependent on a .config detail 
+that is off for that particular build.
+
+But in the common case it's nice to be able to have deterministic/reproducable 
+builds.
 
 Thanks,
 
