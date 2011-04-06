@@ -1,14 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 01A88B6EF0
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2011 15:29:39 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH] powerpc/book3e: Fix CPU feature handling on e5500
-Date: Wed,  6 Apr 2011 00:29:32 -0500
-Message-Id: <1302067772-32104-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 77AA7B6EF7
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2011 15:41:53 +1000 (EST)
+Date: Wed, 6 Apr 2011 15:41:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] powerpc/book3e: Fix CPU feature handling on e5500
+Message-Id: <20110406154147.f736d92e.sfr@canb.auug.org.au>
+In-Reply-To: <1302067772-32104-1-git-send-email-galak@kernel.crashing.org>
+References: <1302067772-32104-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__6_Apr_2011_15_41_47_+1000_xR3vMXKWYnzvf3Fn"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,40 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CPU_FTRS_POSSIBLE and CPU_FTRS_ALWAYS defines did not encompass
-e5500 CPU features when built for 64-bit.  This causes issues with
-cpu_has_feature() as it utilizes the POSSIBLE & ALWAYS defines as part
-of its check.
+--Signature=_Wed__6_Apr_2011_15_41_47_+1000_xR3vMXKWYnzvf3Fn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* I'm concerned if its ok to assume 'enum' can handle a 64-bit mask or not.
-  I'm assuming this is the reason that we use a #define on __powerpc64__
+Hi Kumar,
 
- arch/powerpc/include/asm/cputable.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Wed,  6 Apr 2011 00:29:32 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> * I'm concerned if its ok to assume 'enum' can handle a 64-bit mask or no=
+t.
+>   I'm assuming this is the reason that we use a #define on __powerpc64__
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index be3cdf9..8200e9d 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -434,7 +434,7 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_NO_SLBIE_B)
- #define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
- 
--#ifdef __powerpc64__
-+#if defined(__powerpc64__) && !defined(CONFIG_PPC_BOOK3E)
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
- 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
-@@ -478,7 +478,7 @@ enum {
- };
- #endif /* __powerpc64__ */
- 
--#ifdef __powerpc64__
-+#if defined(__powerpc64__) && !defined(CONFIG_PPC_BOOK3E)
- #define CPU_FTRS_ALWAYS		\
- 	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
- 	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
--- 
-1.7.3.4
+enums are *ints* and therefore 32 bit.  gcc can cope, but warns about it
+(I think). So we must use the #define if any of the included bits are
+above 2^32.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__6_Apr_2011_15_41_47_+1000_xR3vMXKWYnzvf3Fn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJNm/0bAAoJEDMEi1NhKgbs6ZMIAJB9wuVzYj1ov/X9nGjGPNob
+YN26D61whbf7RNFN3tl1w8jyws2phr+iAZiV1VAbRJHFUix0Rw6CxCX3wALh2apA
+Jr/zksXR3GpPt3IDV0thJE7UHWfqP4xEMNtDu6Ul4p3z0+rEjgpEzbf7nR8F1xLF
+z2caPy46WznJLTKi8v2/THaygjGvSJeQEHWeXJaSCJdLW0Ya+umPvQkIVt42oCik
+aDjFEHzC8ptbDQWcrEoHy0I6hHTLaqAZZf5n3tJKpXGtr1KJOhY4iaOahIpiGFmx
+mSqiC6fIZUTrKHqcgpC0t5tR1SNb4O+tYki/tg23U6trtsqB3KeN5De1ANTPJ8g=
+=YCoy
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__6_Apr_2011_15_41_47_+1000_xR3vMXKWYnzvf3Fn--
