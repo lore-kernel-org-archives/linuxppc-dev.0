@@ -1,23 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2AF30B6F71
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2011 06:03:34 +1000 (EST)
-Date: Thu, 7 Apr 2011 14:48:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/book3e: Fix CPU feature handling on 64-bit e5500
-Message-ID: <20110407144819.333dc3f1@schlenkerla.am.freescale.net>
-In-Reply-To: <7597043B-4C16-47F7-8AF7-111A5815545E@kernel.crashing.org>
-References: <1302092943-10586-1-git-send-email-galak@kernel.crashing.org>
-	<20110406130257.2d31beaa@schlenkerla.am.freescale.net>
-	<7597043B-4C16-47F7-8AF7-111A5815545E@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A8164B6F83
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  8 Apr 2011 07:48:32 +1000 (EST)
+Subject: Re: halt/reset on assert?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: kevin diggs <diggskevin38@gmail.com>
+In-Reply-To: <BANLkTimX==Ei2Sn=86svSajHNX+0G1WM9w@mail.gmail.com>
+References: <4D966C5C.9030409__15236.8285613649$1301704900$gmane$org@cyconix.com>
+	<m2sju1uoti.fsf@igel.home> <4D9C6413.8030103@cyconix.com>
+	<1302162933.2458.33.camel@pasglop>
+	<BANLkTimX==Ei2Sn=86svSajHNX+0G1WM9w@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 08 Apr 2011 07:48:09 +1000
+Message-ID: <1302212889.2458.40.camel@pasglop>
+Mime-Version: 1.0
+Cc: Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+	Evan Lavelle <sa212+lppc@cyconix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 7 Apr 2011 14:38:57 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On Thu, 2011-04-07 at 12:04 -0500, kevin diggs wrote:
+> On Thu, Apr 7, 2011 at 2:55 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Wed, 2011-04-06 at 14:01 +0100, Evan Lavelle wrote:
+> >> #define MY_ASSERT(expr) if(!(expr)) BUG()
+> >
+> > Make it
+> >
+> > #define MY_ASSERT(expr) do { if .... } while(0)
+> >
+> > To ensure it has proper single statement semantics in C.
+> >
+> So THAT'S why they do this!!!!!! Now I just have to figure out what
+> 'proper single statement semantics' means!
 
-> 
-> On Apr 6, 2011, at 1:02 PM, Scott Wood wrote:
-> 
-> > On Wed, 6 Apr 2011 07:29:03 -0500
-> > Kumar Gala <galak@kernel.crashing.org> wrote:
-> > 
-> >> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> >> index be3cdf9..9028a9e 100644
-> >> --- a/arch/powerpc/include/asm/cputable.h
-> >> +++ b/arch/powerpc/include/asm/cputable.h
-> >> @@ -386,6 +386,10 @@ extern const char *powerpc_base_platform;
-> >> 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
-> >> 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
-> >> 	    CPU_FTR_DBELL)
-> >> +#define CPU_FTRS_E5500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
-> >> +	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
-> > 
-> > E5500 cannot doze or nap in the way meant by existing code (MSR[WE]).
-> 
-> Should I drop them for e500mc as well?
+Thing what happens without the do { ... } while(0) if you have code
+that looks like:
 
-Yes.
+	if (enable_debug)
+		MY_ASSERT(foo);
+	else
+		something_else;
 
--Scott
+Ben.
