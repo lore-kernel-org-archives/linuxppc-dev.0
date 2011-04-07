@@ -1,36 +1,36 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-px0-f169.google.com (mail-px0-f169.google.com
-	[209.85.212.169]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3CD41B6F72
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2011 03:20:28 +1000 (EST)
-Received: by pxi9 with SMTP id 9so1426100pxi.0
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 Apr 2011 10:20:24 -0700 (PDT)
+Return-Path: <nacc@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5FA691007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  8 Apr 2011 04:12:03 +1000 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p37Hp5Eo000792
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2011 13:51:05 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D173338C803E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  7 Apr 2011 14:11:50 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p37IBwAe2809942
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2011 14:11:58 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p37IBvce026446
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2011 15:11:57 -0300
+Date: Thu, 7 Apr 2011 11:11:49 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] rtas: Only sleep in rtas_busy_delay if we have useful
+	work to do
+Message-ID: <20110407181149.GA3851@us.ibm.com>
+References: <20110407215407.4f6ca50f@kryten>
 MIME-Version: 1.0
-In-Reply-To: <4B2A946E.4040907@embedded-sol.com>
-References: <4B27FEE3.80001@embedded-sol.com>
-	<0949C49693EF1A47A54B0F0113CDB4A607674F@zin33exm23.fsl.freescale.net>
-	<4B28A7C3.6040209@embedded-sol.com>
-	<0949C49693EF1A47A54B0F0113CDB4A6076776@zin33exm23.fsl.freescale.net>
-	<4B28CBC4.4010501@embedded-sol.com>
-	<0949C49693EF1A47A54B0F0113CDB4A6076791@zin33exm23.fsl.freescale.net>
-	<4B29DC2B.8090405@embedded-sol.com>
-	<0949C49693EF1A47A54B0F0113CDB4A60767E8@zin33exm23.fsl.freescale.net>
-	<4B29F23A.9070001@embedded-sol.com>
-	<0949C49693EF1A47A54B0F0113CDB4A60767F0@zin33exm23.fsl.freescale.net>
-	<EBE3ECA5-AC1B-4E1C-A0DA-89260D0F03F6@kernel.crashing.org>
-	<4B2A946E.4040907@embedded-sol.com>
-Date: Thu, 7 Apr 2011 19:20:24 +0200
-Message-ID: <BANLkTimf8uwgew3YPcNxdNj+4XamPhbxbQ@mail.gmail.com>
-Subject: Re: Problem with mini-PCI-E slot on P2020RDB
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mahajan Vivek-B08308 <B08308@freescale.com>,
-	Felix Radensky <felix@embedded-sol.com>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>,
-	Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110407215407.4f6ca50f@kryten>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,56 +40,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On 07.04.2011 [21:54:07 +1000], Anton Blanchard wrote:
+> 
+> RTAS returns extended error codes as a hint of how long the
+> OS might want to wait before retrying a call. If we have nothing
+> else useful to do we may as well call back straight away.
+> 
+> This was found when testing the new dynamic dma window feature.
+> Firmware split the zeroing of the TCE table into 32k chunks but
+> returned 9901 (which is a suggested wait of 10ms). All up this took
+> about 10 minutes to complete since msleep is jiffies based and will
+> round 10ms up to 20ms.
+> 
+> With the patch below we take 3 seconds to complete the same test.
+> The hint firmware is returning in the RTAS call should definitely
+> be decreased, but even if we slept 1ms each iteration this would
+> take 32s.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-On Thu, Dec 17, 2009 at 9:28 PM, Felix Radensky <felix@embedded-sol.com> wr=
-ote:
-> Kumar Gala wrote:
->> On Dec 17, 2009, at 2:59 AM, Mahajan Vivek-B08308 wrote:
->>>> Thanks a lot. If I understand you correctly, the only way I can get
->>>> ath9k driver to work on this board using legacy interrupts is to wait =
-for a
->>>> hardware fix. Right ?
->>>>
->>> Correct
->>
->> I'm confused. =A0What's the issue with IRQ0 on the P2020RDB? =A0Is it us=
-ed for
->> another purpose?
->
-> There's a problem with IRQ0 with respect to mini-PCI-E slot. I have Ather=
-os
-> wireless card plugged
-> into it. ath9k wireless driver for this card uses legacy PCI-E interrupts=
-,
-> and I get "irq 16: nobody cared"
-> message when driver executes request_irq(). Vivek has come to a conclusio=
-n
-> that the problem is
-> related to incorrect IRQ0 routing for mini-PCI-E slot on P2020RDB.
->
+Acked-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-I would like to understand this issue better, as I seem to be running
-into something similar, and it puts my board design on hold.
-
-Can someone (from Freescale) explain what happens if a PCI Express end
-point on the mini-PCIe slot raises a legacy interrupt, and where this
-goes wrong?
-
->From what document or source code file can I conclude that the PCIe
-legacy interrupt is shared with IRQ0?
-
-
-I found this:
-
-P1020E/P2020E RDB System Errata, Last Update: 2/15/2010:
-Problem:IRQ0 held low
-Fix: Add 4.7K pull-up (to 3.3.V) for RTC_INT_N.
-See R420 in Rev D schematic.
-Add 4.7K pull-up (to 3.3.V) for MCU_INT_N.
-See R423 in Rev D schematic.
-
-
-Regards,
---=20
-Leon
+> ---
+> 
+> Index: linux-2.6/arch/powerpc/kernel/rtas.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/rtas.c	2011-04-05 11:19:35.023234011 +1000
+> +++ linux-2.6/arch/powerpc/kernel/rtas.c	2011-04-07 21:25:24.646414629 +1000
+> @@ -494,7 +494,7 @@ unsigned int rtas_busy_delay(int status)
+> 
+>  	might_sleep();
+>  	ms = rtas_busy_delay_time(status);
+> -	if (ms)
+> +	if (ms && need_resched())
+>  		msleep(ms);
+> 
+>  	return ms;
