@@ -1,21 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CE051B6F44
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 13:35:39 +1000 (EST)
-Subject: Re: [PATCH 1/1]  powerpc/eeh: Add support for ibm,configure-pe
-	RTAS call
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Richard A Lary <rlary@linux.vnet.ibm.com>
-In-Reply-To: <4D9CEE45.9000904@linux.vnet.ibm.com>
-References: <4D9CEE45.9000904@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Apr 2011 13:35:31 +1000
-Message-ID: <1302147331.2458.26.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Use new CPU feature bit to select 2.06 tlbie
+In-reply-to: <1301986248.2549.141.camel@pasglop>
+References: <1301984051-18413-1-git-send-email-benh@kernel.crashing.org>
+	<1301984051-18413-5-git-send-email-benh@kernel.crashing.org>
+	<22009.1301985041@neuling.org> <1301986248.2549.141.camel@pasglop>
+Date: Thu, 07 Apr 2011 14:23:29 +1000
+Message-ID: <19302.1302150209@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,79 +18,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-04-06 at 15:50 -0700, Richard A Lary wrote:
-> From: Richard A. Lary <rlary@linux.vnet.ibm.com>
-> 
-> Added support for ibm,configure-pe RTAS call introduced with
-> PAPR 2.2.
+This removes MMU_FTR_TLBIE_206 as we can now use CPU_FTR_HVMODE_206.  It
+also changes the logic to select which tlbie to use to be based on this
+new CPU feature bit.
 
-Care to tell us a bit about the difference ? :-) There's nothing obvious
-in the code.... Also you added calls to rtas_configure_bridge() and
-eeh_restore_bars() to eeh_slot_error_Detail(), that might want some
-explanation as well.
+This also duplicates the ASM_FTR_IF/SET/CLR defines for CPU features
+(copied from MMU features).
 
-Cheers,
-Ben.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Subject: Re: [PATCH 04/15] powerpc: Define CPU feature for Architected 2.06 HV mode
+> > > +#define CPU_FTR_HVMODE_206		LONG_ASM_CONST(0x00000008000000
+00)
+> > 
+> > FYI With this patch we could remove MMU_FTR_TLBIE_206.
+> 
+> We could... care to send a patch ? :-)
 
-> Signed-off-by: Richard A. Lary <rlary@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/pseries/eeh.c |   13 	12 +	1 -	0 !
->   1 file changed, 12 insertions(+), 1 deletion(-)
-> 
-> Index: b/arch/powerpc/platforms/pseries/eeh.c
-> ===================================================================
-> --- a/arch/powerpc/platforms/pseries/eeh.c
-> +++ b/arch/powerpc/platforms/pseries/eeh.c
-> @@ -95,6 +95,7 @@ static int ibm_slot_error_detail;
->   static int ibm_get_config_addr_info;
->   static int ibm_get_config_addr_info2;
->   static int ibm_configure_bridge;
-> +static int ibm_configure_pe;
-> 
->   int eeh_subsystem_enabled;
->   EXPORT_SYMBOL(eeh_subsystem_enabled);
-> @@ -263,6 +264,8 @@ void eeh_slot_error_detail(struct pci_dn
->   	pci_regs_buf[0] = 0;
-> 
->   	rtas_pci_enable(pdn, EEH_THAW_MMIO);
-> +	rtas_configure_bridge(pdn);
-> +	eeh_restore_bars(pdn);
->   	loglen = gather_pci_data(pdn, pci_regs_buf, EEH_PCI_REGS_LOG_LEN);
-> 
->   	rtas_slot_error_detail(pdn, severity, pci_regs_buf, loglen);
-> @@ -896,6 +899,7 @@ void
->   rtas_configure_bridge(struct pci_dn *pdn)
->   {
->   	int config_addr;
-> +	int token;
->   	int rc;
-> 
->   	/* Use PE configuration address, if present */
-> @@ -903,7 +907,13 @@ rtas_configure_bridge(struct pci_dn *pdn
->   	if (pdn->eeh_pe_config_addr)
->   		config_addr = pdn->eeh_pe_config_addr;
-> 
-> -	rc = rtas_call(ibm_configure_bridge,3,1, NULL,
-> +	/* Use new configure-pe function, if supported */
-> +	if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE)
-> +		token = ibm_configure_pe;
-> +	else
-> +		token = ibm_configure_bridge;
-> +
-> +	rc = rtas_call(token, 3, 1, NULL,
->   	               config_addr,
->   	               BUID_HI(pdn->phb->buid),
->   	               BUID_LO(pdn->phb->buid));
-> @@ -1079,6 +1089,7 @@ void __init eeh_init(void)
->   	ibm_get_config_addr_info = rtas_token("ibm,get-config-addr-info");
->   	ibm_get_config_addr_info2 = rtas_token("ibm,get-config-addr-info2");
->   	ibm_configure_bridge = rtas_token ("ibm,configure-bridge");
-> +	ibm_configure_pe = rtas_token("ibm,configure-pe");
-> 
->   	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE)
->   		return;
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Sure... How about this?
+
+Mikey
+
+ arch/powerpc/include/asm/feature-fixups.h |   13 +++++++++++++
+ arch/powerpc/include/asm/mmu.h            |    5 -----
+ arch/powerpc/kernel/cputable.c            |    9 +++------
+ arch/powerpc/mm/hash_native_64.c          |    8 ++++----
+ 4 files changed, 20 insertions(+), 15 deletions(-)
+
+Index: clone1/arch/powerpc/include/asm/feature-fixups.h
+===================================================================
+--- clone1.orig/arch/powerpc/include/asm/feature-fixups.h
++++ clone1/arch/powerpc/include/asm/feature-fixups.h
+@@ -146,6 +146,19 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++#define ASM_FTR_IF(section_if, section_else, msk, val)	\
++	stringify_in_c(BEGIN_FTR_SECTION)			\
++	section_if "; "						\
++	stringify_in_c(FTR_SECTION_ELSE)			\
++	section_else "; "					\
++	stringify_in_c(ALT_FTR_SECTION_END((msk), (val)))
++
++#define ASM_FTR_IFSET(section_if, section_else, msk)	\
++	ASM_FTR_IF(section_if, section_else, (msk), (msk))
++
++#define ASM_FTR_IFCLR(section_if, section_else, msk)	\
++	ASM_FTR_IF(section_if, section_else, (msk), 0)
++
+ #define ASM_MMU_FTR_IF(section_if, section_else, msk, val)	\
+ 	stringify_in_c(BEGIN_MMU_FTR_SECTION)			\
+ 	section_if "; "						\
+Index: clone1/arch/powerpc/include/asm/mmu.h
+===================================================================
+--- clone1.orig/arch/powerpc/include/asm/mmu.h
++++ clone1/arch/powerpc/include/asm/mmu.h
+@@ -56,11 +56,6 @@
+  */
+ #define MMU_FTR_NEED_DTLB_SW_LRU	ASM_CONST(0x00200000)
+ 
+-/* This indicates that the processor uses the ISA 2.06 server tlbie
+- * mnemonics
+- */
+-#define MMU_FTR_TLBIE_206		ASM_CONST(0x00400000)
+-
+ /* Enable use of TLB reservation.  Processor should support tlbsrx.
+  * instruction and MAS0[WQ].
+  */
+Index: clone1/arch/powerpc/kernel/cputable.c
+===================================================================
+--- clone1.orig/arch/powerpc/kernel/cputable.c
++++ clone1/arch/powerpc/kernel/cputable.c
+@@ -417,8 +417,7 @@
+ 		.cpu_name		= "POWER7 (architected)",
+ 		.cpu_features		= CPU_FTRS_POWER7,
+ 		.cpu_user_features	= COMMON_USER_POWER7,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE |
+-			MMU_FTR_TLBIE_206,
++		.mmu_features		= MMU_FTR_HPTE_TABLE,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+@@ -433,8 +432,7 @@
+ 		.cpu_name		= "POWER7 (raw)",
+ 		.cpu_features		= CPU_FTRS_POWER7,
+ 		.cpu_user_features	= COMMON_USER_POWER7,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE |
+-			MMU_FTR_TLBIE_206,
++		.mmu_features		= MMU_FTR_HPTE_TABLE,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
+@@ -451,8 +449,7 @@
+ 		.cpu_name		= "POWER7+ (raw)",
+ 		.cpu_features		= CPU_FTRS_POWER7,
+ 		.cpu_user_features	= COMMON_USER_POWER7,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE |
+-			MMU_FTR_TLBIE_206,
++		.mmu_features		= MMU_FTR_HPTE_TABLE,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
+Index: clone1/arch/powerpc/mm/hash_native_64.c
+===================================================================
+--- clone1.orig/arch/powerpc/mm/hash_native_64.c
++++ clone1/arch/powerpc/mm/hash_native_64.c
+@@ -50,9 +50,9 @@
+ 	case MMU_PAGE_4K:
+ 		va &= ~0xffful;
+ 		va |= ssize << 8;
+-		asm volatile(ASM_MMU_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0),
++		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0),
+ 					       %2)
+-			     : : "r" (va), "r"(0), "i" (MMU_FTR_TLBIE_206)
++			     : : "r" (va), "r"(0), "i" (CPU_FTR_HVMODE_206)
+ 			     : "memory");
+ 		break;
+ 	default:
+@@ -61,9 +61,9 @@
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
+ 		va |= 1; /* L */
+-		asm volatile(ASM_MMU_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0),
++		asm volatile(    ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0),
+ 					       %2)
+-			     : : "r" (va), "r"(0), "i" (MMU_FTR_TLBIE_206)
++			     : : "r" (va), "r"(0), "i" (CPU_FTR_HVMODE_206)
+ 			     : "memory");
+ 		break;
+ 	}
