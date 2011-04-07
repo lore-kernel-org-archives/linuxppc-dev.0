@@ -1,22 +1,35 @@
-Return-Path: <moises.dominguez@ctag.com>
-Received: from jupiter.ctag.com (smtp.ctag.com [193.144.40.36])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E7BD2B6F2B
+Return-Path: <emunson@mgebm.net>
+Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
+	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 94BCCB6F74
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 19:38:28 +1000 (EST)
-Received: from [193.144.40.38] (helo=INN0072)
-	by jupiter.ctag.com with esmtpa (Exim 4.69)
-	(envelope-from <moises.dominguez@ctag.com>) id 1Q7lEm-0005pu-OL
-	for linuxppc-dev@lists.ozlabs.org; Thu, 07 Apr 2011 11:10:49 +0200
-From: <moises.dominguez@ctag.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 7 Apr 2011 11:10:48 +0200
-Message-ID: <9CF962889D6042E9AC8500BC8DA74236@ctag>
+	Fri,  8 Apr 2011 02:16:17 +1000 (EST)
+Received: by qyk7 with SMTP id 7so2029290qyk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 07 Apr 2011 09:16:13 -0700 (PDT)
+Date: Thu, 7 Apr 2011 12:16:11 -0400
+From: Eric B Munson <emunson@mgebm.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] POWER: perf_event: Skip updating kernel counters if
+	register value shrinks
+Message-ID: <20110407161611.GC3119@mgebm.net>
+References: <1301059689-4556-1-git-send-email-emunson@mgebm.net>
+	<1301378637.2402.671.camel@pasglop>
+	<20110329142519.GA3527@mgebm.net>
+	<1301433165.2402.689.camel@pasglop>
+	<20110330183656.GA2564@mgebm.net>
+	<1301551476.2407.61.camel@pasglop>
+	<20110406212733.GB2596@mgebm.net>
+	<1302150177.2458.30.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0039_01CBF514.730B69F0"
-Subject: mscan status on DENX Linux 2.6 Kernel Tree
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VV4b6MQE+OnNyhkM"
+In-Reply-To: <1302150177.2458.30.camel@pasglop>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
+	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,199 +39,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_0039_01CBF514.730B69F0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Hi,
-
-Up to now I've been working ltib over and ads5121 based board.
-
-So as not to work with frozen images I would like to change to u-boot and
-kernel from denx. I did the following:
-
-- Download and compile u-boot: OK.
-
-- Download and kernel (mpc512x_defconfig): compilation fails if I enable
-"Freescale MPC5xxx onboard CAN controller" with this message:
-
-.
-
-  LD      kernel/built-in.o
-
-  CC      drivers/net/can/mscan/mscan.o
-
-  CC      drivers/net/can/mscan/mpc5xxx_can.o
-
-drivers/net/can/mscan/mpc5xxx_can.c: In function 'mpc5xxx_can_probe':
-
-drivers/net/can/mscan/mpc5xxx_can.c:263: error: 'of_dev' undeclared (first
-use in this function)
-
-.
-
-I have not much experience with this stuff but I've notice that there are
-recent patches on mpc5xxx.c file, last from 2011-02-28 so I suppose this
-should work. 
-
-Am I missing something? I also wonder if ads5121-Rev4 is fully supported in
-Linux Denx.
-
- 
-
-Thanks,
-
- 
-
-Moises.
-
-
-------=_NextPart_000_0039_01CBF514.730B69F0
-Content-Type: text/html;
-	charset="us-ascii"
+--VV4b6MQE+OnNyhkM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-<html>
+On Thu, 07 Apr 2011, Benjamin Herrenschmidt wrote:
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
+>=20
+> > > Doesn't that mean that power_pmu_read() can only ever increase the va=
+lue of
+> > > the perf_event and so will essentially -stop- once the counter rolls =
+over ?
+> > >=20
+> > > Similar comments every where you do this type of comparison.
+> > >=20
+> > > Cheers,
+> > > Ben.
+> >=20
+> > Sorry for the nag, but am I missing something about the way the registe=
+r and
+> > the previous values are reset in the overflow interrupt handler?
+>=20
+> Well, not all counters get interrupts right ? Some counters are just
+> free running... I'm not sure when that power_pmu_read() function is
+> actually used by the core, I'm not that familiar with perf, but I'd say
+> better safe than sorry. When comparing counter values, doing in a way
+> that is generally safe vs. wraparounds. Eventually do a helper for that.
+>=20
+> Cheers,
+> Ben.
 
+I am honestly not sure, I was under the assumption that all counters would
+generate an interrupt if they overflowed.  I do not have the hardware docs =
+to
+prove this, so I will have a V3 that (I think/hope) addresses your concerns=
+ out
+momentarily.
 
-<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
+Eric
 
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EstiloCorreo17
-	{font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+--VV4b6MQE+OnNyhkM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-</head>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-<body lang=3DES link=3Dblue vlink=3Dpurple>
+iQEcBAEBAgAGBQJNneNLAAoJEH65iIruGRnNAj0H/3dAR++g0uiPaHaMw12ADag3
+hsGeRsJ8CtuQA1dk2SyhkUudhcy4tOj87Fpnj2L2+y1ewSfBOHzsa4zbryUsRrxM
+vNKWZXdMjeUHIVfbPXbd2Xd9SlNgytFSpxlw00nOUV2VhuZk41V7NvI7TbtMkxfx
+qAAhCofeEY8OlAgrrgVb8nUuDxaT+tpnzV6bNyY2oUhVqx0ZelJFSUyTfaT63dhl
+O5cJbShStZMkKZ4AC29p56ObhjqVLoHxDnWO6RCypvdUm8JywDcEyeu1d3g716pw
+QQ+KrS910pue6sDAxb6GJfmwYulitcl/vYSktJQSMGOXhLwox/4i7GgZdY2O/ZY=
+=NkCe
+-----END PGP SIGNATURE-----
 
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Hi,</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Up to now I&#8217;ve been working ltib over =
-and ads5121
-based board.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>So as not to work with frozen images I would =
-like to
-change to u-boot and kernel from denx. I did the =
-following:</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>- Download and compile u-boot: =
-OK.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>- Download and kernel (mpc512x_defconfig):
-compilation fails if I enable &#8220;Freescale MPC5xxx onboard CAN =
-controller&#8221;
-with this message:</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>&#8230;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>&nbsp; LD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-kernel/built-in.o</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>&nbsp; CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-drivers/net/can/mscan/mscan.o</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>&nbsp; CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-drivers/net/can/mscan/mpc5xxx_can.o</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>drivers/net/can/mscan/mpc5xxx_can.c: In =
-function
-'mpc5xxx_can_probe':</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>drivers/net/can/mscan/mpc5xxx_can.c:263: =
-error: 'of_dev'
-undeclared (first use in this function)</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>&#8230;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>I have not much experience with this stuff =
-but I&#8217;ve
-notice that there are recent patches on mpc5xxx.c file, last from =
-2011-02-28 so
-I suppose this should work. </span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>Am I missing something? I also wonder if =
-ads5121-Rev4
-is fully supported in Linux Denx.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>Thanks,</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-lang=3DEN-GB
-style=3D'font-size:12.0pt'>Moises.</span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0039_01CBF514.730B69F0--
+--VV4b6MQE+OnNyhkM--
