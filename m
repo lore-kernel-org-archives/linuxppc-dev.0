@@ -1,26 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 209C310099A
+	by ozlabs.org (Postfix) with ESMTPS id 79CB1B6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 14:23:36 +1000 (EST)
-Subject: Re: [PATCH] POWER: perf_event: Skip updating kernel counters if
-	register value shrinks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eric B Munson <emunson@mgebm.net>
-In-Reply-To: <20110406212733.GB2596@mgebm.net>
-References: <1301059689-4556-1-git-send-email-emunson@mgebm.net>
-	<1301378637.2402.671.camel@pasglop> <20110329142519.GA3527@mgebm.net>
-	<1301433165.2402.689.camel@pasglop> <20110330183656.GA2564@mgebm.net>
-	<1301551476.2407.61.camel@pasglop>  <20110406212733.GB2596@mgebm.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Apr 2011 14:22:57 +1000
-Message-ID: <1302150177.2458.30.camel@pasglop>
-Mime-Version: 1.0
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
-	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
-	linuxppc-dev@lists.ozlabs.org
+	Thu,  7 Apr 2011 14:51:43 +1000 (EST)
+Date: Thu, 7 Apr 2011 06:51:37 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
+Subject: Re: sdhc/mpc8536 - SDCard always detected like read-only - SOLVED.
+Message-ID: <20110407045137.GA11417@pengutronix.de>
+References: <1302028796.10112.59.camel@moratelli-host.digitel.com.br>
+	<20110405190204.GB12723@pengutronix.de>
+	<1302031171.10112.66.camel@moratelli-host.digitel.com.br>
+	<20110405234824.GB5611@pengutronix.de>
+	<1302110338.2647.21.camel@moratelli-host.digitel.com.br>
+	<1302127065.2647.60.camel@moratelli-host.digitel.com.br>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+In-Reply-To: <1302127065.2647.60.camel@moratelli-host.digitel.com.br>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +31,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> > Doesn't that mean that power_pmu_read() can only ever increase the value of
-> > the perf_event and so will essentially -stop- once the counter rolls over ?
-> > 
-> > Similar comments every where you do this type of comparison.
-> > 
-> > Cheers,
-> > Ben.
-> 
-> Sorry for the nag, but am I missing something about the way the register and
-> the previous values are reset in the overflow interrupt handler?
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Well, not all counters get interrupts right ? Some counters are just
-free running... I'm not sure when that power_pmu_read() function is
-actually used by the core, I'm not that familiar with perf, but I'd say
-better safe than sorry. When comparing counter values, doing in a way
-that is generally safe vs. wraparounds. Eventually do a helper for that.
+> Reading the MPC8536E Chip Errata I saw the SDHC_WP signal polarity is=20
+> reversed to the silicon revision 1.0.
+>=20
+> Unfortunately my prototype board  is using revision 1.0. So, I asked to
+> my hardware team workaround putting an extra inverter for the SDHC_WP
+> signal.
+>=20
+> Now its working fine!
 
-Cheers,
-Ben.
+OK, nice. I fail to see from a glimpse how all this is related to the
+timeout-errors you were seeing (-110), but if it works now, all is fine, I
+guess.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--yrj/dFKFPuw6o+aM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAk2dQtgACgkQD27XaX1/VRv6vACeN/frfcK6YrvW48/1KlC6Blgk
+W/AAn0QP0rfLEdfkVulNqrXjlp2tSZd5
+=kLlL
+-----END PGP SIGNATURE-----
+
+--yrj/dFKFPuw6o+aM--
