@@ -1,36 +1,24 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5FA691007D1
+Return-Path: <dimov@ronetix.at>
+Received: from smtprelay02.ispgateway.de (smtprelay02.ispgateway.de
+	[80.67.31.29]) by ozlabs.org (Postfix) with ESMTP id A83C2B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Apr 2011 04:12:03 +1000 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p37Hp5Eo000792
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2011 13:51:05 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D173338C803E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 14:11:50 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p37IBwAe2809942
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2011 14:11:58 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p37IBvce026446
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2011 15:11:57 -0300
-Date: Thu, 7 Apr 2011 11:11:49 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] rtas: Only sleep in rtas_busy_delay if we have useful
-	work to do
-Message-ID: <20110407181149.GA3851@us.ibm.com>
-References: <20110407215407.4f6ca50f@kryten>
+	Fri,  8 Apr 2011 04:48:34 +1000 (EST)
+Message-ID: <4D9E04F0.5010004@ronetix.at>
+Date: Thu, 07 Apr 2011 21:39:44 +0300
+From: RONETIX - Asen Dimov <dimov@ronetix.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110407215407.4f6ca50f@kryten>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
+To: Daniel Walker <dwalker@codeaurora.org>
+Subject: Re: [PATCH] drivers: char: hvc: add arm JTAG DCC console support
+References: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>
+In-Reply-To: <1291145141-18301-1-git-send-email-dwalker@codeaurora.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mike Frysinger <vapier@gentoo.org>,
+	Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@fluxnic.net>,
+	Tony Lindgren <tony@atomide.com>, linux-arm-msm@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07.04.2011 [21:54:07 +1000], Anton Blanchard wrote:
-> 
-> RTAS returns extended error codes as a hint of how long the
-> OS might want to wait before retrying a call. If we have nothing
-> else useful to do we may as well call back straight away.
-> 
-> This was found when testing the new dynamic dma window feature.
-> Firmware split the zeroing of the TCE table into 32k chunks but
-> returned 9901 (which is a suggested wait of 10ms). All up this took
-> about 10 minutes to complete since msleep is jiffies based and will
-> round 10ms up to 20ms.
-> 
-> With the patch below we take 3 seconds to complete the same test.
-> The hint firmware is returning in the RTAS call should definitely
-> be decreased, but even if we slept 1ms each iteration this would
-> take 32s.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+Hello,
 
-Acked-by: Nishanth Aravamudan <nacc@us.ibm.com>
-
+On 11/30/2010 09:25 PM, Daniel Walker wrote:
+> This driver adds a basic console that uses the arm JTAG
+> DCC to transfer data back and forth. It has support for
+> ARMv6 and ARMv7.
+>
+> This console is created under the HVC driver, and should be named
+> /dev/hvcX (or /dev/hvc0 for example).
+>
+> Cc: Tony Lindgren<tony@atomide.com>
+> Cc: Arnd Bergmann<arnd@arndb.de>
+> Cc: Nicolas Pitre<nico@fluxnic.net>
+> Cc: Greg Kroah-Hartman<gregkh@suse.de>
+> Cc: Mike Frysinger<vapier@gentoo.org>
+> Signed-off-by: Daniel Walker<dwalker@codeaurora.org>
 > ---
-> 
-> Index: linux-2.6/arch/powerpc/kernel/rtas.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/rtas.c	2011-04-05 11:19:35.023234011 +1000
-> +++ linux-2.6/arch/powerpc/kernel/rtas.c	2011-04-07 21:25:24.646414629 +1000
-> @@ -494,7 +494,7 @@ unsigned int rtas_busy_delay(int status)
-> 
->  	might_sleep();
->  	ms = rtas_busy_delay_time(status);
-> -	if (ms)
-> +	if (ms && need_resched())
->  		msleep(ms);
-> 
->  	return ms;
+>   drivers/char/Kconfig   |    9 +++
+>   drivers/char/Makefile  |    1 +
+>   drivers/char/hvc_dcc.c |  133 ++++++++++++++++++++++++++++++++++++++++++++++++
+...
+
+this DCC driver implements "one channel", but what about implementing
+"multiple channels". For example reserve few(3) bits for channel number,
+and two bits for carried data, then fill the rest bytes with with some data
+and send the word(32 bits) over DCC. On the Linux side writing on /dev/hvcX
+puts the number X as channel number, and on the other side the CPU
+emulator gets the data and redistribute it to TCP/IP socket.
+
+I have started write some code implementing this. Are there any one 
+interested
+in this multiple channels, and are there any one started to work on it?
+
+
+Regards,
+Asen
