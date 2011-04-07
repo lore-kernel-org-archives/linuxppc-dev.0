@@ -1,22 +1,13 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 2F87FB6F1E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Apr 2011 21:33:57 +1000 (EST)
-Date: Thu, 7 Apr 2011 13:33:47 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Dave Airlie <airlied@gmail.com>
-Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-Message-ID: <20110407113347.GA2237@iram.es>
-References: <20110404235259.GA30132@iram.es>
-	<20110406084101.GB13963@pengutronix.de>
-	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Return-Path: <anton@samba.org>
+Date: Thu, 7 Apr 2011 21:54:07 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] rtas: Only sleep in rtas_busy_delay if we have useful work
+	to do
+Message-ID: <20110407215407.4f6ca50f@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: nacc@us.ibm.com, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +17,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Hi Dave,
 
-sorry, in my previous message I forgot the strace
-output, which is an inifinite loop of the following:
+RTAS returns extended error codes as a hint of how long the
+OS might want to wait before retrying a call. If we have nothing
+else useful to do we may as well call back straight away.
 
---- SIGALRM (Alarm clock) @ 0 (0) ---
-sigreturn()                             = ? (mask now [])
-ioctl(7, 0xc0286429, 0xffdf9bb8)        = -1 EBUSY (Device or resource busy)
---- SIGALRM (Alarm clock) @ 0 (0) ---
-sigreturn()                             = ? (mask now [])
-ioctl(7, 0xc0286429, 0xffdf9bb8)        = -1 EBUSY (Device or resource busy)
+This was found when testing the new dynamic dma window feature.
+Firmware split the zeroing of the TCE table into 32k chunks but
+returned 9901 (which is a suggested wait of 10ms). All up this took
+about 10 minutes to complete since msleep is jiffies based and will
+round 10ms up to 20ms.
 
-Note: fd 7 is /dev/dri/card0.
+With the patch below we take 3 seconds to complete the same test.
+The hint firmware is returning in the RTAS call should definitely
+be decreased, but even if we slept 1ms each iteration this would
+take 32s.
 
-	Regards,
-	Gabriel
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-2.6/arch/powerpc/kernel/rtas.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/rtas.c	2011-04-05 11:19:35.023234011 +1000
++++ linux-2.6/arch/powerpc/kernel/rtas.c	2011-04-07 21:25:24.646414629 +1000
+@@ -494,7 +494,7 @@ unsigned int rtas_busy_delay(int status)
+ 
+ 	might_sleep();
+ 	ms = rtas_busy_delay_time(status);
+-	if (ms)
++	if (ms && need_resched())
+ 		msleep(ms);
+ 
+ 	return ms;
