@@ -1,25 +1,18 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 91319B6F2B
+Return-Path: <mirq@rere.qmqm.pl>
+Received: from rere.qmqm.pl (rere.qmqm.pl [89.167.52.164])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rere.qmqm.pl", Issuer "rere.qmqm.pl" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 53382B6F7B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Apr 2011 01:30:04 +1000 (EST)
-Received: by fxm5 with SMTP id 5so2716481fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 08 Apr 2011 08:30:00 -0700 (PDT)
+	Fri,  8 Apr 2011 22:46:09 +1000 (EST)
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Subject: [PATCH] net: Remove invalid offloads
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <327152.93855.qm@web36406.mail.mud.yahoo.com>
-References: <327152.93855.qm@web36406.mail.mud.yahoo.com>
-From: Timur Tabi <timur@freescale.com>
-Date: Fri, 8 Apr 2011 10:29:20 -0500
-Message-ID: <BANLkTi=o2uEq9jeU0J+rRBUcXd1ukGdjqQ@mail.gmail.com>
-Subject: Re: Using dmaengine on Freescale P2020 RDB
-To: Chuck Ketcham <chuckk2333@yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+To: netdev@vger.kernel.org
+Message-Id: <20110408123846.D947E13909@rere.qmqm.pl>
+Date: Fri,  8 Apr 2011 14:38:46 +0200 (CEST)
+Cc: linuxppc-dev@lists.ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,19 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 6, 2011 at 2:40 PM, Chuck Ketcham <chuckk2333@yahoo.com> wrote:
+Remove offload changing ethtool ops which drivers don't really support:
 
-> Three of the channels were not used because they were already publicly al=
-located. =A0One channel was
-> not used because it didn't have DMA_MEMCPY capability.
+ - fs_enet
+ - ucc_geth
 
-That's strange, because all four DMA channels are identical.
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/net/fs_enet/fs_enet-main.c |    2 --
+ drivers/net/ucc_geth_ethtool.c     |    1 -
+ 2 files changed, 0 insertions(+), 3 deletions(-)
 
-> 2. If dmaengine is correct, what can I do to free up a channel for my own=
- use?
-
-There must be something else in your system using up the channels.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 24cb953..a938894 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -956,8 +956,6 @@ static const struct ethtool_ops fs_ethtool_ops = {
+ 	.get_link = ethtool_op_get_link,
+ 	.get_msglevel = fs_get_msglevel,
+ 	.set_msglevel = fs_set_msglevel,
+-	.set_tx_csum = ethtool_op_set_tx_csum,	/* local! */
+-	.set_sg = ethtool_op_set_sg,
+ 	.get_regs = fs_get_regs,
+ };
+ 
+diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
+index 6f92e48..537fbc0 100644
+--- a/drivers/net/ucc_geth_ethtool.c
++++ b/drivers/net/ucc_geth_ethtool.c
+@@ -410,7 +410,6 @@ static const struct ethtool_ops uec_ethtool_ops = {
+ 	.set_ringparam          = uec_set_ringparam,
+ 	.get_pauseparam         = uec_get_pauseparam,
+ 	.set_pauseparam         = uec_set_pauseparam,
+-	.set_sg                 = ethtool_op_set_sg,
+ 	.get_sset_count		= uec_get_sset_count,
+ 	.get_strings            = uec_get_strings,
+ 	.get_ethtool_stats      = uec_get_ethtool_stats,
+-- 
+1.7.2.5
