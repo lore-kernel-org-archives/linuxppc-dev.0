@@ -1,18 +1,22 @@
-Return-Path: <B11780@freescale.com>
-Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 65BA8B6F81
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2011 19:26:04 +1000 (EST)
-From: Kumar Gala <kumar.gala@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-Subject: hotplug support on 85xx smp ?
-Date: Fri, 8 Apr 2011 04:25:54 -0500
-Message-ID: <1C7D8EDC-17F4-4A7B-AF3F-DF1DA71C0570@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-MIME-Version: 1.0 (Apple Message framework v1084)
-Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E493EB6F85
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  8 Apr 2011 19:28:45 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	p389ScVF011721
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2011 11:28:38 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Where is CONFIG_BOOT_LOAD ?
+Date: Fri, 8 Apr 2011 11:28:37 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <201104081128.37906.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,11 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+Hello all,
+I don't see this option in the .config and in the menuconfig / Advanced Setup I don't see a [Set the boot link/load 
+address]:
 
-If looks like SUSPEND support requires CPU hotplug (forces =
-CONFIG_HOTPLUG_CPU).  This is causing current 2.6.39-rc2 to break for =
-85xx-smp.  Are you willing to take patches that add cpu hotplug support =
-for 85xx/e500 for 2.6.39 to fix this?
-
-- k=
+[*] Prompt for advanced kernel configuration options
+[ ]   Set maximum low memory
+[ ]   Set custom page offset address
+[ ]   Set custom kernel base address
+[ ] Set custom user task size
+[ ] Set custom consistent memory pool size
+ 
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/Antarctica/
