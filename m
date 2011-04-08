@@ -1,18 +1,17 @@
-Return-Path: <mirq@rere.qmqm.pl>
-Received: from rere.qmqm.pl (rere.qmqm.pl [89.167.52.164])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rere.qmqm.pl", Issuer "rere.qmqm.pl" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 53382B6F7B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Apr 2011 22:46:09 +1000 (EST)
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH] net: Remove invalid offloads
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 3DEADB6F7E
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2011 01:58:48 +1000 (EST)
+Date: Fri, 8 Apr 2011 08:32:46 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: platform_driver/of_platform_driver compile warning in fsldma.c
+Message-ID: <20110408153246.GA13834@ovro.caltech.edu>
+References: <D4BE3D54-805B-4D4F-B8BC-EC1A860C8E84@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-To: netdev@vger.kernel.org
-Message-Id: <20110408123846.D947E13909@rere.qmqm.pl>
-Date: Fri,  8 Apr 2011 14:38:46 +0200 (CEST)
-Cc: linuxppc-dev@lists.ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <D4BE3D54-805B-4D4F-B8BC-EC1A860C8E84@kernel.crashing.org>
+Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove offload changing ethtool ops which drivers don't really support:
+On Fri, Apr 08, 2011 at 04:12:13AM -0500, Kumar Gala wrote:
+> Grant,
+> 
+> I'm being lazy, can you give any quick insight on the following compile warning:
+> 
+> drivers/dma/fsldma.c:1457:2: warning: initialization from incompatible pointer type
+> drivers/dma/fsldma.c: In function 'fsldma_init':
+> drivers/dma/fsldma.c:1468:2: warning: passing argument 1 of 'platform_driver_register' from incompatible pointer type
+> include/linux/platform_device.h:124:12: note: expected 'struct platform_driver *' but argument is of type 'struct of_platform_driver *'
+> drivers/dma/fsldma.c: In function 'fsldma_exit':
+> drivers/dma/fsldma.c:1473:2: warning: passing argument 1 of 'platform_driver_unregister' from incompatible pointer type
+> include/linux/platform_device.h:125:13: note: expected 'struct platform_driver *' but argument is of type 'struct of_platform_driver *'
+> 
 
- - fs_enet
- - ucc_geth
+The "struct of_platform_driver" needs to be changed to a
+"struct platform_driver". Just remove the "of_" prefix, the structure
+initialization is correct. I sent a patch for this yesterday to LKML. The
+title is: fsldma: fix build warning caused by of_platform_device changes
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- drivers/net/fs_enet/fs_enet-main.c |    2 --
- drivers/net/ucc_geth_ethtool.c     |    1 -
- 2 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 24cb953..a938894 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -956,8 +956,6 @@ static const struct ethtool_ops fs_ethtool_ops = {
- 	.get_link = ethtool_op_get_link,
- 	.get_msglevel = fs_get_msglevel,
- 	.set_msglevel = fs_set_msglevel,
--	.set_tx_csum = ethtool_op_set_tx_csum,	/* local! */
--	.set_sg = ethtool_op_set_sg,
- 	.get_regs = fs_get_regs,
- };
- 
-diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
-index 6f92e48..537fbc0 100644
---- a/drivers/net/ucc_geth_ethtool.c
-+++ b/drivers/net/ucc_geth_ethtool.c
-@@ -410,7 +410,6 @@ static const struct ethtool_ops uec_ethtool_ops = {
- 	.set_ringparam          = uec_set_ringparam,
- 	.get_pauseparam         = uec_get_pauseparam,
- 	.set_pauseparam         = uec_set_pauseparam,
--	.set_sg                 = ethtool_op_set_sg,
- 	.get_sset_count		= uec_get_sset_count,
- 	.get_strings            = uec_get_strings,
- 	.get_ethtool_stats      = uec_get_ethtool_stats,
--- 
-1.7.2.5
+Ira
