@@ -1,21 +1,20 @@
-Return-Path: <B11780@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.184])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F25EB6F44
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2011 19:57:48 +1000 (EST)
-Subject: Re: [PATCH] powerpc/book3e: Fix extlb size
-MIME-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <46db3f277b05346f7d50d31907ebcb6b11696c6d.1302247340.git.michael@ellerman.id.au>
-Date: Fri, 8 Apr 2011 04:42:25 -0500
-Message-ID: <D829F35C-6397-41A8-88CE-E19CA0663EC9@freescale.com>
-References: <46db3f277b05346f7d50d31907ebcb6b11696c6d.1302247340.git.michael@ellerman.id.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <FVoegel@partner.ime-actia.de>
+Received: from fw.ime-actia.de (fw.ime-actia.de [217.6.67.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B1032B6F7B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  8 Apr 2011 20:07:55 +1000 (EST)
+Subject: Re: Where is CONFIG_BOOT_LOAD ?
+From: Florian =?ISO-8859-1?Q?V=F6gel?= <fvoegel@partner.ime-actia.de>
+To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+In-Reply-To: <201104081128.37906.dargaud@lpsc.in2p3.fr>
+References: <201104081128.37906.dargaud@lpsc.in2p3.fr>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 08 Apr 2011 11:42:21 +0200
+Message-ID: <1302255741.5359.7.camel@flotop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 8, 2011, at 2:22 AM, Michael Ellerman wrote:
-
-> The calculation of the size for the exception save area of the TLB
-> miss handler is wrong, luckily it's too big not too small.
+On Fri, 2011-04-08 at 11:28 +0200, Guillaume Dargaud wrote:
+> Hello all,
+> I don't see this option in the .config and in the menuconfig / Advanced Setup I don't see a [Set the boot link/load 
+> address]:
 > 
-> Rework it to make it a bit clearer, and also correct. We want 3 save
-> areas, each EX_TLB_SIZE _bytes_.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> arch/powerpc/include/asm/paca.h |    3 ++-
-> 1 files changed, 2 insertions(+), 1 deletions(-)
+> [*] Prompt for advanced kernel configuration options
+> [ ]   Set maximum low memory
+> [ ]   Set custom page offset address
+> [ ]   Set custom kernel base address
+> [ ] Set custom user task size
+> [ ] Set custom consistent memory pool size
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+Isn't that blackfin specific?
 
-- k
+linux-next # find -name Kconfig -exec grep -H "BOOT_LOAD" \{\} \;
+./arch/blackfin/Kconfig:config BOOT_LOAD
+
+linux-next # find -exec grep -H "CONFIG_BOOT_LOAD" \{\} \;
+./arch/blackfin/boot/Makefile:UIMAGE_OPTS-$(CONFIG_RAMKERNEL) += -a
+$(CONFIG_BOOT_LOAD)
+./arch/blackfin/kernel/vmlinux.lds.S:   . = CONFIG_BOOT_LOAD;
+./arch/blackfin/kernel/vmlinux.lds.S:   . = CONFIG_BOOT_LOAD;
+./arch/blackfin/kernel/trace.c: } else if (address < CONFIG_BOOT_LOAD) {
+./arch/blackfin/kernel/setup.c: _rambase = CONFIG_BOOT_LOAD;
+./arch/blackfin/configs/SRV1_defconfig:CONFIG_BOOT_LOAD=0x400000
+./arch/blackfin/configs/BF527-TLL6527M_defconfig:CONFIG_BOOT_LOAD=0x400000
+./arch/blackfin/mach-common/arch_checks.c:#if CONFIG_BOOT_LOAD <
+FIXED_CODE_END
+./arch/blackfin/mach-common/arch_checks.c:#if (CONFIG_BOOT_LOAD & 0x3)
+./arch/blackfin/mach-common/arch_checks.c:#if ((0xffffffff -
+L1_CODE_START + 1) + CONFIG_BOOT_LOAD) > 0x1000000
+
+-Florian
