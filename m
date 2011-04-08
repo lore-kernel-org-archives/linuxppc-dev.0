@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9414CB6F2B
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2011 19:24:20 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc: Use MSR_64BIT in places
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <431bd20fec52ff41fb47808954993ab6369eb45e.1302249358.git.michael@ellerman.id.au>
-Date: Fri, 8 Apr 2011 04:24:12 -0500
-Message-Id: <FA53E865-AB9E-4222-A990-F552E1A1C093@kernel.crashing.org>
-References: <ca7cc2a36bbf492c11cd98d3d1dea0835731c75f.1302249358.git.michael@ellerman.id.au>
-	<431bd20fec52ff41fb47808954993ab6369eb45e.1302249358.git.michael@ellerman.id.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <B11780@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65BA8B6F81
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2011 19:26:04 +1000 (EST)
+From: Kumar Gala <kumar.gala@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Subject: hotplug support on 85xx smp ?
+Date: Fri, 8 Apr 2011 04:25:54 -0500
+Message-ID: <1C7D8EDC-17F4-4A7B-AF3F-DF1DA71C0570@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+MIME-Version: 1.0 (Apple Message framework v1084)
+Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ben,
 
-On Apr 8, 2011, at 2:56 AM, Michael Ellerman wrote:
+If looks like SUSPEND support requires CPU hotplug (forces =
+CONFIG_HOTPLUG_CPU).  This is causing current 2.6.39-rc2 to break for =
+85xx-smp.  Are you willing to take patches that add cpu hotplug support =
+for 85xx/e500 for 2.6.39 to fix this?
 
-> Use the new MSR_64BIT in a few places. Some of these are already ifdef'ed
-> for BOOKE vs BOOKS, but it's still clearer, MSR_SF does not immediately
-> parse as "MSR bit for 64bit".
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> arch/powerpc/kernel/head_64.S   |    2 +-
-> arch/powerpc/kernel/signal_64.c |    4 ++--
-> arch/powerpc/kernel/traps.c     |    2 +-
-> arch/powerpc/xmon/xmon.c        |   14 +++++++-------
-> 4 files changed, 11 insertions(+), 11 deletions(-)
-
-However MSR_ISF does ;)
-
-- k
+- k=
