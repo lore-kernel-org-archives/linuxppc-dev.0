@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0B40AB6F1B
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2011 00:41:06 +1000 (EST)
-Subject: Re: platform_driver/of_platform_driver compile warning in fsldma.c
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110408153246.GA13834@ovro.caltech.edu>
-Date: Sat, 9 Apr 2011 09:40:58 -0500
-Message-Id: <6A9F1556-6932-4A12-8306-F4914F66712A@kernel.crashing.org>
-References: <D4BE3D54-805B-4D4F-B8BC-EC1A860C8E84@kernel.crashing.org>
-	<20110408153246.GA13834@ovro.caltech.edu>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 2481CB6F15
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2011 08:04:54 +1000 (EST)
+Subject: Re: [PATCH 2/3] powerpc: Use MSR_64BIT in places
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <FA53E865-AB9E-4222-A990-F552E1A1C093@kernel.crashing.org>
+References: <ca7cc2a36bbf492c11cd98d3d1dea0835731c75f.1302249358.git.michael@ellerman.id.au>
+	<431bd20fec52ff41fb47808954993ab6369eb45e.1302249358.git.michael@ellerman.id.au>
+	<FA53E865-AB9E-4222-A990-F552E1A1C093@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 10 Apr 2011 08:04:41 +1000
+Message-ID: <1302386681.28876.0.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2011-04-08 at 04:24 -0500, Kumar Gala wrote:
+> On Apr 8, 2011, at 2:56 AM, Michael Ellerman wrote:
+> 
+> > Use the new MSR_64BIT in a few places. Some of these are already ifdef'ed
+> > for BOOKE vs BOOKS, but it's still clearer, MSR_SF does not immediately
+> > parse as "MSR bit for 64bit".
+> > 
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> > arch/powerpc/kernel/head_64.S   |    2 +-
+> > arch/powerpc/kernel/signal_64.c |    4 ++--
+> > arch/powerpc/kernel/traps.c     |    2 +-
+> > arch/powerpc/xmon/xmon.c        |   14 +++++++-------
+> > 4 files changed, 11 insertions(+), 11 deletions(-)
+> 
+> However MSR_ISF does ;)
 
-On Apr 8, 2011, at 10:32 AM, Ira W. Snyder wrote:
+I'm not sure I parse that one :-) Any ways ISF is "interrupt SF" and has
+no equivalent in the MSR for BookE (it's elsewhere, EPCR no ?).
 
-> On Fri, Apr 08, 2011 at 04:12:13AM -0500, Kumar Gala wrote:
->> Grant,
->>=20
->> I'm being lazy, can you give any quick insight on the following =
-compile warning:
->>=20
->> drivers/dma/fsldma.c:1457:2: warning: initialization from =
-incompatible pointer type
->> drivers/dma/fsldma.c: In function 'fsldma_init':
->> drivers/dma/fsldma.c:1468:2: warning: passing argument 1 of =
-'platform_driver_register' from incompatible pointer type
->> include/linux/platform_device.h:124:12: note: expected 'struct =
-platform_driver *' but argument is of type 'struct of_platform_driver *'
->> drivers/dma/fsldma.c: In function 'fsldma_exit':
->> drivers/dma/fsldma.c:1473:2: warning: passing argument 1 of =
-'platform_driver_unregister' from incompatible pointer type
->> include/linux/platform_device.h:125:13: note: expected 'struct =
-platform_driver *' but argument is of type 'struct of_platform_driver *'
->>=20
->=20
-> The "struct of_platform_driver" needs to be changed to a
-> "struct platform_driver". Just remove the "of_" prefix, the structure
-> initialization is correct. I sent a patch for this yesterday to LKML. =
-The
-> title is: fsldma: fix build warning caused by of_platform_device =
-changes
->=20
-> Ira
-
-Ira, thanks.  Hopefully it will get picked up.  If not let me know.
-
-- k=
+Cheers,
+Ben.
