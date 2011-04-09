@@ -1,17 +1,20 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from exchange.solarflare.com (exchange.solarflare.com
-	[216.237.3.220]) by ozlabs.org (Postfix) with ESMTP id 46218B6F80
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  9 Apr 2011 09:57:24 +1000 (EST)
-Subject: [PATCH net-next-2.6 1/2] gianfar: Clean up implementation of RX
-	network flow classification
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 09 Apr 2011 00:45:11 +0100
-Message-ID: <1302306311.2871.56.camel@bwh-desktop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0B40AB6F1B
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2011 00:41:06 +1000 (EST)
+Subject: Re: platform_driver/of_platform_driver compile warning in fsldma.c
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110408153246.GA13834@ovro.caltech.edu>
+Date: Sat, 9 Apr 2011 09:40:58 -0500
+Message-Id: <6A9F1556-6932-4A12-8306-F4914F66712A@kernel.crashing.org>
+References: <D4BE3D54-805B-4D4F-B8BC-EC1A860C8E84@kernel.crashing.org>
+	<20110408153246.GA13834@ovro.caltech.edu>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Cc: Linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,139 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This code was cribbed from niu, so gfar_set_hash_opts() begins by
-converting the ethtool flow class code into a class code for Sun
-Neptune hardware, then does the same thing again for the hardware it's
-really dealing with.  It may also return -1 (-EPERM) for some
-unhandled ethtool flow class codes.
 
-Remove the useless code and definitions, and fix the error code.
+On Apr 8, 2011, at 10:32 AM, Ira W. Snyder wrote:
 
-Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
----
-This isn't even compile-tested, since it can only be built for some
-PowerPC SoCs.  Could someone on ppc-dev check that this won't break the
-driver?
+> On Fri, Apr 08, 2011 at 04:12:13AM -0500, Kumar Gala wrote:
+>> Grant,
+>>=20
+>> I'm being lazy, can you give any quick insight on the following =
+compile warning:
+>>=20
+>> drivers/dma/fsldma.c:1457:2: warning: initialization from =
+incompatible pointer type
+>> drivers/dma/fsldma.c: In function 'fsldma_init':
+>> drivers/dma/fsldma.c:1468:2: warning: passing argument 1 of =
+'platform_driver_register' from incompatible pointer type
+>> include/linux/platform_device.h:124:12: note: expected 'struct =
+platform_driver *' but argument is of type 'struct of_platform_driver *'
+>> drivers/dma/fsldma.c: In function 'fsldma_exit':
+>> drivers/dma/fsldma.c:1473:2: warning: passing argument 1 of =
+'platform_driver_unregister' from incompatible pointer type
+>> include/linux/platform_device.h:125:13: note: expected 'struct =
+platform_driver *' but argument is of type 'struct of_platform_driver *'
+>>=20
+>=20
+> The "struct of_platform_driver" needs to be changed to a
+> "struct platform_driver". Just remove the "of_" prefix, the structure
+> initialization is correct. I sent a patch for this yesterday to LKML. =
+The
+> title is: fsldma: fix build warning caused by of_platform_device =
+changes
+>=20
+> Ira
 
-Ben.
+Ira, thanks.  Hopefully it will get picked up.  If not let me know.
 
- drivers/net/gianfar.h         |   17 -------------
- drivers/net/gianfar_ethtool.c |   52 +----------------------------------------
- 2 files changed, 1 insertions(+), 68 deletions(-)
-
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index ec5d595..57ee3b0 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -382,23 +382,6 @@ extern const char gfar_driver_version[];
- #define BD_LFLAG(flags) ((flags) << 16)
- #define BD_LENGTH_MASK		0x0000ffff
- 
--#define CLASS_CODE_UNRECOG		0x00
--#define CLASS_CODE_DUMMY1		0x01
--#define CLASS_CODE_ETHERTYPE1		0x02
--#define CLASS_CODE_ETHERTYPE2		0x03
--#define CLASS_CODE_USER_PROG1		0x04
--#define CLASS_CODE_USER_PROG2		0x05
--#define CLASS_CODE_USER_PROG3		0x06
--#define CLASS_CODE_USER_PROG4		0x07
--#define CLASS_CODE_TCP_IPV4		0x08
--#define CLASS_CODE_UDP_IPV4		0x09
--#define CLASS_CODE_AH_ESP_IPV4		0x0a
--#define CLASS_CODE_SCTP_IPV4		0x0b
--#define CLASS_CODE_TCP_IPV6		0x0c
--#define CLASS_CODE_UDP_IPV6		0x0d
--#define CLASS_CODE_AH_ESP_IPV6		0x0e
--#define CLASS_CODE_SCTP_IPV6		0x0f
--
- #define FPR_FILER_MASK	0xFFFFFFFF
- #define MAX_FILER_IDX	0xFF
- 
-diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
-index 3bc8e27..0840590 100644
---- a/drivers/net/gianfar_ethtool.c
-+++ b/drivers/net/gianfar_ethtool.c
-@@ -645,42 +645,6 @@ static int gfar_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- }
- #endif
- 
--static int gfar_ethflow_to_class(int flow_type, u64 *class)
--{
--	switch (flow_type) {
--	case TCP_V4_FLOW:
--		*class = CLASS_CODE_TCP_IPV4;
--		break;
--	case UDP_V4_FLOW:
--		*class = CLASS_CODE_UDP_IPV4;
--		break;
--	case AH_V4_FLOW:
--	case ESP_V4_FLOW:
--		*class = CLASS_CODE_AH_ESP_IPV4;
--		break;
--	case SCTP_V4_FLOW:
--		*class = CLASS_CODE_SCTP_IPV4;
--		break;
--	case TCP_V6_FLOW:
--		*class = CLASS_CODE_TCP_IPV6;
--		break;
--	case UDP_V6_FLOW:
--		*class = CLASS_CODE_UDP_IPV6;
--		break;
--	case AH_V6_FLOW:
--	case ESP_V6_FLOW:
--		*class = CLASS_CODE_AH_ESP_IPV6;
--		break;
--	case SCTP_V6_FLOW:
--		*class = CLASS_CODE_SCTP_IPV6;
--		break;
--	default:
--		return 0;
--	}
--
--	return 1;
--}
--
- static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- {
- 	u32 fcr = 0x0, fpr = FPR_FILER_MASK;
-@@ -778,11 +742,6 @@ static int gfar_ethflow_to_filer_table(struct gfar_private *priv, u64 ethflow, u
- 	case UDP_V6_FLOW:
- 		cmp_rqfpr = RQFPR_IPV6 |RQFPR_UDP;
- 		break;
--	case IPV4_FLOW:
--		cmp_rqfpr = RQFPR_IPV4;
--	case IPV6_FLOW:
--		cmp_rqfpr = RQFPR_IPV6;
--		break;
- 	default:
- 		printk(KERN_ERR "Right now this class is not supported\n");
- 		return 0;
-@@ -848,18 +807,9 @@ static int gfar_ethflow_to_filer_table(struct gfar_private *priv, u64 ethflow, u
- 
- static int gfar_set_hash_opts(struct gfar_private *priv, struct ethtool_rxnfc *cmd)
- {
--	u64 class;
--
--	if (!gfar_ethflow_to_class(cmd->flow_type, &class))
--		return -EINVAL;
--
--	if (class < CLASS_CODE_USER_PROG1 ||
--			class > CLASS_CODE_SCTP_IPV6)
--		return -EINVAL;
--
- 	/* write the filer rules here */
- 	if (!gfar_ethflow_to_filer_table(priv, cmd->data, cmd->flow_type))
--		return -1;
-+		return -EINVAL;
- 
- 	return 0;
- }
--- 
-1.7.4
-
-
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+- k=
