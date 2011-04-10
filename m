@@ -1,23 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D67AB6F1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Apr 2011 08:00:32 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc: Use MSR_64BIT in places
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <94DD022B-86D8-4751-BB65-7D46AC63ED9A@kernel.crashing.org>
-References: <ca7cc2a36bbf492c11cd98d3d1dea0835731c75f.1302249358.git.michael@ellerman.id.au>
-	<431bd20fec52ff41fb47808954993ab6369eb45e.1302249358.git.michael@ellerman.id.au>
-	<FA53E865-AB9E-4222-A990-F552E1A1C093@kernel.crashing.org>
-	<1302386681.28876.0.camel@pasglop>
-	<94DD022B-86D8-4751-BB65-7D46AC63ED9A@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Apr 2011 08:00:14 +1000
-Message-ID: <1302472814.28876.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <wanlong.gao@gmail.com>
+Received: from mail-pw0-f67.google.com (mail-pw0-f67.google.com
+	[209.85.160.67]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 972C2B6F00
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 11 Apr 2011 09:34:57 +1000 (EST)
+Received: by pwi6 with SMTP id 6so763051pwi.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 10 Apr 2011 16:34:53 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20110410181238.GE18601@pengutronix.de>
+References: <1302375858-11253-1-git-send-email-wanlong.gao@gmail.com>
+	<20110410181238.GE18601@pengutronix.de>
+Date: Mon, 11 Apr 2011 07:34:53 +0800
+Message-ID: <BANLkTima9-xmm2r6KeQcksvwhk5Wv4oaMA@mail.gmail.com>
+Subject: Re: [PATCH] fix build warnings on defconfigs
+From: wanlong gao <wanlong.gao@gmail.com>
+To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org, david.woodhouse@intel.com, tony@atomide.com,
+	nicolas.ferre@atmel.com, paulus@samba.org, eric@eukrea.com,
+	sam@ravnborg.org, sfr@canb.auug.org.au, linux@arm.linux.org.uk,
+	khilman@deeprootsystems.com, manuel.lauss@googlemail.com,
+	rientjes@google.com, mingo@elte.hu, anton@samba.org,
+	ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+	santosh.shilimkar@ti.com, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, hans-christian.egtvedt@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-04-10 at 12:29 -0500, Kumar Gala wrote:
-> On Apr 9, 2011, at 5:04 PM, Benjamin Herrenschmidt wrote:
-> 
-> > On Fri, 2011-04-08 at 04:24 -0500, Kumar Gala wrote:
-> >> On Apr 8, 2011, at 2:56 AM, Michael Ellerman wrote:
-> >> 
-> >>> Use the new MSR_64BIT in a few places. Some of these are already ifdef'ed
-> >>> for BOOKE vs BOOKS, but it's still clearer, MSR_SF does not immediately
-> >>> parse as "MSR bit for 64bit".
-> >>> 
-> >>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> >>> ---
-> >>> arch/powerpc/kernel/head_64.S   |    2 +-
-> >>> arch/powerpc/kernel/signal_64.c |    4 ++--
-> >>> arch/powerpc/kernel/traps.c     |    2 +-
-> >>> arch/powerpc/xmon/xmon.c        |   14 +++++++-------
-> >>> 4 files changed, 11 insertions(+), 11 deletions(-)
-> >> 
-> >> However MSR_ISF does ;)
-> > 
-> > I'm not sure I parse that one :-) Any ways ISF is "interrupt SF" and has
-> > no equivalent in the MSR for BookE (it's elsewhere, EPCR no ?).
-> 
-> I was just saying that if _SF doesn't parse as 64-bit mode, ISF doesn't parse as interrupt into 64-bit mode :)
-
-Ah right :-) But it's not used nearly as much and has no equivalent on
-BookE so I wouldn't bother. The deal here is really more about getting
-a single definition for both subarchs.
-
-Cheers,
-Ben.
+On 4/11/11, Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de> wrote:
+> On Sun, Apr 10, 2011 at 03:04:18AM +0800, wanlong.gao@gmail.com wrote:
+>> From: Wanlong Gao <wanlong.gao@gmail.com>
+>>
+>> Change the BT_L2CAP and BT_SCO defconfigs from 'm' to 'y',
+>> since BT_L2CAP and BT_SCO had changed to bool configs.
+> Pointing out the commit that changed these two in the commit log would
+> be nice. Something like:
+>
+> 	The BT_L2CAP and BT_SCO configs are bool since
+>
+> 		6427451 (Bluetooth: Merge L2CAP and SCO modules into bluetooth.ko)
+>
+> 	. So change all defconfigs from =3Dm to =3Dy.
+>
+> Other than that
+> Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+Thanks .
+>
+> Best regards
+> Uwe
+>
+> --
+> Pengutronix e.K.                           | Uwe Kleine-K=F6nig          =
+  |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  =
+|
+>
