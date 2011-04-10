@@ -1,24 +1,20 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
-	by ozlabs.org (Postfix) with ESMTP id E1292B6F16
+Return-Path: <mirq@rere.qmqm.pl>
+Received: from rere.qmqm.pl (rere.qmqm.pl [89.167.52.164])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rere.qmqm.pl", Issuer "rere.qmqm.pl" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AC823B6F16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 10 Apr 2011 19:10:16 +1000 (EST)
-Received: from brigitte.telenet-ops.be (unknown [195.130.137.66])
-	by winston.telenet-ops.be (Postfix) with ESMTP id 7045F1BC5B5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 10 Apr 2011 10:59:09 +0200 (CEST)
-Date: Sun, 10 Apr 2011 10:59:07 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Geoff Levand <geoff@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] powerpc: ps3 - Update debug message for
- irq_set_chip_data()
-Message-ID: <alpine.DEB.2.00.1104101058010.13483@ayla.of.borg>
+	Mon, 11 Apr 2011 00:49:59 +1000 (EST)
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Subject: [PATCH RESENT] net: ps3_gelic: convert to hw_features
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+To: netdev@vger.kernel.org
+In-Reply-To: <20110410144746.A28B11389B@rere.qmqm.pl>
+Message-Id: <20110410144955.8620813909@rere.qmqm.pl>
+Date: Sun, 10 Apr 2011 16:49:55 +0200 (CEST)
+Cc: Geoff Levand <geoff@infradead.org>, cbe-oss-dev@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
->From 7193fcea7af93d57a0fea04efa28bcb5a7412e39 Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sun, 10 Apr 2011 10:45:35 +0200
-Subject: [PATCH] powerpc: ps3 - Update debug message for irq_set_chip_data()
-
-commit ec775d0e70eb6b7116406b3441cb8501c2849dd2 ("powerpc: Convert to new irq_*
-function names") changed a call from set_irq_chip_data() to
-irq_set_chip_data(), but forgot to update the corresponding debug message
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+[untested]
+[resent because of broken headers]
 
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index f2f6413..523bd0d 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -197,7 +197,7 @@ static int ps3_virq_setup(enum ps3_cpu_binding cpu, unsigned long outlet,
- 	result = irq_set_chip_data(*virq, pd);
+ drivers/net/ps3_gelic_net.c      |   26 +++++---------------------
+ drivers/net/ps3_gelic_net.h      |    3 ---
+ drivers/net/ps3_gelic_wireless.c |    4 ----
+ 3 files changed, 5 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
+index 5ecfa4b..6c83ac6 100644
+--- a/drivers/net/ps3_gelic_net.c
++++ b/drivers/net/ps3_gelic_net.c
+@@ -951,7 +951,7 @@ static void gelic_net_pass_skb_up(struct gelic_descr *descr,
+ 	skb->protocol = eth_type_trans(skb, netdev);
  
- 	if (result) {
--		pr_debug("%s:%d: set_irq_chip_data failed\n",
-+		pr_debug("%s:%d: irq_set_chip_data failed\n",
- 			__func__, __LINE__);
- 		goto fail_set;
- 	}
+ 	/* checksum offload */
+-	if (card->rx_csum) {
++	if (netdev->features & NETIF_F_RXCSUM) {
+ 		if ((data_status & GELIC_DESCR_DATA_STATUS_CHK_MASK) &&
+ 		    (!(data_error & GELIC_DESCR_DATA_ERROR_CHK_MASK)))
+ 			skb->ip_summed = CHECKSUM_UNNECESSARY;
+@@ -1312,21 +1312,6 @@ static int gelic_ether_set_settings(struct net_device *netdev,
+ 	return 0;
+ }
+ 
+-u32 gelic_net_get_rx_csum(struct net_device *netdev)
+-{
+-	struct gelic_card *card = netdev_card(netdev);
+-
+-	return card->rx_csum;
+-}
+-
+-int gelic_net_set_rx_csum(struct net_device *netdev, u32 data)
+-{
+-	struct gelic_card *card = netdev_card(netdev);
+-
+-	card->rx_csum = data;
+-	return 0;
+-}
+-
+ static void gelic_net_get_wol(struct net_device *netdev,
+ 			      struct ethtool_wolinfo *wol)
+ {
+@@ -1411,10 +1396,6 @@ static const struct ethtool_ops gelic_ether_ethtool_ops = {
+ 	.get_settings	= gelic_ether_get_settings,
+ 	.set_settings	= gelic_ether_set_settings,
+ 	.get_link	= ethtool_op_get_link,
+-	.get_tx_csum	= ethtool_op_get_tx_csum,
+-	.set_tx_csum	= ethtool_op_set_tx_csum,
+-	.get_rx_csum	= gelic_net_get_rx_csum,
+-	.set_rx_csum	= gelic_net_set_rx_csum,
+ 	.get_wol	= gelic_net_get_wol,
+ 	.set_wol	= gelic_net_set_wol,
+ };
+@@ -1512,7 +1493,11 @@ int __devinit gelic_net_setup_netdev(struct net_device *netdev,
+ 	int status;
+ 	u64 v1, v2;
+ 
++	netdev->hw_features = NETIF_F_IP_CSUM | NETIF_F_RXCSUM;
++
+ 	netdev->features = NETIF_F_IP_CSUM;
++	if (GELIC_CARD_RX_CSUM_DEFAULT)
++		netdev->features |= NETIF_F_RXCSUM;
+ 
+ 	status = lv1_net_control(bus_id(card), dev_id(card),
+ 				 GELIC_LV1_GET_MAC_ADDRESS,
+@@ -1756,7 +1741,6 @@ static int __devinit ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
+ 	/* setup card structure */
+ 	card->irq_mask = GELIC_CARD_RXINT | GELIC_CARD_TXINT |
+ 		GELIC_CARD_PORT_STATUS_CHANGED;
+-	card->rx_csum = GELIC_CARD_RX_CSUM_DEFAULT;
+ 
+ 
+ 	if (gelic_card_init_chain(card, &card->tx_chain,
+diff --git a/drivers/net/ps3_gelic_net.h b/drivers/net/ps3_gelic_net.h
+index 32521ae..50d8958 100644
+--- a/drivers/net/ps3_gelic_net.h
++++ b/drivers/net/ps3_gelic_net.h
+@@ -290,7 +290,6 @@ struct gelic_card {
+ 	struct gelic_descr_chain tx_chain;
+ 	struct gelic_descr_chain rx_chain;
+ 	int rx_dma_restart_required;
+-	int rx_csum;
+ 	/*
+ 	 * tx_lock guards tx descriptor list and
+ 	 * tx_dma_progress.
+@@ -377,8 +376,6 @@ extern int gelic_net_setup_netdev(struct net_device *netdev,
+ /* shared ethtool ops */
+ extern void gelic_net_get_drvinfo(struct net_device *netdev,
+ 				  struct ethtool_drvinfo *info);
+-extern u32 gelic_net_get_rx_csum(struct net_device *netdev);
+-extern int gelic_net_set_rx_csum(struct net_device *netdev, u32 data);
+ extern void gelic_net_poll_controller(struct net_device *netdev);
+ 
+ #endif /* _GELIC_NET_H */
+diff --git a/drivers/net/ps3_gelic_wireless.c b/drivers/net/ps3_gelic_wireless.c
+index 4a624a2..39a93e8 100644
+--- a/drivers/net/ps3_gelic_wireless.c
++++ b/drivers/net/ps3_gelic_wireless.c
+@@ -2581,10 +2581,6 @@ static const struct net_device_ops gelic_wl_netdevice_ops = {
+ static const struct ethtool_ops gelic_wl_ethtool_ops = {
+ 	.get_drvinfo	= gelic_net_get_drvinfo,
+ 	.get_link	= gelic_wl_get_link,
+-	.get_tx_csum	= ethtool_op_get_tx_csum,
+-	.set_tx_csum	= ethtool_op_set_tx_csum,
+-	.get_rx_csum	= gelic_net_get_rx_csum,
+-	.set_rx_csum	= gelic_net_set_rx_csum,
+ };
+ 
+ static void __devinit gelic_wl_setup_netdev_ops(struct net_device *netdev)
 -- 
-1.7.0.4
-
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+1.7.2.5
