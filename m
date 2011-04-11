@@ -1,20 +1,10 @@
-Return-Path: <B32579@freescale.com>
-Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9899D1007EC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Apr 2011 16:38:38 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] driver/e1000e: Fix default interrupt mode select
-Date: Mon, 11 Apr 2011 12:08:18 +0530
-Message-ID: <1302503898-22023-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: meet2prabhu@gmail.com, Prabhakar <prabhakar@freescale.com>,
-	Jin Qing <b24347@freescale.com>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <7e33ed902c36baf8e09f52699433c6ef6be729cd.1302504287.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: Look for ibm,
+	associativity-reference-points at the root
+Date: Mon, 11 Apr 2011 16:42:05 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +14,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Prabhakar <prabhakar@freescale.com>
+If we don't find ibm,associativity-reference-points as a child of
+/rtas, look for it at the root of the tree instead. We use this on
+Book3E where we have no RTAS but still use the sPAPR conventions
+for NUMA.
 
-e1000 default interrupt mode is MSI. No matter user select MSI or
-disable MSI in kernel config.
-
-Signed-off-by: Jin Qing <b24347@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
+ arch/powerpc/mm/numa.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
 
- drivers/net/e1000e/param.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/e1000e/param.c b/drivers/net/e1000e/param.c
-index a150e48..7b3bbec 100644
---- a/drivers/net/e1000e/param.c
-+++ b/drivers/net/e1000e/param.c
-@@ -390,7 +390,11 @@ void __devinit e1000e_check_options(struct e1000_adapter *adapter)
- 			.type = range_option,
- 			.name = "Interrupt Mode",
- 			.err  = "defaulting to 2 (MSI-X)",
-+#ifdef CONFIG_PCI_MSI
- 			.def  = E1000E_INT_MODE_MSIX,
-+#else
-+			.def  = E1000E_INT_MODE_LEGACY,
-+#endif
- 			.arg  = { .r = { .min = MIN_INTMODE,
- 					 .max = MAX_INTMODE } }
- 		};
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0dc95c0..6e90986 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -311,14 +311,13 @@ EXPORT_SYMBOL_GPL(of_node_to_nid);
+ static int __init find_min_common_depth(void)
+ {
+ 	int depth;
+-	struct device_node *rtas_root;
+ 	struct device_node *chosen;
++	struct device_node *root;
+ 	const char *vec5;
+ 
+-	rtas_root = of_find_node_by_path("/rtas");
+-
+-	if (!rtas_root)
+-		return -1;
++	root = of_find_node_by_path("/rtas");
++	if (!root)
++		root = of_find_node_by_path("/");
+ 
+ 	/*
+ 	 * This property is a set of 32-bit integers, each representing
+@@ -332,7 +331,7 @@ static int __init find_min_common_depth(void)
+ 	 * NUMA boundary and the following are progressively less significant
+ 	 * boundaries. There can be more than one level of NUMA.
+ 	 */
+-	distance_ref_points = of_get_property(rtas_root,
++	distance_ref_points = of_get_property(root,
+ 					"ibm,associativity-reference-points",
+ 					&distance_ref_points_depth);
+ 
+@@ -376,11 +375,11 @@ static int __init find_min_common_depth(void)
+ 		distance_ref_points_depth = MAX_DISTANCE_REF_POINTS;
+ 	}
+ 
+-	of_node_put(rtas_root);
++	of_node_put(root);
+ 	return depth;
+ 
+ err:
+-	of_node_put(rtas_root);
++	of_node_put(root);
+ 	return -1;
+ }
+ 
 -- 
-1.7.3
+1.7.1
