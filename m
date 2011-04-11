@@ -1,28 +1,21 @@
-Return-Path: <panweiping3@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 50EC3B6F18
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 23C12B6F19
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Apr 2011 20:14:54 +1000 (EST)
-Received: by wwi36 with SMTP id 36so5648297wwi.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Apr 2011 03:14:51 -0700 (PDT)
-From: =?UTF-8?q?Weiping=20Pan=28=E6=BD=98=E5=8D=AB=E5=B9=B3=29?=
-	<panweiping3@gmail.com>
-To: 
-Subject: [PATCH 3/4] usb:fix a typo
-Date: Mon, 11 Apr 2011 18:16:15 +0800
-Message-Id: <1302516975-9575-1-git-send-email-panweiping3@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	"=?UTF-8?q?Weiping=20Pan ?= \(=E6=BD=98=E5=8D=AB=E5=B9=B3\)"
-	<panweiping3@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-	open list <linux-kernel@vger.kernel.org>,
-	"open list:FREESCALE USB PER..." <linux-usb@vger.kernel.org>,
-	"open list:FREESCALE USB PER..." <linuxppc-dev@lists.ozlabs.org>
+	Mon, 11 Apr 2011 23:11:41 +1000 (EST)
+Subject: Re: [PATCH] driver/e1000e: Fix default interrupt mode select
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1302503898-22023-1-git-send-email-prabhakar@freescale.com>
+Date: Mon, 11 Apr 2011 08:11:30 -0500
+Message-Id: <EBA6D042-CAC3-4C17-A14B-767D3FB075B5@kernel.crashing.org>
+References: <1302503898-22023-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: meet2prabhu@gmail.com, linuxppc-dev@lists.ozlabs.org,
+	Jin Qing <b24347@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-replace tranmitted with transmitted.
 
-Signed-off-by: Weiping Pan(潘卫平) <panweiping3@gmail.com>
----
- drivers/usb/gadget/fsl_qe_udc.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Apr 11, 2011, at 1:38 AM, Prabhakar Kushwaha wrote:
 
-diff --git a/drivers/usb/gadget/fsl_qe_udc.h b/drivers/usb/gadget/fsl_qe_udc.h
-index e35e24f..1da5fb0 100644
---- a/drivers/usb/gadget/fsl_qe_udc.h
-+++ b/drivers/usb/gadget/fsl_qe_udc.h
-@@ -207,7 +207,7 @@ struct qe_frame{
- 
- /* Frame status field */
- /* Receive side */
--#define FRAME_OK               0x00000000 /* Frame tranmitted or received OK */
-+#define FRAME_OK               0x00000000 /* Frame transmitted or received OK */
- #define FRAME_ERROR            0x80000000 /* Error occurred on frame */
- #define START_FRAME_LOST       0x40000000 /* START_FRAME_LOST */
- #define END_FRAME_LOST         0x20000000 /* END_FRAME_LOST */
--- 
-1.7.4
+> From: Prabhakar <prabhakar@freescale.com>
+>=20
+> e1000 default interrupt mode is MSI. No matter user select MSI or
+> disable MSI in kernel config.
+>=20
+> Signed-off-by: Jin Qing <b24347@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> ---
+> Based upon =
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branc=
+h master)
+>=20
+> drivers/net/e1000e/param.c |    4 ++++
+> 1 files changed, 4 insertions(+), 0 deletions(-)
+
+You should send this to netdev and CC the e1000e Maintainer.
+
+- k=
