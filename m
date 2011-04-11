@@ -1,10 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <7e33ed902c36baf8e09f52699433c6ef6be729cd.1302504287.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Look for ibm,
-	associativity-reference-points at the root
-Date: Mon, 11 Apr 2011 16:42:05 +1000 (EST)
+Return-Path: <grinberg@compulab.co.il>
+Received: from softlayer.compulab.co.il
+	(50.23.254.54-static.reverse.softlayer.com [50.23.254.54])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BA70CB6F08
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 11 Apr 2011 17:01:16 +1000 (EST)
+Message-ID: <4DA29B75.4090401@compulab.co.il>
+Date: Mon, 11 Apr 2011 09:11:01 +0300
+From: Igor Grinberg <grinberg@compulab.co.il>
+MIME-Version: 1.0
+To: wanlong.gao@gmail.com
+Subject: Re: [PATCH] fix build warnings on defconfigs
+References: <1302375858-11253-1-git-send-email-wanlong.gao@gmail.com>
+In-Reply-To: <1302375858-11253-1-git-send-email-wanlong.gao@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org, david.woodhouse@intel.com, tony@atomide.com,
+	nicolas.ferre@atmel.com, paulus@samba.org, eric@eukrea.com,
+	sam@ravnborg.org, sfr@canb.auug.org.au, linux@arm.linux.org.uk,
+	khilman@deeprootsystems.com, manuel.lauss@googlemail.com,
+	u.kleine-koenig@pengutronix.de, mingo@elte.hu,
+	rientjes@google.com, anton@samba.org, ben-linux@fluff.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+	santosh.shilimkar@ti.com, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, hans-christian.egtvedt@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,61 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we don't find ibm,associativity-reference-points as a child of
-/rtas, look for it at the root of the tree instead. We use this on
-Book3E where we have no RTAS but still use the sPAPR conventions
-for NUMA.
+On 04/09/11 22:04, wanlong.gao@gmail.com wrote:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/mm/numa.c |   15 +++++++--------
- 1 files changed, 7 insertions(+), 8 deletions(-)
+> From: Wanlong Gao <wanlong.gao@gmail.com>
+>
+> Change the BT_L2CAP and BT_SCO defconfigs from 'm' to 'y',
+> since BT_L2CAP and BT_SCO had changed to bool configs.
+>
+> Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
+> ---
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0dc95c0..6e90986 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -311,14 +311,13 @@ EXPORT_SYMBOL_GPL(of_node_to_nid);
- static int __init find_min_common_depth(void)
- {
- 	int depth;
--	struct device_node *rtas_root;
- 	struct device_node *chosen;
-+	struct device_node *root;
- 	const char *vec5;
- 
--	rtas_root = of_find_node_by_path("/rtas");
--
--	if (!rtas_root)
--		return -1;
-+	root = of_find_node_by_path("/rtas");
-+	if (!root)
-+		root = of_find_node_by_path("/");
- 
- 	/*
- 	 * This property is a set of 32-bit integers, each representing
-@@ -332,7 +331,7 @@ static int __init find_min_common_depth(void)
- 	 * NUMA boundary and the following are progressively less significant
- 	 * boundaries. There can be more than one level of NUMA.
- 	 */
--	distance_ref_points = of_get_property(rtas_root,
-+	distance_ref_points = of_get_property(root,
- 					"ibm,associativity-reference-points",
- 					&distance_ref_points_depth);
- 
-@@ -376,11 +375,11 @@ static int __init find_min_common_depth(void)
- 		distance_ref_points_depth = MAX_DISTANCE_REF_POINTS;
- 	}
- 
--	of_node_put(rtas_root);
-+	of_node_put(root);
- 	return depth;
- 
- err:
--	of_node_put(rtas_root);
-+	of_node_put(root);
- 	return -1;
- }
- 
+For:
+
+>  arch/arm/configs/cm_x2xx_defconfig         |    4 ++--
+>  arch/arm/configs/cm_x300_defconfig         |    4 ++--
+>  arch/arm/configs/em_x270_defconfig         |    4 ++--
+
+Acked-by: Igor Grinberg <grinberg@compulab.co.il>
+
 -- 
-1.7.1
+Regards,
+Igor.
