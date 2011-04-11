@@ -1,21 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C229AB6F19
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Apr 2011 16:38:24 +1000 (EST)
-Date: Mon, 11 Apr 2011 16:38:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] powerpc/pci: Move IO workarounds to the common
-	kernel dir
-Message-Id: <20110411163821.27231daf.sfr@canb.auug.org.au>
-In-Reply-To: <5f157bce88237ae70829d2d6df1d792a69b7e02c.1302501428.git.michael@ellerman.id.au>
-References: <3ed7c174af4ccbab67467aa80fe84bd6c6e218ee.1302501428.git.michael@ellerman.id.au>
-	<5f157bce88237ae70829d2d6df1d792a69b7e02c.1302501428.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__11_Apr_2011_16_38_21_+1000_52lb/m.=ee6qQ8Zx"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B32579@freescale.com>
+Received: from TX2EHSOBE009.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9899D1007EC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 11 Apr 2011 16:38:38 +1000 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] driver/e1000e: Fix default interrupt mode select
+Date: Mon, 11 Apr 2011 12:08:18 +0530
+Message-ID: <1302503898-22023-1-git-send-email-prabhakar@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Prabhakar <prabhakar@freescale.com>,
+	Jin Qing <b24347@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__11_Apr_2011_16_38_21_+1000_52lb/m.=ee6qQ8Zx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Prabhakar <prabhakar@freescale.com>
 
-On Mon, 11 Apr 2011 15:54:28 +1000 (EST) Benjamin Herrenschmidt <benh@kerne=
-l.crashing.org> wrote:
->
-> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kcon=
-fig
-> index 220b137..44059e1 100644
-> --- a/arch/powerpc/platforms/Kconfig
-> +++ b/arch/powerpc/platforms/Kconfig
-> @@ -162,6 +162,9 @@ config PPC_INDIRECT_PIO
->  config PPC_INDIRECT_MEM
->  	def_bool n
-> =20
-> +config PPC_IO_WORKAROUNDS
-> +	def_bool n
-> +
+e1000 default interrupt mode is MSI. No matter user select MSI or
+disable MSI in kernel config.
 
-Just "bool"
+Signed-off-by: Jin Qing <b24347@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+---
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ drivers/net/e1000e/param.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
---Signature=_Mon__11_Apr_2011_16_38_21_+1000_52lb/m.=ee6qQ8Zx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJNoqHdAAoJEDMEi1NhKgbsqMcH/2+o/+FB5V2F+HG3BbRdvup4
-cMVEh2SZQXm0fvaRbodiRo+y/mAOwtTC++64HphXd7ZgNZX8z4fwd+H4PuUesPfA
-tJC66sn+TLKTAK/XO3rLStipv7FA9rV/tT/OYItHAGImgMaVe7p/YAMAlEJ/6hVJ
-YCmGFFgMXzfyceHAQ4bDl7yG/dZf+mjDl6kfNmd4jhtTsRQ6C+GCPrK21CxlVt70
-qb6RaQhw8irh6WZqCh98vJx5noG/4q2I/4riDcgInK5+DOnFFw3qe3rElhavJDsz
-1clS041nH9eLeX1pJ9CUNBYbH+Kwg3ZkjfQAxX3+0te0SN+Wp9TU9A4BZPXUeYo=
-=yNog
------END PGP SIGNATURE-----
-
---Signature=_Mon__11_Apr_2011_16_38_21_+1000_52lb/m.=ee6qQ8Zx--
+diff --git a/drivers/net/e1000e/param.c b/drivers/net/e1000e/param.c
+index a150e48..7b3bbec 100644
+--- a/drivers/net/e1000e/param.c
++++ b/drivers/net/e1000e/param.c
+@@ -390,7 +390,11 @@ void __devinit e1000e_check_options(struct e1000_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Interrupt Mode",
+ 			.err  = "defaulting to 2 (MSI-X)",
++#ifdef CONFIG_PCI_MSI
+ 			.def  = E1000E_INT_MODE_MSIX,
++#else
++			.def  = E1000E_INT_MODE_LEGACY,
++#endif
+ 			.arg  = { .r = { .min = MIN_INTMODE,
+ 					 .max = MAX_INTMODE } }
+ 		};
+-- 
+1.7.3
