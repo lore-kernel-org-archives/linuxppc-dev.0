@@ -1,23 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1BE72B6F0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2011 09:50:47 +1000 (EST)
-Date: Mon, 11 Apr 2011 16:50:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] mm: Check we have the right vma in __access_remote_vm()
-Message-Id: <20110411165035.5a303647.akpm@linux-foundation.org>
-In-Reply-To: <10e5cbf67c850b6ae511979bdbad1761236ad9b0.1302247435.git.michael@ellerman.id.au>
-References: <10e5cbf67c850b6ae511979bdbad1761236ad9b0.1302247435.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: aarcange@redhat.com, riel@redhat.com, linuxppc-dev@ozlabs.org,
-	hughd@google.com, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, walken@google.com
+Return-Path: <R1AAHA@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 52F0DB6F05
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Apr 2011 10:15:29 +1000 (EST)
+Date: Mon, 11 Apr 2011 19:15:21 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/4] crypto: caam - fix queue interface detection
+Message-ID: <20110411191521.52d6ccc6.kim.phillips@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Steve Cornelius <sec@pobox.com>, Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  8 Apr 2011 17:24:01 +1000 (EST)
-Michael Ellerman <michael@ellerman.id.au> wrote:
+The presence of a h/w Queue Interface would fail due to this
+cut-n-paste snafu.
 
-> In __access_remote_vm() we need to check that we have found the right
-> vma, not the following vma, before we try to access it. Otherwise we
-> might call the vma's access routine with an address which does not
-> fall inside the vma.
-> 
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ drivers/crypto/caam/regs.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-hm, mysteries.  Does this patch fix any known problem in any known
-kernel, or was the problem discovered by inspection, or what?
-
-> 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 9da8cab..ce999ca 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -3678,7 +3678,7 @@ static int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
->  			 */
->  #ifdef CONFIG_HAVE_IOREMAP_PROT
->  			vma = find_vma(mm, addr);
-> -			if (!vma)
-> +			if (!vma || vma->vm_start > addr)
->  				break;
->  			if (vma->vm_ops && vma->vm_ops->access)
->  				ret = vma->vm_ops->access(vma, addr, buf,
+diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h
+index d063a26..aee394e 100644
+--- a/drivers/crypto/caam/regs.h
++++ b/drivers/crypto/caam/regs.h
+@@ -131,7 +131,7 @@ struct caam_perfmon {
+ 	/* CAAM Hardware Instantiation Parameters		fa0-fbf */
+ 	u64 cha_rev;		/* CRNR - CHA Revision Number		*/
+ #define CTPR_QI_SHIFT		57
+-#define CTPR_QI_MASK		(0x1ull << CHA_NUM_DECONUM_SHIFT)
++#define CTPR_QI_MASK		(0x1ull << CTPR_QI_SHIFT)
+ 	u64 comp_parms;	/* CTPR - Compile Parameters Register	*/
+ 	u64 rsvd1[2];
+ 
+-- 
+1.7.4.3.dirty
