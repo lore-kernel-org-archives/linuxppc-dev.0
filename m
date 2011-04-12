@@ -1,13 +1,13 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 0133CB6F2B
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id 867D7B6F3E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Apr 2011 21:30:44 +1000 (EST)
-Date: Tue, 12 Apr 2011 13:30:34 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+	Tue, 12 Apr 2011 21:46:27 +1000 (EST)
 Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-Message-ID: <20110412113033.GA16649@iram.es>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 12 Apr 2011 13:46:10 +0200
+In-Reply-To: <20110412113033.GA16649@iram.es>
 References: <20110404235259.GA30132@iram.es>
 	<20110406084101.GB13963@pengutronix.de>
 	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
@@ -15,12 +15,13 @@ References: <20110404235259.GA30132@iram.es>
 	<1302185075.24704.143.camel@thor.local>
 	<20110411133128.GA24344@iram.es>
 	<1302535963.24704.268.camel@thor.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1302535963.24704.268.camel@thor.local>
+	<20110412113033.GA16649@iram.es>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1302608770.27054.36.camel@thor.local>
+Mime-Version: 1.0
 Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
 	dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
 	Dave Airlie <airlied@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,89 +32,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Hi Micel,
+On Die, 2011-04-12 at 13:30 +0200, Gabriel Paubert wrote:=20
+>=20
+> On Mon, Apr 11, 2011 at 05:32:43PM +0200, Michel D=C3=A4nzer wrote:
+> >=20
+> > Have you ruled out any MSI related problems? I think the IRQ not workin=
+g
+> > could explain the symptoms...
+>=20
+> Booting with MSI disabled does not change anything. Actually on this
+> machine the Ethernet (tigon3) uses MSI and everything is fine. OTOH,
+> on my home PC (dual code Athlon64 4 1/2 years old), MSI has never worked.
 
-On Mon, Apr 11, 2011 at 05:32:43PM +0200, Michel Dänzer wrote:
-> [ Adding the dri-devel list ]
-> 
-> Have you ruled out any MSI related problems? I think the IRQ not working
-> could explain the symptoms...
+Okay, the fact no_wb helps probably rules out an IRQ problem anyway.
 
-Booting with MSI disabled does not change anything. Actually on this
-machine the Ethernet (tigon3) uses MSI and everything is fine. OTOH,
-on my home PC (dual code Athlon64 4 1/2 years old), MSI has never worked.
 
-> Make sure this line changes to 'WB disabled' with no_wb=1. There's a
-> writeback endianness bug with modeset=1, see
-> http://lists.freedesktop.org/archives/dri-devel/2011-April/009960.html .
-> 
+> > Make sure this line changes to 'WB disabled' with no_wb=3D1. There's a
+> > writeback endianness bug with modeset=3D1, see
+> > http://lists.freedesktop.org/archives/dri-devel/2011-April/009960.html =
+.
+> >=20
+>=20
+> With no_wb=3D1 the driver goes a bit further but the X server ends
+> up in an infinite ioctl loop and the logs are:=20
 
-With no_wb=1 the driver goes a bit further but the X server ends
-up in an infinite ioctl loop and the logs are: 
+Which ioctl does it loop on? Please provide the Xorg.0.log file as well.
 
-kernel: [drm] radeon kernel modesetting enabled.
-kernel: checking generic (c0000000 140000) vs hw (c0000000 10000000)
-kernel: fb: conflicting fb hw usage radeondrmfb vs OFfb vga,Displa - removing generic driver
-kernel: [drm] initializing kernel modesetting (RV530 0x1002:0x71C7).
-kernel: radeon 0000:f1:00.0: Using 64-bit DMA iommu bypass
-kernel: [drm] register mmio base: 0xE8000000
-kernel: [drm] register mmio size: 65536
-kernel: radeon 0000:f1:00.0: Invalid ROM contents
-kernel: ATOM BIOS: X1650PRO
-kernel: [drm] Generation 2 PCI interface, using max accessible memory
-kernel: radeon 0000:f1:00.0: VRAM: 512M 0x0000000000000000 - 0x000000001FFFFFFF (512M used)
-kernel: radeon 0000:f1:00.0: GTT: 512M 0x0000000020000000 - 0x000000003FFFFFFF
-kernel: [drm] Supports vblank timestamp caching Rev 1 (10.10.2010).
-kernel: [drm] Driver supports precise vblank timestamp query.
-kernel: [drm] radeon: irq initialized.
-kernel: [drm] Detected VRAM RAM=512M, BAR=256M
-kernel: [drm] RAM width 128bits DDR
-kernel: [TTM] Zone  kernel: Available graphics memory: 1003018 kiB.
-kernel: [TTM] Initializing pool allocator.
-kernel: [drm] radeon: 512M of VRAM memory ready
-kernel: [drm] radeon: 512M of GTT memory ready.
-kernel: [drm] GART: num cpu pages 131072, num gpu pages 131072
-kernel: [drm] radeon: 1 quad pipes, 2 z pipes initialized.
-kernel: [drm] PCIE GART of 512M enabled (table at 0x00040000).
-kernel: radeon 0000:f1:00.0: WB disabled
-kernel: [drm] Loading R500 Microcode
-kernel: [drm] radeon: ring at 0x0000000020001000
-kernel: [drm] ring test succeeded in 6 usecs
-kernel: [drm] radeon: ib pool ready.
-kernel: [drm] ib test succeeded in 0 usecs
-kernel: [drm] Radeon Display Connectors
-kernel: [drm] Connector 0:
-kernel: [drm]   DVI-I
-kernel: [drm]   HPD1
-kernel: [drm]   DDC: 0x7e40 0x7e40 0x7e44 0x7e44 0x7e48 0x7e48 0x7e4c 0x7e4c
-kernel: [drm]   Encoders:
-kernel: [drm]     CRT1: INTERNAL_KLDSCP_DAC1
-kernel: [drm]     DFP1: INTERNAL_KLDSCP_TMDS1
-kernel: [drm] Connector 1:
-kernel: [drm]   S-video
-kernel: [drm]   Encoders:
-kernel: [drm]     TV1: INTERNAL_KLDSCP_DAC2
-kernel: [drm] Connector 2:
-kernel: [drm]   DVI-I
-kernel: [drm]   HPD2
-kernel: [drm]   DDC: 0x7e50 0x7e50 0x7e54 0x7e54 0x7e58 0x7e58 0x7e5c 0x7e5c
-kernel: [drm]   Encoders:
-kernel: [drm]     CRT2: INTERNAL_KLDSCP_DAC2
-kernel: [drm]     DFP3: INTERNAL_LVTM1
-kernel: [drm] Possible lm63 thermal controller at 0x4c
-kernel: [drm] fb mappable at 0xC00C0000
-kernel: [drm] vram apper at 0xC0000000
-kernel: [drm] size 9216000
-kernel: [drm] fb depth is 24
-kernel: [drm]    pitch is 7680
-kernel: checking generic (c0000000 140000) vs hw (c0000000 10000000)
-kernel: fb: conflicting fb hw usage radeondrmfb vs OFfb vga,Displa - removing generic driver
-kernel: fb1: radeondrmfb frame buffer device
-kernel: drm: registered panic notifier
-kernel: [drm] Initialized radeon 2.8.0 20080528 for 0000:f1:00.0 on minor 0
-kernel: [drm:drm_mode_getfb] *ERROR* invalid framebuffer id
 
-There is only one display connected and it is to the first DVI connector, BTW.
+> kernel: [drm] radeon kernel modesetting enabled.
+> kernel: checking generic (c0000000 140000) vs hw (c0000000 10000000)
+> kernel: fb: conflicting fb hw usage radeondrmfb vs OFfb vga,Displa - remo=
+ving generic driver
+> kernel: [drm] initializing kernel modesetting (RV530 0x1002:0x71C7).
+> kernel: radeon 0000:f1:00.0: Using 64-bit DMA iommu bypass
+> kernel: [drm] register mmio base: 0xE8000000
+> kernel: [drm] register mmio size: 65536
+> kernel: radeon 0000:f1:00.0: Invalid ROM contents
+> kernel: ATOM BIOS: X1650PRO
+> kernel: [drm] Generation 2 PCI interface, using max accessible memory
+> kernel: radeon 0000:f1:00.0: VRAM: 512M 0x0000000000000000 - 0x000000001F=
+FFFFFF (512M used)
+> kernel: radeon 0000:f1:00.0: GTT: 512M 0x0000000020000000 - 0x000000003FF=
+FFFFF
+> kernel: [drm] Supports vblank timestamp caching Rev 1 (10.10.2010).
+> kernel: [drm] Driver supports precise vblank timestamp query.
+> kernel: [drm] radeon: irq initialized.
+> kernel: [drm] Detected VRAM RAM=3D512M, BAR=3D256M
+> kernel: [drm] RAM width 128bits DDR
+> kernel: [TTM] Zone  kernel: Available graphics memory: 1003018 kiB.
+> kernel: [TTM] Initializing pool allocator.
+> kernel: [drm] radeon: 512M of VRAM memory ready
+> kernel: [drm] radeon: 512M of GTT memory ready.
+> kernel: [drm] GART: num cpu pages 131072, num gpu pages 131072
+> kernel: [drm] radeon: 1 quad pipes, 2 z pipes initialized.
+> kernel: [drm] PCIE GART of 512M enabled (table at 0x00040000).
+> kernel: radeon 0000:f1:00.0: WB disabled
+> kernel: [drm] Loading R500 Microcode
+> kernel: [drm] radeon: ring at 0x0000000020001000
+> kernel: [drm] ring test succeeded in 6 usecs
+> kernel: [drm] radeon: ib pool ready.
+> kernel: [drm] ib test succeeded in 0 usecs
+> kernel: [drm] Radeon Display Connectors
+> kernel: [drm] Connector 0:
+> kernel: [drm]   DVI-I
+> kernel: [drm]   HPD1
+> kernel: [drm]   DDC: 0x7e40 0x7e40 0x7e44 0x7e44 0x7e48 0x7e48 0x7e4c 0x7=
+e4c
+> kernel: [drm]   Encoders:
+> kernel: [drm]     CRT1: INTERNAL_KLDSCP_DAC1
+> kernel: [drm]     DFP1: INTERNAL_KLDSCP_TMDS1
+> kernel: [drm] Connector 1:
+> kernel: [drm]   S-video
+> kernel: [drm]   Encoders:
+> kernel: [drm]     TV1: INTERNAL_KLDSCP_DAC2
+> kernel: [drm] Connector 2:
+> kernel: [drm]   DVI-I
+> kernel: [drm]   HPD2
+> kernel: [drm]   DDC: 0x7e50 0x7e50 0x7e54 0x7e54 0x7e58 0x7e58 0x7e5c 0x7=
+e5c
+> kernel: [drm]   Encoders:
+> kernel: [drm]     CRT2: INTERNAL_KLDSCP_DAC2
+> kernel: [drm]     DFP3: INTERNAL_LVTM1
+> kernel: [drm] Possible lm63 thermal controller at 0x4c
+> kernel: [drm] fb mappable at 0xC00C0000
+> kernel: [drm] vram apper at 0xC0000000
+> kernel: [drm] size 9216000
+> kernel: [drm] fb depth is 24
+> kernel: [drm]    pitch is 7680
+> kernel: checking generic (c0000000 140000) vs hw (c0000000 10000000)
+> kernel: fb: conflicting fb hw usage radeondrmfb vs OFfb vga,Displa - remo=
+ving generic driver
+> kernel: fb1: radeondrmfb frame buffer device
 
-	Regards,
-	Gabriel
+Hmm, I think this should say fb0, but that should only matter for
+console, not X.
+
+> kernel: drm: registered panic notifier
+> kernel: [drm] Initialized radeon 2.8.0 20080528 for 0000:f1:00.0 on minor=
+ 0
+> kernel: [drm:drm_mode_getfb] *ERROR* invalid framebuffer id
+
+BTW, if your kernel contains commit
+69a07f0b117a40fcc1a479358d8e1f41793617f2, can you try if reverting that
+helps?
+
+
+--=20
+Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
