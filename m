@@ -1,22 +1,10 @@
-Return-Path: <B32579@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7EA4DB6F19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Apr 2011 14:56:14 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux.nics@intel.com>,
-	<auke-jan.h.kok@intel.com>, <e1000-devel@lists.sourceforge.net>,
-	<netdev@vger.kernel.org>
-Subject: [PATCH] driver/e1000e: Fix default interrupt mode select
-Date: Tue, 12 Apr 2011 10:26:03 +0530
-Message-ID: <1302584163-22318-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: meet2prabhu@gmail.com, Prabhakar <prabhakar@freescale.com>,
-	Jin Qing <b24347@freescale.com>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <a19ba86ac6fd999e3482e2c04b6fb10af04bb4a4.1302593231.git.michael@ellerman.id.au>
+Subject: [PATCH 1/4] powerpc/pci: Split IO vs MMIO indirect access hooks
+Date: Tue, 12 Apr 2011 17:25:01 +1000 (EST)
+From: michael@ozlabs.org (Michael Ellerman)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +14,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Prabhakar <prabhakar@freescale.com>
+The goal is to avoid adding overhead to MMIO when only PIO is needed
 
-The Intel e1000 device driver defaults to MSI interrupt mode, even if MSI
-support is not enabled
-
-Signed-off-by: Jin Qing <b24347@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
+ arch/powerpc/include/asm/io.h          |   16 +++++++++++-----
+ arch/powerpc/platforms/Kconfig         |   10 ++++++++--
+ arch/powerpc/platforms/cell/Kconfig    |    3 ++-
+ arch/powerpc/platforms/iseries/Kconfig |    3 ++-
+ 4 files changed, 23 insertions(+), 9 deletions(-)
 
- added  netdev mail-list and e1000 mail-list & maintainer
 
- drivers/net/e1000e/param.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+v2: Updated based on sfr's comments RE the Kconfig.
 
-diff --git a/drivers/net/e1000e/param.c b/drivers/net/e1000e/param.c
-index a150e48..7b3bbec 100644
---- a/drivers/net/e1000e/param.c
-+++ b/drivers/net/e1000e/param.c
-@@ -390,7 +390,11 @@ void __devinit e1000e_check_options(struct e1000_adapter *adapter)
- 			.type = range_option,
- 			.name = "Interrupt Mode",
- 			.err  = "defaulting to 2 (MSI-X)",
-+#ifdef CONFIG_PCI_MSI
- 			.def  = E1000E_INT_MODE_MSIX,
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 001f2f1..2f365f5 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -481,10 +481,16 @@ __do_out_asm(_rec_outl, "stwbrx")
+ 				_memcpy_fromio(dst,PCI_FIX_ADDR(src),n)
+ #endif /* !CONFIG_EEH */
+ 
+-#ifdef CONFIG_PPC_INDIRECT_IO
+-#define DEF_PCI_HOOK(x)		x
++#ifdef CONFIG_PPC_INDIRECT_PIO
++#define DEF_PCI_HOOK_pio(x)	x
 +#else
-+			.def  = E1000E_INT_MODE_LEGACY,
++#define DEF_PCI_HOOK_pio(x)	NULL
 +#endif
- 			.arg  = { .r = { .min = MIN_INTMODE,
- 					 .max = MAX_INTMODE } }
- 		};
++
++#ifdef CONFIG_PPC_INDIRECT_MMIO
++#define DEF_PCI_HOOK_mem(x)	x
+ #else
+-#define DEF_PCI_HOOK(x)		NULL
++#define DEF_PCI_HOOK_mem(x)	NULL
+ #endif
+ 
+ /* Structure containing all the hooks */
+@@ -504,7 +510,7 @@ extern struct ppc_pci_io {
+ #define DEF_PCI_AC_RET(name, ret, at, al, space, aa)		\
+ static inline ret name at					\
+ {								\
+-	if (DEF_PCI_HOOK(ppc_pci_io.name) != NULL)		\
++	if (DEF_PCI_HOOK_##space(ppc_pci_io.name) != NULL)	\
+ 		return ppc_pci_io.name al;			\
+ 	return __do_##name al;					\
+ }
+@@ -512,7 +518,7 @@ static inline ret name at					\
+ #define DEF_PCI_AC_NORET(name, at, al, space, aa)		\
+ static inline void name at					\
+ {								\
+-	if (DEF_PCI_HOOK(ppc_pci_io.name) != NULL)		\
++	if (DEF_PCI_HOOK_##space(ppc_pci_io.name) != NULL)		\
+ 		ppc_pci_io.name al;				\
+ 	else							\
+ 		__do_##name al;					\
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 59eeb77..34e34ba 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -154,11 +154,17 @@ config PPC_P7_NAP
+ config PPC_INDIRECT_IO
+ 	bool
+ 	select GENERIC_IOMAP
+-	default n
++
++config PPC_INDIRECT_PIO
++	bool
++	select PPC_INDIRECT_IO
++
++config PPC_INDIRECT_MMIO
++	bool
++	select PPC_INDIRECT_IO
+ 
+ config GENERIC_IOMAP
+ 	bool
+-	default n
+ 
+ source "drivers/cpufreq/Kconfig"
+ 
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 81239eb..3c7f1de 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -6,7 +6,8 @@ config PPC_CELL_COMMON
+ 	bool
+ 	select PPC_CELL
+ 	select PPC_DCR_MMIO
+-	select PPC_INDIRECT_IO
++	select PPC_INDIRECT_PIO
++	select PPC_INDIRECT_MMIO
+ 	select PPC_NATIVE
+ 	select PPC_RTAS
+ 	select IRQ_EDGE_EOI_HANDLER
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index e5bc9f7..ea1d362 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -1,7 +1,8 @@
+ config PPC_ISERIES
+ 	bool "IBM Legacy iSeries"
+ 	depends on PPC64 && PPC_BOOK3S
+-	select PPC_INDIRECT_IO
++	select PPC_INDIRECT_PIO
++	select PPC_INDIRECT_MMIO
+ 	select PPC_PCI_CHOICE if EXPERT
+ 
+ menu "iSeries device drivers"
 -- 
-1.7.3
+1.7.1
