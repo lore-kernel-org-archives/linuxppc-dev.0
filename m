@@ -1,17 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84D38B6F18
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2011 21:07:13 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p3CB78ul023456
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2011 06:07:09 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: disable Suspend support if SMP enabled
-Date: Tue, 12 Apr 2011 06:07:08 -0500
-Message-Id: <1302606428-20227-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 0133CB6F2B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Apr 2011 21:30:44 +1000 (EST)
+Date: Tue, 12 Apr 2011 13:30:34 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
+Message-ID: <20110412113033.GA16649@iram.es>
+References: <20110404235259.GA30132@iram.es>
+	<20110406084101.GB13963@pengutronix.de>
+	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
+	<20110406204327.GA11148@iram.es>
+	<1302185075.24704.143.camel@thor.local>
+	<20110411133128.GA24344@iram.es>
+	<1302535963.24704.268.camel@thor.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1302535963.24704.268.camel@thor.local>
+Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
+	dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Dave Airlie <airlied@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +31,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We currently dont have CPU Hotplug support working on 85xx so we need to
-disable Suspsend support as it will force enabling of CPU Hotplug.
+	Hi Micel,
 
-arch/powerpc/kernel/built-in.o: In function `cpu_die': arch/powerpc/kernel/smp.c:702: undefined reference to `start_secondary_resume'
-make: *** [.tmp_vmlinux1] Error 1
+On Mon, Apr 11, 2011 at 05:32:43PM +0200, Michel Dänzer wrote:
+> [ Adding the dri-devel list ]
+> 
+> Have you ruled out any MSI related problems? I think the IRQ not working
+> could explain the symptoms...
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Booting with MSI disabled does not change anything. Actually on this
+machine the Ethernet (tigon3) uses MSI and everything is fine. OTOH,
+on my home PC (dual code Athlon64 4 1/2 years old), MSI has never worked.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b6ff882..8f4d50b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -209,7 +209,7 @@ config ARCH_HIBERNATION_POSSIBLE
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
--		   PPC_85xx || PPC_86xx || PPC_PSERIES || 44x || 40x
-+		   (PPC_85xx && !SMP) || PPC_86xx || PPC_PSERIES || 44x || 40x
- 
- config PPC_DCR_NATIVE
- 	bool
--- 
-1.7.3.4
+> Make sure this line changes to 'WB disabled' with no_wb=1. There's a
+> writeback endianness bug with modeset=1, see
+> http://lists.freedesktop.org/archives/dri-devel/2011-April/009960.html .
+> 
+
+With no_wb=1 the driver goes a bit further but the X server ends
+up in an infinite ioctl loop and the logs are: 
+
+kernel: [drm] radeon kernel modesetting enabled.
+kernel: checking generic (c0000000 140000) vs hw (c0000000 10000000)
+kernel: fb: conflicting fb hw usage radeondrmfb vs OFfb vga,Displa - removing generic driver
+kernel: [drm] initializing kernel modesetting (RV530 0x1002:0x71C7).
+kernel: radeon 0000:f1:00.0: Using 64-bit DMA iommu bypass
+kernel: [drm] register mmio base: 0xE8000000
+kernel: [drm] register mmio size: 65536
+kernel: radeon 0000:f1:00.0: Invalid ROM contents
+kernel: ATOM BIOS: X1650PRO
+kernel: [drm] Generation 2 PCI interface, using max accessible memory
+kernel: radeon 0000:f1:00.0: VRAM: 512M 0x0000000000000000 - 0x000000001FFFFFFF (512M used)
+kernel: radeon 0000:f1:00.0: GTT: 512M 0x0000000020000000 - 0x000000003FFFFFFF
+kernel: [drm] Supports vblank timestamp caching Rev 1 (10.10.2010).
+kernel: [drm] Driver supports precise vblank timestamp query.
+kernel: [drm] radeon: irq initialized.
+kernel: [drm] Detected VRAM RAM=512M, BAR=256M
+kernel: [drm] RAM width 128bits DDR
+kernel: [TTM] Zone  kernel: Available graphics memory: 1003018 kiB.
+kernel: [TTM] Initializing pool allocator.
+kernel: [drm] radeon: 512M of VRAM memory ready
+kernel: [drm] radeon: 512M of GTT memory ready.
+kernel: [drm] GART: num cpu pages 131072, num gpu pages 131072
+kernel: [drm] radeon: 1 quad pipes, 2 z pipes initialized.
+kernel: [drm] PCIE GART of 512M enabled (table at 0x00040000).
+kernel: radeon 0000:f1:00.0: WB disabled
+kernel: [drm] Loading R500 Microcode
+kernel: [drm] radeon: ring at 0x0000000020001000
+kernel: [drm] ring test succeeded in 6 usecs
+kernel: [drm] radeon: ib pool ready.
+kernel: [drm] ib test succeeded in 0 usecs
+kernel: [drm] Radeon Display Connectors
+kernel: [drm] Connector 0:
+kernel: [drm]   DVI-I
+kernel: [drm]   HPD1
+kernel: [drm]   DDC: 0x7e40 0x7e40 0x7e44 0x7e44 0x7e48 0x7e48 0x7e4c 0x7e4c
+kernel: [drm]   Encoders:
+kernel: [drm]     CRT1: INTERNAL_KLDSCP_DAC1
+kernel: [drm]     DFP1: INTERNAL_KLDSCP_TMDS1
+kernel: [drm] Connector 1:
+kernel: [drm]   S-video
+kernel: [drm]   Encoders:
+kernel: [drm]     TV1: INTERNAL_KLDSCP_DAC2
+kernel: [drm] Connector 2:
+kernel: [drm]   DVI-I
+kernel: [drm]   HPD2
+kernel: [drm]   DDC: 0x7e50 0x7e50 0x7e54 0x7e54 0x7e58 0x7e58 0x7e5c 0x7e5c
+kernel: [drm]   Encoders:
+kernel: [drm]     CRT2: INTERNAL_KLDSCP_DAC2
+kernel: [drm]     DFP3: INTERNAL_LVTM1
+kernel: [drm] Possible lm63 thermal controller at 0x4c
+kernel: [drm] fb mappable at 0xC00C0000
+kernel: [drm] vram apper at 0xC0000000
+kernel: [drm] size 9216000
+kernel: [drm] fb depth is 24
+kernel: [drm]    pitch is 7680
+kernel: checking generic (c0000000 140000) vs hw (c0000000 10000000)
+kernel: fb: conflicting fb hw usage radeondrmfb vs OFfb vga,Displa - removing generic driver
+kernel: fb1: radeondrmfb frame buffer device
+kernel: drm: registered panic notifier
+kernel: [drm] Initialized radeon 2.8.0 20080528 for 0000:f1:00.0 on minor 0
+kernel: [drm:drm_mode_getfb] *ERROR* invalid framebuffer id
+
+There is only one display connected and it is to the first DVI connector, BTW.
+
+	Regards,
+	Gabriel
