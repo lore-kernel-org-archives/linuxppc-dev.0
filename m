@@ -3,14 +3,15 @@ Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
 	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3ED2B7103
+	by ozlabs.org (Postfix) with ESMTPS id 51125B6F14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Apr 2011 10:15:55 +1000 (EST)
-Date: Mon, 11 Apr 2011 19:15:28 -0500
+	Tue, 12 Apr 2011 10:16:15 +1000 (EST)
+Date: Mon, 11 Apr 2011 19:15:24 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4] crypto: caam - remove duplicate dev_err
-Message-ID: <20110411191528.36e41831.kim.phillips@freescale.com>
+Subject: [PATCH 3/4] crypto: caam - remove WAIT-FOR-COMPLETIONs from
+	givencrypt descriptor
+Message-ID: <20110411191524.c825a8bf.kim.phillips@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Cc: Steve Cornelius <sec@pobox.com>, Herbert Xu <herbert@gondor.apana.org.au>
@@ -23,25 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-keep the hex error value reporting version (a) to be consistent
-with decrypt_done(), and (b) to keep our hardware guys happy.
+remains from descriptor debugging - not required for normal operation.
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
- drivers/crypto/caam/caamalg.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/crypto/caam/caamalg.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/crypto/caam/caamalg.c b/drivers/crypto/caam/caamalg.c
-index 8eb84d3..245cfe4 100644
+index 20e1215..8eb84d3 100644
 --- a/drivers/crypto/caam/caamalg.c
 +++ b/drivers/crypto/caam/caamalg.c
-@@ -418,7 +418,6 @@ static void ipsec_esp_encrypt_done(struct device *jrdev, u32 *desc, u32 err,
- 	if (err) {
- 		char tmp[256];
+@@ -828,15 +828,13 @@ static int aead_authenc_givencrypt(struct aead_givcrypt_request *req)
+ 	append_cmd(desc, CMD_LOAD | DISABLE_AUTO_INFO_FIFO);
  
--		dev_err(jrdev, "%s\n", caam_jr_strstatus(tmp, err));
- 		dev_err(jrdev, "%08x: %s\n", err, caam_jr_strstatus(tmp, err));
- 	}
+ 	/* MOVE DECO Alignment -> C1 Context 16 bytes */
+-	append_move(desc, MOVE_WAITCOMP | MOVE_SRC_INFIFO |
+-		    MOVE_DEST_CLASS1CTX | ivsize);
++	append_move(desc, MOVE_SRC_INFIFO | MOVE_DEST_CLASS1CTX | ivsize);
+ 
+ 	/* re-enable info fifo entries */
+ 	append_cmd(desc, CMD_LOAD | ENABLE_AUTO_INFO_FIFO);
+ 
+ 	/* MOVE C1 Context -> OFIFO 16 bytes */
+-	append_move(desc, MOVE_WAITCOMP | MOVE_SRC_CLASS1CTX |
+-		    MOVE_DEST_OUTFIFO | ivsize);
++	append_move(desc, MOVE_SRC_CLASS1CTX | MOVE_DEST_OUTFIFO | ivsize);
+ 
+ 	append_fifo_store(desc, iv_dma, ivsize, FIFOST_TYPE_MESSAGE_DATA);
  
 -- 
 1.7.4.3.dirty
