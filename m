@@ -1,20 +1,29 @@
-Return-Path: <JOFT@gmx.de>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
-	by ozlabs.org (Postfix) with SMTP id AF985B6F35
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id 6AD481007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Apr 2011 03:03:16 +1000 (EST)
-Message-ID: <4DA485CD.6060604@gmx.de>
-Date: Tue, 12 Apr 2011 19:03:09 +0200
-From: =?ISO-8859-1?Q?Joachim_F=F6rster?= <JOFT@gmx.de>
-MIME-Version: 1.0
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Where is CONFIG_BOOT_LOAD ?
-References: <201104081128.37906.dargaud@lpsc.in2p3.fr>	<1302255741.5359.7.camel@flotop>
-	<201104081458.43831.dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201104081458.43831.dargaud@lpsc.in2p3.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org,
-	=?ISO-8859-1?Q?Florian_V=F6gel?= <fvoegel@partner.ime-actia.de>
+	Wed, 13 Apr 2011 03:29:40 +1000 (EST)
+Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 12 Apr 2011 19:29:22 +0200
+In-Reply-To: <20110412120055.GA7995@iram.es>
+References: <20110404235259.GA30132@iram.es>
+	<20110406084101.GB13963@pengutronix.de>
+	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
+	<20110406204327.GA11148@iram.es>
+	<1302185075.24704.143.camel@thor.local>
+	<20110411133128.GA24344@iram.es>
+	<1302535963.24704.268.camel@thor.local>
+	<20110412113033.GA16649@iram.es> <1302608770.27054.36.camel@thor.local>
+	<20110412120055.GA7995@iram.es>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1302629362.15520.25.camel@thor.local>
+Mime-Version: 1.0
+Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
+	dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Dave Airlie <airlied@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/08/2011 02:58 PM, Guillaume Dargaud wrote:
->> Isn't that blackfin specific?
->
-> So how do you change the loading address of the PowerPC kernel from its default 0x400000 address ?
+On Die, 2011-04-12 at 14:00 +0200, Gabriel Paubert wrote:
+> On Tue, Apr 12, 2011 at 01:46:10PM +0200, Michel D=C3=A4nzer wrote:
+> > >=20
+> > > With no_wb=3D1 the driver goes a bit further but the X server ends
+> > > up in an infinite ioctl loop and the logs are:=20
+> >=20
+> > Which ioctl does it loop on? Please provide the Xorg.0.log file as well=
+.
+>=20
+> From memory, the code was 0x64, which is DRM_RADEON_GEM_WAIT_IDLE.
 
-Note that the default 0x400... is the link address of the zImage wrapper 
-rather than the one of THE kernel.
+Note that it's normal for this ioctl to be called every time before the
+GPU accessible pixmap memory is accessed by the CPU. Unless the ioctl
+always returns an error, this may not indicate a problem on its own.=20
 
-Currently the link address seems to be hard-coded into
-arch/powerpc/boot/wrapper
-(a shell script). Since long ago I'm wondering why the maintainers did 
-that. But I guess there is a reason, because it wasn't that way in the 
-old arch/ppc days ;-) ...
 
-Is configuring the zImage-piggy-back-loader through menuconfig & co evil?
+> The Xorg.0.log from the previous boot is attached.
 
-   Joachim
+I don't see any obvious problems in it. Can you describe the symptoms of
+the problem you're having with X a bit more?
+
+One thing I notice is that the X server/driver are rather oldish. Maybe
+you can try newer versions from testing, sid or even experimental to see
+if that makes any difference.=20
+
+
+--=20
+Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
