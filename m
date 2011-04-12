@@ -1,24 +1,22 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4CCDFB6F0C
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C1E3EB6F29
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Apr 2011 04:59:09 +1000 (EST)
-Received: by pzk26 with SMTP id 26so2805118pzk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Apr 2011 11:59:06 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <19876.35918.322649.256455@pilspetsen.it.uu.se>
-References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
-Date: Tue, 12 Apr 2011 13:59:05 -0500
-Message-ID: <BANLkTi=usNOXYPJngDJ7XJg3Fij+C26ZCA@mail.gmail.com>
-Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
-From: kevin diggs <diggskevin38@gmail.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Wed, 13 Apr 2011 07:28:05 +1000 (EST)
+Date: Tue, 12 Apr 2011 14:27:27 -0700 (PDT)
+Message-Id: <20110412.142727.39177723.davem@davemloft.net>
+To: prabhakar@freescale.com
+Subject: Re: [PATCH] driver/e1000e: Fix default interrupt mode select
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1302584163-22318-1-git-send-email-prabhakar@freescale.com>
+References: <1302584163-22318-1-git-send-email-prabhakar@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: meet2prabhu@gmail.com, auke-jan.h.kok@intel.com, linux.nics@intel.com,
+	b24347@freescale.com, e1000-devel@lists.sourceforge.net,
+	netdev@vger.kernel.org, jeffrey.t.kirsher@intel.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,8 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+Date: Tue, 12 Apr 2011 10:26:03 +0530
 
-Uh Oh. Are we gettin' booted (no pun intended)?
+> From: Prabhakar <prabhakar@freescale.com>
+> 
+> The Intel e1000 device driver defaults to MSI interrupt mode, even if MSI
+> support is not enabled
+> 
+> Signed-off-by: Jin Qing <b24347@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> ---
+>  Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
+> 
+>  added  netdev mail-list and e1000 mail-list & maintainer
 
-kevin
+Intel folks, you got this?
