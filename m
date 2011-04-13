@@ -1,25 +1,34 @@
-Return-Path: <andyqos@ukfsn.org>
-Received: from mail.ukfsn.org (mail.ukfsn.org [77.75.108.10])
-	by ozlabs.org (Postfix) with ESMTP id C28261007D5
+Return-Path: <nacc@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E9CC51007D8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 06:29:02 +1000 (EST)
-Message-ID: <4DA60126.6030003@ukfsn.org>
-Date: Wed, 13 Apr 2011 21:01:42 +0100
-From: Andy Furniss <andyqos@ukfsn.org>
-MIME-Version: 1.0
-To: =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@daenzer.net>
-Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-References: <20110406204327.GA11148@iram.es>	<1302185075.24704.143.camel@thor.local>	<20110411133128.GA24344@iram.es>	<1302535963.24704.268.camel@thor.local>	<20110412113033.GA16649@iram.es>	<1302608770.27054.36.camel@thor.local>
-	<20110412120055.GA7995@iram.es>	<1302629362.15520.25.camel@thor.local>
-	<20110413075943.GA27996@iram.es>	<1302696736.15520.63.camel@thor.local>
-	<20110413122751.GA21050@iram.es>
-	<1302704124.15520.72.camel@thor.local>
-In-Reply-To: <1302704124.15520.72.camel@thor.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-	dri-devel@lists.freedesktop.org, Greg@freedesktop.org,
-	=?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= <u.kleine-koenig@pengutronix.de>,
-	linuxppc-dev@lists.ozlabs.org
+	Thu, 14 Apr 2011 08:33:16 +1000 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3DMMgJ2032447
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 18:22:42 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7FAA86E803C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Apr 2011 18:33:13 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3DMXDUe202856
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 18:33:13 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p3DMXCc1029743
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 18:33:13 -0400
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2] powerpc: align DTL buffer to AMS boundary
+Date: Wed, 13 Apr 2011 15:33:08 -0700
+Message-Id: <1302733988-23037-1-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1302706373-11653-1-git-send-email-nacc@us.ibm.com>
+References: <1302706373-11653-1-git-send-email-nacc@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michel Dänzer wrote:
+PAPR specifies that DTL buffers can not cross AMS environments (aka CMO
+in the PAPR) and can not cross a memory entitlement granule boundary
+(4k). This is found in section 14.11.3.2 H_REGISTER_VPA of the PAPR.
+kmalloc does not guarantee an alignment of the allocation, though,
+beyond 8 bytes (at least in my understanding). Over-allocate and align
+the resulting address. Tested both with and without AMS on a p7
+partition.
 
->>> That does sound like the GPU locks up. Do you get any messages in dmesg
->>> about lockups and attempts to reset the GPU at any time?
->>
->> No.
->
-> Hmm, I guess the constant SIGALRMs might prevent the lockup detection
-> from kicking in... Maybe you can try starting the X server with
-> -dumbSched to see if that gets things along any further, but in the end
-> there's probably no way around figuring out what causes the lockup and
-> fixing that anyway.
+---
+Change from v1: removed extraneous #include.
 
-I have an old AGP box that locks with 600g + agpgart - It used to give 
-GPU lockup to dmesg/log, but (I only test it occasionally) it doesn't 
-anymore. I can still sysrq OK.
+Note, I initially put this in a firmware check if-block, but we have
+also seen some issues with alignment with non-AMS partitions. The wasted
+memory is unfortunate, though.
 
-I wonder if something changed in recent months in the drm/whatever code 
-that has changed/blocked the logging.
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+
+ arch/powerpc/platforms/pseries/setup.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 0007241..a67be48 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -293,14 +293,15 @@ static int alloc_dispatch_logs(void)
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		pp = &paca[cpu];
+-		dtl = kmalloc_node(DISPATCH_LOG_BYTES, GFP_KERNEL,
+-				   cpu_to_node(cpu));
++		dtl = kmalloc_node(DISPATCH_LOG_BYTES + DISPATCH_LOG_BYTES - 1,
++				   GFP_KERNEL, cpu_to_node(cpu));
+ 		if (!dtl) {
+ 			pr_warn("Failed to allocate dispatch trace log for cpu %d\n",
+ 				cpu);
+ 			pr_warn("Stolen time statistics will be unreliable\n");
+ 			break;
+ 		}
++		dtl = PTR_ALIGN(dtl, DISPATCH_LOG_BYTES);
+ 
+ 		pp->dtl_ridx = 0;
+ 		pp->dispatch_log = dtl;
+-- 
+1.7.4.1
