@@ -1,31 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mikpe@it.uu.se>
+Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3592B6F7E
+	by ozlabs.org (Postfix) with ESMTPS id 905CDB70DC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Apr 2011 18:16:39 +1000 (EST)
-Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20110413075943.GA27996@iram.es>
-References: <20110406084101.GB13963@pengutronix.de>
-	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
-	<20110406204327.GA11148@iram.es>
-	<1302185075.24704.143.camel@thor.local>
-	<20110411133128.GA24344@iram.es>
-	<1302535963.24704.268.camel@thor.local>
-	<20110412113033.GA16649@iram.es> <1302608770.27054.36.camel@thor.local>
-	<20110412120055.GA7995@iram.es> <1302629362.15520.25.camel@thor.local>
-	<20110413075943.GA27996@iram.es>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Apr 2011 18:16:13 +1000
-Message-ID: <1302682573.28876.78.camel@pasglop>
-Mime-Version: 1.0
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-	dri-devel@lists.freedesktop.org,
-	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Dave Airlie <airlied@gmail.com>, linuxppc-dev@lists.ozlabs.org
+	Wed, 13 Apr 2011 18:16:54 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <19877.23529.745123.819112@pilspetsen.it.uu.se>
+Date: Wed, 13 Apr 2011 10:16:41 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
+In-Reply-To: <1302652502.28876.76.camel@pasglop>
+References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
+	<1302646173.28876.53.camel@pasglop>
+	<1302652502.28876.76.camel@pasglop>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,18 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-04-13 at 09:59 +0200, Gabriel Paubert wrote:
-> 
-> Well, X is dead, or rather in an infinite ioctl loop as described
-> above.
-> IIRC, the display enters a power-down mode and there is nothing to
-> see.
+Benjamin Herrenschmidt writes:
+ > 
+ > > > Finally I tried using g5_defconfig with 2.6.39-rc3.  First boot
+ > > > it did get to /sbin/init, but udev init took much longer than
+ > > > normal and threw errors.  After a warm reboot the same kernel
+ > > > hung as usual, this time before framebuffer init.
+ > > > 
+ > > > 2.6.38 works just fine.
+ > > 
+ > > Hrm, that must be new, I remember testing something around -rc1 on a
+ > > similar machine and it worked fine. I'll see if I can find something
+ > > out.
+ > 
+ > Ok so on a PowerMac7,3 here (dual 2.5Ghz and mostly same HW or at least
+ > very similar) I can't reproduce your problem with a g5_defconfig.
+ > 
+ > Your config doesn't work well for me (I don't do modules, I netboot),
+ > but after adding a few things to it, it seems to work fine as well. I
+ > added radeonfb and the radeon DRM (not KMS) and I added eventfd, timerfd
+ > and input events.
+ > 
+ > So I'm afraid I'm going to need you to bisect that one to find out what
+ > exact change caused the breakage for you.
 
-So basically the card crashed. There's about an infinite amount of
-reasons why radeons do so, sometimes it has to do with them not liking
-what you ate that day...
+Thanks for checking.  I'll try a bisect later today.
 
-The only thing I can see that could be of use would be a bisect
-
-Cheers,
-Ben.
+/Mikael
