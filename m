@@ -1,32 +1,27 @@
-Return-Path: <schwab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 578B9B6F4F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Apr 2011 18:59:26 +1000 (EST)
-From: Andreas Schwab <schwab@redhat.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: small git lesson [Was: Re: Revert
-	737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?]
-References: <20110404235259.GA30132@iram.es>
-	<20110406084101.GB13963@pengutronix.de>
-	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
-	<20110406204327.GA11148@iram.es>
-	<1302185075.24704.143.camel@thor.local>
-	<20110411133128.GA24344@iram.es>
-	<1302535963.24704.268.camel@thor.local>
-	<20110412113033.GA16649@iram.es>
-	<1302608770.27054.36.camel@thor.local> <20110413080204.GA3871@iram.es>
-	<20110413081246.GK18850__3180.67204575545$1302682420$gmane$org@pengutronix.de>
-Date: Wed, 13 Apr 2011 10:59:14 +0200
-In-Reply-To: <20110413081246.GK18850__3180.67204575545$1302682420$gmane$org@pengutronix.de>
-	("Uwe =?utf-8?Q?Kleine-K=C3=B6nig=22's?= message of "Wed, 13 Apr 2011
-	10:12:46 +0200")
-Message-ID: <m339lm8r31.fsf@redhat.com>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 11AF7B6F6F
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2011 19:22:18 +1000 (EST)
+Received: by pwj3 with SMTP id 3so299659pwj.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2011 02:22:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
-	Dave Airlie <airlied@gmail.com>
+In-Reply-To: <4DA3DAF6.9090909@embedded-sol.com>
+References: <071A08F2C6A57E4E94D980ECA553F87417069A@039-SN1MPN1-004.039d.mgd.msft.net>
+	<45903308677306428B6EE7E6FF5A520410B713@039-SN1MPN1-004.039d.mgd.msft.net>
+	<4DA3DAF6.9090909@embedded-sol.com>
+Date: Wed, 13 Apr 2011 11:22:14 +0200
+Message-ID: <BANLkTimicG2n=h0pX0JpLZffM0q+-P6o1Q@mail.gmail.com>
+Subject: Re: Problem with mini-PCI-E slot on P2020RDB
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Felix Radensky <felix@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Gupta Maneesh-B18878 <B18878@freescale.com>,
+	Aggrwal Poonam-B10812 <B10812@freescale.com>,
+	Kushwaha Prabhakar-B32579 <B32579@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,21 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> writes:
+Felix,
 
-> $ git name-rev --refs=3Drefs/tags/v2.6\* 69a07f0b117a40fcc1a479358d8e1f41=
-793617f2
-> 69a07f0b117a40fcc1a479358d8e1f41793617f2 tags/v2.6.39-rc2~3^2~43^2~4
+On Tue, Apr 12, 2011 at 6:54 AM, Felix Radensky <felix@embedded-sol.com> wrote:
+> On 04/12/2011 07:05 AM, Aggrwal Poonam-B10812 wrote:
+>> As such there is no hardware fix related to this issue between RevC to
+>> RevD. The solution was a software patch to resolve the issue related to
+>> IRQ0.
 >
-> so it was introduced just before -rc2.
+> Are you sure ? Please take a look at Freescale document titled
+> "P1020E/P2020E RDB System Errata".
+> There's errata CE10, IRQ0 held low. It is fixed in Rev D. Vivek Mahajan, who
+> looked at the issue back
+> in 2009, estimated that problem can be related to missing pull-up on IRQ0.
+> This is exactly what is
+> fixed in Rev D.
+>
 
-$ git tag --contains 69a07f0b117a40fcc1a479358d8e1f41793617f2
-v2.6.39-rc1
-v2.6.39-rc2
+That's my understanding as well.
 
-Andreas.
+Check if R420 and R423 are populated. These are the required pull-ups.
+On Rev D they are populated. You might be able to add them yourself.
 
---=20
-Andreas Schwab, schwab@redhat.com
-GPG Key fingerprint =3D D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
-"And now for something completely different."
+Even if you have an Rev A-C PCB, this fix can already be applied; it
+was on my board! (the bottom of the board mentions the schematic
+revision)
+
+The resistors have a silkscreen designator block called X, the
+resistors are situated to the left and bottom of the silkscreen X.
+IIRC, between the flash and Px020 part.
+
+On the left side of R420 (or R423) I measured the block wave from the
+RTC, which fires the 32kHz interrupt rate on IRQ0. This fixed by the
+u-boot patch.
+
+Regards,
+
+Leon.
