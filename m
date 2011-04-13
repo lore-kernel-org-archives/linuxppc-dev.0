@@ -1,20 +1,35 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+Return-Path: <nacc@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 71FD0B6FD4
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E0325B70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 01:05:31 +1000 (EST)
-In-Reply-To: <201104131632.21350.ml@stefan-roese.de>
-References: <201104131632.21350.ml@stefan-roese.de>
-Subject: Re: FTrace on MPC8xx
-To: Stefan Roese <ml@stefan-roese.de>
-Message-ID: <OF32A80193.EF3E454E-ONC1257871.005204A6-C1257871.00523F24@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 13 Apr 2011 16:58:21 +0200
+	Thu, 14 Apr 2011 01:15:26 +1000 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3DEsJpM012202
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 10:54:21 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 704DA38C8039
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Apr 2011 11:15:13 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3DFFMoT202174
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 11:15:22 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p3DFFMMG025030
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 11:15:22 -0400
+Date: Wed, 13 Apr 2011 08:15:09 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH] powerpc: align DTL buffer to AMS boundary
+Message-ID: <20110413151509.GA27602@us.ibm.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8ACF4@saturn3.aculab.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ACF4@saturn3.aculab.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stefan Roese <ml@stefan-roese.de> wrote on 2011/04/13 16:32:21:
->
-> Hi,
->
-> I noticed that ftrace doesn't seem to work on MPC8xx. I'm trying to use it on
-> an MPC855T board, but ftrace oopses upon startup:
->
-> [    0.028785] ftrace: allocating 10312 entries in 31 pages
-> [    0.038594] ------------[ cut here ]------------
-> [    0.038760] WARNING: at kernel/trace/ftrace.c:1014
-> [    0.038889] Modules linked in:
-> [    0.039062] NIP: c00666a0 LR: c006782c CTR: 00000001
-> [    0.039249] REGS: c0381e60 TRAP: 0700   Not tainted  (2.6.38-default+)
-> [    0.039417] MSR: 00021032 <ME,CE,IR,DR>  CR: 53009393  XER: a000af7f
-> [    0.039856] TASK = c0360500[0] 'swapper' THREAD: c0380000
-> [    0.040001] GPR00: 00000001 c0381f10 c0360500 ffffffff c02962c8 00000000
-> c02962c4 00000000
-> [    0.040487] GPR08: 1de1a3e3 00000000 000258e3 c0381f40 93009399 10091a60
-> 03fff800 0040055c
-> [    0.040977] GPR16: 00000001 00000001 ffffffff 007fff00 03ff9fb0 00000000
-> 00000000 c0384080
-> [    0.041459] GPR24: c000f234 00000000 024acd00 00009032 c02962c8 c384553c
-> c02962c8 c0381f10
-> [    0.042054] NIP [c00666a0] ftrace_bug+0x13c/0x1c4
-> [    0.042268] LR [c006782c] ftrace_process_locs+0x1b4/0x2b0
-> [    0.042405] Call Trace:
-> [    0.042592] [c0381f10] [c006fce8] ftrace_now+0x30/0x78 (unreliable)
-> [    0.042889] [c0381f40] [c006782c] ftrace_process_locs+0x1b4/0x2b0
-> [    0.043182] [c0381f70] [c0339944] ftrace_init+0x1e8/0x21c
-> [    0.043443] [c0381fb0] [c0333964] start_kernel+0x284/0x2a0
-> [    0.043704] [c0381ff0] [c0002224] start_here+0x44/0xa8
-> [    0.043869] Instruction dump:
-> [    0.044013] 2f9e0003 7f1ed800 3bbd0001 7f44d378 409dffc8 3c60c02f 3863101c
-> 4bfbbbb9
-> [    0.044508] 48000080 3d20c04b 8929bc82 69200001 <0f000000> 2f890000
-> 40be0010 38000001
-> [    0.045206] ---[ end trace 31fd0ba7d8756001 ]---
-> [    0.045349] ftrace faulted on writing [<c02962c8>] dns_query+0x8/0x278
-> ...
->
->
-> This is on a 2.6.38 kernel (2.6.32 fails too). Debugging shows that
-> __copy_tofrom_user() fails with return code 4 (called via
-> ftrace_modify_code()).
->
-> Before digging deeper: Has anybody tried/tested ftrace on MPC8xx? Any ideas
-> what going wrong here?
+On 13.04.2011 [15:59:44 +0100], David Laight wrote:
+> > From: 
+> > linuxppc-dev-bounces+david.laight=aculab.com@lists.ozlabs.org 
+> > [mailto:linuxppc-dev-bounces+david.laight=aculab.com@lists.ozl
+> > abs.org] On Behalf Of Nishanth Aravamudan
+> > Sent: 13 April 2011 15:53
+> > To: Ben Herrenschmidt
+> > Cc: linuxppc-dev@ozlabs.org; Paul Mackerras; Anton Blanchard
+> > Subject: [PATCH] powerpc: align DTL buffer to AMS boundary
+> > 
+> > PAPR specifies that DTL buffers can not cross AMS environments (aka
+> CMO
+> > in the PAPR) and can not cross a memory entitlement granule boundary
+> > (4k)....
+> 
+> How big is the buffer being allocated?
+> If it is much less than 4k then it might be worth allocating
+> a buffer of the correct size, and only if that crosses a 4k boundary
+> allocate the larger buffer.
 
-Just an idea, remove the usage of dcbX insn, these has been problematic before.
-How big was the size to copy_tofrom_user()? Did it mange to copy any bytes?
+Currently, DISPATCH_LOG_BYTES is 4k (which I assume was actually in
+deference to this requirement).
 
- Jocke
+> Also, if the buffer is ever freed, the actual base address is needed
+> for the free.
+
+I didn't see any free patch for this sequence of code -- which make
+sense as this allocation occurs under a for_each_possible_cpu loop.
+
+Thanks for the feedback,
+Nish
