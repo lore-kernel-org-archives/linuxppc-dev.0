@@ -1,13 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <732a8ac3a24023f021908d03bd84b76638f381f1.1302676893.git.michael@ellerman.id.au>
-In-Reply-To: <34e3e03a96888bc8c20013aa65712123ccf94649.1302676893.git.michael@ellerman.id.au>
-References: <34e3e03a96888bc8c20013aa65712123ccf94649.1302676893.git.michael@ellerman.id.au>
-Subject: [PATCH 2/2] powerpc: Add an ePAPR compliant boot wrapper
-Date: Wed, 13 Apr 2011 16:38:56 +1000 (EST)
-From: michael@ozlabs.org (Michael Ellerman)
-Cc: Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id E27A0B6F6F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Apr 2011 17:59:52 +1000 (EST)
+Date: Wed, 13 Apr 2011 09:59:43 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
+Message-ID: <20110413075943.GA27996@iram.es>
+References: <20110406084101.GB13963@pengutronix.de>
+	<BANLkTimAJ-s_3A3L1YGfoFLmd4bpu2jWVA@mail.gmail.com>
+	<20110406204327.GA11148@iram.es>
+	<1302185075.24704.143.camel@thor.local>
+	<20110411133128.GA24344@iram.es>
+	<1302535963.24704.268.camel@thor.local>
+	<20110412113033.GA16649@iram.es>
+	<1302608770.27054.36.camel@thor.local>
+	<20110412120055.GA7995@iram.es>
+	<1302629362.15520.25.camel@thor.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1302629362.15520.25.camel@thor.local>
+Cc: Greg KH <greg@kroah.com>, linuxppc-dev@lists.ozlabs.org,
+	dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Dave Airlie <airlied@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,157 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a first cut at making bootwrapper code which will
-produce a zImage compliant with the requirements set down
-by ePAPR.
+On Tue, Apr 12, 2011 at 07:29:22PM +0200, Michel Dänzer wrote:
+> On Die, 2011-04-12 at 14:00 +0200, Gabriel Paubert wrote:
+> > On Tue, Apr 12, 2011 at 01:46:10PM +0200, Michel Dänzer wrote:
+> > > > 
+> > > > With no_wb=1 the driver goes a bit further but the X server ends
+> > > > up in an infinite ioctl loop and the logs are: 
+> > > 
+> > > Which ioctl does it loop on? Please provide the Xorg.0.log file as well.
+> > 
+> > From memory, the code was 0x64, which is DRM_RADEON_GEM_WAIT_IDLE.
+> 
+> Note that it's normal for this ioctl to be called every time before the
+> GPU accessible pixmap memory is accessed by the CPU. Unless the ioctl
+> always returns an error, this may not indicate a problem on its own. 
 
-This is a very simple bootwrapper, taking the device tree
-blob supplied by the ePAPR boot program and passing it on
-to the kernel. It builds on the earlier patch to build a
-relocatable ET_DYN zImage to meet the other ePAPR image
-requirements.
+It seems to be an infinite loop, always returning EINTR because
+of regular SIGALRM delivery.
 
-For good measure we have some paranoid checks which will
-generate warnings if some of the ePAPR entry condition
-guarantees are not met.
+> 
+> 
+> > The Xorg.0.log from the previous boot is attached.
+> 
+> I don't see any obvious problems in it. Can you describe the symptoms of
+> the problem you're having with X a bit more?
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/Kconfig       |    6 ++++
- arch/powerpc/boot/Makefile |    4 ++-
- arch/powerpc/boot/epapr.c  |   69 ++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/wrapper  |    4 ++
- 4 files changed, 82 insertions(+), 1 deletions(-)
+Well, X is dead, or rather in an infinite ioctl loop as described  above.
+IIRC, the display enters a power-down mode and there is nothing to see.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b6ff882..2629c21 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -193,6 +193,12 @@ config SYS_SUPPORTS_APM_EMULATION
- 	default y if PMAC_APM_EMU
- 	bool
- 
-+config EPAPR_BOOT
-+	bool
-+	help
-+	  Used to allow a board to specify it wants an ePAPR compliant wrapper.
-+	default n
-+
- config DEFAULT_UIMAGE
- 	bool
- 	help
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 8917816..0e2a152 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -69,7 +69,8 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
- 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
- 		fsl-soc.c mpc8xx.c pq2.c ugecon.c
- src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
--		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
-+		cuboot-ebony.c cuboot-hotfoot.c epapr.c treeboot-ebony.c \
-+		prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
- 		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
-@@ -182,6 +183,7 @@ image-$(CONFIG_PPC_HOLLY)		+= dtbImage.holly
- image-$(CONFIG_PPC_PRPMC2800)		+= dtbImage.prpmc2800
- image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
-+image-$(CONFIG_EPAPR_BOOT)		+= zImage.epapr
- 
- #
- # Targets which embed a device tree blob
-diff --git a/arch/powerpc/boot/epapr.c b/arch/powerpc/boot/epapr.c
-new file mode 100644
-index 0000000..8642c34
---- /dev/null
-+++ b/arch/powerpc/boot/epapr.c
-@@ -0,0 +1,69 @@
-+/*
-+ * Bootwrapper for ePAPR compliant firmwares
-+ *
-+ * Copyright 2010 David Gibson <david@gibson.dropbear.id.au>, IBM Corporation.
-+ *
-+ * Based on earlier bootwrappers by:
-+ * (c) Benjamin Herrenschmidt <benh@kernel.crashing.org>, IBM Corp,\
-+ *   and
-+ * Scott Wood <scottwood@freescale.com>
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "stdio.h"
-+#include "planetcore.h"
-+#include "dcr.h"
-+#include "4xx.h"
-+#include "io.h"
-+#include <libfdt.h>
-+
-+BSS_STACK(4096);
-+
-+#define EPAPR_SMAGIC	0x65504150
-+#define EPAPR_EMAGIC	0x45504150
-+
-+static unsigned epapr_magic;
-+static unsigned long ima_size;
-+static unsigned long fdt_addr;
-+
-+static void platform_fixups(void)
-+{
-+	if ((epapr_magic != EPAPR_EMAGIC)
-+	    && (epapr_magic != EPAPR_SMAGIC))
-+		fatal("r6 contained 0x%08x instead of ePAPR magic number\n",
-+		      epapr_magic);
-+
-+	if (ima_size < (unsigned long)_end)
-+		printf("WARNING: Image loaded outside IMA!"
-+		       " (_end=%p, ima_size=0x%lx)\n", _end, ima_size);
-+	if (ima_size < fdt_addr)
-+		printf("WARNING: Device tree address is outside IMA!"
-+		       "(fdt_addr=0x%lx, ima_size=0x%lx)\n", fdt_addr,
-+		       ima_size);
-+	if (ima_size < fdt_addr + fdt_totalsize((void *)fdt_addr))
-+		printf("WARNING: Device tree extends outside IMA!"
-+		       " (fdt_addr=0x%lx, size=0x%x, ima_size=0x%lx\n",
-+		       fdt_addr, fdt_totalsize((void *)fdt_addr), ima_size);
-+}
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		   unsigned long r6, unsigned long r7)
-+{
-+	epapr_magic = r6;
-+	ima_size = r7;
-+	fdt_addr = r3;
-+
-+	/* FIXME: we should process reserve entries */
-+
-+	simple_alloc_init(_end, ima_size - (unsigned long)_end, 32, 64);
-+
-+	fdt_init((void *)fdt_addr);
-+
-+	serial_console_init();
-+	platform_ops.fixups = platform_fixups;
-+}
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index fef5278..dfa29cb 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -247,6 +247,10 @@ gamecube|wii)
- treeboot-iss4xx-mpic)
-     platformo="$object/treeboot-iss4xx.o"
-     ;;
-+epapr)
-+    link_address='0x20000000'
-+    pie=-pie
-+    ;;
- esac
- 
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
--- 
-1.7.1
+> 
+> One thing I notice is that the X server/driver are rather oldish. Maybe
+> you can try newer versions from testing, sid or even experimental to see
+> if that makes any difference.
+
+I lack time to do it until early May (being away for 2 weeks starting on 
+Friday and busy on urgent things). I'm indeed Debian stable (Squeeze),
+which is rather recent and the machine is about 2 1/2 years old.
+
+	Gabriel
