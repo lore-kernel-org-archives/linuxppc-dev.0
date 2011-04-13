@@ -1,27 +1,30 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 11AF7B6F6F
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2011 19:22:18 +1000 (EST)
-Received: by pwj3 with SMTP id 3so299659pwj.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2011 02:22:15 -0700 (PDT)
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 4FE8AB6F73
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Apr 2011 20:01:59 +1000 (EST)
+Date: Wed, 13 Apr 2011 12:01:51 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
+Message-ID: <20110413100151.GA3066@iram.es>
+References: <20110406204327.GA11148@iram.es>
+	<1302185075.24704.143.camel@thor.local>
+	<20110411133128.GA24344@iram.es>
+	<1302535963.24704.268.camel@thor.local>
+	<20110412113033.GA16649@iram.es>
+	<1302608770.27054.36.camel@thor.local>
+	<20110412120055.GA7995@iram.es>
+	<1302629362.15520.25.camel@thor.local>
+	<20110413075943.GA27996@iram.es>
+	<1302682573.28876.78.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <4DA3DAF6.9090909@embedded-sol.com>
-References: <071A08F2C6A57E4E94D980ECA553F87417069A@039-SN1MPN1-004.039d.mgd.msft.net>
-	<45903308677306428B6EE7E6FF5A520410B713@039-SN1MPN1-004.039d.mgd.msft.net>
-	<4DA3DAF6.9090909@embedded-sol.com>
-Date: Wed, 13 Apr 2011 11:22:14 +0200
-Message-ID: <BANLkTimicG2n=h0pX0JpLZffM0q+-P6o1Q@mail.gmail.com>
-Subject: Re: Problem with mini-PCI-E slot on P2020RDB
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: Felix Radensky <felix@embedded-sol.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Gupta Maneesh-B18878 <B18878@freescale.com>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>,
-	Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1302682573.28876.78.camel@pasglop>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+	dri-devel@lists.freedesktop.org,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Dave Airlie <airlied@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Felix,
+On Wed, Apr 13, 2011 at 06:16:13PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2011-04-13 at 09:59 +0200, Gabriel Paubert wrote:
+> > 
+> > Well, X is dead, or rather in an infinite ioctl loop as described
+> > above.
+> > IIRC, the display enters a power-down mode and there is nothing to
+> > see.
+> 
+> So basically the card crashed. There's about an infinite amount of
+> reasons why radeons do so, sometimes it has to do with them not liking
+> what you ate that day...
+> 
+> The only thing I can see that could be of use would be a bisect
 
-On Tue, Apr 12, 2011 at 6:54 AM, Felix Radensky <felix@embedded-sol.com> wrote:
-> On 04/12/2011 07:05 AM, Aggrwal Poonam-B10812 wrote:
->> As such there is no hardware fix related to this issue between RevC to
->> RevD. The solution was a software patch to resolve the issue related to
->> IRQ0.
->
-> Are you sure ? Please take a look at Freescale document titled
-> "P1020E/P2020E RDB System Errata".
-> There's errata CE10, IRQ0 held low. It is fixed in Rev D. Vivek Mahajan, who
-> looked at the issue back
-> in 2009, estimated that problem can be related to missing pull-up on IRQ0.
-> This is exactly what is
-> fixed in Rev D.
->
+Bisecting for something which I have never got to work (radeon with
+KMS) on this machine is something I don't know how to do...
 
-That's my understanding as well.
-
-Check if R420 and R423 are populated. These are the required pull-ups.
-On Rev D they are populated. You might be able to add them yourself.
-
-Even if you have an Rev A-C PCB, this fix can already be applied; it
-was on my board! (the bottom of the board mentions the schematic
-revision)
-
-The resistors have a silkscreen designator block called X, the
-resistors are situated to the left and bottom of the silkscreen X.
-IIRC, between the flash and Px020 part.
-
-On the left side of R420 (or R423) I measured the block wave from the
-RTC, which fires the 32kHz interrupt rate on IRQ0. This fixed by the
-u-boot patch.
-
-Regards,
-
-Leon.
+Note that radeon without KMS also always ends up crashing, but it
+may take hours. The only case where the machine works reliably is 
+when glxinfo claims that it is using software rendering.
+ 
+	Regards,
+	Gabriel
