@@ -1,35 +1,22 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E0325B70D5
+Return-Path: <ml@stefan-roese.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.162])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EACF4B70D9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 01:15:26 +1000 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3DEsJpM012202
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 10:54:21 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 704DA38C8039
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Apr 2011 11:15:13 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3DFFMoT202174
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 11:15:22 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p3DFFMMG025030
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2011 11:15:22 -0400
-Date: Wed, 13 Apr 2011 08:15:09 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH] powerpc: align DTL buffer to AMS boundary
-Message-ID: <20110413151509.GA27602@us.ibm.com>
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8ACF4@saturn3.aculab.com>
+	Thu, 14 Apr 2011 01:21:43 +1000 (EST)
+From: Stefan Roese <ml@stefan-roese.de>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: FTrace on MPC8xx
+Date: Wed, 13 Apr 2011 17:21:33 +0200
+References: <201104131632.21350.ml@stefan-roese.de>
+	<OF32A80193.EF3E454E-ONC1257871.005204A6-C1257871.00523F24@transmode.se>
+In-Reply-To: <OF32A80193.EF3E454E-ONC1257871.005204A6-C1257871.00523F24@transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ACF4@saturn3.aculab.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201104131721.34123.ml@stefan-roese.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,34 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13.04.2011 [15:59:44 +0100], David Laight wrote:
-> > From: 
-> > linuxppc-dev-bounces+david.laight=aculab.com@lists.ozlabs.org 
-> > [mailto:linuxppc-dev-bounces+david.laight=aculab.com@lists.ozl
-> > abs.org] On Behalf Of Nishanth Aravamudan
-> > Sent: 13 April 2011 15:53
-> > To: Ben Herrenschmidt
-> > Cc: linuxppc-dev@ozlabs.org; Paul Mackerras; Anton Blanchard
-> > Subject: [PATCH] powerpc: align DTL buffer to AMS boundary
+Hi Joakim,
+
+On Wednesday 13 April 2011 16:58:21 Joakim Tjernlund wrote:
+> > This is on a 2.6.38 kernel (2.6.32 fails too). Debugging shows that
+> > __copy_tofrom_user() fails with return code 4 (called via
+> > ftrace_modify_code()).
 > > 
-> > PAPR specifies that DTL buffers can not cross AMS environments (aka
-> CMO
-> > in the PAPR) and can not cross a memory entitlement granule boundary
-> > (4k)....
+> > Before digging deeper: Has anybody tried/tested ftrace on MPC8xx? Any
+> > ideas what going wrong here?
 > 
-> How big is the buffer being allocated?
-> If it is much less than 4k then it might be worth allocating
-> a buffer of the correct size, and only if that crosses a 4k boundary
-> allocate the larger buffer.
+> Just an idea, remove the usage of dcbX insn, these has been problematic
+> before.
 
-Currently, DISPATCH_LOG_BYTES is 4k (which I assume was actually in
-deference to this requirement).
+I originally tested with 2.6.32. Same problem there. And your 8xx patches with 
+the dcbX changes are not included in 2.6.32 yet.
 
-> Also, if the buffer is ever freed, the actual base address is needed
-> for the free.
+> How big was the size to copy_tofrom_user()? Did it mange to copy
+> any bytes?
 
-I didn't see any free patch for this sequence of code -- which make
-sense as this allocation occurs under a for_each_possible_cpu loop.
+The size in __copy_tofrom_user is 4. And its the first call in 
+ftrace_modify_code() that fails directly. This works just fine on a PPC440EPx 
+board.
 
-Thanks for the feedback,
-Nish
+Best regards,
+Stefan
