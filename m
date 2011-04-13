@@ -1,8 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <d143d3f1ea9830a0f2ef7b0cf7148dab2bf0cc14.1302670946.git.michael@ellerman.id.au>
-Subject: [PATCH 1/2] powerpc: Standardise on MMU_NO_CONTEXT
-Date: Wed, 13 Apr 2011 15:00:04 +1000 (EST)
+Message-Id: <cf6ebe6b06b7474d09bafb4f6d7e8140520bfef0.1302670946.git.michael@ellerman.id.au>
+In-Reply-To: <d143d3f1ea9830a0f2ef7b0cf7148dab2bf0cc14.1302670946.git.michael@ellerman.id.au>
+References: <d143d3f1ea9830a0f2ef7b0cf7148dab2bf0cc14.1302670946.git.michael@ellerman.id.au>
+Subject: [PATCH 2/2] powerpc: Fix slice state initialization for Book3E
+Date: Wed, 13 Apr 2011 15:00:05 +1000 (EST)
 From: michael@ozlabs.org (Michael Ellerman)
 Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -14,48 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use MMU_NO_CONTEXT as the initialiser for mm_context.id on
-nohash and hash64.
+On Book3E, MMU_NO_CONTEXT != 0, but the slice_mm_new_context()
+macro assumes that it is.  This means that the map of the
+page sizes for each slice is always initialized to zeroes
+(which happens to be 4k pages), rather than to the correct
+default base page size value - which might be 64k.
 
+This patch corrects the problem.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/tlbflush.h  |    2 ++
- arch/powerpc/mm/mmu_context_hash64.c |    3 +--
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/page_64.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-v2: Updated to not break 40x.
-
-diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-index d50a380..81143fc 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -79,6 +79,8 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index 932f88d..1cc558c 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -130,7 +130,7 @@ extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+ extern void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 				  unsigned long len, unsigned int psize);
  
- #elif defined(CONFIG_PPC_STD_MMU_64)
+-#define slice_mm_new_context(mm)	((mm)->context.id == 0)
++#define slice_mm_new_context(mm)	((mm)->context.id == MMU_NO_CONTEXT)
  
-+#define MMU_NO_CONTEXT		0
-+
- /*
-  * TLB flushing for 64-bit hash-MMU CPUs
-  */
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 2535828..c585944 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -31,7 +31,6 @@ static DEFINE_IDA(mmu_context_ida);
-  * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-  * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-  */
--#define NO_CONTEXT	0
- #define MAX_CONTEXT	((1UL << 19) - 1)
- 
- int __init_new_context(void)
-@@ -95,5 +94,5 @@ void destroy_context(struct mm_struct *mm)
- {
- 	__destroy_context(mm->context.id);
- 	subpage_prot_free(mm);
--	mm->context.id = NO_CONTEXT;
-+	mm->context.id = MMU_NO_CONTEXT;
- }
+ #endif /* __ASSEMBLY__ */
+ #else
 -- 
 1.7.1
