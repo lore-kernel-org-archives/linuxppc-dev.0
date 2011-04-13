@@ -1,22 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42837B70D5
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7B39AB6FCE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 01:38:08 +1000 (EST)
-In-Reply-To: <201104131721.34123.ml@stefan-roese.de>
-References: <201104131632.21350.ml@stefan-roese.de>
-	<OF32A80193.EF3E454E-ONC1257871.005204A6-C1257871.00523F24@transmode.se>
-	<201104131721.34123.ml@stefan-roese.de>
-Subject: Re: FTrace on MPC8xx
-To: Stefan Roese <ml@stefan-roese.de>
-Message-ID: <OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 13 Apr 2011 17:38:03 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+	Thu, 14 Apr 2011 02:30:30 +1000 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/kexec: fix regression causing compile failure on UP
+Date: Wed, 13 Apr 2011 12:30:08 -0400
+Message-Id: <1302712208-28794-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, mike@it-loops.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stefan Roese <ml@stefan-roese.de> wrote on 2011/04/13 17:21:33:
->
-> Hi Joakim,
->
-> On Wednesday 13 April 2011 16:58:21 Joakim Tjernlund wrote:
-> > > This is on a 2.6.38 kernel (2.6.32 fails too). Debugging shows that
-> > > __copy_tofrom_user() fails with return code 4 (called via
-> > > ftrace_modify_code()).
-> > >
-> > > Before digging deeper: Has anybody tried/tested ftrace on MPC8xx? Any
-> > > ideas what going wrong here?
-> >
-> > Just an idea, remove the usage of dcbX insn, these has been problematic
-> > before.
->
-> I originally tested with 2.6.32. Same problem there. And your 8xx patches with
-> the dcbX changes are not included in 2.6.32 yet.
+Recent commit b987812b3fcaf70fdf0037589e5d2f5f2453e6ce caused
+a compile failure on UP because a considerably large block
+of the file was included within CONFIG_SMP, hence making a stub
+function not exposed on UP builds when it needed to be.
 
-OK
+Relocate the stub to the #else /* ! CONFIG_SMP */ section
+and also annotate the relevant else/endif so that nobody
+else falls into the same trap I did.
 
->
-> > How big was the size to copy_tofrom_user()? Did it mange to copy
-> > any bytes?
->
-> The size in __copy_tofrom_user is 4. And its the first call in
-> ftrace_modify_code() that fails directly. This works just fine on a PPC440EPx
-> board.
+Reported-by: Michael Guntsche <mike@it-loops.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
 
-Since the size is only 4 it would not use dcbX anyway(I think).
-Then is is probably called with the wrong addresses?
+      ** compile tested on both UP & SMP this time! **
 
- Jocke
+ arch/powerpc/kernel/crash.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 3d3d416..5b5e1f0 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -163,7 +163,7 @@ static void crash_kexec_prepare_cpus(int cpu)
+ }
+ 
+ /* wait for all the CPUs to hit real mode but timeout if they don't come in */
+-#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
++#ifdef CONFIG_PPC_STD_MMU_64
+ static void crash_kexec_wait_realmode(int cpu)
+ {
+ 	unsigned int msecs;
+@@ -188,9 +188,7 @@ static void crash_kexec_wait_realmode(int cpu)
+ 	}
+ 	mb();
+ }
+-#else
+-static inline void crash_kexec_wait_realmode(int cpu) {}
+-#endif
++#endif	/* CONFIG_PPC_STD_MMU_64 */
+ 
+ /*
+  * This function will be called by secondary cpus or by kexec cpu
+@@ -235,7 +233,9 @@ void crash_kexec_secondary(struct pt_regs *regs)
+ 	crash_ipi_callback(regs);
+ }
+ 
+-#else
++#else	/* ! CONFIG_SMP */
++static inline void crash_kexec_wait_realmode(int cpu) {}
++
+ static void crash_kexec_prepare_cpus(int cpu)
+ {
+ 	/*
+@@ -255,7 +255,7 @@ void crash_kexec_secondary(struct pt_regs *regs)
+ {
+ 	cpus_in_sr = CPU_MASK_NONE;
+ }
+-#endif
++#endif	/* CONFIG_SMP */
+ 
+ /*
+  * Register a function to be called on shutdown.  Only use this if you
+-- 
+1.7.3.3
