@@ -1,20 +1,25 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3EE2EB6F70
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Apr 2011 05:01:02 +1000 (EST)
-Message-ID: <4DA5C531.1070508@windriver.com>
-Date: Wed, 13 Apr 2011 11:45:53 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <andyqos@ukfsn.org>
+Received: from mail.ukfsn.org (mail.ukfsn.org [77.75.108.10])
+	by ozlabs.org (Postfix) with ESMTP id C28261007D5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Apr 2011 06:29:02 +1000 (EST)
+Message-ID: <4DA60126.6030003@ukfsn.org>
+Date: Wed, 13 Apr 2011 21:01:42 +0100
+From: Andy Furniss <andyqos@ukfsn.org>
 MIME-Version: 1.0
-To: Michael Guntsche <mike@it-loops.com>
-Subject: Re: Powerpc compile error with 2.6.39-rc3 and non-SMP configs
-References: <20110413101737.GA25514@gibson.comsick.at>
-In-Reply-To: <20110413101737.GA25514@gibson.comsick.at>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+To: =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@daenzer.net>
+Subject: Re: Revert 737a3bb9416ce2a7c7a4170852473a4fcc9c67e8 ?
+References: <20110406204327.GA11148@iram.es>	<1302185075.24704.143.camel@thor.local>	<20110411133128.GA24344@iram.es>	<1302535963.24704.268.camel@thor.local>	<20110412113033.GA16649@iram.es>	<1302608770.27054.36.camel@thor.local>
+	<20110412120055.GA7995@iram.es>	<1302629362.15520.25.camel@thor.local>
+	<20110413075943.GA27996@iram.es>	<1302696736.15520.63.camel@thor.local>
+	<20110413122751.GA21050@iram.es>
+	<1302704124.15520.72.camel@thor.local>
+In-Reply-To: <1302704124.15520.72.camel@thor.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+	dri-devel@lists.freedesktop.org, Greg@freedesktop.org,
+	=?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= <u.kleine-koenig@pengutronix.de>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11-04-13 06:17 AM, Michael Guntsche wrote:
-> Hi,
-> 
-> Commit b987812b3fc "powerpc/kexec: Fix mismatched ifdefs for PPC64/SMP."
-> breaks compilation on non SMP powerpc machines.
+Michel Dänzer wrote:
 
-Ah crap.  I compile tested on SMP, so didn't see that.
+>>> That does sound like the GPU locks up. Do you get any messages in dmesg
+>>> about lockups and attempts to reset the GPU at any time?
+>>
+>> No.
+>
+> Hmm, I guess the constant SIGALRMs might prevent the lockup detection
+> from kicking in... Maybe you can try starting the X server with
+> -dumbSched to see if that gets things along any further, but in the end
+> there's probably no way around figuring out what causes the lockup and
+> fixing that anyway.
 
-> I wonder if this commit is really neccessary in the first place. The
-> function definition itself is already between an
+I have an old AGP box that locks with 600g + agpgart - It used to give 
+GPU lockup to dmesg/log, but (I only test it occasionally) it doesn't 
+anymore. I can still sysrq OK.
 
-Your analysis is right, but I think getting rid of the #ifdefs is
-still the right approach where possible.  I'll send a fix shortly.
-
-Thanks for the report.
-
-P.
-
-> 
-> #ifdef CONFIG_SMP (line 56)
-> #endif 
-> 
-> block so only exists if SMP=y and PPC_STD_MMU_64=y.
-> Furthermore the stub in your patch is only created if SMP=y and
-> PPC_STD_MMU_64=n which breaks non-SMP configs. 
-> 
-> Kind regards,
-> Michael Guntsche
+I wonder if something changed in recent months in the drm/whatever code 
+that has changed/blocked the logging.
