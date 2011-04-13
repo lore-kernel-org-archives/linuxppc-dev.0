@@ -1,17 +1,20 @@
-Return-Path: <acrux_it@libero.it>
-Received: from cp-out12.libero.it (cp-out12.libero.it [212.52.84.112])
-	by ozlabs.org (Postfix) with ESMTP id A7B72B70D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 04:27:00 +1000 (EST)
-Date: Wed, 13 Apr 2011 20:27:14 +0200
-From: acrux <acrux_it@libero.it>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: PowerMacintosh B&W G4 boot failure - linux-2.6.36.x
-Message-Id: <20110413202714.ad1b5697.acrux_it@libero.it>
-In-Reply-To: <BANLkTikwJ81ZxtHoJOpu_OW8bCcPTm8F9w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Nello M <ppc.addon@gmail.com>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3EE2EB6F70
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Apr 2011 05:01:02 +1000 (EST)
+Message-ID: <4DA5C531.1070508@windriver.com>
+Date: Wed, 13 Apr 2011 11:45:53 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+To: Michael Guntsche <mike@it-loops.com>
+Subject: Re: Powerpc compile error with 2.6.39-rc3 and non-SMP configs
+References: <20110413101737.GA25514@gibson.comsick.at>
+In-Reply-To: <20110413101737.GA25514@gibson.comsick.at>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,12 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11-04-13 06:17 AM, Michael Guntsche wrote:
+> Hi,
+> 
+> Commit b987812b3fc "powerpc/kexec: Fix mismatched ifdefs for PPC64/SMP."
+> breaks compilation on non SMP powerpc machines.
 
-i guess it's a different problem from the PegasosI G3 but i could be wrong.
+Ah crap.  I compile tested on SMP, so didn't see that.
 
-I'd like to receive  feedbacks and a working kernel config if someone is running with success linux-2.6.26.x on a Pmac B&W G3. This machine, altough obsolete, is still quite common.
+> I wonder if this commit is really neccessary in the first place. The
+> function definition itself is already between an
 
+Your analysis is right, but I think getting rid of the #ifdefs is
+still the right approach where possible.  I'll send a fix shortly.
 
---nico
--- 
-acrux <acrux_it@libero.it>
+Thanks for the report.
+
+P.
+
+> 
+> #ifdef CONFIG_SMP (line 56)
+> #endif 
+> 
+> block so only exists if SMP=y and PPC_STD_MMU_64=y.
+> Furthermore the stub in your patch is only created if SMP=y and
+> PPC_STD_MMU_64=n which breaks non-SMP configs. 
+> 
+> Kind regards,
+> Michael Guntsche
