@@ -1,18 +1,29 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7B39AB6FCE
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B444B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 02:30:30 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/kexec: fix regression causing compile failure on UP
-Date: Wed, 13 Apr 2011 12:30:08 -0400
-Message-Id: <1302712208-28794-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, mike@it-loops.com,
-	linuxppc-dev@lists.ozlabs.org
+	Thu, 14 Apr 2011 03:52:14 +1000 (EST)
+Received: by pvf33 with SMTP id 33so352546pvf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Apr 2011 10:52:11 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1302685102.28876.81.camel@pasglop>
+References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
+	<1302646173.28876.53.camel@pasglop>
+	<1302652502.28876.76.camel@pasglop>
+	<19877.23529.745123.819112@pilspetsen.it.uu.se>
+	<1302685102.28876.81.camel@pasglop>
+Date: Wed, 13 Apr 2011 12:52:11 -0500
+Message-ID: <BANLkTimc84A8kddarnhvrcab3iKZc0HZAg@mail.gmail.com>
+Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
+From: kevin diggs <diggskevin38@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,67 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Recent commit b987812b3fcaf70fdf0037589e5d2f5f2453e6ce caused
-a compile failure on UP because a considerably large block
-of the file was included within CONFIG_SMP, hence making a stub
-function not exposed on UP builds when it needed to be.
+HI,
 
-Relocate the stub to the #else /* ! CONFIG_SMP */ section
-and also annotate the relevant else/endif so that nobody
-else falls into the same trap I did.
+On Wed, Apr 13, 2011 at 3:58 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> Actually I do get a crash in X later on... something in the radeon DRM
+> interrupt code is getting what looks like a NULL dereference. I'll try
+> to dig that one later on. I don't know if it's related to your problem
+> at all though.
+>
+In this context, what does 'crash' mean? The X thingy goes down? Or
+the whole OS?
 
-Reported-by: Michael Guntsche <mike@it-loops.com>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
+Cheers,
+kevin.
 
-      ** compile tested on both UP & SMP this time! **
-
- arch/powerpc/kernel/crash.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index 3d3d416..5b5e1f0 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -163,7 +163,7 @@ static void crash_kexec_prepare_cpus(int cpu)
- }
- 
- /* wait for all the CPUs to hit real mode but timeout if they don't come in */
--#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
-+#ifdef CONFIG_PPC_STD_MMU_64
- static void crash_kexec_wait_realmode(int cpu)
- {
- 	unsigned int msecs;
-@@ -188,9 +188,7 @@ static void crash_kexec_wait_realmode(int cpu)
- 	}
- 	mb();
- }
--#else
--static inline void crash_kexec_wait_realmode(int cpu) {}
--#endif
-+#endif	/* CONFIG_PPC_STD_MMU_64 */
- 
- /*
-  * This function will be called by secondary cpus or by kexec cpu
-@@ -235,7 +233,9 @@ void crash_kexec_secondary(struct pt_regs *regs)
- 	crash_ipi_callback(regs);
- }
- 
--#else
-+#else	/* ! CONFIG_SMP */
-+static inline void crash_kexec_wait_realmode(int cpu) {}
-+
- static void crash_kexec_prepare_cpus(int cpu)
- {
- 	/*
-@@ -255,7 +255,7 @@ void crash_kexec_secondary(struct pt_regs *regs)
- {
- 	cpus_in_sr = CPU_MASK_NONE;
- }
--#endif
-+#endif	/* CONFIG_SMP */
- 
- /*
-  * Register a function to be called on shutdown.  Only use this if you
--- 
-1.7.3.3
+> Cheers,
+> Ben.
