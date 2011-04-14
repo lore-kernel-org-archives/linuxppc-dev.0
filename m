@@ -1,20 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc: Add an ePAPR compliant boot wrapper
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20110414004303.GZ3151@yookeroo>
-References: <34e3e03a96888bc8c20013aa65712123ccf94649.1302676893.git.michael@ellerman.id.au>
-	<732a8ac3a24023f021908d03bd84b76638f381f1.1302676893.git.michael@ellerman.id.au>
-	<20110413130512.GD26874@zod.rchland.ibm.com>
-	<20110414004303.GZ3151@yookeroo>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-gGo60PZPPTk9PvfA2qcO"
-Date: Thu, 14 Apr 2011 14:25:32 +1000
-Message-ID: <1302755132.12513.92.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <nacc@us.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5D7AEB7104
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Apr 2011 15:13:52 +1000 (EST)
+Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3E4jqM4032482
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 00:45:52 -0400
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7A0BB6E8039
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Apr 2011 01:13:48 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3E5DmvZ338098
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:13:48 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p3E5Dl9q019308
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 02:13:48 -0300
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH v3] powerpc: use a kmem cache for DTL buffers
+Date: Wed, 13 Apr 2011 22:13:46 -0700
+Message-Id: <1302758026-29313-1-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1302754363.12513.89.camel@concordia>
+References: <1302754363.12513.89.camel@concordia>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +38,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+PAPR specifies that DTL buffers can not cross AMS environments (aka CMO
+in the PAPR) and can not cross a memory entitlement granule boundary
+(4k). This is found in section 14.11.3.2 H_REGISTER_VPA of the PAPR.
+kmalloc does not guarantee an alignment of the allocation, though,
+beyond 8 bytes (at least in my understanding). Create a special kmem
+cache for DTL buffers with the alignment requirement.
 
---=-gGo60PZPPTk9PvfA2qcO
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+---
+Change from v1: removed extraneous #include.
+Change from v2: instead of overallocating and aligning, use a kmem cache
 
-On Thu, 2011-04-14 at 10:43 +1000, David Gibson wrote:
-> On Wed, Apr 13, 2011 at 09:05:12AM -0400, Josh Boyer wrote:
-> > On Wed, Apr 13, 2011 at 04:38:56PM +1000, Michael Ellerman wrote:
-> > >+++ b/arch/powerpc/boot/epapr.c
-> > >@@ -0,0 +1,69 @@
-> > >+/*
-> > >+ * Bootwrapper for ePAPR compliant firmwares
-> >=20
-> > Out of curiosity, do we have a list of the ePAPR compliant firmwares (i=
-f
-> > any)?
->=20
-> The one this has been tested with is a revised (internal, so far)
-> version of SLOF.  For the platform that I believe Michael is in the
-> middle of upstreaming support for.
+Note, I initially put this in a firmware check if-block, but we have
+also seen some issues with alignment with non-AMS partitions. The wasted
+memory is unfortunate, though.
 
-Yep.
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 
-> > >+#include "ops.h"
-> > >+#include "stdio.h"
-> > >+#include "planetcore.h"
-> > >+#include "dcr.h"
-> > >+#include "4xx.h"
-> > >+#include "io.h"
-> >=20
-> > Do you need planetcore, dcr, and 4xx.h included here?  I don't see
-> > anything used that would require them.
->=20
-> Ah, no.  Leftovers from the files I based this on, I think.
+ arch/powerpc/platforms/pseries/setup.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-I'll send a new version.
-
-cheers
-
---=-gGo60PZPPTk9PvfA2qcO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAk2mdzwACgkQdSjSd0sB4dKyYgCfT2w5TWJJ+K1wf4UOP8XNAve2
-0TIAnRoAA9I0ZVqfx3g/Eu0lZIqqY1CP
-=3Tz1
------END PGP SIGNATURE-----
-
---=-gGo60PZPPTk9PvfA2qcO--
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 0007241..629b703 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -287,14 +287,17 @@ static int alloc_dispatch_logs(void)
+ 	int cpu, ret;
+ 	struct paca_struct *pp;
+ 	struct dtl_entry *dtl;
++	struct kmem_cache *dtl_cache;
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return 0;
+ 
++	dtl_cache = kmem_cache_create("dtl", DISPATCH_LOG_BYTES,
++						DISPATCH_LOG_BYTES, 0, NULL); 
++
+ 	for_each_possible_cpu(cpu) {
+ 		pp = &paca[cpu];
+-		dtl = kmalloc_node(DISPATCH_LOG_BYTES, GFP_KERNEL,
+-				   cpu_to_node(cpu));
++		dtl = kmem_cache_alloc(dtl_cache, GFP_KERNEL);
+ 		if (!dtl) {
+ 			pr_warn("Failed to allocate dispatch trace log for cpu %d\n",
+ 				cpu);
+-- 
+1.7.4.1
