@@ -1,31 +1,20 @@
-Return-Path: <mikpe@it.uu.se>
-Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sruffell@digium.com>
+Received: from mail.digium.com (mail.digium.com [216.207.245.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89BA7B6FDE
+	by ozlabs.org (Postfix) with ESMTPS id 9E7981007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 08:14:14 +1000 (EST)
+	Fri, 15 Apr 2011 09:03:43 +1000 (EST)
+Date: Thu, 14 Apr 2011 17:27:19 -0500
+From: Shaun Ruffell <sruffell@digium.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Define 'crash_kexec_wait_realmode' for Non-SMP
+	systems.
+Message-ID: <20110414222719.GA16256@digium.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19879.29101.783037.726594@pilspetsen.it.uu.se>
-Date: Fri, 15 Apr 2011 00:14:05 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Hugh Dickins <hughd@google.com>
-Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
-In-Reply-To: <BANLkTimykvKp=bwsFyNE9fWqcE9Ffws6bA@mail.gmail.com>
-References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
-	<1302646173.28876.53.camel@pasglop>
-	<1302652502.28876.76.camel@pasglop>
-	<19877.23529.745123.819112@pilspetsen.it.uu.se>
-	<1302685102.28876.81.camel@pasglop>
-	<BANLkTimc84A8kddarnhvrcab3iKZc0HZAg@mail.gmail.com>
-	<1302736869.28876.91.camel@pasglop>
-	<BANLkTika8FY1dD_hOQ4wMhHzuQ2Qt8fg7A@mail.gmail.com>
-	<1302771756.15520.100.camel@thor.local>
-	<BANLkTimykvKp=bwsFyNE9fWqcE9Ffws6bA@mail.gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Jens Axboe <jaxboe@fusionio.com>,
-	linux-kernel@vger.kernel.org, kevin diggs <diggskevin38@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Apr 2011 14:25:31 -0700, Hugh Dickins wrote:
-> Mikael,
-> 
-> Something worth trying: turn off CONFIG_IDE.  That's what I need to
-> boot 2.6.39-rc[1-3] on PowerPC G5.
-> 
-> I know Jens has been fixing problems with IDE versus his plug/unplug
-> changes, but it's still not fixed for me in rc3.
-> 
-> In other mail http://lkml.org/lkml/2011/4/14/614
-> I see Linus recommending his post-rc3 commit 6631e635c65d
-> but I've not tried that myself yet.
-> 
-> Hugh
+This fixes a regression from b987812b3fcaf70fdf0037589e5d2f5f2453e6ce
+"powerpc/kexec: Fix mismatched ifdefs for PPC64/SMP" which resulted in
 
-Hugh,
+arch/powerpc/kernel/crash.c: In function =E2=80=98default_machine_crash_s=
+hutdown=E2=80=99:
+  arch/powerpc/kernel/crash.c:349: error: implicit declaration of functio=
+n
+  =E2=80=98crash_kexec_wait_realmode=E2=80=99
 
-With CONFIG_IDE disabled I could finally boot 2.6.39-rc3 on my G5.
-I lost the DVD drive, but that's fine for now.
+message on when compiling on Blue&White G3 and CONFIG_SMP is not defined.
 
-Thanks!
+Signed-off-by: Shaun Ruffell <sruffell@digium.com>
+---
+ arch/powerpc/kernel/crash.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-/Mikael
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 3d3d416..5e6e37f 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -255,6 +255,9 @@ void crash_kexec_secondary(struct pt_regs *regs)
+ {
+ 	cpus_in_sr =3D CPU_MASK_NONE;
+ }
++
++static inline void crash_kexec_wait_realmode(int cpu) {}
++
+ #endif
+=20
+ /*
+--=20
+1.7.4.3
