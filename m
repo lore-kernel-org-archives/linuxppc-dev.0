@@ -1,26 +1,23 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ml@stefan-roese.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ECD50B6FB9
+	by ozlabs.org (Postfix) with ESMTPS id 0FED0B6FC2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 22:09:59 +1000 (EST)
-Message-ID: <4DA6E429.7010408@embedded-sol.com>
-Date: Thu, 14 Apr 2011 15:10:17 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+	Fri, 15 Apr 2011 01:59:42 +1000 (EST)
+From: Stefan Roese <ml@stefan-roese.de>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: FTrace on MPC8xx
+Date: Thu, 14 Apr 2011 17:59:30 +0200
+References: <201104131632.21350.ml@stefan-roese.de>
+	<201104131721.34123.ml@stefan-roese.de>
+	<OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>
+In-Reply-To: <OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>
 MIME-Version: 1.0
-To: emre kara <emrekara2002@yahoo.co.uk>
-Subject: Re: fsl elbc driver causes corruption with bus monitor timeouts while
-	simultaneously access on Nor / Nand mtd partitions
-References: <204286.97927.qm@web25602.mail.ukl.yahoo.com>
-In-Reply-To: <204286.97927.qm@web25602.mail.ukl.yahoo.com>
-Content-Type: text/html; charset=UTF-8
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	David Woodhouse <David.Woodhouse@intel.com>,
-	linux-kernel@vger.kernel.org, bayraktarz@yahoo.com,
-	Lan Chunhe-B25806 <b25806@freescale.com>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201104141759.30446.ml@stefan-roese.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  </head>
-  <body text="#000000" bgcolor="#ffffff">
-    Hi,<br>
-    <br>
-    Adding linux-mtd list to CC.<br>
-    <br>
-    On 04/14/2011 10:06 AM, emre kara wrote:
-    <blockquote cite="mid:204286.97927.qm@web25602.mail.ukl.yahoo.com"
-      type="cite">
-      <pre wrap="">Hi Scott, Roy.
-Scott's "mtd: eLBC NAND: increase bus timeout to maximum" patch is excluded from kernel with Roy's "P4080/eLBC: Make Freescale elbc interrupt common to elbc devices" patch. I don't know the reason for it but this causes bus monitor timeouts and corrupts nand flash while using mainline kernel. As I know there is an errata related to this topic, I think "increasing bus timeout to maximum" is a must.
-You can easly generate this situation with below commands:
+Hi Joakim,
 
+On Wednesday 13 April 2011 17:38:03 Joakim Tjernlund wrote:
+> > > How big was the size to copy_tofrom_user()? Did it mange to copy
+> > > any bytes?
+> > 
+> > The size in __copy_tofrom_user is 4. And its the first call in
+> > ftrace_modify_code() that fails directly. This works just fine on a
+> > PPC440EPx board.
+> 
+> Since the size is only 4 it would not use dcbX anyway(I think).
+> Then is is probably called with the wrong addresses?
 
-</pre>
-    </blockquote>
-    I think Scott's patch was picked up by Artem Bityutskijy into his
-    tree, but never made it to mainline.<br>
-    <br>
-    Felix.<br>
-    <i>
-    </i>
-  </body>
-</html>
+No, addresses seem to be correct. I checked a bit further (I'm quite new to 
+the MPC8xx MMU) and it seems that trying to modify the code (that's the 
+destination address) via __copy_tofrom_user() fails on MPC8xx. Still not sure 
+why this is the case. Perhaps an 8xx guru might chime in here. ;)
+
+BTW: I just noticed that enabling CONFIG_PIN_TLB seems to resolve this issue. 
+With this option enabled, the dynamic code modification works just fine.
+
+Joakim, Scott? Any ideas on this?
+
+Thanks,
+Stefan
