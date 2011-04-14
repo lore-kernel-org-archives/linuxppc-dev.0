@@ -1,18 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc: align DTL buffer to AMS boundary
+Subject: Re: [PATCH 2/2] powerpc: Add an ePAPR compliant boot wrapper
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <1302733988-23037-1-git-send-email-nacc@us.ibm.com>
-References: <1302706373-11653-1-git-send-email-nacc@us.ibm.com>
-	<1302733988-23037-1-git-send-email-nacc@us.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20110414004303.GZ3151@yookeroo>
+References: <34e3e03a96888bc8c20013aa65712123ccf94649.1302676893.git.michael@ellerman.id.au>
+	<732a8ac3a24023f021908d03bd84b76638f381f1.1302676893.git.michael@ellerman.id.au>
+	<20110413130512.GD26874@zod.rchland.ibm.com>
+	<20110414004303.GZ3151@yookeroo>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-9Vwauf00A/O/sjAwq3Qi"
-Date: Thu, 14 Apr 2011 14:12:43 +1000
-Message-ID: <1302754363.12513.89.camel@concordia>
+	boundary="=-gGo60PZPPTk9PvfA2qcO"
+Date: Thu, 14 Apr 2011 14:25:32 +1000
+Message-ID: <1302755132.12513.92.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,39 +25,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-9Vwauf00A/O/sjAwq3Qi
+--=-gGo60PZPPTk9PvfA2qcO
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2011-04-13 at 15:33 -0700, Nishanth Aravamudan wrote:
-> PAPR specifies that DTL buffers can not cross AMS environments (aka CMO
-> in the PAPR) and can not cross a memory entitlement granule boundary
-> (4k). This is found in section 14.11.3.2 H_REGISTER_VPA of the PAPR.
-> kmalloc does not guarantee an alignment of the allocation, though,
-> beyond 8 bytes (at least in my understanding). Over-allocate and align
-> the resulting address.
+On Thu, 2011-04-14 at 10:43 +1000, David Gibson wrote:
+> On Wed, Apr 13, 2011 at 09:05:12AM -0400, Josh Boyer wrote:
+> > On Wed, Apr 13, 2011 at 04:38:56PM +1000, Michael Ellerman wrote:
+> > >+++ b/arch/powerpc/boot/epapr.c
+> > >@@ -0,0 +1,69 @@
+> > >+/*
+> > >+ * Bootwrapper for ePAPR compliant firmwares
+> >=20
+> > Out of curiosity, do we have a list of the ePAPR compliant firmwares (i=
+f
+> > any)?
+>=20
+> The one this has been tested with is a revised (internal, so far)
+> version of SLOF.  For the platform that I believe Michael is in the
+> middle of upstreaming support for.
 
-You can specify alignment by creating your own kmem_cache, ie.
-kmem_cache_create().
+Yep.
 
-Obviously there will be some overhead to create the cache structure, but
-I'd think it will be less than 4k * NR_CPUs.
+> > >+#include "ops.h"
+> > >+#include "stdio.h"
+> > >+#include "planetcore.h"
+> > >+#include "dcr.h"
+> > >+#include "4xx.h"
+> > >+#include "io.h"
+> >=20
+> > Do you need planetcore, dcr, and 4xx.h included here?  I don't see
+> > anything used that would require them.
+>=20
+> Ah, no.  Leftovers from the files I based this on, I think.
+
+I'll send a new version.
 
 cheers
 
-
-
-
---=-9Vwauf00A/O/sjAwq3Qi
+--=-gGo60PZPPTk9PvfA2qcO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAk2mdDsACgkQdSjSd0sB4dLHygCfYxfZp7RbofC0yIN3AOJIcS5D
-qAAAoLF5MtV9mA+grz5K4TD+DbRtnl7X
-=xzML
+iEYEABECAAYFAk2mdzwACgkQdSjSd0sB4dKyYgCfT2w5TWJJ+K1wf4UOP8XNAve2
+0TIAnRoAA9I0ZVqfx3g/Eu0lZIqqY1CP
+=3Tz1
 -----END PGP SIGNATURE-----
 
---=-9Vwauf00A/O/sjAwq3Qi--
+--=-gGo60PZPPTk9PvfA2qcO--
