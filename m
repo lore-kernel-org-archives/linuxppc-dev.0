@@ -1,32 +1,32 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5D7AEB7104
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 295F1B70FE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 15:13:52 +1000 (EST)
-Received: from d01dlp02.pok.ibm.com (d01dlp02.pok.ibm.com [9.56.224.85])
-	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3E4jqM4032482
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 00:45:52 -0400
+	Thu, 14 Apr 2011 15:46:05 +1000 (EST)
+Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3E5Ox6j026438
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:24:59 -0400
 Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7A0BB6E8039
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id AAEFB38C803C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 01:13:48 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	Thu, 14 Apr 2011 01:45:52 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
 	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3E5DmvZ338098
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:13:48 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p3E5Dl9q019308
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 02:13:48 -0300
+	p3E5k2E0304972
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:46:02 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p3E5k2KO003447
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:46:02 -0400
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH v3] powerpc: use a kmem cache for DTL buffers
-Date: Wed, 13 Apr 2011 22:13:46 -0700
-Message-Id: <1302758026-29313-1-git-send-email-nacc@us.ibm.com>
-In-Reply-To: <1302754363.12513.89.camel@concordia>
-References: <1302754363.12513.89.camel@concordia>
+Subject: [PATCH v4] powerpc: use a kmem cache for DTL buffers
+Date: Wed, 13 Apr 2011 22:45:59 -0700
+Message-Id: <1302759959-31467-1-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1302758026-29313-1-git-send-email-nacc@us.ibm.com>
+References: <1302758026-29313-1-git-send-email-nacc@us.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -48,6 +48,7 @@ cache for DTL buffers with the alignment requirement.
 ---
 Change from v1: removed extraneous #include.
 Change from v2: instead of overallocating and aligning, use a kmem cache
+Change from v3: handle cache creation failure
 
 Note, I initially put this in a firmware check if-block, but we have
 also seen some issues with alignment with non-AMS partitions. The wasted
@@ -59,14 +60,14 @@ Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
 Cc: Anton Blanchard <anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 
- arch/powerpc/platforms/pseries/setup.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 0007241..629b703 100644
+index 0007241..9e20b83 100644
 --- a/arch/powerpc/platforms/pseries/setup.c
 +++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -287,14 +287,17 @@ static int alloc_dispatch_logs(void)
+@@ -287,14 +287,22 @@ static int alloc_dispatch_logs(void)
  	int cpu, ret;
  	struct paca_struct *pp;
  	struct dtl_entry *dtl;
@@ -77,6 +78,11 @@ index 0007241..629b703 100644
  
 +	dtl_cache = kmem_cache_create("dtl", DISPATCH_LOG_BYTES,
 +						DISPATCH_LOG_BYTES, 0, NULL); 
++	if (!dtl_cache) {
++		pr_warn("Failed to create dispatch trace log buffer cache\n");
++		pr_warn("Stolen time statistics will be unreliable\n");
++		return 0;
++	}
 +
  	for_each_possible_cpu(cpu) {
  		pp = &paca[cpu];
