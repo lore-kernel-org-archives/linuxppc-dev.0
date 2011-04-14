@@ -1,20 +1,25 @@
-Return-Path: <emrekara2002@yahoo.co.uk>
-Received: from nm12.bullet.mail.ukl.yahoo.com (nm12.bullet.mail.ukl.yahoo.com
-	[217.146.183.186]) by ozlabs.org (Postfix) with SMTP id C65FAB6EF1
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id 3BE08B6F4C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 17:06:56 +1000 (EST)
-Message-ID: <204286.97927.qm@web25602.mail.ukl.yahoo.com>
-Date: Thu, 14 Apr 2011 08:06:54 +0100 (BST)
-From: emre kara <emrekara2002@yahoo.co.uk>
-Subject: fsl elbc driver causes corruption with bus monitor timeouts while
-	simultaneously access on Nor / Nand mtd partitions
-To: Scott Wood <scottwood@freescale.com>, Roy Zang <tie-fei.zang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Wood Scott-B07421 <B07421@freescale.com>, felix@embedded-sol.com,
-	David Woodhouse <David.Woodhouse@intel.com>,
-	linux-kernel@vger.kernel.org, bayraktarz@yahoo.com,
-	Lan Chunhe-B25806 <b25806@freescale.com>, linuxppc-dev@lists.ozlabs.org
+	Thu, 14 Apr 2011 19:02:55 +1000 (EST)
+Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: kevin diggs <diggskevin38@gmail.com>
+Date: Thu, 14 Apr 2011 11:02:36 +0200
+In-Reply-To: <BANLkTika8FY1dD_hOQ4wMhHzuQ2Qt8fg7A@mail.gmail.com>
+References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
+	<1302646173.28876.53.camel@pasglop> <1302652502.28876.76.camel@pasglop>
+	<19877.23529.745123.819112@pilspetsen.it.uu.se>
+	<1302685102.28876.81.camel@pasglop>
+	<BANLkTimc84A8kddarnhvrcab3iKZc0HZAg@mail.gmail.com>
+	<1302736869.28876.91.camel@pasglop>
+	<BANLkTika8FY1dD_hOQ4wMhHzuQ2Qt8fg7A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1302771756.15520.100.camel@thor.local>
+Mime-Version: 1.0
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott, Roy.
-Scott's "mtd: eLBC NAND: increase bus timeout to maximum" patch is excluded=
- from kernel with Roy's "P4080/eLBC: Make Freescale elbc interrupt common t=
-o elbc devices" patch. I don't know the reason for it but this causes bus m=
-onitor timeouts and corrupts nand flash while using mainline kernel. As I k=
-now there is an errata related to this topic, I think "increasing bus timeo=
-ut to maximum" is a must.
-You can easly generate this situation with below commands:
+On Mit, 2011-04-13 at 18:43 -0500, kevin diggs wrote:=20
+>=20
+> On Wed, Apr 13, 2011 at 6:21 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Wed, 2011-04-13 at 12:52 -0500, kevin diggs wrote:
+> >> > Actually I do get a crash in X later on... something in the radeon
+> >> DRM
+> >> > interrupt code is getting what looks like a NULL dereference. I'll
+> >> try
+> >> > to dig that one later on. I don't know if it's related to your
+> >> problem
+> >> > at all though.
+> >> >
+> >> In this context, what does 'crash' mean? The X thingy goes down? Or
+> >> the whole OS?
+> >
+> > Depends, with xmon enabled you get into xmon :-) Dunno if the oops is
+> > fatal but it could be.
+> >
+> > Cheers,
+> > Ben.
+> >
+> >
+>=20
+> As I think I have the same hardware as you (7,3, radeon 9600) If you
+> can tell me how to reproduce it maybe I can poke around a little.
+> Thus, at least temporarily, freeing you up for other stuff.
+>=20
+> I kinda need a break from fighting with GCC.
 
-Note: mtd4 is a Nor and mtd9 is a Nand partition.
-[root@P2020RDB root]# mount /dev/mtdblock9 /mnt/src/
-mount: you must specify the filesystem type
-[root@P2020RDB root]# mount /dev/mtdblock9 /mnt/src/ -t jffs2
-=EF=BF=BD=EF=BF=BDJFFS2 notice: (1950) jffs2_build_xattr_subsystem: complet=
-e building xattr subsystem, 0 of xdatum (0 unchecked, 0 orphan) and 0 of xr=
-ef (0 dead, 0 orphan) found.
-[root@P2020RDB root]# dd if=3D/dev/mtd4 of=3D/mnt/src/uboot bs=3D1
-fsl-lbc ffe05000.localbus: Local bus monitor time-out: LTESR 0x80000000
-fsl-lbc ffe05000.localbus: command failed: fir 412e0000 fcr 0 status 800000=
-00 mdr c0
-Read of newly-erased block at 0x00430000 failed: -74. Putting on bad_list
-fsl-lbc ffe05000.localbus: Local bus monitor time-out: LTESR 0x80000000
-fsl-lbc ffe05000.localbus: command failed: fir 426db000 fcr 6070d000 status=
- 80000000 mdr ff
-Erase at 0x0042c000 failed immediately: errno -5
-fsl-lbc ffe05000.localbus: Local bus monitor time-out: LTESR 0x80000000
-Cfsl-lbc ffe05000.localbus: command failed: fir 412e0000 fcr 0 status 80000=
-000 mdr c0
-Read of newly-erased block at 0x00433000 failed: -74. Putting on bad_list
-JFFS2: marking eraseblock at 00433000
+FWIW, the problem Ben refers to might be fixed in current mainline by
+commit d87dfdbfc91c5e37288e7e8f7afdd992ba61a60d which reverts
+69a07f0b117a40fcc1a479358d8e1f41793617f2 .
 
-Regards.
 
-Emre
+--=20
+Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
