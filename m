@@ -1,19 +1,23 @@
-Return-Path: <acrux_it@libero.it>
-Received: from cp-out11.libero.it (cp-out11.libero.it [212.52.84.111])
-	by ozlabs.org (Postfix) with ESMTP id 35139B6F4E
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 40A8CB6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 02:39:39 +1000 (EST)
-Date: Thu, 14 Apr 2011 18:39:31 +0200
-From: acrux <acrux_it@libero.it>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PowerMacintosh B&W G3 boot failure - linux-2.6.36.x
-Message-Id: <20110414183931.26cfc02f.acrux_it@libero.it>
-In-Reply-To: <1302749356.28876.105.camel@pasglop>
-References: <20110413202714.ad1b5697.acrux_it@libero.it>
-	<1302749356.28876.105.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Nello M <ppc.addon@gmail.com>, linuxppc-dev@lists.ozlabs.org
+	Fri, 15 Apr 2011 02:50:01 +1000 (EST)
+In-Reply-To: <201104141759.30446.ml@stefan-roese.de>
+References: <201104131632.21350.ml@stefan-roese.de>
+	<201104131721.34123.ml@stefan-roese.de>
+	<OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>
+	<201104141759.30446.ml@stefan-roese.de>
+Subject: Re: FTrace on MPC8xx
+To: Stefan Roese <ml@stefan-roese.de>
+Message-ID: <OF71C64301.E54A0A3C-ONC1257872.005BD121-C1257872.005C754F@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 14 Apr 2011 18:49:53 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Apr 2011 12:49:16 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Stefan Roese <ml@stefan-roese.de> wrote on 2011/04/14 17:59:30:
+>
+> Hi Joakim,
+>
+> On Wednesday 13 April 2011 17:38:03 Joakim Tjernlund wrote:
+> > > > How big was the size to copy_tofrom_user()? Did it mange to copy
+> > > > any bytes?
+> > >
+> > > The size in __copy_tofrom_user is 4. And its the first call in
+> > > ftrace_modify_code() that fails directly. This works just fine on a
+> > > PPC440EPx board.
+> >
+> > Since the size is only 4 it would not use dcbX anyway(I think).
+> > Then is is probably called with the wrong addresses?
+>
+> No, addresses seem to be correct. I checked a bit further (I'm quite new to
+> the MPC8xx MMU) and it seems that trying to modify the code (that's the
+> destination address) via __copy_tofrom_user() fails on MPC8xx. Still not sure
+> why this is the case. Perhaps an 8xx guru might chime in here. ;)
+>
+> BTW: I just noticed that enabling CONFIG_PIN_TLB seems to resolve this issue.
+> With this option enabled, the dynamic code modification works just fine.
+>
+> Joakim, Scott? Any ideas on this?
 
-> On Wed, 2011-04-13 at 20:27 +0200, acrux wrote:
-> > i guess it's a different problem from the PegasosI G3 but i could
-> > be wrong.
-> > 
-> > I'd like to receive  feedbacks and a working kernel config if
-> > someone is running with success linux-2.6.26.x on a Pmac B&W G3.
-> > This machine, altough obsolete, is still quite common
-> 
-> The snapshot you posted doesn't have much information... there's no
-> obvious error for example in there...
-> 
-
-I know, I received from it from a user. It's where the kernel hangs.
-
-Anyway, the last year, i received many install failures report from
-cruxppc users. I hope it's only my fault building the bootkernel and
-i'd like to receive a feedback from others distro developers for this
-specific machine.
-
-I always avoided to collect obsolete machines thus I don't have a B&W G3
-but now i'm looking for one.
-
-> What video driver are you trying to use ? Have you tried plain offb ?
-> (disabling whatever is the native driver for your video card, ie,
-> radeonfb or aty128fb or even atyfb, dunno what you have in there).
-> 
-> You can also try something like "udbg-immortal" on the kernel command
-> line see if that brings you more debug output.
-> 
-
-I'll try to receive more detailed info from that gentle user.
-
-Thanks again for your kind support,
-Nico
--- 
-GNU/Linux on Power Architecture
-CRUX PPC - http://cruxppc.org/
+hmm, I guess 8xx really maps kernel RO as RO :) Try
+changing in pte-8xx.h:
+ - #define _PAGE_KERNEL_RO	(_PAGE_SHARED)
+ + #define _PAGE_KERNEL_RO	(_PAGE_RW |_PAGE_SHARED)
