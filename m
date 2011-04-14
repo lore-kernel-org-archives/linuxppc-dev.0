@@ -1,26 +1,26 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EEF67B6F4D
+	by ozlabs.org (Postfix) with ESMTPS id ECD50B6FB9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 19:19:00 +1000 (EST)
-Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
-	p3E9ItVD032176
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 11:18:55 +0200
-From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Where is CONFIG_BOOT_LOAD ?
-Date: Thu, 14 Apr 2011 11:18:54 +0200
-References: <201104081128.37906.dargaud@lpsc.in2p3.fr>
-	<201104081458.43831.dargaud@lpsc.in2p3.fr>
-	<4DA485CD.6060604@gmx.de>
-In-Reply-To: <4DA485CD.6060604@gmx.de>
+	Thu, 14 Apr 2011 22:09:59 +1000 (EST)
+Message-ID: <4DA6E429.7010408@embedded-sol.com>
+Date: Thu, 14 Apr 2011 15:10:17 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201104141118.55001.dargaud@lpsc.in2p3.fr>
+To: emre kara <emrekara2002@yahoo.co.uk>
+Subject: Re: fsl elbc driver causes corruption with bus monitor timeouts while
+	simultaneously access on Nor / Nand mtd partitions
+References: <204286.97927.qm@web25602.mail.ukl.yahoo.com>
+In-Reply-To: <204286.97927.qm@web25602.mail.ukl.yahoo.com>
+Content-Type: text/html; charset=UTF-8
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	David Woodhouse <David.Woodhouse@intel.com>,
+	linux-kernel@vger.kernel.org, bayraktarz@yahoo.com,
+	Lan Chunhe-B25806 <b25806@freescale.com>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 12 April 2011 19:03:09 Joachim F=F6rster wrote:
-> Note that the default 0x400... is the link address of the zImage wrapper
-> rather than the one of THE kernel.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  </head>
+  <body text="#000000" bgcolor="#ffffff">
+    Hi,<br>
+    <br>
+    Adding linux-mtd list to CC.<br>
+    <br>
+    On 04/14/2011 10:06 AM, emre kara wrote:
+    <blockquote cite="mid:204286.97927.qm@web25602.mail.ukl.yahoo.com"
+      type="cite">
+      <pre wrap="">Hi Scott, Roy.
+Scott's "mtd: eLBC NAND: increase bus timeout to maximum" patch is excluded from kernel with Roy's "P4080/eLBC: Make Freescale elbc interrupt common to elbc devices" patch. I don't know the reason for it but this causes bus monitor timeouts and corrupts nand flash while using mainline kernel. As I know there is an errata related to this topic, I think "increasing bus timeout to maximum" is a must.
+You can easly generate this situation with below commands:
 
-Yes, and I need more space for the uncompression to take place when using a=
- ramdisk.
 
-> Currently the link address seems to be hard-coded into
-> arch/powerpc/boot/wrapper
-> (a shell script). Since long ago I'm wondering why the maintainers did
-> that. But I guess there is a reason, because it wasn't that way in the
-> old arch/ppc days ;-) ...
-
-Thanks for that. I'd been using "objcopy --change-addresses" to relocate th=
-e elf file with success.
-
-> Is configuring the zImage-piggy-back-loader through menuconfig & co evil?
-
-That seems like a good idea. Maybe add some way to figure out if the uncomp=
-ressed kernel overlaps the zImage wrapper ?
-=2D-=20
-Guillaume Dargaud
-http://www.gdargaud.net/Antarctica/
+</pre>
+    </blockquote>
+    I think Scott's patch was picked up by Artem Bityutskijy into his
+    tree, but never made it to mainline.<br>
+    <br>
+    Felix.<br>
+    <i>
+    </i>
+  </body>
+</html>
