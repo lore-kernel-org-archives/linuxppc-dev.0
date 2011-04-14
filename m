@@ -1,21 +1,22 @@
-Return-Path: <pavius@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 488D21007D1
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B29701007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 09:52:27 +1000 (EST)
-Received: by vws20 with SMTP id 20so2107855vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 16:52:23 -0700 (PDT)
+	Fri, 15 Apr 2011 09:59:17 +1000 (EST)
+Message-ID: <4DA78A44.1000704@windriver.com>
+Date: Thu, 14 Apr 2011 19:59:00 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Date: Fri, 15 Apr 2011 02:52:22 +0300
-Message-ID: <BANLkTik=ivFpWQEhqrVnYfr2LS4HSnTDuA@mail.gmail.com>
-Subject: Non-console UART issues with 8xx
-From: Eran Duchan <pavius@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=20cf307f370cd6f61c04a0e99d3a
+To: Shaun Ruffell <sruffell@digium.com>
+Subject: Re: [PATCH] powerpc: Define 'crash_kexec_wait_realmode' for Non-SMP
+	systems.
+References: <20110414222719.GA16256@digium.com>
+In-Reply-To: <20110414222719.GA16256@digium.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf307f370cd6f61c04a0e99d3a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 11-04-14 06:27 PM, Shaun Ruffell wrote:
+> This fixes a regression from b987812b3fcaf70fdf0037589e5d2f5f2453e6ce
 
-Hey list
+A fix was already sent yesterday:
 
-I have a custom MPC875 board running 2.6.37. SMC1 is the console, SCC4 is a
-general purpose UART (DTS is set up accordingly). No hardware or software
-flow control for either.
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-April/089559.html
 
-The issue is simple: the non-console UART transmits garbled characters at
-the end of the transmission. For example, set up SMC1 to console (works
-perfect) and SCC4 as non-console, run stty -F /dev/ttyCPM1 19200 raw and
-then echo -n 1234567890 > /dev/ttyCPM1 - transmission may be something like
-"1234567=F8". Set the SCC4 as console (same baud rates) and the problem is
-reversed (SCC4 works perfect, SMC1 transmit garbled).
+which relocates the stub function to where it needs to be.  Your fix
+below would end up making duplicate stub functions.
 
-Rx direction seems fine, after some rudementary testing.
+Thanks,
+Paul.
 
-I dived into the code and see that the console UART has a completely
-different initialization sequence than the non-console UART. Short of divin=
-g
-into this ancient CPM architecture - does anyone have an idea?
-
-Thanks
-Eran
-
---20cf307f370cd6f61c04a0e99d3a
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Hey list<div><br></div><div>I have a custom=A0MPC875=A0boa=
-rd running 2.6.37. SMC1 is the console, SCC4 is a general purpose UART (DTS=
- is set up accordingly). No hardware or software flow control for either.</=
-div>
-<meta http-equiv=3D"content-type" content=3D"text/html; charset=3Dutf-8"><d=
-iv><br></div><div>The issue is simple: the non-console UART transmits garbl=
-ed characters at the end of the transmission. For example, set up SMC1 to c=
-onsole (works perfect) and SCC4 as non-console, run stty -F /dev/ttyCPM1 19=
-200 raw and then echo -n 1234567890 &gt; /dev/ttyCPM1 - transmission may be=
- something like &quot;1234567=F8&quot;. Set the SCC4 as console (same baud =
-rates) and the problem is reversed (SCC4 works perfect, SMC1 transmit garbl=
-ed). =A0</div>
-<div><br></div><div>Rx direction seems fine, after some rudementary testing=
-.</div><div><br></div><div>I dived into the code and see that the console U=
-ART has a completely different initialization sequence than the non-console=
- UART. Short of diving into this ancient CPM architecture - does anyone hav=
-e an idea?</div>
-<div><br></div><div>Thanks</div><div>Eran</div><div><br></div><div><br></di=
-v></div>
-
---20cf307f370cd6f61c04a0e99d3a--
+> "powerpc/kexec: Fix mismatched ifdefs for PPC64/SMP" which resulted in
+> 
+> arch/powerpc/kernel/crash.c: In function ‘default_machine_crash_shutdown’:
+>   arch/powerpc/kernel/crash.c:349: error: implicit declaration of function
+>   ‘crash_kexec_wait_realmode’
+> 
+> message on when compiling on Blue&White G3 and CONFIG_SMP is not defined.
+> 
+> Signed-off-by: Shaun Ruffell <sruffell@digium.com>
+> ---
+>  arch/powerpc/kernel/crash.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+> index 3d3d416..5e6e37f 100644
+> --- a/arch/powerpc/kernel/crash.c
+> +++ b/arch/powerpc/kernel/crash.c
+> @@ -255,6 +255,9 @@ void crash_kexec_secondary(struct pt_regs *regs)
+>  {
+>  	cpus_in_sr = CPU_MASK_NONE;
+>  }
+> +
+> +static inline void crash_kexec_wait_realmode(int cpu) {}
+> +
+>  #endif
+>  
+>  /*
