@@ -1,21 +1,39 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
-	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.44.51])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7234B6EFF
+	by ozlabs.org (Postfix) with ESMTPS id 3E558B6FE0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 05:21:27 +1000 (EST)
-In-Reply-To: <OF71C64301.E54A0A3C-ONC1257872.005BD121-C1257872.005C754F@transmode.se>
-References: <201104131632.21350.ml@stefan-roese.de>	<201104131721.34123.ml@stefan-roese.de>
-	<OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>	<201104141759.30446.ml@stefan-roese.de>
-	<OF71C64301.E54A0A3C-ONC1257872.005BD121-C1257872.005C754F@transmode.se>
-Subject: Re: FTrace on MPC8xx
-Message-ID: <OFDD77B7E3.D5C79015-ONC1257872.0069E657-C1257872.006A5415@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 14 Apr 2011 21:21:23 +0200
+	Fri, 15 Apr 2011 07:25:47 +1000 (EST)
+Received: from hpaq3.eem.corp.google.com (hpaq3.eem.corp.google.com
+	[172.25.149.3]) by smtp-out.google.com with ESMTP id p3ELPbXf015386
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 14:25:43 -0700
+Received: from ywf7 (ywf7.prod.google.com [10.192.6.7])
+	by hpaq3.eem.corp.google.com with ESMTP id p3ELPFjc013494
+	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 14:25:33 -0700
+Received: by ywf7 with SMTP id 7so21620ywf.13
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Apr 2011 14:25:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1302771756.15520.100.camel@thor.local>
+References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
+	<1302646173.28876.53.camel@pasglop>
+	<1302652502.28876.76.camel@pasglop>
+	<19877.23529.745123.819112@pilspetsen.it.uu.se>
+	<1302685102.28876.81.camel@pasglop>
+	<BANLkTimc84A8kddarnhvrcab3iKZc0HZAg@mail.gmail.com>
+	<1302736869.28876.91.camel@pasglop>
+	<BANLkTika8FY1dD_hOQ4wMhHzuQ2Qt8fg7A@mail.gmail.com>
+	<1302771756.15520.100.camel@thor.local>
+Date: Thu, 14 Apr 2011 14:25:31 -0700
+Message-ID: <BANLkTimykvKp=bwsFyNE9fWqcE9Ffws6bA@mail.gmail.com>
+Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
+From: Hugh Dickins <hughd@google.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jens Axboe <jaxboe@fusionio.com>, linux-kernel@vger.kernel.org,
+	kevin diggs <diggskevin38@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +43,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Apr 14, 2011 at 2:02 AM, Michel D=C3=A4nzer <michel@daenzer.net> wr=
+ote:
+> On Mit, 2011-04-13 at 18:43 -0500, kevin diggs wrote:
+>>
+>> On Wed, Apr 13, 2011 at 6:21 PM, Benjamin Herrenschmidt
+>> <benh@kernel.crashing.org> wrote:
+>> > On Wed, 2011-04-13 at 12:52 -0500, kevin diggs wrote:
+>> >> > Actually I do get a crash in X later on... something in the radeon
+>> >> DRM
+>> >> > interrupt code is getting what looks like a NULL dereference. I'll
+>> >> try
+>> >> > to dig that one later on. I don't know if it's related to your
+>> >> problem
+>> >> > at all though.
+>> >> >
+>> >> In this context, what does 'crash' mean? The X thingy goes down? Or
+>> >> the whole OS?
+>> >
+>> > Depends, with xmon enabled you get into xmon :-) Dunno if the oops is
+>> > fatal but it could be.
+>> >
+>> > Cheers,
+>> > Ben.
+>> >
+>> >
+>>
+>> As I think I have the same hardware as you (7,3, radeon 9600) If you
+>> can tell me how to reproduce it maybe I can poke around a little.
+>> Thus, at least temporarily, freeing you up for other stuff.
+>>
+>> I kinda need a break from fighting with GCC.
 >
-> Stefan Roese <ml@stefan-roese.de> wrote on 2011/04/14 17:59:30:
-> >
-> > Hi Joakim,
-> >
-> > On Wednesday 13 April 2011 17:38:03 Joakim Tjernlund wrote:
-> > > > > How big was the size to copy_tofrom_user()? Did it mange to copy
-> > > > > any bytes?
-> > > >
-> > > > The size in __copy_tofrom_user is 4. And its the first call in
-> > > > ftrace_modify_code() that fails directly. This works just fine on a
-> > > > PPC440EPx board.
-> > >
-> > > Since the size is only 4 it would not use dcbX anyway(I think).
-> > > Then is is probably called with the wrong addresses?
-> >
-> > No, addresses seem to be correct. I checked a bit further (I'm quite new to
-> > the MPC8xx MMU) and it seems that trying to modify the code (that's the
-> > destination address) via __copy_tofrom_user() fails on MPC8xx. Still not sure
-> > why this is the case. Perhaps an 8xx guru might chime in here. ;)
-> >
-> > BTW: I just noticed that enabling CONFIG_PIN_TLB seems to resolve this issue.
-> > With this option enabled, the dynamic code modification works just fine.
-> >
-> > Joakim, Scott? Any ideas on this?
->
-> hmm, I guess 8xx really maps kernel RO as RO :) Try
-> changing in pte-8xx.h:
->  - #define _PAGE_KERNEL_RO   (_PAGE_SHARED)
->  + #define _PAGE_KERNEL_RO   (_PAGE_RW |_PAGE_SHARED)
+> FWIW, the problem Ben refers to might be fixed in current mainline by
+> commit d87dfdbfc91c5e37288e7e8f7afdd992ba61a60d which reverts
+> 69a07f0b117a40fcc1a479358d8e1f41793617f2 .
 
-hmm, I wonder if not this is the problem(in pte-common.h)
-#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
-	defined(CONFIG_KPROBES)
-#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
-#else
-#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
-#endif
+Mikael,
 
-What is PAGE_KERNEL_TEXT for you?
-I think it must be PAGE_KERNEL_X, otherwise kernel text will be readonly.
+Something worth trying: turn off CONFIG_IDE.  That's what I need to
+boot 2.6.39-rc[1-3] on PowerPC G5.
 
- Jocke
+I know Jens has been fixing problems with IDE versus his plug/unplug
+changes, but it's still not fixed for me in rc3.
+
+In other mail http://lkml.org/lkml/2011/4/14/614
+I see Linus recommending his post-rc3 commit 6631e635c65d
+but I've not tried that myself yet.
+
+Hugh
