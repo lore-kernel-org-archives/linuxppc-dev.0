@@ -1,23 +1,19 @@
-Return-Path: <ml@stefan-roese.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0FED0B6FC2
+Return-Path: <acrux_it@libero.it>
+Received: from cp-out11.libero.it (cp-out11.libero.it [212.52.84.111])
+	by ozlabs.org (Postfix) with ESMTP id 35139B6F4E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 01:59:42 +1000 (EST)
-From: Stefan Roese <ml@stefan-roese.de>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: FTrace on MPC8xx
-Date: Thu, 14 Apr 2011 17:59:30 +0200
-References: <201104131632.21350.ml@stefan-roese.de>
-	<201104131721.34123.ml@stefan-roese.de>
-	<OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>
-In-Reply-To: <OF832AEAAB.68C38F85-ONC1257871.0055965D-C1257871.0055E1C2@transmode.se>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201104141759.30446.ml@stefan-roese.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+	Fri, 15 Apr 2011 02:39:39 +1000 (EST)
+Date: Thu, 14 Apr 2011 18:39:31 +0200
+From: acrux <acrux_it@libero.it>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PowerMacintosh B&W G3 boot failure - linux-2.6.36.x
+Message-Id: <20110414183931.26cfc02f.acrux_it@libero.it>
+In-Reply-To: <1302749356.28876.105.camel@pasglop>
+References: <20110413202714.ad1b5697.acrux_it@libero.it>
+	<1302749356.28876.105.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Nello M <ppc.addon@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joakim,
+On Thu, 14 Apr 2011 12:49:16 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Wednesday 13 April 2011 17:38:03 Joakim Tjernlund wrote:
-> > > How big was the size to copy_tofrom_user()? Did it mange to copy
-> > > any bytes?
+> On Wed, 2011-04-13 at 20:27 +0200, acrux wrote:
+> > i guess it's a different problem from the PegasosI G3 but i could
+> > be wrong.
 > > 
-> > The size in __copy_tofrom_user is 4. And its the first call in
-> > ftrace_modify_code() that fails directly. This works just fine on a
-> > PPC440EPx board.
+> > I'd like to receive  feedbacks and a working kernel config if
+> > someone is running with success linux-2.6.26.x on a Pmac B&W G3.
+> > This machine, altough obsolete, is still quite common
 > 
-> Since the size is only 4 it would not use dcbX anyway(I think).
-> Then is is probably called with the wrong addresses?
+> The snapshot you posted doesn't have much information... there's no
+> obvious error for example in there...
+> 
 
-No, addresses seem to be correct. I checked a bit further (I'm quite new to 
-the MPC8xx MMU) and it seems that trying to modify the code (that's the 
-destination address) via __copy_tofrom_user() fails on MPC8xx. Still not sure 
-why this is the case. Perhaps an 8xx guru might chime in here. ;)
+I know, I received from it from a user. It's where the kernel hangs.
 
-BTW: I just noticed that enabling CONFIG_PIN_TLB seems to resolve this issue. 
-With this option enabled, the dynamic code modification works just fine.
+Anyway, the last year, i received many install failures report from
+cruxppc users. I hope it's only my fault building the bootkernel and
+i'd like to receive a feedback from others distro developers for this
+specific machine.
 
-Joakim, Scott? Any ideas on this?
+I always avoided to collect obsolete machines thus I don't have a B&W G3
+but now i'm looking for one.
 
-Thanks,
-Stefan
+> What video driver are you trying to use ? Have you tried plain offb ?
+> (disabling whatever is the native driver for your video card, ie,
+> radeonfb or aty128fb or even atyfb, dunno what you have in there).
+> 
+> You can also try something like "udbg-immortal" on the kernel command
+> line see if that brings you more debug output.
+> 
+
+I'll try to receive more detailed info from that gentle user.
+
+Thanks again for your kind support,
+Nico
+-- 
+GNU/Linux on Power Architecture
+CRUX PPC - http://cruxppc.org/
