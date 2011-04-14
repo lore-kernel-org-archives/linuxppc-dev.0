@@ -1,34 +1,20 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 295F1B70FE
+Return-Path: <emrekara2002@yahoo.co.uk>
+Received: from nm12.bullet.mail.ukl.yahoo.com (nm12.bullet.mail.ukl.yahoo.com
+	[217.146.183.186]) by ozlabs.org (Postfix) with SMTP id C65FAB6EF1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 15:46:05 +1000 (EST)
-Received: from d01dlp01.pok.ibm.com (d01dlp01.pok.ibm.com [9.56.224.56])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3E5Ox6j026438
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:24:59 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id AAEFB38C803C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Apr 2011 01:45:52 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3E5k2E0304972
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:46:02 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p3E5k2KO003447
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2011 01:46:02 -0400
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH v4] powerpc: use a kmem cache for DTL buffers
-Date: Wed, 13 Apr 2011 22:45:59 -0700
-Message-Id: <1302759959-31467-1-git-send-email-nacc@us.ibm.com>
-In-Reply-To: <1302758026-29313-1-git-send-email-nacc@us.ibm.com>
-References: <1302758026-29313-1-git-send-email-nacc@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+	Thu, 14 Apr 2011 17:06:56 +1000 (EST)
+Message-ID: <204286.97927.qm@web25602.mail.ukl.yahoo.com>
+Date: Thu, 14 Apr 2011 08:06:54 +0100 (BST)
+From: emre kara <emrekara2002@yahoo.co.uk>
+Subject: fsl elbc driver causes corruption with bus monitor timeouts while
+	simultaneously access on Nor / Nand mtd partitions
+To: Scott Wood <scottwood@freescale.com>, Roy Zang <tie-fei.zang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: Wood Scott-B07421 <B07421@freescale.com>, felix@embedded-sol.com,
+	David Woodhouse <David.Woodhouse@intel.com>,
+	linux-kernel@vger.kernel.org, bayraktarz@yahoo.com,
+	Lan Chunhe-B25806 <b25806@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,59 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PAPR specifies that DTL buffers can not cross AMS environments (aka CMO
-in the PAPR) and can not cross a memory entitlement granule boundary
-(4k). This is found in section 14.11.3.2 H_REGISTER_VPA of the PAPR.
-kmalloc does not guarantee an alignment of the allocation, though,
-beyond 8 bytes (at least in my understanding). Create a special kmem
-cache for DTL buffers with the alignment requirement.
+Hi Scott, Roy.
+Scott's "mtd: eLBC NAND: increase bus timeout to maximum" patch is excluded=
+ from kernel with Roy's "P4080/eLBC: Make Freescale elbc interrupt common t=
+o elbc devices" patch. I don't know the reason for it but this causes bus m=
+onitor timeouts and corrupts nand flash while using mainline kernel. As I k=
+now there is an errata related to this topic, I think "increasing bus timeo=
+ut to maximum" is a must.
+You can easly generate this situation with below commands:
 
----
-Change from v1: removed extraneous #include.
-Change from v2: instead of overallocating and aligning, use a kmem cache
-Change from v3: handle cache creation failure
+Note: mtd4 is a Nor and mtd9 is a Nand partition.
+[root@P2020RDB root]# mount /dev/mtdblock9 /mnt/src/
+mount: you must specify the filesystem type
+[root@P2020RDB root]# mount /dev/mtdblock9 /mnt/src/ -t jffs2
+=EF=BF=BD=EF=BF=BDJFFS2 notice: (1950) jffs2_build_xattr_subsystem: complet=
+e building xattr subsystem, 0 of xdatum (0 unchecked, 0 orphan) and 0 of xr=
+ef (0 dead, 0 orphan) found.
+[root@P2020RDB root]# dd if=3D/dev/mtd4 of=3D/mnt/src/uboot bs=3D1
+fsl-lbc ffe05000.localbus: Local bus monitor time-out: LTESR 0x80000000
+fsl-lbc ffe05000.localbus: command failed: fir 412e0000 fcr 0 status 800000=
+00 mdr c0
+Read of newly-erased block at 0x00430000 failed: -74. Putting on bad_list
+fsl-lbc ffe05000.localbus: Local bus monitor time-out: LTESR 0x80000000
+fsl-lbc ffe05000.localbus: command failed: fir 426db000 fcr 6070d000 status=
+ 80000000 mdr ff
+Erase at 0x0042c000 failed immediately: errno -5
+fsl-lbc ffe05000.localbus: Local bus monitor time-out: LTESR 0x80000000
+Cfsl-lbc ffe05000.localbus: command failed: fir 412e0000 fcr 0 status 80000=
+000 mdr c0
+Read of newly-erased block at 0x00433000 failed: -74. Putting on bad_list
+JFFS2: marking eraseblock at 00433000
 
-Note, I initially put this in a firmware check if-block, but we have
-also seen some issues with alignment with non-AMS partitions. The wasted
-memory is unfortunate, though.
+Regards.
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-
- arch/powerpc/platforms/pseries/setup.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 0007241..9e20b83 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -287,14 +287,22 @@ static int alloc_dispatch_logs(void)
- 	int cpu, ret;
- 	struct paca_struct *pp;
- 	struct dtl_entry *dtl;
-+	struct kmem_cache *dtl_cache;
- 
- 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
- 		return 0;
- 
-+	dtl_cache = kmem_cache_create("dtl", DISPATCH_LOG_BYTES,
-+						DISPATCH_LOG_BYTES, 0, NULL); 
-+	if (!dtl_cache) {
-+		pr_warn("Failed to create dispatch trace log buffer cache\n");
-+		pr_warn("Stolen time statistics will be unreliable\n");
-+		return 0;
-+	}
-+
- 	for_each_possible_cpu(cpu) {
- 		pp = &paca[cpu];
--		dtl = kmalloc_node(DISPATCH_LOG_BYTES, GFP_KERNEL,
--				   cpu_to_node(cpu));
-+		dtl = kmem_cache_alloc(dtl_cache, GFP_KERNEL);
- 		if (!dtl) {
- 			pr_warn("Failed to allocate dispatch trace log for cpu %d\n",
- 				cpu);
--- 
-1.7.4.1
+Emre
