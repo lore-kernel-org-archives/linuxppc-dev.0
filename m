@@ -1,17 +1,20 @@
-Return-Path: <dwg@au1.ibm.com>
-Date: Thu, 14 Apr 2011 10:43:03 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc: Add an ePAPR compliant boot wrapper
-Message-ID: <20110414004303.GZ3151@yookeroo>
-References: <34e3e03a96888bc8c20013aa65712123ccf94649.1302676893.git.michael@ellerman.id.au>
-	<732a8ac3a24023f021908d03bd84b76638f381f1.1302676893.git.michael@ellerman.id.au>
-	<20110413130512.GD26874@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110413130512.GD26874@zod.rchland.ibm.com>
-Cc: Michael Ellerman <michael@ozlabs.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BCE8EB6EF0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 14 Apr 2011 12:49:33 +1000 (EST)
+Subject: Re: PowerMacintosh B&W G4 boot failure - linux-2.6.36.x
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: acrux <acrux_it@libero.it>
+In-Reply-To: <20110413202714.ad1b5697.acrux_it@libero.it>
+References: <20110413202714.ad1b5697.acrux_it@libero.it>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Apr 2011 12:49:16 +1000
+Message-ID: <1302749356.28876.105.camel@pasglop>
+Mime-Version: 1.0
+Cc: Nello M <ppc.addon@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 13, 2011 at 09:05:12AM -0400, Josh Boyer wrote:
-> On Wed, Apr 13, 2011 at 04:38:56PM +1000, Michael Ellerman wrote:
-> >+++ b/arch/powerpc/boot/epapr.c
-> >@@ -0,0 +1,69 @@
-> >+/*
-> >+ * Bootwrapper for ePAPR compliant firmwares
+On Wed, 2011-04-13 at 20:27 +0200, acrux wrote:
+> i guess it's a different problem from the PegasosI G3 but i could be wrong.
 > 
-> Out of curiosity, do we have a list of the ePAPR compliant firmwares (if
-> any)?
+> I'd like to receive  feedbacks and a working kernel config if someone is running with success
+>  linux-2.6.26.x on a Pmac B&W G3. This machine, altough obsolete, is still quite common
 
-The one this has been tested with is a revised (internal, so far)
-version of SLOF.  For the platform that I believe Michael is in the
-middle of upstreaming support for.
+The snapshot you posted doesn't have much information... there's no
+obvious error for example in there...
 
-> >+ *
-> >+ * Copyright 2010 David Gibson <david@gibson.dropbear.id.au>, IBM Corporation.
-> >+ *
-> >+ * Based on earlier bootwrappers by:
-> >+ * (c) Benjamin Herrenschmidt <benh@kernel.crashing.org>, IBM Corp,\
-> >+ *   and
-> >+ * Scott Wood <scottwood@freescale.com>
-> >+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-> >+ *
-> >+ * This program is free software; you can redistribute it and/or modify it
-> >+ * under the terms of the GNU General Public License version 2 as published
-> >+ * by the Free Software Foundation.
-> >+ */
-> >+
-> >+#include "ops.h"
-> >+#include "stdio.h"
-> >+#include "planetcore.h"
-> >+#include "dcr.h"
-> >+#include "4xx.h"
-> >+#include "io.h"
-> 
-> Do you need planetcore, dcr, and 4xx.h included here?  I don't see
-> anything used that would require them.
+What video driver are you trying to use ? Have you tried plain offb ?
+(disabling whatever is the native driver for your video card, ie,
+radeonfb or aty128fb or even atyfb, dunno what you have in there).
 
-Ah, no.  Leftovers from the files I based this on, I think.
+You can also try something like "udbg-immortal" on the kernel command
+line see if that brings you more debug output.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Ben.
