@@ -1,22 +1,23 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ml@stefan-roese.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D84DB6FEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2011 17:19:19 +1000 (EST)
-Message-ID: <4DA7F1AC.5030908@embedded-sol.com>
-Date: Fri, 15 Apr 2011 10:20:12 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+	by ozlabs.org (Postfix) with ESMTPS id E74A9B6FF7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Apr 2011 17:22:53 +1000 (EST)
+From: Stefan Roese <ml@stefan-roese.de>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: FTrace on MPC8xx
+Date: Fri, 15 Apr 2011 09:22:42 +0200
+References: <201104131632.21350.ml@stefan-roese.de>
+	<OF71C64301.E54A0A3C-ONC1257872.005BD121-C1257872.005C754F@transmode.se>
+	<OFDD77B7E3.D5C79015-ONC1257872.0069E657-C1257872.006A5415@transmode.se>
+In-Reply-To: <OFDD77B7E3.D5C79015-ONC1257872.0069E657-C1257872.006A5415@transmode.se>
 MIME-Version: 1.0
-To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Subject: Re: Problem with mini-PCI-E slot on P2020RDB
-References: <45903308677306428B6EE7E6FF5A520410D3E6@039-SN1MPN1-004.039d.mgd.msft.net>
-	<071A08F2C6A57E4E94D980ECA553F87417BAF7@039-SN1MPN1-004.039d.mgd.msft.net>
-In-Reply-To: <071A08F2C6A57E4E94D980ECA553F87417BAF7@039-SN1MPN1-004.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "leon.woestenberg@gmail.com" <leon.woestenberg@gmail.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201104150922.43093.ml@stefan-roese.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Poonam,
+Hi Joakim,
 
-Thanks for the confirmation.
+On Thursday 14 April 2011 21:21:23 Joakim Tjernlund wrote:
+> > hmm, I guess 8xx really maps kernel RO as RO :) Try
+> > 
+> > changing in pte-8xx.h:
+> >  - #define _PAGE_KERNEL_RO   (_PAGE_SHARED)
+> >  + #define _PAGE_KERNEL_RO   (_PAGE_RW |_PAGE_SHARED)
+> 
+> hmm, I wonder if not this is the problem(in pte-common.h)
+> #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) ||
+> defined(CONFIG_BDI_SWITCH) ||\ defined(CONFIG_KPROBES)
+> #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+> #else
+> #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+> #endif
+> 
+> What is PAGE_KERNEL_TEXT for you?
+> I think it must be PAGE_KERNEL_X, otherwise kernel text will be readonly.
 
-Felix.
+Yes, that's it! Its PAGE_KERNEL_ROX right now. We need to add CONFIG_FTRACE or 
+at least CONFIG_DYNAMIC_FTRACE to the #if statement above.
 
-On 04/15/2011 09:27 AM, Kushwaha Prabhakar-B32579 wrote:
-> Added Linxppc-dev
->
->> -----Original Message-----
->> From: Aggrwal Poonam-B10812
->> Sent: Friday, April 15, 2011 11:47 AM
->> To: Felix Radensky
->> Cc: Kushwaha Prabhakar-B32579; leon.woestenberg@gmail.com
->> Subject: FW: Problem with mini-PCI-E slot on P2020RDB
->>
->> Hello Felix
->>
->> We checked with the Board designer, we need the board fixes "mentioned in
->> Board errata doc" on the board for this issue. Sorry for the confusion.
->>
->> The fixes are not present on RevC, also on some RevDs this fix also may
->> be absent.
->>
->>
->> Please let us know in case of any issues.
->>
->> Regards
->> Poonam
->>
->>> -----Original Message-----
->>> From: Leon Woestenberg [mailto:leon.woestenberg@gmail.com]
->>> Sent: Wednesday, April 13, 2011 2:52 PM
->>> To: Felix Radensky
->>> Cc: Aggrwal Poonam-B10812; linuxppc-dev@ozlabs.org; Gupta
->>> Maneesh-B18878; Kushwaha Prabhakar-B32579
->>> Subject: Re: Problem with mini-PCI-E slot on P2020RDB
->>>
->>> Felix,
->>>
->>> On Tue, Apr 12, 2011 at 6:54 AM, Felix Radensky
->>> <felix@embedded-sol.com>
->>> wrote:
->>>> On 04/12/2011 07:05 AM, Aggrwal Poonam-B10812 wrote:
->>>>> As such there is no hardware fix related to this issue between RevC
->>>>> to RevD. The solution was a software patch to resolve the issue
->>>>> related to IRQ0.
->>>> Are you sure ? Please take a look at Freescale document titled
->>>> "P1020E/P2020E RDB System Errata".
->>>> There's errata CE10, IRQ0 held low. It is fixed in Rev D. Vivek
->>>> Mahajan, who looked at the issue back in 2009, estimated that
->>>> problem can be related to missing pull-up on IRQ0.
->>>> This is exactly what is
->>>> fixed in Rev D.
->>>>
->>> That's my understanding as well.
->>>
->>> Check if R420 and R423 are populated. These are the required pull-ups.
->>> On Rev D they are populated. You might be able to add them yourself.
->>>
->>> Even if you have an Rev A-C PCB, this fix can already be applied; it
->>> was on my board! (the bottom of the board mentions the schematic
->>> revision)
->>>
->>> The resistors have a silkscreen designator block called X, the
->>> resistors are situated to the left and bottom of the silkscreen X.
->>> IIRC, between the flash and Px020 part.
->>>
->>> On the left side of R420 (or R423) I measured the block wave from the
->>> RTC, which fires the 32kHz interrupt rate on IRQ0. This fixed by the
->>> u- boot patch.
->>>
->>> Regards,
->>>
->>> Leon.
->
+Do you want to send a patch (since you detected the real problem)? Or should I 
+do this?
+
+Thanks.
+
+Best regards,
+Stefan
