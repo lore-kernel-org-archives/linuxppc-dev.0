@@ -1,10 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <021a5af117537ce9f7c6c3b27310f15851ab5034.1302856271.git.michael@ellerman.id.au>
+Message-Id: <e0347e8cf1b0c69031cc32f217dbd4adf953f678.1302856271.git.michael@ellerman.id.au>
 In-Reply-To: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-Subject: [PATCH 10/15] powerpc: Define slb0_limit() for BOOK3E
-Date: Fri, 15 Apr 2011 18:32:03 +1000 (EST)
+Subject: [PATCH 11/15] powerpc: Index crit/dbg/mcheck stacks using cpu number
+	on 64bit
+Date: Fri, 15 Apr 2011 18:32:04 +1000 (EST)
 From: michael@ozlabs.org (Michael Ellerman)
 Cc: Jimi Xenidis <jimix@watson.ibm.com>, jack@codezen.org,
 	kumar.gala@freescale.com, imunsie@au.ibm.com,
@@ -20,34 +21,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Michael Ellerman <michael@ellerman.id.au>
 
-On BOOK3E we don't have an SLB 0, but the equivalent concept is the
-bolted entry mapping the kernel. Currently this is a 1G entry, so
-for now hardcode that. This will probably need to be reworked in
-future.
+In exc_lvl_ctx_init() we index into the crit/dbg/mcheck stacks using
+the hard cpu id, but that assumes the hard cpu id is zero based and
+contiguous. That is not the case on A2.
+
+The root of the problem is that the 32bit code has no equivalent of the
+paca to allow it to do the hard->soft mapping in assembler. Until the
+32bit code is updated to handle that, index the stacks using the soft
+cpu ids on 64bit and hard on 32 bit.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup_64.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/irq.c |   26 +++++++++++++++-----------
+ 1 files changed, 15 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 91a5cc5..3d0daf4 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -436,10 +436,14 @@ void __init setup_system(void)
- 
- static u64 slb0_limit(void)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index ac32ba1..4f5d6e7 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -397,24 +397,28 @@ struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
+ void exc_lvl_ctx_init(void)
  {
-+#ifdef CONFIG_PPC_BOOK3E
-+	return 1 << 30;
-+#else
- 	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
- 		return 1UL << SID_SHIFT_1T;
- 	}
- 	return 1UL << SID_SHIFT;
-+#endif
- }
+ 	struct thread_info *tp;
+-	int i, hw_cpu;
++	int i, cpu_nr;
  
- static void __init irqstack_early_init(void)
+ 	for_each_possible_cpu(i) {
+-		hw_cpu = get_hard_smp_processor_id(i);
+-		memset((void *)critirq_ctx[hw_cpu], 0, THREAD_SIZE);
+-		tp = critirq_ctx[hw_cpu];
+-		tp->cpu = i;
++#ifdef CONFIG_PPC64
++		cpu_nr = i;
++#else
++		cpu_nr = get_hard_smp_processor_id(i);
++#endif
++		memset((void *)critirq_ctx[cpu_nr], 0, THREAD_SIZE);
++		tp = critirq_ctx[cpu_nr];
++		tp->cpu = cpu_nr;
+ 		tp->preempt_count = 0;
+ 
+ #ifdef CONFIG_BOOKE
+-		memset((void *)dbgirq_ctx[hw_cpu], 0, THREAD_SIZE);
+-		tp = dbgirq_ctx[hw_cpu];
+-		tp->cpu = i;
++		memset((void *)dbgirq_ctx[cpu_nr], 0, THREAD_SIZE);
++		tp = dbgirq_ctx[cpu_nr];
++		tp->cpu = cpu_nr;
+ 		tp->preempt_count = 0;
+ 
+-		memset((void *)mcheckirq_ctx[hw_cpu], 0, THREAD_SIZE);
+-		tp = mcheckirq_ctx[hw_cpu];
+-		tp->cpu = i;
++		memset((void *)mcheckirq_ctx[cpu_nr], 0, THREAD_SIZE);
++		tp = mcheckirq_ctx[cpu_nr];
++		tp->cpu = cpu_nr;
+ 		tp->preempt_count = HARDIRQ_OFFSET;
+ #endif
+ 	}
 -- 
 1.7.1
