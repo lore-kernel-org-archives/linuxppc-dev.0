@@ -1,32 +1,25 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E29D3B7003
+Return-Path: <emunson@mgebm.net>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CADE71007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Apr 2011 03:27:36 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3FH7O0I002632
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 13:07:24 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3FHRSws1191992
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 13:27:28 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p3FHRRCX005160
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:27:28 -0300
-Date: Fri, 15 Apr 2011 10:27:16 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Steve Wise <swise@opengridcomputing.com>
-Subject: Re: [PATCH] cxgb4: use pgprot_writecombine() on powerpc
-Message-ID: <20110415172716.GA5881@us.ibm.com>
-References: <1300134971-16752-1-git-send-email-nacc@us.ibm.com>
-	<4D7E7FCE.3000703@opengridcomputing.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4D7E7FCE.3000703@opengridcomputing.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+	Sat, 16 Apr 2011 04:12:46 +1000 (EST)
+Received: by qwf7 with SMTP id 7so1821896qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Apr 2011 11:12:42 -0700 (PDT)
+From: Eric B Munson <emunson@mgebm.net>
+To: benh@kernel.crashing.org
+Subject: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
+	register value shrinks
+Date: Fri, 15 Apr 2011 14:12:30 -0400
+Message-Id: <1302891150-8121-1-git-send-email-emunson@mgebm.net>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+	David.Laight@ACULAB.COM, paulus@samba.org, anton@samba.org,
+	acme@ghostprotocols.net, mingo@elte.hu,
+	linuxppc-dev@lists.ozlabs.org, stable@kernel.org,
+	Eric B Munson <emunson@mgebm.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +29,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14.03.2011 [15:51:26 -0500], Steve Wise wrote:
-> On 03/14/2011 03:36 PM, Nishanth Aravamudan wrote:
-> >Commit fe3cc0d99de6a9bf99b6c279a8afb5833888c1f7 ("powerpc: Add
-> >pgprot_writecombine") in benh's tree exposes the pgprot_writecombine()
-> >API to drivers on powerpc. cxgb4 has an open-coded version of the same,
-> >so use the common API now that it's available.
-> >
-> >Signed-off-by: Nishanth Aravamudan<nacc@us.ibm.com>
-> >Cc: Steve Wise<swise@opengridcomputing.com>
-> >Cc: Anton Blanchard<anton@samba.org>
-> >
-> >---
-> >
-> >Given that this depends on a patch in Ben's tree, should this go in via
-> >the powerpc tree? Presuming Steve acks it, of course.
-> >
-> >  drivers/infiniband/hw/cxgb4/t4.h |    5 +----
-> >  1 files changed, 1 insertions(+), 4 deletions(-)
-> >
-> 
-> Acked-by: Steve Wise <swise@opengridcomputing.com>
-> 
-> I suppose it should go into the same tree with the commit that adds this function.
+Because of speculative event roll back, it is possible for some event coutners
+to decrease between reads on POWER7.  This causes a problem with the way that
+counters are updated.  Delta calues are calculated in a 64 bit value and the
+top 32 bits are masked.  If the register value has decreased, this leaves us
+with a very large positive value added to the kernel counters.  This patch
+protects against this by skipping the update if the delta would be negative.
+This can lead to a lack of precision in the coutner values, but from my testing
+the value is typcially fewer than 10 samples at a time.
 
-Ben, I don't think this is in your tree yet, will you be taking it?
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Cc: stable@kernel.org
+---
+Changes from V3:
+ Fix delta checking so that only roll backs are discarded
+Changes from V2:
+ Create a helper that should handle counter roll back as well as registers that
+might be allowed to roll over
+Changes from V1:
+ Updated patch leader
+ Added stable CC
+ Use an s32 to hold delta values and discard any values that are less than 0
 
-Thanks,
-Nish
+ arch/powerpc/kernel/perf_event.c |   37 ++++++++++++++++++++++++++++++-------
+ 1 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
+index c4063b7..822f630 100644
+--- a/arch/powerpc/kernel/perf_event.c
++++ b/arch/powerpc/kernel/perf_event.c
+@@ -398,6 +398,25 @@ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+ 	return 0;
+ }
+ 
++static u64 check_and_compute_delta(u64 prev, u64 val)
++{
++	u64 delta = (val - prev) & 0xfffffffful;
++
++	/*
++	 * POWER7 can roll back counter values, if the new value is smaller
++	 * than the previous value it will cause the delta and the counter to
++	 * have bogus values unless we rolled a counter over.  If a coutner is
++	 * rolled back, it will be smaller, but within 256, which is the maximum
++	 * number of events to rollback at once.  If we dectect a rollback
++	 * return 0.  This can lead to a small lack of precision in the
++	 * counters.
++	 */
++	if (prev > val && (prev - val) < 256)
++		delta = 0;
++
++	return delta;
++}
++
+ static void power_pmu_read(struct perf_event *event)
+ {
+ 	s64 val, delta, prev;
+@@ -416,10 +435,11 @@ static void power_pmu_read(struct perf_event *event)
+ 		prev = local64_read(&event->hw.prev_count);
+ 		barrier();
+ 		val = read_pmc(event->hw.idx);
++		delta = check_and_compute_delta(prev, val);
++		if (!delta)
++			return;
+ 	} while (local64_cmpxchg(&event->hw.prev_count, prev, val) != prev);
+ 
+-	/* The counters are only 32 bits wide */
+-	delta = (val - prev) & 0xfffffffful;
+ 	local64_add(delta, &event->count);
+ 	local64_sub(delta, &event->hw.period_left);
+ }
+@@ -449,8 +469,9 @@ static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
+ 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+ 		prev = local64_read(&event->hw.prev_count);
+ 		event->hw.idx = 0;
+-		delta = (val - prev) & 0xfffffffful;
+-		local64_add(delta, &event->count);
++		delta = check_and_compute_delta(prev, val);
++		if (delta)
++			local64_add(delta, &event->count);
+ 	}
+ }
+ 
+@@ -458,14 +479,16 @@ static void thaw_limited_counters(struct cpu_hw_events *cpuhw,
+ 				  unsigned long pmc5, unsigned long pmc6)
+ {
+ 	struct perf_event *event;
+-	u64 val;
++	u64 val, prev;
+ 	int i;
+ 
+ 	for (i = 0; i < cpuhw->n_limited; ++i) {
+ 		event = cpuhw->limited_counter[i];
+ 		event->hw.idx = cpuhw->limited_hwidx[i];
+ 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+-		local64_set(&event->hw.prev_count, val);
++		prev = local64_read(&event->hw.prev_count);
++		if (check_and_compute_delta(prev, val))
++			local64_set(&event->hw.prev_count, val);
+ 		perf_event_update_userpage(event);
+ 	}
+ }
+@@ -1197,7 +1220,7 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+ 
+ 	/* we don't have to worry about interrupts here */
+ 	prev = local64_read(&event->hw.prev_count);
+-	delta = (val - prev) & 0xfffffffful;
++	delta = check_and_compute_delta(prev, val);
+ 	local64_add(delta, &event->count);
+ 
+ 	/*
+-- 
+1.7.1
