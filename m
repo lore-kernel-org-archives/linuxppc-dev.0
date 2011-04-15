@@ -1,22 +1,16 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from fornost.hengli.com.au (helcar.apana.org.au [209.40.204.226])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F0331007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 19:51:04 +1000 (EST)
-Date: Fri, 15 Apr 2011 17:50:49 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/4] crypto: caam - handle interrupt lines shared
-	across rings
-Message-ID: <20110415095049.GA2129@gondor.apana.org.au>
-References: <20110411191516.bae0454e.kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110411191516.bae0454e.kim.phillips@freescale.com>
-Cc: Steve Cornelius <sec@pobox.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 468E71007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2011 20:01:08 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Don't write protect kernel text with
+	CONFIG_DYNAMIC_FTRACE enabled
+Date: Fri, 15 Apr 2011 11:49:53 +0200
+Message-Id: <1302860993-28829-1-git-send-email-sr@denx.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 11, 2011 at 07:15:16PM -0500, Kim Phillips wrote:
-> - add IRQF_SHARED to request_irq flags to support parts such as
-> the p1023 that has one IRQ line per couple of rings.
-> 
-> - resetting a job ring triggers an interrupt, so move request_irq
-> prior to jr_reset to avoid 'got IRQ but nobody cared' messages.
-> 
-> - disable IRQs in h/w to avoid contention between reset and
-> interrupt status
-> 
-> - delete invalid comment - if there were incomplete jobs,
-> module would be in use, preventing an unload.
-> 
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> ---
-> this, and the remaining patches in this series, tested on p1023, p3041,
-> p4080, and 32- and 64-bit p5020.
+This problem was noticed on an MPC855T platform. Ftrace did oops
+when trying to write to the kernel text segment.
 
-All four patches applied.  Thanks Kim!
+Many thanks to Joakim for finding the root cause of this problem.
+
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+---
+ arch/powerpc/include/asm/pte-common.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 811f04a..8d1569c 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -162,7 +162,7 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
+  * on platforms where such control is possible.
+  */
+ #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
+-	defined(CONFIG_KPROBES)
++	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+ #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+ #else
+ #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.7.4.4
