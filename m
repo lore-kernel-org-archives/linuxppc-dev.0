@@ -1,32 +1,21 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AEA251007D7
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B87091007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Apr 2011 06:29:22 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3FKDDbA021046
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:13:13 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3FKTHWY094456
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:29:17 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p3FKTHIM015554
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:29:17 -0600
-Date: Fri, 15 Apr 2011 13:29:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Fix kexec-related UP build error
-Message-ID: <20110415202916.GA6758@linux.vnet.ibm.com>
+	Sat, 16 Apr 2011 06:41:20 +1000 (EST)
+Date: Fri, 15 Apr 2011 15:41:10 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Eran Duchan <pavius@gmail.com>
+Subject: Re: Non-console UART issues with 8xx
+Message-ID: <20110415154110.1b523da0@schlenkerla.am.freescale.net>
+In-Reply-To: <BANLkTik=ivFpWQEhqrVnYfr2LS4HSnTDuA@mail.gmail.com>
+References: <BANLkTik=ivFpWQEhqrVnYfr2LS4HSnTDuA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: ebiederm@xmission.com, paulus@samba.org, linux-kernel@vger.kernel.org,
-	kexec@lists.infradead.org
-Reply-To: paulmck@linux.vnet.ibm.com
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,37 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+On Fri, 15 Apr 2011 02:52:22 +0300
+Eran Duchan <pavius@gmail.com> wrote:
 
-The following patch fixes a UP build problem for kexec() on powerpc.
-When the crash_kexec_wait_realmode() function was added, it was
-placed in only two of the three required locations.
+> Hey list
+>=20
+> I have a custom MPC875 board running 2.6.37. SMC1 is the console, SCC4 is=
+ a
+> general purpose UART (DTS is set up accordingly). No hardware or software
+> flow control for either.
+>=20
+> The issue is simple: the non-console UART transmits garbled characters at
+> the end of the transmission.
 
-Thoughts?
+Hmm, there's a wait_closing field in uart_cpm_port that doesn't seem to be
+initialized anywhere.
 
-							Thanx, Paul
+The driver should also be sending the STOP_TX/GRA_STOP_TX command *before*
+clearing the transmit enable bits, rather than after.
 
-------------------------------------------------------------------------
+>  For example, set up SMC1 to console (works
+> perfect) and SCC4 as non-console, run stty -F /dev/ttyCPM1 19200 raw and
+> then echo -n 1234567890 > /dev/ttyCPM1 - transmission may be something li=
+ke
+> "1234567=C3=B8". Set the SCC4 as console (same baud rates) and the proble=
+m is
+> reversed (SCC4 works perfect, SMC1 transmit garbled).
+>=20
+> Rx direction seems fine, after some rudementary testing.
+>=20
+> I dived into the code and see that the console UART has a completely
+> different initialization sequence than the non-console UART. Short of div=
+ing
+> into this ancient CPM architecture - does anyone have an idea?
 
-The function crash_kexec_wait_realmode() is defined only if SMP, but is
-called in UP builds.  Create an empty function to keep the compiler happy
-in UP builds.
+The console is a bit different because it has a user that isn't tied to an
+open file-handle -- which doesn't interact well with the driver's
+(possibly misguided) desire to actually deconfigure the hardware when not
+open.
 
-Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index 3d3d416..6f964ef 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -251,6 +251,10 @@ static void crash_kexec_prepare_cpus(int cpu)
- #endif
- }
- 
-+static void crash_kexec_wait_realmode(int cpu)
-+{
-+}
-+
- void crash_kexec_secondary(struct pt_regs *regs)
- {
- 	cpus_in_sr = CPU_MASK_NONE;
+-Scott
