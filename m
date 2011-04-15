@@ -1,25 +1,32 @@
-Return-Path: <emunson@mgebm.net>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CADE71007D7
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AEA251007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Apr 2011 04:12:46 +1000 (EST)
-Received: by qwf7 with SMTP id 7so1821896qwf.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 11:12:42 -0700 (PDT)
-From: Eric B Munson <emunson@mgebm.net>
-To: benh@kernel.crashing.org
-Subject: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
-	register value shrinks
-Date: Fri, 15 Apr 2011 14:12:30 -0400
-Message-Id: <1302891150-8121-1-git-send-email-emunson@mgebm.net>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-	David.Laight@ACULAB.COM, paulus@samba.org, anton@samba.org,
-	acme@ghostprotocols.net, mingo@elte.hu,
-	linuxppc-dev@lists.ozlabs.org, stable@kernel.org,
-	Eric B Munson <emunson@mgebm.net>
+	Sat, 16 Apr 2011 06:29:22 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3FKDDbA021046
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:13:13 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3FKTHWY094456
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:29:17 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p3FKTHIM015554
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:29:17 -0600
+Date: Fri, 15 Apr 2011 13:29:16 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix kexec-related UP build error
+Message-ID: <20110415202916.GA6758@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: ebiederm@xmission.com, paulus@samba.org, linux-kernel@vger.kernel.org,
+	kexec@lists.infradead.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,114 +36,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because of speculative event roll back, it is possible for some event coutners
-to decrease between reads on POWER7.  This causes a problem with the way that
-counters are updated.  Delta calues are calculated in a 64 bit value and the
-top 32 bits are masked.  If the register value has decreased, this leaves us
-with a very large positive value added to the kernel counters.  This patch
-protects against this by skipping the update if the delta would be negative.
-This can lead to a lack of precision in the coutner values, but from my testing
-the value is typcially fewer than 10 samples at a time.
+Hello!
 
-Signed-off-by: Eric B Munson <emunson@mgebm.net>
-Cc: stable@kernel.org
----
-Changes from V3:
- Fix delta checking so that only roll backs are discarded
-Changes from V2:
- Create a helper that should handle counter roll back as well as registers that
-might be allowed to roll over
-Changes from V1:
- Updated patch leader
- Added stable CC
- Use an s32 to hold delta values and discard any values that are less than 0
+The following patch fixes a UP build problem for kexec() on powerpc.
+When the crash_kexec_wait_realmode() function was added, it was
+placed in only two of the three required locations.
 
- arch/powerpc/kernel/perf_event.c |   37 ++++++++++++++++++++++++++++++-------
- 1 files changed, 30 insertions(+), 7 deletions(-)
+Thoughts?
 
-diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
-index c4063b7..822f630 100644
---- a/arch/powerpc/kernel/perf_event.c
-+++ b/arch/powerpc/kernel/perf_event.c
-@@ -398,6 +398,25 @@ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
- 	return 0;
+							Thanx, Paul
+
+------------------------------------------------------------------------
+
+The function crash_kexec_wait_realmode() is defined only if SMP, but is
+called in UP builds.  Create an empty function to keep the compiler happy
+in UP builds.
+
+Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 3d3d416..6f964ef 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -251,6 +251,10 @@ static void crash_kexec_prepare_cpus(int cpu)
+ #endif
  }
  
-+static u64 check_and_compute_delta(u64 prev, u64 val)
++static void crash_kexec_wait_realmode(int cpu)
 +{
-+	u64 delta = (val - prev) & 0xfffffffful;
-+
-+	/*
-+	 * POWER7 can roll back counter values, if the new value is smaller
-+	 * than the previous value it will cause the delta and the counter to
-+	 * have bogus values unless we rolled a counter over.  If a coutner is
-+	 * rolled back, it will be smaller, but within 256, which is the maximum
-+	 * number of events to rollback at once.  If we dectect a rollback
-+	 * return 0.  This can lead to a small lack of precision in the
-+	 * counters.
-+	 */
-+	if (prev > val && (prev - val) < 256)
-+		delta = 0;
-+
-+	return delta;
 +}
 +
- static void power_pmu_read(struct perf_event *event)
+ void crash_kexec_secondary(struct pt_regs *regs)
  {
- 	s64 val, delta, prev;
-@@ -416,10 +435,11 @@ static void power_pmu_read(struct perf_event *event)
- 		prev = local64_read(&event->hw.prev_count);
- 		barrier();
- 		val = read_pmc(event->hw.idx);
-+		delta = check_and_compute_delta(prev, val);
-+		if (!delta)
-+			return;
- 	} while (local64_cmpxchg(&event->hw.prev_count, prev, val) != prev);
- 
--	/* The counters are only 32 bits wide */
--	delta = (val - prev) & 0xfffffffful;
- 	local64_add(delta, &event->count);
- 	local64_sub(delta, &event->hw.period_left);
- }
-@@ -449,8 +469,9 @@ static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
- 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
- 		prev = local64_read(&event->hw.prev_count);
- 		event->hw.idx = 0;
--		delta = (val - prev) & 0xfffffffful;
--		local64_add(delta, &event->count);
-+		delta = check_and_compute_delta(prev, val);
-+		if (delta)
-+			local64_add(delta, &event->count);
- 	}
- }
- 
-@@ -458,14 +479,16 @@ static void thaw_limited_counters(struct cpu_hw_events *cpuhw,
- 				  unsigned long pmc5, unsigned long pmc6)
- {
- 	struct perf_event *event;
--	u64 val;
-+	u64 val, prev;
- 	int i;
- 
- 	for (i = 0; i < cpuhw->n_limited; ++i) {
- 		event = cpuhw->limited_counter[i];
- 		event->hw.idx = cpuhw->limited_hwidx[i];
- 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
--		local64_set(&event->hw.prev_count, val);
-+		prev = local64_read(&event->hw.prev_count);
-+		if (check_and_compute_delta(prev, val))
-+			local64_set(&event->hw.prev_count, val);
- 		perf_event_update_userpage(event);
- 	}
- }
-@@ -1197,7 +1220,7 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 
- 	/* we don't have to worry about interrupts here */
- 	prev = local64_read(&event->hw.prev_count);
--	delta = (val - prev) & 0xfffffffful;
-+	delta = check_and_compute_delta(prev, val);
- 	local64_add(delta, &event->count);
- 
- 	/*
--- 
-1.7.1
+ 	cpus_in_sr = CPU_MASK_NONE;
