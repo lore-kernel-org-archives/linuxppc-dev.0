@@ -1,23 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
-	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from fornost.hengli.com.au (helcar.apana.org.au [209.40.204.226])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0852C1007D1
+	by ozlabs.org (Postfix) with ESMTPS id 4F0331007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 18:46:12 +1000 (EST)
-In-Reply-To: <201104150922.43093.ml@stefan-roese.de>
-References: <201104131632.21350.ml@stefan-roese.de>
-	<OF71C64301.E54A0A3C-ONC1257872.005BD121-C1257872.005C754F@transmode.se>
-	<OFDD77B7E3.D5C79015-ONC1257872.0069E657-C1257872.006A5415@transmode.se>
-	<201104150922.43093.ml@stefan-roese.de>
-Subject: Re: FTrace on MPC8xx
-To: Stefan Roese <ml@stefan-roese.de>
-Message-ID: <OFB0C5E010.756D23BE-ONC1257873.003006DB-C1257873.00302A63@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 15 Apr 2011 10:46:05 +0200
+	Fri, 15 Apr 2011 19:51:04 +1000 (EST)
+Date: Fri, 15 Apr 2011 17:50:49 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 1/4] crypto: caam - handle interrupt lines shared
+	across rings
+Message-ID: <20110415095049.GA2129@gondor.apana.org.au>
+References: <20110411191516.bae0454e.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110411191516.bae0454e.kim.phillips@freescale.com>
+Cc: Steve Cornelius <sec@pobox.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stefan Roese <ml@stefan-roese.de> wrote on 2011/04/15 09:22:42:
-> Hi Joakim,
->
-> On Thursday 14 April 2011 21:21:23 Joakim Tjernlund wrote:
-> > > hmm, I guess 8xx really maps kernel RO as RO :) Try
-> > >
-> > > changing in pte-8xx.h:
-> > >  - #define _PAGE_KERNEL_RO   (_PAGE_SHARED)
-> > >  + #define _PAGE_KERNEL_RO   (_PAGE_RW |_PAGE_SHARED)
-> >
-> > hmm, I wonder if not this is the problem(in pte-common.h)
-> > #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) ||
-> > defined(CONFIG_BDI_SWITCH) ||\ defined(CONFIG_KPROBES)
-> > #define PAGE_KERNEL_TEXT   PAGE_KERNEL_X
-> > #else
-> > #define PAGE_KERNEL_TEXT   PAGE_KERNEL_ROX
-> > #endif
-> >
-> > What is PAGE_KERNEL_TEXT for you?
-> > I think it must be PAGE_KERNEL_X, otherwise kernel text will be readonly.
->
-> Yes, that's it! Its PAGE_KERNEL_ROX right now. We need to add CONFIG_FTRACE or
-> at least CONFIG_DYNAMIC_FTRACE to the #if statement above.
->
-> Do you want to send a patch (since you detected the real problem)? Or should I
-> do this?
+On Mon, Apr 11, 2011 at 07:15:16PM -0500, Kim Phillips wrote:
+> - add IRQF_SHARED to request_irq flags to support parts such as
+> the p1023 that has one IRQ line per couple of rings.
+> 
+> - resetting a job ring triggers an interrupt, so move request_irq
+> prior to jr_reset to avoid 'got IRQ but nobody cared' messages.
+> 
+> - disable IRQs in h/w to avoid contention between reset and
+> interrupt status
+> 
+> - delete invalid comment - if there were incomplete jobs,
+> module would be in use, preventing an unload.
+> 
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+> this, and the remaining patches in this series, tested on p1023, p3041,
+> p4080, and 32- and 64-bit p5020.
 
-Feel free to send it. I am barely managing my mail ATM.
-
- Jocke
+All four patches applied.  Thanks Kim!
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
