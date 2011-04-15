@@ -1,14 +1,13 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <e0347e8cf1b0c69031cc32f217dbd4adf953f678.1302856271.git.michael@ellerman.id.au>
+Message-Id: <bbe411555c95e56ba427ebf638d5333b1870af77.1302856271.git.michael@ellerman.id.au>
 In-Reply-To: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-Subject: [PATCH 11/15] powerpc: Index crit/dbg/mcheck stacks using cpu number
-	on 64bit
+Subject: [PATCH 12/15] powerpc/book3e: Use way 3 for linear mapping bolted
+	entry
 Date: Fri, 15 Apr 2011 18:32:04 +1000 (EST)
 From: michael@ozlabs.org (Michael Ellerman)
-Cc: Jimi Xenidis <jimix@watson.ibm.com>, jack@codezen.org,
-	kumar.gala@freescale.com, imunsie@au.ibm.com,
+Cc: Jimi Xenidis <jimix@watson.ibm.com>, jack@codezen.org, imunsie@au.ibm.com,
 	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,65 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-In exc_lvl_ctx_init() we index into the crit/dbg/mcheck stacks using
-the hard cpu id, but that assumes the hard cpu id is zero based and
-contiguous. That is not the case on A2.
+An erratum on A2 can lead to the bolted entry we insert for the linear
+mapping being evicted, to avoid that write the bolted entry to way 3.
 
-The root of the problem is that the 32bit code has no equivalent of the
-paca to allow it to do the hard->soft mapping in assembler. Until the
-32bit code is updated to handle that, index the stacks using the soft
-cpu ids on 64bit and hard on 32 bit.
-
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/irq.c |   26 +++++++++++++++-----------
- 1 files changed, 15 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index ac32ba1..4f5d6e7 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -397,24 +397,28 @@ struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
- void exc_lvl_ctx_init(void)
- {
- 	struct thread_info *tp;
--	int i, hw_cpu;
-+	int i, cpu_nr;
- 
- 	for_each_possible_cpu(i) {
--		hw_cpu = get_hard_smp_processor_id(i);
--		memset((void *)critirq_ctx[hw_cpu], 0, THREAD_SIZE);
--		tp = critirq_ctx[hw_cpu];
--		tp->cpu = i;
-+#ifdef CONFIG_PPC64
-+		cpu_nr = i;
-+#else
-+		cpu_nr = get_hard_smp_processor_id(i);
-+#endif
-+		memset((void *)critirq_ctx[cpu_nr], 0, THREAD_SIZE);
-+		tp = critirq_ctx[cpu_nr];
-+		tp->cpu = cpu_nr;
- 		tp->preempt_count = 0;
- 
- #ifdef CONFIG_BOOKE
--		memset((void *)dbgirq_ctx[hw_cpu], 0, THREAD_SIZE);
--		tp = dbgirq_ctx[hw_cpu];
--		tp->cpu = i;
-+		memset((void *)dbgirq_ctx[cpu_nr], 0, THREAD_SIZE);
-+		tp = dbgirq_ctx[cpu_nr];
-+		tp->cpu = cpu_nr;
- 		tp->preempt_count = 0;
- 
--		memset((void *)mcheckirq_ctx[hw_cpu], 0, THREAD_SIZE);
--		tp = mcheckirq_ctx[hw_cpu];
--		tp->cpu = i;
-+		memset((void *)mcheckirq_ctx[cpu_nr], 0, THREAD_SIZE);
-+		tp = mcheckirq_ctx[cpu_nr];
-+		tp->cpu = cpu_nr;
- 		tp->preempt_count = HARDIRQ_OFFSET;
- #endif
- 	}
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 5c43063..e6c0926 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -864,8 +864,9 @@ have_hes:
+ 	 * that will have to be made dependent on whether we are running under
+ 	 * a hypervisor I suppose.
+ 	 */
+-	ori	r3,r3,MAS0_HES | MAS0_WQ_ALLWAYS
+-	mtspr	SPRN_MAS0,r3
++	ori	r11,r3,MAS0_WQ_ALLWAYS
++	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 erratum 376 */
++	mtspr	SPRN_MAS0,r11
+ 	lis	r3,(MAS1_VALID | MAS1_IPROT)@h
+ 	ori	r3,r3,BOOK3E_PAGESZ_1GB << MAS1_TSIZE_SHIFT
+ 	mtspr	SPRN_MAS1,r3
 -- 
 1.7.1
