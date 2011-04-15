@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <bbe411555c95e56ba427ebf638d5333b1870af77.1302856271.git.michael@ellerman.id.au>
+Message-Id: <f653265d4078a836a27545cbad8fe7b6f964f28a.1302856271.git.michael@ellerman.id.au>
 In-Reply-To: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-Subject: [PATCH 12/15] powerpc/book3e: Use way 3 for linear mapping bolted
-	entry
-Date: Fri, 15 Apr 2011 18:32:04 +1000 (EST)
+Subject: [PATCH 13/15] powerpc/book3e: Flush IPROT protected TLB entries
+	leftover by firmware
+Date: Fri, 15 Apr 2011 18:32:05 +1000 (EST)
 From: michael@ozlabs.org (Michael Ellerman)
 Cc: Jimi Xenidis <jimix@watson.ibm.com>, jack@codezen.org, imunsie@au.ibm.com,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -18,32 +18,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jack Miller <jack@codezen.org>
 
-An erratum on A2 can lead to the bolted entry we insert for the linear
-mapping being evicted, to avoid that write the bolted entry to way 3.
+When we set up the TLB for ourselves on Book3E, we need to flush out any
+old mappings established by the firmware or bootloader.  At present we
+attempt this with a tlbilx to flush everything, but this will leave behind
+any entries with the IPROT bit set.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+There are several good reason firmware might establish mappings with IPROT,
+and in fact ePAPR compliant firmwares are required to establish their
+initial mapped area with IPROT.
+
+This patch, therefore adds more complex code to scan through the TLB upon
+entry and flush away any entries that are not our own.
+
+Signed-off-by: Jack Miller <jack@codezen.org>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/exceptions-64e.S |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/mmu-book3e.h |    1 +
+ arch/powerpc/kernel/exceptions-64e.S  |   45 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 45 insertions(+), 1 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index 3903d0c..84948e3 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -43,6 +43,7 @@
+ #define MAS0_TLBSEL(x)		(((x) << 28) & 0x30000000)
+ #define MAS0_ESEL(x)		(((x) << 16) & 0x0FFF0000)
+ #define MAS0_NV(x)		((x) & 0x00000FFF)
++#define MAS0_ESEL_MASK		0x0FFF0000
+ #define MAS0_HES		0x00004000
+ #define MAS0_WQ_ALLWAYS		0x00000000
+ #define MAS0_WQ_COND		0x00001000
 diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 5c43063..e6c0926 100644
+index e6c0926..ab5c4dd 100644
 --- a/arch/powerpc/kernel/exceptions-64e.S
 +++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -864,8 +864,9 @@ have_hes:
- 	 * that will have to be made dependent on whether we are running under
- 	 * a hypervisor I suppose.
+@@ -886,8 +886,51 @@ have_hes:
+ 	bctr
+ 
+ 1:	/* We are now running at PAGE_OFFSET, clean the TLB of everything
+-	 * else (XXX we should scan for bolted crap from the firmware too)
++	 * else (including IPROTed things left by firmware)
++	 * r4 = TLBnCFG
++	 * r3 = current address (more or less)
  	 */
--	ori	r3,r3,MAS0_HES | MAS0_WQ_ALLWAYS
--	mtspr	SPRN_MAS0,r3
-+	ori	r11,r3,MAS0_WQ_ALLWAYS
-+	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 erratum 376 */
-+	mtspr	SPRN_MAS0,r11
- 	lis	r3,(MAS1_VALID | MAS1_IPROT)@h
- 	ori	r3,r3,BOOK3E_PAGESZ_1GB << MAS1_TSIZE_SHIFT
- 	mtspr	SPRN_MAS1,r3
++
++	li	r5,0
++	mtspr	SPRN_MAS6,r5
++	tlbsx	0,r3
++
++	rlwinm	r9,r4,0,TLBnCFG_N_ENTRY
++	rlwinm	r10,r4,8,0xff
++	addi	r10,r10,-1	/* Get inner loop mask */
++
++	li	r3,1
++
++	mfspr	r5,SPRN_MAS1
++	rlwinm	r5,r5,0,(~(MAS1_VALID|MAS1_IPROT))
++
++	mfspr	r6,SPRN_MAS2
++	rldicr	r6,r6,0,51		/* Extract EPN */
++
++	mfspr	r7,SPRN_MAS0
++	rlwinm	r7,r7,0,0xffff0fff	/* Clear HES and WQ */
++
++	rlwinm	r8,r7,16,0xfff		/* Extract ESEL */
++
++2:	add	r4,r3,r8
++	and	r4,r4,r10
++
++	rlwimi	r7,r4,16,MAS0_ESEL_MASK
++
++	mtspr	SPRN_MAS0,r7
++	mtspr	SPRN_MAS1,r5
++	mtspr	SPRN_MAS2,r6
++	tlbwe
++
++	addi	r3,r3,1
++	and.	r4,r3,r10
++
++	bne	3f
++	addis	r6,r6,(1<<30)@h
++3:
++	cmpw	r3,r9
++	blt	2b
++
+ 	PPC_TLBILX(0,0,0)
+ 	sync
+ 	isync
 -- 
 1.7.1
