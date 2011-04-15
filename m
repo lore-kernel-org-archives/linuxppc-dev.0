@@ -1,11 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <e47ee8e57f6cd0d842f49e30df84ccec49ddf7fc.1302841853.git.michael@ellerman.id.au>
-In-Reply-To: <34e3e03a96888bc8c20013aa65712123ccf94649.1302676893.git.michael@ellerman.id.au>
-Subject: [PATCH 2/2] powerpc: Add an ePAPR compliant boot wrapper
-Date: Fri, 15 Apr 2011 14:29:16 +1000 (EST)
-From: michael@ozlabs.org (Michael Ellerman)
-Cc: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <koteswararaom@vrindatech.com>
+Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.28])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E355B6FC2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 15 Apr 2011 15:44:06 +1000 (EST)
+Received: from [122.169.181.192] (helo=Koti)
+	by server.indiadomain.com with esmtp (Exim 4.69)
+	(envelope-from <koteswararaom@vrindatech.com>) id 1QAbTo-0003D4-CR
+	for linuxppc-dev@lists.ozlabs.org; Fri, 15 Apr 2011 10:52:05 +0530
+From: <koteswararaom@vrindatech.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: PCI Memory mapping
+Message-ID: <000001c19230$70546870$50fd3950$@com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0001_01C1925E.8A0CA470"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,157 +24,135 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Date: Fri, 15 Apr 2011 05:44:06 -0000
 
-From: David Gibson <dwg@au1.ibm.com>
+This is a multipart message in MIME format.
 
-This is a first cut at making bootwrapper code which will
-produce a zImage compliant with the requirements set down
-by ePAPR.
+------=_NextPart_000_0001_01C1925E.8A0CA470
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-This is a very simple bootwrapper, taking the device tree
-blob supplied by the ePAPR boot program and passing it on
-to the kernel. It builds on the earlier patch to build a
-relocatable ET_DYN zImage to meet the other ePAPR image
-requirements.
+Hi, 
 
-For good measure we have some paranoid checks which will
-generate warnings if some of the ePAPR entry condition
-guarantees are not met.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/Kconfig       |    6 ++++
- arch/powerpc/boot/Makefile |    4 ++-
- arch/powerpc/boot/epapr.c  |   66 ++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/wrapper  |    4 ++
- 4 files changed, 79 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b6ff882..2629c21 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -193,6 +193,12 @@ config SYS_SUPPORTS_APM_EMULATION
- 	default y if PMAC_APM_EMU
- 	bool
  
-+config EPAPR_BOOT
-+	bool
-+	help
-+	  Used to allow a board to specify it wants an ePAPR compliant wrapper.
-+	default n
-+
- config DEFAULT_UIMAGE
- 	bool
- 	help
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 8917816..0e2a152 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -69,7 +69,8 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
- 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
- 		fsl-soc.c mpc8xx.c pq2.c ugecon.c
- src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
--		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
-+		cuboot-ebony.c cuboot-hotfoot.c epapr.c treeboot-ebony.c \
-+		prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
- 		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
-@@ -182,6 +183,7 @@ image-$(CONFIG_PPC_HOLLY)		+= dtbImage.holly
- image-$(CONFIG_PPC_PRPMC2800)		+= dtbImage.prpmc2800
- image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
-+image-$(CONFIG_EPAPR_BOOT)		+= zImage.epapr
+
+I have come across this forum, and I have a question. I am working on PCI
+device driver, I am trying to insert the  pci card in to the pci slot of the
+main computer, I am finding a problem here, when I insert the card in to the
+pci slot, my pci device ID and vendor Id are not getting displayed. I am
+using windows xp o/s.
+
  
- #
- # Targets which embed a device tree blob
-diff --git a/arch/powerpc/boot/epapr.c b/arch/powerpc/boot/epapr.c
-new file mode 100644
-index 0000000..06c1961
---- /dev/null
-+++ b/arch/powerpc/boot/epapr.c
-@@ -0,0 +1,66 @@
-+/*
-+ * Bootwrapper for ePAPR compliant firmwares
-+ *
-+ * Copyright 2010 David Gibson <david@gibson.dropbear.id.au>, IBM Corporation.
-+ *
-+ * Based on earlier bootwrappers by:
-+ * (c) Benjamin Herrenschmidt <benh@kernel.crashing.org>, IBM Corp,\
-+ *   and
-+ * Scott Wood <scottwood@freescale.com>
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "stdio.h"
-+#include "io.h"
-+#include <libfdt.h>
-+
-+BSS_STACK(4096);
-+
-+#define EPAPR_SMAGIC	0x65504150
-+#define EPAPR_EMAGIC	0x45504150
-+
-+static unsigned epapr_magic;
-+static unsigned long ima_size;
-+static unsigned long fdt_addr;
-+
-+static void platform_fixups(void)
-+{
-+	if ((epapr_magic != EPAPR_EMAGIC)
-+	    && (epapr_magic != EPAPR_SMAGIC))
-+		fatal("r6 contained 0x%08x instead of ePAPR magic number\n",
-+		      epapr_magic);
-+
-+	if (ima_size < (unsigned long)_end)
-+		printf("WARNING: Image loaded outside IMA!"
-+		       " (_end=%p, ima_size=0x%lx)\n", _end, ima_size);
-+	if (ima_size < fdt_addr)
-+		printf("WARNING: Device tree address is outside IMA!"
-+		       "(fdt_addr=0x%lx, ima_size=0x%lx)\n", fdt_addr,
-+		       ima_size);
-+	if (ima_size < fdt_addr + fdt_totalsize((void *)fdt_addr))
-+		printf("WARNING: Device tree extends outside IMA!"
-+		       " (fdt_addr=0x%lx, size=0x%x, ima_size=0x%lx\n",
-+		       fdt_addr, fdt_totalsize((void *)fdt_addr), ima_size);
-+}
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		   unsigned long r6, unsigned long r7)
-+{
-+	epapr_magic = r6;
-+	ima_size = r7;
-+	fdt_addr = r3;
-+
-+	/* FIXME: we should process reserve entries */
-+
-+	simple_alloc_init(_end, ima_size - (unsigned long)_end, 32, 64);
-+
-+	fdt_init((void *)fdt_addr);
-+
-+	serial_console_init();
-+	platform_ops.fixups = platform_fixups;
-+}
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index fef5278..dfa29cb 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -247,6 +247,10 @@ gamecube|wii)
- treeboot-iss4xx-mpic)
-     platformo="$object/treeboot-iss4xx.o"
-     ;;
-+epapr)
-+    link_address='0x20000000'
-+    pie=-pie
-+    ;;
- esac
+
+I am trying to map pci memory. Can you suggest me how can we map the pci
+memory. What steps should I take in order to make my Device Id and Vendor Id
+displayed when I insert the card in to the pci slot.
+
  
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
--- 
-1.7.1
+
+With Kind regards,
+
+Ajith.
+
+ 
+
+
+------=_NextPart_000_0001_01C1925E.8A0CA470
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal>Hi, <o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>I have come across this forum, and I have a =
+question. I am
+working on PCI device driver, I am trying to insert the &nbsp;pci card =
+in to
+the pci slot of the main computer, I am finding a problem here, when I =
+insert
+the card in to the pci slot, my pci device ID and vendor Id are not =
+getting
+displayed. I am using windows xp o/s.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>I am trying to map pci memory. Can you suggest me =
+how can we
+map the pci memory. What steps should I take in order to make my Device =
+Id and
+Vendor Id displayed when I insert the card in to the pci =
+slot.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>With Kind regards,<o:p></o:p></p>
+
+<p class=3DMsoNormal>Ajith.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0001_01C1925E.8A0CA470--
