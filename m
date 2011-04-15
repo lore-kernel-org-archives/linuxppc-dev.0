@@ -1,21 +1,22 @@
-Return-Path: <koteswararaom@vrindatech.com>
-Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E355B6FC2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Apr 2011 15:44:06 +1000 (EST)
-Received: from [122.169.181.192] (helo=Koti)
-	by server.indiadomain.com with esmtp (Exim 4.69)
-	(envelope-from <koteswararaom@vrindatech.com>) id 1QAbTo-0003D4-CR
-	for linuxppc-dev@lists.ozlabs.org; Fri, 15 Apr 2011 10:52:05 +0530
-From: <koteswararaom@vrindatech.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: PCI Memory mapping
-Message-ID: <000001c19230$70546870$50fd3950$@com>
+Return-Path: <B32579@freescale.com>
+Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 80846B6FBD
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2011 16:27:46 +1000 (EST)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: RE: Problem with mini-PCI-E slot on P2020RDB
+Date: Fri, 15 Apr 2011 06:27:42 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F87417BAF7@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <45903308677306428B6EE7E6FF5A520410D3E6@039-SN1MPN1-004.039d.mgd.msft.net>
+In-Reply-To: <45903308677306428B6EE7E6FF5A520410D3E6@039-SN1MPN1-004.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0001_01C1925E.8A0CA470"
+Cc: "leon.woestenberg@gmail.com" <leon.woestenberg@gmail.com>,
+	Felix Radensky <felix@embedded-sol.com>,
+	Aggrwal Poonam-B10812 <B10812@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,135 +25,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Date: Fri, 15 Apr 2011 05:44:06 -0000
 
-This is a multipart message in MIME format.
+Added Linxppc-dev
 
-------=_NextPart_000_0001_01C1925E.8A0CA470
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Hi, 
-
- 
-
-I have come across this forum, and I have a question. I am working on PCI
-device driver, I am trying to insert the  pci card in to the pci slot of the
-main computer, I am finding a problem here, when I insert the card in to the
-pci slot, my pci device ID and vendor Id are not getting displayed. I am
-using windows xp o/s.
-
- 
-
-I am trying to map pci memory. Can you suggest me how can we map the pci
-memory. What steps should I take in order to make my Device Id and Vendor Id
-displayed when I insert the card in to the pci slot.
-
- 
-
-With Kind regards,
-
-Ajith.
-
- 
-
-
-------=_NextPart_000_0001_01C1925E.8A0CA470
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal>Hi, <o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>I have come across this forum, and I have a =
-question. I am
-working on PCI device driver, I am trying to insert the &nbsp;pci card =
-in to
-the pci slot of the main computer, I am finding a problem here, when I =
-insert
-the card in to the pci slot, my pci device ID and vendor Id are not =
-getting
-displayed. I am using windows xp o/s.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>I am trying to map pci memory. Can you suggest me =
-how can we
-map the pci memory. What steps should I take in order to make my Device =
-Id and
-Vendor Id displayed when I insert the card in to the pci =
-slot.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>With Kind regards,<o:p></o:p></p>
-
-<p class=3DMsoNormal>Ajith.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0001_01C1925E.8A0CA470--
+> -----Original Message-----
+> From: Aggrwal Poonam-B10812
+> Sent: Friday, April 15, 2011 11:47 AM
+> To: Felix Radensky
+> Cc: Kushwaha Prabhakar-B32579; leon.woestenberg@gmail.com
+> Subject: FW: Problem with mini-PCI-E slot on P2020RDB
+>=20
+> Hello Felix
+>=20
+> We checked with the Board designer, we need the board fixes "mentioned in
+> Board errata doc" on the board for this issue. Sorry for the confusion.
+>=20
+> The fixes are not present on RevC, also on some RevDs this fix also may
+> be absent.
+>=20
+>=20
+> Please let us know in case of any issues.
+>=20
+> Regards
+> Poonam
+>=20
+> > -----Original Message-----
+> > From: Leon Woestenberg [mailto:leon.woestenberg@gmail.com]
+> > Sent: Wednesday, April 13, 2011 2:52 PM
+> > To: Felix Radensky
+> > Cc: Aggrwal Poonam-B10812; linuxppc-dev@ozlabs.org; Gupta
+> > Maneesh-B18878; Kushwaha Prabhakar-B32579
+> > Subject: Re: Problem with mini-PCI-E slot on P2020RDB
+> >
+> > Felix,
+> >
+> > On Tue, Apr 12, 2011 at 6:54 AM, Felix Radensky
+> > <felix@embedded-sol.com>
+> > wrote:
+> > > On 04/12/2011 07:05 AM, Aggrwal Poonam-B10812 wrote:
+> > >> As such there is no hardware fix related to this issue between RevC
+> > >> to RevD. The solution was a software patch to resolve the issue
+> > >> related to IRQ0.
+> > >
+> > > Are you sure ? Please take a look at Freescale document titled
+> > > "P1020E/P2020E RDB System Errata".
+> > > There's errata CE10, IRQ0 held low. It is fixed in Rev D. Vivek
+> > > Mahajan, who looked at the issue back in 2009, estimated that
+> > > problem can be related to missing pull-up on IRQ0.
+> > > This is exactly what is
+> > > fixed in Rev D.
+> > >
+> >
+> > That's my understanding as well.
+> >
+> > Check if R420 and R423 are populated. These are the required pull-ups.
+> > On Rev D they are populated. You might be able to add them yourself.
+> >
+> > Even if you have an Rev A-C PCB, this fix can already be applied; it
+> > was on my board! (the bottom of the board mentions the schematic
+> > revision)
+> >
+> > The resistors have a silkscreen designator block called X, the
+> > resistors are situated to the left and bottom of the silkscreen X.
+> > IIRC, between the flash and Px020 part.
+> >
+> > On the left side of R420 (or R423) I measured the block wave from the
+> > RTC, which fires the 32kHz interrupt rate on IRQ0. This fixed by the
+> > u- boot patch.
+> >
+> > Regards,
+> >
+> > Leon.
