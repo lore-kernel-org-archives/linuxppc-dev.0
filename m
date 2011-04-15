@@ -1,32 +1,35 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 26E7BB6EED
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D2350B6F0C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Apr 2011 07:01:37 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3FKp0oG002368
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 16:51:00 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3FL11Xa166762
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 17:01:06 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p3FL1069029236
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 15:01:01 -0600
-Date: Fri, 15 Apr 2011 14:00:51 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	Sat, 16 Apr 2011 07:08:25 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3FKuDuS017648
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:56:13 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3FL8Kwu125908
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 15:08:20 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p3FL8KKQ003135
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 15:08:20 -0600
+Date: Fri, 15 Apr 2011 14:08:19 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
 Subject: Re: [PATCH] powerpc: Fix kexec-related UP build error
-Message-ID: <20110415210051.GA31245@us.ibm.com>
+Message-ID: <20110415210819.GE2283@linux.vnet.ibm.com>
 References: <20110415202916.GA6758@linux.vnet.ibm.com>
+	<20110415210051.GA31245@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110415202916.GA6758@linux.vnet.ibm.com>
+In-Reply-To: <20110415210051.GA31245@us.ibm.com>
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, ebiederm@xmission.com,
 	kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,18 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul,
-
-On 15.04.2011 [13:29:16 -0700], Paul E. McKenney wrote:
-> Hello!
+On Fri, Apr 15, 2011 at 02:00:51PM -0700, Nishanth Aravamudan wrote:
+> Hi Paul,
 > 
-> The following patch fixes a UP build problem for kexec() on powerpc.
-> When the crash_kexec_wait_realmode() function was added, it was
-> placed in only two of the three required locations.
+> On 15.04.2011 [13:29:16 -0700], Paul E. McKenney wrote:
+> > Hello!
+> > 
+> > The following patch fixes a UP build problem for kexec() on powerpc.
+> > When the crash_kexec_wait_realmode() function was added, it was
+> > placed in only two of the three required locations.
+> 
+> I believe the fix has already been posted as
+> 
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-April/089559.html
 
-I believe the fix has already been posted as
+So it has!  Thank you for the pointer.
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-April/089559.html
-
-Thanks,
-Nish 
+							Thanx, Paul
