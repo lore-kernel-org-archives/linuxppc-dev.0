@@ -1,21 +1,32 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0189.hostedemail.com
-	[216.40.44.189]) by ozlabs.org (Postfix) with ESMTP id C36F4B7007
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Apr 2011 01:02:57 +1000 (EST)
-Received: from smtprelay.hostedemail.com (ff-bigip1 [10.5.19.254])
-	by smtpgrave08.hostedemail.com (Postfix) with ESMTP id 22DB95E6DD
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2011 14:55:38 +0000 (UTC)
-References: <1302860993-28829-1-git-send-email-sr@denx.de>
-In-Reply-To: <1302860993-28829-1-git-send-email-sr@denx.de>
+Return-Path: <nacc@us.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E29D3B7003
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 16 Apr 2011 03:27:36 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3FH7O0I002632
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 13:07:24 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3FHRSws1191992
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 13:27:28 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p3FHRRCX005160
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2011 14:27:28 -0300
+Date: Fri, 15 Apr 2011 10:27:16 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Subject: Re: [PATCH] cxgb4: use pgprot_writecombine() on powerpc
+Message-ID: <20110415172716.GA5881@us.ibm.com>
+References: <1300134971-16752-1-git-send-email-nacc@us.ibm.com>
+	<4D7E7FCE.3000703@opengridcomputing.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----PJJF1HSO7OMA9XS7PQH2K5FIU6I3Q9"
-Subject: Re: [PATCH] powerpc: Don't write protect kernel text with
-	CONFIG_DYNAMIC_FTRACE enabled
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Fri, 15 Apr 2011 10:51:31 -0400
-To: Stefan Roese <sr@denx.de>,linuxppc-dev@ozlabs.org
-Message-ID: <c113ce7d-2e6a-48ea-a3e0-b3f9b846ac14@email.android.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4D7E7FCE.3000703@opengridcomputing.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------PJJF1HSO7OMA9XS7PQH2K5FIU6I3Q9
-Content-Type: text/plain;
- charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On 14.03.2011 [15:51:26 -0500], Steve Wise wrote:
+> On 03/14/2011 03:36 PM, Nishanth Aravamudan wrote:
+> >Commit fe3cc0d99de6a9bf99b6c279a8afb5833888c1f7 ("powerpc: Add
+> >pgprot_writecombine") in benh's tree exposes the pgprot_writecombine()
+> >API to drivers on powerpc. cxgb4 has an open-coded version of the same,
+> >so use the common API now that it's available.
+> >
+> >Signed-off-by: Nishanth Aravamudan<nacc@us.ibm.com>
+> >Cc: Steve Wise<swise@opengridcomputing.com>
+> >Cc: Anton Blanchard<anton@samba.org>
+> >
+> >---
+> >
+> >Given that this depends on a patch in Ben's tree, should this go in via
+> >the powerpc tree? Presuming Steve acks it, of course.
+> >
+> >  drivers/infiniband/hw/cxgb4/t4.h |    5 +----
+> >  1 files changed, 1 insertions(+), 4 deletions(-)
+> >
+> 
+> Acked-by: Steve Wise <swise@opengridcomputing.com>
+> 
+> I suppose it should go into the same tree with the commit that adds this function.
 
-Stefan Roese <sr@denx.de> wrote:
+Ben, I don't think this is in your tree yet, will you be taking it?
 
-This problem was noticed on an MPC855T platform. Ftrace did oops when trying to write to the kernel text segment. Many thanks to Joakim for finding the root cause of this problem. Signed-off-by: Stefan Roese <sr@denx.de> Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org> Cc: Steven Rostedt <rostedt@goodmis.org> --- arch/powerpc/include/asm/pte-common.h | 2 +- 1 files changed, 1 insertions(+), 1 deletions(-) diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h index 811f04a..8d1569c 100644 --- a/arch/powerpc/include/asm/pte-common.h +++ b/arch/powerpc/include/asm/pte-common.h @@ -162,7 +162,7 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void); * on platforms where such control is possible. */ #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\ -	defined(CONFIG_KPROBES) +	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE) #define
-PAGE_KERNEL_TEXT	PAGE_KERNEL_X #else #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX -- 1.7.4.4 
-
-
-This is fine for a work around but you should take a look at what x86 does for this.
-
--- Steve 
--- 
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.
-------PJJF1HSO7OMA9XS7PQH2K5FIU6I3Q9
-Content-Type: text/html;
- charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-<html><head></head><body><div class="gmail_quote">Stefan Roese &lt;sr@denx.de&gt; wrote:<blockquote class="gmail_quote" style="margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
-<pre style="white-space: pre-wrap; word-wrap:break-word; ">This problem was noticed on an MPC855T platform. Ftrace did oops when trying to write to the kernel text segment.
-
-Many thanks to Joakim for finding the root cause of this problem.
-
-Signed-off-by: Stefan Roese &lt;sr@denx.de&gt;
-Cc: Joakim Tjernlund &lt;joakim.tjernlund@transmode.se&gt;
-Cc: Benjamin Herrenschmidt &lt;benh@kernel.crashing.org&gt;
-Cc: Steven Rostedt &lt;rostedt@goodmis.org&gt;
----
- arch/powerpc/include/asm/pte-common.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
- diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h index 811f04a..8d1569c 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -162,7 +162,7 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
-  * on platforms where such control is possible.
-  */
- #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
--	defined(CONFIG_KPROBES)
-+	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
- #define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
- #else
- #define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
--- 
-<a href="http://1.7.4.4">1.7.4.4</a>
-</pre></blockquote></div><br clear="all">This is fine for a work around but you should take a look at what x86 does for this.<br>
-<br>
--- Steve <br>
--- <br>
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.</body></html>
-------PJJF1HSO7OMA9XS7PQH2K5FIU6I3Q9--
+Thanks,
+Nish
