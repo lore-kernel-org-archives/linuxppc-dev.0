@@ -1,19 +1,19 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6EB27B700F
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Apr 2011 17:29:09 +1000 (EST)
-Received: by fxm1 with SMTP id 1so3218352fxm.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Apr 2011 00:29:04 -0700 (PDT)
-Date: Sat, 16 Apr 2011 09:28:56 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: regression: 2.6.39-rc2,3 compile failure on p2020
-Message-ID: <20110416072856.GA3542@riccoc20.at.omicron.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DACE9B6F59
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Apr 2011 17:39:40 +1000 (EST)
+Subject: Re: regression: 2.6.39-rc2,3 compile failure on p2020
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Richard Cochran <richardcochran@gmail.com>
+In-Reply-To: <20110416072856.GA3542@riccoc20.at.omicron.at>
+References: <20110416072856.GA3542@riccoc20.at.omicron.at>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 16 Apr 2011 17:39:29 +1000
+Message-ID: <1302939569.28876.146.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When compiling mpc85xx_smp_defconfig, the kernel fails to link with:
+On Sat, 2011-04-16 at 09:28 +0200, Richard Cochran wrote:
+> When compiling mpc85xx_smp_defconfig, the kernel fails to link with:
+> 
+>    arch/powerpc/kernel/built-in.o: In function `cpu_die':
+>    arch/powerpc/kernel/smp.c:702: undefined reference to
+> `start_secondary_resume'
+> 
+> I suspect:
+> 
+>   commit fa3f82c8bb7acbe049ea71f258b3ae0a33d9d40b
+>   powerpc/smp: soft-replugged CPUs must go back to start_secondary
+> 
+> The symbol start_secondary_resume is provided by head_32.S, but it is
+> not present in head_fsl_booke.S.
+> 
+> I don't now how to fix this and would appreciate any help.
 
-   arch/powerpc/kernel/built-in.o: In function `cpu_die':
-   arch/powerpc/kernel/smp.c:702: undefined reference to `start_secondary_resume'
+I'll fix it. Basically copy the code from head_32.S to head_fsl_booke.S
 
-I suspect:
-
-  commit fa3f82c8bb7acbe049ea71f258b3ae0a33d9d40b
-  powerpc/smp: soft-replugged CPUs must go back to start_secondary
-
-The symbol start_secondary_resume is provided by head_32.S, but it is
-not present in head_fsl_booke.S.
-
-I don't now how to fix this and would appreciate any help.
 
 Thanks,
 
-Richard
+Cheers,
+Ben.
