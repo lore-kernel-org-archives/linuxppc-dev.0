@@ -1,19 +1,19 @@
 Return-Path: <rjw@sisk.pl>
 Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
-	by ozlabs.org (Postfix) with ESMTP id A4AC6B6F65
+	by ozlabs.org (Postfix) with ESMTP id D3BA0B6F77
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 18 Apr 2011 07:43:20 +1000 (EST)
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 12/14] PM / UNICORE32: Use struct syscore_ops instead of
-	sysdevs for PM
-Date: Sun, 17 Apr 2011 23:13:45 +0200
+Subject: [PATCH 3/14] ARM: Use struct syscore_ops instead of sysdevs for PM in
+	common code
+Date: Sun, 17 Apr 2011 23:07:34 +0200
 References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
 In-Reply-To: <201104172301.54115.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Message-Id: <201104172313.45854.rjw@sisk.pl>
+Message-Id: <201104172307.35013.rjw@sisk.pl>
 Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
 	Russell King <linux@arm.linux.org.uk>,
 	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
@@ -36,8 +36,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make some UNICORE32 architecture's code use struct syscore_ops
-objects for power management instead of sysdev classes and sysdevs.
+Convert some ARM architecture's common code to using
+struct syscore_ops objects for power management instead of sysdev
+classes and sysdevs.
 
 This simplifies the code and reduces the kernel's memory footprint.
 It also is necessary for removing sysdevs from the kernel entirely in
@@ -45,70 +46,359 @@ the future.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/unicore32/kernel/irq.c |   23 ++++++++---------------
- 1 file changed, 8 insertions(+), 15 deletions(-)
+ arch/arm/common/vic.c            |   69 ++++++++++++++-------------------------
+ arch/arm/include/asm/mach/time.h |    1 
+ arch/arm/kernel/leds.c           |   28 +++++++++------
+ arch/arm/kernel/time.c           |   35 ++++++-------------
+ arch/arm/vfp/vfpmodule.c         |   19 ++--------
+ 5 files changed, 58 insertions(+), 94 deletions(-)
 
-Index: linux-2.6/arch/unicore32/kernel/irq.c
+Index: linux-2.6/arch/arm/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/unicore32/kernel/irq.c
-+++ linux-2.6/arch/unicore32/kernel/irq.c
-@@ -23,7 +23,7 @@
- #include <linux/list.h>
- #include <linux/kallsyms.h>
- #include <linux/proc_fs.h>
+--- linux-2.6.orig/arch/arm/kernel/time.c
++++ linux-2.6/arch/arm/kernel/time.c
+@@ -21,7 +21,7 @@
+ #include <linux/timex.h>
+ #include <linux/errno.h>
+ #include <linux/profile.h>
 -#include <linux/sysdev.h>
 +#include <linux/syscore_ops.h>
- #include <linux/gpio.h>
+ #include <linux/timer.h>
+ #include <linux/irq.h>
  
- #include <asm/system.h>
-@@ -237,7 +237,7 @@ static struct puv3_irq_state {
- 	unsigned int	iccr;
- } puv3_irq_state;
+@@ -115,48 +115,37 @@ void timer_tick(void)
+ #endif
  
--static int puv3_irq_suspend(struct sys_device *dev, pm_message_t state)
-+static int puv3_irq_suspend(void)
+ #if defined(CONFIG_PM) && !defined(CONFIG_GENERIC_CLOCKEVENTS)
+-static int timer_suspend(struct sys_device *dev, pm_message_t state)
++static int timer_suspend(void)
  {
- 	struct puv3_irq_state *st = &puv3_irq_state;
+-	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
+-
+-	if (timer->suspend != NULL)
+-		timer->suspend();
++	if (system_timer->suspend)
++		system_timer->suspend();
  
-@@ -265,7 +265,7 @@ static int puv3_irq_suspend(struct sys_d
  	return 0;
  }
  
--static int puv3_irq_resume(struct sys_device *dev)
-+static void puv3_irq_resume(void)
+-static int timer_resume(struct sys_device *dev)
++static void timer_resume(void)
  {
- 	struct puv3_irq_state *st = &puv3_irq_state;
- 
-@@ -278,27 +278,20 @@ static int puv3_irq_resume(struct sys_de
- 
- 		writel(st->icmr, INTC_ICMR);
- 	}
+-	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
+-
+-	if (timer->resume != NULL)
+-		timer->resume();
+-
 -	return 0;
++	if (system_timer->resume)
++		system_timer->resume();
  }
+ #else
+ #define timer_suspend NULL
+ #define timer_resume NULL
+ #endif
  
--static struct sysdev_class puv3_irq_sysclass = {
--	.name		= "pkunity-irq",
-+static struct syscore_ops puv3_irq_syscore_ops = {
- 	.suspend	= puv3_irq_suspend,
- 	.resume		= puv3_irq_resume,
+-static struct sysdev_class timer_sysclass = {
+-	.name		= "timer",
++static struct syscore_ops timer_syscore_ops = {
+ 	.suspend	= timer_suspend,
+ 	.resume		= timer_resume,
  };
  
--static struct sys_device puv3_irq_device = {
--	.id		= 0,
--	.cls		= &puv3_irq_sysclass,
--};
--
--static int __init puv3_irq_init_devicefs(void)
-+static int __init puv3_irq_init_syscore(void)
+-static int __init timer_init_sysfs(void)
++static int __init timer_init_syscore_ops(void)
  {
--	sysdev_class_register(&puv3_irq_sysclass);
--	return sysdev_register(&puv3_irq_device);
-+	register_syscore_ops(&puv3_irq_syscore_ops);
+-	int ret = sysdev_class_register(&timer_sysclass);
+-	if (ret == 0) {
+-		system_timer->dev.cls = &timer_sysclass;
+-		ret = sysdev_register(&system_timer->dev);
+-	}
++	register_syscore_ops(&timer_syscore_ops);
+ 
+-	return ret;
 +	return 0;
  }
  
--device_initcall(puv3_irq_init_devicefs);
-+device_initcall(puv3_irq_init_syscore);
+-device_initcall(timer_init_sysfs);
++device_initcall(timer_init_syscore_ops);
  
- void __init init_IRQ(void)
+ void __init time_init(void)
  {
+Index: linux-2.6/arch/arm/include/asm/mach/time.h
+===================================================================
+--- linux-2.6.orig/arch/arm/include/asm/mach/time.h
++++ linux-2.6/arch/arm/include/asm/mach/time.h
+@@ -34,7 +34,6 @@
+  *   timer interrupt which may be pending.
+  */
+ struct sys_timer {
+-	struct sys_device	dev;
+ 	void			(*init)(void);
+ 	void			(*suspend)(void);
+ 	void			(*resume)(void);
+Index: linux-2.6/arch/arm/kernel/leds.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/leds.c
++++ linux-2.6/arch/arm/kernel/leds.c
+@@ -10,6 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ 
+ #include <asm/leds.h>
+ 
+@@ -69,36 +70,37 @@ static ssize_t leds_store(struct sys_dev
+ 
+ static SYSDEV_ATTR(event, 0200, NULL, leds_store);
+ 
+-static int leds_suspend(struct sys_device *dev, pm_message_t state)
++static struct sysdev_class leds_sysclass = {
++	.name		= "leds",
++};
++
++static struct sys_device leds_device = {
++	.id		= 0,
++	.cls		= &leds_sysclass,
++};
++
++static int leds_suspend(void)
+ {
+ 	leds_event(led_stop);
+ 	return 0;
+ }
+ 
+-static int leds_resume(struct sys_device *dev)
++static void leds_resume(void)
+ {
+ 	leds_event(led_start);
+-	return 0;
+ }
+ 
+-static int leds_shutdown(struct sys_device *dev)
++static void leds_shutdown(void)
+ {
+ 	leds_event(led_halted);
+-	return 0;
+ }
+ 
+-static struct sysdev_class leds_sysclass = {
+-	.name		= "leds",
++static struct syscore_ops leds_syscore_ops = {
+ 	.shutdown	= leds_shutdown,
+ 	.suspend	= leds_suspend,
+ 	.resume		= leds_resume,
+ };
+ 
+-static struct sys_device leds_device = {
+-	.id		= 0,
+-	.cls		= &leds_sysclass,
+-};
+-
+ static int __init leds_init(void)
+ {
+ 	int ret;
+@@ -107,6 +109,8 @@ static int __init leds_init(void)
+ 		ret = sysdev_register(&leds_device);
+ 	if (ret == 0)
+ 		ret = sysdev_create_file(&leds_device, &attr_event);
++	if (ret == 0)
++		register_syscore_ops(&leds_syscore_ops);
+ 	return ret;
+ }
+ 
+Index: linux-2.6/arch/arm/common/vic.c
+===================================================================
+--- linux-2.6.orig/arch/arm/common/vic.c
++++ linux-2.6/arch/arm/common/vic.c
+@@ -22,17 +22,16 @@
+ #include <linux/init.h>
+ #include <linux/list.h>
+ #include <linux/io.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/device.h>
+ #include <linux/amba/bus.h>
+ 
+ #include <asm/mach/irq.h>
+ #include <asm/hardware/vic.h>
+ 
+-#if defined(CONFIG_PM)
++#ifdef CONFIG_PM
+ /**
+  * struct vic_device - VIC PM device
+- * @sysdev: The system device which is registered.
+  * @irq: The IRQ number for the base of the VIC.
+  * @base: The register base for the VIC.
+  * @resume_sources: A bitmask of interrupts for resume.
+@@ -43,8 +42,6 @@
+  * @protect: Save for VIC_PROTECT.
+  */
+ struct vic_device {
+-	struct sys_device sysdev;
+-
+ 	void __iomem	*base;
+ 	int		irq;
+ 	u32		resume_sources;
+@@ -59,11 +56,6 @@ struct vic_device {
+ static struct vic_device vic_devices[CONFIG_ARM_VIC_NR];
+ 
+ static int vic_id;
+-
+-static inline struct vic_device *to_vic(struct sys_device *sys)
+-{
+-	return container_of(sys, struct vic_device, sysdev);
+-}
+ #endif /* CONFIG_PM */
+ 
+ /**
+@@ -85,10 +77,9 @@ static void vic_init2(void __iomem *base
+ 	writel(32, base + VIC_PL190_DEF_VECT_ADDR);
+ }
+ 
+-#if defined(CONFIG_PM)
+-static int vic_class_resume(struct sys_device *dev)
++#ifdef CONFIG_PM
++static void resume_one_vic(struct vic_device *vic)
+ {
+-	struct vic_device *vic = to_vic(dev);
+ 	void __iomem *base = vic->base;
+ 
+ 	printk(KERN_DEBUG "%s: resuming vic at %p\n", __func__, base);
+@@ -107,13 +98,18 @@ static int vic_class_resume(struct sys_d
+ 
+ 	writel(vic->soft_int, base + VIC_INT_SOFT);
+ 	writel(~vic->soft_int, base + VIC_INT_SOFT_CLEAR);
++}
+ 
+-	return 0;
++static void vic_resume(void)
++{
++	int id;
++
++	for (id = vic_id - 1; id >= 0; id--)
++		resume_one_vic(vic_devices + id);
+ }
+ 
+-static int vic_class_suspend(struct sys_device *dev, pm_message_t state)
++static void suspend_one_vic(struct vic_device *vic)
+ {
+-	struct vic_device *vic = to_vic(dev);
+ 	void __iomem *base = vic->base;
+ 
+ 	printk(KERN_DEBUG "%s: suspending vic at %p\n", __func__, base);
+@@ -128,14 +124,21 @@ static int vic_class_suspend(struct sys_
+ 
+ 	writel(vic->resume_irqs, base + VIC_INT_ENABLE);
+ 	writel(~vic->resume_irqs, base + VIC_INT_ENABLE_CLEAR);
++}
++
++static int vic_suspend(void)
++{
++	int id;
++
++	for (id = 0; id < vic_id; id++)
++		suspend_one_vic(vic_devices + id);
+ 
+ 	return 0;
+ }
+ 
+-struct sysdev_class vic_class = {
+-	.name		= "vic",
+-	.suspend	= vic_class_suspend,
+-	.resume		= vic_class_resume,
++struct syscore_ops vic_syscore_ops = {
++	.suspend	= vic_suspend,
++	.resume		= vic_resume,
+ };
+ 
+ /**
+@@ -147,30 +150,8 @@ struct sysdev_class vic_class = {
+ */
+ static int __init vic_pm_init(void)
+ {
+-	struct vic_device *dev = vic_devices;
+-	int err;
+-	int id;
+-
+-	if (vic_id == 0)
+-		return 0;
+-
+-	err = sysdev_class_register(&vic_class);
+-	if (err) {
+-		printk(KERN_ERR "%s: cannot register class\n", __func__);
+-		return err;
+-	}
+-
+-	for (id = 0; id < vic_id; id++, dev++) {
+-		dev->sysdev.id = id;
+-		dev->sysdev.cls = &vic_class;
+-
+-		err = sysdev_register(&dev->sysdev);
+-		if (err) {
+-			printk(KERN_ERR "%s: failed to register device\n",
+-			       __func__);
+-			return err;
+-		}
+-	}
++	if (vic_id > 0)
++		register_syscore_ops(&vic_syscore_ops);
+ 
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/vfp/vfpmodule.c
+===================================================================
+--- linux-2.6.orig/arch/arm/vfp/vfpmodule.c
++++ linux-2.6/arch/arm/vfp/vfpmodule.c
+@@ -398,9 +398,9 @@ static void vfp_enable(void *unused)
+ }
+ 
+ #ifdef CONFIG_PM
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ 
+-static int vfp_pm_suspend(struct sys_device *dev, pm_message_t state)
++static int vfp_pm_suspend(void)
+ {
+ 	struct thread_info *ti = current_thread_info();
+ 	u32 fpexc = fmrx(FPEXC);
+@@ -420,34 +420,25 @@ static int vfp_pm_suspend(struct sys_dev
+ 	return 0;
+ }
+ 
+-static int vfp_pm_resume(struct sys_device *dev)
++static void vfp_pm_resume(void)
+ {
+ 	/* ensure we have access to the vfp */
+ 	vfp_enable(NULL);
+ 
+ 	/* and disable it to ensure the next usage restores the state */
+ 	fmxr(FPEXC, fmrx(FPEXC) & ~FPEXC_EN);
+-
+-	return 0;
+ }
+ 
+-static struct sysdev_class vfp_pm_sysclass = {
+-	.name		= "vfp",
++static struct syscore_ops vfp_pm_syscore_ops = {
+ 	.suspend	= vfp_pm_suspend,
+ 	.resume		= vfp_pm_resume,
+ };
+ 
+-static struct sys_device vfp_pm_sysdev = {
+-	.cls	= &vfp_pm_sysclass,
+-};
+-
+ static void vfp_pm_init(void)
+ {
+-	sysdev_class_register(&vfp_pm_sysclass);
+-	sysdev_register(&vfp_pm_sysdev);
++	register_syscore_ops(&vfp_pm_syscore_ops);
+ }
+ 
+-
+ #else
+ static inline void vfp_pm_init(void) { }
+ #endif /* CONFIG_PM */
