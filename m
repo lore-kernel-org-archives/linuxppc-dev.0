@@ -1,19 +1,18 @@
 Return-Path: <rjw@sisk.pl>
 Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
-	by ozlabs.org (Postfix) with ESMTP id A6F2BB6F70
+	by ozlabs.org (Postfix) with ESMTP id AB2A9B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 18 Apr 2011 07:43:20 +1000 (EST)
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/14] ARM / SA1100: Use struct syscore_ops for "core" power
-	management
-Date: Sun, 17 Apr 2011 23:10:02 +0200
+Subject: [PATCH 5/14] ARM / Integrator: Use struct syscore_ops for core PM
+Date: Sun, 17 Apr 2011 23:09:00 +0200
 References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
 In-Reply-To: <201104172301.54115.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Message-Id: <201104172310.02794.rjw@sisk.pl>
+Message-Id: <201104172309.00726.rjw@sisk.pl>
 Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
 	Russell King <linux@arm.linux.org.uk>,
 	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
@@ -37,70 +36,80 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
 Replace the sysdev class and struct sys_device used for power
-management by the SA1100 interrupt-handling code with a
+management by the Integrator interrupt-handling code with a
 struct syscore_ops object which is simpler.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/arm/mach-sa1100/irq.c |   19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ arch/arm/mach-integrator/integrator_ap.c |   26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
-Index: linux-2.6/arch/arm/mach-sa1100/irq.c
+Index: linux-2.6/arch/arm/mach-integrator/integrator_ap.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-sa1100/irq.c
-+++ linux-2.6/arch/arm/mach-sa1100/irq.c
-@@ -14,7 +14,7 @@
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/ioport.h>
+--- linux-2.6.orig/arch/arm/mach-integrator/integrator_ap.c
++++ linux-2.6/arch/arm/mach-integrator/integrator_ap.c
+@@ -24,7 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
 -#include <linux/sysdev.h>
 +#include <linux/syscore_ops.h>
+ #include <linux/amba/bus.h>
+ #include <linux/amba/kmi.h>
+ #include <linux/clocksource.h>
+@@ -180,13 +180,13 @@ static void __init ap_init_irq(void)
+ #ifdef CONFIG_PM
+ static unsigned long ic_irq_enable;
  
- #include <mach/hardware.h>
- #include <asm/mach/irq.h>
-@@ -234,7 +234,7 @@ static struct sa1100irq_state {
- 	unsigned int	iccr;
- } sa1100irq_state;
- 
--static int sa1100irq_suspend(struct sys_device *dev, pm_message_t state)
-+static int sa1100irq_suspend(void)
+-static int irq_suspend(struct sys_device *dev, pm_message_t state)
++static int irq_suspend(void)
  {
- 	struct sa1100irq_state *st = &sa1100irq_state;
- 
-@@ -264,7 +264,7 @@ static int sa1100irq_suspend(struct sys_
+ 	ic_irq_enable = readl(VA_IC_BASE + IRQ_ENABLE);
  	return 0;
  }
  
--static int sa1100irq_resume(struct sys_device *dev)
-+static void sa1100irq_resume(void)
+-static int irq_resume(struct sys_device *dev)
++static void irq_resume(void)
  {
- 	struct sa1100irq_state *st = &sa1100irq_state;
+ 	/* disable all irq sources */
+ 	writel(-1, VA_CMIC_BASE + IRQ_ENABLE_CLEAR);
+@@ -194,33 +194,25 @@ static int irq_resume(struct sys_device
+ 	writel(-1, VA_IC_BASE + FIQ_ENABLE_CLEAR);
  
-@@ -277,24 +277,17 @@ static int sa1100irq_resume(struct sys_d
- 
- 		ICMR = st->icmr;
- 	}
+ 	writel(ic_irq_enable, VA_IC_BASE + IRQ_ENABLE_SET);
 -	return 0;
  }
+ #else
+ #define irq_suspend NULL
+ #define irq_resume NULL
+ #endif
  
--static struct sysdev_class sa1100irq_sysclass = {
--	.name		= "sa11x0-irq",
-+static struct syscore_ops sa1100irq_syscore_ops = {
- 	.suspend	= sa1100irq_suspend,
- 	.resume		= sa1100irq_resume,
+-static struct sysdev_class irq_class = {
+-	.name		= "irq",
++static struct syscore_ops irq_syscore_ops = {
+ 	.suspend	= irq_suspend,
+ 	.resume		= irq_resume,
  };
  
--static struct sys_device sa1100irq_device = {
--	.id		= 0,
--	.cls		= &sa1100irq_sysclass,
+-static struct sys_device irq_device = {
+-	.id	= 0,
+-	.cls	= &irq_class,
 -};
 -
- static int __init sa1100irq_init_devicefs(void)
+-static int __init irq_init_sysfs(void)
++static int __init irq_syscore_init(void)
  {
--	sysdev_class_register(&sa1100irq_sysclass);
--	return sysdev_register(&sa1100irq_device);
-+	register_syscore_ops(&sa1100irq_syscore_ops);
+-	int ret = sysdev_class_register(&irq_class);
+-	if (ret == 0)
+-		ret = sysdev_register(&irq_device);
+-	return ret;
++	register_syscore_ops(&irq_syscore_ops);
++
 +	return 0;
  }
  
- device_initcall(sa1100irq_init_devicefs);
+-device_initcall(irq_init_sysfs);
++device_initcall(irq_syscore_init);
+ 
+ /*
+  * Flash handling.
