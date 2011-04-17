@@ -1,45 +1,30 @@
-Return-Path: <hughd@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.67])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DFE4DB6F68
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id A6F2BB6F70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Apr 2011 03:47:29 +1000 (EST)
-Received: from hpaq11.eem.corp.google.com (hpaq11.eem.corp.google.com
-	[172.25.149.11]) by smtp-out.google.com with ESMTP id p3HHlKxU023884
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2011 10:47:20 -0700
-Received: from ywh1 (ywh1.prod.google.com [10.192.8.1])
-	by hpaq11.eem.corp.google.com with ESMTP id p3HHlHqp012099
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2011 10:47:19 -0700
-Received: by ywh1 with SMTP id 1so2072474ywh.15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Apr 2011 10:47:17 -0700 (PDT)
+	Mon, 18 Apr 2011 07:43:20 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 6/14] ARM / SA1100: Use struct syscore_ops for "core" power
+	management
+Date: Sun, 17 Apr 2011 23:10:02 +0200
+References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
+In-Reply-To: <201104172301.54115.rjw@sisk.pl>
 MIME-Version: 1.0
-In-Reply-To: <4DAA9001.6050203@fusionio.com>
-References: <19876.35918.322649.256455@pilspetsen.it.uu.se>
-	<1302646173.28876.53.camel@pasglop>
-	<1302652502.28876.76.camel@pasglop>
-	<19877.23529.745123.819112@pilspetsen.it.uu.se>
-	<1302685102.28876.81.camel@pasglop>
-	<BANLkTimc84A8kddarnhvrcab3iKZc0HZAg@mail.gmail.com>
-	<1302736869.28876.91.camel@pasglop>
-	<BANLkTika8FY1dD_hOQ4wMhHzuQ2Qt8fg7A@mail.gmail.com>
-	<1302771756.15520.100.camel@thor.local>
-	<BANLkTimykvKp=bwsFyNE9fWqcE9Ffws6bA@mail.gmail.com>
-	<1302818089.28876.134.camel@pasglop>
-	<BANLkTimGLmQjCNFOy5z64Zg=R2FX--LF9A@mail.gmail.com>
-	<4DAA9001.6050203@fusionio.com>
-Date: Sun, 17 Apr 2011 10:47:16 -0700
-Message-ID: <BANLkTinObLcck1EX=UJd4MnVuykafQTf-w@mail.gmail.com>
-Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
-From: Hugh Dickins <hughd@google.com>
-To: Jens Axboe <jaxboe@fusionio.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	kevin diggs <diggskevin38@gmail.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201104172310.02794.rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+	Russell King <linux@arm.linux.org.uk>,
+	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+	Greg KH <gregkh@suse.de>, Ralf Baechle <ralf@linux-mips.org>,
+	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+	Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>,
+	Kay Sievers <kay.sievers@suse.de>, Mike Frysinger <vapier@gentoo.org>,
+	Linux PM mailing list <linux-pm@lists.linux-foundation.org>,
+	linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,48 +34,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 17, 2011 at 12:00 AM, Jens Axboe <jaxboe@fusionio.com> wrote:
-> On 2011-04-17 05:16, Hugh Dickins wrote:
->> On Thu, Apr 14, 2011 at 2:54 PM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->>> On Thu, 2011-04-14 at 14:25 -0700, Hugh Dickins wrote:
->>>>
->>>> Something worth trying: turn off CONFIG_IDE. =C2=A0That's what I need =
-to
->>>> boot 2.6.39-rc[1-3] on PowerPC G5.
->>>>
->>>> I know Jens has been fixing problems with IDE versus his plug/unplug
->>>> changes, but it's still not fixed for me in rc3.
->>>>
->>>> In other mail http://lkml.org/lkml/2011/4/14/614
->>>> I see Linus recommending his post-rc3 commit 6631e635c65d
->>>> but I've not tried that myself yet.
->>>
->>> Well, the disk is SATA so it's CONFIG_ATA/libata, which works fine here=
-,
->>> unless you somewhat replaced your CD-ROM with a legacy IDE disk :-) Or
->>> maybe the problem is related to the CD-ROM drive. There's a libata
->>> driver for it nowadays, so you can use PATA_MACIO instead of IDE_PMAC
->>
->> Thanks for that, Ben: I remember you were brewing up such a driver,
->> but I missed when it actually went in. =C2=A0I can confirm that switchin=
-g
->> off CONFIG_IDE and switching on CONFIG_PATA_MACIO and
->> CONFIG_BLK_DEV_SR now gives me a booting system with a working CD-ROM
->> (though I've not yet tried burning).
->>
->> Whereas CONFIG_IDE=3Dy with current git still does not boot: hangs for a
->> minute or three around the windfarm announcements, then an endless
->> splurge of hda error messages - sorry, I'm not being helpful, other
->> worries...
->
-> It's the media event notification that goes crazy. Try and comment out
-> this line:
->
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0drive->dev_flags |=3D IDE_DFLAG_MEDIA_CHANGED;
->
-> in drivers/ide/ide-cd.c:cdrom_saw_media_change() and see if it boots.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Yes, that also boots, with a working CD-ROM: thanks.
+Replace the sysdev class and struct sys_device used for power
+management by the SA1100 interrupt-handling code with a
+struct syscore_ops object which is simpler.
 
-Hugh
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/mach-sa1100/irq.c |   19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/arch/arm/mach-sa1100/irq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-sa1100/irq.c
++++ linux-2.6/arch/arm/mach-sa1100/irq.c
+@@ -14,7 +14,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/ioport.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ 
+ #include <mach/hardware.h>
+ #include <asm/mach/irq.h>
+@@ -234,7 +234,7 @@ static struct sa1100irq_state {
+ 	unsigned int	iccr;
+ } sa1100irq_state;
+ 
+-static int sa1100irq_suspend(struct sys_device *dev, pm_message_t state)
++static int sa1100irq_suspend(void)
+ {
+ 	struct sa1100irq_state *st = &sa1100irq_state;
+ 
+@@ -264,7 +264,7 @@ static int sa1100irq_suspend(struct sys_
+ 	return 0;
+ }
+ 
+-static int sa1100irq_resume(struct sys_device *dev)
++static void sa1100irq_resume(void)
+ {
+ 	struct sa1100irq_state *st = &sa1100irq_state;
+ 
+@@ -277,24 +277,17 @@ static int sa1100irq_resume(struct sys_d
+ 
+ 		ICMR = st->icmr;
+ 	}
+-	return 0;
+ }
+ 
+-static struct sysdev_class sa1100irq_sysclass = {
+-	.name		= "sa11x0-irq",
++static struct syscore_ops sa1100irq_syscore_ops = {
+ 	.suspend	= sa1100irq_suspend,
+ 	.resume		= sa1100irq_resume,
+ };
+ 
+-static struct sys_device sa1100irq_device = {
+-	.id		= 0,
+-	.cls		= &sa1100irq_sysclass,
+-};
+-
+ static int __init sa1100irq_init_devicefs(void)
+ {
+-	sysdev_class_register(&sa1100irq_sysclass);
+-	return sysdev_register(&sa1100irq_device);
++	register_syscore_ops(&sa1100irq_syscore_ops);
++	return 0;
+ }
+ 
+ device_initcall(sa1100irq_init_devicefs);
