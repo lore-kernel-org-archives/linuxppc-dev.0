@@ -1,19 +1,19 @@
 Return-Path: <rjw@sisk.pl>
 Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
-	by ozlabs.org (Postfix) with ESMTP id 1CBB010081D
+	by ozlabs.org (Postfix) with ESMTP id 200C2100820
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 18 Apr 2011 07:43:23 +1000 (EST)
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 11/14] PM / AVR32: Use struct syscore_ops instead of sysdevs
+Subject: [PATCH 9/14] PM / Blackfin: Use struct syscore_ops instead of sysdevs
 	for PM
-Date: Sun, 17 Apr 2011 23:13:09 +0200
+Date: Sun, 17 Apr 2011 23:11:58 +0200
 References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
 In-Reply-To: <201104172301.54115.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Message-Id: <201104172313.09712.rjw@sisk.pl>
+Message-Id: <201104172311.59289.rjw@sisk.pl>
 Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
 	Russell King <linux@arm.linux.org.uk>,
 	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
@@ -36,7 +36,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Convert some AVR32 architecture's code to using struct syscore_ops
+Convert some Blackfin architecture's code to using struct syscore_ops
 objects for power management instead of sysdev classes and sysdevs.
 
 This simplifies the code and reduces the kernel's memory footprint.
@@ -45,105 +45,71 @@ the future.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/avr32/mach-at32ap/intc.c |   38 ++++++++++++--------------------------
- 1 file changed, 12 insertions(+), 26 deletions(-)
+ arch/blackfin/kernel/nmi.c |   30 +++++++++---------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
 
-Index: linux-2.6/arch/avr32/mach-at32ap/intc.c
+Index: linux-2.6/arch/blackfin/kernel/nmi.c
 ===================================================================
---- linux-2.6.orig/arch/avr32/mach-at32ap/intc.c
-+++ linux-2.6/arch/avr32/mach-at32ap/intc.c
+--- linux-2.6.orig/arch/blackfin/kernel/nmi.c
++++ linux-2.6/arch/blackfin/kernel/nmi.c
 @@ -12,7 +12,7 @@
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/platform_device.h>
+ 
+ #include <linux/bitops.h>
+ #include <linux/hardirq.h>
 -#include <linux/sysdev.h>
 +#include <linux/syscore_ops.h>
+ #include <linux/pm.h>
+ #include <linux/nmi.h>
+ #include <linux/smp.h>
+@@ -196,43 +196,31 @@ void touch_nmi_watchdog(void)
  
- #include <asm/io.h>
- 
-@@ -21,7 +21,6 @@
- struct intc {
- 	void __iomem		*regs;
- 	struct irq_chip		chip;
--	struct sys_device	sysdev;
+ /* Suspend/resume support */
  #ifdef CONFIG_PM
- 	unsigned long		suspend_ipr;
- 	unsigned long		saved_ipr[64];
-@@ -146,9 +145,8 @@ void intc_set_suspend_handler(unsigned l
- 	intc0.suspend_ipr = offset;
- }
- 
--static int intc_suspend(struct sys_device *sdev, pm_message_t state)
-+static int intc_suspend(void)
+-static int nmi_wdt_suspend(struct sys_device *dev, pm_message_t state)
++static int nmi_wdt_suspend(void)
  {
--	struct intc *intc = container_of(sdev, struct intc, sysdev);
- 	int i;
- 
- 	if (unlikely(!irqs_disabled())) {
-@@ -156,28 +154,25 @@ static int intc_suspend(struct sys_devic
- 		return -EINVAL;
- 	}
- 
--	if (unlikely(!intc->suspend_ipr)) {
-+	if (unlikely(!intc0.suspend_ipr)) {
- 		pr_err("intc_suspend: suspend_ipr not initialized\n");
- 		return -EINVAL;
- 	}
- 
- 	for (i = 0; i < 64; i++) {
--		intc->saved_ipr[i] = intc_readl(intc, INTPR0 + 4 * i);
--		intc_writel(intc, INTPR0 + 4 * i, intc->suspend_ipr);
-+		intc0.saved_ipr[i] = intc_readl(&intc0, INTPR0 + 4 * i);
-+		intc_writel(&intc0, INTPR0 + 4 * i, intc0.suspend_ipr);
- 	}
- 
+ 	nmi_wdt_stop();
  	return 0;
  }
  
--static int intc_resume(struct sys_device *sdev)
-+static int intc_resume(void)
+-static int nmi_wdt_resume(struct sys_device *dev)
++static void nmi_wdt_resume(void)
  {
--	struct intc *intc = container_of(sdev, struct intc, sysdev);
- 	int i;
- 
--	WARN_ON(!irqs_disabled());
--
- 	for (i = 0; i < 64; i++)
--		intc_writel(intc, INTPR0 + 4 * i, intc->saved_ipr[i]);
-+		intc_writel(&intc0, INTPR0 + 4 * i, intc0.saved_ipr[i]);
- 
- 	return 0;
+ 	if (nmi_active)
+ 		nmi_wdt_start();
+-	return 0;
  }
-@@ -186,27 +181,18 @@ static int intc_resume(struct sys_device
- #define intc_resume	NULL
- #endif
  
--static struct sysdev_class intc_class = {
--	.name		= "intc",
-+static struct syscore_ops intc_syscore_ops = {
- 	.suspend	= intc_suspend,
- 	.resume		= intc_resume,
+-static struct sysdev_class nmi_sysclass = {
+-	.name		= DRV_NAME,
++static struct syscore_ops nmi_syscore_ops = {
+ 	.resume		= nmi_wdt_resume,
+ 	.suspend	= nmi_wdt_suspend,
  };
  
--static int __init intc_init_sysdev(void)
-+static int __init intc_init_syscore(void)
+-static struct sys_device device_nmi_wdt = {
+-	.id	= 0,
+-	.cls	= &nmi_sysclass,
+-};
+-
+-static int __init init_nmi_wdt_sysfs(void)
++static int __init init_nmi_wdt_syscore(void)
  {
--	int ret;
+-	int error;
 -
--	ret = sysdev_class_register(&intc_class);
--	if (ret)
--		return ret;
-+	register_syscore_ops(&intc_syscore_ops);
+-	if (!nmi_active)
+-		return 0;
++	if (nmi_active)
++		register_syscore_ops(&nmi_syscore_ops);
  
--	intc0.sysdev.id = 0;
--	intc0.sysdev.cls = &intc_class;
--	ret = sysdev_register(&intc0.sysdev);
--
--	return ret;
+-	error = sysdev_class_register(&nmi_sysclass);
+-	if (!error)
+-		error = sysdev_register(&device_nmi_wdt);
+-	return error;
 +	return 0;
  }
--device_initcall(intc_init_sysdev);
-+device_initcall(intc_init_syscore);
+-late_initcall(init_nmi_wdt_sysfs);
++late_initcall(init_nmi_wdt_syscore);
  
- unsigned long intc_get_pending(unsigned int group)
- {
+ #endif	/* CONFIG_PM */
+ 
