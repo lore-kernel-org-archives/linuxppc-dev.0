@@ -1,11 +1,22 @@
-Return-Path: <ginger.xiao@gmail.com>
+Return-Path: <JAxboe@fusionio.com>
+Received: from mx1.fusionio.com (mx1.fusionio.com [64.244.102.30])
+	by ozlabs.org (Postfix) with ESMTP id 4E978B6FE3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 17 Apr 2011 17:13:08 +1000 (EST)
+Message-ID: <4DAA9001.6050203@fusionio.com>
+Date: Sun, 17 Apr 2011 09:00:17 +0200
+From: Jens Axboe <jaxboe@fusionio.com>
 MIME-Version: 1.0
-Date: Sun, 17 Apr 2011 13:56:24 +0800
-Message-ID: <BANLkTi=SST3nLy-CFEBvj98WBmCS4mqKwQ@mail.gmail.com>
-Subject: [Help] MPC8377 2.6.18 PCI-E doesn't work well
-From: Ginger Xiao <ginger.xiao@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd172c45ed4a404a116ef54
+To: Hugh Dickins <hughd@google.com>
+Subject: Re: [regression] 2.6.39-rc[1-3] fail to boot on G5 PowerMac
+References: <19876.35918.322649.256455@pilspetsen.it.uu.se>	<1302646173.28876.53.camel@pasglop>	<1302652502.28876.76.camel@pasglop>	<19877.23529.745123.819112@pilspetsen.it.uu.se>	<1302685102.28876.81.camel@pasglop>	<BANLkTimc84A8kddarnhvrcab3iKZc0HZAg@mail.gmail.com>	<1302736869.28876.91.camel@pasglop>	<BANLkTika8FY1dD_hOQ4wMhHzuQ2Qt8fg7A@mail.gmail.com>	<1302771756.15520.100.camel@thor.local>	<BANLkTimykvKp=bwsFyNE9fWqcE9Ffws6bA@mail.gmail.com>	<1302818089.28876.134.camel@pasglop>
+	<BANLkTimGLmQjCNFOy5z64Zg=R2FX--LF9A@mail.gmail.com>
+In-Reply-To: <BANLkTimGLmQjCNFOy5z64Zg=R2FX--LF9A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	kevin diggs <diggskevin38@gmail.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,90 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd172c45ed4a404a116ef54
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
+On 2011-04-17 05:16, Hugh Dickins wrote:
+> On Thu, Apr 14, 2011 at 2:54 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+>> On Thu, 2011-04-14 at 14:25 -0700, Hugh Dickins wrote:
+>>>
+>>> Something worth trying: turn off CONFIG_IDE.  That's what I need to
+>>> boot 2.6.39-rc[1-3] on PowerPC G5.
+>>>
+>>> I know Jens has been fixing problems with IDE versus his plug/unplug
+>>> changes, but it's still not fixed for me in rc3.
+>>>
+>>> In other mail http://lkml.org/lkml/2011/4/14/614
+>>> I see Linus recommending his post-rc3 commit 6631e635c65d
+>>> but I've not tried that myself yet.
+>>
+>> Well, the disk is SATA so it's CONFIG_ATA/libata, which works fine here,
+>> unless you somewhat replaced your CD-ROM with a legacy IDE disk :-) Or
+>> maybe the problem is related to the CD-ROM drive. There's a libata
+>> driver for it nowadays, so you can use PATA_MACIO instead of IDE_PMAC
+> 
+> Thanks for that, Ben: I remember you were brewing up such a driver,
+> but I missed when it actually went in.  I can confirm that switching
+> off CONFIG_IDE and switching on CONFIG_PATA_MACIO and
+> CONFIG_BLK_DEV_SR now gives me a booting system with a working CD-ROM
+> (though I've not yet tried burning).
+> 
+> Whereas CONFIG_IDE=y with current git still does not boot: hangs for a
+> minute or three around the windfarm announcements, then an endless
+> splurge of hda error messages - sorry, I'm not being helpful, other
+> worries...
 
-Hi All
+It's the media event notification that goes crazy. Try and comment out
+this line:
 
-My board is MPC8377 with linux 2.6.18.
+	drive->dev_flags |= IDE_DFLAG_MEDIA_CHANGED;
 
-When using the  PCI-E device PCE9901, there is one serial can't work.
- The following is the message:
+in drivers/ide/ide-cd.c:cdrom_saw_media_change() and see if it boots.
 
-/myapp # insmod 9900.ko
-0001:02:00.0: ttyT0 at I/O 0x0 (irq =3D 22) is a starex-serial
-starex-serial: probe of 0001:02:00.1 failed with error -12
-
->From the kernel logs, I found that=A3=BA
-PCI: Assigning unassigned resouces...
-PCI: Failed to allocate I/O resource #0:8@1000 for 0001:02:00.1
-
-
-All the PCI devices are as follows:
-~ # lspci
-0000:00:00.0 Power PC: Freescale Semiconductor Inc Unknown device 00c7 (rev
-21)
-0000:00:0f.0 Serial controller: Unknown device 4348:3253 (rev 10)
-0001:01:00.0 PCI bridge: Freescale Semiconductor Inc Unknown device 00c7
-(rev 21)
-0001:02:00.0 Serial controller: NetMos Technology Unknown device 9901
-0001:02:00.1 Serial controller: NetMos Technology Unknown device 9901
-
-
-Parts Kernel booting message is :
-Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus number:
-0->0
- ->Hose at 0xc0417000, cfg_addr=3D0xfdffd300,cfg_data=3D0xfdffd304
-PCI host bridge /pci@e0008500 (primary) ranges:
- MEM 0x0000000090000000..0x000000009fffffff -> 0x0000000090000000
- MEM 0x0000000080000000..0x000000008fffffff -> 0x0000000080000000 Prefetch
-  IO 0x00000000e0300000..0x00000000e03fffff -> 0x0000000000000000
-mpc83xx_add_bridge():Adding PCI host bridge /pcie@e0009000.
-Found MPC83xx PCI host bridge at 0x00000000e0009000. Firmware bus number:
-0->0
- ->Hose at 0xc04170c0, cfg_addr=3D0xf5efc000,cfg_data=3D0xfdefc000
-PCI host bridge /pcie@e0009000 (primary) ranges:
- MEM 0x00000000a8000000..0x00000000b7ffffff -> 0x00000000a8000000
-  IO 0x00000000b8000000..0x00000000b87fffff -> 0x0000000000000000
-
-
-I fount that because the "0001:02:00.1" does not have the IO map.
-How can I configure it?
-
---000e0cd172c45ed4a404a116ef54
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
-
-Hi All<br><br>My board is MPC8377 with linux 2.6.18.<br><br>When using the&=
-nbsp; PCI-E device PCE9901, there is one serial can&#39;t work.<br>&nbsp;Th=
-e following is the message:<br><br>/myapp # insmod 9900.ko<br>0001:02:00.0:=
- ttyT0 at I/O 0x0 (irq =3D 22) is a starex-serial<br>
-starex-serial: probe of 0001:02:00.1 failed with error -12<br><br>From the =
-kernel logs, I found that=A3=BA<br>PCI: Assigning unassigned resouces...<br=
->PCI: Failed to allocate I/O resource #0:8@1000 for 0001:02:00.1<br><br><br=
->
-All the PCI devices are as follows:<br>~ # lspci<br>0000:00:00.0 Power PC: =
-Freescale Semiconductor Inc Unknown device 00c7 (rev 21)<br>0000:00:0f.0 Se=
-rial controller: Unknown device 4348:3253 (rev 10)<br>0001:01:00.0 PCI brid=
-ge: Freescale Semiconductor Inc Unknown device 00c7 (rev 21)<br>
-0001:02:00.0 Serial controller: NetMos Technology Unknown device 9901<br>00=
-01:02:00.1 Serial controller: NetMos Technology Unknown device 9901<br><br>=
-<br>Parts Kernel booting message is :<br>Found MPC83xx PCI host bridge at 0=
-x00000000e0008500. Firmware bus number: 0-&gt;0<br>
-&nbsp;-&gt;Hose at 0xc0417000, cfg_addr=3D0xfdffd300,cfg_data=3D0xfdffd304<=
-br>PCI host bridge /pci@e0008500 (primary) ranges:<br>&nbsp;MEM 0x000000009=
-0000000..0x000000009fffffff -&gt; 0x0000000090000000 <br>&nbsp;MEM 0x000000=
-0080000000..0x000000008fffffff -&gt; 0x0000000080000000 Prefetch<br>
-&nbsp; IO 0x00000000e0300000..0x00000000e03fffff -&gt; 0x0000000000000000<b=
-r>mpc83xx_add_bridge():Adding PCI host bridge /pcie@e0009000. <br>Found MPC=
-83xx PCI host bridge at 0x00000000e0009000. Firmware bus number: 0-&gt;0<br=
->
-&nbsp;-&gt;Hose at 0xc04170c0, cfg_addr=3D0xf5efc000,cfg_data=3D0xfdefc000<=
-br>PCI host bridge /pcie@e0009000 (primary) ranges:<br>&nbsp;MEM 0x00000000=
-a8000000..0x00000000b7ffffff -&gt; 0x00000000a8000000 <br>&nbsp; IO 0x00000=
-000b8000000..0x00000000b87fffff -&gt; 0x0000000000000000<br>
-<br><br>I fount that because the &quot;0001:02:00.1&quot; does not have the=
- IO map.<br>How can I configure it?<br><br>
-
---000e0cd172c45ed4a404a116ef54--
+-- 
+Jens Axboe
