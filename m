@@ -1,19 +1,19 @@
 Return-Path: <rjw@sisk.pl>
 Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
-	by ozlabs.org (Postfix) with ESMTP id 19EE110081A
+	by ozlabs.org (Postfix) with ESMTP id 1CBB010081D
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 18 Apr 2011 07:43:23 +1000 (EST)
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/14] PM: Fix error code paths executed after failing
-	syscore_suspend()
-Date: Sun, 17 Apr 2011 23:05:57 +0200
+Subject: [PATCH 11/14] PM / AVR32: Use struct syscore_ops instead of sysdevs
+	for PM
+Date: Sun, 17 Apr 2011 23:13:09 +0200
 References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
 In-Reply-To: <201104172301.54115.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Message-Id: <201104172305.57989.rjw@sisk.pl>
+Message-Id: <201104172313.09712.rjw@sisk.pl>
 Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
 	Russell King <linux@arm.linux.org.uk>,
 	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
@@ -36,61 +36,114 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If syscore_suspend() fails in suspend_enter(), create_image() or
-resume_target_kernel(), it is necessary to call sysdev_resume(),
-because sysdev_suspend() has been called already and succeeded
-and we are going to abort the transition.
+Convert some AVR32 architecture's code to using struct syscore_ops
+objects for power management instead of sysdev classes and sysdevs.
+
+This simplifies the code and reduces the kernel's memory footprint.
+It also is necessary for removing sysdevs from the kernel entirely in
+the future.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/hibernate.c |   10 ++++++++--
- kernel/power/suspend.c   |    5 ++++-
- 2 files changed, 12 insertions(+), 3 deletions(-)
+ arch/avr32/mach-at32ap/intc.c |   38 ++++++++++++--------------------------
+ 1 file changed, 12 insertions(+), 26 deletions(-)
 
-Index: linux-2.6/kernel/power/suspend.c
+Index: linux-2.6/arch/avr32/mach-at32ap/intc.c
 ===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -164,8 +164,11 @@ static int suspend_enter(suspend_state_t
- 	BUG_ON(!irqs_disabled());
+--- linux-2.6.orig/arch/avr32/mach-at32ap/intc.c
++++ linux-2.6/arch/avr32/mach-at32ap/intc.c
+@@ -12,7 +12,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/platform_device.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
  
- 	error = sysdev_suspend(PMSG_SUSPEND);
--	if (!error)
-+	if (!error) {
- 		error = syscore_suspend();
-+		if (error)
-+			sysdev_resume();
-+	}
- 	if (!error) {
- 		if (!(suspend_test(TEST_CORE) || pm_wakeup_pending())) {
- 			error = suspend_ops->enter(state);
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -273,8 +273,11 @@ static int create_image(int platform_mod
- 	local_irq_disable();
+ #include <asm/io.h>
  
- 	error = sysdev_suspend(PMSG_FREEZE);
--	if (!error)
-+	if (!error) {
- 		error = syscore_suspend();
-+		if (error)
-+			sysdev_resume();
-+	}
- 	if (error) {
- 		printk(KERN_ERR "PM: Some system devices failed to power down, "
- 			"aborting hibernation\n");
-@@ -407,8 +410,11 @@ static int resume_target_kernel(bool pla
- 	local_irq_disable();
+@@ -21,7 +21,6 @@
+ struct intc {
+ 	void __iomem		*regs;
+ 	struct irq_chip		chip;
+-	struct sys_device	sysdev;
+ #ifdef CONFIG_PM
+ 	unsigned long		suspend_ipr;
+ 	unsigned long		saved_ipr[64];
+@@ -146,9 +145,8 @@ void intc_set_suspend_handler(unsigned l
+ 	intc0.suspend_ipr = offset;
+ }
  
- 	error = sysdev_suspend(PMSG_QUIESCE);
--	if (!error)
-+	if (!error) {
- 		error = syscore_suspend();
-+		if (error)
-+			sysdev_resume();
-+	}
- 	if (error)
- 		goto Enable_irqs;
+-static int intc_suspend(struct sys_device *sdev, pm_message_t state)
++static int intc_suspend(void)
+ {
+-	struct intc *intc = container_of(sdev, struct intc, sysdev);
+ 	int i;
  
+ 	if (unlikely(!irqs_disabled())) {
+@@ -156,28 +154,25 @@ static int intc_suspend(struct sys_devic
+ 		return -EINVAL;
+ 	}
+ 
+-	if (unlikely(!intc->suspend_ipr)) {
++	if (unlikely(!intc0.suspend_ipr)) {
+ 		pr_err("intc_suspend: suspend_ipr not initialized\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	for (i = 0; i < 64; i++) {
+-		intc->saved_ipr[i] = intc_readl(intc, INTPR0 + 4 * i);
+-		intc_writel(intc, INTPR0 + 4 * i, intc->suspend_ipr);
++		intc0.saved_ipr[i] = intc_readl(&intc0, INTPR0 + 4 * i);
++		intc_writel(&intc0, INTPR0 + 4 * i, intc0.suspend_ipr);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-static int intc_resume(struct sys_device *sdev)
++static int intc_resume(void)
+ {
+-	struct intc *intc = container_of(sdev, struct intc, sysdev);
+ 	int i;
+ 
+-	WARN_ON(!irqs_disabled());
+-
+ 	for (i = 0; i < 64; i++)
+-		intc_writel(intc, INTPR0 + 4 * i, intc->saved_ipr[i]);
++		intc_writel(&intc0, INTPR0 + 4 * i, intc0.saved_ipr[i]);
+ 
+ 	return 0;
+ }
+@@ -186,27 +181,18 @@ static int intc_resume(struct sys_device
+ #define intc_resume	NULL
+ #endif
+ 
+-static struct sysdev_class intc_class = {
+-	.name		= "intc",
++static struct syscore_ops intc_syscore_ops = {
+ 	.suspend	= intc_suspend,
+ 	.resume		= intc_resume,
+ };
+ 
+-static int __init intc_init_sysdev(void)
++static int __init intc_init_syscore(void)
+ {
+-	int ret;
+-
+-	ret = sysdev_class_register(&intc_class);
+-	if (ret)
+-		return ret;
++	register_syscore_ops(&intc_syscore_ops);
+ 
+-	intc0.sysdev.id = 0;
+-	intc0.sysdev.cls = &intc_class;
+-	ret = sysdev_register(&intc0.sysdev);
+-
+-	return ret;
++	return 0;
+ }
+-device_initcall(intc_init_sysdev);
++device_initcall(intc_init_syscore);
+ 
+ unsigned long intc_get_pending(unsigned int group)
+ {
