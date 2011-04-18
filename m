@@ -1,17 +1,14 @@
 Return-Path: <bhutchings@solarflare.com>
-Received: from exchange.solarflare.com (exchange.solarflare.com
-	[216.237.3.220]) by ozlabs.org (Postfix) with ESMTP id ACC71B6FCE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Apr 2011 06:53:15 +1000 (EST)
-Subject: Re: [PATCH V14 3/4] ptp: Added a clock driver for the IXP46x.
+Subject: Re: [PATCH V14 4/4] ptp: Added a clock driver for the National
+	Semiconductor PHYTER.
 From: Ben Hutchings <bhutchings@solarflare.com>
 To: Richard Cochran <richardcochran@gmail.com>
-In-Reply-To: <dbee2487a57fd7f41e4efbbd2ddfb1313b8d71bc.1303107532.git.richard.cochran@omicron.at>
+In-Reply-To: <1728ffb5735c2a04876a69ad55427c4e7b5a1bd7.1303107532.git.richard.cochran@omicron.at>
 References: <cover.1303107532.git.richard.cochran@omicron.at>
-	<dbee2487a57fd7f41e4efbbd2ddfb1313b8d71bc.1303107532.git.richard.cochran@omicron.at>
+	<1728ffb5735c2a04876a69ad55427c4e7b5a1bd7.1303107532.git.richard.cochran@omicron.at>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Apr 2011 21:53:06 +0100
-Message-ID: <1303159986.2857.56.camel@bwh-desktop>
+Date: Mon, 18 Apr 2011 21:57:25 +0100
+Message-ID: <1303160245.2857.60.camel@bwh-desktop>
 Mime-Version: 1.0
 Cc: Thomas Gleixner <tglx@linutronix.de>, Rodolfo Giometti <giometti@linux.it>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -33,43 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-04-18 at 08:29 +0200, Richard Cochran wrote:
-> This patch adds a driver for the hardware time stamping unit found on the
-> IXP465. The basic clock operations and an external trigger are implemented.
+On Mon, 2011-04-18 at 08:30 +0200, Richard Cochran wrote:
+> This patch adds support for the PTP clock found on the DP83640.
+> The basic clock operations and one external time stamp have
+> been implemented.
 [...]
-> --- a/drivers/net/arm/ixp4xx_eth.c
-> +++ b/drivers/net/arm/ixp4xx_eth.c
+> --- /dev/null
+> +++ b/drivers/net/phy/dp83640.c
 [...]
-> @@ -246,6 +255,169 @@ static int ports_open;
->  static struct port *npe_port_tab[MAX_NPES];
->  static struct dma_pool *dma_pool;
->  
-> +static struct sock_filter ptp_filter[] = {
-> +	PTP_FILTER
-> +};
-> +
-> +static int ixp_ptp_match(struct sk_buff *skb, u16 uid_hi, u32 uid_lo, u16 seq)
+> +static int match(struct sk_buff *skb, unsigned int type, struct rxts *rxts)
 > +{
-> +	unsigned int type;
-> +	u16 *hi, *id;
-> +	u8 *lo, *data = skb->data;
+> +	u16 *seqid;
+
+Should be __be16 *, and similarly for the casts.
+
+> +	u8 *msgtype, *data = skb_mac_header(skb);
 > +
-> +	type = sk_run_filter(skb, ptp_filter);
-> +
-> +	if (PTP_CLASS_V1_IPV4 == type) {
-> +
-> +		id = (u16 *)(data + 42 + 30);
-> +		hi = (u16 *)(data + 42 + 22);
-> +		lo = data + 42 + 24;
+> +	/* check sequenceID, messageType, 12 bit hash of offset 20-29 */
+> +	/* We assume that the IPv4 header has no options. */
+
+Does the hardware definitely not timestamp received packets with IP
+options?
+
+> +	switch (type) {
+> +	case PTP_CLASS_V1_IPV4:
+> +		msgtype = data + 42 + 32;
+> +		seqid = (u16 *)(data + 42 + 30);
+> +		break;
+> +	case PTP_CLASS_V1_IPV6:
+> +		msgtype = data + 62 + 32;
+> +		seqid = (u16 *)(data + 62 + 30);
+> +		break;
+> +	case PTP_CLASS_V2_IPV4:
+> +		msgtype = data + 42 + 0;
+> +		seqid = (u16 *)(data + 42 + 30);
+> +		break;
+> +	case PTP_CLASS_V2_IPV6:
+> +		msgtype = data + 62 + 0;
+> +		seqid = (u16 *)(data + 62 + 30);
+> +		break;
+> +	case PTP_CLASS_V2_L2:
+> +		msgtype = data + 14 + 0;
+> +		seqid = (u16 *)(data + 14 + 30);
+> +		break;
+> +	case PTP_CLASS_V2_VLAN:
+> +		msgtype = data + 18 + 0;
+> +		seqid = (u16 *)(data + 18 + 30);
+> +		break;
 [...]
 
-PTP_FILTER does not verify that the packet length is sufficient to hold
-a complete PTP header, nor does it require that the IPv4 header length
-is 5 (i.e. 20 bytes).  So you have to check those here rather than using
-magic numbers.
-
-I think you also need to use be16_to_cpup() to read 'id' and 'hi', since
-the host byte order may vary.
+Would be better without the magic numbers.
 
 Ben.
 
