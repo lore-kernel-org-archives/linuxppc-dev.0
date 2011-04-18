@@ -1,22 +1,31 @@
-Return-Path: <psomas@ece.ntua.gr>
-Received: from ulysses.noc.ntua.gr (ulysses.noc.ntua.gr [147.102.222.230])
-	by ozlabs.org (Postfix) with ESMTP id 2C87AB6F64
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id 108381007D9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Apr 2011 03:05:04 +1000 (EST)
-Message-ID: <4DAC6C2C.5000503@ece.ntua.gr>
-Date: Mon, 18 Apr 2011 19:51:56 +0300
-From: Stratos Psomadakis <psomas@ece.ntua.gr>
+	Tue, 19 Apr 2011 06:03:10 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH 10/14] PM / MIPS: Use struct syscore_ops instead of
+	sysdevs for PM
+Date: Mon, 18 Apr 2011 22:03:15 +0200
+References: <201103280125.11750.rjw@sisk.pl> <201104172312.35060.rjw@sisk.pl>
+	<20110418101218.GA25325@linux-mips.org>
+In-Reply-To: <20110418101218.GA25325@linux-mips.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ppc64: fix build error when compiling with gcc-4.6.0
-References: <1303144739-4407-1-git-send-email-psomas@cslab.ece.ntua.gr>
-	<1303144739-4407-2-git-send-email-psomas@cslab.ece.ntua.gr>
-In-Reply-To: <1303144739-4407-2-git-send-email-psomas@cslab.ece.ntua.gr>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enigB728FF0943D58F1C8F7032D7"
-Cc: Stratos Psomadakis <psomas@cslab.ece.ntua.gr>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201104182203.16171.rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+	Russell King <linux@arm.linux.org.uk>,
+	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+	Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+	Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>,
+	Kay Sievers <kay.sievers@suse.de>, Mike Frysinger <vapier@gentoo.org>,
+	Linux PM mailing list <linux-pm@lists.linux-foundation.org>,
+	linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB728FF0943D58F1C8F7032D7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Monday, April 18, 2011, Ralf Baechle wrote:
+> This patch breaks the Alchemy kernel compile; below patch on top of it fixes
+> that again.
+> 
+> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-On 18/04/2011 07:38 =CE=BC=CE=BC, Stratos Psomadakis wrote:
-> variable 'old' is set but not used, which results to a warning
-> (-Werror=3Dunused-but-set-variable) when compiling with gcc-4.6.0, and =
-subsequent
-> build failure.
-> Remove the variable 'old', since it's not used anyway.
-Something went wrong with git-send-email :/
+Thanks!  If you don't mind, I'd like to fold your patch into [10/14].
 
-So I send the first mail in the chain as a reply:
-
-The build error was reported at the Gentoo Bugzilla [1].
-
-When compiling with gcc-4.6.0, a build error occurs:=20
-"variable =E2=80=98old=E2=80=99 set but not used [-Werror=3Dunused-but-se=
-t-variable]
-cc1: all warnings being treated as errors"
-
-This patch removes the unnecessary assignments to the variable 'old', whi=
-ch cause
-the compiler warning (used but not set), and build failure, and remove th=
-e variable completely.
-I think it's ok to do that, since the variable is actually never used. Ri=
-ght?
-(of course disabling CONFIG_PPC_WERROR would resolve the build failure, b=
-ut cleaning up the code a bit, is better I think).
-
-[1] https://bugs.gentoo.org/show_bug.cgi?id=3D363935
-
---=20
-Stratos Psomadakis
-<psomas@ece.ntua.gr>
+Rafael
 
 
-
---------------enigB728FF0943D58F1C8F7032D7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAk2sbDAACgkQid1lVeNDMmB0UACgnAcC0jy0ox84DIbGFl+tVkw7
-k4IAn3EMUScfVOrWG6L/3EwW5NC+mdHN
-=bGNI
------END PGP SIGNATURE-----
-
---------------enigB728FF0943D58F1C8F7032D7--
+> ---
+>  arch/mips/alchemy/common/irq.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-mips/arch/mips/alchemy/common/irq.c
+> ===================================================================
+> --- linux-mips.orig/arch/mips/alchemy/common/irq.c
+> +++ linux-mips/arch/mips/alchemy/common/irq.c
+> @@ -619,8 +619,8 @@ static struct syscore_ops alchemy_ic_sys
+>  
+>  static int __init alchemy_ic_syscore_init(void)
+>  {
+> -	alchemy_ic_data[0].base = ioremap(icbase[IC0_PHYS_ADDR], 0x1000);
+> -	alchemy_ic_data[1].base = ioremap(icbase[IC1_PHYS_ADDR], 0x1000);
+> +	alchemy_ic_data[0].base = ioremap(IC0_PHYS_ADDR, 0x1000);
+> +	alchemy_ic_data[1].base = ioremap(IC1_PHYS_ADDR, 0x1000);
+>  
+>  	register_syscore_ops(&alchemy_ic_syscore_ops);
+>  
+> 
+> 
