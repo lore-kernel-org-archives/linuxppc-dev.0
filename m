@@ -1,14 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 07/15] powerpc: Move CPU_FTRS_BASE_BOOK3E into cputable.h
-	& update FTR masks
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1a24282746fd056fb51dda3b25d160d2fc609da5.1302856271.git.michael@ellerman.id.au>
-Date: Mon, 18 Apr 2011 07:37:35 -0500
-Message-Id: <F5D0207F-8EF1-439A-B7C4-53CB89778B32@kernel.crashing.org>
+Return-Path: <B11780@freescale.com>
+Subject: Re: [PATCH 10/15] powerpc: Define slb0_limit() for BOOK3E
+MIME-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <021a5af117537ce9f7c6c3b27310f15851ab5034.1302856271.git.michael@ellerman.id.au>
+Date: Mon, 18 Apr 2011 07:42:47 -0500
+Message-ID: <DB59DA71-C6DA-4E65-9251-C29B973345AD@freescale.com>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-	<1a24282746fd056fb51dda3b25d160d2fc609da5.1302856271.git.michael@ellerman.id.au>
+	<021a5af117537ce9f7c6c3b27310f15851ab5034.1302856271.git.michael@ellerman.id.au>
 To: Michael Ellerman <michael@ozlabs.org>
 Cc: Jimi Xenidis <jimix@watson.ibm.com>, linuxppc-dev@ozlabs.org,
 	David Gibson <david@gibson.dropbear.id.au>, imunsie@au.ibm.com,
@@ -26,37 +25,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Apr 15, 2011, at 3:32 AM, Michael Ellerman wrote:
 
 > From: Michael Ellerman <michael@ellerman.id.au>
-> 
-> Where they belong with all the others. Remove SMT which may not be
-> true for all BOOK3E parts.
-> 
-> Currently the FTRS_POSSIBLE & FTRS_ALWAYS are defined for 64 or 32 bit.
-> Now that we have BOOK3E we need to split it three ways, BOOK3S, BOOK3E,
-> and 32-bit.
-> 
+>=20
+> On BOOK3E we don't have an SLB 0, but the equivalent concept is the
+> bolted entry mapping the kernel. Currently this is a 1G entry, so
+> for now hardcode that. This will probably need to be reworked in
+> future.
+>=20
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 > ---
-> arch/powerpc/include/asm/cputable.h |   17 +++++++++++++----
-> arch/powerpc/kernel/cputable.c      |    3 ---
-> 2 files changed, 13 insertions(+), 7 deletions(-)
+> arch/powerpc/kernel/setup_64.c |    4 ++++
+> 1 files changed, 4 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/setup_64.c =
+b/arch/powerpc/kernel/setup_64.c
+> index 91a5cc5..3d0daf4 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -436,10 +436,14 @@ void __init setup_system(void)
+>=20
+> static u64 slb0_limit(void)
+> {
+> +#ifdef CONFIG_PPC_BOOK3E
+> +	return 1 << 30;
+> +#else
+> 	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
+> 		return 1UL << SID_SHIFT_1T;
+> 	}
+> 	return 1UL << SID_SHIFT;
+> +#endif
+> }
+>=20
 
-will probably need some updating based on:
+Let's rename this function to something 'linear_map'.  As on FSL Book-E =
+64 we do things a bit differently and have more covered in linear map =
+than 1G
 
-commit 11ed0db9f6c7811233632d2ab79c50c011b89902
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Wed Apr 6 00:11:06 2011 -0500
-
-    powerpc/book3e: Fix CPU feature handling on 64-bit e5500
-    
-    The CPU_FTRS_POSSIBLE and CPU_FTRS_ALWAYS defines did not encompass
-    e5500 CPU features when built for 64-bit.  This causes issues with
-    cpu_has_feature() as it utilizes the POSSIBLE & ALWAYS defines as part
-    of its check.
-    
-    Create a unique CPU_FTRS_E5500 (as its different from CPU_FTRS_E500MC),
-    created a new group for 64-bit Book3e based CPUs and add CPU_FTRS_E5500
-    to that group.
-    
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-- k
+> static void __init irqstack_early_init(void)
+> --=20
+> 1.7.1
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
