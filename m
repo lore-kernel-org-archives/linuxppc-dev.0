@@ -1,38 +1,20 @@
-Return-Path: <vapier.adi@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4AD01007D5
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41434B6F67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Apr 2011 12:34:46 +1000 (EST)
-Received: by yxp4 with SMTP id 4so2012199yxp.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Apr 2011 19:34:42 -0700 (PDT)
-MIME-Version: 1.0
-Sender: vapier.adi@gmail.com
-In-Reply-To: <201104172311.59289.rjw@sisk.pl>
-References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
-	<201104172311.59289.rjw@sisk.pl>
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Sun, 17 Apr 2011 22:34:22 -0400
-Message-ID: <BANLkTi=BRXtsG0wK6SbK-6L-xzwMccR3eQ@mail.gmail.com>
-Subject: Re: [PATCH 9/14] PM / Blackfin: Use struct syscore_ops instead of
-	sysdevs for PM
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
-	Russell King <linux@arm.linux.org.uk>,
-	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
-	Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-	Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>,
-	Kay Sievers <kay.sievers@suse.de>,
-	Linux PM mailing list <linux-pm@lists.linux-foundation.org>,
-	linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>,
-	linux-arm-kernel@lists.infradead.org
+	Mon, 18 Apr 2011 15:47:32 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p3I5lQWT000804
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2011 00:47:27 -0500
+Subject: [PATCH] powerpc/powermac: Build fix with SMP and CPU hotplug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Apr 2011 15:47:25 +1000
+Message-ID: <1303105645.28876.153.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,23 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 17, 2011 at 17:11, Rafael J. Wysocki wrote:
-> Convert some Blackfin architecture's code to using struct syscore_ops
-> objects for power management instead of sysdev classes and sysdevs.
->
-> This simplifies the code and reduces the kernel's memory footprint.
-> It also is necessary for removing sysdevs from the kernel entirely in
-> the future.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/platforms/powermac/smp.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-looks straight forward enough ...
-Acked-by: Mike Frysinger <vapier@gentoo.org>
-
-> +static struct syscore_ops nmi_syscore_ops =3D {
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.resume =C2=A0 =C2=A0 =C2=A0 =C2=A0 =3D nmi_wd=
-t_resume,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.suspend =C2=A0 =C2=A0 =C2=A0 =C2=A0=3D nmi_wd=
-t_suspend,
-> =C2=A0};
-
-a bit sad this couldnt be made const
--mike
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index a830c5e..bc5f0dc 100644
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -842,6 +842,7 @@ static void __devinit smp_core99_setup_cpu(int cpu_nr)
+ 	mpic_setup_this_cpu();
+ }
+ 
++#ifdef CONFIG_PPC64
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int smp_core99_cpu_notify(struct notifier_block *self,
+ 				 unsigned long action, void *hcpu)
+@@ -879,7 +880,6 @@ static struct notifier_block __cpuinitdata smp_core99_cpu_nb = {
+ 
+ static void __init smp_core99_bringup_done(void)
+ {
+-#ifdef CONFIG_PPC64
+ 	extern void g5_phy_disable_cpu1(void);
+ 
+ 	/* Close i2c bus if it was used for tb sync */
+@@ -894,14 +894,14 @@ static void __init smp_core99_bringup_done(void)
+ 		set_cpu_present(1, false);
+ 		g5_phy_disable_cpu1();
+ 	}
+-#endif /* CONFIG_PPC64 */
+-
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	register_cpu_notifier(&smp_core99_cpu_nb);
+ #endif
++
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("smp_core99_bringup_done", 0x349);
+ }
++#endif /* CONFIG_PPC64 */
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 
+@@ -975,7 +975,9 @@ static void pmac_cpu_die(void)
+ struct smp_ops_t core99_smp_ops = {
+ 	.message_pass	= smp_mpic_message_pass,
+ 	.probe		= smp_core99_probe,
++#ifdef CONFIG_PPC64
+ 	.bringup_done	= smp_core99_bringup_done,
++#endif
+ 	.kick_cpu	= smp_core99_kick_cpu,
+ 	.setup_cpu	= smp_core99_setup_cpu,
+ 	.give_timebase	= smp_core99_give_timebase,
