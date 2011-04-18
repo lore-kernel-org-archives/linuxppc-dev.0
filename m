@@ -1,32 +1,20 @@
-Return-Path: <rjw@sisk.pl>
-Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
-	by ozlabs.org (Postfix) with ESMTP id 0D72A1007E8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Apr 2011 07:43:50 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH 9/14] PM / Blackfin: Use struct syscore_ops instead of
-	sysdevs for PM
-Date: Mon, 18 Apr 2011 23:43:41 +0200
-References: <201103280125.11750.rjw@sisk.pl> <201104172311.59289.rjw@sisk.pl>
-	<BANLkTi=BRXtsG0wK6SbK-6L-xzwMccR3eQ@mail.gmail.com>
-In-Reply-To: <BANLkTi=BRXtsG0wK6SbK-6L-xzwMccR3eQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201104182343.41702.rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
-	Russell King <linux@arm.linux.org.uk>,
-	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
-	Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-	Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>,
-	Kay Sievers <kay.sievers@suse.de>,
-	Linux PM mailing list <linux-pm@lists.linux-foundation.org>,
-	linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH 12/15] powerpc/book3e: Use way 3 for linear mapping bolted
+	entry
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1303162834.28876.163.camel@pasglop>
+Date: Mon, 18 Apr 2011 17:27:23 -0500
+Message-Id: <7086A97F-A6A6-4D25-9FA7-20959C74E440@kernel.crashing.org>
+References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
+	<bbe411555c95e56ba427ebf638d5333b1870af77.1302856271.git.michael@ellerman.id.au>
+	<FE1E8891-E134-4559-9F26-BAFC36B258AC@kernel.crashing.org>
+	<1303162834.28876.163.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <michael@ozlabs.org>, Jimi Xenidis <jimix@watson.ibm.com>,
+	jack@codezen.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,30 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, April 18, 2011, Mike Frysinger wrote:
-> On Sun, Apr 17, 2011 at 17:11, Rafael J. Wysocki wrote:
-> > Convert some Blackfin architecture's code to using struct syscore_ops
-> > objects for power management instead of sysdev classes and sysdevs.
-> >
-> > This simplifies the code and reduces the kernel's memory footprint.
-> > It also is necessary for removing sysdevs from the kernel entirely in
-> > the future.
-> 
-> looks straight forward enough ...
-> Acked-by: Mike Frysinger <vapier@gentoo.org>
-> 
-> > +static struct syscore_ops nmi_syscore_ops = {
-> >        .resume         = nmi_wdt_resume,
-> >        .suspend        = nmi_wdt_suspend,
-> >  };
-> 
-> a bit sad this couldnt be made const
 
-Well, that would trigger a compiler warning from register_syscore_ops().
+On Apr 18, 2011, at 4:40 PM, Benjamin Herrenschmidt wrote:
 
-However, I'm going to make that change change everywhere at once when all of
-the conversions have been made, since it looks like we're only going to have
-static syscore_ops.
+> On Mon, 2011-04-18 at 07:43 -0500, Kumar Gala wrote:
+>> On Apr 15, 2011, at 3:32 AM, Michael Ellerman wrote:
+>>=20
+>>> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>=20
+>>> An erratum on A2 can lead to the bolted entry we insert for the =
+linear
+>>> mapping being evicted, to avoid that write the bolted entry to way =
+3.
+>>>=20
+>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>>> ---
+>>> arch/powerpc/kernel/exceptions-64e.S |    5 +++--
+>>> 1 files changed, 3 insertions(+), 2 deletions(-)
+>>>=20
+>>> diff --git a/arch/powerpc/kernel/exceptions-64e.S =
+b/arch/powerpc/kernel/exceptions-64e.S
+>>> index 5c43063..e6c0926 100644
+>>> --- a/arch/powerpc/kernel/exceptions-64e.S
+>>> +++ b/arch/powerpc/kernel/exceptions-64e.S
+>>> @@ -864,8 +864,9 @@ have_hes:
+>>> 	 * that will have to be made dependent on whether we are running =
+under
+>>> 	 * a hypervisor I suppose.
+>>> 	 */
+>>> -	ori	r3,r3,MAS0_HES | MAS0_WQ_ALLWAYS
+>>> -	mtspr	SPRN_MAS0,r3
+>>> +	ori	r11,r3,MAS0_WQ_ALLWAYS
+>>> +	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 =
+erratum 376 */
+>>> +	mtspr	SPRN_MAS0,r11
+>>> 	lis	r3,(MAS1_VALID | MAS1_IPROT)@h
+>>> 	ori	r3,r3,BOOK3E_PAGESZ_1GB << MAS1_TSIZE_SHIFT
+>>> 	mtspr	SPRN_MAS1,r3
+>>=20
+>> Seems like this should have a MMU Feature bit or something for A2.
+>=20
+> Too early. We haven't detected the CPU and are establishing the =
+initial
+> TLB entry here.
 
-Thanks,
-Rafael
+How about wrapping with CONFIG_PPC_A2
+
+> Any reason why that wouldn't work on something else anyways ?
+
+No, I wasn't paying attention to what this code exactly was (not enough =
+context in the diff), I see its our initial setup so not a big deal.  =
+Was thinking this was run-time exception handler code.
+
+- k
