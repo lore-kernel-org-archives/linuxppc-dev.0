@@ -1,15 +1,14 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 12/15] powerpc/book3e: Use way 3 for linear mapping
-	bolted entry
+Subject: Re: [PATCH 10/15] powerpc: Define slb0_limit() for BOOK3E
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <FE1E8891-E134-4559-9F26-BAFC36B258AC@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <DB59DA71-C6DA-4E65-9251-C29B973345AD@freescale.com>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-	<bbe411555c95e56ba427ebf638d5333b1870af77.1302856271.git.michael@ellerman.id.au>
-	<FE1E8891-E134-4559-9F26-BAFC36B258AC@kernel.crashing.org>
+	<021a5af117537ce9f7c6c3b27310f15851ab5034.1302856271.git.michael@ellerman.id.au>
+	<DB59DA71-C6DA-4E65-9251-C29B973345AD@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Apr 2011 07:40:34 +1000
-Message-ID: <1303162834.28876.163.camel@pasglop>
+Date: Tue, 19 Apr 2011 07:41:42 +1000
+Message-ID: <1303162902.28876.164.camel@pasglop>
 Mime-Version: 1.0
 Cc: Michael Ellerman <michael@ozlabs.org>, Jimi Xenidis <jimix@watson.ibm.com>,
 	jack@codezen.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
@@ -23,43 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-04-18 at 07:43 -0500, Kumar Gala wrote:
-> On Apr 15, 2011, at 3:32 AM, Michael Ellerman wrote:
-> 
-> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > An erratum on A2 can lead to the bolted entry we insert for the linear
-> > mapping being evicted, to avoid that write the bolted entry to way 3.
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> > arch/powerpc/kernel/exceptions-64e.S |    5 +++--
-> > 1 files changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> > index 5c43063..e6c0926 100644
-> > --- a/arch/powerpc/kernel/exceptions-64e.S
-> > +++ b/arch/powerpc/kernel/exceptions-64e.S
-> > @@ -864,8 +864,9 @@ have_hes:
-> > 	 * that will have to be made dependent on whether we are running under
-> > 	 * a hypervisor I suppose.
-> > 	 */
-> > -	ori	r3,r3,MAS0_HES | MAS0_WQ_ALLWAYS
-> > -	mtspr	SPRN_MAS0,r3
-> > +	ori	r11,r3,MAS0_WQ_ALLWAYS
-> > +	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 erratum 376 */
-> > +	mtspr	SPRN_MAS0,r11
-> > 	lis	r3,(MAS1_VALID | MAS1_IPROT)@h
-> > 	ori	r3,r3,BOOK3E_PAGESZ_1GB << MAS1_TSIZE_SHIFT
-> > 	mtspr	SPRN_MAS1,r3
-> 
-> Seems like this should have a MMU Feature bit or something for A2.
+On Mon, 2011-04-18 at 07:42 -0500, Kumar Gala wrote:
+> Let's rename this function to something 'linear_map'.  As on FSL
+> Book-E 64 we do things a bit differently and have more covered in
+> linear map than 1G
 
-Too early. We haven't detected the CPU and are establishing the initial
-TLB entry here.
+It's not quite linear_map. It's whatever can be accessed without taking
+exceptions. IE. What is bolted.
 
-Any reason why that wouldn't work on something else anyways ?
+It should probably go into a variable initialized by the mm code tho.
 
 Cheers,
 Ben.
