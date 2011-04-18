@@ -1,18 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 12/15] powerpc/book3e: Use way 3 for linear mapping
-	bolted entry
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <7086A97F-A6A6-4D25-9FA7-20959C74E440@kernel.crashing.org>
+Return-Path: <B11780@freescale.com>
+Subject: Re: [PATCH 10/15] powerpc: Define slb0_limit() for BOOK3E
+MIME-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1303162902.28876.164.camel@pasglop>
+Date: Mon, 18 Apr 2011 17:30:50 -0500
+Message-ID: <5313E556-6BFA-48D0-921F-7CF91892514A@freescale.com>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-	<bbe411555c95e56ba427ebf638d5333b1870af77.1302856271.git.michael@ellerman.id.au>
-	<FE1E8891-E134-4559-9F26-BAFC36B258AC@kernel.crashing.org>
-	<1303162834.28876.163.camel@pasglop>
-	<7086A97F-A6A6-4D25-9FA7-20959C74E440@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Apr 2011 08:44:21 +1000
-Message-ID: <1303166661.28876.165.camel@pasglop>
-Mime-Version: 1.0
+	<021a5af117537ce9f7c6c3b27310f15851ab5034.1302856271.git.michael@ellerman.id.au>
+	<DB59DA71-C6DA-4E65-9251-C29B973345AD@freescale.com>
+	<1303162902.28876.164.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <michael@ozlabs.org>, Jimi Xenidis <jimix@watson.ibm.com>,
 	jack@codezen.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -26,22 +24,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> >> Seems like this should have a MMU Feature bit or something for A2.
-> > 
-> > Too early. We haven't detected the CPU and are establishing the initial
-> > TLB entry here.
+On Apr 18, 2011, at 4:41 PM, Benjamin Herrenschmidt wrote:
+
+> On Mon, 2011-04-18 at 07:42 -0500, Kumar Gala wrote:
+>> Let's rename this function to something 'linear_map'.  As on FSL
+>> Book-E 64 we do things a bit differently and have more covered in
+>> linear map than 1G
 > 
-> How about wrapping with CONFIG_PPC_A2
-
-YUCK :-)
-
-> > Any reason why that wouldn't work on something else anyways ?
+> It's not quite linear_map. It's whatever can be accessed without taking
+> exceptions. IE. What is bolted.
 > 
-> No, I wasn't paying attention to what this code exactly was (not enough
-> context in the diff), I see its our initial setup so not a big deal.
->   Was thinking this was run-time exception handler code.
+> It should probably go into a variable initialized by the mm code tho.
+> 
+> Cheers,
+> Ben.
 
-No, it's the boot time bolted entry.
+Is this 'ppc64_rma_size' ?
 
-Cheers,
-Ben.
+- k
