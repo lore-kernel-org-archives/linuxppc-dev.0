@@ -1,20 +1,15 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 03D6CB6EE6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Apr 2011 17:01:36 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH V14 1/4] ptp: Added a brand new class driver for ptp
-	clocks.
-Date: Mon, 18 Apr 2011 08:54:35 +0200
+Return-Path: <richardcochran@gmail.com>
+Date: Mon, 18 Apr 2011 10:06:07 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH V14 3/4] ptp: Added a clock driver for the IXP46x.
+Message-ID: <20110418080606.GA3809@riccoc20.at.omicron.at>
 References: <cover.1303107532.git.richard.cochran@omicron.at>
-	<7cabcc0bbd14733fa979fe08deccab8939204f24.1303107532.git.richard.cochran@omicron.at>
-In-Reply-To: <7cabcc0bbd14733fa979fe08deccab8939204f24.1303107532.git.richard.cochran@omicron.at>
+	<dbee2487a57fd7f41e4efbbd2ddfb1313b8d71bc.1303107532.git.richard.cochran@omicron.at>
+	<201104180856.04186.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201104180854.35552.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201104180856.04186.arnd@arndb.de>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Rodolfo Giometti <giometti@linux.it>,
 	Peter Zijlstra <peterz@infradead.org>, linux-api@vger.kernel.org,
 	devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -34,15 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 18 April 2011, Richard Cochran wrote:
-> This patch adds an infrastructure for hardware clocks that implement
-> IEEE 1588, the Precision Time Protocol (PTP). A class driver offers a
-> registration method to particular hardware clock drivers. Each clock is
-> presented as a standard POSIX clock.
+On Mon, Apr 18, 2011 at 08:56:03AM +0200, Arnd Bergmann wrote:
+> On Monday 18 April 2011, Richard Cochran wrote:
+> > +
+> > +       lo = __raw_readl(&regs->channel[ch].src_uuid_lo);
+> > +       hi = __raw_readl(&regs->channel[ch].src_uuid_hi);
+> > +
 > 
-> The ancillary clock features are exposed in two different ways, via
-> the sysfs and by a character device.
-> 
-> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
+> I guess you should use readl(), not __raw_readl() here. The __raw_* functions
+> are not meant for device drivers.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Krzysztof had a different opinion about this.
+
+    https://lkml.org/lkml/2011/1/8/67
+
+Anyway, it is his driver, and I just followed what he does elsewhere
+in the driver. It make sense to me to keep the driver consistent.
+Maybe we should make the change throughout?
+
+Thanks,
+Richard
