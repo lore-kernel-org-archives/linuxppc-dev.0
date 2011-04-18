@@ -1,14 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 14/15] powerpc: Add WSP platform
+Subject: Re: [PATCH 12/15] powerpc/book3e: Use way 3 for linear mapping
+	bolted entry
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <A6E5DD55-F9D1-430E-BAA7-E770523821A0@kernel.crashing.org>
+In-Reply-To: <FE1E8891-E134-4559-9F26-BAFC36B258AC@kernel.crashing.org>
 References: <d284a5076d7760656470a5fd16d98ec6501a9bf3.1302856271.git.michael@ellerman.id.au>
-	<02b9880aa9ef5d49b473c894bce886f2060f9f0b.1302856271.git.michael@ellerman.id.au>
-	<A6E5DD55-F9D1-430E-BAA7-E770523821A0@kernel.crashing.org>
+	<bbe411555c95e56ba427ebf638d5333b1870af77.1302856271.git.michael@ellerman.id.au>
+	<FE1E8891-E134-4559-9F26-BAFC36B258AC@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Apr 2011 07:39:49 +1000
-Message-ID: <1303162789.28876.162.camel@pasglop>
+Date: Tue, 19 Apr 2011 07:40:34 +1000
+Message-ID: <1303162834.28876.163.camel@pasglop>
 Mime-Version: 1.0
 Cc: Michael Ellerman <michael@ozlabs.org>, Jimi Xenidis <jimix@watson.ibm.com>,
 	jack@codezen.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
@@ -22,13 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-04-18 at 07:46 -0500, Kumar Gala wrote:
+On Mon, 2011-04-18 at 07:43 -0500, Kumar Gala wrote:
+> On Apr 15, 2011, at 3:32 AM, Michael Ellerman wrote:
 > 
-> Can this be moved into kernel/cpu_setup_a2.S.  This and the debug
-> patch that follows are bit ugly.
+> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > An erratum on A2 can lead to the bolted entry we insert for the linear
+> > mapping being evicted, to avoid that write the bolted entry to way 3.
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> > arch/powerpc/kernel/exceptions-64e.S |    5 +++--
+> > 1 files changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> > index 5c43063..e6c0926 100644
+> > --- a/arch/powerpc/kernel/exceptions-64e.S
+> > +++ b/arch/powerpc/kernel/exceptions-64e.S
+> > @@ -864,8 +864,9 @@ have_hes:
+> > 	 * that will have to be made dependent on whether we are running under
+> > 	 * a hypervisor I suppose.
+> > 	 */
+> > -	ori	r3,r3,MAS0_HES | MAS0_WQ_ALLWAYS
+> > -	mtspr	SPRN_MAS0,r3
+> > +	ori	r11,r3,MAS0_WQ_ALLWAYS
+> > +	oris	r11,r11,MAS0_ESEL(3)@h /* Use way 3: workaround A2 erratum 376 */
+> > +	mtspr	SPRN_MAS0,r11
+> > 	lis	r3,(MAS1_VALID | MAS1_IPROT)@h
+> > 	ori	r3,r3,BOOK3E_PAGESZ_1GB << MAS1_TSIZE_SHIFT
+> > 	mtspr	SPRN_MAS1,r3
+> 
+> Seems like this should have a MMU Feature bit or something for A2.
 
-Well, the code per-se is not really A2 specific... the labels and
-comments are :-)
+Too early. We haven't detected the CPU and are establishing the initial
+TLB entry here.
+
+Any reason why that wouldn't work on something else anyways ?
 
 Cheers,
 Ben.
