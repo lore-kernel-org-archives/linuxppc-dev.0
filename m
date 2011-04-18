@@ -1,20 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 41434B6F67
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 84AB51007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Apr 2011 15:47:32 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p3I5lQWT000804
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2011 00:47:27 -0500
-Subject: [PATCH] powerpc/powermac: Build fix with SMP and CPU hotplug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Apr 2011 15:47:25 +1000
-Message-ID: <1303105645.28876.153.camel@pasglop>
-Mime-Version: 1.0
+	Mon, 18 Apr 2011 16:02:15 +1000 (EST)
+Date: Sun, 17 Apr 2011 23:02:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/14] Remove sysdev suspend/resume and shutdown operations
+Message-ID: <20110418060218.GB22168@suse.de>
+References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201104172301.54115.rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+	Russell King <linux@arm.linux.org.uk>,
+	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+	LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+	Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+	Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>,
+	Kay Sievers <kay.sievers@suse.de>, Mike Frysinger <vapier@gentoo.org>,
+	Linux PM mailing list <linux-pm@lists.linux-foundation.org>,
+	linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/powermac/smp.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+On Sun, Apr 17, 2011 at 11:01:53PM +0200, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> The following series of patches fixes bugs related to the introduction
+> of struct syscore_ops later in this cycle, replaces sysdev suspend/resume
+> operations in all of the architectures still using them with struct
+> syscore_ops-based PM callbacks and finally removes the suspend/resume
+> and shutdown operations from struct sysdev_class and struct sysdev_driver.
+> 
+> Patches [1/14] and [2/14] are important bug fixes targeted at 2.6.39.
+> The remaining patches are regareded as 2.6.40 material, but I'd like to
+> put them into linux-next shortly, if there are no objections, to catch
+> problems that they may introduce before they hit the mainline.  Again,
+> if there are no objections I'd like to merge these patches through the
+> suspend-2.6 tree.
 
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index a830c5e..bc5f0dc 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -842,6 +842,7 @@ static void __devinit smp_core99_setup_cpu(int cpu_nr)
- 	mpic_setup_this_cpu();
- }
- 
-+#ifdef CONFIG_PPC64
- #ifdef CONFIG_HOTPLUG_CPU
- static int smp_core99_cpu_notify(struct notifier_block *self,
- 				 unsigned long action, void *hcpu)
-@@ -879,7 +880,6 @@ static struct notifier_block __cpuinitdata smp_core99_cpu_nb = {
- 
- static void __init smp_core99_bringup_done(void)
- {
--#ifdef CONFIG_PPC64
- 	extern void g5_phy_disable_cpu1(void);
- 
- 	/* Close i2c bus if it was used for tb sync */
-@@ -894,14 +894,14 @@ static void __init smp_core99_bringup_done(void)
- 		set_cpu_present(1, false);
- 		g5_phy_disable_cpu1();
- 	}
--#endif /* CONFIG_PPC64 */
--
- #ifdef CONFIG_HOTPLUG_CPU
- 	register_cpu_notifier(&smp_core99_cpu_nb);
- #endif
-+
- 	if (ppc_md.progress)
- 		ppc_md.progress("smp_core99_bringup_done", 0x349);
- }
-+#endif /* CONFIG_PPC64 */
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 
-@@ -975,7 +975,9 @@ static void pmac_cpu_die(void)
- struct smp_ops_t core99_smp_ops = {
- 	.message_pass	= smp_mpic_message_pass,
- 	.probe		= smp_core99_probe,
-+#ifdef CONFIG_PPC64
- 	.bringup_done	= smp_core99_bringup_done,
-+#endif
- 	.kick_cpu	= smp_core99_kick_cpu,
- 	.setup_cpu	= smp_core99_setup_cpu,
- 	.give_timebase	= smp_core99_give_timebase,
+No objection from me at all, thanks for doing this they look great.
+
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
