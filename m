@@ -1,21 +1,12 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C12701007D9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Apr 2011 00:49:31 +1000 (EST)
-Received: by eyg5 with SMTP id 5so1826195eyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Apr 2011 07:49:26 -0700 (PDT)
-Date: Tue, 19 Apr 2011 18:49:29 +0400
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Return-Path: <meador_inge@mentor.com>
+From: Meador Inge <meador_inge@mentor.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Info reg. MapleD
-Message-ID: <20110419144929.GA8790@doriath.ww600.siemens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 0/2] powerpc: define and implement MPIC message register
+	support
+Date: Tue, 19 Apr 2011 11:59:33 -0500
+Message-Id: <1303232375-25014-1-git-send-email-meador_inge@mentor.com>
+Cc: openmcapi-dev@googlegroups.com, devicetree-discuss@lists.ozlabs.org,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +16,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, colleagues,
+This patch set defines a binding for FSL MPIC message registers and implements
+an API for accessing those message registers.  Testing was done on a MPC8572DS
+in an Linux-Linux AMP setup using OpenMCAPI (www.openmcapi.org) to communicate
+between OS instances.  The message register API is used by the OpenMCAPI shared 
+memory driver to send notifications between cores.
 
-I've recently got my hands on MapleD (ppc970fx ev. kit, XSC-100) board.
-I'm trying to fixup several issues with it and further enhance Linux
-support for this device. However somewhere in the long history of this
-board the original developers disk that came with it got lost.
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
 
-Thus I'm looking for several parts of information that might help me:
-* Schematics for the board
-* datasheet/user manual for CPC925 nothern bridge (does such thing ever
-  existed? Maybe someone can convince IBM to publish it?)
+Meador Inge (2):
+  powerpc: document the FSL MPIC message register binding
+  powerpc: add support for MPIC message register API
 
--- 
-With best wishes
-Dmitry
+ .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   71 +++++
+ arch/powerpc/include/asm/mpic_msgr.h               |   35 +++
+ arch/powerpc/platforms/Kconfig                     |    8 +
+ arch/powerpc/sysdev/Makefile                       |    3 +-
+ arch/powerpc/sysdev/mpic_msgr.c                    |  279 ++++++++++++++++++++
+ 5 files changed, 395 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+ create mode 100644 arch/powerpc/include/asm/mpic_msgr.h
+ create mode 100644 arch/powerpc/sysdev/mpic_msgr.c
