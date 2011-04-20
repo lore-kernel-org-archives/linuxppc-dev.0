@@ -1,23 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CEDDDB6F7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Apr 2011 13:07:45 +1000 (EST)
-Subject: Re: [PATCH] cxgb4: use pgprot_writecombine() on powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <20110415172716.GA5881@us.ibm.com>
-References: <1300134971-16752-1-git-send-email-nacc@us.ibm.com>
-	<4D7E7FCE.3000703@opengridcomputing.com>
-	<20110415172716.GA5881@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Apr 2011 13:07:35 +1000
-Message-ID: <1303268855.2513.22.camel@pasglop>
-Mime-Version: 1.0
-Cc: Steve Wise <swise@opengridcomputing.com>, linuxppc-dev@lists.ozlabs.org,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <B32579@freescale.com>
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree-discuss@lists.ozlabs.org>
+Subject: [PATCH] powerpc/85xx:DTS: Fix PCIe IDSEL for Px020RDB
+Date: Wed, 20 Apr 2011 09:42:44 +0530
+Message-ID: <1303272764-15333-1-git-send-email-prabhakar@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +16,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+PCIe device in legacy mode can trigger interrupts using the wires #INTA, #INTB
+,#INTC and #INTD. PCI devices are obligated to use #INTx for interrupts under
+legacy mode.  Each PCI slot or device is typically wired to different inputs on
+the interrupt controller. 
 
-> > >Given that this depends on a patch in Ben's tree, should this go in via
-> > >the powerpc tree? Presuming Steve acks it, of course.
-> > >
-> > >  drivers/infiniband/hw/cxgb4/t4.h |    5 +----
-> > >  1 files changed, 1 insertions(+), 4 deletions(-)
-> > >
-> > 
-> > Acked-by: Steve Wise <swise@opengridcomputing.com>
-> > 
-> > I suppose it should go into the same tree with the commit that adds this function.
-> 
-> Ben, I don't think this is in your tree yet, will you be taking it?
+So, Define interrupt-map and interrupt-map-mask properties for device tree to
+of map each PCI interrupt signal to the inputs of the interrupt controller.
 
-Thanks Steve. Yes, I'll put this in powerpc-next.
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+---
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
 
-Cheers,
-Ben.
+ This patch has depedency on following 2 patches
+ 	-- powerpc/85xx: P2020 DTS: re-organize dts files
+	-- powerpc/85xx: P1020 DTS : re-organize dts files
+
+ arch/powerpc/boot/dts/p1020rdb.dts            |   16 ++++++++++++++++
+ arch/powerpc/boot/dts/p2020rdb.dts            |   16 ++++++++++++++++
+ arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 ++++++++
+ arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |    8 ++++++++
+ 4 files changed, 48 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
+index 7ed4793..d6a8ae4 100644
+--- a/arch/powerpc/boot/dts/p1020rdb.dts
++++ b/arch/powerpc/boot/dts/p1020rdb.dts
+@@ -257,6 +257,14 @@
+ 	pci0: pcie@ffe09000 {
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x4 0x1
++			0000 0x0 0x0 0x2 &mpic 0x5 0x1
++			0000 0x0 0x0 0x3 &mpic 0x6 0x1
++			0000 0x0 0x0 0x4 &mpic 0x7 0x1
++			>;
+ 		pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+ 			#size-cells = <2>;
+@@ -275,6 +283,14 @@
+ 	pci1: pcie@ffe0a000 {
+ 		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0000 0x0 0x0 0x4 &mpic 0x3 0x1
++			>;
+ 		pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+ 			#size-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+index 60a0a8c..3782a58 100644
+--- a/arch/powerpc/boot/dts/p2020rdb.dts
++++ b/arch/powerpc/boot/dts/p2020rdb.dts
+@@ -249,6 +249,14 @@
+ 	pci1: pcie@ffe09000 {
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x4 0x1
++			0000 0x0 0x0 0x2 &mpic 0x5 0x1
++			0000 0x0 0x0 0x3 &mpic 0x6 0x1
++			0000 0x0 0x0 0x4 &mpic 0x7 0x1
++			>;
+ 			pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+ 			#size-cells = <2>;
+@@ -267,6 +275,14 @@
+ 	pci2: pcie@ffe0a000 {
+ 		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0000 0x0 0x0 0x4 &mpic 0x3 0x1
++			>;
+ 		pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+ 			#size-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+index 72c912f..fc8dddd 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+@@ -175,6 +175,14 @@
+ 	pci1: pcie@ffe09000 {
+ 		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x4 0x1
++			0000 0x0 0x0 0x2 &mpic 0x5 0x1
++			0000 0x0 0x0 0x3 &mpic 0x6 0x1
++			0000 0x0 0x0 0x4 &mpic 0x7 0x1
++			>;
+ 		pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+ 			#size-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+index eb572cc..261c34b 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+@@ -203,6 +203,14 @@
+ 	pci2: pcie@ffe0a000 {
+ 		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0000 0x0 0x0 0x4 &mpic 0x3 0x1
++			>;
+ 		pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+ 			#size-cells = <2>;
+-- 
+1.7.3
