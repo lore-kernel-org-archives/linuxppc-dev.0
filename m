@@ -1,25 +1,20 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
-	[64.235.106.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50EC21007DA
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id D7184B7168
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Apr 2011 06:50:58 +1000 (EST)
-Received: from cpec03f0ed08c7f-cm001ac318e826.cpe.net.cable.rogers.com
-	([99.241.2.77] helo=crashcourse.ca)
-	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.69) (envelope-from <rpjday@crashcourse.ca>)
-	id 1QD034-0004OI-Vl
-	for linuxppc-dev@lists.ozlabs.org; Thu, 21 Apr 2011 16:00:23 -0400
-Date: Thu, 21 Apr 2011 16:00:18 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] POWERPC: Remove redundant initialization of bsr dev_t
-	declaration.
-Message-ID: <alpine.DEB.2.00.1104211556240.6841@localhost6.localdomain6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 Apr 2011 10:00:17 +1000 (EST)
+Date: Thu, 21 Apr 2011 16:59:41 -0700 (PDT)
+Message-Id: <20110421.165941.260095636.davem@davemloft.net>
+To: gizero@gmail.com
+Subject: Re: [PATCH v2 1/1] powerpc: Fix multicast problem in fs_enet driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1303388481-17993-1-git-send-email-gizero@gmail.com>
+References: <1303388481-17993-1-git-send-email-gizero@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, vbordug@ru.mvista.com,
+	scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Andrea Galbusera <gizero@gmail.com>
+Date: Thu, 21 Apr 2011 14:21:21 +0200
 
-Remove the unnecessary initialization of "dev_t bsr_dev" since it's
-subsequently used in an "alloc_chrdev_region()" call which uses that
-variable in an output-only fashion.
+> mac-fec.c was setting individual UDP address registers instead of multicast
+> group address registers when joining a multicast group.
+> This prevented from correctly receiving UDP multicast packets.
+> According to datasheet, replaced hash_table_high and hash_table_low
+> with grp_hash_table_high and grp_hash_table_low respectively.
+> Also renamed hash_table_* with grp_hash_table_* in struct fec declaration
+> for 8xx: these registers are used only for multicast there.
+> 
+> Tested on a MPC5121 based board.
+> Build tested also against mpc866_ads_defconfig.
+> 
+> Signed-off-by: Andrea Galbusera <gizero@gmail.com>
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-
----
-
-  *Not* compile tested since I don't have a PPC toolchain, but the
-logic here should be fairly obvious.  The current code isn't wrong,
-just misleading.
-
-diff --git a/drivers/char/bsr.c b/drivers/char/bsr.c
-index a4a6c2f..cf39bc0 100644
---- a/drivers/char/bsr.c
-+++ b/drivers/char/bsr.c
-@@ -295,7 +295,7 @@ static int bsr_create_devs(struct device_node *bn)
- static int __init bsr_init(void)
- {
- 	struct device_node *np;
--	dev_t bsr_dev = MKDEV(bsr_major, 0);
-+	dev_t bsr_dev;
- 	int ret = -ENODEV;
- 	int result;
-
-
--- 
-
-========================================================================
-Robert P. J. Day                                 Ottawa, Ontario, CANADA
-                        http://crashcourse.ca
-
-Twitter:                                       http://twitter.com/rpjday
-LinkedIn:                               http://ca.linkedin.com/in/rpjday
-========================================================================
+Applied, thanks.
