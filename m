@@ -1,26 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 92AB7B6F67
+	by ozlabs.org (Postfix) with ESMTPS id DDDBEB6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Apr 2011 13:59:17 +1000 (EST)
-Received: by iwc10 with SMTP id 10so1383018iwc.38
+	Thu, 21 Apr 2011 14:03:54 +1000 (EST)
+Received: by pxi19 with SMTP id 19so916189pxi.15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Apr 2011 20:59:13 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20110420193145.GA15439@merkur.ravnborg.org>
-References: <20110420084449.23741.45580.stgit@ponder>
-	<20110420193145.GA15439@merkur.ravnborg.org>
+	Wed, 20 Apr 2011 21:03:51 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [RFC PATCH v2 0/4] Switch to core code for irq allocation
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 20 Apr 2011 21:58:53 -0600
-Message-ID: <BANLkTimYJu5BeCb3i64KVTDcTn8SnFsPXQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: stop exporting irq_map
-To: Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Wed, 20 Apr 2011 22:03:48 -0600
+Message-ID: <20110421040036.30579.53752.stgit@ponder>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 20, 2011 at 1:31 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
->> +
->> =A0irq_hw_number_t virq_to_hw(unsigned int virq)
->> =A0{
->> =A0 =A0 =A0 return irq_map[virq].hwirq;
->> =A0}
->> =A0EXPORT_SYMBOL_GPL(virq_to_hw);
->
-> General comment...
-> kernel/irq/* denote the virtual irq numbers "irq".
-> powerpc uses "virq" for the same.
+Hey Ben,
 
-I might do that, but I'm early in this refactoring work yet so I'm not
-entirely sure what the final result is going to look like.  At least
-with the 'virq_' prefix I can find the powerpc specific functions that
-are candidates for refactoring or replacing.
+Can you take a look at this series and let me know what you think.
+The only functional change is in the last patch which uses the core
+irq_alloc_desc*() infrastructure to allocating irqs.
+
+I know I've left race conditions in the code; specifically the
+unlikely case of two threads trying to map the same interrupt at the
+same time.  Both will see that it isn't allocated, and both will do
+the allocation (I think).  I need to hack on it more, but I wanted to
+get your feedback.
+
+Ultimately I'm hoping to be rid of the irq_map table entirely.
 
 g.
 
->
-> Sometimes it is confusing that two different names is used
-> for the same thing.
->
-> The intent of this patch is to centralize access to a common data structu=
-re,
-> but this could also be a good candidate for a terminology shift if
-> this is considered.
->
-> "git grep virq" shows a lot of hits - especially in arm, powerpc.
-> So what I suggest is obviously only a small step in the direction
-> of using "irq" all over.
->
-> =A0 =A0 =A0 =A0Sam
->
+---
+
+Grant Likely (4):
+      powerpc: stop exporting irq_map
+      powerpc: make irq_{alloc,free}_virt private and remove count argument
+      powerpc: move irq_alloc_descs_at() call into irq_alloc_virt()
+      powerpc: use irq_alloc_desc() to manage irq allocations
 
 
+ arch/microblaze/kernel/setup.c                   |    2 
+ arch/powerpc/include/asm/irq.h                   |   47 ------
+ arch/powerpc/kernel/irq.c                        |  162 +++++++++++-----------
+ arch/powerpc/platforms/512x/mpc5121_ads_cpld.c   |    4 -
+ arch/powerpc/platforms/52xx/media5200.c          |    4 -
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c        |   79 ++---------
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c     |    4 -
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c  |   26 +---
+ arch/powerpc/platforms/86xx/gef_pic.c            |   10 -
+ arch/powerpc/platforms/8xx/m8xx_setup.c          |    2 
+ arch/powerpc/platforms/cell/axon_msi.c           |    2 
+ arch/powerpc/platforms/cell/spider-pic.c         |   10 +
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c |    8 +
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c    |    8 +
+ arch/powerpc/platforms/iseries/irq.c             |   10 +
+ arch/powerpc/platforms/powermac/pic.c            |   12 +-
+ arch/powerpc/platforms/pseries/ras.c             |    4 -
+ arch/powerpc/platforms/pseries/xics.c            |   14 +-
+ arch/powerpc/sysdev/cpm1.c                       |    8 +
+ arch/powerpc/sysdev/cpm2_pic.c                   |   10 +
+ arch/powerpc/sysdev/ipic.c                       |   16 +-
+ arch/powerpc/sysdev/mpc8xx_pic.c                 |   10 +
+ arch/powerpc/sysdev/mpc8xxx_gpio.c               |   12 +-
+ arch/powerpc/sysdev/mpic.c                       |   28 ++--
+ arch/powerpc/sysdev/mv64x60_pic.c                |   14 +-
+ arch/powerpc/sysdev/qe_lib/qe_ic.c               |    6 -
+ arch/powerpc/sysdev/uic.c                        |   12 +-
+ arch/powerpc/sysdev/xilinx_intc.c                |    8 +
+ 28 files changed, 206 insertions(+), 326 deletions(-)
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- 
+Signature
