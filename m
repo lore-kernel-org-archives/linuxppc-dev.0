@@ -1,20 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id D7184B7168
+Return-Path: <B33228@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8FA6C1007DC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Apr 2011 10:00:17 +1000 (EST)
-Date: Thu, 21 Apr 2011 16:59:41 -0700 (PDT)
-Message-Id: <20110421.165941.260095636.davem@davemloft.net>
-To: gizero@gmail.com
-Subject: Re: [PATCH v2 1/1] powerpc: Fix multicast problem in fs_enet driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1303388481-17993-1-git-send-email-gizero@gmail.com>
-References: <1303388481-17993-1-git-send-email-gizero@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, vbordug@ru.mvista.com,
-	scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+	Fri, 22 Apr 2011 17:42:10 +1000 (EST)
+From: Lei Xu <B33228@freescale.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PCI: portdrv: fix irq initialization on FSL pcie host
+	controller
+Date: Fri, 22 Apr 2011 15:43:39 +0800
+Message-ID: <1303458219-31915-1-git-send-email-B33228@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-pci@vger.kernel.org, kumar.gala@freescale.com,
+	linuxppc-dev@lists.ozlabs.org, Lei Xu <B33228@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andrea Galbusera <gizero@gmail.com>
-Date: Thu, 21 Apr 2011 14:21:21 +0200
+Root complex ports for Freescale PCIe host controller only receive
+interrupts, so if there is no irq setting for RC, it should not return
+error, otherwise it may result the PCIe host controller is disabled.
 
-> mac-fec.c was setting individual UDP address registers instead of multicast
-> group address registers when joining a multicast group.
-> This prevented from correctly receiving UDP multicast packets.
-> According to datasheet, replaced hash_table_high and hash_table_low
-> with grp_hash_table_high and grp_hash_table_low respectively.
-> Also renamed hash_table_* with grp_hash_table_* in struct fec declaration
-> for 8xx: these registers are used only for multicast there.
-> 
-> Tested on a MPC5121 based board.
-> Build tested also against mpc866_ads_defconfig.
-> 
-> Signed-off-by: Andrea Galbusera <gizero@gmail.com>
+Signed-off-by: Lei Xu <B33228@freescale.com>
+---
+ drivers/pci/pcie/portdrv_core.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Applied, thanks.
+diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
+index 595654a..95e64c8 100644
+--- a/drivers/pci/pcie/portdrv_core.c
++++ b/drivers/pci/pcie/portdrv_core.c
+@@ -209,7 +209,10 @@ static int init_service_irqs(struct pci_dev *dev, int *irqs, int mask)
+ 		irqs[i] = irq;
+ 	irqs[PCIE_PORT_SERVICE_VC_SHIFT] = -1;
+ 
+-	if (irq < 0)
++	/* Root complex ports for Freescale PCIe host controller only
++	 * receive interrupts, so if there is no irq setting for RC,
++	 * it should not return error. */
++	if ((irq < 0) && (dev->pcie_type != PCI_EXP_TYPE_ROOT_PORT))
+ 		return -ENODEV;
+ 	return 0;
+ }
+-- 
+1.7.0.4
