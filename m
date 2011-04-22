@@ -1,28 +1,29 @@
 Return-Path: <rlary@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BAC2D100889
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9567A1007DC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Apr 2011 06:00:51 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3MJmS0o026719
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 13:48:28 -0600
+	Sat, 23 Apr 2011 06:09:04 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3MJtK7j032089
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 13:55:20 -0600
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3MK0c25100762
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 14:00:38 -0600
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3MK8hsO319820
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 14:08:46 -0600
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p3MK0brY013524
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 14:00:38 -0600
-Message-ID: <4DB1DE63.1020408@linux.vnet.ibm.com>
-Date: Fri, 22 Apr 2011 13:00:35 -0700
+	id p3MK8gLH018413
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 14:08:42 -0600
+Message-ID: <4DB1E047.3000109@linux.vnet.ibm.com>
+Date: Fri, 22 Apr 2011 13:08:39 -0700
 From: Richard A Lary <rlary@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc/eeh: Handle functional reset on non-PCIe device
+Subject: [PATCH 3/3] powerpc/eeh: Display eeh error location for bus and device
+	(resend)
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: antonb@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
