@@ -1,28 +1,30 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 97B18B6F41
+Return-Path: <rlary@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1933E1007E0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Apr 2011 23:16:39 +1000 (EST)
-Received: by vxi40 with SMTP id 40so525524vxi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 22 Apr 2011 06:16:35 -0700 (PDT)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: LPPC <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/5] powerpc,
-	hw_breakpoints: Fix racy access to ptrace breakpoints
-Date: Fri, 22 Apr 2011 15:16:27 +0200
-Message-Id: <1303478187-2367-1-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1302284067-7860-4-git-send-email-fweisbec@gmail.com>
-References: <1302284067-7860-4-git-send-email-fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Will Deacon <will.deacon@arm.com>, LKML <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>,
-	Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-	Prasad <prasad@linux.vnet.ibm.com>, "v2.6.33.." <stable@kernel.org>
+	Sat, 23 Apr 2011 05:59:40 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3MJqZH3023862
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 13:52:35 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p3MJxRI9074526
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 13:59:27 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p3MJxRtO007325
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2011 13:59:27 -0600
+Message-ID: <4DB1DE1A.2080307@linux.vnet.ibm.com>
+Date: Fri, 22 Apr 2011 12:59:22 -0700
+From: Richard A Lary <rlary@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/3] powerpc/eeh: Bug fix and enhancement
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: antonb@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(resend with ppc list in cc)
+This patch set contains three patches, all to eeh.c,
+which fix a issue seen on PCIe adapters with devices below
+PCIe bridge/switch, gracefully handle case where driver
+sets 'needs_freset' for non-PCIe adapter, and display
+location information for both PCIe bus and device for
+the device which detected an error.
 
-While the tracer accesses ptrace breakpoints, the child task may
-concurrently exit due to a SIGKILL and thus release its breakpoints
-at the same time. We can then dereference some freed pointers.
-
-To fix this, hold a reference on the child breakpoints before
-manipulating them.
-
-Reported-by: Oleg Nesterov <oleg@redhat.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: v2.6.33.. <stable@kernel.org>
----
- arch/powerpc/kernel/ptrace.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 55613e3..4edeeb3 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1591,7 +1591,10 @@ long arch_ptrace(struct task_struct *child, long request,
- 	}
- 
- 	case PTRACE_SET_DEBUGREG:
-+		if (ptrace_get_breakpoints(child) < 0)
-+			return -ESRCH;
- 		ret = ptrace_set_debugreg(child, addr, data);
-+		ptrace_put_breakpoints(child);
- 		break;
- 
- #ifdef CONFIG_PPC64
--- 
-1.7.3.2
+Patches were tested on P5/P6/P7 platforms on a variety
+of PCI, PCI-X and PCI-E adapters with no regressions.
