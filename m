@@ -1,24 +1,22 @@
 Return-Path: <B31383@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.186])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5B804B7126
+	by ozlabs.org (Postfix) with ESMTPS id 0846FB6F06
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Apr 2011 22:48:34 +1000 (EST)
-Received: from mail114-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail114-ch1-R.bigfish.com (Postfix) with ESMTP id 10E47FB007A	for
-	<linuxppc-dev@lists.ozlabs.org>; Sat, 23 Apr 2011 12:33:20 +0000 (UTC)
-Received: from CH1EHSMHS034.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.242])	by mail114-ch1.bigfish.com (Postfix) with ESMTP id
-	B42ED1B7804F	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Apr 2011 12:33:19 +0000 (UTC)
+	Sat, 23 Apr 2011 23:48:23 +1000 (EST)
+Received: from mail54-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail54-tx2-R.bigfish.com (Postfix) with ESMTP id 0F8A630377	for
+	<linuxppc-dev@lists.ozlabs.org>; Sat, 23 Apr 2011 13:48:06 +0000 (UTC)
+Received: from TX2EHSMHS040.bigfish.com (unknown [10.9.14.248])	by
+	mail54-tx2.bigfish.com (Postfix) with ESMTP id A516AB60051	for
+	<linuxppc-dev@lists.ozlabs.org>; Sat, 23 Apr 2011 13:48:05 +0000 (UTC)
 From: Ramneek Mehresh <ramneek.mehresh@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Add UTMI PHY support for 85xx platforms
-Date: Sat, 23 Apr 2011 18:03:14 +0530
-Message-ID: <1303561994-22122-1-git-send-email-ramneek.mehresh@freescale.com>
+Subject: [PATCH] [v1] powerpc/85xx: Add ULPI PHY support for P101x platforms
+Date: Sat, 23 Apr 2011 19:18:00 +0530
+Message-ID: <1303566480-28095-1-git-send-email-ramneek.mehresh@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Ramneek Mehresh <ramneek.mehresh@freescale.com>
@@ -31,139 +29,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add UTMI internal PHY support for P5020/P3041/P101x platforms.
+Add support for USB ULPI (external) PHY for P101x platforms
  - for both USB Host and Peripheral modes
 
 Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 ---
+Changes for v1:
+	- removing the usage of variable temp
+
 Applies on git://git.am.freescale.net/mirrors/linux-2.6.git
 (branch master)
 
- drivers/usb/gadget/fsl_udc_core.c |    7 ++++++-
- drivers/usb/gadget/fsl_usb2_udc.h |   19 +++++++++++++++++++
- drivers/usb/host/ehci-fsl.c       |   10 ++++++++--
- drivers/usb/host/ehci-fsl.h       |   12 +++++++++++-
- 4 files changed, 44 insertions(+), 4 deletions(-)
+ drivers/usb/gadget/fsl_udc_core.c |    6 ++++++
+ drivers/usb/gadget/fsl_usb2_udc.h |    1 +
+ drivers/usb/host/ehci-fsl.c       |    5 +++++
+ drivers/usb/host/ehci-fsl.h       |    1 +
+ 4 files changed, 13 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index 07499c1..c669600 100644
+index c669600..4f7578a 100644
 --- a/drivers/usb/gadget/fsl_udc_core.c
 +++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004-2007 Freescale Semicondutor, Inc. All rights reserved.
-+ * Copyright (C) 2004-2011 Freescale Semiconductor, Inc.
-  *
-  * Author: Li Yang <leoli@freescale.com>
-  *         Jiang Bo <tanya.jiang@freescale.com>
-@@ -195,6 +195,11 @@ static int dr_controller_setup(struct fsl_udc *udc)
- 		portctrl |= PORTSCX_PTW_16BIT;
- 		/* fall through */
- 	case FSL_USB2_PHY_UTMI:
+@@ -189,6 +189,12 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 	portctrl &= ~(PORTSCX_PHY_TYPE_SEL | PORTSCX_PORT_WIDTH);
+ 	switch (udc->phy_mode) {
+ 	case FSL_USB2_PHY_ULPI:
 +#ifdef CONFIG_PPC_85xx
-+		setbits32(&usb_sys_regs->control, USB_CTRL_UTMI_PHY_EN |
-+				USB_CTRL_USB_EN);
-+		udelay(10*1000);  /* delay for PHY clk to ready */
++		ctrl = __raw_readl(&usb_sys_regs->control);
++		ctrl &= ~USB_CTRL_UTMI_PHY_EN;
++		ctrl |= USB_CTRL_ULPI_PHY_CLK_SEL;
++		__raw_writel(ctrl, &usb_sys_regs->control);
 +#endif
- 		portctrl |= PORTSCX_PTS_UTMI;
+ 		portctrl |= PORTSCX_PTS_ULPI;
  		break;
- 	case FSL_USB2_PHY_SERIAL:
+ 	case FSL_USB2_PHY_UTMI_WIDE:
 diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
-index e88cce5..d489c62 100644
+index d489c62..78e55ba 100644
 --- a/drivers/usb/gadget/fsl_usb2_udc.h
 +++ b/drivers/usb/gadget/fsl_usb2_udc.h
-@@ -1,3 +1,20 @@
-+/* Copyright (C) 2011 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the  GNU General Public License along
-+ * with this program; if not, write  to the Free Software Foundation, Inc.,
-+ * 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
- /*
-  * Freescale USB device/endpoint management registers
-  */
-@@ -346,6 +363,8 @@ struct usb_sys_interface {
- /* control Register Bit Masks */
- #define  USB_CTRL_IOENB                       0x00000004
+@@ -365,6 +365,7 @@ struct usb_sys_interface {
  #define  USB_CTRL_ULPI_INT0EN                 0x00000001
-+#define USB_CTRL_UTMI_PHY_EN		      0x00000200
-+#define USB_CTRL_USB_EN			      0x00000004
+ #define USB_CTRL_UTMI_PHY_EN		      0x00000200
+ #define USB_CTRL_USB_EN			      0x00000004
++#define USB_CTRL_ULPI_PHY_CLK_SEL	      0x00000400
  
  /* Endpoint Queue Head data struct
   * Rem: all the variables of qh are LittleEndian Mode
 diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index 5c761df..55f4ab5 100644
+index 55f4ab5..d698ac8 100644
 --- a/drivers/usb/host/ehci-fsl.c
 +++ b/drivers/usb/host/ehci-fsl.c
-@@ -1,6 +1,6 @@
- /*
-  * Copyright 2005-2009 MontaVista Software, Inc.
-- * Copyright 2008      Freescale Semiconductor, Inc.
-+ * Copyright 2011      Freescale Semiconductor, Inc.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-@@ -183,10 +183,11 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
- 			       unsigned int port_offset)
- {
- 	u32 portsc;
-+	struct usb_hcd *hcd = ehci_to_hcd(ehci);
-+	void __iomem *non_ehci = hcd->regs;
- 
- 	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
+@@ -190,6 +190,11 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
  	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
--
  	switch (phy_mode) {
  	case FSL_USB2_PHY_ULPI:
- 		portsc |= PORT_PTS_ULPI;
-@@ -198,6 +199,11 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
- 		portsc |= PORT_PTS_PTW;
- 		/* fall through */
- 	case FSL_USB2_PHY_UTMI:
 +#ifdef CONFIG_PPC_85xx
-+		setbits32(non_ehci + FSL_SOC_USB_CTRL, UTMI_PHY_EN |
-+				USB_CTRL_USB_EN);
-+		udelay(10*1000);  /* delay for PHY clk to ready */
++		out_be32(non_ehci + FSL_SOC_USB_CTRL,
++			in_be32(non_ehci + FSL_SOC_USB_CTRL) |
++			USB_CTRL_USB_EN | ULPI_PHY_CLK_SEL);
 +#endif
- 		portsc |= PORT_PTS_UTMI;
+ 		portsc |= PORT_PTS_ULPI;
  		break;
- 	case FSL_USB2_PHY_NONE:
+ 	case FSL_USB2_PHY_SERIAL:
 diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index 3fabed3..06a94e9 100644
+index 06a94e9..6ed589c 100644
 --- a/drivers/usb/host/ehci-fsl.h
 +++ b/drivers/usb/host/ehci-fsl.h
-@@ -1,4 +1,4 @@
--/* Copyright (C) 2005-2010 Freescale Semiconductor, Inc.
-+/* Copyright (C) 2005-2011 Freescale Semiconductor, Inc.
-  * Copyright (c) 2005 MontaVista Software
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-@@ -42,4 +42,14 @@
- #define FSL_SOC_USB_SICTRL	0x410	/* NOTE: big-endian */
- #define FSL_SOC_USB_CTRL	0x500	/* NOTE: big-endian */
- #define SNOOP_SIZE_2GB		0x1e
-+
-+/* control Register Bit Masks */
-+#define ULPI_INT_EN		(1<<0)
-+#define WU_INT_EN		(1<<1)
-+#define USB_CTRL_USB_EN		(1<<2)
-+#define LINE_STATE_FILTER__EN	(1<<3)
-+#define KEEP_OTG_ON		(1<<4)
-+#define OTG_PORT		(1<<5)
-+#define PLL_RESET		(1<<8)
-+#define UTMI_PHY_EN		(1<<9)
+@@ -52,4 +52,5 @@
+ #define OTG_PORT		(1<<5)
+ #define PLL_RESET		(1<<8)
+ #define UTMI_PHY_EN		(1<<9)
++#define ULPI_PHY_CLK_SEL	(1<<10)
  #endif				/* _EHCI_FSL_H */
 -- 
 1.6.1
