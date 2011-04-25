@@ -1,37 +1,19 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BD5AF1007D7
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+	[88.96.1.126]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 54BD6B6EFE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 24 Apr 2011 18:04:35 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id p3O84NKC004802
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2011 18:04:23 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3O84NZv2552052
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2011 18:04:23 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p3O84McJ004330
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2011 18:04:23 +1000
-Date: Sun, 24 Apr 2011 13:34:15 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 3/5] powerpc, hw_breakpoints: Fix racy access to ptrace
-	breakpoints
-Message-ID: <20110424080414.GB1958@in.ibm.com>
-References: <1302284067-7860-4-git-send-email-fweisbec@gmail.com>
-	<1303478187-2367-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1303478187-2367-1-git-send-email-fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Will Deacon <will.deacon@arm.com>,
-	LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-	Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-	LPPC <linuxppc-dev@lists.ozlabs.org>, "v2.6.33.." <stable@kernel.org>
-Reply-To: prasad@linux.vnet.ibm.com
+	Mon, 25 Apr 2011 11:30:25 +1000 (EST)
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 25 Apr 2011 02:04:31 +0100
+Message-ID: <1303693471.3032.212.camel@localhost>
+Mime-Version: 1.0
+Subject: [PATCH] powerpc/kexec: Fix build failure on 32-bit SMP
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,52 +23,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 22, 2011 at 03:16:27PM +0200, Frederic Weisbecker wrote:
-> (resend with ppc list in cc)
-> 
-> While the tracer accesses ptrace breakpoints, the child task may
-> concurrently exit due to a SIGKILL and thus release its breakpoints
-> at the same time. We can then dereference some freed pointers.
-> 
-> To fix this, hold a reference on the child breakpoints before
-> manipulating them.
-> 
-> Reported-by: Oleg Nesterov <oleg@redhat.com>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Prasad <prasad@linux.vnet.ibm.com>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: v2.6.33.. <stable@kernel.org>
-> ---
->  arch/powerpc/kernel/ptrace.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 55613e3..4edeeb3 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -1591,7 +1591,10 @@ long arch_ptrace(struct task_struct *child, long request,
->  	}
-> 
->  	case PTRACE_SET_DEBUGREG:
-> +		if (ptrace_get_breakpoints(child) < 0)
-> +			return -ESRCH;
->  		ret = ptrace_set_debugreg(child, addr, data);
-> +		ptrace_put_breakpoints(child);
->  		break;
-> 
->  #ifdef CONFIG_PPC64
-> -- 
-> 1.7.3.2
->
+Commit b987812b3fcaf70fdf0037589e5d2f5f2453e6ce left
+crash_kexec_wait_realmode() undefined for UP.
 
-Hi Frederic,
-	Looks fine to me.
+Commit 7c7a81b53e581d727d069cc45df5510516faac31 defined it for UP but
+left it undefined for 32-bit SMP.
 
-Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Seems like people are getting confused by nested #ifdef's, so move the
+definitions of crash_kexec_wait_realmode() after the #ifdef CONFIG_SMP
+section.
 
-Thanks,
-K.Prasad 
+Compile-tested with 32-bit UP, 32-bit SMP and 64-bit SMP configurations.
+
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -162,34 +162,6 @@
+ 	/* Leave the IPI callback set */
+ }
+=20
+-/* wait for all the CPUs to hit real mode but timeout if they don't come i=
+n */
+-#ifdef CONFIG_PPC_STD_MMU_64
+-static void crash_kexec_wait_realmode(int cpu)
+-{
+-	unsigned int msecs;
+-	int i;
+-
+-	msecs =3D 10000;
+-	for (i=3D0; i < NR_CPUS && msecs > 0; i++) {
+-		if (i =3D=3D cpu)
+-			continue;
+-
+-		while (paca[i].kexec_state < KEXEC_STATE_REAL_MODE) {
+-			barrier();
+-			if (!cpu_possible(i)) {
+-				break;
+-			}
+-			if (!cpu_online(i)) {
+-				break;
+-			}
+-			msecs--;
+-			mdelay(1);
+-		}
+-	}
+-	mb();
+-}
+-#endif	/* CONFIG_PPC_STD_MMU_64 */
+-
+ /*
+  * This function will be called by secondary cpus or by kexec cpu
+  * if soft-reset is activated to stop some CPUs.
+@@ -234,7 +206,6 @@
+ }
+=20
+ #else	/* ! CONFIG_SMP */
+-static inline void crash_kexec_wait_realmode(int cpu) {}
+=20
+ static void crash_kexec_prepare_cpus(int cpu)
+ {
+@@ -257,6 +228,36 @@
+ }
+ #endif	/* CONFIG_SMP */
+=20
++/* wait for all the CPUs to hit real mode but timeout if they don't come i=
+n */
++#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_64)
++static void crash_kexec_wait_realmode(int cpu)
++{
++	unsigned int msecs;
++	int i;
++
++	msecs =3D 10000;
++	for (i=3D0; i < NR_CPUS && msecs > 0; i++) {
++		if (i =3D=3D cpu)
++			continue;
++
++		while (paca[i].kexec_state < KEXEC_STATE_REAL_MODE) {
++			barrier();
++			if (!cpu_possible(i)) {
++				break;
++			}
++			if (!cpu_online(i)) {
++				break;
++			}
++			msecs--;
++			mdelay(1);
++		}
++	}
++	mb();
++}
++#else
++static inline void crash_kexec_wait_realmode(int cpu) {}
++#endif	/* CONFIG_SMP && CONFIG_PPC_STD_MMU_64 */
++
+ /*
+  * Register a function to be called on shutdown.  Only use this if you
+  * can't reset your device in the second kernel.
+
+--=20
+Ben Hutchings
+Once a job is fouled up, anything done to improve it makes it worse.
