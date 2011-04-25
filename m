@@ -1,33 +1,15 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4886BB6F15
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 72D67B6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Apr 2011 00:05:18 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p3PDxTOQ032154
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2011 07:59:29 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p3PE51ts145610
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2011 08:05:01 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p3PE3ZNK014785
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2011 08:03:36 -0600
-Message-ID: <4DB57F39.7020003@linux.vnet.ibm.com>
-Date: Mon, 25 Apr 2011 09:03:37 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+	Tue, 26 Apr 2011 06:28:10 +1000 (EST)
+Message-ID: <4DB5D548.7020303@harris.com>
+Date: Mon, 25 Apr 2011 16:10:48 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] powerpc: Add page coalescing support
-References: <201104222108.p3ML8WQt002094@d03av05.boulder.ibm.com>
-	<1303513178.2513.92.camel@pasglop>
-In-Reply-To: <1303513178.2513.92.camel@pasglop>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: device not available because of BAR 0 collisions
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,28 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/22/2011 05:59 PM, Benjamin Herrenschmidt wrote:
-> On Fri, 2011-04-22 at 16:08 -0500, Brian King wrote:
->> Adds support for page coalescing, which is a feature on IBM Power servers
->> which allows for coalescing identical pages between logical partitions.
->> Hint text pages as coalesce candidates, since they are the most likely
->> pages to be able to be coalesced between partitions. This patch also
->> exports some page coalescing statistics available from firmware via
->> lparcfg.
-> 
-> Hi Brian !
-> 
-> Is this patch different from the version you posted previously which is
-> already on Patchwork ? I'm in the process of putting together
-> powerpc-next and your previous variant is in my queue.
+I'm getting an error message when trying to talk to some custom hardware:
 
-Its the same, just a repost.
+dx83xx 0001:43:00.0: device not available because of BAR 0 [0xa1000000-0xa1ffffff] collisions
 
-Thanks,
+I see in setup-res.c that this message comes out when there is no parent for
+a device resource.
 
-Brian
+I've been digging around in the code, and I confess that I cannot figure out
+where the parent member is assigned.  Can someone please give me a hint as to
+where the assignment happens?
+
+The hardware consists of a pair of ASICs attached to a PPC405EX via a PCIe switch.
+The device tree is based on the Kilauea evaluation board.  The device tree does not
+specify the PCIe switch or ASICs.
+
+Do I need to add something to the device tree to represent the PCIe switch, or
+should it be automatically discovered and configured?
+
+U-Boot reports the PCI hardware as:
+
+PCIE0: successfully set as root-complex
+        01  00  1172  0004  ff00  00
+PCIE1: successfully set as root-complex
+        05  00  1b03  7000  0000  ff
+        04  01  10b5  8613  0604  00
+        06  00  1b03  7000  0000  ff
+        04  02  10b5  8613  0604  00
+        03  00  10b5  8613  0604  00
+
+The PCIe switch shows up as 03:00, 04:01, and 04:02.  The ASICs show up as 05:00 and
+06:00, so there is no problem with config-space that I can see.
+
+Similar hardware (an evaluation board for the ASICs) works ok on an x86 PC.  The
+PCIe switch is recognized, and the ASIC driver probes and enables the device
+without any problems.  Sadly, I cannot plug it into the Kilauea because it needs a
+PCIe x16 slot.
+
+Guidance gratefully accepted!
+
+	Steve
+
 
 -- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+A: Because it makes the logic of the discussion difficult to follow.
+Q: Why shouldn't I top post?
+A: No.
+Q: Should I top post?
