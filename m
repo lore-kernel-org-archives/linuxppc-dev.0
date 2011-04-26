@@ -1,19 +1,20 @@
-Return-Path: <Hans-Christian.Egtvedt@atmel.com>
-Received: from sjogate2.atmel.com (newsmtp5.atmel.com [204.2.163.5])
-	by ozlabs.org (Postfix) with ESMTP id 89A38B6F15
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id 1DE42B6F14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Apr 2011 23:23:01 +1000 (EST)
+	Wed, 27 Apr 2011 03:14:07 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Hans-Christian Egtvedt" <hans-christian.egtvedt@atmel.com>
 Subject: Re: [PATCH 11/14] PM / AVR32: Use struct syscore_ops instead of
 	sysdevs for PM
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <201104172313.09712.rjw@sisk.pl>
-References: <201103280125.11750.rjw@sisk.pl>
-	<201104172301.54115.rjw@sisk.pl>  <201104172313.09712.rjw@sisk.pl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 Apr 2011 14:22:12 +0200
-Message-ID: <1303820532.3125.12.camel@hcegtvedt>
-Mime-Version: 1.0
+Date: Tue, 26 Apr 2011 19:14:13 +0200
+References: <201103280125.11750.rjw@sisk.pl> <201104172313.09712.rjw@sisk.pl>
+	<1303820532.3125.12.camel@hcegtvedt>
+In-Reply-To: <1303820532.3125.12.camel@hcegtvedt>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201104261914.14351.rjw@sisk.pl>
 Cc: Kevin Hilman <khilman@ti.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
 	Russell King <linux@arm.linux.org.uk>,
 	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
@@ -34,23 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2011-04-17 at 23:13 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tuesday, April 26, 2011, Hans-Christian Egtvedt wrote:
+> On Sun, 2011-04-17 at 23:13 +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Convert some AVR32 architecture's code to using struct syscore_ops
+> > objects for power management instead of sysdev classes and sysdevs.
+> > 
+> > This simplifies the code and reduces the kernel's memory footprint.
+> > It also is necessary for removing sysdevs from the kernel entirely in
+> > the future.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Convert some AVR32 architecture's code to using struct syscore_ops
-> objects for power management instead of sysdev classes and sysdevs.
+> Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
 > 
-> This simplifies the code and reduces the kernel's memory footprint.
-> It also is necessary for removing sysdevs from the kernel entirely in
-> the future.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Thanks, nice work. Tested and run on hardware.
 
-Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Thanks!
 
-Thanks, nice work. Tested and run on hardware.
-
-<snipp>
-
--- 
-Hans-Christian Egtvedt
+Rafael
