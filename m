@@ -1,26 +1,23 @@
-Return-Path: <emunson@mgebm.net>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
-	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1CBC31007D7
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 4D191B6F0A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 22:59:39 +1000 (EST)
-Received: by qyk7 with SMTP id 7so981491qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 05:59:35 -0700 (PDT)
-Date: Wed, 27 Apr 2011 08:59:31 -0400
-From: Eric B Munson <emunson@mgebm.net>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
-	register value shrinks
-Message-ID: <20110427125930.GB2936@mgebm.net>
-References: <20110427121902.GA2936@mgebm.net>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AD03@saturn3.aculab.com>
+	Wed, 27 Apr 2011 23:05:16 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 29763-04 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 27 Apr 2011 14:05:11 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AD03@saturn3.aculab.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
+	register value shrinks
+Date: Wed, 27 Apr 2011 14:04:25 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD05@saturn3.aculab.com>
+In-Reply-To: <20110427125930.GB2936@mgebm.net>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Eric B Munson" <emunson@mgebm.net>
 Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
 	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
 	linuxppc-dev@lists.ozlabs.org, stable@kernel.org
@@ -33,41 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---bCsyhTFzCvuiizWE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 27 Apr 2011, David Laight wrote:
-
-> > But it isn't, and it doesn't have trouble with 2^32 - 1. =20
+=20
+> On Wed, 27 Apr 2011, David Laight wrote:
 >=20
-> what about:
-> prev =3D 0x00000001
-> val  =3D 0xffffffff
-
-Result is 0xfffffffe and we are fine.
+> > > But it isn't, and it doesn't have trouble with 2^32 - 1. =20
+> >=20
+> > what about:
+> > prev =3D 0x00000001
+> > val  =3D 0xffffffff
 >=20
-> 	David
->=20
->=20
+> Result is 0xfffffffe and we are fine.
 
---bCsyhTFzCvuiizWE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+'delta' will be 0xfffffffe, but you need the function to
+return zero - since the underlying counter has decremented
+by 2. But 'prev > val' is false so the counter will
+be increased by 2^32-2.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJNuBMyAAoJEH65iIruGRnNPtwH/3T5/zvmHE2lShhDQxFFqP+R
-mLxZZERXWvuFK/ZTK6dAfrtUJTzPcYjtcnHWJV6xaFekMpk7WST3N9aXUu6RMHIC
-JnLrieUbi64dWymjVSjLU5wJRvvLUDCqoKIaR6/zu9QBUiucfWOV4RhAbJh+zqKz
-mNWYrObmcjWrdwYsql7or1olXsjCWIr28bFO29Ep3xOKS+oXlLUh2Kt4ktsYDtg1
-Fppbl1XrpKq0ZkH+LLNU+D6QEzrcyqK2VBrzjSE6UukXc712iW8AQePf5u1TXQE4
-NhNrY39WMDmDalXjdLJdbGaTRsVbD0PBOOeqCepmlS1F6bk4goRmaI9zTLOg2yQ=
-=cH+J
------END PGP SIGNATURE-----
-
---bCsyhTFzCvuiizWE--
+	David
