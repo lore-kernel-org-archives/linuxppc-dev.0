@@ -1,27 +1,23 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 15C511007D5
+Return-Path: <mirq@rere.qmqm.pl>
+Received: from rere.qmqm.pl (rere.qmqm.pl [89.167.52.164])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rere.qmqm.pl", Issuer "rere.qmqm.pl" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DB96A1007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 17:41:29 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 25723-01 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 08:41:21 +0100 (BST)
+	Wed, 27 Apr 2011 20:36:31 +1000 (EST)
+Date: Wed, 27 Apr 2011 12:36:22 +0200
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: ibmveth runtime errors
+Message-ID: <20110427103622.GA22781@rere.qmqm.pl>
+References: <20110427144901.4c3f79b3.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
-	register value shrinks
-Date: Wed, 27 Apr 2011 08:40:36 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ACFA@saturn3.aculab.com>
-In-Reply-To: <1302891150-8121-1-git-send-email-emunson@mgebm.net>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Eric B Munson" <emunson@mgebm.net>,
-	<benh@kernel.crashing.org>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
-	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
-	linuxppc-dev@lists.ozlabs.org, stable@kernel.org
+Content-Type: text/plain; charset=iso-8859-2
+In-Reply-To: <20110427144901.4c3f79b3.sfr@canb.auug.org.au>
+Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+	Santiago Leon <santil@linux.vnet.ibm.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I keep telling Eric that the code below is incorrect
-modulo arithimetic...
+On Wed, Apr 27, 2011 at 02:49:01PM +1000, Stephen Rothwell wrote:
+> For the last couple of days, linux-next booting on a few of our Power
+> partitions (but not all) have produced this error (over and over):
+> 
+> ibmveth 3000000b: eth0: tx: h_send_logical_lan failed with rc=-4
+> 
+> Linus' tree seems to boot fine on these partitions.  The only commit
+> directly affecting ibmveth in linux-next is b9367bf3ee6d ("net: ibmveth:
+> convert to hw_features") which first appeared in next-20110421 which is
+> also the first one that failed.
 
-> +static u64 check_and_compute_delta(u64 prev, u64 val)
-> +{
-> +	u64 delta =3D (val - prev) & 0xfffffffful;
-> +
-> +	/*
-> +	 * POWER7 can roll back counter values, if the new value is
-smaller
-> +	 * than the previous value it will cause the delta and the
-counter to
-> +	 * have bogus values unless we rolled a counter over.  If a
-coutner is
-> +	 * rolled back, it will be smaller, but within 256, which is the
-maximum
-> +	 * number of events to rollback at once.  If we dectect a
-rollback
-> +	 * return 0.  This can lead to a small lack of precision in the
-> +	 * counters.
-> +	 */
-> +	if (prev > val && (prev - val) < 256)
-> +		delta =3D 0;
-> +
-> +	return delta;
+Please test the following patch. It's just a blind guess, as this error
+is not descriptive.
 
-The code should detect rollback by looking at the value of 'delta'
-otherwise there are horrid end effects near 2^32-1.
+Best Regards,
+Micha³ Miros³aw
 
-For instance:
-	u32 delta =3D val - prev;
-	return delta & 0x80000000 ? 0 : delta;
+---
 
+net: ibmveth: force reconfiguring checksum settings on startup
 
-   David
+Commit b9367bf3ee6d ("net: ibmveth: convert to hw_features") accidentally
+removed call to ibmveth_set_csum_offload() in ibmveth_probe(). Put the
+call back where it was, but with additional error checking provided
+by ibmveth_set_features().
+
+Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+---
+ drivers/net/ibmveth.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
+index 4855f1f..0d1fea2 100644
+--- a/drivers/net/ibmveth.c
++++ b/drivers/net/ibmveth.c
+@@ -1397,6 +1397,8 @@ static int __devinit ibmveth_probe(struct vio_dev *dev,
+ 
+ 	netdev_dbg(netdev, "registering netdev...\n");
+ 
++	ibmveth_set_features(dev, dev->features);
++
+ 	rc = register_netdev(netdev);
+ 
+ 	if (rc) {
+-- 
+1.7.2.5
