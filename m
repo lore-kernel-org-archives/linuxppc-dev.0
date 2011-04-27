@@ -1,20 +1,20 @@
 Return-Path: <David.Laight@ACULAB.COM>
 Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id DBEAAB6EEE
+	by ozlabs.org (Postfix) with SMTP id DD270B6EF3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 22:35:50 +1000 (EST)
+	Wed, 27 Apr 2011 22:43:21 +1000 (EST)
 Received: from mx0.aculab.com ([127.0.0.1])
 	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
 	port 10024) with SMTP
-	id 09222-10 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 13:35:44 +0100 (BST)
+	id 25408-03 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 27 Apr 2011 13:43:16 +0100 (BST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
 	register value shrinks
-Date: Wed, 27 Apr 2011 13:34:58 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD03@saturn3.aculab.com>
+Date: Wed, 27 Apr 2011 13:42:30 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD04@saturn3.aculab.com>
 In-Reply-To: <20110427121902.GA2936@mgebm.net>
 From: "David Laight" <David.Laight@ACULAB.COM>
 To: "Eric B Munson" <emunson@mgebm.net>
@@ -30,10 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> But it isn't, and it doesn't have trouble with 2^32 - 1. =20
+=20
+> +	if (prev > val && (prev - val) < 256)
+> +		delta =3D 0;
+> +
+> +	return delta;
 
-what about:
-prev =3D 0x00000001
-val  =3D 0xffffffff
+Also, 'prev' is a true 64bit value, but 'val' is only ever 32bits.
+So once the 64bit 'prev' exceeds 2^32+256 both 'prev > val'
+and 'prev - val' are true regardless of the value of 'val'.
+This will lead to jumps in the value ....
 
 	David
