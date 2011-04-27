@@ -1,23 +1,29 @@
-Return-Path: <mirq@rere.qmqm.pl>
-Received: from rere.qmqm.pl (rere.qmqm.pl [89.167.52.164])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rere.qmqm.pl", Issuer "rere.qmqm.pl" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DB96A1007D5
+Return-Path: <emunson@mgebm.net>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4C890B6EED
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 20:36:31 +1000 (EST)
-Date: Wed, 27 Apr 2011 12:36:22 +0200
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: ibmveth runtime errors
-Message-ID: <20110427103622.GA22781@rere.qmqm.pl>
-References: <20110427144901.4c3f79b3.sfr@canb.auug.org.au>
+	Wed, 27 Apr 2011 22:19:12 +1000 (EST)
+Received: by qwf7 with SMTP id 7so830217qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 27 Apr 2011 05:19:07 -0700 (PDT)
+Date: Wed, 27 Apr 2011 08:19:02 -0400
+From: Eric B Munson <emunson@mgebm.net>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
+	register value shrinks
+Message-ID: <20110427121902.GA2936@mgebm.net>
+References: <1302891150-8121-1-git-send-email-emunson@mgebm.net>
+	<AE90C24D6B3A694183C094C60CF0A2F6D8ACFA@saturn3.aculab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-In-Reply-To: <20110427144901.4c3f79b3.sfr@canb.auug.org.au>
-Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-	Santiago Leon <santil@linux.vnet.ibm.com>,
-	David Miller <davem@davemloft.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ACFA@saturn3.aculab.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
+	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
+	linuxppc-dev@lists.ozlabs.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +33,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 27, 2011 at 02:49:01PM +1000, Stephen Rothwell wrote:
-> For the last couple of days, linux-next booting on a few of our Power
-> partitions (but not all) have produced this error (over and over):
-> 
-> ibmveth 3000000b: eth0: tx: h_send_logical_lan failed with rc=-4
-> 
-> Linus' tree seems to boot fine on these partitions.  The only commit
-> directly affecting ibmveth in linux-next is b9367bf3ee6d ("net: ibmveth:
-> convert to hw_features") which first appeared in next-20110421 which is
-> also the first one that failed.
 
-Please test the following patch. It's just a blind guess, as this error
-is not descriptive.
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best Regards,
-Micha³ Miros³aw
+On Wed, 27 Apr 2011, David Laight wrote:
 
----
+> I keep telling Eric that the code below is incorrect
+> modulo arithimetic...
 
-net: ibmveth: force reconfiguring checksum settings on startup
+But it isn't, and it doesn't have trouble with 2^32 - 1.  Here is one done =
+by
+hand:
 
-Commit b9367bf3ee6d ("net: ibmveth: convert to hw_features") accidentally
-removed call to ibmveth_set_csum_offload() in ibmveth_probe(). Put the
-call back where it was, but with additional error checking provided
-by ibmveth_set_features().
+Counter is at 0xffffffff and is rolled over to 0x101 (258 counted items so
+that we miss the test for rollback).
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+ 0x00000000ffffffff  (Remember counters are 32 bit, but we store them in 64)
+-0x0000000000000101
+=3D0xffffffff00000102
 
----
- drivers/net/ibmveth.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+After the mask we have 0x00000000000102, the actual difference between the
+counters.
 
-diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
-index 4855f1f..0d1fea2 100644
---- a/drivers/net/ibmveth.c
-+++ b/drivers/net/ibmveth.c
-@@ -1397,6 +1397,8 @@ static int __devinit ibmveth_probe(struct vio_dev *dev,
- 
- 	netdev_dbg(netdev, "registering netdev...\n");
- 
-+	ibmveth_set_features(dev, dev->features);
-+
- 	rc = register_netdev(netdev);
- 
- 	if (rc) {
--- 
-1.7.2.5
+>=20
+> > +static u64 check_and_compute_delta(u64 prev, u64 val)
+> > +{
+> > +	u64 delta =3D (val - prev) & 0xfffffffful;
+> > +
+> > +	/*
+> > +	 * POWER7 can roll back counter values, if the new value is
+> smaller
+> > +	 * than the previous value it will cause the delta and the
+> counter to
+> > +	 * have bogus values unless we rolled a counter over.  If a
+> coutner is
+> > +	 * rolled back, it will be smaller, but within 256, which is the
+> maximum
+> > +	 * number of events to rollback at once.  If we dectect a
+> rollback
+> > +	 * return 0.  This can lead to a small lack of precision in the
+> > +	 * counters.
+> > +	 */
+> > +	if (prev > val && (prev - val) < 256)
+> > +		delta =3D 0;
+> > +
+> > +	return delta;
+>=20
+> The code should detect rollback by looking at the value of 'delta'
+> otherwise there are horrid end effects near 2^32-1.
+>=20
+> For instance:
+> 	u32 delta =3D val - prev;
+> 	return delta & 0x80000000 ? 0 : delta;
+>=20
+>=20
+>    David
+>=20
+>=20
+>=20
+>=20
+
+--liOOAslEiF7prFVr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJNuAm2AAoJEH65iIruGRnNJXUIAMmRQhchWoC5zG6wCyZ4O9Na
+K28xPGqGF9JHka0P7AL5M5pJtaZxG8uu2bGb/hAYKSh+v99PUxT8YFaFTII4X0Ns
+ZbS13ErCrn+tq7uuF/IVFztG7SsZCLoYlE/AIcNzYGyGT053Jo5oqjloyfRpmv6Z
+NtqDUSiuF58bEP7NnNO7Pl3uOJAcrO1NZ+285DPXq1qeQk6SaT5t8TQlOcKFuhYU
+ajiSBYVgc//EF0ih4uCmoPZch1lKILwZk28Dj5jfoSNDU6Ab9k3Rw760p5HFKz0s
+eNIM0qGg7zLZhicJaOcZvsaCuvRRVWEX5hm06gSTb6i7OyTFjO9JGRduhakQJ8o=
+=caaf
+-----END PGP SIGNATURE-----
+
+--liOOAslEiF7prFVr--
