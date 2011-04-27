@@ -1,29 +1,24 @@
-Return-Path: <emunson@mgebm.net>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
-	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C82021007DE
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4171E1007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 23:21:02 +1000 (EST)
-Received: by qyk7 with SMTP id 7so993867qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Apr 2011 06:20:58 -0700 (PDT)
-Date: Wed, 27 Apr 2011 09:20:54 -0400
-From: Eric B Munson <emunson@mgebm.net>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
+	Wed, 27 Apr 2011 23:26:59 +1000 (EST)
+Subject: RE: [PATCH V4] POWER: perf_event: Skip updating kernel counters if
 	register value shrinks
-Message-ID: <20110427132053.GD2936@mgebm.net>
-References: <20110427130822.GC2936@mgebm.net>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AD06@saturn3.aculab.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ylS2wUBXLOxYXZFQ"
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AD06@saturn3.aculab.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Laight <David.Laight@ACULAB.COM>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8ACFA@saturn3.aculab.com>
+References: <AE90C24D6B3A694183C094C60CF0A2F6D8ACFA@saturn3.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Apr 2011 23:26:32 +1000
+Message-ID: <1303910792.2513.176.camel@pasglop>
+Mime-Version: 1.0
 Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, paulus@samba.org,
-	anton@samba.org, acme@ghostprotocols.net, mingo@elte.hu,
-	linuxppc-dev@lists.ozlabs.org, stable@kernel.org
+	Eric B Munson <emunson@mgebm.net>, acme@ghostprotocols.net,
+	mingo@elte.hu, linuxppc-dev@lists.ozlabs.org, stable@kernel.org,
+	anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,48 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2011-04-27 at 08:40 +0100, David Laight wrote:
+> I keep telling Eric that the code below is incorrect
+> modulo arithimetic...
 
---ylS2wUBXLOxYXZFQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+His previous versions were wrong yes. This one should be limping along
+afaik. But I tend to agree, testing delta is the way to go.
 
-On Wed, 27 Apr 2011, David Laight wrote:
+Eric idea was to not test the sign bit to allow for bigger increments of
+the counter, since the rollback is limited to 255... But I agree it's
+non obvious.
 
-> =20
-> > prev and val are both 64 bit variables holding 32 bit numbers, we do
-> not
-> > accumulate in either, they are both replaced by values directly from
-> the
-> > registers.
-> > So prev > val will not always be true.
->=20
-> The code seems to be:
->     prev =3D local64_read(&event->hw.prev_count);
->     val =3D read_pmc(event->hw.idx);
->     delta =3D check_and_compute_delta(prev, val);
->     local64_add(delta, &event->count);
-> Which looks very much like 'prev' being a 64bit counter generated
-> from the 32bit pmc register.
->=20
+I've put the patch in for now, we can always followup with something
+better.
 
-Which implies that it will only ever be 32 bits wide, just stored in 64.
+Cheers,
+Ben.
 
---ylS2wUBXLOxYXZFQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJNuBg1AAoJEH65iIruGRnNzGYIAJIsoYp0R/dJvlfUncOh3B6e
-FGoYP9TL6so1Wa//AYLYgWG7ERPn6XAfIOQx99XzqEhf4sQhJ066c+pz9jnNu6JY
-9Gl7r8haQ81bxzkNNIPws45il40/wyTJNtBajWuAz/AH+Vh/BkEyjTtzLupawOeQ
-AvOPZmVL2Rn+i/zc+3blf5yfeFwX90m2Nqzfj2qGLJcMQ+KN3tH3sLnoXyT+8dn1
-JRcXFPo2AnoD7f43UBiuHq3WsIpnGlly1NN8HOR6zBxI8crrj+l57h/+F5fOzZIm
-KcdqQlPkBXLowV24Zd48V0j/goEacK5ZoXQUWygFnpCq+l+T4wvE/jNwteHGi1o=
-=QRrD
------END PGP SIGNATURE-----
-
---ylS2wUBXLOxYXZFQ--
+> > +static u64 check_and_compute_delta(u64 prev, u64 val)
+> > +{
+> > +	u64 delta = (val - prev) & 0xfffffffful;
+> > +
+> > +	/*
+> > +	 * POWER7 can roll back counter values, if the new value is
+> smaller
+> > +	 * than the previous value it will cause the delta and the
+> counter to
+> > +	 * have bogus values unless we rolled a counter over.  If a
+> coutner is
+> > +	 * rolled back, it will be smaller, but within 256, which is the
+> maximum
+> > +	 * number of events to rollback at once.  If we dectect a
+> rollback
+> > +	 * return 0.  This can lead to a small lack of precision in the
+> > +	 * counters.
+> > +	 */
+> > +	if (prev > val && (prev - val) < 256)
+> > +		delta = 0;
+> > +
+> > +	return delta;
+> 
+> The code should detect rollback by looking at the value of 'delta'
+> otherwise there are horrid end effects near 2^32-1.
+> 
+> For instance:
+> 	u32 delta = val - prev;
+> 	return delta & 0x80000000 ? 0 : delta;
+> 
+> 
+>    David
+> 
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
