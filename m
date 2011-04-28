@@ -1,7 +1,6 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 5/6] powerpc: move irq_alloc_descs_at() call into
-	irq_alloc_virt()
+Subject: [PATCH 6/6] powerpc: use irq_alloc_desc() to manage irq allocations
 To: Michal Simek <monstr@monstr.eu>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
@@ -9,8 +8,8 @@ To: Michal Simek <monstr@monstr.eu>,
 	hpa@zytor.com, Dirk Brandewie <dirk.brandewie@gmail.com>,
 	Thomas Gleixner <tglx@linutronix.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 28 Apr 2011 14:02:09 -0600
-Message-ID: <20110428200209.8979.85021.stgit@ponder>
+Date: Thu, 28 Apr 2011 14:02:14 -0600
+Message-ID: <20110428200214.8979.84221.stgit@ponder>
 In-Reply-To: <20110428192227.8979.49181.stgit@ponder>
 References: <20110428192227.8979.49181.stgit@ponder>
 MIME-Version: 1.0
@@ -26,116 +25,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a stepping stone to using core code for allocating virqs
-instead of the powerpc architecture specific code.  A subsequent patch
-will drop the algorithm that searches for a free irq and replaces it
-with irq_alloc_desc()
+This patch drops the architecture specific code for managing irq
+assignments and uses core code instead.
+
+*RFC*
+
+This patch is *not* ready for merging.  The locking is messed up where
+the irq_map is still used to find out if a mapping is already established,
+but irq_alloc_desc() is now called before the irq_map is updated which
+creates a race condition.  I've not completely sorted out how to solve
+this yet.  The solution may very well be to convert the irq_big_lock
+to a mutex (but I'm not sure if anything that sleeps calls the affected
+code), and hold the mutex over the entire operation.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/kernel/irq.c |   49 ++++++++++++++++++++++++++-------------------
- 1 files changed, 28 insertions(+), 21 deletions(-)
+ arch/powerpc/kernel/irq.c |   51 ++++++++++++---------------------------------
+ 1 files changed, 14 insertions(+), 37 deletions(-)
 
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 9300e1c..0fb90ab 100644
+index 0fb90ab..e4a6646 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -665,16 +665,6 @@ static void irq_free_virt(unsigned int virq);
- static int irq_setup_virq(struct irq_host *host, unsigned int virq,
- 			    irq_hw_number_t hwirq)
- {
--	int res;
--
--	res = irq_alloc_desc_at(virq, 0);
--	if (res != virq) {
--		pr_debug("irq: -> allocating desc failed\n");
--		goto error;
--	}
--
--	irq_clear_status_flags(virq, IRQ_NOREQUEST);
--
- 	/* map it */
- 	smp_wmb();
- 	irq_map[virq].hwirq = hwirq;
-@@ -688,8 +678,6 @@ static int irq_setup_virq(struct irq_host *host, unsigned int virq,
- 	return 0;
- 
- errdesc:
--	irq_free_descs(virq, 1);
--error:
- 	irq_free_virt(virq);
- 	return -1;
- }
-@@ -754,14 +742,14 @@ unsigned int irq_create_mapping(struct irq_host *host,
- 		if (virq == 0 || virq >= NUM_ISA_INTERRUPTS)
- 			return NO_IRQ;
- 		return virq;
--	} else {
--		/* Allocate a virtual interrupt number */
--		hint = hwirq % irq_virq_count;
--		virq = irq_alloc_virt(host, hint);
--		if (virq == NO_IRQ) {
--			pr_debug("irq: -> virq allocation failed\n");
--			return NO_IRQ;
--		}
-+	}
-+
-+	/* Allocate a virtual interrupt number */
-+	hint = hwirq % irq_virq_count;
-+	virq = irq_alloc_virt(host, hint);
-+	if (virq == NO_IRQ) {
-+		pr_debug("irq: -> virq allocation failed\n");
-+		return NO_IRQ;
- 	}
- 
- 	if (irq_setup_virq(host, virq, hwirq))
-@@ -867,7 +855,6 @@ void irq_dispose_mapping(unsigned int virq)
- 
- 	irq_set_status_flags(virq, IRQ_NOREQUEST);
- 
--	irq_free_descs(virq, 1);
- 	/* Free it */
- 	irq_free_virt(virq);
- }
-@@ -998,6 +985,7 @@ static unsigned int irq_alloc_virt(struct irq_host *host, unsigned int hint)
+@@ -984,53 +984,29 @@ unsigned int irq_linear_revmap(struct irq_host *host,
+ static unsigned int irq_alloc_virt(struct irq_host *host, unsigned int hint)
  {
  	unsigned long flags;
- 	unsigned int i, j, found = NO_IRQ;
-+	int res;
+-	unsigned int i, j, found = NO_IRQ;
+-	int res;
++	int found;
  
- 	raw_spin_lock_irqsave(&irq_big_lock, flags);
- 
-@@ -1024,7 +1012,25 @@ static unsigned int irq_alloc_virt(struct irq_host *host, unsigned int hint)
+-	raw_spin_lock_irqsave(&irq_big_lock, flags);
+-
+-	/* Use hint for 1 interrupt if any */
+-	if (hint >= NUM_ISA_INTERRUPTS &&
+-	    hint < irq_virq_count && irq_map[hint].host == NULL) {
+-		found = hint;
+-		goto hint_found;
+-	}
+-
+-	/* Look for a free virq in the allocatable (non-legacy) space */
+-	for (i = NUM_ISA_INTERRUPTS, j = 0; i < irq_virq_count; i++) {
+-		if (irq_map[i].host == NULL) {
+-			found = i;
+-			break;
+-		}
+-	}
+-	if (found == NO_IRQ) {
+-		raw_spin_unlock_irqrestore(&irq_big_lock, flags);
++	/*
++	 * Find an unused interrupt.  First, attempt to allocate
++	 * 'hint'.  If that fails, then just allocate any free one.
++	 */
++	found = irq_alloc_desc_at(hint, 0);
++	if (found <= NO_IRQ)
++		found = irq_alloc_desc(0);
++	if (found <= NO_IRQ) {
++		pr_debug("irq: -> allocating desc failed\n");
+ 		return NO_IRQ;
+ 	}
+- hint_found:
++
++	raw_spin_lock_irqsave(&irq_big_lock, flags);
+ 	irq_map[found].hwirq = host->inval_irq;
  	smp_wmb();
  	irq_map[found].host = host;
  	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-+
-+	res = irq_alloc_desc_at(found, 0);
-+	if (res != found) {
-+		pr_debug("irq: -> allocating desc failed\n");
-+		goto error_desc;
-+	}
-+
-+	irq_clear_status_flags(found, IRQ_NOREQUEST);
-+
+ 
+-	res = irq_alloc_desc_at(found, 0);
+-	if (res != found) {
+-		pr_debug("irq: -> allocating desc failed\n");
+-		goto error_desc;
+-	}
+-
+ 	irq_clear_status_flags(found, IRQ_NOREQUEST);
+ 
  	return found;
-+
-+ error_desc:
-+	raw_spin_lock_irqsave(&irq_big_lock, flags);
-+	host = irq_map[found].host;
-+	irq_map[found].hwirq = host->inval_irq;
-+	smp_wmb();
-+	irq_map[found].host = NULL;
-+	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
-+	return NO_IRQ;
+-
+- error_desc:
+-	raw_spin_lock_irqsave(&irq_big_lock, flags);
+-	host = irq_map[found].host;
+-	irq_map[found].hwirq = host->inval_irq;
+-	smp_wmb();
+-	irq_map[found].host = NULL;
+-	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
+-	return NO_IRQ;
  }
  
  /**
-@@ -1045,6 +1051,7 @@ static void irq_free_virt(unsigned int virq)
+@@ -1051,13 +1027,14 @@ static void irq_free_virt(unsigned int virq)
  		return;
  	}
  
-+	irq_free_descs(virq, 1);
+-	irq_free_descs(virq, 1);
  	raw_spin_lock_irqsave(&irq_big_lock, flags);
  	host = irq_map[virq].host;
  	irq_map[virq].hwirq = host->inval_irq;
+ 	smp_wmb();
+ 	irq_map[virq].host = NULL;
+ 	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
++
++	irq_free_descs(virq, 1);
+ }
+ 
+ int arch_early_irq_init(void)
