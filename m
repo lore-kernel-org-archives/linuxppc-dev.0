@@ -1,20 +1,19 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 10EECB6F74
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Apr 2011 03:29:30 +1000 (EST)
-Message-ID: <4DB9A3F1.9070300@harris.com>
-Date: Thu, 28 Apr 2011 13:29:21 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH 0/6] General device tree irq domain infrastructure
+To: Michal Simek <monstr@monstr.eu>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+	hpa@zytor.com, Dirk Brandewie <dirk.brandewie@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 28 Apr 2011 14:01:43 -0600
+Message-ID: <20110428192227.8979.49181.stgit@ponder>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: device not available because of BAR 0 collisions
-References: <4DB5D548.7020303@harris.com>	 <1303776114.2513.152.camel@pasglop>
-	<4DB6CAD0.5030102@harris.com> <1303861178.2513.171.camel@pasglop>
-	<4DB873B6.1000809@harris.com>
-In-Reply-To: <4DB873B6.1000809@harris.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: devicetree-discuss@lists.ozlabs.org, x86@kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,139 +23,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/27/2011 03:51 PM, Steven A. Falco wrote:
-> On 04/26/2011 07:39 PM, Benjamin Herrenschmidt wrote:
->> On Tue, 2011-04-26 at 09:38 -0400, Steven A. Falco wrote:
->>> On 04/25/2011 08:01 PM, Benjamin Herrenschmidt wrote:
->>>> On Mon, 2011-04-25 at 16:10 -0400, Steven A. Falco wrote:
->>>>> I'm getting an error message when trying to talk to some custom
->>>>> hardware:
->>>>>
->>>>> dx83xx 0001:43:00.0: device not available because of BAR 0
->>>>> [0xa1000000-0xa1ffffff] collisions
+A lot of this series ends up being fixups to powerpc code; but the 4th
+patch is of importance to every architecture using CONFIG_OF (except
+SPARC, which has its own solution).
 
-I believe I've gotten to the root cause of this issue.  Turns out the
-ASIC is reporting a class code of 0000, in violation of the PCI spec.
+This series (finally!) factors out device tree irq domain decoding
+from arch/powerpc and makes it generic for all architectures.  The
+infrastructure is quite simple.  Any interrupt controller can embed
+the of_irq_domain structure and register it with the core code.  After
+that, device nodes referencing interrupts on that device tree node
+will trigger a call to the domain's map function.
 
-As a result, Linux is refusing to set up the ASIC, and so it remains
-with the settings made in U-Boot, which are in conflict with the
-allocation Linux makes for the bridge the ASIC is connected to.
+PowerPC and x86 have been converted to use of_irq_domain.  MIPS and
+Microblaze have it enabled, but nothing actually registers domains
+yet, so a workaround is in place to preserve the current behaviour
+until it is fixed.
 
-So Ben, you are absolutely right that there was some left-over
-configuration.
+I'd really like to get patches 1-4 merged into 2.6.40.  Please test.
+I'm also running through build testing here, and when it's complete
+I'll push it out to a 'devicetree/irq-domain' branch on
+git://git.secretlab.ca/git/linux-2.6
 
-My choices appear to be:
+It needs testing.  I've booted it on a powerpc board here without any
+apparent regressions, but that isn't a very big sample.  I've also
+build tested on everything I think is affected.
 
-1) Fix the ASIC (yeah, right)
+I'd also like to get it into linux-next.  Ben, if things checkout okay
+over the next few days, would you be okay with me adding it to
+linux-next, say around Wednesday next week?  As for merging, I think
+this should probably go via your powerpc tree since the that's where
+the bulk of the changes are, but I'm open to other suggestions).
 
-2) Force Linux to use the U-Boot settings
+Patches 5 & 6 are follow-on cleanup work to powerpc, but patch 6 is
+RFC only since there is a locking problem that I haven't fixed yet.
 
-3) Hack Linux to set up a device with a bogus class.
+Cheers,
+g.
 
-I'm not sure why this hardware works in x86 - I guess it is less
-fussy.
+---
 
-	Steve
-
->>>>>
->>>>> I see in setup-res.c that this message comes out when there is no
->>>>> parent for
->>>>> a device resource.
->>>>
->>>>  .../...
->>>>
->>>> It mostly happens in arch/powerpc/kernel/pci-common.c and the generic
->>>> setup-res.c
->>>>
->>>> Try #define DEBUG at the top (before the #includes) of pci-common.c and
->>>> pci_32.c (remove the exiting #undef in the last one) and send us the
->>>> full dmesg log, along with the output of cat /proc/iomem
->>
->> Have you set any specific flags ? IE. Modified the value of
->> ppc_pci_flags from what the 4xx code sets originally ?
-> 
-> For fun, I just tried changing:
-> 
-> ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
-> 
-> to:
-> 
-> ppc_pci_set_flags(PPC_PCI_PROBE_ONLY);
-> 
-> I realize that is the exact opposite of what you were suggesting, but
-> please bear with me for a bit.
-> 
-> I also changed the PCIE 0 ranges from:
-> 
-> ranges = <0x02000000 0x00000000 0x80000000 0x90000000 0x00000000 0x10000000
->           0x01000000 0x00000000 0x00000000 0xe8010000 0x00000000 0x00010000>;
-> 
-> ranges = <0x02000000 0x00000000 0x90000000 0x90000000 0x00000000 0x10000000
->           0x01000000 0x00000000 0x00000000 0xe8010000 0x00000000 0x00010000>;
-> 
-> I changed the ranges not because I wanted a 1:1 map, but because 90000000 is
-> what U-Boot chooses when it scans PCIe 1.
-> 
-> At this point, everything is working.  Here is /proc/iomap:
-> 
-> 90000000-9fffffff : /plb/pciex@0c0000000
->   90000000-94ffffff : PCI Bus 0001:41
->     90000000-9001ffff : 0001:41:00.0
->     90100000-94ffffff : PCI Bus 0001:42
->       90100000-92ffffff : PCI Bus 0001:43
->         91000000-91ffffff : 0001:43:00.0  //<--- was missing before
->         92000000-92ffffff : 0001:43:00.0  //<--- was missing before
->       93000000-94ffffff : PCI Bus 0001:44
->         93000000-93ffffff : 0001:44:00.0  //<--- was missing before
->         94000000-94ffffff : 0001:44:00.0  //<--- was missing before
-> e0000000-e7ffffff : /plb/pciex@0a0000000
->   e0000000-e7ffffff : PCI Bus 0000:01
->     e0000000-e00fffff : 0000:01:00.0
->     e0100000-e01fffff : 0000:01:00.0
->     e4000000-e7ffffff : 0000:01:00.0
-> ef600200-ef600207 : serial
-> ef600300-ef600307 : serial
-> ef600600-ef600606 : spi_ppc4xx_of
-> ef6c0000-ef6cffff : dwc_otg.0
->   ef6c0000-ef6cffff : dwc_otg
-> fc000000-ffffffff : fc000000.nor_flash
-> 
-> Now I see the bars for the ASICs (flagged above).  I could stop here,
-> and declare success, but I don't really like this solution, because it
-> requires me to be sure the dts has the same bus addresses that U-Boot
-> will choose.  Seems risky.
-> 
-> Tentative conclusion:  Either I still have something set wrong in my dts
-> or there is a bug in the Linux PCI bus mapping code.
-> 
-> 	Steve
-> 
->>
->> It does look to me like some of your device BARs have been setup already
->> by the firmware in a way that conflict with the way you configure your
->> ranges, and the kernel doesn't appear to detect nor try to remap that
->> which would happen if you have the "probe only" flag set.
->>
->> IE. On your c0000000 bus, you have memory at 90000000 CPU space mapped
->> to 80000000 PCI space. However, when probing, the kernel finds:
->>
->> pci 0001:41:00.0: reg 10 32bit mmio: [0x90000000-0x9001ffff]
->>
->> IE. A BAR was already set with a value of 90000000 PCI-side which is out
->> of the bounds you have for your bus.
->>
->> Maybe you really want to configure that second bus to have CPU 90000000
->> mapped to 90000000 PCI-side ? (IE. a 1:1 mapping). That would be
->> something to fix in your "ranges" property.
->>
->> Cheers,
->> Ben.
-> 
-> 
+Grant Likely (6):
+      powerpc: stop exporting irq_map
+      powerpc: make irq_{alloc,free}_virt private and remove count argument
+      powerpc: Make struct irq_host semi-private by moving into irqhost.h
+      dt: generalize of_irq_parse_and_map()
+      powerpc: move irq_alloc_descs_at() call into irq_alloc_virt()
+      powerpc: use irq_alloc_desc() to manage irq allocations
 
 
--- 
-A: Because it makes the logic of the discussion difficult to follow.
-Q: Why shouldn't I top post?
-A: No.
-Q: Should I top post?
+ arch/microblaze/kernel/irq.c                     |    7 -
+ arch/microblaze/kernel/setup.c                   |    2 
+ arch/mips/kernel/prom.c                          |   14 -
+ arch/powerpc/include/asm/irq.h                   |   88 +------
+ arch/powerpc/include/asm/irqhost.h               |   27 ++
+ arch/powerpc/kernel/irq.c                        |  260 ++++++++++++----------
+ arch/powerpc/platforms/512x/mpc5121_ads_cpld.c   |    5 
+ arch/powerpc/platforms/52xx/media5200.c          |    5 
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c        |    1 
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c        |   80 +------
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c     |    5 
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c  |   26 +-
+ arch/powerpc/platforms/86xx/gef_pic.c            |   10 -
+ arch/powerpc/platforms/8xx/m8xx_setup.c          |    2 
+ arch/powerpc/platforms/cell/axon_msi.c           |   15 +
+ arch/powerpc/platforms/cell/spider-pic.c         |   19 +-
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c |    9 -
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c    |    9 -
+ arch/powerpc/platforms/embedded6xx/wii.c         |    6 -
+ arch/powerpc/platforms/iseries/irq.c             |   10 -
+ arch/powerpc/platforms/powermac/pic.c            |   12 +
+ arch/powerpc/platforms/pseries/ras.c             |    4 
+ arch/powerpc/platforms/pseries/xics.c            |   14 +
+ arch/powerpc/sysdev/cpm1.c                       |    8 -
+ arch/powerpc/sysdev/cpm2_pic.c                   |   10 -
+ arch/powerpc/sysdev/fsl_msi.c                    |    3 
+ arch/powerpc/sysdev/i8259.c                      |    3 
+ arch/powerpc/sysdev/ipic.c                       |   19 +-
+ arch/powerpc/sysdev/mpc8xx_pic.c                 |   10 -
+ arch/powerpc/sysdev/mpc8xxx_gpio.c               |   13 +
+ arch/powerpc/sysdev/mpic.c                       |   33 +--
+ arch/powerpc/sysdev/mpic_msi.c                   |    3 
+ arch/powerpc/sysdev/mpic_pasemi_msi.c            |    5 
+ arch/powerpc/sysdev/mv64x60_pic.c                |   14 +
+ arch/powerpc/sysdev/qe_lib/qe_ic.c               |    9 -
+ arch/powerpc/sysdev/uic.c                        |   13 +
+ arch/powerpc/sysdev/xilinx_intc.c                |    9 -
+ arch/x86/include/asm/irq_controller.h            |   12 -
+ arch/x86/include/asm/prom.h                      |    1 
+ arch/x86/kernel/devicetree.c                     |   77 +------
+ drivers/of/irq.c                                 |  118 ++++++++++
+ include/linux/of_irq.h                           |   31 +++
+ 42 files changed, 504 insertions(+), 517 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/irqhost.h
+ delete mode 100644 arch/x86/include/asm/irq_controller.h
