@@ -1,20 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Fri, 29 Apr 2011 11:43:55 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH 0/6] General device tree irq domain infrastructure
-Message-ID: <20110429174355.GA21098@ponder.secretlab.ca>
-References: <20110428192227.8979.49181.stgit@ponder>
-	<4DBAE461.7000307@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4DBAE461.7000307@linutronix.de>
-Cc: Michal Simek <monstr@monstr.eu>, devicetree-discuss@lists.ozlabs.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Ralf Baechle <ralf@linux-mips.org>, hpa@zytor.com,
-	Dirk Brandewie <dirk.brandewie@gmail.com>,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 115901007E8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Apr 2011 06:38:18 +1000 (EST)
+Subject: Re: [PATCH 0/1] ppc4xx: Fix PCIe scanning for the 460SX
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ayman El-Khashab <ayman@elkhashab.com>
+In-Reply-To: <20110429170240.GA21384@crust.elkhashab.com>
+References: <1302286930-9988-1-git-send-email-ayman@elkhashab.com>
+	<1302306484.2458.64.camel@pasglop>
+	<178c7df4696bacdd1510bacae143222a@mail.gmail.com>
+	<20110429170240.GA21384@crust.elkhashab.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 30 Apr 2011 06:37:56 +1000
+Message-ID: <1304109476.2513.243.camel@pasglop>
+Mime-Version: 1.0
+Cc: Tirumala Marri <tmarri@apm.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 29, 2011 at 06:16:33PM +0200, Sebastian Andrzej Siewior wrote:
-> Grant Likely wrote:
-> >I'd really like to get patches 1-4 merged into 2.6.40.  Please test.
-> >I'm also running through build testing here, and when it's complete
-> >I'll push it out to a 'devicetree/irq-domain' branch on
-> >git://git.secretlab.ca/git/linux-2.6
+On Fri, 2011-04-29 at 12:02 -0500, Ayman El-Khashab wrote:
+> On Tue, Apr 12, 2011 at 07:09:49PM -0700, Tirumala Marri wrote:
+> > You originally submitted the support for 460ex. Can you chime in (and
+> > review Ayman patch) please ?
+> > 
+> > [Marri] Ben sure I will review it and send you my feedback in couple of
+> > days.
 > 
-> I pulled this, built and booted my x86-dt box and nothing exploded so far.
-> 
-> If you merge Linus' tree then you will get a conflict (sooner or later) in
-> ioapic_of_irq_map() in arch/x86/kernel/devicetree.c:
-> 
-> -       return io_apic_setup_irq_pin_once(*out_hwirq, cpu_to_node(0), &attr);
->  -      if (io_apic_setup_irq_pin(hwirq, cpu_to_node(0), &attr))
-> ++      if (io_apic_setup_irq_pin_once(hwirq, cpu_to_node(0), &attr))
-> 
-> Sebastian
+> Is there any update on this patch?  Any comment?  Any reason it _cant_
+> be included?  
 
-Thanks Sebastian.  Unless you say otherwise, I'll take that as an Acked-by.  :-)
+I'm tempted to put it in if Tirumala doesn't get to review it asap.
 
-g.
+Cheers,
+Ben.
