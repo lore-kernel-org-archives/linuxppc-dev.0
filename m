@@ -1,21 +1,18 @@
-Return-Path: <prashantsmailcenter@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
-	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4BD8DB6F93
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Apr 2011 20:22:40 +1000 (EST)
-Received: by iym7 with SMTP id 7so3653133iym.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Apr 2011 03:22:36 -0700 (PDT)
+Return-Path: <bigeasy@linutronix.de>
+Message-ID: <4DBAE461.7000307@linutronix.de>
+Date: Fri, 29 Apr 2011 18:16:33 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 MIME-Version: 1.0
-Date: Fri, 29 Apr 2011 15:52:36 +0530
-Message-ID: <BANLkTi=VwXSCDKcynwvZP-D5Q=xaAXtzzg@mail.gmail.com>
-Subject: Kernel cannot see PCI device on 460EX
-From: Prashant Bhole <prashantsmailcenter@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=20cf30334815798b3804a20c0d1d
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 0/6] General device tree irq domain infrastructure
+References: <20110428192227.8979.49181.stgit@ponder>
+In-Reply-To: <20110428192227.8979.49181.stgit@ponder>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Michal Simek <monstr@monstr.eu>, devicetree-discuss@lists.ozlabs.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	Ralf Baechle <ralf@linux-mips.org>, hpa@zytor.com,
+	Dirk Brandewie <dirk.brandewie@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf30334815798b3804a20c0d1d
-Content-Type: text/plain; charset=ISO-8859-1
+Grant Likely wrote:
+> I'd really like to get patches 1-4 merged into 2.6.40.  Please test.
+> I'm also running through build testing here, and when it's complete
+> I'll push it out to a 'devicetree/irq-domain' branch on
+> git://git.secretlab.ca/git/linux-2.6
 
-Hi,
-I have a custom made 460EX board. On that board u-boot can see a PCI device
-but linux kernel cannot see it. What could be the problem?
+I pulled this, built and booted my x86-dt box and nothing exploded so far.
 
-On u-boot "pci  2" commands displays following device:
-Scanning PCI devices on bus 2
-BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
-_____________________________________________________________
-02.00.00   0x1000     0x0072     Mass storage controller 0x00
+If you merge Linus' tree then you will get a conflict (sooner or later) in
+ioapic_of_irq_map() in arch/x86/kernel/devicetree.c:
 
-And when linux is booted there is only one pci device (bridge):
-#ls /sys/bus/pci/devices
-0000:80:00.0
+-       return io_apic_setup_irq_pin_once(*out_hwirq, cpu_to_node(0), &attr);
+  -      if (io_apic_setup_irq_pin(hwirq, cpu_to_node(0), &attr))
+++      if (io_apic_setup_irq_pin_once(hwirq, cpu_to_node(0), &attr))
 
-
-Thanks in advance.
-
-
--Prashant
-
---20cf30334815798b3804a20c0d1d
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi,<div>I have a custom made 460EX board. On that board u-boot can see a PC=
-I device</div><div>but linux kernel cannot see it. What could be the proble=
-m?</div><div><br></div><div>On u-boot &quot;pci =A02&quot; commands display=
-s following device:</div>
-<div><div>Scanning PCI devices on bus 2</div><div>BusDevFun =A0VendorId =A0=
- DeviceId =A0 Device Class =A0 =A0 =A0 Sub-Class</div><div>________________=
-_____________________________________________</div><div>02.00.00 =A0 0x1000=
- =A0 =A0 0x0072 =A0 =A0 Mass storage controller 0x00</div>
-<div><br></div><div>And when linux is booted there is only one pci device (=
-bridge):</div><div><div>#ls /sys/bus/pci/devices</div><div>0000:80:00.0</di=
-v></div><div><br></div><div><br></div><div>Thanks in advance.</div><div>
-<br></div><div><br></div>-Prashant
-</div>
-
---20cf30334815798b3804a20c0d1d--
+Sebastian
