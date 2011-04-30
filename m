@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 115901007E8
+Return-Path: <geert@linux-m68k.org>
+Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
+	by ozlabs.org (Postfix) with ESMTP id D5A4FB6F4E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Apr 2011 06:38:18 +1000 (EST)
-Subject: Re: [PATCH 0/1] ppc4xx: Fix PCIe scanning for the 460SX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ayman El-Khashab <ayman@elkhashab.com>
-In-Reply-To: <20110429170240.GA21384@crust.elkhashab.com>
-References: <1302286930-9988-1-git-send-email-ayman@elkhashab.com>
-	<1302306484.2458.64.camel@pasglop>
-	<178c7df4696bacdd1510bacae143222a@mail.gmail.com>
-	<20110429170240.GA21384@crust.elkhashab.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 30 Apr 2011 06:37:56 +1000
-Message-ID: <1304109476.2513.243.camel@pasglop>
-Mime-Version: 1.0
-Cc: Tirumala Marri <tmarri@apm.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+	Sun,  1 May 2011 07:08:30 +1000 (EST)
+Received: from georges.telenet-ops.be (unknown [195.130.137.68])
+	by wilson.telenet-ops.be (Postfix) with ESMTP id 4AC57717D9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 30 Apr 2011 22:56:23 +0200 (CEST)
+Date: Sat, 30 Apr 2011 22:56:20 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] genirq: Fix typo CONFIG_GENIRC_IRQ_SHOW_LEVEL
+Message-ID: <alpine.DEB.2.00.1104302251370.19068@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-04-29 at 12:02 -0500, Ayman El-Khashab wrote:
-> On Tue, Apr 12, 2011 at 07:09:49PM -0700, Tirumala Marri wrote:
-> > You originally submitted the support for 460ex. Can you chime in (and
-> > review Ayman patch) please ?
-> > 
-> > [Marri] Ben sure I will review it and send you my feedback in couple of
-> > days.
-> 
-> Is there any update on this patch?  Any comment?  Any reason it _cant_
-> be included?  
+commit ab7798ffcf98b11a9525cf65bacdae3fd58d357f ("genirq: Expand generic
+show_interrupts()") added the Kconfig option GENERIC_IRQ_SHOW_LEVEL to
+accomodate PowerPC, but this doesn't actually enable the functionality due
+to a typo in the #ifdef check.
 
-I'm tempted to put it in if Tirumala doesn't get to review it asap.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ kernel/irq/proc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+index dd201bd..834899f 100644
+--- a/kernel/irq/proc.c
++++ b/kernel/irq/proc.c
+@@ -419,7 +419,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 	} else {
+ 		seq_printf(p, " %8s", "None");
+ 	}
+-#ifdef CONFIG_GENIRC_IRQ_SHOW_LEVEL
++#ifdef CONFIG_GENERIC_IRQ_SHOW_LEVEL
+ 	seq_printf(p, " %-8s", irqd_is_level_type(&desc->irq_data) ? "Level" : "Edge");
+ #endif
+ 	if (desc->name)
+-- 
+1.7.0.4
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
