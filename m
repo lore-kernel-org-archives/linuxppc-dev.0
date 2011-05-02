@@ -1,24 +1,31 @@
-Return-Path: <B29882@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98E431007D1
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CBD27B6F62
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  3 May 2011 05:57:20 +1000 (EST)
-From: McClintock Matthew-B29882 <B29882@freescale.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: Login prompt on a video console instead of serial port?
-Date: Mon, 2 May 2011 19:55:21 +0000
-Message-ID: <BANLkTikWMksVsvs8KzjdiZfRR-2WGD0Ftw@mail.gmail.com>
-References: <4DBF065C.3030407@freescale.com>
-In-Reply-To: <4DBF065C.3030407@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue,  3 May 2011 08:14:11 +1000 (EST)
+Received: by pzk26 with SMTP id 26so3785785pzk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 02 May 2011 15:14:09 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Mon, 2 May 2011 16:14:06 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH v6 0/6] powerpc, 52xx: add charon board support
+Message-ID: <20110502221406.GA15043@ponder.secretlab.ca>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+	<1300782452-528-1-git-send-email-hs@denx.de>
 MIME-Version: 1.0
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	devicetree-discuss <devicetree-discuss@ozlabs.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1300782452-528-1-git-send-email-hs@denx.de>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>,
+	linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Paul Mundt <lethal@linux-sh.org>, linuxppc-dev@lists.ozlabs.org,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Don't you have to spawn a terminal on the framebuffer for the login?
-Right now getty spawns the login on the serial port via /etc/inittab.
-Something similiar is probably needed for the framebuffer.
+On Tue, Mar 22, 2011 at 09:27:26AM +0100, Heiko Schocher wrote:
+> cc: Wolfram Sang <w.sang@pengutronix.de>
+> cc: Grant Likely <grant.likely@secretlab.ca>
+> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> cc: linux-fbdev@vger.kernel.org
+> cc: devicetree-discuss@ozlabs.org
+> cc: Ben Dooks <ben@simtec.co.uk>
+> cc: Vincent Sanders <vince@simtec.co.uk>
+> cc: Samuel Ortiz <sameo@linux.intel.com>
+> cc: linux-kernel@vger.kernel.org
+> cc: Randy Dunlap <rdunlap@xenotime.net>
+> cc: Wolfgang Denk <wd@denx.de>
+> cc: Paul Mundt <lethal@linux-sh.org>
+> 
+> changes since v5:
+> - repost complete patchseries, as Paul Mundt suggested
+> - rebased against current head
+> - add Acked-by from Samuel Ortiz (MFD parts)
+>   http://www.spinics.net/lists/linux-fbdev/msg02550.html
+>   http://linux.derkeiler.com/Mailing-Lists/Kernel/2011-01/msg11798.html
+> 
+>   and Benjamin Herrenschmidt (DTS parts)
+>   http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-February/088279.html
+> - removed patch 
+>   "powerpc, mpc5200: update mpc5200_defconfig to fit for charon board."
+>   therefore added
+>   "powerpc, tqm5200: update tqm5200_defconfig to fit for charon board."
 
--M
+Refresh my memory, why was the mpc5200_defconfig updated dropped?
 
-
-
-On Mon, May 2, 2011 at 2:30 PM, Timur Tabi <timur@freescale.com> wrote:
-> I'm using a Freescale P1022DS (PowerPC e500 core) system, which has a bui=
-lt-in
-> video controller. =A0I have a framebuffer driver that works fine, and if =
-I add
-> "video=3Dfslfb:1280x1024-32@60,monitor=3D0 console=3Dtty0" to the command=
--line, then
-> *most* of the kernel boot log appears on the serial port and the video di=
-splay.
->
-> However, the login prompt is always on the serial port. =A0This happens e=
-ven if I
-> delete the "console=3DttyS0,115200" from the command-line. =A0I presume t=
-his is
-> because the "linux,stdout-path" property in the device tree always points=
- to a
-> serial port node.
->
-> So my question is: what do I need to do get the login prompt on the video
-> console? =A0That is, stdout goes to /dev/fb0 but stdin is still from /dev=
-/ttyS0.
-> I presume I need to direct "linux,stdout-path" to the fslfb node in the d=
-evice
-> tree, but there doesn't appear to be support for "linux,stdin-path".=
+g.
