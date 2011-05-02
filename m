@@ -1,24 +1,12 @@
-Return-Path: <B32579@freescale.com>
-From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 2/2] powerpc: add support for MPIC message register API
-Date: Mon, 2 May 2011 03:41:03 +0000
-Message-ID: <071A08F2C6A57E4E94D980ECA553F8741984EE@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1303232375-25014-1-git-send-email-meador_inge@mentor.com>
-	<1303232375-25014-3-git-send-email-meador_inge@mentor.com>
-	<071A08F2C6A57E4E94D980ECA553F8741959CA@039-SN1MPN1-004.039d.mgd.msft.net>
-	<4DBAED5D.4060906@mentor.com>
-	<071A08F2C6A57E4E94D980ECA553F8741967EC@039-SN1MPN1-004.039d.mgd.msft.net>
-	<20110429123051.4ed1ca01@schlenkerla.am.freescale.net>
-In-Reply-To: <20110429123051.4ed1ca01@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 2 May 2011 15:46:44 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: Save register r9-r13 values accurately on
+	interrupt with bad stack
+Message-ID: <20110502054643.GA3182@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
-Cc: Meador Inge <meador_inge@mentor.com>,
-	"openmcapi-dev@googlegroups.com" <openmcapi-dev@googlegroups.com>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +16,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When we take an interrupt or exception from kernel mode and the stack
+pointer is obviously not a kernel address (i.e. the top bit is 0), we
+switch to an emergency stack, save register values and panic.  However,
+on 64-bit server machines, we don't actually save the values of r9 - r13
+at the time of the interrupt, but rather values corrupted by the
+exception entry code for r12-r13, and nothing at all for r9-r11.
 
+This fixes it by passing a pointer to the register save area in the paca
+through to the bad_stack code in r3.  The register values are saved in
+one of the paca register save areas (depending on which exception this
+is).  Using the pointer in r3, the bad_stack code now retrieves the
+saved values of r9 - r13 and stores them in the exception frame on the
+emergency stack.  This also stores the normal exception frame marker
+("regshere") in the exception frame.
 
->=20
-> >
-> >
-> > > > Hi,
-> > > >
-> > > > I have no comments about coding and architecture. It looks fine.
-> > > >
-> > > > Only have a query about its use case..
-> > > >    "Any application intended to use message interrupt requires to
-> > > > know
-> > > reg_num because of struct mpic_msgr* mpic_msgr_get(unsigned int
-> > > reg_num) API"
-> > > >
-> > > > It will be good to search available unit internally and provide
-> > > > its
-> > > pointer. It will make application more flexible.
-> > > >
-> > >
-> > > The problem is that you fundamentally cannot implement an allocator
-> > > for MSG registers if you're going to communicate with another kernel
-> > > (how would both kernels' allocators be synchronized?). So the
-> > > message register allocation must be decided at design time, not run
-> time.
-> > >
-> >
-> > I agree with you..  It is true while communicating with another kernel.
-> > But message interrupts can be used by different independent drivers
-> within same kernel. For eg. PCIe and Ethernet driver.
-> > As per current design both drivers needs to be in sync before
-> requesting any message unit for avoiding any conflict. As these drivers
-> are completely independent. It is very difficult.
-> >
-> > Can it be possible to provide new API to take care it.
->=20
-> Do you have a real use case in mind where these message registers (not
-> MSIs) are used internally in this manner?
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/exception-64s.h |    7 ++++---
+ arch/powerpc/kernel/exceptions-64s.S     |   20 +++++++++++++++++---
+ 2 files changed, 21 insertions(+), 6 deletions(-)
 
-Yes, we use for PCIe host/agent test case scenario.
-Host usage message register to interrupt Agent...
-Agent uses message register to generate irq_out (automatically generate MSI=
-) to interrupt master. Please see RM for more details about irq_out
-=20
-
-Note: PCIe host/agent test scenario is used internally and we are working o=
-n pushing it out..
-=20
-> Perhaps an allocator could be added in the same patchset that adds such a
-> user.
->=20
-
-Yaa. It can be done. Otherwise module has to query each message unit for it=
-s availability.=20
-
---Prabhakar
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index d6b4849..96ccef1 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -104,10 +104,11 @@
+ 	beq-	1f;							   \
+ 	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
+ 1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
+-	bge-	cr1,2f;			/* abort if it is		*/ \
+-	b	3f;							   \
+-2:	li	r1,(n);			/* will be reloaded later	*/ \
++	blt+	cr1,3f;			/* abort if it is		*/ \
++	li	r1,(n);			/* will be reloaded later	*/ \
+ 	sth	r1,PACA_TRAP_SAVE(r13);					   \
++	std	r3,area+EX_R3(r13);					   \
++	addi	r3,r13,area;		/* r3 -> where regs are saved*/	   \
+ 	b	bad_stack;						   \
+ 3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
+ 	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 226cc8c..27ca8b7 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -461,9 +461,20 @@ bad_stack:
+ 	std	r12,_XER(r1)
+ 	SAVE_GPR(0,r1)
+ 	SAVE_GPR(2,r1)
+-	SAVE_4GPRS(3,r1)
+-	SAVE_2GPRS(7,r1)
+-	SAVE_10GPRS(12,r1)
++	ld	r10,EX_R3(r3)
++	std	r10,GPR3(r1)
++	SAVE_GPR(4,r1)
++	SAVE_4GPRS(5,r1)
++	ld	r9,EX_R9(r3)
++	ld	r10,EX_R10(r3)
++	SAVE_2GPRS(9,r1)
++	ld	r9,EX_R11(r3)
++	ld	r10,EX_R12(r3)
++	ld	r11,EX_R13(r3)
++	std	r9,GPR11(r1)
++	std	r10,GPR12(r1)
++	std	r11,GPR13(r1)
++	SAVE_8GPRS(14,r1)
+ 	SAVE_10GPRS(22,r1)
+ 	lhz	r12,PACA_TRAP_SAVE(r13)
+ 	std	r12,_TRAP(r1)
+@@ -472,6 +483,9 @@ bad_stack:
+ 	li	r12,0
+ 	std	r12,0(r11)
+ 	ld	r2,PACATOC(r13)
++	ld	r11,exception_marker@toc(r2)
++	std	r12,RESULT(r1)
++	std	r11,STACK_FRAME_OVERHEAD-16(r1)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.kernel_bad_stack
+ 	b	1b
+-- 
+1.7.4.1
