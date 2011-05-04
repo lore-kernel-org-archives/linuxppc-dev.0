@@ -1,33 +1,14 @@
-Return-Path: <vapier.adi@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4C70DB6F17
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 1ACD1B6F6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 May 2011 14:45:11 +1000 (EST)
-Received: by yxp4 with SMTP id 4so327501yxp.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 03 May 2011 21:45:07 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
-References: <1304458235-28473-1-git-send-email-sven@narfation.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 4 May 2011 00:44:46 -0400
-Message-ID: <BANLkTiminpyJ_opxhqG0E0gBOrF490b+tQ@mail.gmail.com>
-Subject: Re: [PATCH] atomic: add *_dec_not_zero
-To: Sven Eckelmann <sven@narfation.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>, David Howells <dhowells@redhat.com>,
-	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+	Wed,  4 May 2011 15:20:44 +1000 (EST)
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc, mpc52xx: update defconfig
+Date: Wed,  4 May 2011 07:20:38 +0200
+Message-Id: <1304486438-20943-1-git-send-email-hs@denx.de>
+Cc: Heiko Schocher <hs@denx.de>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,26 +18,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 3, 2011 at 17:30, Sven Eckelmann wrote:
-> Introduce an *_dec_not_zero operation. =C2=A0Make this a special case of
-> *_add_unless because batman-adv uses atomic_dec_not_zero in different
-> places like re-broadcast queue or aggregation queue management. There
-> are other non-final patches which may also want to use this macro.
->
-> Cc: uclinux-dist-devel@blackfin.uclinux.org
->
-> --- a/arch/blackfin/include/asm/atomic.h
-> +++ b/arch/blackfin/include/asm/atomic.h
-> @@ -103,6 +103,7 @@ static inline int atomic_test_mask(int mask, atomic_t=
- *v)
->        c !=3D (u);                                               \
->  })
->  #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
-> +#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
->
->  /*
->  * atomic_inc_and_test - increment and test
+Did following steps:
 
-no opinion on the actual idea, but for the Blackfin pieces:
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+make mpc5200_defconfig
+make savedefconfig
+cp defconfig arch/powerpc/configs/mpc5200_defconfig
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: Grant Likely <grant.likely@secretlab.ca>
+cc: Wolfgang Denk <wd@denx.de>
+---
+based against:
+git://git.secretlab.ca/git/linux-2.6
+
+Grant: Don;t know, if this patch is needed, but with it,
+the next patch shows only the changes I need for the
+charon board support.
+
+./scripts/checkpatch.pl 0001-powerpc-mpc52xx-update-defconfig.patch
+total: 0 errors, 0 warnings, 36 lines checked
+
+0001-powerpc-mpc52xx-update-defconfig.patch has no obvious style problems and is ready for submission.
+
+ arch/powerpc/configs/mpc5200_defconfig |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
+index e63f537..e9813a7 100644
+--- a/arch/powerpc/configs/mpc5200_defconfig
++++ b/arch/powerpc/configs/mpc5200_defconfig
+@@ -1,5 +1,6 @@
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
++CONFIG_SPARSE_IRQ=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+@@ -20,8 +21,6 @@ CONFIG_PPC_BESTCOMM=y
+ CONFIG_SIMPLE_GPIO=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_SPARSE_IRQ=y
+-CONFIG_PM=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+@@ -36,10 +35,8 @@ CONFIG_SYN_COOKIES=y
+ # CONFIG_IPV6 is not set
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_MTD=y
+-CONFIG_MTD_CONCAT=y
+ CONFIG_MTD_PARTITIONS=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_OF_PARTS=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+@@ -115,7 +112,6 @@ CONFIG_RTC_DRV_DS1307=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-CONFIG_INOTIFY=y
+ CONFIG_MSDOS_FS=y
+ CONFIG_VFAT_FS=y
+ CONFIG_PROC_KCORE=y
+@@ -133,5 +129,4 @@ CONFIG_PRINTK_TIME=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+-- 
+1.7.4.4
