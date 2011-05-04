@@ -1,24 +1,29 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
-	by ozlabs.org (Postfix) with ESMTP id 13865B6EF7
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+	[66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 953C6B6F6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 May 2011 00:29:37 +1000 (EST)
-Received: from georges.telenet-ops.be (unknown [195.130.137.68])
-	by winston.telenet-ops.be (Postfix) with ESMTP id 5CB811BC0A1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 May 2011 16:29:33 +0200 (CEST)
-Date: Wed, 4 May 2011 16:29:31 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/mpc8610_hpcd: Do not use "/" in interrupt names
-Message-ID: <alpine.DEB.2.00.1105041627560.2601@ayla.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
+	Thu,  5 May 2011 01:10:11 +1000 (EST)
+Subject: Re: [PATCH] atomic: add *_dec_not_zero
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+In-Reply-To: <BANLkTiminpyJ_opxhqG0E0gBOrF490b+tQ@mail.gmail.com>
+References: <1304458235-28473-1-git-send-email-sven@narfation.org>
+	<BANLkTiminpyJ_opxhqG0E0gBOrF490b+tQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 04 May 2011 10:04:04 -0500
+Message-ID: <1304521444.2810.23.camel@mulgrave.site>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	Chris Metcalf <cmetcalf@tilera.com>, David Howells <dhowells@redhat.com>,
+	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
+	Sven Eckelmann <sven@narfation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It may trigger a warning in fs/proc/generic.c:__xlate_proc_name() when
-trying to add an entry for the interrupt handler to sysfs.
+On Wed, 2011-05-04 at 00:44 -0400, Mike Frysinger wrote:
+> On Tue, May 3, 2011 at 17:30, Sven Eckelmann wrote:
+> > Introduce an *_dec_not_zero operation.  Make this a special case of
+> > *_add_unless because batman-adv uses atomic_dec_not_zero in different
+> > places like re-broadcast queue or aggregation queue management. There
+> > are other non-final patches which may also want to use this macro.
+> >
+> > Cc: uclinux-dist-devel@blackfin.uclinux.org
+> >
+> > --- a/arch/blackfin/include/asm/atomic.h
+> > +++ b/arch/blackfin/include/asm/atomic.h
+> > @@ -103,6 +103,7 @@ static inline int atomic_test_mask(int mask, atomic_t *v)
+> >        c != (u);                                               \
+> >  })
+> >  #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+> > +#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
+> >
+> >  /*
+> >  * atomic_inc_and_test - increment and test
+> 
+> no opinion on the actual idea, but for the Blackfin pieces:
+> Acked-by: Mike Frysinger <vapier@gentoo.org>
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+This goes for parisc as well.
 
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 018cc67..efadd3b 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -66,7 +66,7 @@ static void __init mpc8610_suspend_init(void)
- 		return;
- 	}
- 
--	ret = request_irq(irq, mpc8610_sw9_irq, 0, "sw9/wakeup", NULL);
-+	ret = request_irq(irq, mpc8610_sw9_irq, 0, "sw9:wakeup", NULL);
- 	if (ret) {
- 		pr_err("%s: can't request pixis event IRQ: %d\n",
- 		       __func__, ret);
--- 
-1.7.0.4
+Acked-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+James
