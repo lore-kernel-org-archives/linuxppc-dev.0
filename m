@@ -1,33 +1,15 @@
-Return-Path: <mattst88@gmail.com>
-Received: from mail-qy0-f179.google.com (mail-qy0-f179.google.com
-	[209.85.216.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 541671007DB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 May 2011 04:13:53 +1000 (EST)
-Received: by qyk7 with SMTP id 7so1197461qyk.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 04 May 2011 11:13:49 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
-References: <1304458235-28473-1-git-send-email-sven@narfation.org>
-From: Matt Turner <mattst88@gmail.com>
-Date: Wed, 4 May 2011 14:13:29 -0400
-Message-ID: <BANLkTinWa9E1_iLWyqAF+G8Qag=YK2T98A@mail.gmail.com>
-Subject: Re: [PATCH] atomic: add *_dec_not_zero
-To: Sven Eckelmann <sven@narfation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>, David Howells <dhowells@redhat.com>,
-	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 165BAB6FCD
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 May 2011 06:17:42 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [RFC][PATCH] powerpc: respect how command line nr_cpus is set
+Date: Wed,  4 May 2011 15:17:37 -0500
+Message-Id: <1304540257-19831-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +19,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 3, 2011 at 5:30 PM, Sven Eckelmann <sven@narfation.org> wrote:
-> diff --git a/arch/alpha/include/asm/atomic.h b/arch/alpha/include/asm/ato=
-mic.h
-> index e756d04..7e9434e 100644
-> --- a/arch/alpha/include/asm/atomic.h
-> +++ b/arch/alpha/include/asm/atomic.h
-> @@ -200,6 +200,7 @@ static __inline__ int atomic_add_unless(atomic_t *v, =
-int a, int u)
-> =A0}
->
-> =A0#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
-> +#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
->
-> =A0/**
-> =A0* atomic64_add_unless - add unless the number is a given value
-> @@ -226,6 +227,7 @@ static __inline__ int atomic64_add_unless(atomic64_t =
-*v, long a, long u)
-> =A0}
->
-> =A0#define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
-> +#define atomic64_dec_not_zero(v) atomic64_add_unless((v), -1, 0)
->
-> =A0#define atomic_add_negative(a, v) (atomic_add_return((a), (v)) < 0)
-> =A0#define atomic64_add_negative(a, v) (atomic64_add_return((a), (v)) < 0=
-)
-> diff --git a/arch/alpha/include/asm/local.h b/arch/alpha/include/asm/loca=
-l.h
-> index b9e3e33..09fb327 100644
-> --- a/arch/alpha/include/asm/local.h
-> +++ b/arch/alpha/include/asm/local.h
-> @@ -79,6 +79,7 @@ static __inline__ long local_sub_return(long i, local_t=
- * l)
-> =A0 =A0 =A0 =A0c !=3D (u); =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 \
-> =A0})
-> =A0#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-> +#define local_dec_not_zero(l) local_add_unless((l), -1, 0)
->
-> =A0#define local_add_negative(a, l) (local_add_return((a), (l)) < 0)
->
+We should utilize nr_cpus as the max # of CPUs that we can have present
+instead of NR_CPUS.  This way we actually respect how nr_cpus is set on
+the command line rather than ignoring it.
 
-Acked-by: Matt Turner <mattst88@gmail.com> [alpha]
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+I think this is what we should be doing, but would like someone else to take
+a look.
+
+- k
+
+ arch/powerpc/kernel/setup-common.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 21f30cb..fedf813 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -424,7 +424,7 @@ void __init smp_setup_cpu_maps(void)
+ 
+ 	DBG("smp_setup_cpu_maps()\n");
+ 
+-	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < NR_CPUS) {
++	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < nr_cpu_ids) {
+ 		const int *intserv;
+ 		int j, len;
+ 
+@@ -443,7 +443,7 @@ void __init smp_setup_cpu_maps(void)
+ 				intserv = &cpu;	/* assume logical == phys */
+ 		}
+ 
+-		for (j = 0; j < nthreads && cpu < NR_CPUS; j++) {
++		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+ 			DBG("    thread %d -> cpu %d (hard id %d)\n",
+ 			    j, cpu, intserv[j]);
+ 			set_cpu_present(cpu, true);
+@@ -483,12 +483,12 @@ void __init smp_setup_cpu_maps(void)
+ 		if (cpu_has_feature(CPU_FTR_SMT))
+ 			maxcpus *= nthreads;
+ 
+-		if (maxcpus > NR_CPUS) {
++		if (maxcpus > nr_cpu_ids) {
+ 			printk(KERN_WARNING
+ 			       "Partition configured for %d cpus, "
+ 			       "operating system maximum is %d.\n",
+-			       maxcpus, NR_CPUS);
+-			maxcpus = NR_CPUS;
++			       maxcpus, nr_cpu_ids);
++			maxcpus = nr_cpu_ids;
+ 		} else
+ 			printk(KERN_INFO "Partition configured for %d cpus.\n",
+ 			       maxcpus);
+-- 
+1.7.3.4
