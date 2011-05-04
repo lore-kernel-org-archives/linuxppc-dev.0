@@ -1,21 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 92DC4B6F47
+Return-Path: <vapier.adi@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4C70DB6F17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 May 2011 14:43:22 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Fix xmon ml/mz commands to work with 64-bit
-	values
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20110408121822.GG2754@zod.rchland.ibm.com>
-References: <20110408121822.GG2754@zod.rchland.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 May 2011 14:43:14 +1000
-Message-ID: <1304484194.2513.348.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Wed,  4 May 2011 14:45:11 +1000 (EST)
+Received: by yxp4 with SMTP id 4so327501yxp.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 03 May 2011 21:45:07 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
+References: <1304458235-28473-1-git-send-email-sven@narfation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 4 May 2011 00:44:46 -0400
+Message-ID: <BANLkTiminpyJ_opxhqG0E0gBOrF490b+tQ@mail.gmail.com>
+Subject: Re: [PATCH] atomic: add *_dec_not_zero
+To: Sven Eckelmann <sven@narfation.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	Chris Metcalf <cmetcalf@tilera.com>, David Howells <dhowells@redhat.com>,
+	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,65 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-04-08 at 08:18 -0400, Josh Boyer wrote:
-> The ml and and mz commands in xmon currently only work on 32-bit values.
-> This leads to odd issues when trying to use them on a ppc64 machine.  If
-> one specified 64-bit addresses to mz, it would loop on the same output
-> indefinitely.  The ml command would fail to find any 64-bit values in a
-> memory range, even though one could clearly see them present with the d
-> command.
-> 
-> This adds a small function that mimics GETWORD, but works for 64-bit
-> values.  The data types involved in these commands are also changed to
-> 'unsigned long' instead of just 'unsigned'.
-> 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+On Tue, May 3, 2011 at 17:30, Sven Eckelmann wrote:
+> Introduce an *_dec_not_zero operation. =C2=A0Make this a special case of
+> *_add_unless because batman-adv uses atomic_dec_not_zero in different
+> places like re-broadcast queue or aggregation queue management. There
+> are other non-final patches which may also want to use this macro.
+>
+> Cc: uclinux-dist-devel@blackfin.uclinux.org
+>
+> --- a/arch/blackfin/include/asm/atomic.h
+> +++ b/arch/blackfin/include/asm/atomic.h
+> @@ -103,6 +103,7 @@ static inline int atomic_test_mask(int mask, atomic_t=
+ *v)
+>        c !=3D (u);                                               \
+>  })
+>  #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+> +#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
+>
+>  /*
+>  * atomic_inc_and_test - increment and test
 
-Well if you're going to mimic GETWORD, why not replace it everywhere ?
-
-Or just do that :-)
-
-#if BITS_PER_LONG == 32
-#define GETLONG(v)	GETWORD(v)
-#else
-#define GETLONG(v)	((GETWORD(v) << 32) | GETWORD(v + 4))
-#endif
-
-Cheers,
-Ben.
- 
->  static void
->  memlocate(void)
->  {
-> -	unsigned a, n;
-> -	unsigned char val[4];
-> +	unsigned long a, n;
-> +	unsigned char val[sizeof(unsigned long)];
-> +	int size = sizeof(unsigned long);
->  
->  	last_cmd = "ml";
->  	scanhex((void *)&mdest);
-> @@ -2280,10 +2306,10 @@ memlocate(void)
->  		}
->  	}
->  	n = 0;
-> -	for (a = mdest; a < mend; a += 4) {
-> -		if (mread(a, val, 4) == 4
-> -			&& ((GETWORD(val) ^ mval) & mask) == 0) {
-> -			printf("%.16x:  %.16x\n", a, GETWORD(val));
-> +	for (a = mdest; a < mend; a += size) {
-> +		if (mread(a, val, size) == size
-> +			&& ((xmon_getval(val) ^ mval) & mask) == 0) {
-> +			printf("%.16lx:  %.16lx\n", a, xmon_getval(val));
->  			if (++n >= 10)
->  				break;
->  		}
-> @@ -2297,7 +2323,7 @@ static void
->  memzcan(void)
->  {
->  	unsigned char v;
-> -	unsigned a;
-> +	unsigned long a;
->  	int ok, ook;
->  
->  	scanhex(&mdest);
+no opinion on the actual idea, but for the Blackfin pieces:
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+-mike
