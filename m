@@ -1,15 +1,25 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6E443B7230
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C44EBB6F70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 May 2011 15:20:49 +1000 (EST)
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc,
-	mpc5200: update mpc5200_defconfig to fit for charon board.
-Date: Wed,  4 May 2011 07:20:46 +0200
-Message-Id: <1304486446-20985-1-git-send-email-hs@denx.de>
-Cc: Heiko Schocher <hs@denx.de>, Wolfgang Denk <wd@denx.de>
+	Wed,  4 May 2011 15:33:07 +1000 (EST)
+Subject: Re: [PATCH 0/1] ppc4xx: Fix PCIe scanning for the 460SX
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ayman El-Khashab <ayman@elkhashab.com>
+In-Reply-To: <1304109476.2513.243.camel@pasglop>
+References: <1302286930-9988-1-git-send-email-ayman@elkhashab.com>
+	<1302306484.2458.64.camel@pasglop>
+	<178c7df4696bacdd1510bacae143222a@mail.gmail.com>
+	<20110429170240.GA21384@crust.elkhashab.com>
+	<1304109476.2513.243.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 04 May 2011 15:32:46 +1000
+Message-ID: <1304487166.2513.351.camel@pasglop>
+Mime-Version: 1.0
+Cc: Tirumala Marri <tmarri@apm.com>, linuxppc-dev@lists.ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,80 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add:
+On Sat, 2011-04-30 at 06:37 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2011-04-29 at 12:02 -0500, Ayman El-Khashab wrote:
+> > On Tue, Apr 12, 2011 at 07:09:49PM -0700, Tirumala Marri wrote:
+> > > You originally submitted the support for 460ex. Can you chime in (and
+> > > review Ayman patch) please ?
+> > > 
+> > > [Marri] Ben sure I will review it and send you my feedback in couple of
+> > > days.
+> > 
+> > Is there any update on this patch?  Any comment?  Any reason it _cant_
+> > be included?  
+> 
+> I'm tempted to put it in if Tirumala doesn't get to review it asap.
 
-- CONFIG_MTD_PLATRAM=y
-  (selects CONFIG_MTD_RAM, so this is removed)
-- CONFIG_FIXED_PHY=y
-- CONFIG_SENSORS_LM80=y
-- CONFIG_FB_FOREIGN_ENDIAN=y
-- CONFIG_FB_SM501=m
-- CONFIG_RTC_DRV_DS1374=y
+Ok so after a closer review, the patch can't go in as-is.
 
-also to the mpc5200_defconfig, as Grant suggested here:
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-May/089844.html
+The code in there is meant to work on any 44x with runtime detection of
+the type of PCIe bridge.
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: Grant Likely <grant.likely@secretlab.ca>
-cc: Wolfgang Denk <wd@denx.de>
----
-based against:
-git://git.secretlab.ca/git/linux-2.6
+Your patch uses #ifdef's which breaks this.
 
-./scripts/checkpatch.pl 0002-powerpc-mpc5200-update-mpc5200_defconfig-to-fit-for-.patch
-total: 0 errors, 0 warnings, 39 lines checked
+Please use the "compatible" property in the device-tree to identify the
+460SX specific implementation (of_device_is_compatible(...)) and use
+that to trigger your changes.
 
-0002-powerpc-mpc5200-update-mpc5200_defconfig-to-fit-for-.patch has no obvious style problems and is ready for submission.
+Also, the patch removes the code for waiting for the link to be up with
+a comment "What DCR has the link status on the 460SX?". Please fix that
+(Tirumala, can you provide the missing information ?)
 
- arch/powerpc/configs/mpc5200_defconfig |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
-index e9813a7..7a0bcd7 100644
---- a/arch/powerpc/configs/mpc5200_defconfig
-+++ b/arch/powerpc/configs/mpc5200_defconfig
-@@ -41,9 +41,9 @@ CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLOCK=y
- CONFIG_MTD_CFI=y
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_RAM=y
- CONFIG_MTD_ROM=y
- CONFIG_MTD_PHYSMAP_OF=y
-+CONFIG_MTD_PLATRAM=y
- CONFIG_MTD_UBI=m
- CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
-@@ -59,6 +59,7 @@ CONFIG_PATA_MPC52xx=y
- CONFIG_PATA_PLATFORM=y
- CONFIG_NETDEVICES=y
- CONFIG_LXT_PHY=y
-+CONFIG_FIXED_PHY=y
- CONFIG_NET_ETHERNET=y
- CONFIG_FEC_MPC52xx=y
- # CONFIG_NETDEV_1000 is not set
-@@ -77,11 +78,15 @@ CONFIG_SPI_GPIO=m
- CONFIG_SPI_MPC52xx=m
- CONFIG_SPI_MPC52xx_PSC=m
- CONFIG_SPI_SPIDEV=m
-+CONFIG_SENSORS_LM80=y
- CONFIG_WATCHDOG=y
-+CONFIG_MFD_SM501=m
- CONFIG_DRM=y
- CONFIG_VIDEO_OUTPUT_CONTROL=y
- CONFIG_FB=y
-+CONFIG_FB_FOREIGN_ENDIAN=y
- CONFIG_FB_RADEON=y
-+CONFIG_FB_SM501=m
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_FRAMEBUFFER_CONSOLE=y
- CONFIG_LOGO=y
-@@ -109,6 +114,7 @@ CONFIG_USB_STORAGE=y
- CONFIG_NEW_LEDS=y
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--- 
-1.7.4.4
+Cheers,
+Ben.
