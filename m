@@ -1,26 +1,30 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from USMAMAIL.TILERA.COM (usmamail.tilera.com [206.83.70.75])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "usmamail.tilera.com",
-	Issuer "Go Daddy Secure Certification Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DF6D6B6F70
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AB4BEB6F70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 May 2011 22:15:03 +1000 (EST)
-Message-ID: <4DC141EC.5050406@tilera.com>
-Date: Wed, 4 May 2011 08:09:16 -0400
-From: Chris Metcalf <cmetcalf@tilera.com>
+	Wed,  4 May 2011 22:17:56 +1000 (EST)
+Received: by bwz10 with SMTP id 10so1024311bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 04 May 2011 05:17:51 -0700 (PDT)
 MIME-Version: 1.0
-To: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] atomic: add *_dec_not_zero
-References: <1304458235-28473-1-git-send-email-sven@narfation.org>
+Sender: geert.uytterhoeven@gmail.com
 In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
-Content-Type: text/plain; charset="ISO-8859-1"
+References: <1304458235-28473-1-git-send-email-sven@narfation.org>
+Date: Wed, 4 May 2011 14:17:51 +0200
+Message-ID: <BANLkTi=kRLxKS417xhaWDpF4h8+VTcUQQA@mail.gmail.com>
+Subject: Re: [PATCH] atomic: add *_dec_not_zero
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sven Eckelmann <sven@narfation.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
 	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
 	linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
 	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
 	x86@kernel.org, linux-kernel@vger.kernel.org,
-	David Howells <dhowells@redhat.com>,
+	Chris Metcalf <cmetcalf@tilera.com>, David Howells <dhowells@redhat.com>,
 	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
 	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
 	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
@@ -34,20 +38,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5/3/2011 5:30 PM, Sven Eckelmann wrote:
-> Introduce an *_dec_not_zero operation.  Make this a special case of
+On Tue, May 3, 2011 at 23:30, Sven Eckelmann <sven@narfation.org> wrote:
+> Introduce an *_dec_not_zero operation. =C2=A0Make this a special case of
 > *_add_unless because batman-adv uses atomic_dec_not_zero in different
 > places like re-broadcast queue or aggregation queue management. There
 > are other non-final patches which may also want to use this macro.
->
-> Reported-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> [...]
->  arch/tile/include/asm/atomic.h     |    9 +++++++++
->  arch/tile/include/asm/atomic_32.h  |    1 +
 
-Acked-by: Chris Metcalf <cmetcalf@tilera.com>
+> =C2=A0arch/m68k/include/asm/atomic.h =C2=A0 =C2=A0 | =C2=A0 =C2=A01 +
 
--- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Gr{oetje,eeting}s,
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
