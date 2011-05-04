@@ -1,34 +1,20 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AB4BEB6F70
+Return-Path: <B31383@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 30930B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 May 2011 22:17:56 +1000 (EST)
-Received: by bwz10 with SMTP id 10so1024311bwz.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 04 May 2011 05:17:51 -0700 (PDT)
+	Wed,  4 May 2011 23:27:14 +1000 (EST)
+From: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/qoriq: Add default mode for P1020RDB USB
+Date: Wed, 4 May 2011 18:56:56 +0530
+Message-ID: <1304515616-3413-1-git-send-email-ramneek.mehresh@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
-References: <1304458235-28473-1-git-send-email-sven@narfation.org>
-Date: Wed, 4 May 2011 14:17:51 +0200
-Message-ID: <BANLkTi=kRLxKS417xhaWDpF4h8+VTcUQQA@mail.gmail.com>
-Subject: Re: [PATCH] atomic: add *_dec_not_zero
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sven Eckelmann <sven@narfation.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>, David Howells <dhowells@redhat.com>,
-	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Cc: paulus@samba.org, Ramneek Mehresh <ramneek.mehresh@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,28 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 3, 2011 at 23:30, Sven Eckelmann <sven@narfation.org> wrote:
-> Introduce an *_dec_not_zero operation. =C2=A0Make this a special case of
-> *_add_unless because batman-adv uses atomic_dec_not_zero in different
-> places like re-broadcast queue or aggregation queue management. There
-> are other non-final patches which may also want to use this macro.
+Add P1020 USB controller default value for "dr_mode" property
 
-> =C2=A0arch/m68k/include/asm/atomic.h =C2=A0 =C2=A0 | =C2=A0 =C2=A01 +
+Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+---
+Applies on git://git.am.freescale.net/mirrors/linux-2.6.git
+(branch master)
+ arch/powerpc/boot/dts/p1020rdb.dts |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
+index e0668f8..c630b51 100644
+--- a/arch/powerpc/boot/dts/p1020rdb.dts
++++ b/arch/powerpc/boot/dts/p1020rdb.dts
+@@ -473,13 +473,11 @@
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <28 0x2>;
+ 			phy_type = "ulpi";
++			dr_mode = "host";
+ 		};
+ 
+-		/* USB2 is shared with localbus, so it must be disabled
+-		   by default. We can't put 'status = "disabled";' here
+-		   since U-Boot doesn't clear the status property when
+-		   it enables USB2. OTOH, U-Boot does create a new node
+-		   when there isn't any. So, just comment it out.
++		/* USB2 is shared with localbus. It is used
++		   only in case of SPI and SD boot*/
+ 		usb@23000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -488,8 +486,8 @@
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <46 0x2>;
+ 			phy_type = "ulpi";
++			dr_mode = "host";
+ 		};
+-		*/
+ 
+ 		sdhci@2e000 {
+ 			compatible = "fsl,p1020-esdhc", "fsl,esdhc";
+-- 
+1.6.1
