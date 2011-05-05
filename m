@@ -1,23 +1,21 @@
-Return-Path: <cbouatmailru@gmail.com>
-Date: Thu, 5 May 2011 18:24:31 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 1/7] mmc: sdhci: make sdhci-pltfm device drivers
-	self registered
-Message-ID: <20110505142431.GA12444@oksana.dev.rtsoft.ru>
-References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
-	<1304601778-13837-2-git-send-email-shawn.guo@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1304601778-13837-2-git-send-email-shawn.guo@linaro.org>
-Cc: sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
-	devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
-	Saeed Bishara <saeed@marvell.com>,
-	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
-	Mike Rapoport <mike@compulab.co.il>,
-	Olof Johansson <olof@lixom.net>, Chris Ball <cjb@laptop.org>,
-	linuxppc-dev@lists.ozlabs.org, Albert Herranz <albert_herranz@yahoo.es>,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <mmarek@suse.cz>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 105621007F3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  6 May 2011 01:23:39 +1000 (EST)
+From: Michal Marek <mmarek@suse.cz>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH v2] powerpc: Use the deterministic mode of ar
+Date: Thu,  5 May 2011 17:22:55 +0200
+Message-Id: <1304608975-21441-1-git-send-email-mmarek@suse.cz>
+In-Reply-To: <1302015561-21047-6-git-send-email-mmarek@suse.cz>
+References: <1302015561-21047-6-git-send-email-mmarek@suse.cz>
+In-Reply-To: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
+References: <1302015561-21047-1-git-send-email-mmarek@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 05, 2011 at 09:22:52PM +0800, Shawn Guo wrote:
-[...]
-> +static int __devinit sdhci_cns3xxx_probe(struct platform_device *pdev)
-> +{
-> +	return sdhci_pltfm_register(pdev, &sdhci_cns3xxx_pdata);
-> +}
-> +
-> +static int __devexit sdhci_cns3xxx_remove(struct platform_device *pdev)
-> +{
-> +	return sdhci_pltfm_unregister(pdev);
-> +}
-> +
-> +static struct platform_driver sdhci_cns3xxx_driver = {
-> +	.driver		= {
-> +		.name	= "sdhci-cns3xxx",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe		= sdhci_cns3xxx_probe,
-> +	.remove		= __devexit_p(sdhci_cns3xxx_remove),
-> +#ifdef CONFIG_PM
-> +	.suspend	= sdhci_pltfm_suspend,
-> +	.resume		= sdhci_pltfm_resume,
-> +#endif
-> +};
-> +
-> +static int __init sdhci_cns3xxx_init(void)
-> +{
-> +	return platform_driver_register(&sdhci_cns3xxx_driver);
-> +}
-> +module_init(sdhci_cns3xxx_init);
-> +
-> +static void __exit sdhci_cns3xxx_exit(void)
-> +{
-> +	platform_driver_unregister(&sdhci_cns3xxx_driver);
-> +}
-> +module_exit(sdhci_cns3xxx_exit);
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michal Marek <mmarek@suse.cz>
 
-I don't think I like this duplicate code for each platform sub-
-driver. It's repetitive and annoying. :-/
+---
 
-But considering that ARM will be multiplatform soon, we don't
-want to have every mach-* stuff in the single sdhci-pltfm.
+Hi,
 
-So... OK. If that compiles, I'm fine with it. :-D
+this version fixes build with binutils <= 2.19 by first checking if ar(1)
+supports the D option. It depends on a previous patch in the kbuild tree,
+commit 40df759e (kbuild: Fix build with binutils <= 2.19) in linux-next,
+so it will need to go through the kbuild tree. But feedback from the PPC
+maintainers would be appreciated.
 
-Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
+Thanks
+Michal
 
-Thanks!
+---
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 8917816..f0543f8 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -127,7 +127,7 @@ quiet_cmd_bootas = BOOTAS  $@
+       cmd_bootas = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTAFLAGS) -c -o $@ $<
+ 
+ quiet_cmd_bootar = BOOTAR  $@
+-      cmd_bootar = $(CROSS32AR) -cr $@.$$$$ $(filter-out FORCE,$^); mv $@.$$$$ $@
++      cmd_bootar = $(CROSS32AR) -cr$(KBUILD_ARFLAGS) $@.$$$$ $(filter-out FORCE,$^); mv $@.$$$$ $@
+ 
+ $(obj-libfdt): $(obj)/%.o: $(srctree)/scripts/dtc/libfdt/%.c FORCE
+ 	$(call if_changed_dep,bootcc)
 -- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+1.7.4.1
