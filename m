@@ -1,22 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 24447B6FB6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 May 2011 13:41:47 +1000 (EST)
-Date: Thu, 5 May 2011 13:41:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the final tree (powerpc
-	tree related)
-Message-Id: <20110505134142.3a1cb1f9.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Michael Ellerman <michael@ozlabs.org>,
-	"Tseng-Hui \(Frank\) Lin" <thlin@linux.vnet.ibm.com>,
-	Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <tglx@linutronix.de>
+Date: Thu, 5 May 2011 10:37:05 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/6] General device tree irq domain infrastructure
+In-Reply-To: <1304555953.2513.390.camel@pasglop>
+Message-ID: <alpine.LFD.2.02.1105051026370.3005@ionos>
+References: <20110428192227.8979.49181.stgit@ponder>
+	<1304386999.2513.293.camel@pasglop>
+	<20110504155227.GA3317@ponder.secretlab.ca>
+	<1304555953.2513.390.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Michal Simek <monstr@monstr.eu>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	Ralf Baechle <ralf@linux-mips.org>, hpa@zytor.com,
+	Dirk Brandewie <dirk.brandewie@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +26,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Thu, 5 May 2011, Benjamin Herrenschmidt wrote:
+> > As for the mapping, I agree that the functionality is generally
+> > useful, I'm just not fond of the current implementation.  I think it
+> > is more complex than it needs to be and I'm not excited about bring it
+> > over to the other architectures as-is.
+>
+> Nobody cares about the current implementation. What is important is
+> indeed the functionality. The basic thing I think everybody agrees is
+> that you need to extend the irq_desc (or data, whatever tglx prefers)
+> with two bits of information: Some identifier of the domain and some
+> identifier of the interrupt number within that domain.
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+irq_data because that's what is handed into the callbacks and you
+probably want to have the HW number there.
+ 
+> In addition, PIC code will need a way to perform efficient reverse
+> mapping. You may decide that for simple IRQ controllers that handle a
+> small linear range of interrupts, it's kosher to simply reserve a linear
+> range of descriptors and use a simple offset, I'm find with that now
+> that we no longer live in a world constrained by NR_IRQ.
+> 
+> But the need for the radix tree remains for things that have massively
+> large potential HW numbers such as we have on powerpc.
+> 
+> > For the majority of fixed hw interrupt controllers it is overkill.
+> > There is no need for a map table when all the irq descs (<=32 of them)
+> > get allocated when the irq controller is instantiated and the mapping
+> > consists of 'virq = hw_irq + virq_base'.  For instance, with the arm
+> > irq controllers, it's be more than sufficient to use irq_alloc_descs
+> > to obtain a range of irq numbers and then a simple of_irq_domain
+> > registration to handle the parsing.
+> 
+> That's true if and only if you make NR_IRQ a non issue and if you accept
+> the general wastage due to unused interrupts.
+> 
+> The main problem has always been that hard limit which made me chose a
+> more efficient mechanisms. Take a mac with 2 cascaded MPICs with 256
+> sources each which are mostly never used. I would need an NR_IRQs of 512
+> with your scheme (plus 16 because I do want to continue avoiding the
+> "ISA" numbers), which is a waste of space, even with SPARSE_IRQ.
+> 
+> Now I hope eventually NR_IRQ will go away and we'll have a more
+> efficient mechanism to allocate descriptors and so it will become less
+> of an issue.
 
-arch/powerpc/mm/mmu_context_hash64.c: In function 'init_new_context':
-arch/powerpc/mm/mmu_context_hash64.c:282: error: 'NO_CONTEXT' undeclared (first use in this function)
+Well, NR_IRQS in the sparse case is irrelevant already and I'm looking
+into a way to remove the !SPARSE code completely.
 
-Presumably caused by commit 851d2e2fe8db ("powerpc: Add Initiate
-Coprocessor Store Word (icswx) support") interacting with commit
-5e8e7b404ac9 ("powerpc/mm: Standardise on MMU_NO_CONTEXT").
+One thing we can do to avoid allocating 512 irq descriptors for the
+MAC case is to reserve the space and only allocate the descriptors you
+really need to be operational.
 
-I added the below patch for today.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> > For the cases where an interrupt controller isn't able to alloc all
+> > the irq descs at once, like for MSI, then yes the LINEAR and RADIX
+> > mappings are important.  What bothers me though is the way irq_host
+> > needs to use unions and the ->revmap_type value to implement multiple
+> > behaviours into a single type.  That's the sort of thing that can be
+> > broken out into a library and instantiated only by the interrupt
+> > controllers that actually need it.
+> 
+> But that's what it is really. You'll notice that on the fast path the
+> interrupt controller code calls directly into the "right" type of revmap
+> routine. You may want to refactor things a bit if you want, but the
+> union served me well simply because I didnt have to bother doing lots of
+> different alloc_bootmem back then. Nowadays, kmalloc is available much
+> earlier so it might have become a non issue too.
+> 
+> >   Similarly, it bothers me that that
+> > radix mapping makes up a significant portion of the code, yet it has
+> > only one user. 
+> 
+> "significant" ? Seriously ? Like 3 function calls ? It's nothing. We use
+> an existing radix tree facility, and the amount of code in our irq.c is
+> actually very small.
+> 
+> Originally it was living in xics in fact, but I moved it out
+> specifically because I wanted a common interface to remapping, so for
+> example, I can expose the linux -> hw mapping in debugfs generically,
+> among others.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 5 May 2011 13:32:02 +1000
-Subject: [PATCH] powerpc: fix up mismerge in mmu_context_hash64.c
+And there is another reverse mapping implementation in the superH
+code.
 
-NO_CONTEXT was changed to MMU_NO_CONTEXT.
+> >  I'd be happier if each kind of mapping had its own
+> > structure that embedded a generic irq_host/irq_domain with mapping
+> > specific ops populated to manipulate it.
+> 
+> Whatever, that's just plumbing, I don't care either way, that doesn't
+> change the fact that the concept of domain doesn't have much to do with
+> OF :-)
+> 
+> > Regardless, the immediate priority is to implement a mapper that will
+> > work for all architectures (or at least everything but powerpc and
+> > sparc).
+> 
+> I oppose the implementation of a new mapper that doesn't include
+> powerpc, that would be stupid. Either re-use ours or implement a new one
+> that encompass our needs. I can't talk for sparc but I wouldn't be
+> surprised if David thought about the same lines.
+> 
+> >   x86 has already implemented a skeleton irq_domain because
+> > there wasn't any common code for it to use.  ARM also needs the
+> > functionality immediately, and I don't want to see yet another
+> > arch-specific implementation.  I'd like to get the framework in place
+> > now, and grafting in mapping features as follow on patches.  That way
+> > the new DT users aren't blocked while waiting for us to hammer down
+> > the features that the other architectures don't need yet.
+> 
+> But the mapping code exist already. It returns a device-node as the
+> interrupt controller. What you then need is to establish the
+> relationship between that device-node and a domain in linux, and have
+> code to decode the content of the interrupts property.
+> 
+> So you need the concept of domain first, generic, and -then- you can
+> start adding a way to bind it to OF.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/mmu_context_hash64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Ack.
+ 
+Thanks,
 
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index c517815..3bafc3d 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -279,7 +279,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 	if (!mm->context.cop_lockp) {
- 		__destroy_context(index);
- 		subpage_prot_free(mm);
--		mm->context.id = NO_CONTEXT;
-+		mm->context.id = MMU_NO_CONTEXT;
- 		return -ENOMEM;
- 	}
- 	spin_lock_init(mm->context.cop_lockp);
--- 
-1.7.4.4
+	tglx
