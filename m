@@ -1,24 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <alpine.LFD.2.02.1105051026370.3005@ionos>
-References: <20110428192227.8979.49181.stgit@ponder>
-	<1304386999.2513.293.camel@pasglop>
-	<20110504155227.GA3317@ponder.secretlab.ca>
-	<1304555953.2513.390.camel@pasglop>
-	<alpine.LFD.2.02.1105051026370.3005@ionos>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 5 May 2011 08:07:05 -0600
-Message-ID: <BANLkTimQ7GsUton3nvJof8YB8k6cnx4rFQ@mail.gmail.com>
-Subject: Re: [PATCH 0/6] General device tree irq domain infrastructure
-To: Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Simek <monstr@monstr.eu>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Ralf Baechle <ralf@linux-mips.org>, hpa@zytor.com,
-	Dirk Brandewie <dirk.brandewie@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	devicetree-discuss@lists.ozlabs.org
+Return-Path: <shawn.guo@linaro.org>
+From: Shawn Guo <shawn.guo@linaro.org>
+To: linux-mmc@vger.kernel.org
+Subject: [PATCH v2 0/7] Consolidate sdhci pltfm & OF drivers and get them self
+	registered
+Date: Thu,  5 May 2011 21:22:51 +0800
+Message-Id: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
+Cc: Chris Ball <cjb@laptop.org>, sameo@linux.intel.com,
+	Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
+	devicetree-discuss@lists.ozlabs.org, Saeed Bishara <saeed@marvell.com>,
+	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
+	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +22,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 5, 2011 at 2:37 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Thu, 5 May 2011, Benjamin Herrenschmidt wrote:
->> > As for the mapping, I agree that the functionality is generally
->> > useful, I'm just not fond of the current implementation. =A0I think it
->> > is more complex than it needs to be and I'm not excited about bring it
->> > over to the other architectures as-is.
->>
->> Nobody cares about the current implementation. What is important is
->> indeed the functionality. The basic thing I think everybody agrees is
->> that you need to extend the irq_desc (or data, whatever tglx prefers)
->> with two bits of information: Some identifier of the domain and some
->> identifier of the interrupt number within that domain.
->
-> irq_data because that's what is handed into the callbacks and you
-> probably want to have the HW number there.
+Here are what the patch set does.
 
-Okay, I'll take another hack at it.  Unfortunately I've got a great
-big unmaskable interrupt in the form of UDS next week, but I'll be
-back on it the week after.
+* Remove .probe and .remove hooks from sdhci-pltfm.c and make it be
+  a pure common helper function providers.
+* Add .probe and .remove hooks for sdhci pltfm drivers sdhci-cns3xxx,
+  sdhci-dove, sdhci-tegra, and sdhci-esdhc-imx to make them self
+  registered with calling helper functions created above.
+* Migrate the use of sdhci_of_host and sdhci_of_data to
+  sdhci_pltfm_host and sdhci_pltfm_data, so that OF version host and
+  data structure works can be saved, and pltfm version works for both
+  cases.
+* Add OF common helper stuff into sdhci-pltfm.c, and make OF version
+  sdhci drivers sdhci-of-esdhc and sdhci-of-hlwd become self
+  registered as well, so that sdhci-of-core.c and sdhci-of.h can be
+  removed.
+* Consolidate the OF and pltfm esdhc drivers into one with sharing
+  the same pair of .probe and .remove hooks.
+* Eliminate include/linux/mmc/sdhci-pltfm.h with moving stuff into
+  drivers/mmc/host/sdhci-pltfm.h.
 
-g.
+And the benefits we gain from the changes are:
+
+* Get the sdhci device driver follow the Linux trend that driver
+  makes the registration by its own.
+* sdhci-pltfm.c becomes simple and clean as it only has common helper
+  stuff there now.
+* All sdhci device specific things are going back its own driver.
+* The dt and non-dt drivers are consolidated to use the same pair of
+  .probe and .remove hooks.
+* SDHCI driver for Freescale eSDHC controller found on both MPCxxx
+  and i.MX platforms is consolidated to use the same one .probe
+  function.
+
+It was only tested on i.mx51 babbage board, all other targets were
+build tested.  Tested-by, Reviwed-by, and Acked-by are much
+appreciated.
+
+I attempt to get patch #1 ~ #6 go through Chris' tree, while the #7
+through Sascha's tree.
+
+Regards,
+Shawn
+
+Changes since v1:
+ * Rebase on cjb's mmc-next tree
+ * Introduce helper function pair sdhci_pltfm_register and
+   sdhci_pltfm_unregister
+ * Eliminate variable 'scratch' in .remove hook to make the code
+   look simple
+ * Return ERR_PTR in sdhci_pltfm_init and use IS_ERR/PTR_ERR to check
+   return value in .probe hooks
+ * Correct MODULE_AUTHOR statement
+ * Split esdhc conlidation patch to ease reviewing
+
+Shawn Guo (7):
+      mmc: sdhci: make sdhci-pltfm device drivers self registered
+      mmc: sdhci: eliminate sdhci_of_host and sdhci_of_data
+      mmc: sdhci: make sdhci-of device drivers self registered
+      sdhci: rename sdhci-esdhc-imx.c to sdhci-esdhc.c
+      mmc: sdhci: consolidate sdhci-of-esdhc and sdhci-esdhc-imx
+      mmc: sdhci: merge two sdhci-pltfm.h into one
+      ARM: mxc: remove esdhc.h and use the public one
+
+ .../plat-mxc/devices/platform-sdhci-esdhc-imx.c    |    1 -
+ arch/arm/plat-mxc/include/mach/devices-common.h    |    2 +-
+ drivers/mmc/host/Kconfig                           |   77 ++--
+ drivers/mmc/host/Makefile                          |   17 +-
+ drivers/mmc/host/sdhci-cns3xxx.c                   |   43 ++-
+ drivers/mmc/host/sdhci-dove.c                      |   42 ++-
+ drivers/mmc/host/sdhci-esdhc-imx.c                 |  331 -----------
+ drivers/mmc/host/sdhci-esdhc.c                     |  580 ++++++++++++++++++++
+ drivers/mmc/host/sdhci-esdhc.h                     |   81 ---
+ drivers/mmc/host/sdhci-of-core.c                   |  250 ---------
+ drivers/mmc/host/sdhci-of-esdhc.c                  |   91 ---
+ drivers/mmc/host/sdhci-of-hlwd.c                   |   66 ++-
+ drivers/mmc/host/sdhci-of.h                        |   42 --
+ drivers/mmc/host/sdhci-pltfm.c                     |  259 +++++----
+ drivers/mmc/host/sdhci-pltfm.h                     |   39 ++-
+ drivers/mmc/host/sdhci-tegra.c                     |  118 +++--
+ include/linux/mmc/esdhc.h                          |   27 +
+ include/linux/mmc/sdhci-pltfm.h                    |   35 --
+ 18 files changed, 1048 insertions(+), 1053 deletions(-)
