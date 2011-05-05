@@ -1,27 +1,21 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
-	by ozlabs.org (Postfix) with SMTP id E5DCAB702E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 May 2011 02:44:30 +1000 (EST)
-Received: by gwaa18 with SMTP id a18so820856gwa.19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 05 May 2011 09:44:27 -0700 (PDT)
+Return-Path: <meador_inge@mentor.com>
+Message-ID: <4DC31989.8080703@mentor.com>
+Date: Thu, 05 May 2011 16:41:29 -0500
+From: Meador Inge <meador_inge@mentor.com>
 MIME-Version: 1.0
-In-Reply-To: <1304487166.2513.351.camel@pasglop>
-References: <1302286930-9988-1-git-send-email-ayman@elkhashab.com>
-	<1302306484.2458.64.camel@pasglop>
-	<178c7df4696bacdd1510bacae143222a@mail.gmail.com>
-	<20110429170240.GA21384@crust.elkhashab.com>
-	<1304109476.2513.243.camel@pasglop>
-	<1304487166.2513.351.camel@pasglop>
-Date: Thu, 5 May 2011 09:44:27 -0700
-Message-ID: <BANLkTi=BaYhw92wYHp9rPvz1yq2H1p0G9w@mail.gmail.com>
-Subject: Re: [PATCH 0/1] ppc4xx: Fix PCIe scanning for the 460SX
-From: Tirumala Marri <tmarri@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/alternative; boundary=20cf3011ded9243b4404a28a169e
-Cc: linuxppc-dev@lists.ozlabs.org, Ayman El-Khashab <ayman@elkhashab.com>,
-	Paul Mackerras <paulus@samba.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] powerpc: add support for MPIC message register API
+References: <1303232375-25014-1-git-send-email-meador_inge@mentor.com>	<1303232375-25014-3-git-send-email-meador_inge@mentor.com>	<071A08F2C6A57E4E94D980ECA553F8741959CA@039-SN1MPN1-004.039d.mgd.msft.net>	<4DBAED5D.4060906@mentor.com>	<071A08F2C6A57E4E94D980ECA553F8741967EC@039-SN1MPN1-004.039d.mgd.msft.net>	<20110429123051.4ed1ca01@schlenkerla.am.freescale.net>	<071A08F2C6A57E4E94D980ECA553F8741984EE@039-SN1MPN1-004.039d.mgd.msft.net>	<4DBED5E9.2070201@mentor.com>
+	<20110503101921.45f31d34@schlenkerla.am.freescale.net>
+In-Reply-To: <20110503101921.45f31d34@schlenkerla.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	"devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	Hollis Blanchard <hollis_blanchard@mentor.com>,
+	Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
+	"openmcapi-dev@googlegroups.com" <openmcapi-dev@googlegroups.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +25,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf3011ded9243b4404a28a169e
-Content-Type: text/plain; charset=ISO-8859-1
+On 05/03/2011 10:19 AM, Scott Wood wrote:
+> In the absence of partitioning, no driver should need a specific one.  With
+> partitioning, let the system designer mark those resources as reserved so
+> they don't get allocated. :-)
 
->
-> Also, the patch removes the code for waiting for the link to be up with
-> a comment "What DCR has the link status on the 460SX?". Please fix that
-> (Tirumala, can you provide the missing information ?)
->
+That seem reasonable.  Back to the device tree then.  One option is to bring
+back the sister-send property 'mpic-msgr-send-mask', which was discussed some
+months back.  For example, consider:
 
-It is not one register. Here is the flow for Gen-1.
-1. PECFGn_DLLSTA[3] will be asserted when pci-e link comes up.
-2. now progream the UTL buffer configuration registers.
-3. SW should assert PEUTLn_PCTL[0] to cause flow control initialization.
-This is memory mapped using GPL register REGBH , REBAL and REGMSK
-4. Now check for the PEUTLN_PSTA[8] for the flow control init completion.
+	/* OS 1 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb0 2 0xb2 2>;
+		mpic-msgr-receive-mask = <0x5>;
+		mpic-msgr-send-mask = <0xa>;
+	};
 
---20cf3011ded9243b4404a28a169e
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	mpic_msgr_block1: mpic-msgr-block@42400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x42400 0x200>;
+		interrupts = <0xb4 2 0xb6 2>;
+		mpic-msgr-receive-mask = <0x5>;
+	};
 
-<div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" style=3D"margi=
-n:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex;">Also, the patch =
-removes the code for waiting for the link to be up with<br>
-a comment &quot;What DCR has the link status on the 460SX?&quot;. Please fi=
-x that<br>
-(Tirumala, can you provide the missing information ?)<br></blockquote><div>=
-<br></div><div>It is not one register. Here is the flow for Gen-1.</div><di=
-v>1. PECFGn_DLLSTA[3] will be asserted when pci-e link comes up.</div>
-<div>2. now progream the UTL buffer configuration registers.</div><div>3. S=
-W should assert PEUTLn_PCTL[0] to cause flow control initialization. This i=
-s memory mapped using GPL register REGBH , REBAL and REGMSK</div><div>4. No=
-w check for the PEUTLN_PSTA[8] for the flow control init completion.</div>
-<div><br></div><div><br></div></div>
+	/* OS 2 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb0 2 0xb2 2>;
+		mpic-msgr-receive-mask = <0xa>;
+		mpic-msgr-send-mask = <0x5>;
+	};
 
---20cf3011ded9243b4404a28a169e--
+	mpic_msgr_block1: mpic-msgr-block@42400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x42400 0x200>;
+		interrupts = <0xb4 2 0xb6 2>;
+		mpic-msgr-send-mask = <0x5>;
+	};
+
+In block0 for both OSes, all registers are partitioned and are thus not
+available for allocation.  In block1 for both OSes, registers 0 and 2 are
+reserved and registers 1 and 3 are available for general allocation.
+
+So any register mentioned in one of 'mpic-msgr-receive-mask' or
+'mpic-msgr-send-mask' is out of the running for general allocation.
+If neither of the properties appear, then all registers are available
+for general allocation.
+
+You could get into trouble with this method with cases like:
+
+	/* OS 1 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb0 2 0xb2 2>;
+		mpic-msgr-send-mask = <0xa>;
+	};
+
+	/* OS 2 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb0 2 0xb2 2>;
+		mpic-msgr-receive-mask = <0x5>;
+	};
+
+Now OS 1 has registers 0 and 2 available for general allocation, which
+OS 2 is receiving on.  However, we already have that problem if someone
+botches the masks.  So I am not very worried about that.
+
+Clearly this is just one method, but I think tagging what is available from the
+device tree is a must.
+
+
+Thoughts?
+
+
+-- 
+Meador Inge     | meador_inge AT mentor.com
+Mentor Embedded | http://www.mentor.com/embedded-software
