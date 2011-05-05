@@ -1,24 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] powerpc: make irq_{alloc, free}_virt private and
-	remove count argument
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6F162B6F7B
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 May 2011 12:25:10 +1000 (EST)
+Subject: Re: [RFC][PATCH] powerpc: respect how command line nr_cpus is set
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20110504155905.GB3317@ponder.secretlab.ca>
-References: <20110428192227.8979.49181.stgit@ponder>
-	<20110428200153.8979.23873.stgit@ponder>
-	<1304387267.2513.298.camel@pasglop>
-	<20110504155905.GB3317@ponder.secretlab.ca>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1304540257-19831-1-git-send-email-galak@kernel.crashing.org>
+References: <1304540257-19831-1-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 05 May 2011 10:39:55 +1000
-Message-ID: <1304555995.2513.391.camel@pasglop>
+Date: Thu, 05 May 2011 12:25:02 +1000
+Message-ID: <1304562302.2513.418.camel@pasglop>
 Mime-Version: 1.0
-Cc: Michal Simek <monstr@monstr.eu>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Ralf Baechle <ralf@linux-mips.org>, hpa@zytor.com,
-	Dirk Brandewie <dirk.brandewie@gmail.com>,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
-	devicetree-discuss@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-05-04 at 09:59 -0600, Grant Likely wrote:
+On Wed, 2011-05-04 at 15:17 -0500, Kumar Gala wrote:
+> We should utilize nr_cpus as the max # of CPUs that we can have present
+> instead of NR_CPUS.  This way we actually respect how nr_cpus is set on
+> the command line rather than ignoring it.
 > 
-> Heh, I wondered about that, but there hasn't been any users for at
-> least 5 years (as evidenced by commit e12514650b, "Fix loop logic in
-> irq_alloc_virt()") so it was looking pretty dead, and it made the
-> patch to switch to using irq_alloc_desc*() quite a bit simpler if it
-> was removed.  :-)
-> 
-> I'm not particularly attached to this patch, so I can drop it from the
-> series. 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> I think this is what we should be doing, but would like someone else to take
+> a look.
 
-Well, Willy recently added support for the MSI block allocation so ...
+The main question I have is should max_cpus absolutely limit the number
+of possible CPUs or should it limit the number that get automatically
+onlined at boot, potentially letting us bring the rest online later on ?
 
 Cheers,
 Ben.
+
+> - k
+> 
+>  arch/powerpc/kernel/setup-common.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 21f30cb..fedf813 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -424,7 +424,7 @@ void __init smp_setup_cpu_maps(void)
+>  
+>  	DBG("smp_setup_cpu_maps()\n");
+>  
+> -	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < NR_CPUS) {
+> +	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < nr_cpu_ids) {
+>  		const int *intserv;
+>  		int j, len;
+>  
+> @@ -443,7 +443,7 @@ void __init smp_setup_cpu_maps(void)
+>  				intserv = &cpu;	/* assume logical == phys */
+>  		}
+>  
+> -		for (j = 0; j < nthreads && cpu < NR_CPUS; j++) {
+> +		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+>  			DBG("    thread %d -> cpu %d (hard id %d)\n",
+>  			    j, cpu, intserv[j]);
+>  			set_cpu_present(cpu, true);
+> @@ -483,12 +483,12 @@ void __init smp_setup_cpu_maps(void)
+>  		if (cpu_has_feature(CPU_FTR_SMT))
+>  			maxcpus *= nthreads;
+>  
+> -		if (maxcpus > NR_CPUS) {
+> +		if (maxcpus > nr_cpu_ids) {
+>  			printk(KERN_WARNING
+>  			       "Partition configured for %d cpus, "
+>  			       "operating system maximum is %d.\n",
+> -			       maxcpus, NR_CPUS);
+> -			maxcpus = NR_CPUS;
+> +			       maxcpus, nr_cpu_ids);
+> +			maxcpus = nr_cpu_ids;
+>  		} else
+>  			printk(KERN_INFO "Partition configured for %d cpus.\n",
+>  			       maxcpus);
