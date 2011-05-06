@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB3AA1007D1
+	by ozlabs.org (Postfix) with ESMTPS id 08211B70E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 May 2011 10:50:32 +1000 (EST)
-Subject: Re: [PATCH 3/3] [repost] powerpc/eeh: Display eeh error location
-	for bus and device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Richard A Lary <rlary@linux.vnet.ibm.com>
-In-Reply-To: <1304642771.2513.487.camel@pasglop>
-References: <4DC1D9CE.4050104@linux.vnet.ibm.com>
-	<1304642771.2513.487.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 06 May 2011 10:50:09 +1000
-Message-ID: <1304643009.2513.488.camel@pasglop>
-Mime-Version: 1.0
-Cc: antonb@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+	Fri,  6 May 2011 11:07:40 +1000 (EST)
+Subject: Re: [PATCH 3/4] powerpc/mpic: parse 4-cell intspec types other than
+	zero
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110324214354.GB9524@schlenkerla.am.freescale.net>
+Date: Thu, 5 May 2011 20:07:25 -0500
+Message-Id: <B68EC50E-6BAA-4F24-B653-8EB2D709432E@kernel.crashing.org>
+References: <20110324214354.GB9524@schlenkerla.am.freescale.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,85 +25,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-06 at 10:46 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2011-05-04 at 15:57 -0700, Richard A Lary wrote:
-> > From: Richard A Lary <rlary@linux.vnet.ibm.com>
-> > 
-> >   For adapters which have devices under a PCIe switch/bridge it is informative
-> >   to display information for both the PCIe switch/bridge and the device on
-> >   which the bus error was detected.
-> > 
-> >   rebased to powerpc-next
-> > 
-> > Signed-off-by: Richard A Lary <rlary@linux.vnet.ibm.com>
-> > ---
-> 
-> Not sure what you're doing but it still doesn't apply for me. I think
-> the patch is whitespace damaged. IE. Some spaces have been added at
-> the beginning of each line. IE. "context" lines (nor patch lines
-> that start with - or +) seem to have -two- spaces at the beginning
-> of each line for some reason.
-> 
-> I suspect whatever you're using for email is corrupting patches.
 
-BTW. I've hand applied it this time.
+On Mar 24, 2011, at 4:43 PM, Scott Wood wrote:
 
-Cheers,
-Ben.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> arch/powerpc/include/asm/mpic.h |    2 ++
+> arch/powerpc/sysdev/mpic.c      |   37 =
+++++++++++++++++++++++++++++++++++++-
+> 2 files changed, 38 insertions(+), 1 deletions(-)
 
-> Cheers,
-> Ben.
-> 
-> > ---
-> >   arch/powerpc/platforms/pseries/eeh_driver.c |   22 	13 +	9 -	0 !
-> >   1 file changed, 13 insertions(+), 9 deletions(-)
-> > 
-> > Index: b/arch/powerpc/platforms/pseries/eeh_driver.c
-> > ===================================================================
-> > --- a/arch/powerpc/platforms/pseries/eeh_driver.c
-> > +++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-> > @@ -328,7 +328,7 @@ struct pci_dn * handle_eeh_events (struc
-> >   	struct pci_bus *frozen_bus;
-> >   	int rc = 0;
-> >   	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
-> > -	const char *location, *pci_str, *drv_str;
-> > +	const char *location, *pci_str, *drv_str, *bus_pci_str, *bus_drv_str;
-> > 
-> >   	frozen_dn = find_device_pe(event->dn);
-> >   	if (!frozen_dn) {
-> > @@ -364,13 +364,8 @@ struct pci_dn * handle_eeh_events (struc
-> >   	frozen_pdn = PCI_DN(frozen_dn);
-> >   	frozen_pdn->eeh_freeze_count++;
-> > 
-> > -	if (frozen_pdn->pcidev) {
-> > -		pci_str = pci_name (frozen_pdn->pcidev);
-> > -		drv_str = pcid_name (frozen_pdn->pcidev);
-> > -	} else {
-> > -		pci_str = eeh_pci_name(event->dev);
-> > -		drv_str = pcid_name (event->dev);
-> > -	}
-> > +	pci_str = eeh_pci_name(event->dev);
-> > +	drv_str = pcid_name(event->dev);
-> >   	
-> >   	if (frozen_pdn->eeh_freeze_count > EEH_MAX_ALLOWED_FREEZES)
-> >   		goto excess_failures;
-> > @@ -378,8 +373,17 @@ struct pci_dn * handle_eeh_events (struc
-> >   	printk(KERN_WARNING
-> >   	   "EEH: This PCI device has failed %d times in the last hour:\n",
-> >   		frozen_pdn->eeh_freeze_count);
-> > +
-> > +	if (frozen_pdn->pcidev) {
-> > +		bus_pci_str = pci_name(frozen_pdn->pcidev);
-> > +		bus_drv_str = pcid_name(frozen_pdn->pcidev);
-> > +		printk(KERN_WARNING
-> > +			"EEH: Bus location=%s driver=%s pci addr=%s\n",
-> > +			location, bus_drv_str, bus_pci_str);
-> > +	}
-> > +
-> >   	printk(KERN_WARNING
-> > -		"EEH: location=%s driver=%s pci addr=%s\n",
-> > +		"EEH: Device location=%s driver=%s pci addr=%s\n",
-> >   		location, drv_str, pci_str);
-> > 
-> >   	/* Walk the various device drivers attached to this slot through
-> 
+Ben,
+
+Did you plan on review and pull this in or expect me to?
+
+- k
+
+>=20
+> diff --git a/arch/powerpc/include/asm/mpic.h =
+b/arch/powerpc/include/asm/mpic.h
+> index 7005ee0..25a0cb3 100644
+> --- a/arch/powerpc/include/asm/mpic.h
+> +++ b/arch/powerpc/include/asm/mpic.h
+> @@ -371,6 +371,8 @@ struct mpic
+>  * NOTE: This flag trumps MPIC_WANTS_RESET.
+>  */
+> #define MPIC_NO_RESET			0x00004000
+> +/* Freescale MPIC (compatible includes "fsl,mpic") */
+> +#define MPIC_FSL			0x00008000
+>=20
+> /* MPIC HW modification ID */
+> #define MPIC_REGSET_MASK		0xf0000000
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 0f7c671..69f96ec 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -6,6 +6,7 @@
+>  *  with various broken implementations of this HW.
+>  *
+>  *  Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
+> + *  Copyright 2010-2011 Freescale Semiconductor, Inc.
+>  *
+>  *  This file is subject to the terms and conditions of the GNU =
+General Public
+>  *  License.  See the file COPYING in the main directory of this =
+archive
+> @@ -1030,6 +1031,7 @@ static int mpic_host_xlate(struct irq_host *h, =
+struct device_node *ct,
+> 			   irq_hw_number_t *out_hwirq, unsigned int =
+*out_flags)
+>=20
+> {
+> +	struct mpic *mpic =3D h->host_data;
+> 	static unsigned char map_mpic_senses[4] =3D {
+> 		IRQ_TYPE_EDGE_RISING,
+> 		IRQ_TYPE_LEVEL_LOW,
+> @@ -1038,7 +1040,38 @@ static int mpic_host_xlate(struct irq_host *h, =
+struct device_node *ct,
+> 	};
+>=20
+> 	*out_hwirq =3D intspec[0];
+> -	if (intsize > 1) {
+> +	if (intsize >=3D 4 && (mpic->flags & MPIC_FSL)) {
+> +		/*
+> +		 * Freescale MPIC with extended intspec:
+> +		 * First two cells are as usual.  Third specifies
+> +		 * an "interrupt type".  Fourth is type-specific data.
+> +		 *
+> +		 * See =
+Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
+> +		 */
+> +		switch (intspec[2]) {
+> +		case 0:
+> +		case 1: /* no EISR/EIMR support for now, treat as shared =
+IRQ */
+> +			break;
+> +		case 2:
+> +			if (intspec[0] >=3D ARRAY_SIZE(mpic->ipi_vecs))
+> +				return -EINVAL;
+> +
+> +			*out_hwirq =3D mpic->ipi_vecs[intspec[0]];
+> +			break;
+> +		case 3:
+> +			if (intspec[0] >=3D =
+ARRAY_SIZE(mpic->timer_vecs))
+> +				return -EINVAL;
+> +
+> +			*out_hwirq =3D mpic->timer_vecs[intspec[0]];
+> +			break;
+> +		default:
+> +			pr_debug("%s: unknown irq type %u\n",
+> +				 __func__, intspec[2]);
+> +			return -EINVAL;
+> +		}
+> +
+> +		*out_flags =3D map_mpic_senses[intspec[1] & 3];
+> +	} else if (intsize > 1) {
+> 		u32 mask =3D 0x3;
+>=20
+> 		/* Apple invented a new race of encoding on machines =
+with
+> @@ -1137,6 +1170,8 @@ struct mpic * __init mpic_alloc(struct =
+device_node *node,
+> 	/* Check for "big-endian" in device-tree */
+> 	if (node && of_get_property(node, "big-endian", NULL) !=3D NULL)
+> 		mpic->flags |=3D MPIC_BIG_ENDIAN;
+> +	if (node && of_device_is_compatible(node, "fsl,mpic"))
+> +		mpic->flags |=3D MPIC_FSL;
+>=20
+> 	/* Look for protected sources */
+> 	if (node) {
+> --=20
+> 1.7.1
+>=20
