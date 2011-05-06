@@ -1,24 +1,29 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 288A01007DB
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 May 2011 02:06:30 +1000 (EST)
-Date: Fri, 6 May 2011 09:06:27 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-Message-ID: <20110506160627.GB14069@ovro.caltech.edu>
-References: <071A08F2C6A57E4E94D980ECA553F8741A54D4@039-SN1MPN1-004.039d.mgd.msft.net>
+Return-Path: <B07421@freescale.com>
+Date: Fri, 6 May 2011 14:29:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Meador Inge <meador_inge@mentor.com>
+Subject: Re: [PATCH 2/2] powerpc: add support for MPIC message register API
+Message-ID: <20110506142937.77e7a10f@schlenkerla.am.freescale.net>
+In-Reply-To: <4DC31989.8080703@mentor.com>
+References: <1303232375-25014-1-git-send-email-meador_inge@mentor.com>
+	<1303232375-25014-3-git-send-email-meador_inge@mentor.com>
+	<071A08F2C6A57E4E94D980ECA553F8741959CA@039-SN1MPN1-004.039d.mgd.msft.net>
+	<4DBAED5D.4060906@mentor.com>
+	<071A08F2C6A57E4E94D980ECA553F8741967EC@039-SN1MPN1-004.039d.mgd.msft.net>
+	<20110429123051.4ed1ca01@schlenkerla.am.freescale.net>
+	<071A08F2C6A57E4E94D980ECA553F8741984EE@039-SN1MPN1-004.039d.mgd.msft.net>
+	<4DBED5E9.2070201@mentor.com>
+	<20110503101921.45f31d34@schlenkerla.am.freescale.net>
+	<4DC31989.8080703@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <071A08F2C6A57E4E94D980ECA553F8741A54D4@039-SN1MPN1-004.039d.mgd.msft.net>
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	Zang Roy-R61911 <R61911@freescale.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Kalra Ashish-B00888 <B00888@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	Gupta Maneesh-B18878 <B18878@freescale.com>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	"devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	Hollis Blanchard <hollis_blanchard@mentor.com>,
+	Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
+	"openmcapi-dev@googlegroups.com" <openmcapi-dev@googlegroups.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,212 +33,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 06, 2011 at 12:00:34PM +0000, Kushwaha Prabhakar-B32579 wrote:
-> Hi,
-> 
-> I want to use this patch as base patch for "FSL 85xx platform" to support PCIe Agent.
-> The work looks to be little old now. So wanted to understand if any development has happened further on it.
-> 
-> In case no, I would take this work forward for PCIe Agent. 
-> 
-> Any help/suggestions are most appreciated in this regard.
-> 
+On Thu, 5 May 2011 16:41:29 -0500
+Meador Inge <meador_inge@mentor.com> wrote:
 
-Hi Prabhakar,
+> 	/* OS 1 */
+> 	mpic_msgr_block0: mpic-msgr-block@41400 {
+> 		compatible = "fsl,mpic-v3.1-msgr";
+> 		reg = <0x41400 0x200>;
+> 		interrupts = <0xb0 2 0xb2 2>;
+> 		mpic-msgr-receive-mask = <0x5>;
+> 		mpic-msgr-send-mask = <0xa>;
+> 	};
+> 
+> 	mpic_msgr_block1: mpic-msgr-block@42400 {
+> 		compatible = "fsl,mpic-v3.1-msgr";
+> 		reg = <0x42400 0x200>;
+> 		interrupts = <0xb4 2 0xb6 2>;
+> 		mpic-msgr-receive-mask = <0x5>;
+> 	};
+> 
+> 	/* OS 2 */
+> 	mpic_msgr_block0: mpic-msgr-block@41400 {
+> 		compatible = "fsl,mpic-v3.1-msgr";
+> 		reg = <0x41400 0x200>;
+> 		interrupts = <0xb0 2 0xb2 2>;
+> 		mpic-msgr-receive-mask = <0xa>;
+> 		mpic-msgr-send-mask = <0x5>;
+> 	};
+> 
+> 	mpic_msgr_block1: mpic-msgr-block@42400 {
+> 		compatible = "fsl,mpic-v3.1-msgr";
+> 		reg = <0x42400 0x200>;
+> 		interrupts = <0xb4 2 0xb6 2>;
+> 		mpic-msgr-send-mask = <0x5>;
+> 	};
+> 
+> In block0 for both OSes, all registers are partitioned and are thus not
+> available for allocation.  In block1 for both OSes, registers 0 and 2 are
+> reserved and registers 1 and 3 are available for general allocation.
 
-I use PCI agent mode on an mpc8349emds board. All of the important setup is
-done very early in the boot process, by U-Boot. Search the U-Boot source
-for CONFIG_PCISLAVE. I hunch that the setup needed for 85xx boards are
-similar.
+How can both OSes independently own registers 1 and 3 for alloction?  And
+where are the interrupt specifiers for these registers?
 
-This virtio-over-PCI work is now very old. It was intended to provide a
-communication mechanism between a PCI Master and many PCI Agents (slaves).
-Dave Miller (networking maintainer) suggested to use virtio for this so
-that many different devices could be used. Such as:
-- network interface
-- serial port (for serial console)
+> So any register mentioned in one of 'mpic-msgr-receive-mask' or
+> 'mpic-msgr-send-mask' is out of the running for general allocation.
 
-I am aware of other ongoing work in this area. Specifically, some ARM
-developers are working on a virtio API using their message registers. This
-work is much newer, and will be a much better starting place for you.
+mpic-msgr-receive-mask has to match interrupts -- it's not intended to be
+an indication of usage, just that this partition is granted those
+interrupts.
 
-Search the virtualization mailing list for:
-"[PATCH 00/02] virtio: Virtio platform driver"
+Plus, a dynamically allocated message register must be owned for both
+sending and receiving, so it doesn't make sense to separate it.  I'd have
+an "mpic-msgr-free-mask" property, which must be a subset of
+"mpic-msgr-receive-mask".  If the register is not in free-mask, it is
+reserved for a fixed purpose.  If free-mask is absent, all registers in the
+receive-mask can be allocated.
 
-Here is a link to some of their code:
-http://www.spinics.net/lists/linux-sh/msg07188.html
+So the above example would be:
 
-I am currently using a custom driver to provide a network device on my PCI
-agents. Searching the mailing list archives for "PCINet", you will find
-early versions of the driver. I am happy to provide you a current copy. It
-does not use virtio at all, and is unlikely to be accepted into mainline
-Linux.
+	/* OS 1 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb0 2 0xb2 2>;
+		mpic-msgr-receive-mask = <0x5>;
+		mpic-msgr-free-mask = <0>;
+	};
 
-I am happy to provide any of my code if you think it would help you get
-started. Specifically, the current version of "PCINet" show how to use the
-DMA controller in order to get good network performance. I am also happy to
-help port code to 83xx, as well as test on 83xx. Please ask any questions
-you may have.
+	mpic_msgr_block1: mpic-msgr-block@42400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x42400 0x200>;
+		interrupts = <0xb4 2 0xb5 2>;
+		mpic-msgr-receive-mask = <0x3>;
+		mpic-msgr-free-mask = <0x2>;
+	};
 
-I have people ask about this code about once every two months. There is
-plenty of interest in a mainline Linux solution to this problem. :) I
-will be moving to 85xx someday, and I hope there is an accepted mainline
-solution by then.
+	/* OS 2 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb1 2 0xb3 2>;
+		mpic-msgr-receive-mask = <0xa>;
+		mpic-msgr-free-mask = <0>;
+	};
 
-I hope it helps,
-Ira
+	mpic_msgr_block1: mpic-msgr-block@42400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x42400 0x200>;
+		interrupts = <0xb6 2 0xb7 2>;
+		mpic-msgr-receive-mask = <0xc>;
+		mpic-msgr-free-mask = <0x8>;
+	};
 
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Ira Snyder
-> Sent: Friday, 27 February, 2009 3:19 AM
-> To: Arnd Bergmann
-> Cc: linux-kernel@vger.kernel.org; Rusty Russell; Jan-Bernd Themann; linuxppc-dev@ozlabs.org; netdev@vger.kernel.org
-> Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+mpic-msgr-send-mask could be added as well, as a permissions mechanism to
+serve as extra protection against an improperly specified non-free message
+register -- especially if the interface is exposed to a less-trusted realm
+such as userspace, or if a hypervisor is reading the device tree to
+determine what to allow guests to do.  In this case, just like
+mpic-msgr-receive-mask, it would list both free and non-free message
+registers that the partition can send to, and mpic-msgr-free-mask would be
+a subset of both the send and receive masks.
+
+> You could get into trouble with this method with cases like:
 > 
-> On Thu, Feb 26, 2009 at 09:37:14PM +0100, Arnd Bergmann wrote:
-> > On Thursday 26 February 2009, Ira Snyder wrote:
-> > > On Thu, Feb 26, 2009 at 05:15:27PM +0100, Arnd Bergmann wrote:
-> > >
-> > > I think so too. I was just getting something working, and thought it 
-> > > would be better to have it "out there" rather than be working on it 
-> > > forever. I'll try to break things up as I have time.
-> > 
-> > Ok, perfect!
-> >  
-> > > For the "libraries", would you suggest breaking things into seperate 
-> > > code files, and using EXPORT_SYMBOL_GPL()? I'm not very familiar 
-> > > with doing that, I've mostly been writing code within the existing 
-> > > device driver frameworks. Or do I need export symbol at all? I'm not sure...
-> > 
-> > You have both options. When you list each file as a separate module in 
-> > the Makefile, you use EXPORT_SYMBOL_GPL to mark functions that get 
-> > called by dependent modules, but this will work only in one way.
-> > 
-> > You can also link multiple files together into one module, although it 
-> > is less common to link a single source file into multiple modules.
-> > 
+> 	/* OS 1 */
+> 	mpic_msgr_block0: mpic-msgr-block@41400 {
+> 		compatible = "fsl,mpic-v3.1-msgr";
+> 		reg = <0x41400 0x200>;
+> 		interrupts = <0xb0 2 0xb2 2>;
+> 		mpic-msgr-send-mask = <0xa>;
+> 	};
 > 
-> Ok. I'm more familiar with the EXPORT_SYMBOL_GPL interface, so I'll do that. If we decide it sucks later, we'll change it.
+> 	/* OS 2 */
+> 	mpic_msgr_block0: mpic-msgr-block@41400 {
+> 		compatible = "fsl,mpic-v3.1-msgr";
+> 		reg = <0x41400 0x200>;
+> 		interrupts = <0xb0 2 0xb2 2>;
+> 		mpic-msgr-receive-mask = <0x5>;
+> 	};
 > 
-> > > I always thought you were supposed to use packed for data structures 
-> > > that are external to the system. I purposely designed the structures 
-> > > so they wouldn't need padding.
-> > 
-> > That would only make sense for structures that are explicitly 
-> > unaligned, like a register layout using
-> > 
-> > struct my_registers {
-> > 	__le16 first;
-> > 	__le32 second __attribute__((packed));
-> > 	__le16 third;
-> > };
-> > 
-> > Even here, I'd recommend listing the individual members as packed 
-> > rather than the entire struct. Obviously if you layout the members in 
-> > a sane way, you don't need either.
-> > 
-> 
-> Ok. I'll drop the __attribute__((packed)) and make sure there aren't problems. I don't suspect any, though.
-> 
-> > > I mostly don't need it. In fact, the only place I'm using registers 
-> > > not specific to the messaging unit is in the probe routine, where I 
-> > > setup the 1GB window into host memory and setting up access to the 
-> > > guest memory on the PCI bus.
-> > 
-> > You could add the registers you need for this to the "reg" property of 
-> > your device, to be mapped with of_iomap.
-> > 
-> > If the registers for setting up this window don't logically fit into 
-> > the same device as the one you already use, the cleanest solution 
-> > would be to have another device just for this and then make a function 
-> > call into that driver to set up the window.
-> > 
-> 
-> The registers are part of the board control registers. They don't fit at all in the message unit. Doing this in the bootloader seems like a logical place, but that would require any testers to flash a new U-Boot image into their mpc8349emds boards.
-> 
-> The first set of access is used to set up a 1GB region in the memory map that accesses the host's memory. Any reads/writes to addresses 0x80000000-0xc0000000 actually hit the host's memory.
-> 
-> The last access sets up PCI BAR1 to hit the memory from dma_alloc_coherent(). The bootloader already sets up the window as 16K, it just doesn't point it anywhere. Maybe this /should/ go into the bootloader. Like above, it would require testers to flash a new U-Boot image into their mpc8349emds boards.
-> 
-> > > Now, I wouldn't need to access these registers at all if the 
-> > > bootloader could handle it. I just don't know if it is possible to 
-> > > have Linux not use some memory that the bootloader allocated, other 
-> > > than with the mem=XXX trick, which I'm sure wouldn't be acceptable.
-> > > I've just used regular RAM so this is portable to my custom board 
-> > > (mpc8349emds based) and a regular mpc8349emds. I didn't want to 
-> > > change anything board specific.
-> > > 
-> > > I would love to have the bootloader allocate (or reserve somewhere 
-> > > in the memory map) 16K of RAM, and not be required to allocate it 
-> > > with dma_alloc_coherent(). It would save me plenty of headaches.
-> > 
-> > I believe you can do that through the "memory" devices in the device 
-> > tree, by leaving out a small part of the description of main memory, 
-> > at putting it into the "reg" property of your own device.
-> > 
-> 
-> I'll explore this option. I didn't even know you could do this.  Is a driver that requires the trick acceptable for mainline inclusion? Just like setting up the 16K PCI window, this is very platform specific.
-> 
-> This limits the guest driver to systems which are able to change Linux's view of their memory somehow. Maybe this isn't a problem.
-> 
-> > > Code complexity only. Also, it was easier to write 80-char lines 
-> > > with something like:
-> > > 
-> > > vop_get_desc(vq, idx, &desc);
-> > > if (desc.flags & VOP_DESC_F_NEXT) {
-> > > 	/* do something */
-> > > }
-> > > 
-> > > Instead of:
-> > > if (le16_to_cpu(vq->desc[idx].flags) & VOP_DESC_F_NEXT) {
-> > > 	/* do something */
-> > > }
-> > > 
-> > > Plus, I didn't have to remember how many bits were in each field. I 
-> > > just thought it made everything simpler to understand. Suggestions?
-> > 
-> > hmm, in this particular case, you could change the definition of 
-> > VOP_DESC_F_NEXT to
-> > 
-> > #define VOP_DESC_F_NEXT cpu_to_le16(1)
-> > 
-> > and then do the code as the even simpler (source and object code wise)
-> > 
-> > if (vq->desc[idx].flags) & VOP_DESC_F_NEXT)
-> > 
-> > I'm not sure if you can do something along these lines for the other 
-> > cases as well though.
-> > 
-> 
-> That's a good idea. It wouldn't fix the addresses, lengths, and next fields, though. I'll make the change and see how bad it is, then report back. It may not be so bad after all.
-> 
-> > > I used 3 so they would would align to 1024 byte boundaries within a 
-> > > 4K page. Then the layout was 16K on the bus, each 4K page is a 
-> > > single virtio-device, and each 1K block is a single virtqueue. The 
-> > > first 1K is for virtio-device status and feature bits, etc.
-> > > 
-> > > Packing them differently isn't a problem. It was just easier to code 
-> > > because setting up a window with the correct size is so platform 
-> > > specific.
-> > 
-> > Ok. I guess the important question is what part of the code makes this 
-> > decision. Ideally, the virtio-net glue would instantiate the device 
-> > with the right number of queues.
-> > 
-> 
-> Yeah, virtio doesn't work that way.
-> 
-> The virtio drivers just call find_vq() with a different index for each queue they want to use. You have no way of knowing how many queues each virtio driver will want, unless you go read their source code.
-> 
-> virtio-net currently uses 3 queues, but we only support the first two.
-> The third is optional (for now...), and non-symmetric.
-> 
-> Thanks again,
-> Ira
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in the body of a message to majordomo@vger.kernel.org More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
-> 
+> Now OS 1 has registers 0 and 2 available for general allocation, which
+> OS 2 is receiving on.  However, we already have that problem if someone
+> botches the masks.  So I am not very worried about that.
+
+There's a big difference between "botching the masks" and having no way to
+express the situation properly.
+
+BTW, the above fragment has the two OSes inappropriately sharing
+interrupts, and OS1 has only two interrupts but no receive mask
+(and therefore owns all 4 message registers for receive).  Only one OS
+should be able to receive any given interrupt.
+
+Consider this:
+
+	/* OS 1 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb0 2 0xb1 2>;
+		mpic-msgr-receive-mask = <0x3>;
+		mpic-msgr-send-mask = <0xc>;
+	};
+
+	/* OS 2 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb2 2>;
+		mpic-msgr-receive-mask = <0x4>;
+		mpic-msgr-send-mask = <0x1>;
+	};
+
+	/* OS 3 */
+	mpic_msgr_block0: mpic-msgr-block@41400 {
+		compatible = "fsl,mpic-v3.1-msgr";
+		reg = <0x41400 0x200>;
+		interrupts = <0xb3 2>;
+		mpic-msgr-receive-mask = <0x8>;
+		mpic-msgr-send-mask = <0x2>;
+	};
+
+None of the message registers are actually free for allocation, but with
+your scheme OS 2 would think it could allocate 1 and 3, and OS 3 would
+think it could allocate 0 and 2.  Even if a register were actually free
+from a reserved use, it would have to be owned by one partition.
+
+-Scott
