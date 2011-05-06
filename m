@@ -1,28 +1,29 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC9B61007D1
+	by ozlabs.org (Postfix) with ESMTPS id 08FB61007DB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 May 2011 16:14:23 +1000 (EST)
-Received: from mx3.mail.elte.hu ([157.181.1.138])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1QIEIr-0007ui-Pz
-	from <mingo@elte.hu>
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 May 2011 08:14:17 +0200
-Date: Fri, 6 May 2011 08:13:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc, hw_breakpoints: Fix CONFIG_HAVE_HW_BREAKPOINT
-	off-case in ptrace_set_debugreg
-Message-ID: <20110506061353.GA21742@elte.hu>
-References: <1304639598-4707-1-git-send-email-fweisbec@gmail.com>
+	Fri,  6 May 2011 18:40:27 +1000 (EST)
+Date: Fri, 6 May 2011 10:39:59 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v2 7/7] ARM: mxc: remove esdhc.h and use the public one
+Message-ID: <20110506083959.GS11574@pengutronix.de>
+References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
+	<1304601778-13837-8-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1304639598-4707-1-git-send-email-fweisbec@gmail.com>
-Cc: Prasad <prasad@linux.vnet.ibm.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, "v2.6.33.." <stable@kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1304601778-13837-8-git-send-email-shawn.guo@linaro.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, sameo@linux.intel.com,
+	Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
+	devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
+	Saeed Bishara <saeed@marvell.com>,
+	linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de,
+	Mike Rapoport <mike@compulab.co.il>,
+	Olof Johansson <olof@lixom.net>, Chris Ball <cjb@laptop.org>,
+	linuxppc-dev@lists.ozlabs.org, Albert Herranz <albert_herranz@yahoo.es>,
+	Xiaobo Xie <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello Shawn,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+On Thu, May 05, 2011 at 09:22:58PM +0800, Shawn Guo wrote:
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
+>  .../plat-mxc/devices/platform-sdhci-esdhc-imx.c    |    1 -
+>  arch/arm/plat-mxc/include/mach/devices-common.h    |    2 +-
+what about removing arch/arm/plat-mxc/include/mach/esdhc.h in this
+patch as advertised in the subject?
 
-> We make use of ptrace_get_breakpoints() / ptrace_put_breakpoints()
-> to protect ptrace_set_debugreg() even if CONFIG_HAVE_HW_BREAKPOINT
-> if off. However in this case, these APIs are not implemented.
-> 
-> To fix this, push the protection down inside the relevant ifdef.
-> Best would be to export the code inside CONFIG_HAVE_HW_BREAKPOINT
-> into a standalone function to cleanup the ifdefury there and call
-> the breakpoint ref API inside. But as it is more invasive, this
-> should be rather made in an -rc1.
-> 
-> Fixes:
-> 
-> arch/powerpc/kernel/ptrace.c:1594: error: implicit declaration of function 'ptrace_get_breakpoints'
-> make[2]: *** [arch/powerpc/kernel/ptrace.o] Error 1
-> make[1]: *** [arch/powerpc/kernel] Error 2
-> make: *** [sub-make] Error 2
+Best regards
+Uwe
 
-Thanks.
-
-I'll need a PowerPC ack for this. Note: it's dependent on hw-breakpoint fixes 
-in tip:perf/urgent so the commit will want to go there too.
-
-Thanks,
-
-	Ingo
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
