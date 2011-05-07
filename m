@@ -1,21 +1,16 @@
-Return-Path: <meador_inge@mentor.com>
-Message-ID: <4DC4896A.6010705@mentor.com>
-Date: Fri, 06 May 2011 18:51:06 -0500
-From: Meador Inge <meador_inge@mentor.com>
+Return-Path: <jignesh.patel@onrampwireless.com>
+Received: from relay.ihostexchange.net (relay.ihostexchange.net [66.46.182.56])
+	by ozlabs.org (Postfix) with ESMTP id 853ACB6EE6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  7 May 2011 11:24:15 +1000 (EST)
+Subject: ibm_newemac driver hangs while using 10Mbps full-duplex
+From: Jignesh Patel <jignesh.patel@onrampwireless.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 6 May 2011 18:18:14 -0700
+Message-ID: <1304731094.1702.611.camel@jpatel-desktop>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] powerpc: add support for MPIC message register API
-References: <1303232375-25014-1-git-send-email-meador_inge@mentor.com>	<1303232375-25014-3-git-send-email-meador_inge@mentor.com>	<071A08F2C6A57E4E94D980ECA553F8741959CA@039-SN1MPN1-004.039d.mgd.msft.net>	<4DBAED5D.4060906@mentor.com>	<071A08F2C6A57E4E94D980ECA553F8741967EC@039-SN1MPN1-004.039d.mgd.msft.net>	<20110429123051.4ed1ca01@schlenkerla.am.freescale.net>	<071A08F2C6A57E4E94D980ECA553F8741984EE@039-SN1MPN1-004.039d.mgd.msft.net>	<4DBED5E9.2070201@mentor.com>	<20110503101921.45f31d34@schlenkerla.am.freescale.net>	<4DC31989.8080703@mentor.com>
-	<20110506142937.77e7a10f@schlenkerla.am.freescale.net>
-In-Reply-To: <20110506142937.77e7a10f@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
-	"openmcapi-dev@googlegroups.com" <openmcapi-dev@googlegroups.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: jignesh.patel@onrampwireless.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,86 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/06/2011 02:29 PM, Scott Wood wrote:
-> On Thu, 5 May 2011 16:41:29 -0500
-> 
-> How can both OSes independently own registers 1 and 3 for alloction?
+Hi, 
 
-They can't.  I just choose a horrible example.  It does point to a serious
-flaw (which you allude to later) in inferring free registers from send/receive:
-in some cases one will have to arbitrarily add registers to send/receive masks
-just to keep registers out of the free allocation pool.  Your free-mask
-proposal is better.
+We are using denx kernel 2.6.31.4 on ppc405ex with national
+semiconductor DP83640 Ethernet transceiver.  The kernel driver
+(ibm_newemac) seems to hang after setting the ethernet phy to use 10Mbps
+Full-duplex settings. The time after which the driver hangs is random.
 
->> So any register mentioned in one of 'mpic-msgr-receive-mask' or
->> 'mpic-msgr-send-mask' is out of the running for general allocation.
-> 
-> mpic-msgr-receive-mask has to match interrupts -- it's not intended to be
-> an indication of usage, just that this partition is granted those
-> interrupts.
-> 
-> Plus, a dynamically allocated message register must be owned for both
-> sending and receiving, so it doesn't make sense to separate it.  I'd have
-> an "mpic-msgr-free-mask" property, which must be a subset of
-> "mpic-msgr-receive-mask".  If the register is not in free-mask, it is
-> reserved for a fixed purpose.  If free-mask is absent, all registers in the
-> receive-mask can be allocated.
-> 
-> So the above example would be:
-> 
-> 	/* OS 1 */
-> 	mpic_msgr_block0: mpic-msgr-block@41400 {
-> 		compatible = "fsl,mpic-v3.1-msgr";
-> 		reg = <0x41400 0x200>;
-> 		interrupts = <0xb0 2 0xb2 2>;
-> 		mpic-msgr-receive-mask = <0x5>;
-> 		mpic-msgr-free-mask = <0>;
-> 	};
-> 
-> 	mpic_msgr_block1: mpic-msgr-block@42400 {
-> 		compatible = "fsl,mpic-v3.1-msgr";
-> 		reg = <0x42400 0x200>;
-> 		interrupts = <0xb4 2 0xb5 2>;
-> 		mpic-msgr-receive-mask = <0x3>;
-> 		mpic-msgr-free-mask = <0x2>;
-> 	};
-> 
-> 	/* OS 2 */
-> 	mpic_msgr_block0: mpic-msgr-block@41400 {
-> 		compatible = "fsl,mpic-v3.1-msgr";
-> 		reg = <0x41400 0x200>;
-> 		interrupts = <0xb1 2 0xb3 2>;
-> 		mpic-msgr-receive-mask = <0xa>;
-> 		mpic-msgr-free-mask = <0>;
-> 	};
-> 
-> 	mpic_msgr_block1: mpic-msgr-block@42400 {
-> 		compatible = "fsl,mpic-v3.1-msgr";
-> 		reg = <0x42400 0x200>;
-> 		interrupts = <0xb6 2 0xb7 2>;
-> 		mpic-msgr-receive-mask = <0xc>;
-> 		mpic-msgr-free-mask = <0x8>;
-> 	};
-> 
-> mpic-msgr-send-mask could be added as well, as a permissions mechanism to
-> serve as extra protection against an improperly specified non-free message
-> register -- especially if the interface is exposed to a less-trusted realm
-> such as userspace, or if a hypervisor is reading the device tree to
-> determine what to allow guests to do.  In this case, just like
-> mpic-msgr-receive-mask, it would list both free and non-free message
-> registers that the partition can send to, and mpic-msgr-free-mask would be
-> a subset of both the send and receive masks.
+I am predicting that it's the driver issue because we cannot send or
+receive any packets even though ethernet phy detects a good link and
+interface is up (eth0). Bringing the interface down and back up using
+ifconfig command fixes the hang and normal packet transfer continues.
 
-free-mask seems reasonable.  Although, all of these masks are starting to get
-rather complicated :-)
+Also, some times during 10Mbps operation we see following warning from
+the kernel:
 
-Anyway, I am going to cut a v2 patch without the dynamic allocation.  All
-of this is getting complicated without a public use case.  I agree with your
-previous suggestion that the dynamic allocation can be added as a part of the
-patch set that actually uses it.
+eth0: link is up, 10 FDX
+NETDEV WATCHDOG: eth0 (emac): transmit queue 0 timed out
+------------[ cut here ]------------
+Badness at net/sched/sch_generic.c:246
+NIP: c02094a4 LR: c02094a4 CTR: c0175af0
+REGS: c03a9d00 TRAP: 0700   Not tainted  (2.6.31.4)
+MSR: 00029030 <EE,ME,CE,IR,DR>  CR: 24000024  XER: 20000000
+TASK = c037f440[0] 'swapper' THREAD: c03a8000
+GPR00: c02094a4 c03a9db0 c037f440 0000003f 00002631 ffffffff c0175a5c
+00000036
+GPR08: c03b1d40 c0380000 00002631 00004000 24000082 fffffeef 0ffed700
+00800000
+GPR16: 00000000 007fff00 c038138c c03b0000 c0300000 c03b0000 0000000a
+c03a9e18
+GPR24: c0380000 c03a8000 00000000 c03b5ec8 c03b0000 c0380000 00000000
+cf012000
+NIP [c02094a4] dev_watchdog+0x290/0x2a0
+LR [c02094a4] dev_watchdog+0x290/0x2a0
+Call Trace:
+[c03a9db0] [c02094a4] dev_watchdog+0x290/0x2a0 (unreliable)
+[c03a9e10] [c002d60c] run_timer_softirq+0xfc/0x1b8
+[c03a9e50] [c00284a8] __do_softirq+0xb0/0x130
+[c03a9e90] [c0004900] do_softirq+0x58/0x5c
+[c03a9ea0] [c00282bc] irq_exit+0x48/0x58
+[c03a9eb0] [c000bd94] timer_interrupt+0xa4/0x108
+[c03a9ed0] [c000f618] ret_from_except+0x0/0x18
+[c03a9f90] [c0007eb0] cpu_idle+0xd0/0xe0
+[c03a9fb0] [c0002928] rest_init+0x5c/0x6c
+[c03a9fc0] [c0355738] start_kernel+0x230/0x2b8
+[c03a9ff0] [c0002254] start_here+0x44/0xb0
+Instruction dump:
+7c0903a6 4bffff78 38810008 7fe3fb78 38a00040 4bfebc4d 7c651b78 3c60c033
+7fc6f378 7fe4fb78 3863e668 4be1a415 <0fe00000> 38000001 901cfa00
+4bffff14
+eth0: link is down
 
-Thanks Scott.
 
--- 
-Meador Inge     | meador_inge AT mentor.com
-Mentor Embedded | http://www.mentor.com/embedded-software
+Does anyone have an understanding of how ibm_newemac is supposed to
+behave in 10Mbps Full-duplex operation? any help to solve this issue is
+really appreciated
+
+Thanks!
+
+-Jignesh
