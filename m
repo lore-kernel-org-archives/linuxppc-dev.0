@@ -1,16 +1,21 @@
-Return-Path: <psomas@cslab.ece.ntua.gr>
-Received: from diomedes.noc.ntua.gr (diomedes.noc.ntua.gr [147.102.222.220])
-	by ozlabs.org (Postfix) with ESMTP id D3799B712E
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8734D100814
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 May 2011 00:11:40 +1000 (EST)
-From: Stratos Psomadakis <psomas@cslab.ece.ntua.gr>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] ppc: Fix compiler warning in ptrace.c [-Wno-array-bounds]
-Date: Sat,  7 May 2011 17:11:30 +0300
-Message-Id: <1304777491-7947-2-git-send-email-psomas@cslab.ece.ntua.gr>
-In-Reply-To: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>
+	Sun,  8 May 2011 01:18:24 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Stratos Psomadakis <psomas@cslab.ece.ntua.gr>
+Subject: Re: [PATCH 1/2] ppc: Fix compiler warning in ptrace.c
+	[-Wno-array-bounds]
 References: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>
-Cc: linux-kernel@vger.kernel.org
+	<1304777491-7947-2-git-send-email-psomas@cslab.ece.ntua.gr>
+Date: Sat, 07 May 2011 17:18:19 +0200
+In-Reply-To: <1304777491-7947-2-git-send-email-psomas@cslab.ece.ntua.gr>
+	(Stratos Psomadakis's message of "Sat, 7 May 2011 17:11:30 +0300")
+Message-ID: <m2oc3eh744.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The trick used to bypass the thread_struct fpr array in order to access the
-struct fpscr, in arch/powerpc/kernel/ptrace.c, can trigger an "array subscript
-is above array bounds [-Werror=array-bounds]" warning.
+Stratos Psomadakis <psomas@cslab.ece.ntua.gr> writes:
 
-Add -Wno-array-bounds to CFLAGS_ptrace.o, in arch/powerpc/kernel/Makefile to
-slience this warning.
+> +CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' -Wno-array-bounds
 
-Signed-off-by: Stratos Psomadakis <psomas@ece.ntua.gr>
----
- arch/powerpc/kernel/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+You need to check first whether the option is valid.
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 3bb2a3e..92b1002 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for the linux kernel.
- #
- 
--CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
-+CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' -Wno-array-bounds
- 
- subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
+Andreas.
+
 -- 
-1.5.6.5
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
