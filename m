@@ -1,17 +1,21 @@
-Return-Path: <psomas@cslab.ece.ntua.gr>
+Return-Path: <psomas@ece.ntua.gr>
 Received: from diomedes.noc.ntua.gr (diomedes.noc.ntua.gr [147.102.222.220])
-	by ozlabs.org (Postfix) with ESMTP id 633EAB6F72
+	by ozlabs.org (Postfix) with ESMTP id 0AC4B1007DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 May 2011 01:54:42 +1000 (EST)
-From: Stratos Psomadakis <psomas@cslab.ece.ntua.gr>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RESEND PATCH 1/2] ppc: Fix compiler warning in ptrace.c
+	Sun,  8 May 2011 01:57:17 +1000 (EST)
+Message-ID: <4DC56BD5.60109@ece.ntua.gr>
+Date: Sat, 07 May 2011 18:57:09 +0300
+From: Stratos Psomadakis <psomas@ece.ntua.gr>
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 1/2] ppc: Fix compiler warning in ptrace.c
 	[-Wno-array-bounds]
-Date: Sat,  7 May 2011 18:54:34 +0300
-Message-Id: <1304783674-3977-1-git-send-email-psomas@cslab.ece.ntua.gr>
+References: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>	<1304777491-7947-2-git-send-email-psomas@cslab.ece.ntua.gr>
+	<m2oc3eh744.fsf@igel.home>
 In-Reply-To: <m2oc3eh744.fsf@igel.home>
-References: <m2oc3eh744.fsf@igel.home>
-Cc: schwab@linux-m68k.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stratos Psomadakis <psomas@cslab.ece.ntua.gr>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,30 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The trick used to bypass the thread_struct fpr array in order to access the
-struct fpscr, in arch/powerpc/kernel/ptrace.c, can trigger an "array subscript
-is above array bounds [-Werror=array-bounds]" warning.
+On 05/07/2011 06:18 PM, Andreas Schwab wrote:
+> Stratos Psomadakis <psomas@cslab.ece.ntua.gr> writes:
+>
+>> +CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' -Wno-array-bounds
+> You need to check first whether the option is valid.
+>
+> Andreas.
+>
+I resent the patch, with $(call cc-option) to check if GCC supports the
+option. Is it ok?
 
-Add -Wno-array-bounds to CFLAGS_ptrace.o, in arch/powerpc/kernel/Makefile to
-slience this warning.
+Thx.
 
-Signed-off-by: Stratos Psomadakis <psomas@ece.ntua.gr>
----
- arch/powerpc/kernel/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 3bb2a3e..92b1002 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for the linux kernel.
- #
- 
--CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
-+CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' $(call cc-option, -Wno-array-bounds)
- 
- subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
 -- 
-1.5.6.5
+Stratos Psomadakis
+<psomas@ece.ntua.gr>
