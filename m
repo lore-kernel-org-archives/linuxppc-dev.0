@@ -1,16 +1,23 @@
-Return-Path: <jignesh.patel@onrampwireless.com>
-Received: from relay.ihostexchange.net (relay.ihostexchange.net [66.46.182.56])
-	by ozlabs.org (Postfix) with ESMTP id 853ACB6EE6
+Return-Path: <sboyd@codeaurora.org>
+Received: from wolverine02.qualcomm.com (wolverine02.qualcomm.com
+	[199.106.114.251])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wolverine02.qualcomm.com",
+	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 61385B6FFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  7 May 2011 11:24:15 +1000 (EST)
-Subject: ibm_newemac driver hangs while using 10Mbps full-duplex
-From: Jignesh Patel <jignesh.patel@onrampwireless.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 6 May 2011 18:18:14 -0700
-Message-ID: <1304731094.1702.611.camel@jpatel-desktop>
-MIME-Version: 1.0
-Reply-To: jignesh.patel@onrampwireless.com
+	Sat,  7 May 2011 15:57:17 +1000 (EST)
+From: Stephen Boyd <sboyd@codeaurora.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] lib: Consolidate DEBUG_STACK_USAGE option
+Date: Fri,  6 May 2011 22:57:11 -0700
+Message-Id: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+	linux-m32r@ml.linux-m32r.org, user-mode-linux-devel@lists.sourceforge.net,
+	linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+	Chris Metcalf <cmetcalf@tilera.com>, sparclinux@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,62 +27,300 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, 
+Most arches define CONFIG_DEBUG_STACK_USAGE exactly the same way.
+Move it to lib/Kconfig.debug so each arch doesn't have to define
+it. This obviously makes the option generic, but that's fine
+because the config is already used in generic code.
 
-We are using denx kernel 2.6.31.4 on ppc405ex with national
-semiconductor DP83640 Ethernet transceiver.  The kernel driver
-(ibm_newemac) seems to hang after setting the ethernet phy to use 10Mbps
-Full-duplex settings. The time after which the driver hangs is random.
+It's not obvious to me that sysrq-P actually does anything
+different with this option enabled, but I erred on the side of
+caution by keeping the most inclusive wording.
 
-I am predicting that it's the driver issue because we cannot send or
-receive any packets even though ethernet phy detects a good link and
-interface is up (eth0). Bringing the interface down and back up using
-ifconfig command fixes the hang and normal packet transfer continues.
+Cc: linux-arch@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Cc: linux-m32r@ml.linux-m32r.org
+Cc: linux-mips@linux-mips.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: x86@kernel.org
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+---
 
-Also, some times during 10Mbps operation we see following warning from
-the kernel:
+This is on top of mmotm's lib-conslidate-debug_per_cpu_maps patch.
 
-eth0: link is up, 10 FDX
-NETDEV WATCHDOG: eth0 (emac): transmit queue 0 timed out
-------------[ cut here ]------------
-Badness at net/sched/sch_generic.c:246
-NIP: c02094a4 LR: c02094a4 CTR: c0175af0
-REGS: c03a9d00 TRAP: 0700   Not tainted  (2.6.31.4)
-MSR: 00029030 <EE,ME,CE,IR,DR>  CR: 24000024  XER: 20000000
-TASK = c037f440[0] 'swapper' THREAD: c03a8000
-GPR00: c02094a4 c03a9db0 c037f440 0000003f 00002631 ffffffff c0175a5c
-00000036
-GPR08: c03b1d40 c0380000 00002631 00004000 24000082 fffffeef 0ffed700
-00800000
-GPR16: 00000000 007fff00 c038138c c03b0000 c0300000 c03b0000 0000000a
-c03a9e18
-GPR24: c0380000 c03a8000 00000000 c03b5ec8 c03b0000 c0380000 00000000
-cf012000
-NIP [c02094a4] dev_watchdog+0x290/0x2a0
-LR [c02094a4] dev_watchdog+0x290/0x2a0
-Call Trace:
-[c03a9db0] [c02094a4] dev_watchdog+0x290/0x2a0 (unreliable)
-[c03a9e10] [c002d60c] run_timer_softirq+0xfc/0x1b8
-[c03a9e50] [c00284a8] __do_softirq+0xb0/0x130
-[c03a9e90] [c0004900] do_softirq+0x58/0x5c
-[c03a9ea0] [c00282bc] irq_exit+0x48/0x58
-[c03a9eb0] [c000bd94] timer_interrupt+0xa4/0x108
-[c03a9ed0] [c000f618] ret_from_except+0x0/0x18
-[c03a9f90] [c0007eb0] cpu_idle+0xd0/0xe0
-[c03a9fb0] [c0002928] rest_init+0x5c/0x6c
-[c03a9fc0] [c0355738] start_kernel+0x230/0x2b8
-[c03a9ff0] [c0002254] start_here+0x44/0xb0
-Instruction dump:
-7c0903a6 4bffff78 38810008 7fe3fb78 38a00040 4bfebc4d 7c651b78 3c60c033
-7fc6f378 7fe4fb78 3863e668 4be1a415 <0fe00000> 38000001 901cfa00
-4bffff14
-eth0: link is down
+ arch/arm/Kconfig.debug       |    7 -------
+ arch/blackfin/Kconfig.debug  |    9 ---------
+ arch/m32r/Kconfig.debug      |    9 ---------
+ arch/mips/Kconfig.debug      |    9 ---------
+ arch/powerpc/Kconfig.debug   |    9 ---------
+ arch/score/Kconfig.debug     |    9 ---------
+ arch/sh/Kconfig.debug        |    9 ---------
+ arch/sparc/Kconfig.debug     |    9 ---------
+ arch/tile/Kconfig.debug      |    9 ---------
+ arch/um/Kconfig.debug        |    9 ---------
+ arch/unicore32/Kconfig.debug |    7 -------
+ arch/x86/Kconfig.debug       |    9 ---------
+ lib/Kconfig.debug            |    9 +++++++++
+ 13 files changed, 9 insertions(+), 104 deletions(-)
 
-
-Does anyone have an understanding of how ibm_newemac is supposed to
-behave in 10Mbps Full-duplex operation? any help to solve this issue is
-really appreciated
-
-Thanks!
-
--Jignesh
+diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
+index 03d01d7..81cbe40 100644
+--- a/arch/arm/Kconfig.debug
++++ b/arch/arm/Kconfig.debug
+@@ -63,13 +63,6 @@ config DEBUG_USER
+ 	      8 - SIGSEGV faults
+ 	     16 - SIGBUS faults
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Enable stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T output.
+-
+ # These options are only for real kernel hackers who want to get their hands dirty.
+ config DEBUG_LL
+ 	bool "Kernel low-level debugging functions"
+diff --git a/arch/blackfin/Kconfig.debug b/arch/blackfin/Kconfig.debug
+index 2641731..19ccfb3 100644
+--- a/arch/blackfin/Kconfig.debug
++++ b/arch/blackfin/Kconfig.debug
+@@ -9,15 +9,6 @@ config DEBUG_STACKOVERFLOW
+ 	  This option will cause messages to be printed if free stack space
+ 	  drops below a certain limit.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Enable stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config DEBUG_VERBOSE
+ 	bool "Verbose fault messages"
+ 	default y
+diff --git a/arch/m32r/Kconfig.debug b/arch/m32r/Kconfig.debug
+index 2e1019d..bb1afc1 100644
+--- a/arch/m32r/Kconfig.debug
++++ b/arch/m32r/Kconfig.debug
+@@ -9,15 +9,6 @@ config DEBUG_STACKOVERFLOW
+ 	  This option will cause messages to be printed if free stack space
+ 	  drops below a certain limit.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config DEBUG_PAGEALLOC
+ 	bool "Debug page memory allocations"
+ 	depends on DEBUG_KERNEL && BROKEN
+diff --git a/arch/mips/Kconfig.debug b/arch/mips/Kconfig.debug
+index 5358f90..83ed00a 100644
+--- a/arch/mips/Kconfig.debug
++++ b/arch/mips/Kconfig.debug
+@@ -76,15 +76,6 @@ config DEBUG_STACKOVERFLOW
+ 	  provides another way to check stack overflow happened on kernel mode
+ 	  stack usually caused by nested interruption.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Enable stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config SMTC_IDLE_HOOK_DEBUG
+ 	bool "Enable additional debug checks before going into CPU idle loop"
+ 	depends on DEBUG_KERNEL && MIPS_MT_SMTC
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 12a8d18..f862fc0 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -35,15 +35,6 @@ config DEBUG_STACKOVERFLOW
+ 	  This option will cause messages to be printed if free stack space
+ 	  drops below a certain limit.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config HCALL_STATS
+ 	bool "Hypervisor call instrumentation"
+ 	depends on PPC_PSERIES && DEBUG_FS && TRACEPOINTS
+diff --git a/arch/score/Kconfig.debug b/arch/score/Kconfig.debug
+index 451ed54..a1f346d 100644
+--- a/arch/score/Kconfig.debug
++++ b/arch/score/Kconfig.debug
+@@ -16,15 +16,6 @@ config CMDLINE
+ 	  other cases you can specify kernel args so that you don't have
+ 	  to set them up in board prom initialization routines.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Enable stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config RUNTIME_DEBUG
+ 	bool "Enable run-time debugging"
+ 	depends on DEBUG_KERNEL
+diff --git a/arch/sh/Kconfig.debug b/arch/sh/Kconfig.debug
+index 1553d56..c1d5a82 100644
+--- a/arch/sh/Kconfig.debug
++++ b/arch/sh/Kconfig.debug
+@@ -28,15 +28,6 @@ config STACK_DEBUG
+ 	  every function call and will therefore incur a major
+ 	  performance hit. Most users should say N.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config 4KSTACKS
+ 	bool "Use 4Kb for kernel stacks instead of 8Kb"
+ 	depends on DEBUG_KERNEL && (MMU || BROKEN) && !PAGE_SIZE_64KB
+diff --git a/arch/sparc/Kconfig.debug b/arch/sparc/Kconfig.debug
+index d9a795e..6db35fb 100644
+--- a/arch/sparc/Kconfig.debug
++++ b/arch/sparc/Kconfig.debug
+@@ -6,15 +6,6 @@ config TRACE_IRQFLAGS_SUPPORT
+ 
+ source "lib/Kconfig.debug"
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Enable stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config DEBUG_DCFLUSH
+ 	bool "D-cache flush debugging"
+ 	depends on SPARC64 && DEBUG_KERNEL
+diff --git a/arch/tile/Kconfig.debug b/arch/tile/Kconfig.debug
+index 9bc161a..ddbfc33 100644
+--- a/arch/tile/Kconfig.debug
++++ b/arch/tile/Kconfig.debug
+@@ -21,15 +21,6 @@ config DEBUG_STACKOVERFLOW
+ 	  This option will cause messages to be printed if free stack space
+ 	  drops below a certain limit.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config DEBUG_EXTRA_FLAGS
+ 	string "Additional compiler arguments when building with '-g'"
+ 	depends on DEBUG_INFO
+diff --git a/arch/um/Kconfig.debug b/arch/um/Kconfig.debug
+index 8fce5e5..34ac57f 100644
+--- a/arch/um/Kconfig.debug
++++ b/arch/um/Kconfig.debug
+@@ -28,13 +28,4 @@ config GCOV
+ 	  If you're involved in UML kernel development and want to use gcov,
+ 	  say Y.  If you're unsure, say N.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	default N
+-	help
+-	  Track the maximum kernel stack usage - this will look at each
+-	  kernel stack at process exit and log it if it's the deepest
+-	  stack seen so far.
+-
+-	  This option will slow down process creation and destruction somewhat.
+ endmenu
+diff --git a/arch/unicore32/Kconfig.debug b/arch/unicore32/Kconfig.debug
+index 3140151..ae2ec33 100644
+--- a/arch/unicore32/Kconfig.debug
++++ b/arch/unicore32/Kconfig.debug
+@@ -27,13 +27,6 @@ config EARLY_PRINTK
+ 	  with klogd/syslogd or the X server. You should normally N here,
+ 	  unless you want to debug such a crash.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Enable stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T output.
+-
+ # These options are only for real kernel hackers who want to get their hands dirty.
+ config DEBUG_LL
+ 	bool "Kernel low-level debugging functions"
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 1bf8839..c0f8a5c 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -66,15 +66,6 @@ config DEBUG_STACKOVERFLOW
+ 	  This option will cause messages to be printed if free stack space
+ 	  drops below a certain limit.
+ 
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	---help---
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+ config X86_PTDUMP
+ 	bool "Export kernel pagetable layout to userspace via debugfs"
+ 	depends on DEBUG_KERNEL
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index c0872ee..37fae12 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -654,6 +654,15 @@ config STACKTRACE
+ 	bool
+ 	depends on STACKTRACE_SUPPORT
+ 
++config DEBUG_STACK_USAGE
++	bool "Stack utilization instrumentation"
++	depends on DEBUG_KERNEL
++	help
++	  Enables the display of the minimum amount of free stack which each
++	  task has ever had available in the sysrq-T and sysrq-P debug output.
++
++	  This option will slow down process creation somewhat.
++
+ config DEBUG_KOBJECT
+ 	bool "kobject debugging"
+ 	depends on DEBUG_KERNEL
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
