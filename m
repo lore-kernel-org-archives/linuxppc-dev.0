@@ -1,30 +1,17 @@
-Return-Path: <vapier.adi@gmail.com>
-Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
-	[209.85.213.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2014DB710B
+Return-Path: <psomas@cslab.ece.ntua.gr>
+Received: from diomedes.noc.ntua.gr (diomedes.noc.ntua.gr [147.102.222.220])
+	by ozlabs.org (Postfix) with ESMTP id D3EE5B7140
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  7 May 2011 23:58:00 +1000 (EST)
-Received: by ywg4 with SMTP id 4so1675847ywg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 07 May 2011 06:57:56 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
-References: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sat, 7 May 2011 09:57:36 -0400
-Message-ID: <BANLkTim4RFeFpj8uJsnm0gazLOMdYr8P1Q@mail.gmail.com>
-Subject: Re: [PATCH] lib: Consolidate DEBUG_STACK_USAGE option
-To: Stephen Boyd <sboyd@codeaurora.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-m32r@ml.linux-m32r.org, user-mode-linux-devel@lists.sourceforge.net,
-	linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>, sparclinux@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+	Sun,  8 May 2011 00:11:40 +1000 (EST)
+From: Stratos Psomadakis <psomas@cslab.ece.ntua.gr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] ppc64: Fix compiler warning in pgtable-ppc64.h
+	[-Wunused-but-set-variable]
+Date: Sat,  7 May 2011 17:11:31 +0300
+Message-Id: <1304777491-7947-3-git-send-email-psomas@cslab.ece.ntua.gr>
+In-Reply-To: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>
+References: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,18 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 7, 2011 at 01:57, Stephen Boyd wrote:
-> Most arches define CONFIG_DEBUG_STACK_USAGE exactly the same way.
-> Move it to lib/Kconfig.debug so each arch doesn't have to define
-> it. This obviously makes the option generic, but that's fine
-> because the config is already used in generic code.
->
-> It's not obvious to me that sysrq-P actually does anything
-> different with this option enabled, but I erred on the side of
-> caution by keeping the most inclusive wording.
->
-> Cc: uclinux-dist-devel@blackfin.uclinux.org
-> =C2=A0arch/blackfin/Kconfig.debug =C2=A0| =C2=A0 =C2=A09 ---------
+The variable 'old' is set but not used in the wrprotect functions in
+arch/powerpc/include/asm/pgtable-ppc64.h, which can trigger a compiler warning.
 
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+Remove the variable, since it's not used anyway.
+
+Signed-off-by: Stratos Psomadakis <psomas@ece.ntua.gr>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 2b09cd5..0b27dba 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -257,21 +257,20 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
+ {
+-	unsigned long old;
+ 
+-       	if ((pte_val(*ptep) & _PAGE_RW) == 0)
+-       		return;
+-	old = pte_update(mm, addr, ptep, _PAGE_RW, 0);
++	if ((pte_val(*ptep) & _PAGE_RW) == 0)
++		return;
++
++	pte_update(mm, addr, ptep, _PAGE_RW, 0);
+ }
+ 
+ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 					   unsigned long addr, pte_t *ptep)
+ {
+-	unsigned long old;
+-
+ 	if ((pte_val(*ptep) & _PAGE_RW) == 0)
+ 		return;
+-	old = pte_update(mm, addr, ptep, _PAGE_RW, 1);
++
++	pte_update(mm, addr, ptep, _PAGE_RW, 1);
+ }
+ 
+ /*
+-- 
+1.5.6.5
