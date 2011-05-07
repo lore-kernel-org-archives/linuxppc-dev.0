@@ -1,24 +1,29 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 1D9FAB6FDC
+Return-Path: <richard.weinberger@gmail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6D7C8100811
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  7 May 2011 17:59:23 +1000 (EST)
-Date: Sat, 07 May 2011 00:58:48 -0700 (PDT)
-Message-Id: <20110507.005848.226775736.davem@davemloft.net>
-To: sboyd@codeaurora.org
-Subject: Re: [PATCH] lib: Consolidate DEBUG_STACK_USAGE option
-From: David Miller <davem@davemloft.net>
+	Sat,  7 May 2011 19:34:17 +1000 (EST)
+Received: by qwf7 with SMTP id 7so2564793qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 07 May 2011 02:34:13 -0700 (PDT)
+MIME-Version: 1.0
 In-Reply-To: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
 References: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Date: Sat, 7 May 2011 11:34:13 +0200
+Message-ID: <BANLkTi=h-151_cMPpii6O+kowvc=0WxKjQ@mail.gmail.com>
+Subject: Re: [PATCH] lib: Consolidate DEBUG_STACK_USAGE option
+From: richard -rw- weinberger <richard.weinberger@gmail.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
 	linux-m32r@ml.linux-m32r.org, user-mode-linux-devel@lists.sourceforge.net,
-	linux-sh@vger.kernel.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	sparclinux@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+	Chris Metcalf <cmetcalf@tilera.com>, sparclinux@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,18 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stephen Boyd <sboyd@codeaurora.org>
-Date: Fri,  6 May 2011 22:57:11 -0700
-
+On Sat, May 7, 2011 at 7:57 AM, Stephen Boyd <sboyd@codeaurora.org> wrote:
 > Most arches define CONFIG_DEBUG_STACK_USAGE exactly the same way.
 > Move it to lib/Kconfig.debug so each arch doesn't have to define
 > it. This obviously makes the option generic, but that's fine
 > because the config is already used in generic code.
-> 
+>
 > It's not obvious to me that sysrq-P actually does anything
 > different with this option enabled, but I erred on the side of
 > caution by keeping the most inclusive wording.
-> 
+>
 > Cc: linux-arch@vger.kernel.org
 > Cc: linux-arm-kernel@lists.infradead.org
 > Cc: uclinux-dist-devel@blackfin.uclinux.org
@@ -53,5 +56,10 @@ Date: Fri,  6 May 2011 22:57:11 -0700
 > Cc: user-mode-linux-devel@lists.sourceforge.net
 > Cc: x86@kernel.org
 > Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> ---
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Richard Weinberger <richard@nod.at>
+
+-- 
+Thanks,
+//richard
