@@ -1,31 +1,18 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[78.32.30.218])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8CCDBB7154
+Return-Path: <psomas@ece.ntua.gr>
+Received: from ulysses.noc.ntua.gr (ulysses.noc.ntua.gr [147.102.222.230])
+	by ozlabs.org (Postfix) with ESMTP id 99471B715F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 May 2011 19:43:42 +1000 (EST)
-Date: Sun, 8 May 2011 10:24:03 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] atomic: add *_dec_not_zero
-Message-ID: <20110508092403.GB27807@n2100.arm.linux.org.uk>
-References: <1304458235-28473-1-git-send-email-sven@narfation.org>
+	Mon,  9 May 2011 06:02:45 +1000 (EST)
+Message-ID: <4DC6F6D8.40303@ece.ntua.gr>
+Date: Sun, 08 May 2011 23:02:32 +0300
+From: Stratos Psomadakis <psomas@ece.ntua.gr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
-	linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>,
-	David Howells <dhowells@redhat.com>,
-	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org, x86@kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] ppc/cleaup: Fix compiler warnings
+References: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>
+In-Reply-To: <1304777491-7947-1-git-send-email-psomas@cslab.ece.ntua.gr>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 03, 2011 at 11:30:35PM +0200, Sven Eckelmann wrote:
-> Introduce an *_dec_not_zero operation.  Make this a special case of
-> *_add_unless because batman-adv uses atomic_dec_not_zero in different
-> places like re-broadcast queue or aggregation queue management. There
-> are other non-final patches which may also want to use this macro.
-...
-> diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
-> index 7e79503..a005265 100644
-> --- a/arch/arm/include/asm/atomic.h
-> +++ b/arch/arm/include/asm/atomic.h
-> @@ -218,6 +218,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
->  	return c != u;
->  }
->  #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
-> +#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
->  
->  #define atomic_inc(v)		atomic_add(1, v)
->  #define atomic_dec(v)		atomic_sub(1, v)
-> @@ -459,6 +460,7 @@ static inline int atomic64_add_unless(atomic64_t *v, u64 a, u64 u)
->  #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
->  #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
->  #define atomic64_inc_not_zero(v)	atomic64_add_unless((v), 1LL, 0LL)
-> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
->  
->  #else /* !CONFIG_GENERIC_ATOMIC64 */
->  #include <asm-generic/atomic64.h>
+On 05/07/2011 05:11 PM, Stratos Psomadakis wrote:
+> Fix compiler warnings in ppc code, which can lead to build failure, if
+> CONFIG_PPC_WERROR is set (default).
+>
+>  arch/powerpc/include/asm/pgtable-ppc64.h |   13 ++++++-------
+>  arch/powerpc/kernel/Makefile             |    2 +-
+>  2 files changed, 7 insertions(+), 8 deletions(-)
+forgot to cc the maintainers
 
-Do we need atomic_dec_not_zero() et.al. in every arch header - is there no
-generic header which it could be added to?
+-- 
+Stratos Psomadakis
+<psomas@ece.ntua.gr>
