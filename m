@@ -1,9 +1,9 @@
 Return-Path: <anton@samba.org>
-Date: Mon, 9 May 2011 09:18:27 +1000
+Date: Mon, 9 May 2011 09:19:30 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/pseries: Enable Emulex and Qlogic 10Gbit cards
-Message-ID: <20110509091827.552686c9@kryten>
+Subject: [PATCH] powerpc/pseries: Enable iSCSI support for a number of cards
+Message-ID: <20110509091930.2e784e54@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,21 +17,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Enable the Qlogic and Emulex 10Gbit adapters.
+Enable iSCSI support for a number of cards. We had the base
+networking devices enabled but forgot to enable iSCSI.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-powerpc/arch/powerpc/configs/pseries_defconfig
 ===================================================================
---- linux-powerpc.orig/arch/powerpc/configs/pseries_defconfig	2011-05-09 09:14:34.302937721 +1000
-+++ linux-powerpc/arch/powerpc/configs/pseries_defconfig	2011-05-09 09:14:40.773045437 +1000
-@@ -197,6 +197,8 @@ CONFIG_S2IO=m
- CONFIG_MYRI10GE=m
- CONFIG_NETXEN_NIC=m
- CONFIG_MLX4_EN=m
-+CONFIG_QLGE=m
-+CONFIG_BE2NET=m
- CONFIG_PPP=m
- CONFIG_PPP_ASYNC=m
- CONFIG_PPP_SYNC_TTY=m
+--- linux-powerpc.orig/arch/powerpc/configs/pseries_defconfig	2011-05-09 09:14:40.773045437 +1000
++++ linux-powerpc/arch/powerpc/configs/pseries_defconfig	2011-05-09 09:16:47.445154427 +1000
+@@ -146,12 +146,18 @@ CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_CONSTANTS=y
+ CONFIG_SCSI_FC_ATTRS=y
+ CONFIG_SCSI_SAS_ATTRS=m
++CONFIG_SCSI_CXGB3_ISCSI=m
++CONFIG_SCSI_CXGB4_ISCSI=m
++CONFIG_SCSI_BNX2_ISCSI=m
++CONFIG_SCSI_BNX2_ISCSI=m
++CONFIG_BE2ISCSI=m
+ CONFIG_SCSI_IBMVSCSI=y
+ CONFIG_SCSI_IBMVFC=m
+ CONFIG_SCSI_SYM53C8XX_2=y
+ CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
+ CONFIG_SCSI_IPR=y
+ CONFIG_SCSI_QLA_FC=m
++CONFIG_SCSI_QLA_ISCSI=m
+ CONFIG_SCSI_LPFC=m
+ CONFIG_ATA=y
+ # CONFIG_ATA_SFF is not set
