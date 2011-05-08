@@ -1,24 +1,31 @@
-Return-Path: <B11780@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D059E1007E9
+Return-Path: <sven@narfation.org>
+Received: from v3-1039.vlinux.de (narfation.org [79.140.41.39])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 844CDB7141
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 May 2011 02:21:23 +1000 (EST)
-Subject: Re: [PATCH] PCI: portdrv: fix irq initialization on FSL pcie host
-	controller
-MIME-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1303977671.1642.742.camel@xulei-desktop>
-Date: Sat, 7 May 2011 11:21:16 -0500
-Message-ID: <E8D326F6-7E52-4A20-87B3-6C4CC34406C4@freescale.com>
-References: <1303458219-31915-1-git-send-email-B33228@freescale.com>
-	<1303977671.1642.742.camel@xulei-desktop>
-To: Xu Lei <B33228@freescale.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+	Sun,  8 May 2011 19:34:14 +1000 (EST)
+From: Sven Eckelmann <sven@narfation.org>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] atomic: add *_dec_not_zero
+Date: Sun, 8 May 2011 11:33:48 +0200
+References: <1304458235-28473-1-git-send-email-sven@narfation.org>
+	<20110508092403.GB27807@n2100.arm.linux.org.uk>
+In-Reply-To: <20110508092403.GB27807@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1677856.Ey88dTAy4V";
+	protocol="application/pgp-signature"; micalg=pgp-sha512
+Message-Id: <201105081133.50824.sven@narfation.org>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
+	linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>,
+	David Howells <dhowells@redhat.com>,
+	linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org, x86@kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--nextPart1677856.Ey88dTAy4V
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On Apr 28, 2011, at 3:01 AM, Xu Lei wrote:
+Russell King - ARM Linux wrote:
+[...]
+> Do we need atomic_dec_not_zero() et.al. in every arch header - is there no
+> generic header which it could be added to?
 
->=20
-> 	Any feedback on this patch? Thanks.
->=20
-> On Friday, 2011-04-22 at 15:43 +0800, Lei Xu wrote:
->> Root complex ports for Freescale PCIe host controller only receive
->> interrupts, so if there is no irq setting for RC, it should not =
-return
->> error, otherwise it may result the PCIe host controller is disabled.
->>=20
->> Signed-off-by: Lei Xu <B33228@freescale.com>
->> ---
->> drivers/pci/pcie/portdrv_core.c |    5 ++++-
->> 1 files changed, 4 insertions(+), 1 deletions(-)
->>=20
->> diff --git a/drivers/pci/pcie/portdrv_core.c =
-b/drivers/pci/pcie/portdrv_core.c
->> index 595654a..95e64c8 100644
->> --- a/drivers/pci/pcie/portdrv_core.c
->> +++ b/drivers/pci/pcie/portdrv_core.c
->> @@ -209,7 +209,10 @@ static int init_service_irqs(struct pci_dev =
-*dev, int *irqs, int mask)
->> 		irqs[i] =3D irq;
->> 	irqs[PCIE_PORT_SERVICE_VC_SHIFT] =3D -1;
->>=20
->> -	if (irq < 0)
->> +	/* Root complex ports for Freescale PCIe host controller only
->> +	 * receive interrupts, so if there is no irq setting for RC,
->> +	 * it should not return error. */
->> +	if ((irq < 0) && (dev->pcie_type !=3D PCI_EXP_TYPE_ROOT_PORT))
->> 		return -ENODEV;
->> 	return 0;
->> }
->=20
-> --=20
-> Regards
->=20
-> Lei
->=20
+Mike Frysinger already tried to answer it in=20
+<BANLkTimctgbto3dsnJ3d3r7NggS0KF9_Sw@mail.gmail.com>:
+> that's what asm-generic is for.  if the arch isnt using it, it's
+> either because the arch needs to convert to it, or they're using SMP
+> and asm-generic doesnt yet support that for atomic.h.
+>
+> for example, the Blackfin port only needed updating for the SMP case.
+> in the non-SMP case, we're getting the def from asm-generic/atomic.h.
+> -mike
 
-Reviewing this in more detail this is not the right solution.  We should =
-have an dev->irq set and need to fix that.
+=46eel free to change that but I just followed the style used by all other=
+=20
+macros and will not redesign the complete atomic*.h idea.
 
-The means to accomplish that is by fixing up the device tree to properly =
-get the interrupt assigned to the root complex node.
+thanks,
+	Sven
 
-- k=
+--nextPart1677856.Ey88dTAy4V
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABCgAGBQJNxmN9AAoJEF2HCgfBJntGmosP/0BjDtvk4ZKsL9hhonb8gZ4t
+/2/hY6jeQ3Mg30Z1v6+PIZDun17qML5ODBcTB72oJs1LujHyEgNKKtfQ9stYgAm3
+79B2UAH5LYVzZzd2j5nMWemGYChUXl5v5N/hOFOp04ImC7DU27fwadcuO+q47vnS
+kKvrnccIFc0qUpnGwZ+1rqHIp9Rs3AQHjvyxaUDIuMs8ZWurYkS+e5SMini7qUpe
+QvsTQVZhyuNtemvZUzrWUcftMVPNXxTHwwV5aALBswX4SPreBJWX33b8j+NIHeFU
+hmwZ7/RzuDCyIzUFmeeXj/f0RCbWv5XkhQmNaCGFBdatgLRd2fnDOXzkuOeUPtBi
+SX2jkxoXSMGwEtl2mzOW8JhvcGrG1+oMw9j/BqdQyaQe0rRnuFg962eRUs1RvibI
+bej/DRfMexoXhlw7EIN9JGoniuMAW88Ws4RB79HuPURy6Ax1cr87ELH/Oj5ZvlOc
++whWNM9JuDFamC9E4zaenxqf0jd3mlvCAMaljh66J7qECJF9xWd5eJyet7CE7/hp
+kE6iUT6Zf93Na9NImeTTeGK16LW1KqLkP8QyI+HUGO7A5wj/QvubGPBO0deHsp8G
+YkQBcQwZMSft69hsW2Ke1btpJv/ScGxeVuplmMNrlDa1hAqjm+aHo6+xxTS5Mp72
+p5S21fQTeEf4fOJsQubR
+=ICmm
+-----END PGP SIGNATURE-----
+
+--nextPart1677856.Ey88dTAy4V--
