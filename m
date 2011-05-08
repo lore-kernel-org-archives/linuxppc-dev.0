@@ -1,21 +1,21 @@
-Return-Path: <sven@narfation.org>
-Received: from v3-1039.vlinux.de (narfation.org [79.140.41.39])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[78.32.30.218])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 844CDB7141
+	by ozlabs.org (Postfix) with ESMTPS id 8CCDBB7154
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 May 2011 19:34:14 +1000 (EST)
-From: Sven Eckelmann <sven@narfation.org>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+	Sun,  8 May 2011 19:43:42 +1000 (EST)
+Date: Sun, 8 May 2011 10:24:03 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Sven Eckelmann <sven@narfation.org>
 Subject: Re: [PATCH] atomic: add *_dec_not_zero
-Date: Sun, 8 May 2011 11:33:48 +0200
+Message-ID: <20110508092403.GB27807@n2100.arm.linux.org.uk>
 References: <1304458235-28473-1-git-send-email-sven@narfation.org>
-	<20110508092403.GB27807@n2100.arm.linux.org.uk>
-In-Reply-To: <20110508092403.GB27807@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1677856.Ey88dTAy4V";
-	protocol="application/pgp-signature"; micalg=pgp-sha512
-Message-Id: <201105081133.50824.sven@narfation.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1304458235-28473-1-git-send-email-sven@narfation.org>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
 	linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
 	linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
@@ -35,53 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart1677856.Ey88dTAy4V
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Tue, May 03, 2011 at 11:30:35PM +0200, Sven Eckelmann wrote:
+> Introduce an *_dec_not_zero operation.  Make this a special case of
+> *_add_unless because batman-adv uses atomic_dec_not_zero in different
+> places like re-broadcast queue or aggregation queue management. There
+> are other non-final patches which may also want to use this macro.
+...
+> diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
+> index 7e79503..a005265 100644
+> --- a/arch/arm/include/asm/atomic.h
+> +++ b/arch/arm/include/asm/atomic.h
+> @@ -218,6 +218,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+>  	return c != u;
+>  }
+>  #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+> +#define atomic_dec_not_zero(v) atomic_add_unless((v), -1, 0)
+>  
+>  #define atomic_inc(v)		atomic_add(1, v)
+>  #define atomic_dec(v)		atomic_sub(1, v)
+> @@ -459,6 +460,7 @@ static inline int atomic64_add_unless(atomic64_t *v, u64 a, u64 u)
+>  #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
+>  #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+>  #define atomic64_inc_not_zero(v)	atomic64_add_unless((v), 1LL, 0LL)
+> +#define atomic64_dec_not_zero(v)	atomic64_add_unless((v), -1LL, 0LL)
+>  
+>  #else /* !CONFIG_GENERIC_ATOMIC64 */
+>  #include <asm-generic/atomic64.h>
 
-Russell King - ARM Linux wrote:
-[...]
-> Do we need atomic_dec_not_zero() et.al. in every arch header - is there no
-> generic header which it could be added to?
-
-Mike Frysinger already tried to answer it in=20
-<BANLkTimctgbto3dsnJ3d3r7NggS0KF9_Sw@mail.gmail.com>:
-> that's what asm-generic is for.  if the arch isnt using it, it's
-> either because the arch needs to convert to it, or they're using SMP
-> and asm-generic doesnt yet support that for atomic.h.
->
-> for example, the Blackfin port only needed updating for the SMP case.
-> in the non-SMP case, we're getting the def from asm-generic/atomic.h.
-> -mike
-
-=46eel free to change that but I just followed the style used by all other=
-=20
-macros and will not redesign the complete atomic*.h idea.
-
-thanks,
-	Sven
-
---nextPart1677856.Ey88dTAy4V
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABCgAGBQJNxmN9AAoJEF2HCgfBJntGmosP/0BjDtvk4ZKsL9hhonb8gZ4t
-/2/hY6jeQ3Mg30Z1v6+PIZDun17qML5ODBcTB72oJs1LujHyEgNKKtfQ9stYgAm3
-79B2UAH5LYVzZzd2j5nMWemGYChUXl5v5N/hOFOp04ImC7DU27fwadcuO+q47vnS
-kKvrnccIFc0qUpnGwZ+1rqHIp9Rs3AQHjvyxaUDIuMs8ZWurYkS+e5SMini7qUpe
-QvsTQVZhyuNtemvZUzrWUcftMVPNXxTHwwV5aALBswX4SPreBJWX33b8j+NIHeFU
-hmwZ7/RzuDCyIzUFmeeXj/f0RCbWv5XkhQmNaCGFBdatgLRd2fnDOXzkuOeUPtBi
-SX2jkxoXSMGwEtl2mzOW8JhvcGrG1+oMw9j/BqdQyaQe0rRnuFg962eRUs1RvibI
-bej/DRfMexoXhlw7EIN9JGoniuMAW88Ws4RB79HuPURy6Ax1cr87ELH/Oj5ZvlOc
-+whWNM9JuDFamC9E4zaenxqf0jd3mlvCAMaljh66J7qECJF9xWd5eJyet7CE7/hp
-kE6iUT6Zf93Na9NImeTTeGK16LW1KqLkP8QyI+HUGO7A5wj/QvubGPBO0deHsp8G
-YkQBcQwZMSft69hsW2Ke1btpJv/ScGxeVuplmMNrlDa1hAqjm+aHo6+xxTS5Mp72
-p5S21fQTeEf4fOJsQubR
-=ICmm
------END PGP SIGNATURE-----
-
---nextPart1677856.Ey88dTAy4V--
+Do we need atomic_dec_not_zero() et.al. in every arch header - is there no
+generic header which it could be added to?
