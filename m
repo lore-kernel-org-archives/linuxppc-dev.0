@@ -1,20 +1,41 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
-	[213.199.154.207])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5B63CB6F11
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9C690B72DE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 May 2011 07:26:10 +1000 (EST)
-Date: Mon, 9 May 2011 16:26:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/e5500: set non-base IVORs
-Message-ID: <20110509212600.GA29190@schlenkerla.am.freescale.net>
+	Tue, 10 May 2011 07:26:37 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p49LF9Hj011653
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2011 15:15:09 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	p49LQQ6P150166
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2011 15:26:26 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p49FQO6G019071
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2011 09:26:25 -0600
+Message-ID: <4DC85BFE.7060900@linux.vnet.ibm.com>
+Date: Mon, 09 May 2011 16:26:22 -0500
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [BUG] rebuild_sched_domains considered dangerous
+References: <1299639487.22236.256.camel@pasglop>
+	<1299665998.2308.2753.camel@twins>
+	<1299675674.2308.2924.camel@twins>
+	<1299766211.2308.4468.camel@twins>
+	<1303294056.8345.122.camel@twins>
+	<1303336869.2513.26.camel@pasglop>
+In-Reply-To: <1303336869.2513.26.camel@pasglop>
+Content-Type: multipart/alternative;
+	boundary="------------050809090000080802010600"
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,131 +45,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Without this, we attempt to use doorbells for IPIs, and end up
-branching to some bad address.  Plus, even for the exceptions
-we don't implement, it's good to handle it and get a message out.
+This is a multi-part message in MIME format.
+--------------050809090000080802010600
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/include/asm/reg_booke.h      |    4 ++
- arch/powerpc/kernel/cpu_setup_fsl_booke.S |    3 ++
- arch/powerpc/kernel/exceptions-64e.S      |   47 +++++++++++++++++++++++++++++
- 3 files changed, 54 insertions(+), 0 deletions(-)
+On 04/20/2011 05:01 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2011-04-20 at 12:07 +0200, Peter Zijlstra wrote:
+>> On Thu, 2011-03-10 at 15:10 +0100, Peter Zijlstra wrote:
+>>>
+>>> Also, still waiting to hear from the Power7 folks on how often
+>>> they think to rebuild the topology and how they think that makes
+>>> sense, afaict Power7 does have actual NUMA nodes unlike s390, so
+>>> I'm still not seeing how that's going to work properly at all.
+>>
+>> Jesse care to answer? I hear from Ben you're responsible for that
+>> mess.
+>
+> "responsible for this mess" is a big word :-)
+>
+> But he's the one to last play with that code ... Jesse ?
+>
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 817bd1a..0f0ad9f 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -83,6 +83,10 @@
- #define SPRN_IVOR13	0x19D	/* Interrupt Vector Offset Register 13 */
- #define SPRN_IVOR14	0x19E	/* Interrupt Vector Offset Register 14 */
- #define SPRN_IVOR15	0x19F	/* Interrupt Vector Offset Register 15 */
-+#define SPRN_IVOR38	0x1B0	/* Interrupt Vector Offset Register 38 */
-+#define SPRN_IVOR39	0x1B1	/* Interrupt Vector Offset Register 39 */
-+#define SPRN_IVOR40	0x1B2	/* Interrupt Vector Offset Register 40 */
-+#define SPRN_IVOR41	0x1B3	/* Interrupt Vector Offset Register 41 */
- #define SPRN_SPEFSCR	0x200	/* SPE & Embedded FP Status & Control */
- #define SPRN_BBEAR	0x201	/* Branch Buffer Entry Address Register */
- #define SPRN_BBTAR	0x202	/* Branch Buffer Target Address Register */
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index 9136111..8053db0 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -88,6 +88,9 @@ _GLOBAL(__setup_cpu_e5500)
- 	bl	__e500_dcache_setup
- #ifdef CONFIG_PPC_BOOK3E_64
- 	bl	.__setup_base_ivors
-+	bl	.setup_perfmon_ivor
-+	bl	.setup_doorbell_ivors
-+	bl	.setup_ehv_ivors
- #else
- 	bl	__setup_e500mc_ivors
- #endif
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 4d0abb4..69de473 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -272,8 +272,13 @@ interrupt_base_book3e:					/* fake trap */
- 	EXCEPTION_STUB(0x1a0, watchdog)			/* 0x09f0 */
- 	EXCEPTION_STUB(0x1c0, data_tlb_miss)
- 	EXCEPTION_STUB(0x1e0, instruction_tlb_miss)
-+	EXCEPTION_STUB(0x260, perfmon)
- 	EXCEPTION_STUB(0x280, doorbell)
- 	EXCEPTION_STUB(0x2a0, doorbell_crit)
-+	EXCEPTION_STUB(0x2c0, guest_doorbell)
-+	EXCEPTION_STUB(0x2e0, guest_doorbell_crit)
-+	EXCEPTION_STUB(0x300, hypercall)
-+	EXCEPTION_STUB(0x320, ehpriv)
- 
- 	.globl interrupt_end_book3e
- interrupt_end_book3e:
-@@ -455,6 +460,8 @@ interrupt_end_book3e:
- kernel_dbg_exc:
- 	b	.	/* NYI */
- 
-+	MASKABLE_EXCEPTION(0x260, perfmon, .performance_monitor_exception, ACK_NONE)
-+
- /* Doorbell interrupt */
- 	MASKABLE_EXCEPTION(0x2070, doorbell, .doorbell_exception, ACK_NONE)
- 
-@@ -469,6 +476,11 @@ kernel_dbg_exc:
- //	b	ret_from_crit_except
- 	b	.
- 
-+	MASKABLE_EXCEPTION(0x2c0, guest_doorbell, .unknown_exception, ACK_NONE)
-+	MASKABLE_EXCEPTION(0x2e0, guest_doorbell_crit, .unknown_exception, ACK_NONE)
-+	MASKABLE_EXCEPTION(0x310, hypercall, .unknown_exception, ACK_NONE)
-+	MASKABLE_EXCEPTION(0x320, ehpriv, .unknown_exception, ACK_NONE)
-+
- 
- /*
-  * An interrupt came in while soft-disabled; clear EE in SRR1,
-@@ -588,7 +600,12 @@ fast_exception_return:
- BAD_STACK_TRAMPOLINE(0x000)
- BAD_STACK_TRAMPOLINE(0x100)
- BAD_STACK_TRAMPOLINE(0x200)
-+BAD_STACK_TRAMPOLINE(0x260)
-+BAD_STACK_TRAMPOLINE(0x2c0)
-+BAD_STACK_TRAMPOLINE(0x2e0)
- BAD_STACK_TRAMPOLINE(0x300)
-+BAD_STACK_TRAMPOLINE(0x310)
-+BAD_STACK_TRAMPOLINE(0x320)
- BAD_STACK_TRAMPOLINE(0x400)
- BAD_STACK_TRAMPOLINE(0x500)
- BAD_STACK_TRAMPOLINE(0x600)
-@@ -1124,3 +1141,33 @@ _GLOBAL(__setup_base_ivors)
- 	sync
- 
- 	blr
-+
-+_GLOBAL(setup_perfmon_ivor)
-+	SET_IVOR(35, 0x260) /* Performance Monitor */
-+	blr
-+
-+_GLOBAL(setup_doorbell_ivors)
-+	SET_IVOR(36, 0x280) /* Processor Doorbell */
-+	SET_IVOR(37, 0x2a0) /* Processor Doorbell Crit */
-+
-+	/* Check MMUCFG[LPIDSIZE] to determine if we have category E.HV */
-+	mfspr	r10,SPRN_MMUCFG
-+	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
-+	beqlr
-+
-+	SET_IVOR(38, 0x2c0) /* Guest Processor Doorbell */
-+	SET_IVOR(39, 0x2e0) /* Guest Processor Doorbell Crit/MC */
-+	blr
-+
-+_GLOBAL(setup_ehv_ivors)
-+	/*
-+	 * We may be running as a guest and lack E.HV even on a chip
-+	 * that normally has it.
-+	 */
-+	mfspr	r10,SPRN_MMUCFG
-+	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
-+	beqlr
-+
-+	SET_IVOR(40, 0x300) /* Embedded Hypervisor System Call */
-+	SET_IVOR(41, 0x320) /* Embedded Hypervisor Privilege */
-+	blr
--- 
-1.7.4.1
+Hi Peter!
+
+According the the Power firmware folks, updating the home node of a virtual cpu happens rather infrequently. The VPHN code currently checks for topology updates every 60 seconds, but we can poll less frequently if it helps. I chose 60 second intervals simply because that's how often they check the topology on s390. ;-)
+
+As for updating the memory topology, there are cases where changing the home node of a virtual cpu doesn't affect the memory topology. If it does, there is a separate notification system for memory topology updates that is independent from the cpu updates. I plan to start working on a patch set to enable memory topology updates in the kernel in the coming weeks, but I wanted to get the cpu patches out on the list so we could start having these debates. :)
+
+Sincerely,
+
+Jesse Larrew
+Software Engineer, Linux on Power Kernel Team
+IBM Linux Technology Center
+Phone: (512) 973-2052 (T/L: 363-2052)
+jlarrew@linux.vnet.ibm.com
+
+
+--------------050809090000080802010600
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <title></title>
+  </head>
+  <body bgcolor="#ffffff" text="#000000">
+    On 04/20/2011 05:01 PM, Benjamin Herrenschmidt wrote:<br>
+    <span style="white-space: pre;">&gt; On Wed, 2011-04-20 at 12:07
+      +0200, Peter Zijlstra wrote:<br>
+      &gt;&gt; On Thu, 2011-03-10 at 15:10 +0100, Peter Zijlstra wrote:<br>
+      &gt;&gt;&gt; <br>
+      &gt;&gt;&gt; Also, still waiting to hear from the Power7 folks on
+      how often<br>
+      &gt;&gt;&gt; they think to rebuild the topology and how they think
+      that makes<br>
+      &gt;&gt;&gt; sense, afaict Power7 does have actual NUMA nodes
+      unlike s390, so<br>
+      &gt;&gt;&gt; I'm still not seeing how that's going to work
+      properly at all.<br>
+      &gt;&gt; <br>
+      &gt;&gt; Jesse care to answer? I hear from Ben you're responsible
+      for that<br>
+      &gt;&gt; mess.<br>
+      &gt; <br>
+      &gt; "responsible for this mess" is a big word :-)<br>
+      &gt; <br>
+      &gt; But he's the one to last play with that code ... Jesse ?<br>
+      &gt; <br>
+    </span><br>
+    Hi Peter!<br>
+    <br>
+    According the the Power firmware folks, updating the home node of a
+    virtual cpu happens rather infrequently. The VPHN code currently
+    checks for topology updates every 60 seconds, but we can poll less
+    frequently if it helps. I chose 60 second intervals simply because
+    that's how often they check the topology on s390. ;-)<br>
+    <br>
+    As for updating the memory topology, there are cases where changing
+    the home node of a virtual cpu doesn't affect the memory topology.
+    If it does, there is a separate notification system for memory
+    topology updates that is independent from the cpu updates. I plan to
+    start working on a patch set to enable memory topology updates in
+    the kernel in the coming weeks, but I wanted to get the cpu patches
+    out on the list so we could start having these debates. :)<br>
+    <br>
+    Sincerely,<br>
+    <br>
+    Jesse Larrew<br>
+    Software Engineer, Linux on Power Kernel Team<br>
+    IBM Linux Technology Center<br>
+    Phone: (512) 973-2052 (T/L: 363-2052)<br>
+    <a class="moz-txt-link-abbreviated" href="mailto:jlarrew@linux.vnet.ibm.com">jlarrew@linux.vnet.ibm.com</a><br>
+    <br>
+  </body>
+</html>
+
+--------------050809090000080802010600--
