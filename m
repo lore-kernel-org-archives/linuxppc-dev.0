@@ -1,21 +1,24 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CBA7C10099F
+Return-Path: <B10812@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+	(ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E29671007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 May 2011 10:17:54 +1000 (EST)
-Subject: Patch "hw_breakpoints,
-	powerpc: Fix CONFIG_HAVE_HW_BREAKPOINT off-case in
-	ptrace_set_debugreg()" has been added to the 2.6.38-stable tree
-To: fweisbec@gmail.com, gregkh@suse.de, linuxppc-dev@lists.ozlabs.org,
-	mingo@elte.hu, prasad@linux.vnet.ibm.com
-From: <gregkh@suse.de>
-Date: Mon, 09 May 2011 17:10:40 -0700
-Message-ID: <13049862401464@kroah.org>
+	Tue, 10 May 2011 17:50:37 +1000 (EST)
+From: Aggrwal Poonam-B10812 <B10812@freescale.com>
+To: Hollis Blanchard <hollis_blanchard@mentor.com>, Prasanna Khanapur
+	<pskhanapur@googlemail.com>
+Subject: RE: Regarding P2020 in AMP mode
+Date: Tue, 10 May 2011 07:50:26 +0000
+Message-ID: <45903308677306428B6EE7E6FF5A5204120187@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <BANLkTik7tZSJ9-OPDbQEPJDHpZ13wMmo_Q@mail.gmail.com>
+	<4DC84D09.5020909@mentor.com>
+In-Reply-To: <4DC84D09.5020909@mentor.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Cc: stable@kernel.org, stable-commits@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,107 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-This is a note to let you know that I've just added the patch titled
-
-    hw_breakpoints, powerpc: Fix CONFIG_HAVE_HW_BREAKPOINT off-case in ptrace_set_debugreg()
-
-to the 2.6.38-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     hw_breakpoints-powerpc-fix-config_have_hw_breakpoint-off-case-in-ptrace_set_debugreg.patch
-and it can be found in the queue-2.6.38 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@kernel.org> know about it.
+The code looks to be correct in upstream,
+Can u mention the AMP boot steps you are using.
 
 
->From 925f83c085e1bb08435556c5b4844a60de002e31 Mon Sep 17 00:00:00 2001
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Fri, 6 May 2011 01:53:18 +0200
-Subject: hw_breakpoints, powerpc: Fix CONFIG_HAVE_HW_BREAKPOINT off-case in ptrace_set_debugreg()
+5.5.2.4 Test Procedure
+1. Power on the board
+2. Follow the command below at U-boot prompt=20
+=3D> setenv <serverip>
+=3D> setenv <ipaddr>
+=3D> setenv ethact eTSEC2
+=3D> setenv bootargs root=3D/dev/ram rw console=3DttyS0,115200
+3. Bring up core1's kernel first:=20
+=3D> setenv bootm_low 0x10000000
+=3D> setenv bootm_size 0x8000000
+=3D> tftp 11000000 uImage.core1
+=3D> tftp 12000000 rootfs_min.ext2.gz.uboot
+=3D> tftp 10c00000 p1020rdb_camp_core1.dtb
+=3D> interrupts off=20
+=20
+=3D> bootm start 11000000 12000000 10c00000
+=3D> bootm loados
+=3D> bootm ramdisk
+=3D> bootm fdt
+=3D> fdt boardsetup
+=3D> fdt chosen $initrd_start $initrd_end
+=3D> bootm prep
+=3D> cpu 1 release $bootm_low - $fdtaddr -
 
-From: Frederic Weisbecker <fweisbec@gmail.com>
-
-commit 925f83c085e1bb08435556c5b4844a60de002e31 upstream.
-
-We make use of ptrace_get_breakpoints() / ptrace_put_breakpoints() to
-protect ptrace_set_debugreg() even if CONFIG_HAVE_HW_BREAKPOINT if off.
-However in this case, these APIs are not implemented.
-
-To fix this, push the protection down inside the relevant ifdef.
-Best would be to export the code inside
-CONFIG_HAVE_HW_BREAKPOINT into a standalone function to cleanup
-the ifdefury there and call the breakpoint ref API inside. But
-as it is more invasive, this should be rather made in an -rc1.
-
-Fixes this build error:
-
-  arch/powerpc/kernel/ptrace.c:1594: error: implicit declaration of function 'ptrace_get_breakpoints' make[2]: ***
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LPPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-Link: http://lkml.kernel.org/r/1304639598-4707-1-git-send-email-fweisbec@gmail.com
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/powerpc/kernel/ptrace.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -924,12 +924,16 @@ int ptrace_set_debugreg(struct task_stru
- 	if (data && !(data & DABR_TRANSLATION))
- 		return -EIO;
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	if (ptrace_get_breakpoints(task) < 0)
-+		return -ESRCH;
-+
- 	bp = thread->ptrace_bps[0];
- 	if ((!data) || !(data & (DABR_DATA_WRITE | DABR_DATA_READ))) {
- 		if (bp) {
- 			unregister_hw_breakpoint(bp);
- 			thread->ptrace_bps[0] = NULL;
- 		}
-+		ptrace_put_breakpoints(task);
- 		return 0;
- 	}
- 	if (bp) {
-@@ -939,9 +943,12 @@ int ptrace_set_debugreg(struct task_stru
- 					(DABR_DATA_WRITE | DABR_DATA_READ),
- 							&attr.bp_type);
- 		ret =  modify_user_hw_breakpoint(bp, &attr);
--		if (ret)
-+		if (ret) {
-+			ptrace_put_breakpoints(task);
- 			return ret;
-+		}
- 		thread->ptrace_bps[0] = bp;
-+		ptrace_put_breakpoints(task);
- 		thread->dabr = data;
- 		return 0;
- 	}
-@@ -956,9 +963,12 @@ int ptrace_set_debugreg(struct task_stru
- 							ptrace_triggered, task);
- 	if (IS_ERR(bp)) {
- 		thread->ptrace_bps[0] = NULL;
-+		ptrace_put_breakpoints(task);
- 		return PTR_ERR(bp);
- 	}
- 
-+	ptrace_put_breakpoints(task);
-+
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- 
- 	/* Move contents to the DABR register */
+As soon as, when you run the cpu 1 release $bootm_low - $fdtaddr - command,=
+ Core-1 starts booting=20
+and boot-up log can be observed on the UART#2 console.
+4. Bring up core0's kernel(on the same u-boot console -UART#1):
+=3D> setenv bootm_low 0x0
+=3D> setenv bootm_size 0x10000000
+=3D> tftp 1000000 uImage.core0
+=3D> tftp 2000000 rootfs_min.ext2.gz.uboot
+=3D> tftp c00000 p1020rdb_camp_core0.dtb
+=3D> bootm 1000000 2000000 c00000
 
 
-Patches currently in stable-queue which might be from fweisbec@gmail.com are
+The main catch  here is to use eTSEC2 as active port at u-boot. I think I r=
+emember we also  faced similar issue.
+Regards
+Poonam
 
-queue-2.6.38/ptrace-prepare-to-fix-racy-accesses-on-task-breakpoints.patch
-queue-2.6.38/hw_breakpoints-powerpc-fix-config_have_hw_breakpoint-off-case-in-ptrace_set_debugreg.patch
-queue-2.6.38/x86-hw_breakpoints-fix-racy-access-to-ptrace-breakpoints.patch
+> -----Original Message-----
+> From: linuxppc-dev-bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.or=
+g
+> [mailto:linuxppc-dev-
+> bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+> Hollis Blanchard
+> Sent: Tuesday, May 10, 2011 1:53 AM
+> To: Prasanna Khanapur
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: Regarding P2020 in AMP mode
+>=20
+> On 05/07/2011 05:20 AM, Prasanna Khanapur wrote:
+> > Hi,
+> > I'm running P2020 in AMP mode, each core running its linux os.
+> > Ethernet 1(@25000) and Ethernet 2(@26000) assigned to Core0 are
+> > working fine.
+> > I'm facing problems with Ethernet interface(@24000) assigned to Core1,
+> > its not working.
+> >
+> > I'm using dts file which were added by :
+> > http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-September/075594.h
+> > tml
+> >
+> > Looks either there is some mistake in the dts file or my understanding
+> > is wrong.
+> >
+> > MDIO @24000 is defined in core0 dts file though the Ethernet is
+> > assigned to Core 1.
+> >
+> > DTS files :
+> > http://web.mornfall.net/repos/linux-2.6/git/arch/powerpc/boot/dts/p202
+> > 0rdb_camp_core0.dts
+> > http://web.mornfall.net/repos/linux-2.6/git/arch/powerpc/boot/dts/p202
+> > 0rdb_camp_core1.dts
+>=20
+> The fixed-link property in core1.dts indicates enet0 should use 1Gb link.
+> Is that device connected to a 1Gb network?
+>=20
+> --
+> Hollis Blanchard
+> Mentor Graphics, Embedded Systems Division
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
