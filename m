@@ -1,23 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 48370B6F65
+	by ozlabs.org (Postfix) with ESMTPS id 1E73DB6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 05:17:29 +1000 (EST)
-Received: by gwj17 with SMTP id 17so319975gwj.38
+	Thu, 12 May 2011 05:18:33 +1000 (EST)
+Received: by iym7 with SMTP id 7so697045iym.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 May 2011 12:17:25 -0700 (PDT)
+	Wed, 11 May 2011 12:18:31 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <e01cafe6352e8e4715788f959b747c1363459cee.1305092637.git.miltonm@bga.com>
+In-Reply-To: <2e97f048f0a39de47c9af61c1b53fb6fba6260d6.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
-	<e01cafe6352e8e4715788f959b747c1363459cee.1305092637.git.miltonm@bga.com>
+	<2e97f048f0a39de47c9af61c1b53fb6fba6260d6.1305092637.git.miltonm@bga.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 11 May 2011 21:17:04 +0200
-Message-ID: <BANLkTikoZvnOROzNKpvxjxud_-cWXL4Dnw@mail.gmail.com>
-Subject: Re: [PATCH 36/37] powerpc: remove virq_to_host
+Date: Wed, 11 May 2011 21:18:11 +0200
+Message-ID: <BANLkTi=03Te6kqs8G48FJr6zmQVaP3N2Vw@mail.gmail.com>
+Subject: Re: [PATCH 37/37] powerpc: make IRQ_NOREQUEST last to clear,
+	first to set
 To: Milton Miller <miltonm@bga.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
@@ -31,51 +32,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, May 11, 2011 at 7:30 AM, Milton Miller <miltonm@bga.com> wrote:
-> The only references to the irq_map[].host field are internal to
-> arch/powerpc/kernel/irq.c
+> When allocating irqs, wait to clear the IRQ_NOREQUEST flag until the
+> host map hook has been called.
+>
+> When freeing irqs, set the IRQ_NOREQUEST flag before calling the host
+> unmap hook.
+
+A description describing why this change is being made would be
+appreciated here.
+
+g.
+
 >
 > Signed-off-by: Milton Miller <miltonm@bga.com>
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
 > ---
-> ---
-> =A0arch/powerpc/include/asm/irq.h | =A0 =A01 -
-> =A0arch/powerpc/kernel/irq.c =A0 =A0 =A0| =A0 =A06 ------
-> =A02 files changed, 0 insertions(+), 7 deletions(-)
+> =A0arch/powerpc/kernel/irq.c | =A0 14 +++++++-------
+> =A01 files changed, 7 insertions(+), 7 deletions(-)
 >
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/ir=
-q.h
-> index a65d170..1bff591 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -129,7 +129,6 @@ struct irq_data;
-> =A0extern irq_hw_number_t irqd_to_hwirq(struct irq_data *d);
-> =A0extern irq_hw_number_t virq_to_hw(unsigned int virq);
-> =A0extern bool virq_is_host(unsigned int virq, struct irq_host *host);
-> -extern struct irq_host *virq_to_host(unsigned int virq);
->
-> =A0/**
-> =A0* irq_alloc_host - Allocate a new irq_host data structure
 > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 73cf290..4368b5e 100644
+> index 4368b5e..a24d37d 100644
 > --- a/arch/powerpc/kernel/irq.c
 > +++ b/arch/powerpc/kernel/irq.c
-> @@ -516,12 +516,6 @@ bool virq_is_host(unsigned int virq, struct irq_host=
- *host)
-> =A0}
-> =A0EXPORT_SYMBOL_GPL(virq_is_host);
+> @@ -586,14 +586,14 @@ struct irq_host *irq_alloc_host(struct device_node =
+*of_node,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0irq_map[i].host =3D host;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0smp_wmb();
 >
-> -struct irq_host *virq_to_host(unsigned int virq)
-> -{
-> - =A0 =A0 =A0 return irq_map[virq].host;
-> -}
-> -EXPORT_SYMBOL_GPL(virq_to_host);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Clear norequest flags */
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_clear_status_flags(i, I=
+RQ_NOREQUEST);
 > -
-> =A0static int default_irq_host_match(struct irq_host *h, struct device_no=
-de *np)
-> =A0{
-> =A0 =A0 =A0 =A0return h->of_node !=3D NULL && h->of_node =3D=3D np;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Legacy flags are left t=
+o default at this point,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * one can then use irq_cr=
+eate_mapping() to
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * explicitly change them
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ops->map(host, i, i);
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Clear norequest flags */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_clear_status_flags(i, I=
+RQ_NOREQUEST);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
+> =A0 =A0 =A0 =A0case IRQ_HOST_MAP_LINEAR:
+> @@ -664,8 +664,6 @@ static int irq_setup_virq(struct irq_host *host, unsi=
+gned int virq,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto error;
+> =A0 =A0 =A0 =A0}
+>
+> - =A0 =A0 =A0 irq_clear_status_flags(virq, IRQ_NOREQUEST);
+> -
+> =A0 =A0 =A0 =A0/* map it */
+> =A0 =A0 =A0 =A0smp_wmb();
+> =A0 =A0 =A0 =A0irq_map[virq].hwirq =3D hwirq;
+> @@ -676,6 +674,8 @@ static int irq_setup_virq(struct irq_host *host, unsi=
+gned int virq,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto errdesc;
+> =A0 =A0 =A0 =A0}
+>
+> + =A0 =A0 =A0 irq_clear_status_flags(virq, IRQ_NOREQUEST);
+> +
+> =A0 =A0 =A0 =A0return 0;
+>
+> =A0errdesc:
+> @@ -819,6 +819,8 @@ void irq_dispose_mapping(unsigned int virq)
+> =A0 =A0 =A0 =A0if (host->revmap_type =3D=3D IRQ_HOST_MAP_LEGACY)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
+>
+> + =A0 =A0 =A0 irq_set_status_flags(virq, IRQ_NOREQUEST);
+> +
+> =A0 =A0 =A0 =A0/* remove chip and handler */
+> =A0 =A0 =A0 =A0irq_set_chip_and_handler(virq, NULL, NULL);
+>
+> @@ -848,8 +850,6 @@ void irq_dispose_mapping(unsigned int virq)
+> =A0 =A0 =A0 =A0smp_mb();
+> =A0 =A0 =A0 =A0irq_map[virq].hwirq =3D host->inval_irq;
+>
+> - =A0 =A0 =A0 irq_set_status_flags(virq, IRQ_NOREQUEST);
+> -
+> =A0 =A0 =A0 =A0irq_free_descs(virq, 1);
+> =A0 =A0 =A0 =A0/* Free it */
+> =A0 =A0 =A0 =A0irq_free_virt(virq, 1);
 > --
 > 1.7.0.4
 >
