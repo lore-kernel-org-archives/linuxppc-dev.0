@@ -1,17 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 640F71009D2
+	by ozlabs.org (Postfix) with ESMTP id 63E901009D0
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 11 May 2011 17:42:40 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <bae1a50ee464fb9530bb5c922cb59d7e1f07833d.1305092637.git.miltonm@bga.com>
+Message-Id: <69f5978c647fad7a57b39de2a3c10f2f2bccb642.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:29:46 -0500
-Subject: [PATCH 21/37] powerpc: use bytes instead of bitops in smp ipi
-	multiplexing
+Date: Wed, 11 May 2011 00:29:53 -0500
+Subject: [PATCH 23/37] powerpc: radix trees are available before init_IRQ
+Cc: Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,109 +21,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since there are only 4 messages, we can replace the atomic bit set
-(which uses atomic load reserve and store conditional sequence) with
-a byte stores to seperate bytes.  We still have to perform a load
-reserve and store conditional sequence to avoid loosing messages on
-reception but we can do that with a single call to xchg.
+Since the generic irq code uses a radix tree for sparse interrupts,
+the initcall ordering has been changed to initialize radix trees before
+irqs.   We no longer need to defer creating revmap radix trees to the
+arch_initcall irq_late_init.
 
-The do {} while and __BIG_ENDIAN specific mask testing was chosen by
-looking at the generated asm code.  On gcc-4.4, the bit masking becomes
-a simple bit mask and test of the register returned from xchg without
-storing and loading the value to the stack like attempts with a union
-of bytes and an int (or worse, loading single bit constants from the
-constant pool into non-voliatle registers that had to be preseved on
-the stack).  The do {} while avoids an unconditional branch to the
-end of the loop to test the entry / repeat condition of a while loop
-and instead optimises for the expected single iteration of the loop.
-
-We have a full mb() at the beginning to cover ordering between send,
-ipi, and receive so we can use xchg_local and forgo the further
-acquire and release barriers of xchg.
+Also, the kmem caches are allocated so we don't need to use
+zalloc_maybe_bootmem.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-v4: cast int to char ptr in msg send instead of char[] to int* for xchg/test
-v3a: add resend to replace dorbell_check_self
-v3: settle on casting from char message[4] __aligned(4) to int ptr
-v2: try initialized messages
-	(ended up with globals for each check value, increased reg pressure)
-v1: initial version, check bytes though pointer to result of xchg
-	(resulted in store to stack then byte load / compare / branch)
----
- arch/powerpc/kernel/smp.c |   31 ++++++++++++++++++-------------
- 1 files changed, 18 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/irq.c |   78 ++------------------------------------------
+ 1 files changed, 4 insertions(+), 74 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index a28e945..8321b0a 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -180,7 +180,7 @@ int smp_request_message_ipi(int virq, int msg)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 826552c..f42e869 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -493,7 +493,6 @@ struct irq_map_entry {
  
- #ifdef CONFIG_PPC_SMP_MUXED_IPI
- struct cpu_messages {
--	unsigned long messages;		/* current messages bits */
-+	int messages;			/* current messages */
- 	unsigned long data;		/* data for cause ipi */
- };
- static DEFINE_PER_CPU_SHARED_ALIGNED(struct cpu_messages, ipi_message);
-@@ -195,9 +195,9 @@ void smp_muxed_ipi_set_data(int cpu, unsigned long data)
- void smp_muxed_ipi_message_pass(int cpu, int msg)
+ static LIST_HEAD(irq_hosts);
+ static DEFINE_RAW_SPINLOCK(irq_big_lock);
+-static unsigned int revmap_trees_allocated;
+ static DEFINE_MUTEX(revmap_trees_mutex);
+ static struct irq_map_entry irq_map[NR_IRQS];
+ static unsigned int irq_virq_count = NR_IRQS;
+@@ -537,7 +536,7 @@ struct irq_host *irq_alloc_host(struct device_node *of_node,
+ 	/* Allocate structure and revmap table if using linear mapping */
+ 	if (revmap_type == IRQ_HOST_MAP_LINEAR)
+ 		size += revmap_arg * sizeof(unsigned int);
+-	host = zalloc_maybe_bootmem(size, GFP_KERNEL);
++	host = kzalloc(size, GFP_KERNEL);
+ 	if (host == NULL)
+ 		return NULL;
+ 
+@@ -605,6 +604,9 @@ struct irq_host *irq_alloc_host(struct device_node *of_node,
+ 		smp_wmb();
+ 		host->revmap_data.linear.revmap = rmap;
+ 		break;
++	case IRQ_HOST_MAP_TREE:
++		INIT_RADIX_TREE(&host->revmap_data.tree, GFP_KERNEL);
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -839,13 +841,6 @@ void irq_dispose_mapping(unsigned int virq)
+ 			host->revmap_data.linear.revmap[hwirq] = NO_IRQ;
+ 		break;
+ 	case IRQ_HOST_MAP_TREE:
+-		/*
+-		 * Check if radix tree allocated yet, if not then nothing to
+-		 * remove.
+-		 */
+-		smp_rmb();
+-		if (revmap_trees_allocated < 1)
+-			break;
+ 		mutex_lock(&revmap_trees_mutex);
+ 		radix_tree_delete(&host->revmap_data.tree, hwirq);
+ 		mutex_unlock(&revmap_trees_mutex);
+@@ -906,14 +901,6 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
+ 	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
+ 
+ 	/*
+-	 * Check if the radix tree exists and has bee initialized.
+-	 * If not, we fallback to slow mode
+-	 */
+-	if (revmap_trees_allocated < 2)
+-		return irq_find_mapping(host, hwirq);
+-
+-	/* Now try to resolve */
+-	/*
+ 	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
+ 	 * as it's referencing an entry in the static irq_map table.
+ 	 */
+@@ -935,18 +922,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
+ void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
+ 			     irq_hw_number_t hwirq)
  {
- 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
--	unsigned long *tgt = &info->messages;
-+	char *message = (char *)&info->messages;
+-
+ 	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
  
--	set_bit(msg, tgt);
-+	message[msg] = 1;
- 	mb();
- 	smp_ops->cause_ipi(cpu, info->data);
+-	/*
+-	 * Check if the radix tree exists yet.
+-	 * If not, then the irq will be inserted into the tree when it gets
+-	 * initialized.
+-	 */
+-	smp_rmb();
+-	if (revmap_trees_allocated < 1)
+-		return;
+-
+ 	if (virq != NO_IRQ) {
+ 		mutex_lock(&revmap_trees_mutex);
+ 		radix_tree_insert(&host->revmap_data.tree, hwirq,
+@@ -1054,53 +1031,6 @@ int arch_early_irq_init(void)
+ 	return 0;
  }
-@@ -205,30 +205,35 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
- void smp_muxed_ipi_resend(void)
- {
- 	struct cpu_messages *info = &__get_cpu_var(ipi_message);
--	unsigned long *tgt = &info->messages;
  
--	if (*tgt)
-+	if (info->messages)
- 		smp_ops->cause_ipi(smp_processor_id(), info->data);
- }
- 
- irqreturn_t smp_ipi_demux(void)
- {
- 	struct cpu_messages *info = &__get_cpu_var(ipi_message);
--	unsigned long *tgt = &info->messages;
-+	unsigned int all;
- 
- 	mb();	/* order any irq clear */
--	while (*tgt) {
--		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION, tgt))
-+
-+	do {
-+		all = xchg_local(&info->messages, 0);
-+
-+#ifdef __BIG_ENDIAN
-+		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
- 			generic_smp_call_function_interrupt();
--		if (test_and_clear_bit(PPC_MSG_RESCHEDULE, tgt))
-+		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
- 			reschedule_action(0, NULL); /* upcoming sched hook */
--		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE, tgt))
-+		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
- 			generic_smp_call_function_single_interrupt();
--#if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
--		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK, tgt))
-+		if (all & (1 << (24 - 8 * PPC_MSG_DEBUGGER_BREAK)))
- 			debug_ipi_action(0, NULL);
-+#else
-+#error Unsupported ENDIAN
- #endif
+-/* We need to create the radix trees late */
+-static int irq_late_init(void)
+-{
+-	struct irq_host *h;
+-	unsigned int i;
+-
+-	/*
+-	 * No mutual exclusion with respect to accessors of the tree is needed
+-	 * here as the synchronization is done via the state variable
+-	 * revmap_trees_allocated.
+-	 */
+-	list_for_each_entry(h, &irq_hosts, link) {
+-		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+-			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_KERNEL);
 -	}
-+	} while (info->messages);
-+
- 	return IRQ_HANDLED;
- }
- #endif /* CONFIG_PPC_SMP_MUXED_IPI */
+-
+-	/*
+-	 * Make sure the radix trees inits are visible before setting
+-	 * the flag
+-	 */
+-	smp_wmb();
+-	revmap_trees_allocated = 1;
+-
+-	/*
+-	 * Insert the reverse mapping for those interrupts already present
+-	 * in irq_map[].
+-	 */
+-	mutex_lock(&revmap_trees_mutex);
+-	for (i = 0; i < irq_virq_count; i++) {
+-		if (irq_map[i].host &&
+-		    (irq_map[i].host->revmap_type == IRQ_HOST_MAP_TREE))
+-			radix_tree_insert(&irq_map[i].host->revmap_data.tree,
+-					  irq_map[i].hwirq, &irq_map[i]);
+-	}
+-	mutex_unlock(&revmap_trees_mutex);
+-
+-	/*
+-	 * Make sure the radix trees insertions are visible before setting
+-	 * the flag
+-	 */
+-	smp_wmb();
+-	revmap_trees_allocated = 2;
+-
+-	return 0;
+-}
+-arch_initcall(irq_late_init);
+-
+ #ifdef CONFIG_VIRQ_DEBUG
+ static int virq_debug_show(struct seq_file *m, void *private)
+ {
 -- 
 1.7.0.4
