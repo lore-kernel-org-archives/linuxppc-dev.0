@@ -1,14 +1,34 @@
 Return-Path: <nacc@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1ADD41008F4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 May 2011 08:25:26 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BMIDtm031792
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:18:13 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4BMPFiY132170
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:25:15 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4BGPFB1016888
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:25:15 -0600
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH 4/8] pseries/iommu: cleanup ddw naming
-Date: Wed, 11 May 2011 15:25:00 -0700
-Message-Id: <1305152704-4864-5-git-send-email-nacc@us.ibm.com>
+Subject: [PATCH 8/8] powerpc: tidy up dma_map_ops after adding new hook
+Date: Wed, 11 May 2011 15:25:04 -0700
+Message-Id: <1305152704-4864-9-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
 References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
 	Paul Mackerras <paulus@samba.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,169 +40,121 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Milton Miller <miltonm@bga.com>
 
-When using a property refering to the availibily of dynamic dma windows
-call it ddw_avail not ddr_avail.
-
-dupe_ddw_if_already_created does not dupilcate anything, it only finds
-and reuses the windows we already created, so rename it to
-find_existing_ddw.  Also, it does not need the pci device node, so
-remove that argument.
+The new get_required_mask hook name is longer than many of but not all
+of the prior ops.  Tidy the struct initializers to align the equal signs
+using the local whitespace.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/platforms/pseries/iommu.c |   42 ++++++++++++++-----------------
- 1 files changed, 19 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/dma-iommu.c |   14 +++++++-------
+ arch/powerpc/kernel/dma.c       |   16 ++++++++--------
+ arch/powerpc/kernel/ibmebus.c   |   14 +++++++-------
+ arch/powerpc/kernel/vio.c       |   14 +++++++-------
+ 4 files changed, 29 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index a48f126..01faab9 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -659,16 +659,16 @@ static void remove_ddw(struct device_node *np)
- {
- 	struct dynamic_dma_window_prop *dwp;
- 	struct property *win64;
--	const u32 *ddr_avail;
-+	const u32 *ddw_avail;
- 	u64 liobn;
- 	int len, ret;
- 
--	ddr_avail = of_get_property(np, "ibm,ddw-applicable", &len);
-+	ddw_avail = of_get_property(np, "ibm,ddw-applicable", &len);
- 	win64 = of_find_property(np, DIRECT64_PROPNAME, NULL);
- 	if (!win64)
- 		return;
- 
--	if (!ddr_avail || len < 3 * sizeof(u32) || win64->length < sizeof(*dwp))
-+	if (!ddw_avail || len < 3 * sizeof(u32) || win64->length < sizeof(*dwp))
- 		goto delprop;
- 
- 	dwp = win64->value;
-@@ -684,15 +684,15 @@ static void remove_ddw(struct device_node *np)
- 		pr_debug("%s successfully cleared tces in window.\n",
- 			 np->full_name);
- 
--	ret = rtas_call(ddr_avail[2], 1, 1, NULL, liobn);
-+	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
- 	if (ret)
- 		pr_warning("%s: failed to remove direct window: rtas returned "
- 			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
--			np->full_name, ret, ddr_avail[2], liobn);
-+			np->full_name, ret, ddw_avail[2], liobn);
- 	else
- 		pr_debug("%s: successfully removed direct window: rtas returned "
- 			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
--			np->full_name, ret, ddr_avail[2], liobn);
-+			np->full_name, ret, ddw_avail[2], liobn);
- 
- delprop:
- 	ret = prom_remove_property(np, win64);
-@@ -701,16 +701,12 @@ delprop:
- 			np->full_name, ret);
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index c1ad9db..6f04b9c 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -104,13 +104,13 @@ static u64 dma_iommu_get_required_mask(struct device *dev)
  }
  
--static u64 dupe_ddw_if_already_created(struct pci_dev *dev, struct device_node *pdn)
-+static u64 find_existing_ddw(struct device_node *pdn)
- {
--	struct device_node *dn;
--	struct pci_dn *pcidn;
- 	struct direct_window *window;
- 	const struct dynamic_dma_window_prop *direct64;
- 	u64 dma_addr = 0;
+ struct dma_map_ops dma_iommu_ops = {
+-	.alloc_coherent	= dma_iommu_alloc_coherent,
+-	.free_coherent	= dma_iommu_free_coherent,
+-	.map_sg		= dma_iommu_map_sg,
+-	.unmap_sg	= dma_iommu_unmap_sg,
+-	.dma_supported	= dma_iommu_dma_supported,
+-	.map_page	= dma_iommu_map_page,
+-	.unmap_page	= dma_iommu_unmap_page,
++	.alloc_coherent		= dma_iommu_alloc_coherent,
++	.free_coherent		= dma_iommu_free_coherent,
++	.map_sg			= dma_iommu_map_sg,
++	.unmap_sg		= dma_iommu_unmap_sg,
++	.dma_supported		= dma_iommu_dma_supported,
++	.map_page		= dma_iommu_map_page,
++	.unmap_page		= dma_iommu_unmap_page,
+ 	.get_required_mask	= dma_iommu_get_required_mask,
+ };
+ EXPORT_SYMBOL(dma_iommu_ops);
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index df142d1..f94df52 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -149,14 +149,14 @@ static inline void dma_direct_sync_single(struct device *dev,
+ #endif
  
--	dn = pci_device_to_OF_node(dev);
--	pcidn = PCI_DN(dn);
- 	spin_lock(&direct_window_list_lock);
- 	/* check if we already created a window and dupe that config if so */
- 	list_for_each_entry(window, &direct_window_list, list) {
-@@ -758,7 +754,7 @@ static int find_existing_ddw_windows(void)
+ struct dma_map_ops dma_direct_ops = {
+-	.alloc_coherent	= dma_direct_alloc_coherent,
+-	.free_coherent	= dma_direct_free_coherent,
+-	.map_sg		= dma_direct_map_sg,
+-	.unmap_sg	= dma_direct_unmap_sg,
+-	.dma_supported	= dma_direct_dma_supported,
+-	.map_page	= dma_direct_map_page,
+-	.unmap_page	= dma_direct_unmap_page,
+-	.get_required_mask	= dma_direct_get_required_mask,
++	.alloc_coherent			= dma_direct_alloc_coherent,
++	.free_coherent			= dma_direct_free_coherent,
++	.map_sg				= dma_direct_map_sg,
++	.unmap_sg			= dma_direct_unmap_sg,
++	.dma_supported			= dma_direct_dma_supported,
++	.map_page			= dma_direct_map_page,
++	.unmap_page			= dma_direct_unmap_page,
++	.get_required_mask		= dma_direct_get_required_mask,
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+ 	.sync_single_for_cpu 		= dma_direct_sync_single,
+ 	.sync_single_for_device 	= dma_direct_sync_single,
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 90ef2a4..73110fb 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -134,14 +134,14 @@ static u64 ibmebus_dma_get_required_mask(struct device *dev)
  }
- machine_arch_initcall(pseries, find_existing_ddw_windows);
  
--static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail,
-+static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
- 			struct ddw_query_response *query)
- {
- 	struct device_node *dn;
-@@ -779,15 +775,15 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail,
- 	if (pcidn->eeh_pe_config_addr)
- 		cfg_addr = pcidn->eeh_pe_config_addr;
- 	buid = pcidn->phb->buid;
--	ret = rtas_call(ddr_avail[0], 3, 5, (u32 *)query,
-+	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
- 		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
- 	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
--		" returned %d\n", ddr_avail[0], cfg_addr, BUID_HI(buid),
-+		" returned %d\n", ddw_avail[0], cfg_addr, BUID_HI(buid),
- 		BUID_LO(buid), ret);
- 	return ret;
+ static struct dma_map_ops ibmebus_dma_ops = {
+-	.alloc_coherent = ibmebus_alloc_coherent,
+-	.free_coherent  = ibmebus_free_coherent,
+-	.map_sg         = ibmebus_map_sg,
+-	.unmap_sg       = ibmebus_unmap_sg,
+-	.dma_supported  = ibmebus_dma_supported,
++	.alloc_coherent     = ibmebus_alloc_coherent,
++	.free_coherent      = ibmebus_free_coherent,
++	.map_sg             = ibmebus_map_sg,
++	.unmap_sg           = ibmebus_unmap_sg,
++	.dma_supported      = ibmebus_dma_supported,
+ 	.get_required_mask  = ibmebus_dma_get_required_mask,
+-	.map_page       = ibmebus_map_page,
+-	.unmap_page     = ibmebus_unmap_page,
++	.map_page           = ibmebus_map_page,
++	.unmap_page         = ibmebus_unmap_page,
+ };
+ 
+ static int ibmebus_match_path(struct device *dev, void *data)
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index c049325..34d291d 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -611,13 +611,13 @@ static u64 vio_dma_get_required_mask(struct device *dev)
  }
  
--static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail,
-+static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
- 			struct ddw_create_response *create, int page_shift,
- 			int window_shift)
- {
-@@ -812,12 +808,12 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddr_avail,
- 
- 	do {
- 		/* extra outputs are LIOBN and dma-addr (hi, lo) */
--		ret = rtas_call(ddr_avail[1], 5, 4, (u32 *)create, cfg_addr,
-+		ret = rtas_call(ddw_avail[1], 5, 4, (u32 *)create, cfg_addr,
- 				BUID_HI(buid), BUID_LO(buid), page_shift, window_shift);
- 	} while (rtas_busy_delay(ret));
- 	dev_info(&dev->dev,
- 		"ibm,create-pe-dma-window(%x) %x %x %x %x %x returned %d "
--		"(liobn = 0x%x starting addr = %x %x)\n", ddr_avail[1],
-+		"(liobn = 0x%x starting addr = %x %x)\n", ddw_avail[1],
- 		 cfg_addr, BUID_HI(buid), BUID_LO(buid), page_shift,
- 		 window_shift, ret, create->liobn, create->addr_hi, create->addr_lo);
- 
-@@ -843,14 +839,14 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	int page_shift;
- 	u64 dma_addr, max_addr;
- 	struct device_node *dn;
--	const u32 *uninitialized_var(ddr_avail);
-+	const u32 *uninitialized_var(ddw_avail);
- 	struct direct_window *window;
- 	struct property *win64;
- 	struct dynamic_dma_window_prop *ddwprop;
- 
- 	mutex_lock(&direct_window_init_mutex);
- 
--	dma_addr = dupe_ddw_if_already_created(dev, pdn);
-+	dma_addr = find_existing_ddw(pdn);
- 	if (dma_addr != 0)
- 		goto out_unlock;
- 
-@@ -862,8 +858,8 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	 * for the given node in that order.
- 	 * the property is actually in the parent, not the PE
- 	 */
--	ddr_avail = of_get_property(pdn, "ibm,ddw-applicable", &len);
--	if (!ddr_avail || len < 3 * sizeof(u32))
-+	ddw_avail = of_get_property(pdn, "ibm,ddw-applicable", &len);
-+	if (!ddw_avail || len < 3 * sizeof(u32))
- 		goto out_unlock;
- 
-        /*
-@@ -873,7 +869,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	 * of page sizes: supported and supported for migrate-dma.
- 	 */
- 	dn = pci_device_to_OF_node(dev);
--	ret = query_ddw(dev, ddr_avail, &query);
-+	ret = query_ddw(dev, ddw_avail, &query);
- 	if (ret != 0)
- 		goto out_unlock;
- 
-@@ -922,7 +918,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 		goto out_free_prop;
- 	}
- 
--	ret = create_ddw(dev, ddr_avail, &create, page_shift, len);
-+	ret = create_ddw(dev, ddw_avail, &create, page_shift, len);
- 	if (ret != 0)
- 		goto out_free_prop;
+ struct dma_map_ops vio_dma_mapping_ops = {
+-	.alloc_coherent = vio_dma_iommu_alloc_coherent,
+-	.free_coherent  = vio_dma_iommu_free_coherent,
+-	.map_sg         = vio_dma_iommu_map_sg,
+-	.unmap_sg       = vio_dma_iommu_unmap_sg,
+-	.map_page       = vio_dma_iommu_map_page,
+-	.unmap_page     = vio_dma_iommu_unmap_page,
+-	.dma_supported  = vio_dma_iommu_dma_supported,
++	.alloc_coherent    = vio_dma_iommu_alloc_coherent,
++	.free_coherent     = vio_dma_iommu_free_coherent,
++	.map_sg            = vio_dma_iommu_map_sg,
++	.unmap_sg          = vio_dma_iommu_unmap_sg,
++	.map_page          = vio_dma_iommu_map_page,
++	.unmap_page        = vio_dma_iommu_unmap_page,
++	.dma_supported     = vio_dma_iommu_dma_supported,
+ 	.get_required_mask = vio_dma_get_required_mask,
+ };
  
 -- 
 1.7.4.1
