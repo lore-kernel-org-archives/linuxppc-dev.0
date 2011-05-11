@@ -1,14 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 11 May 2011 20:44:07 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org
-Subject: [PATCH 09/13] powerpc: Set up LPCR for running guest partitions
-Message-ID: <20110511104407.GJ2837@brick.ozlabs.ibm.com>
-References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
+Return-Path: <pskhanapur@googlemail.com>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 923711007D9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 11 May 2011 21:23:53 +1000 (EST)
+Received: by qwf7 with SMTP id 7so208660qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 11 May 2011 04:23:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-Cc: Alexander Graf <agraf@suse.de>
+In-Reply-To: <45903308677306428B6EE7E6FF5A5204120187@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <BANLkTik7tZSJ9-OPDbQEPJDHpZ13wMmo_Q@mail.gmail.com>
+	<4DC84D09.5020909@mentor.com>
+	<45903308677306428B6EE7E6FF5A5204120187@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Wed, 11 May 2011 13:23:48 +0200
+Message-ID: <BANLkTimPgGjJXE+zJzumE=GcPeLEWK78mQ@mail.gmail.com>
+Subject: Re: Regarding P2020 in AMP mode
+From: Prasanna Khanapur <pskhanapur@googlemail.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/alternative; boundary=0015175d023879595004a2fe4ebd
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,81 +31,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In hypervisor mode, the LPCR controls several aspects of guest
-partitions, including virtual partition memory mode, and also controls
-whether the hypervisor decrementer interrupts are enabled.  This sets
-up LPCR at boot time so that guest partitions will use a virtual real
-memory area (VRMA) composed of 16MB large pages, and hypervisor
-decrementer interrupts are disabled.
+--0015175d023879595004a2fe4ebd
+Content-Type: text/plain; charset=ISO-8859-1
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/include/asm/reg.h         |    4 ++++
- arch/powerpc/kernel/cpu_setup_power7.S |   18 +++++++++++-------
- 2 files changed, 15 insertions(+), 7 deletions(-)
+I tried the suggestion of setting eTSEC2 as active port for the u-boot .
+Ethernet  of Core1 (connected to 1G) is working now.
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 05658b7..c07b7be 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -231,10 +231,12 @@
- #define   LPCR_VPM0	(1ul << (63-0))
- #define   LPCR_VPM1	(1ul << (63-1))
- #define   LPCR_ISL	(1ul << (63-2))
-+#define   LPCR_VC_SH	(63-2)
- #define   LPCR_DPFD_SH	(63-11)
- #define   LPCR_VRMA_L	(1ul << (63-12))
- #define   LPCR_VRMA_LP0	(1ul << (63-15))
- #define   LPCR_VRMA_LP1	(1ul << (63-16))
-+#define   LPCR_VRMASD_SH (63-16)
- #define   LPCR_RMLS    0x1C000000      /* impl dependent rmo limit sel */
- #define   LPCR_ILE     0x02000000      /* !HV irqs set MSR:LE */
- #define   LPCR_PECE	0x00007000	/* powersave exit cause enable */
-@@ -242,8 +244,10 @@
- #define     LPCR_PECE1	0x00002000	/* decrementer can cause exit */
- #define     LPCR_PECE2	0x00001000	/* machine check etc can cause exit */
- #define   LPCR_MER	0x00000800	/* Mediated External Exception */
-+#define   LPCR_LPES    0x0000000c
- #define   LPCR_LPES0   0x00000008      /* LPAR Env selector 0 */
- #define   LPCR_LPES1   0x00000004      /* LPAR Env selector 1 */
-+#define   LPCR_LPES_SH	2
- #define   LPCR_RMI     0x00000002      /* real mode is cache inhibit */
- #define   LPCR_HDICE   0x00000001      /* Hyp Decr enable (HV,PR,EE) */
- #define SPRN_LPID	0x13F	/* Logical Partition Identifier */
-diff --git a/arch/powerpc/kernel/cpu_setup_power7.S b/arch/powerpc/kernel/cpu_setup_power7.S
-index 4f9a93f..2ef6749 100644
---- a/arch/powerpc/kernel/cpu_setup_power7.S
-+++ b/arch/powerpc/kernel/cpu_setup_power7.S
-@@ -61,19 +61,23 @@ __init_LPCR:
- 	 *   LPES = 0b01 (HSRR0/1 used for 0x500)
- 	 *   PECE = 0b111
- 	 *   DPFD = 4
-+	 *   HDICE = 0
-+	 *   VC = 0b100 (VPM0=1, VPM1=0, ISL=0)
-+	 *   VRMASD = 0b10000 (L=1, LP=00)
- 	 *
- 	 * Other bits untouched for now
- 	 */
- 	mfspr	r3,SPRN_LPCR
--	ori	r3,r3,(LPCR_LPES0|LPCR_LPES1)
--	xori	r3,r3, LPCR_LPES0
-+	li	r5,1
-+	rldimi	r3,r5, LPCR_LPES_SH, 64-LPCR_LPES_SH-2
- 	ori	r3,r3,(LPCR_PECE0|LPCR_PECE1|LPCR_PECE2)
--	li	r5,7
--	sldi	r5,r5,LPCR_DPFD_SH
--	andc	r3,r3,r5
- 	li	r5,4
--	sldi	r5,r5,LPCR_DPFD_SH
--	or	r3,r3,r5
-+	rldimi	r3,r5, LPCR_DPFD_SH, 64-LPCR_DPFD_SH-3
-+	clrrdi	r3,r3,1		/* clear HDICE */
-+	li	r5,4
-+	rldimi	r3,r5, LPCR_VC_SH, 0
-+	li	r5,0x10
-+	rldimi	r3,r5, LPCR_VRMASD_SH, 64-LPCR_VRMASD_SH-5
- 	mtspr	SPRN_LPCR,r3
- 	isync
- 	blr
--- 
-1.7.4.4
+Thanks for the inputs , they really helped !
+
+Best Regards
+Prasanna Khanapur
+
+
+On Tue, May 10, 2011 at 9:50 AM, Aggrwal Poonam-B10812 <B10812@freescale.com
+> wrote:
+
+> The code looks to be correct in upstream,
+> Can u mention the AMP boot steps you are using.
+>
+>
+> 5.5.2.4 Test Procedure
+> 1. Power on the board
+> 2. Follow the command below at U-boot prompt
+> => setenv <serverip>
+> => setenv <ipaddr>
+> => setenv ethact eTSEC2
+> => setenv bootargs root=/dev/ram rw console=ttyS0,115200
+> 3. Bring up core1's kernel first:
+> => setenv bootm_low 0x10000000
+> => setenv bootm_size 0x8000000
+> => tftp 11000000 uImage.core1
+> => tftp 12000000 rootfs_min.ext2.gz.uboot
+> => tftp 10c00000 p1020rdb_camp_core1.dtb
+> => interrupts off
+>
+> => bootm start 11000000 12000000 10c00000
+> => bootm loados
+> => bootm ramdisk
+> => bootm fdt
+> => fdt boardsetup
+> => fdt chosen $initrd_start $initrd_end
+> => bootm prep
+> => cpu 1 release $bootm_low - $fdtaddr -
+>
+> As soon as, when you run the cpu 1 release $bootm_low - $fdtaddr - command,
+> Core-1 starts booting
+> and boot-up log can be observed on the UART#2 console.
+> 4. Bring up core0's kernel(on the same u-boot console -UART#1):
+> => setenv bootm_low 0x0
+> => setenv bootm_size 0x10000000
+> => tftp 1000000 uImage.core0
+> => tftp 2000000 rootfs_min.ext2.gz.uboot
+> => tftp c00000 p1020rdb_camp_core0.dtb
+> => bootm 1000000 2000000 c00000
+>
+>
+> The main catch  here is to use eTSEC2 as active port at u-boot. I think I
+> remember we also  faced similar issue.
+> Regards
+> Poonam
+>
+> > -----Original Message-----
+> > From: linuxppc-dev-bounces+poonam.aggrwal=freescale.com@lists.ozlabs.org
+> > [mailto:linuxppc-dev-
+> > bounces+poonam.aggrwal=freescale.com@lists.ozlabs.org] On Behalf Of
+> > Hollis Blanchard
+> > Sent: Tuesday, May 10, 2011 1:53 AM
+> > To: Prasanna Khanapur
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: Regarding P2020 in AMP mode
+> >
+> > On 05/07/2011 05:20 AM, Prasanna Khanapur wrote:
+> > > Hi,
+> > > I'm running P2020 in AMP mode, each core running its linux os.
+> > > Ethernet 1(@25000) and Ethernet 2(@26000) assigned to Core0 are
+> > > working fine.
+> > > I'm facing problems with Ethernet interface(@24000) assigned to Core1,
+> > > its not working.
+> > >
+> > > I'm using dts file which were added by :
+> > > http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-September/075594.h
+> > > tml
+> > >
+> > > Looks either there is some mistake in the dts file or my understanding
+> > > is wrong.
+> > >
+> > > MDIO @24000 is defined in core0 dts file though the Ethernet is
+> > > assigned to Core 1.
+> > >
+> > > DTS files :
+> > > http://web.mornfall.net/repos/linux-2.6/git/arch/powerpc/boot/dts/p202
+> > > 0rdb_camp_core0.dts
+> > > http://web.mornfall.net/repos/linux-2.6/git/arch/powerpc/boot/dts/p202
+> > > 0rdb_camp_core1.dts
+> >
+> > The fixed-link property in core1.dts indicates enet0 should use 1Gb link.
+> > Is that device connected to a 1Gb network?
+> >
+> > --
+> > Hollis Blanchard
+> > Mentor Graphics, Embedded Systems Division
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
+>
+
+--0015175d023879595004a2fe4ebd
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+I tried the suggestion of setting=A0eTSEC2=A0as active port for the u-boot =
+.<div><div>Ethernet =A0of Core1 (connected to 1G) is working now.</div><div=
+><br><div>Thanks for the inputs , they really=A0helped=A0!</div><div><br></=
+div><div>
+Best Regards</div><div>Prasanna Khanapur</div><div><br><br><div class=3D"gm=
+ail_quote">On Tue, May 10, 2011 at 9:50 AM, Aggrwal Poonam-B10812 <span dir=
+=3D"ltr">&lt;<a href=3D"mailto:B10812@freescale.com">B10812@freescale.com</=
+a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex;">The code looks to be correct in upstream,<b=
+r>
+Can u mention the AMP boot steps you are using.<br>
+<br>
+<br>
+5.5.2.4 Test Procedure<br>
+1. Power on the board<br>
+2. Follow the command below at U-boot prompt<br>
+=3D&gt; setenv &lt;serverip&gt;<br>
+=3D&gt; setenv &lt;ipaddr&gt;<br>
+=3D&gt; setenv ethact eTSEC2<br>
+=3D&gt; setenv bootargs root=3D/dev/ram rw console=3DttyS0,115200<br>
+3. Bring up core1&#39;s kernel first:<br>
+=3D&gt; setenv bootm_low 0x10000000<br>
+=3D&gt; setenv bootm_size 0x8000000<br>
+=3D&gt; tftp 11000000 uImage.core1<br>
+=3D&gt; tftp 12000000 rootfs_min.ext2.gz.uboot<br>
+=3D&gt; tftp 10c00000 p1020rdb_camp_core1.dtb<br>
+=3D&gt; interrupts off<br>
+<br>
+=3D&gt; bootm start 11000000 12000000 10c00000<br>
+=3D&gt; bootm loados<br>
+=3D&gt; bootm ramdisk<br>
+=3D&gt; bootm fdt<br>
+=3D&gt; fdt boardsetup<br>
+=3D&gt; fdt chosen $initrd_start $initrd_end<br>
+=3D&gt; bootm prep<br>
+=3D&gt; cpu 1 release $bootm_low - $fdtaddr -<br>
+<br>
+As soon as, when you run the cpu 1 release $bootm_low - $fdtaddr - command,=
+ Core-1 starts booting<br>
+and boot-up log can be observed on the UART#2 console.<br>
+4. Bring up core0&#39;s kernel(on the same u-boot console -UART#1):<br>
+=3D&gt; setenv bootm_low 0x0<br>
+=3D&gt; setenv bootm_size 0x10000000<br>
+=3D&gt; tftp 1000000 uImage.core0<br>
+=3D&gt; tftp 2000000 rootfs_min.ext2.gz.uboot<br>
+=3D&gt; tftp c00000 p1020rdb_camp_core0.dtb<br>
+=3D&gt; bootm 1000000 2000000 c00000<br>
+<br>
+<br>
+The main catch =A0here is to use eTSEC2 as active port at u-boot. I think I=
+ remember we also =A0faced similar issue.<br>
+Regards<br>
+Poonam<br>
+<br>
+&gt; -----Original Message-----<br>
+&gt; From: linuxppc-dev-bounces+poonam.aggrwal=3D<a href=3D"http://freescal=
+e.com" target=3D"_blank">freescale.com</a>@<a href=3D"http://lists.ozlabs.o=
+rg" target=3D"_blank">lists.ozlabs.org</a><br>
+&gt; [mailto:<a href=3D"mailto:linuxppc-dev-">linuxppc-dev-</a><br>
+&gt; bounces+poonam.aggrwal=3D<a href=3D"http://freescale.com" target=3D"_b=
+lank">freescale.com</a>@<a href=3D"http://lists.ozlabs.org" target=3D"_blan=
+k">lists.ozlabs.org</a>] On Behalf Of<br>
+&gt; Hollis Blanchard<br>
+&gt; Sent: Tuesday, May 10, 2011 1:53 AM<br>
+&gt; To: Prasanna Khanapur<br>
+&gt; Cc: <a href=3D"mailto:linuxppc-dev@lists.ozlabs.org">linuxppc-dev@list=
+s.ozlabs.org</a><br>
+&gt; Subject: Re: Regarding P2020 in AMP mode<br>
+<div><div></div><div class=3D"h5">&gt;<br>
+&gt; On 05/07/2011 05:20 AM, Prasanna Khanapur wrote:<br>
+&gt; &gt; Hi,<br>
+&gt; &gt; I&#39;m running P2020 in AMP mode, each core running its linux os=
+.<br>
+&gt; &gt; Ethernet 1(@25000) and Ethernet 2(@26000) assigned to Core0 are<b=
+r>
+&gt; &gt; working fine.<br>
+&gt; &gt; I&#39;m facing problems with Ethernet interface(@24000) assigned =
+to Core1,<br>
+&gt; &gt; its not working.<br>
+&gt; &gt;<br>
+&gt; &gt; I&#39;m using dts file which were added by :<br>
+&gt; &gt; <a href=3D"http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-Se=
+ptember/075594.h" target=3D"_blank">http://lists.ozlabs.org/pipermail/linux=
+ppc-dev/2009-September/075594.h</a><br>
+&gt; &gt; tml<br>
+&gt; &gt;<br>
+&gt; &gt; Looks either there is some mistake in the dts file or my understa=
+nding<br>
+&gt; &gt; is wrong.<br>
+&gt; &gt;<br>
+&gt; &gt; MDIO @24000 is defined in core0 dts file though the Ethernet is<b=
+r>
+&gt; &gt; assigned to Core 1.<br>
+&gt; &gt;<br>
+&gt; &gt; DTS files :<br>
+&gt; &gt; <a href=3D"http://web.mornfall.net/repos/linux-2.6/git/arch/power=
+pc/boot/dts/p202" target=3D"_blank">http://web.mornfall.net/repos/linux-2.6=
+/git/arch/powerpc/boot/dts/p202</a><br>
+&gt; &gt; 0rdb_camp_core0.dts<br>
+&gt; &gt; <a href=3D"http://web.mornfall.net/repos/linux-2.6/git/arch/power=
+pc/boot/dts/p202" target=3D"_blank">http://web.mornfall.net/repos/linux-2.6=
+/git/arch/powerpc/boot/dts/p202</a><br>
+&gt; &gt; 0rdb_camp_core1.dts<br>
+&gt;<br>
+&gt; The fixed-link property in core1.dts indicates enet0 should use 1Gb li=
+nk.<br>
+&gt; Is that device connected to a 1Gb network?<br>
+&gt;<br>
+&gt; --<br>
+&gt; Hollis Blanchard<br>
+&gt; Mentor Graphics, Embedded Systems Division<br>
+</div></div>&gt; _______________________________________________<br>
+&gt; Linuxppc-dev mailing list<br>
+&gt; <a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.oz=
+labs.org</a><br>
+&gt; <a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_=
+blank">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+<br>
+<br>
+</blockquote></div><br></div></div></div>
+
+--0015175d023879595004a2fe4ebd--
