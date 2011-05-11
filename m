@@ -3,22 +3,22 @@ Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
 	[209.85.210.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E6A1AB6F54
+	by ozlabs.org (Postfix) with ESMTPS id E5DEEB6F5A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 05:04:18 +1000 (EST)
-Received: by iym7 with SMTP id 7so685054iym.38
+	Thu, 12 May 2011 05:06:15 +1000 (EST)
+Received: by iym7 with SMTP id 7so686725iym.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 May 2011 12:04:16 -0700 (PDT)
+	Wed, 11 May 2011 12:06:13 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <a254a95c4fe502cf11a3a094afe0298263c3dbd6.1305092637.git.miltonm@bga.com>
+In-Reply-To: <ed4319ec825be60a30d7ce5fd50654cde2c5829d.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
-	<a254a95c4fe502cf11a3a094afe0298263c3dbd6.1305092637.git.miltonm@bga.com>
+	<ed4319ec825be60a30d7ce5fd50654cde2c5829d.1305092637.git.miltonm@bga.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 11 May 2011 21:03:56 +0200
-Message-ID: <BANLkTimAK8889PapC-5POOhaKZyLO3OfpQ@mail.gmail.com>
-Subject: Re: [PATCH 24/37] powerpc: return early if irq_host lookup type is
-	wrong
+Date: Wed, 11 May 2011 21:05:53 +0200
+Message-ID: <BANLkTi=RnHdA8jVvJCQPH6edH++cPPW_wQ@mail.gmail.com>
+Subject: Re: [PATCH 27/37] powerpc fsl_msi: don't abuse platform_data for
+	driver_data
 To: Milton Miller <miltonm@bga.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
@@ -31,72 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 11, 2011 at 7:29 AM, Milton Miller <miltonm@bga.com> wrote:
-> If for some reason the code incrorectly calls the wrong function to
-> manage the revmap, not only should we warn, we should take action.
-> However, in the paths we expect to be taken every delivered interrupt
-> change to WARN_ON_ONCE. =A0Use the if (WARN_ON(x)) format to get the
-> unlikely for free.
+On Wed, May 11, 2011 at 7:30 AM, Milton Miller <miltonm@bga.com> wrote:
+> The msi platform device driver was abusing dev.platform_data for its
+> platform_driver_data. =A0Use the correct pointer for storage.
+>
+> Platform_data is supposed to be for platforms to communicate to drivers
+> parameters that are not otherwise discoverable. =A0Its lifetime matches
+> the platform_device not the platform device driver. =A0It is generally
+> not needed for drivers that only support systems with device trees.
 >
 > Signed-off-by: Milton Miller <miltonm@bga.com>
 
-Looks right.
-
-Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
 > ---
-> =A0arch/powerpc/kernel/irq.c | =A0 12 +++++++-----
-> =A01 files changed, 7 insertions(+), 5 deletions(-)
+> ---
+> =A0arch/powerpc/sysdev/fsl_msi.c | =A0 =A04 ++--
+> =A01 files changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index f42e869..4a5aa8c 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -814,8 +814,7 @@ void irq_dispose_mapping(unsigned int virq)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
+> diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.=
+c
+> index d5679dc..077776c 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.c
+> +++ b/arch/powerpc/sysdev/fsl_msi.c
+> @@ -253,7 +253,7 @@ unlock:
 >
-> =A0 =A0 =A0 =A0host =3D irq_map[virq].host;
-> - =A0 =A0 =A0 WARN_ON (host =3D=3D NULL);
-> - =A0 =A0 =A0 if (host =3D=3D NULL)
-> + =A0 =A0 =A0 if (WARN_ON(host =3D=3D NULL))
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
->
-> =A0 =A0 =A0 =A0/* Never unmap legacy interrupts */
-> @@ -898,7 +897,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host =
-*host,
-> =A0 =A0 =A0 =A0struct irq_map_entry *ptr;
-> =A0 =A0 =A0 =A0unsigned int virq;
->
-> - =A0 =A0 =A0 WARN_ON(host->revmap_type !=3D IRQ_HOST_MAP_TREE);
-> + =A0 =A0 =A0 if (WARN_ON_ONCE(host->revmap_type !=3D IRQ_HOST_MAP_TREE))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return irq_find_mapping(host, hwirq);
->
-> =A0 =A0 =A0 =A0/*
-> =A0 =A0 =A0 =A0 * No rcu_read_lock(ing) needed, the ptr returned can't go=
- under us
-> @@ -922,7 +922,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host =
-*host,
-> =A0void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_hw_number_t h=
-wirq)
+> =A0static int fsl_of_msi_remove(struct platform_device *ofdev)
 > =A0{
-> - =A0 =A0 =A0 WARN_ON(host->revmap_type !=3D IRQ_HOST_MAP_TREE);
-> + =A0 =A0 =A0 if (WARN_ON(host->revmap_type !=3D IRQ_HOST_MAP_TREE))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> - =A0 =A0 =A0 struct fsl_msi *msi =3D ofdev->dev.platform_data;
+> + =A0 =A0 =A0 struct fsl_msi *msi =3D platform_get_drvdata(ofdev);
+> =A0 =A0 =A0 =A0int virq, i;
+> =A0 =A0 =A0 =A0struct fsl_msi_cascade_data *cascade_data;
 >
-> =A0 =A0 =A0 =A0if (virq !=3D NO_IRQ) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_lock(&revmap_trees_mutex);
-> @@ -937,7 +938,8 @@ unsigned int irq_linear_revmap(struct irq_host *host,
-> =A0{
-> =A0 =A0 =A0 =A0unsigned int *revmap;
+> @@ -327,7 +327,7 @@ static int __devinit fsl_of_msi_probe(struct platform=
+_device *dev)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(&dev->dev, "No memory for MSI stru=
+cture\n");
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -ENOMEM;
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 dev->dev.platform_data =3D msi;
+> + =A0 =A0 =A0 platform_set_drvdata(dev, msi);
 >
-> - =A0 =A0 =A0 WARN_ON(host->revmap_type !=3D IRQ_HOST_MAP_LINEAR);
-> + =A0 =A0 =A0 if (WARN_ON_ONCE(host->revmap_type !=3D IRQ_HOST_MAP_LINEAR=
-))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return irq_find_mapping(host, hwirq);
->
-> =A0 =A0 =A0 =A0/* Check revmap bounds */
-> =A0 =A0 =A0 =A0if (unlikely(hwirq >=3D host->revmap_data.linear.size))
+> =A0 =A0 =A0 =A0msi->irqhost =3D irq_alloc_host(dev->dev.of_node, IRQ_HOST=
+_MAP_LINEAR,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0NR_MSI_IRQS, &fsl_msi_host_ops, 0);
 > --
 > 1.7.0.4
 >
