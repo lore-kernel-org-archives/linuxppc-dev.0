@@ -1,19 +1,28 @@
-Return-Path: <mlcreech@gmail.com>
-Received: from mail-vx0-f170.google.com (mail-vx0-f170.google.com
-	[209.85.220.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2CD70B6F54
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2011 07:37:08 +1000 (EST)
-Received: by vxb40 with SMTP id 40so972804vxb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2011 14:37:04 -0700 (PDT)
-MIME-Version: 1.0
-Date: Wed, 11 May 2011 17:37:04 -0400
-Message-ID: <BANLkTikp5yVgrCe7tbc4cvG5wvy7XJp2fQ@mail.gmail.com>
-Subject: fsl_udc_core: BUG: scheduling while atomic
-From: "Matthew L. Creech" <mlcreech@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <nacc@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BEA4F1007D7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 May 2011 08:25:13 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BME4ge013730
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 18:14:04 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4BMP7b41192078
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 18:25:07 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p4BIOtiF002511
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 15:24:55 -0300
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: [PATCH 0/8] pseries/iommu: bug-fixes and cleanups for dynamic dma
+	windows
+Date: Wed, 11 May 2011 15:24:56 -0700
+Message-Id: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This series of patches attempts to cleanup and fix some bugs related to
+dynamic dma windows and kexec/kdump. They build on the three patches I
+have submitted most recently:
 
-My MPC8313-based board, running a 2.6.37 kernel, is occasionally
-hitting this bug while doing RNDIS-based communication:
+powerpc: fix kexec with dynamic dma windows
+	http://patchwork.ozlabs.org/patch/94445/
+pseries/iommu: restore iommu table pointer when restoring iommu ops
+	http://patchwork.ozlabs.org/patch/94909/
+pseries/iommu: use correct return type in dupe_ddw_if_already_created
+	http://patchwork.ozlabs.org/patch/95184/
 
-BUG: scheduling while atomic: lighttpd/1145/0x10000200
-Call Trace:
-[c6a8b910] [c00086c0] show_stack+0x7c/0x194 (unreliable)
-[c6a8b950] [c0019e28] __schedule_bug+0x54/0x68
-[c6a8b960] [c02b04e8] schedule+0xa4/0x408
-[c6a8ba50] [c02b0988] _cond_resched+0x38/0x64
-[c6a8ba60] [c0080e8c] dma_pool_alloc+0x5c/0x2a4
-[c6a8bac0] [c01c57b0] fsl_req_to_dtd+0x68/0x24c
-[c6a8bb00] [c01c5b68] fsl_ep_queue+0x1d4/0x264
-[c6a8bb20] [c01c7eec] eth_start_xmit+0x278/0x344
-[c6a8bb50] [c01fdbc8] dev_hard_start_xmit+0x520/0x680
-[c6a8bba0] [c02122a4] sch_direct_xmit+0x68/0x1e0
-[c6a8bbc0] [c01fdf20] dev_queue_xmit+0x1f8/0x3c4
-[c6a8bbe0] [c022d684] ip_finish_output+0x2d4/0x328
-[c6a8bc10] [c022db08] ip_local_out+0x38/0x4c
-[c6a8bc20] [c022e3cc] ip_queue_xmit+0x2cc/0x360
-[c6a8bca0] [c0241844] tcp_transmit_skb+0x7cc/0x838
-[c6a8bd00] [c0244434] tcp_write_xmit+0x8c4/0xa34
-[c6a8bd60] [c0237618] tcp_sendmsg+0x900/0xbd4
-[c6a8bdd0] [c0256088] inet_sendmsg+0x74/0x8c
-[c6a8bdf0] [c01ea498] sock_aio_write+0x130/0x14c
-[c6a8be50] [c00855fc] do_sync_write+0xb0/0x110
-[c6a8bef0] [c0086294] vfs_write+0xdc/0x17c
-[c6a8bf10] [c008642c] sys_write+0x54/0x9c
-[c6a8bf40] [c000f2cc] ret_from_syscall+0x0/0x38
+The full series has been successfully tested with kdump/kexec on pseries
+machine.
 
-This seems similar to a bug from 2010:
+Milton Miller (8):
+  pseries/iommu: add additional checks when changing iommu mask
+  pseries/iommu: remove ddw property when destroying window
+  pseries/iommu: find windows after kexec during boot
+  pseries/iommu: cleanup ddw naming
+  powerpc: override dma_get_required_mask by platform hook and ops
+  dma-mapping: add get_required_mask if arch overrides default
+  powerpc: use the newly added get_required_mask dma_map_ops hook
+  powerpc: tidy up dma_map_ops after adding new hook
 
-http://www.spinics.net/lists/linux-usb/msg31354.html
-
-which concludes that the fsl_udc_core driver is wrongly using
-GFP_KERNEL in fsl_build_dtd().  However I'm not sure what an
-appropriate fix is, since just replacing it with GFP_ATOMIC causes
-allocation failures.  Any helpful tips?
-
-Thanks
+ arch/powerpc/include/asm/device.h       |    2 +
+ arch/powerpc/include/asm/machdep.h      |    3 +-
+ arch/powerpc/kernel/dma-iommu.c         |   28 +++++--
+ arch/powerpc/kernel/dma-swiotlb.c       |   16 ++++
+ arch/powerpc/kernel/dma.c               |   44 ++++++++--
+ arch/powerpc/kernel/ibmebus.c           |   22 +++--
+ arch/powerpc/kernel/vio.c               |   21 +++--
+ arch/powerpc/platforms/cell/iommu.c     |   21 +++++
+ arch/powerpc/platforms/ps3/system-bus.c |    7 ++
+ arch/powerpc/platforms/pseries/iommu.c  |  142 +++++++++++++++++++------------
+ include/linux/dma-mapping.h             |    3 +
+ 11 files changed, 224 insertions(+), 85 deletions(-)
 
 -- 
-Matthew L. Creech
+1.7.4.1
