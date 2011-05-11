@@ -1,16 +1,16 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id B170B1009A0
+	by ozlabs.org (Postfix) with ESMTP id CB859100863
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 11 May 2011 17:42:39 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <6ea83fba12e333c40117c273082730df930bf258.1305092637.git.miltonm@bga.com>
+Message-Id: <a254a95c4fe502cf11a3a094afe0298263c3dbd6.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:30:00 -0500
-Subject: [PATCH 25/37] powerpc: remove trival irq_host_ops.unmap
+Date: Wed, 11 May 2011 00:29:57 -0500
+Subject: [PATCH 24/37] powerpc: return early if irq_host lookup type is wrong
 Cc: Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,106 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These all just clear chip or chipdata fields, which will be done
-by the generic code when we call irq_free_descs.
+If for some reason the code incrorectly calls the wrong function to
+manage the revmap, not only should we warn, we should take action.
+However, in the paths we expect to be taken every delivered interrupt
+change to WARN_ON_ONCE.  Use the if (WARN_ON(x)) format to get the
+unlikely for free.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c     |    8 --------
- arch/powerpc/platforms/embedded6xx/flipper-pic.c |    7 -------
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c    |    7 -------
- arch/powerpc/platforms/ps3/interrupt.c           |    6 ------
- 4 files changed, 0 insertions(+), 28 deletions(-)
+ arch/powerpc/kernel/irq.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-index 5d6c34c..8ccf9ed 100644
---- a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-+++ b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-@@ -112,16 +112,8 @@ static int pci_pic_host_map(struct irq_host *h, unsigned int virq,
- 	return 0;
- }
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index f42e869..4a5aa8c 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -814,8 +814,7 @@ void irq_dispose_mapping(unsigned int virq)
+ 		return;
  
--static void pci_host_unmap(struct irq_host *h, unsigned int virq)
--{
--	/* remove chip and handler */
--	irq_set_chip_data(virq, NULL);
--	irq_set_chip(virq, NULL);
--}
--
- static struct irq_host_ops pci_pic_host_ops = {
- 	.map = pci_pic_host_map,
--	.unmap = pci_host_unmap,
- };
+ 	host = irq_map[virq].host;
+-	WARN_ON (host == NULL);
+-	if (host == NULL)
++	if (WARN_ON(host == NULL))
+ 		return;
  
- int __init pq2ads_pci_init_irq(void)
-diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.c b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-index 77cbe4c..f61a2dd 100644
---- a/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-@@ -107,12 +107,6 @@ static int flipper_pic_map(struct irq_host *h, unsigned int virq,
- 	return 0;
- }
+ 	/* Never unmap legacy interrupts */
+@@ -898,7 +897,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
+ 	struct irq_map_entry *ptr;
+ 	unsigned int virq;
  
--static void flipper_pic_unmap(struct irq_host *h, unsigned int irq)
--{
--	irq_set_chip_data(irq, NULL);
--	irq_set_chip(irq, NULL);
--}
--
- static int flipper_pic_match(struct irq_host *h, struct device_node *np)
+-	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
++	if (WARN_ON_ONCE(host->revmap_type != IRQ_HOST_MAP_TREE))
++		return irq_find_mapping(host, hwirq);
+ 
+ 	/*
+ 	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
+@@ -922,7 +922,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
+ void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
+ 			     irq_hw_number_t hwirq)
  {
- 	return 1;
-@@ -121,7 +115,6 @@ static int flipper_pic_match(struct irq_host *h, struct device_node *np)
+-	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
++	if (WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE))
++		return;
  
- static struct irq_host_ops flipper_irq_host_ops = {
- 	.map = flipper_pic_map,
--	.unmap = flipper_pic_unmap,
- 	.match = flipper_pic_match,
- };
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index 44b398b..e491917 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -100,15 +100,8 @@ static int hlwd_pic_map(struct irq_host *h, unsigned int virq,
- 	return 0;
- }
- 
--static void hlwd_pic_unmap(struct irq_host *h, unsigned int irq)
--{
--	irq_set_chip_data(irq, NULL);
--	irq_set_chip(irq, NULL);
--}
--
- static struct irq_host_ops hlwd_irq_host_ops = {
- 	.map = hlwd_pic_map,
--	.unmap = hlwd_pic_unmap,
- };
- 
- static unsigned int __hlwd_pic_get_irq(struct irq_host *h)
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index 523bd0d..600ed2c 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -659,11 +659,6 @@ static void __maybe_unused _dump_mask(struct ps3_private *pd,
- static void dump_bmp(struct ps3_private* pd) {};
- #endif /* defined(DEBUG) */
- 
--static void ps3_host_unmap(struct irq_host *h, unsigned int virq)
--{
--	irq_set_chip_data(virq, NULL);
--}
--
- static int ps3_host_map(struct irq_host *h, unsigned int virq,
- 	irq_hw_number_t hwirq)
+ 	if (virq != NO_IRQ) {
+ 		mutex_lock(&revmap_trees_mutex);
+@@ -937,7 +938,8 @@ unsigned int irq_linear_revmap(struct irq_host *host,
  {
-@@ -683,7 +678,6 @@ static int ps3_host_match(struct irq_host *h, struct device_node *np)
+ 	unsigned int *revmap;
  
- static struct irq_host_ops ps3_host_ops = {
- 	.map = ps3_host_map,
--	.unmap = ps3_host_unmap,
- 	.match = ps3_host_match,
- };
+-	WARN_ON(host->revmap_type != IRQ_HOST_MAP_LINEAR);
++	if (WARN_ON_ONCE(host->revmap_type != IRQ_HOST_MAP_LINEAR))
++		return irq_find_mapping(host, hwirq);
  
+ 	/* Check revmap bounds */
+ 	if (unlikely(hwirq >= host->revmap_data.linear.size))
 -- 
 1.7.0.4
