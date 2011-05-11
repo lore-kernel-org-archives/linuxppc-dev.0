@@ -1,29 +1,18 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3630D1007D7
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2011 07:08:07 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BKtYQH012720
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2011 14:55:34 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4BL7wNs122886
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2011 15:07:58 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4BL7vrF024429
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2011 15:07:58 -0600
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] pseries/iommu: use correct return type in
-	dupe_ddw_if_already_created
-Date: Wed, 11 May 2011 14:07:51 -0700
-Message-Id: <1305148071-30824-1-git-send-email-nacc@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 12 May 2011 07:17:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 13/13] kvm/powerpc: Allow book3s_hv guests to use SMT
+	processor modes
+Message-ID: <20110511211745.GO2837@brick.ozlabs.ibm.com>
+References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
+	<20110511104656.GN2837@brick.ozlabs.ibm.com>
+	<20110511134415.GA1134@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110511134415.GA1134@lst.de>
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+	kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Otherwise we get silent truncations.
+On Wed, May 11, 2011 at 03:44:15PM +0200, Christoph Hellwig wrote:
+> On Wed, May 11, 2011 at 08:46:56PM +1000, Paul Mackerras wrote:
+> > arch/powerpc/sysdev/xics/icp-native.c.
+> 
+> What kernel tree do I need to actually have that file?
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Milton Miller <miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org
+The "next" branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
 
----
-
- arch/powerpc/platforms/pseries/iommu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 6d5412a..31e2ac4 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -693,7 +693,7 @@ static void remove_ddw(struct device_node *np)
- }
- 
- 
--static int dupe_ddw_if_already_created(struct pci_dev *dev, struct device_node *pdn)
-+static u64 dupe_ddw_if_already_created(struct pci_dev *dev, struct device_node *pdn)
- {
- 	struct device_node *dn;
- 	struct pci_dn *pcidn;
--- 
-1.7.4.1
+Paul.
