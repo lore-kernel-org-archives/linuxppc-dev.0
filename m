@@ -1,34 +1,21 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1ADD41008F4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 08:25:26 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BMIDtm031792
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:18:13 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4BMPFiY132170
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:25:15 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4BGPFB1016888
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:25:15 -0600
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH 8/8] powerpc: tidy up dma_map_ops after adding new hook
-Date: Wed, 11 May 2011 15:25:04 -0700
-Message-Id: <1305152704-4864-9-git-send-email-nacc@us.ibm.com>
+Subject: [PATCH 7/8] powerpc: use the newly added get_required_mask
+	dma_map_ops hook
+Date: Wed, 11 May 2011 15:25:03 -0700
+Message-Id: <1305152704-4864-8-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
 References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+Cc: cbe-oss-dev@lists.ozlabs.org,
 	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Paul Mackerras <paulus@samba.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>, Arnd Bergmann <arnd@arndb.de>,
+	Geoff Levand <geoff@infradead.org>,
 	Sean MacLennan <smaclennan@pikatech.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,121 +27,313 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Milton Miller <miltonm@bga.com>
 
-The new get_required_mask hook name is longer than many of but not all
-of the prior ops.  Tidy the struct initializers to align the equal signs
-using the local whitespace.
+Now that the generic code has dma_map_ops set, instead of having a
+messy ifdef & if block in the base dma_get_required_mask hook push
+the computation into the dma ops.
+
+If the ops fails to set the get_required_mask hook default to the
+width of dma_addr_t.
+
+This also corrects ibmbus ibmebus_dma_supported to require a 64
+bit mask.  I doubt anything is checking or setting the dma mask on
+that bus.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/kernel/dma-iommu.c |   14 +++++++-------
- arch/powerpc/kernel/dma.c       |   16 ++++++++--------
- arch/powerpc/kernel/ibmebus.c   |   14 +++++++-------
- arch/powerpc/kernel/vio.c       |   14 +++++++-------
- 4 files changed, 29 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/device.h       |    2 +
+ arch/powerpc/include/asm/dma-mapping.h  |    3 --
+ arch/powerpc/kernel/dma-iommu.c         |    3 +-
+ arch/powerpc/kernel/dma-swiotlb.c       |   16 ++++++++++++
+ arch/powerpc/kernel/dma.c               |   41 ++++++++++++-------------------
+ arch/powerpc/kernel/ibmebus.c           |    8 +++++-
+ arch/powerpc/kernel/vio.c               |    7 ++++-
+ arch/powerpc/platforms/cell/iommu.c     |   13 ++++++++-
+ arch/powerpc/platforms/ps3/system-bus.c |    7 +++++
+ arch/powerpc/platforms/pseries/iommu.c  |    2 +-
+ 10 files changed, 68 insertions(+), 34 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 16d25c0..d57c08a 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -37,4 +37,6 @@ struct pdev_archdata {
+ 	u64 dma_mask;
+ };
+ 
++#define ARCH_HAS_DMA_GET_REQUIRED_MASK
++
+ #endif /* _ASM_POWERPC_DEVICE_H */
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 8135e66..dd70fac 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -20,8 +20,6 @@
+ 
+ #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
+ 
+-#define ARCH_HAS_DMA_GET_REQUIRED_MASK
+-
+ /* Some dma direct funcs must be visible for use in other dma_ops */
+ extern void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *dma_handle, gfp_t flag);
+@@ -71,7 +69,6 @@ static inline unsigned long device_to_mask(struct device *dev)
+  */
+ #ifdef CONFIG_PPC64
+ extern struct dma_map_ops dma_iommu_ops;
+-extern u64 dma_iommu_get_required_mask(struct device *dev);
+ #endif
+ extern struct dma_map_ops dma_direct_ops;
+ 
 diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index c1ad9db..6f04b9c 100644
+index 1f2a711..c1ad9db 100644
 --- a/arch/powerpc/kernel/dma-iommu.c
 +++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -104,13 +104,13 @@ static u64 dma_iommu_get_required_mask(struct device *dev)
+@@ -90,7 +90,7 @@ static int dma_iommu_dma_supported(struct device *dev, u64 mask)
+ 		return 1;
  }
  
- struct dma_map_ops dma_iommu_ops = {
--	.alloc_coherent	= dma_iommu_alloc_coherent,
--	.free_coherent	= dma_iommu_free_coherent,
--	.map_sg		= dma_iommu_map_sg,
--	.unmap_sg	= dma_iommu_unmap_sg,
--	.dma_supported	= dma_iommu_dma_supported,
--	.map_page	= dma_iommu_map_page,
--	.unmap_page	= dma_iommu_unmap_page,
-+	.alloc_coherent		= dma_iommu_alloc_coherent,
-+	.free_coherent		= dma_iommu_free_coherent,
-+	.map_sg			= dma_iommu_map_sg,
-+	.unmap_sg		= dma_iommu_unmap_sg,
-+	.dma_supported		= dma_iommu_dma_supported,
-+	.map_page		= dma_iommu_map_page,
-+	.unmap_page		= dma_iommu_unmap_page,
- 	.get_required_mask	= dma_iommu_get_required_mask,
+-u64 dma_iommu_get_required_mask(struct device *dev)
++static u64 dma_iommu_get_required_mask(struct device *dev)
+ {
+ 	struct iommu_table *tbl = get_iommu_table_base(dev);
+ 	u64 mask;
+@@ -111,5 +111,6 @@ struct dma_map_ops dma_iommu_ops = {
+ 	.dma_supported	= dma_iommu_dma_supported,
+ 	.map_page	= dma_iommu_map_page,
+ 	.unmap_page	= dma_iommu_unmap_page,
++	.get_required_mask	= dma_iommu_get_required_mask,
  };
  EXPORT_SYMBOL(dma_iommu_ops);
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 4295e0b..1ebc918 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -24,6 +24,21 @@
+ 
+ unsigned int ppc_swiotlb_enable;
+ 
++static u64 swiotlb_powerpc_get_required(struct device *dev)
++{
++	u64 end, mask, max_direct_dma_addr = dev->archdata.max_direct_dma_addr;
++
++	end = memblock_end_of_DRAM();
++	if (max_direct_dma_addr && end > max_direct_dma_addr)
++		end = max_direct_dma_addr;
++	end += get_dma_offset(dev);
++
++	mask = 1ULL << (fls64(end) - 1);
++	mask += mask - 1;
++
++	return mask;
++}
++
+ /*
+  * At the moment, all platforms that use this code only require
+  * swiotlb to be used if we're operating on HIGHMEM.  Since
+@@ -44,6 +59,7 @@ struct dma_map_ops swiotlb_dma_ops = {
+ 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
+ 	.sync_sg_for_device = swiotlb_sync_sg_for_device,
+ 	.mapping_error = swiotlb_dma_mapping_error,
++	.get_required_mask = swiotlb_powerpc_get_required,
+ };
+ 
+ void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
 diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index df142d1..f94df52 100644
+index 97fe867..df142d1 100644
 --- a/arch/powerpc/kernel/dma.c
 +++ b/arch/powerpc/kernel/dma.c
-@@ -149,14 +149,14 @@ static inline void dma_direct_sync_single(struct device *dev,
+@@ -96,6 +96,18 @@ static int dma_direct_dma_supported(struct device *dev, u64 mask)
  #endif
+ }
  
- struct dma_map_ops dma_direct_ops = {
--	.alloc_coherent	= dma_direct_alloc_coherent,
--	.free_coherent	= dma_direct_free_coherent,
--	.map_sg		= dma_direct_map_sg,
--	.unmap_sg	= dma_direct_unmap_sg,
--	.dma_supported	= dma_direct_dma_supported,
--	.map_page	= dma_direct_map_page,
--	.unmap_page	= dma_direct_unmap_page,
--	.get_required_mask	= dma_direct_get_required_mask,
-+	.alloc_coherent			= dma_direct_alloc_coherent,
-+	.free_coherent			= dma_direct_free_coherent,
-+	.map_sg				= dma_direct_map_sg,
-+	.unmap_sg			= dma_direct_unmap_sg,
-+	.dma_supported			= dma_direct_dma_supported,
-+	.map_page			= dma_direct_map_page,
-+	.unmap_page			= dma_direct_unmap_page,
-+	.get_required_mask		= dma_direct_get_required_mask,
++static u64 dma_direct_get_required_mask(struct device *dev)
++{
++	u64 end, mask;
++
++	end = memblock_end_of_DRAM() + get_dma_offset(dev);
++
++	mask = 1ULL << (fls64(end) - 1);
++	mask += mask - 1;
++
++	return mask;
++}
++
+ static inline dma_addr_t dma_direct_map_page(struct device *dev,
+ 					     struct page *page,
+ 					     unsigned long offset,
+@@ -144,6 +156,7 @@ struct dma_map_ops dma_direct_ops = {
+ 	.dma_supported	= dma_direct_dma_supported,
+ 	.map_page	= dma_direct_map_page,
+ 	.unmap_page	= dma_direct_unmap_page,
++	.get_required_mask	= dma_direct_get_required_mask,
  #ifdef CONFIG_NOT_COHERENT_CACHE
  	.sync_single_for_cpu 		= dma_direct_sync_single,
  	.sync_single_for_device 	= dma_direct_sync_single,
+@@ -175,7 +188,6 @@ EXPORT_SYMBOL(dma_set_mask);
+ u64 dma_get_required_mask(struct device *dev)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-	u64 mask, end = 0;
+ 
+ 	if (ppc_md.dma_get_required_mask)
+ 		return ppc_md.dma_get_required_mask(dev);
+@@ -183,31 +195,10 @@ u64 dma_get_required_mask(struct device *dev)
+ 	if (unlikely(dma_ops == NULL))
+ 		return 0;
+ 
+-#ifdef CONFIG_PPC64
+-	else if (dma_ops == &dma_iommu_ops)
+-		return dma_iommu_get_required_mask(dev);
+-#endif
+-#ifdef CONFIG_SWIOTLB
+-	else if (dma_ops == &swiotlb_dma_ops) {
+-		u64 max_direct_dma_addr = dev->archdata.max_direct_dma_addr;
+-
+-		end = memblock_end_of_DRAM();
+-		if (max_direct_dma_addr && end > max_direct_dma_addr)
+-			end = max_direct_dma_addr;
+-		end += get_dma_offset(dev);
+-	}
+-#endif
+-	else if (dma_ops == &dma_direct_ops)
+-		end = memblock_end_of_DRAM() + get_dma_offset(dev);
+-	else {
+-		WARN_ONCE(1, "%s: unknown ops %p\n", __func__, dma_ops);
+-		end = memblock_end_of_DRAM();
+-	}
++	if (dma_ops->get_required_mask)
++		return dma_ops->get_required_mask(dev);
+ 
+-	mask = 1ULL << (fls64(end) - 1);
+-	mask += mask - 1;
+-
+-	return mask;
++	return DMA_BIT_MASK(8 * sizeof(dma_addr_t));
+ }
+ EXPORT_SYMBOL_GPL(dma_get_required_mask);
+ 
 diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 90ef2a4..73110fb 100644
+index 28581f1..90ef2a4 100644
 --- a/arch/powerpc/kernel/ibmebus.c
 +++ b/arch/powerpc/kernel/ibmebus.c
-@@ -134,14 +134,14 @@ static u64 ibmebus_dma_get_required_mask(struct device *dev)
+@@ -125,7 +125,12 @@ static void ibmebus_unmap_sg(struct device *dev,
+ 
+ static int ibmebus_dma_supported(struct device *dev, u64 mask)
+ {
+-	return 1;
++	return mask == DMA_BIT_MASK(64);
++}
++
++static u64 ibmebus_dma_get_required_mask(struct device *dev)
++{
++	return DMA_BIT_MASK(64);
  }
  
  static struct dma_map_ops ibmebus_dma_ops = {
--	.alloc_coherent = ibmebus_alloc_coherent,
--	.free_coherent  = ibmebus_free_coherent,
--	.map_sg         = ibmebus_map_sg,
--	.unmap_sg       = ibmebus_unmap_sg,
--	.dma_supported  = ibmebus_dma_supported,
-+	.alloc_coherent     = ibmebus_alloc_coherent,
-+	.free_coherent      = ibmebus_free_coherent,
-+	.map_sg             = ibmebus_map_sg,
-+	.unmap_sg           = ibmebus_unmap_sg,
-+	.dma_supported      = ibmebus_dma_supported,
- 	.get_required_mask  = ibmebus_dma_get_required_mask,
--	.map_page       = ibmebus_map_page,
--	.unmap_page     = ibmebus_unmap_page,
-+	.map_page           = ibmebus_map_page,
-+	.unmap_page         = ibmebus_unmap_page,
+@@ -134,6 +139,7 @@ static struct dma_map_ops ibmebus_dma_ops = {
+ 	.map_sg         = ibmebus_map_sg,
+ 	.unmap_sg       = ibmebus_unmap_sg,
+ 	.dma_supported  = ibmebus_dma_supported,
++	.get_required_mask  = ibmebus_dma_get_required_mask,
+ 	.map_page       = ibmebus_map_page,
+ 	.unmap_page     = ibmebus_unmap_page,
  };
- 
- static int ibmebus_match_path(struct device *dev, void *data)
 diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index c049325..34d291d 100644
+index 1b695fd..c049325 100644
 --- a/arch/powerpc/kernel/vio.c
 +++ b/arch/powerpc/kernel/vio.c
-@@ -611,13 +611,13 @@ static u64 vio_dma_get_required_mask(struct device *dev)
+@@ -605,6 +605,11 @@ static int vio_dma_iommu_dma_supported(struct device *dev, u64 mask)
+         return dma_iommu_ops.dma_supported(dev, mask);
  }
  
++static u64 vio_dma_get_required_mask(struct device *dev)
++{
++        return dma_iommu_ops.get_required_mask(dev);
++}
++
  struct dma_map_ops vio_dma_mapping_ops = {
--	.alloc_coherent = vio_dma_iommu_alloc_coherent,
--	.free_coherent  = vio_dma_iommu_free_coherent,
--	.map_sg         = vio_dma_iommu_map_sg,
--	.unmap_sg       = vio_dma_iommu_unmap_sg,
--	.map_page       = vio_dma_iommu_map_page,
--	.unmap_page     = vio_dma_iommu_unmap_page,
--	.dma_supported  = vio_dma_iommu_dma_supported,
-+	.alloc_coherent    = vio_dma_iommu_alloc_coherent,
-+	.free_coherent     = vio_dma_iommu_free_coherent,
-+	.map_sg            = vio_dma_iommu_map_sg,
-+	.unmap_sg          = vio_dma_iommu_unmap_sg,
-+	.map_page          = vio_dma_iommu_map_page,
-+	.unmap_page        = vio_dma_iommu_unmap_page,
-+	.dma_supported     = vio_dma_iommu_dma_supported,
- 	.get_required_mask = vio_dma_get_required_mask,
+ 	.alloc_coherent = vio_dma_iommu_alloc_coherent,
+ 	.free_coherent  = vio_dma_iommu_free_coherent,
+@@ -613,7 +618,7 @@ struct dma_map_ops vio_dma_mapping_ops = {
+ 	.map_page       = vio_dma_iommu_map_page,
+ 	.unmap_page     = vio_dma_iommu_unmap_page,
+ 	.dma_supported  = vio_dma_iommu_dma_supported,
+-
++	.get_required_mask = vio_dma_get_required_mask,
  };
  
+ /**
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 5ef55f3..fc46fca 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -1161,11 +1161,20 @@ __setup("iommu_fixed=", setup_iommu_fixed);
+ 
+ static u64 cell_dma_get_required_mask(struct device *dev)
+ {
++	struct dma_map_ops *dma_ops;
++
+ 	if (!dev->dma_mask)
+ 		return 0;
+ 
+-	if (iommu_fixed_disabled && get_dma_ops(dev) == &dma_iommu_ops)
+-		return dma_iommu_get_required_mask(dev);
++	if (!iommu_fixed_disabled &&
++			cell_iommu_get_fixed_address(dev) != OF_BAD_ADDR)
++		return DMA_BIT_MASK(64);
++
++	dma_ops = get_dma_ops(dev);
++	if (dma_ops->get_required_mask)
++		return dma_ops->get_required_mask(dev);
++
++	WARN_ONCE(1, "no get_required_mask in %p ops", dma_ops);
+ 
+ 	return DMA_BIT_MASK(64);
+ }
+diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+index 23083c3..688141c 100644
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -695,12 +695,18 @@ static int ps3_dma_supported(struct device *_dev, u64 mask)
+ 	return mask >= DMA_BIT_MASK(32);
+ }
+ 
++static u64 ps3_dma_get_required_mask(struct device *_dev)
++{
++	return DMA_BIT_MASK(32);
++}
++
+ static struct dma_map_ops ps3_sb_dma_ops = {
+ 	.alloc_coherent = ps3_alloc_coherent,
+ 	.free_coherent = ps3_free_coherent,
+ 	.map_sg = ps3_sb_map_sg,
+ 	.unmap_sg = ps3_sb_unmap_sg,
+ 	.dma_supported = ps3_dma_supported,
++	.get_required_mask = ps3_dma_get_required_mask,
+ 	.map_page = ps3_sb_map_page,
+ 	.unmap_page = ps3_unmap_page,
+ };
+@@ -711,6 +717,7 @@ static struct dma_map_ops ps3_ioc0_dma_ops = {
+ 	.map_sg = ps3_ioc0_map_sg,
+ 	.unmap_sg = ps3_ioc0_unmap_sg,
+ 	.dma_supported = ps3_dma_supported,
++	.get_required_mask = ps3_dma_get_required_mask,
+ 	.map_page = ps3_ioc0_map_page,
+ 	.unmap_page = ps3_unmap_page,
+ };
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index fe5eded..9f121a3 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1099,7 +1099,7 @@ static u64 dma_get_required_mask_pSeriesLP(struct device *dev)
+ 			return DMA_BIT_MASK(64);
+ 	}
+ 
+-	return dma_iommu_get_required_mask(dev);
++	return dma_iommu_ops.get_required_mask(dev);
+ }
+ 
+ #else  /* CONFIG_PCI */
 -- 
 1.7.4.1
