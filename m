@@ -1,20 +1,32 @@
 Return-Path: <nacc@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E222F1007F2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 May 2011 08:25:18 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BMI4t5031698
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:18:04 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4BMP7cp130294
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:25:07 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4BGP6iu016648
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:25:06 -0600
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH 5/8] powerpc: override dma_get_required_mask by platform hook
-	and ops
-Date: Wed, 11 May 2011 15:25:01 -0700
-Message-Id: <1305152704-4864-6-git-send-email-nacc@us.ibm.com>
+Subject: [PATCH 1/8] pseries/iommu: add additional checks when changing iommu
+	mask
+Date: Wed, 11 May 2011 15:24:57 -0700
+Message-Id: <1305152704-4864-2-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
 References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-Cc: cbe-oss-dev@lists.ozlabs.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Arnd Bergmann <arnd@arndb.de>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,224 +38,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Milton Miller <miltonm@bga.com>
 
-The hook dma_get_required_mask is supposed to return the mask required
-by the platform to operate efficently.  The generic version of
-dma_get_required_mask in driver/base/platform.c returns a mask based
-only on max_pfn.  However, this is likely too big for iommu systems
-and could be too small for platforms that require a dma offset or have
-a secondary window at a high offset.
+Do not check dma supported until we have chosen the right dma ops.
+Check that the device is pci before treating it as such.
 
-Override the default, provide a hook in ppc_md used by pseries lpar and
-cell, and provide the default answer based on memblock_end_of_DRAM(),
-with hooks for get_dma_offset, and provide an implementation for iommu
-that looks at the defined table size.  Coverting from the end address
-to the required bit mask is based on the generic implementation.
+Check the mask is supported by the selected dma ops before
+committing it.
 
-The need for this was discovered when the qla2xxx driver switched to
-64 bit dma then reverted to 32 bit when dma_get_required_mask said
-32 bits was sufficient.
+We only need to set iommu ops if it is not the current ops; this
+avoids searching the tree for the iommu table unnecessarily.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/include/asm/dma-mapping.h |    3 ++
- arch/powerpc/include/asm/machdep.h     |    3 +-
- arch/powerpc/kernel/dma-iommu.c        |   13 ++++++++++
- arch/powerpc/kernel/dma.c              |   39 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/cell/iommu.c    |   12 +++++++++
- arch/powerpc/platforms/pseries/iommu.c |   27 ++++++++++++++++++++++
- 6 files changed, 96 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index dd70fac..8135e66 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -20,6 +20,8 @@
- 
- #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
- 
-+#define ARCH_HAS_DMA_GET_REQUIRED_MASK
-+
- /* Some dma direct funcs must be visible for use in other dma_ops */
- extern void *dma_direct_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t flag);
-@@ -69,6 +71,7 @@ static inline unsigned long device_to_mask(struct device *dev)
-  */
- #ifdef CONFIG_PPC64
- extern struct dma_map_ops dma_iommu_ops;
-+extern u64 dma_iommu_get_required_mask(struct device *dev);
- #endif
- extern struct dma_map_ops dma_direct_ops;
- 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index e4f0191..5837881 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -100,8 +100,9 @@ struct machdep_calls {
- 	void		(*pci_dma_dev_setup)(struct pci_dev *dev);
- 	void		(*pci_dma_bus_setup)(struct pci_bus *bus);
- 
--	/* Platform set_dma_mask override */
-+	/* Platform set_dma_mask and dma_get_required_mask overrides */
- 	int		(*dma_set_mask)(struct device *dev, u64 dma_mask);
-+	u64		(*dma_get_required_mask)(struct device *dev);
- 
- 	int		(*probe)(void);
- 	void		(*setup_arch)(void); /* Optional, may be NULL */
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index e755415..1f2a711 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -90,6 +90,19 @@ static int dma_iommu_dma_supported(struct device *dev, u64 mask)
- 		return 1;
- }
- 
-+u64 dma_iommu_get_required_mask(struct device *dev)
-+{
-+	struct iommu_table *tbl = get_iommu_table_base(dev);
-+	u64 mask;
-+	if (!tbl)
-+		return 0;
-+
-+	mask = 1ULL < (fls_long(tbl->it_offset + tbl->it_size) - 1);
-+	mask += mask - 1;
-+
-+	return mask;
-+}
-+
- struct dma_map_ops dma_iommu_ops = {
- 	.alloc_coherent	= dma_iommu_alloc_coherent,
- 	.free_coherent	= dma_iommu_free_coherent,
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index d238c08..97fe867 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -172,6 +172,45 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
- }
- EXPORT_SYMBOL(dma_set_mask);
- 
-+u64 dma_get_required_mask(struct device *dev)
-+{
-+	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	u64 mask, end = 0;
-+
-+	if (ppc_md.dma_get_required_mask)
-+		return ppc_md.dma_get_required_mask(dev);
-+
-+	if (unlikely(dma_ops == NULL))
-+		return 0;
-+
-+#ifdef CONFIG_PPC64
-+	else if (dma_ops == &dma_iommu_ops)
-+		return dma_iommu_get_required_mask(dev);
-+#endif
-+#ifdef CONFIG_SWIOTLB
-+	else if (dma_ops == &swiotlb_dma_ops) {
-+		u64 max_direct_dma_addr = dev->archdata.max_direct_dma_addr;
-+
-+		end = memblock_end_of_DRAM();
-+		if (max_direct_dma_addr && end > max_direct_dma_addr)
-+			end = max_direct_dma_addr;
-+		end += get_dma_offset(dev);
-+	}
-+#endif
-+	else if (dma_ops == &dma_direct_ops)
-+		end = memblock_end_of_DRAM() + get_dma_offset(dev);
-+	else {
-+		WARN_ONCE(1, "%s: unknown ops %p\n", __func__, dma_ops);
-+		end = memblock_end_of_DRAM();
-+	}
-+
-+	mask = 1ULL << (fls64(end) - 1);
-+	mask += mask - 1;
-+
-+	return mask;
-+}
-+EXPORT_SYMBOL_GPL(dma_get_required_mask);
-+
- static int __init dma_init(void)
- {
-        dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 26a0671..5ef55f3 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -1159,6 +1159,17 @@ static int __init setup_iommu_fixed(char *str)
- }
- __setup("iommu_fixed=", setup_iommu_fixed);
- 
-+static u64 cell_dma_get_required_mask(struct device *dev)
-+{
-+	if (!dev->dma_mask)
-+		return 0;
-+
-+	if (iommu_fixed_disabled && get_dma_ops(dev) == &dma_iommu_ops)
-+		return dma_iommu_get_required_mask(dev);
-+
-+	return DMA_BIT_MASK(64);
-+}
-+
- static int __init cell_iommu_init(void)
- {
- 	struct device_node *np;
-@@ -1175,6 +1186,7 @@ static int __init cell_iommu_init(void)
- 
- 	/* Setup various ppc_md. callbacks */
- 	ppc_md.pci_dma_dev_setup = cell_pci_dma_dev_setup;
-+	ppc_md.dma_get_required_mask = cell_dma_get_required_mask;
- 	ppc_md.tce_build = tce_build_cell;
- 	ppc_md.tce_free = tce_free_cell;
- 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 01faab9..fe5eded 100644
+index 44d47ac..05c101e 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -1077,12 +1077,38 @@ check_mask:
+@@ -1026,9 +1026,12 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+ 	const void *dma_window = NULL;
+ 	u64 dma_offset;
+ 
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
++	if (!dev->dma_mask)
+ 		return -EIO;
+ 
++	if (!dev_is_pci(dev))
++		goto check_mask;
++
+ 	pdev = to_pci_dev(dev);
+ 
+ 	/* only attempt to use a new window if 64-bit DMA is requested */
+@@ -1059,13 +1062,17 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+ 		}
+ 	}
+ 
+-	/* fall-through to iommu ops */
+-	if (!ddw_enabled) {
+-		dev_info(dev, "Using 32-bit DMA via iommu\n");
++	/* fall back on iommu ops, restore table pointer with ops */
++	if (!ddw_enabled && get_dma_ops(dev) != &dma_iommu_ops) {
++		dev_info(dev, "Restoring 32-bit DMA via iommu\n");
+ 		set_dma_ops(dev, &dma_iommu_ops);
+ 		pci_dma_dev_setup_pSeriesLP(pdev);
+ 	}
+ 
++check_mask:
++	if (!dma_supported(dev, dma_mask))
++		return -EIO;
++
+ 	*dev->dma_mask = dma_mask;
  	return 0;
  }
- 
-+static u64 dma_get_required_mask_pSeriesLP(struct device *dev)
-+{
-+	if (!dev->dma_mask)
-+		return 0;
-+
-+	if (!disable_ddw && dev_is_pci(dev)) {
-+		struct pci_dev *pdev = to_pci_dev(dev);
-+		struct device_node *dn;
-+
-+		dn = pci_device_to_OF_node(pdev);
-+
-+		/* search upwards for ibm,dma-window */
-+		for (; dn && PCI_DN(dn) && !PCI_DN(dn)->iommu_table;
-+				dn = dn->parent)
-+			if (of_get_property(dn, "ibm,dma-window", NULL))
-+				break;
-+		/* if there is a ibm,ddw-applicable property require 64 bits */
-+		if (dn && PCI_DN(dn) &&
-+				of_get_property(dn, "ibm,ddw-applicable", NULL))
-+			return DMA_BIT_MASK(64);
-+	}
-+
-+	return dma_iommu_get_required_mask(dev);
-+}
-+
- #else  /* CONFIG_PCI */
- #define pci_dma_bus_setup_pSeries	NULL
- #define pci_dma_dev_setup_pSeries	NULL
- #define pci_dma_bus_setup_pSeriesLP	NULL
- #define pci_dma_dev_setup_pSeriesLP	NULL
- #define dma_set_mask_pSeriesLP		NULL
-+#define dma_get_required_mask_pSeriesLP	NULL
- #endif /* !CONFIG_PCI */
- 
- static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
-@@ -1186,6 +1212,7 @@ void iommu_init_early_pSeries(void)
- 		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
- 		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
- 		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
-+		ppc_md.dma_get_required_mask = dma_get_required_mask_pSeriesLP;
- 	} else {
- 		ppc_md.tce_build = tce_build_pSeries;
- 		ppc_md.tce_free  = tce_free_pSeries;
 -- 
 1.7.4.1
