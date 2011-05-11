@@ -1,17 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id EEED71008C1
+	by ozlabs.org (Postfix) with ESMTP id 8ED06B6F14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 May 2011 17:42:36 +1000 (EST)
+	Wed, 11 May 2011 17:42:37 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <e23e5e19f8eade7cfa0957c2636cea1fd40aecb3.1305092637.git.miltonm@bga.com>
+Message-Id: <e619719d90d94f19b6e2b47c3f36e7873da5bef9.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:28:48 -0500
-Subject: [PATCH 05/37] powerpc: Respect nr_cpu_ids when calling
-	set_cpu_possible and set_cpu_present
+Date: Wed, 11 May 2011 00:30:18 -0500
+Subject: [PATCH 30/37] powerpc: mpc62xx_pic: fix get_irq handling of NO_IRQ
+Cc: Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,72 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We should not set cpus above nr_cpu_ids to possible.  While we
-will trigger a warning with CONFIG_CPUMASK_DEBUG, even then the mask
-initializers will set the bits beyond what the iterators check and cause
-nr_cpu_ids to increase.
+If none of irq category bits were set mpc52xx_get_irq() would pass
+NO_IRQ_IGNORE (-1) to irq_linear_revmap, which does an unsigned compare
+and declares the interrupt above the linear map range.  It then punts
+to irq_find_mapping, which performs a linear search of all irqs,
+which will likely miss and only then return NO_IRQ.
 
-Respecting nr_cpu_ids during setup will allow us to use it in our initial
-paca allocation.  It can be reduced from NR_CPUS by the existing early param
-nr_cpus=, which was added in 2b633e3fac5efada088b57d31e65401f22bcc18f (smp:
-Use nr_cpus= to set nr_cpu_ids early).  We already call parse_early_parms
-between finding the command line and allocating the pacas.
+If no status bit is set, then we should return NO_IRQ directly.
+The interrupt should not be suppressed from spurious counting, in fact
+that is the definition of supurious.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
-
 ---
-
-Probably-not-worth-Cc: stable (2.6.34 and up)
 ---
- arch/powerpc/kernel/setup-common.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 1475df6..fce759b 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -404,7 +404,7 @@ static void __init cpu_init_thread_core_maps(int tpc)
-  *                  cpu_present_mask
-  *
-  * Having the possible map set up early allows us to restrict allocations
-- * of things like irqstacks to num_possible_cpus() rather than NR_CPUS.
-+ * of things like irqstacks to nr_cpu_ids rather than NR_CPUS.
-  *
-  * We do not initialize the online map here; cpus set their own bits in
-  * cpu_online_mask as they come up.
-@@ -424,7 +424,7 @@ void __init smp_setup_cpu_maps(void)
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+index bb61181..1a9a495 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+@@ -486,7 +486,7 @@ void __init mpc52xx_init_irq(void)
+ unsigned int mpc52xx_get_irq(void)
+ {
+ 	u32 status;
+-	int irq = NO_IRQ_IGNORE;
++	int irq;
  
- 	DBG("smp_setup_cpu_maps()\n");
- 
--	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < NR_CPUS) {
-+	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < nr_cpu_ids) {
- 		const int *intserv;
- 		int j, len;
- 
-@@ -443,7 +443,7 @@ void __init smp_setup_cpu_maps(void)
- 				intserv = &cpu;	/* assume logical == phys */
+ 	status = in_be32(&intr->enc_status);
+ 	if (status & 0x00000400) {	/* critical */
+@@ -509,6 +509,8 @@ unsigned int mpc52xx_get_irq(void)
+ 		} else {
+ 			irq |= (MPC52xx_IRQ_L1_PERP << MPC52xx_IRQ_L1_OFFSET);
  		}
++	} else {
++		return NO_IRQ;
+ 	}
  
--		for (j = 0; j < nthreads && cpu < NR_CPUS; j++) {
-+		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
- 			DBG("    thread %d -> cpu %d (hard id %d)\n",
- 			    j, cpu, intserv[j]);
- 			set_cpu_present(cpu, true);
-@@ -483,12 +483,12 @@ void __init smp_setup_cpu_maps(void)
- 		if (cpu_has_feature(CPU_FTR_SMT))
- 			maxcpus *= nthreads;
- 
--		if (maxcpus > NR_CPUS) {
-+		if (maxcpus > nr_cpu_ids) {
- 			printk(KERN_WARNING
- 			       "Partition configured for %d cpus, "
- 			       "operating system maximum is %d.\n",
--			       maxcpus, NR_CPUS);
--			maxcpus = NR_CPUS;
-+			       maxcpus, nr_cpu_ids);
-+			maxcpus = nr_cpu_ids;
- 		} else
- 			printk(KERN_INFO "Partition configured for %d cpus.\n",
- 			       maxcpus);
+ 	return irq_linear_revmap(mpc52xx_irqhost, irq);
 -- 
 1.7.0.4
