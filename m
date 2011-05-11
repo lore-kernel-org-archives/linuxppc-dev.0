@@ -1,18 +1,41 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 673141007D7
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A94B2B6F6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 00:46:39 +1000 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] RapidIO: Fix default routing initialization
-Date: Wed, 11 May 2011 10:46:03 -0400
-Message-Id: <1305125163-14590-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
-	Thomas Moll <thomas.moll@sysgo.com>
+	Thu, 12 May 2011 02:18:37 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BGFVhX007745
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:15:31 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4BGJHEq127198
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:19:18 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4BAHsCk022186
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 04:17:55 -0600
+Message-ID: <4DCAB6B0.8020904@linux.vnet.ibm.com>
+Date: Wed, 11 May 2011 11:17:52 -0500
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [BUG] rebuild_sched_domains considered dangerous
+References: <1299639487.22236.256.camel@pasglop>
+	<1299665998.2308.2753.camel@twins>
+	<1299675674.2308.2924.camel@twins>
+	<1299766211.2308.4468.camel@twins>
+	<1303294056.8345.122.camel@twins>
+	<1303336869.2513.26.camel@pasglop>
+	<4DC85BFE.7060900@linux.vnet.ibm.com>
+	<1305036563.2914.80.camel@laptop>
+In-Reply-To: <1305036563.2914.80.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,92 +45,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix switch initialization to ensure that all switches have default
-routing disabled. This guarantees that no unexpected RapidIO packets
-arrive to the default port set by reset and there is no default routing
-destination until it is properly configured by software.
+On 05/10/2011 09:09 AM, Peter Zijlstra wrote:
+> On Mon, 2011-05-09 at 16:26 -0500, Jesse Larrew wrote:
+>>
+>> According the the Power firmware folks, updating the home node of a
+>> virtual cpu happens rather infrequently. The VPHN code currently
+>> checks for topology updates every 60 seconds, but we can poll less
+>> frequently if it helps. I chose 60 second intervals simply because
+>> that's how often they check the topology on s390. ;-)
+> 
+> This just makes me shudder, so you poll the state? Meaning that the vcpu
+> can actually run 99% of the time on another node?
+> 
+> What's the point of this if the vcpu scheduler can move the vcpu around
+> much faster?
+> 
 
-This update also unifies handling of unmapped destinations by tsi57x,
-IDT Gen1 and IDT Gen2 switches.
+Based on my discussion with the firmware folks, it sounds like the hypervisor will never automatically move vcpus around on its own. The firmware is designed to set the cpu home node at partition boot, then wait for the customer to run a tool to rebalance the affinity. Moving vcpus around costs performance, so they want to let the customer decide when to shuffle the vcpus. 
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
-Cc: Thomas Moll <thomas.moll@sysgo.com>
----
- drivers/rapidio/switches/idt_gen2.c |    9 +++++++++
- drivers/rapidio/switches/idtcps.c   |    6 ++++++
- drivers/rapidio/switches/tsi57x.c   |    6 ++++++
- 3 files changed, 21 insertions(+), 0 deletions(-)
+>From the kernel's perspective, we can expect to see occasional batches of vcpus updating at once, after which the topology should remain fixed until the tool is run again.
 
-diff --git a/drivers/rapidio/switches/idt_gen2.c b/drivers/rapidio/switches/idt_gen2.c
-index ac2701b..043ee31 100644
---- a/drivers/rapidio/switches/idt_gen2.c
-+++ b/drivers/rapidio/switches/idt_gen2.c
-@@ -95,6 +95,9 @@ idtg2_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
- 	else
- 		table++;
- 
-+	if (route_port == RIO_INVALID_ROUTE)
-+		route_port = IDT_DEFAULT_ROUTE;
-+
- 	rio_mport_write_config_32(mport, destid, hopcount,
- 				  LOCAL_RTE_CONF_DESTID_SEL, table);
- 
-@@ -411,6 +414,12 @@ static int idtg2_switch_init(struct rio_dev *rdev, int do_enum)
- 	rdev->rswitch->em_handle = idtg2_em_handler;
- 	rdev->rswitch->sw_sysfs = idtg2_sysfs;
- 
-+	if (do_enum) {
-+		/* Ensure that default routing is disabled on startup */
-+		rio_write_config_32(rdev,
-+				    RIO_STD_RTE_DEFAULT_PORT, IDT_NO_ROUTE);
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/drivers/rapidio/switches/idtcps.c b/drivers/rapidio/switches/idtcps.c
-index 3a97107..d06ee2d 100644
---- a/drivers/rapidio/switches/idtcps.c
-+++ b/drivers/rapidio/switches/idtcps.c
-@@ -26,6 +26,9 @@ idtcps_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
- {
- 	u32 result;
- 
-+	if (route_port == RIO_INVALID_ROUTE)
-+		route_port = CPS_DEFAULT_ROUTE;
-+
- 	if (table == RIO_GLOBAL_TABLE) {
- 		rio_mport_write_config_32(mport, destid, hopcount,
- 				RIO_STD_RTE_CONF_DESTID_SEL_CSR, route_destid);
-@@ -130,6 +133,9 @@ static int idtcps_switch_init(struct rio_dev *rdev, int do_enum)
- 		/* set TVAL = ~50us */
- 		rio_write_config_32(rdev,
- 			rdev->phys_efptr + RIO_PORT_LINKTO_CTL_CSR, 0x8e << 8);
-+		/* Ensure that default routing is disabled on startup */
-+		rio_write_config_32(rdev,
-+				    RIO_STD_RTE_DEFAULT_PORT, CPS_NO_ROUTE);
- 	}
- 
- 	return 0;
-diff --git a/drivers/rapidio/switches/tsi57x.c b/drivers/rapidio/switches/tsi57x.c
-index d322fa0..10e7ddc 100644
---- a/drivers/rapidio/switches/tsi57x.c
-+++ b/drivers/rapidio/switches/tsi57x.c
-@@ -303,6 +303,12 @@ static int tsi57x_switch_init(struct rio_dev *rdev, int do_enum)
- 	rdev->rswitch->em_init = tsi57x_em_init;
- 	rdev->rswitch->em_handle = tsi57x_em_handler;
- 
-+	if (do_enum) {
-+		/* Ensure that default routing is disabled on startup */
-+		rio_write_config_32(rdev, RIO_STD_RTE_DEFAULT_PORT,
-+				    RIO_INVALID_ROUTE);
-+	}
-+
- 	return 0;
- }
- 
+>> As for updating the memory topology, there are cases where changing
+>> the home node of a virtual cpu doesn't affect the memory topology. If
+>> it does, there is a separate notification system for memory topology
+>> updates that is independent from the cpu updates. I plan to start
+>> working on a patch set to enable memory topology updates in the kernel
+>> in the coming weeks, but I wanted to get the cpu patches out on the
+>> list so we could start having these debates. :) 
+> 
+> Well, they weren't put out on a list (well maybe on the ppc list but
+> that's the same as not posting them from my pov), they were merged (and
+> thus declared done) that's not how you normally start a debate.
+> 
+
+That's a fair point. At the time, I didn't expect anyone outside of the PPC community to care much about a PPC-specific patch set, but I see now why it's important to keep everyone in the loop. Sorry about that. I'll be sure to send any future patches to LKML as well.
+
+> I would really like to see both patch-sets together. Also, I'm not at
+> all convinced its a sane thing to do. Pretty much all NUMA aware
+> software I know of assumes that CPU<->NODE relations are static,
+> breaking that in kernel renders all existing software broken.
+> 
+
+I suspect that's true. Then again, shouldn't it be the capabilities of the hardware that dictates what the software does, rather than the other way around?
+
 -- 
-1.7.3.1
+
+Jesse Larrew
+Software Engineer, Linux on Power Kernel Team
+IBM Linux Technology Center
+Phone: (512) 973-2052 (T/L: 363-2052)
+jlarrew@linux.vnet.ibm.com
