@@ -1,17 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id CB859100863
+	by ozlabs.org (Postfix) with ESMTP id 640F71009D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 May 2011 17:42:39 +1000 (EST)
+	Wed, 11 May 2011 17:42:40 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <a254a95c4fe502cf11a3a094afe0298263c3dbd6.1305092637.git.miltonm@bga.com>
+Message-Id: <bae1a50ee464fb9530bb5c922cb59d7e1f07833d.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:29:57 -0500
-Subject: [PATCH 24/37] powerpc: return early if irq_host lookup type is wrong
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Date: Wed, 11 May 2011 00:29:46 -0500
+Subject: [PATCH 21/37] powerpc: use bytes instead of bitops in smp ipi
+	multiplexing
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,60 +21,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If for some reason the code incrorectly calls the wrong function to
-manage the revmap, not only should we warn, we should take action.
-However, in the paths we expect to be taken every delivered interrupt
-change to WARN_ON_ONCE.  Use the if (WARN_ON(x)) format to get the
-unlikely for free.
+Since there are only 4 messages, we can replace the atomic bit set
+(which uses atomic load reserve and store conditional sequence) with
+a byte stores to seperate bytes.  We still have to perform a load
+reserve and store conditional sequence to avoid loosing messages on
+reception but we can do that with a single call to xchg.
+
+The do {} while and __BIG_ENDIAN specific mask testing was chosen by
+looking at the generated asm code.  On gcc-4.4, the bit masking becomes
+a simple bit mask and test of the register returned from xchg without
+storing and loading the value to the stack like attempts with a union
+of bytes and an int (or worse, loading single bit constants from the
+constant pool into non-voliatle registers that had to be preseved on
+the stack).  The do {} while avoids an unconditional branch to the
+end of the loop to test the entry / repeat condition of a while loop
+and instead optimises for the expected single iteration of the loop.
+
+We have a full mb() at the beginning to cover ordering between send,
+ipi, and receive so we can use xchg_local and forgo the further
+acquire and release barriers of xchg.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
- arch/powerpc/kernel/irq.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+v4: cast int to char ptr in msg send instead of char[] to int* for xchg/test
+v3a: add resend to replace dorbell_check_self
+v3: settle on casting from char message[4] __aligned(4) to int ptr
+v2: try initialized messages
+	(ended up with globals for each check value, increased reg pressure)
+v1: initial version, check bytes though pointer to result of xchg
+	(resulted in store to stack then byte load / compare / branch)
+---
+ arch/powerpc/kernel/smp.c |   31 ++++++++++++++++++-------------
+ 1 files changed, 18 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index f42e869..4a5aa8c 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -814,8 +814,7 @@ void irq_dispose_mapping(unsigned int virq)
- 		return;
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index a28e945..8321b0a 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -180,7 +180,7 @@ int smp_request_message_ipi(int virq, int msg)
  
- 	host = irq_map[virq].host;
--	WARN_ON (host == NULL);
--	if (host == NULL)
-+	if (WARN_ON(host == NULL))
- 		return;
- 
- 	/* Never unmap legacy interrupts */
-@@ -898,7 +897,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
- 	struct irq_map_entry *ptr;
- 	unsigned int virq;
- 
--	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-+	if (WARN_ON_ONCE(host->revmap_type != IRQ_HOST_MAP_TREE))
-+		return irq_find_mapping(host, hwirq);
- 
- 	/*
- 	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
-@@ -922,7 +922,8 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
- void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
- 			     irq_hw_number_t hwirq)
+ #ifdef CONFIG_PPC_SMP_MUXED_IPI
+ struct cpu_messages {
+-	unsigned long messages;		/* current messages bits */
++	int messages;			/* current messages */
+ 	unsigned long data;		/* data for cause ipi */
+ };
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct cpu_messages, ipi_message);
+@@ -195,9 +195,9 @@ void smp_muxed_ipi_set_data(int cpu, unsigned long data)
+ void smp_muxed_ipi_message_pass(int cpu, int msg)
  {
--	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-+	if (WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE))
-+		return;
+ 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
+-	unsigned long *tgt = &info->messages;
++	char *message = (char *)&info->messages;
  
- 	if (virq != NO_IRQ) {
- 		mutex_lock(&revmap_trees_mutex);
-@@ -937,7 +938,8 @@ unsigned int irq_linear_revmap(struct irq_host *host,
+-	set_bit(msg, tgt);
++	message[msg] = 1;
+ 	mb();
+ 	smp_ops->cause_ipi(cpu, info->data);
+ }
+@@ -205,30 +205,35 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+ void smp_muxed_ipi_resend(void)
  {
- 	unsigned int *revmap;
+ 	struct cpu_messages *info = &__get_cpu_var(ipi_message);
+-	unsigned long *tgt = &info->messages;
  
--	WARN_ON(host->revmap_type != IRQ_HOST_MAP_LINEAR);
-+	if (WARN_ON_ONCE(host->revmap_type != IRQ_HOST_MAP_LINEAR))
-+		return irq_find_mapping(host, hwirq);
+-	if (*tgt)
++	if (info->messages)
+ 		smp_ops->cause_ipi(smp_processor_id(), info->data);
+ }
  
- 	/* Check revmap bounds */
- 	if (unlikely(hwirq >= host->revmap_data.linear.size))
+ irqreturn_t smp_ipi_demux(void)
+ {
+ 	struct cpu_messages *info = &__get_cpu_var(ipi_message);
+-	unsigned long *tgt = &info->messages;
++	unsigned int all;
+ 
+ 	mb();	/* order any irq clear */
+-	while (*tgt) {
+-		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION, tgt))
++
++	do {
++		all = xchg_local(&info->messages, 0);
++
++#ifdef __BIG_ENDIAN
++		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
+ 			generic_smp_call_function_interrupt();
+-		if (test_and_clear_bit(PPC_MSG_RESCHEDULE, tgt))
++		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
+ 			reschedule_action(0, NULL); /* upcoming sched hook */
+-		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE, tgt))
++		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
+ 			generic_smp_call_function_single_interrupt();
+-#if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+-		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK, tgt))
++		if (all & (1 << (24 - 8 * PPC_MSG_DEBUGGER_BREAK)))
+ 			debug_ipi_action(0, NULL);
++#else
++#error Unsupported ENDIAN
+ #endif
+-	}
++	} while (info->messages);
++
+ 	return IRQ_HANDLED;
+ }
+ #endif /* CONFIG_PPC_SMP_MUXED_IPI */
 -- 
 1.7.0.4
