@@ -1,28 +1,14 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BEA4F1007D7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 08:25:13 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BME4ge013730
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 18:14:04 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4BMP7b41192078
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 18:25:07 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p4BIOtiF002511
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 15:24:55 -0300
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH 0/8] pseries/iommu: bug-fixes and cleanups for dynamic dma
-	windows
-Date: Wed, 11 May 2011 15:24:56 -0700
-Message-Id: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/8] pseries/iommu: find windows after kexec during boot
+Date: Wed, 11 May 2011 15:24:59 -0700
+Message-Id: <1305152704-4864-4-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
+References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +18,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of patches attempts to cleanup and fix some bugs related to
-dynamic dma windows and kexec/kdump. They build on the three patches I
-have submitted most recently:
+From: Milton Miller <miltonm@bga.com>
 
-powerpc: fix kexec with dynamic dma windows
-	http://patchwork.ozlabs.org/patch/94445/
-pseries/iommu: restore iommu table pointer when restoring iommu ops
-	http://patchwork.ozlabs.org/patch/94909/
-pseries/iommu: use correct return type in dupe_ddw_if_already_created
-	http://patchwork.ozlabs.org/patch/95184/
+Move the discovery of windows previously setup from when the pci driver
+calls set_dma_mask to an arch_initcall.
 
-The full series has been successfully tested with kdump/kexec on pseries
-machine.
+When kexecing into a kernel with dynamic dma windows allocated, we need
+to find the windows early so that memory hot remove will be able to
+delete the tces mapping the to be removed memory and memory hotplug add
+will map the new memory into the window.  We should not wait for the
+driver to be loaded and the device to be probed.  The iommu init hooks
+are before kmalloc is setup, so defer to arch_initcall.
 
-Milton Miller (8):
-  pseries/iommu: add additional checks when changing iommu mask
-  pseries/iommu: remove ddw property when destroying window
-  pseries/iommu: find windows after kexec during boot
-  pseries/iommu: cleanup ddw naming
-  powerpc: override dma_get_required_mask by platform hook and ops
-  dma-mapping: add get_required_mask if arch overrides default
-  powerpc: use the newly added get_required_mask dma_map_ops hook
-  powerpc: tidy up dma_map_ops after adding new hook
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+---
+ arch/powerpc/platforms/pseries/iommu.c |   52 ++++++++++++++-----------------
+ 1 files changed, 24 insertions(+), 28 deletions(-)
 
- arch/powerpc/include/asm/device.h       |    2 +
- arch/powerpc/include/asm/machdep.h      |    3 +-
- arch/powerpc/kernel/dma-iommu.c         |   28 +++++--
- arch/powerpc/kernel/dma-swiotlb.c       |   16 ++++
- arch/powerpc/kernel/dma.c               |   44 ++++++++--
- arch/powerpc/kernel/ibmebus.c           |   22 +++--
- arch/powerpc/kernel/vio.c               |   21 +++--
- arch/powerpc/platforms/cell/iommu.c     |   21 +++++
- arch/powerpc/platforms/ps3/system-bus.c |    7 ++
- arch/powerpc/platforms/pseries/iommu.c  |  142 +++++++++++++++++++------------
- include/linux/dma-mapping.h             |    3 +
- 11 files changed, 224 insertions(+), 85 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index a0421ac..a48f126 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -695,9 +695,9 @@ static void remove_ddw(struct device_node *np)
+ 			np->full_name, ret, ddr_avail[2], liobn);
+ 
+ delprop:
+-	ret = of_remove_property(np, win64);
++	ret = prom_remove_property(np, win64);
+ 	if (ret)
+-		pr_warning("%s: failed to remove direct window property: %d\n"
++		pr_warning("%s: failed to remove direct window property: %d\n",
+ 			np->full_name, ret);
+ }
+ 
+@@ -725,38 +725,38 @@ static u64 dupe_ddw_if_already_created(struct pci_dev *dev, struct device_node *
+ 	return dma_addr;
+ }
+ 
+-static u64 dupe_ddw_if_kexec(struct pci_dev *dev, struct device_node *pdn)
++static int find_existing_ddw_windows(void)
+ {
+-	struct device_node *dn;
+-	struct pci_dn *pcidn;
+ 	int len;
++	struct device_node *pdn;
+ 	struct direct_window *window;
+ 	const struct dynamic_dma_window_prop *direct64;
+-	u64 dma_addr = 0;
+ 
+-	dn = pci_device_to_OF_node(dev);
+-	pcidn = PCI_DN(dn);
+-	direct64 = of_get_property(pdn, DIRECT64_PROPNAME, &len);
+-	if (direct64) {
+-		if (len < sizeof(struct dynamic_dma_window_prop)) {
++	if (!firmware_has_feature(FW_FEATURE_LPAR))
++		return 0;
++
++	for_each_node_with_property(pdn, DIRECT64_PROPNAME) {
++		direct64 = of_get_property(pdn, DIRECT64_PROPNAME, &len);
++		if (!direct64)
++			continue;
++
++		window = kzalloc(sizeof(*window), GFP_KERNEL);
++		if (!window || len < sizeof(struct dynamic_dma_window_prop)) {
++			kfree(window);
+ 			remove_ddw(pdn);
+-		} else {
+-			window = kzalloc(sizeof(*window), GFP_KERNEL);
+-			if (!window) {
+-				remove_ddw(pdn);
+-			} else {
+-				window->device = pdn;
+-				window->prop = direct64;
+-				spin_lock(&direct_window_list_lock);
+-				list_add(&window->list, &direct_window_list);
+-				spin_unlock(&direct_window_list_lock);
+-				dma_addr = direct64->dma_base;
+-			}
++			continue;
+ 		}
++
++		window->device = pdn;
++		window->prop = direct64;
++		spin_lock(&direct_window_list_lock);
++		list_add(&window->list, &direct_window_list);
++		spin_unlock(&direct_window_list_lock);
+ 	}
+ 
+-	return dma_addr;
++	return 0;
+ }
++machine_arch_initcall(pseries, find_existing_ddw_windows);
+ 
+ static int query_ddw(struct pci_dev *dev, const u32 *ddr_avail,
+ 			struct ddw_query_response *query)
+@@ -854,10 +854,6 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	if (dma_addr != 0)
+ 		goto out_unlock;
+ 
+-	dma_addr = dupe_ddw_if_kexec(dev, pdn);
+-	if (dma_addr != 0)
+-		goto out_unlock;
+-
+ 	/*
+ 	 * the ibm,ddw-applicable property holds the tokens for:
+ 	 * ibm,query-pe-dma-window
 -- 
 1.7.4.1
