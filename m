@@ -1,16 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 640B51009D1
+	by ozlabs.org (Postfix) with ESMTP id 126161007E7
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 11 May 2011 17:42:40 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <769cd6c6775a7a85ddc758619783ef7c0ba49e1b.1305092637.git.miltonm@bga.com>
+Message-Id: <e01cafe6352e8e4715788f959b747c1363459cee.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:29:49 -0500
-Subject: [PATCH 22/37] powerpc: xics: cleanup xics_host_map and ipi
+Date: Wed, 11 May 2011 00:30:40 -0500
+Subject: [PATCH 36/37] powerpc: remove virq_to_host
+Cc: Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,51 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since we already have a special case in map to set the ipi handler, use
-the desired flow.
-
-If we don't find an ics to handle the interrupt complain instead of
-returning 0 without having set a chip or handler.
+The only references to the irq_map[].host field are internal to
+arch/powerpc/kernel/irq.c
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
- arch/powerpc/sysdev/xics/xics-common.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+---
+ arch/powerpc/include/asm/irq.h |    1 -
+ arch/powerpc/kernel/irq.c      |    6 ------
+ 2 files changed, 0 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index a31a710..43b2a79 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -135,9 +135,8 @@ static void xics_request_ipi(void)
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index a65d170..1bff591 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -129,7 +129,6 @@ struct irq_data;
+ extern irq_hw_number_t irqd_to_hwirq(struct irq_data *d);
+ extern irq_hw_number_t virq_to_hw(unsigned int virq);
+ extern bool virq_is_host(unsigned int virq, struct irq_host *host);
+-extern struct irq_host *virq_to_host(unsigned int virq);
  
- 	/*
- 	 * IPIs are marked IRQF_DISABLED as they must run with irqs
--	 * disabled
-+	 * disabled, and PERCPU.  The handler was set in map.
- 	 */
--	irq_set_handler(ipi, handle_percpu_irq);
- 	BUG_ON(request_irq(ipi, icp_ops->ipi_action,
- 			   IRQF_DISABLED|IRQF_PERCPU, "IPI", NULL));
+ /**
+  * irq_alloc_host - Allocate a new irq_host data structure
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 73cf290..4368b5e 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -516,12 +516,6 @@ bool virq_is_host(unsigned int virq, struct irq_host *host)
  }
-@@ -341,15 +340,16 @@ static int xics_host_map(struct irq_host *h, unsigned int virq,
- 	/* Don't call into ICS for IPIs */
- 	if (hw == XICS_IPI) {
- 		irq_set_chip_and_handler(virq, &xics_ipi_chip,
--					 handle_fasteoi_irq);
-+					 handle_percpu_irq);
- 		return 0;
- 	}
+ EXPORT_SYMBOL_GPL(virq_is_host);
  
- 	/* Let the ICS setup the chip data */
- 	list_for_each_entry(ics, &ics_list, link)
- 		if (ics->map(ics, virq) == 0)
--			break;
--	return 0;
-+			return 0;
-+
-+	return -EINVAL;
- }
- 
- static int xics_host_xlate(struct irq_host *h, struct device_node *ct,
+-struct irq_host *virq_to_host(unsigned int virq)
+-{
+-	return irq_map[virq].host;
+-}
+-EXPORT_SYMBOL_GPL(virq_to_host);
+-
+ static int default_irq_host_match(struct irq_host *h, struct device_node *np)
+ {
+ 	return h->of_node != NULL && h->of_node == np;
 -- 
 1.7.0.4
