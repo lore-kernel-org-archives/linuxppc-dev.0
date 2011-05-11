@@ -1,26 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 350621007D1
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8ACD9B6F4F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 05:40:50 +1000 (EST)
-Received: by iwc10 with SMTP id 10so926948iwc.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 May 2011 12:40:47 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
-References: <cover.1305092637.git.miltonm@bga.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 11 May 2011 21:40:27 +0200
-Message-ID: <BANLkTi=XkfREnGaRjv7Pnk4VeJGjC8y+VA@mail.gmail.com>
-Subject: Re: [PATCH 00/37] fix paca memory usage and NR_CPU loops, factor ipi
-	and simplify irq code
-To: Milton Miller <miltonm@bga.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+	Thu, 12 May 2011 06:01:17 +1000 (EST)
+Date: Wed, 11 May 2011 13:00:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexandre Bounine <alexandre.bounine@idt.com>
+Subject: Re: [PATCH] RapidIO: Fix default routing initialization
+Message-Id: <20110511130024.955f1981.akpm@linux-foundation.org>
+In-Reply-To: <1305125163-14590-1-git-send-email-alexandre.bounine@idt.com>
+References: <1305125163-14590-1-git-send-email-alexandre.bounine@idt.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, Thomas Moll <thomas.moll@sysgo.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 11, 2011 at 7:43 AM, Milton Miller <miltonm@bga.com> wrote:
-[...]
-> After doing a bunch of grep's on arch/sh, I think the interesting
-> parts of super8 interrupt handling that Thomas referred to are in
-> drivers/sh/intc. =A0For some reason they populate the radix tree first
-> with a descriptor of their common interrupt controler abstraction
-> then walk the tree, replacing the tagged elements with the pointer
-> to their equivalent to irq_map. =A0I do not yet understand the purpose
-> of this two phase allocation.
+On Wed, 11 May 2011 10:46:03 -0400
+Alexandre Bounine <alexandre.bounine@idt.com> wrote:
 
-BTW, you can also write a patch now that eliminates irq_map entirely.
-I just talked to tglx today and we agree in principle to move the
-hwirq value and irq_domain pointer directly into irq_data (and hence
-directly accessible from the irq_desc).  The final form of irq_domain
-is still up in the air, but you could do an initial patch that leaves
-it as platform defined, and it can be followed up with a patch series
-that creates a common irq_domain definition.
+> Fix switch initialization to ensure that all switches have default
+> routing disabled. This guarantees that no unexpected RapidIO packets
+> arrive to the default port set by reset and there is no default routing
+> destination until it is properly configured by software.
+> 
+> This update also unifies handling of unmapped destinations by tsi57x,
+> IDT Gen1 and IDT Gen2 switches.
 
-g.
+The changelog doesn't permit me to determine the importance of this fix,
+so I don't know whether to schedule it for 2.6.39 or for -stable.
