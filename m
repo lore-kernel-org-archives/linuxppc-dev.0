@@ -1,16 +1,18 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 25115B6EFE
+	by ozlabs.org (Postfix) with ESMTP id AABC91007EB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 May 2011 17:42:32 +1000 (EST)
+	Wed, 11 May 2011 17:42:34 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <a8b749a3d0ac4e4da123c6abe344d2283a1ee637.1305092637.git.miltonm@bga.com>
+Message-Id: <72549d3e9897a80a25e83c873b970463d12e30f0.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:28:41 -0500
-Subject: [PATCH 03/37] powerpc/kdump64: Don't reference freed memory as pacas
+Date: Wed, 11 May 2011 00:30:29 -0500
+Subject: [PATCH 33/37] powerpc: spider-pic: get pic from chip_data instead of
+	irq_map
+Cc: Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,37 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Starting with 1426d5a3bd07589534286375998c0c8c6fdc5260 (powerpc:
-Dynamically allocate pacas) the space for pacas beyond cpu_possible
-is freed, but we failed to update the loop in crash.c.
-
-Since c1854e00727f50f7ac99e98d26ece04c087ef785 (powerpc: Set nr_cpu_ids
-early and use it to free PACAs) the number of pacas allocated is
-always nr_cpu_ids.
+Building on Grant's efforts to remove the irq_map array, this patch
+moves spider-pics use of virq_to_host() to use irq_data_get_chip_data
+and sets the irq chip data in the map call, like most other interrupt
+controllers in powerpc.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
-Cc: <stable@kernel.org> # .34.x
 ---
-This is the simplest fix, and quite sutiable for stable.
-
-We can merge the crash waits with the normal kexec waits later,
-and fix the hole described in the other version.
 ---
- arch/powerpc/kernel/crash.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/cell/spider-pic.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index 21f2c78..4e6ee94 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -236,7 +236,7 @@ static void crash_kexec_wait_realmode(int cpu)
- 	int i;
+diff --git a/arch/powerpc/platforms/cell/spider-pic.c b/arch/powerpc/platforms/cell/spider-pic.c
+index 34d2b99..442c28c 100644
+--- a/arch/powerpc/platforms/cell/spider-pic.c
++++ b/arch/powerpc/platforms/cell/spider-pic.c
+@@ -68,9 +68,9 @@ struct spider_pic {
+ };
+ static struct spider_pic spider_pics[SPIDER_CHIP_COUNT];
  
- 	msecs = 10000;
--	for (i=0; i < NR_CPUS && msecs > 0; i++) {
-+	for (i=0; i < nr_cpu_ids && msecs > 0; i++) {
- 		if (i == cpu)
- 			continue;
+-static struct spider_pic *spider_virq_to_pic(unsigned int virq)
++static struct spider_pic *spider_irq_data_to_pic(struct irq_data *d)
+ {
+-	return virq_to_host(virq)->host_data;
++	return irq_data_get_irq_chip_data(d);
+ }
  
+ static void __iomem *spider_get_irq_config(struct spider_pic *pic,
+@@ -81,7 +81,7 @@ static void __iomem *spider_get_irq_config(struct spider_pic *pic,
+ 
+ static void spider_unmask_irq(struct irq_data *d)
+ {
+-	struct spider_pic *pic = spider_virq_to_pic(d->irq);
++	struct spider_pic *pic = spider_irq_data_to_pic(d);
+ 	void __iomem *cfg = spider_get_irq_config(pic, irqd_to_hwirq(d));
+ 
+ 	out_be32(cfg, in_be32(cfg) | 0x30000000u);
+@@ -89,7 +89,7 @@ static void spider_unmask_irq(struct irq_data *d)
+ 
+ static void spider_mask_irq(struct irq_data *d)
+ {
+-	struct spider_pic *pic = spider_virq_to_pic(d->irq);
++	struct spider_pic *pic = spider_irq_data_to_pic(d);
+ 	void __iomem *cfg = spider_get_irq_config(pic, irqd_to_hwirq(d));
+ 
+ 	out_be32(cfg, in_be32(cfg) & ~0x30000000u);
+@@ -97,7 +97,7 @@ static void spider_mask_irq(struct irq_data *d)
+ 
+ static void spider_ack_irq(struct irq_data *d)
+ {
+-	struct spider_pic *pic = spider_virq_to_pic(d->irq);
++	struct spider_pic *pic = spider_irq_data_to_pic(d);
+ 	unsigned int src = irqd_to_hwirq(d);
+ 
+ 	/* Reset edge detection logic if necessary
+@@ -116,7 +116,7 @@ static void spider_ack_irq(struct irq_data *d)
+ static int spider_set_irq_type(struct irq_data *d, unsigned int type)
+ {
+ 	unsigned int sense = type & IRQ_TYPE_SENSE_MASK;
+-	struct spider_pic *pic = spider_virq_to_pic(d->irq);
++	struct spider_pic *pic = spider_irq_data_to_pic(d);
+ 	unsigned int hw = irqd_to_hwirq(d);
+ 	void __iomem *cfg = spider_get_irq_config(pic, hw);
+ 	u32 old_mask;
+@@ -171,6 +171,7 @@ static struct irq_chip spider_pic = {
+ static int spider_host_map(struct irq_host *h, unsigned int virq,
+ 			irq_hw_number_t hw)
+ {
++	irq_set_chip_data(virq, h->host_data);
+ 	irq_set_chip_and_handler(virq, &spider_pic, handle_level_irq);
+ 
+ 	/* Set default irq type */
 -- 
 1.7.0.4
