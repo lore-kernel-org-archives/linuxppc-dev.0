@@ -1,28 +1,27 @@
 Return-Path: <nacc@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E222F1007F2
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6117B10087D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 08:25:18 +1000 (EST)
+	Thu, 12 May 2011 08:25:23 +1000 (EST)
 Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
 	[9.17.195.226])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BMI4t5031698
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:18:04 -0600
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4BMJS9H032349
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:19:28 -0600
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
 	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4BMP7cp130294
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:25:07 -0600
+	p4BMP8Yu063054
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 16:25:08 -0600
 Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4BGP6iu016648
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:25:06 -0600
+	id p4BGP7eW016664
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2011 10:25:07 -0600
 From: Nishanth Aravamudan <nacc@us.ibm.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH 1/8] pseries/iommu: add additional checks when changing iommu
-	mask
-Date: Wed, 11 May 2011 15:24:57 -0700
-Message-Id: <1305152704-4864-2-git-send-email-nacc@us.ibm.com>
+Subject: [PATCH 2/8] pseries/iommu: remove ddw property when destroying window
+Date: Wed, 11 May 2011 15:24:58 -0700
+Message-Id: <1305152704-4864-3-git-send-email-nacc@us.ibm.com>
 In-Reply-To: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
 References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
@@ -38,59 +37,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Milton Miller <miltonm@bga.com>
 
-Do not check dma supported until we have chosen the right dma ops.
-Check that the device is pci before treating it as such.
+If we destroy the window, we need to remove the property recording that
+we setup the window.  Otherwise the next kernel we kexec will be
+confused.
 
-Check the mask is supported by the selected dma ops before
-committing it.
-
-We only need to set iommu ops if it is not the current ops; this
-avoids searching the tree for the iommu table unnecessarily.
+Also we should remove the property if even if we don't find the
+ibm,ddw-applicable window or if one of the property sizes is unexpected;
+presumably these came from a prior kernel via kexec, and we will not be
+maintaining the window with respect to memory hotplug.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 ---
- arch/powerpc/platforms/pseries/iommu.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 44d47ac..05c101e 100644
+index 05c101e..a0421ac 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -1026,9 +1026,12 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
- 	const void *dma_window = NULL;
- 	u64 dma_offset;
+@@ -665,9 +665,12 @@ static void remove_ddw(struct device_node *np)
  
--	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
-+	if (!dev->dma_mask)
- 		return -EIO;
+ 	ddr_avail = of_get_property(np, "ibm,ddw-applicable", &len);
+ 	win64 = of_find_property(np, DIRECT64_PROPNAME, NULL);
+-	if (!win64 || !ddr_avail || len < 3 * sizeof(u32))
++	if (!win64)
+ 		return;
  
-+	if (!dev_is_pci(dev))
-+		goto check_mask;
++	if (!ddr_avail || len < 3 * sizeof(u32) || win64->length < sizeof(*dwp))
++		goto delprop;
 +
- 	pdev = to_pci_dev(dev);
+ 	dwp = win64->value;
+ 	liobn = (u64)be32_to_cpu(dwp->liobn);
  
- 	/* only attempt to use a new window if 64-bit DMA is requested */
-@@ -1059,13 +1062,17 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
- 		}
- 	}
+@@ -690,8 +693,13 @@ static void remove_ddw(struct device_node *np)
+ 		pr_debug("%s: successfully removed direct window: rtas returned "
+ 			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
+ 			np->full_name, ret, ddr_avail[2], liobn);
+-}
  
--	/* fall-through to iommu ops */
--	if (!ddw_enabled) {
--		dev_info(dev, "Using 32-bit DMA via iommu\n");
-+	/* fall back on iommu ops, restore table pointer with ops */
-+	if (!ddw_enabled && get_dma_ops(dev) != &dma_iommu_ops) {
-+		dev_info(dev, "Restoring 32-bit DMA via iommu\n");
- 		set_dma_ops(dev, &dma_iommu_ops);
- 		pci_dma_dev_setup_pSeriesLP(pdev);
- 	}
++delprop:
++	ret = of_remove_property(np, win64);
++	if (ret)
++		pr_warning("%s: failed to remove direct window property: %d\n"
++			np->full_name, ret);
++}
  
-+check_mask:
-+	if (!dma_supported(dev, dma_mask))
-+		return -EIO;
-+
- 	*dev->dma_mask = dma_mask;
- 	return 0;
- }
+ static u64 dupe_ddw_if_already_created(struct pci_dev *dev, struct device_node *pdn)
+ {
 -- 
 1.7.4.1
