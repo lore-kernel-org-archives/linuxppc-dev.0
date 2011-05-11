@@ -1,16 +1,17 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 1E61810083F
+	by ozlabs.org (Postfix) with ESMTP id 1E348100843
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 11 May 2011 17:42:44 +1000 (EST)
 To: <linuxppc-dev@lists.ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <97d94cc156d8e8c199ab5d057d3375e6403aecf0.1305092637.git.miltonm@bga.com>
+Message-Id: <817ac482cbc66586496ef9fec80d84e472582e24.1305092637.git.miltonm@bga.com>
 In-Reply-To: <cover.1305092637.git.miltonm@bga.com>
 References: <cover.1305092637.git.miltonm@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Date: Wed, 11 May 2011 00:28:59 -0500
-Subject: [PATCH 08/37] powerpc: mpic: limit NR_CPUS loop to 32 bit
+Date: Wed, 11 May 2011 00:28:55 -0500
+Subject: [PATCH 07/37] powerpc: call no-longer static setup_nr_cpu_ids instead
+	of replicating it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,28 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpic_physmask was looping NR_CPUS times over a mask that was passed as
-a u32. Since mpic is architecturaly limited to 32 physical cpus, clamp
-the logical cpus to 32 when compiling (we could also clamp at runtime
-to nr_cpu_ids).
+c1854e00727f50f7ac99e98d26ece04c087ef785 (powerpc: Set nr_cpu_ids early
+and use it to free PACAs) copied the formerly static setup_nr_cpu_ids
+from init/main.c but 34db18a054c600b6f81787165669dc572fe4de25 (smp:
+move smp setup functions to kernel/smp.c) moved it to kernel/smp.c
+with a declaration in include/linux/smp.h, so we can call it instead of
+replicating it.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
- arch/powerpc/sysdev/mpic.c |    2 +-
+I found this cleanup while c1854e was being merged, but saved it from the
+end to ease backporting.
+---
+ arch/powerpc/kernel/setup-common.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 824a94f..a93da80 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -631,7 +631,7 @@ static inline u32 mpic_physmask(u32 cpumask)
- 	int i;
- 	u32 mask = 0;
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index fce759b..ef33a08 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -510,7 +510,7 @@ void __init smp_setup_cpu_maps(void)
+ 	cpu_init_thread_core_maps(nthreads);
  
--	for (i = 0; i < NR_CPUS; ++i, cpumask >>= 1)
-+	for (i = 0; i < min(32, NR_CPUS); ++i, cpumask >>= 1)
- 		mask |= (cpumask & 1) << get_hard_smp_processor_id(i);
- 	return mask;
+ 	/* Now that possible cpus are set, set nr_cpu_ids for later use */
+-	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
++	setup_nr_cpu_ids();
+ 
+ 	free_unused_pacas();
  }
 -- 
 1.7.0.4
