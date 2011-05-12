@@ -1,29 +1,22 @@
-Return-Path: <bounces.tip@hpa.at.zytor.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 173F7B6FD7
+	by ozlabs.org (Postfix) with ESMTPS id 4B9A3B6FCB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 20:16:40 +1000 (EST)
-Date: Thu, 12 May 2011 10:15:49 GMT
-Sender: tip tree robot <bounces.tip@hpa.at.zytor.com>
-From: tip-bot for Milton Miller <miltonm@bga.com>
-Message-ID: <tip-5db1256a5131d3b133946fa02ac9770a784e6eb2@git.kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/locking] seqlock: Don't smp_rmb in seqlock reader spin loop
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: andi@firstfloor.org, npiggin@kernel.dk, eric.dumazet@gmail.com,
-	linuxppc-dev@lists.ozlabs.org, miltonm@bga.com, mingo@redhat.com,
-	anton@samba.org, hpa@zytor.com, stable@vger.kernel.org,
-	tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
-	torvalds@linux-foundation.org
-Reply-To: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-	anton@samba.org, andi@firstfloor.org, eric.dumazet@gmail.com,
-	torvalds@linux-foundation.org, miltonm@bga.com,
-	linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
-	paulmck@linux.vnet.ibm.com, npiggin@kernel.dk,
-	benh@kernel.crashing.org, tglx@linutronix.de
+	Thu, 12 May 2011 21:08:26 +1000 (EST)
+Subject: Re: powerpc: Make early memory scan more resilient to out of order
+	nodes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <benh-inital-memory@mdm.bga.com>
+References: <1305183498.29820.95.camel@pasglop>
+	<benh-inital-memory@mdm.bga.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 12 May 2011 21:08:18 +1000
+Message-ID: <1305198498.29820.96.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,79 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit-ID:  5db1256a5131d3b133946fa02ac9770a784e6eb2
-Gitweb:     http://git.kernel.org/tip/5db1256a5131d3b133946fa02ac9770a784e6eb2
-Author:     Milton Miller <miltonm@bga.com>
-AuthorDate: Thu, 12 May 2011 04:13:54 -0500
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Thu, 12 May 2011 12:13:43 +0200
+On Thu, 2011-05-12 at 03:09 -0500, Milton Miller wrote:
+> On Wed, 11 May 2011 about 20:58:18 -0000, Benjamin Herrenschmidt wrote:
+> > We keep track of the size of the lowest block of memory and call
+> > setup_initial_memory_limit() only after we've parsed them all
+> > 
+> 
+> Good, we lose our sensitivity to device node ordering.
 
-seqlock: Don't smp_rmb in seqlock reader spin loop
+Yup, A platform we'll release soon has all of them backward :-)
 
-Move the smp_rmb after cpu_relax loop in read_seqlock and add
-ACCESS_ONCE to make sure the test and return are consistent.
+> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> 
+> > index 584b398..27475c6 100644
+> > --- a/arch/powerpc/kernel/prom.c
+> > +++ b/arch/powerpc/kernel/prom.c
+> > @@ -70,6 +70,7 @@ int __initdata iommu_force_on;
+> >  unsigned long tce_alloc_start, tce_alloc_end;
+> >  u64 ppc64_rma_size;
+> >  #endif
+> > +static phys_addr_t first_memblock_size;
+> 
+> __initdata 
+> 
+> (its only referenced by 2 __init functions)
+> 
+> Acked-by: Milton Miller <miltonm@bga.com>
 
-A multi-threaded core in the lab didn't like the update
-from 2.6.35 to 2.6.36, to the point it would hang during
-boot when multiple threads were active.  Bisection showed
-af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
-Remove the per cpu tick skew) as the culprit and it is
-supported with stack traces showing xtime_lock waits including
-tick_do_update_jiffies64 and/or update_vsyscall.
+Ag good, I'll fold that in, thanks.
 
-Experimentation showed the combination of cpu_relax and smp_rmb
-was significantly slowing the progress of other threads sharing
-the core, and this patch is effective in avoiding the hang.
+Cheers,
+Ben.
 
-A theory is the rmb is affecting the whole core while the
-cpu_relax is causing a resource rebalance flush, together they
-cause an interfernce cadance that is unbroken when the seqlock
-reader has interrupts disabled.
-
-At first I was confused why the refactor in
-3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
-seqlock) didn't affect this patch application, but after some
-study that affected seqcount not seqlock. The new seqcount was
-not factored back into the seqlock.  I defer that the future.
-
-While the removal of the timer interrupt offset created
-contention for the xtime lock while a cpu does the
-additonal work to update the system clock, the seqlock
-implementation with the tight rmb spin loop goes back much
-further, and is just waiting for the right trigger.
-
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@kernel.dk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
-Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/seqlock.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
-index e98cd2e..06d6964 100644
---- a/include/linux/seqlock.h
-+++ b/include/linux/seqlock.h
-@@ -88,12 +88,12 @@ static __always_inline unsigned read_seqbegin(const seqlock_t *sl)
- 	unsigned ret;
- 
- repeat:
--	ret = sl->sequence;
--	smp_rmb();
-+	ret = ACCESS_ONCE(sl->sequence);
- 	if (unlikely(ret & 1)) {
- 		cpu_relax();
- 		goto repeat;
- 	}
-+	smp_rmb();
- 
- 	return ret;
- }
+> 
+> >  static int __init early_parse_mem(char *p)
+> >  {
+> ..
+> > @@ -507,11 +508,14 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+> ..
+> > @@ -708,6 +712,7 @@ void __init early_init_devtree(void *params)
