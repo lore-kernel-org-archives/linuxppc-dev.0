@@ -1,23 +1,21 @@
-Return-Path: <R58472@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C427DB6F65
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 42E38B6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 16:11:15 +1000 (EST)
-From: Li Yang-R58472 <R58472@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, "galak@kernel.crashing.org"
-	<galak@kernel.crashing.org>
-Subject: RE: [linuxppc-release] [PATCH 1/2] powerpc,	e5500: add networking
-	to defconfig
-Date: Thu, 12 May 2011 06:11:03 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E0514EC65@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <20110510180147.GA18443@schlenkerla.am.freescale.net>
-In-Reply-To: <20110510180147.GA18443@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	Thu, 12 May 2011 16:58:26 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p4C6wJMs024277
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2011 01:58:20 -0500
+Subject: [PATCH] powerpc: Make early memory scan more resilient to out of
+	order nodes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 12 May 2011 16:58:18 +1000
+Message-ID: <1305183498.29820.95.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: [linuxppc-release] [PATCH 1/2] powerpc, e5500: add networking to
->defconfig
->
->Even though support for the p5020's on-chip ethernet is not yet upstream,
->it is not appropriate to disable all networking support (including
->loopback, unix domain sockets, external ethernet devices, etc) in the
->defconfig.  The networking settings are taken from mpc85xx_smp_defconfig,
->minus the drivers for ethernet devices not found on any current e5500 chip=
-.
->
->The other changes are the result of running "make savedefconfig".
->
->Signed-off-by: Scott Wood <scottwood@freescale.com>
->---
-> arch/powerpc/configs/e55xx_smp_defconfig |   38 ++++++++++++++++++++++---
->----
-> 1 files changed, 29 insertions(+), 9 deletions(-)
->
->diff --git a/arch/powerpc/configs/e55xx_smp_defconfig
->b/arch/powerpc/configs/e55xx_smp_defconfig
->index 9fa1613..f4c5780 100644
->--- a/arch/powerpc/configs/e55xx_smp_defconfig
->+++ b/arch/powerpc/configs/e55xx_smp_defconfig
->@@ -6,10 +6,10 @@ CONFIG_NR_CPUS=3D2
-> CONFIG_EXPERIMENTAL=3Dy
-> CONFIG_SYSVIPC=3Dy
-> CONFIG_BSD_PROCESS_ACCT=3Dy
->+CONFIG_SPARSE_IRQ=3Dy
+We keep track of the size of the lowest block of memory and call
+setup_initial_memory_limit() only after we've parsed them all
 
-Hi Scott,
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/prom.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-I remember in previous testing that this option has a negative effect on pe=
-rformance.  Do we really need it to be enabled?
-
-- Leo
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 584b398..27475c6 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -70,6 +70,7 @@ int __initdata iommu_force_on;
+ unsigned long tce_alloc_start, tce_alloc_end;
+ u64 ppc64_rma_size;
+ #endif
++static phys_addr_t first_memblock_size;
+ 
+ static int __init early_parse_mem(char *p)
+ {
+@@ -507,11 +508,14 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ 			size = 0x80000000ul - base;
+ 	}
+ #endif
+-
+-	/* First MEMBLOCK added, do some special initializations */
+-	if (memstart_addr == ~(phys_addr_t)0)
+-		setup_initial_memory_limit(base, size);
+-	memstart_addr = min((u64)memstart_addr, base);
++	/* Keep track of the beginning of memory -and- the size of
++	 * the very first block in the device-tree as it represents
++	 * the RMA on ppc64 server
++	 */
++	if (base < memstart_addr) {
++		memstart_addr = base;
++		first_memblock_size = size;
++	}
+ 
+ 	/* Add the chunk to the MEMBLOCK list */
+ 	memblock_add(base, size);
+@@ -708,6 +712,7 @@ void __init early_init_devtree(void *params)
+ 
+ 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+ 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
++	setup_initial_memory_limit(memstart_addr, first_memblock_size);
+ 
+ 	/* Save command line for /proc/cmdline and then parse parameters */
+ 	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
