@@ -1,22 +1,46 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kees.cook@canonical.com>
+Received: from smtp.outflux.net (smtp.outflux.net [198.145.64.163])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4B9A3B6FCB
+	(Client CN "smtp.outflux.net",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EFF1BB6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 21:08:26 +1000 (EST)
-Subject: Re: powerpc: Make early memory scan more resilient to out of order
-	nodes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <benh-inital-memory@mdm.bga.com>
-References: <1305183498.29820.95.camel@pasglop>
-	<benh-inital-memory@mdm.bga.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 May 2011 21:08:18 +1000
-Message-ID: <1305198498.29820.96.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Thu, 12 May 2011 19:37:23 +1000 (EST)
+Date: Thu, 12 May 2011 02:24:24 -0700
+From: Kees Cook <kees.cook@canonical.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
+	filtering
+Message-ID: <20110512092424.GO28888@outflux.net>
+References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
+	<1305169376-2363-1-git-send-email-wad@chromium.org>
+	<20110512074850.GA9937@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110512074850.GA9937@elte.hu>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	sparclinux@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+	linux-s390@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, x86@kernel.org, jmorris@namei.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, microblaze-uclinux@itee.uq.edu.au,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
+	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
+	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
+	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+	agl@chromium.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +50,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-05-12 at 03:09 -0500, Milton Miller wrote:
-> On Wed, 11 May 2011 about 20:58:18 -0000, Benjamin Herrenschmidt wrote:
-> > We keep track of the size of the lowest block of memory and call
-> > setup_initial_memory_limit() only after we've parsed them all
-> > 
-> 
-> Good, we lose our sensitivity to device node ordering.
+Hi,
 
-Yup, A platform we'll release soon has all of them backward :-)
+On Thu, May 12, 2011 at 09:48:50AM +0200, Ingo Molnar wrote:
+> 1) We already have a specific ABI for this: you can set filters for events via 
+>    an event fd.
+> 
+>    Why not extend that mechanism instead and improve *both* your sandboxing
+>    bits and the events code? This new seccomp code has a lot more
+>    to do with trace event filters than the minimal old seccomp code ...
 
-> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> 
-> > index 584b398..27475c6 100644
-> > --- a/arch/powerpc/kernel/prom.c
-> > +++ b/arch/powerpc/kernel/prom.c
-> > @@ -70,6 +70,7 @@ int __initdata iommu_force_on;
-> >  unsigned long tce_alloc_start, tce_alloc_end;
-> >  u64 ppc64_rma_size;
-> >  #endif
-> > +static phys_addr_t first_memblock_size;
-> 
-> __initdata 
-> 
-> (its only referenced by 2 __init functions)
-> 
-> Acked-by: Milton Miller <miltonm@bga.com>
+Would this require privileges to get the event fd to start with? If so,
+I would prefer to avoid that, since using prctl() as shown in the patch
+set won't require any privs.
 
-Ag good, I'll fold that in, thanks.
+-Kees
 
-Cheers,
-Ben.
-
-> 
-> >  static int __init early_parse_mem(char *p)
-> >  {
-> ..
-> > @@ -507,11 +508,14 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
-> ..
-> > @@ -708,6 +712,7 @@ void __init early_init_devtree(void *params)
+-- 
+Kees Cook
+Ubuntu Security Team
