@@ -1,21 +1,47 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 1AD29B6F73
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2011 19:33:16 +1000 (EST)
-References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-	<20110511103950.GD2837@brick.ozlabs.ibm.com>
-In-Reply-To: <20110511103950.GD2837@brick.ozlabs.ibm.com>
-Mime-Version: 1.0 (iPhone Mail 8G4)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <C5B8A119-56B6-467C-B3BD-01D5D7FA0773@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 03/13] kvm/powerpc: Fix the build for 32-bit Book 3S
-	(classic) processors
-Date: Thu, 12 May 2011 11:33:00 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B3BA5B6F8A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 May 2011 19:36:00 +1000 (EST)
+Received: by wyg36 with SMTP id 36so1129700wyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 May 2011 02:35:55 -0700 (PDT)
+Subject: Re: [PATCH] seqlock: don't smp_rmb in seqlock reader spin loop
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <seqlock-rmb@mdm.bga.com>
+References: <alpine.LFD.2.02.1105091036000.2895@ionos>
+	<1304574244.32152.666.camel@edumazet-laptop>
+	<1304576495.2943.40.camel@work-vm>
+	<1304604284.3032.78.camel@edumazet-laptop>
+	<alpine.LFD.2.02.1105051630390.3005@ionos>
+	<1304608095.3032.95.camel@edumazet-laptop>
+	<alpine.LFD.2.02.1105051750540.3005@ionos>
+	<20110505210118.GI2925@one.firstfloor.org>
+	<alpine.LFD.2.02.1105061117220.3005@ionos>
+	<20110506165913.GF11636@one.firstfloor.org>
+	<1304703767.3066.211.camel@edumazet-laptop>
+	<20110506175051.GL11636@one.firstfloor.org>
+	<1304710003.2821.0.camel@edumazet-laptop>
+	<1304712267.2821.29.camel@edumazet-laptop>
+	<1304713443.20980.124.camel@work-vm>
+	<1304721004.2821.148.camel@edumazet-laptop>
+	<1304722000.20980.130.camel@work-vm>
+	<1304722835.2821.192.camel@edumazet-laptop>
+	<1304724519.20980.139.camel@work-vm>  <seqlock-rmb@mdm.bga.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 12 May 2011 11:35:52 +0200
+Message-ID: <1305192952.3795.11.camel@edumazet-laptop>
+Mime-Version: 1.0
+Cc: Nick Piggin <npiggin@kernel.dk>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andi Kleen <andi@firstfloor.org>, Anton Blanchard <anton@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +51,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Am 11.05.2011 um 12:39 schrieb Paul Mackerras <paulus@samba.org>:
-
-> Commits a5d4f3ad3a ("powerpc: Base support for exceptions using
-> HSRR0/1") and 673b189a2e ("powerpc: Always use SPRN_SPRG_HSCRATCH0
-> when running in HV mode") cause compile and link errors for 32-bit
-> classic Book 3S processors when KVM is enabled.  This fixes these
-> errors.
->=20
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+Le jeudi 12 mai 2011 à 04:13 -0500, Milton Miller a écrit :
+> Move the smp_rmb after cpu_relax loop in read_seqlock and add
+> ACCESS_ONCE to make sure the test and return are consistent.
+> 
+> A multi-threaded core in the lab didn't like the update
+> from 2.6.35 to 2.6.36, to the point it would hang during
+> boot when multiple threads were active.  Bisection showed
+> af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
+> Remove the per cpu tick skew) as the culprit and it is
+> supported with stack traces showing xtime_lock waits including
+> tick_do_update_jiffies64 and/or update_vsyscall.
+> 
+> Experimentation showed the combination of cpu_relax and smp_rmb
+> was significantly slowing the progress of other threads sharing
+> the core, and this patch is effective in avoiding the hang.
+> 
+> A theory is the rmb is affecting the whole core while the
+> cpu_relax is causing a resource rebalance flush, together they
+> cause an interfernce cadance that is unbroken when the seqlock
+> reader has interrupts disabled.  
+> 
+> At first I was confused why the refactor in
+> 3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
+> seqlock) didn't affect this patch application, but after some
+> study that affected seqcount not seqlock. The new seqcount was
+> not factored back into the seqlock.  I defer that the future.
+> 
+> While the removal of the timer interrupt offset created
+> contention for the xtime lock while a cpu does the
+> additonal work to update the system clock, the seqlock
+> implementation with the tight rmb spin loop goes back much
+> further, and is just waiting for the right trigger.
+> 
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Milton Miller <miltonm@bga.com>
 > ---
-> arch/powerpc/include/asm/reg.h       |    5 +++++
-> arch/powerpc/kvm/book3s_rmhandlers.S |    2 ++
-> 2 files changed, 7 insertions(+), 0 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg=
-.h
-> index 47e3416..05658b7 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -823,6 +823,11 @@
->    FTR_SECTION_ELSE_NESTED(66);            \
->    mtspr    SPRN_SPRG_HSCRATCH0,rX;            \
->    ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE_206, 66)
-> +
-> +#else /* CONFIG_PPC_BOOK3S_64 */
-> +#define GET_SCRATCH0(rX)    mfspr    rX,SPRN_SPRG_SCRATCH0
-> +#define SET_SCRATCH0(rX)    mtspr    SPRN_SPRG_SCRATCH0,rX
-> +
-> #endif
->=20
-> #ifdef CONFIG_PPC_BOOK3E_64
-> diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3=
-s_rmhandlers.S
-> index ae99af6..1a1b344 100644
-> --- a/arch/powerpc/kvm/book3s_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_rmhandlers.S
-> @@ -112,7 +112,9 @@ INTERRUPT_TRAMPOLINE    BOOK3S_INTERRUPT_MACHINE_CHECK=
+> 
+> To the readers of [RFC] time: xtime_lock is held too long:
+> 
+> I initially thought x86 would not see this because rmb would
+> be a nop, but upon closer inspection X86_PPRO_FENCE will add
+> a lfence for rmb.
+> 
+> milton
+> 
+> Index: common/include/linux/seqlock.h
+> ===================================================================
+> --- common.orig/include/linux/seqlock.h	2011-04-06 03:27:02.000000000 -0500
+> +++ common/include/linux/seqlock.h	2011-04-06 03:35:02.000000000 -0500
+> @@ -88,12 +88,12 @@ static __always_inline unsigned read_seq
+>  	unsigned ret;
+>  
+>  repeat:
+> -	ret = sl->sequence;
+> -	smp_rmb();
+> +	ret = ACCESS_ONCE(sl->sequence);
+>  	if (unlikely(ret & 1)) {
+>  		cpu_relax();
+>  		goto repeat;
+>  	}
+> +	smp_rmb();
+>  
+>  	return ret;
+>  }
 
-> INTERRUPT_TRAMPOLINE    BOOK3S_INTERRUPT_DATA_STORAGE
-> INTERRUPT_TRAMPOLINE    BOOK3S_INTERRUPT_INST_STORAGE
-> INTERRUPT_TRAMPOLINE    BOOK3S_INTERRUPT_EXTERNAL
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> INTERRUPT_TRAMPOLINE    BOOK3S_INTERRUPT_EXTERNAL_HV
+I fully agree with your analysis. This is a call to make the change I
+suggested earlier [1]. (Use a seqcount object in seqlock_t)
 
-Hrm - I don't remember putting this one here. When did it get into the tree a=
-nd why wasn't I CC'ed?
+typedef struct {
+	seqcount_t seq
+	spinlock_t lock;
+} seqlock_t;
 
-Alex
+I'll submit a patch for 2.6.40
+
+Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
+
+Thanks
+
+[1] Ref: https://lkml.org/lkml/2011/5/6/351
