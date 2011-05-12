@@ -1,23 +1,25 @@
-Return-Path: <mlcreech@gmail.com>
-Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
-	[209.85.212.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B3641007D8
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 May 2011 01:30:55 +1000 (EST)
-Received: by vwl1 with SMTP id 1so1729084vwl.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2011 08:30:51 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+	[213.199.154.205])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B10E11007DB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 13 May 2011 01:31:25 +1000 (EST)
+Date: Thu, 12 May 2011 10:31:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Li Yang-R58472 <R58472@freescale.com>
+Subject: Re: [linuxppc-release] [PATCH 1/2] powerpc,	e5500: add networking
+	to defconfig
+Message-ID: <20110512103108.6dd3ca2a@schlenkerla.am.freescale.net>
+In-Reply-To: <3F607A5180246847A760FD34122A1E0514EC65@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <20110510180147.GA18443@schlenkerla.am.freescale.net>
+	<3F607A5180246847A760FD34122A1E0514EC65@039-SN1MPN1-002.039d.mgd.msft.net>
 MIME-Version: 1.0
-In-Reply-To: <4206182445660643B9AEB8D4E55BBD0A1533BC2780@HERMES2>
-References: <BANLkTikp5yVgrCe7tbc4cvG5wvy7XJp2fQ@mail.gmail.com>
-	<4206182445660643B9AEB8D4E55BBD0A1533BC2780@HERMES2>
-Date: Thu, 12 May 2011 11:30:51 -0400
-Message-ID: <BANLkTim8ntQHkcm_yOgD+UQQb+b+tSoFqA@mail.gmail.com>
-Subject: Re: fsl_udc_core: BUG: scheduling while atomic
-From: "Matthew L. Creech" <mlcreech@gmail.com>
-To: Sergej.Stepanov@ids.de
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 12, 2011 at 4:37 AM,  <Sergej.Stepanov@ids.de> wrote:
-> Hi Mattheew,
->
-> such oops you can get also with spi.
-> For such problem helps to compile your kernel with other preemption
-> model:
-> =A0- preempt
-> =A0- standard
-> =A0- !!! but not voluntary preemption !!!
+On Thu, 12 May 2011 01:11:03 -0500
+Li Yang-R58472 <R58472@freescale.com> wrote:
 
-Thanks Sergej, indeed I'm currently using CONFIG_PREEMPT_VOLUNTARY on
-this board.  I'll change it to fix this problem for now.
+> >Subject: [linuxppc-release] [PATCH 1/2] powerpc, e5500: add networking to
+> >defconfig
+> >
+> >Even though support for the p5020's on-chip ethernet is not yet upstream,
+> >it is not appropriate to disable all networking support (including
+> >loopback, unix domain sockets, external ethernet devices, etc) in the
+> >defconfig.  The networking settings are taken from mpc85xx_smp_defconfig,
+> >minus the drivers for ethernet devices not found on any current e5500 chip.
+> >
+> >The other changes are the result of running "make savedefconfig".
+> >
+> >Signed-off-by: Scott Wood <scottwood@freescale.com>
+> >---
+> > arch/powerpc/configs/e55xx_smp_defconfig |   38 ++++++++++++++++++++++---
+> >----
+> > 1 files changed, 29 insertions(+), 9 deletions(-)
+> >
+> >diff --git a/arch/powerpc/configs/e55xx_smp_defconfig
+> >b/arch/powerpc/configs/e55xx_smp_defconfig
+> >index 9fa1613..f4c5780 100644
+> >--- a/arch/powerpc/configs/e55xx_smp_defconfig
+> >+++ b/arch/powerpc/configs/e55xx_smp_defconfig
+> >@@ -6,10 +6,10 @@ CONFIG_NR_CPUS=2
+> > CONFIG_EXPERIMENTAL=y
+> > CONFIG_SYSVIPC=y
+> > CONFIG_BSD_PROCESS_ACCT=y
+> >+CONFIG_SPARSE_IRQ=y
+> 
+> Hi Scott,
+> 
+> I remember in previous testing that this option has a negative effect on performance.  Do we really need it to be enabled?
 
-Do you happen to know whether the Freescale folks intend to fix this?
-If not, it seems like at least some sort of warning is in order.
+I didn't change this setting, it just moved due to running it through
+savedefconfig.
 
---=20
-Matthew L. Creech
+-Scott
