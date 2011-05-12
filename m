@@ -1,17 +1,20 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [88.79.252.171])
-	by ozlabs.org (Postfix) with ESMTP id 581AE1007D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2011 19:00:55 +1000 (EST)
-From: <Sergej.Stepanov@ids.de>
-To: <mlcreech@gmail.com>
-Date: Thu, 12 May 2011 10:37:52 +0200
-Subject: Re: fsl_udc_core: BUG: scheduling while atomic
-Message-ID: <4206182445660643B9AEB8D4E55BBD0A1533BC2780@HERMES2>
-References: <BANLkTikp5yVgrCe7tbc4cvG5wvy7XJp2fQ@mail.gmail.com>
-In-Reply-To: <BANLkTikp5yVgrCe7tbc4cvG5wvy7XJp2fQ@mail.gmail.com>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id DA3B31007D7
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2011 19:07:23 +1000 (EST)
+Message-ID: <4DCBA345.6090006@redhat.com>
+Date: Thu, 12 May 2011 12:07:17 +0300
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 10/13] kvm/powerpc: Add support for Book3S processors
+	in hypervisor mode
+References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
+	<20110511104456.GK2837@brick.ozlabs.ibm.com>
+In-Reply-To: <20110511104456.GK2837@brick.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+	kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgTWF0dGhlZXcsCgpzdWNoIG9vcHMgeW91IGNhbiBnZXQgYWxzbyB3aXRoIHNwaS4KRm9yIHN1
-Y2ggcHJvYmxlbSBoZWxwcyB0byBjb21waWxlIHlvdXIga2VybmVsIHdpdGggb3RoZXIgcHJlZW1w
-dGlvbgptb2RlbDoKIC0gcHJlZW1wdAogLSBzdGFuZGFyZAogLSAhISEgYnV0IG5vdCB2b2x1bnRh
-cnkgcHJlZW1wdGlvbiAhISEKVGhlIG90aGVyIHBvc3NpYmlsaXR5OiBjaGVjayB5b3VyIGJvYXJk
-LCBtYXkgYmUgaXQgaGFzIHNvbWUgbWVtb3J5CnByb2JsZW1zLgoKUmVnYXJkcwpTZXJnZWouCgoK
-QW0gTWl0dHdvY2gsIGRlbiAxMS4wNS4yMDExLCAxNzozNyAtMDQwMCBzY2hyaWViIE1hdHRoZXcg
-TC4gQ3JlZWNoOgo+IEhpLAo+IAo+IE15IE1QQzgzMTMtYmFzZWQgYm9hcmQsIHJ1bm5pbmcgYSAy
-LjYuMzcga2VybmVsLCBpcyBvY2Nhc2lvbmFsbHkKPiBoaXR0aW5nIHRoaXMgYnVnIHdoaWxlIGRv
-aW5nIFJORElTLWJhc2VkIGNvbW11bmljYXRpb246Cj4gCj4gQlVHOiBzY2hlZHVsaW5nIHdoaWxl
-IGF0b21pYzogbGlnaHR0cGQvMTE0NS8weDEwMDAwMjAwCj4gQ2FsbCBUcmFjZToKPiBbYzZhOGI5
-MTBdIFtjMDAwODZjMF0gc2hvd19zdGFjaysweDdjLzB4MTk0ICh1bnJlbGlhYmxlKQo+IFtjNmE4
-Yjk1MF0gW2MwMDE5ZTI4XSBfX3NjaGVkdWxlX2J1ZysweDU0LzB4NjgKPiBbYzZhOGI5NjBdIFtj
-MDJiMDRlOF0gc2NoZWR1bGUrMHhhNC8weDQwOAo+IFtjNmE4YmE1MF0gW2MwMmIwOTg4XSBfY29u
-ZF9yZXNjaGVkKzB4MzgvMHg2NAo+IFtjNmE4YmE2MF0gW2MwMDgwZThjXSBkbWFfcG9vbF9hbGxv
-YysweDVjLzB4MmE0Cj4gW2M2YThiYWMwXSBbYzAxYzU3YjBdIGZzbF9yZXFfdG9fZHRkKzB4Njgv
-MHgyNGMKPiBbYzZhOGJiMDBdIFtjMDFjNWI2OF0gZnNsX2VwX3F1ZXVlKzB4MWQ0LzB4MjY0Cj4g
-W2M2YThiYjIwXSBbYzAxYzdlZWNdIGV0aF9zdGFydF94bWl0KzB4Mjc4LzB4MzQ0Cj4gW2M2YThi
-YjUwXSBbYzAxZmRiYzhdIGRldl9oYXJkX3N0YXJ0X3htaXQrMHg1MjAvMHg2ODAKPiBbYzZhOGJi
-YTBdIFtjMDIxMjJhNF0gc2NoX2RpcmVjdF94bWl0KzB4NjgvMHgxZTAKPiBbYzZhOGJiYzBdIFtj
-MDFmZGYyMF0gZGV2X3F1ZXVlX3htaXQrMHgxZjgvMHgzYzQKPiBbYzZhOGJiZTBdIFtjMDIyZDY4
-NF0gaXBfZmluaXNoX291dHB1dCsweDJkNC8weDMyOAo+IFtjNmE4YmMxMF0gW2MwMjJkYjA4XSBp
-cF9sb2NhbF9vdXQrMHgzOC8weDRjCj4gW2M2YThiYzIwXSBbYzAyMmUzY2NdIGlwX3F1ZXVlX3ht
-aXQrMHgyY2MvMHgzNjAKPiBbYzZhOGJjYTBdIFtjMDI0MTg0NF0gdGNwX3RyYW5zbWl0X3NrYisw
-eDdjYy8weDgzOAo+IFtjNmE4YmQwMF0gW2MwMjQ0NDM0XSB0Y3Bfd3JpdGVfeG1pdCsweDhjNC8w
-eGEzNAo+IFtjNmE4YmQ2MF0gW2MwMjM3NjE4XSB0Y3Bfc2VuZG1zZysweDkwMC8weGJkNAo+IFtj
-NmE4YmRkMF0gW2MwMjU2MDg4XSBpbmV0X3NlbmRtc2crMHg3NC8weDhjCj4gW2M2YThiZGYwXSBb
-YzAxZWE0OThdIHNvY2tfYWlvX3dyaXRlKzB4MTMwLzB4MTRjCj4gW2M2YThiZTUwXSBbYzAwODU1
-ZmNdIGRvX3N5bmNfd3JpdGUrMHhiMC8weDExMAo+IFtjNmE4YmVmMF0gW2MwMDg2Mjk0XSB2ZnNf
-d3JpdGUrMHhkYy8weDE3Ywo+IFtjNmE4YmYxMF0gW2MwMDg2NDJjXSBzeXNfd3JpdGUrMHg1NC8w
-eDljCj4gW2M2YThiZjQwXSBbYzAwMGYyY2NdIHJldF9mcm9tX3N5c2NhbGwrMHgwLzB4MzgKPiAK
-PiBUaGlzIHNlZW1zIHNpbWlsYXIgdG8gYSBidWcgZnJvbSAyMDEwOgo+IAo+IGh0dHA6Ly93d3cu
-c3Bpbmljcy5uZXQvbGlzdHMvbGludXgtdXNiL21zZzMxMzU0Lmh0bWwKPiAKPiB3aGljaCBjb25j
-bHVkZXMgdGhhdCB0aGUgZnNsX3VkY19jb3JlIGRyaXZlciBpcyB3cm9uZ2x5IHVzaW5nCj4gR0ZQ
-X0tFUk5FTCBpbiBmc2xfYnVpbGRfZHRkKCkuICBIb3dldmVyIEknbSBub3Qgc3VyZSB3aGF0IGFu
-Cj4gYXBwcm9wcmlhdGUgZml4IGlzLCBzaW5jZSBqdXN0IHJlcGxhY2luZyBpdCB3aXRoIEdGUF9B
-VE9NSUMgY2F1c2VzCj4gYWxsb2NhdGlvbiBmYWlsdXJlcy4gIEFueSBoZWxwZnVsIHRpcHM/Cj4g
-Cj4gVGhhbmtzCj4gCj4gLS0gCj4gTWF0dGhldyBMLiBDcmVlY2gKPiBfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IExpbnV4cHBjLWRldiBtYWlsaW5nIGxp
-c3QKPiBMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwo+IGh0dHBzOi8vbGlzdHMub3psYWJz
-Lm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYK
+On 05/11/2011 01:44 PM, Paul Mackerras wrote:
+> This adds support for KVM running on 64-bit Book 3S processors,
+> specifically POWER7, in hypervisor mode.  Using hypervisor mode means
+> that the guest can use the processor's supervisor mode.  That means
+> that the guest can execute privileged instructions and access privileged
+> registers itself without trapping to the host.  This gives excellent
+> performance, but does mean that KVM cannot emulate a processor
+> architecture other than the one that the hardware implements.
+>
+> This code assumes that the guest is running paravirtualized using the
+> PAPR (Power Architecture Platform Requirements) interface, which is the
+> interface that IBM's PowerVM hypervisor uses.  That means that existing
+> Linux distributions that run on IBM pSeries machines will also run
+> under KVM without modification.  In order to communicate the PAPR
+> hypercalls to qemu, this adds a new KVM_EXIT_PAPR_HCALL exit code
+> to include/linux/kvm.h.
+>
+> Currently the choice between book3s_hv support and book3s_pr support
+> (i.e. the existing code, which runs the guest in user mode) has to be
+> made at kernel configuration time, so a given kernel binary can only
+> do one or the other.
+>
+> This new book3s_hv code doesn't support MMIO emulation at present.
+> Since we are running paravirtualized guests, this isn't a serious
+> restriction.
+>
+> With the guest running in supervisor mode, most exceptions go straight
+> to the guest.  We will never get data or instruction storage or segment
+> interrupts, alignment interrupts, decrementer interrupts, program
+> interrupts, single-step interrupts, etc., coming to the hypervisor from
+> the guest.  Therefore this introduces a new KVMTEST_NONHV macro for the
+> exception entry path so that we don't have to do the KVM test on entry
+> to those exception handlers.
+>
+> We do however get hypervisor decrementer, hypervisor data storage,
+> hypervisor instruction storage, and hypervisor emulation assist
+> interrupts, so we have to handle those.
+>
+> In hypervisor mode, real-mode accesses can access all of RAM, not just
+> a limited amount.  Therefore we put all the guest state in the vcpu.arch
+> and use the shadow_vcpu in the PACA only for temporary scratch space.
+> We allocate the vcpu with kzalloc rather than vzalloc, and we don't use
+> anything in the kvmppc_vcpu_book3s struct, so we don't allocate it.
+>
+> The POWER7 processor has a restriction that all threads in a core have
+> to be in the same partition.  MMU-on kernel code counts as a partition
+> (partition 0), so we have to do a partition switch on every entry to and
+> exit from the guest.  At present we require the host and guest to run
+> in single-thread mode because of this hardware restriction.
+>
+> This code allocates a hashed page table for the guest and initializes
+> it with HPTEs for the guest's Virtual Real Memory Area (VRMA).  We
+> require that the guest memory is allocated using 16MB huge pages, in
+> order to simplify the low-level memory management.  This also means that
+> we can get away without tracking paging activity in the host for now,
+> since huge pages can't be paged or swapped.
+>
+> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+> index ea2dc1a..a4447ce 100644
+> --- a/include/linux/kvm.h
+> +++ b/include/linux/kvm.h
+> @@ -161,6 +161,7 @@ struct kvm_pit_config {
+>   #define KVM_EXIT_NMI              16
+>   #define KVM_EXIT_INTERNAL_ERROR   17
+>   #define KVM_EXIT_OSI              18
+> +#define KVM_EXIT_PAPR_HCALL	  19
+>
+>   /* For KVM_EXIT_INTERNAL_ERROR */
+>   #define KVM_INTERNAL_ERROR_EMULATION 1
+> @@ -264,6 +265,11 @@ struct kvm_run {
+>   		struct {
+>   			__u64 gprs[32];
+>   		} osi;
+> +		struct {
+> +			__u64 nr;
+> +			__u64 ret;
+> +			__u64 args[9];
+> +		} papr_hcall;
+>   		/* Fix the size of the union. */
+>   		char padding[256];
+>   	};
+
+Please document this in Documentation/kvm/api.txt.
+
+-- 
+error compiling committee.c: too many arguments to function
