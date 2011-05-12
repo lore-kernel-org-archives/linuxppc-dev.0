@@ -1,25 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
+Return-Path: <R58472@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C427DB6F65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 May 2011 16:11:15 +1000 (EST)
+From: Li Yang-R58472 <R58472@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, "galak@kernel.crashing.org"
+	<galak@kernel.crashing.org>
+Subject: RE: [linuxppc-release] [PATCH 1/2] powerpc,	e5500: add networking
+	to defconfig
+Date: Thu, 12 May 2011 06:11:03 +0000
+Message-ID: <3F607A5180246847A760FD34122A1E0514EC65@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <20110510180147.GA18443@schlenkerla.am.freescale.net>
+In-Reply-To: <20110510180147.GA18443@schlenkerla.am.freescale.net>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1305152704-4864-8-git-send-email-nacc@us.ibm.com>
-References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-	<1305152704-4864-8-git-send-email-nacc@us.ibm.com>
-Date: Thu, 12 May 2011 07:51:32 +0200
-Message-ID: <BANLkTi=eL9uwvNSdEnY4S=k1kjSgH4Q5xg@mail.gmail.com>
-Subject: Re: [PATCH 7/8] powerpc: use the newly added get_required_mask
-	dma_map_ops hook
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>, Milton Miller <miltonm@bga.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: cbe-oss-dev@lists.ozlabs.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Greg Kroah-Hartman <gregkh@suse.de>, Arnd Bergmann <arnd@arndb.de>,
-	Geoff Levand <geoff@infradead.org>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,56 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 12, 2011 at 00:25, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
-> diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platf=
-orms/ps3/system-bus.c
-> index 23083c3..688141c 100644
-> --- a/arch/powerpc/platforms/ps3/system-bus.c
-> +++ b/arch/powerpc/platforms/ps3/system-bus.c
-> @@ -695,12 +695,18 @@ static int ps3_dma_supported(struct device *_dev, u=
-64 mask)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0return mask >=3D DMA_BIT_MASK(32);
-> =C2=A0}
+>Subject: [linuxppc-release] [PATCH 1/2] powerpc, e5500: add networking to
+>defconfig
 >
-> +static u64 ps3_dma_get_required_mask(struct device *_dev)
-> +{
-> + =C2=A0 =C2=A0 =C2=A0 return DMA_BIT_MASK(32);
+>Even though support for the p5020's on-chip ethernet is not yet upstream,
+>it is not appropriate to disable all networking support (including
+>loopback, unix domain sockets, external ethernet devices, etc) in the
+>defconfig.  The networking settings are taken from mpc85xx_smp_defconfig,
+>minus the drivers for ethernet devices not found on any current e5500 chip=
+.
+>
+>The other changes are the result of running "make savedefconfig".
+>
+>Signed-off-by: Scott Wood <scottwood@freescale.com>
+>---
+> arch/powerpc/configs/e55xx_smp_defconfig |   38 ++++++++++++++++++++++---
+>----
+> 1 files changed, 29 insertions(+), 9 deletions(-)
+>
+>diff --git a/arch/powerpc/configs/e55xx_smp_defconfig
+>b/arch/powerpc/configs/e55xx_smp_defconfig
+>index 9fa1613..f4c5780 100644
+>--- a/arch/powerpc/configs/e55xx_smp_defconfig
+>+++ b/arch/powerpc/configs/e55xx_smp_defconfig
+>@@ -6,10 +6,10 @@ CONFIG_NR_CPUS=3D2
+> CONFIG_EXPERIMENTAL=3Dy
+> CONFIG_SYSVIPC=3Dy
+> CONFIG_BSD_PROCESS_ACCT=3Dy
+>+CONFIG_SPARSE_IRQ=3Dy
 
-Why 32 and not 64?
+Hi Scott,
 
-> +}
-> +
-> =C2=A0static struct dma_map_ops ps3_sb_dma_ops =3D {
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.alloc_coherent =3D ps3_alloc_coherent,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.free_coherent =3D ps3_free_coherent,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.map_sg =3D ps3_sb_map_sg,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.unmap_sg =3D ps3_sb_unmap_sg,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.dma_supported =3D ps3_dma_supported,
-> + =C2=A0 =C2=A0 =C2=A0 .get_required_mask =3D ps3_dma_get_required_mask,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.map_page =3D ps3_sb_map_page,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.unmap_page =3D ps3_unmap_page,
-> =C2=A0};
-> @@ -711,6 +717,7 @@ static struct dma_map_ops ps3_ioc0_dma_ops =3D {
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.map_sg =3D ps3_ioc0_map_sg,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.unmap_sg =3D ps3_ioc0_unmap_sg,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.dma_supported =3D ps3_dma_supported,
-> + =C2=A0 =C2=A0 =C2=A0 .get_required_mask =3D ps3_dma_get_required_mask,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.map_page =3D ps3_ioc0_map_page,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.unmap_page =3D ps3_unmap_page,
-> =C2=A0};
+I remember in previous testing that this option has a negative effect on pe=
+rformance.  Do we really need it to be enabled?
 
-Gr{oetje,eeting}s,
-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+- Leo
