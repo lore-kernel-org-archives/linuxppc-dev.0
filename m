@@ -1,28 +1,29 @@
-Return-Path: <tmarri@apm.com>
-Received: from exprod5og116.obsmtp.com (exprod5og116.obsmtp.com [64.18.0.147])
-	by ozlabs.org (Postfix) with SMTP id EE1C0B6F11
+Return-Path: <ralf@linux-mips.org>
+Received: from duck.linux-mips.net (h5.dl5rb.org.uk [81.2.74.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 61E28B6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 May 2011 04:16:38 +1000 (EST)
-Received: by gwb17 with SMTP id 17so890384gwb.15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 11:16:35 -0700 (PDT)
-From: Tirumala Marri <tmarri@apm.com>
-References: <1302286930-9988-1-git-send-email-ayman@elkhashab.com>
-	<1302306484.2458.64.camel@pasglop>
-	<178c7df4696bacdd1510bacae143222a@mail.gmail.com>
-	<20110429170240.GA21384@crust.elkhashab.com>
-	<1304109476.2513.243.camel@pasglop>
-	<1304487166.2513.351.camel@pasglop>
-	<BANLkTi=BaYhw92wYHp9rPvz1yq2H1p0G9w@mail.gmail.com>
-	<20110509160935.GA14965@crust.elkhashab.com>
-In-Reply-To: <20110509160935.GA14965@crust.elkhashab.com>
+	Fri, 13 May 2011 07:58:00 +1000 (EST)
+Date: Thu, 12 May 2011 22:57:46 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: wanlong.gao@gmail.com
+Subject: Re: [PATCH] fix build warnings on defconfigs
+Message-ID: <20110512215746.GB21865@linux-mips.org>
+References: <1302375858-11253-1-git-send-email-wanlong.gao@gmail.com>
 MIME-Version: 1.0
-Date: Thu, 12 May 2011 11:16:34 -0700
-Message-ID: <6a09a426f126fb315b773fc207d68eb9@mail.gmail.com>
-Subject: RE: [PATCH 0/1] ppc4xx: Fix PCIe scanning for the 460SX
-To: Ayman El-Khashab <ayman@elkhashab.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1302375858-11253-1-git-send-email-wanlong.gao@gmail.com>
+Cc: linux-mips@linux-mips.org, david.woodhouse@intel.com, tony@atomide.com,
+	nicolas.ferre@atmel.com, paulus@samba.org, eric@eukrea.com,
+	sam@ravnborg.org, sfr@canb.auug.org.au, linux@arm.linux.org.uk,
+	khilman@deeprootsystems.com, manuel.lauss@googlemail.com,
+	u.kleine-koenig@pengutronix.de, mingo@elte.hu,
+	rientjes@google.com, anton@samba.org, ben-linux@fluff.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+	hans-christian.egtvedt@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So what is the best way to handle this?  It appears (based
-on the comments of others and my own experience) that there
-is no DCR that exists and behaves the way that previous SOCs
-behaved to give us the link status?  The register above
-PECFGn_DLLSTA is actually in the PCIe configuration space so
-we would have to map that in to be able to read that
-register during the link check.  Is that correct or ok?
-[marri] yes, you need to program DCR register access these local PCIE_CFG
-registers.
+On Sun, Apr 10, 2011 at 03:04:18AM +0800, wanlong.gao@gmail.com wrote:
 
+> Subject: [PATCH] fix build warnings on defconfigs
+> 
+> From: Wanlong Gao <wanlong.gao@gmail.com>
+> 
+> Change the BT_L2CAP and BT_SCO defconfigs from 'm' to 'y',
+> since BT_L2CAP and BT_SCO had changed to bool configs.
+> 
+> Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
 
-I've communicated with some people over email and they had
-tried the (PESDRn_HSSLySTS) register.  Recognizing that
-there exists one of these for each port/lane, is there a way
-to use this one?  It is in the indirect DCR space.  I'd
-tried this myself and never did get it to do anything but I
-could have been looking at the wrong lane or something.
-[marri]This is at SERDES level. If this link up doesn't necessarily
-Overall stack is up. This is mostly used for BIST and diagnostics.
+I've queued the MIPS bits only for 2.6.40.  Thanks.
 
-Lastly, what was the reason for forcing the original code to
-be GEN-1 speeds?
-[marri] Gen-2 need some extra checks compared to Gen-1.
-There were not many Gen-2 devices at the time of submission
-To test them.
+  Ralf
