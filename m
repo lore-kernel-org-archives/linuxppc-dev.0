@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42E38B6F75
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 9C7CEB6FD6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 16:58:26 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p4C6wJMs024277
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2011 01:58:20 -0500
-Subject: [PATCH] powerpc: Make early memory scan more resilient to out of
-	order nodes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 May 2011 16:58:18 +1000
-Message-ID: <1305183498.29820.95.camel@pasglop>
-Mime-Version: 1.0
+	Thu, 12 May 2011 17:32:39 +1000 (EST)
+Message-id: <geert-ps3-iommu@mdm.bga.com>
+In-Reply-To: <BANLkTi=eL9uwvNSdEnY4S=k1kjSgH4Q5xg@mail.gmail.com>
+References: <BANLkTi=eL9uwvNSdEnY4S=k1kjSgH4Q5xg@mail.gmail.com>
+	<1305152704-4864-8-git-send-email-nacc@us.ibm.com>
+Subject: Re: [PATCH 7/8] powerpc: use the newly added get_required_mask
+	dma_map_ops hook
+From: Milton Miller <miltonm@bga.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 12 May 2011 02:32:37 -0500
+Cc: cbe-oss-dev@lists.ozlabs.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Greg Kroah-Hartman <gregkh@suse.de>, Arnd Bergmann <arnd@arndb.de>,
+	Geoff Levand <geoff@infradead.org>,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	Nishanth Aravamudan <nacc@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We keep track of the size of the lowest block of memory and call
-setup_initial_memory_limit() only after we've parsed them all
+> On Thu, May 12, 2011 at 00:25, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
+> > diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+> > index 23083c3..688141c 100644
+> > --- a/arch/powerpc/platforms/ps3/system-bus.c
+> > +++ b/arch/powerpc/platforms/ps3/system-bus.c
+> > @@ -695,12 +695,18 @@ static int ps3_dma_supported(struct device *_dev, u64 mask)
+> > 				return mask >= DMA_BIT_MASK(32);
+> > 	}
+> >
+> > +static u64 ps3_dma_get_required_mask(struct device *_dev)
+> > +{
+> > + 			return DMA_BIT_MASK(32);
+> 
+> Why 32 and not 64?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/prom.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+I based it on the return of ps3_dma_supported, which you can see just
+above says anything at or above a 32 bit mask is ok.
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 584b398..27475c6 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -70,6 +70,7 @@ int __initdata iommu_force_on;
- unsigned long tce_alloc_start, tce_alloc_end;
- u64 ppc64_rma_size;
- #endif
-+static phys_addr_t first_memblock_size;
- 
- static int __init early_parse_mem(char *p)
- {
-@@ -507,11 +508,14 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
- 			size = 0x80000000ul - base;
- 	}
- #endif
--
--	/* First MEMBLOCK added, do some special initializations */
--	if (memstart_addr == ~(phys_addr_t)0)
--		setup_initial_memory_limit(base, size);
--	memstart_addr = min((u64)memstart_addr, base);
-+	/* Keep track of the beginning of memory -and- the size of
-+	 * the very first block in the device-tree as it represents
-+	 * the RMA on ppc64 server
-+	 */
-+	if (base < memstart_addr) {
-+		memstart_addr = base;
-+		first_memblock_size = size;
-+	}
- 
- 	/* Add the chunk to the MEMBLOCK list */
- 	memblock_add(base, size);
-@@ -708,6 +712,7 @@ void __init early_init_devtree(void *params)
- 
- 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
- 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
-+	setup_initial_memory_limit(memstart_addr, first_memblock_size);
- 
- 	/* Save command line for /proc/cmdline and then parse parameters */
- 	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
+I don't really know the platform, but digging a bit deeper, it looks
+like this goes to ps3_map_dma in ps3/mm.c.  It looks like that translates
+the virt to phys to lpar (similar to absolute in iseries), and the
+maps it to a bus address by a linear mapping.  But no where do I see
+mention of a device dma mask (neither in mm.c or system-dev.c (except
+for the ps3_dma_supported local), so I assume that 32 bits is sufficient
+for any device.  It appears to me the code establishs a 1:1 mapping
+of all possible memory with no provision for allocating blocks or
+checking that a bus address belongs to another memory segment.
+
+Feel free to point out any errors in the above analysis, otherwise
+I assume the required mask matches the dma_supported op.
+
+Does the lv1 hypervisor offer more than 4G of memory to the lpar?
+
+milton
