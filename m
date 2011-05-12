@@ -1,27 +1,49 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 9C7CEB6FD6
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2072E1007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 May 2011 17:32:39 +1000 (EST)
-Message-id: <geert-ps3-iommu@mdm.bga.com>
-In-Reply-To: <BANLkTi=eL9uwvNSdEnY4S=k1kjSgH4Q5xg@mail.gmail.com>
-References: <BANLkTi=eL9uwvNSdEnY4S=k1kjSgH4Q5xg@mail.gmail.com>
-	<1305152704-4864-8-git-send-email-nacc@us.ibm.com>
-Subject: Re: [PATCH 7/8] powerpc: use the newly added get_required_mask
-	dma_map_ops hook
-From: Milton Miller <miltonm@bga.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 12 May 2011 02:32:37 -0500
-Cc: cbe-oss-dev@lists.ozlabs.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Greg Kroah-Hartman <gregkh@suse.de>, Arnd Bergmann <arnd@arndb.de>,
-	Geoff Levand <geoff@infradead.org>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-	Nishanth Aravamudan <nacc@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>
+	Thu, 12 May 2011 17:50:18 +1000 (EST)
+Received: from mx2.mail.elte.hu ([157.181.151.9])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1QKQex-0004ni-Rj
+	from <mingo@elte.hu>
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2011 09:50:11 +0200
+Date: Thu, 12 May 2011 09:48:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Will Drewry <wad@chromium.org>
+Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
+	filtering
+Message-ID: <20110512074850.GA9937@elte.hu>
+References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
+	<1305169376-2363-1-git-send-email-wad@chromium.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1305169376-2363-1-git-send-email-wad@chromium.org>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	sparclinux@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+	linux-s390@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, x86@kernel.org, jmorris@namei.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	linux-arm-kernel@lists.infradead.org, kees.cook@canonical.com,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, microblaze-uclinux@itee.uq.edu.au,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
+	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Ralf Baechle <ralf@linux-mips.org>,
+	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
+	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+	agl@chromium.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +53,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Thu, May 12, 2011 at 00:25, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
-> > diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-> > index 23083c3..688141c 100644
-> > --- a/arch/powerpc/platforms/ps3/system-bus.c
-> > +++ b/arch/powerpc/platforms/ps3/system-bus.c
-> > @@ -695,12 +695,18 @@ static int ps3_dma_supported(struct device *_dev, u64 mask)
-> > 				return mask >= DMA_BIT_MASK(32);
-> > 	}
-> >
-> > +static u64 ps3_dma_get_required_mask(struct device *_dev)
-> > +{
-> > + 			return DMA_BIT_MASK(32);
-> 
-> Why 32 and not 64?
 
-I based it on the return of ps3_dma_supported, which you can see just
-above says anything at or above a 32 bit mask is ok.
+Ok, i like the direction here, but i think the ABI should be done differently.
 
-I don't really know the platform, but digging a bit deeper, it looks
-like this goes to ps3_map_dma in ps3/mm.c.  It looks like that translates
-the virt to phys to lpar (similar to absolute in iseries), and the
-maps it to a bus address by a linear mapping.  But no where do I see
-mention of a device dma mask (neither in mm.c or system-dev.c (except
-for the ps3_dma_supported local), so I assume that 32 bits is sufficient
-for any device.  It appears to me the code establishs a 1:1 mapping
-of all possible memory with no provision for allocating blocks or
-checking that a bus address belongs to another memory segment.
+In this patch the ftrace event filter mechanism is used:
 
-Feel free to point out any errors in the above analysis, otherwise
-I assume the required mask matches the dma_supported op.
+* Will Drewry <wad@chromium.org> wrote:
 
-Does the lv1 hypervisor offer more than 4G of memory to the lpar?
+> +static struct seccomp_filter *alloc_seccomp_filter(int syscall_nr,
+> +						   const char *filter_string)
+> +{
+> +	int err = -ENOMEM;
+> +	struct seccomp_filter *filter = kzalloc(sizeof(struct seccomp_filter),
+> +						GFP_KERNEL);
+> +	if (!filter)
+> +		goto fail;
+> +
+> +	INIT_HLIST_NODE(&filter->node);
+> +	filter->syscall_nr = syscall_nr;
+> +	filter->data = syscall_nr_to_meta(syscall_nr);
+> +
+> +	/* Treat a filter of SECCOMP_WILDCARD_FILTER as a wildcard and skip
+> +	 * using a predicate at all.
+> +	 */
+> +	if (!strcmp(SECCOMP_WILDCARD_FILTER, filter_string))
+> +		goto out;
+> +
+> +	/* Argument-based filtering only works on ftrace-hooked syscalls. */
+> +	if (!filter->data) {
+> +		err = -ENOSYS;
+> +		goto fail;
+> +	}
+> +
+> +#ifdef CONFIG_FTRACE_SYSCALLS
+> +	err = ftrace_parse_filter(&filter->event_filter,
+> +				  filter->data->enter_event->event.type,
+> +				  filter_string);
+> +	if (err)
+> +		goto fail;
+> +#endif
+> +
+> +out:
+> +	return filter;
+> +
+> +fail:
+> +	kfree(filter);
+> +	return ERR_PTR(err);
+> +}
 
-milton
+Via a prctl() ABI:
+
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -1698,12 +1698,23 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+>  		case PR_SET_ENDIAN:
+>  			error = SET_ENDIAN(me, arg2);
+>  			break;
+> -
+>  		case PR_GET_SECCOMP:
+>  			error = prctl_get_seccomp();
+>  			break;
+>  		case PR_SET_SECCOMP:
+> -			error = prctl_set_seccomp(arg2);
+> +			error = prctl_set_seccomp(arg2, arg3);
+> +			break;
+> +		case PR_SET_SECCOMP_FILTER:
+> +			error = prctl_set_seccomp_filter(arg2,
+> +							 (char __user *) arg3);
+> +			break;
+> +		case PR_CLEAR_SECCOMP_FILTER:
+> +			error = prctl_clear_seccomp_filter(arg2);
+> +			break;
+> +		case PR_GET_SECCOMP_FILTER:
+> +			error = prctl_get_seccomp_filter(arg2,
+> +							 (char __user *) arg3,
+> +							 arg4);
+
+To restrict execution to system calls.
+
+Two observations:
+
+1) We already have a specific ABI for this: you can set filters for events via 
+   an event fd.
+
+   Why not extend that mechanism instead and improve *both* your sandboxing
+   bits and the events code? This new seccomp code has a lot more
+   to do with trace event filters than the minimal old seccomp code ...
+
+   kernel/trace/trace_event_filter.c is 2000 lines of tricky code that
+   interprets the ASCII filter expressions. kernel/seccomp.c is 86 lines of
+   mostly trivial code.
+
+2) Why should this concept not be made available wider, to allow the 
+   restriction of not just system calls but other security relevant components 
+   of the kernel as well?
+
+   This too, if you approach the problem via the events code, will be a natural 
+   end result, while if you approach it from the seccomp prctl angle it will be
+   a limited hack only.
+
+Note, the end result will be the same - just using a different ABI.
+
+So i really think the ABI itself should be closer related to the event code. 
+What this "seccomp" code does is that it uses specific syscall events to 
+restrict execution of certain event generating codepaths, such as system calls.
+
+Thanks,
+
+	Ingo
