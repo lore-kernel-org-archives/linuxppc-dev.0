@@ -1,19 +1,26 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [88.79.252.171])
-	by ozlabs.org (Postfix) with ESMTP id BDE59B6EF3
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 May 2011 18:36:40 +1000 (EST)
-From: <Sergej.Stepanov@ids.de>
-To: <mlcreech@gmail.com>
-Date: Fri, 13 May 2011 10:34:21 +0200
-Subject: Re: fsl_udc_core: BUG: scheduling while atomic
-Message-ID: <4206182445660643B9AEB8D4E55BBD0A1533BC2781@HERMES2>
-References: <BANLkTikp5yVgrCe7tbc4cvG5wvy7XJp2fQ@mail.gmail.com>
-	<4206182445660643B9AEB8D4E55BBD0A1533BC2780@HERMES2>
-	<BANLkTim8ntQHkcm_yOgD+UQQb+b+tSoFqA@mail.gmail.com>
-In-Reply-To: <BANLkTim8ntQHkcm_yOgD+UQQb+b+tSoFqA@mail.gmail.com>
+Return-Path: <R58472@freescale.com>
+Received: from CH1EHSOBE001.bigfish.com
+	(ch1outboundpool.messaging.microsoft.com [216.32.181.186])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 93137B6EE6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 13 May 2011 20:36:31 +1000 (EST)
+From: Li Yang-R58472 <R58472@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [linuxppc-release] [PATCH 1/2] powerpc,	e5500: add networking
+	to defconfig
+Date: Fri, 13 May 2011 10:36:19 +0000
+Message-ID: <3F607A5180246847A760FD34122A1E0515096A@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <20110510180147.GA18443@schlenkerla.am.freescale.net>
+	<3F607A5180246847A760FD34122A1E0514EC65@039-SN1MPN1-002.039d.mgd.msft.net>
+	<20110512103108.6dd3ca2a@schlenkerla.am.freescale.net>
+	<20110512103135.2c2a037a@schlenkerla.am.freescale.net>
+In-Reply-To: <20110512103135.2c2a037a@schlenkerla.am.freescale.net>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SSB3b3VsZCBzYXkgaXQgaXMgYSBnZW5lcmFsIHByb2JsZW0gYnkgdXNpbmcgQ09ORklHX1BSRUVN
-UFRfVk9MVU5UQVJZLApub3Qgb25seSBGcmVlc2NhbGUuLi4KCkFtIERvbm5lcnN0YWcsIGRlbiAx
-Mi4wNS4yMDExLCAxMTozMCAtMDQwMCBzY2hyaWViIE1hdHRoZXcgTC4gQ3JlZWNoOgo+IE9uIFRo
-dSwgTWF5IDEyLCAyMDExIGF0IDQ6MzcgQU0sICA8U2VyZ2VqLlN0ZXBhbm92QGlkcy5kZT4gd3Jv
-dGU6Cj4gPiBIaSBNYXR0aGVldywKPiA+Cj4gPiBzdWNoIG9vcHMgeW91IGNhbiBnZXQgYWxzbyB3
-aXRoIHNwaS4KPiA+IEZvciBzdWNoIHByb2JsZW0gaGVscHMgdG8gY29tcGlsZSB5b3VyIGtlcm5l
-bCB3aXRoIG90aGVyIHByZWVtcHRpb24KPiA+IG1vZGVsOgo+ID4gIC0gcHJlZW1wdAo+ID4gIC0g
-c3RhbmRhcmQKPiA+ICAtICEhISBidXQgbm90IHZvbHVudGFyeSBwcmVlbXB0aW9uICEhIQo+IAo+
-IFRoYW5rcyBTZXJnZWosIGluZGVlZCBJJ20gY3VycmVudGx5IHVzaW5nIENPTkZJR19QUkVFTVBU
-X1ZPTFVOVEFSWSBvbgo+IHRoaXMgYm9hcmQuICBJJ2xsIGNoYW5nZSBpdCB0byBmaXggdGhpcyBw
-cm9ibGVtIGZvciBub3cuCj4gCj4gRG8geW91IGhhcHBlbiB0byBrbm93IHdoZXRoZXIgdGhlIEZy
-ZWVzY2FsZSBmb2xrcyBpbnRlbmQgdG8gZml4IHRoaXM/Cj4gSWYgbm90LCBpdCBzZWVtcyBsaWtl
-IGF0IGxlYXN0IHNvbWUgc29ydCBvZiB3YXJuaW5nIGlzIGluIG9yZGVyLgo+IAo+IC0tIAo+IE1h
-dHRoZXcgTC4gQ3JlZWNoCg==
+>Subject: Re: [linuxppc-release] [PATCH 1/2] powerpc, e5500: add networking
+>to defconfig
+>
+>On Thu, 12 May 2011 10:31:08 -0500
+>Scott Wood <scottwood@freescale.com> wrote:
+>
+>> On Thu, 12 May 2011 01:11:03 -0500
+>> Li Yang-R58472 <R58472@freescale.com> wrote:
+>>
+>> > >diff --git a/arch/powerpc/configs/e55xx_smp_defconfig
+>> > >b/arch/powerpc/configs/e55xx_smp_defconfig
+>> > >index 9fa1613..f4c5780 100644
+>> > >--- a/arch/powerpc/configs/e55xx_smp_defconfig
+>> > >+++ b/arch/powerpc/configs/e55xx_smp_defconfig
+>> > >@@ -6,10 +6,10 @@ CONFIG_NR_CPUS=3D2
+>> > > CONFIG_EXPERIMENTAL=3Dy
+>> > > CONFIG_SYSVIPC=3Dy
+>> > > CONFIG_BSD_PROCESS_ACCT=3Dy
+>> > >+CONFIG_SPARSE_IRQ=3Dy
+>> >
+>> > Hi Scott,
+>> >
+>> > I remember in previous testing that this option has a negative effect
+>on performance.  Do we really need it to be enabled?
+>>
+>> I didn't change this setting, it just moved due to running it through
+>> savedefconfig.
+>
+>What was the performance impact?
+
+It adds CPU cycles to the interrupt handling path.  Will cause performance =
+drop for benchmarks with large amount of interrupts such as IP forwarding.
+
+- Leo
