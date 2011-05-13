@@ -1,27 +1,25 @@
 Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 682E5B6F08
+	by ozlabs.org (Postfix) with ESMTPS id 58E071007FD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 May 2011 23:56:02 +1000 (EST)
+	Fri, 13 May 2011 23:56:03 +1000 (EST)
 Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
 	call filtering
 From: Peter Zijlstra <peterz@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20110513124902.GC3924@elte.hu>
-References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
-	<1305169376-2363-1-git-send-email-wad@chromium.org>
-	<20110512074850.GA9937@elte.hu>
-	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
+In-Reply-To: <20110513131800.GA7883@elte.hu>
+References: <alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
 	<20110512130104.GA2912@elte.hu>
 	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
 	<20110513121034.GG21022@elte.hu> <1305289146.2466.8.camel@twins>
 	<20110513122646.GA3924@elte.hu> <1305290370.2466.14.camel@twins>
-	<20110513124902.GC3924@elte.hu>
+	<1305290612.2466.17.camel@twins> <20110513125452.GD3924@elte.hu>
+	<1305292132.2466.26.camel@twins>  <20110513131800.GA7883@elte.hu>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 May 2011 15:55:36 +0200
-Message-ID: <1305294936.2466.65.camel@twins>
+Date: Fri, 13 May 2011 15:55:35 +0200
+Message-ID: <1305294935.2466.64.camel@twins>
 Mime-Version: 1.0
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	Frederic Weisbecker <fweisbec@gmail.com>,
@@ -35,8 +33,8 @@ Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	James Morris <jmorris@namei.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
 	Ingo Molnar <mingo@redhat.com>,
-	linux-arm-kernel@lists.infradead.org, kees.cook@canonical.com,
-	"Serge E. Hallyn" <serge@hallyn.com>, microblaze-uclinux@itee.uq.edu.au,
+	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+	kees.cook@canonical.com, "Serge E. Hallyn" <serge@hallyn.com>,
 	Steven Rostedt <rostedt@goodmis.org>,
 	Martin Schwidefsky <schwidefsky@de.ibm.com>,
 	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
@@ -55,14 +53,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-13 at 14:49 +0200, Ingo Molnar wrote:
->=20
-> So given that by your own admission it makes sense to share the facilitie=
-s at=20
-> the low level, i also argue that it makes sense to share as high up as=
-=20
-> possible.=20
+Cut the microblaze list since its bouncy.
 
-I'm not saying any such thing, I'm saying that it might make sense to
-observe active objects and auto-create these observation points. That
-doesn't make them similar or make them share anything.
+On Fri, 2011-05-13 at 15:18 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+>=20
+> > On Fri, 2011-05-13 at 14:54 +0200, Ingo Molnar wrote:
+> > > I think the sanest semantics is to run all active callbacks as well.
+> > >=20
+> > > For example if this is used for three stacked security policies - as =
+if 3 LSM=20
+> > > modules were stacked at once. We'd call all three, and we'd determine=
+ that at=20
+> > > least one failed - and we'd return a failure.=20
+> >=20
+> > But that only works for boolean functions where you can return the
+> > multi-bit-or of the result. What if you need to return the specific
+> > error code.
+>=20
+> Do you mean that one filter returns -EINVAL while the other -EACCES?
+>=20
+> Seems like a non-problem to me, we'd return the first nonzero value.
+
+Assuming the first is -EINVAL, what then is the value in computing the
+-EACCESS? Sounds like a massive waste of time to me.
+
+> > Also, there's bound to be other cases where people will want to employ
+> > this, look at all the various notifier chain muck we've got, it already
+> > deals with much of this -- simply because users need it.
+>=20
+> Do you mean it would be easy to abuse it? What kind of abuse are you most=
+=20
+> worried about?
+
+I'm not worried about abuse, I'm saying that going by the existing
+notifier pattern always visiting all entries on the callback list is
+undesired.
+
+> > Then there's the whole indirection argument, if you don't need
+> > indirection, its often better to not use it, I myself much prefer code
+> > to look like:
+> >=20
+> >    foo1(bar);
+> >    foo2(bar);
+> >    foo3(bar);
+> >=20
+> > Than:
+> >=20
+> >    foo_notifier(bar);
+> >=20
+> > Simply because its much clearer who all are involved without me having
+> > to grep around to see who registers for foo_notifier and wth they do
+> > with it. It also makes it much harder to sneak in another user, whereas
+> > its nearly impossible to find new notifier users.
+> >=20
+> > Its also much faster, no extra memory accesses, no indirect function
+> > calls, no other muck.
+>=20
+> But i suspect this question has been settled, given the fact that even pu=
+re=20
+> observer events need and already process a chain of events? Am i missing=
+=20
+> something about your argument?
+
+I'm saying that there's reasons to not use notifiers passive or active.
+
+Mostly the whole notifier/indirection muck comes up once you want
+modules to make use of the thing, because then you need dynamic
+management of the callback list.
+
+(Then again, I'm fairly glad we don't have explicit callbacks in
+kernel/cpu.c for all the cpu-hotplug callbacks :-)
+
+Anyway, I oppose for the existing events to gain an active role.
