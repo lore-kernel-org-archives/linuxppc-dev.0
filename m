@@ -1,23 +1,23 @@
 Return-Path: <eparis@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id C2850B6F06
+	by ozlabs.org (Postfix) with ESMTP id D3DACB6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 14 May 2011 01:12:50 +1000 (EST)
+	Sat, 14 May 2011 01:18:55 +1000 (EST)
 Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
 	filtering
 From: Eric Paris <eparis@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 13 May 2011 11:10:49 -0400
-In-Reply-To: <20110513121034.GG21022@elte.hu>
-References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
-	<1305169376-2363-1-git-send-email-wad@chromium.org>
-	<20110512074850.GA9937@elte.hu>
-	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
+Date: Fri, 13 May 2011 11:17:52 -0400
+In-Reply-To: <20110513131800.GA7883@elte.hu>
+References: <alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
 	<20110512130104.GA2912@elte.hu>
 	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-	<20110513121034.GG21022@elte.hu>
+	<20110513121034.GG21022@elte.hu> <1305289146.2466.8.camel@twins>
+	<20110513122646.GA3924@elte.hu> <1305290370.2466.14.camel@twins>
+	<1305290612.2466.17.camel@twins> <20110513125452.GD3924@elte.hu>
+	<1305292132.2466.26.camel@twins> <20110513131800.GA7883@elte.hu>
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1305299455.2076.26.camel@localhost.localdomain>
+Message-ID: <1305299880.2076.31.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	Peter Zijlstra <peterz@infradead.org>,
@@ -30,8 +30,8 @@ Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
 	James Morris <jmorris@namei.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com, "Serge E.
-	Hallyn" <serge@hallyn.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
+	"Serge E. Hallyn" <serge@hallyn.com>,
 	Steven Rostedt <rostedt@goodmis.org>, Tejun Heo <tj@kernel.org>,
 	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
 	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
@@ -52,79 +52,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 [dropping microblaze and roland]
 
-lOn Fri, 2011-05-13 at 14:10 +0200, Ingo Molnar wrote:
-> * James Morris <jmorris@namei.org> wrote:
+On Fri, 2011-05-13 at 15:18 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Fri, 2011-05-13 at 14:54 +0200, Ingo Molnar wrote:
+> > > I think the sanest semantics is to run all active callbacks as well.
+> > > 
+> > > For example if this is used for three stacked security policies - as if 3 LSM 
+> > > modules were stacked at once. We'd call all three, and we'd determine that at 
+> > > least one failed - and we'd return a failure. 
+> > 
+> > But that only works for boolean functions where you can return the
+> > multi-bit-or of the result. What if you need to return the specific
+> > error code.
+> 
+> Do you mean that one filter returns -EINVAL while the other -EACCES?
+> 
+> Seems like a non-problem to me, we'd return the first nonzero value.
 
-> It is a simple and sensible security feature, agreed? It allows most code to 
-> run well and link to countless libraries - but no access to other files is 
-> allowed.
-
-It's simple enough and sounds reasonable, but you can read all the
-discussion about AppArmour why many people don't really think it's the
-best.  Still, I'll agree it's a lot better than nothing.
-
-> But if i had a VFS event at the fs/namei.c::getname() level, i would have 
-> access to a central point where the VFS string becomes stable to the kernel and 
-> can be checked (and denied if necessary).
-> 
-> A sidenote, and not surprisingly, the audit subsystem already has an event 
-> callback there:
-> 
->         audit_getname(result);
-> 
-> Unfortunately this audit callback cannot be used for my purposes, because the 
-> event is single-purpose for auditd and because it allows no feedback (no 
-> deny/accept discretion for the security policy).
-> 
-> But if had this simple event there:
-> 
-> 	err = event_vfs_getname(result);
-
-Wow it sounds so easy.  Now lets keep extending your train of thought
-until we can actually provide the security provided by SELinux.  What do
-we end up with?  We end up with an event hook right next to every LSM
-hook.  You know, the LSM hooks were placed where they are for a reason.
-Because those were the locations inside the kernel where you actually
-have information about the task doing an operation and the objects
-(files, sockets, directories, other tasks, etc) they are doing an
-operation on.
-
-Honestly all you are talking about it remaking the LSM with 2 sets of
-hooks instead if 1.  Why?  It seems much easier that if you want the
-language of the filter engine you would just make a new LSM that uses
-the filter engine for it's policy language rather than the language
-created by SELinux or SMACK or name your LSM implementation.
-
->  - unprivileged:  application-definable, allowing the embedding of security 
->                   policy in *apps* as well, not just the system
-> 
->  - flexible:      can be added/removed runtime unprivileged, and cheaply so
-> 
->  - transparent:   does not impact executing code that meets the policy
-> 
->  - nestable:      it is inherited by child tasks and is fundamentally stackable,
->                   multiple policies will have the combined effect and they
->                   are transparent to each other. So if a child task within a
->                   sandbox adds *more* checks then those add to the already
->                   existing set of checks. We only narrow permissions, never
->                   extend them.
-> 
->  - generic:       allowing observation and (safe) control of security relevant
->                   parameters not just at the system call boundary but at other
->                   relevant places of kernel execution as well: which 
->                   points/callbacks could also be used for other types of event 
->                   extraction such as perf. It could even be shared with audit ...
-
-I'm not arguing that any of these things are bad things.  What you
-describe is a new LSM that uses a discretionary access control model but
-with the granularity and flexibility that has traditionally only existed
-in the mandatory access control security modules previously implemented
-in the kernel.
-
-I won't argue that's a bad idea, there's no reason in my mind that a
-process shouldn't be allowed to control it's own access decisions in a
-more flexible way than rwx bits.  Then again, I certainly don't see a
-reason that this syscall hardening patch should be held up while a whole
-new concept in computer security is contemplated...
+Sounds so easy!  Why haven't LSMs stacked already?  Because what happens
+if one of these hooks did something stateful?  Lets say on open, hook #1
+returns EPERM.  hook #2 allocates memory.  The open is going to fail and
+hooks #2 is never going to get the close() which should have freed the
+allocation.  If you can be completely stateless its easier, but there's
+a reason that stacking security modules is hard.  Serge has tried in the
+past and both dhowells and casey schaufler are working on it right now.
+Stacking is never as easy as it sounds   :)
 
 -Eric
