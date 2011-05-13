@@ -1,47 +1,44 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9382CB6F08
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 0B944B6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 14 May 2011 01:27:45 +1000 (EST)
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
-	call filtering
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20110513145737.GC32688@elte.hu>
-References: <alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-	<20110513121034.GG21022@elte.hu> <1305289146.2466.8.camel@twins>
-	<20110513122646.GA3924@elte.hu> <1305290370.2466.14.camel@twins>
-	<1305290612.2466.17.camel@twins> <20110513125452.GD3924@elte.hu>
-	<1305292132.2466.26.camel@twins> <20110513131800.GA7883@elte.hu>
-	<1305294935.2466.64.camel@twins>  <20110513145737.GC32688@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 May 2011 17:27:23 +0200
-Message-ID: <1305300443.2466.77.camel@twins>
-Mime-Version: 1.0
+	Sat, 14 May 2011 01:30:38 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 25566-10 for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 13 May 2011 16:30:31 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
+	callfiltering
+Date: Fri, 13 May 2011 16:29:27 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD37@saturn3.aculab.com>
+In-Reply-To: <1305299880.2076.31.camel@localhost.localdomain>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Eric Paris" <eparis@redhat.com>,
+	"Ingo Molnar" <mingo@elte.hu>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	Peter Zijlstra <peterz@infradead.org>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Eric Paris <eparis@redhat.com>, "H. Peter
-	Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+	David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	"H. PeterAnvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
 	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
 	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	James Morris <jmorris@namei.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Tejun Heo <tj@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+	James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
+	kees.cook@canonical.com, "Serge E. Hallyn" <serge@hallyn.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, agl@chromium.org,
+	linux-arm-kernel@lists.infradead.org,
 	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
 	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
+	Oleg Nesterov <oleg@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
+	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
 	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -52,15 +49,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-13 at 16:57 +0200, Ingo Molnar wrote:
-> this is a security mechanism
+> ... If you can be completely stateless its easier, but there's
+> a reason that stacking security modules is hard.  Serge has tried in
+the
+> past and both dhowells and casey schaufler are working on it right
+now.
+> Stacking is never as easy as it sounds   :)
 
-Who says? and why would you want to unify two separate concepts only to
-them limit it to security that just doesn't make sense.
+For a bad example of trying to allow alternate security models
+look at NetBSD's kauth code :-)
 
-Either you provide a full on replacement for notifier chain like things
-or you don't, only extending trace events in this fashion for security
-is like way weird.
+NetBSD also had issues where some 'system call trace' code
+was being used to (try to) apply security - unfortunately
+it worked by looking at the user-space buffers on system
+call entry - and a multithreaded program can easily arrange
+to update them after the initial check!
+For trace/event type activities this wouldn't really matter,
+for security policy it does.
+(I've not looked directly at these event points in linux)
 
-Plus see the arguments Eric made about stacking stuff, not only security
-schemes will have those problems.
+	David
