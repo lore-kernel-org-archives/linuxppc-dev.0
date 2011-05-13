@@ -1,26 +1,16 @@
-Return-Path: <R58472@freescale.com>
-Received: from CH1EHSOBE001.bigfish.com
-	(ch1outboundpool.messaging.microsoft.com [216.32.181.186])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 93137B6EE6
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 5C6BFB6F08
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 May 2011 20:36:31 +1000 (EST)
-From: Li Yang-R58472 <R58472@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [linuxppc-release] [PATCH 1/2] powerpc,	e5500: add networking
-	to defconfig
-Date: Fri, 13 May 2011 10:36:19 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E0515096A@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <20110510180147.GA18443@schlenkerla.am.freescale.net>
-	<3F607A5180246847A760FD34122A1E0514EC65@039-SN1MPN1-002.039d.mgd.msft.net>
-	<20110512103108.6dd3ca2a@schlenkerla.am.freescale.net>
-	<20110512103135.2c2a037a@schlenkerla.am.freescale.net>
-In-Reply-To: <20110512103135.2c2a037a@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="Windows-1252"
+	Fri, 13 May 2011 21:03:16 +1000 (EST)
+Date: Fri, 13 May 2011 13:03:13 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATHC] Fix for Pegasos keyboard and mouse
+Message-ID: <20110513110313.GA4208@iram.es>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: pacman@kosh.dhis.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: Re: [linuxppc-release] [PATCH 1/2] powerpc, e5500: add networking
->to defconfig
->
->On Thu, 12 May 2011 10:31:08 -0500
->Scott Wood <scottwood@freescale.com> wrote:
->
->> On Thu, 12 May 2011 01:11:03 -0500
->> Li Yang-R58472 <R58472@freescale.com> wrote:
->>
->> > >diff --git a/arch/powerpc/configs/e55xx_smp_defconfig
->> > >b/arch/powerpc/configs/e55xx_smp_defconfig
->> > >index 9fa1613..f4c5780 100644
->> > >--- a/arch/powerpc/configs/e55xx_smp_defconfig
->> > >+++ b/arch/powerpc/configs/e55xx_smp_defconfig
->> > >@@ -6,10 +6,10 @@ CONFIG_NR_CPUS=3D2
->> > > CONFIG_EXPERIMENTAL=3Dy
->> > > CONFIG_SYSVIPC=3Dy
->> > > CONFIG_BSD_PROCESS_ACCT=3Dy
->> > >+CONFIG_SPARSE_IRQ=3Dy
->> >
->> > Hi Scott,
->> >
->> > I remember in previous testing that this option has a negative effect
->on performance.  Do we really need it to be enabled?
->>
->> I didn't change this setting, it just moved due to running it through
->> savedefconfig.
->
->What was the performance impact?
+[See http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086424.html
+and followups. Part of the commit message is directly copied from that.]
 
-It adds CPU cycles to the interrupt handling path.  Will cause performance =
-drop for benchmarks with large amount of interrupts such as IP forwarding.
+Commit 540c6c392f01887dcc96bef0a41e63e6c1334f01 tries to find i8042 IRQs in
+the device-tree but doesn't fall back to the old hardcoded 1 and 12 in all
+failure cases.
 
-- Leo
+Specifically, the case where the device-tree contains nothing matching
+pnpPNP,303 or pnpPNP,f03 doesn't seem to be handled well. It sort of falls
+through to the old code, but leaves the IRQs set to 0.
+
+Signed-off-by: Gabriel Paubert <paubert@iram.es>
+
+---
+
+This fix has only been tested on Pegasos, but to my knowledge it only 
+affects a Pegasos specific path (all other fimwares should be able
+to find the keyboard through the pnp identifiers.
+
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 21f30cb..6c7abbf 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -602,6 +602,10 @@ int check_legacy_ioport(unsigned long base_port)
+ 		 * name instead */
+ 		if (!np)
+ 			np = of_find_node_by_name(NULL, "8042");
++		if (np) {
++			of_i8042_kbd_irq = 1;
++			of_i8042_aux_irq = 12;
++		}
+ 		break;
+ 	case FDC_BASE: /* FDC1 */
+ 		np = of_find_node_by_type(NULL, "fdc");
