@@ -1,49 +1,48 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 27A641007D1
+Return-Path: <eparis@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 6992CB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 May 2011 22:11:33 +1000 (EST)
-Date: Fri, 13 May 2011 14:10:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Morris <jmorris@namei.org>
+	Sat, 14 May 2011 01:56:29 +1000 (EST)
 Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
 	filtering
-Message-ID: <20110513121034.GG21022@elte.hu>
+From: Eric Paris <eparis@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Date: Fri, 13 May 2011 11:55:34 -0400
+In-Reply-To: <1305300181.2466.72.camel@twins>
 References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
 	<1305169376-2363-1-git-send-email-wad@chromium.org>
 	<20110512074850.GA9937@elte.hu>
 	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
 	<20110512130104.GA2912@elte.hu>
 	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
+	<20110513121034.GG21022@elte.hu>
+	<1305299455.2076.26.camel@localhost.localdomain>
+	<1305300181.2466.72.camel@twins>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <1305302141.2076.56.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
 	Heiko Carstens <heiko.carstens@de.ibm.com>,
 	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-	sparclinux@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
-	linux-s390@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, "H. Peter
+	Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
 	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+	James Morris <jmorris@namei.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	linux-arm-kernel@lists.infradead.org, kees.cook@canonical.com,
+	Ingo Molnar <mingo@redhat.com>, Ingo Molnar <mingo@elte.hu>,
 	"Serge E. Hallyn" <serge@hallyn.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, microblaze-uclinux@itee.uq.edu.au,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Tejun Heo <tj@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>, kees.cook@canonical.com,
+	linux-arm-kernel@lists.infradead.org,
 	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
 	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
-	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-	agl@chromium.org, "David S. Miller" <davem@davemloft.net>
+	Paul Mundt <lethal@linux-sh.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,129 +52,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* James Morris <jmorris@namei.org> wrote:
-
-> On Thu, 12 May 2011, Ingo Molnar wrote:
-> > Funnily enough, back then you wrote this:
-> > 
-> >   " I'm concerned that we're seeing yet another security scheme being designed on 
-> >     the fly, without a well-formed threat model, and without taking into account 
-> >     lessons learned from the seemingly endless parade of similar, failed schemes. "
-> > 
-> > so when and how did your opinion of this scheme turn from it being an 
-> > "endless parade of failed schemes" to it being a "well-defined and readily 
-> > understandable feature"? :-)
+On Fri, 2011-05-13 at 17:23 +0200, Peter Zijlstra wrote:
+> On Fri, 2011-05-13 at 11:10 -0400, Eric Paris wrote:
+> > Then again, I certainly don't see a
+> > reason that this syscall hardening patch should be held up while a whole
+> > new concept in computer security is contemplated... 
 > 
-> When it was defined in a way which limited its purpose to reducing the attack 
-> surface of the sycall interface.
+> Which makes me wonder why this syscall hardening stuff is done outside
+> of LSM? Why isn't is part of the LSM so that say SELinux can have a
+> syscall bitmask per security context?
 
-Let me outline a simple example of a new filter expression based security 
-feature that could be implemented outside the narrow system call boundary you 
-find acceptable, and please tell what is bad about it.
+I could do that, but I like Will's approach better.  From the PoV of
+meeting security goals of information flow, data confidentiality,
+integrity, least priv, etc limiting on the syscall boundary doesn't make
+a lot of sense.  You just don't know enough there to enforce these
+things.  These are the types of goals that SELinux and other LSMs have
+previously tried to enforce.  From the PoV of making the kernel more
+resistant to attacks and making a process more resistant to misbehavior
+I think that the syscall boundary is appropriate.  Although I could do
+it in SELinux it don't really want to do it there.
 
-Say i'm a user-space sandbox developer who wants to enforce that sandboxed code 
-should only be allowed to open files in /home/sandbox/, /lib/ and /usr/lib/.
+In case people are interested or confused let me give my definition of
+two words I've used a bit in these conversations: discretionary and
+mandatory.  Any time I talk about a 'discretionary' security decision it
+is a security decisions that a process imposed upon itself.  Aka the
+choice to use seccomp is discretionary.  The choice to mark our own file
+u-wx is discretionary.  This isn't the best definition but it's one that
+works well in this discussion.  Mandatory security is one enforce by a
+global policy.  It's what selinux is all about.  SELinux doesn't give
+hoot what a process wants to do, it enforces a global policy from the
+top down.  You take over a process, well, too bad, you still have no
+choice but to follow the mandatory policy.
 
-It is a simple and sensible security feature, agreed? It allows most code to 
-run well and link to countless libraries - but no access to other files is 
-allowed.
+The LSM does NOT enforce a mandatory access control model, it's just how
+it's been used in the past.  Ingo appears to me (please correct me if
+I'm wrong) to really be a fan of exposing the flexibility of the LSM to
+a discretionary access control model.  That doesn't seem like a bad
+idea.  And maybe using the filter engine to define the language to do
+this isn't a bad idea either.  But I think that's a 'down the road'
+project, not something to hold up a better seccomp.
 
-I would also like my sandbox app to be able to install this policy without 
-having to be root. I do not want the sandbox app to have permission to create 
-labels on /lib and /usr/lib and what not.
+> Making it part of the LSM also avoids having to add this prctl().
 
-Firstly, using the filter code i deny the various link creation syscalls so 
-that sandboxed code cannot escape for example by creating a symlink to outside 
-the permitted VFS namespace. (Note: we opt-in to syscalls, that way new 
-syscalls added by new kernels are denied by defalt. The current symlink 
-creation syscalls are not opted in to.)
+Well, it would mean exposing some new language construct to every LSM
+(instead of a single prctl construct) and it would mean anyone wanting
+to use the interface would have to rely on the LSM implementing those
+hooks the way they need it.  Honestly chrome can already get all of the
+benefits of this patch (given a perfectly coded kernel) and a whole lot
+more using SELinux, but (surprise surprise) not everyone uses SELinux.
+I think it's a good idea to expose a simple interface which will be
+widely enough adopted that many userspace applications can rely on it
+for hardening.
 
-But the next step, actually checking filenames, poses a big hurdle: i cannot 
-implement the filename checking at the sys_open() syscall level in a secure 
-way: because the pathname is passed to sys_open() by pointer, and if i check it 
-at the generic sys_open() syscall level, another thread in the sandbox might 
-modify the underlying filename *after* i've checked it.
+The existence of the LSM and the fact that there exists multiple
+security modules that may or may not be enabled really leads application
+developers to be unable to rely on LSM for security.  If linux had a
+single security model which everyone could rely on we wouldn't really
+have as big of an issue but that's not possible.  So I'm advocating for
+this series which will provide a single useful change which applications
+can rely upon across distros and platforms to enhance the properties and
+abilities of the linux kernel.
 
-But if i had a VFS event at the fs/namei.c::getname() level, i would have 
-access to a central point where the VFS string becomes stable to the kernel and 
-can be checked (and denied if necessary).
-
-A sidenote, and not surprisingly, the audit subsystem already has an event 
-callback there:
-
-        audit_getname(result);
-
-Unfortunately this audit callback cannot be used for my purposes, because the 
-event is single-purpose for auditd and because it allows no feedback (no 
-deny/accept discretion for the security policy).
-
-But if had this simple event there:
-
-	err = event_vfs_getname(result);
-
-I could implement this new filename based sandboxing policy, using a filter 
-like this installed on the vfs::getname event and inherited by all sandboxed 
-tasks (which cannot uninstall the filter, obviously):
-
-  "
-	if (strstr(name, ".."))
-		return -EACCESS;
-
-	if (!strncmp(name, "/home/sandbox/", 14) &&
-	    !strncmp(name, "/lib/", 5) &&
-	    !strncmp(name, "/usr/lib/", 9))
-		return -EACCESS;
-
-  "
-
-  #
-  # Note1: Obviously the filter engine would be extended to allow such simple string
-  #        match functions. )
-  #
-  # Note2: ".." is disallowed so that sandboxed code cannot escape the restrictions
-  #         using "/..".
-  #
-
-This kind of flexible and dynamic sandboxing would allow a wide range of file 
-ops within the sandbox, while still isolating it from files not included in the 
-specified VFS namespace.
-
-( Note that there are tons of other examples as well, for useful security features
-  that are best done using events outside the syscall boundary. )
-
-The security event filters code tied to seccomp and syscalls at the moment is 
-useful, but limited in its future potential.
-
-So i argue that it should go slightly further and should become:
-
- - unprivileged:  application-definable, allowing the embedding of security 
-                  policy in *apps* as well, not just the system
-
- - flexible:      can be added/removed runtime unprivileged, and cheaply so
-
- - transparent:   does not impact executing code that meets the policy
-
- - nestable:      it is inherited by child tasks and is fundamentally stackable,
-                  multiple policies will have the combined effect and they
-                  are transparent to each other. So if a child task within a
-                  sandbox adds *more* checks then those add to the already
-                  existing set of checks. We only narrow permissions, never
-                  extend them.
-
- - generic:       allowing observation and (safe) control of security relevant
-                  parameters not just at the system call boundary but at other
-                  relevant places of kernel execution as well: which 
-                  points/callbacks could also be used for other types of event 
-                  extraction such as perf. It could even be shared with audit ...
-
-I argue that this is the LSM and audit subsystems designed right: in the long 
-run it could allow everything that LSM does at the moment - and so much more 
-...
-
-And you argue that allowing this would be bad, if it was extended like that 
-then you'd consider it a failed scheme? Why?
-
-Thanks,
-
-	Ingo
+-Eric
