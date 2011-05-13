@@ -1,26 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 400C2B6F08
+	by ozlabs.org (Postfix) with ESMTPS id DE338B6F08
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 May 2011 22:19:47 +1000 (EST)
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
-	call filtering
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20110513121034.GG21022@elte.hu>
+	Fri, 13 May 2011 22:27:24 +1000 (EST)
+Date: Fri, 13 May 2011 14:26:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
+	filtering
+Message-ID: <20110513122646.GA3924@elte.hu>
 References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
 	<1305169376-2363-1-git-send-email-wad@chromium.org>
 	<20110512074850.GA9937@elte.hu>
 	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
 	<20110512130104.GA2912@elte.hu>
 	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-	<20110513121034.GG21022@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 May 2011 14:19:06 +0200
-Message-ID: <1305289146.2466.8.camel@twins>
-Mime-Version: 1.0
+	<20110513121034.GG21022@elte.hu> <1305289146.2466.8.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1305289146.2466.8.camel@twins>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	Frederic Weisbecker <fweisbec@gmail.com>,
 	Heiko Carstens <heiko.carstens@de.ibm.com>,
@@ -53,15 +53,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-13 at 14:10 +0200, Ingo Molnar wrote:
->         err =3D event_vfs_getname(result);
 
-I really think we should not do this. Events like we have them should be
-inactive, totally passive entities, only observe but not affect
-execution (other than the bare minimal time delay introduced by
-observance).
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-If you want another entity that is more active, please invent a new name
-for it and create a new subsystem for them, now you could have these
-active entities also have an (automatic) passive event side, but that's
-some detail.
+> On Fri, 2011-05-13 at 14:10 +0200, Ingo Molnar wrote:
+> >         err = event_vfs_getname(result);
+> 
+> I really think we should not do this. Events like we have them should be 
+> inactive, totally passive entities, only observe but not affect execution 
+> (other than the bare minimal time delay introduced by observance).
+
+Well, this patchset already demonstrates that we can use a single event 
+callback for a rather useful purpose.
+
+Either it makes sense to do, in which case we should share facilities as much 
+as possible, or it makes no sense, in which case we should not merge it at all.
+
+> If you want another entity that is more active, please invent a new name for 
+> it and create a new subsystem for them, now you could have these active 
+> entities also have an (automatic) passive event side, but that's some detail.
+
+Why should we have two callbacks next to each other:
+
+	event_vfs_getname(result);
+	result = check_event_vfs_getname(result);
+
+if one could do it all?
+
+Thanks,
+
+	Ingo
