@@ -1,25 +1,26 @@
 Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 261EBB6EEC
+	by ozlabs.org (Postfix) with ESMTPS id 0C2C0B6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 14 May 2011 00:58:24 +1000 (EST)
-Date: Fri, 13 May 2011 16:57:37 +0200
+	Sat, 14 May 2011 01:03:11 +1000 (EST)
+Date: Fri, 13 May 2011 17:02:15 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
 	filtering
-Message-ID: <20110513145737.GC32688@elte.hu>
-References: <alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
+Message-ID: <20110513150215.GD32688@elte.hu>
+References: <20110512074850.GA9937@elte.hu>
+	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
+	<20110512130104.GA2912@elte.hu>
+	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
 	<20110513121034.GG21022@elte.hu> <1305289146.2466.8.camel@twins>
 	<20110513122646.GA3924@elte.hu> <1305290370.2466.14.camel@twins>
-	<1305290612.2466.17.camel@twins> <20110513125452.GD3924@elte.hu>
-	<1305292132.2466.26.camel@twins> <20110513131800.GA7883@elte.hu>
-	<1305294935.2466.64.camel@twins>
+	<20110513124902.GC3924@elte.hu> <1305294936.2466.65.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1305294935.2466.64.camel@twins>
+In-Reply-To: <1305294936.2466.65.camel@twins>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	Frederic Weisbecker <fweisbec@gmail.com>,
 	Heiko Carstens <heiko.carstens@de.ibm.com>,
@@ -32,8 +33,8 @@ Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	James Morris <jmorris@namei.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
 	Ingo Molnar <mingo@redhat.com>,
-	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-	kees.cook@canonical.com, "Serge E. Hallyn" <serge@hallyn.com>,
+	linux-arm-kernel@lists.infradead.org, kees.cook@canonical.com,
+	"Serge E. Hallyn" <serge@hallyn.com>, microblaze-uclinux@itee.uq.edu.au,
 	Steven Rostedt <rostedt@goodmis.org>,
 	Martin Schwidefsky <schwidefsky@de.ibm.com>,
 	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
@@ -55,97 +56,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Cut the microblaze list since its bouncy.
-> 
-> On Fri, 2011-05-13 at 15:18 +0200, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2011-05-13 at 14:49 +0200, Ingo Molnar wrote:
 > > 
-> > > On Fri, 2011-05-13 at 14:54 +0200, Ingo Molnar wrote:
-> > > > I think the sanest semantics is to run all active callbacks as well.
-> > > > 
-> > > > For example if this is used for three stacked security policies - as if 3 LSM 
-> > > > modules were stacked at once. We'd call all three, and we'd determine that at 
-> > > > least one failed - and we'd return a failure. 
-> > > 
-> > > But that only works for boolean functions where you can return the
-> > > multi-bit-or of the result. What if you need to return the specific
-> > > error code.
-> > 
-> > Do you mean that one filter returns -EINVAL while the other -EACCES?
-> > 
-> > Seems like a non-problem to me, we'd return the first nonzero value.
+> > So given that by your own admission it makes sense to share the facilities at 
+> > the low level, i also argue that it makes sense to share as high up as 
+> > possible. 
 > 
-> Assuming the first is -EINVAL, what then is the value in computing the
-> -EACCESS? Sounds like a massive waste of time to me.
+> I'm not saying any such thing, I'm saying that it might make sense to
+> observe active objects and auto-create these observation points. That
+> doesn't make them similar or make them share anything.
 
-No, because the common case is no rejection - this is a security mechanism. So 
-in the normal case we would execute all 3 anyway, just to determine that all 
-return 0.
+Well, they would share the lowest level call site:
 
-Are you really worried about the abnormal case of one of them returning an 
-error and us calculating all 3 return values?
+	result = check_event_vfs_getname(result);
 
-> > > Also, there's bound to be other cases where people will want to employ
-> > > this, look at all the various notifier chain muck we've got, it already
-> > > deals with much of this -- simply because users need it.
-> > 
-> > Do you mean it would be easy to abuse it? What kind of abuse are you most 
-> > worried about?
-> 
-> I'm not worried about abuse, I'm saying that going by the existing
-> notifier pattern always visiting all entries on the callback list is
-> undesired.
+You call it 'auto-generated call site', i call it a shared (single line) call 
+site. The same thing as far as the lowest level goes.
 
-That is because many notifier chains are used in an 'event consuming' manner - 
-they are responding to things like hardware events and are called in an 
-interrupt-handler alike fashion most of the time.
+Now (the way i understood it) you'd want to stop the sharing right after that. 
+I argue that it should go all the way up.
 
-> > > Then there's the whole indirection argument, if you don't need
-> > > indirection, its often better to not use it, I myself much prefer code
-> > > to look like:
-> > > 
-> > >    foo1(bar);
-> > >    foo2(bar);
-> > >    foo3(bar);
-> > > 
-> > > Than:
-> > > 
-> > >    foo_notifier(bar);
-> > > 
-> > > Simply because its much clearer who all are involved without me having
-> > > to grep around to see who registers for foo_notifier and wth they do
-> > > with it. It also makes it much harder to sneak in another user, whereas
-> > > its nearly impossible to find new notifier users.
-> > > 
-> > > Its also much faster, no extra memory accesses, no indirect function
-> > > calls, no other muck.
-> > 
-> > But i suspect this question has been settled, given the fact that even pure 
-> > observer events need and already process a chain of events? Am i missing 
-> > something about your argument?
-> 
-> I'm saying that there's reasons to not use notifiers passive or active.
-> 
-> Mostly the whole notifier/indirection muck comes up once you want
-> modules to make use of the thing, because then you need dynamic
-> management of the callback list.
+Note: i fully agree that there should be events where filters can have no 
+effect whatsoever. For example if this was written as:
 
-But your argument assumes that we'd have a chain of functions to call, like 
-regular notifiers.
+	check_event_vfs_getname(result);
 
-While the natural model here would be to have a list of registered event 
-structs for that point, with different filters but basically the same callback 
-mechanism (a call into the filter engine in essence).
+Then it would have no effect. This is decided by the subsystem developers, 
+obviously. So whether an event is 'active' or 'passive' can be enforced at the 
+subsystem level as well.
 
-Also note that the common case would be no event registered - and we'd 
-automatically optimize that case via the existing jump labels optimization.
-
-> (Then again, I'm fairly glad we don't have explicit callbacks in kernel/cpu.c 
-> for all the cpu-hotplug callbacks :-)
-> 
-> Anyway, I oppose for the existing events to gain an active role.
-
-Why if 'being active' is optional and useful?
+As far as the event facilities go, 'no effect observation' is a special-case of 
+'active observation' - just like read-only files are a special case of 
+read-write files.
 
 Thanks,
 
