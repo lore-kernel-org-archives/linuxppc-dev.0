@@ -1,43 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.8])
-	by ozlabs.org (Postfix) with ESMTP id 02AB9B6F07
+Return-Path: <sha_neb@hotmail.com>
+Received: from blu0-omc3-s13.blu0.hotmail.com (blu0-omc3-s13.blu0.hotmail.com
+	[65.55.116.88]) by ozlabs.org (Postfix) with ESMTP id D887AB6EF1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 15 May 2011 16:43:11 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Will Drewry <wad@chromium.org>
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
-	filtering
-Date: Sun, 15 May 2011 08:42:07 +0200
-References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
-	<201105132135.34741.arnd@arndb.de>
-	<BANLkTinukLesDoXzXKdtdRwgHtJkthXK0A@mail.gmail.com>
-In-Reply-To: <BANLkTinukLesDoXzXKdtdRwgHtJkthXK0A@mail.gmail.com>
+	Mon, 16 May 2011 02:57:26 +1000 (EST)
+Message-ID: <BLU156-w53FEA9E58A7EB19B0F239E838A0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_8de94878-bb3b-456e-a164-6a4983157370_"
+From: s shaiju <sha_neb@hotmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: book  to  learn  ppc  assembly  and  architecture
+Date: Sun, 15 May 2011 16:52:11 +0000
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201105150842.07816.arnd@arndb.de>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	jmorris@namei.org, Ingo Molnar <mingo@redhat.com>,
-	Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, microblaze-uclinux@itee.uq.edu.au,
-	Steven Rostedt <rostedt@goodmis.org>, Tejun Heo <tj@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>, kees.cook@canonical.com,
-	linux-arm-kernel@lists.infradead.org,
-	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
-	agl@chromium.org, linux-kernel@vger.kernel.org,
-	Eric Paris <eparis@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,17 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 14 May 2011, Will Drewry wrote:
-> Depending on integration, it could even be limited to ioctl commands
-> that are appropriate to a known fd if the fd is opened prior to
-> entering seccomp mode 2. Alternatively, __NR__ioctl could be allowed
-> with a filter of "1" then narrowed through a later addition of
-> something like "(fd == %u && (cmd == %u || cmd == %u))" or something
-> along those lines.
-> 
-> Does that make sense?
+--_8de94878-bb3b-456e-a164-6a4983157370_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the explanation. This sounds like it's already doing all
-we need.
 
-	Arnd
+Hi=2C
+=20
+what  is  the  best  book  to  learn  assembly  and  architecture .
+=20
+=20
+=20
+regards=2C
+sha 		 	   		  =
+
+--_8de94878-bb3b-456e-a164-6a4983157370_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+Hi=2C<BR>
+&nbsp=3B<BR>
+what&nbsp=3B is&nbsp=3B the&nbsp=3B best&nbsp=3B book&nbsp=3B to&nbsp=3B le=
+arn&nbsp=3B assembly&nbsp=3B and&nbsp=3B architecture .<BR>
+&nbsp=3B<BR>
+&nbsp=3B<BR>
+&nbsp=3B<BR>
+regards=2C<BR>
+sha<BR> 		 	   		  </body>
+</html>=
+
+--_8de94878-bb3b-456e-a164-6a4983157370_--
