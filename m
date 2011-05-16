@@ -1,28 +1,45 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E2613B6EEC
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id A7047B6EF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 May 2011 02:21:59 +1000 (EST)
-Received: from mail56-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail56-tx2-R.bigfish.com (Postfix) with ESMTP id 9C91112580A3	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2011 16:21:48 +0000 (UTC)
-Received: from TX2EHSMHS021.bigfish.com (unknown [10.9.14.246])	by
-	mail56-tx2.bigfish.com (Postfix) with ESMTP id B24BBB50053	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2011 16:21:45 +0000 (UTC)
-Received: from [10.82.123.3] (efes.am.freescale.net [10.82.123.3])	by
-	az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
-	p4GGLgge027566	for
-	<linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2011 11:21:42 -0500 (CDT)
-Message-ID: <4DD14F15.5070902@freescale.com>
-Date: Mon, 16 May 2011 11:21:41 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Updating the define_machine() structure at runtime?
-Content-Type: text/plain; charset="ISO-8859-1"
+	Tue, 17 May 2011 02:23:53 +1000 (EST)
+Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
+	call filtering
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20110513145737.GC32688@elte.hu>
+References: <alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
+	<20110513121034.GG21022@elte.hu> <1305289146.2466.8.camel@twins>
+	<20110513122646.GA3924@elte.hu> <1305290370.2466.14.camel@twins>
+	<1305290612.2466.17.camel@twins> <20110513125452.GD3924@elte.hu>
+	<1305292132.2466.26.camel@twins> <20110513131800.GA7883@elte.hu>
+	<1305294935.2466.64.camel@twins>  <20110513145737.GC32688@elte.hu>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Mon, 16 May 2011 12:23:46 -0400
+Message-ID: <1305563026.5456.19.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+	James Morris <jmorris@namei.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+	kees.cook@canonical.com, "Serge E. Hallyn" <serge@hallyn.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
+	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
+	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
+	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+	agl@chromium.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +49,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I would like to get some opinions on the following.
+On Fri, 2011-05-13 at 16:57 +0200, Ingo Molnar wrote:
 
-I'm working on extending our existing board definition files to support our
-ePAPR reference hypervisor.  Because our hypervisor provides a virtual PIC, we
-need to have different functions for define_machine() structure that related to
-the PIC, but most everything else can stay the same.
+> > > > Then there's the whole indirection argument, if you don't need
+> > > > indirection, its often better to not use it, I myself much prefer code
+> > > > to look like:
+> > > > 
+> > > >    foo1(bar);
+> > > >    foo2(bar);
+> > > >    foo3(bar);
+> > > > 
+> > > > Than:
+> > > > 
+> > > >    foo_notifier(bar);
+> > > > 
+> > > > Simply because its much clearer who all are involved without me having
+> > > > to grep around to see who registers for foo_notifier and wth they do
+> > > > with it. It also makes it much harder to sneak in another user, whereas
+> > > > its nearly impossible to find new notifier users.
+> > > > 
+> > > > Its also much faster, no extra memory accesses, no indirect function
+> > > > calls, no other muck.
+> > > 
+> > > But i suspect this question has been settled, given the fact that even pure 
+> > > observer events need and already process a chain of events? Am i missing 
+> > > something about your argument?
+> > 
+> > I'm saying that there's reasons to not use notifiers passive or active.
+> > 
+> > Mostly the whole notifier/indirection muck comes up once you want
+> > modules to make use of the thing, because then you need dynamic
+> > management of the callback list.
+> 
+> But your argument assumes that we'd have a chain of functions to call, like 
+> regular notifiers.
+> 
+> While the natural model here would be to have a list of registered event 
+> structs for that point, with different filters but basically the same callback 
+> mechanism (a call into the filter engine in essence).
+> 
+> Also note that the common case would be no event registered - and we'd 
+> automatically optimize that case via the existing jump labels optimization.
 
-define_machine(p4080_hv) {
-	.name			= "P4080DS HV",
-	.probe			= p4080hv_probe,
-	.setup_arch		= corenet_ds_setup_arch,
-	.init_IRQ		= fsl_hv_pic_init,
-#ifdef CONFIG_PCI
-	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-#endif
-	.get_irq		= ehv_pic_get_irq,
-	.restart		= fsl_hv_restart,
-	.power_off		= fsl_hv_halt,
-	.halt			= fsl_hv_halt,
-	.calibrate_decr		= generic_calibrate_decr,
-	.progress		= udbg_progress,
-};
+I agree that I prefer the "notifier" type over having direct function
+calls. Yes, it's easier to read and figure out what functions are
+called, but notifiers can be optimized for the default case where
+nothing is called (jump-label nop).
 
-Rather than create two such structures for each board that can support the
-hypervisor (one with HV support, one without), I would like to do the following
-instead.  What do you all think?
+> 
+> > (Then again, I'm fairly glad we don't have explicit callbacks in kernel/cpu.c 
+> > for all the cpu-hotplug callbacks :-)
+> > 
+> > Anyway, I oppose for the existing events to gain an active role.
+> 
+> Why if 'being active' is optional and useful?
 
-define_machine(p4080_ds) {
-	.name			= "P4080 DS",
-	.probe			= p4080_ds_probe,
-	...
-	.get_irq		= mpic_get_coreint_irq,
-};
+I'm a bit nervous about the 'active' role of (trace_)events, because of
+the way multiple callbacks can be registered. How would:
 
-static int __init p4080_ds_probe(void)
-{
-	...
-#ifdef CONFIG_FSL_HYPERVISOR
-	if (of_flat_dt_is_compatible(root, "fsl,P4080DS-hv")) {
-		mach_p4080_ds.get_irq = ehv_pic_get_irq;
-		...
-		return 1;
-	} else
-		return 0;
-#endif	
+	err = event_x();
+	if (err == -EACCESS) {
 
+be handled? Would we need a way to prioritize which call back gets the
+return value? One way I guess would be to add a check_event option,
+where you pass in an ENUM of the event you want:
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+	event_x();
+	err = check_event_x(MYEVENT);
+
+If something registered itself as "MYEVENT" to event_x, then you get the
+return code of MYEVENT. If the MYEVENT was not registered, a -ENODEV or
+something could be returned. I'm sure we could even optimize it such a
+way if no active events have been registered to event_x, that
+check_event_x() will return -ENODEV without any branches.
+
+-- Steve
