@@ -1,13 +1,28 @@
-Return-Path: <agust@denx.de>
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/5200: dts: digsy_mtc.dts: update to add can, pci,
-	serial and spi
-Date: Mon, 16 May 2011 18:02:44 +0200
-Message-Id: <1305561764-5942-2-git-send-email-agust@denx.de>
-In-Reply-To: <1305561764-5942-1-git-send-email-agust@denx.de>
-References: <1305561764-5942-1-git-send-email-agust@denx.de>
-Cc: devicetree-discuss@lists.ozlabs.org, Heiko Schocher <hs@denx.de>
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E2613B6EEC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 17 May 2011 02:21:59 +1000 (EST)
+Received: from mail56-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail56-tx2-R.bigfish.com (Postfix) with ESMTP id 9C91112580A3	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2011 16:21:48 +0000 (UTC)
+Received: from TX2EHSMHS021.bigfish.com (unknown [10.9.14.246])	by
+	mail56-tx2.bigfish.com (Postfix) with ESMTP id B24BBB50053	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2011 16:21:45 +0000 (UTC)
+Received: from [10.82.123.3] (efes.am.freescale.net [10.82.123.3])	by
+	az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	p4GGLgge027566	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2011 11:21:42 -0500 (CDT)
+Message-ID: <4DD14F15.5070902@freescale.com>
+Date: Mon, 16 May 2011 11:21:41 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Updating the define_machine() structure at runtime?
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,108 +32,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add new nodes to describe more hardware the board is
-equipped with:
- - two can nodes for SJA1000 on localbus
- - pci node to support Coral-PA graphics controller
- - serial node for SC28L92 DUART on localbus
- - spi node for MSP430 device
+I would like to get some opinions on the following.
 
-Also correct i2c eeprom node name.
+I'm working on extending our existing board definition files to support our
+ePAPR reference hypervisor.  Because our hypervisor provides a virtual PIC, we
+need to have different functions for define_machine() structure that related to
+the PIC, but most everything else can stay the same.
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/boot/dts/digsy_mtc.dts |   50 ++++++++++++++++++++++++++++++++--
- 1 files changed, 47 insertions(+), 3 deletions(-)
+define_machine(p4080_hv) {
+	.name			= "P4080DS HV",
+	.probe			= p4080hv_probe,
+	.setup_arch		= corenet_ds_setup_arch,
+	.init_IRQ		= fsl_hv_pic_init,
+#ifdef CONFIG_PCI
+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+#endif
+	.get_irq		= ehv_pic_get_irq,
+	.restart		= fsl_hv_restart,
+	.power_off		= fsl_hv_halt,
+	.halt			= fsl_hv_halt,
+	.calibrate_decr		= generic_calibrate_decr,
+	.progress		= udbg_progress,
+};
 
-diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
-index 27bd267..e205d17 100644
---- a/arch/powerpc/boot/dts/digsy_mtc.dts
-+++ b/arch/powerpc/boot/dts/digsy_mtc.dts
-@@ -38,6 +38,14 @@
- 			status = "disabled";
- 		};
- 
-+		spi@f00 {
-+			msp430@0 {
-+				compatible = "spidev";
-+				spi-max-frequency = <32000>;
-+				reg = <0>;
-+			};
-+		};
-+
- 		psc@2000 {		// PSC1
- 			status = "disabled";
- 		};
-@@ -73,11 +81,16 @@
- 		};
- 
- 		i2c@3d00 {
--			rtc@50 {
-+			eeprom@50 {
- 				compatible = "at,24c08";
- 				reg = <0x50>;
- 			};
- 
-+			rtc@56 {
-+				compatible = "mc,rv3029c2";
-+				reg = <0x56>;
-+			};
-+
- 			rtc@68 {
- 				compatible = "dallas,ds1339";
- 				reg = <0x68>;
-@@ -90,11 +103,22 @@
- 	};
- 
- 	pci@f0000d00 {
--		status = "disabled";
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
-+				 0xc000 0 0 2 &mpc5200_pic 0 0 3
-+				 0xc000 0 0 3 &mpc5200_pic 0 0 3
-+				 0xc000 0 0 4 &mpc5200_pic 0 0 3>;
-+		clock-frequency = <0>; // From boot loader
-+		interrupts = <2 8 0 2 9 0 2 10 0>;
-+		bus-range = <0 0>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
-+			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
--		ranges = <0 0 0xff000000 0x1000000>;
-+		ranges = <0 0 0xff000000 0x1000000
-+			  4 0 0x60000000 0x0001000>;
- 
- 		// 16-bit flash device at LocalPlus Bus CS0
- 		flash@0,0 {
-@@ -122,5 +146,25 @@
- 				reg = <0x00f00000 0x100000>;
- 			};
- 		};
-+
-+		can@4,0 {
-+			compatible = "nxp,sja1000";
-+			reg = <4 0x000 0x80>;
-+			nxp,external-clock-frequency = <24000000>;
-+			interrupts = <1 2 3>; // Level-low
-+		};
-+
-+		can@4,100 {
-+			compatible = "nxp,sja1000";
-+			reg = <4 0x100 0x80>;
-+			nxp,external-clock-frequency = <24000000>;
-+			interrupts = <1 2 3>;  // Level-low
-+		};
-+
-+		serial@4,200 {
-+			compatible = "nxp,sc28l92";
-+			reg = <4 0x200 0x10>;
-+			interrupts = <1 3 3>;
-+		};
- 	};
- };
+Rather than create two such structures for each board that can support the
+hypervisor (one with HV support, one without), I would like to do the following
+instead.  What do you all think?
+
+define_machine(p4080_ds) {
+	.name			= "P4080 DS",
+	.probe			= p4080_ds_probe,
+	...
+	.get_irq		= mpic_get_coreint_irq,
+};
+
+static int __init p4080_ds_probe(void)
+{
+	...
+#ifdef CONFIG_FSL_HYPERVISOR
+	if (of_flat_dt_is_compatible(root, "fsl,P4080DS-hv")) {
+		mach_p4080_ds.get_irq = ehv_pic_get_irq;
+		...
+		return 1;
+	} else
+		return 0;
+#endif	
+
+
 -- 
-1.7.1
+Timur Tabi
+Linux kernel developer at Freescale
