@@ -1,20 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BCF861007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 May 2011 09:38:52 +1000 (EST)
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: book to learn ppc assembly and architecture
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <9136.1305527852@neuling.org>
+In-reply-to: <1305589123.2781.15.camel@pasglop>
 References: <BLU156-w53FEA9E58A7EB19B0F239E838A0@phx.gbl>
-	<9136.1305527852@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 May 2011 09:38:43 +1000
-Message-ID: <1305589123.2781.15.camel@pasglop>
-Mime-Version: 1.0
+	<9136.1305527852@neuling.org> <1305589123.2781.15.camel@pasglop>
+Date: Tue, 17 May 2011 09:43:35 +1000
+Message-ID: <18259.1305589415@neuling.org>
 Cc: s shaiju <sha_neb@hotmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,17 +17,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-05-16 at 16:37 +1000, Michael Neuling wrote:
-> > what  is  the  best  book  to  learn  assembly  and  architecture .
+In message <1305589123.2781.15.camel@pasglop> you wrote:
+> On Mon, 2011-05-16 at 16:37 +1000, Michael Neuling wrote:
+> > > what  is  the  best  book  to  learn  assembly  and  architecture .
+> > 
+> > Reading the architecture books with a nice cup of tea.
+> > 
+> > http://www.power.org/resources/downloads/PowerISA_V2.06B_V2_PUBLIC.pdf
+> > 
 > 
-> Reading the architecture books with a nice cup of tea.
-> 
-> http://www.power.org/resources/downloads/PowerISA_V2.06B_V2_PUBLIC.pdf
-> 
+> A slightly less steep approach might be to get yourself the programmer
+> manuals of some older powerpc chips, like the freescale PEMs, and then
+> move on to the full ISA
 
-A slightly less steep approach might be to get yourself the programmer
-manuals of some older powerpc chips, like the freescale PEMs, and then
-move on to the full ISA
+True but a well aged Shiraz goes better with them than the cup of tea.
 
-Cheers,
-Ben.
+Mikey
