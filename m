@@ -1,20 +1,20 @@
-Return-Path: <sebastian@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2B788B6EF3
+	by ozlabs.org (Postfix) with ESMTPS id 80A05B6EED
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 May 2011 05:25:19 +1000 (EST)
-Date: Mon, 16 May 2011 20:58:13 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: remove last piece of GEMINI
-Message-ID: <20110516185813.GA23559@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Cc: linuxppc-dev@lists.ozlabs.org, Adrian Bunk <bunk@kernel.org>,
-	Paul Mackerras <paulus@samba.org>
+	Tue, 17 May 2011 09:38:01 +1000 (EST)
+Subject: Re: Updating the define_machine() structure at runtime?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <4DD14F15.5070902@freescale.com>
+References: <4DD14F15.5070902@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 17 May 2011 09:37:50 +1000
+Message-ID: <1305589070.2781.14.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It seems that Adrian is getting old. He removed almost everything of
-GEMINI in commit c53653130 ("[POWERPC] Remove the broken Gemini
-support") except this piece.
+On Mon, 2011-05-16 at 11:21 -0500, Timur Tabi wrote:
+> I would like to get some opinions on the following.
+> 
+> I'm working on extending our existing board definition files to support our
+> ePAPR reference hypervisor.  Because our hypervisor provides a virtual PIC, we
+> need to have different functions for define_machine() structure that related to
+> the PIC, but most everything else can stay the same.
 
-Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
----
- arch/powerpc/kernel/head_32.S |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
+ .../...
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index c5c24be..0e49de0 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -805,19 +805,6 @@ _ENTRY(copy_and_flush)
- 	blr
+> static int __init p4080_ds_probe(void)
+> {
+> 	...
+> #ifdef CONFIG_FSL_HYPERVISOR
+> 	if (of_flat_dt_is_compatible(root, "fsl,P4080DS-hv")) {
+> 		mach_p4080_ds.get_irq = ehv_pic_get_irq;
+> 		...
+> 		return 1;
+> 	} else
+> 		return 0;
+> #endif	
+
+One approach i've been taking more often nowadays is to have the PIC
+code setup the ppc_md hooks itself.
+
+You don't need to do it in probe(), just in setup_arch or init_IRQ,
+wherever you do your PIC discovery, have it set it up.
+
+For example, xics sets get_irq itself, which is necessary because the
+xics code itself can have multiple variants.
+
+We could probably make mpic.c do the same when MPIC_PRIMARY is set (or
+keep that a wrapper for now).
  
- #ifdef CONFIG_SMP
--#ifdef CONFIG_GEMINI
--	.globl	__secondary_start_gemini
--__secondary_start_gemini:
--        mfspr   r4,SPRN_HID0
--        ori     r4,r4,HID0_ICFI
--        li      r3,0
--        ori     r3,r3,HID0_ICE
--        andc    r4,r4,r3
--        mtspr   SPRN_HID0,r4
--        sync
--        b       __secondary_start
--#endif /* CONFIG_GEMINI */
--
- 	.globl __secondary_start_mpc86xx
- __secondary_start_mpc86xx:
- 	mfspr	r3, SPRN_PIR
--- 
-1.7.4.4
+Cheers,
+Ben.
