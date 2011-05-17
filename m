@@ -1,52 +1,22 @@
-Return-Path: <jmorris@namei.org>
-Received: from tundra.namei.org (tundra.namei.org [65.99.196.166])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8BB7B6EEA
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
+	[209.85.215.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4524BB6EE7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 May 2011 23:30:41 +1000 (EST)
-Date: Tue, 17 May 2011 23:29:36 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
-	filtering
-In-Reply-To: <20110517131058.GE21441@elte.hu>
-Message-ID: <alpine.LRH.2.00.1105172317060.5404@tundra.namei.org>
-References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
-	<1305169376-2363-1-git-send-email-wad@chromium.org>
-	<20110512074850.GA9937@elte.hu>
-	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
-	<20110512130104.GA2912@elte.hu>
-	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-	<20110513121034.GG21022@elte.hu>
-	<alpine.LRH.2.00.1105161006340.21749@tundra.namei.org>
-	<20110516150837.GA513@elte.hu>
-	<alpine.LRH.2.00.1105171214330.31710@tundra.namei.org>
-	<20110517131058.GE21441@elte.hu>
+	Wed, 18 May 2011 02:28:38 +1000 (EST)
+Received: by ewy6 with SMTP id 6so208406ewy.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 17 May 2011 09:28:34 -0700 (PDT)
+Date: Tue, 17 May 2011 18:28:27 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: benh@kernel.crashing.org
+Subject: powerpc: mpc85xx regression since 2.6.39-rc2, one cpu core lame
+Message-ID: <20110517162827.GA16918@riccoc20.at.omicron.at>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-	sparclinux@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
-	linux-s390@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Steven Rostedt <rostedt@goodmis.org>, Tejun Heo <tj@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
-	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
-	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,33 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 17 May 2011, Ingo Molnar wrote:
+Ben,
 
-> I'm not sure i get your point.
+Recent 2.6.39-rc kernels behave strangely on the Freescale dual core
+mpc8572 and p2020. There is a long pause (like 2 seconds) in the boot
+sequence after "mpic: requesting IPIs..."
 
-Your example was not complete as described.  After an apparently simple 
-specification, you've since added several qualifiers and assumptions, and 
-I still doubt that it's complete.
+When the system comes up, only one core shows in /proc/cpuinfo. Later
+on, lots of messages appear like the following:
 
-A higher level goal would look like
+   INFO: task ksoftirqd/1:9 blocked for more than 120 seconds.
 
-"Allow a sandbox app access only to approved resources, to contain the 
-effects of flaws in the app", or similar.
+I bisected [1] the problem to:
 
-Note that this includes a threat model (remote attacker taking control of 
-the app) and a general and fully stated strategy for dealing with it.
+   commit c56e58537d504706954a06570b4034c04e5b7500
+   Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+   Date:   Tue Mar 8 14:40:04 2011 +1100
 
->From there, you can start to analyze how to implement the goal, at which 
-point you'd start thinking about configuration, assumptions, filesystem 
-access, namespaces, indirect access (e.g. via sockets, rpc, ipc, shared 
-memory, invocation).
+       powerpc/smp: Create idle threads on demand and properly reset them
 
-Anyway, this is getting off track from the main discussion, but you 
-asked...
+I don't see from that commit what had gone wrong. Perhaps you can
+help resolve this?
 
+Thanks,
+Richard
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+1. I had to patch commit e5462d16 by hand when bisecting, which is a
+   fixup for commit fa3f82c8 and not yet merged in c56e5853.
