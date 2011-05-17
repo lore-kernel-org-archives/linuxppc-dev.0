@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B2ECAB6EF3
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7B9751007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 07:40:28 +1000 (EST)
-Subject: Re: powerpc: mpc85xx regression since 2.6.39-rc2, one cpu core lame
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Richard Cochran <richardcochran@gmail.com>, Kumar Gala
-	<galak@kernel.crashing.org>
-In-Reply-To: <20110517162827.GA16918@riccoc20.at.omicron.at>
-References: <20110517162827.GA16918@riccoc20.at.omicron.at>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 May 2011 07:40:16 +1000
-Message-ID: <1305668416.2781.23.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Wed, 18 May 2011 09:36:03 +1000 (EST)
+Date: Tue, 17 May 2011 18:35:51 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <agraf@suse.de>, <galak@kernel.crashing.org>
+Subject: [PATCH 01/13] powerpc/e500: Save SPEFCSR in flush_spe_to_thread()
+Message-ID: <20110517233551.GA3511@schlenkerla.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +24,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-05-17 at 18:28 +0200, Richard Cochran wrote:
-> Ben,
-> 
-> Recent 2.6.39-rc kernels behave strangely on the Freescale dual core
-> mpc8572 and p2020. There is a long pause (like 2 seconds) in the boot
-> sequence after "mpic: requesting IPIs..."
-> 
-> When the system comes up, only one core shows in /proc/cpuinfo. Later
-> on, lots of messages appear like the following:
-> 
->    INFO: task ksoftirqd/1:9 blocked for more than 120 seconds.
-> 
-> I bisected [1] the problem to:
-> 
->    commit c56e58537d504706954a06570b4034c04e5b7500
->    Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->    Date:   Tue Mar 8 14:40:04 2011 +1100
-> 
->        powerpc/smp: Create idle threads on demand and properly reset them
-> 
-> I don't see from that commit what had gone wrong. Perhaps you can
-> help resolve this?
+From: yu liu <yu.liu@freescale.com>
 
-Hrm, odd. Kumar, care to have a look ? That's what happens when you
-don't get me HW to test with :-)
+giveup_spe() saves the SPE state which is protected by MSR[SPE].
+However, modifying SPEFSCR does not trap when MSR[SPE]=0.
+And since SPEFSCR is already saved/restored in _switch(),
+not all the callers want to save SPEFSCR again.
+Thus, saving SPEFSCR should not belong to giveup_spe().
 
-Cheers,
-Ben.
+This patch moves SPEFSCR saving to flush_spe_to_thread(),
+and cleans up the caller that needs to save SPEFSCR accordingly.
 
-> Thanks,
-> Richard
-> 
-> 
-> 1. I had to patch commit e5462d16 by hand when bisecting, which is a
->    fixup for commit fa3f82c8 and not yet merged in c56e5853.
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+This is a resending of http://patchwork.ozlabs.org/patch/88677/
+
+Kumar, please ack to go via kvm.  This is holding up the rest of the SPE
+patches, which in turn are holding up the MMU patches due to both
+touching the MSR update code.
+
+ arch/powerpc/kernel/head_fsl_booke.S |    2 --
+ arch/powerpc/kernel/process.c        |    1 +
+ arch/powerpc/kernel/traps.c          |    5 +----
+ 3 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 5ecf54c..aede4f8 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -792,8 +792,6 @@ _GLOBAL(giveup_spe)
+ 	evmwumiaa evr6, evr6, evr6	/* evr6 <- ACC = 0 * 0 + ACC */
+ 	li	r4,THREAD_ACC
+ 	evstddx	evr6, r4, r3		/* save off accumulator */
+-	mfspr	r6,SPRN_SPEFSCR
+-	stw	r6,THREAD_SPEFSCR(r3)	/* save spefscr register value */
+ 	beq	1f
+ 	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+ 	lis	r3,MSR_SPE@h
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index f74f355..138e7dd 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -213,6 +213,7 @@ void flush_spe_to_thread(struct task_struct *tsk)
+ #ifdef CONFIG_SMP
+ 			BUG_ON(tsk != current);
+ #endif
++			tsk->thread.spefscr = mfspr(SPRN_SPEFSCR);
+ 			giveup_spe(tsk);
+ 		}
+ 		preempt_enable();
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 5ddb801..742a0fb 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1356,10 +1356,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+ 	int code = 0;
+ 	int err;
+ 
+-	preempt_disable();
+-	if (regs->msr & MSR_SPE)
+-		giveup_spe(current);
+-	preempt_enable();
++	flush_spe_to_thread(current);
+ 
+ 	spefscr = current->thread.spefscr;
+ 	fpexc_mode = current->thread.fpexc_mode;
+-- 
+1.7.4.1
