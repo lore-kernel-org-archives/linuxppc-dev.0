@@ -1,16 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 17 May 2011 20:44:22 +1000
+Date: Tue, 17 May 2011 20:28:40 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 13/13] kvm/powerpc: Allow book3s_hv guests to use SMT
-	processor modes
-Message-ID: <20110517104422.GB7924@brick.ozlabs.ibm.com>
+Subject: Re: [PATCH 11/13] kvm/powerpc: Handle some PAPR hcalls in the kernel
+Message-ID: <20110517102840.GA7924@brick.ozlabs.ibm.com>
 References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-	<20110511104656.GN2837@brick.ozlabs.ibm.com>
-	<F90D2118-7694-4AB0-9C17-8B449D14B9DF@suse.de>
+	<20110511104530.GL2837@brick.ozlabs.ibm.com>
+	<2C53DD5C-4F74-4FC4-9C65-4F401AE9AF78@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F90D2118-7694-4AB0-9C17-8B449D14B9DF@suse.de>
+In-Reply-To: <2C53DD5C-4F74-4FC4-9C65-4F401AE9AF78@suse.de>
 Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,68 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 17, 2011 at 10:21:56AM +0200, Alexander Graf wrote:
+On Tue, May 17, 2011 at 09:54:35AM +0200, Alexander Graf wrote:
+
+> Not sure I like the name - when is it used? :)
+
+When the real-mode hcall handler decides it can't handle the hcall and
+wants to pass it up.
+
+> Also, if it's not in the PAPR, the guest should never receive it, right?
+
+Right.  It's purely an internal value.
+
+> > +	/* See if this is something we can handle in real mode */
+> > +	cmpwi	r12,0xc00
 > 
-> On 11.05.2011, at 12:46, Paul Mackerras wrote:
+> use the define please
+
+OK
+
+> > +	beq	hcall_real_mode
 > 
-> > -#define KVM_MAX_VCPUS 1
-> > +#define KVM_MAX_VCPUS		NR_CPUS
-> > +#define KVM_THREADS_PER_CORE	4
+> This is simply a hcall helper, as the name suggests. So the comment
+> is slightly misleading - it should rather read like "Try to handle
+> hypercalls in real mode".
+
+Hmmm, OK, that's what it was trying to indicate.  I could add "try" to
+the name if you like.
+
+> > +	cmpdi	r3,H_TOO_HARD
+> > +	beq	hcall_real_fallback
 > 
-> So what if POWER8 (or whatever it will be called) comes along with 8
-> threads per core? Would that change the userspace interface?
+> Ah, very good. Please mark the constant as "for internal use only"
+> then, as that's certainly fine :).
 
-The idea is that userspace queries the KVM_CAP_PPC_SMT capability and
-the value it gets back is the number of vcpus per vcore.  It then
-allocates vcpu numbers based on that.
+Cool, will do.
 
-If a CPU came along with more than 4 threads per core then we'd have
-to change that define in the kernel, but that won't affect the
-userspace API.
-
-> > +	/* wait for secondary threads to get back to nap mode */
-> > +	spin_lock(&vc->lock);
-> > +	if (vc->nap_count < vc->n_woken)
-> > +		kvmppc_wait_for_nap(vc);
+> > +	li	r12,0xc00
 > 
-> So you're taking the vcore wide lock and wait for other CPUs to set
-> themselves to nap? Not sure I fully understand this. Why would
-> another thread want to go to nap mode when it's 100% busy?
+> use the define please :)
 
-It's more about waiting for the other hardware threads to have
-finished writing their vcpu state to memory.  Currently those threads
-then go to nap mode, but they could in fact poll instead for a bit,
-so that name is possible a bit misleading, I agree.
+OK.
 
-> > +	cmpwi	r12,0x980
-> > +	beq	40f
-> > +	cmpwi	r3,0x100
-> 
-> good old use define comment :)
-
-Yep, OK. :)
-
-> Maybe I also missed the point here, but how does this correlate with
-> Linux threads? Is each vcpu running in its own Linux thread? How
-> does the scheduling happen? IIUC the host only sees a single thread
-> per core and then distributes the vcpus to the respective host
-> threads.
-
-Each vcpu has its own Linux thread, but while the vcore is running,
-all but one of them are sleeping.  The thing is that since the host is
-running with each core single-threaded, one Linux thread is enough to
-run 4 vcpus.  So when we decide we can run the vcore, the vcpu thread
-that discovered that we can now run the vcore takes the responsibility
-to run it.  That involves sending an IPI to the other hardware threads
-to wake them up and get them to each run a vcpu.  Then the vcpu thread
-that is running the vcore dives into the guest switch code itself.  It
-synchronizes with the other threads and does the partition switch, and
-then they all enter the guest.
-
-We thought about various schemes to cope with the hardware restriction
-that all hardware threads in a core have to be in the same partition
-(at least whenever the MMU is on).  This is the least messy scheme we
-could come up with.  I'd be happy to discuss the alternatives if you
-like.
-
+Thanks,
 Paul.
