@@ -1,26 +1,21 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1542CB6EEA
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B2ECAB6EF3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 05:24:17 +1000 (EST)
-Received: by vws20 with SMTP id 20so658448vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 May 2011 12:24:13 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1305589123.2781.15.camel@pasglop>
-References: <BLU156-w53FEA9E58A7EB19B0F239E838A0@phx.gbl>
-	<9136.1305527852@neuling.org> <1305589123.2781.15.camel@pasglop>
-Date: Tue, 17 May 2011 14:24:13 -0500
-Message-ID: <BANLkTinuzAwxxMJ+BAYrrotH6an=wvZ3=Q@mail.gmail.com>
-Subject: Re: book to learn ppc assembly and architecture
-From: kevin diggs <diggskevin38@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
-	s shaiju <sha_neb@hotmail.com>
+	Wed, 18 May 2011 07:40:28 +1000 (EST)
+Subject: Re: powerpc: mpc85xx regression since 2.6.39-rc2, one cpu core lame
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Richard Cochran <richardcochran@gmail.com>, Kumar Gala
+	<galak@kernel.crashing.org>
+In-Reply-To: <20110517162827.GA16918@riccoc20.at.omicron.at>
+References: <20110517162827.GA16918@riccoc20.at.omicron.at>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 May 2011 07:40:16 +1000
+Message-ID: <1305668416.2781.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,14 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 2011-05-17 at 18:28 +0200, Richard Cochran wrote:
+> Ben,
+> 
+> Recent 2.6.39-rc kernels behave strangely on the Freescale dual core
+> mpc8572 and p2020. There is a long pause (like 2 seconds) in the boot
+> sequence after "mpic: requesting IPIs..."
+> 
+> When the system comes up, only one core shows in /proc/cpuinfo. Later
+> on, lots of messages appear like the following:
+> 
+>    INFO: task ksoftirqd/1:9 blocked for more than 120 seconds.
+> 
+> I bisected [1] the problem to:
+> 
+>    commit c56e58537d504706954a06570b4034c04e5b7500
+>    Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>    Date:   Tue Mar 8 14:40:04 2011 +1100
+> 
+>        powerpc/smp: Create idle threads on demand and properly reset them
+> 
+> I don't see from that commit what had gone wrong. Perhaps you can
+> help resolve this?
 
-On Mon, May 16, 2011 at 6:38 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2011-05-16 at 16:37 +1000, Michael Neuling wrote:
->> > what =A0is =A0the =A0best =A0book =A0to =A0learn =A0assembly =A0and =
-=A0architecture .
->>
+Hrm, odd. Kumar, care to have a look ? That's what happens when you
+don't get me HW to test with :-)
 
-Assuming you have a powerpc compiler available you can use the -S
-option to produce assembly listings.
+Cheers,
+Ben.
+
+> Thanks,
+> Richard
+> 
+> 
+> 1. I had to patch commit e5462d16 by hand when bisecting, which is a
+>    fixup for commit fa3f82c8 and not yet merged in c56e5853.
