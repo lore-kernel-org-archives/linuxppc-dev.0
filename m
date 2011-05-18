@@ -2,20 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10EB81007F6
+	by ozlabs.org (Postfix) with ESMTPS id 89A18100827
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 07:34:03 +1000 (EST)
-Subject: Re: [PATCH 2/7] powerpc/mm: 64-bit 4k: use a PMD-based virtual
-	page table
+	Thu, 19 May 2011 07:36:27 +1000 (EST)
+Subject: Re: [PATCH 5/7] powerpc/mm: 64-bit: don't handle non-standard page
+	sizes
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20110518210528.GA29524@schlenkerla.am.freescale.net>
-References: <20110518210528.GA29524@schlenkerla.am.freescale.net>
+In-Reply-To: <20110518210535.GD29524@schlenkerla.am.freescale.net>
+References: <20110518210535.GD29524@schlenkerla.am.freescale.net>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 May 2011 07:33:55 +1000
-Message-ID: <1305754435.7481.3.camel@pasglop>
+Date: Thu, 19 May 2011 07:36:04 +1000
+Message-ID: <1305754564.7481.4.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,83 +26,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2011-05-18 at 16:05 -0500, Scott Wood wrote:
-> Loads with non-linear access patterns were producing a very high
-> ratio of recursive pt faults to regular tlb misses.  Rather than
-> choose between a 4-level table walk or a 1-level virtual page table
-> lookup, use a hybrid scheme with a virtual linear pmd, followed by a
-> 2-level lookup in the normal handler.
+> I don't see where any non-standard page size will be set in the
+> kernel page tables, so don't waste time checking for it.  It wouldn't
+> work with TLB0 on an FSL MMU anyway, so if there's something I missed
+> (or which is out-of-tree), it's relying on implementation-specific
+> behavior.  If there's an out-of-tree need for occasional 4K mappings
+> with CONFIG_PPC_64K_PAGES, perhaps this check could only be done when
+> that is defined.
 > 
-> This adds about 5 cycles (assuming no cache misses, and e5500 timing)
-> to a normal TLB miss, but greatly reduces the recursive fault rate
-> for loads which don't have locality within 2 MiB regions but do have
-> significant locality within 1 GiB regions.  Improvements of close to 50%
-> were seen on such benchmarks.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
 
-Can you publish benchmarks that compare these two with no virtual at all
-(4 full loads) ?
+Do you use that in the hugetlbfs code ? Can you publish that code ? It's
+long overdue...
 
 Cheers,
 Ben.
 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/mm/tlb_low_64e.S |   23 +++++++++++++++--------
->  1 files changed, 15 insertions(+), 8 deletions(-)
+>  arch/powerpc/mm/tlb_low_64e.S |   13 -------------
+>  1 files changed, 0 insertions(+), 13 deletions(-)
 > 
 > diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-> index af08922..17726d3 100644
+> index 922fece..e782023 100644
 > --- a/arch/powerpc/mm/tlb_low_64e.S
 > +++ b/arch/powerpc/mm/tlb_low_64e.S
-> @@ -24,7 +24,7 @@
->  #ifdef CONFIG_PPC_64K_PAGES
->  #define VPTE_PMD_SHIFT	(PTE_INDEX_SIZE+1)
->  #else
-> -#define VPTE_PMD_SHIFT	(PTE_INDEX_SIZE)
-> +#define VPTE_PMD_SHIFT	0
->  #endif
->  #define VPTE_PUD_SHIFT	(VPTE_PMD_SHIFT + PMD_INDEX_SIZE)
->  #define VPTE_PGD_SHIFT	(VPTE_PUD_SHIFT + PUD_INDEX_SIZE)
-> @@ -185,7 +185,7 @@ normal_tlb_miss:
->  	/* Insert the bottom bits in */
->  	rlwimi	r14,r15,0,16,31
->  #else
-> -	rldicl	r14,r16,64-(PAGE_SHIFT-3),PAGE_SHIFT-3+4
-> +	rldicl	r14,r16,64-(PMD_SHIFT-3),PMD_SHIFT-3+4
->  #endif
->  	sldi	r15,r10,60
->  	clrrdi	r14,r14,3
-> @@ -202,6 +202,16 @@ MMU_FTR_SECTION_ELSE
->  	ld	r14,0(r10)
->  ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
+> @@ -232,19 +232,6 @@ finish_normal_tlb_miss:
+>  	rlwimi	r11,r14,32-19,27,31	/* Insert WIMGE */
+>  	mtspr	SPRN_MAS2,r11
 >  
-> +#ifndef CONFIG_PPC_64K_PAGES
-> +	rldicl	r15,r16,64-PAGE_SHIFT+3,64-PTE_INDEX_SIZE-3
-> +	clrrdi	r15,r15,3
-> +
-> +	cmpldi	cr0,r14,0
-> +	beq	normal_tlb_miss_access_fault
-> +
-> +	ldx	r14,r14,r15
-> +#endif
-> +
->  finish_normal_tlb_miss:
->  	/* Check if required permissions are met */
->  	andc.	r15,r11,r14
-> @@ -353,14 +363,11 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_TLBRSRV)
->  #ifndef CONFIG_PPC_64K_PAGES
->  	/* Get to PUD entry */
->  	rldicl	r11,r16,64-VPTE_PUD_SHIFT,64-PUD_INDEX_SIZE-3
-> -	clrrdi	r10,r11,3
-> -	ldx	r15,r10,r15
-> -	cmpldi	cr0,r15,0
-> -	beq	virt_page_table_tlb_miss_fault
-> -#endif /* CONFIG_PPC_64K_PAGES */
-> -
-> +#else
->  	/* Get to PMD entry */
->  	rldicl	r11,r16,64-VPTE_PMD_SHIFT,64-PMD_INDEX_SIZE-3
-> +#endif
-> +
->  	clrrdi	r10,r11,3
->  	ldx	r15,r10,r15
->  	cmpldi	cr0,r15,0
+> -	/* Check page size, if not standard, update MAS1 */
+> -	rldicl	r11,r14,64-8,64-8
+> -#ifdef CONFIG_PPC_64K_PAGES
+> -	cmpldi	cr0,r11,BOOK3E_PAGESZ_64K
+> -#else
+> -	cmpldi	cr0,r11,BOOK3E_PAGESZ_4K
+> -#endif
+> -	beq-	1f
+> -	mfspr	r11,SPRN_MAS1
+> -	rlwimi	r11,r14,31,21,24
+> -	rlwinm	r11,r11,0,21,19
+> -	mtspr	SPRN_MAS1,r11
+> -1:
+>  	/* Move RPN in position */
+>  	rldicr	r11,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
+>  	clrldi	r15,r11,12		/* Clear crap at the top */
