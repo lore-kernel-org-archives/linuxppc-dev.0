@@ -1,26 +1,26 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C422AB6EE8
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 71205B6EDD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 14:24:41 +1000 (EST)
-Date: Tue, 17 May 2011 22:15:52 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+	Wed, 18 May 2011 15:45:55 +1000 (EST)
 Subject: Re: [PATCH 1/3] mpt2sas: remove the use of writeq, since writeq is
 	not atomic
-Message-ID: <20110518041551.GL15227@parisc-linux.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+In-Reply-To: <20110518041551.GL15227@parisc-linux.org>
 References: <20110504115324.GE17855@lsi.com>
 	<1305616571.6008.23.camel@mulgrave.site>
 	<B2FD678A64EAAD45B089B123FDFC3ED70157F7BCE5@inbmail01.lsi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <B2FD678A64EAAD45B089B123FDFC3ED70157F7BCE5@inbmail01.lsi.com>
+	<20110518041551.GL15227@parisc-linux.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 May 2011 15:45:43 +1000
+Message-ID: <1305697543.2781.28.camel@pasglop>
+Mime-Version: 1.0
 Cc: "Prakash, Sathya" <Sathya.Prakash@lsi.com>,
 	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
+	Matthew Wilcox <matthew@wil.cx>, linuxppc-dev@lists.ozlabs.org,
 	James Bottomley <James.Bottomley@HansenPartnership.com>,
 	paulus@samba.org, "Moore, Eric" <Eric.Moore@lsi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,59 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 18, 2011 at 09:37:08AM +0530, Desai, Kashyap wrote:
-> On Wed, 2011-05-04 at 17:23 +0530, Kashyap, Desai wrote:
-> > The following code seems to be there in /usr/src/linux/arch/x86/include/asm/io.h.
-> > This is not going to work.
-> > 
-> > static inline void writeq(__u64 val, volatile void __iomem *addr)
-> > {
-> >         writel(val, addr);
-> >         writel(val >> 32, addr+4);
-> > }
-> > 
-> > So with this code turned on in the kernel, there is going to be race condition 
-> > where multiple cpus can be writing to the request descriptor at the same time.
-> > 
-> > Meaning this could happen:
-> > (A) CPU A doest 32bit write
-> > (B) CPU B does 32 bit write
-> > (C) CPU A does 32 bit write
-> > (D) CPU B does 32 bit write
-> > 
-> > We need the 64 bit completed in one access pci memory write, else spin lock is required.
-> > Since it's going to be difficult to know which writeq was implemented in the kernel, 
-> > the driver is going to have to always acquire a spin lock each time we do 64bit write.
-> > 
-> > Cc: stable@kernle.org
-> > Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-> > ---
-> > diff --git a/drivers/scsi/mpt2sas/mpt2sas_base.c b/drivers/scsi/mpt2sas/mpt2sas_base.c
-> > index efa0255..5778334 100644
-> > --- a/drivers/scsi/mpt2sas/mpt2sas_base.c
-> > +++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
-> > @@ -1558,7 +1558,6 @@ mpt2sas_base_free_smid(struct MPT2SAS_ADAPTER *ioc, u16 smid)
-> >   * care of 32 bit environment where its not quarenteed to send the entire word
-> >   * in one transfer.
-> >   */
-> > -#ifndef writeq
-> 
-> Why not make this #ifndef CONFIG_64BIT?  You know that all 64 bit
-> systems have writeq implemented correctly; you suspect 32 bit systems
-> don't.
-> 
-> James
-> 
-> James, This issue was observed on PPC64 system. So what you have suggested will not solve this issue.
-> If we are sure that writeq() is atomic across all architecture, we can use it safely. As we have seen issue on ppc64, we are not confident to use
-> "writeq" call.
 
-So have you told the powerpc people that they have a broken writeq?
-And why do you obfuscate your report by talking about i386 when it's
-really about powerpc64?
+> > > Cc: stable@kernle.org
+> > > Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
+> > > ---
+> > > diff --git a/drivers/scsi/mpt2sas/mpt2sas_base.c b/drivers/scsi/mpt2sas/mpt2sas_base.c
+> > > index efa0255..5778334 100644
+> > > --- a/drivers/scsi/mpt2sas/mpt2sas_base.c
+> > > +++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
+> > > @@ -1558,7 +1558,6 @@ mpt2sas_base_free_smid(struct MPT2SAS_ADAPTER *ioc, u16 smid)
+> > >   * care of 32 bit environment where its not quarenteed to send the entire word
+> > >   * in one transfer.
+> > >   */
+> > > -#ifndef writeq
+> > 
+> > Why not make this #ifndef CONFIG_64BIT?  You know that all 64 bit
+> > systems have writeq implemented correctly; you suspect 32 bit systems
+> > don't.
+> > 
+> > James
+> > 
+> > James, This issue was observed on PPC64 system. So what you have
+> suggested will not solve this issue.
+> > If we are sure that writeq() is atomic across all architecture, we
+> can use it safely. As we have seen issue on ppc64, we are not
+> confident to use
+> > "writeq" call.
+> 
+> So have you told the powerpc people that they have a broken writeq?
+> And why do you obfuscate your report by talking about i386 when it's
+> really about powerpc64?
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Well, our writeq isn't supposed to be broken :-)
+
+It's defined as an std instruction (and "ld" for readq) so that's
+perfectly atomic ... provided your access is aligned. Is it ?
+
+Cheers,
+Be
