@@ -1,24 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3506CB6F59
+Return-Path: <jeremy@goop.org>
+Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 40E04B6F73
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 08:27:33 +1000 (EST)
-Date: Wed, 18 May 2011 17:27:20 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 6/7] powerpc/mm: 64-bit: tlb handler micro-optimization
-Message-ID: <20110518172720.465e3789@schlenkerla.am.freescale.net>
-In-Reply-To: <1305755688.7481.12.camel@pasglop>
-References: <20110518210536.GE29524@schlenkerla.am.freescale.net>
-	<1305754667.7481.5.camel@pasglop>
-	<20110518165134.1023dccc@schlenkerla.am.freescale.net>
-	<1305755688.7481.12.camel@pasglop>
+	Thu, 19 May 2011 09:39:52 +1000 (EST)
+Message-ID: <4DD45673.3010007@goop.org>
+Date: Wed, 18 May 2011 16:29:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: mmotm threatens ppc preemption again
+References: <alpine.LSU.2.00.1103192041390.1592@sister.anvils>	
+	<1300665188.2402.64.camel@pasglop>	
+	<alpine.LSU.2.00.1103201814320.7035@sister.anvils>	
+	<1300672207.2402.205.camel@pasglop>	
+	<alpine.LSU.2.00.1103201901340.7257@sister.anvils>	
+	<1300674150.2402.207.camel@pasglop>	
+	<20110330135332.9c322e40.akpm@linux-foundation.org>	
+	<4D939B88.5020707@goop.org> <1301532729.2407.16.camel@pasglop>	
+	<4D94B810.4000107@goop.org> <1301603918.2407.70.camel@pasglop>
+In-Reply-To: <1301603918.2407.70.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Hugh Dickins <hughd@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 19 May 2011 07:54:48 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On 03/31/2011 01:38 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2011-03-31 at 10:21 -0700, Jeremy Fitzhardinge wrote:
+>> No, its the same accessors for both, since the need to distinguish them
+>> hasn't really come up.  Could you put a "if (preemptable()) return;"
+>> guard in your implementations?
+> That would be a band-aid but would probably do the trick for now
+> for !-rt, tho it wouldn't do the right thing for -rt... 
 
-> On Wed, 2011-05-18 at 16:51 -0500, Scott Wood wrote:
-> > On Thu, 19 May 2011 07:37:47 +1000
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > On Wed, 2011-05-18 at 16:05 -0500, Scott Wood wrote:
-> > > > A little more speed up measured on e5500.
-> > > > 
-> > > > Setting of U0-3 is dropped as it is not used by Linux as far as I can
-> > > > see.
-> > > 
-> > > Please keep them for now. If your core doesn't have them, make them an
-> > > MMU feature.
-> > 
-> > We have them, it was just an attempt to clean out unused things to speed up
-> > the miss handler.  I'll drop that part if you think we'll use it in the
-> > future.
-> 
-> I never know for sure ... damn research people ... :-)
-> 
-> I'd rather keep them for now, does it make a significant difference ?
+Hi Ben,
 
-It was minor but measurable (wouldn't have been worthwhile except as part
-of a series of small things that add up), but upon trying again I was able
-to reorder slightly and fit it in without seeing an impact.
+Have you had a chance to look at doing a workaround/fix for these power
+problems?  I believe that's the only holdup to putting in the batching
+changes.  I'd like to get them in for the next window if possible, since
+they're a pretty significant performance win for us.
 
--Scott
+Thanks,
+    J
