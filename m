@@ -1,19 +1,19 @@
 Return-Path: <ericvh@gmail.com>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C330E100802
+	by ozlabs.org (Postfix) with ESMTPS id 2B78FB6F7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 07:25:18 +1000 (EST)
-Received: by gyg8 with SMTP id 8so779310gyg.38
+	Thu, 19 May 2011 07:25:26 +1000 (EST)
+Received: by mail-yx0-f179.google.com with SMTP id 4so780924yxp.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 14:25:14 -0700 (PDT)
+	Wed, 18 May 2011 14:25:26 -0700 (PDT)
 From: Eric Van Hensbergen <ericvh@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/7] [RFC] add support for BlueGene/P FPU
-Date: Wed, 18 May 2011 16:24:51 -0500
-Message-Id: <1305753895-24845-3-git-send-email-ericvh@gmail.com>
+Subject: [PATCH 6/7] [RFC] enable early TLBs for BG/P
+Date: Wed, 18 May 2011 16:24:54 -0500
+Message-Id: <1305753895-24845-6-git-send-email-ericvh@gmail.com>
 In-Reply-To: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
 References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, bg-linux@lists.anl-external.org
@@ -26,122 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds save/restore register support for the BlueGene/P
-double hummer FPU.
+BG/P maps firmware with an early TLB
 
 Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
 ---
- arch/powerpc/include/asm/ppc_asm.h |   39 ++++++++++++++++++++++++-----------
- arch/powerpc/kernel/fpu.S          |    8 +++---
- arch/powerpc/platforms/44x/Kconfig |    9 ++++++++
- 3 files changed, 40 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/mmu-44x.h |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 9821006..daa22bb 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -88,6 +88,13 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 				REST_10GPRS(22, base)
- #endif
+diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
+index ca1b90c..2807d6e 100644
+--- a/arch/powerpc/include/asm/mmu-44x.h
++++ b/arch/powerpc/include/asm/mmu-44x.h
+@@ -115,8 +115,12 @@ typedef struct {
+ #endif /* !__ASSEMBLY__ */
  
-+#ifdef CONFIG_BGP
-+#define LFPDX(frt, ra, rb)	.long (31<<26)|((frt)<<21)|((ra)<<16)| \
-+							((rb)<<11)|(462<<1)
-+#define STFPDX(frt, ra, rb)	.long (31<<26)|((frt)<<21)|((ra)<<16)| \
-+							((rb)<<11)|(974<<1)
-+#endif /* CONFIG_BGP */
-+
- #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
- #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
- #define SAVE_8GPRS(n, base)	SAVE_4GPRS(n, base); SAVE_4GPRS(n+4, base)
-@@ -97,18 +104,26 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
- #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
- 
--#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
--#define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
--#define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
--#define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
--#define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
--#define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
--#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
--#define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
--#define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
--#define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
--#define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
--#define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
-+#ifdef CONFIG_BGP
-+#define SAVE_FPR(n, b, base)	li b, THREAD_FPR0+(16*(n)); STFPDX(n, base, b)
-+#define REST_FPR(n, b, base)	li b, THREAD_FPR0+(16*(n)); LFPDX(n, base, b)
+ #ifndef CONFIG_PPC_EARLY_DEBUG_44x
++#ifndef CONFIG_BGP
+ #define PPC44x_EARLY_TLBS	1
+-#else
 +#else /* CONFIG_BGP */
-+#define SAVE_FPR(n, b, base)	(stfd	n, THREAD_FPR0+8*TS_FPRWIDTH*(n)(base))
-+#define REST_FPR(n, b, base)	(lfd	n, THREAD_FPR0+8*TS_FPRWIDTH*(n)(base))
++#define PPC44x_EARLY_TLBS	2
 +#endif /* CONFIG_BGP */
-+
-+#define SAVE_2FPRS(n, b, base)	SAVE_FPR(n, b, base); SAVE_FPR(n+1, b, base)
-+#define SAVE_4FPRS(n, b, base)	SAVE_2FPRS(n, b, base); SAVE_2FPRS(n+2, b, base)
-+#define SAVE_8FPRS(n, b, base)	SAVE_4FPRS(n, b, base); SAVE_4FPRS(n+4, b, base)
-+#define SAVE_16FPRS(n, b, base)	SAVE_8FPRS(n, b, base); SAVE_8FPRS(n+8, b, base)
-+#define SAVE_32FPRS(n, b, base)	SAVE_16FPRS(n, b, base); \
-+				SAVE_16FPRS(n+16, b, base)
-+#define REST_2FPRS(n, b, base)	REST_FPR(n, b, base); REST_FPR(n+1, b, base)
-+#define REST_4FPRS(n, b, base)	REST_2FPRS(n, b, base); REST_2FPRS(n+2, b, base)
-+#define REST_8FPRS(n, b, base)	REST_4FPRS(n, b, base); REST_4FPRS(n+4, b, base)
-+#define REST_16FPRS(n, b, base)	REST_8FPRS(n, b, base); REST_8FPRS(n+8, b, base)
-+#define REST_32FPRS(n, b, base)	REST_16FPRS(n, b, base); \
-+				REST_16FPRS(n+16, b, base)
- 
- #define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,base,b
- #define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index de36955..9f11c66 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -30,7 +30,7 @@
- BEGIN_FTR_SECTION							\
- 	b	2f;							\
- END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
--	REST_32FPRS(n,base);						\
-+	REST_32FPRS(n,c,base);						\
- 	b	3f;							\
- 2:	REST_32VSRS(n,c,base);						\
- 3:
-@@ -39,13 +39,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
- BEGIN_FTR_SECTION							\
- 	b	2f;							\
- END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
--	SAVE_32FPRS(n,base);						\
-+	SAVE_32FPRS(n,c,base);						\
- 	b	3f;							\
- 2:	SAVE_32VSRS(n,c,base);						\
- 3:
- #else
--#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
--#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
-+#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n,b,base)
-+#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n,b,base)
- #endif
- 
- /*
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index f485fc5f..24a515e 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -169,6 +169,15 @@ config YOSEMITE
- 	help
- 	  This option enables support for the AMCC PPC440EP evaluation board.
- 
-+config	BGP
-+	bool "Blue Gene/P"
-+	depends on 44x
-+	default n
-+	select PPC_FPU
-+	select PPC_DOUBLE_FPU
-+	help
-+	  This option enables support for the IBM BlueGene/P supercomputer.
-+
- config ISS4xx
- 	bool "ISS 4xx Simulator"
- 	depends on (44x || 40x)
++#else /* CONFIG_PPC_EARLY_DEBUG_44x */
+ #define PPC44x_EARLY_TLBS	2
+ #define PPC44x_EARLY_DEBUG_VIRTADDR	(ASM_CONST(0xf0000000) \
+ 	| (ASM_CONST(CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW) & 0xffff))
 -- 
 1.7.4.1
