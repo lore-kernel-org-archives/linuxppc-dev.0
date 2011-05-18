@@ -1,16 +1,16 @@
 Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
 	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9FD7EB6F5A
+	by ozlabs.org (Postfix) with ESMTPS id 5C8DC1007D9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 07:05:38 +1000 (EST)
-Date: Wed, 18 May 2011 16:05:29 -0500
+	Thu, 19 May 2011 07:05:45 +1000 (EST)
+Date: Wed, 18 May 2011 16:05:36 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: <benh@kernel.crashing.org>
-Subject: [PATCH 2/7] powerpc/mm: 64-bit 4k: use a PMD-based virtual page table
-Message-ID: <20110518210528.GA29524@schlenkerla.am.freescale.net>
+Subject: [PATCH 6/7] powerpc/mm: 64-bit: tlb handler micro-optimization
+Message-ID: <20110518210536.GE29524@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20110518210453.GA29500@schlenkerla.am.freescale.net>
@@ -24,79 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Loads with non-linear access patterns were producing a very high
-ratio of recursive pt faults to regular tlb misses.  Rather than
-choose between a 4-level table walk or a 1-level virtual page table
-lookup, use a hybrid scheme with a virtual linear pmd, followed by a
-2-level lookup in the normal handler.
+A little more speed up measured on e5500.
 
-This adds about 5 cycles (assuming no cache misses, and e5500 timing)
-to a normal TLB miss, but greatly reduces the recursive fault rate
-for loads which don't have locality within 2 MiB regions but do have
-significant locality within 1 GiB regions.  Improvements of close to 50%
-were seen on such benchmarks.
+Setting of U0-3 is dropped as it is not used by Linux as far as I can
+see.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/mm/tlb_low_64e.S |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/tlb_low_64e.S |   21 ++++++++-------------
+ 1 files changed, 8 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index af08922..17726d3 100644
+index e782023..a94c87b 100644
 --- a/arch/powerpc/mm/tlb_low_64e.S
 +++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -24,7 +24,7 @@
- #ifdef CONFIG_PPC_64K_PAGES
- #define VPTE_PMD_SHIFT	(PTE_INDEX_SIZE+1)
- #else
--#define VPTE_PMD_SHIFT	(PTE_INDEX_SIZE)
-+#define VPTE_PMD_SHIFT	0
- #endif
- #define VPTE_PUD_SHIFT	(VPTE_PMD_SHIFT + PMD_INDEX_SIZE)
- #define VPTE_PGD_SHIFT	(VPTE_PUD_SHIFT + PUD_INDEX_SIZE)
-@@ -185,7 +185,7 @@ normal_tlb_miss:
- 	/* Insert the bottom bits in */
- 	rlwimi	r14,r15,0,16,31
- #else
--	rldicl	r14,r16,64-(PAGE_SHIFT-3),PAGE_SHIFT-3+4
-+	rldicl	r14,r16,64-(PMD_SHIFT-3),PMD_SHIFT-3+4
- #endif
- 	sldi	r15,r10,60
- 	clrrdi	r14,r14,3
-@@ -202,6 +202,16 @@ MMU_FTR_SECTION_ELSE
- 	ld	r14,0(r10)
- ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
+@@ -47,10 +47,10 @@
+ 	 * We could probably also optimize by not saving SRR0/1 in the
+ 	 * linear mapping case but I'll leave that for later
+ 	 */
+-	mfspr	r14,SPRN_ESR
+ 	mfspr	r16,SPRN_DEAR		/* get faulting address */
+ 	srdi	r15,r16,60		/* get region */
+ 	cmpldi	cr0,r15,0xc		/* linear mapping ? */
++	mfspr	r14,SPRN_ESR
+ 	TLB_MISS_STATS_SAVE_INFO
+ 	beq	tlb_load_linear		/* yes -> go to linear map load */
  
-+#ifndef CONFIG_PPC_64K_PAGES
-+	rldicl	r15,r16,64-PAGE_SHIFT+3,64-PTE_INDEX_SIZE-3
-+	clrrdi	r15,r15,3
-+
-+	cmpldi	cr0,r14,0
-+	beq	normal_tlb_miss_access_fault
-+
-+	ldx	r14,r14,r15
-+#endif
-+
- finish_normal_tlb_miss:
- 	/* Check if required permissions are met */
- 	andc.	r15,r11,r14
-@@ -353,14 +363,11 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_TLBRSRV)
- #ifndef CONFIG_PPC_64K_PAGES
- 	/* Get to PUD entry */
- 	rldicl	r11,r16,64-VPTE_PUD_SHIFT,64-PUD_INDEX_SIZE-3
--	clrrdi	r10,r11,3
--	ldx	r15,r10,r15
--	cmpldi	cr0,r15,0
--	beq	virt_page_table_tlb_miss_fault
--#endif /* CONFIG_PPC_64K_PAGES */
+@@ -62,11 +62,11 @@
+ 	andi.	r10,r15,0x1
+ 	bne-	virt_page_table_tlb_miss
+ 
+-	std	r14,EX_TLB_ESR(r12);	/* save ESR */
+-	std	r16,EX_TLB_DEAR(r12);	/* save DEAR */
++	/* We need _PAGE_PRESENT and  _PAGE_ACCESSED set */
+ 
+-	 /* We need _PAGE_PRESENT and  _PAGE_ACCESSED set */
++	std	r14,EX_TLB_ESR(r12);	/* save ESR */
+ 	li	r11,_PAGE_PRESENT
++	std	r16,EX_TLB_DEAR(r12);	/* save DEAR */
+ 	oris	r11,r11,_PAGE_ACCESSED@h
+ 
+ 	/* We do the user/kernel test for the PID here along with the RW test
+@@ -225,21 +225,16 @@ finish_normal_tlb_miss:
+ 	 *                 yet implemented for now
+ 	 * MAS 2   :	Defaults not useful, need to be redone
+ 	 * MAS 3+7 :	Needs to be done
+-	 *
+-	 * TODO: mix up code below for better scheduling
+ 	 */
+ 	clrrdi	r11,r16,12		/* Clear low crap in EA */
++	rldicr	r15,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
+ 	rlwimi	r11,r14,32-19,27,31	/* Insert WIMGE */
++	clrldi	r15,r15,12		/* Clear crap at the top */
+ 	mtspr	SPRN_MAS2,r11
 -
-+#else
- 	/* Get to PMD entry */
- 	rldicl	r11,r16,64-VPTE_PMD_SHIFT,64-PMD_INDEX_SIZE-3
-+#endif
-+
- 	clrrdi	r10,r11,3
- 	ldx	r15,r10,r15
- 	cmpldi	cr0,r15,0
+-	/* Move RPN in position */
+-	rldicr	r11,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
+-	clrldi	r15,r11,12		/* Clear crap at the top */
+-	rlwimi	r15,r14,32-8,22,25	/* Move in U bits */
++	andi.	r11,r14,_PAGE_DIRTY
+ 	rlwimi	r15,r14,32-2,26,31	/* Move in BAP bits */
+ 
+ 	/* Mask out SW and UW if !DIRTY (XXX optimize this !) */
+-	andi.	r11,r14,_PAGE_DIRTY
+ 	bne	1f
+ 	li	r11,MAS3_SW|MAS3_UW
+ 	andc	r15,r15,r11
+@@ -483,10 +478,10 @@ virt_page_table_tlb_miss_whacko_fault:
+ 	 * We could probably also optimize by not saving SRR0/1 in the
+ 	 * linear mapping case but I'll leave that for later
+ 	 */
+-	mfspr	r14,SPRN_ESR
+ 	mfspr	r16,SPRN_DEAR		/* get faulting address */
+ 	srdi	r11,r16,60		/* get region */
+ 	cmpldi	cr0,r11,0xc		/* linear mapping ? */
++	mfspr	r14,SPRN_ESR
+ 	TLB_MISS_STATS_SAVE_INFO
+ 	beq	tlb_load_linear		/* yes -> go to linear map load */
+ 
 -- 
 1.7.4.1
