@@ -1,22 +1,22 @@
 Return-Path: <kerstin.jonsson@ericsson.com>
-Received: from mailgw10.se.ericsson.net (mailgw10.se.ericsson.net
-	[193.180.251.61])
+Received: from mailgw9.se.ericsson.net (mailgw9.se.ericsson.net
+	[193.180.251.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 680271007D5
+	by ozlabs.org (Postfix) with ESMTPS id 77E1FB6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 20:08:04 +1000 (EST)
+	Wed, 18 May 2011 20:12:38 +1000 (EST)
 From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
 To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>
 Subject: [PATCH] PPC_47x SMP fix
-Date: Wed, 18 May 2011 11:51:57 +0200
-Message-ID: <1305712318-21590-1-git-send-email-kerstin.jonsson@ericsson.com>
+Date: Wed, 18 May 2011 11:57:11 +0200
+Message-ID: <1305712631-21690-1-git-send-email-kerstin.jonsson@ericsson.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>,
-	Michael Neuling <mikey@neuling.org>, Darren Hart <dvhltc@us.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Will Schmidt <will_schmidt@vnet.ibm.com>
+	Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,7 +39,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Neuling <mikey@neuling.org>
-Cc: Darren Hart <dvhltc@us.ibm.com>
 Cc: Will Schmidt <will_schmidt@vnet.ibm.com>
 ---
  arch/powerpc/kernel/smp.c |    4 ++--
