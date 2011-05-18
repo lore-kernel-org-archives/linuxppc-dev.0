@@ -1,28 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 71205B6EDD
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 9E353B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 15:45:55 +1000 (EST)
-Subject: Re: [PATCH 1/3] mpt2sas: remove the use of writeq, since writeq is
-	not atomic
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-In-Reply-To: <20110518041551.GL15227@parisc-linux.org>
-References: <20110504115324.GE17855@lsi.com>
-	<1305616571.6008.23.camel@mulgrave.site>
-	<B2FD678A64EAAD45B089B123FDFC3ED70157F7BCE5@inbmail01.lsi.com>
-	<20110518041551.GL15227@parisc-linux.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 May 2011 15:45:43 +1000
-Message-ID: <1305697543.2781.28.camel@pasglop>
-Mime-Version: 1.0
-Cc: "Prakash, Sathya" <Sathya.Prakash@lsi.com>,
-	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-	Matthew Wilcox <matthew@wil.cx>, linuxppc-dev@lists.ozlabs.org,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	paulus@samba.org, "Moore, Eric" <Eric.Moore@lsi.com>
+	Wed, 18 May 2011 17:57:31 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 25654-03 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 18 May 2011 08:57:19 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: book to learn ppc assembly and architecture
+Date: Wed, 18 May 2011 08:56:13 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD3D@saturn3.aculab.com>
+In-Reply-To: <BANLkTinuzAwxxMJ+BAYrrotH6an=wvZ3=Q@mail.gmail.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "kevin diggs" <diggskevin38@gmail.com>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+	s shaiju <sha_neb@hotmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,41 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+=20
+> > On Mon, 2011-05-16 at 16:37 +1000, Michael Neuling wrote:
+> >> > what =A0is =A0the =A0best =A0book =A0to =A0learn =A0assembly =
+=A0and architecture .
+>=20
+> Assuming you have a powerpc compiler available you can use the -S
+> option to produce assembly listings.
 
-> > > Cc: stable@kernle.org
-> > > Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-> > > ---
-> > > diff --git a/drivers/scsi/mpt2sas/mpt2sas_base.c b/drivers/scsi/mpt2sas/mpt2sas_base.c
-> > > index efa0255..5778334 100644
-> > > --- a/drivers/scsi/mpt2sas/mpt2sas_base.c
-> > > +++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
-> > > @@ -1558,7 +1558,6 @@ mpt2sas_base_free_smid(struct MPT2SAS_ADAPTER *ioc, u16 smid)
-> > >   * care of 32 bit environment where its not quarenteed to send the entire word
-> > >   * in one transfer.
-> > >   */
-> > > -#ifndef writeq
-> > 
-> > Why not make this #ifndef CONFIG_64BIT?  You know that all 64 bit
-> > systems have writeq implemented correctly; you suspect 32 bit systems
-> > don't.
-> > 
-> > James
-> > 
-> > James, This issue was observed on PPC64 system. So what you have
-> suggested will not solve this issue.
-> > If we are sure that writeq() is atomic across all architecture, we
-> can use it safely. As we have seen issue on ppc64, we are not
-> confident to use
-> > "writeq" call.
-> 
-> So have you told the powerpc people that they have a broken writeq?
-> And why do you obfuscate your report by talking about i386 when it's
-> really about powerpc64?
+With gcc add -fverbose-asm for more info.
 
-Well, our writeq isn't supposed to be broken :-)
+For a general background, look at something much simpler than ppc,
+even if you don't write/run any code.
 
-It's defined as an std instruction (and "ld" for readq) so that's
-perfectly atomic ... provided your access is aligned. Is it ?
-
-Cheers,
-Be
+	David
