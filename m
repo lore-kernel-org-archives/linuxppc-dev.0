@@ -1,22 +1,25 @@
-Return-Path: <kerstin.jonsson@ericsson.com>
-Received: from mailgw9.se.ericsson.net (mailgw9.se.ericsson.net
-	[193.180.251.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77E1FB6F68
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5597FB6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 20:12:38 +1000 (EST)
-From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
-To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH] PPC_47x SMP fix
-Date: Wed, 18 May 2011 11:57:11 +0200
-Message-ID: <1305712631-21690-1-git-send-email-kerstin.jonsson@ericsson.com>
+	Wed, 18 May 2011 22:03:31 +1000 (EST)
+Received: by fxm5 with SMTP id 5so1308083fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 18 May 2011 05:03:26 -0700 (PDT)
+Date: Wed, 18 May 2011 14:03:20 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc: mpc85xx regression since 2.6.39-rc2, one cpu core lame
+Message-ID: <20110518120320.GA3025@riccoc20.at.omicron.at>
+References: <20110517162827.GA16918@riccoc20.at.omicron.at>
+	<1305668416.2781.23.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>,
-	Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1305668416.2781.23.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- commit c56e58537d504706954a06570b4034c04e5b7500 breaks SMP support in PPC_47x chip.
- secondary_ti must be set to current thread info before callin kick_cpu or else
- start_secondary_47x will jump into void when trying to return to c-code.
- In the current setup secondary_ti is initialized before the CPU idle task is started
- and only the boot core will start. I am not sure this is the correct solution, but it
- makes SMP possible in my chip.
- Note! The HOTPLUG support probably need some fixing to, There is no trampoline code
- available in head_44x.S - start_secondary_resume?
+On Wed, May 18, 2011 at 07:40:16AM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2011-05-17 at 18:28 +0200, Richard Cochran wrote:
+> > Ben,
+> > 
+> > Recent 2.6.39-rc kernels behave strangely on the Freescale dual core
+> > mpc8572 and p2020. There is a long pause (like 2 seconds) in the boot
+> > sequence after "mpic: requesting IPIs..."
+> > 
+> > When the system comes up, only one core shows in /proc/cpuinfo. Later
+> > on, lots of messages appear like the following:
+> > 
+> >    INFO: task ksoftirqd/1:9 blocked for more than 120 seconds.
+> > 
+> > I bisected [1] the problem to:
+> > 
+> >    commit c56e58537d504706954a06570b4034c04e5b7500
+> >    Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >    Date:   Tue Mar 8 14:40:04 2011 +1100
+> > 
+> >        powerpc/smp: Create idle threads on demand and properly reset them
+> > 
+> > I don't see from that commit what had gone wrong. Perhaps you can
+> > help resolve this?
+> 
+> Hrm, odd. Kumar, care to have a look ? That's what happens when you
+> don't get me HW to test with :-)
 
+(I get the feeling that I am the only one testing recent kernels with
+the mpc85xx.)
 
-Signed-off-by: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: Will Schmidt <will_schmidt@vnet.ibm.com>
----
- arch/powerpc/kernel/smp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Anyhow, I see that this commit was one of a series. For my own use,
+can I simply revert this one commit independently?
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index cbdbb14..f2dcab7 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -410,8 +410,6 @@ int __cpuinit __cpu_up(unsigned int cpu)
- {
- 	int rc, c;
- 
--	secondary_ti = current_set[cpu];
--
- 	if (smp_ops == NULL ||
- 	    (smp_ops->cpu_bootable && !smp_ops->cpu_bootable(cpu)))
- 		return -EINVAL;
-@@ -421,6 +419,8 @@ int __cpuinit __cpu_up(unsigned int cpu)
- 	if (rc)
- 		return rc;
- 
-+	secondary_ti = current_set[cpu];
-+
- 	/* Make sure callin-map entry is 0 (can be leftover a CPU
- 	 * hotplug
- 	 */
--- 
-1.7.2.3
+Thanks,
+Richard
