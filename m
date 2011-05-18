@@ -1,20 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
-	[216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0610DB6F6E
+Return-Path: <ericvh@gmail.com>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+	[209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 34312B6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 07:20:53 +1000 (EST)
-Date: Wed, 18 May 2011 16:05:35 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH 5/7] powerpc/mm: 64-bit: don't handle non-standard page sizes
-Message-ID: <20110518210535.GD29524@schlenkerla.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20110518210453.GA29500@schlenkerla.am.freescale.net>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu, 19 May 2011 07:25:12 +1000 (EST)
+Received: by gxk1 with SMTP id 1so778103gxk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 18 May 2011 14:25:07 -0700 (PDT)
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/7] [RFC] Mainline BG/P platform support
+Date: Wed, 18 May 2011 16:24:49 -0500
+Message-Id: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I don't see where any non-standard page size will be set in the
-kernel page tables, so don't waste time checking for it.  It wouldn't
-work with TLB0 on an FSL MMU anyway, so if there's something I missed
-(or which is out-of-tree), it's relying on implementation-specific
-behavior.  If there's an out-of-tree need for occasional 4K mappings
-with CONFIG_PPC_64K_PAGES, perhaps this check could only be done when
-that is defined.
+The Linux kernel patches for the IBM BlueGene/P have been open-sourced
+for quite some time, but haven't been integrated into the mainline Linux
+kernel source tree.  This is the first patch series of several where I
+will attempt to cleanup and mainline the already public patches.  I
+welcome feedback as well as any help I can get.  I'm drawing on
+the patches available for the IBM Compute Node kernel, the ZeptoOS project
+and the Kittyhawk project.
+(all available from http://wiki.bg.anl-external.org)
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
+I'll be prioritizing core patches which are harder to keep current with
+mainline due to merge conflicts and then slowly incorporating the drivers
+and other extensions (if acceptable after community review).
+
+I'll be maintaining the patchset in my kernel.org repository
+(/pub/scm/linux/kernel/git/ericvh/bluegene.git) under the bluegene
+branch with the source repos (zepto, kittyhawk, ibmcn) available in
+respective branches.  Ben - if you would prefer me to send pull requests
+once we get rolling, I can switch to that -- otherwise I'll stick to
+just submitting patches to the list assuming you'll pull them when they
+become acceptable.  Thanks for your attention reviewing these patches.
+
+Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
 ---
- arch/powerpc/mm/tlb_low_64e.S |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
+ MAINTAINERS |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 922fece..e782023 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -232,19 +232,6 @@ finish_normal_tlb_miss:
- 	rlwimi	r11,r14,32-19,27,31	/* Insert WIMGE */
- 	mtspr	SPRN_MAS2,r11
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 69f19f1..3ffca88 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3863,6 +3863,14 @@ S:	Maintained
+ F:	arch/powerpc/platforms/40x/
+ F:	arch/powerpc/platforms/44x/
  
--	/* Check page size, if not standard, update MAS1 */
--	rldicl	r11,r14,64-8,64-8
--#ifdef CONFIG_PPC_64K_PAGES
--	cmpldi	cr0,r11,BOOK3E_PAGESZ_64K
--#else
--	cmpldi	cr0,r11,BOOK3E_PAGESZ_4K
--#endif
--	beq-	1f
--	mfspr	r11,SPRN_MAS1
--	rlwimi	r11,r14,31,21,24
--	rlwinm	r11,r11,0,21,19
--	mtspr	SPRN_MAS1,r11
--1:
- 	/* Move RPN in position */
- 	rldicr	r11,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
- 	clrldi	r15,r11,12		/* Clear crap at the top */
++LINUX FOR POWERPC BLUEGENE/P
++M:	Eric Van Hensbergen <ericvh@gmail.com>
++W:	http://bg-linux.anl-external.org/wiki/index.php/Main_Page
++L:	bg-linux@lists.anl-external.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/bluegene.git
++S:	Maintained
++F:	arch/powerpc/platforms/44x/bgp*
++
+ LINUX FOR POWERPC EMBEDDED XILINX VIRTEX
+ M:	Grant Likely <grant.likely@secretlab.ca>
+ W:	http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
 -- 
 1.7.4.1
