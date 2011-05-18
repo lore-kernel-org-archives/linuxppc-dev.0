@@ -3,14 +3,14 @@ Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
 	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5C8DC1007D9
+	by ozlabs.org (Postfix) with ESMTPS id 6C5EA1007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 07:05:45 +1000 (EST)
-Date: Wed, 18 May 2011 16:05:36 -0500
+	Thu, 19 May 2011 07:05:46 +1000 (EST)
+Date: Wed, 18 May 2011 16:05:38 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: <benh@kernel.crashing.org>
-Subject: [PATCH 6/7] powerpc/mm: 64-bit: tlb handler micro-optimization
-Message-ID: <20110518210536.GE29524@schlenkerla.am.freescale.net>
+Subject: [PATCH 7/7] powerpc/e5500: set MMU_FTR_USE_PAIRED_MAS
+Message-ID: <20110518210538.GF29524@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20110518210453.GA29500@schlenkerla.am.freescale.net>
@@ -24,83 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A little more speed up measured on e5500.
-
-Setting of U0-3 is dropped as it is not used by Linux as far as I can
-see.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/mm/tlb_low_64e.S |   21 ++++++++-------------
- 1 files changed, 8 insertions(+), 13 deletions(-)
+Is there any 64-bit book3e chip that doesn't support this?  It
+doesn't appear to be optional in the ISA.
 
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index e782023..a94c87b 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -47,10 +47,10 @@
- 	 * We could probably also optimize by not saving SRR0/1 in the
- 	 * linear mapping case but I'll leave that for later
- 	 */
--	mfspr	r14,SPRN_ESR
- 	mfspr	r16,SPRN_DEAR		/* get faulting address */
- 	srdi	r15,r16,60		/* get region */
- 	cmpldi	cr0,r15,0xc		/* linear mapping ? */
-+	mfspr	r14,SPRN_ESR
- 	TLB_MISS_STATS_SAVE_INFO
- 	beq	tlb_load_linear		/* yes -> go to linear map load */
- 
-@@ -62,11 +62,11 @@
- 	andi.	r10,r15,0x1
- 	bne-	virt_page_table_tlb_miss
- 
--	std	r14,EX_TLB_ESR(r12);	/* save ESR */
--	std	r16,EX_TLB_DEAR(r12);	/* save DEAR */
-+	/* We need _PAGE_PRESENT and  _PAGE_ACCESSED set */
- 
--	 /* We need _PAGE_PRESENT and  _PAGE_ACCESSED set */
-+	std	r14,EX_TLB_ESR(r12);	/* save ESR */
- 	li	r11,_PAGE_PRESENT
-+	std	r16,EX_TLB_DEAR(r12);	/* save DEAR */
- 	oris	r11,r11,_PAGE_ACCESSED@h
- 
- 	/* We do the user/kernel test for the PID here along with the RW test
-@@ -225,21 +225,16 @@ finish_normal_tlb_miss:
- 	 *                 yet implemented for now
- 	 * MAS 2   :	Defaults not useful, need to be redone
- 	 * MAS 3+7 :	Needs to be done
--	 *
--	 * TODO: mix up code below for better scheduling
- 	 */
- 	clrrdi	r11,r16,12		/* Clear low crap in EA */
-+	rldicr	r15,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
- 	rlwimi	r11,r14,32-19,27,31	/* Insert WIMGE */
-+	clrldi	r15,r15,12		/* Clear crap at the top */
- 	mtspr	SPRN_MAS2,r11
--
--	/* Move RPN in position */
--	rldicr	r11,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
--	clrldi	r15,r11,12		/* Clear crap at the top */
--	rlwimi	r15,r14,32-8,22,25	/* Move in U bits */
-+	andi.	r11,r14,_PAGE_DIRTY
- 	rlwimi	r15,r14,32-2,26,31	/* Move in BAP bits */
- 
- 	/* Mask out SW and UW if !DIRTY (XXX optimize this !) */
--	andi.	r11,r14,_PAGE_DIRTY
- 	bne	1f
- 	li	r11,MAS3_SW|MAS3_UW
- 	andc	r15,r15,r11
-@@ -483,10 +478,10 @@ virt_page_table_tlb_miss_whacko_fault:
- 	 * We could probably also optimize by not saving SRR0/1 in the
- 	 * linear mapping case but I'll leave that for later
- 	 */
--	mfspr	r14,SPRN_ESR
- 	mfspr	r16,SPRN_DEAR		/* get faulting address */
- 	srdi	r11,r16,60		/* get region */
- 	cmpldi	cr0,r11,0xc		/* linear mapping ? */
-+	mfspr	r14,SPRN_ESR
- 	TLB_MISS_STATS_SAVE_INFO
- 	beq	tlb_load_linear		/* yes -> go to linear map load */
- 
+ arch/powerpc/kernel/cputable.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 34d2722..a3b8eeb 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1981,7 +1981,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_features		= CPU_FTRS_E5500,
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
+ 		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS |
+-			MMU_FTR_USE_TLBILX,
++			MMU_FTR_USE_TLBILX | MMU_FTR_USE_PAIRED_MAS,
+ 		.icache_bsize		= 64,
+ 		.dcache_bsize		= 64,
+ 		.num_pmcs		= 4,
 -- 
 1.7.4.1
