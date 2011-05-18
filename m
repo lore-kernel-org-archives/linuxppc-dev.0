@@ -1,25 +1,15 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5597FB6F68
+Return-Path: <max@stro.at>
+Received: from vostochny.stro.at (vostochny.stro.at [78.47.22.85])
+	by ozlabs.org (Postfix) with ESMTP id D68D3B6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 22:03:31 +1000 (EST)
-Received: by fxm5 with SMTP id 5so1308083fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 05:03:26 -0700 (PDT)
-Date: Wed, 18 May 2011 14:03:20 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: mpc85xx regression since 2.6.39-rc2, one cpu core lame
-Message-ID: <20110518120320.GA3025@riccoc20.at.omicron.at>
-References: <20110517162827.GA16918@riccoc20.at.omicron.at>
-	<1305668416.2781.23.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1305668416.2781.23.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Wed, 18 May 2011 23:47:46 +1000 (EST)
+From: maximilian attems <max@stro.at>
+To: klibc@zytor.com
+Subject: [PATCH] [klibc] ppc64: Fix build failure with stricter as
+Date: Wed, 18 May 2011 15:41:20 +0200
+Message-Id: <1305726080-27589-1-git-send-email-max@stro.at>
+Cc: Matthias Klose <doko@ubuntu.com>, linuxppc-dev@lists.ozlabs.org,
+	maximilian attems <max@stro.at>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 18, 2011 at 07:40:16AM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2011-05-17 at 18:28 +0200, Richard Cochran wrote:
-> > Ben,
-> > 
-> > Recent 2.6.39-rc kernels behave strangely on the Freescale dual core
-> > mpc8572 and p2020. There is a long pause (like 2 seconds) in the boot
-> > sequence after "mpic: requesting IPIs..."
-> > 
-> > When the system comes up, only one core shows in /proc/cpuinfo. Later
-> > on, lots of messages appear like the following:
-> > 
-> >    INFO: task ksoftirqd/1:9 blocked for more than 120 seconds.
-> > 
-> > I bisected [1] the problem to:
-> > 
-> >    commit c56e58537d504706954a06570b4034c04e5b7500
-> >    Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >    Date:   Tue Mar 8 14:40:04 2011 +1100
-> > 
-> >        powerpc/smp: Create idle threads on demand and properly reset them
-> > 
-> > I don't see from that commit what had gone wrong. Perhaps you can
-> > help resolve this?
-> 
-> Hrm, odd. Kumar, care to have a look ? That's what happens when you
-> don't get me HW to test with :-)
+From: Matthias Klose <doko@ubuntu.com>
 
-(I get the feeling that I am the only one testing recent kernels with
-the mpc85xx.)
+Landed in Ubuntu klibc version 1.5.20-1ubuntu3.
 
-Anyhow, I see that this commit was one of a series. For my own use,
-can I simply revert this one commit independently?
 
-Thanks,
-Richard
+Signed-off-by: maximilian attems <max@stro.at>
+---
+ usr/klibc/arch/ppc64/crt0.S |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/usr/klibc/arch/ppc64/crt0.S b/usr/klibc/arch/ppc64/crt0.S
+index a7776a1..c976d5c 100644
+--- a/usr/klibc/arch/ppc64/crt0.S
++++ b/usr/klibc/arch/ppc64/crt0.S
+@@ -12,16 +12,17 @@
+ 	.section ".toc","aw"
+ .LC0:	.tc	environ[TC],environ
+ 
++	.text
++	.align 4
++
+ 	.section ".opd","aw"
+-	.align 3
+-	.globl _start
+ _start:
+-	.quad	._start
+-	.quad	.TOC.@tocbase, 0
+-
+-	.text
+-	.globl	._start
++	.quad	._start, .TOC.@tocbase, 0
++	.previous
++	.size	_start, 24
+ 	.type	._start,@function
++	.globl	_start
++	.globl	._start
+ ._start:
+ 	stdu    %r1,-32(%r1)
+ 	addi    %r3,%r1,32
+@@ -29,4 +30,4 @@ _start:
+ 	b 	.__libc_init
+ 	nop
+ 
+-	.size _start,.-_start
++	.size ._start,.-._start
+-- 
+1.7.4.4
