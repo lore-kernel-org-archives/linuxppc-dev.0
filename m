@@ -1,19 +1,21 @@
 Return-Path: <ericvh@gmail.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 34312B6F68
+	by ozlabs.org (Postfix) with ESMTPS id E59F9B6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 07:25:12 +1000 (EST)
-Received: by gxk1 with SMTP id 1so778103gxk.38
+	Thu, 19 May 2011 07:25:13 +1000 (EST)
+Received: by yxp4 with SMTP id 4so780924yxp.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 May 2011 14:25:07 -0700 (PDT)
+	Wed, 18 May 2011 14:25:10 -0700 (PDT)
 From: Eric Van Hensbergen <ericvh@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/7] [RFC] Mainline BG/P platform support
-Date: Wed, 18 May 2011 16:24:49 -0500
-Message-Id: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
+Subject: [PATCH 2/7] [RFC] add bluegene entry to cputable
+Date: Wed, 18 May 2011 16:24:50 -0500
+Message-Id: <1305753895-24845-2-git-send-email-ericvh@gmail.com>
+In-Reply-To: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
+References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,50 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Linux kernel patches for the IBM BlueGene/P have been open-sourced
-for quite some time, but haven't been integrated into the mainline Linux
-kernel source tree.  This is the first patch series of several where I
-will attempt to cleanup and mainline the already public patches.  I
-welcome feedback as well as any help I can get.  I'm drawing on
-the patches available for the IBM Compute Node kernel, the ZeptoOS project
-and the Kittyhawk project.
-(all available from http://wiki.bg.anl-external.org)
-
-I'll be prioritizing core patches which are harder to keep current with
-mainline due to merge conflicts and then slowly incorporating the drivers
-and other extensions (if acceptable after community review).
-
-I'll be maintaining the patchset in my kernel.org repository
-(/pub/scm/linux/kernel/git/ericvh/bluegene.git) under the bluegene
-branch with the source repos (zepto, kittyhawk, ibmcn) available in
-respective branches.  Ben - if you would prefer me to send pull requests
-once we get rolling, I can switch to that -- otherwise I'll stick to
-just submitting patches to the list assuming you'll pull them when they
-become acceptable.  Thanks for your attention reviewing these patches.
-
 Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
 ---
- MAINTAINERS |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/cputable.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 69f19f1..3ffca88 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3863,6 +3863,14 @@ S:	Maintained
- F:	arch/powerpc/platforms/40x/
- F:	arch/powerpc/platforms/44x/
- 
-+LINUX FOR POWERPC BLUEGENE/P
-+M:	Eric Van Hensbergen <ericvh@gmail.com>
-+W:	http://bg-linux.anl-external.org/wiki/index.php/Main_Page
-+L:	bg-linux@lists.anl-external.org
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/bluegene.git
-+S:	Maintained
-+F:	arch/powerpc/platforms/44x/bgp*
-+
- LINUX FOR POWERPC EMBEDDED XILINX VIRTEX
- M:	Grant Likely <grant.likely@secretlab.ca>
- W:	http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index b9602ee..0eb245e 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1732,6 +1732,20 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_440A,
+ 		.platform		= "ppc440",
+ 	},
++	{ /* Blue Gene/P */
++		.pvr_mask		= 0xfffffff0,
++		.pvr_value		= 0x52131880,
++		.cpu_name		= "450 Blue Gene/P",
++		.cpu_features		= CPU_FTRS_440x6,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++						PPC_FEATURE_HAS_FPU,
++		.mmu_features		= MMU_FTR_TYPE_44x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_460gt,
++		.machine_check		= machine_check_440A,
++		.platform		= "ppc440",
++	},
+ 	{ /* 460EX */
+ 		.pvr_mask		= 0xffff0006,
+ 		.pvr_value		= 0x13020002,
 -- 
 1.7.4.1
