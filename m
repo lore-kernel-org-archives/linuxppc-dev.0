@@ -1,24 +1,14 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B054A1009EC
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2011 16:01:39 +1000 (EST)
-Subject: Re: [PATCH 0/13] Hypervisor-mode KVM on POWER7
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] powerpc: Add fsl mpic timer binding
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20110519052246.GA8165@drongo>
-Date: Thu, 19 May 2011 08:01:33 +0200
-Message-Id: <408320BA-1CE5-4777-8984-9B7A5522296E@suse.de>
-References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-	<764651B6-6DDA-49DC-AA95-52CD86FF82D9@suse.de>
-	<20110517111536.GC7924@brick.ozlabs.ibm.com>
-	<14CFAA70-1747-4902-8CC1-4BE924CAD031@suse.de>
-	<4DD25F10.4030707@redhat.com> <20110519052246.GA8165@drongo>
-To: Paul Mackerras <paulus@samba.org>
-Cc: kvm-ppc@vger.kernel.org, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Avi Kivity <avi@redhat.com>, KVM list <kvm@vger.kernel.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110324214315.GA9502@schlenkerla.am.freescale.net>
+Date: Thu, 19 May 2011 01:01:27 -0500
+Message-Id: <1BBDC69D-E843-4F0E-B22F-D32E2319E780@kernel.crashing.org>
+References: <20110324214315.GA9502@schlenkerla.am.freescale.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +19,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 19.05.2011, at 07:22, Paul Mackerras wrote:
+On Mar 24, 2011, at 4:43 PM, Scott Wood wrote:
 
-> On Tue, May 17, 2011 at 02:42:08PM +0300, Avi Kivity wrote:
->> On 05/17/2011 02:38 PM, Alexander Graf wrote:
->>>>=20
->>>> What would be the path for these patches to get upstream?  Would =
-this
->>>> stuff normally go through Avi's tree?  There is a bit of a
->>>> complication in that they are based on Ben's next branch.  Would =
-Avi
->>>> pull Ben's next branch, or would they go in via Ben's tree?
->>>=20
->>> Usually the ppc tree gets merged into Avi's tree and goes on from
->>> there. When we have interdependencies, we can certainly do it
->>> differently though. We can also shove them through Ben's tree this
->>> time around, as there are more dependencies on ppc code than KVM
->>> code.
->>>=20
->>=20
->> Yes, both options are fine.  If it goes through kvm.git I can merge
->> Ben's tree (provided it is append-only) and apply the kvm-ppc
->> patches on top.
+> Update the existing example in the general mpic binding to have a
+> separate TCRx region.  Currently the example doesn't describe TCRx at
+> all.  The one upstream device tree with an mpic timer node (p1022ds)
+> uses one large reg region to describe both, even though there are =
+other
+> unrelated registers in between.  That device tree also contains a =
+bogus
+> interrupt specifier, and there's no upstream software that uses this =
+yet,
+> so changing this shouldn't be a problem.
 >=20
-> OK, the easiest thing is for them to go via Ben's tree, I think, since
-> they depend so much on other stuff in Ben's tree.
+> Add a full binding for the MPIC timer node, not just an example of
+> 4-cell interrupts in the MPIC binding.
 >=20
-> Alex, could you give Ben an acked-by for patches 1-8 of the series?
-> There haven't been any changes requested for them.
+> Add fsl,available-ranges, similar to msi-available-ranges.
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> .../devicetree/bindings/powerpc/fsl/mpic-timer.txt |   38 =
+++++++++++++++++++++
+> .../devicetree/bindings/powerpc/fsl/mpic.txt       |    2 +-
+> 2 files changed, 39 insertions(+), 1 deletions(-)
+> create mode 100644 =
+Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
 
-Let me give them a spin on a G5, so I can at least verify nothing breaks =
-;). I'll hopefully get to this before next week.
+applied to next
 
-Alex
+- k=
