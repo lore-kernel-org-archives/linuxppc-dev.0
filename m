@@ -1,20 +1,29 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id E0D24B6F5D
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 08E0EB6F8B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 02:10:32 +1000 (EST)
-Date: Thu, 19 May 2011 09:10:29 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH RFCv7 0/2] CARMA Board Support
-Message-ID: <20110519161029.GC28291@ovro.caltech.edu>
-References: <1297467270-29576-1-git-send-email-iws@ovro.caltech.edu>
-	<1305778421.7481.38.camel@pasglop>
+	Fri, 20 May 2011 02:18:10 +1000 (EST)
+Message-ID: <4DD542BA.6040608@freescale.com>
+Date: Thu, 19 May 2011 11:18:02 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1305778421.7481.38.camel@pasglop>
-Cc: dmitry.torokhov@gmail.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded hypervisor
+	byte channel driver
+References: <1305813272-31826-1-git-send-email-timur@freescale.com>
+	<1305813272-31826-7-git-send-email-timur@freescale.com>
+	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
+	<4DD533DE.1020705@freescale.com>
+	<20110519165039.7fd8ec34@lxorguk.ukuu.org.uk>
+	<4DD53D1B.4060600@freescale.com> <20110519160239.GB25606@kroah.com>
+In-Reply-To: <20110519160239.GB25606@kroah.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
+	linux-console@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,105 +33,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 02:13:41PM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2011-02-11 at 15:34 -0800, Ira W. Snyder wrote:
-> > Hello everyone,
-> > 
-> > This is the seventh posting of these drivers, taking into account comments
-> > from earlier postings. I've made sure that the drivers both pass checkpatch
-> > without any errors or warnings. I would appreciate as much review as you
-> > can offer, so that these can get into the next merge cycle. They've been
-> > sitting outside mainline for far too long.
+Greg KH wrote:
+> It's too late, it needed to be in linux-next _before_ the window opened.
 > 
-> This has been bitrotting for way too long indeed. I'm sticking this into
-> powerpc -next today.
-> 
+> sorry,
 
-Thanks Ben.
+Curses!  Foiled again!
 
-I'll grab the -next tree and make sure it builds on my board. I don't
-think any API's have changed, but I will send an updated version if they
-have.
+Well, then I'd like to get this patchset fixed up and approved soon after the
+window closes, so that there's no excuse for missing 2.6.41.
 
-Thanks,
-Ira
-
-> > RFCv6 -> RFCv7:
-> > - reference count private data structure (to support unbind)
-> > - use #defines instead of hex values for registers
-> > - keep lines <=80 characters
-> > 
-> > RFCv5 -> RFCv6:
-> > - change locking in several functions
-> > - use list_move_tail() to simplify code
-> > - remove unused helper functions
-> > 
-> > RFCv4 -> RFCv5:
-> > - remove unecessary locking per review comments
-> > - do not clobber return values from *_interruptible()
-> > - explicitly track buffer DMA mapping
-> > - use #defines instead of raw hex addresses
-> > - change enable sysfs attribute to root-writeable only
-> > 
-> > RFCv3 -> RFCv4:
-> > - updates for DATA-FPGA version 2
-> > 
-> > RFCv2 -> RFCv3:
-> > - use miscdevice framework (removing the carma class)
-> > - add bitfile readback capability to the programmer
-> > 
-> > RFCv1 -> RFCv2:
-> > - change comments to kerneldoc format
-> > - Kconfig improvements
-> > - use the videobuf_dma_sg API in the programmer
-> > - updates for Freescale DMAEngine DMA_SLAVE API changes
-> > 
-> > KNOWN ISSUES:
-> > - untested with a setup that can generate interrupts (will get access soon)
-> > - does not handle runtime "unbind"
-> > 
-> > Information about the CARMA board:
-> > 
-> > The CARMA board is essentially an MPC8349EA MDS reference design with a
-> > 1GHz ADC and 4 high powered data processing FPGAs connected to the local
-> > bus. It is all packed into a compact PCI form factor. It is used at the
-> > Owens Valley Radio Observatory as the main component in the correlator
-> > system.
-> > 
-> > For board information, see:
-> > http://www.mmarray.org/~dwh/carma_board/index.html
-> > 
-> > For DATA-FPGA register layout, see:
-> > http://www.mmarray.org/memos/carma_memo46.pdf
-> > 
-> > These drivers are the necessary pieces to get the data processing FPGAs
-> > working and producing data. Despite the fact that the hardware is custom
-> > and we are the only users, I'd still like to get the drivers upstream.
-> > Several people have suggested that this is possible.
-> > 
-> > Some further patches will be forthcoming. I have a driver for the LED
-> > subsystem and the PPS subsystem. The LED register layout is expected to
-> > change soon, so I won't post the driver until that is finished. The PPS
-> > driver will be posted seperately from this patch series; it is very
-> > generic.
-> > 
-> > Thanks to everyone who has provided comments on earlier versions!
-> > 
-> > Ira W. Snyder (2):
-> >   misc: add CARMA DATA-FPGA Access Driver
-> >   misc: add CARMA DATA-FPGA Programmer support
-> > 
-> >  drivers/misc/Kconfig                    |    1 +
-> >  drivers/misc/Makefile                   |    1 +
-> >  drivers/misc/carma/Kconfig              |   18 +
-> >  drivers/misc/carma/Makefile             |    2 +
-> >  drivers/misc/carma/carma-fpga-program.c | 1141 ++++++++++++++++++++++++
-> >  drivers/misc/carma/carma-fpga.c         | 1433 +++++++++++++++++++++++++++++++
-> >  6 files changed, 2596 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/misc/carma/Kconfig
-> >  create mode 100644 drivers/misc/carma/Makefile
-> >  create mode 100644 drivers/misc/carma/carma-fpga-program.c
-> >  create mode 100644 drivers/misc/carma/carma-fpga.c
-> > 
-> 
-> 
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
