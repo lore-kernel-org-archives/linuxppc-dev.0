@@ -1,20 +1,32 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2AEE1B718D
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9195CB718B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 02:36:52 +1000 (EST)
-Received: by fxm5 with SMTP id 5so2358429fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 09:36:48 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Maple: register CPC925 EDAC device on all boards with CPC925
-Date: Thu, 19 May 2011 20:36:54 +0400
-Message-Id: <1305823014-13648-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
+	Fri, 20 May 2011 03:06:04 +1000 (EST)
+Date: Thu, 19 May 2011 19:05:48 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH v2 0/7] Consolidate sdhci pltfm & OF drivers and get them
+	self registered
+Message-ID: <20110519170548.GA1075@pengutronix.de>
+References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
+	<20110519094046.GA2219@pengutronix.de>
+	<20110519160901.GC26816@S2100-06.ap.freescale.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
+In-Reply-To: <20110519160901.GC26816@S2100-06.ap.freescale.net>
+Cc: Chris Ball <cjb@laptop.org>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+	sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+	patches@linaro.org, devicetree-discuss@lists.ozlabs.org,
+	linux-mmc@vger.kernel.org, Saeed Bishara <saeed@marvell.com>,
+	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
+	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
+	Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,82 +36,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently Maple setup code creates cpc925_edac device only on
-Motorola ATCA-6101 blade. Make setup code check bridge revision
-and enable EDAC on all U3 bridges.
 
-Verified on Momentum MapleD (ppc970fx kit) board.
+--3V7upXqbjpZ4EhLz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- arch/powerpc/platforms/maple/setup.c |   41 +++++++++++++++------------------
- 1 files changed, 19 insertions(+), 22 deletions(-)
+Hi Shawn,
 
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index fe34c3d..2c48a91 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -338,35 +338,16 @@ define_machine(maple) {
- #ifdef CONFIG_EDAC
- /*
-  * Register a platform device for CPC925 memory controller on
-- * Motorola ATCA-6101 blade.
-+ * all boards with U3 (CPC925) bridge.
-  */
--#define MAPLE_CPC925_MODEL	"Motorola,ATCA-6101"
- static int __init maple_cpc925_edac_setup(void)
- {
- 	struct platform_device *pdev;
- 	struct device_node *np = NULL;
- 	struct resource r;
--	const unsigned char *model;
- 	int ret;
--
--	np = of_find_node_by_path("/");
--	if (!np) {
--		printk(KERN_ERR "%s: Unable to get root node\n", __func__);
--		return -ENODEV;
--	}
--
--	model = (const unsigned char *)of_get_property(np, "model", NULL);
--	if (!model) {
--		printk(KERN_ERR "%s: Unabel to get model info\n", __func__);
--		of_node_put(np);
--		return -ENODEV;
--	}
--
--	ret = strcmp(model, MAPLE_CPC925_MODEL);
--	of_node_put(np);
--
--	if (ret != 0)
--		return 0;
-+	volatile void __iomem *mem;
-+	u32 rev;
- 
- 	np = of_find_node_by_type(NULL, "memory-controller");
- 	if (!np) {
-@@ -384,6 +365,22 @@ static int __init maple_cpc925_edac_setup(void)
- 		return -ENODEV;
- 	}
- 
-+	mem = ioremap(r.start, resource_size(&r));
-+	if (!mem) {
-+		printk(KERN_ERR "%s: Unable to map memory-controller memory\n",
-+				__func__);
-+		return -ENOMEM;
-+	}
-+
-+	rev = __raw_readl(mem);
-+	iounmap(mem);
-+
-+	if ((rev & 0xf0) != 0x30) { /* U3 */
-+		printk(KERN_ERR "%s: Non-CPC925(U3) bridge revision: %02x\n",
-+			__func__, rev);
-+		return -ENODEV;
-+	}
-+
- 	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
- 	if (IS_ERR(pdev))
- 		return PTR_ERR(pdev);
--- 
-1.7.4.4
+> Should I go for v3 right now to address the patch applying problems
+> and that ESDHC_IMX build issue, or hold for a while to see if you
+> have more comments on v2?
+
+Please wait a little bit more.
+
+> And what is your position on patch #5 which merges esdhc imx and mpc
+> support into one?  As Anton has voted a NO there, I would probably
+> drop the patch if there is another person has strong opinion to get
+> imx and mpc stay separated.
+
+This was the other main issue I spotted so far. I wanted to have another lo=
+ok
+tomorrow, yet the tendency is that I agree with Anton.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--3V7upXqbjpZ4EhLz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEARECAAYFAk3VTewACgkQD27XaX1/VRvEVQCgoMGHWdXFq4VEDCKT4inZMq7b
+/UEAnjZoFTYmmWA06EPFIGVIRqEvbO7A
+=MmT8
+-----END PGP SIGNATURE-----
+
+--3V7upXqbjpZ4EhLz--
