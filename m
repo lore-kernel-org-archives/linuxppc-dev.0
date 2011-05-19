@@ -2,25 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 359BAB6F68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 13:33:19 +1000 (EST)
-Subject: Re: [PATCH] lib: Consolidate DEBUG_STACK_USAGE option
+	by ozlabs.org (Postfix) with ESMTPS id 761061007D7
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2011 14:06:58 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Boyd <sboyd@codeaurora.org>
-In-Reply-To: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
-References: <1304747831-2098-1-git-send-email-sboyd@codeaurora.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 May 2011 13:32:07 +1000
-Message-ID: <1305775927.7481.31.camel@pasglop>
+Date: Thu, 19 May 2011 14:06:18 +1000
+Message-ID: <1305777978.7481.37.camel@pasglop>
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-m32r@ml.linux-m32r.org, user-mode-linux-devel@lists.sourceforge.net,
-	linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>, sparclinux@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-06 at 22:57 -0700, Stephen Boyd wrote:
-> Most arches define CONFIG_DEBUG_STACK_USAGE exactly the same way.
-> Move it to lib/Kconfig.debug so each arch doesn't have to define
-> it. This obviously makes the option generic, but that's fine
-> because the config is already used in generic code.
-> 
-> It's not obvious to me that sysrq-P actually does anything
-> different with this option enabled, but I erred on the side of
-> caution by keeping the most inclusive wording.
+Hi Linus
 
-Sorry for the delay...
+Dunno if it's too late or not yet but here's 3 fixes for powerpc that
+would be welcome to have in before the release. If not I'll send them
+first thing next (one of them is already in -next in fact).
 
-For powerpc:
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Those are regression fixes and a build breakage.
 
 Cheers,
 Ben.
+
+The following changes since commit fce519588acfac249e8fdc1f5016c73d617de315:
+
+  Merge branch 'devicetree/merge' of git://git.secretlab.ca/git/linux-2.6 (2011-05-18 13:25:57 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Ben Hutchings (1):
+      powerpc/kexec: Fix build failure on 32-bit SMP
+
+Benjamin Herrenschmidt (1):
+      powerpc/smp: Make start_secondary_resume available to all CPU variants
+
+kerstin jonsson (1):
+      powerpc/4xx: Fix regression in SMP on 476
+
+ arch/powerpc/kernel/crash.c   |   59 +++++++++++++++++++++--------------------
+ arch/powerpc/kernel/head_32.S |    9 ------
+ arch/powerpc/kernel/misc_32.S |   11 +++++++
+ arch/powerpc/kernel/smp.c     |    4 +-
+ 4 files changed, 43 insertions(+), 40 deletions(-)
