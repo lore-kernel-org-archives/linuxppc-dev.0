@@ -1,23 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/8] powerpc: override dma_get_required_mask by
-	platform hook and ops
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <1305152704-4864-6-git-send-email-nacc@us.ibm.com>
-References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-	<1305152704-4864-6-git-send-email-nacc@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 May 2011 17:43:56 +1000
-Message-ID: <1305791036.7481.52.camel@pasglop>
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Arnd Bergmann <arnd@arndb.de>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 0B3C5B6F86
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 18:36:38 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 20075-05 for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 09:36:26 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 1/3] mpt2sas: remove the use of writeq,
+	since writeq isnot atomic
+Date: Thu, 19 May 2011 09:35:19 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD41@saturn3.aculab.com>
+In-Reply-To: <1305780360.2576.20.camel@mulgrave.site>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Hitoshi Mitake" <h.mitake@gmail.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>, "Prakash,
+	Sathya" <Sathya.Prakash@lsi.com>,
+	Roland Dreier <roland@kernel.org>, "Desai,
+	Kashyap" <Kashyap.Desai@lsi.com>,
+	linux scsi dev <linux-scsi@vger.kernel.org>,
+	Matthew Wilcox <matthew@wil.cx>, linux pci <linux-pci@vger.kernel.org>,
+	linux powerpc dev <linuxppc-dev@lists.ozlabs.org>,
+	Milton Miller <miltonm@bga.com>,
+	linux kernel <linux-kernel@vger.kernel.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@redhat.com>,
+	paulus@samba.org, Ingo Molnar <mingo@elte.hu>, "Moore,
+	Eric" <Eric.Moore@lsi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +40,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-05-11 at 15:25 -0700, Nishanth Aravamudan wrote:
-> From: Milton Miller <miltonm@bga.com>
-> 
-> The hook dma_get_required_mask is supposed to return the mask required
-> by the platform to operate efficently.  The generic version of
-> dma_get_required_mask in driver/base/platform.c returns a mask based
-> only on max_pfn.  However, this is likely too big for iommu systems
-> and could be too small for platforms that require a dma offset or have
-> a secondary window at a high offset.
+=20
+> The specific mpt2sas problem is that if we write a 64 bit register non
+> atomically, we can't allow any interleaving writes for any other
+region
+> on the chip, otherwise the HW will take the write as complete in the
+64
+> bit register and latch the wrong value.  The only way to achieve that
+> given the semantics of writeq is a global static spinlock.
 
-The result of those 3 patches doesn't build on top of my current tree,
-the generic dma_ops lacks the dma_get_required_mask hook. I'll have a
-look again after the merge window.
+That sounds like very specific and slightly dodgy hardware.
+You don't say what the scope of 'region on the chip' is, but
+it looks like you need to disable ALL writes to the memory
+area between the first and second writes of the 64bit value
+and not just those coming from writeq().
+I don't see how this can possibly be done by normal mutexing
+around the writeq() sequence, surely you need to lock the bus
+between the two transfers.
+Even dma writes would be a problem.
 
-Cheers,
-Ben.
+The only way I can think to stop other cpus doing writes
+is to use IPIs for force them into a busy wait loop.
+
+All rather reminds me of a PCI slave that got things
+horribly wrong when a read was done while a write was
+still 'posted', or a 2nd master did a cycle did a read
+while a read rerun sequence was still in progress.
+(required a mutex and dummy cycles).
+At least than one wqs confined to one driver.
+
+	David
