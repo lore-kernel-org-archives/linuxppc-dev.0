@@ -1,12 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx: P2020 DTS: re-organize dts files
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1302265625-10131-1-git-send-email-prabhakar@freescale.com>
-Date: Thu, 19 May 2011 01:16:22 -0500
-Message-Id: <FF5F027D-35D2-4645-8D0E-DFF500AF8149@kernel.crashing.org>
-References: <1302265625-10131-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <B11780@freescale.com>
+Subject: Re: [PATCH][v2] powerpc/85xx: P1020 DTS : re-organize dts files
+MIME-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1302167455-21538-1-git-send-email-prabhakar@freescale.com>
+Date: Thu, 19 May 2011 01:16:16 -0500
+Message-ID: <432676EA-9461-4B8D-9215-C7EF32366A8C@freescale.com>
+References: <1302167455-21538-1-git-send-email-prabhakar@freescale.com>
 To: Prabhakar Kushwaha <prabhakar@freescale.com>
 Cc: meet2prabhu@gmail.com, devicetree-discuss@lists.ozlabs.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -20,13 +20,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 8, 2011, at 7:27 AM, Prabhakar Kushwaha wrote:
+On Apr 7, 2011, at 4:10 AM, Prabhakar Kushwaha wrote:
 
-> Creates P2020si.dtsi, containing information for P2020 SoC. Modifies =
-dts files
-> for P2020 based systems to use dtsi file.
+> Creates P1020si.dtsi, containing information for the P1020 SoC. =
+Modifies dts
+> files for P1020 based systems to use dtsi file
 >=20
 > Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> Acked-by: Kumar Gala <kumar.gala@freescale.com>
 > ---
 > Based upon =
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branc=
@@ -34,18 +35,17 @@ h master)
 >=20
 > Please see mpc5200b.dtsi for reference.
 >=20
-> Tested on P2020RDB and P2020DS
+> Tested on P1020RDB
 >=20
-> arch/powerpc/boot/dts/p2020ds.dts             |  374 =
-++----------------------
-> arch/powerpc/boot/dts/p2020rdb.dts            |  362 =
-++---------------------
-> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |  237 +++-------------
-> arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |  142 ++++++----
-> arch/powerpc/boot/dts/p2020si.dtsi            |  382 =
-+++++++++++++++++++++++++
-> 5 files changed, 564 insertions(+), 933 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/p2020si.dtsi
+> Changes for v2: Incorporated Grant Likely's comment
+> 	-updated model name
+>=20
+> arch/powerpc/boot/dts/p1020rdb.dts |  316 =
++------------------------------
+> arch/powerpc/boot/dts/p1020si.dtsi |  377 =
+++++++++++++++++++++++++++++++++++++
+> 2 files changed, 380 insertions(+), 313 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/p1020si.dtsi
 
 applied to next
 
