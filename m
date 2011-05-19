@@ -1,36 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 0B3C5B6F86
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 9C6BBB6F77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 18:36:38 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 20075-05 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 09:36:26 +0100 (BST)
+	Thu, 19 May 2011 19:38:59 +1000 (EST)
+Message-ID: <4DD4E52F.6040408@suse.de>
+Date: Thu, 19 May 2011 11:38:55 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 1/3] mpt2sas: remove the use of writeq,
-	since writeq isnot atomic
-Date: Thu, 19 May 2011 09:35:19 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD41@saturn3.aculab.com>
-In-Reply-To: <1305780360.2576.20.camel@mulgrave.site>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Hitoshi Mitake" <h.mitake@gmail.com>
-Cc: linux-arch <linux-arch@vger.kernel.org>, "Prakash,
-	Sathya" <Sathya.Prakash@lsi.com>,
-	Roland Dreier <roland@kernel.org>, "Desai,
-	Kashyap" <Kashyap.Desai@lsi.com>,
-	linux scsi dev <linux-scsi@vger.kernel.org>,
-	Matthew Wilcox <matthew@wil.cx>, linux pci <linux-pci@vger.kernel.org>,
-	linux powerpc dev <linuxppc-dev@lists.ozlabs.org>,
-	Milton Miller <miltonm@bga.com>,
-	linux kernel <linux-kernel@vger.kernel.org>,
-	Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@redhat.com>,
-	paulus@samba.org, Ingo Molnar <mingo@elte.hu>, "Moore,
-	Eric" <Eric.Moore@lsi.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 01/13] powerpc/e500: Save SPEFCSR in flush_spe_to_thread()
+References: <20110517233551.GA3511@schlenkerla.am.freescale.net>
+	<DC207279-54AC-41CC-BF21-25181D16A6AB@kernel.crashing.org>
+In-Reply-To: <DC207279-54AC-41CC-BF21-25181D16A6AB@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,33 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> The specific mpt2sas problem is that if we write a 64 bit register non
-> atomically, we can't allow any interleaving writes for any other
-region
-> on the chip, otherwise the HW will take the write as complete in the
-64
-> bit register and latch the wrong value.  The only way to achieve that
-> given the semantics of writeq is a global static spinlock.
+On 05/19/2011 08:04 AM, Kumar Gala wrote:
+> On May 17, 2011, at 6:35 PM, Scott Wood wrote:
+>
+>> From: yu liu<yu.liu@freescale.com>
+>>
+>> giveup_spe() saves the SPE state which is protected by MSR[SPE].
+>> However, modifying SPEFSCR does not trap when MSR[SPE]=0.
+>> And since SPEFSCR is already saved/restored in _switch(),
+>> not all the callers want to save SPEFSCR again.
+>> Thus, saving SPEFSCR should not belong to giveup_spe().
+>>
+>> This patch moves SPEFSCR saving to flush_spe_to_thread(),
+>> and cleans up the caller that needs to save SPEFSCR accordingly.
+>>
+>> Signed-off-by: Liu Yu<yu.liu@freescale.com>
+>> Signed-off-by: Scott Wood<scottwood@freescale.com>
+>> ---
+>> This is a resending of http://patchwork.ozlabs.org/patch/88677/
+>>
+>> Kumar, please ack to go via kvm.  This is holding up the rest of the SPE
+>> patches, which in turn are holding up the MMU patches due to both
+>> touching the MSR update code.
+>>
+>> arch/powerpc/kernel/head_fsl_booke.S |    2 --
+>> arch/powerpc/kernel/process.c        |    1 +
+>> arch/powerpc/kernel/traps.c          |    5 +----
+>> 3 files changed, 2 insertions(+), 6 deletions(-)
+> Acked-by: Kumar Gala<galak@kernel.crashing.org>
+>
+> [ Alex, let me know if you want this via my powerpc.git tree or your kvm tree ]
 
-That sounds like very specific and slightly dodgy hardware.
-You don't say what the scope of 'region on the chip' is, but
-it looks like you need to disable ALL writes to the memory
-area between the first and second writes of the 64bit value
-and not just those coming from writeq().
-I don't see how this can possibly be done by normal mutexing
-around the writeq() sequence, surely you need to lock the bus
-between the two transfers.
-Even dma writes would be a problem.
+I'll take them :). Thanks!
 
-The only way I can think to stop other cpus doing writes
-is to use IPIs for force them into a busy wait loop.
-
-All rather reminds me of a PCI slave that got things
-horribly wrong when a read was done while a write was
-still 'posted', or a 2nd master did a cycle did a read
-while a read rerun sequence was still in progress.
-(required a mutex and dummy cycles).
-At least than one wqs confined to one driver.
-
-	David
+Alex
