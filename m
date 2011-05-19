@@ -1,26 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE005.bigfish.com (am1ehsobe005.messaging.microsoft.com
-	[213.199.154.208])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B186B718C
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2AEE1B718D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 02:32:03 +1000 (EST)
-Message-ID: <4DD545E4.9090408@freescale.com>
-Date: Thu, 19 May 2011 11:31:32 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded hypervisor
-	byte channel driver
-References: <1305813272-31826-1-git-send-email-timur@freescale.com>	<1305813272-31826-7-git-send-email-timur@freescale.com>
-	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
-In-Reply-To: <20110519153358.5876f310@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
-	linux-console@vger.kernel.org, greg@kroah.com,
-	linuxppc-dev@lists.ozlabs.org
+	Fri, 20 May 2011 02:36:52 +1000 (EST)
+Received: by fxm5 with SMTP id 5so2358429fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 09:36:48 -0700 (PDT)
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Maple: register CPC925 EDAC device on all boards with CPC925
+Date: Thu, 19 May 2011 20:36:54 +0400
+Message-Id: <1305823014-13648-1-git-send-email-dbaryshkov@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Cox wrote:
-> You really also need a hangup method so vhangup() does the right thing
-> and you can securely do logins etc and sessions on your console. As
-> you've got no hardware entangled in this and you already use tty_port
-> helpers the hangup helper will do the work for you.
+Currently Maple setup code creates cpc925_edac device only on
+Motorola ATCA-6101 blade. Make setup code check bridge revision
+and enable EDAC on all U3 bridges.
 
-So all I need is this?
+Verified on Momentum MapleD (ppc970fx kit) board.
 
-static void ehv_bc_tty_hangup(struct tty_struct *ttys)
-{
-	struct ehv_bc_data *bc = ttys->driver_data;
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/powerpc/platforms/maple/setup.c |   41 +++++++++++++++------------------
+ 1 files changed, 19 insertions(+), 22 deletions(-)
 
-	tty_port_hangup(&bc->port);
-}
-
-I've noticed that some drivers flush their transmit buffers before calling
-tty_port_hangup(), but some others don't.  Should I do this too?  I don't know
-if hangup should be as quick as possible.
-
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index fe34c3d..2c48a91 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -338,35 +338,16 @@ define_machine(maple) {
+ #ifdef CONFIG_EDAC
+ /*
+  * Register a platform device for CPC925 memory controller on
+- * Motorola ATCA-6101 blade.
++ * all boards with U3 (CPC925) bridge.
+  */
+-#define MAPLE_CPC925_MODEL	"Motorola,ATCA-6101"
+ static int __init maple_cpc925_edac_setup(void)
+ {
+ 	struct platform_device *pdev;
+ 	struct device_node *np = NULL;
+ 	struct resource r;
+-	const unsigned char *model;
+ 	int ret;
+-
+-	np = of_find_node_by_path("/");
+-	if (!np) {
+-		printk(KERN_ERR "%s: Unable to get root node\n", __func__);
+-		return -ENODEV;
+-	}
+-
+-	model = (const unsigned char *)of_get_property(np, "model", NULL);
+-	if (!model) {
+-		printk(KERN_ERR "%s: Unabel to get model info\n", __func__);
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-
+-	ret = strcmp(model, MAPLE_CPC925_MODEL);
+-	of_node_put(np);
+-
+-	if (ret != 0)
+-		return 0;
++	volatile void __iomem *mem;
++	u32 rev;
+ 
+ 	np = of_find_node_by_type(NULL, "memory-controller");
+ 	if (!np) {
+@@ -384,6 +365,22 @@ static int __init maple_cpc925_edac_setup(void)
+ 		return -ENODEV;
+ 	}
+ 
++	mem = ioremap(r.start, resource_size(&r));
++	if (!mem) {
++		printk(KERN_ERR "%s: Unable to map memory-controller memory\n",
++				__func__);
++		return -ENOMEM;
++	}
++
++	rev = __raw_readl(mem);
++	iounmap(mem);
++
++	if ((rev & 0xf0) != 0x30) { /* U3 */
++		printk(KERN_ERR "%s: Non-CPC925(U3) bridge revision: %02x\n",
++			__func__, rev);
++		return -ENODEV;
++	}
++
+ 	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
+ 	if (IS_ERR(pdev))
+ 		return PTR_ERR(pdev);
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.4.4
