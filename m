@@ -1,16 +1,23 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id 7C622B6F8A
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE002.bigfish.com (va3ehsobe002.messaging.microsoft.com
+	[216.32.180.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 04EC3B6F88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 00:18:15 +1000 (EST)
-From: =?UTF-8?q?Michel=20D=C3=A4nzer?= <michel@daenzer.net>
-To: Dave Airlie <airlied@gmail.com>
-Subject: [PATCH] agp/uninorth: Fix lockups with radeon KMS and >1x.
-Date: Thu, 19 May 2011 16:08:39 +0200
-Message-Id: <1305814119-32288-1-git-send-email-michel@daenzer.net>
+	Fri, 20 May 2011 00:27:05 +1000 (EST)
+Message-ID: <4DD52195.7060104@freescale.com>
+Date: Thu, 19 May 2011 08:56:37 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+To: <kumar.gala@freescale.com>, <benh@kernel.crashing.org>, <greg@kroah.com>,
+	<akpm@kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <linux-console@vger.kernel.org>
+Subject: Re: [PATCH 0/7] This patchset adds support for running Linux under
+	the Freescale hypervisor,
+References: <1305813272-31826-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1305813272-31826-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michel Dänzer <daenzer@vmware.com>
+Timur Tabi wrote:
+> have hypervisor extensions (e.g. the P4080 which has an e500mc core).
 
-This was based on a description by Ben Herrenschmidt:
+Oops, this email got munged.  The first paragraph should say:
 
-> I've removed that SBA reset from the normal TLB invalidation path and
-> left it only once after turning AGP on.
+This patchset adds support for running Linux under the Freescale hypervisor,
+which is an ePAPR-compliant hypervisor that runs on our PowerPC SOCs that
+have hypervisor extensions (e.g. the P4080 which has an e500mc core).
 
-About six months ago, he said:
-
-> I did it a bit differently, but yeah, you get the idea. I'm doing a
-> patch series so don't bother pushing things too hard yet.
-
-But I haven't seen anything from him about this since then, and people are
-regularly hitting these lockups, so here we are...
-
-Signed-off-by: Michel Dänzer <daenzer@vmware.com>
----
- drivers/char/agp/uninorth-agp.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
-index 47c2218..55af723 100644
---- a/drivers/char/agp/uninorth-agp.c
-+++ b/drivers/char/agp/uninorth-agp.c
-@@ -80,7 +80,7 @@ static void uninorth_tlbflush(struct agp_memory *mem)
- 			       ctrl | UNI_N_CFG_GART_INVAL);
- 	pci_write_config_dword(agp_bridge->dev, UNI_N_CFG_GART_CTRL, ctrl);
- 
--	if (uninorth_rev <= 0x30) {
-+	if (!mem && uninorth_rev <= 0x30) {
- 		pci_write_config_dword(agp_bridge->dev, UNI_N_CFG_GART_CTRL,
- 				       ctrl | UNI_N_CFG_GART_2xRESET);
- 		pci_write_config_dword(agp_bridge->dev, UNI_N_CFG_GART_CTRL,
 -- 
-1.7.5.1
+Timur Tabi
+Linux kernel developer at Freescale
