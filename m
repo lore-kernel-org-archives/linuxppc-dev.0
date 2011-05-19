@@ -1,32 +1,27 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9195CB718B
+	by ozlabs.org (Postfix) with ESMTPS id 433EDB6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 03:06:04 +1000 (EST)
-Date: Thu, 19 May 2011 19:05:48 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Shawn Guo <shawn.guo@freescale.com>
-Subject: Re: [PATCH v2 0/7] Consolidate sdhci pltfm & OF drivers and get them
-	self registered
-Message-ID: <20110519170548.GA1075@pengutronix.de>
-References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
-	<20110519094046.GA2219@pengutronix.de>
-	<20110519160901.GC26816@S2100-06.ap.freescale.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
-In-Reply-To: <20110519160901.GC26816@S2100-06.ap.freescale.net>
-Cc: Chris Ball <cjb@laptop.org>, Anton Vorontsov <avorontsov@ru.mvista.com>,
-	sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
-	patches@linaro.org, devicetree-discuss@lists.ozlabs.org,
-	linux-mmc@vger.kernel.org, Saeed Bishara <saeed@marvell.com>,
-	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
-	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
-	Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-arm-kernel@lists.infradead.org
+	Fri, 20 May 2011 03:24:36 +1000 (EST)
+Date: Thu, 19 May 2011 18:25:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded
+	hypervisor byte channel driver
+Message-ID: <20110519182551.0c06cd10@lxorguk.ukuu.org.uk>
+In-Reply-To: <4DD545E4.9090408@freescale.com>
+References: <1305813272-31826-1-git-send-email-timur@freescale.com>
+	<1305813272-31826-7-git-send-email-timur@freescale.com>
+	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
+	<4DD545E4.9090408@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
+	linux-console@vger.kernel.org, greg@kroah.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 19 May 2011 11:31:32 -0500
+Timur Tabi <timur@freescale.com> wrote:
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Alan Cox wrote:
+> > You really also need a hangup method so vhangup() does the right thing
+> > and you can securely do logins etc and sessions on your console. As
+> > you've got no hardware entangled in this and you already use tty_port
+> > helpers the hangup helper will do the work for you.
+> 
+> So all I need is this?
+> 
+> static void ehv_bc_tty_hangup(struct tty_struct *ttys)
+> {
+> 	struct ehv_bc_data *bc = ttys->driver_data;
+> 
+> 	tty_port_hangup(&bc->port);
+> }
+> 
+> I've noticed that some drivers flush their transmit buffers before calling
+> tty_port_hangup(), but some others don't.  Should I do this too?  I don't know
+> if hangup should be as quick as possible.
 
-Hi Shawn,
-
-> Should I go for v3 right now to address the patch applying problems
-> and that ESDHC_IMX build issue, or hold for a while to see if you
-> have more comments on v2?
-
-Please wait a little bit more.
-
-> And what is your position on patch #5 which merges esdhc imx and mpc
-> support into one?  As Anton has voted a NO there, I would probably
-> drop the patch if there is another person has strong opinion to get
-> imx and mpc stay separated.
-
-This was the other main issue I spotted so far. I wanted to have another lo=
-ok
-tomorrow, yet the tendency is that I agree with Anton.
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---3V7upXqbjpZ4EhLz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEARECAAYFAk3VTewACgkQD27XaX1/VRvEVQCgoMGHWdXFq4VEDCKT4inZMq7b
-/UEAnjZoFTYmmWA06EPFIGVIRqEvbO7A
-=MmT8
------END PGP SIGNATURE-----
-
---3V7upXqbjpZ4EhLz--
+Doesn't matter too much. If you can flush it quickly then do so
