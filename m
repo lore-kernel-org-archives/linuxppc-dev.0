@@ -1,13 +1,12 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] powerpc/mpic: parse 4-cell intspec types other than
-	zero
+Subject: Re: [PATCH 4/4] powerpc/mpic: add the mpic global timer support
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110324214354.GB9524@schlenkerla.am.freescale.net>
-Date: Thu, 19 May 2011 01:01:38 -0500
-Message-Id: <EF221297-49F5-4A12-AA06-C7C40815CFA8@kernel.crashing.org>
-References: <20110324214354.GB9524@schlenkerla.am.freescale.net>
+In-Reply-To: <20110324214355.GC9524@schlenkerla.am.freescale.net>
+Date: Thu, 19 May 2011 01:01:49 -0500
+Message-Id: <A8328BF9-349B-4CC4-B9FF-C98DEA2CD74B@kernel.crashing.org>
+References: <20110324214355.GC9524@schlenkerla.am.freescale.net>
 To: Scott Wood <scottwood@freescale.com>
 Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,13 +21,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mar 24, 2011, at 4:43 PM, Scott Wood wrote:
 
+> Add support for MPIC timers as requestable interrupt sources.
+>=20
+> Based on http://patchwork.ozlabs.org/patch/20941/ by Dave Liu.
+>=20
+> Signed-off-by: Dave Liu <daveliu@freescale.com>
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
 > ---
-> arch/powerpc/include/asm/mpic.h |    2 ++
-> arch/powerpc/sysdev/mpic.c      |   37 =
-++++++++++++++++++++++++++++++++++++-
-> 2 files changed, 38 insertions(+), 1 deletions(-)
+> arch/powerpc/include/asm/mpic.h |    3 +-
+> arch/powerpc/sysdev/mpic.c      |   92 =
+++++++++++++++++++++++++++++++++++++---
+> 2 files changed, 88 insertions(+), 7 deletions(-)
 
-applied to next
+applied to next, fixed for upstream changes.
 
 - k=
