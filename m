@@ -1,50 +1,26 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id DE016B6F86
+Return-Path: <ericvh@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ABC69B6F82
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 22:22:17 +1000 (EST)
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
-	call filtering
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Will Drewry <wad@chromium.org>
-In-Reply-To: <BANLkTikBK3-KZ10eErQ6Eex_L6Qe2aZang@mail.gmail.com>
-References: <20110513125452.GD3924@elte.hu> <1305292132.2466.26.camel@twins>
-	<20110513131800.GA7883@elte.hu> <1305294935.2466.64.camel@twins>
-	<20110513145737.GC32688@elte.hu>
-	<1305563026.5456.19.camel@gandalf.stny.rr.com>
-	<20110516165249.GB10929@elte.hu>
-	<1305565422.5456.21.camel@gandalf.stny.rr.com>
-	<20110517124212.GB21441@elte.hu>
-	<1305637528.5456.723.camel@gandalf.stny.rr.com>
-	<20110517131902.GF21441@elte.hu>
-	<BANLkTikBK3-KZ10eErQ6Eex_L6Qe2aZang@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Thu, 19 May 2011 08:22:08 -0400
-Message-ID: <1305807728.11267.25.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	James Morris <jmorris@namei.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-	Ingo Molnar <mingo@elte.hu>, "Serge E. Hallyn" <serge@hallyn.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, kees.cook@canonical.com,
-	Roland McGrath <roland@redhat.com>,
-	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Eric Paris <eparis@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
-	Tejun Heo <tj@kernel.org>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
-	"David S. Miller" <davem@davemloft.net>
+	Thu, 19 May 2011 22:35:16 +1000 (EST)
+Received: by bwz10 with SMTP id 10so2615870bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 05:35:11 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20110519110105.GB25179@zod.rchland.ibm.com>
+References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
+	<20110519110105.GB25179@zod.rchland.ibm.com>
+Date: Thu, 19 May 2011 07:35:11 -0500
+Message-ID: <BANLkTi=08fugm=kpP7LNQc+eRaOuOYR1-w@mail.gmail.com>
+Subject: Re: [PATCH 1/7] [RFC] Mainline BG/P platform support
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,17 +30,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-05-18 at 21:07 -0700, Will Drewry wrote:
+On Thu, May 19, 2011 at 6:01 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wr=
+ote:
+> On Wed, May 18, 2011 at 04:24:49PM -0500, Eric Van Hensbergen wrote:
+>>
+>>I'll be maintaining the patchset in my kernel.org repository
+>>(/pub/scm/linux/kernel/git/ericvh/bluegene.git) under the bluegene
+>>branch with the source repos (zepto, kittyhawk, ibmcn) available in
+>>respective branches. =A0Ben - if you would prefer me to send pull request=
+s
+>>once we get rolling, I can switch to that -- otherwise I'll stick to
+>>just submitting patches to the list assuming you'll pull them when they
+>>become acceptable. =A0Thanks for your attention reviewing these patches.
+>
+> This is going to get slightly messy if there are lots of changes in
+> platforms/44x and/or head_44x.S. =A0Most 4xx changes go through my tree,
+> and I'm happy to pull from your tree once things get off the ground. =A0W=
+e
+> just need to make sure and coordinate as we go.
+>
 
-> Do event_* that return non-void exist in the tree at all now?  I've
-> looked at the various tracepoint macros as well as some of the other
-> handlers (trace_function, perf_tp_event, etc) and I'm not seeing any
-> places where a return value is honored nor could be.  At best, the
-> perf_tp_event can be short-circuited it in the hlist_for_each, but
-> it'd still need a way to bubble up a failure and result in not calling
-> the trace/event that the hook precedes.
+I'm fine with processing the changes through your tree.  Most of the items
+with conflicts are in this series, so hopefully it won't be too messy (outs=
+ide
+of some Makefile and Kconfig changes which are much easier to merge)
+after this.  So, should I base changes on:
+http://git.kernel.org/?p=3Dlinux/kernel/git/jwboyer/powerpc-4xx.git;a=3Dsho=
+rtlog;h=3Drefs/heads/next
+or:
+http://git.kernel.org/?p=3Dlinux/kernel/git/benh/powerpc.git;a=3Dshortlog;h=
+=3Drefs/heads/next
 
-No, none of the current trace hooks have return values. That was what I
-was talking about how to implement in my previous emails.
+There are some important questions on code organization which it would
+probably be a good idea to discuss at some point -- in particular what I
+should do about the device drivers.  Pretty much every driver except for
+the ethernet is particular to this platform.  IIRC some of the embedded
+platforms have the SOC drivers in the platforms directory -- but it doesn't
+seem like you've done this with 4xx so I was gonna just place them in
+the appropriate drivers/* directory.  The other question is that there are
+a number of patches which involve communication which a somewhat
+substantial firmware layer.  You can get an idea of the existing patch's
+code organization by looking at:
 
--- Steve
+http://git.kernel.org/?p=3Dlinux/kernel/git/ericvh/bluegene.git;a=3Dcommit;=
+h=3Dbee9f329eeef6c8eb95c35de4c5d22a0c05a1b3e
+
+Its important to point out that I am going through and cleaning up as I
+go, so not everything from that patch will make the cut as is (or perhaps
+even at all) -- but that should help identify where potential conflicts are
+as well as potentially out of place code.
+
+>>
+>>+LINUX FOR POWERPC BLUEGENE/P
+>>+M: =A0 =A0Eric Van Hensbergen <ericvh@gmail.com>
+>>+W: =A0 =A0http://bg-linux.anl-external.org/wiki/index.php/Main_Page
+>>+L: =A0 =A0bg-linux@lists.anl-external.org
+>>+T: =A0 =A0git git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/blueg=
+ene.git
+>>+S: =A0 =A0Maintained
+>>+F: =A0 =A0arch/powerpc/platforms/44x/bgp*
+>
+> This should probably be the last patch in the series. =A0You have a file
+> pattern listed for files that don't exist at all in any of the other
+> patches you submitted :).
+>
+
+Yeah, I wondered about that, its just I hate patch series intro messages wi=
+th
+no patch, and I figured this was a good way out of it.  It also adds
+the relevant
+info as far as mailing lists and wiki pages where folks can go for more inf=
+o --
+but if folks have a problem with it I'll kill it until we get
+everything else in.
+
+     -eric
