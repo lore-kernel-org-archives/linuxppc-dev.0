@@ -1,27 +1,24 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 433EDB6F83
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 03:24:36 +1000 (EST)
-Date: Thu, 19 May 2011 18:25:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded
-	hypervisor byte channel driver
-Message-ID: <20110519182551.0c06cd10@lxorguk.ukuu.org.uk>
-In-Reply-To: <4DD545E4.9090408@freescale.com>
-References: <1305813272-31826-1-git-send-email-timur@freescale.com>
-	<1305813272-31826-7-git-send-email-timur@freescale.com>
-	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
-	<4DD545E4.9090408@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
-	linux-console@vger.kernel.org, greg@kroah.com,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <nacc@us.ibm.com>
+Date: Thu, 19 May 2011 10:46:25 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/8] powerpc: override dma_get_required_mask by platform
+	hook and ops
+Message-ID: <20110519174625.GA3338@us.ibm.com>
+References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
+	<1305152704-4864-6-git-send-email-nacc@us.ibm.com>
+	<1305791036.7481.52.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1305791036.7481.52.camel@pasglop>
+Cc: cbe-oss-dev@lists.ozlabs.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Arnd Bergmann <arnd@arndb.de>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 19 May 2011 11:31:32 -0500
-Timur Tabi <timur@freescale.com> wrote:
+On 19.05.2011 [17:43:56 +1000], Benjamin Herrenschmidt wrote:
+> On Wed, 2011-05-11 at 15:25 -0700, Nishanth Aravamudan wrote:
+> > From: Milton Miller <miltonm@bga.com>
+> > 
+> > The hook dma_get_required_mask is supposed to return the mask required
+> > by the platform to operate efficently.  The generic version of
+> > dma_get_required_mask in driver/base/platform.c returns a mask based
+> > only on max_pfn.  However, this is likely too big for iommu systems
+> > and could be too small for platforms that require a dma offset or have
+> > a secondary window at a high offset.
+> 
+> The result of those 3 patches doesn't build on top of my current tree,
+> the generic dma_ops lacks the dma_get_required_mask hook. I'll have a
+> look again after the merge window.
 
-> Alan Cox wrote:
-> > You really also need a hangup method so vhangup() does the right thing
-> > and you can securely do logins etc and sessions on your console. As
-> > you've got no hardware entangled in this and you already use tty_port
-> > helpers the hangup helper will do the work for you.
-> 
-> So all I need is this?
-> 
-> static void ehv_bc_tty_hangup(struct tty_struct *ttys)
-> {
-> 	struct ehv_bc_data *bc = ttys->driver_data;
-> 
-> 	tty_port_hangup(&bc->port);
-> }
-> 
-> I've noticed that some drivers flush their transmit buffers before calling
-> tty_port_hangup(), but some others don't.  Should I do this too?  I don't know
-> if hangup should be as quick as possible.
+Hrm, I think it's because for whatever reason [1] I forgot to cc you on 6/8?
 
-Doesn't matter too much. If you can flush it quickly then do so
+https://lkml.org/lkml/2011/5/11/473
+
+-Nish
+
+[1] AKA over-reliance on get_maintainer.pl and lack of mental oversight!
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
