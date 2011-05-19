@@ -1,16 +1,21 @@
-Return-Path: <B11780@freescale.com>
-Subject: Re: [linuxppc-dev] [PATCH][upstream] powerpc:Integrated Flash
-	controller device tree bindings
-MIME-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1305787103-25105-1-git-send-email-Dipen.Dudhat@freescale.com>
-Date: Thu, 19 May 2011 01:41:32 -0500
-Message-ID: <30A87988-8F77-4127-B6FB-266C14A07B34@freescale.com>
-References: <1305787103-25105-1-git-send-email-Dipen.Dudhat@freescale.com>
-To: Dipen Dudhat <Dipen.Dudhat@freescale.com>
-Cc: linuxppc-dev@linux.freescale.net, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2DF6BB6F80
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 16:57:09 +1000 (EST)
+Subject: Re: [PATCH 19/37] powerpc: consolidate ipi message mux and demux
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <b9e2ff2d16e4647af0047ddbf6146b6c7433ce6c.1305092637.git.miltonm@bga.com>
+References: <cover.1305092637.git.miltonm@bga.com>
+	<b9e2ff2d16e4647af0047ddbf6146b6c7433ce6c.1305092637.git.miltonm@bga.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 May 2011 16:57:02 +1000
+Message-ID: <1305788222.7481.46.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2011-05-11 at 00:29 -0500, Milton Miller wrote:
+> Consolidate the mux and demux of ipi messages into smp.c and call
+> a new smp_ops callback to actually trigger the ipi.
 
-On May 19, 2011, at 1:38 AM, Dipen Dudhat wrote:
+ .../...
 
-> Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
-> Acked-By: Scott Wood <scottwood@freescale.com>
-> ---
-> Based upon =
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git =
-(branch -> master)
-> .../devicetree/bindings/powerpc/fsl/ifc.txt        |   76 =
-++++++++++++++++++++
-> 1 files changed, 76 insertions(+), 0 deletions(-)
-> create mode 100644 =
-Documentation/devicetree/bindings/powerpc/fsl/ifc.txt
+I'm merging the whole series.  I had to do some fixups to this one and
+the one adding the CONFIG option, missing cell & wsp bits among others,
+but mostly trivial.
 
-applied to next
-
-- k=
+Cheers,
+Ben.
