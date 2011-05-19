@@ -1,22 +1,55 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5B4D0B718C
+Return-Path: <wad@chromium.org>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9119FB718C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 04:35:04 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: <kumar.gala@freescale.com>, <benh@kernel.crashing.org>, <greg@kroah.com>,
-	<akpm@kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, <linux-console@vger.kernel.org>,
-	<alan@lxorguk.ukuu.org.uk>, <arnd@arndb.de>
-Subject: [PATCH 6/7] [v2] tty/powerpc: introduce the ePAPR embedded hypervisor
-	byte channel driver
-Date: Thu, 19 May 2011 13:34:52 -0500
-Message-ID: <1305830092-20104-1-git-send-email-timur@freescale.com>
+	Fri, 20 May 2011 07:05:21 +1000 (EST)
+Received: by fxm5 with SMTP id 5so2597592fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 14:05:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1305807728.11267.25.camel@gandalf.stny.rr.com>
+References: <20110513125452.GD3924@elte.hu> <1305292132.2466.26.camel@twins>
+	<20110513131800.GA7883@elte.hu> <1305294935.2466.64.camel@twins>
+	<20110513145737.GC32688@elte.hu>
+	<1305563026.5456.19.camel@gandalf.stny.rr.com>
+	<20110516165249.GB10929@elte.hu>
+	<1305565422.5456.21.camel@gandalf.stny.rr.com>
+	<20110517124212.GB21441@elte.hu>
+	<1305637528.5456.723.camel@gandalf.stny.rr.com>
+	<20110517131902.GF21441@elte.hu>
+	<BANLkTikBK3-KZ10eErQ6Eex_L6Qe2aZang@mail.gmail.com>
+	<1305807728.11267.25.camel@gandalf.stny.rr.com>
+Date: Thu, 19 May 2011 16:05:14 -0500
+Message-ID: <BANLkTiki8aQJbFkKOFC+s6xAEiuVyMM5MQ@mail.gmail.com>
+Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
+	filtering
+From: Will Drewry <wad@chromium.org>
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+	James Morris <jmorris@namei.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
+	"Serge E. Hallyn" <serge@hallyn.com>, Tejun Heo <tj@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Eric Paris <eparis@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,1002 +59,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ePAPR embedded hypervisor specification provides an API for "byte
-channels", which are serial-like virtual devices for sending and receiving
-streams of bytes.  This driver provides Linux kernel support for byte
-channels via three distinct interfaces:
+On Thu, May 19, 2011 at 7:22 AM, Steven Rostedt <rostedt@goodmis.org> wrote=
+:
+> On Wed, 2011-05-18 at 21:07 -0700, Will Drewry wrote:
+>
+>> Do event_* that return non-void exist in the tree at all now? =A0I've
+>> looked at the various tracepoint macros as well as some of the other
+>> handlers (trace_function, perf_tp_event, etc) and I'm not seeing any
+>> places where a return value is honored nor could be. =A0At best, the
+>> perf_tp_event can be short-circuited it in the hlist_for_each, but
+>> it'd still need a way to bubble up a failure and result in not calling
+>> the trace/event that the hook precedes.
+>
+> No, none of the current trace hooks have return values. That was what I
+> was talking about how to implement in my previous emails.
 
-1) An early-console (udbg) driver.  This provides early console output
-through a byte channel.  The byte channel handle must be specified in a
-Kconfig option.
+Led on by complete ignorance, I think I'm finally beginning to untwist
+the different pieces of the tracing infrastructure.  Unfortunately,
+that means I took a few wrong turns along the way...
 
-2) A normal console driver.  Output is sent to the byte channel designated
-for stdout in the device tree.  The console driver is for handling kernel
-printk calls.
+I think function tracing looks something like this:
 
-3) A tty driver, which is used to handle user-space input and output.  The
-byte channel used for the console is designated as the default tty.
+ftrace_call has been injected into at a specific callsite.  Upon hit:
+1. ftrace_call triggers
+2. does some checks then calls ftrace_trace_function (via mcount instrs)
+3. ftrace_trace_function may be a single func or a list. For a list it
+will be: ftrace_list_func
+4. ftrace_list_func calls each registered hook for that function in a
+while loop ignoring return values
+5. registered hook funcs may then track the call, farm it out to
+specific sub-handlers, etc.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/include/asm/udbg.h |    1 +
- arch/powerpc/kernel/udbg.c      |    2 +
- drivers/tty/Kconfig             |   33 ++
- drivers/tty/Makefile            |    1 +
- drivers/tty/ehv_bytechan.c      |  888 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 925 insertions(+), 0 deletions(-)
- create mode 100644 drivers/tty/ehv_bytechan.c
+This seems to be a red herring for my use case :/ though this helped
+me understand your back and forth (Ingo & Steve) regarding dynamic
+versus explicit events.
 
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index 11ae699..bb9f6b1 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -52,6 +52,7 @@ extern void __init udbg_init_44x_as1(void);
- extern void __init udbg_init_40x_realmode(void);
- extern void __init udbg_init_cpm(void);
- extern void __init udbg_init_usbgecko(void);
-+extern void __init udbg_init_ehv_bc(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-index e39cad8..d117368 100644
---- a/arch/powerpc/kernel/udbg.c
-+++ b/arch/powerpc/kernel/udbg.c
-@@ -62,6 +62,8 @@ void __init udbg_early_init(void)
- 	udbg_init_cpm();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_USBGECKO)
- 	udbg_init_usbgecko();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_EHV_BC)
-+	udbg_init_ehv_bc();
- #endif
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG
-diff --git a/drivers/tty/Kconfig b/drivers/tty/Kconfig
-index 3fd7199..9fe0212 100644
---- a/drivers/tty/Kconfig
-+++ b/drivers/tty/Kconfig
-@@ -319,3 +319,36 @@ config N_GSM
- 	  This line discipline provides support for the GSM MUX protocol and
- 	  presents the mux as a set of 61 individual tty devices.
- 
-+config PPC_EPAPR_HV_BYTECHAN
-+	tristate "ePAPR hypervisor byte channel driver"
-+	depends on PPC
-+	help
-+	  This driver creates /dev entries for each ePAPR hypervisor byte
-+	  channel, thereby allowing applications to communicate with byte
-+	  channels as if they were serial ports.
-+
-+config PPC_EARLY_DEBUG_EHV_BC
-+	bool "Early console (udbg) support for ePAPR hypervisors"
-+	depends on PPC_EPAPR_HV_BYTECHAN
-+	help
-+	  Select this option to enable early console (a.k.a. "udbg") support
-+	  via an ePAPR byte channel.  You also need to choose the byte channel
-+	  handle below.
-+
-+config PPC_EARLY_DEBUG_EHV_BC_HANDLE
-+	int "Byte channel handle for early console (udbg)"
-+	depends on PPC_EARLY_DEBUG_EHV_BC
-+	default 0
-+	help
-+	  If you want early console (udbg) output through a byte channel,
-+	  specify the handle of the byte channel to use.
-+
-+	  For this to work, the byte channel driver must be compiled
-+	  in-kernel, not as a module.
-+
-+	  Note that only one early console driver can be enabled, so don't
-+	  enable any others if you enable this one.
-+
-+	  If the number you specify is not a valid byte channel handle, then
-+	  there simply will be no early console output.  This is true also
-+	  if you don't boot under a hypervisor at all.
-diff --git a/drivers/tty/Makefile b/drivers/tty/Makefile
-index 690522f..4afebd2 100644
---- a/drivers/tty/Makefile
-+++ b/drivers/tty/Makefile
-@@ -24,5 +24,6 @@ obj-$(CONFIG_ROCKETPORT)	+= rocket.o
- obj-$(CONFIG_SYNCLINK_GT)	+= synclink_gt.o
- obj-$(CONFIG_SYNCLINKMP)	+= synclinkmp.o
- obj-$(CONFIG_SYNCLINK)		+= synclink.o
-+obj-$(CONFIG_PPC_EPAPR_HV_BYTECHAN) += ehv_bytechan.o
- 
- obj-y += ipwireless/
-diff --git a/drivers/tty/ehv_bytechan.c b/drivers/tty/ehv_bytechan.c
-new file mode 100644
-index 0000000..e67f70b
---- /dev/null
-+++ b/drivers/tty/ehv_bytechan.c
-@@ -0,0 +1,888 @@
-+/* ePAPR hypervisor byte channel device driver
-+ *
-+ * Copyright 2009-2011 Freescale Semiconductor, Inc.
-+ *
-+ * Author: Timur Tabi <timur@freescale.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ *
-+ * This driver support three distinct interfaces, all of which are related to
-+ * ePAPR hypervisor byte channels.
-+ *
-+ * 1) An early-console (udbg) driver.  This provides early console output
-+ * through a byte channel.  The byte channel handle must be specified in a
-+ * Kconfig option.
-+ *
-+ * 2) A normal console driver.  Output is sent to the byte channel designated
-+ * for stdout in the device tree.  The console driver is for handling kernel
-+ * printk calls.
-+ *
-+ * 3) A tty driver, which is used to handle user-space input and output.  The
-+ * byte channel used for the console is designated as the default tty.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/err.h>
-+#include <linux/interrupt.h>
-+#include <linux/fs.h>
-+#include <linux/poll.h>
-+#include <asm/epapr_hcalls.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/cdev.h>
-+#include <linux/console.h>
-+#include <linux/tty.h>
-+#include <linux/tty_flip.h>
-+#include <linux/circ_buf.h>
-+#include <asm/udbg.h>
-+
-+/* The size of the transmit circular buffer.  This must be a power of two. */
-+#define BUF_SIZE	2048
-+
-+/* Per-byte channel private data */
-+struct ehv_bc_data {
-+	struct device *dev;
-+	struct tty_port port;
-+	uint32_t handle;
-+	unsigned int rx_irq;
-+	unsigned int tx_irq;
-+
-+	spinlock_t lock;	/* lock for transmit buffer */
-+	unsigned char buf[BUF_SIZE];	/* transmit circular buffer */
-+	unsigned int head;	/* circular buffer head */
-+	unsigned int tail;	/* circular buffer tail */
-+
-+	int tx_irq_enabled;	/* true == TX interrupt is enabled */
-+};
-+
-+/* Array of byte channel objects */
-+static struct ehv_bc_data *bcs;
-+
-+/* Byte channel handle for stdout (and stdin), taken from device tree */
-+static unsigned int stdout_bc;
-+
-+/* Virtual IRQ for the byte channel handle for stdin, taken from device tree */
-+static unsigned int stdout_irq;
-+
-+/**************************** SUPPORT FUNCTIONS ****************************/
-+
-+/*
-+ * Enable the transmit interrupt
-+ *
-+ * Unlike a serial device, byte channels have no mechanism for disabling their
-+ * own receive or transmit interrupts.  To emulate that feature, we toggle
-+ * the IRQ in the kernel.
-+ *
-+ * We cannot just blindly call enable_irq() or disable_irq(), because these
-+ * calls are reference counted.  This means that we cannot call enable_irq()
-+ * if interrupts are already enabled.  This can happen in two situations:
-+ *
-+ * 1. The tty layer makes two back-to-back calls to ehv_bc_tty_write()
-+ * 2. A transmit interrupt occurs while executing ehv_bc_tx_dequeue()
-+ *
-+ * To work around this, we keep a flag to tell us if the IRQ is enabled or not.
-+ */
-+static void enable_tx_interrupt(struct ehv_bc_data *bc)
-+{
-+	if (!bc->tx_irq_enabled) {
-+		enable_irq(bc->tx_irq);
-+		bc->tx_irq_enabled = 1;
-+	}
-+}
-+
-+static void disable_tx_interrupt(struct ehv_bc_data *bc)
-+{
-+	if (bc->tx_irq_enabled) {
-+		disable_irq_nosync(bc->tx_irq);
-+		bc->tx_irq_enabled = 0;
-+	}
-+}
-+
-+/*
-+ * find the byte channel handle to use for the console
-+ *
-+ * The byte channel to be used for the console is specified via a "stdout"
-+ * property in the /chosen node.
-+ *
-+ * For compatible with legacy device trees, we also look for a "stdout" alias.
-+ */
-+static int find_console_handle(void)
-+{
-+	struct device_node *np, *np2;
-+	const char *sprop = NULL;
-+	const uint32_t *iprop;
-+
-+	np = of_find_node_by_path("/chosen");
-+	if (np)
-+		sprop = of_get_property(np, "stdout-path", NULL);
-+
-+	if (!np || !sprop) {
-+		of_node_put(np);
-+		np = of_find_node_by_name(NULL, "aliases");
-+		if (np)
-+			sprop = of_get_property(np, "stdout", NULL);
-+	}
-+
-+	if (!sprop) {
-+		of_node_put(np);
-+		return 0;
-+	}
-+
-+	/* We don't care what the aliased node is actually called.  We only
-+	 * care if it's compatible with "epapr,hv-byte-channel", because that
-+	 * indicates that it's a byte channel node.  We use a temporary
-+	 * variable, 'np2', because we can't release 'np' until we're done with
-+	 * 'sprop'.
-+	 */
-+	np2 = of_find_node_by_path(sprop);
-+	of_node_put(np);
-+	np = np2;
-+	if (!np) {
-+		pr_warning("ehv-bc: stdout node '%s' does not exist\n", sprop);
-+		return 0;
-+	}
-+
-+	/* Is it a byte channel? */
-+	if (!of_device_is_compatible(np, "epapr,hv-byte-channel")) {
-+		of_node_put(np);
-+		return 0;
-+	}
-+
-+	stdout_irq = irq_of_parse_and_map(np, 0);
-+	if (stdout_irq == NO_IRQ) {
-+		pr_err("ehv-bc: no 'interrupts' property in %s node\n", sprop);
-+		of_node_put(np);
-+		return 0;
-+	}
-+
-+	/*
-+	 * The 'hv-handle' property contains the handle for this byte channel.
-+	 */
-+	iprop = of_get_property(np, "hv-handle", NULL);
-+	if (!iprop) {
-+		pr_err("ehv-bc: no 'hv-handle' property in %s node\n",
-+		       np->name);
-+		of_node_put(np);
-+		return 0;
-+	}
-+	stdout_bc = be32_to_cpu(*iprop);
-+
-+	of_node_put(np);
-+	return 1;
-+}
-+
-+/*************************** EARLY CONSOLE DRIVER ***************************/
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_EHV_BC
-+
-+/*
-+ * send a byte to a byte channel, wait if necessary
-+ *
-+ * This function sends a byte to a byte channel, and it waits and
-+ * retries if the byte channel is full.  It returns if the character
-+ * has been sent, or if some error has occurred.
-+ *
-+ */
-+static void byte_channel_spin_send(const char data)
-+{
-+	int ret, count;
-+
-+	do {
-+		count = 1;
-+		ret = ev_byte_channel_send(CONFIG_PPC_EARLY_DEBUG_EHV_BC_HANDLE,
-+					   &count, &data);
-+	} while (ret == EV_EAGAIN);
-+}
-+
-+/*
-+ * The udbg subsystem calls this function to display a single character.
-+ * We convert CR to a CR/LF.
-+ */
-+static void ehv_bc_udbg_putc(char c)
-+{
-+	if (c == '\n')
-+		byte_channel_spin_send('\r');
-+
-+	byte_channel_spin_send(c);
-+}
-+
-+/*
-+ * early console initialization
-+ *
-+ * PowerPC kernels support an early printk console, also known as udbg.
-+ * This function must be called via the ppc_md.init_early function pointer.
-+ * At this point, the device tree has been unflattened, so we can obtain the
-+ * byte channel handle for stdout.
-+ *
-+ * We only support displaying of characters (putc).  We do not support
-+ * keyboard input.
-+ */
-+void __init udbg_init_ehv_bc(void)
-+{
-+	unsigned int rx_count, tx_count;
-+	unsigned int ret;
-+
-+	/* Check if we're running as a guest of a hypervisor */
-+	if (!(mfmsr() & MSR_GS))
-+		return;
-+
-+	/* Verify the byte channel handle */
-+	ret = ev_byte_channel_poll(CONFIG_PPC_EARLY_DEBUG_EHV_BC_HANDLE,
-+				   &rx_count, &tx_count);
-+	if (ret)
-+		return;
-+
-+	udbg_putc = ehv_bc_udbg_putc;
-+	register_early_udbg_console();
-+
-+	udbg_printf("ehv-bc: early console using byte channel handle %u\n",
-+		    CONFIG_PPC_EARLY_DEBUG_EHV_BC_HANDLE);
-+}
-+
-+#endif
-+
-+/****************************** CONSOLE DRIVER ******************************/
-+
-+static struct tty_driver *ehv_bc_driver;
-+
-+/*
-+ * Byte channel console sending worker function.
-+ *
-+ * For consoles, if the output buffer is full, we should just spin until it
-+ * clears.
-+ */
-+static int ehv_bc_console_byte_channel_send(unsigned int handle, const char *s,
-+			     unsigned int count)
-+{
-+	unsigned int len;
-+	int ret = 0;
-+
-+	while (count) {
-+		len = min_t(unsigned int, count, EV_BYTE_CHANNEL_MAX_BYTES);
-+		do {
-+			ret = ev_byte_channel_send(handle, &len, s);
-+		} while (ret == EV_EAGAIN);
-+		count -= len;
-+		s += len;
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ * write a string to the console
-+ *
-+ * This function gets called to write a string from the kernel, typically from
-+ * a printk().  This function spins until all data is written.
-+ *
-+ * We copy the data to a temporary buffer because we need to insert a \r in
-+ * front of every \n.  It's more efficient to copy the data to the buffer than
-+ * it is to make multiple hcalls for each character or each newline.
-+ */
-+static void ehv_bc_console_write(struct console *co, const char *s,
-+				 unsigned int count)
-+{
-+	unsigned int handle = (unsigned int)co->data;
-+	char s2[EV_BYTE_CHANNEL_MAX_BYTES];
-+	unsigned int i, j = 0;
-+	char c;
-+
-+	for (i = 0; i < count; i++) {
-+		c = *s++;
-+
-+		if (c == '\n')
-+			s2[j++] = '\r';
-+
-+		s2[j++] = c;
-+		if (j >= (EV_BYTE_CHANNEL_MAX_BYTES - 1)) {
-+			if (ehv_bc_console_byte_channel_send(handle, s2, j))
-+				return;
-+			j = 0;
-+		}
-+	}
-+
-+	if (j)
-+		ehv_bc_console_byte_channel_send(handle, s2, j);
-+}
-+
-+/*
-+ * When /dev/console is opened, the kernel iterates the console list looking
-+ * for one with ->device and then calls that method. On success, it expects
-+ * the passed-in int* to contain the minor number to use.
-+ */
-+static struct tty_driver *ehv_bc_console_device(struct console *co, int *index)
-+{
-+	*index = co->index;
-+
-+	return ehv_bc_driver;
-+}
-+
-+static struct console ehv_bc_console = {
-+	.name		= "ttyEHV",
-+	.write		= ehv_bc_console_write,
-+	.device		= ehv_bc_console_device,
-+	.flags		= CON_PRINTBUFFER | CON_ENABLED,
-+};
-+
-+/*
-+ * Console initialization
-+ *
-+ * This is the first function that is called after the device tree is
-+ * available, so here is where we determine the byte channel handle and IRQ for
-+ * stdout/stdin, even though that information is used by the tty and character
-+ * drivers.
-+ */
-+static int __init ehv_bc_console_init(void)
-+{
-+	if (!find_console_handle()) {
-+		pr_debug("ehv-bc: stdout is not a byte channel\n");
-+		return -ENODEV;
-+	}
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_EHV_BC
-+	/* Print a friendly warning if the user chose the wrong byte channel
-+	 * handle for udbg.
-+	 */
-+	if (stdout_bc != CONFIG_PPC_EARLY_DEBUG_EHV_BC_HANDLE)
-+		pr_warning("ehv-bc: udbg handle %u is not the stdout handle\n",
-+			   CONFIG_PPC_EARLY_DEBUG_EHV_BC_HANDLE);
-+#endif
-+
-+	ehv_bc_console.data = (void *)stdout_bc;
-+
-+	/* add_preferred_console() must be called before register_console(),
-+	   otherwise it won't work.  However, we don't want to enumerate all the
-+	   byte channels here, either, since we only care about one. */
-+
-+	add_preferred_console(ehv_bc_console.name, ehv_bc_console.index, NULL);
-+	register_console(&ehv_bc_console);
-+
-+	pr_info("ehv-bc: registered console driver for byte channel %u\n",
-+		stdout_bc);
-+
-+	return 0;
-+}
-+console_initcall(ehv_bc_console_init);
-+
-+/******************************** TTY DRIVER ********************************/
-+
-+/*
-+ * byte channel receive interupt handler
-+ *
-+ * This ISR is called whenever data is available on a byte channel.
-+ */
-+static irqreturn_t ehv_bc_tty_rx_isr(int irq, void *data)
-+{
-+	struct ehv_bc_data *bc = data;
-+	struct tty_struct *ttys = tty_port_tty_get(&bc->port);
-+	unsigned int rx_count, tx_count, len;
-+	int count;
-+	char buffer[EV_BYTE_CHANNEL_MAX_BYTES];
-+	int ret;
-+
-+	/* ttys could be NULL during a hangup */
-+	if (!ttys)
-+		return IRQ_HANDLED;
-+
-+	/* Find out how much data needs to be read, and then ask the TTY layer
-+	 * if it can handle that much.  We want to ensure that every byte we
-+	 * read from the byte channel will be accepted by the TTY layer.
-+	 */
-+	ev_byte_channel_poll(bc->handle, &rx_count, &tx_count);
-+	count = tty_buffer_request_room(ttys, rx_count);
-+
-+	/* 'count' is the maximum amount of data the TTY layer can accept at
-+	 * this time.  However, during testing, I was never able to get 'count'
-+	 * to be less than 'rx_count'.  I'm not sure whether I'm calling it
-+	 * correctly.
-+	 */
-+
-+	while (count > 0) {
-+		len = min_t(unsigned int, count, sizeof(buffer));
-+
-+		/* Read some data from the byte channel.  This function will
-+		 * never return more than EV_BYTE_CHANNEL_MAX_BYTES bytes.
-+		 */
-+		ev_byte_channel_receive(bc->handle, &len, buffer);
-+
-+		/* 'len' is now the amount of data that's been received. 'len'
-+		 * can't be zero, and most likely it's equal to one.
-+		 */
-+
-+		/* Pass the received data to the tty layer. */
-+		ret = tty_insert_flip_string(ttys, buffer, len);
-+
-+		/* 'ret' is the number of bytes that the TTY layer accepted.
-+		 * If it's not equal to 'len', then it means the buffer is
-+		 * full, which should never happen.  If it does happen, we can
-+		 * exit gracefully, but we drop the last 'len - ret' characters
-+		 * that we read from the byte channel.
-+		 */
-+		if (ret != len)
-+			break;
-+
-+		count -= len;
-+	}
-+
-+	/* Tell the tty layer that we're done. */
-+	tty_flip_buffer_push(ttys);
-+
-+	tty_kref_put(ttys);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*
-+ * dequeue the transmit buffer to the hypervisor
-+ *
-+ * This function, which can be called in interrupt context, dequeues as much
-+ * data as possible from the transmit buffer to the byte channel.
-+ */
-+static void ehv_bc_tx_dequeue(struct ehv_bc_data *bc)
-+{
-+	unsigned int count;
-+	unsigned int len, ret;
-+	unsigned long flags;
-+
-+	do {
-+		spin_lock_irqsave(&bc->lock, flags);
-+		len = min_t(unsigned int,
-+			    CIRC_CNT_TO_END(bc->head, bc->tail, BUF_SIZE),
-+			    EV_BYTE_CHANNEL_MAX_BYTES);
-+
-+		ret = ev_byte_channel_send(bc->handle, &len, bc->buf + bc->tail);
-+
-+		/* 'len' is valid only if the return code is 0 or EV_EAGAIN */
-+		if (!ret || (ret == EV_EAGAIN))
-+			bc->tail = (bc->tail + len) & (BUF_SIZE - 1);
-+
-+		count = CIRC_CNT(bc->head, bc->tail, BUF_SIZE);
-+		spin_unlock_irqrestore(&bc->lock, flags);
-+	} while (count && !ret);
-+
-+	spin_lock_irqsave(&bc->lock, flags);
-+	if (CIRC_CNT(bc->head, bc->tail, BUF_SIZE))
-+		/*
-+		 * If we haven't emptied the buffer, then enable the TX IRQ.
-+		 * We'll get an interrupt when there's more room in the
-+		 * hypervisor's output buffer.
-+		 */
-+		enable_tx_interrupt(bc);
-+	else
-+		disable_tx_interrupt(bc);
-+	spin_unlock_irqrestore(&bc->lock, flags);
-+}
-+
-+/*
-+ * byte channel transmit interupt handler
-+ *
-+ * This ISR is called whenever space becomes available for transmitting
-+ * characters on a byte channel.
-+ */
-+static irqreturn_t ehv_bc_tty_tx_isr(int irq, void *data)
-+{
-+	struct ehv_bc_data *bc = data;
-+	struct tty_struct *ttys = tty_port_tty_get(&bc->port);
-+
-+	ehv_bc_tx_dequeue(bc);
-+	if (ttys) {
-+		tty_wakeup(ttys);
-+		tty_kref_put(ttys);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*
-+ * This function is called when the tty layer has data for us send.  We store
-+ * the data first in a circular buffer, and then dequeue as much of that data
-+ * as possible.
-+ *
-+ * We don't need to worry about whether there is enough room in the buffer for
-+ * all the data.  The purpose of ehv_bc_tty_write_room() is to tell the tty
-+ * layer how much data it can safely send to us.  We guarantee that
-+ * ehv_bc_tty_write_room() will never lie, so the tty layer will never send us
-+ * too much data.
-+ */
-+static int ehv_bc_tty_write(struct tty_struct *ttys, const unsigned char *s,
-+			    int count)
-+{
-+	struct ehv_bc_data *bc = ttys->driver_data;
-+	unsigned long flags;
-+	unsigned int len;
-+	unsigned int written = 0;
-+
-+	while (1) {
-+		spin_lock_irqsave(&bc->lock, flags);
-+		len = CIRC_SPACE_TO_END(bc->head, bc->tail, BUF_SIZE);
-+		if (count < len)
-+			len = count;
-+		if (len) {
-+			memcpy(bc->buf + bc->head, s, len);
-+			bc->head = (bc->head + len) & (BUF_SIZE - 1);
-+		}
-+		spin_unlock_irqrestore(&bc->lock, flags);
-+		if (!len)
-+			break;
-+
-+		s += len;
-+		count -= len;
-+		written += len;
-+	}
-+
-+	ehv_bc_tx_dequeue(bc);
-+
-+	return written;
-+}
-+
-+/*
-+ * This function can be called multiple times for a given tty_struct, which is
-+ * why we initialize bc->ttys in ehv_bc_tty_port_activate() instead.
-+ *
-+ * The tty layer will still call this function even if the device was not
-+ * registered (i.e. tty_register_device() was not called).  This happens
-+ * because tty_register_device() is optional and some legacy drivers don't
-+ * use it.  So we need to check for that.
-+ */
-+static int ehv_bc_tty_open(struct tty_struct *ttys, struct file *filp)
-+{
-+	struct ehv_bc_data *bc = &bcs[ttys->index];
-+
-+	if (!bc->dev)
-+		return -ENODEV;
-+
-+	return tty_port_open(&bc->port, ttys, filp);
-+}
-+
-+/*
-+ * Amazingly, if ehv_bc_tty_open() returns an error code, the tty layer will
-+ * still call this function to close the tty device.  So we can't assume that
-+ * the tty port has been initialized.
-+ */
-+static void ehv_bc_tty_close(struct tty_struct *ttys, struct file *filp)
-+{
-+	struct ehv_bc_data *bc = &bcs[ttys->index];
-+
-+	if (bc->dev)
-+		tty_port_close(&bc->port, ttys, filp);
-+}
-+
-+/*
-+ * Return the amount of space in the output buffer
-+ *
-+ * This is actually a contract between the driver and the tty layer outlining
-+ * how much write room the driver can guarantee will be sent OR BUFFERED.  This
-+ * driver MUST honor the return value.
-+ */
-+static int ehv_bc_tty_write_room(struct tty_struct *ttys)
-+{
-+	struct ehv_bc_data *bc = ttys->driver_data;
-+	unsigned long flags;
-+	int count;
-+
-+	spin_lock_irqsave(&bc->lock, flags);
-+	count = CIRC_SPACE(bc->head, bc->tail, BUF_SIZE);
-+	spin_unlock_irqrestore(&bc->lock, flags);
-+
-+	return count;
-+}
-+
-+/*
-+ * Stop sending data to the tty layer
-+ *
-+ * This function is called when the tty layer's input buffers are getting full,
-+ * so the driver should stop sending it data.  The easiest way to do this is to
-+ * disable the RX IRQ, which will prevent ehv_bc_tty_rx_isr() from being
-+ * called.
-+ *
-+ * The hypervisor will continue to queue up any incoming data.  If there is any
-+ * data in the queue when the RX interrupt is enabled, we'll immediately get an
-+ * RX interrupt.
-+ */
-+static void ehv_bc_tty_throttle(struct tty_struct *ttys)
-+{
-+	struct ehv_bc_data *bc = ttys->driver_data;
-+
-+	disable_irq(bc->rx_irq);
-+}
-+
-+/*
-+ * Resume sending data to the tty layer
-+ *
-+ * This function is called after previously calling ehv_bc_tty_throttle().  The
-+ * tty layer's input buffers now have more room, so the driver can resume
-+ * sending it data.
-+ */
-+static void ehv_bc_tty_unthrottle(struct tty_struct *ttys)
-+{
-+	struct ehv_bc_data *bc = ttys->driver_data;
-+
-+	/* If there is any data in the queue when the RX interrupt is enabled,
-+	 * we'll immediately get an RX interrupt.
-+	 */
-+	enable_irq(bc->rx_irq);
-+}
-+
-+static void ehv_bc_tty_hangup(struct tty_struct *ttys)
-+{
-+	struct ehv_bc_data *bc = ttys->driver_data;
-+
-+	ehv_bc_tx_dequeue(bc);
-+	tty_port_hangup(&bc->port);
-+}
-+
-+/*
-+ * TTY driver operations
-+ *
-+ * If we could ask the hypervisor how much data is still in the TX buffer, or
-+ * at least how big the TX buffers are, then we could implement the
-+ * .wait_until_sent and .chars_in_buffer functions.
-+ */
-+static const struct tty_operations ehv_bc_ops = {
-+	.open		= ehv_bc_tty_open,
-+	.close		= ehv_bc_tty_close,
-+	.write		= ehv_bc_tty_write,
-+	.write_room	= ehv_bc_tty_write_room,
-+	.throttle	= ehv_bc_tty_throttle,
-+	.unthrottle	= ehv_bc_tty_unthrottle,
-+	.hangup		= ehv_bc_tty_hangup,
-+};
-+
-+/*
-+ * initialize the TTY port
-+ *
-+ * This function will only be called once, no matter how many times
-+ * ehv_bc_tty_open() is called.  That's why we register the ISR here, and also
-+ * why we initialize tty_struct-related variables here.
-+ */
-+static int ehv_bc_tty_port_activate(struct tty_port *port,
-+				    struct tty_struct *ttys)
-+{
-+	struct ehv_bc_data *bc = container_of(port, struct ehv_bc_data, port);
-+	int ret;
-+
-+	ttys->driver_data = bc;
-+
-+	ret = request_irq(bc->rx_irq, ehv_bc_tty_rx_isr, 0, "ehv-bc", bc);
-+	if (ret < 0) {
-+		dev_err(bc->dev, "could not request rx irq %u (ret=%i)\n",
-+		       bc->rx_irq, ret);
-+		return ret;
-+	}
-+
-+	/* request_irq also enables the IRQ */
-+	bc->tx_irq_enabled = 1;
-+
-+	ret = request_irq(bc->tx_irq, ehv_bc_tty_tx_isr, 0, "ehv-bc", bc);
-+	if (ret < 0) {
-+		dev_err(bc->dev, "could not request tx irq %u (ret=%i)\n",
-+		       bc->tx_irq, ret);
-+		free_irq(bc->rx_irq, bc);
-+		return ret;
-+	}
-+
-+	/* The TX IRQ is enabled only when we can't write all the data to the
-+	 * byte channel at once, so by default it's disabled.
-+	 */
-+	disable_tx_interrupt(bc);
-+
-+	return 0;
-+}
-+
-+static void ehv_bc_tty_port_shutdown(struct tty_port *port)
-+{
-+	struct ehv_bc_data *bc = container_of(port, struct ehv_bc_data, port);
-+
-+	free_irq(bc->tx_irq, bc);
-+	free_irq(bc->rx_irq, bc);
-+}
-+
-+static const struct tty_port_operations ehv_bc_tty_port_ops = {
-+	.activate = ehv_bc_tty_port_activate,
-+	.shutdown = ehv_bc_tty_port_shutdown,
-+};
-+
-+static int __devinit ehv_bc_tty_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct ehv_bc_data *bc;
-+	const uint32_t *iprop;
-+	unsigned int handle;
-+	int ret;
-+	static unsigned int index = 1;
-+	unsigned int i;
-+
-+	iprop = of_get_property(np, "hv-handle", NULL);
-+	if (!iprop) {
-+		dev_err(&pdev->dev, "no 'hv-handle' property in %s node\n",
-+			np->name);
-+		return -ENODEV;
-+	}
-+
-+	/* We already told the console layer that the index for the console
-+	 * device is zero, so we need to make sure that we use that index when
-+	 * we probe the console byte channel node.
-+	 */
-+	handle = be32_to_cpu(*iprop);
-+	i = (handle == stdout_bc) ? 0 : index++;
-+	bc = &bcs[i];
-+
-+	bc->handle = handle;
-+	bc->head = 0;
-+	bc->tail = 0;
-+	spin_lock_init(&bc->lock);
-+
-+	bc->rx_irq = irq_of_parse_and_map(np, 0);
-+	bc->tx_irq = irq_of_parse_and_map(np, 1);
-+	if ((bc->rx_irq == NO_IRQ) || (bc->tx_irq == NO_IRQ)) {
-+		dev_err(&pdev->dev, "no 'interrupts' property in %s node\n",
-+			np->name);
-+		ret = -ENODEV;
-+		goto error;
-+	}
-+
-+	bc->dev = tty_register_device(ehv_bc_driver, i, &pdev->dev);
-+	if (IS_ERR(bc->dev)) {
-+		ret = PTR_ERR(bc->dev);
-+		dev_err(&pdev->dev, "could not register tty (ret=%i)\n", ret);
-+		goto error;
-+	}
-+
-+	tty_port_init(&bc->port);
-+	bc->port.ops = &ehv_bc_tty_port_ops;
-+
-+	dev_set_drvdata(&pdev->dev, bc);
-+
-+	dev_info(&pdev->dev, "registered /dev/%s%u for byte channel %u\n",
-+		ehv_bc_driver->name, i, bc->handle);
-+
-+	return 0;
-+
-+error:
-+	irq_dispose_mapping(bc->tx_irq);
-+	irq_dispose_mapping(bc->rx_irq);
-+
-+	memset(bc, 0, sizeof(struct ehv_bc_data));
-+	return ret;
-+}
-+
-+static int ehv_bc_tty_remove(struct platform_device *pdev)
-+{
-+	struct ehv_bc_data *bc = dev_get_drvdata(&pdev->dev);
-+
-+	tty_unregister_device(ehv_bc_driver, bc - bcs);
-+
-+	irq_dispose_mapping(bc->tx_irq);
-+	irq_dispose_mapping(bc->rx_irq);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id ehv_bc_tty_of_ids[] = {
-+	{ .compatible = "epapr,hv-byte-channel" },
-+	{}
-+};
-+
-+static struct platform_driver ehv_bc_tty_driver = {
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = "ehv-bc",
-+		.of_match_table = ehv_bc_tty_of_ids,
-+	},
-+	.probe		= ehv_bc_tty_probe,
-+	.remove		= ehv_bc_tty_remove,
-+};
-+
-+/**
-+ * ehv_bc_init - ePAPR hypervisor byte channel driver initialization
-+ *
-+ * This function is called when this module is loaded.
-+ */
-+static int __init ehv_bc_init(void)
-+{
-+	struct device_node *np;
-+	unsigned int count = 0; /* Number of elements in bcs[] */
-+	int ret;
-+
-+	pr_info("ePAPR hypervisor byte channel driver\n");
-+
-+	/* Count the number of byte channels */
-+	for_each_compatible_node(np, NULL, "epapr,hv-byte-channel")
-+		count++;
-+
-+	if (!count)
-+		return -ENODEV;
-+
-+	/* The array index of an element in bcs[] is the same as the tty index
-+	 * for that element.  If you know the address of an element in the
-+	 * array, then you can use pointer math (e.g. "bc - bcs") to get its
-+	 * tty index.
-+	 */
-+	bcs = kzalloc(count * sizeof(struct ehv_bc_data), GFP_KERNEL);
-+	if (!bcs)
-+		return -ENOMEM;
-+
-+	ehv_bc_driver = alloc_tty_driver(count);
-+	if (!ehv_bc_driver) {
-+		ret = -ENOMEM;
-+		goto error;
-+	}
-+
-+	ehv_bc_driver->owner = THIS_MODULE;
-+	ehv_bc_driver->driver_name = "ehv-bc";
-+	ehv_bc_driver->name = ehv_bc_console.name;
-+	ehv_bc_driver->type = TTY_DRIVER_TYPE_CONSOLE;
-+	ehv_bc_driver->subtype = SYSTEM_TYPE_CONSOLE;
-+	ehv_bc_driver->init_termios = tty_std_termios;
-+	ehv_bc_driver->flags = TTY_DRIVER_REAL_RAW | TTY_DRIVER_DYNAMIC_DEV;
-+	tty_set_operations(ehv_bc_driver, &ehv_bc_ops);
-+
-+	ret = tty_register_driver(ehv_bc_driver);
-+	if (ret) {
-+		pr_err("ehv-bc: could not register tty driver (ret=%i)\n", ret);
-+		goto error;
-+	}
-+
-+	ret = platform_driver_register(&ehv_bc_tty_driver);
-+	if (ret) {
-+		pr_err("ehv-bc: could not register platform driver (ret=%i)\n",
-+		       ret);
-+		goto error;
-+	}
-+
-+	return 0;
-+
-+error:
-+	if (ehv_bc_driver) {
-+		tty_unregister_driver(ehv_bc_driver);
-+		put_tty_driver(ehv_bc_driver);
-+	}
-+
-+	kfree(bcs);
-+
-+	return ret;
-+}
-+
-+
-+/**
-+ * ehv_bc_exit - ePAPR hypervisor byte channel driver termination
-+ *
-+ * This function is called when this driver is unloaded.
-+ */
-+static void __exit ehv_bc_exit(void)
-+{
-+	tty_unregister_driver(ehv_bc_driver);
-+	put_tty_driver(ehv_bc_driver);
-+	kfree(bcs);
-+}
-+
-+module_init(ehv_bc_init);
-+module_exit(ehv_bc_exit);
-+
-+MODULE_AUTHOR("Timur Tabi <timur@freescale.com>");
-+MODULE_DESCRIPTION("ePAPR hypervisor byte channel driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.7.3.4
+
+System call tracing is done via kernel/tracepoint.c events fed in via
+arch/[arch]/kernel/ptrace.c where it calls trace_sys_enter.  This
+yields direct sys_enter and sys_exit event sources (and an event class
+to hook up per-system call events).  This means that
+ftrace_syscall_enter() does the event prep prior to doing a filter
+check comparing the ftrace_event object for the given syscall_nr to
+the event data.  perf_sysenter_enter() is similar but it pushes the
+info over to perf_tp_event to be matched not against the global
+syscall event entry, but against any sub-event in the linked list on
+that syscall's event.
+
+Is that roughly an accurate representation of the two?  I wish I
+hadn't gotten distracted along the function path, but at least I
+learned something (and it is relevant to the larger scope of this
+thread's discussion).
+
+
+After doing that digging, it looks like providing hook call
+pre-emption and return value propagation will be a unique and fun task
+for each tracer and event subsystem.  If I look solely at tracepoints,
+a generic change would be to make the trace_##subsys function return
+an int (which I think was the event_vfs_getname proposal?).  The other
+option is to change the trace_sys_enter proto to include a 'int
+*retcode'.
+
+That change would allow the propagation of some sort of policy
+information.  To put it to use, seccomp mode 1 could be implemented on
+top of trace_syscalls.  The following changes would need to happen:
+1. dummy metadata should be inserted for all unhooked system calls
+2. perf_trace_buf_submit would need to return an int or a new
+TRACE_REG_SECCOMP_REGISTER handler would need to be setup in
+syscall_enter_register.
+3. If perf is abused, a "kill/fail_on_discard" bit would be added to
+event->attrs.
+4. perf_trace_buf_submit/perf_tp_event will return 0 for no matches,
+'n' for the number of event matches, and -EACCES/? if a
+'fail_on_discard' event is seen.
+5. perf_syscall_enter would set *retcode =3D perf_trace_buf_submit()'s retc=
+ode
+6. trace_sys_enter() would need to be moved to be the first entry
+arch/../kernel/ptrace.c for incoming syscalls
+7. if trace_sys_enter() yields a negative return code, then
+do_exit(SIGKILL) the process and return.
+
+Entering into seccomp mode 1 would require adding a  "0" filter for
+every system call number (which is why we need a dummy event call for
+them since failing to check the bitmask can't be flagged
+fail_on_discard) with the fail_on_discard bit.  For the three calls
+that are allowed, a '1' filter would be set.
+
+That would roughly implement seccomp mode 1.  It's pretty ugly and the
+fact that every system call that's disallowed has to be blacklisted is
+not ideal.  An alternate model would be to just use the seccomp mode
+as we do today and let secure_computing() handle the return code of "#
+of matches".  If it the # of matches is 0, it terminates. A
+'fail_on_discard' bit then would only be good to stop further
+tracepoint callback evaluation.  This approach would also *almost* nix
+the need to provide dummy syscall hooks.  (Since sigreturn isn't
+hooked on x86 because it uses ptregs fixup, a dummy would still be
+needed to apply a "1" filter to.)
+
+Even with that tweak to move to a whitelist model, the perf event
+evaluation and tracepoint callback ordering is still not guaranteed.
+Without changing tracepoint itself, all other TPs will still execute.
+And for perf events, it'll be first-come-first-serve until a
+fail_on_discard is hit.
+
+After using seccomp mode=3D1 as the sample case to reduce scope, it's
+possible to ignore it for now :) and look at the seccomp-filter/mode=3D2
+case.  The same mechanism could be used to inject more expressive
+filters.  This would be done over the sys_perf_event_open() interface
+assuming the new attr is added to stop perf event list enumeration.
+Assuming a whitelist model, a call to prctl(PR_SET_SECCOMP, 2) would
+be needed (maybe with the ON_EXEC flag option too to mirror the
+event->attr on-exec bit). That would yield the ability to register
+perf events for system calls then use ioctl() to SET_FILTER on them.
+
+Reducing the privileges of the filters after installation could be
+done with another attribute bit like 'set_filter_ands'.  If that is
+also set on the event, and a filter is installed to ensure that
+sys_perf_event_open is blocked, then it should be reasonably sane.
+
+I'd need to add a PERF_EVENT_IOC_GET_FILTER handler to allow
+extracting the settings.
+
+Clearly, I haven't written the code for that yet, though making the
+change for a single platform shouldn't be too much code.
+
+So that leaves me with some questions:
+- Is this the type of reuse that was being encouraged?
+- Does it really make sense to cram this through the perf interface
+and events?  While the changed attributes are innocuous and
+potentially reusable, it seems that a large amount of the perf
+facilities are exposed that could have weird side effects, but I'm
+sure I still don't fully grok the perf infrastructure.
+- Does extending one tracepoint to provide return values via a pointer
+make sense? I'd hesitate to make all tracepoint hooks return an int by
+default.
+- If all tracepoints returned an int, what would the standard value
+look like - or would it need to be per tracepoint impl?
+- How is ambiguity resolved if multiple perf_events are registered for
+a syscall with different filters?  Maybe a 'stop_on_match'? though
+ordering is still a problem then.
+- Is there a way to affect a task-wide change without a seccomp flag
+(or new task_struct entry) via the existing sys_perf_event_open
+syscall?  I considered suggesting a attr bit call 'secure_computing'
+that when an event with the bit is enabled, it automagically forces
+the task into seccomp enforcement mode, but that, again, seemed
+hackish.
+
+While I like the idea of sharing the tracepoints infrastructure and
+the trace_syscalls hooks as well as using a pre-existing interface
+with very minor changes, I'm worried that the complexity of the
+interface and of the infrastructure might undermine the ability to
+continue meeting the desired security goals.  I had originally stayed
+very close to the seccomp world because of how trivial it is to review
+the code and verify its accuracy/effectiveness.  This approach leaves
+a lot of gaps for kernel code to seep through and a fair amount of
+ambiguity in what locked down syscall filters might look like.
+
+To me, the best part of the above is that it shows that even if we go
+with a prctl SET_SECCOMP_FILTER-style interface, it is completely
+certain that if a perf/ftrace-based security infrastructure is on our
+future, it will be entirely compatible -- even if the prctl()
+interface is just the "simpler" interface at that point somewhere down
+the road.
+
+
+Regardless, I'll hack up a proof of concept based on the outline
+above. Perhaps something more elegant will emerge once I start
+tweaking the source, but I'm still seeing too many gaps to be
+comfortable so far.
+
+
+[[There is a whole other approach to this too. We could continue with
+the prctl() interface and mirror the trace_sys_enter model for
+secure_computing().   Instead of keeping a seccomp_t-based hlist of
+events, they could be stored in a new hlist for seccomp_events in
+struct ftrace_event_call.  The ftrace filters would be installed there
+and the seccomp_syscall_enter() function could do the checks and pass
+up some state data on the task's seccomp_t that indicates it needs to
+do_exit().  That would likely reduce the amount of code in
+seccomp_filter.c pretty seriously (though not entirely
+beneficially).]]
+
+
+Thanks again for all the feedback and insights! I really hope we can
+come to an agreeable approach for implementing kernel attack surface
+reduction.
+will
