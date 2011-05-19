@@ -1,29 +1,24 @@
-Return-Path: <greg@kroah.com>
-Received: from out3.smtp.messagingengine.com (out3.smtp.messagingengine.com
-	[66.111.4.27])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D77A6B6F83
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 02:02:57 +1000 (EST)
-Date: Thu, 19 May 2011 09:02:39 -0700
-From: Greg KH <greg@kroah.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded hypervisor
-	byte channel driver
-Message-ID: <20110519160239.GB25606@kroah.com>
-References: <1305813272-31826-1-git-send-email-timur@freescale.com>
-	<1305813272-31826-7-git-send-email-timur@freescale.com>
-	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
-	<4DD533DE.1020705@freescale.com>
-	<20110519165039.7fd8ec34@lxorguk.ukuu.org.uk>
-	<4DD53D1B.4060600@freescale.com>
+Return-Path: <R65073@freescale.com>
+Date: Fri, 20 May 2011 00:09:02 +0800
+From: Shawn Guo <shawn.guo@freescale.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH v2 0/7] Consolidate sdhci pltfm & OF drivers and get them
+	self registered
+Message-ID: <20110519160901.GC26816@S2100-06.ap.freescale.net>
+References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
+	<20110519094046.GA2219@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4DD53D1B.4060600@freescale.com>
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
-	linux-console@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20110519094046.GA2219@pengutronix.de>
+Cc: Chris Ball <cjb@laptop.org>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+	sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+	patches@linaro.org, devicetree-discuss@lists.ozlabs.org,
+	linux-mmc@vger.kernel.org, Saeed Bishara <saeed@marvell.com>,
+	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
+	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
+	Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,14 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 10:54:03AM -0500, Timur Tabi wrote:
-> > Depends if the functionality is useful in your environment or not
+Hi Wolfram,
+
+On Thu, May 19, 2011 at 11:40:46AM +0200, Wolfram Sang wrote:
+> Hi Shawn,
 > 
-> It is, but I'd like to add it later so that I can make the 2.6.40 window (if it
-> isn't already too late).
+> > Changes since v1:
+> >  * Rebase on cjb's mmc-next tree
+> 
+> Is it maybe possible that you get access to
+> http://opensource.freescale.com/git or another machine? A branch to pull
+> from would be more convenient, because the series does not apply to
+> mmc-next anymore, so an extra step to go "back in time" is needed.
+> 
+> (minor) When applying I got:
+> 
+> Applying: mmc: sdhci: make sdhci-pltfm device drivers self registered
+> /home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:384: trailing whitespace.
+> /home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:817: space before tab in indent.
+>  	struct tegra_sdhci_platform_data *plat;
+> /home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:867: trailing whitespace.
+> 
+> Applying: sdhci: rename sdhci-esdhc-imx.c to sdhci-esdhc.c
+> /home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:780: trailing whitespace.
+> 
+> See later comments for further issues.
+> 
+Should I go for v3 right now to address the patch applying problems
+and that ESDHC_IMX build issue, or hold for a while to see if you
+have more comments on v2?
 
-It's too late, it needed to be in linux-next _before_ the window opened.
+And what is your position on patch #5 which merges esdhc imx and mpc
+support into one?  As Anton has voted a NO there, I would probably
+drop the patch if there is another person has strong opinion to get
+imx and mpc stay separated.
 
-sorry,
-
-greg k-h
+-- 
+Regards,
+Shawn
