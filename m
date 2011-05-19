@@ -1,14 +1,20 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Subject: Re: [PATCH 3/7] [RFC] add support for BlueGene/P FPU
-In-reply-to: <1305753895-24845-3-git-send-email-ericvh@gmail.com>
-References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-3-git-send-email-ericvh@gmail.com>
-Date: Thu, 19 May 2011 15:58:38 +1000
-Message-ID: <425.1305784718@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	bg-linux@lists.anl-external.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 919A5B6F7B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 16:01:29 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc,e5500: add networking to defconfig
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110510180147.GA18443@schlenkerla.am.freescale.net>
+Date: Thu, 19 May 2011 01:01:19 -0500
+Message-Id: <366EDEF5-7E8A-4F24-95B8-3665EA1A5E32@kernel.crashing.org>
+References: <20110510180147.GA18443@schlenkerla.am.freescale.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,168 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Eric,
 
-> This patch adds save/restore register support for the BlueGene/P
-> double hummer FPU.
+On May 10, 2011, at 1:01 PM, Scott Wood wrote:
 
-What does this mean?  Needs more details here.
-
-> Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
+> Even though support for the p5020's on-chip ethernet is not yet =
+upstream,
+> it is not appropriate to disable all networking support (including
+> loopback, unix domain sockets, external ethernet devices, etc) in the
+> defconfig.  The networking settings are taken from =
+mpc85xx_smp_defconfig,
+> minus the drivers for ethernet devices not found on any current e5500
+> chip.
+>=20
+> The other changes are the result of running "make savedefconfig".
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 > ---
->  arch/powerpc/include/asm/ppc_asm.h |   39 ++++++++++++++++++++++++----------
--
->  arch/powerpc/kernel/fpu.S          |    8 +++---
->  arch/powerpc/platforms/44x/Kconfig |    9 ++++++++
->  3 files changed, 40 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/pp
-c_asm.h
-> index 9821006..daa22bb 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -88,6 +88,13 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  				REST_10GPRS(22, base)
->  #endif
->  
-> +#ifdef CONFIG_BGP
-> +#define LFPDX(frt, ra, rb)	.long (31<<26)|((frt)<<21)|((ra)<<16)| \
-> +							((rb)<<11)|(462<<1)
-> +#define STFPDX(frt, ra, rb)	.long (31<<26)|((frt)<<21)|((ra)<<16)| \
-> +							((rb)<<11)|(974<<1)
-> +#endif /* CONFIG_BGP */
+> arch/powerpc/configs/e55xx_smp_defconfig |   38 =
+++++++++++++++++++++++-------
+> 1 files changed, 29 insertions(+), 9 deletions(-)
 
-Put these in arch/powerpc/include/asm/ppc-opcode.h and reformat to fit
-whats there already.  
+applied to next
 
-Also, don't need to put these defines inside a #ifdef.
-
-> +
->  #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
->  #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
->  #define SAVE_8GPRS(n, base)	SAVE_4GPRS(n, base); SAVE_4GPRS(n+4, base)
-> @@ -97,18 +104,26 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
->  #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
->  
-> -#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-> -#define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
-> -#define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
-> -#define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
-> -#define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
-> -#define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
-> -#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-> -#define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
-> -#define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
-> -#define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
-> -#define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
-> -#define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
-> +#ifdef CONFIG_BGP
-> +#define SAVE_FPR(n, b, base)	li b, THREAD_FPR0+(16*(n)); STFPDX(n, base, b)
-> +#define REST_FPR(n, b, base)	li b, THREAD_FPR0+(16*(n)); LFPDX(n, base, b)
-
-16*?  Are these FP regs 64 or 128 bits wide?  If 128 you are doing to
-have to play with TS_WIDTH to get the size of the FPs correct in the
-thread_struct.
-
-I think there's a bug here.
-
-> +#else /* CONFIG_BGP */
-> +#define SAVE_FPR(n, b, base)	(stfd	n, THREAD_FPR0+8*TS_FPRWIDTH*(n)(base))
-> +#define REST_FPR(n, b, base)	(lfd	n, THREAD_FPR0+8*TS_FPRWIDTH*(n)(base))
-> +#endif /* CONFIG_BGP */
-> +
-> +#define SAVE_2FPRS(n, b, base)	SAVE_FPR(n, b, base); SAVE_FPR(n+1, b, 
-base)
-> +#define SAVE_4FPRS(n, b, base)	SAVE_2FPRS(n, b, base); SAVE_2FPRS(n+2,
- b, base)
-> +#define SAVE_8FPRS(n, b, base)	SAVE_4FPRS(n, b, base); SAVE_4FPRS(n+4,
- b, base)
-> +#define SAVE_16FPRS(n, b, base)	SAVE_8FPRS(n, b, base); SAVE_8FPRS(n+8,
- b, base)
-> +#define SAVE_32FPRS(n, b, base)	SAVE_16FPRS(n, b, base); \
-> +				SAVE_16FPRS(n+16, b, base)
-> +#define REST_2FPRS(n, b, base)	REST_FPR(n, b, base); REST_FPR(n+1, b, 
-base)
-> +#define REST_4FPRS(n, b, base)	REST_2FPRS(n, b, base); REST_2FPRS(n+2,
- b, base)
-> +#define REST_8FPRS(n, b, base)	REST_4FPRS(n, b, base); REST_4FPRS(n+4,
- b, base)
-> +#define REST_16FPRS(n, b, base)	REST_8FPRS(n, b, base); REST_8FPRS(n+8,
- b, base)
-> +#define REST_32FPRS(n, b, base)	REST_16FPRS(n, b, base); \
-> +				REST_16FPRS(n+16, b, base)
->  
->  #define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,base,b
->  #define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
-> diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-> index de36955..9f11c66 100644
-> --- a/arch/powerpc/kernel/fpu.S
-> +++ b/arch/powerpc/kernel/fpu.S
-> @@ -30,7 +30,7 @@
->  BEGIN_FTR_SECTION							\
->  	b	2f;							\
->  END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
-> -	REST_32FPRS(n,base);						\
-> +	REST_32FPRS(n,c,base);						\
->  	b	3f;							\
->  2:	REST_32VSRS(n,c,base);						\
->  3:
-> @@ -39,13 +39,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);		
-			\
->  BEGIN_FTR_SECTION							\
->  	b	2f;							\
->  END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
-> -	SAVE_32FPRS(n,base);						\
-> +	SAVE_32FPRS(n,c,base);						\
->  	b	3f;							\
->  2:	SAVE_32VSRS(n,c,base);						\
->  3:
->  #else
-> -#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
-> -#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
-> +#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n,b,base)
-> +#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n,b,base)
->  #endif
->  
->  /*
-> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/
-Kconfig
-> index f485fc5f..24a515e 100644
-> --- a/arch/powerpc/platforms/44x/Kconfig
-> +++ b/arch/powerpc/platforms/44x/Kconfig
-> @@ -169,6 +169,15 @@ config YOSEMITE
->  	help
->  	  This option enables support for the AMCC PPC440EP evaluation board.
->  
-> +config	BGP
-
-Does this FPU feature have a specific name like double hammer?  I'd
-rather have the BGP defconfig depend on PPC_FPU_DOUBLE_HUMMER, or
-something like that...
-
-> +	bool "Blue Gene/P"
-> +	depends on 44x
-> +	default n
-> +	select PPC_FPU
-> +	select PPC_DOUBLE_FPU
-
-... in fact, it seem you are doing something like these here but you
-don't use PPC_DOUBLE_FPU anywhere?
-
-Mikey
-
-> +	help
-> +	  This option enables support for the IBM BlueGene/P supercomputer.
-> +
->  config ISS4xx
->  	bool "ISS 4xx Simulator"
->  	depends on (44x || 40x)
-> -- 
-> 1.7.4.1
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+- k=
