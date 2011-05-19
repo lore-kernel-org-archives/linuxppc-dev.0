@@ -1,25 +1,42 @@
-Return-Path: <greg@kroah.com>
-Received: from out2.smtp.messagingengine.com (out2.smtp.messagingengine.com
-	[66.111.4.26])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 86C7EB718D
+	by ozlabs.org (Postfix) with ESMTPS id B7B2FB6F88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 04:07:59 +1000 (EST)
-Message-Id: <20110519180555.352937123@clark.kroah.org>
-Date: Thu, 19 May 2011 11:04:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org,
- stable@kernel.org
-Subject: [11/71] hw_breakpoints,
-	powerpc: Fix CONFIG_HAVE_HW_BREAKPOINT off-case in
-	ptrace_set_debugreg()
-In-Reply-To: <20110519180626.GA16555@kroah.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	torvalds@linux-foundation.org,
-	Prasad <prasad@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-	LPPC <linuxppc-dev@lists.ozlabs.org>, stable-review@kernel.org,
-	alan@lxorguk.ukuu.org.uk
+	Fri, 20 May 2011 04:15:22 +1000 (EST)
+Date: Thu, 19 May 2011 20:15:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3] mpt2sas: remove the use of writeq, since writeq is
+	not atomic
+Message-ID: <20110519181500.GF6139@elte.hu>
+References: <1305616571.6008.23.camel@mulgrave.site>
+	<B2FD678A64EAAD45B089B123FDFC3ED70157F7BCE5@inbmail01.lsi.com>
+	<20110518041551.GL15227@parisc-linux.org>
+	<1305692584.2580.3.camel@mulgrave.site>
+	<1305702010.2781.33.camel@pasglop>
+	<mpt2sas-writeq-powerpc64@mdm.bga.com>
+	<4565AEA676113A449269C2F3A549520F80B66280@cosmail03.lsi.com>
+	<x86-32-writeq-is-broken@mdm.bga.com>
+	<BANLkTimDktq8SxOU3HZkPpj=J9pdkzVX-w@mail.gmail.com>
+	<1305783242.7481.42.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1305783242.7481.42.camel@pasglop>
+Cc: Roland Dreier <roland@kernel.org>, "Prakash,
+	Sathya" <Sathya.Prakash@lsi.com>,
+	linux-arch <linux-arch@vger.kernel.org>, "Desai,
+	Kashyap" <Kashyap.Desai@lsi.com>,
+	linux scsi dev <linux-scsi@vger.kernel.org>,
+	Matthew Wilcox <matthew@wil.cx>, Hitoshi Mitake <h.mitake@gmail.com>,
+	linux powerpc dev <linuxppc-dev@lists.ozlabs.org>,
+	Milton Miller <miltonm@bga.com>,
+	linux kernel <linux-kernel@vger.kernel.org>,
+	James Bottomley <James.Bottomley@hansenpartnership.com>,
+	Ingo Molnar <mingo@redhat.com>, "paulus@samba.org" <paulus@samba.org>,
+	linux pci <linux-pci@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,83 +46,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.38-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-From: Frederic Weisbecker <fweisbec@gmail.com>
+> On Wed, 2011-05-18 at 21:16 -0700, Roland Dreier wrote:
+> > On Wed, May 18, 2011 at 11:31 AM, Milton Miller <miltonm@bga.com> wrote:
+> > > So the real question should be why is x86-32 supplying a broken writeq
+> > > instead of letting drivers work out what to do it when needed?
+> > 
+> > Sounds a lot like what I was asking a couple of years ago :)
+> > http://lkml.org/lkml/2009/4/19/164
+> > 
+> > But Ingo insisted that non-atomic writeq would be fine:
+> > http://lkml.org/lkml/2009/4/19/167
+> 
+> Yuck... Ingo, I think that was very wrong.
+> 
+> Those are for MMIO, which must almost ALWAYS know precisely what the
+> resulting access size is going to be. It's not even about atomicity
+> between multiple CPUs. I have seen plenty of HW for which a 64-bit
+> access to a register is -not- equivalent to two 32-bit ones. In fact, in
+> some case, you can get the side effects twice ... or none at all.
+> 
+> The only case where you can be lax is when you explicitely know that
+> there is no side effects -and- the HW cope with different access sizes.
+> This is not the general case and drivers need at the very least a way to
+> know what the behaviour will be.
 
-commit 925f83c085e1bb08435556c5b4844a60de002e31 upstream.
+Ok, that's pretty convincing.
 
-We make use of ptrace_get_breakpoints() / ptrace_put_breakpoints() to
-protect ptrace_set_debugreg() even if CONFIG_HAVE_HW_BREAKPOINT if off.
-However in this case, these APIs are not implemented.
+Unless hpa or tglx disagrees with reverting this, could any of you send a patch 
+with a proper changelog etc. that applies cleanly to v2.6.39?
 
-To fix this, push the protection down inside the relevant ifdef.
-Best would be to export the code inside
-CONFIG_HAVE_HW_BREAKPOINT into a standalone function to cleanup
-the ifdefury there and call the breakpoint ref API inside. But
-as it is more invasive, this should be rather made in an -rc1.
+Thanks,
 
-Fixes this build error:
-
-  arch/powerpc/kernel/ptrace.c:1594: error: implicit declaration of function 'ptrace_get_breakpoints' make[2]: ***
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LPPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-Link: http://lkml.kernel.org/r/1304639598-4707-1-git-send-email-fweisbec@gmail.com
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/powerpc/kernel/ptrace.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -924,12 +924,16 @@ int ptrace_set_debugreg(struct task_stru
- 	if (data && !(data & DABR_TRANSLATION))
- 		return -EIO;
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	if (ptrace_get_breakpoints(task) < 0)
-+		return -ESRCH;
-+
- 	bp = thread->ptrace_bps[0];
- 	if ((!data) || !(data & (DABR_DATA_WRITE | DABR_DATA_READ))) {
- 		if (bp) {
- 			unregister_hw_breakpoint(bp);
- 			thread->ptrace_bps[0] = NULL;
- 		}
-+		ptrace_put_breakpoints(task);
- 		return 0;
- 	}
- 	if (bp) {
-@@ -939,9 +943,12 @@ int ptrace_set_debugreg(struct task_stru
- 					(DABR_DATA_WRITE | DABR_DATA_READ),
- 							&attr.bp_type);
- 		ret =  modify_user_hw_breakpoint(bp, &attr);
--		if (ret)
-+		if (ret) {
-+			ptrace_put_breakpoints(task);
- 			return ret;
-+		}
- 		thread->ptrace_bps[0] = bp;
-+		ptrace_put_breakpoints(task);
- 		thread->dabr = data;
- 		return 0;
- 	}
-@@ -956,9 +963,12 @@ int ptrace_set_debugreg(struct task_stru
- 							ptrace_triggered, task);
- 	if (IS_ERR(bp)) {
- 		thread->ptrace_bps[0] = NULL;
-+		ptrace_put_breakpoints(task);
- 		return PTR_ERR(bp);
- 	}
- 
-+	ptrace_put_breakpoints(task);
-+
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- 
- 	/* Move contents to the DABR register */
+	Ingo
