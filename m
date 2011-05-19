@@ -1,25 +1,25 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D31B1B6F7C
+Return-Path: <kazutomo.yoshii@gmail.com>
+Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EB36FB6F8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 01:16:00 +1000 (EST)
-Message-ID: <4DD533DE.1020705@freescale.com>
-Date: Thu, 19 May 2011 10:14:38 -0500
-From: Timur Tabi <timur@freescale.com>
+	Fri, 20 May 2011 01:22:33 +1000 (EST)
+Received: by gwj17 with SMTP id 17so1056380gwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 08:22:30 -0700 (PDT)
+Message-ID: <4DD535B3.6040101@gmail.com>
+Date: Thu, 19 May 2011 10:22:27 -0500
+From: Kazutomo Yoshii <kazutomo.yoshii@gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded hypervisor
-	byte channel driver
-References: <1305813272-31826-1-git-send-email-timur@freescale.com>	<1305813272-31826-7-git-send-email-timur@freescale.com>
-	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
-In-Reply-To: <20110519153358.5876f310@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
-	linux-console@vger.kernel.org, greg@kroah.com,
-	linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [bg-linux] [PATCH 3/7] [RFC] add support for BlueGene/P FPU
+References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>	<1305753895-24845-3-git-send-email-ericvh@gmail.com>	<425.1305784718@neuling.org>
+	<BANLkTimKhApFW8G1-pG0u_9Kv2YB0R1O0w@mail.gmail.com>
+In-Reply-To: <BANLkTimKhApFW8G1-pG0u_9Kv2YB0R1O0w@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Cox wrote:
-> ttys = tty_port_tty_get(&bc->port);
-> stuff
-> if (ttys != NULL)
-> 	tty stuff
-> 	tty_kref_put(ttys);
+On 05/19/2011 08:53 AM, Eric Van Hensbergen wrote:
+>>> >>  +#ifdef CONFIG_BGP
+>>> >>  +#define SAVE_FPR(n, b, base) li b, THREAD_FPR0+(16*(n)); STFPDX(n, base, b)
+>>> >>  +#define REST_FPR(n, b, base) li b, THREAD_FPR0+(16*(n)); LFPDX(n, base, b)
+>>>        
+>> >
+>> >  16*?  Are these FP regs 64 or 128 bits wide?  If 128 you are doing to
+>> >  have to play with TS_WIDTH to get the size of the FPs correct in the
+>> >  thread_struct.
+>> >
+>> >  I think there's a bug here.
+>> >
+>>      
+> I actually have three different versions of this code from different
+> source patches that I'm drawing from - so your help in figuring out
+> the best way to approach this is appreciated.  The kittyhawk version
+> of the code has 8* instead of 16*.  According to the docs:
+> "Each of the two FPU units contains 32 64-bit floating point registers
+> for a total of 64 FP registers per processor." which would seem to
+> point to the kittyhawk version - but they have a second SAVE_32SFPRS
+> for the second hummer.  What wasn't clear to me with this version of
+> the code was whether or not they were doing something clever like
+> saving the pair of the 64-bit FPU registers in a single 128-bit slot
+> (seems plausible).
+Yes, it does.    SIMD like instructions are added to BGP PPC.
+stdpdx or lfpdx, for example, handle two FPU registers (primary and 
+secondary).
 
-Under what circumstances can ttys be NULL?  I currently only use this code in
-the RX and TX interrupt handlers, which are both enabled in the
-tty_port_operations.activate() function.
-
-Is this right for the TX handler:
-
-static irqreturn_t ehv_bc_tty_tx_isr(int irq, void *data)
-{
-	struct ehv_bc_data *bc = data;
-	struct tty_struct *ttys = tty_port_tty_get(&bc->port);
-
-	ehv_bc_tx_dequeue(bc);
-	if (ttys) {
-		tty_wakeup(ttys);
-		tty_kref_put(ttys);
-	}
-
-	return IRQ_HANDLED;
-}
-
-I just want to make sure that testing for NULL is really necessary in my
-interrupt handlers.
-
->> > +		len = min_t(unsigned int,
->> > +			    CIRC_CNT_TO_END(bc->head, bc->tail, BUF_SIZE),
->> > +			    EV_BYTE_CHANNEL_MAX_BYTES);
-> The kfifo API is probably faster and cleaner. Much of tty still uses
-> CIRC_* because they predate the new APIs.
-
-Ok, I'll change it.
-
-> You really also need a hangup method so vhangup() does the right thing
-> and you can securely do logins etc and sessions on your console. As
-> you've got no hardware entangled in this and you already use tty_port
-> helpers the hangup helper will do the work for you.
-
-Ok.
-
-> 
-> I guess the only other thing to consider is whether you want to implement
-> a SYSRQ interface on your console ?
-
-I don't think byte channels can support SYSRQ, but I'll look into it.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Thanks,
+Kaz
