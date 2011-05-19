@@ -1,12 +1,12 @@
-Return-Path: <B11780@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/85xx: P1020 DTS : re-organize dts files
-MIME-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset="us-ascii"
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1302167455-21538-1-git-send-email-prabhakar@freescale.com>
-Date: Thu, 19 May 2011 01:16:16 -0500
-Message-ID: <432676EA-9461-4B8D-9215-C7EF32366A8C@freescale.com>
-References: <1302167455-21538-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx:DTS: Fix PCIe IDSEL for Px020RDB
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1303272764-15333-1-git-send-email-prabhakar@freescale.com>
+Date: Thu, 19 May 2011 01:16:28 -0500
+Message-Id: <12CBD4BB-FC1B-4A44-91A2-B6E00AC251D8@kernel.crashing.org>
+References: <1303272764-15333-1-git-send-email-prabhakar@freescale.com>
 To: Prabhakar Kushwaha <prabhakar@freescale.com>
 Cc: meet2prabhu@gmail.com, devicetree-discuss@lists.ozlabs.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -20,32 +20,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 7, 2011, at 4:10 AM, Prabhakar Kushwaha wrote:
+On Apr 19, 2011, at 11:12 PM, Prabhakar Kushwaha wrote:
 
-> Creates P1020si.dtsi, containing information for the P1020 SoC. =
-Modifies dts
-> files for P1020 based systems to use dtsi file
+> PCIe device in legacy mode can trigger interrupts using the wires =
+#INTA, #INTB
+> ,#INTC and #INTD. PCI devices are obligated to use #INTx for =
+interrupts under
+> legacy mode.  Each PCI slot or device is typically wired to different =
+inputs on
+> the interrupt controller.=20
+>=20
+> So, Define interrupt-map and interrupt-map-mask properties for device =
+tree to
+> of map each PCI interrupt signal to the inputs of the interrupt =
+controller.
 >=20
 > Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> Acked-by: Kumar Gala <kumar.gala@freescale.com>
 > ---
 > Based upon =
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branc=
 h master)
 >=20
-> Please see mpc5200b.dtsi for reference.
+> This patch has depedency on following 2 patches
+> 	-- powerpc/85xx: P2020 DTS: re-organize dts files
+> 	-- powerpc/85xx: P1020 DTS : re-organize dts files
 >=20
-> Tested on P1020RDB
->=20
-> Changes for v2: Incorporated Grant Likely's comment
-> 	-updated model name
->=20
-> arch/powerpc/boot/dts/p1020rdb.dts |  316 =
-+------------------------------
-> arch/powerpc/boot/dts/p1020si.dtsi |  377 =
-++++++++++++++++++++++++++++++++++++
-> 2 files changed, 380 insertions(+), 313 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/p1020si.dtsi
+> arch/powerpc/boot/dts/p1020rdb.dts            |   16 ++++++++++++++++
+> arch/powerpc/boot/dts/p2020rdb.dts            |   16 ++++++++++++++++
+> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 ++++++++
+> arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |    8 ++++++++
+> 4 files changed, 48 insertions(+), 0 deletions(-)
 
 applied to next
 
