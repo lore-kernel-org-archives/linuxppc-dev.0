@@ -1,33 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB7D6B6F84
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 21:00:16 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4JAv8cQ010271
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 04:57:08 -0600
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4JAxxHC328954
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 04:59:59 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4JB56xB029204
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 05:05:06 -0600
-Date: Thu, 19 May 2011 07:01:05 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Subject: Re: [PATCH 1/7] [RFC] Mainline BG/P platform support
-Message-ID: <20110519110105.GB25179@zod.rchland.ibm.com>
-References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
+Return-Path: <B36685@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5AF12B6F87
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2011 21:07:07 +1000 (EST)
+Received: from mail183-va3 (localhost.localdomain [127.0.0.1])	by
+	mail183-va3-R.bigfish.com (Postfix) with ESMTP id 28C5017C83A6	for
+	<linuxppc-dev@ozlabs.org>; Thu, 19 May 2011 11:07:00 +0000 (UTC)
+Received: from VA3EHSMHS002.bigfish.com (unknown [10.7.14.246])	by
+	mail183-va3.bigfish.com (Postfix) with ESMTP id E5BF143804F	for
+	<linuxppc-dev@ozlabs.org>; Thu, 19 May 2011 11:06:59 +0000 (UTC)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Powerpc/fsl_lbc: Add workaround for ELBC-A001 erratum
+Date: Thu, 19 May 2011 18:48:01 +0800
+Message-ID: <1305802081-19733-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	bg-linux@lists.anl-external.org
+Content-Type: text/plain
+Cc: scottwood@freescale.com, kumar.gala@freescale.com,
+	Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,59 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 18, 2011 at 04:24:49PM -0500, Eric Van Hensbergen wrote:
->The Linux kernel patches for the IBM BlueGene/P have been open-sourced
->for quite some time, but haven't been integrated into the mainline Linux
->kernel source tree.  This is the first patch series of several where I
->will attempt to cleanup and mainline the already public patches.  I
->welcome feedback as well as any help I can get.  I'm drawing on
->the patches available for the IBM Compute Node kernel, the ZeptoOS project
->and the Kittyhawk project.
->(all available from http://wiki.bg.anl-external.org)
->
->I'll be prioritizing core patches which are harder to keep current with
->mainline due to merge conflicts and then slowly incorporating the drivers
->and other extensions (if acceptable after community review).
->
->I'll be maintaining the patchset in my kernel.org repository
->(/pub/scm/linux/kernel/git/ericvh/bluegene.git) under the bluegene
->branch with the source repos (zepto, kittyhawk, ibmcn) available in
->respective branches.  Ben - if you would prefer me to send pull requests
->once we get rolling, I can switch to that -- otherwise I'll stick to
->just submitting patches to the list assuming you'll pull them when they
->become acceptable.  Thanks for your attention reviewing these patches.
+Simultaneous FCM and GPCM or UPM operation may erroneously trigger
+bus monitor timeout.
 
-This is going to get slightly messy if there are lots of changes in
-platforms/44x and/or head_44x.S.  Most 4xx changes go through my tree,
-and I'm happy to pull from your tree once things get off the ground.  We
-just need to make sure and coordinate as we go.
+Set the local bus monitor timeout value to the maximum by setting
+LBCR[BMT] = 0 and LBCR[BMTPS] = 0xF.
 
-My tree is fairly low-churn (as is all of 4xx) so hopefully I'm worried
-for nothing.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Signed-off-by: Gala Kumar <kumar.gala@freescale.com>
+---
+ arch/powerpc/include/asm/fsl_lbc.h |    2 ++
+ arch/powerpc/sysdev/fsl_lbc.c      |    9 +++++++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
->Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
->---
-> MAINTAINERS |    8 ++++++++
-> 1 files changed, 8 insertions(+), 0 deletions(-)
->
->diff --git a/MAINTAINERS b/MAINTAINERS
->index 69f19f1..3ffca88 100644
->--- a/MAINTAINERS
->+++ b/MAINTAINERS
->@@ -3863,6 +3863,14 @@ S:	Maintained
-> F:	arch/powerpc/platforms/40x/
-> F:	arch/powerpc/platforms/44x/
->
->+LINUX FOR POWERPC BLUEGENE/P
->+M:	Eric Van Hensbergen <ericvh@gmail.com>
->+W:	http://bg-linux.anl-external.org/wiki/index.php/Main_Page
->+L:	bg-linux@lists.anl-external.org
->+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/bluegene.git
->+S:	Maintained
->+F:	arch/powerpc/platforms/44x/bgp*
-
-This should probably be the last patch in the series.  You have a file
-pattern listed for files that don't exist at all in any of the other
-patches you submitted :).
-
-josh
+diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
+index 5c1bf34..8a0b5ec 100644
+--- a/arch/powerpc/include/asm/fsl_lbc.h
++++ b/arch/powerpc/include/asm/fsl_lbc.h
+@@ -157,6 +157,8 @@ struct fsl_lbc_regs {
+ #define LBCR_EPAR_SHIFT    16
+ #define LBCR_BMT   0x0000FF00
+ #define LBCR_BMT_SHIFT      8
++#define LBCR_BMTPS 0x0000000F
++#define LBCR_BMTPS_SHIFT    0
+ #define LBCR_INIT  0x00040000
+ 	__be32 lcrr;            /**< Clock Ratio Register */
+ #define LCRR_DBYP    0x80000000
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index 4fcb5a4..19a4ecd 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -184,7 +184,8 @@ int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
+ }
+ EXPORT_SYMBOL(fsl_upm_run_pattern);
+ 
+-static int __devinit fsl_lbc_ctrl_init(struct fsl_lbc_ctrl *ctrl)
++static int __devinit fsl_lbc_ctrl_init(struct fsl_lbc_ctrl *ctrl,
++				       struct device_node *node)
+ {
+ 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+ 
+@@ -198,6 +199,10 @@ static int __devinit fsl_lbc_ctrl_init(struct fsl_lbc_ctrl *ctrl)
+ 	/* Enable interrupts for any detected events */
+ 	out_be32(&lbc->lteir, LTEIR_ENABLE);
+ 
++	/* Set the monitor timeout value to the maximum for erratum A001 */
++	if (of_device_is_compatible(node, "fsl,elbc"))
++		clrsetbits_be32(&lbc->lbcr, LBCR_BMT, LBCR_BMTPS);
++
+ 	return 0;
+ }
+ 
+@@ -304,7 +309,7 @@ static int __devinit fsl_lbc_ctrl_probe(struct platform_device *dev)
+ 
+ 	fsl_lbc_ctrl_dev->dev = &dev->dev;
+ 
+-	ret = fsl_lbc_ctrl_init(fsl_lbc_ctrl_dev);
++	ret = fsl_lbc_ctrl_init(fsl_lbc_ctrl_dev, ofdev->node);
+ 	if (ret < 0)
+ 		goto err;
+ 
+-- 
+1.6.4
