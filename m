@@ -1,22 +1,21 @@
 Return-Path: <B04825@freescale.com>
-Received: from CH1EHSOBE005.bigfish.com (ch1ehsobe004.messaging.microsoft.com
-	[216.32.181.184]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A19EAB6F7C
+	by ozlabs.org (Postfix) with ESMTPS id D31B1B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 01:09:26 +1000 (EST)
-Message-ID: <4DD5329C.2040200@freescale.com>
-Date: Thu, 19 May 2011 10:09:16 -0500
+	Fri, 20 May 2011 01:16:00 +1000 (EST)
+Message-ID: <4DD533DE.1020705@freescale.com>
+Date: Thu, 19 May 2011 10:14:38 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 6/7] tty/powerpc: introduce the ePAPR embedded hypervisor
 	byte channel driver
-References: <1305813272-31826-1-git-send-email-timur@freescale.com>
-	<1305813272-31826-7-git-send-email-timur@freescale.com>
-	<201105191702.39919.arnd@arndb.de>
-In-Reply-To: <201105191702.39919.arnd@arndb.de>
+References: <1305813272-31826-1-git-send-email-timur@freescale.com>	<1305813272-31826-7-git-send-email-timur@freescale.com>
+	<20110519153358.5876f310@lxorguk.ukuu.org.uk>
+In-Reply-To: <20110519153358.5876f310@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
 	linux-console@vger.kernel.org, greg@kroah.com,
@@ -30,22 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> Why is this using a full tty driver instead of the hvc framework that most
-> other hypervisor consoles use?
+Alan Cox wrote:
+> ttys = tty_port_tty_get(&bc->port);
+> stuff
+> if (ttys != NULL)
+> 	tty stuff
+> 	tty_kref_put(ttys);
 
-Because HVC uses the same interface for consoles and tty, and that resulted in
-dropped characters if the client driver returns EAGAIN because it's output
-buffer is full.  I posted a patch that "fixes" this, but it was rejected.
-Here's the original patch:
+Under what circumstances can ttys be NULL?  I currently only use this code in
+the RX and TX interrupt handlers, which are both enabled in the
+tty_port_operations.activate() function.
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-August/085136.html
+Is this right for the TX handler:
 
-And here's the thread discussing our concerns:
+static irqreturn_t ehv_bc_tty_tx_isr(int irq, void *data)
+{
+	struct ehv_bc_data *bc = data;
+	struct tty_struct *ttys = tty_port_tty_get(&bc->port);
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-September/thread.html
+	ehv_bc_tx_dequeue(bc);
+	if (ttys) {
+		tty_wakeup(ttys);
+		tty_kref_put(ttys);
+	}
 
-(search for "fix dropping of characters when output byte channel is full")
+	return IRQ_HANDLED;
+}
+
+I just want to make sure that testing for NULL is really necessary in my
+interrupt handlers.
+
+>> > +		len = min_t(unsigned int,
+>> > +			    CIRC_CNT_TO_END(bc->head, bc->tail, BUF_SIZE),
+>> > +			    EV_BYTE_CHANNEL_MAX_BYTES);
+> The kfifo API is probably faster and cleaner. Much of tty still uses
+> CIRC_* because they predate the new APIs.
+
+Ok, I'll change it.
+
+> You really also need a hangup method so vhangup() does the right thing
+> and you can securely do logins etc and sessions on your console. As
+> you've got no hardware entangled in this and you already use tty_port
+> helpers the hangup helper will do the work for you.
+
+Ok.
+
+> 
+> I guess the only other thing to consider is whether you want to implement
+> a SYSRQ interface on your console ?
+
+I don't think byte channels can support SYSRQ, but I'll look into it.
 
 -- 
 Timur Tabi
