@@ -1,20 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 9C6BBB6F77
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 993BAB6F76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 19:38:59 +1000 (EST)
-Message-ID: <4DD4E52F.6040408@suse.de>
-Date: Thu, 19 May 2011 11:38:55 +0200
-From: Alexander Graf <agraf@suse.de>
+	Thu, 19 May 2011 19:41:02 +1000 (EST)
+Date: Thu, 19 May 2011 11:40:46 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v2 0/7] Consolidate sdhci pltfm & OF drivers and get
+	them self registered
+Message-ID: <20110519094046.GA2219@pengutronix.de>
+References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 01/13] powerpc/e500: Save SPEFCSR in flush_spe_to_thread()
-References: <20110517233551.GA3511@schlenkerla.am.freescale.net>
-	<DC207279-54AC-41CC-BF21-25181D16A6AB@kernel.crashing.org>
-In-Reply-To: <DC207279-54AC-41CC-BF21-25181D16A6AB@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	kvm-ppc@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
+In-Reply-To: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
+Cc: Chris Ball <cjb@laptop.org>, sameo@linux.intel.com,
+	Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
+	devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
+	Saeed Bishara <saeed@marvell.com>,
+	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
+	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2011 08:04 AM, Kumar Gala wrote:
-> On May 17, 2011, at 6:35 PM, Scott Wood wrote:
->
->> From: yu liu<yu.liu@freescale.com>
->>
->> giveup_spe() saves the SPE state which is protected by MSR[SPE].
->> However, modifying SPEFSCR does not trap when MSR[SPE]=0.
->> And since SPEFSCR is already saved/restored in _switch(),
->> not all the callers want to save SPEFSCR again.
->> Thus, saving SPEFSCR should not belong to giveup_spe().
->>
->> This patch moves SPEFSCR saving to flush_spe_to_thread(),
->> and cleans up the caller that needs to save SPEFSCR accordingly.
->>
->> Signed-off-by: Liu Yu<yu.liu@freescale.com>
->> Signed-off-by: Scott Wood<scottwood@freescale.com>
->> ---
->> This is a resending of http://patchwork.ozlabs.org/patch/88677/
->>
->> Kumar, please ack to go via kvm.  This is holding up the rest of the SPE
->> patches, which in turn are holding up the MMU patches due to both
->> touching the MSR update code.
->>
->> arch/powerpc/kernel/head_fsl_booke.S |    2 --
->> arch/powerpc/kernel/process.c        |    1 +
->> arch/powerpc/kernel/traps.c          |    5 +----
->> 3 files changed, 2 insertions(+), 6 deletions(-)
-> Acked-by: Kumar Gala<galak@kernel.crashing.org>
->
-> [ Alex, let me know if you want this via my powerpc.git tree or your kvm tree ]
 
-I'll take them :). Thanks!
+--sdtB3X0nJg68CQEu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Alex
+Hi Shawn,
+
+> Changes since v1:
+>  * Rebase on cjb's mmc-next tree
+
+Is it maybe possible that you get access to
+http://opensource.freescale.com/git or another machine? A branch to pull
+=66rom would be more convenient, because the series does not apply to
+mmc-next anymore, so an extra step to go "back in time" is needed.
+
+(minor) When applying I got:
+
+Applying: mmc: sdhci: make sdhci-pltfm device drivers self registered
+/home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:384: trailing whitespace.
+/home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:817: space before tab in=
+ indent.
+ 	struct tegra_sdhci_platform_data *plat;
+/home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:867: trailing whitespace.
+
+Applying: sdhci: rename sdhci-esdhc-imx.c to sdhci-esdhc.c
+/home/wsa/Kernel/linux-2.6/.git/rebase-apply/patch:780: trailing whitespace.
+
+See later comments for further issues.
+
+Thanks,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--sdtB3X0nJg68CQEu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk3U5Z4ACgkQD27XaX1/VRvTrACfeBXJzoQO911nMrx10wtlkXDw
+p1EAmwYXFQH6XMdjXZLuJRLA5pDE3h9o
+=tg5z
+-----END PGP SIGNATURE-----
+
+--sdtB3X0nJg68CQEu--
