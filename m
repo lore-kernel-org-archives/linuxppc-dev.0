@@ -1,19 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 19 May 2011 15:22:46 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 0/13] Hypervisor-mode KVM on POWER7
-Message-ID: <20110519052246.GA8165@drongo>
-References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-	<764651B6-6DDA-49DC-AA95-52CD86FF82D9@suse.de>
-	<20110517111536.GC7924@brick.ozlabs.ibm.com>
-	<14CFAA70-1747-4902-8CC1-4BE924CAD031@suse.de>
-	<4DD25F10.4030707@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4DD25F10.4030707@redhat.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alexander Graf <agraf@suse.de>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9F0B0B6F80
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2011 15:28:41 +1000 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <BANLkTikRjqpxRKKhawcD1WjyhmH1PUgz5A@mail.gmail.com>
+References: <1305777978.7481.37.camel@pasglop>
+	<BANLkTikRjqpxRKKhawcD1WjyhmH1PUgz5A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 May 2011 15:28:01 +1000
+Message-ID: <1305782881.7481.39.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 17, 2011 at 02:42:08PM +0300, Avi Kivity wrote:
-> On 05/17/2011 02:38 PM, Alexander Graf wrote:
-> >>
-> >>  What would be the path for these patches to get upstream?  Would this
-> >>  stuff normally go through Avi's tree?  There is a bit of a
-> >>  complication in that they are based on Ben's next branch.  Would Avi
-> >>  pull Ben's next branch, or would they go in via Ben's tree?
+On Wed, 2011-05-18 at 21:11 -0700, Linus Torvalds wrote:
+> On Wed, May 18, 2011 at 9:06 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
 > >
-> >Usually the ppc tree gets merged into Avi's tree and goes on from
-> >there. When we have interdependencies, we can certainly do it
-> >differently though. We can also shove them through Ben's tree this
-> >time around, as there are more dependencies on ppc code than KVM
-> >code.
-> >
+> > Dunno if it's too late or not yet but here's 3 fixes for powerpc that
+> > would be welcome to have in before the release. If not I'll send them
+> > first thing next (one of them is already in -next in fact).
 > 
-> Yes, both options are fine.  If it goes through kvm.git I can merge
-> Ben's tree (provided it is append-only) and apply the kvm-ppc
-> patches on top.
+> Gah. I just cut 2.6.39.
 
-OK, the easiest thing is for them to go via Ben's tree, I think, since
-they depend so much on other stuff in Ben's tree.
+Bah, no biggie. I'll stick some CC: stable and put them in -next :-)
 
-Alex, could you give Ben an acked-by for patches 1-8 of the series?
-There haven't been any changes requested for them.
-
-Thanks,
-Paul.
+Cheers,
+Ben.
