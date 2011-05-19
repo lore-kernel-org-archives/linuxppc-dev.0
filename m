@@ -1,22 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CF0FDB6F7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 16:58:49 +1000 (EST)
-Subject: Re: [PATCH 19/37] powerpc: consolidate ipi message mux and demux
+Subject: Re: [PATCH 5/8] powerpc: override dma_get_required_mask by
+	platform hook and ops
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <1305788222.7481.46.camel@pasglop>
-References: <cover.1305092637.git.miltonm@bga.com>
-	<b9e2ff2d16e4647af0047ddbf6146b6c7433ce6c.1305092637.git.miltonm@bga.com>
-	<1305788222.7481.46.camel@pasglop>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+In-Reply-To: <1305152704-4864-6-git-send-email-nacc@us.ibm.com>
+References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
+	<1305152704-4864-6-git-send-email-nacc@us.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 May 2011 16:58:42 +1000
-Message-ID: <1305788322.7481.48.camel@pasglop>
+Date: Thu, 19 May 2011 17:43:56 +1000
+Message-ID: <1305791036.7481.52.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Arnd Bergmann <arnd@arndb.de>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-05-19 at 16:57 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2011-05-11 at 00:29 -0500, Milton Miller wrote:
-> > Consolidate the mux and demux of ipi messages into smp.c and call
-> > a new smp_ops callback to actually trigger the ipi.
+On Wed, 2011-05-11 at 15:25 -0700, Nishanth Aravamudan wrote:
+> From: Milton Miller <miltonm@bga.com>
 > 
->  .../...
-> 
-> I'm merging the whole series.  I had to do some fixups to this one and
-> the one adding the CONFIG option, missing cell & wsp bits among others,
-> but mostly trivial.
+> The hook dma_get_required_mask is supposed to return the mask required
+> by the platform to operate efficently.  The generic version of
+> dma_get_required_mask in driver/base/platform.c returns a mask based
+> only on max_pfn.  However, this is likely too big for iommu systems
+> and could be too small for platforms that require a dma offset or have
+> a secondary window at a high offset.
 
-I forgot to mention... I dropped the change to include/linux/smp.h to
-remove the unused MSG_ flags for now. It will not have been in -next
-long enough to hit Linus via my tree, just in case somebody started
-using the flags while we were not looking :-)
-
-I suggest you send it to Linus directly after he pulls my tree during
-the merge window.
+The result of those 3 patches doesn't build on top of my current tree,
+the generic dma_ops lacks the dma_get_required_mask hook. I'll have a
+look again after the merge window.
 
 Cheers,
 Ben.
