@@ -1,32 +1,31 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E84E0B6F77
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EB7D6B6F84
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 20:43:29 +1000 (EST)
+	Thu, 19 May 2011 21:00:16 +1000 (EST)
 Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
 	[9.17.195.107])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4JAa7fj014687
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 04:36:07 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4JAv8cQ010271
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 04:57:08 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
 	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4JAgQ6J328938
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 04:42:28 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4J4gPFW030469
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2011 22:42:26 -0600
-Date: Thu, 19 May 2011 06:43:30 -0400
+	p4JAxxHC328954
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 04:59:59 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4JB56xB029204
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2011 05:05:06 -0600
+Date: Thu, 19 May 2011 07:01:05 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Eric Van Hensbergen <ericvh@gmail.com>
-Subject: Re: [PATCH 4/7] [RFC] enable L1_WRITETHROUGH mode for BG/P
-Message-ID: <20110519104330.GA25179@zod.rchland.ibm.com>
+Subject: Re: [PATCH 1/7] [RFC] Mainline BG/P platform support
+Message-ID: <20110519110105.GB25179@zod.rchland.ibm.com>
 References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-4-git-send-email-ericvh@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1305753895-24845-4-git-send-email-ericvh@gmail.com>
+In-Reply-To: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,219 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 18, 2011 at 04:24:52PM -0500, Eric Van Hensbergen wrote:
->BG/P nodes need to be configured for writethrough to work in SMP
->configurations.  This patch adds the right hooks in the MMU code
->to make sure L1_WRITETHROUGH configurations are setup for BG/P.
+On Wed, May 18, 2011 at 04:24:49PM -0500, Eric Van Hensbergen wrote:
+>The Linux kernel patches for the IBM BlueGene/P have been open-sourced
+>for quite some time, but haven't been integrated into the mainline Linux
+>kernel source tree.  This is the first patch series of several where I
+>will attempt to cleanup and mainline the already public patches.  I
+>welcome feedback as well as any help I can get.  I'm drawing on
+>the patches available for the IBM Compute Node kernel, the ZeptoOS project
+>and the Kittyhawk project.
+>(all available from http://wiki.bg.anl-external.org)
 >
+>I'll be prioritizing core patches which are harder to keep current with
+>mainline due to merge conflicts and then slowly incorporating the drivers
+>and other extensions (if acceptable after community review).
+>
+>I'll be maintaining the patchset in my kernel.org repository
+>(/pub/scm/linux/kernel/git/ericvh/bluegene.git) under the bluegene
+>branch with the source repos (zepto, kittyhawk, ibmcn) available in
+>respective branches.  Ben - if you would prefer me to send pull requests
+>once we get rolling, I can switch to that -- otherwise I'll stick to
+>just submitting patches to the list assuming you'll pull them when they
+>become acceptable.  Thanks for your attention reviewing these patches.
+
+This is going to get slightly messy if there are lots of changes in
+platforms/44x and/or head_44x.S.  Most 4xx changes go through my tree,
+and I'm happy to pull from your tree once things get off the ground.  We
+just need to make sure and coordinate as we go.
+
+My tree is fairly low-churn (as is all of 4xx) so hopefully I'm worried
+for nothing.
+
 >Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
 >---
-> arch/powerpc/include/asm/mmu-44x.h     |    2 ++
-> arch/powerpc/kernel/head_44x.S         |   24 ++++++++++++++++++++++--
-> arch/powerpc/kernel/misc_32.S          |   15 +++++++++++++++
-> arch/powerpc/lib/copy_32.S             |   10 ++++++++++
-> arch/powerpc/mm/44x_mmu.c              |    7 +++++--
-> arch/powerpc/platforms/Kconfig         |    5 +++++
-> arch/powerpc/platforms/Kconfig.cputype |    4 ++++
-> 7 files changed, 63 insertions(+), 4 deletions(-)
+> MAINTAINERS |    8 ++++++++
+> 1 files changed, 8 insertions(+), 0 deletions(-)
 >
->diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
->index bf52d70..ca1b90c 100644
->--- a/arch/powerpc/include/asm/mmu-44x.h
->+++ b/arch/powerpc/include/asm/mmu-44x.h
->@@ -8,6 +8,7 @@
+>diff --git a/MAINTAINERS b/MAINTAINERS
+>index 69f19f1..3ffca88 100644
+>--- a/MAINTAINERS
+>+++ b/MAINTAINERS
+>@@ -3863,6 +3863,14 @@ S:	Maintained
+> F:	arch/powerpc/platforms/40x/
+> F:	arch/powerpc/platforms/44x/
 >
-> #define PPC44x_MMUCR_TID	0x000000ff
-> #define PPC44x_MMUCR_STS	0x00010000
->+#define PPC44x_MMUCR_U2		0x00200000
->
-> #define	PPC44x_TLB_PAGEID	0
-> #define	PPC44x_TLB_XLAT		1
->@@ -32,6 +33,7 @@
->
-> /* Storage attribute and access control fields */
-> #define PPC44x_TLB_ATTR_MASK	0x0000ff80
->+#define PPC44x_TLB_WL1		0x00100000	/* Write-through L1 */
-> #define PPC44x_TLB_U0		0x00008000      /* User 0 */
-> #define PPC44x_TLB_U1		0x00004000      /* User 1 */
-> #define PPC44x_TLB_U2		0x00002000      /* User 2 */
->diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
->index 5e12b74..1f7ae60 100644
->--- a/arch/powerpc/kernel/head_44x.S
->+++ b/arch/powerpc/kernel/head_44x.S
->@@ -429,7 +429,16 @@ finish_tlb_load_44x:
-> 	andi.	r10,r12,_PAGE_USER		/* User page ? */
-> 	beq	1f				/* nope, leave U bits empty */
-> 	rlwimi	r11,r11,3,26,28			/* yes, copy S bits to U */
->-1:	tlbwe	r11,r13,PPC44x_TLB_ATTRIB	/* Write ATTRIB */
->+1:
->+#ifdef CONFIG_L1_WRITETHROUGH
->+	andi.	r10, r11, PPC44x_TLB_I
->+	bne	2f
->+	oris    r11,r11,PPC44x_TLB_WL1@h	/* Add coherency for */
->+						/* non-inhibited */
->+	ori	r11,r11,PPC44x_TLB_U2|PPC44x_TLB_M
->+2:
->+#endif /* CONFIG_L1_WRITETHROUGH */
->+	tlbwe	r11,r13,PPC44x_TLB_ATTRIB	/* Write ATTRIB */
->
-> 	/* Done...restore registers and get out of here.
-> 	*/
->@@ -799,7 +808,11 @@ skpinv:	addi	r4,r4,1				/* Increment */
-> 	sync
->
-> 	/* Initialize MMUCR */
->+#ifdef CONFIG_L1_WRITETHROUGH
->+	lis	r5, PPC44x_MMUCR_U2@h
->+#else
-> 	li	r5,0
->+#endif /* CONFIG_L1_WRITETHROUGH */
-> 	mtspr	SPRN_MMUCR,r5
-> 	sync
->
->@@ -814,7 +827,14 @@ skpinv:	addi	r4,r4,1				/* Increment */
-> 	/* attrib fields */
-> 	/* Added guarded bit to protect against speculative loads/stores */
-> 	li	r5,0
->-	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G)
->+#ifdef CONFIG_L1_WRITETHROUGH
->+	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | \
->+						PPC44x_TLB_G | PPC44x_TLB_U2)
->+	oris	r5,r5,PPC44x_TLB_WL1@h
->+#else
->+	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | \
->+			PPC44x_TLB_G)
->+#endif /* CONFIG_L1_WRITETHROUGH
->
->         li      r0,63                    /* TLB slot 63 */
->
->diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
->index 094bd98..d88369b 100644
->--- a/arch/powerpc/kernel/misc_32.S
->+++ b/arch/powerpc/kernel/misc_32.S
->@@ -506,7 +506,20 @@ _GLOBAL(clear_pages)
-> 	li	r0,PAGE_SIZE/L1_CACHE_BYTES
-> 	slw	r0,r0,r4
-> 	mtctr	r0
->+#ifdef CONFIG_L1_WRITETHROUGH
->+	/* assuming 32 byte cacheline */
->+	li      r4, 0
->+1:	stw     r4, 0(r3)
->+	stw     r4, 4(r3)
->+	stw     r4, 8(r3)
->+	stw     r4, 12(r3)
->+	stw     r4, 16(r3)
->+	stw     r4, 20(r3)
->+	stw     r4, 24(r3)
->+	stw     r4, 28(r3)
->+#else
-> 1:	dcbz	0,r3
->+#endif /* CONFIG_L1_WRITETHROUGH */
-> 	addi	r3,r3,L1_CACHE_BYTES
-> 	bdnz	1b
-> 	blr
->@@ -550,7 +563,9 @@ _GLOBAL(copy_page)
-> 	mtctr	r0
-> 1:
-> 	dcbt	r11,r4
->+#ifndef CONFIG_L1_WRITETHROUGH
-> 	dcbz	r5,r3
->+#endif
-> 	COPY_16_BYTES
-> #if L1_CACHE_BYTES >= 32
-> 	COPY_16_BYTES
->diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
->index 55f19f9..98a07e3 100644
->--- a/arch/powerpc/lib/copy_32.S
->+++ b/arch/powerpc/lib/copy_32.S
->@@ -98,7 +98,11 @@ _GLOBAL(cacheable_memzero)
-> 	bdnz	4b
-> 3:	mtctr	r9
-> 	li	r7,4
->+#ifdef CONFIG_L1_WRITETHROUGH
->+10:
->+#else
-> 10:	dcbz	r7,r6
->+#endif /* CONFIG_L1_WRITETHROUGH */
-> 	addi	r6,r6,CACHELINE_BYTES
-> 	bdnz	10b
-> 	clrlwi	r5,r8,32-LG_CACHELINE_BYTES
->@@ -187,7 +191,9 @@ _GLOBAL(cacheable_memcpy)
-> 	mtctr	r0
-> 	beq	63f
-> 53:
->+#ifndef CONFIG_L1_WRITETHROUGH
-> 	dcbz	r11,r6
->+#endif /* CONFIG_L1_WRITETHROUGH */
-> 	COPY_16_BYTES
-> #if L1_CACHE_BYTES >= 32
-> 	COPY_16_BYTES
->@@ -368,7 +374,11 @@ _GLOBAL(__copy_tofrom_user)
-> 	mtctr	r8
->
-> 53:	dcbt	r3,r4
->+#ifdef CONFIG_L1_WRITETHROUGH
->+54:
->+#else
-> 54:	dcbz	r11,r6
->+#endif
-> 	.section __ex_table,"a"
-> 	.align	2
-> 	.long	54b,105f
->diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
->index 024acab..b684c8a 100644
->--- a/arch/powerpc/mm/44x_mmu.c
->+++ b/arch/powerpc/mm/44x_mmu.c
->@@ -80,9 +80,12 @@ static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
-> 	:
-> #ifdef CONFIG_PPC47x
-> 	: "r" (PPC47x_TLB2_S_RWX),
->-#else
->+#elseif CONFIG_L1_WRITETHROUGH
->+	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_WL1 \
->+		| PPC44x_TLB_U2 | PPC44x_TLB_M),
->+#else /* neither CONFIG_PPC47x or CONFIG_L1_WRITETHROUGH */
-> 	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
->-#endif
->+#endif /* CONFIG_PPC47x */
-> 	  "r" (phys),
-> 	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
-> 	  "r" (entry),
->diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
->index f7b0772..684a281 100644
->--- a/arch/powerpc/platforms/Kconfig
->+++ b/arch/powerpc/platforms/Kconfig
->@@ -348,4 +348,9 @@ config XILINX_PCI
-> 	bool "Xilinx PCI host bridge support"
-> 	depends on PCI && XILINX_VIRTEX
->
->+config L1_WRITETHROUGH
->+	bool "Blue Gene/P enabled writethrough mode"
->+	depends on BGP
->+	default y
+>+LINUX FOR POWERPC BLUEGENE/P
+>+M:	Eric Van Hensbergen <ericvh@gmail.com>
+>+W:	http://bg-linux.anl-external.org/wiki/index.php/Main_Page
+>+L:	bg-linux@lists.anl-external.org
+>+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/bluegene.git
+>+S:	Maintained
+>+F:	arch/powerpc/platforms/44x/bgp*
 
-You add this config option here, named generically, but then make it
-depend on BGP.  It sees it should be named BGP_L1_WRITETHROUGH, and then
-just selected by the BGP platform.  But then....
-
-> endmenu
->diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
->index 111138c..3a3c711 100644
->--- a/arch/powerpc/platforms/Kconfig.cputype
->+++ b/arch/powerpc/platforms/Kconfig.cputype
->@@ -329,9 +329,13 @@ config NOT_COHERENT_CACHE
-> 	bool
-> 	depends on 4xx || 8xx || E200 || PPC_MPC512x || GAMECUBE_COMMON
-> 	default n if PPC_47x
->+	default n if BGP
-> 	default y
->
-> config CHECK_CACHE_COHERENCY
-> 	bool
->
->+config L1_WRITETHROUGH
->+	bool
-
-You add an identical option down here.  Confused.
+This should probably be the last patch in the series.  You have a file
+pattern listed for files that don't exist at all in any of the other
+patches you submitted :).
 
 josh
