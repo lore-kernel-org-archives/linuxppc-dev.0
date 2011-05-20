@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 90E23B71C1
+Return-Path: <ericvh@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2D5F6B71C1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 11:05:39 +1000 (EST)
-Subject: Re: [PATCH 7/7] [RFC] SMP support code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-In-Reply-To: <1305753895-24845-7-git-send-email-ericvh@gmail.com>
+	Fri, 20 May 2011 11:08:50 +1000 (EST)
+Received: by fxm5 with SMTP id 5so2702009fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 May 2011 18:08:47 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1305851709.7481.89.camel@pasglop>
 References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-7-git-send-email-ericvh@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 May 2011 11:05:29 +1000
-Message-ID: <1305853529.7481.111.camel@pasglop>
-Mime-Version: 1.0
+	<1305753895-24845-2-git-send-email-ericvh@gmail.com>
+	<1305851709.7481.89.camel@pasglop>
+Date: Thu, 19 May 2011 20:08:46 -0500
+Message-ID: <BANLkTimEqYnTn10rV2=gfDkXfgxX+2OSCg@mail.gmail.com>
+Subject: Re: [PATCH 2/7] [RFC] add bluegene entry to cputable
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,116 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
+On Thu, May 19, 2011 at 7:35 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
+>> + =A0 =A0 =A0 =A0 =A0 =A0 .dcache_bsize =A0 =A0 =A0 =A0 =A0 =3D 32,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 .cpu_setup =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D __se=
+tup_cpu_460gt,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0^^^^^^^^^^^^^^^^^^
+> Are you sure ?
+>
 
-> +#ifdef CONFIG_BGP
-> +/*
-> + * The icbi instruction does not broadcast to all cpus in the ppc450
-> + * processor used by Blue Gene/P.  It is unlikely this problem will
-> + * be exhibited in other processors so this remains ifdef'ed for BGP
-> + * specifically.
-> + *
-> + * We deal with this by marking executable pages either writable, or
-> + * executable, but never both.  The permissions will fault back and
-> + * forth if the thread is actively writing to executable sections.
-> + * Each time we fault to become executable we flush the dcache into
-> + * icache on all cpus.
-> + *
+That surprised me too, I figured it must have been a close enough
+match (at least in the 2.6.29.1 time frame which is where I'm trying
+to merge the BG/P patches up from.  The kittyhawk patches don't even
+use this, so its possible we could just remove it.
 
-I know that hack :-) I think I wrote it even (or a version of it, that
-was a long time ago) ;-) That doesn't make it pretty tho ...
-> 
 
-> +struct bgp_fixup_parm {
-> +	struct page		*page;
-> +	unsigned long		address;
-> +	struct vm_area_struct	*vma;
-> +};
-> +
-> +static void bgp_fixup_cache_tlb(void *parm)
-> +{
-> +	struct bgp_fixup_parm	*p = parm;
-> +
-> +	if (!PageHighMem(p->page))
-> +		flush_dcache_icache_page(p->page);
-> +	local_flush_tlb_page(p->vma, p->address);
-> +}
-> +
-> +static void bgp_fixup_access_perms(struct vm_area_struct *vma,
-> +				  unsigned long address,
-> +				  int is_write, int is_exec)
-> +{
-> +	struct mm_struct *mm = vma->vm_mm;
-> +	pte_t *ptep = NULL;
-> +	pmd_t *pmdp;
-> +
-> +	if (get_pteptr(mm, address, &ptep, &pmdp)) {
-> +		spinlock_t *ptl = pte_lockptr(mm, pmdp);
-> +		pte_t old;
-> +
-> +		spin_lock(ptl);
-> +		old = *ptep;
-> +		if (pte_present(old)) {
-> +			struct page *page = pte_page(old);
-> +
-> +			if (is_exec) {
-> +				struct bgp_fixup_parm param = {
-> +					.page		= page,
-> +					.address	= address,
-> +					.vma		= vma,
-> +				};
-> +				pte_update(ptep, _PAGE_HWWRITE, 0);
-> +				on_each_cpu(bgp_fixup_cache_tlb, &param, 1);
+_GLOBAL(__setup_cpu_460ex)
+_GLOBAL(__setup_cpu_460gt)
+        mflr    r4
+        bl      __init_fpu_44x
+        bl      __fixup_440A_mcheck
+        mtlr    r4
+        blr
 
-Gotta be very careful with on_each_cpu() done within a lock. I wonder if
-we could fast-path & simplify that using crits, is there a way to shoot
-criticial IPIs to the other cores ? Might even be able in this case to
-do it entirely in asm in the page fault path.
+Looks like the 460 setup invokes a bunch of 440 calls!  Would you
+prefer I setup my own entry point (setup_cpu_bgp or setup_cpu_450)
+which makes the same calls?
 
-> +				pte_update(ptep, 0, _PAGE_EXEC);
-> +				pte_unmap_unlock(ptep, ptl);
-> +				return;
-> +			}
-> +			if (is_write &&
-> +			    (pte_val(old) & _PAGE_RW) &&
-> +			    (pte_val(old) & _PAGE_DIRTY) &&
-> +			    !(pte_val(old) & _PAGE_HWWRITE)) {
-> +				pte_update(ptep, _PAGE_EXEC, _PAGE_HWWRITE);
-> +			}
-> +		}
-> +		if (!pte_same(old, *ptep))
-> +			flush_tlb_page(vma, address);
-> +		pte_unmap_unlock(ptep, ptl);
-> +	}
-> +}
-> +#endif /* CONFIG_BGP */
-> +
->  /*
->   * For 600- and 800-family processors, the error_code parameter is DSISR
->   * for a data fault, SRR1 for an instruction fault. For 400-family processors
-> @@ -333,6 +404,12 @@ good_area:
->  		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1, 0,
->  				     regs, address);
->  	}
-> +
-> +#ifdef CONFIG_BGP
-> +	/* Fixup _PAGE_EXEC and _PAGE_HWWRITE if necessary */
-> +	bgp_fixup_access_perms(vma, address, is_write, is_exec);
-> +#endif /* CONFIG_BGP */
-> +
->  	up_read(&mm->mmap_sem);
->  	return 0;
->  
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 3a3c711..b77a25f 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -300,7 +300,7 @@ config PPC_PERF_CTRS
->           This enables the powerpc-specific perf_event back-end.
->  
->  config SMP
-> -	depends on PPC_BOOK3S || PPC_BOOK3E || FSL_BOOKE || PPC_47x
-> +	depends on PPC_BOOK3S || PPC_BOOK3E || FSL_BOOKE || PPC_47x || BGP
->  	bool "Symmetric multi-processing support"
->  	---help---
->  	  This enables support for systems with more than one CPU. If you have
+     -eric
