@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4E140B71B4
+	by ozlabs.org (Postfix) with ESMTPS id 7F966B71B4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 10:36:19 +1000 (EST)
-Subject: Re: [PATCH 5/7] [RFC] force 32-byte aligned kmallocs
+	Fri, 20 May 2011 10:39:13 +1000 (EST)
+Subject: Re: [PATCH 6/7] [RFC] enable early TLBs for BG/P
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Eric Van Hensbergen <ericvh@gmail.com>
-In-Reply-To: <1305753895-24845-5-git-send-email-ericvh@gmail.com>
+In-Reply-To: <1305753895-24845-6-git-send-email-ericvh@gmail.com>
 References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-5-git-send-email-ericvh@gmail.com>
+	<1305753895-24845-6-git-send-email-ericvh@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 May 2011 10:36:09 +1000
-Message-ID: <1305851769.7481.90.camel@pasglop>
+Date: Fri, 20 May 2011 10:39:01 +1000
+Message-ID: <1305851941.7481.92.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	bg-linux@lists.anl-external.org
@@ -27,28 +27,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
-> For BGP, it is convenient for 'kmalloc' to come back with 32-byte
-> aligned units for torus DMA
-> 
-> Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
-> ---
->  arch/powerpc/include/asm/page_32.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-> index 68d73b2..fb0a7ae 100644
-> --- a/arch/powerpc/include/asm/page_32.h
-> +++ b/arch/powerpc/include/asm/page_32.h
-> @@ -9,7 +9,7 @@
->  
->  #define VM_DATA_DEFAULT_FLAGS	VM_DATA_DEFAULT_FLAGS32
->  
-> -#ifdef CONFIG_NOT_COHERENT_CACHE
-> +#if defined(CONFIG_NOT_COHERENT_CACHE) || defined(CONFIG_BGP)
->  #define ARCH_DMA_MINALIGN	L1_CACHE_BYTES
->  #endif
+> BG/P maps firmware with an early TLB
 
-Is DMA cache coherent on BG/P ? That's odd for a 4xx base :-)
+That's a bit gross. How often do you call that firmware in practice ?
+Aren't you better off instead inserting a TLB entry for it when you call
+it instead ? A simple tlbsx. + tlbwe sequence would do. That would free
+up a TLB entry for normal use.
 
 Cheers,
 Ben.
+
+> Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
+> ---
+>  arch/powerpc/include/asm/mmu-44x.h |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
+> index ca1b90c..2807d6e 100644
+> --- a/arch/powerpc/include/asm/mmu-44x.h
+> +++ b/arch/powerpc/include/asm/mmu-44x.h
+> @@ -115,8 +115,12 @@ typedef struct {
+>  #endif /* !__ASSEMBLY__ */
+>  
+>  #ifndef CONFIG_PPC_EARLY_DEBUG_44x
+> +#ifndef CONFIG_BGP
+>  #define PPC44x_EARLY_TLBS	1
+> -#else
+> +#else /* CONFIG_BGP */
+> +#define PPC44x_EARLY_TLBS	2
+> +#endif /* CONFIG_BGP */
+> +#else /* CONFIG_PPC_EARLY_DEBUG_44x */
+>  #define PPC44x_EARLY_TLBS	2
+>  #define PPC44x_EARLY_DEBUG_VIRTADDR	(ASM_CONST(0xf0000000) \
+>  	| (ASM_CONST(CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW) & 0xffff))
