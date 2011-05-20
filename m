@@ -1,25 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A75A9B71BD
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6E882B71A4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 13:52:31 +1000 (EST)
-Subject: Re: [bg-linux] [PATCH 6/7] [RFC] enable early TLBs for BG/P
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kazutomo Yoshii <kazutomo@mcs.anl.gov>
-In-Reply-To: <4DD5E218.5030508@mcs.anl.gov>
-References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-6-git-send-email-ericvh@gmail.com>
-	<1305851941.7481.92.camel@pasglop>
-	<BANLkTinAqeu7C+U_HFrOAOctFTuSUwG-iA@mail.gmail.com>
-	<1305856442.7481.120.camel@pasglop>  <4DD5E218.5030508@mcs.anl.gov>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 May 2011 13:52:21 +1000
-Message-ID: <1305863541.7481.132.camel@pasglop>
+	Fri, 20 May 2011 14:14:28 +1000 (EST)
+Date: Fri, 20 May 2011 14:14:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: manual merge of the tip tree with the powerpc tree
+Message-Id: <20110520141425.dd38cb7d.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	bg-linux@lists.anl-external.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll"
+Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,98 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Unfortunately, the firmware is also required:
-> - to configure Blue Gene Interrupt Controller(BIC)
+--Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can't we just write bare metal code for that ?
+Hi all,
 
-> - to configure Torus DMA unit. e.g. fifo
+Today's linux-next merge of the tip tree got a conflict in
+arch/powerpc/kernel/smp.c between commit 23d72bfd8f9f ("powerpc:
+Consolidate ipi message mux and demux") from the powerpc tree and commit
+184748cc50b2 ("sched: Provide scheduler_ipi() callback in response to
+smp_send_reschedule()") from the tip tree.
 
-Same
-
-> - to configure global interrupt (even we don't use, we need to disable 
-> some channel correctly)
-
-Same
-
-> - to access node personality information (node id, DDR size, HZ, etc) or 
-> maybe we can directly access SRAM?
-
-That should be turned into device-tree at boot, possibly from a
-bootloader or from the zImage wrapper.
-
-> etc, etc.
-> 
-> >> As such the IO Node guys, the Compute Node Kernel guys and the
-> >> ZeptoOS guys use it quite a bit.  The kittyhawk guys on the other hand
-> >> barely use it at all, in fact I believe they do all the interaction with
-> >> it during uboot and then shut it off.
-> >>      
-> >    
-> (I'm one of the ZeptoOS guys, btw)
-
-Heh ok.
-
-> As a regular ppc linux usage, our firmware dependency is minimum as well.
-> However,  with our HPC extension, the firmware functions are called when
-> it configures BGP specific network hardware.
-> 
-> We are not planning to submit our HPC extension here anytime soon
-> because our work is very special purpose and includes lots of dirty hack 
-> right now.
-
-Ok.
-
+The former superceded part of the latter's changes, so I just used the
+former for that.
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Thanks,
-> Kaz
-> > I would prefer that approach.
-> >
-> >    
-> >> IIRC, the sticky question is RAS support, there are certain things it
-> >> wants to jump to firmware to deal with and expects things to be mapped
-> >> an pinned into memory.
-> >>
-> >> Furthermore, I think it may make assumptions about where in the TLB the
-> >> mappings are.
-> >>      
-> > This is gross, especially on a system with only 64 SW loaded TLB
-> > entries :-(
-> >
-> >    
-> >> Since the kittyhawk guys
-> >> obviously ignore this by shutting it down, its not clear just how
-> >> important this is.  I'm game to
-> >> try the dynamic mapping as you suggest if you would prefer it.
-> >>      
-> > I would yes, we can sort things out later for RAS.
-> >
-> >    
-> >> Its worth mentioning that I believe with BG/Q, the plan is to rely on
-> >> the firmware even more extensively, but I haven't looked at any of the code yet to verify
-> >> whether or not this is true.
-> >>      
-> > This is tantamount to linking a binary blob with the kernel ... it's a
-> > fine line. At some point we might refuse the patches if they go too far
-> > in that direction.
-> >
-> > Cheers,
-> > Ben.
-> >
-> >    
-> >>       -eric
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >> Please read the FAQ at  http://www.tux.org/lkml/
-> >>      
-> >
-> > _______________________________________________
-> > bg-linux mailing list
-> > bg-linux@lists.anl-external.org
-> > https://lists.anl-external.org/mailman/listinfo/bg-linux
-> > http://bg-linux.anl-external.org/wiki
-> >    
+--Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJN1eqhAAoJEDMEi1NhKgbsR+IIAKKfRcS7sd8JgO2z23qr7Z/w
+41pG3hRdtEco7wvvL5j0dwyRbBqHINt4bq5g54PZvdke1ztH4acXfdPN9B933Izf
+l+wijwxpcq2O33goFwYdIe2iZRvSLF8a4mwFNLOUG2avr3Uhyy6AXGZPYWPwt5eo
+qUM1mjogl4i/r3Z3upi07Uee9pUMDwlk6g4mzDI02tWKIE+kGoUNnGbjXnxO4tvR
+mco7/rxHYywgnxW1PiMM/hj/LqhQFOLpldRG6RxYLkjqLr8PstRmLkXL3z2KJ5AD
+BBwMZOfdXNiYaIFxyldLw6KYjiayqLwi/bQsg0GLts1kovwDIQydh0SEbre5Q4k=
+=vlAW
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll--
