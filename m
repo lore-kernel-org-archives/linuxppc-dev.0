@@ -1,27 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 97043B719F
+Return-Path: <ericvh@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2E6F6B6F7A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 22:42:30 +1000 (EST)
-Subject: Re: [PATCH 2/2][v3] rapidio,
-	powerpc/85xx: Error interrupt handler for sRIO.
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55201D20C69@CORPEXCH1.na.ads.idt.com>
-Date: Fri, 20 May 2011 07:42:05 -0500
-Message-Id: <C1F44016-59F6-459E-82E6-0A265A280D48@kernel.crashing.org>
-References: <1290063473-20950-1-git-send-email-b21989@freescale.com><0CE8B6BE3C4AD74AB97D9D29BD24E552015F5E40@CORPEXCH1.na.ads.idt.com><267A3B246C22C34A8E574051858E077002E834@039-SN1MPN1-003.039d.mgd.msft.net><0CE8B6BE3C4AD74AB97D9D29BD24E5520162CA22@CORPEXCH1.na.ads.idt.com>
-	<6CBDFAB4-F884-4B33-8A77-0AE2CF2D2ED4@kernel.crashing.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201D20C69@CORPEXCH1.na.ads.idt.com>
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Cc: Li Yang-R58472 <r58472@freescale.com>,
-	Xie Shaohui-B21989 <B21989@freescale.com>,
-	Zang Roy-R61911 <r61911@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+	Fri, 20 May 2011 23:01:51 +1000 (EST)
+Received: by fxm5 with SMTP id 5so3007565fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 May 2011 06:01:47 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1305863541.7481.132.camel@pasglop>
+References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
+	<1305753895-24845-6-git-send-email-ericvh@gmail.com>
+	<1305851941.7481.92.camel@pasglop>
+	<BANLkTinAqeu7C+U_HFrOAOctFTuSUwG-iA@mail.gmail.com>
+	<1305856442.7481.120.camel@pasglop> <4DD5E218.5030508@mcs.anl.gov>
+	<1305863541.7481.132.camel@pasglop>
+Date: Fri, 20 May 2011 08:01:47 -0500
+Message-ID: <BANLkTikG9mfzXM0WmWxPLhjGD-M6AVznkw@mail.gmail.com>
+Subject: Re: [bg-linux] [PATCH 6/7] [RFC] enable early TLBs for BG/P
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Kazutomo Yoshii <kazutomo@mcs.anl.gov>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,106 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Any reason for me not to apply this and send it upstream for now?
+On Thu, May 19, 2011 at 10:52 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>> Unfortunately, the firmware is also required:
+>> - to configure Blue Gene Interrupt Controller(BIC)
+>> - to configure Torus DMA unit. e.g. fifo
+>> - to configure global interrupt (even we don't use, we need to disable
+>> some channel correctly)
+>
+> Can't we just write bare metal code for that ?
+>
 
-- k
+The kittyhawk code has the bare-metal equivalents for all of these.
+When I get to the drivers, I'll favor the kittyhawk versions for
+submission and then we'll see if it would be possible to adapt the HPC
+extensions to use the bare-metal versions of the drivers versus the
+firmware interface.
 
-On May 20, 2011, at 7:14 AM, Bounine, Alexandre wrote:
+>> - to access node personality information (node id, DDR size, HZ, etc) or
+>> maybe we can directly access SRAM?
+>
+> That should be turned into device-tree at boot, possibly from a
+> bootloader or from the zImage wrapper.
+>
 
-> Kumar,
-> 
-> Are you planning to release support for dual-port SRIO controller?
-> If yes, it may be just merged into it (unless dual-port implementation
-> already has it).
-> 
-> Alex.
-> 
->> -----Original Message-----
->> From: linuxppc-dev-bounces+alexandre.bounine=idt.com@lists.ozlabs.org
->> [mailto:linuxppc-dev-
->> bounces+alexandre.bounine=idt.com@lists.ozlabs.org] On Behalf Of Kumar
->> Gala
->> Sent: Friday, May 20, 2011 12:29 AM
->> To: Bounine, Alexandre
->> Cc: Li Yang-R58472; Xie Shaohui-B21989; Zang Roy-R61911; akpm@linux-
->> foundation.org; linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780
->> Subject: Re: [PATCH 2/2][v3] rapidio,powerpc/85xx: Error interrupt
->> handler for sRIO.
->> 
->> Alex,
->> 
->> What are we doing with this patch?
->> 
->> - k
->> 
->> On Dec 3, 2010, at 12:04 PM, Bounine, Alexandre wrote:
->> 
->>> I think they should follow the previous two that are in Kumar's
-> tree.
->>> Probably Kumar may give you a better timeline estimate for this.
->>> 
->>> Alex.
->>> 
->>> From:
-> linuxppc-dev-bounces+alexandre.bounine=idt.com@lists.ozlabs.org
->> [mailto:linuxppc-dev-
->> bounces+alexandre.bounine=idt.com@lists.ozlabs.org] On Behalf Of Xie
->> Shaohui-B21989
->>> Sent: Thursday, December 02, 2010 10:29 PM
->>> To: Bounine, Alexandre; linuxppc-dev@lists.ozlabs.org
->>> Cc: akpm@linux-foundation.org; Gala Kumar-B11780; Li Yang-R58472;
->> Zang Roy-R61911
->>> Subject: RE: [PATCH 2/2][v3] rapidio,powerpc/85xx: Error interrupt
->> handler for sRIO.
->>> 
->>> Hi Alex,
->>> 
->>> May I ask when would these patches be applied to mainline?
->>> 
->>> 
->>> Best Regards,
->>> Shaohui Xie
->>> 
->>> From: Bounine, Alexandre [mailto:Alexandre.Bounine@idt.com]
->>> Sent: Wednesday, December 01, 2010 4:49 AM
->>> To: Xie Shaohui-B21989; linuxppc-dev@lists.ozlabs.org
->>> Cc: akpm@linux-foundation.org; Li Yang-R58472; Gala Kumar-B11780;
->> Zang Roy-R61911
->>> Subject: RE: [PATCH 2/2][v3] rapidio, powerpc/85xx: Error interrupt
->> handler for sRIO.
->>> 
->>> Applies correctly now. Lab tested on 8548/RIO setup.
->>> 
->>> Alex.
->>> 
->>>> -----Original Message-----
->>>> From: Shaohui Xie [mailto:b21989@freescale.com]
->>>> Sent: Thursday, November 18, 2010 1:58 AM
->>>> To: linuxppc-dev@lists.ozlabs.org
->>>> Cc: akpm@linux-foundation.org; Shaohui Xie; Li Yang; Kumar Gala;
-> Roy
->>> Zang; Bounine, Alexandre
->>>> Subject: [PATCH 2/2][v3] rapidio, powerpc/85xx: Error interrupt
->>> handler for sRIO.
->>>> 
->>>> The sRIO controller reports errors to the core with one signal, it
->>> uses
->>>> register EPWISR to provides the core quick access to where the
-> error
->>> occurred.
->>>> The EPWISR indicates that there are 4 interrupts sources, port1,
->>> port2, message
->>>> unit and port write receive, but the sRIO driver does not support
->>> port2
->>>> for now, still the handler takes care of port2.
->>>> Currently the handler only clear error status without any recovery.
->>> 
->>> _______________________________________________
->>> Linuxppc-dev mailing list
->>> Linuxppc-dev@lists.ozlabs.org
->>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->> 
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+This is the approach is used by the kittyhawk u-boot approach.
+However, it would also be just as easy to construct an in-memory
+device-tree within Linux by mapping the personality page and copying
+the relevant bits out.  This has the advantage of being able to boot
+Linux directly on the nodes without an intermediary boot loader (which
+kittyhawk uses just to allow us customize which kernel boots on a
+node-to-node basis whereas the stock system boots the same kernel on
+all the nodes within a partition allocation (64-40,000 nodes)).
+
+         -eric
