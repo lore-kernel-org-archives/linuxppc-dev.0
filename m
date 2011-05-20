@@ -1,31 +1,23 @@
-Return-Path: <R58472@freescale.com>
-Received: from TX2EHSOBE002.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B11780@freescale.com>
+Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
+	[65.55.88.14]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2BBA1B71A2
+	by ozlabs.org (Postfix) with ESMTPS id C4F3DB6F71
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 23:42:19 +1000 (EST)
-From: Li Yang-R58472 <R58472@freescale.com>
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>, Kumar Gala
-	<galak@kernel.crashing.org>
-Subject: =?gb2312?B?tPC4tDogW1BBVENIIDIvMl1bdjNdIHJhcGlkaW8scG93ZXJwYy84NXh4OiBF?=
-	=?gb2312?Q?rror_interrupt_handler_for_sRIO.?=
-Date: Fri, 20 May 2011 13:42:06 +0000
-Message-ID: <3F607A5180246847A760FD34122A1E051684E8@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1290063473-20950-1-git-send-email-b21989@freescale.com><0CE8B6BE3C4AD74AB97D9D29BD24E552015F5E40@CORPEXCH1.na.ads.idt.com><267A3B246C22C34A8E574051858E077002E834@039-SN1MPN1-003.039d.mgd.msft.net><0CE8B6BE3C4AD74AB97D9D29BD24E5520162CA22@CORPEXCH1.na.ads.idt.com>
-	<6CBDFAB4-F884-4B33-8A77-0AE2CF2D2ED4@kernel.crashing.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201D20C69@CORPEXCH1.na.ads.idt.com>
-	<C1F44016-59F6-459E-82E6-0A265A280D48@kernel.crashing.org>,
-	<0CE8B6BE3C4AD74AB97D9D29BD24E55201D20CA9@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E55201D20CA9@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Zang Roy-R61911 <R61911@freescale.com>,
-	Xie Shaohui-B21989 <B21989@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>
+	Fri, 20 May 2011 23:55:02 +1000 (EST)
+Subject: Re: [PATCH 2/2][v3] rapidio,
+	powerpc/85xx: Error interrupt handler for sRIO.
+MIME-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1290063473-20950-1-git-send-email-b21989@freescale.com>
+Date: Fri, 20 May 2011 08:53:18 -0500
+Message-ID: <341CA772-7912-40D4-B340-A83FDFD6E17B@freescale.com>
+References: <1290063473-20950-1-git-send-email-b21989@freescale.com>
+To: Shaohui Xie <b21989@freescale.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,82 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgQWxleCwKCkp1c3QgZm9yIHlvdXIgaW5mb3JtYXRpb24gYXMgeW91IG1lbnRpb25lZCBhYm91
-dCBpdC4gIFRoZSBkdWFsIHBvcnQgc3VwcG9ydCBpcyBiZWluZyB3b3JrZWQgb24sIGJ1dCBub3Qg
-bGlrZWx5IHRvIGJlIHJlYWR5IGluIHRoaXMgbWVyZ2Ugd2luZG93LgoKLSBMZW8KCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18Kt6K8/sjLOiBCb3VuaW5lLCBBbGV4YW5k
-cmUgW0FsZXhhbmRyZS5Cb3VuaW5lQGlkdC5jb21dCreiy83KsbzkOiAyMDExxOo11MIyMMjVIDIx
-OjE4CrW9OiBLdW1hciBHYWxhCkNjOiBMaSBZYW5nLVI1ODQ3MjsgWGllIFNoYW9odWktQjIxOTg5
-OyBaYW5nIFJveS1SNjE5MTE7IGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnOyBHYWxhIEt1bWFyLUIxMTc4MArW98ziOiBSRTogW1BBVENIIDIv
-Ml1bdjNdIHJhcGlkaW8scG93ZXJwYy84NXh4OiBFcnJvciBpbnRlcnJ1cHQgaGFuZGxlciBmb3Ig
-c1JJTy4KCk5vdCBhdCBhbGwuIEkgdGVzdGVkIGl0IGVhcmxpZXIgYW5kIGl0IHdvcmtzIGZvciBt
-ZSBvbiA4NTQ4IHBsYXRmb3JtLgoKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206
-IEt1bWFyIEdhbGEgW21haWx0bzpnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnXQo+IFNlbnQ6IEZy
-aWRheSwgTWF5IDIwLCAyMDExIDg6NDIgQU0KPiBUbzogQm91bmluZSwgQWxleGFuZHJlCj4gQ2M6
-IExpIFlhbmctUjU4NDcyOyBYaWUgU2hhb2h1aS1CMjE5ODk7IFphbmcgUm95LVI2MTkxMTsgYWtw
-bUBsaW51eC0KPiBmb3VuZGF0aW9uLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7
-IEdhbGEgS3VtYXItQjExNzgwCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdW3YzXSByYXBpZGlv
-LHBvd2VycGMvODV4eDogRXJyb3IgaW50ZXJydXB0Cj4gaGFuZGxlciBmb3Igc1JJTy4KPgo+IEFu
-eSByZWFzb24gZm9yIG1lIG5vdCB0byBhcHBseSB0aGlzIGFuZCBzZW5kIGl0IHVwc3RyZWFtIGZv
-ciBub3c/Cj4KPiAtIGsKPgo+IE9uIE1heSAyMCwgMjAxMSwgYXQgNzoxNCBBTSwgQm91bmluZSwg
-QWxleGFuZHJlIHdyb3RlOgo+Cj4gPiBLdW1hciwKPiA+Cj4gPiBBcmUgeW91IHBsYW5uaW5nIHRv
-IHJlbGVhc2Ugc3VwcG9ydCBmb3IgZHVhbC1wb3J0IFNSSU8gY29udHJvbGxlcj8KPiA+IElmIHll
-cywgaXQgbWF5IGJlIGp1c3QgbWVyZ2VkIGludG8gaXQgKHVubGVzcyBkdWFsLXBvcnQKPiBpbXBs
-ZW1lbnRhdGlvbgo+ID4gYWxyZWFkeSBoYXMgaXQpLgo+ID4KPiA+IEFsZXguCj4gPgo+ID4+IC0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gPj4gRnJvbTogbGludXhwcGMtZGV2LQo+IGJvdW5j
-ZXMrYWxleGFuZHJlLmJvdW5pbmU9aWR0LmNvbUBsaXN0cy5vemxhYnMub3JnCj4gPj4gW21haWx0
-bzpsaW51eHBwYy1kZXYtCj4gPj4gYm91bmNlcythbGV4YW5kcmUuYm91bmluZT1pZHQuY29tQGxp
-c3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZgo+IEt1bWFyCj4gPj4gR2FsYQo+ID4+IFNlbnQ6
-IEZyaWRheSwgTWF5IDIwLCAyMDExIDEyOjI5IEFNCj4gPj4gVG86IEJvdW5pbmUsIEFsZXhhbmRy
-ZQo+ID4+IENjOiBMaSBZYW5nLVI1ODQ3MjsgWGllIFNoYW9odWktQjIxOTg5OyBaYW5nIFJveS1S
-NjE5MTE7CmFrcG1AbGludXgtCj4gPj4gZm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnOyBHYWxhIEt1bWFyLUIxMTc4MAo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
-Mi8yXVt2M10gcmFwaWRpbyxwb3dlcnBjLzg1eHg6IEVycm9yIGludGVycnVwdAo+ID4+IGhhbmRs
-ZXIgZm9yIHNSSU8uCj4gPj4KPiA+PiBBbGV4LAo+ID4+Cj4gPj4gV2hhdCBhcmUgd2UgZG9pbmcg
-d2l0aCB0aGlzIHBhdGNoPwo+ID4+Cj4gPj4gLSBrCj4gPj4KPiA+PiBPbiBEZWMgMywgMjAxMCwg
-YXQgMTI6MDQgUE0sIEJvdW5pbmUsIEFsZXhhbmRyZSB3cm90ZToKPiA+Pgo+ID4+PiBJIHRoaW5r
-IHRoZXkgc2hvdWxkIGZvbGxvdyB0aGUgcHJldmlvdXMgdHdvIHRoYXQgYXJlIGluIEt1bWFyJ3MK
-PiA+IHRyZWUuCj4gPj4+IFByb2JhYmx5IEt1bWFyIG1heSBnaXZlIHlvdSBhIGJldHRlciB0aW1l
-bGluZSBlc3RpbWF0ZSBmb3IgdGhpcy4KPiA+Pj4KPiA+Pj4gQWxleC4KPiA+Pj4KPiA+Pj4gRnJv
-bToKPiA+IGxpbnV4cHBjLWRldi1ib3VuY2VzK2FsZXhhbmRyZS5ib3VuaW5lPWlkdC5jb21AbGlz
-dHMub3psYWJzLm9yZwo+ID4+IFttYWlsdG86bGludXhwcGMtZGV2LQo+ID4+IGJvdW5jZXMrYWxl
-eGFuZHJlLmJvdW5pbmU9aWR0LmNvbUBsaXN0cy5vemxhYnMub3JnXSBPbiBCZWhhbGYgT2YKWGll
-Cj4gPj4gU2hhb2h1aS1CMjE5ODkKPiA+Pj4gU2VudDogVGh1cnNkYXksIERlY2VtYmVyIDAyLCAy
-MDEwIDEwOjI5IFBNCj4gPj4+IFRvOiBCb3VuaW5lLCBBbGV4YW5kcmU7IGxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnCj4gPj4+IENjOiBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnOyBHYWxh
-IEt1bWFyLUIxMTc4MDsgTGkgWWFuZy1SNTg0NzI7Cj4gPj4gWmFuZyBSb3ktUjYxOTExCj4gPj4+
-IFN1YmplY3Q6IFJFOiBbUEFUQ0ggMi8yXVt2M10gcmFwaWRpbyxwb3dlcnBjLzg1eHg6IEVycm9y
-IGludGVycnVwdAo+ID4+IGhhbmRsZXIgZm9yIHNSSU8uCj4gPj4+Cj4gPj4+IEhpIEFsZXgsCj4g
-Pj4+Cj4gPj4+IE1heSBJIGFzayB3aGVuIHdvdWxkIHRoZXNlIHBhdGNoZXMgYmUgYXBwbGllZCB0
-byBtYWlubGluZT8KPiA+Pj4KPiA+Pj4KPiA+Pj4gQmVzdCBSZWdhcmRzLAo+ID4+PiBTaGFvaHVp
-IFhpZQo+ID4+Pgo+ID4+PiBGcm9tOiBCb3VuaW5lLCBBbGV4YW5kcmUgW21haWx0bzpBbGV4YW5k
-cmUuQm91bmluZUBpZHQuY29tXQo+ID4+PiBTZW50OiBXZWRuZXNkYXksIERlY2VtYmVyIDAxLCAy
-MDEwIDQ6NDkgQU0KPiA+Pj4gVG86IFhpZSBTaGFvaHVpLUIyMTk4OTsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmcKPiA+Pj4gQ2M6IGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmc7IExpIFlh
-bmctUjU4NDcyOyBHYWxhIEt1bWFyLUIxMTc4MDsKPiA+PiBaYW5nIFJveS1SNjE5MTEKPiA+Pj4g
-U3ViamVjdDogUkU6IFtQQVRDSCAyLzJdW3YzXSByYXBpZGlvLCBwb3dlcnBjLzg1eHg6IEVycm9y
-CmludGVycnVwdAo+ID4+IGhhbmRsZXIgZm9yIHNSSU8uCj4gPj4+Cj4gPj4+IEFwcGxpZXMgY29y
-cmVjdGx5IG5vdy4gTGFiIHRlc3RlZCBvbiA4NTQ4L1JJTyBzZXR1cC4KPiA+Pj4KPiA+Pj4gQWxl
-eC4KPiA+Pj4KPiA+Pj4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gPj4+PiBGcm9tOiBT
-aGFvaHVpIFhpZSBbbWFpbHRvOmIyMTk4OUBmcmVlc2NhbGUuY29tXQo+ID4+Pj4gU2VudDogVGh1
-cnNkYXksIE5vdmVtYmVyIDE4LCAyMDEwIDE6NTggQU0KPiA+Pj4+IFRvOiBsaW51eHBwYy1kZXZA
-bGlzdHMub3psYWJzLm9yZwo+ID4+Pj4gQ2M6IGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmc7IFNo
-YW9odWkgWGllOyBMaSBZYW5nOyBLdW1hciBHYWxhOwo+ID4gUm95Cj4gPj4+IFphbmc7IEJvdW5p
-bmUsIEFsZXhhbmRyZQo+ID4+Pj4gU3ViamVjdDogW1BBVENIIDIvMl1bdjNdIHJhcGlkaW8sIHBv
-d2VycGMvODV4eDogRXJyb3IgaW50ZXJydXB0Cj4gPj4+IGhhbmRsZXIgZm9yIHNSSU8uCj4gPj4+
-Pgo+ID4+Pj4gVGhlIHNSSU8gY29udHJvbGxlciByZXBvcnRzIGVycm9ycyB0byB0aGUgY29yZSB3
-aXRoIG9uZSBzaWduYWwsCml0Cj4gPj4+IHVzZXMKPiA+Pj4+IHJlZ2lzdGVyIEVQV0lTUiB0byBw
-cm92aWRlcyB0aGUgY29yZSBxdWljayBhY2Nlc3MgdG8gd2hlcmUgdGhlCj4gPiBlcnJvcgo+ID4+
-PiBvY2N1cnJlZC4KPiA+Pj4+IFRoZSBFUFdJU1IgaW5kaWNhdGVzIHRoYXQgdGhlcmUgYXJlIDQg
-aW50ZXJydXB0cyBzb3VyY2VzLCBwb3J0MSwKPiA+Pj4gcG9ydDIsIG1lc3NhZ2UKPiA+Pj4+IHVu
-aXQgYW5kIHBvcnQgd3JpdGUgcmVjZWl2ZSwgYnV0IHRoZSBzUklPIGRyaXZlciBkb2VzIG5vdCBz
-dXBwb3J0Cj4gPj4+IHBvcnQyCj4gPj4+PiBmb3Igbm93LCBzdGlsbCB0aGUgaGFuZGxlciB0YWtl
-cyBjYXJlIG9mIHBvcnQyLgo+ID4+Pj4gQ3VycmVudGx5IHRoZSBoYW5kbGVyIG9ubHkgY2xlYXIg
-ZXJyb3Igc3RhdHVzIHdpdGhvdXQgYW55Cj4gcmVjb3ZlcnkuCj4gPj4+Cj4gPj4+IF9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gPj4+IExpbnV4cHBjLWRl
-diBtYWlsaW5nIGxpc3QKPiA+Pj4gTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKPiA+Pj4g
-aHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldgo+ID4+Cj4gPj4g
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiA+PiBMaW51
-eHBwYy1kZXYgbWFpbGluZyBsaXN0Cj4gPj4gTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcK
-PiA+PiBodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2CgoK
+
+On Nov 18, 2010, at 12:57 AM, Shaohui Xie wrote:
+
+> The sRIO controller reports errors to the core with one signal, it =
+uses
+> register EPWISR to provides the core quick access to where the error =
+occurred.
+> The EPWISR indicates that there are 4 interrupts sources, port1, =
+port2, message
+> unit and port write receive, but the sRIO driver does not support =
+port2
+> for now, still the handler takes care of port2.
+> Currently the handler only clear error status without any recovery.
+>=20
+> Signed-off-by: Shaohui Xie <b21989@freescale.com>
+> Cc: Li Yang <leoli@freescale.com>
+> Cc: Kumar Gala <kumar.gala@freescale.com>
+> Cc: Roy Zang <tie-fei.zang@freescale.com>
+> Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+> ---
+> updated to 37-rc2
+> arch/powerpc/sysdev/fsl_rio.c |   85 =
++++++++++++++++++++++++++++++++++++++----
+> 1 files changed, 77 insertions(+), 8 deletions(-)
+
+applied to merge
+
+- k=
