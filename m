@@ -1,29 +1,20 @@
-Return-Path: <ericvh@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A4E4FB71A6
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 58F53B71A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 10:30:25 +1000 (EST)
-Received: by fxm5 with SMTP id 5so2687869fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 17:30:20 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <6241.1305847001@neuling.org>
+	Fri, 20 May 2011 10:35:23 +1000 (EST)
+Subject: Re: [PATCH 2/7] [RFC] add bluegene entry to cputable
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+In-Reply-To: <1305753895-24845-2-git-send-email-ericvh@gmail.com>
 References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-3-git-send-email-ericvh@gmail.com>
-	<425.1305784718@neuling.org>
-	<BANLkTimKhApFW8G1-pG0u_9Kv2YB0R1O0w@mail.gmail.com>
-	<29601.1305840992@neuling.org>
-	<BANLkTi=rc5vZm3xAXHpHSxSH1wBWKhv92A@mail.gmail.com>
-	<6241.1305847001@neuling.org>
-Date: Thu, 19 May 2011 19:30:20 -0500
-Message-ID: <BANLkTindzEFRjEGkc9bLccrFUdVtvbA73A@mail.gmail.com>
-Subject: Re: [PATCH 3/7] [RFC] add support for BlueGene/P FPU
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<1305753895-24845-2-git-send-email-ericvh@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 May 2011 10:35:09 +1000
+Message-ID: <1305851709.7481.89.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,59 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 6:16 PM, Michael Neuling <mikey@neuling.org> wrote:
-> In message <BANLkTi=3Drc5vZm3xAXHpHSxSH1wBWKhv92A@mail.gmail.com> you wro=
-te:
->> On Thu, May 19, 2011 at 4:36 PM, Michael Neuling <mikey@neuling.org> wro=
-te:
->> > In message <BANLkTimKhApFW8G1-pG0u_9Kv2YB0R1O0w@mail.gmail.com> you wr=
-ote=3D
->> :
->> >> On Thu, May 19, 2011 at 12:58 AM, Michael Neuling <mikey@neuling.org>=
- wr=3D
->> ote=3D3D
->> >> :
->> >> > Eric,
->> >> >
->> >> >> This patch adds save/restore register support for the BlueGene/P
->> >> >> double hummer FPU.
->> >> >
->> >> > What does this mean? =3D3DA0Needs more details here.
->> >> >
->>
->> okay, I've changed it a bit in [V2], if you want more I can do my best.
->
-> If you can describe the whole primary and secondary registers that'd be
-> cool. =A0ASCII art would be awesome! :-)
->
+On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
+> Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
+> ---
+>  arch/powerpc/kernel/cputable.c |   14 ++++++++++++++
+>  1 files changed, 14 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index b9602ee..0eb245e 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -1732,6 +1732,20 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  		.machine_check		= machine_check_440A,
+>  		.platform		= "ppc440",
+>  	},
+> +	{ /* Blue Gene/P */
+> +		.pvr_mask		= 0xfffffff0,
+> +		.pvr_value		= 0x52131880,
+> +		.cpu_name		= "450 Blue Gene/P",
+> +		.cpu_features		= CPU_FTRS_440x6,
+> +		.cpu_user_features	= COMMON_USER_BOOKE |
+> +						PPC_FEATURE_HAS_FPU,
+> +		.mmu_features		= MMU_FTR_TYPE_44x,
+> +		.icache_bsize		= 32,
+> +		.dcache_bsize		= 32,
+> +		.cpu_setup		= __setup_cpu_460gt,
+                                            ^^^^^^^^^^^^^^^^^^
+Are you sure ?
 
-You sure you don't just want a bitfield.conf? :)  I'll do my best, but my
-ASCII art isn't what it used to be.  I'll also include a reference to the P=
-DF.
+Cheers,
+Ben.
 
->> >
->> > Ok, sounds like there is 32*8*2 bytes of data, rather than the normal
->> > 32*8 bytes for FP only (ignoring VSX). =3DA0If this is the case, then =
-you'l=3D
->> l
->> > need make 'fpr' in the thread struct bigger which you can do by settin=
-g
->> > TS_FPRWIDTH =3D3D 2 like we do for VSX.
->> >
-
-Okay - so basically what I have now and TS_FPRWIDTH=3D2 ?
-
->>
->> Since it isn't available on other chips, shoudl it just be PPC_BGP_FPU
->> or PPC_BGP_DOUBLE_FPU?
->
-> I'd probably still prefer it disassociated with the CPU name, but we are
-> really bike shedding here. =A0I'm not too fussed.
->
-
-I'll leave it separate and switch it to PPC_FP2 (or would you prefer
-PPC_FP2_FPU to make it clear) since the public PDF refers to it this way.
-
-If that all sounds good, I'll spin [V3] tomorrow.
-
-     -eric
+> +		.machine_check		= machine_check_440A,
+> +		.platform		= "ppc440",
+> +	},
+>  	{ /* 460EX */
+>  		.pvr_mask		= 0xffff0006,
+>  		.pvr_value		= 0x13020002,
