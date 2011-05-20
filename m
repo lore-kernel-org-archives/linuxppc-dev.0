@@ -1,27 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65430B71A2
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2011 06:13:22 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Mime-Version: 1.0 (Apple Message framework v1084)
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CD120B71A2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 21 May 2011 06:21:29 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4KK4BGJ011182
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2011 14:04:11 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4KKLIol113602
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2011 14:21:18 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4KKLHRT003853
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2011 14:21:17 -0600
+Date: Fri, 20 May 2011 16:22:25 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix 32-bit SMP build
+Message-ID: <20110520202225.GI25179@zod.rchland.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110520144653.GH25179@zod.rchland.ibm.com>
-Date: Fri, 20 May 2011 15:13:05 -0500
-Message-Id: <EBEB3CA6-696B-4411-8E62-0795A9BC1FD7@kernel.crashing.org>
-References: <1305777978.7481.37.camel@pasglop>
-	<20110520132328.GA5785@riccoc20.at.omicron.at>
-	<20110520135845.GG25179@zod.rchland.ibm.com>
-	<20110520143259.GB5785@riccoc20.at.omicron.at>
-	<20110520144653.GH25179@zod.rchland.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Richard Cochran <richardcochran@gmail.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Cc: stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit 69e3cea8d5fd526 introduced start_secondary_resume to misc_32.S,
+however it uses a 64-bit instruction which is not valid on 32-bit
+platforms.  Use 'stw' instead.
 
-On May 20, 2011, at 9:46 AM, Josh Boyer wrote:
+Reported-by: Richard Cochran <richardcochran@gmail.com>
+Tested-by: Richard Cochran <richardcochran@gmail.com>
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-> On Fri, May 20, 2011 at 04:32:59PM +0200, Richard Cochran wrote:
->> On Fri, May 20, 2011 at 09:58:45AM -0400, Josh Boyer wrote:
->>> On Fri, May 20, 2011 at 03:23:29PM +0200, Richard Cochran wrote:
->>>> When I try to build 'next' (now at 208b3a4c), it does not compile =
-due
->>>> to a change from the following commit.
->>>>=20
->>>>> Benjamin Herrenschmidt (1):
->>>>>      powerpc/smp: Make start_secondary_resume available to all CPU =
-variants
->>>>=20
->>>> I would appreciate your help in getting this fixed...
->>>=20
->>> Could you try the patch below?
->>=20
->> Yes, and it both compiles and boots.
->=20
-> Thanks for testing!
->=20
-> Ben, can you pull this patch in as-is (fixing up the Subject), or do =
-you
-> need me to resubmit it?
+---
 
-
-Yeah, we need this all so we can send it to stable for 2.6.39.1
-
-- k=
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 402560e..998a100 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -700,7 +700,7 @@ _GLOBAL(start_secondary_resume)
+	rlwinm  r1,r1,0,0,(31-THREAD_SHIFT)     /* current_thread_info() */
+	addi    r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
+	li      r3,0
+-	std     r3,0(r1)                /* Zero the stack frame pointer */
++	stw     r3,0(r1)                /* Zero the stack frame pointer */
+	bl      start_secondary
+	b       .
+ #endif /* CONFIG_SMP */
