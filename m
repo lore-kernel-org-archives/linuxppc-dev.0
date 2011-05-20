@@ -1,25 +1,22 @@
-Return-Path: <ericvh@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8735CB71C1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 19025B71C3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 11:21:58 +1000 (EST)
-Received: by fxm5 with SMTP id 5so2707631fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 May 2011 18:21:54 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1305851941.7481.92.camel@pasglop>
+	Fri, 20 May 2011 11:50:16 +1000 (EST)
+Subject: Re: [PATCH 5/7] [RFC] force 32-byte aligned kmallocs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+In-Reply-To: <BANLkTimc3jQTOJdqAiqbPxGQNVWe39VqfQ@mail.gmail.com>
 References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-6-git-send-email-ericvh@gmail.com>
-	<1305851941.7481.92.camel@pasglop>
-Date: Thu, 19 May 2011 20:21:54 -0500
-Message-ID: <BANLkTinAqeu7C+U_HFrOAOctFTuSUwG-iA@mail.gmail.com>
-Subject: Re: [PATCH 6/7] [RFC] enable early TLBs for BG/P
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<1305753895-24845-5-git-send-email-ericvh@gmail.com>
+	<1305851769.7481.90.camel@pasglop>
+	<BANLkTimc3jQTOJdqAiqbPxGQNVWe39VqfQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 May 2011 11:50:03 +1000
+Message-ID: <1305856203.7481.116.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,40 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 7:39 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
->> BG/P maps firmware with an early TLB
->
-> That's a bit gross. How often do you call that firmware in practice ?
-> Aren't you better off instead inserting a TLB entry for it when you call
-> it instead ? A simple tlbsx. + tlbwe sequence would do. That would free
-> up a TLB entry for normal use.
->
+On Thu, 2011-05-19 at 19:47 -0500, Eric Van Hensbergen wrote:
+> On Thu, May 19, 2011 at 7:36 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
+> >>
+> >> -#ifdef CONFIG_NOT_COHERENT_CACHE
+> >> +#if defined(CONFIG_NOT_COHERENT_CACHE) || defined(CONFIG_BGP)
+> >>  #define ARCH_DMA_MINALIGN    L1_CACHE_BYTES
+> >>  #endif
+> >
+> > Is DMA cache coherent on BG/P ? That's odd for a 4xx base :-)
+> >
+> 
+> My understanding of things (which could be totally wrong) is that the
+> DMA we care about on BG/P (namely the Torus and Collective networks)
+> is coherent at the L2.  Of course the change in question is talking
+> about L1_CACHE_BYTES, so my reading of this is that its a sleazy way
+> of getting aligned mallocs that make interactions with the tightly
+> coupled networks easier/more-efficient.  I'm open to alternative
+> suggestions.
 
-Well, it depends on who you talk to.  The production software BG/P
-guys use the firmware
-constantly, its the primary interface to the networks, the console,
-and the management software
-which runs the machine.  As such the IO Node guys, the Compute Node
-Kernel guys and the
-ZeptoOS guys use it quite a bit.  The kittyhawk guys on the other hand
-barely use it at all, in fact
-I believe they do all the interaction with it during uboot and then shut it off.
+But if it's not coherent with L1, then you sould have
+CONFIG_NOT_COHERENT_CACHE set and not need that patch... or am I missing
+something ?
 
-IIRC, the sticky question is RAS support, there are certain things it
-wants to jump to firmware
-to deal with and expects things to be mapped an pinned into memory.
-Furthermore, I think it
-may make assumptions about where in the TLB the mappings are.  Since
-the kittyhawk guys
-obviously ignore this by shutting it down, its not clear just how
-important this is.  I'm game to
-try the dynamic mapping as you suggest if you would prefer it.
+One thing we should do some day as well is make that whole non-coherent
+be runtime selected, on the list of things to fix 440+47x in the same
+kernel. Pfiew....
 
-Its worth mentioning that I believe with BG/Q, the plan is to rely on
-the firmware even more
-extensively, but I haven't looked at any of the code yet to verify
-whether or not this is true.
-
-     -eric
+Cheers,
+Ben.
