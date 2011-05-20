@@ -2,18 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0D249B71D2
+	by ozlabs.org (Postfix) with ESMTPS id CC4ADB71BF
 	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 16:09:35 +1000 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p4K69Wxh001042
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 01:09:32 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p4K69VKm001031
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 01:09:31 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 02/14] powerpc: Add a defconfig for 'corenet' 32-bit platforms
-Date: Fri, 20 May 2011 01:09:19 -0500
-Message-Id: <1305871771-16334-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1305871771-16334-1-git-send-email-galak@kernel.crashing.org>
-References: <1305871771-16334-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 01/14] powerpc: Rename e55xx_smp_defconfig to
+	corenet64_smp_defconfig
+Date: Fri, 20 May 2011 01:09:18 -0500
+Message-Id: <1305871771-16334-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The e500mc and e5500 based cores are only available on corenet based
-SoCs.  We use this name for the P204x, P3040, P4040, P4080, P50x0 SoCs
-and any future processors in these families.
+Rather than trying to use the core name we use corenet to distinquish
+the platform/core combo.  corenet64 will be a 64-bit kernel build and
+we'll add a new defconfig for corenet32 for a 32-bit platforms.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/configs/corenet32_smp_defconfig |  183 ++++++++++++++++++++++++++
- 1 files changed, 183 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/corenet32_smp_defconfig
+ arch/powerpc/configs/corenet64_smp_defconfig |  104 ++++++++++++++++++++++++++
+ arch/powerpc/configs/e55xx_smp_defconfig     |  104 --------------------------
+ 2 files changed, 104 insertions(+), 104 deletions(-)
+ create mode 100644 arch/powerpc/configs/corenet64_smp_defconfig
+ delete mode 100644 arch/powerpc/configs/e55xx_smp_defconfig
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
 new file mode 100644
-index 0000000..59269a6
+index 0000000..d322835
 --- /dev/null
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -0,0 +1,183 @@
-+CONFIG_PPC_85xx=y
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -0,0 +1,104 @@
++CONFIG_PPC64=y
++CONFIG_PPC_BOOK3E_64=y
++# CONFIG_VIRT_CPU_ACCOUNTING is not set
 +CONFIG_SMP=y
-+CONFIG_NR_CPUS=8
++CONFIG_NR_CPUS=2
 +CONFIG_EXPERIMENTAL=y
 +CONFIG_SYSVIPC=y
-+CONFIG_POSIX_MQUEUE=y
 +CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_AUDIT=y
 +CONFIG_SPARSE_IRQ=y
-+CONFIG_RCU_TRACE=y
 +CONFIG_IKCONFIG=y
 +CONFIG_IKCONFIG_PROC=y
 +CONFIG_LOG_BUF_SHIFT=14
 +CONFIG_BLK_DEV_INITRD=y
 +# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_EXPERT=y
 +CONFIG_KALLSYMS_ALL=y
 +CONFIG_KALLSYMS_EXTRA_PASS=y
-+CONFIG_EMBEDDED=y
-+CONFIG_PERF_EVENTS=y
-+CONFIG_SLAB=y
 +CONFIG_MODULES=y
 +CONFIG_MODULE_UNLOAD=y
 +CONFIG_MODULE_FORCE_UNLOAD=y
 +CONFIG_MODVERSIONS=y
 +# CONFIG_BLK_DEV_BSG is not set
-+CONFIG_P3041_DS=y
-+CONFIG_P4080_DS=y
 +CONFIG_P5020_DS=y
-+CONFIG_HIGHMEM=y
++# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
 +CONFIG_NO_HZ=y
 +CONFIG_HIGH_RES_TIMERS=y
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
 +CONFIG_BINFMT_MISC=m
-+CONFIG_MATH_EMULATION=y
-+CONFIG_FORCE_MAX_ZONEORDER=13
-+CONFIG_FSL_LBC=y
-+CONFIG_PCI=y
-+CONFIG_PCIEPORTBUS=y
-+# CONFIG_PCIEASPM is not set
++# CONFIG_PCI is not set
 +CONFIG_NET=y
 +CONFIG_PACKET=y
 +CONFIG_UNIX=y
 +CONFIG_XFRM_USER=y
-+CONFIG_XFRM_SUB_POLICY=y
-+CONFIG_XFRM_STATISTICS=y
 +CONFIG_NET_KEY=y
-+CONFIG_NET_KEY_MIGRATE=y
 +CONFIG_INET=y
 +CONFIG_IP_MULTICAST=y
 +CONFIG_IP_ADVANCED_ROUTER=y
@@ -101,126 +88,171 @@ index 0000000..59269a6
 +CONFIG_IP_PIMSM_V1=y
 +CONFIG_IP_PIMSM_V2=y
 +CONFIG_ARPD=y
-+CONFIG_INET_AH=y
 +CONFIG_INET_ESP=y
-+CONFIG_INET_IPCOMP=y
++# CONFIG_INET_XFRM_MODE_BEET is not set
 +# CONFIG_INET_LRO is not set
 +CONFIG_IPV6=y
 +CONFIG_IP_SCTP=m
 +CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_MTD=y
-+CONFIG_MTD_PARTITIONS=y
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLOCK=y
-+CONFIG_MTD_CFI=y
-+CONFIG_MTD_CFI_AMDSTD=y
-+CONFIG_MTD_PHYSMAP_OF=y
-+CONFIG_MTD_M25P80=y
 +CONFIG_PROC_DEVICETREE=y
 +CONFIG_BLK_DEV_LOOP=y
 +CONFIG_BLK_DEV_RAM=y
 +CONFIG_BLK_DEV_RAM_SIZE=131072
 +CONFIG_MISC_DEVICES=y
-+CONFIG_BLK_DEV_SD=y
-+CONFIG_CHR_DEV_ST=y
-+CONFIG_BLK_DEV_SR=y
-+CONFIG_CHR_DEV_SG=y
-+CONFIG_SCSI_MULTI_LUN=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SYM53C8XX_2=y
-+CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
-+CONFIG_SATA_FSL=y
-+CONFIG_SATA_SIL24=y
-+CONFIG_SATA_SIL=y
-+CONFIG_PATA_SIL680=y
++CONFIG_EEPROM_LEGACY=y
 +CONFIG_NETDEVICES=y
-+CONFIG_VITESSE_PHY=y
-+CONFIG_FIXED_PHY=y
++CONFIG_DUMMY=y
 +CONFIG_NET_ETHERNET=y
-+CONFIG_E1000=y
-+CONFIG_E1000E=y
-+CONFIG_FSL_PQ_MDIO=y
++CONFIG_INPUT_FF_MEMLESS=m
 +# CONFIG_INPUT_MOUSEDEV is not set
 +# CONFIG_INPUT_KEYBOARD is not set
 +# CONFIG_INPUT_MOUSE is not set
 +CONFIG_SERIO_LIBPS2=y
-+# CONFIG_LEGACY_PTYS is not set
 +CONFIG_SERIAL_8250=y
 +CONFIG_SERIAL_8250_CONSOLE=y
 +CONFIG_SERIAL_8250_EXTENDED=y
 +CONFIG_SERIAL_8250_MANY_PORTS=y
 +CONFIG_SERIAL_8250_DETECT_IRQ=y
 +CONFIG_SERIAL_8250_RSA=y
-+CONFIG_HW_RANDOM=y
-+CONFIG_NVRAM=y
 +CONFIG_I2C=y
-+CONFIG_I2C_MPC=y
-+CONFIG_SPI=y
-+CONFIG_SPI_GPIO=y
-+CONFIG_SPI_FSL_SPI=y
-+CONFIG_SPI_FSL_ESPI=y
 +# CONFIG_HWMON is not set
 +CONFIG_VIDEO_OUTPUT_CONTROL=y
-+CONFIG_USB_HID=m
-+CONFIG_USB=y
-+CONFIG_USB_DEVICEFS=y
-+CONFIG_USB_MON=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_EHCI_FSL=y
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
-+CONFIG_USB_STORAGE=y
-+CONFIG_MMC=y
-+CONFIG_MMC_SDHCI=y
-+CONFIG_MMC_SDHCI_OF=y
-+CONFIG_MMC_SDHCI_OF_ESDHC=y
-+CONFIG_EDAC=y
-+CONFIG_EDAC_MM_EDAC=y
-+CONFIG_EDAC_MPC85XX=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS3232=y
-+CONFIG_RTC_DRV_CMOS=y
-+CONFIG_UIO=y
-+CONFIG_STAGING=y
-+# CONFIG_STAGING_EXCLUDE_BUILD is not set
++# CONFIG_HID_SUPPORT is not set
++# CONFIG_USB_SUPPORT is not set
++CONFIG_DMADEVICES=y
++CONFIG_FSL_DMA=y
 +CONFIG_EXT2_FS=y
 +CONFIG_EXT3_FS=y
 +# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-+CONFIG_ISO9660_FS=m
-+CONFIG_JOLIET=y
-+CONFIG_ZISOFS=y
-+CONFIG_UDF_FS=m
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=y
-+CONFIG_NTFS_FS=y
 +CONFIG_PROC_KCORE=y
 +CONFIG_TMPFS=y
-+CONFIG_JFFS2_FS=y
-+CONFIG_CRAMFS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+CONFIG_NFS_V4=y
-+CONFIG_ROOT_NFS=y
-+CONFIG_NFSD=m
++# CONFIG_MISC_FILESYSTEMS is not set
 +CONFIG_PARTITION_ADVANCED=y
 +CONFIG_MAC_PARTITION=y
-+CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS=y
 +CONFIG_NLS_UTF8=m
-+CONFIG_MAGIC_SYSRQ=y
++CONFIG_CRC_T10DIF=y
++CONFIG_CRC_ITU_T=m
++CONFIG_FRAME_WARN=1024
++CONFIG_DEBUG_FS=y
 +CONFIG_DEBUG_KERNEL=y
-+CONFIG_DEBUG_SHIRQ=y
 +CONFIG_DETECT_HUNG_TASK=y
 +CONFIG_DEBUG_INFO=y
++# CONFIG_RCU_CPU_STALL_DETECTOR is not set
 +CONFIG_SYSCTL_SYSCALL_CHECK=y
-+CONFIG_CRYPTO_NULL=y
++CONFIG_VIRQ_DEBUG=y
 +CONFIG_CRYPTO_PCBC=m
-+CONFIG_CRYPTO_MD4=y
-+CONFIG_CRYPTO_SHA256=y
-+CONFIG_CRYPTO_SHA512=y
-+CONFIG_CRYPTO_AES=y
 +# CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_CRYPTO_DEV_TALITOS=y
+diff --git a/arch/powerpc/configs/e55xx_smp_defconfig b/arch/powerpc/configs/e55xx_smp_defconfig
+deleted file mode 100644
+index d322835..0000000
+--- a/arch/powerpc/configs/e55xx_smp_defconfig
++++ /dev/null
+@@ -1,104 +0,0 @@
+-CONFIG_PPC64=y
+-CONFIG_PPC_BOOK3E_64=y
+-# CONFIG_VIRT_CPU_ACCOUNTING is not set
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=2
+-CONFIG_EXPERIMENTAL=y
+-CONFIG_SYSVIPC=y
+-CONFIG_BSD_PROCESS_ACCT=y
+-CONFIG_SPARSE_IRQ=y
+-CONFIG_IKCONFIG=y
+-CONFIG_IKCONFIG_PROC=y
+-CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+-CONFIG_EXPERT=y
+-CONFIG_KALLSYMS_ALL=y
+-CONFIG_KALLSYMS_EXTRA_PASS=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-# CONFIG_BLK_DEV_BSG is not set
+-CONFIG_P5020_DS=y
+-# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_BINFMT_MISC=m
+-# CONFIG_PCI is not set
+-CONFIG_NET=y
+-CONFIG_PACKET=y
+-CONFIG_UNIX=y
+-CONFIG_XFRM_USER=y
+-CONFIG_NET_KEY=y
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-CONFIG_IP_ADVANCED_ROUTER=y
+-CONFIG_IP_MULTIPLE_TABLES=y
+-CONFIG_IP_ROUTE_MULTIPATH=y
+-CONFIG_IP_ROUTE_VERBOSE=y
+-CONFIG_IP_PNP=y
+-CONFIG_IP_PNP_DHCP=y
+-CONFIG_IP_PNP_BOOTP=y
+-CONFIG_IP_PNP_RARP=y
+-CONFIG_NET_IPIP=y
+-CONFIG_IP_MROUTE=y
+-CONFIG_IP_PIMSM_V1=y
+-CONFIG_IP_PIMSM_V2=y
+-CONFIG_ARPD=y
+-CONFIG_INET_ESP=y
+-# CONFIG_INET_XFRM_MODE_BEET is not set
+-# CONFIG_INET_LRO is not set
+-CONFIG_IPV6=y
+-CONFIG_IP_SCTP=m
+-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_PROC_DEVICETREE=y
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_MISC_DEVICES=y
+-CONFIG_EEPROM_LEGACY=y
+-CONFIG_NETDEVICES=y
+-CONFIG_DUMMY=y
+-CONFIG_NET_ETHERNET=y
+-CONFIG_INPUT_FF_MEMLESS=m
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-CONFIG_SERIO_LIBPS2=y
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_EXTENDED=y
+-CONFIG_SERIAL_8250_MANY_PORTS=y
+-CONFIG_SERIAL_8250_DETECT_IRQ=y
+-CONFIG_SERIAL_8250_RSA=y
+-CONFIG_I2C=y
+-# CONFIG_HWMON is not set
+-CONFIG_VIDEO_OUTPUT_CONTROL=y
+-# CONFIG_HID_SUPPORT is not set
+-# CONFIG_USB_SUPPORT is not set
+-CONFIG_DMADEVICES=y
+-CONFIG_FSL_DMA=y
+-CONFIG_EXT2_FS=y
+-CONFIG_EXT3_FS=y
+-# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-# CONFIG_MISC_FILESYSTEMS is not set
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+-CONFIG_NLS=y
+-CONFIG_NLS_UTF8=m
+-CONFIG_CRC_T10DIF=y
+-CONFIG_CRC_ITU_T=m
+-CONFIG_FRAME_WARN=1024
+-CONFIG_DEBUG_FS=y
+-CONFIG_DEBUG_KERNEL=y
+-CONFIG_DETECT_HUNG_TASK=y
+-CONFIG_DEBUG_INFO=y
+-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
+-CONFIG_VIRQ_DEBUG=y
+-CONFIG_CRYPTO_PCBC=m
+-# CONFIG_CRYPTO_ANSI_CPRNG is not set
+-CONFIG_CRYPTO_DEV_TALITOS=y
 -- 
 1.7.3.4
