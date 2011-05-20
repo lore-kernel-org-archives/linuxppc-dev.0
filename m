@@ -1,30 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CD120B71A2
+Return-Path: <psomas@ece.ntua.gr>
+Received: from ulysses.noc.ntua.gr (ulysses.noc.ntua.gr [147.102.222.230])
+	by ozlabs.org (Postfix) with ESMTP id 285EEB71A0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 06:21:29 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4KK4BGJ011182
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2011 14:04:11 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4KKLIol113602
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2011 14:21:18 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4KKLHRT003853
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2011 14:21:17 -0600
-Date: Fri, 20 May 2011 16:22:25 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Fix 32-bit SMP build
-Message-ID: <20110520202225.GI25179@zod.rchland.ibm.com>
+	Sat, 21 May 2011 06:32:41 +1000 (EST)
+Message-ID: <4DD6CFB9.6090101@ece.ntua.gr>
+Date: Fri, 20 May 2011 23:31:53 +0300
+From: Stratos Psomadakis <psomas@ece.ntua.gr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: stable@kernel.org
+To: Marcus Meissner <meissner@suse.de>
+Subject: Re: PATCH: powerpc: remove unused variable assignment
+References: <20110520091346.GC29499@suse.de>
+In-Reply-To: <20110520091346.GC29499@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: akpm@linux-foundation.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,26 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 69e3cea8d5fd526 introduced start_secondary_resume to misc_32.S,
-however it uses a 64-bit instruction which is not valid on 32-bit
-platforms.  Use 'stw' instead.
+On 05/20/2011 12:13 PM, Marcus Meissner wrote:
+> Hi,
+>
+> gcc 4.6 with -Werror does not like setting but not using variables
+> anymore.
+>
+> So remove it, it does not seem necessary.
+>
+> Signed-off-by: Marcus Meissner <meissner@suse.de>
+>
+> Ciao, Marcus
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc64.h |    8 ++------
+>  1 files changed, 2 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+> index 2b09cd5..c3d39de 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -257,21 +257,17 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+>  static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+>  				      pte_t *ptep)
+>  {
+> -	unsigned long old;
+> -
+>         	if ((pte_val(*ptep) & _PAGE_RW) == 0)
+>         		return;
+> -	old = pte_update(mm, addr, ptep, _PAGE_RW, 0);
+> +	pte_update(mm, addr, ptep, _PAGE_RW, 0);
+>  }
+>  
+>  static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>  					   unsigned long addr, pte_t *ptep)
+>  {
+> -	unsigned long old;
+> -
+>  	if ((pte_val(*ptep) & _PAGE_RW) == 0)
+>  		return;
+> -	old = pte_update(mm, addr, ptep, _PAGE_RW, 1);
+> +	pte_update(mm, addr, ptep, _PAGE_RW, 1);
+>  }
+>  
+>  /*
+It's already in the ppc repo [1]. And going to be merged in 2.6.40 I
+think. :)
 
-Reported-by: Richard Cochran <richardcochran@gmail.com>
-Tested-by: Richard Cochran <richardcochran@gmail.com>
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+[1]
+http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=commit;h=2a2c29c1a581319f4485af55e8d628d89e8f2583
 
----
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 402560e..998a100 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -700,7 +700,7 @@ _GLOBAL(start_secondary_resume)
-	rlwinm  r1,r1,0,0,(31-THREAD_SHIFT)     /* current_thread_info() */
-	addi    r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
-	li      r3,0
--	std     r3,0(r1)                /* Zero the stack frame pointer */
-+	stw     r3,0(r1)                /* Zero the stack frame pointer */
-	bl      start_secondary
-	b       .
- #endif /* CONFIG_SMP */
+-- 
+Stratos Psomadakis
+<psomas@ece.ntua.gr>
