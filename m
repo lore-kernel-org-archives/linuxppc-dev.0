@@ -2,16 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94C45B71CF
+	by ozlabs.org (Postfix) with ESMTPS id DC2D1B71CE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 14:46:40 +1000 (EST)
+	Fri, 20 May 2011 14:49:06 +1000 (EST)
 Subject: Re: [PATCH] powerpc/85xx: Save and restore pcie ATMU windows for PM
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <071A08F2C6A57E4E94D980ECA553F8741D8D46@039-SN1MPN1-005.039d.mgd.msft.net>
-Date: Thu, 19 May 2011 23:46:31 -0500
-Message-Id: <66C47280-B1EF-4BE6-96CB-4FF4865AB7F4@kernel.crashing.org>
+Date: Thu, 19 May 2011 23:48:58 -0500
+Message-Id: <0CF50C76-D9D0-4966-87B9-CD4EDF6ABC07@kernel.crashing.org>
 References: <1303972729-32242-1-git-send-email-prabhakar@freescale.com>
 	<3A8FAEED-7BD9-4776-85A9-560D07417BA8@kernel.crashing.org>
 	<071A08F2C6A57E4E94D980ECA553F8741D5C33@039-SN1MPN1-005.039d.mgd.msft.net>
@@ -104,8 +104,11 @@ git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 supporting it.
 > Note:  D3 cold state =3D=3D PCIe block Power down
 >=20
-> --Prabhakar=20
 
-how do we test this ?
+I'm wondering a few things:
 
-- k=
+1. Is there any reason not to do this for ALL FSL PCIe SoCs?
+2. why do bother saving state, we don't we re-parse the .dts and =
+reconfigure ATMUs that way?
+
+- k
