@@ -1,22 +1,12 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB09FB71A4
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2011 00:48:25 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 02/14] powerpc: Add a defconfig for 'corenet' 32-bit
-	platforms
-Date: Fri, 20 May 2011 14:45:11 +0000
-Message-ID: <BANLkTimzQ3PUpJQB_sF+PM9DAL+kAYgDYw@mail.gmail.com>
-References: <1305871771-16334-1-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1305871771-16334-2-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <meador_inge@mentor.com>
+From: Meador Inge <meador_inge@mentor.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/2] powerpc: define and implement MPIC message register
+	support
+Date: Fri, 20 May 2011 11:36:37 -0500
+Message-Id: <1305909399-26969-1-git-send-email-meador_inge@mentor.com>
+Cc: openmcapi-dev@googlegroups.com, devicetree-discuss@lists.ozlabs.org,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +16,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 20, 2011 at 1:09 AM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
+This patch set defines a binding for FSL MPIC message registers and implements
+an API for accessing those message registers.  Testing was done on a MPC8572DS
+in an Linux-Linux AMP setup using OpenMCAPI (www.openmcapi.org) to communicate
+between OS instances.  The message register API is used by the OpenMCAPI shared 
+memory driver to send notifications between cores.
 
-> +CONFIG_MATH_EMULATION=3Dy
+* v2 - Incorporate feedback from Scott Wood
+   * Make binding less implementation specific.
+   * Add 'mpic-' prefix to message register node properties and aliases.
+   * Remove 'interrupt-parent' from binding.
+   * Fixed some example bugs with receive masks.
 
-Don't these chips have hardware floating point?
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
 
-> +CONFIG_FORCE_MAX_ZONEORDER=3D13
+Meador Inge (2):
+  powerpc: document the FSL MPIC message register binding
+  powerpc: add support for MPIC message register API
 
-This may be unnecessary.  I originally set CONFIG_FORCE_MAX_ZONEORDER
-to 12 because the DIU driver needs to be able to allocate a contiguous
-5MB memory block.  Setting it to 13 means a max of 16MB.  Is there a
-reason the default isn't good enough?
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+ .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 +++++
+ arch/powerpc/include/asm/mpic_msgr.h               |   35 +++
+ arch/powerpc/platforms/Kconfig                     |    8 +
+ arch/powerpc/sysdev/Makefile                       |    3 +-
+ arch/powerpc/sysdev/mpic_msgr.c                    |  279 ++++++++++++++++++++
+ 5 files changed, 386 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+ create mode 100644 arch/powerpc/include/asm/mpic_msgr.h
+ create mode 100644 arch/powerpc/sysdev/mpic_msgr.c
