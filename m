@@ -1,28 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B69CFB71CD
+Return-Path: <kazutomo@mcs.anl.gov>
+Received: from mailhost.anl.gov (mailhost.anl.gov [130.202.113.50])
+	by ozlabs.org (Postfix) with ESMTP id C1C7BB71CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 15:15:22 +1000 (EST)
-Subject: Re: [PATCH] powerpc/85xx: Save and restore pcie ATMU windows for PM
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <071A08F2C6A57E4E94D980ECA553F8741D9670@039-SN1MPN1-005.039d.mgd.msft.net>
-Date: Fri, 20 May 2011 00:15:12 -0500
-Message-Id: <19D20E47-DE39-42C3-A0AE-EEF72851F395@kernel.crashing.org>
-References: <1303972729-32242-1-git-send-email-prabhakar@freescale.com>
-	<3A8FAEED-7BD9-4776-85A9-560D07417BA8@kernel.crashing.org>
-	<071A08F2C6A57E4E94D980ECA553F8741D5C33@039-SN1MPN1-005.039d.mgd.msft.net>
-	<EFA5CCD8-07AE-4AD3-A067-4E79F61B3886@kernel.crashing.org>
-	<071A08F2C6A57E4E94D980ECA553F8741D8D46@039-SN1MPN1-005.039d.mgd.msft.net>
-	<0CF50C76-D9D0-4966-87B9-CD4EDF6ABC07@kernel.crashing.org>
-	<071A08F2C6A57E4E94D980ECA553F8741D9670@039-SN1MPN1-005.039d.mgd.msft.net>
-To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Cc: "meet2prabhu@gmail.com" <meet2prabhu@gmail.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Jiang Yutang-B14898 <B14898@freescale.com>
+	Fri, 20 May 2011 13:21:30 +1000 (EST)
+Message-ID: <4DD5D9C9.3020000@mcs.anl.gov>
+Date: Thu, 19 May 2011 22:02:33 -0500
+From: Kazutomo Yoshii <kazutomo@mcs.anl.gov>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [bg-linux] [PATCH 5/7] [RFC] force 32-byte aligned kmallocs
+References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>	<1305753895-24845-5-git-send-email-ericvh@gmail.com>	<1305851769.7481.90.camel@pasglop>
+	<4DD5C49E.4050103@gmail.com>	<1305857301.7481.121.camel@pasglop>
+	<1305857610.7481.124.camel@pasglop>
+In-Reply-To: <1305857610.7481.124.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Kazutomo Yoshii <kazutomo.yoshii@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,118 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/19/2011 09:13 PM, Benjamin Herrenschmidt wrote:
+> On Fri, 2011-05-20 at 12:08 +1000, Benjamin Herrenschmidt wrote:
+>    
+>> On Thu, 2011-05-19 at 20:32 -0500, Kazutomo Yoshii wrote:
+>>      
+>>> Actually DMA sends invalidate requests to the snoop unit(L2 level).
+>>> BGP SoC is a bit different from other 4xx base.
+>>>        
+>> Well, some other 44x also have a snooping L2 (more or less), but L1 is
+>> usually the problem.
+>>      
+> Hrm... looking at the doco you pointed me to, it looks like the L1 -is-
+> coherent, it gets snoop kills from the L2.
+>    
+Right, L1D is coherent if write throug is set.
+L1I(virtually tagged) is not coherent, btw.
 
-On May 20, 2011, at 12:01 AM, Kushwaha Prabhakar-B32579 wrote:
+> Ok so we do need to make this non-coherent cache stuff a runtime option
+> (well, we need that for 440+476 too anyways so may as well do it now).
+>    
+What sort of runtime option do you mean?
 
->=20
->=20
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Friday, May 20, 2011 10:19 AM
->> To: Kushwaha Prabhakar-B32579
->> Cc: linuxppc-dev@lists.ozlabs.org; meet2prabhu@gmail.com; Jiang =
-Yutang-
->> B14898
->> Subject: Re: [PATCH] powerpc/85xx: Save and restore pcie ATMU windows =
-for
->> PM
->>=20
->>=20
->> On May 19, 2011, at 11:41 PM, Kushwaha Prabhakar-B32579 wrote:
->>=20
->>>=20
->>>=20
->>>> -----Original Message-----
->>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>>> Sent: Thursday, May 19, 2011 6:53 PM
->>>> To: Kushwaha Prabhakar-B32579
->>>> Cc: linuxppc-dev@lists.ozlabs.org; meet2prabhu@gmail.com; Jiang
->>>> Yutang-
->>>> B14898
->>>> Subject: Re: [PATCH] powerpc/85xx: Save and restore pcie ATMU =
-windows
->>>> for PM
->>>>=20
->>>>=20
->>>> On May 19, 2011, at 6:22 AM, Kushwaha Prabhakar-B32579 wrote:
->>>>=20
->>>>> Hi Kumar,
->>>>> Please find my answer in-lined
->>>>>=20
->>>>>> -----Original Message-----
->>>>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>>>>> Sent: Thursday, May 19, 2011 12:00 PM
->>>>>> To: Kushwaha Prabhakar-B32579
->>>>>> Cc: linuxppc-dev@lists.ozlabs.org; meet2prabhu@gmail.com; Jiang
->>>>>> Yutang-
->>>>>> B14898
->>>>>> Subject: Re: [PATCH] powerpc/85xx: Save and restore pcie ATMU
->>>>>> windows for PM
->>>>>>=20
->>>>>>=20
->>>>>> On Apr 28, 2011, at 1:38 AM, Prabhakar Kushwaha wrote:
->>>>>>=20
->>>>>>> D3-cold state indicates removal of the clock and power. however
->>>>>>> auxiliary (AUX) Power may remain available even after the main
->>>>>>> power
->>>>>> rails are powered down.
->>>>>>>=20
->>>>>>> wakeup from D3-cold state requires full context restore. Other
->>>>>>> things are taken care in pci-driver except ATMUs.
->>>>>>> ATMU windows needs to be saved and restored during suspend and
->>>> resume.
->>>>>>>=20
->>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
->>>>>>> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
->>>>>>> ---
->>>>>>> Based upon
->>>>>>> =
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.g
->>>>>>> it
->>>>>>> (b
->>>>>>> ranch master)
->>>>>>>=20
->>>>>>> arch/powerpc/sysdev/fsl_pci.c |  116
->>>>>> +++++++++++++++++++++++++++++++++++++++++
->>>>>>> arch/powerpc/sysdev/fsl_pci.h |    7 ++-
->>>>>>> 2 files changed, 121 insertions(+), 2 deletions(-)
->>>>>>=20
->>>>>> Is this patch for when we are a host or agent?
->>>>>=20
->>>>> This patch is independent of host or agent. It is for supporting =
-D3
->>>> cold state for P1022.
->>>>> These functions are called during System level suspend and resume.
->>>>>=20
->>>>> --Prabhakar
->>>>=20
->>>> I'm trying to figure out why this is limited to P1022.
->>>=20
->>> Till now, No SOC was supporting D3 cold state. First time P1022
->> supporting it.
->>> Note:  D3 cold state =3D=3D PCIe block Power down
->>>=20
->>=20
->> I'm wondering a few things:
->>=20
->> 1. Is there any reason not to do this for ALL FSL PCIe SoCs?
->=20
-> Yes, I am agree with you. It can be done.=20
-> But as only P1022 SOC supporting it. There is no use of handling it.
-
-I'm also not clear if the DECLARE_PCI_FIXUP_SUSPEND() is the right way =
-for us to connect up these suspend/resume functions.
-
->> 2. why do bother saving state, we don't we re-parse the .dts and
->> reconfigure ATMUs that way?
->=20
-> I also thought of this case. But Agent use case scenario forbid me to =
-do this.=20
-> As ATMU's are programmed by host depending upon different use case . =
-And this information is never stored in the dts.
-
-Fair point, but in agent mode will this code ever really be called?  It =
-seems like we'd never register ourselves with the PCI subsystem so how =
-would this get called?
-
-- k=
+- kaz
+> As for the alignment of kmalloc, it looks like a hack that should be
+> done in the torus code itself.
+>
+> Cheers,
+> Ben.
+>
+> _______________________________________________
+> bg-linux mailing list
+> bg-linux@lists.anl-external.org
+> https://lists.anl-external.org/mailman/listinfo/bg-linux
+> http://bg-linux.anl-external.org/wiki
+>    
