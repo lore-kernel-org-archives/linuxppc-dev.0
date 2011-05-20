@@ -1,31 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@kernel.crashing.org>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 405B6B75F9
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 16:09:47 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p4K69hB6001173
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 01:09:44 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
+	(Client CN "e23smtp06.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DA6B0B71C8
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 17:51:41 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id p4K7pEjm008653
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 17:51:14 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4K7pCDS1228828
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 17:51:14 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p4K7pc2T003411
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 17:51:38 +1000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 14/14] powerpc/qe: Limit QE support to ppc32
-Date: Fri, 20 May 2011 01:09:31 -0500
-Message-Id: <1305871771-16334-14-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1305871771-16334-13-git-send-email-galak@kernel.crashing.org>
-References: <1305871771-16334-1-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-2-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-3-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-4-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-5-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-6-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-7-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-8-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-9-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-10-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-11-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-12-git-send-email-galak@kernel.crashing.org>
-	<1305871771-16334-13-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/pmac: Update via-pmu to new syscore_ops
+Date: Fri, 20 May 2011 17:51:14 +1000
+Message-Id: <1305877875-23157-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,25 +30,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only 32-bit SoCs have a QUICC Engine so limit the config option to PPC32.
+This was left as a sysdev, breaking the build
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/macintosh/via-pmu.c |   56 +++++++++---------------------------------
+ 1 files changed, 12 insertions(+), 44 deletions(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index f970ca2..546ceea 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -266,7 +266,7 @@ config TAU_AVERAGE
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 8b021eb..6cccd60 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -40,7 +40,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/device.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/freezer.h>
+ #include <linux/syscalls.h>
+ #include <linux/suspend.h>
+@@ -2527,12 +2527,9 @@ void pmu_blink(int n)
+ #if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ int pmu_sys_suspended;
  
- config QUICC_ENGINE
- 	bool "Freescale QUICC Engine (QE) Support"
--	depends on FSL_SOC
-+	depends on FSL_SOC && PPC32
- 	select PPC_LIB_RHEAP
- 	select CRC32
- 	help
+-static int pmu_sys_suspend(struct sys_device *sysdev, pm_message_t state)
++static int pmu_syscore_suspend(void)
+ {
+-	if (state.event != PM_EVENT_SUSPEND || pmu_sys_suspended)
+-		return 0;
+-
+-	/* Suspend PMU event interrupts */\
++	/* Suspend PMU event interrupts */
+ 	pmu_suspend();
+ 	pmu_sys_suspended = 1;
+ 
+@@ -2544,12 +2541,12 @@ static int pmu_sys_suspend(struct sys_device *sysdev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int pmu_sys_resume(struct sys_device *sysdev)
++static void pmu_syscore_resume(void)
+ {
+ 	struct adb_request req;
+ 
+ 	if (!pmu_sys_suspended)
+-		return 0;
++		return;
+ 
+ 	/* Tell PMU we are ready */
+ 	pmu_request(&req, NULL, 2, PMU_SYSTEM_READY, 2);
+@@ -2562,50 +2559,21 @@ static int pmu_sys_resume(struct sys_device *sysdev)
+ 	/* Resume PMU event interrupts */
+ 	pmu_resume();
+ 	pmu_sys_suspended = 0;
+-
+-	return 0;
+ }
+ 
+-#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+-
+-static struct sysdev_class pmu_sysclass = {
+-	.name = "pmu",
+-};
+-
+-static struct sys_device device_pmu = {
+-	.cls		= &pmu_sysclass,
+-};
+-
+-static struct sysdev_driver driver_pmu = {
+-#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+-	.suspend	= &pmu_sys_suspend,
+-	.resume		= &pmu_sys_resume,
+-#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
++static struct syscore_ops pmu_syscore_ops = {
++	.suspend = pmu_syscore_suspend,
++	.resume = pmu_syscore_resume,
+ };
+ 
+-static int __init init_pmu_sysfs(void)
++static int pmu_syscore_register(void)
+ {
+-	int rc;
++	register_syscore_ops(&pmu_syscore_ops);
+ 
+-	rc = sysdev_class_register(&pmu_sysclass);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering PMU sys class\n");
+-		return -ENODEV;
+-	}
+-	rc = sysdev_register(&device_pmu);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering PMU sys device\n");
+-		return -ENODEV;
+-	}
+-	rc = sysdev_driver_register(&pmu_sysclass, &driver_pmu);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering PMU sys driver\n");
+-		return -ENODEV;
+-	}
+ 	return 0;
+ }
+-
+-subsys_initcall(init_pmu_sysfs);
++subsys_initcall(pmu_syscore_register);
++#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ 
+ EXPORT_SYMBOL(pmu_request);
+ EXPORT_SYMBOL(pmu_queue_request);
 -- 
-1.7.3.4
+1.7.1
