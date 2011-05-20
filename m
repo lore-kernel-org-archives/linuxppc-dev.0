@@ -1,20 +1,24 @@
-Return-Path: <kazutomo@mcs.anl.gov>
-Received: from mailhost.anl.gov (mailhost.anl.gov [130.202.113.50])
-	by ozlabs.org (Postfix) with ESMTP id 793D1B71C2
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 230B3B71BC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 13:38:03 +1000 (EST)
-Message-ID: <4DD5E218.5030508@mcs.anl.gov>
-Date: Thu, 19 May 2011 22:38:00 -0500
-From: Kazutomo Yoshii <kazutomo@mcs.anl.gov>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [bg-linux] [PATCH 6/7] [RFC] enable early TLBs for BG/P
-References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>	<1305753895-24845-6-git-send-email-ericvh@gmail.com>	<1305851941.7481.92.camel@pasglop>	<BANLkTinAqeu7C+U_HFrOAOctFTuSUwG-iA@mail.gmail.com>
-	<1305856442.7481.120.camel@pasglop>
-In-Reply-To: <1305856442.7481.120.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	bg-linux@lists.anl-external.org
+	Fri, 20 May 2011 15:38:57 +1000 (EST)
+Subject: Re: linux-next: manual merge of the tip tree with the powerpc tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20110520141425.dd38cb7d.sfr@canb.auug.org.au>
+References: <20110520141425.dd38cb7d.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 May 2011 15:38:24 +1000
+Message-ID: <1305869904.7481.145.camel@pasglop>
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	Milton Miller <miltonm@bga.com>, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, "H.
+	Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,101 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2011 08:54 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2011-05-19 at 20:21 -0500, Eric Van Hensbergen wrote:
->    
->> On Thu, May 19, 2011 at 7:39 PM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org>  wrote:
->>      
->>> On Wed, 2011-05-18 at 16:24 -0500, Eric Van Hensbergen wrote:
->>>        
->>>> BG/P maps firmware with an early TLB
->>>>          
->>> That's a bit gross. How often do you call that firmware in practice ?
->>> Aren't you better off instead inserting a TLB entry for it when you call
->>> it instead ? A simple tlbsx. + tlbwe sequence would do. That would free
->>> up a TLB entry for normal use.
->>>
->>>        
->> Well, it depends on who you talk to.  The production software BG/P
->> guys use the firmware constantly, its the primary interface to the networks, the console,
->> and the management software which runs the machine.
->>      
-> Yuck.
->    
+On Fri, 2011-05-20 at 14:14 +1000, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Today's linux-next merge of the tip tree got a conflict in
+> arch/powerpc/kernel/smp.c between commit 23d72bfd8f9f ("powerpc:
+> Consolidate ipi message mux and demux") from the powerpc tree and commit
+> 184748cc50b2 ("sched: Provide scheduler_ipi() callback in response to
+> smp_send_reschedule()") from the tip tree.
+> 
+> The former superceded part of the latter's changes, so I just used the
+> former for that.
 
-Unfortunately, the firmware is also required:
-- to configure Blue Gene Interrupt Controller(BIC)
-- to configure Torus DMA unit. e.g. fifo
-- to configure global interrupt (even we don't use, we need to disable 
-some channel correctly)
-- to access node personality information (node id, DDR size, HZ, etc) or 
-maybe we can directly access SRAM?
-etc, etc.
+I've done the merge and resolved the conflict properly (it's actually
+non trivial due to some other changes) in the powerpc tree, I'll send a
+pull request to Linus later today.
 
->> As such the IO Node guys, the Compute Node Kernel guys and the
->> ZeptoOS guys use it quite a bit.  The kittyhawk guys on the other hand
->> barely use it at all, in fact I believe they do all the interaction with
->> it during uboot and then shut it off.
->>      
->    
-(I'm one of the ZeptoOS guys, btw)
-
-As a regular ppc linux usage, our firmware dependency is minimum as well.
-However,  with our HPC extension, the firmware functions are called when
-it configures BGP specific network hardware.
-
-We are not planning to submit our HPC extension here anytime soon
-because our work is very special purpose and includes lots of dirty hack 
-right now.
-
-Thanks,
-Kaz
-> I would prefer that approach.
->
->    
->> IIRC, the sticky question is RAS support, there are certain things it
->> wants to jump to firmware to deal with and expects things to be mapped
->> an pinned into memory.
->>
->> Furthermore, I think it may make assumptions about where in the TLB the
->> mappings are.
->>      
-> This is gross, especially on a system with only 64 SW loaded TLB
-> entries :-(
->
->    
->> Since the kittyhawk guys
->> obviously ignore this by shutting it down, its not clear just how
->> important this is.  I'm game to
->> try the dynamic mapping as you suggest if you would prefer it.
->>      
-> I would yes, we can sort things out later for RAS.
->
->    
->> Its worth mentioning that I believe with BG/Q, the plan is to rely on
->> the firmware even more extensively, but I haven't looked at any of the code yet to verify
->> whether or not this is true.
->>      
-> This is tantamount to linking a binary blob with the kernel ... it's a
-> fine line. At some point we might refuse the patches if they go too far
-> in that direction.
->
-> Cheers,
-> Ben.
->
->    
->>       -eric
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>      
->
-> _______________________________________________
-> bg-linux mailing list
-> bg-linux@lists.anl-external.org
-> https://lists.anl-external.org/mailman/listinfo/bg-linux
-> http://bg-linux.anl-external.org/wiki
->    
+Cheers,
+Ben.
