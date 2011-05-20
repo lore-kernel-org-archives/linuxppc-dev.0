@@ -2,20 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 848E0B71A4
+	by ozlabs.org (Postfix) with ESMTPS id 96C93B71A4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 08:25:14 +1000 (EST)
-Subject: Re: [stable] [PATCH] powerpc: Fix 32-bit SMP build
+	Sat, 21 May 2011 08:27:47 +1000 (EST)
+Subject: Re: [PATCH]powerpc: Force page alignment for early reserved memory
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <20110520215835.GA14918@kroah.com>
-References: <20110520202225.GI25179@zod.rchland.ibm.com>
-	<20110520215835.GA14918@kroah.com>
+To: Dave Carroll <dcarroll@astekcorp.com>
+In-Reply-To: <522F24EF533FC546962ECFA2054FF777373072AB71@MAILSERVER2.cos.astekcorp.com>
+References: <522F24EF533FC546962ECFA2054FF777373072AB71@MAILSERVER2.cos.astekcorp.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 21 May 2011 08:24:57 +1000
-Message-ID: <1305930297.7481.192.camel@pasglop>
+Date: Sat, 21 May 2011 08:27:39 +1000
+Message-ID: <1305930459.7481.194.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, stable@kernel.org
+Cc: "LPPC \(E-mail\)" <linuxppc-dev@lists.ozlabs.org>,
+	"Paul Mackerras \(E-mail\)" <paulus@samba.org>,
+	"LKML \(E-mail\)" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +26,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-20 at 14:58 -0700, Greg KH wrote:
-> On Fri, May 20, 2011 at 04:22:25PM -0400, Josh Boyer wrote:
-> > Commit 69e3cea8d5fd526 introduced start_secondary_resume to misc_32.S,
-> > however it uses a 64-bit instruction which is not valid on 32-bit
-> > platforms.  Use 'stw' instead.
-> > 
-> > Reported-by: Richard Cochran <richardcochran@gmail.com>
-> > Tested-by: Richard Cochran <richardcochran@gmail.com>
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > 
-> > ---
+On Fri, 2011-05-20 at 15:26 -0600, Dave Carroll wrote:
+> When using 64K pages with a separate cpio rootfs, U-Boot will align the rootfs on a 4K
+> page boundary. When the memory is reserved, and subsequent early memblock_alloc
+> is called, it will allocate memory between the 64K page alignment and reserved
+> memory. When the reserved memory is subsequently freed, it is done so by pages,
+> causing the early memblock_alloc requests to be re-used, which in my case, caused
+> the device-tree to be clobbered.
 > 
-> <formletter>
-> 
-> This is not the correct way to submit patches for inclusion in the
-> stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-> for how to do this properly.
-> 
-> </formletter>
+> This patch forces all early reserved memory to be kernel page aligned, to match
+> the mechanism used to free reserved memory.
 
-The function is in a different place in 2.6.39 anyways. I'll do a proper
-backport when Linus merges this one.
+Hrm...
+
+Reserved memory isn't normally freed. The rootfs is a special case here,
+shouldn't we special case it and thus align that specific reserve at the
+call site ?
+
+Not a huge deal either way now that I fixed memblock_reserve() to cope
+with overlaps but could be a problem if we want to backport your patch.
 
 Cheers,
 Ben.
+
+> Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+> ---
+>  arch/powerpc/kernel/prom.c |   21 +++++++++++++++++----
+>  1 files changed, 17 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index e74fa12..2744792 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -534,6 +534,19 @@ void __init early_init_dt_setup_initrd_arch(unsigned long start,
+>  }
+>  #endif
+> 
+> +static void __init reserve_mem(u64 base, u64 size)
+> +{
+> +       u64 top = base + size;
+> +       if (size == 0)
+> +               return;
+> +
+> +       base = _ALIGN_DOWN(base, PAGE_SIZE);
+> +       top = _ALIGN_UP(top, PAGE_SIZE);
+> +       size = top - base;
+> +       memblock_reserve(base, size);
+> +
+> +}
+> +
+>  static void __init early_reserve_mem(void)
+>  {
+>         u64 base, size;
+> @@ -547,12 +560,12 @@ static void __init early_reserve_mem(void)
+>         /* before we do anything, lets reserve the dt blob */
+>         self_base = __pa((unsigned long)initial_boot_params);
+>         self_size = initial_boot_params->totalsize;
+> -       memblock_reserve(self_base, self_size);
+> +       reserve_mem(self_base, self_size);
+> 
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>         /* then reserve the initrd, if any */
+>         if (initrd_start && (initrd_end > initrd_start))
+> -               memblock_reserve(__pa(initrd_start), initrd_end - initrd_start);
+> +               reserve_mem(__pa(initrd_start), initrd_end - initrd_start);
+>  #endif /* CONFIG_BLK_DEV_INITRD */
+> 
+>  #ifdef CONFIG_PPC32
+> @@ -573,7 +586,7 @@ static void __init early_reserve_mem(void)
+>                         if (base_32 == self_base && size_32 == self_size)
+>                                 continue;
+>                         DBG("reserving: %x -> %x\n", base_32, size_32);
+> -                       memblock_reserve(base_32, size_32);
+> +                       reserve_mem(base_32, size_32);
+>                 }
+>                 return;
+>         }
+> @@ -584,7 +597,7 @@ static void __init early_reserve_mem(void)
+>                 if (size == 0)
+>                         break;
+>                 DBG("reserving: %llx -> %llx\n", base, size);
+> -               memblock_reserve(base, size);
+> +               reserve_mem(base, size);
+>         }
+>  }
+> 
+> --
+> 1.7.4
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
