@@ -1,21 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6E882B71A4
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 06F81B71A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 14:14:28 +1000 (EST)
-Date: Fri, 20 May 2011 14:14:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: linux-next: manual merge of the tip tree with the powerpc tree
-Message-Id: <20110520141425.dd38cb7d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll"
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+	Fri, 20 May 2011 14:29:21 +1000 (EST)
+Subject: Re: [PATCH 2/2][v3] rapidio,
+	powerpc/85xx: Error interrupt handler for sRIO.
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=windows-1252
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E5520162CA22@CORPEXCH1.na.ads.idt.com>
+Date: Thu, 19 May 2011 23:28:55 -0500
+Message-Id: <6CBDFAB4-F884-4B33-8A77-0AE2CF2D2ED4@kernel.crashing.org>
+References: <1290063473-20950-1-git-send-email-b21989@freescale.com><0CE8B6BE3C4AD74AB97D9D29BD24E552015F5E40@CORPEXCH1.na.ads.idt.com>
+	<267A3B246C22C34A8E574051858E077002E834@039-SN1MPN1-003.039d.mgd.msft.net>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E5520162CA22@CORPEXCH1.na.ads.idt.com>
+To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+	Xie Shaohui-B21989 <B21989@freescale.com>,
+	Zang Roy-R61911 <r61911@freescale.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +31,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Alex,
 
-Hi all,
+What are we doing with this patch?
 
-Today's linux-next merge of the tip tree got a conflict in
-arch/powerpc/kernel/smp.c between commit 23d72bfd8f9f ("powerpc:
-Consolidate ipi message mux and demux") from the powerpc tree and commit
-184748cc50b2 ("sched: Provide scheduler_ipi() callback in response to
-smp_send_reschedule()") from the tip tree.
+- k
 
-The former superceded part of the latter's changes, so I just used the
-former for that.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On Dec 3, 2010, at 12:04 PM, Bounine, Alexandre wrote:
 
---Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJN1eqhAAoJEDMEi1NhKgbsR+IIAKKfRcS7sd8JgO2z23qr7Z/w
-41pG3hRdtEco7wvvL5j0dwyRbBqHINt4bq5g54PZvdke1ztH4acXfdPN9B933Izf
-l+wijwxpcq2O33goFwYdIe2iZRvSLF8a4mwFNLOUG2avr3Uhyy6AXGZPYWPwt5eo
-qUM1mjogl4i/r3Z3upi07Uee9pUMDwlk6g4mzDI02tWKIE+kGoUNnGbjXnxO4tvR
-mco7/rxHYywgnxW1PiMM/hj/LqhQFOLpldRG6RxYLkjqLr8PstRmLkXL3z2KJ5AD
-BBwMZOfdXNiYaIFxyldLw6KYjiayqLwi/bQsg0GLts1kovwDIQydh0SEbre5Q4k=
-=vlAW
------END PGP SIGNATURE-----
-
---Signature=_Fri__20_May_2011_14_14_25_+1000_xAAV=6AbXkTTvSll--
+> I think they should follow the previous two that are in Kumar=92s =
+tree.
+> Probably Kumar may give you a better timeline estimate for this.  =20
+>=20
+> Alex.
+>=20
+> From: linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org =
+[mailto:linuxppc-dev-bounces+alexandre.bounine=3Didt.com@lists.ozlabs.org]=
+ On Behalf Of Xie Shaohui-B21989
+> Sent: Thursday, December 02, 2010 10:29 PM
+> To: Bounine, Alexandre; linuxppc-dev@lists.ozlabs.org
+> Cc: akpm@linux-foundation.org; Gala Kumar-B11780; Li Yang-R58472; Zang =
+Roy-R61911
+> Subject: RE: [PATCH 2/2][v3] rapidio,powerpc/85xx: Error interrupt =
+handler for sRIO.
+>=20
+> Hi Alex,
+>=20
+> May I ask when would these patches be applied to mainline?
+>=20
+>=20
+> Best Regards,=20
+> Shaohui Xie
+>=20
+> From: Bounine, Alexandre [mailto:Alexandre.Bounine@idt.com]=20
+> Sent: Wednesday, December 01, 2010 4:49 AM
+> To: Xie Shaohui-B21989; linuxppc-dev@lists.ozlabs.org
+> Cc: akpm@linux-foundation.org; Li Yang-R58472; Gala Kumar-B11780; Zang =
+Roy-R61911
+> Subject: RE: [PATCH 2/2][v3] rapidio, powerpc/85xx: Error interrupt =
+handler for sRIO.
+>=20
+> Applies correctly now. Lab tested on 8548/RIO setup.
+>=20
+> Alex.
+>=20
+>> -----Original Message-----
+>> From: Shaohui Xie [mailto:b21989@freescale.com]
+>> Sent: Thursday, November 18, 2010 1:58 AM
+>> To: linuxppc-dev@lists.ozlabs.org
+>> Cc: akpm@linux-foundation.org; Shaohui Xie; Li Yang; Kumar Gala; Roy
+> Zang; Bounine, Alexandre
+>> Subject: [PATCH 2/2][v3] rapidio, powerpc/85xx: Error interrupt
+> handler for sRIO.
+>>=20
+>> The sRIO controller reports errors to the core with one signal, it
+> uses
+>> register EPWISR to provides the core quick access to where the error
+> occurred.
+>> The EPWISR indicates that there are 4 interrupts sources, port1,
+> port2, message
+>> unit and port write receive, but the sRIO driver does not support
+> port2
+>> for now, still the handler takes care of port2.
+>> Currently the handler only clear error status without any recovery.
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
