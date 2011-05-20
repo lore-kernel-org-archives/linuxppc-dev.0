@@ -1,30 +1,25 @@
-Return-Path: <ericvh@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2E6F6B6F7A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 23:01:51 +1000 (EST)
-Received: by fxm5 with SMTP id 5so3007565fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 May 2011 06:01:47 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1305863541.7481.132.camel@pasglop>
-References: <1305753895-24845-1-git-send-email-ericvh@gmail.com>
-	<1305753895-24845-6-git-send-email-ericvh@gmail.com>
-	<1305851941.7481.92.camel@pasglop>
-	<BANLkTinAqeu7C+U_HFrOAOctFTuSUwG-iA@mail.gmail.com>
-	<1305856442.7481.120.camel@pasglop> <4DD5E218.5030508@mcs.anl.gov>
-	<1305863541.7481.132.camel@pasglop>
-Date: Fri, 20 May 2011 08:01:47 -0500
-Message-ID: <BANLkTikG9mfzXM0WmWxPLhjGD-M6AVznkw@mail.gmail.com>
-Subject: Re: [bg-linux] [PATCH 6/7] [RFC] enable early TLBs for BG/P
-From: Eric Van Hensbergen <ericvh@gmail.com>
+	by ozlabs.org (Postfix) with ESMTPS id 47EACB7195
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 23:23:41 +1000 (EST)
+Received: by fxm1 with SMTP id 1so3143565fxm.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 06:23:37 -0700 (PDT)
+Date: Fri, 20 May 2011 15:23:29 +0200
+From: Richard Cochran <richardcochran@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Kazutomo Yoshii <kazutomo@mcs.anl.gov>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, bg-linux@lists.anl-external.org
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+Message-ID: <20110520132328.GA5785@riccoc20.at.omicron.at>
+References: <1305777978.7481.37.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1305777978.7481.37.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,37 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 10:52 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->> Unfortunately, the firmware is also required:
->> - to configure Blue Gene Interrupt Controller(BIC)
->> - to configure Torus DMA unit. e.g. fifo
->> - to configure global interrupt (even we don't use, we need to disable
->> some channel correctly)
->
-> Can't we just write bare metal code for that ?
->
+On Thu, May 19, 2011 at 02:06:18PM +1000, Benjamin Herrenschmidt wrote:
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-The kittyhawk code has the bare-metal equivalents for all of these.
-When I get to the drivers, I'll favor the kittyhawk versions for
-submission and then we'll see if it would be possible to adapt the HPC
-extensions to use the bare-metal versions of the drivers versus the
-firmware interface.
+When I try to build 'next' (now at 208b3a4c), it does not compile due
+to a change from the following commit.
 
->> - to access node personality information (node id, DDR size, HZ, etc) or
->> maybe we can directly access SRAM?
->
-> That should be turned into device-tree at boot, possibly from a
-> bootloader or from the zImage wrapper.
->
+> Benjamin Herrenschmidt (1):
+>       powerpc/smp: Make start_secondary_resume available to all CPU variants
 
-This is the approach is used by the kittyhawk u-boot approach.
-However, it would also be just as easy to construct an in-memory
-device-tree within Linux by mapping the personality page and copying
-the relevant bits out.  This has the advantage of being able to boot
-Linux directly on the nodes without an intermediary boot loader (which
-kittyhawk uses just to allow us customize which kernel boots on a
-node-to-node basis whereas the stock system boots the same kernel on
-all the nodes within a partition allocation (64-40,000 nodes)).
+I would appreciate your help in getting this fixed...
 
-         -eric
+Thanks,
+Richard
+
+PS the error looks like this:
+
+  AS      arch/powerpc/kernel/misc_32.o
+arch/powerpc/kernel/misc_32.S: Assembler messages:
+arch/powerpc/kernel/misc_32.S:703: Error: Unrecognized opcode: `std'
+make[2]: *** [arch/powerpc/kernel/misc_32.o] Error 1
+make[1]: *** [arch/powerpc/kernel] Error 2
+
+> ${CROSS_COMPILE}gcc -v
+Using built-in specs.
+Target: powerpc-none-linux-gnuspe
+Configured with: ../gcc-4.3.2/configure --target=powerpc-none-linux-gnuspe --host=i686-pc-linux-gnu --prefix=/opt/freescale/usr/local/gcc-4.3.74-eglibc-2.8.74-dp-2/powerpc-none-linux-gnuspe --with-sysroot=/opt/freescale/usr/local/gcc-4.3.74-eglibc-2.8.74-dp-2/powerpc-none-linux-gnuspe/powerpc-none-linux-gnuspe/libc --disable-libssp --disable-libmudflap --disable-libstdcxx-pch --enable-libgomp --enable-shared --enable-threads --enable-languages=c,c++ --with-gmp=/usr/src/redhat/BUILD/csl-tc-4.3.74/host-libs/usr --with-mpfr=/usr/src/redhat/BUILD/csl-tc-4.3.74/host-libs/usr --with-cpu=8548 --with-gnu-as --with-gnu-ld --enable-symvers=gnu --enable-__cxa_atexit --enable-cxx-flags=-mcpu=8548 --disable-multilib --with-long-double-128 --disable-nls --enable-e500_double
+Thread model: posix
+gcc version 4.3.2 (GCC) 
