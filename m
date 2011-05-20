@@ -1,37 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DF8D7B71A2
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2011 00:47:06 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4KEdf0T019510
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 08:39:41 -0600
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id p4KEjmke250036
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 08:45:48 -0600
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4KEjkJ4016030
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2011 08:45:46 -0600
-Date: Fri, 20 May 2011 10:46:53 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20110520144653.GH25179@zod.rchland.ibm.com>
-References: <1305777978.7481.37.camel@pasglop>
-	<20110520132328.GA5785@riccoc20.at.omicron.at>
-	<20110520135845.GG25179@zod.rchland.ibm.com>
-	<20110520143259.GB5785@riccoc20.at.omicron.at>
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EB09FB71A4
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2011 00:48:25 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 02/14] powerpc: Add a defconfig for 'corenet' 32-bit
+	platforms
+Date: Fri, 20 May 2011 14:45:11 +0000
+Message-ID: <BANLkTimzQ3PUpJQB_sF+PM9DAL+kAYgDYw@mail.gmail.com>
+References: <1305871771-16334-1-git-send-email-galak@kernel.crashing.org>
+	<1305871771-16334-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1305871771-16334-2-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110520143259.GB5785@riccoc20.at.omicron.at>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 20, 2011 at 04:32:59PM +0200, Richard Cochran wrote:
->On Fri, May 20, 2011 at 09:58:45AM -0400, Josh Boyer wrote:
->> On Fri, May 20, 2011 at 03:23:29PM +0200, Richard Cochran wrote:
->> >When I try to build 'next' (now at 208b3a4c), it does not compile due
->> >to a change from the following commit.
->> >
->> >> Benjamin Herrenschmidt (1):
->> >>       powerpc/smp: Make start_secondary_resume available to all CPU variants
->> >
->> >I would appreciate your help in getting this fixed...
->> 
->> Could you try the patch below?
->
->Yes, and it both compiles and boots.
+On Fri, May 20, 2011 at 1:09 AM, Kumar Gala <galak@kernel.crashing.org> wro=
+te:
 
-Thanks for testing!
+> +CONFIG_MATH_EMULATION=3Dy
 
-Ben, can you pull this patch in as-is (fixing up the Subject), or do you
-need me to resubmit it?
+Don't these chips have hardware floating point?
 
-josh
->> 
->> Commit 69e3cea8d5fd526 introduced start_secondary_resume to misc_32.S,
->> however it uses a 64-bit instruction which is not valid on 32-bit
->> platforms.  Use 'stw' instead.
->> 
->> Reported-by: Richard Cochran <richardcochran@gmail.com>
->> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->> 
->> ---
->> 
->> diff --git a/arch/powerpc/kernel/misc_32.S
->> b/arch/powerpc/kernel/misc_32.S
->> index 402560e..998a100 100644
->> --- a/arch/powerpc/kernel/misc_32.S
->> +++ b/arch/powerpc/kernel/misc_32.S
->> @@ -700,7 +700,7 @@ _GLOBAL(start_secondary_resume)
->> 	rlwinm  r1,r1,0,0,(31-THREAD_SHIFT)     /* current_thread_info() */
->> 	addi    r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
->> 	li      r3,0
->> -	std     r3,0(r1)                /* Zero the stack frame pointer */
->> +	stw     r3,0(r1)                /* Zero the stack frame pointer */
->> 	bl      start_secondary
->> 	b       .
->>  #endif /* CONFIG_SMP */
->> 
+> +CONFIG_FORCE_MAX_ZONEORDER=3D13
+
+This may be unnecessary.  I originally set CONFIG_FORCE_MAX_ZONEORDER
+to 12 because the DIU driver needs to be able to allocate a contiguous
+5MB memory block.  Setting it to 13 means a max of 16MB.  Is there a
+reason the default isn't good enough?
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
