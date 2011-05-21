@@ -1,19 +1,26 @@
-Return-Path: <dcarroll@astekcorp.com>
-Received: from ether.astekcorp.com (unknown [173.160.34.133])
-	by ozlabs.org (Postfix) with ESMTP id B085AB6F67
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 11CE8B71A2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 09:23:55 +1000 (EST)
-From: Dave Carroll <dcarroll@astekcorp.com>
-To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>
-Date: Fri, 20 May 2011 17:23:36 -0600
-Subject: RE: [PATCH v2]powerpc: Force page alignment for initrd
-Message-ID: <522F24EF533FC546962ECFA2054FF777373072AB72@MAILSERVER2.cos.astekcorp.com>
-In-Reply-To: <1305930459.7481.194.camel@pasglop>
-Content-Type: text/plain; charset="us-ascii"
+	Sat, 21 May 2011 10:38:22 +1000 (EST)
+Received: by vxi40 with SMTP id 40so3472397vxi.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 May 2011 17:38:18 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "Paul Mackerras \(E-mail\)" <paulus@samba.org>,
-	"LPPC \(E-mail\)" <linuxppc-dev@lists.ozlabs.org>,
-	"LKML \(E-mail\)" <linux-kernel@vger.kernel.org>
+Sender: jwboyer@gmail.com
+In-Reply-To: <20110520215835.GA14918@kroah.com>
+References: <20110520202225.GI25179@zod.rchland.ibm.com>
+	<20110520215835.GA14918@kroah.com>
+Date: Fri, 20 May 2011 20:38:18 -0400
+Message-ID: <BANLkTi=upg115LcMRBdNpcGJXZZBc2bz2A@mail.gmail.com>
+Subject: Re: [stable] [PATCH] powerpc: Fix 32-bit SMP build
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, May 20, 2011 at 5:58 PM, Greg KH <greg@kroah.com> wrote:
+> On Fri, May 20, 2011 at 04:22:25PM -0400, Josh Boyer wrote:
+>> Commit 69e3cea8d5fd526 introduced start_secondary_resume to misc_32.S,
+>> however it uses a 64-bit instruction which is not valid on 32-bit
+>> platforms. =A0Use 'stw' instead.
+>>
+>> Reported-by: Richard Cochran <richardcochran@gmail.com>
+>> Tested-by: Richard Cochran <richardcochran@gmail.com>
+>> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>>
+>> ---
+>
+> <formletter>
+>
+> This is not the correct way to submit patches for inclusion in the
+> stable kernel tree. =A0Please read Documentation/stable_kernel_rules.txt
+> for how to do this properly.
+>
+> </formletter>
 
-When using 64K pages with a separate cpio rootfs, U-Boot will align the roo=
-tfs
-on a 4K page boundary. When the memory is reserved, and subsequent early
-memblock_alloc is called, it will allocate memory between the 64K page alig=
-nment
-and reserved memory. When the reserved memory is subsequently freed, it is =
-done
-so by pages, causing the early memblock_alloc requests to be re-used, which=
- in
-my case, caused the device-tree to be clobbered.
+Sigh.  I know that.  My fault for rushing it and not thinking.
 
-This patch forces initrd to be kernel page aligned, to match the mechanism =
-used
-to free reserved memory.
-
-Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
----
- arch/powerpc/kernel/prom.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 48aeb55..7e58f6b 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -555,7 +555,8 @@ static void __init early_reserve_mem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
-        /* then reserve the initrd, if any */
-        if (initrd_start && (initrd_end > initrd_start))
--               memblock_reserve(__pa(initrd_start), initrd_end - initrd_st=
-art);
-+               memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE)=
-,
-+                       PAGE_ALIGN(initrd_end) - _ALIGN_DOWN(initrd_start, =
-PAGE_SIZE));
- #endif /* CONFIG_BLK_DEV_INITRD */
-
- #ifdef CONFIG_PPC32
---
-1.7.4
+josh
