@@ -1,19 +1,27 @@
-Return-Path: <dcarroll@astekcorp.com>
-Received: from ether.astekcorp.com (unknown [173.160.34.133])
-	by ozlabs.org (Postfix) with ESMTP id 6BB8FB71B0
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A56C1B71AD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 May 2011 03:05:53 +1000 (EST)
-From: Dave Carroll <dcarroll@astekcorp.com>
-To: 'Milton Miller' <miltonm@bga.com>, "Benjamin Herrenschmidt (E-mail)"
-	<benh@kernel.crashing.org>
-Date: Sat, 21 May 2011 11:05:27 -0600
-Subject: [PATCH v3] powerpc: Force page alignment for initrd reserved memory
-Message-ID: <522F24EF533FC546962ECFA2054FF777373072AB73@MAILSERVER2.cos.astekcorp.com>
-In-Reply-To: <initrd-reserve-alignment@mdm.bga.com>
-Content-Type: text/plain; charset="us-ascii"
+	Sun, 22 May 2011 04:15:17 +1000 (EST)
+Received: by vws20 with SMTP id 20so3738379vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 21 May 2011 11:15:14 -0700 (PDT)
 MIME-Version: 1.0
-Cc: LPPC <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <cca27f630fb5e3388eef060ea784f024@kernel.crashing.org>
+References: <1305973871-28244-2-git-send-email-dbaryshkov@gmail.com>
+	<1305977629-26648-1-git-send-email-dbaryshkov@gmail.com>
+	<cca27f630fb5e3388eef060ea784f024@kernel.crashing.org>
+Date: Sat, 21 May 2011 22:15:13 +0400
+Message-ID: <BANLkTimCq6zOtZ3LYKdXLsvqr5SVeMnsDg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] cpc925_edac: support single-processor configurations
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org, Doug Thompson <dougthompson@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 5/21/11, Segher Boessenkool <segher@kernel.crashing.org> wrote:
+>> If second CPU is not enabled, CPC925 EDAC driver will spill out
+>> warnings
+>> about errors on second Processor Interface. Support masking that out,
+>> by detecting at runtime which CPUs are present in device tree.
+>
+> That doesn't quite work, there can be multiple CPUs per processor
+> interface.
 
-When using 64K pages with a separate cpio rootfs, U-Boot will align
-the rootfs on a 4K page boundary. When the memory is reserved, and
-subsequent early memblock_alloc is called, it will allocate memory
-between the 64K page alignment and reserved memory. When the reserved
-memory is subsequently freed, it is done so by pages, causing the
-early memblock_alloc requests to be re-used, which in my case, caused
-the device-tree to be clobbered.
+Are you sure that there can be multiple CPUs on one PI with CPC925
+(CPC945 isn't supported by this driver anyway, IIUC).
 
-This patch forces the reserved memory for initrd to be kernel page
-aligned, and adds the same range extension when freeing initrd.
+> You should be able to see which interfaces are enabled in some CPC925
+> register,
+> but maybe both _are_ enabled on your system (although one is not
+> connected),
+> which is causing the errors?
 
+Hmm, I dont't think this is the case: I'm using a MapleD board with two CPUs
+connected to separate PIs. However I can slect the service processor
+to enable only one CPU via selecting correct bootscript. In this case
+bootscript correctly enables only APIMASK_ADI0. However as cpc925_edac
+checks the APIEXCP itself, it sees the APIEXCP_ADI1 bit set and spills
+regular warnings about it (see below).
 
-Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
----
- arch/powerpc/kernel/prom.c |    4 +++-
- arch/powerpc/mm/init_32.c  |    3 +++
- arch/powerpc/mm/init_64.c  |    3 +++
- 3 files changed, 9 insertions(+), 1 deletions(-)
+If you'd prefer I can add a check for APIMASK at cpc925_cpu_init() time,
+but I think that this will be less robust.
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 48aeb55..397d4a0 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -555,7 +555,9 @@ static void __init early_reserve_mem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
-        /* then reserve the initrd, if any */
-        if (initrd_start && (initrd_end > initrd_start))
--               memblock_reserve(__pa(initrd_start), initrd_end - initrd_st=
-art);
-+               memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE)=
-,
-+                       _ALIGN_UP(initrd_end, PAGE_SIZE) -
-+                       _ALIGN_DOWN(initrd_start, PAGE_SIZE));
- #endif /* CONFIG_BLK_DEV_INITRD */
-
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index d65b591..b0791cb 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -226,6 +226,9 @@ void free_initmem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
-+       start =3D _ALIGN_DOWN(start, PAGE_SIZE);
-+       end =3D _ALIGN_UP(end, PAGE_SIZE);
-+
-        if (start < end)
-                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
-) >> 10);
-        for (; start < end; start +=3D PAGE_SIZE) {
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 6374b21..07ae936 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -102,6 +102,9 @@ void free_initmem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
-+       start =3D _ALIGN_DOWN(start, PAGE_SIZE);
-+       end =3D _ALIGN_UP(end, PAGE_SIZE);
-+
-        if (start < end)
-                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
-) >> 10);
-        for (; start < end; start +=3D PAGE_SIZE) {
---
-1.7.4
+-- 
+With best wishes
+Dmitry
