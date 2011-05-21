@@ -1,23 +1,17 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E5C4FB72AA
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 0F51EB71A5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 20:31:11 +1000 (EST)
-Received: by fxm5 with SMTP id 5so3514534fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 03:31:05 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] cpc925_edac: support single-processor configurations
-Date: Sat, 21 May 2011 14:31:11 +0400
-Message-Id: <1305973871-28244-2-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1305973871-28244-1-git-send-email-dbaryshkov@gmail.com>
-References: <1305973871-28244-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
-	Doug Thompson <dougthompson@xmission.com>
+	Sat, 21 May 2011 20:36:32 +1000 (EST)
+Subject: Re: [v2] powerpc: Force page alignment for initrd
+To: Dave Carroll <dcarroll@astekcorp.com>
+From: Milton Miller <miltonm@bga.com>
+Message-Id: <initrd-reserve-alignment@mdm.bga.com>
+In-Reply-To: <522F24EF533FC546962ECFA2054FF777373072AB72@MAILSERVER2.cos.astekcorp.com>
+References: <522F24EF533FC546962ECFA2054FF777373072AB72@MAILSERVER2.cos.astekcorp.com>
+Date: Sat, 21 May 2011 05:36:27 -0500
+Cc: Paul Mackerras <paulus@samba.org>, LPPC <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,96 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If second CPU is not enabled, CPC925 EDAC driver will spill out warnings
-about errors on second Processor Interface. Support masking that out,
-by detecting at runtime which CPUs are present in device tree.
+On Fri, 20 May 2011 about 13:23:36 -0000, Dave Carroll wrote:
+> When using 64K pages with a separate cpio rootfs, U-Boot will align
+> the rootfs on a 4K page boundary. When the memory is reserved, and
+> subsequent early memblock_alloc is called, it will allocate memory
+> between the 64K page alignment and reserved memory. When the reserved
+> memory is subsequently freed, it is done so by pages, causing the
+> early memblock_alloc requests to be re-used, which in my case, caused
+> the device-tree to be clobbered.
+> 
+> This patch forces initrd to be kernel page aligned, to match the
+> mechanism used to free reserved memory.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>
-Cc: Doug Thompson <dougthompson@xmission.com>
----
- drivers/edac/cpc925_edac.c |   45 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 45 insertions(+), 0 deletions(-)
+Actually it is only forcing the memory reserved for the initrd (its
+not moving the contents nor filling the extra space).
 
-diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
-index 837ad8f..fbb6947 100644
---- a/drivers/edac/cpc925_edac.c
-+++ b/drivers/edac/cpc925_edac.c
-@@ -90,6 +90,7 @@ enum apimask_bits {
- 	ECC_MASK_ENABLE = (APIMASK_ECC_UE_H | APIMASK_ECC_CE_H |
- 			   APIMASK_ECC_UE_L | APIMASK_ECC_CE_L),
- };
-+#define APIMASK_ADI(n)		CPC925_BIT(((n)+1))
- 
- /************************************************************
-  *	Processor Interface Exception Register (APIEXCP)
-@@ -581,16 +582,57 @@ static void cpc925_mc_check(struct mem_ctl_info *mci)
- }
- 
- /******************** CPU err device********************************/
-+static u32 cpc925_cpu_getmask(void)
-+{
-+	struct device_node *cpus;
-+	struct device_node *cpunode;
-+	static u32 mask = 0;
-+
-+	if (mask != 0)
-+		return mask;
-+
-+	mask = APIMASK_ADI0 | APIMASK_ADI1;
-+
-+	cpus = of_find_node_by_path("/cpus");
-+	if (cpus == NULL) {
-+		cpc925_printk(KERN_DEBUG, "No /cpus node !\n");
-+		return 0;
-+	}
-+
-+	/* Get first CPU node */
-+	for (cpunode = NULL;
-+	     (cpunode = of_get_next_child(cpus, cpunode)) != NULL;) {
-+		const u32 *reg = of_get_property(cpunode, "reg", NULL);
-+
-+		cpc925_printk(KERN_ERR, "HERE: %s %p %d %d %d %lx\n", cpunode->type, reg, reg ? *reg : -1, !strcmp(cpunode->type, "cpu"), reg != NULL, APIMASK_ADI(*reg));
-+		if (!strcmp(cpunode->type, "cpu") && reg != NULL)
-+			mask &= ~APIMASK_ADI(*reg);
-+	}
-+
-+	of_node_put(cpunode);
-+	of_node_put(cpus);
-+
-+	return mask;
-+}
-+
- /* Enable CPU Errors detection */
- static void cpc925_cpu_init(struct cpc925_dev_info *dev_info)
- {
- 	u32 apimask;
-+	u32 cpumask;
- 
- 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
- 	if ((apimask & CPU_MASK_ENABLE) == 0) {
- 		apimask |= CPU_MASK_ENABLE;
- 		__raw_writel(apimask, dev_info->vbase + REG_APIMASK_OFFSET);
- 	}
-+
-+	cpumask = cpc925_cpu_getmask();
-+	if (apimask & cpumask) {
-+		cpc925_printk(KERN_WARNING, "CPU(s) not present, "
-+				"but enabled in APIMASK, disabling\n");
-+		apimask &= ~cpumask;
-+	}
- }
- 
- /* Disable CPU Errors detection */
-@@ -622,6 +664,9 @@ static void cpc925_cpu_check(struct edac_device_ctl_info *edac_dev)
- 	if ((apiexcp & CPU_EXCP_DETECTED) == 0)
- 		return;
- 
-+	if ((apiexcp & ~cpc925_cpu_getmask()) == 0)
-+		return;
-+
- 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
- 	cpc925_printk(KERN_INFO, "Processor Interface Fault\n"
- 				 "Processor Interface register dump:\n");
--- 
-1.7.4.4
+> 
+> @@ -555,7 +555,8 @@ static void __init early_reserve_mem(void)
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>         /* then reserve the initrd, if any */
+>         if (initrd_start && (initrd_end > initrd_start))
+> -               memblock_reserve(__pa(initrd_start), initrd_end - initrd_start);
+> +               memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
+> +                       PAGE_ALIGN(initrd_end) - _ALIGN_DOWN(initrd_start, PAGE_SIZE));
+
+Please align up the end, then change free_initrd_mem (32 and 64 bit)
+to do the same range extension.
+
+Thanks,
+milton
