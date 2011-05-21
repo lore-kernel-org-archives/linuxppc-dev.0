@@ -1,22 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E96C4B71AD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 23:45:06 +1000 (EST)
-In-Reply-To: <1305977629-26648-1-git-send-email-dbaryshkov@gmail.com>
-References: <1305973871-28244-2-git-send-email-dbaryshkov@gmail.com>
-	<1305977629-26648-1-git-send-email-dbaryshkov@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <cca27f630fb5e3388eef060ea784f024@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] cpc925_edac: support single-processor configurations
-Date: Sat, 21 May 2011 15:45:41 +0200
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org, Doug Thompson <dougthompson@xmission.com>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8CD23B71AC
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 May 2011 02:41:49 +1000 (EST)
+Subject: Re: [PATCH 0/13] Hypervisor-mode KVM on POWER7
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20110519052246.GA8165@drongo>
+Date: Sat, 21 May 2011 18:41:41 +0200
+Message-Id: <A46CA8F3-FADC-4D36-A068-EE79CE21C434@suse.de>
+References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
+	<764651B6-6DDA-49DC-AA95-52CD86FF82D9@suse.de>
+	<20110517111536.GC7924@brick.ozlabs.ibm.com>
+	<14CFAA70-1747-4902-8CC1-4BE924CAD031@suse.de>
+	<4DD25F10.4030707@redhat.com> <20110519052246.GA8165@drongo>
+To: Paul Mackerras <paulus@samba.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> If second CPU is not enabled, CPC925 EDAC driver will spill out 
-> warnings
-> about errors on second Processor Interface. Support masking that out,
-> by detecting at runtime which CPUs are present in device tree.
 
-That doesn't quite work, there can be multiple CPUs per processor 
-interface.
-You should be able to see which interfaces are enabled in some CPC925 
-register,
-but maybe both _are_ enabled on your system (although one is not 
-connected),
-which is causing the errors?
+On 19.05.2011, at 07:22, Paul Mackerras wrote:
+
+> On Tue, May 17, 2011 at 02:42:08PM +0300, Avi Kivity wrote:
+>> On 05/17/2011 02:38 PM, Alexander Graf wrote:
+>>>>=20
+>>>> What would be the path for these patches to get upstream?  Would =
+this
+>>>> stuff normally go through Avi's tree?  There is a bit of a
+>>>> complication in that they are based on Ben's next branch.  Would =
+Avi
+>>>> pull Ben's next branch, or would they go in via Ben's tree?
+>>>=20
+>>> Usually the ppc tree gets merged into Avi's tree and goes on from
+>>> there. When we have interdependencies, we can certainly do it
+>>> differently though. We can also shove them through Ben's tree this
+>>> time around, as there are more dependencies on ppc code than KVM
+>>> code.
+>>>=20
+>>=20
+>> Yes, both options are fine.  If it goes through kvm.git I can merge
+>> Ben's tree (provided it is append-only) and apply the kvm-ppc
+>> patches on top.
+>=20
+> OK, the easiest thing is for them to go via Ben's tree, I think, since
+> they depend so much on other stuff in Ben's tree.
+>=20
+> Alex, could you give Ben an acked-by for patches 1-8 of the series?
+> There haven't been any changes requested for them.
+
+With ben's tree merged into avi's tree and your patches applied on top, =
+MOL breaks. I'll have to track down why exactly though.
 
 
-Segher
+Alex
