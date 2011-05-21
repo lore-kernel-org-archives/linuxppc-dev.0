@@ -3,19 +3,19 @@ Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
 	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1FB41B71A6
+	by ozlabs.org (Postfix) with ESMTPS id 4079FB71A5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 20:28:45 +1000 (EST)
-Received: by fxm5 with SMTP id 5so3513779fxm.38
+	Sat, 21 May 2011 20:31:07 +1000 (EST)
+Received: by fxm5 with SMTP id 5so3514526fxm.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 May 2011 03:28:40 -0700 (PDT)
+	Sat, 21 May 2011 03:31:03 -0700 (PDT)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: cpufreq@vger.kernel.org
-Subject: [PATCH] Add cpufreq driver for Momentum Maple boards
-Date: Sat, 21 May 2011 14:28:46 +0400
-Message-Id: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] Maple: register CPC925 EDAC device on all boards with
+	CPC925
+Date: Sat, 21 May 2011 14:31:10 +0400
+Message-Id: <1305973871-28244-1-git-send-email-dbaryshkov@gmail.com>
+Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,390 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
-kit and others). Driver is based on a cpufreq driver for 64-bit powermac
-boxes with all pmac-dependant features removed and simple cleanup
-applied.
+Currently Maple setup code creates cpc925_edac device only on
+Motorola ATCA-6101 blade. Make setup code check bridge revision
+and enable EDAC on all U3 bridges.
+
+Verified on Momentum MapleD (ppc970fx kit) board.
 
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- arch/powerpc/kernel/misc_64.S          |    4 +-
- arch/powerpc/platforms/Kconfig         |    8 +
- arch/powerpc/platforms/maple/Makefile  |    1 +
- arch/powerpc/platforms/maple/cpufreq.c |  317 ++++++++++++++++++++++++++++++++
- 4 files changed, 328 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
+ arch/powerpc/platforms/maple/setup.c |   41 +++++++++++++++------------------
+ 1 files changed, 19 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 206a321..c442aae 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -339,7 +339,7 @@ _GLOBAL(real_205_writeb)
- #endif /* CONFIG_PPC_PASEMI */
- 
- 
--#ifdef CONFIG_CPU_FREQ_PMAC64
-+#if defined(CONFIG_CPU_FREQ_PMAC64) || defined(CONFIG_CPU_FREQ_MAPLE)
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index fe34c3d..2c48a91 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -338,35 +338,16 @@ define_machine(maple) {
+ #ifdef CONFIG_EDAC
  /*
-  * SCOM access functions for 970 (FX only for now)
-  *
-@@ -408,7 +408,7 @@ _GLOBAL(scom970_write)
- 	/* restore interrupts */
- 	mtmsrd	r5,1
- 	blr
--#endif /* CONFIG_CPU_FREQ_PMAC64 */
-+#endif /* CONFIG_CPU_FREQ_PMAC64 || CONFIG_CPU_FREQ_MAPLE */
+  * Register a platform device for CPC925 memory controller on
+- * Motorola ATCA-6101 blade.
++ * all boards with U3 (CPC925) bridge.
+  */
+-#define MAPLE_CPC925_MODEL	"Motorola,ATCA-6101"
+ static int __init maple_cpc925_edac_setup(void)
+ {
+ 	struct platform_device *pdev;
+ 	struct device_node *np = NULL;
+ 	struct resource r;
+-	const unsigned char *model;
+ 	int ret;
+-
+-	np = of_find_node_by_path("/");
+-	if (!np) {
+-		printk(KERN_ERR "%s: Unable to get root node\n", __func__);
+-		return -ENODEV;
+-	}
+-
+-	model = (const unsigned char *)of_get_property(np, "model", NULL);
+-	if (!model) {
+-		printk(KERN_ERR "%s: Unabel to get model info\n", __func__);
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-
+-	ret = strcmp(model, MAPLE_CPC925_MODEL);
+-	of_node_put(np);
+-
+-	if (ret != 0)
+-		return 0;
++	volatile void __iomem *mem;
++	u32 rev;
  
+ 	np = of_find_node_by_type(NULL, "memory-controller");
+ 	if (!np) {
+@@ -384,6 +365,22 @@ static int __init maple_cpc925_edac_setup(void)
+ 		return -ENODEV;
+ 	}
  
- /*
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index f7b0772..4c5eb5b 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -187,6 +187,14 @@ config PPC_PASEMI_CPUFREQ
- 	  This adds the support for frequency switching on PA Semi
- 	  PWRficient processors.
- 
-+config CPU_FREQ_MAPLE
-+	bool "Support for Maple 970FX Evaluation Board"
-+	depends on PPC_MAPLE
-+	select CPU_FREQ_TABLE
-+	help
-+	  This adds support for frequency switching on Maple 970FX
-+	  Evaluation Board and compatible boards (IBM JS2x blades).
-+
- endmenu
- 
- config PPC601_SYNC_FIX
-diff --git a/arch/powerpc/platforms/maple/Makefile b/arch/powerpc/platforms/maple/Makefile
-index 1be1a99..0b3e3e3 100644
---- a/arch/powerpc/platforms/maple/Makefile
-+++ b/arch/powerpc/platforms/maple/Makefile
-@@ -1 +1,2 @@
- obj-y	+= setup.o pci.o time.o
-+obj-$(CONFIG_CPU_FREQ_MAPLE) += cpufreq.o
-diff --git a/arch/powerpc/platforms/maple/cpufreq.c b/arch/powerpc/platforms/maple/cpufreq.c
-new file mode 100644
-index 0000000..854adfa
---- /dev/null
-+++ b/arch/powerpc/platforms/maple/cpufreq.c
-@@ -0,0 +1,317 @@
-+/*
-+ *  Copyright (C) 2011 Dmitry Eremin-Solenikov
-+ *  Copyright (C) 2002 - 2005 Benjamin Herrenschmidt <benh@kernel.crashing.org>
-+ *  and                       Markus Demleitner <msdemlei@cl.uni-heidelberg.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This driver adds basic cpufreq support for SMU & 970FX based G5 Macs,
-+ * that is iMac G5 and latest single CPU desktop.
-+ */
-+
-+#undef DEBUG
-+
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/delay.h>
-+#include <linux/sched.h>
-+#include <linux/cpufreq.h>
-+#include <linux/init.h>
-+#include <linux/completion.h>
-+#include <linux/mutex.h>
-+#include <asm/prom.h>
-+#include <asm/machdep.h>
-+#include <asm/irq.h>
-+#include <asm/sections.h>
-+#include <asm/cputable.h>
-+#include <asm/time.h>
-+
-+#define DBG(fmt...) pr_debug(fmt)
-+
-+/* see 970FX user manual */
-+
-+#define SCOM_PCR 0x0aa001			/* PCR scom addr */
-+
-+#define PCR_HILO_SELECT		0x80000000U	/* 1 = PCR, 0 = PCRH */
-+#define PCR_SPEED_FULL		0x00000000U	/* 1:1 speed value */
-+#define PCR_SPEED_HALF		0x00020000U	/* 1:2 speed value */
-+#define PCR_SPEED_QUARTER	0x00040000U	/* 1:4 speed value */
-+#define PCR_SPEED_MASK		0x000e0000U	/* speed mask */
-+#define PCR_SPEED_SHIFT		17
-+#define PCR_FREQ_REQ_VALID	0x00010000U	/* freq request valid */
-+#define PCR_VOLT_REQ_VALID	0x00008000U	/* volt request valid */
-+#define PCR_TARGET_TIME_MASK	0x00006000U	/* target time */
-+#define PCR_STATLAT_MASK	0x00001f00U	/* STATLAT value */
-+#define PCR_SNOOPLAT_MASK	0x000000f0U	/* SNOOPLAT value */
-+#define PCR_SNOOPACC_MASK	0x0000000fU	/* SNOOPACC value */
-+
-+#define SCOM_PSR 0x408001			/* PSR scom addr */
-+/* warning: PSR is a 64 bits register */
-+#define PSR_CMD_RECEIVED	0x2000000000000000U   /* command received */
-+#define PSR_CMD_COMPLETED	0x1000000000000000U   /* command completed */
-+#define PSR_CUR_SPEED_MASK	0x0300000000000000U   /* current speed */
-+#define PSR_CUR_SPEED_SHIFT	(56)
-+
-+/*
-+ * The G5 only supports two frequencies (Quarter speed is not supported)
-+ */
-+#define CPUFREQ_HIGH                  0
-+#define CPUFREQ_LOW                   1
-+
-+static struct cpufreq_frequency_table g5_cpu_freqs[] = {
-+	{CPUFREQ_HIGH, 		0},
-+	{CPUFREQ_LOW,		0},
-+	{0,			CPUFREQ_TABLE_END},
-+};
-+
-+static struct freq_attr* g5_cpu_freqs_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
-+/* Power mode data is an array of the 32 bits PCR values to use for
-+ * the various frequencies, retrieved from the device-tree
-+ */
-+static int g5_pmode_cur;
-+
-+static DEFINE_MUTEX(g5_switch_mutex);
-+
-+static const u32 *g5_pmode_data;
-+static int g5_pmode_max;
-+
-+/*
-+ * Fake voltage switching for platforms with missing support
-+ */
-+
-+static void g5_dummy_switch_volt(int speed_mode)
-+{
-+}
-+
-+/*
-+ * SCOM based frequency switching for 970FX rev3
-+ */
-+static int g5_scom_switch_freq(int speed_mode)
-+{
-+	unsigned long flags;
-+	int to;
-+
-+	/* If frequency is going up, first ramp up the voltage */
-+	if (speed_mode < g5_pmode_cur)
-+		g5_dummy_switch_volt(speed_mode);
-+
-+	local_irq_save(flags);
-+
-+	/* Clear PCR high */
-+	scom970_write(SCOM_PCR, 0);
-+	/* Clear PCR low */
-+	scom970_write(SCOM_PCR, PCR_HILO_SELECT | 0);
-+	/* Set PCR low */
-+	scom970_write(SCOM_PCR, PCR_HILO_SELECT |
-+		      g5_pmode_data[speed_mode]);
-+
-+	/* Wait for completion */
-+	for (to = 0; to < 10; to++) {
-+		unsigned long psr = scom970_read(SCOM_PSR);
-+
-+		if ((psr & PSR_CMD_RECEIVED) == 0 &&
-+		    (((psr >> PSR_CUR_SPEED_SHIFT) ^
-+		      (g5_pmode_data[speed_mode] >> PCR_SPEED_SHIFT)) & 0x3)
-+		    == 0)
-+			break;
-+		if (psr & PSR_CMD_COMPLETED)
-+			break;
-+		udelay(100);
++	mem = ioremap(r.start, resource_size(&r));
++	if (!mem) {
++		printk(KERN_ERR "%s: Unable to map memory-controller memory\n",
++				__func__);
++		return -ENOMEM;
 +	}
 +
-+	local_irq_restore(flags);
++	rev = __raw_readl(mem);
++	iounmap(mem);
 +
-+	/* If frequency is going down, last ramp the voltage */
-+	if (speed_mode > g5_pmode_cur)
-+		g5_dummy_switch_volt(speed_mode);
-+
-+	g5_pmode_cur = speed_mode;
-+	ppc_proc_freq = g5_cpu_freqs[speed_mode].frequency * 1000ul;
-+
-+	return 0;
-+}
-+
-+static int g5_scom_query_freq(void)
-+{
-+	unsigned long psr = scom970_read(SCOM_PSR);
-+	int i;
-+
-+	for (i = 0; i <= g5_pmode_max; i++)
-+		if ((((psr >> PSR_CUR_SPEED_SHIFT) ^
-+		      (g5_pmode_data[i] >> PCR_SPEED_SHIFT)) & 0x3) == 0)
-+			break;
-+	return i;
-+}
-+
-+/*
-+ * Common interface to the cpufreq core
-+ */
-+
-+static int g5_cpufreq_verify(struct cpufreq_policy *policy)
-+{
-+	return cpufreq_frequency_table_verify(policy, g5_cpu_freqs);
-+}
-+
-+static int g5_cpufreq_target(struct cpufreq_policy *policy,
-+	unsigned int target_freq, unsigned int relation)
-+{
-+	unsigned int newstate = 0;
-+	struct cpufreq_freqs freqs;
-+	int rc;
-+
-+	if (cpufreq_frequency_table_target(policy, g5_cpu_freqs,
-+			target_freq, relation, &newstate))
-+		return -EINVAL;
-+
-+	if (g5_pmode_cur == newstate)
-+		return 0;
-+
-+	mutex_lock(&g5_switch_mutex);
-+
-+	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
-+	freqs.new = g5_cpu_freqs[newstate].frequency;
-+	freqs.cpu = 0;
-+
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+	rc = g5_scom_switch_freq(newstate);
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+
-+	mutex_unlock(&g5_switch_mutex);
-+
-+	return rc;
-+}
-+
-+static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
-+{
-+	return g5_cpu_freqs[g5_pmode_cur].frequency;
-+}
-+
-+static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	policy->cpuinfo.transition_latency = 12000;
-+	policy->cur = g5_cpu_freqs[g5_scom_query_freq()].frequency;
-+	/* secondary CPUs are tied to the primary one by the
-+	 * cpufreq core if in the secondary policy we tell it that
-+	 * it actually must be one policy together with all others. */
-+	cpumask_copy(policy->cpus, cpu_online_mask);
-+	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
-+
-+	return cpufreq_frequency_table_cpuinfo(policy,
-+		g5_cpu_freqs);
-+}
-+
-+
-+static struct cpufreq_driver g5_cpufreq_driver = {
-+	.name		= "maple",
-+	.owner		= THIS_MODULE,
-+	.flags		= CPUFREQ_CONST_LOOPS,
-+	.init		= g5_cpufreq_cpu_init,
-+	.verify		= g5_cpufreq_verify,
-+	.target		= g5_cpufreq_target,
-+	.get		= g5_cpufreq_get_speed,
-+	.attr		= g5_cpu_freqs_attr,
-+};
-+
-+static int __init g5_cpufreq_init(void)
-+{
-+	struct device_node *cpus;
-+	struct device_node *cpunode;
-+	unsigned int psize;
-+	unsigned long max_freq;
-+	const u32 *valp;
-+	u32 pvr_hi;
-+	int rc = -ENODEV;
-+
-+	cpus = of_find_node_by_path("/cpus");
-+	if (cpus == NULL) {
-+		DBG("No /cpus node !\n");
++	if ((rev & 0xf0) != 0x30) { /* U3 */
++		printk(KERN_ERR "%s: Non-CPC925(U3) bridge revision: %02x\n",
++			__func__, rev);
 +		return -ENODEV;
 +	}
 +
-+	/* Get first CPU node */
-+	for (cpunode = NULL;
-+	     (cpunode = of_get_next_child(cpus, cpunode)) != NULL;) {
-+		const u32 *reg = of_get_property(cpunode, "reg", NULL);
-+		if (reg == NULL || (*reg) != 0)
-+			continue;
-+		if (!strcmp(cpunode->type, "cpu"))
-+			break;
-+	}
-+	if (cpunode == NULL) {
-+		printk(KERN_ERR "cpufreq: Can't find any CPU 0 node\n");
-+		goto bail_cpus;
-+	}
-+
-+	/* Check 970FX for now */
-+	/* we actually don't care on which CPU to access PVR */
-+	pvr_hi = PVR_VER(mfspr(SPRN_PVR));
-+	if (pvr_hi != 0x3c && pvr_hi != 0x44) {
-+		printk(KERN_ERR "cpufreq: Unsupported CPU version (%x)\n", pvr_hi);
-+		goto bail_noprops;
-+	}
-+
-+	/* Look for the powertune data in the device-tree */
-+	g5_pmode_data = of_get_property(cpunode, "power-mode-data",&psize);
-+	if (!g5_pmode_data) {
-+		DBG("No power-mode-data !\n");
-+		goto bail_noprops;
-+	}
-+	g5_pmode_max = psize / sizeof(u32) - 1;
-+
-+	/*
-+	 * From what I see, clock-frequency is always the maximal frequency.
-+	 * The current driver can not slew sysclk yet, so we really only deal
-+	 * with powertune steps for now. We also only implement full freq and
-+	 * half freq in this version. So far, I haven't yet seen a machine
-+	 * supporting anything else.
-+	 */
-+	valp = of_get_property(cpunode, "clock-frequency", NULL);
-+	if (!valp)
-+		return -ENODEV;
-+	max_freq = (*valp)/1000;
-+	g5_cpu_freqs[0].frequency = max_freq;
-+	g5_cpu_freqs[1].frequency = max_freq/2;
-+
-+	/* Force apply current frequency to make sure everything is in
-+	 * sync (voltage is right for example). Firmware may leave us with
-+	 * a strange setting ...
-+	 */
-+	g5_dummy_switch_volt(CPUFREQ_HIGH);
-+	msleep(10);
-+	g5_pmode_cur = -1;
-+	g5_scom_switch_freq(g5_scom_query_freq());
-+
-+	printk(KERN_INFO "Registering G5 CPU frequency driver\n");
-+	printk(KERN_INFO "Frequency method: SCOM, Voltage method: none\n");
-+	printk(KERN_INFO "Low: %d Mhz, High: %d Mhz, Cur: %d MHz\n",
-+		g5_cpu_freqs[1].frequency/1000,
-+		g5_cpu_freqs[0].frequency/1000,
-+		g5_cpu_freqs[g5_pmode_cur].frequency/1000);
-+
-+	rc = cpufreq_register_driver(&g5_cpufreq_driver);
-+
-+	of_node_put(cpunode);
-+	of_node_put(cpus);
-+
-+	return rc;
-+
-+bail_noprops:
-+	of_node_put(cpunode);
-+bail_cpus:
-+	of_node_put(cpus);
-+
-+	return rc;
-+}
-+
-+module_init(g5_cpufreq_init);
-+
-+
-+MODULE_LICENSE("GPL");
+ 	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
+ 	if (IS_ERR(pdev))
+ 		return PTR_ERR(pdev);
 -- 
 1.7.4.4
