@@ -1,26 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94C21B71AA
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 May 2011 03:00:13 +1000 (EST)
-Subject: Re: [PATCH 0/13] Hypervisor-mode KVM on POWER7
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <A46CA8F3-FADC-4D36-A068-EE79CE21C434@suse.de>
-Date: Sat, 21 May 2011 19:00:08 +0200
-Message-Id: <716BAE9B-F950-41B8-8289-DFAC4C6876CC@suse.de>
-References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-	<764651B6-6DDA-49DC-AA95-52CD86FF82D9@suse.de>
-	<20110517111536.GC7924@brick.ozlabs.ibm.com>
-	<14CFAA70-1747-4902-8CC1-4BE924CAD031@suse.de>
-	<4DD25F10.4030707@redhat.com> <20110519052246.GA8165@drongo>
-	<A46CA8F3-FADC-4D36-A068-EE79CE21C434@suse.de>
-To: Alexander Graf <agraf@suse.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Avi Kivity <avi@redhat.com>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <dcarroll@astekcorp.com>
+Received: from ether.astekcorp.com (unknown [173.160.34.133])
+	by ozlabs.org (Postfix) with ESMTP id 6BB8FB71B0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 22 May 2011 03:05:53 +1000 (EST)
+From: Dave Carroll <dcarroll@astekcorp.com>
+To: 'Milton Miller' <miltonm@bga.com>, "Benjamin Herrenschmidt (E-mail)"
+	<benh@kernel.crashing.org>
+Date: Sat, 21 May 2011 11:05:27 -0600
+Subject: [PATCH v3] powerpc: Force page alignment for initrd reserved memory
+Message-ID: <522F24EF533FC546962ECFA2054FF777373072AB73@MAILSERVER2.cos.astekcorp.com>
+In-Reply-To: <initrd-reserve-alignment@mdm.bga.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: LPPC <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,43 +24,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 21.05.2011, at 18:41, Alexander Graf wrote:
+When using 64K pages with a separate cpio rootfs, U-Boot will align
+the rootfs on a 4K page boundary. When the memory is reserved, and
+subsequent early memblock_alloc is called, it will allocate memory
+between the 64K page alignment and reserved memory. When the reserved
+memory is subsequently freed, it is done so by pages, causing the
+early memblock_alloc requests to be re-used, which in my case, caused
+the device-tree to be clobbered.
 
->=20
-> On 19.05.2011, at 07:22, Paul Mackerras wrote:
->=20
->> On Tue, May 17, 2011 at 02:42:08PM +0300, Avi Kivity wrote:
->>> On 05/17/2011 02:38 PM, Alexander Graf wrote:
->>>>>=20
->>>>> What would be the path for these patches to get upstream?  Would =
-this
->>>>> stuff normally go through Avi's tree?  There is a bit of a
->>>>> complication in that they are based on Ben's next branch.  Would =
-Avi
->>>>> pull Ben's next branch, or would they go in via Ben's tree?
->>>>=20
->>>> Usually the ppc tree gets merged into Avi's tree and goes on from
->>>> there. When we have interdependencies, we can certainly do it
->>>> differently though. We can also shove them through Ben's tree this
->>>> time around, as there are more dependencies on ppc code than KVM
->>>> code.
->>>>=20
->>>=20
->>> Yes, both options are fine.  If it goes through kvm.git I can merge
->>> Ben's tree (provided it is append-only) and apply the kvm-ppc
->>> patches on top.
->>=20
->> OK, the easiest thing is for them to go via Ben's tree, I think, =
-since
->> they depend so much on other stuff in Ben's tree.
->>=20
->> Alex, could you give Ben an acked-by for patches 1-8 of the series?
->> There haven't been any changes requested for them.
->=20
-> With ben's tree merged into avi's tree and your patches applied on =
-top, MOL breaks. I'll have to track down why exactly though.
-
-In fact, qemu-system-ppc64 -enable-kvm also breaks.
+This patch forces the reserved memory for initrd to be kernel page
+aligned, and adds the same range extension when freeing initrd.
 
 
-Alex
+Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+---
+ arch/powerpc/kernel/prom.c |    4 +++-
+ arch/powerpc/mm/init_32.c  |    3 +++
+ arch/powerpc/mm/init_64.c  |    3 +++
+ 3 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 48aeb55..397d4a0 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -555,7 +555,9 @@ static void __init early_reserve_mem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+        /* then reserve the initrd, if any */
+        if (initrd_start && (initrd_end > initrd_start))
+-               memblock_reserve(__pa(initrd_start), initrd_end - initrd_st=
+art);
++               memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE)=
+,
++                       _ALIGN_UP(initrd_end, PAGE_SIZE) -
++                       _ALIGN_DOWN(initrd_start, PAGE_SIZE));
+ #endif /* CONFIG_BLK_DEV_INITRD */
+
+ #ifdef CONFIG_PPC32
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index d65b591..b0791cb 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -226,6 +226,9 @@ void free_initmem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ void free_initrd_mem(unsigned long start, unsigned long end)
+ {
++       start =3D _ALIGN_DOWN(start, PAGE_SIZE);
++       end =3D _ALIGN_UP(end, PAGE_SIZE);
++
+        if (start < end)
+                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
+) >> 10);
+        for (; start < end; start +=3D PAGE_SIZE) {
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 6374b21..07ae936 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -102,6 +102,9 @@ void free_initmem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ void free_initrd_mem(unsigned long start, unsigned long end)
+ {
++       start =3D _ALIGN_DOWN(start, PAGE_SIZE);
++       end =3D _ALIGN_UP(end, PAGE_SIZE);
++
+        if (start < end)
+                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
+) >> 10);
+        for (; start < end; start +=3D PAGE_SIZE) {
+--
+1.7.4
