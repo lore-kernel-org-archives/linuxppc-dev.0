@@ -1,25 +1,27 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 7DA38B71C2
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 May 2011 04:15:36 +1000 (EST)
-Subject: Re: [PATCH 0/13] Hypervisor-mode KVM on POWER7
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <716BAE9B-F950-41B8-8289-DFAC4C6876CC@suse.de>
-Date: Sat, 21 May 2011 20:15:31 +0200
-Message-Id: <72F6273E-DEE7-42B7-815B-494A53049B93@suse.de>
-References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
-	<764651B6-6DDA-49DC-AA95-52CD86FF82D9@suse.de>
-	<20110517111536.GC7924@brick.ozlabs.ibm.com>
-	<14CFAA70-1747-4902-8CC1-4BE924CAD031@suse.de>
-	<4DD25F10.4030707@redhat.com> <20110519052246.GA8165@drongo>
-	<A46CA8F3-FADC-4D36-A068-EE79CE21C434@suse.de>
-	<716BAE9B-F950-41B8-8289-DFAC4C6876CC@suse.de>
-To: Alexander Graf <agraf@suse.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Avi Kivity <avi@redhat.com>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2A523B7210
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 22 May 2011 04:15:53 +1000 (EST)
+Received: by vxi40 with SMTP id 40so3777188vxi.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 21 May 2011 11:15:50 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <2825c3704d46eca735f20b01be7e33f9@kernel.crashing.org>
+References: <1305973871-28244-1-git-send-email-dbaryshkov@gmail.com>
+	<2825c3704d46eca735f20b01be7e33f9@kernel.crashing.org>
+Date: Sat, 21 May 2011 22:15:50 +0400
+Message-ID: <BANLkTinVURXfVwZq5G6B2kBj2b30p6n13A@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Maple: register CPC925 EDAC device on all boards with
+	CPC925
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 5/21/11, Segher Boessenkool <segher@kernel.crashing.org> wrote:
+>> Currently Maple setup code creates cpc925_edac device only on
+>> Motorola ATCA-6101 blade. Make setup code check bridge revision
+>> and enable EDAC on all U3 bridges.
+>
+> But the EDAC code only works on U3H (CPC925), not old U3.
 
-On 21.05.2011, at 19:00, Alexander Graf wrote:
+Ack, corrected. Thank you for the info.
 
->=20
-> On 21.05.2011, at 18:41, Alexander Graf wrote:
->=20
->>=20
->> On 19.05.2011, at 07:22, Paul Mackerras wrote:
->>=20
->>> On Tue, May 17, 2011 at 02:42:08PM +0300, Avi Kivity wrote:
->>>> On 05/17/2011 02:38 PM, Alexander Graf wrote:
->>>>>>=20
->>>>>> What would be the path for these patches to get upstream?  Would =
-this
->>>>>> stuff normally go through Avi's tree?  There is a bit of a
->>>>>> complication in that they are based on Ben's next branch.  Would =
-Avi
->>>>>> pull Ben's next branch, or would they go in via Ben's tree?
->>>>>=20
->>>>> Usually the ppc tree gets merged into Avi's tree and goes on from
->>>>> there. When we have interdependencies, we can certainly do it
->>>>> differently though. We can also shove them through Ben's tree this
->>>>> time around, as there are more dependencies on ppc code than KVM
->>>>> code.
->>>>>=20
->>>>=20
->>>> Yes, both options are fine.  If it goes through kvm.git I can merge
->>>> Ben's tree (provided it is append-only) and apply the kvm-ppc
->>>> patches on top.
->>>=20
->>> OK, the easiest thing is for them to go via Ben's tree, I think, =
-since
->>> they depend so much on other stuff in Ben's tree.
->>>=20
->>> Alex, could you give Ben an acked-by for patches 1-8 of the series?
->>> There haven't been any changes requested for them.
->>=20
->> With ben's tree merged into avi's tree and your patches applied on =
-top, MOL breaks. I'll have to track down why exactly though.
->=20
-> In fact, qemu-system-ppc64 -enable-kvm also breaks.
-
-Only ben's tree merged into avi's tree works fine. So it's definitely =
-one of your patches from 1-8 (except for 2,3 which are already in Ben's =
-tree).
+>
+>> +	if ((rev & 0xf0) != 0x30) { /* U3 */
+>> +		printk(KERN_ERR "%s: Non-CPC925(U3) bridge revision: %02x\n",
+>
+> Should be:  if (rev >= 0x34 && rev <= 0x3f)
+>
+>
+> Segher
+>
+>
 
 
-Alex
+-- 
+With best wishes
+Dmitry
