@@ -1,30 +1,21 @@
 Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 20757B6FB1
+	by ozlabs.org (Postfix) with ESMTPS id EFBC6B6FB3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 May 2011 19:12:34 +1000 (EST)
-Received: by vxi40 with SMTP id 40so4005406vxi.38
+	Sun, 22 May 2011 20:15:18 +1000 (EST)
+Received: by eyg5 with SMTP id 5so1699685eyg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 May 2011 02:12:31 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <ed1c0926526a93858f21a1538eb84f7b@kernel.crashing.org>
-References: <1305973871-28244-2-git-send-email-dbaryshkov@gmail.com>
-	<1305977629-26648-1-git-send-email-dbaryshkov@gmail.com>
-	<cca27f630fb5e3388eef060ea784f024@kernel.crashing.org>
-	<BANLkTimCq6zOtZ3LYKdXLsvqr5SVeMnsDg@mail.gmail.com>
-	<ed1c0926526a93858f21a1538eb84f7b@kernel.crashing.org>
-Date: Sun, 22 May 2011 13:12:30 +0400
-Message-ID: <BANLkTi=8+c3NOFiYXZLbhc9vwtCBG9=9zQ@mail.gmail.com>
-Subject: Re: [PATCH 2/2] cpc925_edac: support single-processor configurations
+	Sun, 22 May 2011 03:15:12 -0700 (PDT)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Doug Thompson <dougthompson@xmission.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V2 1/2] Maple: register CPC925 EDAC device on all boards with
+	CPC925
+Date: Sun, 22 May 2011 14:14:54 +0400
+Message-Id: <1306059295-25806-1-git-send-email-dbaryshkov@gmail.com>
+Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,58 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 22, 2011 at 12:04 AM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->>> You should be able to see which interfaces are enabled in some CPC925
->>> register,
->>> but maybe both _are_ enabled on your system (although one is not
->>> connected),
->>> which is causing the errors?
->>
->> Hmm, I dont't think this is the case: I'm using a MapleD board with two
->> CPUs
->> connected to separate PIs. However I can slect the service processor
->> to enable only one CPU via selecting correct bootscript. In this case
->> bootscript correctly enables only APIMASK_ADI0. However as cpc925_edac
->> checks the APIEXCP itself, it sees the APIEXCP_ADI1 bit set and spills
->> regular warnings about it (see below).
->
-> (no below :-) )
+Currently Maple setup code creates cpc925_edac device only on
+Motorola ATCA-6101 blade. Make setup code check bridge revision
+and enable EDAC on all U3H bridges.
 
-Sorry, here it goes:
+Verified on Momentum MapleD (ppc970fx kit) board.
 
-EDAC CPC925: Processor Interface Fault
-Processor Interface register dump:
-EDAC CPC925: APIMASK            0xdea00000
-EDAC CPC925: APIEXCP            0x20000000
-EDAC DEVICE0: INTERNAL ERROR: instance 0 'block' out of range (0 >=3D 0)
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/powerpc/platforms/maple/setup.c |   41 +++++++++++++++------------------
+ 1 files changed, 19 insertions(+), 22 deletions(-)
 
-> I think the service processor left that processor interface enabled (the
-> interface itself, not the exception stuff), so the exception thing will
-> signal exceptions any time the CPC925 sends snoops to that second
-> processor. =A0This also might reduce performance.
->
-> Or maybe it is normal for the exception thing to signal errors on disable=
-d
-> interfaces.
-
-I only have U4 manual, so I can't be sure about U3H. And for U4 manual is
-also unclear about ADI1 exception.
-
->> If you'd prefer I can add a check for APIMASK at cpc925_cpu_init() time,
->> but I think that this will be less robust.
->
-> Yeah that's less robust, for sure.
->
-> Just keep what you have, but add a big fat comment that you are assuming
-> the processor interface id is identical to the MPIC processor id :-)
-
-sure
-
-> Did you test disabling physical CPU #0 as well?
-
-No. I still don't have _that_ level of understanding of PIBS boot scripts.
-
---=20
-With best wishes
-Dmitry
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index fe34c3d..2f15aca 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -338,35 +338,16 @@ define_machine(maple) {
+ #ifdef CONFIG_EDAC
+ /*
+  * Register a platform device for CPC925 memory controller on
+- * Motorola ATCA-6101 blade.
++ * all boards with U3H (CPC925) bridge.
+  */
+-#define MAPLE_CPC925_MODEL	"Motorola,ATCA-6101"
+ static int __init maple_cpc925_edac_setup(void)
+ {
+ 	struct platform_device *pdev;
+ 	struct device_node *np = NULL;
+ 	struct resource r;
+-	const unsigned char *model;
+ 	int ret;
+-
+-	np = of_find_node_by_path("/");
+-	if (!np) {
+-		printk(KERN_ERR "%s: Unable to get root node\n", __func__);
+-		return -ENODEV;
+-	}
+-
+-	model = (const unsigned char *)of_get_property(np, "model", NULL);
+-	if (!model) {
+-		printk(KERN_ERR "%s: Unabel to get model info\n", __func__);
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-
+-	ret = strcmp(model, MAPLE_CPC925_MODEL);
+-	of_node_put(np);
+-
+-	if (ret != 0)
+-		return 0;
++	volatile void __iomem *mem;
++	u32 rev;
+ 
+ 	np = of_find_node_by_type(NULL, "memory-controller");
+ 	if (!np) {
+@@ -384,6 +365,22 @@ static int __init maple_cpc925_edac_setup(void)
+ 		return -ENODEV;
+ 	}
+ 
++	mem = ioremap(r.start, resource_size(&r));
++	if (!mem) {
++		printk(KERN_ERR "%s: Unable to map memory-controller memory\n",
++				__func__);
++		return -ENOMEM;
++	}
++
++	rev = __raw_readl(mem);
++	iounmap(mem);
++
++	if (rev >= 0x34 && rev <= 0x3f) { /* U3H */
++		printk(KERN_ERR "%s: Non-CPC925(U3H) bridge revision: %02x\n",
++			__func__, rev);
++		return -ENODEV;
++	}
++
+ 	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
+ 	if (IS_ERR(pdev))
+ 		return PTR_ERR(pdev);
+-- 
+1.7.4.4
