@@ -1,23 +1,21 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
-	[209.85.215.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BBC18B7052
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id BCCF2B6F80
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 May 2011 20:15:22 +1000 (EST)
-Received: by ewy6 with SMTP id 6so1696872ewy.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 May 2011 03:15:17 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V2 2/2] cpc925_edac: support single-processor configurations
-Date: Sun, 22 May 2011 14:14:55 +0400
-Message-Id: <1306059295-25806-2-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1306059295-25806-1-git-send-email-dbaryshkov@gmail.com>
-References: <1306059295-25806-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
-	Doug Thompson <dougthompson@xmission.com>
+	Mon, 23 May 2011 07:17:28 +1000 (EST)
+Subject: Re: [PATCH v3] powerpc: Force page alignment for initrd reserved
+	memory
+To: Dave Carroll <dcarroll@astekcorp.com>
+From: 'Milton Miller' <miltonm@bga.com>
+Subject: Re: [PATCH v3] powerpc: Force page alignment for initrd reserved
+	memory
+Message-ID: <initrd-reserve-reply2@mdm.bga.com>
+In-Reply-To: <522F24EF533FC546962ECFA2054FF777373072AB73@MAILSERVER2.cos.astekcorp.com>
+References: <initrd-reserve-alignment@mdm.bga.com>
+	<522F24EF533FC546962ECFA2054FF777373072AB73@MAILSERVER2.cos.astekcorp.com>
+Date: Sun, 22 May 2011 16:17:18 -0500
+Cc: LPPC <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,104 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If second CPU is not enabled, CPC925 EDAC driver will spill out warnings
-about errors on second Processor Interface. Support masking that out,
-by detecting at runtime which CPUs are present in device tree.
+On Sat, 21 May 2011 about 11:05:27 -0600, Dave Carroll wrote:
+> 
+> When using 64K pages with a separate cpio rootfs, U-Boot will align
+> the rootfs on a 4K page boundary. When the memory is reserved, and
+> subsequent early memblock_alloc is called, it will allocate memory
+> between the 64K page alignment and reserved memory. When the reserved
+> memory is subsequently freed, it is done so by pages, causing the
+> early memblock_alloc requests to be re-used, which in my case, caused
+> the device-tree to be clobbered.
+> 
+> This patch forces the reserved memory for initrd to be kernel page
+> aligned, and adds the same range extension when freeing initrd.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>
-Cc: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/edac/cpc925_edac.c |   52 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 52 insertions(+), 0 deletions(-)
+Getting better, but
 
-diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
-index 837ad8f..0b466af 100644
---- a/drivers/edac/cpc925_edac.c
-+++ b/drivers/edac/cpc925_edac.c
-@@ -90,6 +90,7 @@ enum apimask_bits {
- 	ECC_MASK_ENABLE = (APIMASK_ECC_UE_H | APIMASK_ECC_CE_H |
- 			   APIMASK_ECC_UE_L | APIMASK_ECC_CE_L),
- };
-+#define APIMASK_ADI(n)		CPC925_BIT(((n)+1))
- 
- /************************************************************
-  *	Processor Interface Exception Register (APIEXCP)
-@@ -581,16 +582,64 @@ static void cpc925_mc_check(struct mem_ctl_info *mci)
- }
- 
- /******************** CPU err device********************************/
-+static u32 cpc925_cpu_getmask(void)
-+{
-+	struct device_node *cpus;
-+	struct device_node *cpunode;
-+	static u32 mask = 0;
-+
-+	if (mask != 0)
-+		return mask;
-+
-+	mask = APIMASK_ADI0 | APIMASK_ADI1;
-+
-+	cpus = of_find_node_by_path("/cpus");
-+	if (cpus == NULL) {
-+		cpc925_printk(KERN_DEBUG, "No /cpus node !\n");
-+		return 0;
-+	}
-+
-+	/* Get first CPU node */
-+	for (cpunode = NULL;
-+	     (cpunode = of_get_next_child(cpus, cpunode)) != NULL;) {
-+		const u32 *reg = of_get_property(cpunode, "reg", NULL);
-+
-+		if (!strcmp(cpunode->type, "cpu") && reg != NULL)
-+			mask &= ~APIMASK_ADI(*reg);
-+	}
-+
-+	if (mask != APIMASK_ADI0 | APIMASK_ADI1) {
-+		/* We assume that each CPU sits on it's own PI and that
-+		 * for present CPUs the reg property equals to the PI
-+		 * interface id */
-+		cpc925_printk(KERN_WARNING,
-+				"Assuming PI id is equal to CPU MPIC id!\n");
-+	}
-+
-+	of_node_put(cpunode);
-+	of_node_put(cpus);
-+
-+	return mask;
-+}
-+
- /* Enable CPU Errors detection */
- static void cpc925_cpu_init(struct cpc925_dev_info *dev_info)
- {
- 	u32 apimask;
-+	u32 cpumask;
- 
- 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
- 	if ((apimask & CPU_MASK_ENABLE) == 0) {
- 		apimask |= CPU_MASK_ENABLE;
- 		__raw_writel(apimask, dev_info->vbase + REG_APIMASK_OFFSET);
- 	}
-+
-+	cpumask = cpc925_cpu_getmask();
-+	if (apimask & cpumask) {
-+		cpc925_printk(KERN_WARNING, "CPU(s) not present, "
-+				"but enabled in APIMASK, disabling\n");
-+		apimask &= ~cpumask;
-+	}
- }
- 
- /* Disable CPU Errors detection */
-@@ -622,6 +671,9 @@ static void cpc925_cpu_check(struct edac_device_ctl_info *edac_dev)
- 	if ((apiexcp & CPU_EXCP_DETECTED) == 0)
- 		return;
- 
-+	if ((apiexcp & ~cpc925_cpu_getmask()) == 0)
-+		return;
-+
- 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
- 	cpc925_printk(KERN_INFO, "Processor Interface Fault\n"
- 				 "Processor Interface register dump:\n");
--- 
-1.7.4.4
+> 
+> 
+> Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+> ---
+>  arch/powerpc/kernel/prom.c |    4 +++-
+>  arch/powerpc/mm/init_32.c  |    3 +++
+>  arch/powerpc/mm/init_64.c  |    3 +++
+>  3 files changed, 9 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 48aeb55..397d4a0 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -555,7 +555,9 @@ static void __init early_reserve_mem(void)
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>         /* then reserve the initrd, if any */
+>         if (initrd_start && (initrd_end > initrd_start))
+
+Here you test the unaligned values
+
+>  void free_initrd_mem(unsigned long start, unsigned long end)
+>  {
+> +       start = _ALIGN_DOWN(start, PAGE_SIZE);
+> +       end = _ALIGN_UP(end, PAGE_SIZE);
+> +
+>         if (start < end)
+>                 printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+
+But here you test the aligned values.  And they are aligned with
+opposite bias.  Which means that if start == end (or is less than,
+but within the same page), a page that wasn't reserved (same
+32 and 64 bit) gets freed.
+
+I thought "what happens if we are within a page of end, could we
+free the last page of bss?", but then I checked vmlinux.lds and we
+align end to page size.  I thought other allocations should be safe,
+but then remembered: 
+
+The flattened device tree (of which we continue to use the string
+table after boot) could be a problem.
+
+milton
