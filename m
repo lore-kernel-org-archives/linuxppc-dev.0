@@ -2,27 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A64EB6FAC
+	by ozlabs.org (Postfix) with ESMTPS id 390DCB6FAC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 08:32:20 +1000 (EST)
-Subject: Re: [PATCH 0/7] This patchset adds support for running Linux under
-	the Freescale hypervisor,
+	Tue, 24 May 2011 08:41:17 +1000 (EST)
+Subject: Re: [PATCH][v3] powerpc/85xx: add host-pci(e) bridge only for RC
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <BANLkTinqOb1UH=keRtZ9=454NDrzcjYV7g@mail.gmail.com>
-Date: Mon, 23 May 2011 17:27:41 -0500
-Message-Id: <4E082CF8-0ED1-4236-BBC4-EA35E227D2F0@kernel.crashing.org>
-References: <1305813272-31826-1-git-send-email-timur@freescale.com>
-	<A221B293-A4DD-4223-AEEA-F3E5243D2C0A@freescale.com>
-	<BANLkTinqOb1UH=keRtZ9=454NDrzcjYV7g@mail.gmail.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Cc: "greg@kroah.com" <greg@kroah.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"akpm@kernel.org" <akpm@kernel.org>,
-	"linux-console@vger.kernel.org" <linux-console@vger.kernel.org>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1306146205-22772-1-git-send-email-prabhakar@freescale.com>
+Date: Mon, 23 May 2011 17:41:08 -0500
+Message-Id: <127FB8A0-FB0E-4066-9808-C1207C82CAA3@kernel.crashing.org>
+References: <1306146205-22772-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: meet2prabhu@gmail.com, linuxppc-dev@lists.ozlabs.org,
+	Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +26,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 23, 2011, at 4:09 PM, Tabi Timur-B04825 wrote:
+On May 23, 2011, at 5:23 AM, Prabhakar Kushwaha wrote:
 
-> On Fri, May 20, 2011 at 3:29 PM, Kumar Gala <kumar.gala@freescale.com> =
-wrote:
+> FSL PCIe controller can act as agent(EP) or host(RC).
+> Under Agent(EP) mode they are configured via Host. So it is not =
+required to add
+> with the PCI(e) sub-system.
 >=20
->> Applied to 'test' branch.  (grabbed 'v2' of tty patch).  Fixed merged =
-conflicts.
+> Add and configure PCIe controller only for RC mode.
 >=20
-> I don't think you pushed this branch to git.kernel.org
+> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> ---
+> Based upon =
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branc=
+h master)
 >=20
-> =
-http://git.kernel.org/?p=3Dlinux/kernel/git/galak/powerpc.git;a=3Dshortlog=
-;h=3Drefs/heads/test
+> Chages for v2: Incorporated Kumar's comment
+> 	- Use PCI_CLASS_PROG instead of PCI_HEADER_TYPE=20
+> Changes for v3:=20
+> 	- updated if check condition
+> 	- removed checkpatch warning
 >=20
+> arch/powerpc/sysdev/fsl_pci.c |   14 ++++++++++++++
+> 1 files changed, 14 insertions(+), 0 deletions(-)
 
-Tree pushed.
+applied to next.
 
 - k=
