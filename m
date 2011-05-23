@@ -1,27 +1,25 @@
-Return-Path: <emunson@mgebm.net>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <vasim98@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C1A8AB6FB7
+	by ozlabs.org (Postfix) with ESMTPS id 96AE0B6FB5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 05:37:43 +1000 (EST)
-Received: by qwf7 with SMTP id 7so3412905qwf.38
+	Tue, 24 May 2011 05:22:39 +1000 (EST)
+Received: by eyg5 with SMTP id 5so2073641eyg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 May 2011 12:37:40 -0700 (PDT)
-Date: Mon, 23 May 2011 15:37:36 -0400
-From: Eric B Munson <emunson@mgebm.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] oprofile, powerpc: Handle events that raise an exception
-	without overflowing
-Message-ID: <20110523193736.GA2997@mgebm.net>
-References: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
+	Mon, 23 May 2011 12:22:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
-In-Reply-To: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
-Cc: robert.richter@amd.com, oprofile-list@lists.sf.net, paulus@samba.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <BANLkTin5TyfdfNDfXokDdtdpDmnoRQ6aAA@mail.gmail.com>
+References: <BANLkTims8CrK6s0bJZPBt3jTDRDKzg2e-A@mail.gmail.com>
+	<20110523124035.GJ25179@zod.rchland.ibm.com>
+	<BANLkTin5TyfdfNDfXokDdtdpDmnoRQ6aAA@mail.gmail.com>
+From: Muhammad Waseem <vasim98@gmail.com>
+Date: Tue, 24 May 2011 00:22:14 +0500
+Message-ID: <BANLkTikvmy-bkckgxyQttoKQqkuNUd2+5g@mail.gmail.com>
+Subject: Fwd: UART #1 access on Sequoia board
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0015174c1110bae39604a3f664b5
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,101 +29,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--0015174c1110bae39604a3f664b5
+Content-Type: text/plain; charset=ISO-8859-1
 
---YZ5djTAD1cGYuMQK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I am using kernel version 2.6.23 which came with the Sequoia support CD. So
+that means UART # 1 BSP would probably not there?  But device file
+/dev/ttyS1 is present in rootfs when listed using 'ls'. Do you think
+updating the kernel might solve the problem?
+
+BTW where can I see the board's DTS file?
+
+--
+Waseem
+
+
+
+
+On Mon, May 23, 2011 at 5:40 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com>wrote:
+
+> On Mon, May 23, 2011 at 11:34:26AM +0500, Muhammad Waseem wrote:
+> >Hello,
+> >   I am working on PPC440EPx (Sequoia) to access its UART # 1 port for
+> data
+> >transfer, while UART # 0 is connected to remote terminal access on host.
+> >However there is no module/driver listed for UART # 1 using 'lsmod'. The
+> >kernel version is 2.6.23. How can I access the UART # 1 in user space
+> and/or
+> >kernel space? Do I need to develop own BSP for this? please help.
+>
+> The driver is normally built into the kernel.  If the board DTS file has
+> both UARTs listed, and you have /dev/ttyS1 on your rootfs you should be
+> able to use it.  However, Sequoia wasn't added until 2.6.24, so I'm not
+> really sure what kernel flavor you are using.
+>
+> josh
+>
+
+--0015174c1110bae39604a3f664b5
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 23 May 2011, Eric B Munson wrote:
+<div class=3D"gmail_quote">I am using kernel version 2.6.23 which came with=
+ the Sequoia support CD. So that means UART # 1 BSP would probably not ther=
+e? =A0But device file /dev/ttyS1 is present in rootfs when listed using &#3=
+9;ls&#39;. Do you think updating the kernel might solve the problem?<div>
 
-> Commit 0837e3242c73566fc1c0196b4ec61779c25ffc93 fixes a situation on POWE=
-R7
-> where events can roll back if a specualtive event doesn't actually comple=
-te.
-> This can raise a performance monitor exception.  We need to catch this to=
- ensure
-> that we reset the PMC.  In all cases the PMC will be less than 256 cycles=
- from
-> overflow.
->=20
-> This patch lifts Anton's fix for the problem in perf and applies it to op=
-rofile
-> as well.
->=20
-> Signed-off-by: Eric B Munson <emunson@mgebm.net>
-> Cc: <stable@kernel.org> # as far back as it applies cleanly
 
-I'd like to get this patch into mainline this merge window if at all possib=
-le.
+<br></div><div>BTW where can I see the board&#39;s DTS file?</div><div><br>=
+<div>--</div><div>Waseem</div><div><div></div><div class=3D"h5"><div><br><d=
+iv><br><div>=A0=A0<br><br><div class=3D"gmail_quote">On Mon, May 23, 2011 a=
+t 5:40 PM, Josh Boyer <span dir=3D"ltr">&lt;<a href=3D"mailto:jwboyer@linux=
+.vnet.ibm.com" target=3D"_blank">jwboyer@linux.vnet.ibm.com</a>&gt;</span> =
+wrote:<br>
 
-> ---
->  arch/powerpc/oprofile/op_model_power4.c |   24 +++++++++++++++++++++++-
->  1 files changed, 23 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprof=
-ile/op_model_power4.c
-> index 8ee51a2..e6bec74 100644
-> --- a/arch/powerpc/oprofile/op_model_power4.c
-> +++ b/arch/powerpc/oprofile/op_model_power4.c
-> @@ -261,6 +261,28 @@ static int get_kernel(unsigned long pc, unsigned lon=
-g mmcra)
->  	return is_kernel;
->  }
-> =20
-> +static bool pmc_overflow(unsigned long val)
-> +{
-> +	if ((int)val < 0)
-> +		return true;
-> +
-> +	/*
-> +	 * Events on POWER7 can roll back if a speculative event doesn't
-> +	 * eventually complete. Unfortunately in some rare cases they will
-> +	 * raise a performance monitor exception. We need to catch this to
-> +	 * ensure we reset the PMC. In all cases the PMC will be 256 or less
-> +	 * cycles from overflow.
-> +	 *
-> +	 * We only do this if the first pass fails to find any overflowing
-> +	 * PMCs because a user might set a period of less than 256 and we
-> +	 * don't want to mistakenly reset them.
-> +	 */
-> +	if (__is_processor(PV_POWER7) && ((0x80000000 - val) <=3D 256))
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
->  static void power4_handle_interrupt(struct pt_regs *regs,
->  				    struct op_counter_config *ctr)
->  {
-> @@ -281,7 +303,7 @@ static void power4_handle_interrupt(struct pt_regs *r=
-egs,
-> =20
->  	for (i =3D 0; i < cur_cpu_spec->num_pmcs; ++i) {
->  		val =3D classic_ctr_read(i);
-> -		if (val < 0) {
-> +		if (pmc_overflow(val)) {
->  			if (oprofile_running && ctr[i].enabled) {
->  				oprofile_add_ext_sample(pc, regs, i, is_kernel);
->  				classic_ctr_write(i, reset_value[i]);
-> --=20
-> 1.7.4.1
->=20
 
---YZ5djTAD1cGYuMQK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex"><div><div></div><div>On Mon, May 23, 2011 at=
+ 11:34:26AM +0500, Muhammad Waseem wrote:<br>
+&gt;Hello,<br>
+&gt; =A0 I am working on PPC440EPx (Sequoia) to access its UART # 1 port fo=
+r data<br>
+&gt;transfer, while UART # 0 is connected to remote terminal access on host=
+.<br>
+&gt;However there is no module/driver listed for UART # 1 using &#39;lsmod&=
+#39;. The<br>
+&gt;kernel version is 2.6.23. How can I access the UART # 1 in user space a=
+nd/or<br>
+&gt;kernel space? Do I need to develop own BSP for this? please help.<br>
+<br>
+</div></div>The driver is normally built into the kernel. =A0If the board D=
+TS file has<br>
+both UARTs listed, and you have /dev/ttyS1 on your rootfs you should be<br>
+able to use it. =A0However, Sequoia wasn&#39;t added until 2.6.24, so I&#39=
+;m not<br>
+really sure what kernel flavor you are using.<br>
+<font color=3D"#888888"><br>
+josh<br>
+</font></blockquote></div><br></div></div></div></div></div></div>
+</div><br>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJN2reAAAoJEH65iIruGRnNmAEH/RPIb6YpEtIf2/d1y6+mkJK1
-97f5dWPZ8wmausN9IY1jkoSY0Jp7NNj+jHME33H54m0xPoHpScTRMvv9peUenihS
-BBYDBFlIBP7HakAV1JD6i960l1/SMw8ILUo2rutou3cPKKwU0RJxQucU04UcvLUI
-fcDjXLHnRooNbmp/42TZIepDSvPQQS8EXgFgxlXtoEWUTk3cD6RGjDUJcg0fswHG
-He0GXeLCc0QQo6wMx+pZAmXZYhIkCDwb2+FOCUF4plyUH2Bpc3xDIOuxAhghcvRs
-QkBz8Z57YF4QAB4HRTJvEj2a0uQBjYxvrLSX1kbpJtWXvcaKBKgxwR7hX9fH9rM=
-=x9or
------END PGP SIGNATURE-----
-
---YZ5djTAD1cGYuMQK--
+--0015174c1110bae39604a3f664b5--
