@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 390DCB6FAC
+Return-Path: <dcarroll@astekcorp.com>
+Received: from ether.astekcorp.com (unknown [173.160.34.133])
+	by ozlabs.org (Postfix) with ESMTP id 19F62B6FB0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 08:41:17 +1000 (EST)
-Subject: Re: [PATCH][v3] powerpc/85xx: add host-pci(e) bridge only for RC
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1306146205-22772-1-git-send-email-prabhakar@freescale.com>
-Date: Mon, 23 May 2011 17:41:08 -0500
-Message-Id: <127FB8A0-FB0E-4066-9808-C1207C82CAA3@kernel.crashing.org>
-References: <1306146205-22772-1-git-send-email-prabhakar@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Cc: meet2prabhu@gmail.com, linuxppc-dev@lists.ozlabs.org,
-	Vivek Mahajan <vivek.mahajan@freescale.com>
+	Tue, 24 May 2011 08:54:46 +1000 (EST)
+From: Dave Carroll <dcarroll@astekcorp.com>
+To: 'Milton Miller' <miltonm@bga.com>
+Date: Mon, 23 May 2011 16:54:25 -0600
+Subject: [PATCH  v5] powerpc: Force page alignment for initrd reserved memory
+Message-ID: <522F24EF533FC546962ECFA2054FF777373072AB79@MAILSERVER2.cos.astekcorp.com>
+In-Reply-To: <initrd-align-withdrawn@mdm.bga.com>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, LPPC <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +22,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When using 64K pages with a separate cpio rootfs, U-Boot will align
+the rootfs on a 4K page boundary. When the memory is reserved, and
+subsequent early memblock_alloc is called, it will allocate memory
+between the 64K page alignment and reserved memory. When the reserved
+memory is subsequently freed, it is done so by pages, causing the
+early memblock_alloc requests to be re-used, which in my case, caused
+the device-tree to be clobbered.
 
-On May 23, 2011, at 5:23 AM, Prabhakar Kushwaha wrote:
+This patch forces the reserved memory for initrd to be kernel page
+aligned, and adds the same range extension when freeing initrd. It
+will also move the device tree if it overlaps with the reserved memory
+for initrd.
 
-> FSL PCIe controller can act as agent(EP) or host(RC).
-> Under Agent(EP) mode they are configured via Host. So it is not =
-required to add
-> with the PCI(e) sub-system.
->=20
-> Add and configure PCIe controller only for RC mode.
->=20
-> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> ---
-> Based upon =
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branc=
-h master)
->=20
-> Chages for v2: Incorporated Kumar's comment
-> 	- Use PCI_CLASS_PROG instead of PCI_HEADER_TYPE=20
-> Changes for v3:=20
-> 	- updated if check condition
-> 	- removed checkpatch warning
->=20
-> arch/powerpc/sysdev/fsl_pci.c |   14 ++++++++++++++
-> 1 files changed, 14 insertions(+), 0 deletions(-)
+Many thanks to Milton Miller for his input on this patch.
 
-applied to next.
+Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+---
+ * This patch is based on Linus' current tree
 
-- k=
+ arch/powerpc/kernel/prom.c |   11 ++++++++---
+ arch/powerpc/mm/init_32.c  |    5 ++++-
+ arch/powerpc/mm/init_64.c  |    5 ++++-
+ 3 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 48aeb55..58871df 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -86,7 +86,8 @@ early_param("mem", early_parse_mem);
+  * move_device_tree - move tree to an unused area, if needed.
+  *
+  * The device tree may be allocated beyond our memory limit, or inside the
+- * crash kernel region for kdump. If so, move it out of the way.
++ * crash kernel region for kdump, or within the page aligned range of init=
+rd.
++ * If so, move it out of the way.
+  */
+ static void __init move_device_tree(void)
+ {
+@@ -99,7 +100,9 @@ static void __init move_device_tree(void)
+        size =3D be32_to_cpu(initial_boot_params->totalsize);
+
+        if ((memory_limit && (start + size) > PHYSICAL_START + memory_limit=
+) ||
+-                       overlaps_crashkernel(start, size)) {
++                       overlaps_crashkernel(start, size) ||
++                       ((start + size) > _ALIGN_DOWN(initrd_start, PAGE_SI=
+ZE)
++                       && start <=3D _ALIGN_UP(initrd_end, PAGE_SIZE))) {
+                p =3D __va(memblock_alloc(size, PAGE_SIZE));
+                memcpy(p, initial_boot_params, size);
+                initial_boot_params =3D (struct boot_param_header *)p;
+@@ -555,7 +558,9 @@ static void __init early_reserve_mem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+        /* then reserve the initrd, if any */
+        if (initrd_start && (initrd_end > initrd_start))
+-               memblock_reserve(__pa(initrd_start), initrd_end - initrd_st=
+art);
++               memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE)=
+,
++                       _ALIGN_UP(initrd_end, PAGE_SIZE) -
++                       _ALIGN_DOWN(initrd_start, PAGE_SIZE));
+ #endif /* CONFIG_BLK_DEV_INITRD */
+
+ #ifdef CONFIG_PPC32
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index d65b591..4835c4f 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -226,8 +226,11 @@ void free_initmem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ void free_initrd_mem(unsigned long start, unsigned long end)
+ {
+-       if (start < end)
++       if (start < end) {
++               start =3D _ALIGN_DOWN(start, PAGE_SIZE);
++               end =3D _ALIGN_UP(end, PAGE_SIZE);
+                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
+) >> 10);
++       }
+        for (; start < end; start +=3D PAGE_SIZE) {
+                ClearPageReserved(virt_to_page(start));
+                init_page_count(virt_to_page(start));
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 6374b21..060c952 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -102,8 +102,11 @@ void free_initmem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ void free_initrd_mem(unsigned long start, unsigned long end)
+ {
+-       if (start < end)
++       if (start < end) {
++               start =3D _ALIGN_DOWN(start, PAGE_SIZE);
++               end =3D _ALIGN_UP(end, PAGE_SIZE);
+                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
+) >> 10);
++       }
+        for (; start < end; start +=3D PAGE_SIZE) {
+                ClearPageReserved(virt_to_page(start));
+                init_page_count(virt_to_page(start));
+--
+1.7.4
