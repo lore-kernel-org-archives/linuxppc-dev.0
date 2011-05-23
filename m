@@ -1,20 +1,32 @@
-Return-Path: <b32579@lc1106.zin33.ap.freescale.net>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB28EB6FAA
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C05C1B6FB0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 May 2011 20:23:39 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][v3] powerpc/85xx: add host-pci(e) bridge only for RC
-Date: Mon, 23 May 2011 15:53:25 +0530
-Message-ID: <1306146205-22772-1-git-send-email-prabhakar@freescale.com>
+	Mon, 23 May 2011 22:39:38 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4NCMFBi004538
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2011 06:22:15 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4NCdPPs108082
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2011 06:39:25 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4N6dOTB022012
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2011 00:39:25 -0600
+Date: Mon, 23 May 2011 08:40:35 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Muhammad Waseem <vasim98@gmail.com>
+Subject: Re: UART #1 access on Sequoia board
+Message-ID: <20110523124035.GJ25179@zod.rchland.ibm.com>
+References: <BANLkTims8CrK6s0bJZPBt3jTDRDKzg2e-A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: meet2prabhu@gmail.com, Vivek Mahajan <vivek.mahajan@freescale.com>,
-	Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BANLkTims8CrK6s0bJZPBt3jTDRDKzg2e-A@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FSL PCIe controller can act as agent(EP) or host(RC).
-Under Agent(EP) mode they are configured via Host. So it is not required to add
-with the PCI(e) sub-system.
+On Mon, May 23, 2011 at 11:34:26AM +0500, Muhammad Waseem wrote:
+>Hello,
+>   I am working on PPC440EPx (Sequoia) to access its UART # 1 port for data
+>transfer, while UART # 0 is connected to remote terminal access on host.
+>However there is no module/driver listed for UART # 1 using 'lsmod'. The
+>kernel version is 2.6.23. How can I access the UART # 1 in user space and/or
+>kernel space? Do I need to develop own BSP for this? please help.
 
-Add and configure PCIe controller only for RC mode.
+The driver is normally built into the kernel.  If the board DTS file has
+both UARTs listed, and you have /dev/ttyS1 on your rootfs you should be
+able to use it.  However, Sequoia wasn't added until 2.6.24, so I'm not
+really sure what kernel flavor you are using.
 
-Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
-
- Chages for v2: Incorporated Kumar's comment
- 	- Use PCI_CLASS_PROG instead of PCI_HEADER_TYPE 
- Changes for v3: 
- 	- updated if check condition
-	- removed checkpatch warning
-
- arch/powerpc/sysdev/fsl_pci.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 68ca929..4a1d37c 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -323,6 +323,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	struct pci_controller *hose;
- 	struct resource rsrc;
- 	const int *bus_range;
-+	u8 progif;
- 
- 	if (!of_device_is_available(dev)) {
- 		pr_warning("%s: disabled\n", dev->full_name);
-@@ -353,6 +354,19 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 
- 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
- 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-+
-+	early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
-+	if ((progif & 1) == 1) {
-+		u32 temp;
-+
-+		temp = (u32)hose->cfg_data & ~PAGE_MASK;
-+		if (((u32)hose->cfg_data & PAGE_MASK) != (u32)hose->cfg_addr)
-+			iounmap(hose->cfg_data - temp);
-+		iounmap(hose->cfg_addr);
-+		pcibios_free_controller(hose);
-+		return 0;
-+	}
-+
- 	setup_pci_cmd(hose);
- 
- 	/* check PCI express link status */
--- 
-1.7.4.1
+josh
