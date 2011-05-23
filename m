@@ -1,19 +1,17 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id BCCF2B6F80
+Return-Path: <dcarroll@astekcorp.com>
+Received: from ether.astekcorp.com (unknown [173.160.34.133])
+	by ozlabs.org (Postfix) with ESMTP id EB580B6FA4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 May 2011 07:17:28 +1000 (EST)
-Subject: Re: [PATCH v3] powerpc: Force page alignment for initrd reserved
+	Mon, 23 May 2011 11:30:02 +1000 (EST)
+From: Dave Carroll <dcarroll@astekcorp.com>
+To: 'Milton Miller' <miltonm@bga.com>
+Date: Sun, 22 May 2011 19:29:42 -0600
+Subject: RE: [PATCH v3] powerpc: Force page alignment for initrd reserved
 	memory
-To: Dave Carroll <dcarroll@astekcorp.com>
-From: 'Milton Miller' <miltonm@bga.com>
-Subject: Re: [PATCH v3] powerpc: Force page alignment for initrd reserved
-	memory
-Message-ID: <initrd-reserve-reply2@mdm.bga.com>
-In-Reply-To: <522F24EF533FC546962ECFA2054FF777373072AB73@MAILSERVER2.cos.astekcorp.com>
-References: <initrd-reserve-alignment@mdm.bga.com>
-	<522F24EF533FC546962ECFA2054FF777373072AB73@MAILSERVER2.cos.astekcorp.com>
-Date: Sun, 22 May 2011 16:17:18 -0500
+Message-ID: <522F24EF533FC546962ECFA2054FF777373072AB74@MAILSERVER2.cos.astekcorp.com>
+In-Reply-To: <initrd-reserve-reply2@mdm.bga.com>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 Cc: LPPC <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
 	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,60 +23,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 21 May 2011 about 11:05:27 -0600, Dave Carroll wrote:
-> 
-> When using 64K pages with a separate cpio rootfs, U-Boot will align
-> the rootfs on a 4K page boundary. When the memory is reserved, and
-> subsequent early memblock_alloc is called, it will allocate memory
-> between the 64K page alignment and reserved memory. When the reserved
-> memory is subsequently freed, it is done so by pages, causing the
-> early memblock_alloc requests to be re-used, which in my case, caused
-> the device-tree to be clobbered.
-> 
-> This patch forces the reserved memory for initrd to be kernel page
-> aligned, and adds the same range extension when freeing initrd.
+>On Sun, 22 May 2011 about 15:17, Milton Miller wrote:
+>>On Sat, 21 May 2011 about 11:05:27 -0600, Dave Carroll wrote:>
+>> When using 64K pages with a separate cpio rootfs, U-Boot will align
+>> the rootfs on a 4K page boundary. When the memory is reserved, and
+>> subsequent early memblock_alloc is called, it will allocate memory
+>> between the 64K page alignment and reserved memory. When the reserved
+>> memory is subsequently freed, it is done so by pages, causing the
+>> early memblock_alloc requests to be re-used, which in my case, caused
+>> the device-tree to be clobbered.
+>>
+>> This patch forces the reserved memory for initrd to be kernel page
+>> aligned, and adds the same range extension when freeing initrd.
+>
+>Getting better, but
+>
+>>
+>>
+>> Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+>> ---
+>>  arch/powerpc/kernel/prom.c |    4 +++-
+>>  arch/powerpc/mm/init_32.c  |    3 +++
+>>  arch/powerpc/mm/init_64.c  |    3 +++
+>>  3 files changed, 9 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index 48aeb55..397d4a0 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -555,7 +555,9 @@ static void __init early_reserve_mem(void)
+>>  #ifdef CONFIG_BLK_DEV_INITRD
+>>         /* then reserve the initrd, if any */
+>>         if (initrd_start && (initrd_end > initrd_start))
+>
+>Here you test the unaligned values
+>
+>>  void free_initrd_mem(unsigned long start, unsigned long end)
+>>  {
+>> +       start =3D _ALIGN_DOWN(start, PAGE_SIZE);
+>> +       end =3D _ALIGN_UP(end, PAGE_SIZE);
+>> +
+>>         if (start < end)
+>>                 printk ("Freeing initrd memory: %ldk freed\n", (end - st=
+art) >> 10);
+>
+>But here you test the aligned values.  And they are aligned with
+>opposite bias.  Which means that if start =3D=3D end (or is less than,
+>but within the same page), a page that wasn't reserved (same
+>32 and 64 bit) gets freed.
+>
 
-Getting better, but
+Agreed ... I'll have the but shortly ...
 
-> 
-> 
-> Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
-> ---
->  arch/powerpc/kernel/prom.c |    4 +++-
->  arch/powerpc/mm/init_32.c  |    3 +++
->  arch/powerpc/mm/init_64.c  |    3 +++
->  3 files changed, 9 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 48aeb55..397d4a0 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -555,7 +555,9 @@ static void __init early_reserve_mem(void)
->  #ifdef CONFIG_BLK_DEV_INITRD
->         /* then reserve the initrd, if any */
->         if (initrd_start && (initrd_end > initrd_start))
+>I thought "what happens if we are within a page of end, could we
+>free the last page of bss?", but then I checked vmlinux.lds and we
+>align end to page size.  I thought other allocations should be safe,
+>but then remembered:
+>
+>The flattened device tree (of which we continue to use the string
+>table after boot) could be a problem.
+>
 
-Here you test the unaligned values
+I had previouly looked at free_initrd_mem, and thought the same conditions
+should be used to handle the memory release, but as for the explicit alignm=
+ent
+of the release areas, that seemed to be handled by the fact that all of the
+releases are specifically page aligned. The remainder of the free_initrd_me=
+m
+routine:
 
->  void free_initrd_mem(unsigned long start, unsigned long end)
->  {
-> +       start = _ALIGN_DOWN(start, PAGE_SIZE);
-> +       end = _ALIGN_UP(end, PAGE_SIZE);
-> +
->         if (start < end)
->                 printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+        for (; start < end; start +=3D PAGE_SIZE) {
+                ClearPageReserved(virt_to_page(start));
+                init_page_count(virt_to_page(start));
+                free_page(start);
+                totalram_pages++;
+        }
 
-But here you test the aligned values.  And they are aligned with
-opposite bias.  Which means that if start == end (or is less than,
-but within the same page), a page that wasn't reserved (same
-32 and 64 bit) gets freed.
+implicitly aligns down start to a page boundary, and also would implicitly =
+align
+up the end address. While I would be a proponent of something like;
 
-I thought "what happens if we are within a page of end, could we
-free the last page of bss?", but then I checked vmlinux.lds and we
-align end to page size.  I thought other allocations should be safe,
-but then remembered: 
+        if (start && (start < end)) do { remainder of free_initrd_mem }
 
-The flattened device tree (of which we continue to use the string
-table after boot) could be a problem.
+I'm not sure of the goal in explicitly attempting to align the addresses in=
+ the
+routine as you proposed.
 
-milton
+As for the FDT, if the FDT is packed contiguous with initrd, and the alignm=
+ent is on
+4K page boundaries, it would have been released before this patch. In my ca=
+se (U-Boot),
+they are not near each other.
+
+Thanks,
+-Dave
+>
+>milton
