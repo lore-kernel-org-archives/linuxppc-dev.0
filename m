@@ -1,26 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
-	[213.199.154.205])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5DBA7B6FA0
+Return-Path: <emunson@mgebm.net>
+Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
+	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1A8AB6FB7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 05:03:12 +1000 (EST)
-Date: Mon, 23 May 2011 13:54:33 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/7] powerpc/mm: 64-bit 4k: use a PMD-based virtual page
-	table
-Message-ID: <20110523135433.557e2d63@schlenkerla.am.freescale.net>
-In-Reply-To: <1305929736.7481.188.camel@pasglop>
-References: <20110518210528.GA29524@schlenkerla.am.freescale.net>
-	<1305754435.7481.3.camel@pasglop>
-	<20110520155719.32e51635@schlenkerla.am.freescale.net>
-	<1305929736.7481.188.camel@pasglop>
+	Tue, 24 May 2011 05:37:43 +1000 (EST)
+Received: by qwf7 with SMTP id 7so3412905qwf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 23 May 2011 12:37:40 -0700 (PDT)
+Date: Mon, 23 May 2011 15:37:36 -0400
+From: Eric B Munson <emunson@mgebm.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] oprofile, powerpc: Handle events that raise an exception
+	without overflowing
+Message-ID: <20110523193736.GA2997@mgebm.net>
+References: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
+In-Reply-To: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
+Cc: robert.richter@amd.com, oprofile-list@lists.sf.net, paulus@samba.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +31,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 21 May 2011 08:15:36 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Fri, 2011-05-20 at 15:57 -0500, Scott Wood wrote:
-> 
-> > I see a 2% cost going from virtual pmd to full 4-level walk in the
-> > benchmark mentioned above (some type of sort), and just under 3% in
-> > page-stride lat_mem_rd from lmbench.
-> > 
-> > OTOH, the virtual pmd approach still leaves the possibility of taking a
-> > bunch of virtual page table misses if non-localized accesses happen over a
-> > very large chunk of address space (tens of GiB), and we'd have one fewer
-> > type of TLB miss to worry about complexity-wise with a straight table walk.
-> > 
-> > Let me know what you'd prefer.
-> 
-> I'm tempted to kill the virtual linear feature alltogether.. it didn't
-> buy us that much. Have you looked if you can snatch back some of those
-> cycles with hand tuning of the level walker ?
+--YZ5djTAD1cGYuMQK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's after trying a bit of that (pulled the pgd load up before
-normal_tlb_miss, and some other reordering).  Not sure how much more can be
-squeezed out of it with such techniques, at least with e5500.
+On Mon, 23 May 2011, Eric B Munson wrote:
 
-Hmm, in the normal miss case we know we're in the first EXTLB level,
-right?  So we could cut out a load/mfspr by subtracting EXTLB from r12
-to get the PACA (that load's latency is pretty well buried, but maybe we
-could replace it with loading pgd, replacing it later if it's a kernel
-region).  Maybe move pgd to the first EXTLB, so it's in the same cache line
-as the state save data. The PACA cacheline containing pgd is probably
-pretty hot in normal kernel code, but not so much in a long stretch of
-userspace plus TLB misses (other than for pgd itself).
+> Commit 0837e3242c73566fc1c0196b4ec61779c25ffc93 fixes a situation on POWE=
+R7
+> where events can roll back if a specualtive event doesn't actually comple=
+te.
+> This can raise a performance monitor exception.  We need to catch this to=
+ ensure
+> that we reset the PMC.  In all cases the PMC will be less than 256 cycles=
+ from
+> overflow.
+>=20
+> This patch lifts Anton's fix for the problem in perf and applies it to op=
+rofile
+> as well.
+>=20
+> Signed-off-by: Eric B Munson <emunson@mgebm.net>
+> Cc: <stable@kernel.org> # as far back as it applies cleanly
 
-> Would it work/help to have a simple cache of the last pmd & address and
-> compare just that ?
+I'd like to get this patch into mainline this merge window if at all possib=
+le.
 
-Maybe.
+> ---
+>  arch/powerpc/oprofile/op_model_power4.c |   24 +++++++++++++++++++++++-
+>  1 files changed, 23 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprof=
+ile/op_model_power4.c
+> index 8ee51a2..e6bec74 100644
+> --- a/arch/powerpc/oprofile/op_model_power4.c
+> +++ b/arch/powerpc/oprofile/op_model_power4.c
+> @@ -261,6 +261,28 @@ static int get_kernel(unsigned long pc, unsigned lon=
+g mmcra)
+>  	return is_kernel;
+>  }
+> =20
+> +static bool pmc_overflow(unsigned long val)
+> +{
+> +	if ((int)val < 0)
+> +		return true;
+> +
+> +	/*
+> +	 * Events on POWER7 can roll back if a speculative event doesn't
+> +	 * eventually complete. Unfortunately in some rare cases they will
+> +	 * raise a performance monitor exception. We need to catch this to
+> +	 * ensure we reset the PMC. In all cases the PMC will be 256 or less
+> +	 * cycles from overflow.
+> +	 *
+> +	 * We only do this if the first pass fails to find any overflowing
+> +	 * PMCs because a user might set a period of less than 256 and we
+> +	 * don't want to mistakenly reset them.
+> +	 */
+> +	if (__is_processor(PV_POWER7) && ((0x80000000 - val) <=3D 256))
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+>  static void power4_handle_interrupt(struct pt_regs *regs,
+>  				    struct op_counter_config *ctr)
+>  {
+> @@ -281,7 +303,7 @@ static void power4_handle_interrupt(struct pt_regs *r=
+egs,
+> =20
+>  	for (i =3D 0; i < cur_cpu_spec->num_pmcs; ++i) {
+>  		val =3D classic_ctr_read(i);
+> -		if (val < 0) {
+> +		if (pmc_overflow(val)) {
+>  			if (oprofile_running && ctr[i].enabled) {
+>  				oprofile_add_ext_sample(pc, regs, i, is_kernel);
+>  				classic_ctr_write(i, reset_value[i]);
+> --=20
+> 1.7.4.1
+>=20
 
-It would still slow down the case where you miss that cache -- not by as
-much as a virtual page table miss (and it wouldn't compete for TLB entries
-with actual user pages), but it would happen more often, since you'd only be
-able to cache one pmd.
+--YZ5djTAD1cGYuMQK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> Maybe in a SPRG or a known cache hot location like
-> the PACA in a line that we already load anyways ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-A cache access is faster than a SPRG access on our chips (plus we
-don't have many to spare, especially if we want to avoid swapping SPRG4-7 on
-guest entry/exit in KVM), so I'd favor putting it in the PACA.
+iQEcBAEBAgAGBQJN2reAAAoJEH65iIruGRnNmAEH/RPIb6YpEtIf2/d1y6+mkJK1
+97f5dWPZ8wmausN9IY1jkoSY0Jp7NNj+jHME33H54m0xPoHpScTRMvv9peUenihS
+BBYDBFlIBP7HakAV1JD6i960l1/SMw8ILUo2rutou3cPKKwU0RJxQucU04UcvLUI
+fcDjXLHnRooNbmp/42TZIepDSvPQQS8EXgFgxlXtoEWUTk3cD6RGjDUJcg0fswHG
+He0GXeLCc0QQo6wMx+pZAmXZYhIkCDwb2+FOCUF4plyUH2Bpc3xDIOuxAhghcvRs
+QkBz8Z57YF4QAB4HRTJvEj2a0uQBjYxvrLSX1kbpJtWXvcaKBKgxwR7hX9fH9rM=
+=x9or
+-----END PGP SIGNATURE-----
 
-I'll try this stuff out and see what helps.
-
--Scott
+--YZ5djTAD1cGYuMQK--
