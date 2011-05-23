@@ -1,17 +1,18 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 20DFBB6FB1
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2011 03:27:31 +1000 (EST)
-Date: Mon, 23 May 2011 10:27:27 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: PCI DMA to user mem on mpc83xx
-Message-ID: <20110523172727.GA21717@ovro.caltech.edu>
-References: <4DDA2509.6070702@matrix-vision.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4DDA2509.6070702@matrix-vision.de>
-Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id AF1BEB6FB5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 24 May 2011 03:39:16 +1000 (EST)
+From: Milton Miller <miltonm@bga.com>
+To: Dave Carroll <dcarroll@astekcorp.com>
+Subject: RE: [ v4] powerpc: Force page alignment for initrd reserved memory
+Message-ID: <initrd-align-withdrawn@mdm.bga.com>
+In-Reply-To: <522F24EF533FC546962ECFA2054FF777373072AB78@MAILSERVER2.cos.astekcorp.com>
+References: <522F24EF533FC546962ECFA2054FF777373072AB75@MAILSERVER2.cos.astekcorp.com>
+	<522F24EF533FC546962ECFA2054FF777373072AB78@MAILSERVER2.cos.astekcorp.com>
+Date: Mon, 23 May 2011 12:39:06 -0500
+Cc: Paul Mackerras <paulus@samba.org>, LPPC <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 23, 2011 at 11:12:41AM +0200, Andre Schwarz wrote:
-> Ira,
+
+On Mon, 23 May 2011 about 10:50:07 -0600, Dave Carroll wrote:
+> I'm withdrawing this patch for the moment, due to two areas that need
+> further research;
 > 
-> we have a pretty old PCI device driver here that needs some basic rework 
-> running on 2.6.27 on several MPC83xx.
-> It's a simple char-device with "give me some data" implemented using 
-> read() resulting in zero-copy DMA to user mem.
-> 
-> There's get_user_pages() working under the hood along with 
-> SetPageDirty() and page_cache_release().
-> 
-> Main goal is to prepare a sg-list that gets fed into a DMA controller.
-> 
-> I wonder if there's a more up-to-date/efficient and future proof scheme 
-> of creating the mapping.
-> 
-> 
-> Could you provide some pointers or would you stick to the current scheme ?
+> 1) An adjacent FDT blob, as mentioned by Milton Miller, and
 > 
 
-This scheme is the best you'll come up with for zero-copy IO. I used
-get_user_pages_fast(), but otherwise my implementation was the same.
-These interfaces should be fairly future proof.
+Ok ... by the way, see move_device_tree() in arch/powerpc/kernel/prom.c
 
-In the end, I realized that most of my transfers were 4 bytes in length,
-and zero copy IO was a waste of effort. I decided to use mmap instead.
+> 2) Potential interaction with the crash kernel, as used in
+>         init/initramfs.c
 
-Ira
+which already goes around the start and end of crashk_res, which
+is adjusted to PAGE_ALIGN in reserve_crashkernel() in machine_kexec.c
+
+ 
+> If anyone sees other interactions, please feel free to let me know ...
+> 
+> Thanks,
+> -Dave Carroll
+
+One interaction that I have ignored is preserve_initrd overlapping
+crash kernel.  Loading the crash kernel destroys the preserved initrd.
+But that is beyond the scope of your current patch (and probably a
+seperate patch, with cross-architecture scope).
+
+milton
