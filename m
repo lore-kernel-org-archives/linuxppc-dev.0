@@ -1,18 +1,21 @@
-Return-Path: <dcarroll@astekcorp.com>
-Received: from ether.astekcorp.com (unknown [173.160.34.133])
-	by ozlabs.org (Postfix) with ESMTP id DD9E2B6FB4
+Return-Path: <b32579@lc1106.zin33.ap.freescale.net>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0DD56B6FAF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 May 2011 12:31:37 +1000 (EST)
-From: Dave Carroll <dcarroll@astekcorp.com>
-To: 'Milton Miller' <miltonm@bga.com>
-Date: Sun, 22 May 2011 20:31:11 -0600
-Subject: [PATCH v4] powerpc: Force page alignment for initrd reserved memory
-Message-ID: <522F24EF533FC546962ECFA2054FF777373072AB75@MAILSERVER2.cos.astekcorp.com>
-In-Reply-To: <initrd-reserve-reply2@mdm.bga.com>
-Content-Type: text/plain; charset="iso-8859-1"
+	Mon, 23 May 2011 16:22:52 +1000 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH][v2] powerpc/85xx: add host-pci(e) bridge only for RC
+Date: Mon, 23 May 2011 11:51:46 +0530
+Message-ID: <1306131706-15385-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-Cc: LPPC <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Vivek Mahajan <vivek.mahajan@freescale.com>,
+	Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,101 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using 64K pages with a separate cpio rootfs, U-Boot will align
-the rootfs on a 4K page boundary. When the memory is reserved, and
-subsequent early memblock_alloc is called, it will allocate memory
-between the 64K page alignment and reserved memory. When the reserved
-memory is subsequently freed, it is done so by pages, causing the
-early memblock_alloc requests to be re-used, which in my case, caused
-the device-tree to be clobbered.
+FSL PCIe controller can act as agent(EP) or host(RC).
+Under Agent(EP) mode they are configured via Host. So it is not required to add
+with the PCI(e) sub-system.
 
-This patch forces the reserved memory for initrd to be kernel page
-aligned, and adds the same range extension when freeing initrd.
+Add and configure PCIe controller only for RC mode.
 
-Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 ---
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git(branch master)
 
-* I think this handles Milton's concerns with the exception of
-  a packed FDT next to initrd with mismatched page sizes. That
-  would require coordination with the bootloader.
+ Chages for v2: Incorporated Kumar's comment
+ 	- Use PCI_CLASS_PROG instead of PCI_HEADER_TYPE 
 
- arch/powerpc/kernel/prom.c |    4 +++-
- arch/powerpc/mm/init_32.c  |   15 +++++++++------
- arch/powerpc/mm/init_64.c  |   15 +++++++++------
- 3 files changed, 21 insertions(+), 13 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 48aeb55..387e5c9 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -555,7 +555,9 @@ static void __init early_reserve_mem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
-        /* then reserve the initrd, if any */
-        if (initrd_start && (initrd_end > initrd_start))
--               memblock_reserve(__pa(initrd_start), initrd_end - initrd_st=
-art);
-+               memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE)=
-,
-+                       _ALIGN_UP(initrd_end, PAGE_SIZE) -
-+                       _ALIGN_DOWN(initrd_start, PAGE_SIZE));
- #endif /* CONFIG_BLK_DEV_INITRD */
-
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index d65b591..1aad444 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -226,13 +226,16 @@ void free_initmem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
--       if (start < end)
-+       if (start && (start < end)) {
-+               start =3D _ALIGN_DOWN(start, PAGE_SIZE);
-+               end =3D _ALIGN_UP(end, PAGE_SIZE);
-                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
-) >> 10);
--       for (; start < end; start +=3D PAGE_SIZE) {
--               ClearPageReserved(virt_to_page(start));
--               init_page_count(virt_to_page(start));
--               free_page(start);
--               totalram_pages++;
-+               for (; start < end; start +=3D PAGE_SIZE) {
-+                       ClearPageReserved(virt_to_page(start));
-+                       init_page_count(virt_to_page(start));
-+                       free_page(start);
-+                       totalram_pages++;
-+               }
-        }
- }
- #endif
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 6374b21..fa9586b 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -102,13 +102,16 @@ void free_initmem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
--       if (start < end)
-+       if (start && (start < end)) {
-+               start =3D _ALIGN_DOWN(start, PAGE_SIZE);
-+               end =3D _ALIGN_UP(end, PAGE_SIZE);
-                printk ("Freeing initrd memory: %ldk freed\n", (end - start=
-) >> 10);
--       for (; start < end; start +=3D PAGE_SIZE) {
--               ClearPageReserved(virt_to_page(start));
--               init_page_count(virt_to_page(start));
--               free_page(start);
--               totalram_pages++;
-+               for (; start < end; start +=3D PAGE_SIZE) {
-+                       ClearPageReserved(virt_to_page(start));
-+                       init_page_count(virt_to_page(start));
-+                       free_page(start);
-+                       totalram_pages++;
-+               }
-        }
- }
- #endif
---
-1.7.4
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 68ca929..4a1d37c 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -323,6 +323,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
++	u8 progif;
+ 
+ 	if (!of_device_is_available(dev)) {
+ 		pr_warning("%s: disabled\n", dev->full_name);
+@@ -353,6 +354,19 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 
+ 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+ 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
++
++	early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
++	if (progif & 1 ) {
++		u32 temp;
++
++		temp = (u32)hose->cfg_data & ~PAGE_MASK;
++		if (((u32)hose->cfg_data & PAGE_MASK) != (u32)hose->cfg_addr)
++			iounmap(hose->cfg_data - temp);
++		iounmap(hose->cfg_addr);
++		pcibios_free_controller(hose);
++		return 0;
++	}
++
+ 	setup_pci_cmd(hose);
+ 
+ 	/* check PCI express link status */
+-- 
+1.7.4.1
