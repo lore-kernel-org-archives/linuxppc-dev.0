@@ -1,23 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1F82B6F5F
+Return-Path: <B04825@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+	[213.199.154.205])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 463D5B6FB5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 06:51:45 +1000 (EST)
-Subject: Re: [PATCH 2/2] powerpc/book3e-64: reraise doorbell when masked by
-	soft-irq-disable
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20110523152618.00a0e5f0@schlenkerla.am.freescale.net>
-References: <20110520190047.GB7058@schlenkerla.am.freescale.net>
-	<1305930778.7481.197.camel@pasglop>
-	<20110523152618.00a0e5f0@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 May 2011 06:51:36 +1000
-Message-ID: <1306183896.7481.209.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Tue, 24 May 2011 07:09:16 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>
+Subject: Re: [PATCH 0/7] This patchset adds support for running Linux under
+	the Freescale hypervisor,
+Date: Mon, 23 May 2011 21:09:07 +0000
+Message-ID: <BANLkTinqOb1UH=keRtZ9=454NDrzcjYV7g@mail.gmail.com>
+References: <1305813272-31826-1-git-send-email-timur@freescale.com>
+	<A221B293-A4DD-4223-AEEA-F3E5243D2C0A@freescale.com>
+In-Reply-To: <A221B293-A4DD-4223-AEEA-F3E5243D2C0A@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: Tabi Timur-B04825 <B04825@freescale.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"akpm@kernel.org" <akpm@kernel.org>,
+	"linux-console@vger.kernel.org" <linux-console@vger.kernel.org>,
+	"greg@kroah.com" <greg@kroah.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-05-23 at 15:26 -0500, Scott Wood wrote:
-> On Sat, 21 May 2011 08:32:58 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Fri, 2011-05-20 at 14:00 -0500, Scott Wood wrote:
-> > > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > > ---
-> > >  arch/powerpc/kernel/exceptions-64e.S |   22 +++++++++++++++++++++-
-> > >  1 files changed, 21 insertions(+), 1 deletions(-)
-> > 
-> > You can probably remove the doorbell re-check when enabling interrupts
-> > now, can't you ?
-> 
-> Ah, so that's how it currently gets away without re-raising when the
-> interrupt happens. :-)
-> 
-> I'll remove it.
+On Fri, May 20, 2011 at 3:29 PM, Kumar Gala <kumar.gala@freescale.com> wrot=
+e:
 
-Yup, I was too lazy to make a special case in the exception handlers :-)
+> Applied to 'test' branch. =A0(grabbed 'v2' of tty patch). =A0Fixed merged=
+ conflicts.
 
-Cheers,
-Ben.
+I don't think you pushed this branch to git.kernel.org
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/galak/powerpc.git;a=3Dshortlog;=
+h=3Drefs/heads/test
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
