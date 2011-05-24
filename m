@@ -1,26 +1,21 @@
-Return-Path: <robert.richter@amd.com>
-Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
-	[213.199.154.207])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 42AC3B6FAC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 19:29:00 +1000 (EST)
-Date: Tue, 24 May 2011 11:27:47 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Eric B Munson <emunson@mgebm.net>
-Subject: Re: [PATCH] oprofile, powerpc: Handle events that raise an exception
-	without overflowing
-Message-ID: <20110524092747.GS20052@erda.amd.com>
-References: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from mail2.matrix-vision.com (mail2.matrix-vision.com
+	[85.214.244.251])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "template", Issuer "template" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7E5E5B6FAD
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2011 19:53:21 +1000 (EST)
+Message-ID: <4DDB7EA6.7000404@matrix-vision.de>
+Date: Tue, 24 May 2011 11:47:18 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
-Cc: "oprofile-list@lists.sf.net" <oprofile-list@lists.sf.net>,
-	"paulus@samba.org" <paulus@samba.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: PCI DMA to user mem on mpc83xx
+References: <4DDA2509.6070702@matrix-vision.de>
+	<20110523172727.GA21717@ovro.caltech.edu>
+In-Reply-To: <20110523172727.GA21717@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23.05.11 10:22:40, Eric B Munson wrote:
-> Commit 0837e3242c73566fc1c0196b4ec61779c25ffc93 fixes a situation on POWER7
-> where events can roll back if a specualtive event doesn't actually complete.
-> This can raise a performance monitor exception.  We need to catch this to ensure
-> that we reset the PMC.  In all cases the PMC will be less than 256 cycles from
-> overflow.
-> 
-> This patch lifts Anton's fix for the problem in perf and applies it to oprofile
-> as well.
-> 
-> Signed-off-by: Eric B Munson <emunson@mgebm.net>
-> Cc: <stable@kernel.org> # as far back as it applies cleanly
-> ---
->  arch/powerpc/oprofile/op_model_power4.c |   24 +++++++++++++++++++++++-
->  1 files changed, 23 insertions(+), 1 deletions(-)
+Ira,
 
-I applied the fix to oprofile/urgent.
+> On Mon, May 23, 2011 at 11:12:41AM +0200, Andre Schwarz wrote:
+>> Ira,
+>>
+>> we have a pretty old PCI device driver here that needs some basic rework
+>> running on 2.6.27 on several MPC83xx.
+>> It's a simple char-device with "give me some data" implemented using
+>> read() resulting in zero-copy DMA to user mem.
+>>
+>> There's get_user_pages() working under the hood along with
+>> SetPageDirty() and page_cache_release().
+>>
+>> Main goal is to prepare a sg-list that gets fed into a DMA controller.
+>>
+>> I wonder if there's a more up-to-date/efficient and future proof scheme
+>> of creating the mapping.
+>>
+>>
+>> Could you provide some pointers or would you stick to the current scheme ?
+>>
+> This scheme is the best you'll come up with for zero-copy IO. I used
+> get_user_pages_fast(), but otherwise my implementation was the same.
+> These interfaces should be fairly future proof.
+excellent - thanks.
+Will stick to it then ...
+> In the end, I realized that most of my transfers were 4 bytes in length,
+> and zero copy IO was a waste of effort. I decided to use mmap instead.
+>
 
-Thanks Eric,
+I'm using 98% page sized (4KiB) scatter gather transfers summing up to 
+~80MiB/sec sustained throughput.
 
--Robert
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
+
+
+Cheers,
+André
+
+MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
