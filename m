@@ -1,21 +1,28 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from mail2.matrix-vision.com (mail2.matrix-vision.com
-	[85.214.244.251])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "template", Issuer "template" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CD36CB6FAC
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2011 20:02:53 +1000 (EST)
-Message-ID: <4DDB8248.8010406@matrix-vision.de>
-Date: Tue, 24 May 2011 12:02:48 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
-MIME-Version: 1.0
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: PCI DMA to user mem on mpc83xx
-References: <AE90C24D6B3A694183C094C60CF0A2F6D8AD4B@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AD4B@saturn3.aculab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8C567B6F77
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 24 May 2011 23:41:04 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4ODTf1f015141
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2011 09:29:41 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4ODeuoF1380438
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2011 09:40:56 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p4ODet2K006412
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2011 10:40:56 -0300
+Message-Id: <201105241340.p4ODerDL006322@d01av02.pok.ibm.com>
+Subject: [PATCH 1/1] powerpc: Update MAX_HCALL_OPCODE to reflect page
+	coalescing
+To: benh@kernel.crashing.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Tue, 24 May 2011 08:40:54 -0500
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David,
 
->> we have a pretty old PCI device driver here that needs some
->> basic rework running on 2.6.27 on several MPC83xx.
->> It's a simple char-device with "give me some data" implemented
->> using read() resulting in zero-copy DMA to user mem.
->>
->> There's get_user_pages() working under the hood along with
->> SetPageDirty() and page_cache_release().
-> Does that dma use the userspace virtual address, or the
-> physical address - or are you remapping the user memory into
-> kernel address space.
+When page coalescing support was added recently, the MAX_HCALL_OPCODE
+define was not updated for the newly added H_GET_MPP_X hcall.
 
-no mapping at all AFAIK.
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-I'm using get_user_pages() followed by allocation of a struct 
-scatterlist being filled with sg_set_page().
-After the transfer the pages are marked dirty using SetPageDirty().
+ arch/powerpc/include/asm/hvcall.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> If the memory is remapped into the kernel address space, the
-> cost of the mmu and tlb operations (especially on MP systems)
-> is such that a dma to kernel memory followed by copyout/copytouser
-> may well be faster!
-no mapping.
-
-> That may even be the case even if the dma is writing to the
-> user virtual (or physical) addresses when it is only
-> necessary to ensure the memory page is resident and that
-> the caches are coherent.
-All I need is physical addresses of user mem.
-Since the allocating user driver is using mlock() and there's no swap I 
-expect to be safe ... is this a stupid assumption ?
-> In any case the second copy is probably far faster than the
-> PCI one!
-huh - I observed memcpy() to be very expensive (at least on 83xx PowerPC).
-> I've recently written driver that supports a pread/pwrite interface
-> to the memory windows on a PCIe card. It was important to use
-> dma for the PCIe transfers (to get a sensible transfer size).
-> I overlapped the copyin/copyout with the next dma transfer.
-> The dma's are fast enough that it is worth spinning waiting
-> for completion - but slow enough to make the overlapped
-> operation worthwhile (same speed as a single word pio transfer).
-
-
-Thanks for your feedback.
-
-
-Cheers,
-André
-
-
-MATRIX VISION GmbH, Talstrasse 16, DE-71570 Oppenweiler
-Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschaeftsfuehrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+diff -puN arch/powerpc/include/asm/hvcall.h~powerpc_max_hcall_opcode arch/powerpc/include/asm/hvcall.h
+--- linux-2.6/arch/powerpc/include/asm/hvcall.h~powerpc_max_hcall_opcode	2011-05-20 09:33:45.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/include/asm/hvcall.h	2011-05-20 09:33:58.000000000 -0500
+@@ -236,7 +236,7 @@
+ #define H_HOME_NODE_ASSOCIATIVITY 0x2EC
+ #define H_BEST_ENERGY		0x2F4
+ #define H_GET_MPP_X		0x314
+-#define MAX_HCALL_OPCODE	H_BEST_ENERGY
++#define MAX_HCALL_OPCODE	H_GET_MPP_X
+ 
+ #ifndef __ASSEMBLY__
+ 
+_
