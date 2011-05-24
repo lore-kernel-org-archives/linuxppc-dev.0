@@ -1,51 +1,30 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id EABE0B6F9E
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EAC4DB6F9D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 May 2011 06:14:30 +1000 (EST)
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
-	call filtering
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20110524200815.GD27634@elte.hu>
-References: <1305563026.5456.19.camel@gandalf.stny.rr.com>
-	<20110516165249.GB10929@elte.hu>
-	<1305565422.5456.21.camel@gandalf.stny.rr.com>
-	<20110517124212.GB21441@elte.hu>
-	<1305637528.5456.723.camel@gandalf.stny.rr.com>
-	<20110517131902.GF21441@elte.hu>
-	<BANLkTikBK3-KZ10eErQ6Eex_L6Qe2aZang@mail.gmail.com>
-	<1305807728.11267.25.camel@gandalf.stny.rr.com>
-	<BANLkTiki8aQJbFkKOFC+s6xAEiuVyMM5MQ@mail.gmail.com>
-	<BANLkTim9UyYAGhg06vCFLxkYPX18cPymEQ@mail.gmail.com>
-	<20110524200815.GD27634@elte.hu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Tue, 24 May 2011 16:14:22 -0400
-Message-ID: <1306268062.1465.79.camel@gandalf.stny.rr.com>
+	Wed, 25 May 2011 07:43:36 +1000 (EST)
+Subject: Re: Kernel cannot see PCI device
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Prashant Bhole <prashantsmailcenter@gmail.com>
+In-Reply-To: <BANLkTi=J5EFvs3nHDQXNQfyd0EejWJvzcQ@mail.gmail.com>
+References: <BANLkTimm98Xxx8y9qM8DUSR4rTDPSFpgHw@mail.gmail.com>
+	<BANLkTi=tvyOPoN3f3v_C+NuVOwr+YKaRJA@mail.gmail.com>
+	<BANLkTim22Lm=TG9vP+XH25k04ncX=kqy8g@mail.gmail.com>
+	<BANLkTinNSXCQJ=WJm6CkfttOgpVz1XOCBQ@mail.gmail.com>
+	<BANLkTimoyzERHjw_kQ5SAbNWudWJoX7yMA@mail.gmail.com>
+	<1305846751.7481.55.camel@pasglop>
+	<BANLkTi=bs31L=C+XWGeXG49xuFVzt+omgA@mail.gmail.com>
+	<BANLkTi=J5EFvs3nHDQXNQfyd0EejWJvzcQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 May 2011 07:43:08 +1000
+Message-ID: <1306273388.7481.240.camel@pasglop>
 Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Ralf Baechle <ralf@linux-mips.org>, "H. Peter
-	Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	James Morris <jmorris@namei.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
-	"Serge E. Hallyn" <serge@hallyn.com>, Tejun Heo <tj@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
-	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
-	"David S. Miller" <davem@davemloft.net>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	Stefan Roese <sr@denx.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Tirumala Marri <tmarri@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,15 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-05-24 at 22:08 +0200, Ingo Molnar wrote:
-> * Will Drewry <wad@chromium.org> wrote:
+On Tue, 2011-05-24 at 10:25 +0530, Prashant Bhole wrote:
 
-> But there could be a perf_tp_event_ret() or perf_tp_event_check() entry that 
-> code like seccomp which wants to use event results can use.
+> Fixed the problem by soft resetting the PCIe port in the function
+> ppc460ex_pciex_port_init_hw().
+> Is it a right thing to do?
+> Following is the patch for kernel 2.6.38.4:
+> --------------------------------------------------------------------------------------
+> --- linux-2.6.38.4/arch/powerpc/sysdev/ppc4xx_pci.c.orig	2011-05-24
+> 10:02:38.000000000 +0530
+> +++ linux-2.6.38.4/arch/powerpc/sysdev/ppc4xx_pci.c	2011-05-24
+> 10:07:17.000000000 +0530
+> @@ -876,6 +876,20 @@
+>  	u32 val;
+>  	u32 utlset1;
+> 
+> +	switch (port->index)
+> +	{
+> +		case 0:
+> +			mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST, 0x0);
+> +			mdelay(10);
+> +			break;
+> +		case 1:
+> +			mtdcri(SDR0, PESDR1_460EX_PHY_CTL_RST, 0x0);
+> +			mdelay(10);
+> +			break;
+> +		default:
+> +			break;
+> +	}
+> +
+>  	if (port->endpoint)
+>  		val = PTYPE_LEGACY_ENDPOINT << 20;
+>  	else
+> --------------------------------------------------------------------------------------
 
-We should name it something else. The "perf_tp.." is a misnomer as it
-has nothing to do with performance monitoring. "dynamic_event_.." maybe,
-as it is dynamic to the affect that we can use jump labels to enable or
-disable it.
+Well, it's odd that you'd have to do that, maybe something the
+bootloader is doing ?
 
--- Steve
+I personally don't mind but I'd like Stefan and/or Tirumala opinion on
+this.
+
+Cheers,
+Ben.
