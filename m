@@ -1,22 +1,26 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 952FCB6FAC
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2011 18:23:03 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP id 17015-02 for <linuxppc-dev@ozlabs.org>;
-	Tue, 24 May 2011 09:16:14 +0100 (BST)
+Return-Path: <robert.richter@amd.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 42AC3B6FAC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 24 May 2011 19:29:00 +1000 (EST)
+Date: Tue, 24 May 2011 11:27:47 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Eric B Munson <emunson@mgebm.net>
+Subject: Re: [PATCH] oprofile, powerpc: Handle events that raise an exception
+	without overflowing
+Message-ID: <20110524092747.GS20052@erda.amd.com>
+References: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: PCI DMA to user mem on mpc83xx
-Date: Tue, 24 May 2011 09:15:03 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD4B@saturn3.aculab.com>
-In-Reply-To: <4DDA2509.6070702@matrix-vision.de>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: LinuxPPC List <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1306160560-5309-1-git-send-email-emunson@mgebm.net>
+Cc: "oprofile-list@lists.sf.net" <oprofile-list@lists.sf.net>,
+	"paulus@samba.org" <paulus@samba.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> we have a pretty old PCI device driver here that needs some
-> basic rework running on 2.6.27 on several MPC83xx.
-> It's a simple char-device with "give me some data" implemented
-> using read() resulting in zero-copy DMA to user mem.
->=20
-> There's get_user_pages() working under the hood along with=20
-> SetPageDirty() and page_cache_release().
+On 23.05.11 10:22:40, Eric B Munson wrote:
+> Commit 0837e3242c73566fc1c0196b4ec61779c25ffc93 fixes a situation on POWER7
+> where events can roll back if a specualtive event doesn't actually complete.
+> This can raise a performance monitor exception.  We need to catch this to ensure
+> that we reset the PMC.  In all cases the PMC will be less than 256 cycles from
+> overflow.
+> 
+> This patch lifts Anton's fix for the problem in perf and applies it to oprofile
+> as well.
+> 
+> Signed-off-by: Eric B Munson <emunson@mgebm.net>
+> Cc: <stable@kernel.org> # as far back as it applies cleanly
+> ---
+>  arch/powerpc/oprofile/op_model_power4.c |   24 +++++++++++++++++++++++-
+>  1 files changed, 23 insertions(+), 1 deletions(-)
 
-Does that dma use the userspace virtual address, or the
-physical address - or are you remapping the user memory into
-kernel address space.
+I applied the fix to oprofile/urgent.
 
-If the memory is remapped into the kernel address space, the
-cost of the mmu and tlb operations (especially on MP systems)
-is such that a dma to kernel memory followed by copyout/copytouser
-may well be faster!
+Thanks Eric,
 
-That may even be the case even if the dma is writing to the
-user virtual (or physical) addresses when it is only
-necessary to ensure the memory page is resident and that
-the caches are coherent.
+-Robert
 
-In any case the second copy is probably far faster than the
-PCI one!
-
-I've recently written driver that supports a pread/pwrite interface
-to the memory windows on a PCIe card. It was important to use
-dma for the PCIe transfers (to get a sensible transfer size).
-I overlapped the copyin/copyout with the next dma transfer.
-The dma's are fast enough that it is worth spinning waiting
-for completion - but slow enough to make the overlapped
-operation worthwhile (same speed as a single word pio transfer).
-
-	David
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
