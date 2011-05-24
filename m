@@ -1,31 +1,52 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2573BB6F8B
+	by ozlabs.org (Postfix) with ESMTPS id 7B14EB6F93
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 May 2011 05:41:03 +1000 (EST)
-Date: Tue, 24 May 2011 21:40:54 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 5/7] mmc: sdhci: consolidate sdhci-of-esdhc and
-	sdhci-esdhc-imx
-Message-ID: <20110524194054.GC25727@pengutronix.de>
-References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
-	<1304601778-13837-6-git-send-email-shawn.guo@linaro.org>
+	Wed, 25 May 2011 05:55:21 +1000 (EST)
+Date: Tue, 24 May 2011 21:54:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
+	filtering
+Message-ID: <20110524195435.GC27634@elte.hu>
+References: <20110516165249.GB10929@elte.hu>
+	<1305565422.5456.21.camel@gandalf.stny.rr.com>
+	<20110517124212.GB21441@elte.hu>
+	<1305637528.5456.723.camel@gandalf.stny.rr.com>
+	<20110517131902.GF21441@elte.hu>
+	<BANLkTikBK3-KZ10eErQ6Eex_L6Qe2aZang@mail.gmail.com>
+	<1305807728.11267.25.camel@gandalf.stny.rr.com>
+	<BANLkTiki8aQJbFkKOFC+s6xAEiuVyMM5MQ@mail.gmail.com>
+	<BANLkTim9UyYAGhg06vCFLxkYPX18cPymEQ@mail.gmail.com>
+	<1306254027.18455.47.camel@twins>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3siQDZowHQqNOShm"
-In-Reply-To: <1304601778-13837-6-git-send-email-shawn.guo@linaro.org>
-Cc: Chris Ball <cjb@laptop.org>, sameo@linux.intel.com,
-	Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
-	devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
-	Saeed Bishara <saeed@marvell.com>,
-	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
-	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1306254027.18455.47.camel@twins>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	sparclinux@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+	linux-s390@vger.kernel.org,
+	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+	James Morris <jmorris@namei.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Tejun Heo <tj@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
+	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+	Paul Mundt <lethal@linux-sh.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>, agl@chromium.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +57,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---3siQDZowHQqNOShm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-On Thu, May 05, 2011 at 09:22:56PM +0800, Shawn Guo wrote:
-> This patch is to consolidate SDHCI driver for Freescale eSDHC
-> controller found on both MPCxxx and i.MX platforms.  It merges
-> sdhci-of-esdhc.c into sdhci-esdhc.c, so that the same pair of
-> .probe/.remove hook works with eSDHC for two platforms.
->=20
-> As the results, sdhci-of-esdhc.c and sdhci-esdhc.h are removed, and
-> header esdhc.h containing the definition of esdhc_platform_data is
-> put into the public folder.
->=20
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> On Tue, 2011-05-24 at 10:59 -0500, Will Drewry wrote:
+> >  include/linux/ftrace_event.h  |    4 +-
+> >  include/linux/perf_event.h    |   10 +++++---
+> >  kernel/perf_event.c           |   49 +++++++++++++++++++++++++++++++++++++---
+> >  kernel/seccomp.c              |    8 ++++++
+> >  kernel/trace/trace_syscalls.c |   27 +++++++++++++++++-----
+> >  5 files changed, 82 insertions(+), 16 deletions(-) 
+> 
+> I strongly oppose to the perf core being mixed with any sekurity voodoo
+> (or any other active role for that matter).
 
-I agree with Anton about not merging the two...
+I'd object to invisible side-effects as well, and vehemently so. But note how 
+intelligently it's used here: it's explicit in the code, it's used explicitly 
+in kernel/seccomp.c and the event generation place in 
+kernel/trace/trace_syscalls.c.
 
-> +#ifndef CONFIG_MMC_SDHCI_ESDHC_IMX
-> +#define cpu_is_mx25()	(0)
-> +#define cpu_is_mx35()	(0)
-> +#define cpu_is_mx51()	(0)
-> +#define cpu_is_imx()	(0)
-> +#else
-> +#define cpu_is_imx()	(1)
-> +#endif
+So this is a really flexible solution IMO and does not extend events with some 
+invisible 'active' role. It extends the *call site* with an open-coded active 
+role - which active role btw. already pre-existed.
 
-=2E.. e.g. that looks a bit frightening.
+Thanks,
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---3siQDZowHQqNOShm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEARECAAYFAk3cCcYACgkQD27XaX1/VRtUwQCgoIV85fwgIwLJrNnpZcKcpuon
-2t8AnAurv1dsjn89lmIF70htQOUZ02xt
-=L9v8
------END PGP SIGNATURE-----
-
---3siQDZowHQqNOShm--
+	Ingo
