@@ -1,25 +1,25 @@
-Return-Path: <nacc@us.ibm.com>
-Date: Wed, 25 May 2011 11:47:38 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/8] powerpc: override dma_get_required_mask by platform
-	hook and ops
-Message-ID: <20110525184738.GA10283@us.ibm.com>
-References: <1305152704-4864-1-git-send-email-nacc@us.ibm.com>
-	<1305152704-4864-6-git-send-email-nacc@us.ibm.com>
-	<1305791036.7481.52.camel@pasglop>
-	<20110519174625.GA3338@us.ibm.com>
+Return-Path: <B29882@freescale.com>
+Received: from AM1EHSOBE003.bigfish.com (am1ehsobe003.messaging.microsoft.com
+	[213.199.154.206])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7FDF1B6F67
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 26 May 2011 04:52:34 +1000 (EST)
+From: McClintock Matthew-B29882 <B29882@freescale.com>
+To: "Gabbasov, Andrew" <Andrew_Gabbasov@mentor.com>
+Subject: Re: Booting p4080ds on non-0 cpu
+Date: Wed, 25 May 2011 18:52:23 +0000
+Message-ID: <BANLkTi=jp2CbA+wCEVfM8O0-ON5ZUgo47A@mail.gmail.com>
+References: <DBDC8B5977CFF7429A9DBC6C51C7ADE701E81C32@EU1-MAIL.mgc.mentorg.com>
+	<DBDC8B5977CFF7429A9DBC6C51C7ADE701E81C39@EU1-MAIL.mgc.mentorg.com>
+In-Reply-To: <DBDC8B5977CFF7429A9DBC6C51C7ADE701E81C39@EU1-MAIL.mgc.mentorg.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110519174625.GA3338@us.ibm.com>
-Cc: cbe-oss-dev@lists.ozlabs.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Arnd Bergmann <arnd@arndb.de>, Sonny Rao <sonnyrao@linux.vnet.ibm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Blanchard,
+	Hollis" <Hollis_Blanchard@mentor.com>
+Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+On Wed, May 25, 2011 at 7:16 AM, Gabbasov, Andrew
+<Andrew_Gabbasov@mentor.com> wrote:
+> Hello Matthew,
+>
+> You have made a patch
+> "powerpc/fsl_booke:=A0Add=A0support=A0to=A0boot=A0from=A0core=A0other=A0t=
+han=A00" some time
+> ago, so you probably worked with booting the kernel on a cpu subset,
+> particularly on the core other than 0.
+>
+> Could you please describe any details how you ran the kernel from u-boot =
+on
+> a non-0 cpu?
 
-On 19.05.2011 [10:46:25 -0700], Nishanth Aravamudan wrote:
-> On 19.05.2011 [17:43:56 +1000], Benjamin Herrenschmidt wrote:
-> > On Wed, 2011-05-11 at 15:25 -0700, Nishanth Aravamudan wrote:
-> > > From: Milton Miller <miltonm@bga.com>
-> > > 
-> > > The hook dma_get_required_mask is supposed to return the mask required
-> > > by the platform to operate efficently.  The generic version of
-> > > dma_get_required_mask in driver/base/platform.c returns a mask based
-> > > only on max_pfn.  However, this is likely too big for iommu systems
-> > > and could be too small for platforms that require a dma offset or have
-> > > a secondary window at a high offset.
-> > 
-> > The result of those 3 patches doesn't build on top of my current tree,
-> > the generic dma_ops lacks the dma_get_required_mask hook. I'll have a
-> > look again after the merge window.
-> 
-> Hrm, I think it's because for whatever reason [1] I forgot to cc you on 6/8?
-> 
-> https://lkml.org/lkml/2011/5/11/473
+I did this via kexec not via u-boot. In this method I would reboot on
+any one of the cores and it would bring up the other cores.
 
-Were you able to find the patch I refer to above?
+> I have a problem trying to boot linux on p4080ds platform on any non-0 cp=
+u
+> (as a first step to running AMP or mixed AMP/SMP configuration). I'm tryi=
+ng
+> to run 2.6.34.6 kernel with some Freescale patches in SMP configuration w=
+ith
+> full original device tree and device tree with some cpu nodes removed. I'=
+m
+> using the u-boot script, shown at the bottom of this message.
+>
+> If I run "bootm go" after the script commands (thus running the kernel on
+> cpu 0), the kernel runs fine.
+>
+> When I'm trying to run the SMP kernel with full device tree on cpu 1 usin=
+g
+> the following commands after the script:
+> =A0 fdt boot 1
+> =A0 cpu 1 release 0 1 c00000 -
+> the kernel begins to run, but soon crashes. Possible reasons
+> are:=A0"Unrecoverable FP Unavailable Exception", at nearly random
+> place;=A0memory allocation errors somewhere in DPAA=A0code and then segme=
+ntation
+> fault (sig 11); unknown exception (sig 4).=A0Sometimes it doesn't even sh=
+ow
+> anything on the console (too early exception?), but sometimes it boots
+> successfully up to the shell prompt.
 
-Thanks,
-Nish
+Is the single core boot stable at this point?
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+> When I'm trying to run the SMP kernel with the device tree with cpu 0
+> stripped out (commented out the whole cpu0 node and all properties referr=
+ing
+> to it with &cpu0), using the following commands after the script:
+> =A0 fdt boot 1
+> =A0 cpu 1 release 0 0 c00000 -
+> =A0 [Note the difference in the parameter to 'cpu 1 release' command,
+> =A0=A0=A0 it should be a logical cpu number, which is different]
+> the result is almost the same, the kernel crashes too. The reasons are
+> similar to the above, with more often "Unrecoverable FP Unavailable
+> Exception".
+
+Can you send me the kernel boot logs and kernel defconfig? (off list perhap=
+s)
+
+>
+> Can you give any advise why can this happen, and what I could be doing
+> wrong?
+
+Did you build your kernel relocatable? Did you use the -b option when
+compiling your device tree? We do have a hypervisor for this part
+which might be a more suitable and tested solution depending on what
+you are trying to accomplish. I'm not sure that anyone has explicitly
+tested AMP on a p4080.
+
+-M=
