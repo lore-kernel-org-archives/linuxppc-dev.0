@@ -1,18 +1,32 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 95401B7411
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 99758B6F8D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 May 2011 16:34:37 +1000 (EST)
-Subject: [PATCH 7/8] powerpc irq: protect irq_radix_revmap_lookup against
-	irq_free_virt
-From: Milton Miller <miltonm@bga.com>
-Message-Id: <rcu-lock-radix-lookup-ppc@mdm.bga.com>
-In-Reply-To: <more-irq-cleanups@mdm.bga.com>
-References: <more-irq-cleanups@mdm.bga.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 25 May 2011 01:34:18 -0500
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
+	Wed, 25 May 2011 16:46:31 +1000 (EST)
+Date: Wed, 25 May 2011 08:46:19 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH v2 5/7] mmc: sdhci: consolidate sdhci-of-esdhc and
+	sdhci-esdhc-imx
+Message-ID: <20110525064619.GI9774@pengutronix.de>
+References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
+	<1304601778-13837-6-git-send-email-shawn.guo@linaro.org>
+	<20110524194054.GC25727@pengutronix.de>
+	<20110525060637.GA30583@S2100-06.ap.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20110525060637.GA30583@S2100-06.ap.freescale.net>
+Cc: Chris Ball <cjb@laptop.org>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+	sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+	patches@linaro.org, devicetree-discuss@lists.ozlabs.org,
+	linux-mmc@vger.kernel.org, Saeed Bishara <saeed@marvell.com>,
+	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
+	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
+	Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The radix-tree code uses call_rcu when freeing internal elements.
-We must protect against the elements being freed while we traverse
-the tree, even if the returned pointer will still be valid.
+Hello Shawn,
 
-While preparing a patch to expand the context in which
-irq_radix_revmap_lookup will be called, I realized that the
-radix tree was not locked.
+> > > +#ifndef CONFIG_MMC_SDHCI_ESDHC_IMX
+> > > +#define cpu_is_mx25()	(0)
+> > > +#define cpu_is_mx35()	(0)
+> > > +#define cpu_is_mx51()	(0)
+> > > +#define cpu_is_imx()	(0)
+> > > +#else
+> > > +#define cpu_is_imx()	(1)
+> > > +#endif
+> > 
+> > ... e.g. that looks a bit frightening.
+> > 
+> Agree.
+> 
+> The use of cpu_is_mx..() in the driver itself seems a churn to me
+> even without this consolidation patch.  Is it possible for us to
+> eliminate them by using pdata, and eventually device tree?  When we
+> are there, I might want to revisit the consolidation again.
+An alternative that allows letting the logic in the driver and still
+getting rid of the cpu_is_ stuff is using platform ids. See
+drivers/spi/spi_imx.c for an example. Instead of an index into an array
+(as it's for the imx-spi driver) driver_data can hold flags, too, which
+should be enough most of the time.
 
-When asked
+Best regards
+Uwe
 
-    For a normal call_rcu usage, is it allowed to read the structure in
-    irq_enter / irq_exit, without additional rcu_read_lock?  Could an
-    element freed with call_rcu advance with the cpu still between
-    irq_enter/irq_exit (and irq_disabled())?
-
-Paul McKenney replied:
-
-    Absolutely illegal to do so. OK for call_rcu_sched(), but a
-    flaming bug for call_rcu().
-
-    And thank you very much for finding this!!!
-
-Further analysis:
-
-In the current CONFIG_TREE_RCU implementation. CONFIG_TREE_PREEMPT_RCU
-(and CONFIG_TINY_PREEMPT_RCU) uses explicit counters.
-
-These counters are reflected from per-CPU to global in the
-scheduling-clock-interrupt handler, so disabling irq does prevent the
-grace period from completing. But there are real-time implementations
-(such as the one use by the Concurrent guys) where disabling irq
-does -not- prevent the grace period from completing.
-
-
-While an alternative fix would be to switch radix-tree to rcu_sched, I
-don't want to audit the other users of radix trees (nor put alternative
-freeing in the library).  The normal overhead for rcu_read_lock and
-unlock are a local counter increment and decrement.
-
-This does not show up in the rcu lockdep because in 2.6.34 commit
-2676a58c98 (radix-tree: Disable RCU lockdep checking in radix tree)
-deemed it too hard to pass the condition of the protecting lock
-to the library.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-
-Index: work.git/arch/powerpc/kernel/irq.c
-===================================================================
---- work.git.orig/arch/powerpc/kernel/irq.c	2011-05-24 21:14:30.860096118 -0500
-+++ work.git/arch/powerpc/kernel/irq.c	2011-05-24 21:15:55.350096024 -0500
-@@ -893,10 +893,13 @@ unsigned int irq_radix_revmap_lookup(str
- 		return irq_find_mapping(host, hwirq);
- 
- 	/*
--	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
--	 * as it's referencing an entry in the static irq_map table.
-+	 * The ptr returned references the static global irq_map.
-+	 * but freeing an irq can delete nodes along the path to
-+	 * do the lookup via call_rcu.
- 	 */
-+	rcu_read_lock();
- 	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-+	rcu_read_unlock();
- 
- 	/*
- 	 * If found in radix tree, then fine.
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
