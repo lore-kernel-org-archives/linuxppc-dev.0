@@ -1,27 +1,27 @@
-Return-Path: <r65073@freescale.com>
-Date: Wed, 25 May 2011 17:36:02 +0800
-From: Shawn Guo <shawn.guo@freescale.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v2 5/7] mmc: sdhci: consolidate sdhci-of-esdhc and
-	sdhci-esdhc-imx
-Message-ID: <20110525093601.GA2070@S2100-06.ap.freescale.net>
-References: <1304601778-13837-1-git-send-email-shawn.guo@linaro.org>
-	<1304601778-13837-6-git-send-email-shawn.guo@linaro.org>
-	<20110524194054.GC25727@pengutronix.de>
-	<20110525060637.GA30583@S2100-06.ap.freescale.net>
-	<20110525064619.GI9774@pengutronix.de>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C9A6FB6F9B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 May 2011 19:57:30 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Kernel cannot see PCI device
+Date: Wed, 25 May 2011 11:57:12 +0200
+References: <BANLkTimm98Xxx8y9qM8DUSR4rTDPSFpgHw@mail.gmail.com>
+	<BANLkTi=J5EFvs3nHDQXNQfyd0EejWJvzcQ@mail.gmail.com>
+	<1306273388.7481.240.camel@pasglop>
+In-Reply-To: <1306273388.7481.240.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-In-Reply-To: <20110525064619.GI9774@pengutronix.de>
-Cc: Chris Ball <cjb@laptop.org>, Anton Vorontsov <avorontsov@ru.mvista.com>,
-	sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
-	patches@linaro.org, devicetree-discuss@lists.ozlabs.org,
-	linux-mmc@vger.kernel.org, Saeed Bishara <saeed@marvell.com>,
-	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
-	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
-	Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-arm-kernel@lists.infradead.org
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201105251157.12537.sr@denx.de>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	Prashant Bhole <prashantsmailcenter@gmail.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Tirumala Marri <tmarri@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Uwe,
+On Tuesday 24 May 2011 23:43:08 Benjamin Herrenschmidt wrote:
+> On Tue, 2011-05-24 at 10:25 +0530, Prashant Bhole wrote:
+> > Fixed the problem by soft resetting the PCIe port in the function
+> > ppc460ex_pciex_port_init_hw().
+> > Is it a right thing to do?
 
-On Wed, May 25, 2011 at 08:46:19AM +0200, Uwe Kleine-K=F6nig wrote:
-> Hello Shawn,
->=20
-> > > > +#ifndef CONFIG_MMC_SDHCI_ESDHC_IMX
-> > > > +#define cpu_is_mx25()	(0)
-> > > > +#define cpu_is_mx35()	(0)
-> > > > +#define cpu_is_mx51()	(0)
-> > > > +#define cpu_is_imx()	(0)
-> > > > +#else
-> > > > +#define cpu_is_imx()	(1)
-> > > > +#endif
-> > >=20
-> > > ... e.g. that looks a bit frightening.
-> > >=20
-> > Agree.
-> >=20
-> > The use of cpu_is_mx..() in the driver itself seems a churn to me
-> > even without this consolidation patch.  Is it possible for us to
-> > eliminate them by using pdata, and eventually device tree?  When we
-> > are there, I might want to revisit the consolidation again.
-> An alternative that allows letting the logic in the driver and still
-> getting rid of the cpu_is_ stuff is using platform ids. See
-> drivers/spi/spi_imx.c for an example. Instead of an index into an array
-> (as it's for the imx-spi driver) driver_data can hold flags, too, which
-> should be enough most of the time.
->=20
-Yeah, this is definitely a solution I can try later.  But for now, I
-would drop the esdhc consolidation patch.
+<snip>
 
---=20
-Regards,
-Shawn
+> Well, it's odd that you'd have to do that, maybe something the
+> bootloader is doing ?
+> 
+> I personally don't mind but I'd like Stefan and/or Tirumala opinion on
+> this.
+
+Not sure. I had no problems with the PCIe cards I tested with the current 
+code. But from my experience, this card reset behavior is highly card/device 
+dependent.
+
+It would be good to know that this new code doesn't break detection of other 
+PCIe cards/devices. Prashant, did you check this new code with other PCIe 
+cards/devices as well? If this patch doesn't break other PCIe cards like the 
+Intel PRO/1000, then:
+
+Acked-by: Stefan Roese <sr@denx.de>
+
+Cheers,
+Stefan
