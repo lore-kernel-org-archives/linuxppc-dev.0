@@ -1,27 +1,12 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2521B6FB9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 May 2011 07:52:43 +1000 (EST)
-Received: by mail-ww0-f45.google.com with SMTP id 36so6214247wwi.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 May 2011 14:52:43 -0700 (PDT)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/6] hw_breakpoints: Drop remaining misplaced dependency on
-	perf
-Date: Tue, 24 May 2011 23:52:27 +0200
-Message-Id: <1306273947-8410-7-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1306273947-8410-1-git-send-email-fweisbec@gmail.com>
-References: <1306273947-8410-1-git-send-email-fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
-	Prasad <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Gabriel Menini <gabriel.menini@gmail.com>
+Subject: Re: Best Linux choice for POWER7?
+In-reply-to: <BANLkTinLMava9Oyke2OL7Xy==h8AhBywfQ@mail.gmail.com>
+References: <BANLkTinLMava9Oyke2OL7Xy==h8AhBywfQ@mail.gmail.com>
+Date: Wed, 25 May 2011 11:49:55 +1000
+Message-ID: <452.1306288195@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +16,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Powerpc and Arm select breakpoint support ability only if
-Perf is built. This is not necessary anymore now that we
-enable perf once breakpoints support is selected.
+Gabriel,
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Will Deacon <will.deacon@arm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
----
- arch/arm/Kconfig     |    2 +-
- arch/powerpc/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> I am looking for the most-tested Linux distro for POWER7 architecture.
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 377a7a5..1d3a0b4 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -24,7 +24,7 @@ config ARM
- 	select HAVE_PERF_EVENTS
- 	select PERF_USE_VMALLOC
- 	select HAVE_REGS_AND_STACK_ACCESS_API
--	select HAVE_HW_BREAKPOINT if (PERF_EVENTS && (CPU_V6 || CPU_V6K || CPU_V7))
-+	select HAVE_HW_BREAKPOINT if (CPU_V6 || CPU_V6K || CPU_V7)
- 	select HAVE_C_RECORDMCOUNT
- 	select HAVE_GENERIC_HARDIRQS
- 	select HAVE_SPARSE_IRQ
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8f4d50b..e944eb8 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -134,7 +134,7 @@ config PPC
- 	select HAVE_IRQ_WORK
- 	select HAVE_PERF_EVENTS
- 	select HAVE_REGS_AND_STACK_ACCESS_API
--	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
-+	select HAVE_HW_BREAKPOINT if PPC_BOOK3S_64
- 	select HAVE_GENERIC_HARDIRQS
- 	select HAVE_SPARSE_IRQ
- 	select IRQ_PER_CPU
--- 
-1.7.3.2
+IBM partnered with RedHat and Novell to make sure RHEL6 and SLES11 SP1 are
+well tested with POWER7.  Essential back-ports and bug are included in
+both of these distros.  These two are the most-tested by far for
+POWER7.  
+
+Mainline kernels will also work with POWER7.  Any problems you have,
+please feel free to report them here.  
+
+Disclaimer: I work for IBM.
+
+Mikey
