@@ -2,50 +2,49 @@ Return-Path: <mingo@elte.hu>
 Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B1BF2B6F97
+	by ozlabs.org (Postfix) with ESMTPS id 63225B6F9C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 May 2011 18:36:10 +1000 (EST)
-Date: Thu, 26 May 2011 10:35:13 +0200
+	Thu, 26 May 2011 18:44:30 +1000 (EST)
+Date: Thu, 26 May 2011 10:43:41 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system call
 	filtering
-Message-ID: <20110526083513.GC26775@elte.hu>
-References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
-	<1305169376-2363-1-git-send-email-wad@chromium.org>
-	<20110512074850.GA9937@elte.hu>
-	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
-	<20110512130104.GA2912@elte.hu>
-	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-	<20110513121034.GG21022@elte.hu>
-	<alpine.LRH.2.00.1105161006340.21749@tundra.namei.org>
-	<20110526062752.GA14622@localhost.ucw.cz>
+Message-ID: <20110526084341.GD26775@elte.hu>
+References: <20110517131902.GF21441@elte.hu>
+	<BANLkTikBK3-KZ10eErQ6Eex_L6Qe2aZang@mail.gmail.com>
+	<1305807728.11267.25.camel@gandalf.stny.rr.com>
+	<BANLkTiki8aQJbFkKOFC+s6xAEiuVyMM5MQ@mail.gmail.com>
+	<BANLkTim9UyYAGhg06vCFLxkYPX18cPymEQ@mail.gmail.com>
+	<1306254027.18455.47.camel@twins> <20110524195435.GC27634@elte.hu>
+	<alpine.LFD.2.02.1105242239230.3078@ionos>
+	<20110525150153.GE29179@elte.hu>
+	<alpine.LFD.2.02.1105251836030.3078@ionos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110526062752.GA14622@localhost.ucw.cz>
+In-Reply-To: <alpine.LFD.2.02.1105251836030.3078@ionos>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	Peter Zijlstra <peterz@infradead.org>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-	David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Eric Paris <eparis@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	sparclinux@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+	linux-s390@vger.kernel.org,
 	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
-	kees.cook@canonical.com, "Serge E. Hallyn" <serge@hallyn.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Steven Rostedt <rostedt@goodmis.org>,
+	James Morris <jmorris@namei.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>, kees.cook@canonical.com,
+	"Serge E. Hallyn" <serge@hallyn.com>, Steven Rostedt <rostedt@goodmis.org>,
 	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, agl@chromium.org,
-	linux-arm-kernel@lists.infradead.org,
+	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
 	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
 	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
-	Oleg Nesterov <oleg@redhat.com>, Eric Paris <eparis@redhat.com>,
+	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
 	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
 	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+	agl@chromium.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,53 +55,62 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
->   On Mon 2011-05-16 10:36:05, James Morris wrote:
-> > On Fri, 13 May 2011, Ingo Molnar wrote:
-> > How do you reason about the behavior of the system as a whole?
+> > > We do _NOT_ make any decision based on the trace point so 
+> > > what's the "pre-existing" active role in the syscall entry 
+> > > code?
 > > 
-> > 
-> > > I argue that this is the LSM and audit subsystems designed right: in the long 
-> > > run it could allow everything that LSM does at the moment - and so much more 
-> > > ...
-> > 
-> > Now you're proposing a redesign of the security subsystem.  That's a 
-> > significant undertaking.
-> > 
-> > In the meantime, we have a simple, well-defined enhancement to seccomp 
-> > which will be very useful to current users in reducing their kernel attack 
-> > surface.
+> > The seccomp code we are discussing in this thread.
 > 
-> Well, you can do the same with subterfugue, even without kernel 
-> changes. But that's ptrace -- slow. (And it already shows that 
-> syscall based filters are extremely tricky to configure).
+> That's proposed code and has absolutely nothing to do with the 
+> existing trace point semantics.
 
-Yes, if you use syscall based filters to implement access to 
-underlying objects where the access methods do not capture essential 
-lifetime events properly (such as files) they you'll quickly run into 
-trouble achieving a secure solution.
+So because it's proposed code it does not exist?
 
-But you can robustly use syscall filters to control the underlying 
-primary *resource*: various pieces of kernel code with *negative* 
-utility to the current app - which have no use to the app but pose 
-risks in terms of potential exploits in them.
+If the feature is accepted (and given Linus's opinion it's not clear 
+at all it's accepted in any form) then it's obviously a very 
+legitimate technical concern whether we do:
 
-But you can use event filters to implement arbitrary security 
-policies robustly.
+	ret = seccomp_check_syscall_event(p1, p2, p3, p4, p5);
+	if (ret)
+		return -EACCES;
 
-For example file objects: if you generate the right events for a 
-class of objects then you can control access to them very robustly.
+	... random code ...
 
-It's not a surprise that this is what SELinux does primarily: it has 
-lifetime event hooks at the inode object (and socket, packet, etc.) 
-level and captures those access attempts and validates them against 
-the permissions of that object, in light of the accessing task's 
-credentials.
+	trace_syscall_event(p1, p2, p3, p4, p5);
 
-Exactly that can be done with Will's patch as well, if its potential 
-scope of event-checking points is not stupidly limited to the syscall 
-boundary alone ...
+Where seccomp_check_syscall_event() duplicates much of the machinery 
+that is behind trace_syscall_event().
+
+Or we do the more intelligent:
+
+	ret = check_syscall_event(p1, p2, p3, p4, p5);
+	if (ret)
+		return -EACCES;
+
+Where we have the happy side effects of:
+
+  - less code at the call site
+
+  - (a lot of!) shared infrastructure between the proposed seccomp 
+    code and event filters.
+
+  - we'd also be able to trace at security check boundaries - which
+    has obvious bug analysis advantages.
+
+In fact i do not see *any* advantages in keeping this needlessly 
+bloaty and needlessly inconsistently sampled form of instrumentation:
+
+	ret = seccomp_check_syscall_event(p1, p2, p3, p4, p5);
+	if (ret)
+		return -EACCES;
+
+	... random code ...
+
+	trace_syscall_event(p1, p2, p3, p4, p5);
+
+Do you?
 
 Thanks,
 
