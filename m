@@ -1,11 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 26 May 2011 19:34:12 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Avoid extra indirect function call in sending IPIs
-Message-ID: <20110526093412.GA3400@brick.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id E8309B6F84
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 26 May 2011 21:18:59 +1000 (EST)
+To: Dave Carroll <dtcarroll@gmail.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH v7] powerpc: Force page alignment for initrd reserved
+	memory
+Message-Id: <initrd-align-v7-reply@mdm.bga.com>
+In-Reply-To: <1306377162-7898-1-git-send-email-dcarroll@astekcorp.com>
+References: <initrd-align-v5-reply@mdm.bga.com>
+	<1306377162-7898-1-git-send-email-dcarroll@astekcorp.com>
+Date: Thu, 26 May 2011 06:18:46 -0500
+Cc: Dave Carroll <dcarroll@astekcorp.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,138 +23,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On many platforms (including pSeries), smp_ops->message_pass is always
-smp_muxed_ipi_message_pass.  This changes arch/powerpc/kernel/smp.c so
-that if smp_ops->message_pass is NULL, it calls smp_muxed_ipi_message_pass
-directly.
+On Wed, 25 May 2011 about 20:32:42 -0600, Dave Carroll wrote:
 
-This means that a platform doesn't need to set both .message_pass and
-.cause_ipi, only one of them.  It is a slight performance improvement
-in that it gets rid of an indirect function call at the expense of a
-predictable conditional branch.
+> When using 64K pages with a separate cpio rootfs, U-Boot will align
+> the rootfs on a 4K page boundary. When the memory is reserved, and
+> subsequent early memblock_alloc is called, it will allocate memory
+> between the 64K page alignment and reserved memory. When the reserved
+> memory is subsequently freed, it is done so by pages, causing the
+> early memblock_alloc requests to be re-used, which in my case, caused
+> the device-tree to be clobbered.
+> 
+> This patch forces the reserved memory for initrd to be kernel page
+> aligned, and will move the device tree if it overlaps with the range
+> extension of initrd. This patch will also consolidate the identical
+> function free_initrd_mem() from mm/init_32.c, init_64.c to mm/mem.c,
+> and adds the same range extension when freeing initrd.
+> 
+> Many thanks to Milton Miller for his input on this patch.
+> 
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/kernel/smp.c             |   16 ++++++++++++----
- arch/powerpc/platforms/85xx/smp.c     |    2 +-
- arch/powerpc/platforms/iseries/smp.c  |    2 +-
- arch/powerpc/platforms/powermac/smp.c |    2 +-
- arch/powerpc/platforms/pseries/smp.c  |    2 +-
- arch/powerpc/platforms/wsp/smp.c      |    2 +-
- 6 files changed, 17 insertions(+), 9 deletions(-)
+Thanks for the mailer update, it applied cleanly.
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 4a6f2ec..b50c577 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -238,15 +238,23 @@ irqreturn_t smp_ipi_demux(void)
- }
- #endif /* CONFIG_PPC_SMP_MUXED_IPI */
- 
-+static inline void do_message_pass(int cpu, int msg)
-+{
-+	if (smp_ops->message_pass)
-+		smp_ops->message_pass(cpu, msg);
-+	else
-+		smp_muxed_ipi_message_pass(cpu, msg);
-+}
-+
- void smp_send_reschedule(int cpu)
- {
- 	if (likely(smp_ops))
--		smp_ops->message_pass(cpu, PPC_MSG_RESCHEDULE);
-+		do_message_pass(cpu, PPC_MSG_RESCHEDULE);
- }
- 
- void arch_send_call_function_single_ipi(int cpu)
- {
--	smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
-+	do_message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
- }
- 
- void arch_send_call_function_ipi_mask(const struct cpumask *mask)
-@@ -254,7 +262,7 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
- 	unsigned int cpu;
- 
- 	for_each_cpu(cpu, mask)
--		smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNCTION);
-+		do_message_pass(cpu, PPC_MSG_CALL_FUNCTION);
- }
- 
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
-@@ -268,7 +276,7 @@ void smp_send_debugger_break(void)
- 
- 	for_each_online_cpu(cpu)
- 		if (cpu != me)
--			smp_ops->message_pass(cpu, PPC_MSG_DEBUGGER_BREAK);
-+			do_message_pass(cpu, PPC_MSG_DEBUGGER_BREAK);
- }
- #endif
- 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index d6a93a1..8eef8d2 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -236,7 +236,7 @@ void __init mpc85xx_smp_init(void)
- 	}
- 
- 	if (cpu_has_feature(CPU_FTR_DBELL)) {
--		smp_85xx_ops.message_pass = smp_muxed_ipi_message_pass;
-+		/* .message_pass defaults to smp_muxed_ipi_message_pass */
- 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
- 	}
- 
-diff --git a/arch/powerpc/platforms/iseries/smp.c b/arch/powerpc/platforms/iseries/smp.c
-index e3265ad..2df48c2 100644
---- a/arch/powerpc/platforms/iseries/smp.c
-+++ b/arch/powerpc/platforms/iseries/smp.c
-@@ -75,7 +75,7 @@ static void __devinit smp_iSeries_setup_cpu(int nr)
- }
- 
- static struct smp_ops_t iSeries_smp_ops = {
--	.message_pass = smp_muxed_ipi_message_pass,
-+	.message_pass = NULL,	/* Use smp_muxed_ipi_message_pass */
- 	.cause_ipi    = smp_iSeries_cause_ipi,
- 	.probe        = smp_iSeries_probe,
- 	.kick_cpu     = smp_iSeries_kick_cpu,
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index db092d7..d15fca3 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -447,7 +447,7 @@ void __init smp_psurge_give_timebase(void)
- 
- /* PowerSurge-style Macs */
- struct smp_ops_t psurge_smp_ops = {
--	.message_pass	= smp_muxed_ipi_message_pass,
-+	.message_pass	= NULL,	/* Use smp_muxed_ipi_message_pass */
- 	.cause_ipi	= smp_psurge_cause_ipi,
- 	.probe		= smp_psurge_probe,
- 	.kick_cpu	= smp_psurge_kick_cpu,
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index fbffd7e..84dafd3 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -207,7 +207,7 @@ static struct smp_ops_t pSeries_mpic_smp_ops = {
- };
- 
- static struct smp_ops_t pSeries_xics_smp_ops = {
--	.message_pass	= smp_muxed_ipi_message_pass,
-+	.message_pass	= NULL,	/* Use smp_muxed_ipi_message_pass */
- 	.cause_ipi	= NULL,	/* Filled at runtime by xics_smp_probe() */
- 	.probe		= xics_smp_probe,
- 	.kick_cpu	= smp_pSeries_kick_cpu,
-diff --git a/arch/powerpc/platforms/wsp/smp.c b/arch/powerpc/platforms/wsp/smp.c
-index 9d20fa9..71bd105 100644
---- a/arch/powerpc/platforms/wsp/smp.c
-+++ b/arch/powerpc/platforms/wsp/smp.c
-@@ -75,7 +75,7 @@ static int __init smp_a2_probe(void)
- }
- 
- static struct smp_ops_t a2_smp_ops = {
--	.message_pass	= smp_muxed_ipi_message_pass,
-+	.message_pass	= NULL,	/* Use smp_muxed_ipi_message_pass */
- 	.cause_ipi	= doorbell_cause_ipi,
- 	.probe		= smp_a2_probe,
- 	.kick_cpu	= smp_a2_kick_cpu,
--- 
-1.7.5.1
+> Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> ---
+>  * The previous patch [v6] was the wrong copy, sorry ...
+>  
+>  arch/powerpc/kernel/prom.c |   21 ++++++++++++++++++---
+>  arch/powerpc/mm/init_32.c  |   15 ---------------
+>  arch/powerpc/mm/init_64.c  |   13 -------------
+>  arch/powerpc/mm/mem.c      |   19 +++++++++++++++++++
+>  4 files changed, 37 insertions(+), 31 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 48aeb55..86966a0 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -81,12 +81,24 @@ static int __init early_parse_mem(char *p)
+>  	return 0;
+>  }
+>  early_param("mem", early_parse_mem);
+> +/**
+> + * overlaps_initrd - check for overlap with page aligned extension of
+> + * initrd.
+> + */
+
+1) Please place a blank line after the above early_param before
+the comment block.
+
+2) /** says it is kernel doc format, so you need to follow the rules.
+The description should fit on one line (I might say: ... with the initrd,
+page aligned.)  and you have to document the parameters.  (Or just make
+it a simple comment block by removing the second *)
+
+> +static inline int overlaps_initrd(unsigned long start, unsigned long size)
+> +{
+> +	if (!initrd_start)
+> +		return 0;
+>  
+> +	return	(start + size) > _ALIGN_DOWN(initrd_start, PAGE_SIZE) &&
+> +			start <= _ALIGN_UP(initrd_end, PAGE_SIZE);
+> +}
+>  /**
+
+need a blank line after the function before this comment block too.
+
+>   * move_device_tree - move tree to an unused area, if needed.
+>   *
+>   * The device tree may be allocated beyond our memory limit, or inside the
+> - * crash kernel region for kdump. If so, move it out of the way.
+> + * crash kernel region for kdump, or within the page aligned range of initrd.
+> + * If so, move it out of the way.
+
+of the initrd.
+
+>   */
+>  static void __init move_device_tree(void)
+>  {
+> @@ -99,7 +111,8 @@ static void __init move_device_tree(void)
+>  	size = be32_to_cpu(initial_boot_params->totalsize);
+>  
+>  	if ((memory_limit && (start + size) > PHYSICAL_START + memory_limit) ||
+> -			overlaps_crashkernel(start, size)) {
+> +			overlaps_crashkernel(start, size) ||
+> +			overlaps_initrd(start, size)) {
+>  		p = __va(memblock_alloc(size, PAGE_SIZE));
+>  		memcpy(p, initial_boot_params, size);
+>  		initial_boot_params = (struct boot_param_header *)p;
+> @@ -555,7 +568,9 @@ static void __init early_reserve_mem(void)
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>  	/* then reserve the initrd, if any */
+>  	if (initrd_start && (initrd_end > initrd_start))
+> -		memblock_reserve(__pa(initrd_start), initrd_end - initrd_start);
+> +		memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
+> +			_ALIGN_UP(initrd_end, PAGE_SIZE) -
+> +			_ALIGN_DOWN(initrd_start, PAGE_SIZE));
+>  #endif /* CONFIG_BLK_DEV_INITRD */
+>  
+>  #ifdef CONFIG_PPC32
+> diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+> index d65b591..5de0f25 100644
+> --- a/arch/powerpc/mm/init_32.c
+> +++ b/arch/powerpc/mm/init_32.c
+> @@ -223,21 +223,6 @@ void free_initmem(void)
+>  #undef FREESEC
+>  }
+>  
+> -#ifdef CONFIG_BLK_DEV_INITRD
+> -void free_initrd_mem(unsigned long start, unsigned long end)
+> -{
+> -	if (start < end)
+> -		printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+> -	for (; start < end; start += PAGE_SIZE) {
+> -		ClearPageReserved(virt_to_page(start));
+> -		init_page_count(virt_to_page(start));
+> -		free_page(start);
+> -		totalram_pages++;
+> -	}
+> -}
+> -#endif
+> -
+> -
+>  #ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
+>  void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+>  				phys_addr_t first_memblock_size)
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index 6374b21..7591a97 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -99,19 +99,6 @@ void free_initmem(void)
+>  		((unsigned long)__init_end - (unsigned long)__init_begin) >> 10);
+>  }
+>  
+> -#ifdef CONFIG_BLK_DEV_INITRD
+> -void free_initrd_mem(unsigned long start, unsigned long end)
+> -{
+> -	if (start < end)
+> -		printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+> -	for (; start < end; start += PAGE_SIZE) {
+> -		ClearPageReserved(virt_to_page(start));
+> -		init_page_count(virt_to_page(start));
+> -		free_page(start);
+> -		totalram_pages++;
+> -	}
+> -}
+> -#endif
+>  
+>  static void pgd_ctor(void *addr)
+>  {
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 57e545b..f60e44e 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -160,6 +160,25 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+>  }
+>  EXPORT_SYMBOL_GPL(walk_system_ram_range);
+>  
+> +#ifdef CONFIG_BLK_DEV_INITRD
+> +void free_initrd_mem(unsigned long start, unsigned long end)
+> +{
+> +	if (start >= end)
+> +		return;
+> +
+> +	start = _ALIGN_DOWN(start, PAGE_SIZE);
+> +	end = _ALIGN_UP(end, PAGE_SIZE);
+> +	printk(KERN_INFO "Freeing initrd memory: %ldk freed\n",
+> +			(end - start) >> 10);
+
+If you use pr_info then the above again fits on one line. 
+(this is what triggered my formatting and whitespace review).
+
+Although I would then add a blank line before the loop for readability.
+
+> +	for (; start < end; start += PAGE_SIZE) {
+> +		ClearPageReserved(virt_to_page(start));
+> +		init_page_count(virt_to_page(start));
+> +		free_page(start);
+> +		totalram_pages++;
+> +	}
+> +}
+> +#endif
+> +
+
+Nit: Looking at the whole file I would put this after mem_init
+because that puts it next to the other code that sets page counts,
+clears PageReerved, and hands pages to page_alloc.
+
+
+>  /*
+>   * Initialize the bootmem system and give it all the memory we
+>   * have available.  If we are using highmem, we only put the
+> -- 
+> 1.7.4
+> 
+
+milton
