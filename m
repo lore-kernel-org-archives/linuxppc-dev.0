@@ -1,23 +1,13 @@
-Return-Path: <dtcarroll@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79753B6F8A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 May 2011 12:49:34 +1000 (EST)
-Received: by pzk26 with SMTP id 26so120397pzk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 May 2011 19:49:31 -0700 (PDT)
-From: Dave Carroll <dtcarroll@gmail.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH v7] powerpc: Force page alignment for initrd reserved memory
-Date: Wed, 25 May 2011 20:32:42 -0600
-Message-Id: <1306377162-7898-1-git-send-email-dcarroll@astekcorp.com>
-In-Reply-To: <initrd-align-v5-reply@mdm.bga.com>
-References: <initrd-align-v5-reply@mdm.bga.com>
-Cc: Dave Carroll <dcarroll@astekcorp.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4DDDD268.70005@ozlabs.org>
+Date: Thu, 26 May 2011 14:09:12 +1000
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: Replace boot_cpu_count with spinning_secondaries,
+	fix off-by-one cpu wait
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,166 +17,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Carroll <dcarroll@astekcorp.com>
+smp_release_cpus() waits for all cpus (including the bootcpu) due to an
+off-by-one count on boot_cpu_count (which is all CPUs).  This patch replaces
+that with spinning_secondaries (which is all secondary CPUs).
 
-When using 64K pages with a separate cpio rootfs, U-Boot will align
-the rootfs on a 4K page boundary. When the memory is reserved, and
-subsequent early memblock_alloc is called, it will allocate memory
-between the 64K page alignment and reserved memory. When the reserved
-memory is subsequently freed, it is done so by pages, causing the
-early memblock_alloc requests to be re-used, which in my case, caused
-the device-tree to be clobbered.
-
-This patch forces the reserved memory for initrd to be kernel page
-aligned, and will move the device tree if it overlaps with the range
-extension of initrd. This patch will also consolidate the identical
-function free_initrd_mem() from mm/init_32.c, init_64.c to mm/mem.c,
-and adds the same range extension when freeing initrd.
-
-Many thanks to Milton Miller for his input on this patch.
-
-Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
+Signed-off-by: Matt Evans <matt@ozlabs.org>
 ---
- * The previous patch [v6] was the wrong copy, sorry ...
- 
- arch/powerpc/kernel/prom.c |   21 ++++++++++++++++++---
- arch/powerpc/mm/init_32.c  |   15 ---------------
- arch/powerpc/mm/init_64.c  |   13 -------------
- arch/powerpc/mm/mem.c      |   19 +++++++++++++++++++
- 4 files changed, 37 insertions(+), 31 deletions(-)
+ arch/powerpc/include/asm/smp.h |    2 +-
+ arch/powerpc/kernel/head_64.S  |    2 +-
+ arch/powerpc/kernel/prom.c     |    8 ++++++++
+ arch/powerpc/kernel/setup_32.c |    1 -
+ arch/powerpc/kernel/setup_64.c |    6 +++---
+ 5 files changed, 13 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 880b8c1..8f01c85 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -30,7 +30,7 @@
+ #include <asm/percpu.h>
+ 
+ extern int boot_cpuid;
+-extern int boot_cpu_count;
++extern int spinning_secondaries;
+ 
+ extern void cpu_die(void);
+ 
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index ba50409..3564c49 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -255,7 +255,7 @@ generic_secondary_common_init:
+ 	mtctr	r23
+ 	bctrl
+ 
+-3:	LOAD_REG_ADDR(r3, boot_cpu_count) /* Decrement boot_cpu_count */
++3:	LOAD_REG_ADDR(r3, spinning_secondaries) /* Decrement spinning_secondaries */
+ 	lwarx	r4,0,r3
+ 	subi	r4,r4,1
+ 	stwcx.	r4,0,r3
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 48aeb55..86966a0 100644
+index 48aeb55..540e0dc 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -81,12 +81,24 @@ static int __init early_parse_mem(char *p)
- 	return 0;
- }
- early_param("mem", early_parse_mem);
-+/**
-+ * overlaps_initrd - check for overlap with page aligned extension of
-+ * initrd.
-+ */
-+static inline int overlaps_initrd(unsigned long start, unsigned long size)
-+{
-+	if (!initrd_start)
-+		return 0;
+@@ -69,6 +69,7 @@ unsigned long tce_alloc_start, tce_alloc_end;
+ u64 ppc64_rma_size;
+ #endif
+ static phys_addr_t first_memblock_size;
++static int __initdata boot_cpu_count;
  
-+	return	(start + size) > _ALIGN_DOWN(initrd_start, PAGE_SIZE) &&
-+			start <= _ALIGN_UP(initrd_end, PAGE_SIZE);
-+}
- /**
-  * move_device_tree - move tree to an unused area, if needed.
-  *
-  * The device tree may be allocated beyond our memory limit, or inside the
-- * crash kernel region for kdump. If so, move it out of the way.
-+ * crash kernel region for kdump, or within the page aligned range of initrd.
-+ * If so, move it out of the way.
-  */
- static void __init move_device_tree(void)
+ static int __init early_parse_mem(char *p)
  {
-@@ -99,7 +111,8 @@ static void __init move_device_tree(void)
- 	size = be32_to_cpu(initial_boot_params->totalsize);
+@@ -748,6 +749,13 @@ void __init early_init_devtree(void *params)
+ 	 */
+ 	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
  
- 	if ((memory_limit && (start + size) > PHYSICAL_START + memory_limit) ||
--			overlaps_crashkernel(start, size)) {
-+			overlaps_crashkernel(start, size) ||
-+			overlaps_initrd(start, size)) {
- 		p = __va(memblock_alloc(size, PAGE_SIZE));
- 		memcpy(p, initial_boot_params, size);
- 		initial_boot_params = (struct boot_param_header *)p;
-@@ -555,7 +568,9 @@ static void __init early_reserve_mem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* then reserve the initrd, if any */
- 	if (initrd_start && (initrd_end > initrd_start))
--		memblock_reserve(__pa(initrd_start), initrd_end - initrd_start);
-+		memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
-+			_ALIGN_UP(initrd_end, PAGE_SIZE) -
-+			_ALIGN_DOWN(initrd_start, PAGE_SIZE));
- #endif /* CONFIG_BLK_DEV_INITRD */
- 
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index d65b591..5de0f25 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -223,21 +223,6 @@ void free_initmem(void)
- #undef FREESEC
- }
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--void free_initrd_mem(unsigned long start, unsigned long end)
--{
--	if (start < end)
--		printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
--	for (; start < end; start += PAGE_SIZE) {
--		ClearPageReserved(virt_to_page(start));
--		init_page_count(virt_to_page(start));
--		free_page(start);
--		totalram_pages++;
--	}
--}
--#endif
--
--
- #ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
- void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				phys_addr_t first_memblock_size)
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 6374b21..7591a97 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -99,19 +99,6 @@ void free_initmem(void)
- 		((unsigned long)__init_end - (unsigned long)__init_begin) >> 10);
- }
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--void free_initrd_mem(unsigned long start, unsigned long end)
--{
--	if (start < end)
--		printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
--	for (; start < end; start += PAGE_SIZE) {
--		ClearPageReserved(virt_to_page(start));
--		init_page_count(virt_to_page(start));
--		free_page(start);
--		totalram_pages++;
--	}
--}
--#endif
- 
- static void pgd_ctor(void *addr)
- {
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 57e545b..f60e44e 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -160,6 +160,25 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- }
- EXPORT_SYMBOL_GPL(walk_system_ram_range);
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+void free_initrd_mem(unsigned long start, unsigned long end)
-+{
-+	if (start >= end)
-+		return;
-+
-+	start = _ALIGN_DOWN(start, PAGE_SIZE);
-+	end = _ALIGN_UP(end, PAGE_SIZE);
-+	printk(KERN_INFO "Freeing initrd memory: %ldk freed\n",
-+			(end - start) >> 10);
-+	for (; start < end; start += PAGE_SIZE) {
-+		ClearPageReserved(virt_to_page(start));
-+		init_page_count(virt_to_page(start));
-+		free_page(start);
-+		totalram_pages++;
-+	}
-+}
++#if defined(CONFIG_SMP) && defined(CONFIG_PPC64)
++	/* We'll later wait for secondaries to check in; there are
++	 * NCPUS-1 non-boot CPUs  :-)
++	 */
++	spinning_secondaries = boot_cpu_count - 1;
 +#endif
 +
- /*
-  * Initialize the bootmem system and give it all the memory we
-  * have available.  If we are using highmem, we only put the
+ 	DBG(" <- early_init_devtree()\n");
+ }
+ 
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 620d792..1d2fbc9 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -48,7 +48,6 @@ extern void bootx_init(unsigned long r4, unsigned long phys);
+ 
+ int boot_cpuid = -1;
+ EXPORT_SYMBOL_GPL(boot_cpuid);
+-int __initdata boot_cpu_count;
+ int boot_cpuid_phys;
+ 
+ int smp_hw_index[NR_CPUS];
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index a88bf27..0576919 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -73,7 +73,7 @@
+ #endif
+ 
+ int boot_cpuid = 0;
+-int __initdata boot_cpu_count;
++int __initdata spinning_secondaries;
+ u64 ppc64_pft_size;
+ 
+ /* Pick defaults since we might want to patch instructions
+@@ -253,11 +253,11 @@ void smp_release_cpus(void)
+ 	for (i = 0; i < 100000; i++) {
+ 		mb();
+ 		HMT_low();
+-		if (boot_cpu_count == 0)
++		if (spinning_secondaries == 0)
+ 			break;
+ 		udelay(1);
+ 	}
+-	DBG("boot_cpu_count = %d\n", boot_cpu_count);
++	DBG("spinning_secondaries = %d\n", spinning_secondaries);
+ 
+ 	DBG(" <- smp_release_cpus()\n");
+ }
 -- 
-1.7.4
+1.7.0.4
+
+0
