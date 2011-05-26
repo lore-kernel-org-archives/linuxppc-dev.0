@@ -1,13 +1,19 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4DDDD268.70005@ozlabs.org>
-Date: Thu, 26 May 2011 14:09:12 +1000
-From: Matt Evans <matt@ozlabs.org>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: Replace boot_cpu_count with spinning_secondaries,
-	fix off-by-one cpu wait
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8828BB6F9D
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2011 15:23:05 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 May 2011 15:22:54 +1000
+Message-ID: <1306387374.7481.451.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,111 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-smp_release_cpus() waits for all cpus (including the bootcpu) due to an
-off-by-one count on boot_cpu_count (which is all CPUs).  This patch replaces
-that with spinning_secondaries (which is all secondary CPUs).
+Hi Linus !
 
-Signed-off-by: Matt Evans <matt@ozlabs.org>
----
- arch/powerpc/include/asm/smp.h |    2 +-
- arch/powerpc/kernel/head_64.S  |    2 +-
- arch/powerpc/kernel/prom.c     |    8 ++++++++
- arch/powerpc/kernel/setup_32.c |    1 -
- arch/powerpc/kernel/setup_64.c |    6 +++---
- 5 files changed, 13 insertions(+), 6 deletions(-)
+This is a bit more than I expected to send you that late in the merge
+window, but hopefully none of it should be problematic. A couple of
+patches were simply delayed due to misunderstandings as to which tree
+they should go through (4xx MSI and ftrace).
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 880b8c1..8f01c85 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -30,7 +30,7 @@
- #include <asm/percpu.h>
- 
- extern int boot_cpuid;
--extern int boot_cpu_count;
-+extern int spinning_secondaries;
- 
- extern void cpu_die(void);
- 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index ba50409..3564c49 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -255,7 +255,7 @@ generic_secondary_common_init:
- 	mtctr	r23
- 	bctrl
- 
--3:	LOAD_REG_ADDR(r3, boot_cpu_count) /* Decrement boot_cpu_count */
-+3:	LOAD_REG_ADDR(r3, spinning_secondaries) /* Decrement spinning_secondaries */
- 	lwarx	r4,0,r3
- 	subi	r4,r4,1
- 	stwcx.	r4,0,r3
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 48aeb55..540e0dc 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -69,6 +69,7 @@ unsigned long tce_alloc_start, tce_alloc_end;
- u64 ppc64_rma_size;
- #endif
- static phys_addr_t first_memblock_size;
-+static int __initdata boot_cpu_count;
- 
- static int __init early_parse_mem(char *p)
- {
-@@ -748,6 +749,13 @@ void __init early_init_devtree(void *params)
- 	 */
- 	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
- 
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC64)
-+	/* We'll later wait for secondaries to check in; there are
-+	 * NCPUS-1 non-boot CPUs  :-)
-+	 */
-+	spinning_secondaries = boot_cpu_count - 1;
-+#endif
-+
- 	DBG(" <- early_init_devtree()\n");
- }
- 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 620d792..1d2fbc9 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -48,7 +48,6 @@ extern void bootx_init(unsigned long r4, unsigned long phys);
- 
- int boot_cpuid = -1;
- EXPORT_SYMBOL_GPL(boot_cpuid);
--int __initdata boot_cpu_count;
- int boot_cpuid_phys;
- 
- int smp_hw_index[NR_CPUS];
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index a88bf27..0576919 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -73,7 +73,7 @@
- #endif
- 
- int boot_cpuid = 0;
--int __initdata boot_cpu_count;
-+int __initdata spinning_secondaries;
- u64 ppc64_pft_size;
- 
- /* Pick defaults since we might want to patch instructions
-@@ -253,11 +253,11 @@ void smp_release_cpus(void)
- 	for (i = 0; i < 100000; i++) {
- 		mb();
- 		HMT_low();
--		if (boot_cpu_count == 0)
-+		if (spinning_secondaries == 0)
- 			break;
- 		udelay(1);
- 	}
--	DBG("boot_cpu_count = %d\n", boot_cpu_count);
-+	DBG("spinning_secondaries = %d\n", spinning_secondaries);
- 
- 	DBG(" <- smp_release_cpus()\n");
- }
--- 
-1.7.0.4
+There's a generic patch to linux/smp.h which removes some definitions
+that as far as we can tell aren't used anywhere anymore (we just removed
+the last use in powerpc in my previous pull request).
 
-0
+The rest is either good enough bug fixes (in large part regressions),
+with a couple more cleanups from Milton on top of his big series that
+I merged earlier.
+
+Cheers,
+Ben.
+
+The following changes since commit 3f5785ec31adcb7cafa9135087297a38d9698cf8:
+
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6 (2011-05-25 17:00:17 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git ..BRANCH.NOT.VERIFIED..
+
+Brian King (1):
+      powerpc/pseries: Update MAX_HCALL_OPCODE to reflect page coalescing
+
+Eric B Munson (1):
+      powerpc/oprofile: Handle events that raise an exception without overflowing
+
+Ian Munsie (1):
+      powerpc/ftrace: Implement raw syscall tracepoints on PowerPC
+
+Milton Miller (8):
+      Remove unused MSG_ flags in linux/smp.h
+      powerpc/cell: Use common smp ipi actions
+      powerpc/cell: Rename ipi functions to match current abstractions
+      powerpc/irq: Remove stale and misleading comment
+      powerpc/irq: Always free duplicate IRQ_LEGACY hosts
+      powerpc/irq: Check desc in handle_one_irq and expand generic_handle_irq
+      powerpc/irq: Protect irq_radix_revmap_lookup against irq_free_virt
+      powerpc: Fix irq_free_virt by adjusting bounds before loop
+
+Rupjyoti Sarmah (1):
+      powerpc/4xx: Adding PCIe MSI support
+
+ arch/powerpc/Kconfig                    |    1 +
+ arch/powerpc/boot/dts/canyonlands.dts   |   18 ++
+ arch/powerpc/boot/dts/katmai.dts        |   18 ++
+ arch/powerpc/boot/dts/kilauea.dts       |   28 +++
+ arch/powerpc/boot/dts/redwood.dts       |   20 +++
+ arch/powerpc/include/asm/ftrace.h       |   14 ++
+ arch/powerpc/include/asm/hvcall.h       |    2 +-
+ arch/powerpc/include/asm/smp.h          |    2 -
+ arch/powerpc/include/asm/syscall.h      |    5 +
+ arch/powerpc/include/asm/thread_info.h  |    7 +-
+ arch/powerpc/kernel/Makefile            |    1 +
+ arch/powerpc/kernel/ftrace.c            |    8 +
+ arch/powerpc/kernel/irq.c               |   46 +++---
+ arch/powerpc/kernel/ptrace.c            |   10 +
+ arch/powerpc/kernel/smp.c               |    2 +-
+ arch/powerpc/oprofile/op_model_power4.c |   24 +++-
+ arch/powerpc/platforms/40x/Kconfig      |    2 +
+ arch/powerpc/platforms/44x/Kconfig      |    6 +
+ arch/powerpc/platforms/cell/interrupt.c |   55 ++----
+ arch/powerpc/platforms/cell/interrupt.h |    2 +-
+ arch/powerpc/platforms/cell/smp.c       |    2 +-
+ arch/powerpc/sysdev/Kconfig             |    7 +
+ arch/powerpc/sysdev/Makefile            |    1 +
+ arch/powerpc/sysdev/ppc4xx_msi.c        |  276 +++++++++++++++++++++++++++++++
+ include/linux/smp.h                     |   10 -
+ 25 files changed, 491 insertions(+), 76 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/ppc4xx_msi.c
