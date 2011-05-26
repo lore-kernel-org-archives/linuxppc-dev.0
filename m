@@ -1,10 +1,10 @@
 Return-Path: <B07421@freescale.com>
-Date: Thu, 26 May 2011 15:03:51 -0500
+Date: Thu, 26 May 2011 15:06:43 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: Meador Inge <meador_inge@mentor.com>
 Subject: Re: [PATCH v2 1/2] powerpc: document the FSL MPIC message register
 	binding
-Message-ID: <20110526150351.12af61a8@schlenkerla.am.freescale.net>
+Message-ID: <20110526150643.3e01f9a6@schlenkerla.am.freescale.net>
 In-Reply-To: <1305909399-26969-2-git-send-email-meador_inge@mentor.com>
 References: <1305909399-26969-1-git-send-email-meador_inge@mentor.com>
 	<1305909399-26969-2-git-send-email-meador_inge@mentor.com>
@@ -32,9 +32,6 @@ Meador Inge <meador_inge@mentor.com> wrote:
 > Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
 > Cc: Grant Likely <grant.likely@secretlab.ca>
 > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Acked-by: Scott Wood <scottwood@freescale.com>
-
 > ---
 >  .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 ++++++++++++++++++++
 >  1 files changed, 62 insertions(+), 0 deletions(-)
@@ -66,6 +63,9 @@ Acked-by: Scott Wood <scottwood@freescale.com>
 > +    - interrupts: Specifies a list of interrupt source and level-sense pairs.
 > +      The type shall be <prop-encoded-array>.  The length shall be equal to
 > +      the number of bits set in the 'msg-receive-mask' property value.
+
+Oh, just noticed -- mismatch between msg-receive-mask here...
+
 > +
 > +Optional properties:
 > +
@@ -74,37 +74,11 @@ Acked-by: Scott Wood <scottwood@freescale.com>
 > +      bit at bit 'n' indicates that message register 'n' can receive interrupts.
 > +      The type shall be <prop-encoded-array>.  If not present, then all of
 > +      the message registers in the block are available.
-> +
-> +Aliases:
-> +
-> +    An alias should be created for every message register block.  They are not
-> +    required, though.  However, are particular implementation of this binding
-> +    may require aliases to be present.  Aliases are of the form
-> +    'mpic-msgr-block<n>', where <n> is an integer specifying the block's number.
-> +    Numbers shall start at 0.
-> +
-> +Example:
-> +
-> +	aliases {
-> +		mpic-msgr-block0 = &mpic_msgr_block0;
-> +		mpic-msgr-block1 = &mpic_msgr_block1;
-> +	};
-> +
-> +	mpic_msgr_block0: mpic-msgr-block@41400 {
-> +		compatible = "fsl,mpic-v3.1-msgr";
-> +		reg = <0x41400 0x200>;
-> +		// Message registers 0 and 2 in this block can receive interrupts on
-> +		// sources 0xb0 and 0xb2, respectively.
-> +		interrupts = <0xb0 2 0xb2 2>;
-> +		mpic-msgr-receive-mask = <0x5>;
-> +	};
-> +
-> +	mpic_msgr_block1: mpic-msgr-block@42400 {
-> +		compatible = "fsl,mpic-v3.1-msgr";
-> +		reg = <0x42400 0x200>;
-> +		// Message registers 0 and 2 in this block can receive interrupts on
-> +		// sources 0xb4 and 0xb6, respectively.
-> +		interrupts = <0xb4 2 0xb6 2>;
-> +		mpic-msgr-receive-mask = <0x5>;
-> +	};
-> +
+
+...and mpic-msgr-receive-mask here.
+
+Might want to just say "equal to the number of registers that are
+available for receiving interrupts", to more clearly apply to the case where
+mpic-msgr-receive-mask is missing.
+
+-Scott
