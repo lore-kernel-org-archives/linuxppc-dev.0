@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B8FF8B6F9C
+Return-Path: <dtcarroll@gmail.com>
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 820D1B6F97
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 May 2011 13:32:48 +1000 (EST)
-Subject: Re: [PATCH 6/8] powerpc 8xx: cascade eoi will be performed by
-	generic_handle_irq handler
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Thu, 26 May 2011 12:18:50 +1000 (EST)
+Received: by pvf33 with SMTP id 33so112462pvf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 May 2011 19:18:47 -0700 (PDT)
+From: Dave Carroll <dtcarroll@gmail.com>
 To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <8xx-cascade-eoi@mdm.bga.com>
-References: <more-irq-cleanups@mdm.bga.com>  <8xx-cascade-eoi@mdm.bga.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 May 2011 13:32:33 +1000
-Message-ID: <1306380753.7481.350.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v6] powerpc: Force page alignment for initrd reserved memory
+Date: Wed, 25 May 2011 20:00:14 -0600
+Message-Id: <1306375214-12007-1-git-send-email-dcarroll@astekcorp.com>
+In-Reply-To: <initrd-align-v5-reply@mdm.bga.com>
+References: <initrd-align-v5-reply@mdm.bga.com>
+Cc: Dave Carroll <dcarroll@astekcorp.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +27,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-05-25 at 01:34 -0500, Milton Miller wrote:
-> The 8xx cpm_cascade was calling irq_eoi for the cascaded irq,
-> but that will already have been called by the handle_fasteoi_irq
-> that generic_handle_irq will call.  The handler is set in
-> arch/powerpc/sysdev/cpm1.c by the host map routine.
+From: Dave Carroll <dcarroll@astekcorp.com>
 
-No it won't unless I'm missing something. The flow handler
-(handle_fasteoi_irq) is going to be replaced by the chained handler when
-mpc8xx_pics_init() calls irq_set_chained_handle(irq, cpm_cascade) no ?
+When using 64K pages with a separate cpio rootfs, U-Boot will align
+the rootfs on a 4K page boundary. When the memory is reserved, and
+subsequent early memblock_alloc is called, it will allocate memory
+between the 64K page alignment and reserved memory. When the reserved
+memory is subsequently freed, it is done so by pages, causing the
+early memblock_alloc requests to be re-used, which in my case, caused
+the device-tree to be clobbered.
 
-Cheers,
-Ben.
+This patch forces the reserved memory for initrd to be kernel page
+aligned, and will move the device tree if it overlaps with the range
+extension of initrd. This patch will also consolidate the identical
+function free_initrd_mem() from mm/init_32.c, init_64.c to mm/mem.c,
+and adds the same range extension when freeing initrd.
 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> 
-> Index: work.git/arch/powerpc/platforms/8xx/m8xx_setup.c
-> ===================================================================
-> --- work.git.orig/arch/powerpc/platforms/8xx/m8xx_setup.c	2011-05-18 22:50:38.983498572 -0500
-> +++ work.git/arch/powerpc/platforms/8xx/m8xx_setup.c	2011-05-18 22:52:48.920532258 -0500
-> @@ -221,15 +221,9 @@ static void cpm_cascade(unsigned int irq
->  	struct irq_chip *chip;
->  	int cascade_irq;
->  
-> -	if ((cascade_irq = cpm_get_irq()) >= 0) {
-> -		struct irq_desc *cdesc = irq_to_desc(cascade_irq);
-> -
-> +	if ((cascade_irq = cpm_get_irq()) >= 0)
->  		generic_handle_irq(cascade_irq);
->  
-> -		chip = irq_desc_get_chip(cdesc);
-> -		chip->irq_eoi(&cdesc->irq_data);
-> -	}
-> -
->  	chip = irq_desc_get_chip(desc);
->  	chip->irq_eoi(&desc->irq_data);
->  }
+Many thanks to Milton Miller for his input on this patch.
+
+Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+ arch/powerpc/kernel/prom.c |   21 ++++++++++++++++++---
+ arch/powerpc/mm/init_32.c  |   15 ---------------
+ arch/powerpc/mm/init_64.c  |   13 -------------
+ arch/powerpc/mm/mem.c      |   19 +++++++++++++++++++
+ 4 files changed, 37 insertions(+), 31 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 48aeb55..86966a0 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -81,12 +81,24 @@ static int __init early_parse_mem(char *p)
+ 	return 0;
+ }
+ early_param("mem", early_parse_mem);
++/**
++ * overlaps_initrd - check for overlap with page aligned extension of
++ * initrd.
++ */
++static inline int overlaps_initrd(unsigned long start, unsigned long end)
++{
++	if (!initrd_start)
++		return 0;
+ 
++	return	(start + size) > _ALIGN_DOWN(initrd_start, PAGE_SIZE) &&
++			start <= _ALIGN_UP(initrd_end, PAGE_SIZE);
++}
+ /**
+  * move_device_tree - move tree to an unused area, if needed.
+  *
+  * The device tree may be allocated beyond our memory limit, or inside the
+- * crash kernel region for kdump. If so, move it out of the way.
++ * crash kernel region for kdump, or within the page aligned range of initrd.
++ * If so, move it out of the way.
+  */
+ static void __init move_device_tree(void)
+ {
+@@ -99,7 +111,8 @@ static void __init move_device_tree(void)
+ 	size = be32_to_cpu(initial_boot_params->totalsize);
+ 
+ 	if ((memory_limit && (start + size) > PHYSICAL_START + memory_limit) ||
+-			overlaps_crashkernel(start, size)) {
++			overlaps_crashkernel(start, size) ||
++			overlaps_initrd(start, size) {
+ 		p = __va(memblock_alloc(size, PAGE_SIZE));
+ 		memcpy(p, initial_boot_params, size);
+ 		initial_boot_params = (struct boot_param_header *)p;
+@@ -555,7 +568,9 @@ static void __init early_reserve_mem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* then reserve the initrd, if any */
+ 	if (initrd_start && (initrd_end > initrd_start))
+-		memblock_reserve(__pa(initrd_start), initrd_end - initrd_start);
++		memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
++			_ALIGN_UP(initrd_end, PAGE_SIZE) -
++			_ALIGN_DOWN(initrd_start, PAGE_SIZE));
+ #endif /* CONFIG_BLK_DEV_INITRD */
+ 
+ #ifdef CONFIG_PPC32
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index d65b591..5de0f25 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -223,21 +223,6 @@ void free_initmem(void)
+ #undef FREESEC
+ }
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-void free_initrd_mem(unsigned long start, unsigned long end)
+-{
+-	if (start < end)
+-		printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+-	for (; start < end; start += PAGE_SIZE) {
+-		ClearPageReserved(virt_to_page(start));
+-		init_page_count(virt_to_page(start));
+-		free_page(start);
+-		totalram_pages++;
+-	}
+-}
+-#endif
+-
+-
+ #ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
+ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				phys_addr_t first_memblock_size)
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 6374b21..7591a97 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -99,19 +99,6 @@ void free_initmem(void)
+ 		((unsigned long)__init_end - (unsigned long)__init_begin) >> 10);
+ }
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-void free_initrd_mem(unsigned long start, unsigned long end)
+-{
+-	if (start < end)
+-		printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+-	for (; start < end; start += PAGE_SIZE) {
+-		ClearPageReserved(virt_to_page(start));
+-		init_page_count(virt_to_page(start));
+-		free_page(start);
+-		totalram_pages++;
+-	}
+-}
+-#endif
+ 
+ static void pgd_ctor(void *addr)
+ {
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 57e545b..f60e44e 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -160,6 +160,25 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ }
+ EXPORT_SYMBOL_GPL(walk_system_ram_range);
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++void free_initrd_mem(unsigned long start, unsigned long end)
++{
++	if (start >= end)
++		return;
++
++	start = _ALIGN_DOWN(start, PAGE_SIZE);
++	end = _ALIGN_UP(end, PAGE_SIZE);
++	printk(KERN_INFO "Freeing initrd memory: %ldk freed\n",
++			(end - start) >> 10);
++	for (; start < end; start += PAGE_SIZE) {
++		ClearPageReserved(virt_to_page(start));
++		init_page_count(virt_to_page(start));
++		free_page(start);
++		totalram_pages++;
++	}
++}
++#endif
++
+ /*
+  * Initialize the bootmem system and give it all the memory we
+  * have available.  If we are using highmem, we only put the
+-- 
+1.7.4
