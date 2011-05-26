@@ -1,18 +1,22 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 6AAECB6F84
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 May 2011 21:19:39 +1000 (EST)
-Subject: Re: [PATCH 6/8] powerpc 8xx: cascade eoi will be performed by
-	generic_handle_irq handler
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5CEBDB6F92
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 May 2011 00:03:24 +1000 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1306387374.7481.451.camel@pasglop>
+Date: Thu, 26 May 2011 09:02:45 -0500
+Message-Id: <C1E4ECF7-17CD-4A32-941D-FE53137F94EC@kernel.crashing.org>
+References: <1306387374.7481.451.camel@pasglop>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Milton Miller <miltonm@bga.com>
-In-Reply-To: <1306380753.7481.350.camel@pasglop>
-References: <more-irq-cleanups@mdm.bga.com> <8xx-cascade-eoi@mdm.bga.com>
-	<1306380753.7481.350.camel@pasglop>
-Message-ID: <reply-ben-8xx-cascade@mdm.bga.com>
-Date: Thu, 26 May 2011 06:19:34 -0500
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 26 May 2011 about 13:32:33 +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2011-05-25 at 01:34 -0500, Milton Miller wrote:
-> > > The 8xx cpm_cascade was calling irq_eoi for the cascaded irq,
-> > > but that will already have been called by the handle_fasteoi_irq
-> > > that generic_handle_irq will call.  The handler is set in
-> > > arch/powerpc/sysdev/cpm1.c by the host map routine.
-> > 
-> > No it won't unless I'm missing something. The flow handler
-> > (handle_fasteoi_irq) is going to be replaced by the chained handler when
-> > mpc8xx_pics_init() calls irq_set_chained_handle(irq, cpm_cascade) no ?
-> > 
-> > Cheers,
-> > Ben.
 
-No.   We set the chained handler on the top level irq (on the irq
-to the primary irq controller).  The handler is set to this 8xx_cascade
-function.  We don't change the handler on the subordnate irq that
-is invoked via generic_handle_irq in this function.
+On May 26, 2011, at 12:22 AM, Benjamin Herrenschmidt wrote:
 
-Or that is how I understand things to work, and this makes the 8xx
-code match the current 8xxx cpm1 cascade handler.
+> Hi Linus !
+>=20
+> This is a bit more than I expected to send you that late in the merge
+> window, but hopefully none of it should be problematic. A couple of
+> patches were simply delayed due to misunderstandings as to which tree
+> they should go through (4xx MSI and ftrace).
+>=20
+> There's a generic patch to linux/smp.h which removes some definitions
+> that as far as we can tell aren't used anywhere anymore (we just =
+removed
+> the last use in powerpc in my previous pull request).
+>=20
+> The rest is either good enough bug fixes (in large part regressions),
+> with a couple more cleanups from Milton on top of his big series that
+> I merged earlier.
+>=20
+> Cheers,
+> Ben.
+>=20
+> The following changes since commit =
+3f5785ec31adcb7cafa9135087297a38d9698cf8:
+>=20
+>  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6 =
+(2011-05-25 17:00:17 -0700)
+>=20
+> are available in the git repository at:
+>=20
+>  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git =
+..BRANCH.NOT.VERIFIED..
+>=20
+> Brian King (1):
+>      powerpc/pseries: Update MAX_HCALL_OPCODE to reflect page =
+coalescing
+>=20
+> Eric B Munson (1):
+>      powerpc/oprofile: Handle events that raise an exception without =
+overflowing
+>=20
+> Ian Munsie (1):
+>      powerpc/ftrace: Implement raw syscall tracepoints on PowerPC
+>=20
+> Milton Miller (8):
+>      Remove unused MSG_ flags in linux/smp.h
+>      powerpc/cell: Use common smp ipi actions
+>      powerpc/cell: Rename ipi functions to match current abstractions
+>      powerpc/irq: Remove stale and misleading comment
+>      powerpc/irq: Always free duplicate IRQ_LEGACY hosts
+>      powerpc/irq: Check desc in handle_one_irq and expand =
+generic_handle_irq
+>      powerpc/irq: Protect irq_radix_revmap_lookup against =
+irq_free_virt
+>      powerpc: Fix irq_free_virt by adjusting bounds before loop
+>=20
+> Rupjyoti Sarmah (1):
+>      powerpc/4xx: Adding PCIe MSI support
 
-Of course, it would be good for someone with hardware to confirm
-that it works with the patch (or even put a printk or counter in the
-handler if that would not cause printk recursion -- don't do it on
-your console).
+Ben,
 
-milton
+Did you ignore my pull request with a bug fix and two long standing RIO =
+patches?
 
-> > 
-> > > Signed-off-by: Milton Miller <miltonm@bga.com>
-> > > 
-> > > Index: work.git/arch/powerpc/platforms/8xx/m8xx_setup.c
-> > > ===================================================================
-> > > --- work.git.orig/arch/powerpc/platforms/8xx/m8xx_setup.c	2011-05-18 22:50:38.983498572 -0500
-> > > +++ work.git/arch/powerpc/platforms/8xx/m8xx_setup.c	2011-05-18 22:52:48.920532258 -0500
-> > > @@ -221,15 +221,9 @@ static void cpm_cascade(unsigned int irq
-> > >  	struct irq_chip *chip;
-> > >  	int cascade_irq;
-> > >  
-> > > -	if ((cascade_irq = cpm_get_irq()) >= 0) {
-> > > -		struct irq_desc *cdesc = irq_to_desc(cascade_irq);
-> > > -
-> > > +	if ((cascade_irq = cpm_get_irq()) >= 0)
-> > >  		generic_handle_irq(cascade_irq);
-> > >  
-> > > -		chip = irq_desc_get_chip(cdesc);
-> > > -		chip->irq_eoi(&cdesc->irq_data);
-> > > -	}
-> > > -
-> > >  	chip = irq_desc_get_chip(desc);
-> > >  	chip->irq_eoi(&desc->irq_data);
-> > >  }
-> > 
-> > 
+- k=
