@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <meador_inge@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5CEBDB6F92
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 May 2011 00:03:24 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1306387374.7481.451.camel@pasglop>
-Date: Thu, 26 May 2011 09:02:45 -0500
-Message-Id: <C1E4ECF7-17CD-4A32-941D-FE53137F94EC@kernel.crashing.org>
-References: <1306387374.7481.451.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "relay1.mentorg.com",
+	Issuer "Entrust Certification Authority - L1B" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id A27A8B6F85
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 May 2011 00:22:03 +1000 (EST)
+Message-ID: <4DDE6203.10007@mentor.com>
+Date: Thu, 26 May 2011 09:21:55 -0500
+From: Meador Inge <meador_inge@mentor.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 0/2] powerpc: define and implement MPIC message register
+	support
+References: <1305909399-26969-1-git-send-email-meador_inge@mentor.com>
+	<BANLkTikvDEG4DSvVMtxa8=i=NV=o=DQLXA@mail.gmail.com>
+In-Reply-To: <BANLkTikvDEG4DSvVMtxa8=i=NV=o=DQLXA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,67 +28,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 26, 2011, at 12:22 AM, Benjamin Herrenschmidt wrote:
+Scott, I addressed your feedback in this patch set:
 
-> Hi Linus !
->=20
-> This is a bit more than I expected to send you that late in the merge
-> window, but hopefully none of it should be problematic. A couple of
-> patches were simply delayed due to misunderstandings as to which tree
-> they should go through (4xx MSI and ftrace).
->=20
-> There's a generic patch to linux/smp.h which removes some definitions
-> that as far as we can tell aren't used anywhere anymore (we just =
-removed
-> the last use in powerpc in my previous pull request).
->=20
-> The rest is either good enough bug fixes (in large part regressions),
-> with a couple more cleanups from Milton on top of his big series that
-> I merged earlier.
->=20
-> Cheers,
-> Ben.
->=20
-> The following changes since commit =
-3f5785ec31adcb7cafa9135087297a38d9698cf8:
->=20
->  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6 =
-(2011-05-25 17:00:17 -0700)
->=20
-> are available in the git repository at:
->=20
->  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git =
-..BRANCH.NOT.VERIFIED..
->=20
-> Brian King (1):
->      powerpc/pseries: Update MAX_HCALL_OPCODE to reflect page =
-coalescing
->=20
-> Eric B Munson (1):
->      powerpc/oprofile: Handle events that raise an exception without =
-overflowing
->=20
-> Ian Munsie (1):
->      powerpc/ftrace: Implement raw syscall tracepoints on PowerPC
->=20
-> Milton Miller (8):
->      Remove unused MSG_ flags in linux/smp.h
->      powerpc/cell: Use common smp ipi actions
->      powerpc/cell: Rename ipi functions to match current abstractions
->      powerpc/irq: Remove stale and misleading comment
->      powerpc/irq: Always free duplicate IRQ_LEGACY hosts
->      powerpc/irq: Check desc in handle_one_irq and expand =
-generic_handle_irq
->      powerpc/irq: Protect irq_radix_revmap_lookup against =
-irq_free_virt
->      powerpc: Fix irq_free_virt by adjusting bounds before loop
->=20
-> Rupjyoti Sarmah (1):
->      powerpc/4xx: Adding PCIe MSI support
+   * 1/2 - http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-May/090405.html
+   * 2/2 - http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-May/090406.html
 
-Ben,
+Ben, my Cc for you didn't go through the first time.
 
-Did you ignore my pull request with a bug fix and two long standing RIO =
-patches?
 
-- k=
+> This patch set defines a binding for FSL MPIC message registers and implements
+> an API for accessing those message registers.  Testing was done on a MPC8572DS
+> in an Linux-Linux AMP setup using OpenMCAPI (www.openmcapi.org) to communicate
+> between OS instances.  The message register API is used by the OpenMCAPI shared
+> memory driver to send notifications between cores.
+> 
+> * v2 - Incorporate feedback from Scott Wood
+>   * Make binding less implementation specific.
+>   * Add 'mpic-' prefix to message register node properties and aliases.
+>   * Remove 'interrupt-parent' from binding.
+>   * Fixed some example bugs with receive masks.
+> 
+> Signed-off-by: Meador Inge <meador_inge@mentor.com>
+> Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
+> 
+> Meador Inge (2):
+>  powerpc: document the FSL MPIC message register binding
+>  powerpc: add support for MPIC message register API
+> 
+>  .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 +++++
+>  arch/powerpc/include/asm/mpic_msgr.h               |   35 +++
+>  arch/powerpc/platforms/Kconfig                     |    8 +
+>  arch/powerpc/sysdev/Makefile                       |    3 +-
+>  arch/powerpc/sysdev/mpic_msgr.c                    |  279 ++++++++++++++++++++
+>  5 files changed, 386 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+>  create mode 100644 arch/powerpc/include/asm/mpic_msgr.h
+>  create mode 100644 arch/powerpc/sysdev/mpic_msgr.c
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+-- 
+Meador Inge
+CodeSourcery / Mentor Embedded
+http://www.mentor.com/embedded-software
