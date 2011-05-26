@@ -1,48 +1,21 @@
-Return-Path: <pavel@ucw.cz>
-Received: from atrey.karlin.mff.cuni.cz (ksp.mff.cuni.cz [195.113.26.206])
-	by ozlabs.org (Postfix) with ESMTP id 80BFBB6FA6
+Return-Path: <b32167@lc1106.zin33.ap.freescale.net>
+Received: from TX2EHSOBE005.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCE92B6FA7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 May 2011 16:33:52 +1000 (EST)
-Date: Thu, 26 May 2011 06:27:52 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: James Morris <jmorris@namei.org>
-Subject: Re: [PATCH 3/5] v2 seccomp_filters: Enable ftrace-based system
-	call filtering
-Message-ID: <20110526062752.GA14622@localhost.ucw.cz>
-References: <1304017638.18763.205.camel@gandalf.stny.rr.com>
-	<1305169376-2363-1-git-send-email-wad@chromium.org>
-	<20110512074850.GA9937@elte.hu>
-	<alpine.LRH.2.00.1105122133500.31507@tundra.namei.org>
-	<20110512130104.GA2912@elte.hu>
-	<alpine.LRH.2.00.1105131018040.3047@tundra.namei.org>
-	<20110513121034.GG21022@elte.hu>
-	<alpine.LRH.2.00.1105161006340.21749@tundra.namei.org>
+	Thu, 26 May 2011 17:05:24 +1000 (EST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: <akpm@linux-foundation.org>, <w.sang@pengutronix.de>,
+	<rtc-linux@googlegroups.com>, <linuxppc-dev@lists.ozlabs.org>,
+	<a.zummo@towertech.it>, <p_gortmaker@yahoo.com>
+Subject: [PATCH] Add support for pt7c4338 (rtc device) in rtc-ds1307 driver
+Date: Thu, 26 May 2011 12:33:29 +0530
+Message-ID: <1306393409-16153-1-git-send-email-Priyanka.Jain@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LRH.2.00.1105161006340.21749@tundra.namei.org>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-	David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Jiri Slaby <jslaby@suse.cz>, linux-s390@vger.kernel.org,
-	Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
-	agl@chromium.org, Ingo Molnar <mingo@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, "Serge E. Hallyn" <serge@hallyn.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, kees.cook@canonical.com,
-	linux-arm-kernel@lists.infradead.org,
-	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
-	Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
-	Oleg Nesterov <oleg@redhat.com>, Eric Paris <eparis@redhat.com>,
-	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
-	linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,28 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  On Mon 2011-05-16 10:36:05, James Morris wrote:
-> On Fri, 13 May 2011, Ingo Molnar wrote:
-> How do you reason about the behavior of the system as a whole?
-> 
-> 
-> > I argue that this is the LSM and audit subsystems designed right: in the long 
-> > run it could allow everything that LSM does at the moment - and so much more 
-> > ...
-> 
-> Now you're proposing a redesign of the security subsystem.  That's a 
-> significant undertaking.
-> 
-> In the meantime, we have a simple, well-defined enhancement to seccomp 
-> which will be very useful to current users in reducing their kernel attack 
-> surface.
+PT7C4338 chip is being manufactured by Pericom Technology Inc.
+It is a serial real-time clock which provides:
+1)Low-power clock/calendar.
+2)Programmable square-wave output.
+It has 56 bytes of nonvolatile RAM.
+Its register set is same as that of rtc device: DS1307.
 
-Well, you can do the same with subterfugue, even without kernel
-changes. But that's ptrace -- slow. (And it already shows that syscall
-based filters are extremely tricky to configure).
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+---
+ Changes :
+	 This patch will supersede patch:
+		"RTC driver(Linux) for PT7C4338 chip"
+	 Incorporting Wolfram Sang's comments to reuse ds1307 driver.
 
-If yu want speed, seccomp+server for non-permitted operations seems like reasonable way.
+ drivers/rtc/Kconfig      |    6 +++---
+ drivers/rtc/rtc-ds1307.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index b8f4e9e..c6045dd 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -126,13 +126,13 @@ comment "I2C RTC drivers"
+ if I2C
+ 
+ config RTC_DRV_DS1307
+-	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025"
++	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025, PT7C4338"
+ 	help
+ 	  If you say yes here you get support for various compatible RTC
+ 	  chips (often with battery backup) connected with I2C. This driver
+ 	  should handle DS1307, DS1337, DS1338, DS1339, DS1340, ST M41T00,
+-	  EPSON RX-8025 and probably other chips. In some cases the RTC
+-	  must already have been initialized (by manufacturing or a
++	  EPSON RX-8025, PT7C4338 and probably other chips. In some cases
++	  the RTC must already have been initialized (by manufacturing or a
+ 	  bootloader).
+ 
+ 	  The first seven registers on these chips hold an RTC, and other
+diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
+index 4724ba3..8436f16 100644
+--- a/drivers/rtc/rtc-ds1307.c
++++ b/drivers/rtc/rtc-ds1307.c
+@@ -4,6 +4,8 @@
+  *  Copyright (C) 2005 James Chapman (ds1337 core)
+  *  Copyright (C) 2006 David Brownell
+  *  Copyright (C) 2009 Matthias Fuchs (rx8025 support)
++ *  Copyright (C) 2011 Priyanka Jain (Priyanka.Jain@freescale.com)
++ *                                   (pt7c4338 support)
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+@@ -34,6 +36,7 @@ enum ds_type {
+ 	ds_1388,
+ 	ds_3231,
+ 	m41t00,
++	pt7c4338,
+ 	rx_8025,
+ 	// rs5c372 too?  different address...
+ };
+@@ -137,6 +140,8 @@ static const struct chip_desc chips[] = {
+ },
+ [m41t00] = {
+ },
++[pt7c4338] = {
++},
+ [rx_8025] = {
+ }, };
+ 
+@@ -149,6 +154,7 @@ static const struct i2c_device_id ds1307_id[] = {
+ 	{ "ds1340", ds_1340 },
+ 	{ "ds3231", ds_3231 },
+ 	{ "m41t00", m41t00 },
++	{ "pt7c4338", pt7c4338 },
+ 	{ "rx8025", rx_8025 },
+ 	{ }
+ };
+@@ -769,6 +775,7 @@ read_rtc:
+ 	switch (ds1307->type) {
+ 	case ds_1307:
+ 	case m41t00:
++	case pt7c4338:
+ 		/* clock halted?  turn it on, so clock can tick. */
+ 		if (tmp & DS1307_BIT_CH) {
+ 			i2c_smbus_write_byte_data(client, DS1307_REG_SECS, 0);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.5.6
