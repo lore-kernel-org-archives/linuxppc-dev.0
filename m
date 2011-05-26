@@ -1,19 +1,19 @@
 Return-Path: <dtcarroll@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 820D1B6F97
+	by ozlabs.org (Postfix) with ESMTPS id 79753B6F8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 May 2011 12:18:50 +1000 (EST)
-Received: by pvf33 with SMTP id 33so112462pvf.38
+	Thu, 26 May 2011 12:49:34 +1000 (EST)
+Received: by pzk26 with SMTP id 26so120397pzk.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 May 2011 19:18:47 -0700 (PDT)
+	Wed, 25 May 2011 19:49:31 -0700 (PDT)
 From: Dave Carroll <dtcarroll@gmail.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: [PATCH v6] powerpc: Force page alignment for initrd reserved memory
-Date: Wed, 25 May 2011 20:00:14 -0600
-Message-Id: <1306375214-12007-1-git-send-email-dcarroll@astekcorp.com>
+Subject: [PATCH v7] powerpc: Force page alignment for initrd reserved memory
+Date: Wed, 25 May 2011 20:32:42 -0600
+Message-Id: <1306377162-7898-1-git-send-email-dcarroll@astekcorp.com>
 In-Reply-To: <initrd-align-v5-reply@mdm.bga.com>
 References: <initrd-align-v5-reply@mdm.bga.com>
 Cc: Dave Carroll <dcarroll@astekcorp.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
@@ -49,6 +49,8 @@ Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
+ * The previous patch [v6] was the wrong copy, sorry ...
+ 
  arch/powerpc/kernel/prom.c |   21 ++++++++++++++++++---
  arch/powerpc/mm/init_32.c  |   15 ---------------
  arch/powerpc/mm/init_64.c  |   13 -------------
@@ -67,7 +69,7 @@ index 48aeb55..86966a0 100644
 + * overlaps_initrd - check for overlap with page aligned extension of
 + * initrd.
 + */
-+static inline int overlaps_initrd(unsigned long start, unsigned long end)
++static inline int overlaps_initrd(unsigned long start, unsigned long size)
 +{
 +	if (!initrd_start)
 +		return 0;
@@ -91,7 +93,7 @@ index 48aeb55..86966a0 100644
  	if ((memory_limit && (start + size) > PHYSICAL_START + memory_limit) ||
 -			overlaps_crashkernel(start, size)) {
 +			overlaps_crashkernel(start, size) ||
-+			overlaps_initrd(start, size) {
++			overlaps_initrd(start, size)) {
  		p = __va(memblock_alloc(size, PAGE_SIZE));
  		memcpy(p, initial_boot_params, size);
  		initial_boot_params = (struct boot_param_header *)p;
