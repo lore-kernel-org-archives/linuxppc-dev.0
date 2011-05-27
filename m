@@ -1,30 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE9EAB6F8E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 May 2011 08:57:24 +1000 (EST)
-Subject: Re: [PATCH 0/1] ppc4xx: Fix PCIe scanning for the 460SX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ayman El-Khashab <ayman@elkhashab.com>
-In-Reply-To: <20110527165108.GA1752@crust.elkhashab.com>
-References: <1302286930-9988-1-git-send-email-ayman@elkhashab.com>
-	<1302306484.2458.64.camel@pasglop>
-	<178c7df4696bacdd1510bacae143222a@mail.gmail.com>
-	<20110429170240.GA21384@crust.elkhashab.com>
-	<1304109476.2513.243.camel@pasglop> <1304487166.2513.351.camel@pasglop>
-	<BANLkTi=BaYhw92wYHp9rPvz1yq2H1p0G9w@mail.gmail.com>
-	<20110509160935.GA14965@crust.elkhashab.com>
-	<6a09a426f126fb315b773fc207d68eb9@mail.gmail.com>
-	<1306208412.7481.214.camel@pasglop>
-	<20110527165108.GA1752@crust.elkhashab.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 28 May 2011 08:57:12 +1000
-Message-ID: <1306537032.7481.552.camel@pasglop>
-Mime-Version: 1.0
-Cc: Tirumala Marri <tmarri@apm.com>, linuxppc-dev@lists.ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7D66DB6F90
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 May 2011 09:19:50 +1000 (EST)
+Subject: Re: [PATCH 10/13] kvm/powerpc: Add support for Book3S processors in
+	hypervisor mode
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <b833d9df4fc8e1e6a8b6a56311c6f344@kernel.crashing.org>
+Date: Sat, 28 May 2011 01:19:38 +0200
+Message-Id: <6A1CA2C8-8032-4D67-9C14-4ABD81ABCDD7@suse.de>
+References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
+	<20110511104456.GK2837@brick.ozlabs.ibm.com>
+	<BDD550B2-02CA-4B1A-A05B-6CB3EF89B7B3@suse.de>
+	<20110516055809.GA3590@drongo>
+	<D8CAE971-9A97-4C02-8908-2B199C81947A@suse.de>
+	<20110527103334.GA4236@brick.ozlabs.ibm.com>
+	<b833d9df4fc8e1e6a8b6a56311c6f344@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	kvm-ppc@vger.kernel.org, KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,69 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-05-27 at 11:51 -0500, Ayman El-Khashab wrote:
-> On Tue, May 24, 2011 at 01:40:12PM +1000, Benjamin Herrenschmidt wrote:
-> > On Thu, 2011-05-12 at 11:16 -0700, Tirumala Marri wrote:
-> > 
-> >  The register above
-> > > PECFGn_DLLSTA is actually in the PCIe configuration space so
-> > > we would have to map that in to be able to read that
-> > > register during the link check.  Is that correct or ok?
-> > > [marri] yes, you need to program DCR register access these local PCIE_CFG
-> > > registers.
-> > 
-> > We do I think, tho we might have to re-order some stuff. I'm facing a
-> > similar issue with some internal design here, I'm thinking off adding a
-> > new hook to the ppc4xx_pciex_hwops for link checking to replace the SDR
-> > business.
-> 
-> That would probably solve the existing problem.  I might be
-> remembering it wrong (or reading it wrong) or both.  But I
-> thought that the config space was mapped in the setup_hose
-> that happens after (and if) the link check finished
-> successfully.  
 
-Yes but we already map separately the host part and the generic part of
-cfg, so it wouldn't be hard to move one of these around.
+On 27.05.2011, at 22:59, Segher Boessenkool wrote:
 
-> > The interesting question of course is whether that 460SX stuff is the
-> > same as what we're using internally :-)
-> 
-> Not sure how I would know --  But with my eiger kit, I got a
-> cd from amcc that had a patched 2.6.30 or something kernel
-> in it to support the 460SX.  The pci code was basically
-> subverted by adding a "port->link=1" at the very end of the
-> link check to always force it to succeed.  
+>>>> I do the check there because I was having problems where, if the =
+HDEC
+>>>> goes negative before we do the partition switch, we would =
+occasionally
+>>>> not get the HDEC interrupt at all until the next time HDEC went
+>>>> negative, ~ 8.4 seconds later.
+>>>=20
+>>> Yikes - so HDEC is edge and doesn't even keep the interrupt line up?
+>>> That sounds like a serious hardware limitation. What if you only use
+>>> HDEC and it triggers while interrupts are off in a critical section?
+>>> Is the hardware really that broken?
+>>=20
+>> If HDEC expires when interrupts are off, the HDEC interrupt stays
+>> pending until interrupts get re-enabled.  I'm not sure exactly what
+>> the conditions are that cause an HDEC interrupt to get lost, but they
+>> seem to involve at least a partition switch.
+>=20
+> On some CPUs, if the top bit of the decrementer is 0 again when you =
+re-enable
+> the interrupt, the interrupt is lost (so it is actually =
+level-triggered).
+> The arch books talk a bit about this AFAIR.
 
-Niiiiiiice .... not. And they didn't even bothered to submit
-anything :-(
+Sure, but that shouldn't happen with HDEC during the odd 50 instructions =
+that it takes to enter the guest :)
 
-> However this code
-> never appeared in the public git repositories, so I am not
-> sure how the 460SX functioned (if it ever did) since the
-> link check that is in there now can't work on that SOC.
-
-Yeah odd. Looks like MyAMCC account is no longer working so I can't get
-to the docs, at least until I create a new one and get it re-authorized
-I suppose.
-
-Anyways, I'll come up with something (or rather Tony Breeds will) some
-time next week that does this refactoring and we'll see what's up from
-there.
-
-> > > Lastly, what was the reason for forcing the original code to
-> > > be GEN-1 speeds?
-> > > [marri] Gen-2 need some extra checks compared to Gen-1.
-> > > There were not many Gen-2 devices at the time of submission
-> > > To test them.
-> > 
-> > Can we fix that ?
-> > 
-> 
-> I took care of that in my patch.  Basically it let the
-> system go to gen-2 speeds and negotiate down.
-
-Ah ok good.
-
-Cheers,
-Ben.
+Alex
