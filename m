@@ -1,20 +1,26 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 92AA7B6F7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 May 2011 06:33:53 +1000 (EST)
-Message-ID: <4DE00AA7.2040804@ovro.caltech.edu>
-Date: Fri, 27 May 2011 13:33:43 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Bruce_Leonard@selinc.com
-Subject: Re: MPC8308 bursting question
-References: <OF1B4E92C8.698C0AE4-ON8825789D.00209684-8825789D.002206EF@selinc.com>
-	<4DDFB49D.8010104@ovro.caltech.edu>
-	<OF8813D588.08896EF4-ON8825789D.007035CD-8825789D.00709882@selinc.com>
-In-Reply-To: <OF8813D588.08896EF4-ON8825789D.007035CD-8825789D.00709882@selinc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41997B6F7C
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 May 2011 06:58:04 +1000 (EST)
+In-Reply-To: <20110527103334.GA4236@brick.ozlabs.ibm.com>
+References: <20110511103443.GA2837@brick.ozlabs.ibm.com>
+	<20110511104456.GK2837@brick.ozlabs.ibm.com>
+	<BDD550B2-02CA-4B1A-A05B-6CB3EF89B7B3@suse.de>
+	<20110516055809.GA3590@drongo>
+	<D8CAE971-9A97-4C02-8908-2B199C81947A@suse.de>
+	<20110527103334.GA4236@brick.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b833d9df4fc8e1e6a8b6a56311c6f344@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 10/13] kvm/powerpc: Add support for Book3S processors in
+	hypervisor mode
+Date: Fri, 27 May 2011 22:59:41 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>, kvm-ppc@vger.kernel.org,
+	KVM list <kvm@vger.kernel.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Bruce,
-
->> Read my MPC8349EA UPM setup notes and see if you have used
->> similar settings (I assume the local bus UPMs are similar):
+>>> I do the check there because I was having problems where, if the HDEC
+>>> goes negative before we do the partition switch, we would 
+>>> occasionally
+>>> not get the HDEC interrupt at all until the next time HDEC went
+>>> negative, ~ 8.4 seconds later.
+>>
+>> Yikes - so HDEC is edge and doesn't even keep the interrupt line up?
+>> That sounds like a serious hardware limitation. What if you only use
+>> HDEC and it triggers while interrupts are off in a critical section?
+>> Is the hardware really that broken?
 >
-> I found you paper interesting.  I didn't have a problem with my UPM
-> settings, single beat reads and writes worked just fine, however it did
-> tickle my memory and helped me find what was wrong.  Turns out that the
-> person who was responsible for the BAx/ORx registers for this chip select
-> had set the BI bit a long time ago, before we were contemplating doing
-> what we're currently doing.  The code had been reviewed and signed off, so
-> in my back brain I was thinking everything there was good.
->
-> When I read your paper, it mentioned the BI bit which got me to thinking.
-> Sure enough, when I looked it was set.  Soon as I  cleared that bit, my
-> burst transactions started working just fine.
->
-> Thanks for the help.
+> If HDEC expires when interrupts are off, the HDEC interrupt stays
+> pending until interrupts get re-enabled.  I'm not sure exactly what
+> the conditions are that cause an HDEC interrupt to get lost, but they
+> seem to involve at least a partition switch.
 
-You're welcome. I'm glad it helped.
+On some CPUs, if the top bit of the decrementer is 0 again when you 
+re-enable
+the interrupt, the interrupt is lost (so it is actually 
+level-triggered).
+The arch books talk a bit about this AFAIR.
 
-Cheers,
-Dave
+
+Segher
