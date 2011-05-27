@@ -1,18 +1,22 @@
-Return-Path: <shawn.guo@linaro.org>
-From: Shawn Guo <shawn.guo@linaro.org>
-To: linux-mmc@vger.kernel.org
-Subject: [PATCH v4 4/4] mmc: sdhci: merge two sdhci-pltfm.h into one
-Date: Fri, 27 May 2011 23:48:15 +0800
-Message-Id: <1306511295-2433-5-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1306511295-2433-1-git-send-email-shawn.guo@linaro.org>
-References: <1306511295-2433-1-git-send-email-shawn.guo@linaro.org>
-Cc: Chris Ball <cjb@laptop.org>, sameo@linux.intel.com,
-	Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
-	Shawn Guo <shawn.guo@linaro.org>, devicetree-discuss@lists.ozlabs.org,
+Return-Path: <cjb@laptop.org>
+From: Chris Ball <cjb@laptop.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 0/4] Consolidate sdhci pltfm & OF drivers and get them
+	self registered
+References: <1306321314-2493-1-git-send-email-shawn.guo@linaro.org>
+	<20110527072647.GE31953@ponder.secretlab.ca>
+Date: Fri, 27 May 2011 12:06:18 -0400
+In-Reply-To: <20110527072647.GE31953@ponder.secretlab.ca> (Grant Likely's
+	message of "Fri, 27 May 2011 01:26:47 -0600")
+Message-ID: <m3pqn4ruv9.fsf@pullcord.laptop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: sameo@linux.intel.com, Arnd Bergmann <arnd@arndb.de>, patches@linaro.org,
+	devicetree-discuss@lists.ozlabs.org, linux-mmc@vger.kernel.org,
 	Saeed Bishara <saeed@marvell.com>,
 	Xiaobo Xie <X.Xie@freescale.com>, kernel@pengutronix.de,
 	Mike Rapoport <mike@compulab.co.il>, Olof Johansson <olof@lixom.net>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
+	Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
 	Albert Herranz <albert_herranz@yahoo.es>,
 	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,98 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The structure sdhci_pltfm_data is not necessarily to be in a public
-header like include/linux/mmc/sdhci-pltfm.h, so the patch moves it
-into drivers/mmc/host/sdhci-pltfm.h and eliminates the former one.
+Hi Grant,
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
----
- drivers/mmc/host/sdhci-cns3xxx.c   |    1 -
- drivers/mmc/host/sdhci-esdhc-imx.c |    1 -
- drivers/mmc/host/sdhci-pltfm.h     |    6 +++++-
- include/linux/mmc/sdhci-pltfm.h    |   29 -----------------------------
- 4 files changed, 5 insertions(+), 32 deletions(-)
- delete mode 100644 include/linux/mmc/sdhci-pltfm.h
+On Fri, May 27 2011, Grant Likely wrote:
+> Any chance we can get this series into $NEXT_KERNEL?
 
-diff --git a/drivers/mmc/host/sdhci-cns3xxx.c b/drivers/mmc/host/sdhci-cns3xxx.c
-index ac4b26f..025d1a5 100644
---- a/drivers/mmc/host/sdhci-cns3xxx.c
-+++ b/drivers/mmc/host/sdhci-cns3xxx.c
-@@ -15,7 +15,6 @@
- #include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/mmc/host.h>
--#include <linux/mmc/sdhci-pltfm.h>
- #include <mach/cns3xxx.h>
- #include "sdhci.h"
- #include "sdhci-pltfm.h"
-diff --git a/drivers/mmc/host/sdhci-esdhc-imx.c b/drivers/mmc/host/sdhci-esdhc-imx.c
-index e27ccbb..977f142 100644
---- a/drivers/mmc/host/sdhci-esdhc-imx.c
-+++ b/drivers/mmc/host/sdhci-esdhc-imx.c
-@@ -18,7 +18,6 @@
- #include <linux/gpio.h>
- #include <linux/slab.h>
- #include <linux/mmc/host.h>
--#include <linux/mmc/sdhci-pltfm.h>
- #include <linux/mmc/mmc.h>
- #include <linux/mmc/sdio.h>
- #include <mach/hardware.h>
-diff --git a/drivers/mmc/host/sdhci-pltfm.h b/drivers/mmc/host/sdhci-pltfm.h
-index fe27b83..fd72694 100644
---- a/drivers/mmc/host/sdhci-pltfm.h
-+++ b/drivers/mmc/host/sdhci-pltfm.h
-@@ -14,9 +14,13 @@
- #include <linux/clk.h>
- #include <linux/types.h>
- #include <linux/platform_device.h>
--#include <linux/mmc/sdhci-pltfm.h>
- #include <linux/mmc/sdhci.h>
- 
-+struct sdhci_pltfm_data {
-+	struct sdhci_ops *ops;
-+	unsigned int quirks;
-+};
-+
- struct sdhci_pltfm_host {
- 	struct clk *clk;
- 	void *priv; /* to handle quirks across io-accessor calls */
-diff --git a/include/linux/mmc/sdhci-pltfm.h b/include/linux/mmc/sdhci-pltfm.h
-deleted file mode 100644
-index f1c2ac3..0000000
---- a/include/linux/mmc/sdhci-pltfm.h
-+++ /dev/null
-@@ -1,29 +0,0 @@
--/*
-- * Platform data declarations for the sdhci-pltfm driver.
-- *
-- * Copyright (c) 2010 MontaVista Software, LLC.
-- *
-- * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or (at
-- * your option) any later version.
-- */
--
--#ifndef _SDHCI_PLTFM_H
--#define _SDHCI_PLTFM_H
--
--struct sdhci_ops;
--
--/**
-- * struct sdhci_pltfm_data - SDHCI platform-specific information & hooks
-- * @ops: optional pointer to the platform-provided SDHCI ops
-- * @quirks: optional SDHCI quirks
-- */
--struct sdhci_pltfm_data {
--	struct sdhci_ops *ops;
--	unsigned int quirks;
--};
--
--#endif /* _SDHCI_PLTFM_H */
+I think I'd rather not in this case, hope that's okay.  It hasn't seen
+testing in linux-next yet, there's a reasonable chance of it breaking
+sdhci-pltfm users in subtle ways -- we haven't had much testing from
+the individual -pltfm driver maintainers yet -- and the mmc merge was
+(relatively) huge already this cycle.
+
+I'll certainly push it to linux-next as soon as -rc1 is released,
+though.  Sound okay?
+
+Thanks,
+
+- Chris.
 -- 
-1.7.4.1
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
