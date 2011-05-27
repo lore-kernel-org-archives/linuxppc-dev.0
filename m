@@ -1,18 +1,19 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
-	by ozlabs.org (Postfix) with ESMTP id 4F887B6F8F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 May 2011 16:44:45 +1000 (EST)
-Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
-	by duster.selinc.com (8.14.4/8.14.4) with ESMTP id p4R6Be5d007799
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2011 23:11:40 -0700
-To: linuxppc-dev@lists.ozlabs.org
-MIME-Version: 1.0
-Subject: MPC8308 bursting question
-Message-ID: <OF1B4E92C8.698C0AE4-ON8825789D.00209684-8825789D.002206EF@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 26 May 2011 23:11:40 -0700
-Content-Type: text/plain; charset="US-ASCII"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7340EB6F8F
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 May 2011 16:56:04 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 27 May 2011 16:55:53 +1000
+Message-ID: <1306479353.7481.546.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All,
+Hi Linus !
 
-This isn't really a Linux PPC question, but this is the smartest mailing 
-list I know for asking PPC hardware questions, so here goes.
+Here's the 3 patches Kumar was complaining I forgot to pull :-)
 
-We're using an MPC8308 and want to use the DMA engine to move data in and 
-out of an FPGA hanging on the local bus.  Our bandwidth/local bus burden 
-calculations were done assuming that we could use bursting.  So I've setup 
-a UPM to do single beat and burst reads/writes.  I've also configured my 
-DMA TCD to use a data transfer size of 32-bytes when accessing the FPGA. 
-The problem I'm having is I can't seem to get the UPM to ever trigger the 
-burst write sequence using the DMA.  Single beat reads and writes work 
-okay, but no bursting.  In fact, the only thing I've been able to find in 
-the manual that causes a burst transaction is a cache line miss, which is 
-wholly in the purview of the core and really does me no good.
+Two are pretty old patches related to FSL RapidIO stuff, and
+one is a bug fix.
 
-Does anyone know of any way (short of issuing a run command to the UPM via 
-MxMR) to force a burst transaction on the 8308?  Am I just being dumb and 
-missing something totally fundamental?
+Cheers,
+Ben.
 
-Thanks.
+The following changes since commit dc7acbb2518f250050179c8581a972df3b6a24f1:
 
-Bruce
+  Merge branch 'upstream/tidy-xen-mmu-2.6.39' of git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen (2011-05-26 19:01:15 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Benjamin Herrenschmidt (1):
+      Merge remote branch 'kumar/merge' into merge
+
+Shaohui Xie (2):
+      powerpc/fsl_rio: move machine_check handler
+      powerpc/fsl_rio: Error interrupt handler for sRIO on MPC85xx
+
+Shengzhou Liu (1):
+      powerpc/fsl_lbc: Add workaround for ELBC-A001 erratum
+
+ arch/powerpc/include/asm/fsl_lbc.h |    2 +
+ arch/powerpc/include/asm/rio.h     |    5 ++
+ arch/powerpc/kernel/traps.c        |   13 +++++
+ arch/powerpc/sysdev/fsl_lbc.c      |    9 +++-
+ arch/powerpc/sysdev/fsl_rio.c      |  100 ++++++++++++++++++++++++++++-------
+ 5 files changed, 107 insertions(+), 22 deletions(-)
