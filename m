@@ -1,28 +1,21 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 51E87B6F6F
+Return-Path: <rob@landley.net>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8DF9AB6F6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 May 2011 03:25:45 +1000 (EST)
-Date: Mon, 30 May 2011 20:57:45 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [rtc-linux] Re: [PATCH] Add support for pt7c4338 (rtc device)
-	in rtc-ds1307 driver
-Message-ID: <20110530165745.GA2758@oksana.dev.rtsoft.ru>
-References: <1306393409-16153-1-git-send-email-Priyanka.Jain@freescale.com>
-	<20110526091020.GA2201@pengutronix.de>
-	<470DB7CE2CD0944E9436E7ADEFC02FE316DCB8@039-SN1MPN1-002.039d.mgd.msft.net>
-	<20110530082429.GA3409@pengutronix.de>
-	<BANLkTi=H2rHSjTvRK5+SPhW26qCNUBMxbA@mail.gmail.com>
+	Tue, 31 May 2011 06:00:32 +1000 (EST)
+Received: by pwi9 with SMTP id 9so1812526pwi.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 30 May 2011 13:00:30 -0700 (PDT)
+Message-ID: <4DE3F754.1060806@landley.net>
+Date: Mon, 30 May 2011 15:00:20 -0500
+From: Rob Landley <rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <BANLkTi=H2rHSjTvRK5+SPhW26qCNUBMxbA@mail.gmail.com>
-Cc: "a.zummo@towertech.it" <a.zummo@towertech.it>,
-	"rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>,
-	"p_gortmaker@yahoo.com" <p_gortmaker@yahoo.com>,
-	Jain Priyanka-B32167 <B32167@freescale.com>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: PMAC_ZILOG serial driver locks up.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 30, 2011 at 02:29:58PM +0000, Tabi Timur-B04825 wrote:
-> On Mon, May 30, 2011 at 3:24 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> 
-> > The first place where this should be mentioned is the datasheet of the
-> > pt-chip, so you might ask the producer to add this information (don't
-> > expect much to happen, though).
-> 
-> It's true that the data sheet does not mention that it's identical to
-> the DS1307, but that's still no excuse for not noticing it and writing
-> a whole driver for it.  :-(
-> 
-> > IIRC I asked you explicitly for the differences between the chips. If
-> > there are none, you can use the driver directly, right? :)
-> 
-> Yes.  The device tree node for the PT7C4338 device should just say
-> 
->    /* The board has a PT7C4338, which is compatible with the DS1307 */
->    compatible = "dallas,ds1307";
+The powerpc systems I emulate under qemu use the "mac99" board 
+emulation, which routes the serial console through a PMAC_ZILOG serial 
+chip.
 
-While it seems to be 100% compatible, there could be chip-specific
-bugs or some interesting features that are hidden behind "reserved"
-bits and registers.
+It got screwed up by Alan Cox's refactoring of the tty layer in 2.6.28:
 
-So I think device tree should not lie about the chip model. Doing
-'compatible = "pericom,pt7c4338", "dallas,ds1307"' is perfectly fine.
+  http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078700.html
 
-Note that today the several compatible entries approach gives you
-almost nothing, as you will need to add pt7c4338 entry into the driver
-anyway.
+And then partially fixed here:
 
-I tried to improve this, i.e. make linux do OF-matching on the most
-generic compatible entry (the last one):
+  http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg40477.html
 
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg21196.html
+However, if significant input and output traffic overlaps, the serial 
+port locks up.  Here's a test for that.  Grab this tarball:
 
-It was received coldly though:
+  http://landley.net/aboriginal/downloads/binaries/system-image-powerpc.tar.bz2
 
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg22041.html
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg21273.html
+And do this:
 
--- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+  echo -e "                    \necho hello world" | ./run-emulator.sh
+
+That's echo a line of 20 spaces, a newline, and a command to see
+if it makes it through to the comand prompt.
+
+Data makes it out the serial console right up until init launches
+(and interrupts are enabled), then it locks hard.
+
+if you just ./run-emulator.sh directly and don't type anything until
+you get a shell prompt, it works fine.  It's the data crossing in
+both directions at once that screws the driver up.
+
+Trivially reproducible.  I've tested back to 2.6.32 and it was doing
+it back then.  (2.6.31 was a build break.)
+
+Rob
