@@ -3,19 +3,19 @@ Received: from out3.smtp.messagingengine.com (out3.smtp.messagingengine.com
 	[66.111.4.27])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E1CF3B6F6C
+	by ozlabs.org (Postfix) with ESMTPS id 454FDB6F84
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 14:21:45 +1000 (EST)
+	Mon, 30 May 2011 14:22:52 +1000 (EST)
 Subject: Patch "seqlock: Don't smp_rmb in seqlock reader spin loop" has been
-	added to the 2.6.32-longterm tree
+	added to the 2.6.33-longterm tree
 To: miltonm@bga.com, andi@firstfloor.org, anton@samba.org,
 	benh@kernel.crashing.org, eric.dumazet@gmail.com, gregkh@suse.de,
 	linuxppc-dev@lists.ozlabs.org, npiggin@kernel.dk,
 	paulmck@linux.vnet.ibm.com, tglx@linutronix.de,
 	torvalds@linux-foundation.org
 From: <gregkh@suse.de>
-Date: Mon, 30 May 2011 12:14:23 +0800
-Message-ID: <13067288631671@kroah.org>
+Date: Mon, 30 May 2011 12:16:09 +0800
+Message-ID: <13067289692660@kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ASCII
 Cc: stable@kernel.org, stable-commits@vger.kernel.org
@@ -33,14 +33,14 @@ This is a note to let you know that I've just added the patch titled
 
     seqlock: Don't smp_rmb in seqlock reader spin loop
 
-to the 2.6.32-longterm tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/longterm/longterm-queue-2.6.32.git;a=summary
+to the 2.6.33-longterm tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/longterm/longterm-queue-2.6.33.git;a=summary
 
 The filename of the patch is:
      seqlock-don-t-smp_rmb-in-seqlock-reader-spin-loop.patch
-and it can be found in the queue-2.6.32 subdirectory.
+and it can be found in the queue-2.6.33 subdirectory.
 
-If you, or anyone else, feels it should not be added to the 2.6.32 longterm tree,
+If you, or anyone else, feels it should not be added to the 2.6.33 longterm tree,
 please let <stable@kernel.org> know about it.
 
 
@@ -121,4 +121,4 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
  }
 
 
-Patches currently in longterm-queue-2.6.32 which might be from miltonm@bga.com are
+Patches currently in longterm-queue-2.6.33 which might be from miltonm@bga.com are
