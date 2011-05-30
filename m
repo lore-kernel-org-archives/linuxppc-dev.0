@@ -1,25 +1,22 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BE19CB6F73
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E4114B6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 May 2011 08:11:53 +1000 (EST)
-Received: by vws20 with SMTP id 20so3238422vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 15:11:49 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1306705871.7481.594.camel@pasglop>
+	Tue, 31 May 2011 08:17:22 +1000 (EST)
+Subject: Re: PROBLEM: 2.6.39 doesn't boot on POWER MAC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: kevin diggs <diggskevin38@gmail.com>
+In-Reply-To: <BANLkTimLm1DYVWy2Cj-F9hLw3mNsqtk4iQ@mail.gmail.com>
 References: <4DE0AA62.4070909@list.ru>
 	<BANLkTinZd32+5b=3DdYknBCtQJT0qiNKcg@mail.gmail.com>
 	<4DE29B78.1070209@list.ru> <1306705871.7481.594.camel@pasglop>
-Date: Mon, 30 May 2011 17:11:49 -0500
-Message-ID: <BANLkTimLm1DYVWy2Cj-F9hLw3mNsqtk4iQ@mail.gmail.com>
-Subject: Re: PROBLEM: 2.6.39 doesn't boot on POWER MAC
-From: kevin diggs <diggskevin38@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<BANLkTimLm1DYVWy2Cj-F9hLw3mNsqtk4iQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 31 May 2011 08:17:04 +1000
+Message-ID: <1306793824.7481.622.camel@pasglop>
+Mime-Version: 1.0
 Cc: Tabi Timur-B04825 <B04825@freescale.com>, Andrey Gusev <ronne@list.ru>,
 	"paulus@samba.org" <paulus@samba.org>,
 	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -32,14 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, 2011-05-30 at 17:11 -0500, kevin diggs wrote:
+> Hi,
+> 
+> >
+> > This is an SMP machine ? If not, does it work with a UP kernel ?
+> >
+> > Cheers,
+> > Ben.
+> >
+> ??? Even if it is SMP, you can run non-SMP kernel on it, right?
 
->
-> This is an SMP machine ? If not, does it work with a UP kernel ?
->
-> Cheers,
-> Ben.
->
-??? Even if it is SMP, you can run non-SMP kernel on it, right?
+Yes, I was asking whether the bug also occured with an UP kernel.
 
-kevin
+Cheers,
+Ben.
