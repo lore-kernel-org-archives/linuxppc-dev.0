@@ -1,38 +1,32 @@
 Return-Path: <suzuki@in.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 062FCB6F57
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 21C76B6EE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 16:30:26 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e32.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4U6Ii2s008580
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 00:18:44 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p4U6UCqM331250
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 00:30:13 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p4U0TiDY029453
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2011 18:29:45 -0600
-Message-ID: <4DE3396E.4090801@in.ibm.com>
-Date: Mon, 30 May 2011 12:00:06 +0530
+	Mon, 30 May 2011 17:22:45 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4U75wbp022393
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 01:05:58 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4U7NuJb170052
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 01:23:56 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4U1MSV5019890
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2011 19:22:28 -0600
+Message-ID: <4DE345B0.8020505@in.ibm.com>
+Date: Mon, 30 May 2011 12:52:24 +0530
 From: Suzuki Poulose <suzuki@in.ibm.com>
 MIME-Version: 1.0
-To: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-	Simon Horman <horms@verge.net.au>
-Subject: [RFC][PATCH] powerpc: Use the #address-cells information to parse
-	memory/reg
-References: <4DC923C4.6080707@in.ibm.com> <4DC92784.2040001@in.ibm.com>
-	<20110510134152.GB18537@in.ibm.com> <4DCA285D.2080006@in.ibm.com>
-In-Reply-To: <4DCA285D.2080006@in.ibm.com>
+To: linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC][PATCH] Kexec support for PPC440x
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	lkml <linux-kernel@vger.kernel.org>,
-	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
-	Vivek Goyal <vgoyal@redhat.com>
+	"kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,372 +36,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the #address-cells, #size-cells information to parse the memory/reg info
-from  device tree.
+KEXEC Support for ppc440X
 
-The format of memory/reg is based on the #address-cells,#size-cells. Currently,
-the kexec-tools doesn't use the above values in parsing the memory/reg values.
-Hence the kexec cannot handle cases where #address-cells, #size-cells are
-different, (for e.g, PPC440X ).
+The patch adds kexec support for PPC440x based boards. This work is based
+on the KEXEC patches for FSL BookE.
 
-This patch introduces a read_memory_region_limits(), which parses the
-memory/reg contents based on the values of #address-cells and #size-cells.
+The FSL BookE patch and the code flow could be found at the link below:
 
-Changed the add_usable_mem_property() to accept FILE* fp instead of int fd,
-as most of the other users of read_memory_region_limits() deals with FILE*.
+http://patchwork.ozlabs.org/patch/49359/
+
+We invalidate all the TLB entries except the one this code is run from,
+and create a 1:1 mapping for 0-2GiB in blocks of 256M. Later we jump to
+the 1:1 mapping.
+
+I have tested this patches on Ebony and Sequoia boards. It would be great
+if somebody could test this on the other boards.
 
 Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-
 ---
-  kexec/arch/ppc/crashdump-powerpc.c |   23 ------
-  kexec/arch/ppc/fs2dt.c             |   31 ++------
-  kexec/arch/ppc/kexec-ppc.c         |  136 ++++++++++++++++++++++++++-----------
-  kexec/arch/ppc/kexec-ppc.h         |    6 +
-  4 files changed, 118 insertions(+), 78 deletions(-)
+  arch/powerpc/Kconfig                    |    2
+  arch/powerpc/include/asm/kexec.h        |    2
+  arch/powerpc/kernel/44x_kexec_mapping.S |   66 ++++++++++++++++++++++++++++++++
+  arch/powerpc/kernel/misc_32.S           |   22 ++++++++++
+  4 files changed, 90 insertions(+), 2 deletions(-)
 
-Index: kexec-tools-2.0.4/kexec/arch/ppc/kexec-ppc.c
+Index: powerpc/arch/powerpc/Kconfig
 ===================================================================
---- kexec-tools-2.0.4.orig/kexec/arch/ppc/kexec-ppc.c
-+++ kexec-tools-2.0.4/kexec/arch/ppc/kexec-ppc.c
-@@ -26,6 +26,7 @@
+--- powerpc.orig/arch/powerpc/Kconfig
++++ powerpc/arch/powerpc/Kconfig
+@@ -349,7 +349,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
   
-  #include "config.h"
+  config KEXEC
+  	bool "kexec system call (EXPERIMENTAL)"
+-	depends on (PPC_BOOK3S || FSL_BOOKE) && EXPERIMENTAL
++	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP && !47x)) && EXPERIMENTAL
+  	help
+  	  kexec is a system call that implements the ability to shutdown your
+  	  current kernel, and to start another kernel.  It is like a reboot
+Index: powerpc/arch/powerpc/include/asm/kexec.h
+===================================================================
+--- powerpc.orig/arch/powerpc/include/asm/kexec.h
++++ powerpc/arch/powerpc/include/asm/kexec.h
+@@ -2,7 +2,7 @@
+  #define _ASM_POWERPC_KEXEC_H
+  #ifdef __KERNEL__
   
-+unsigned long dt_address_cells = 0, dt_size_cells = 0;
-  uint64_t rmo_top;
-  unsigned long long crash_base = 0, crash_size = 0;
-  unsigned long long initrd_base = 0, initrd_size = 0;
-@@ -34,6 +35,92 @@ unsigned int rtas_base, rtas_size;
-  int max_memory_ranges;
-  const char *ramdisk;
+-#ifdef CONFIG_FSL_BOOKE
++#if defined(CONFIG_FSL_BOOKE) || defined(CONFIG_44x)
   
+  /*
+   * On FSL-BookE we setup a 1:1 mapping which covers the first 2GiB of memory
+Index: powerpc/arch/powerpc/kernel/44x_kexec_mapping.S
+===================================================================
+--- /dev/null
++++ powerpc/arch/powerpc/kernel/44x_kexec_mapping.S
+@@ -0,0 +1,66 @@
 +/*
-+ * Reads the #address-cells and #size-cells on this platform.
-+ * This is used to parse the memory/reg info from the device-tree
++ * Copyright (C) 2011 IBM
++ *
++ * Author : Suzuki K. Poulose <suzuki@in.ibm.com>
++ *
++ * This source code is licensed under the GNU General Public License,
++ * Version 2.  See the file COPYING for more details.
++ *
++ * Code for setting up 1:1 mapping for PPC440x for KEXEC
++ *
++ * We cannot switch off the MMU on PPC44x.
++ * So we:
++ * 1) Invalidate all the mappings except the one we are
++ * running from.
++ * 2) Create a 1:1 mapping for 0-2GiB
++ *
++ * - Based on the kexec support code for FSL BookE
++ * - Based on the boot up code for ppc44x from head_44x.S
++ * - Doesn't support 47x yet.
++ * - Doesn't support SMP.
++ *
 + */
-+int init_memory_region_info()
-+{
-+	size_t res = 0;
-+	FILE *fp;
-+	char *file;
++	bl	nxtins				/* Find our address */
++nxtins:	mflr	r5				/* Make it accessible */
++	tlbsx	r23,0,r5			/* Find entry we are in */
++	li	r4,0				/* Start at TLB entry 0 */
++	li	r3,0				/* Set PAGEID inval value */
++1:	cmpw	r23,r4				/* Is this our entry? */
++	beq	skip				/* If so, skip the inval */
++	tlbwe	r3,r4,PPC44x_TLB_PAGEID		/* If not, inval the entry */
++skip:	addi	r4,r4,1				/* Increment */
++	cmpwi	r4,64				/* Are we done? */
++	bne	1b				/* If not, repeat */
++	isync
 +
-+	file = "/proc/device-tree/#address-cells";
-+	fp = fopen(file, "r");
-+	if (!fp) {
-+		fprintf(stderr,"Unable to open %s\n", file);
-+		return -1;
-+	}
-+
-+	res = fread(&dt_address_cells,sizeof(unsigned long),1,fp);
-+	if (res != 1) {
-+		fprintf(stderr,"Error reading %s\n", file);
-+		return -1;
-+	}
-+	fclose(fp);
-+	dt_address_cells *= sizeof(unsigned long);
-+
-+	file = "/proc/device-tree/#size-cells";
-+	fp = fopen(file, "r");
-+	if (!fp) {
-+		fprintf(stderr,"Unable to open %s\n", file);
-+		return -1;
-+	}
-+
-+	res = fread(&dt_size_cells,sizeof(unsigned long),1,fp);
-+	if (res != 1) {
-+		fprintf(stderr,"Error reading %s\n", file);
-+		return -1;
-+	}
-+	fclose(fp);
-+	dt_size_cells *= sizeof(unsigned long);
-+
-+	return 0;
-+}
-+
-+#define MAXBYTES 128
 +/*
-+ * Reads the memory region info from the device-tree node pointed
-+ * by @fp and fills the *start, *end with the boundaries of the region
++ * Setup 1:1 mapping  for 0-2GiB in blocks of 256M.
++ * r23 is the index to the mapping of this code.
++ * Skip it.
 + */
-+int read_memory_region_limits(FILE* fp, unsigned long long *start,
-+				unsigned long long *end)
-+{
-+	char buf[MAXBYTES];
-+	unsigned long *p;
-+	unsigned long nbytes = dt_address_cells + dt_size_cells;
++	/* attribute fields. rwx for SUPERVISOR mode */
++	li	r5, 0
++	ori	r5, r5, (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G)
 +
-+	if (fread(buf, 1, MAXBYTES, fp) != nbytes) {
-+		fprintf(stderr, "Error reading the memory region info\n");
-+		return -1;
-+	}
++	li	r11, 0				/* PageNumber */
++	li	r6, 0				/* TLB Index  */
 +
-+	p = (unsigned long*)buf;
-+	if (dt_address_cells == sizeof(unsigned long)) {
-+		*start = p[0];
-+		p++;
-+	} else if (dt_address_cells == sizeof(unsigned long long)) {
-+		*start = ((unsigned long long *)p)[0];
-+		p = (unsigned long long *)p + 1;
-+	} else {
-+		fprintf(stderr,"Unsupported value for #address-cells : %ld\n",
-+					dt_address_cells);
-+		return -1;
-+	}
++next_tlb:
++	rotlwi	r3, r11, 28			/* Create EPN (bits 0-3) */
++	mr	r4, r3				/* RPN = EPN  */
++	ori	r3, r3, PPC44x_TLB_VALID | PPC44x_TLB_256M /* SIZE = 256M, Valid */
++	cmpw	r6, r23				/* Is this our TLB entry ? */
++	bne	write_tlb
++	addi	r6, r6, 1			/* Skip our entry */
 +
-+	if (dt_size_cells == sizeof(unsigned long))
-+		*end = *start + p[0];
-+	else if (dt_size_cells == sizeof(unsigned long long))
-+		*end = *start + ((unsigned long long *)p)[0];
-+	else {
-+		fprintf(stderr,"Unsupported value for #size-cells : %ld\n",
-+					dt_size_cells);
-+		return -1;
-+	}
++write_tlb:
++	tlbwe	r3, r6, PPC44x_TLB_PAGEID	/* PageID field : EPN, V, SIZE */
++	tlbwe	r4, r6, PPC44x_TLB_XLAT		/* Address translation : RPN   */
++	tlbwe	r5, r6, PPC44x_TLB_ATTRIB	/* Attributes */
 +
-+	return 0;
-+}
++	addi	r11, r11, 1			/* Increment PN */
++	addi	r6, r6, 1			/* Increment TLB Index */
++	cmpwi	r11, 8				/* Are we done ? */
++	bne	next_tlb
++	isync
 +
-  void arch_reuse_initrd(void)
-  {
-  	reuse_initrd = 1;
-@@ -182,9 +269,6 @@ static int sort_base_ranges(void)
-  	return 0;
-  }
+Index: powerpc/arch/powerpc/kernel/misc_32.S
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/misc_32.S
++++ powerpc/arch/powerpc/kernel/misc_32.S
+@@ -736,6 +736,28 @@ relocate_new_kernel:
+  	mr      r5, r31
   
--
--#define MAXBYTES 128
--
-  static int realloc_memory_ranges(void)
-  {
-  	size_t memory_range_len;
-@@ -248,6 +332,8 @@ static int get_base_ranges(void)
-  			return -1;
-  		}
-  		while ((mentry = readdir(dmem)) != NULL) {
-+			unsigned long long start, end;
+  	li	r0, 0
++#elif defined(CONFIG_44x)  && !defined(CONFIG_47x)
 +
-  			if (strcmp(mentry->d_name, "reg"))
-  				continue;
-  			strcat(fname, "/reg");
-@@ -257,8 +343,7 @@ static int get_base_ranges(void)
-  				closedir(dir);
-  				return -1;
-  			}
--			if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
--				perror(fname);
-+			if (read_memory_region_limits(file, &start, &end) != 0) {
-  				fclose(file);
-  				closedir(dmem);
-  				closedir(dir);
-@@ -271,24 +356,8 @@ static int get_base_ranges(void)
-  				}
-  			}
-  
--			if (n == sizeof(uint32_t) * 2) {
--				base_memory_range[local_memory_ranges].start =
--					((uint32_t *)buf)[0];
--				base_memory_range[local_memory_ranges].end  =
--					base_memory_range[local_memory_ranges].start +
--					((uint32_t *)buf)[1];
--			}
--			else if (n == sizeof(uint64_t) * 2) {
--				base_memory_range[local_memory_ranges].start =
--                                        ((uint64_t *)buf)[0];
--                                base_memory_range[local_memory_ranges].end  =
--                                        base_memory_range[local_memory_ranges].start +
--                                        ((uint64_t *)buf)[1];
--			}
--			else {
--				fprintf(stderr, "Mem node has invalid size: %d\n", n);
--				return -1;
--			}
-+			base_memory_range[local_memory_ranges].start = start;
-+			base_memory_range[local_memory_ranges].end  = end;
-  			base_memory_range[local_memory_ranges].type = RANGE_RAM;
-  			local_memory_ranges++;
-  			dbgprintf("%016llx-%016llx : %x\n",
-@@ -577,20 +646,10 @@ static int get_devtree_details(unsigned
-  				perror(fname);
-  				goto error_opencdir;
-  			}
--			if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
--				perror(fname);
--				goto error_openfile;
--			}
--			if (n == sizeof(uint64_t)) {
--				rmo_base = ((uint32_t *)buf)[0];
--				rmo_top = rmo_base + ((uint32_t *)buf)[1];
--			} else if (n == 16) {
--				rmo_base = ((uint64_t *)buf)[0];
--				rmo_top = rmo_base + ((uint64_t *)buf)[1];
--			} else {
--				fprintf(stderr, "Mem node has invalid size: %d\n", n);
-+			if (read_memory_region_limits(file, &rmo_base, &rmo_top) != 0) {
-  				goto error_openfile;
-  			}
++	mr	r29, r3
++	mr	r30, r4
++	mr	r31, r5
 +
-  			if (rmo_top > 0x30000000UL)
-  				rmo_top = 0x30000000UL;
-  
-@@ -664,7 +723,6 @@ error_opendir:
-  	return -1;
-  }
-  
--
-  /* Setup a sorted list of memory ranges. */
-  static int setup_memory_ranges(unsigned long kexec_flags)
-  {
-@@ -756,7 +814,6 @@ out:
-  	return -1;
-  }
-  
--
-  /* Return a list of valid memory ranges */
-  int get_memory_ranges_dt(struct memory_range **range, int *ranges,
-  		unsigned long kexec_flags)
-@@ -778,6 +835,11 @@ int get_memory_ranges_dt(struct memory_r
-  int get_memory_ranges(struct memory_range **range, int *ranges,
-  					unsigned long kexec_flags)
-  {
-+	int res = 0;
++#include "44x_kexec_mapping.S"
 +
-+	res = init_memory_region_info();
-+	if (res != 0)
-+		return res;
-  #ifdef WITH_GAMECUBE
-  	return get_memory_ranges_gc(range, ranges, kexec_flags);
++	mr	r3, r29
++	mr	r4, r30
++	mr	r5, r31
++
++	li	r0, 0
++
++	/* Jump back to the 1:1 address */
++	mr	r8, r0
++	mtspr	SPRN_SRR1, r8
++	addi	r8, r4, 1f - relocate_new_kernel
++	mtspr	SPRN_SRR0, r8
++	sync
++	rfi
++1:
   #else
-Index: kexec-tools-2.0.4/kexec/arch/ppc/kexec-ppc.h
-===================================================================
---- kexec-tools-2.0.4.orig/kexec/arch/ppc/kexec-ppc.h
-+++ kexec-tools-2.0.4/kexec/arch/ppc/kexec-ppc.h
-@@ -69,6 +69,12 @@ extern unsigned long long initrd_base, i
-  extern unsigned long long ramdisk_base, ramdisk_size;
-  extern unsigned char reuse_initrd;
-  extern const char *ramdisk;
-+
-+/* Method to parse the memory/reg nodes in device-tree */
-+extern unsigned long dt_address_cells, dt_size_cells;
-+extern int init_memory_region_info(void);
-+extern int read_memory_region_limits(FILE *fp, unsigned long long *start,
-+					unsigned long long *end);
-  #define COMMAND_LINE_SIZE	512 /* from kernel */
-  /*fs2dt*/
-  void reserve(unsigned long long where, unsigned long long length);
-Index: kexec-tools-2.0.4/kexec/arch/ppc/crashdump-powerpc.c
-===================================================================
---- kexec-tools-2.0.4.orig/kexec/arch/ppc/crashdump-powerpc.c
-+++ kexec-tools-2.0.4/kexec/arch/ppc/crashdump-powerpc.c
-@@ -130,9 +130,8 @@ static int get_crash_memory_ranges(struc
-  				closedir(dir);
-  				goto err;
-  			}
--			n = fread(buf, 1, MAXBYTES, file);
--			if (n < 0) {
--				perror(fname);
-+			n = read_memory_region_limits(file, &start, &end);
-+			if (n != 0) {
-  				fclose(file);
-  				closedir(dmem);
-  				closedir(dir);
-@@ -146,24 +145,6 @@ static int get_crash_memory_ranges(struc
-  				goto err;
-  			}
+  	li	r0, 0
   
--			/*
--			 * FIXME: This code fails on platforms that
--			 * have more than one memory range specified
--			 * in the device-tree's /memory/reg property.
--			 * or where the #address-cells and #size-cells
--			 * are not identical.
--			 *
--			 * We should interpret the /memory/reg property
--			 * based on the values of the #address-cells and
--			 * #size-cells properites.
--			 */
--			if (n == (sizeof(unsigned long) * 2)) {
--				start = ((unsigned long *)buf)[0];
--				end = start + ((unsigned long *)buf)[1];
--			} else {
--				start = ((unsigned long long *)buf)[0];
--				end = start + ((unsigned long long *)buf)[1];
--			}
-  			if (start == 0 && end >= (BACKUP_SRC_END + 1))
-  				start = BACKUP_SRC_END + 1;
-  
-Index: kexec-tools-2.0.4/kexec/arch/ppc/fs2dt.c
-===================================================================
---- kexec-tools-2.0.4.orig/kexec/arch/ppc/fs2dt.c
-+++ kexec-tools-2.0.4/kexec/arch/ppc/fs2dt.c
-@@ -122,7 +122,7 @@ static unsigned propnum(const char *name
-  	return offset;
-  }
-  
--static void add_usable_mem_property(int fd, int len)
-+static void add_usable_mem_property(FILE* fp, int len)
-  {
-  	char fname[MAXPATH], *bname;
-  	unsigned long buf[2];
-@@ -137,21 +137,11 @@ static void add_usable_mem_property(int
-  	if (strncmp(bname, "/memory@", 8) && strcmp(bname, "/memory"))
-  		return;
-  
--	if (len < 2 * sizeof(unsigned long))
--		die("unrecoverable error: not enough data for mem property\n");
--	len = 2 * sizeof(unsigned long);
--
--	if (lseek(fd, 0, SEEK_SET) < 0)
-+	if (fseek(fp, 0, SEEK_SET) < 0)
-  		die("unrecoverable error: error seeking in \"%s\": %s\n",
-  		    pathname, strerror(errno));
--	if (read(fd, buf, len) != len)
--		die("unrecoverable error: error reading \"%s\": %s\n",
--		    pathname, strerror(errno));
--
--	if (~0ULL - buf[0] < buf[1])
--		die("unrecoverable error: mem property overflow\n");
--	base = buf[0];
--	end = base + buf[1];
-+	if (read_memory_region_limits(fp, &base, &end) != 0)
-+		die("unrecoverable error: error parsing memory/reg limits\n");
-  
-  	for (range = 0; range < usablemem_rgns.size; range++) {
-  		loc_base = usablemem_rgns.ranges[range].start;
-@@ -194,8 +184,9 @@ static void add_usable_mem_property(int
-  static void putprops(char *fn, struct dirent **nlist, int numlist)
-  {
-  	struct dirent *dp;
--	int i = 0, fd, len;
-+	int i = 0, len;
-  	struct stat statbuf;
-+	FILE *fp;
-  
-  	for (i = 0; i < numlist; i++) {
-  		dp = nlist[i];
-@@ -243,12 +234,12 @@ static void putprops(char *fn, struct di
-  		*dt++ = len;
-  		*dt++ = propnum(fn);
-  
--		fd = open(pathname, O_RDONLY);
--		if (fd == -1)
-+		fp = fopen(pathname, "r");
-+		if (fp == NULL)
-  			die("unrecoverable error: could not open \"%s\": %s\n",
-  			    pathname, strerror(errno));
-  
--		if (read(fd, dt, len) != len)
-+		if (fread(dt, 1, len, fp) != len)
-  			die("unrecoverable error: could not read \"%s\": %s\n",
-  			    pathname, strerror(errno));
-  
-@@ -290,8 +281,8 @@ static void putprops(char *fn, struct di
-  
-  		dt += (len + 3)/4;
-  		if (!strcmp(dp->d_name, "reg") && usablemem_rgns.size)
--			add_usable_mem_property(fd, len);
--		close(fd);
-+			add_usable_mem_property(fp, len);
-+		fclose(fp);
-  	}
-  
-  	fn[0] = '\0';
