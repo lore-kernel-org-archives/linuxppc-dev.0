@@ -1,25 +1,30 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BBF07B6F67
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D1D5CB6F73
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 21:57:20 +1000 (EST)
-Received: by vws20 with SMTP id 20so2916471vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 04:57:17 -0700 (PDT)
+	Mon, 30 May 2011 22:25:21 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p4UCJGLG015415
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 06:19:16 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p4UCQWml091508
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 06:26:32 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p4U6OaF1007675
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2011 00:24:37 -0600
+Date: Mon, 30 May 2011 08:26:21 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] 2.6.39 powerpc: Fix 32-bit SMP build
+Message-ID: <20110530122621.GD2557@zod.rchland.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
-References: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
-Date: Mon, 30 May 2011 15:57:17 +0400
-Message-ID: <BANLkTikGyV8aG1twBt7Jt_=j-fSBDiGzAg@mail.gmail.com>
-Subject: Re: [PATCH] Add cpufreq driver for Momentum Maple boards
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: cpufreq@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Backport upstream commit 6de06f313a65d0ec
+    
+Commit fa3f82c8bb7acb ("powerpc/smp: soft-replugged CPUs must go back to
+start_secondary") introduced start_secondary_resume to head_32.S, however
+it uses a 64-bit instruction which is not valid on 32-bit platforms.  Use
+'stw' instead.
+    
+CC: stable@kernel.org
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-On 5/21/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
-> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
-> kit and others). Driver is based on a cpufreq driver for 64-bit powermac
-> boxes with all pmac-dependant features removed and simple cleanup
-> applied.
->
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> ---
->  arch/powerpc/kernel/misc_64.S          |    4 +-
->  arch/powerpc/platforms/Kconfig         |    8 +
->  arch/powerpc/platforms/maple/Makefile  |    1 +
->  arch/powerpc/platforms/maple/cpufreq.c |  317
-> ++++++++++++++++++++++++++++++++
->  4 files changed, 328 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
+---
 
-What about this patch?
-
--- 
-With best wishes
-Dmitry
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index c5c24be..727f40a 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -896,7 +896,7 @@ _GLOBAL(start_secondary_resume)
+ 	rlwinm  r1,r1,0,0,(31-THREAD_SHIFT)     /* current_thread_info() */
+ 	addi    r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
+ 	li      r3,0
+-	std     r3,0(r1)                /* Zero the stack frame pointer */
++	stw     r3,0(r1)                /* Zero the stack frame pointer */
+ 	bl      start_secondary
+ 	b       .
+ #endif /* CONFIG_SMP */
