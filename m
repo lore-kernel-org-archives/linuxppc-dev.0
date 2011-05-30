@@ -1,21 +1,20 @@
-Return-Path: <rob@landley.net>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8DF9AB6F6F
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EDDDFB6F67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 31 May 2011 06:00:32 +1000 (EST)
-Received: by pwi9 with SMTP id 9so1812526pwi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 13:00:30 -0700 (PDT)
-Message-ID: <4DE3F754.1060806@landley.net>
-Date: Mon, 30 May 2011 15:00:20 -0500
-From: Rob Landley <rob@landley.net>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: PMAC_ZILOG serial driver locks up.
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 31 May 2011 07:18:39 +1000 (EST)
+Subject: Re: [PATCH] 2.6.39 powerpc: Fix 32-bit SMP build
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20110530122621.GD2557@zod.rchland.ibm.com>
+References: <20110530122621.GD2557@zod.rchland.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 31 May 2011 07:18:28 +1000
+Message-ID: <1306790308.7481.618.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The powerpc systems I emulate under qemu use the "mac99" board 
-emulation, which routes the serial console through a PMAC_ZILOG serial 
-chip.
+On Mon, 2011-05-30 at 08:26 -0400, Josh Boyer wrote:
+> Backport upstream commit 6de06f313a65d0ec
+>     
+> Commit fa3f82c8bb7acb ("powerpc/smp: soft-replugged CPUs must go back to
+> start_secondary") introduced start_secondary_resume to head_32.S, however
+> it uses a 64-bit instruction which is not valid on 32-bit platforms.  Use
+> 'stw' instead.
+>     
+> CC: stable@kernel.org
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-It got screwed up by Alan Cox's refactoring of the tty layer in 2.6.28:
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-  http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078700.html
-
-And then partially fixed here:
-
-  http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg40477.html
-
-However, if significant input and output traffic overlaps, the serial 
-port locks up.  Here's a test for that.  Grab this tarball:
-
-  http://landley.net/aboriginal/downloads/binaries/system-image-powerpc.tar.bz2
-
-And do this:
-
-  echo -e "                    \necho hello world" | ./run-emulator.sh
-
-That's echo a line of 20 spaces, a newline, and a command to see
-if it makes it through to the comand prompt.
-
-Data makes it out the serial console right up until init launches
-(and interrupts are enabled), then it locks hard.
-
-if you just ./run-emulator.sh directly and don't type anything until
-you get a shell prompt, it works fine.  It's the data crossing in
-both directions at once that screws the driver up.
-
-Trivially reproducible.  I've tested back to 2.6.32 and it was doing
-it back then.  (2.6.31 was a build break.)
-
-Rob
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+> index c5c24be..727f40a 100644
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -896,7 +896,7 @@ _GLOBAL(start_secondary_resume)
+>  	rlwinm  r1,r1,0,0,(31-THREAD_SHIFT)     /* current_thread_info() */
+>  	addi    r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
+>  	li      r3,0
+> -	std     r3,0(r1)                /* Zero the stack frame pointer */
+> +	stw     r3,0(r1)                /* Zero the stack frame pointer */
+>  	bl      start_secondary
+>  	b       .
+>  #endif /* CONFIG_SMP */
