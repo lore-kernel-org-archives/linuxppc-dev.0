@@ -1,20 +1,25 @@
 Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A5010B6F5A
+	by ozlabs.org (Postfix) with ESMTPS id BBF07B6F67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 21:56:17 +1000 (EST)
-Received: by wyg36 with SMTP id 36so2912126wyg.38
+	Mon, 30 May 2011 21:57:20 +1000 (EST)
+Received: by vws20 with SMTP id 20so2916471vws.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 May 2011 04:56:09 -0700 (PDT)
+	Mon, 30 May 2011 04:57:17 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
+References: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
+Date: Mon, 30 May 2011 15:57:17 +0400
+Message-ID: <BANLkTikGyV8aG1twBt7Jt_=j-fSBDiGzAg@mail.gmail.com>
+Subject: Re: [PATCH] Add cpufreq driver for Momentum Maple boards
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mpic: support compiling with DEBUG enabled
-Date: Mon, 30 May 2011 15:56:09 +0400
-Message-Id: <1306756569-12912-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
+To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Support compilation of mpic.c with DEBUG defined, as now we have irq_desc and
-not irq number.
+Hello,
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- arch/powerpc/sysdev/mpic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On 5/21/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
+> kit and others). Driver is based on a cpufreq driver for 64-bit powermac
+> boxes with all pmac-dependant features removed and simple cleanup
+> applied.
+>
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> ---
+>  arch/powerpc/kernel/misc_64.S          |    4 +-
+>  arch/powerpc/platforms/Kconfig         |    8 +
+>  arch/powerpc/platforms/maple/Makefile  |    1 +
+>  arch/powerpc/platforms/maple/cpufreq.c |  317
+> ++++++++++++++++++++++++++++++++
+>  4 files changed, 328 insertions(+), 2 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 3a8de5b..3f995dc 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -848,7 +848,7 @@ static void mpic_unmask_tm(struct irq_data *d)
- 	struct mpic *mpic = mpic_from_irq_data(d);
- 	unsigned int src = virq_to_hw(d->irq) - mpic->timer_vecs[0];
- 
--	DBG("%s: enable_tm: %d (tm %d)\n", mpic->name, irq, src);
-+	DBG("%s: enable_tm: %d (tm %d)\n", mpic->name, d->irq, src);
- 	mpic_tm_write(src, mpic_tm_read(src) & ~MPIC_VECPRI_MASK);
- 	mpic_tm_read(src);
- }
+What about this patch?
+
 -- 
-1.7.4.4
+With best wishes
+Dmitry
