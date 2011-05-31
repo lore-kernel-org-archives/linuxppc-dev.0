@@ -1,26 +1,21 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 6B6B4B6F71
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 01:54:13 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH] ssb: pci: implement serdes workaround
-References: <1301657212-12126-1-git-send-email-zajec5@gmail.com>
-	<m2vcwr9pn8.fsf@linux-m68k.org> <4DE505C6.8020601@lwfinger.net>
-Date: Tue, 31 May 2011 17:54:08 +0200
-In-Reply-To: <4DE505C6.8020601@lwfinger.net> (Larry Finger's message of "Tue,
-	31 May 2011 10:14:14 -0500")
-Message-ID: <m3wrh6hnmn.fsf@linux-m68k.org>
+Return-Path: <B29882@freescale.com>
+Received: from CH1EHSOBE003.bigfish.com (ch1ehsobe001.messaging.microsoft.com
+	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 97979B6F73
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 02:01:44 +1000 (EST)
+From: McClintock Matthew-B29882 <B29882@freescale.com>
+To: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
+Subject: Re: Mapping an executable page
+Date: Tue, 31 May 2011 16:01:35 +0000
+Message-ID: <BANLkTinL-z6AUGn-vnDpsWF9bqPenoQ-7w@mail.gmail.com>
+References: <BANLkTikd3ZtNRcz=ZWSsDL9OoeV0Wndy1g@mail.gmail.com>
+In-Reply-To: <BANLkTikd3ZtNRcz=ZWSsDL9OoeV0Wndy1g@mail.gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: =?utf-8?Q?Rafa=C5=82_Mi=C5=82ecki?=
-	<public-zajec5-Re5JQEeQqe8AvxtiuMwx3w@plane.gmane.org>,
-	Michael =?utf-8?Q?B=C3=BCsch?=
-	<public-mb-fseUSCV1ubazQB+pC5nmwQ@plane.gmane.org>,
-	public-b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@plane.gmane.org,
-	linuxppc-dev@ozlabs.org, "John W.
-	Linville" <public-linville-2XuSBdqkA4R54TAoqtyWWQ@plane.gmane.org>,
-	public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@plane.gmane.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: McClintock Matthew-B29882 <B29882@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Larry Finger <Larry.Finger@lwfinger.net> writes:
+On Fri, May 27, 2011 at 8:25 AM, Thomas De Schampheleire
+<patrickdepinguin+linuxppc@gmail.com> wrote:
+> Although I realize that what I need to achieve is unconventional, what
+> is the correct way of mapping a certain address range into memory, and
+> be able to execute from it?
 
-> From the traceback, it must be the serdes_pll_device read that failed.
+Can you look at using mpic_reset_core in arch/powerpc/sysdev/mpic.c?
+kexec on 85xx uses this to reset other cores the the hold off spin
+loop.
 
-Why not ssb_pcicore_polarity_workaround (note r4 == 0x134)?
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+-M=
