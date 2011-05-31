@@ -1,30 +1,26 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
-	[209.85.213.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E7DCDB6F75
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 02:17:17 +1000 (EST)
-Received: by yxi11 with SMTP id 11so2542316yxi.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 May 2011 09:17:14 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-Message-ID: <4DE51487.1000808@lwfinger.net>
-Date: Tue, 31 May 2011 11:17:11 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9947CB6F72
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 03:07:24 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
 Subject: Re: [PATCH] ssb: pci: implement serdes workaround
-References: <1301657212-12126-1-git-send-email-zajec5@gmail.com>	<m2vcwr9pn8.fsf@linux-m68k.org>
-	<4DE505C6.8020601@lwfinger.net> <m3wrh6hnmn.fsf@linux-m68k.org>
-In-Reply-To: <m3wrh6hnmn.fsf@linux-m68k.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?=
+References: <1301657212-12126-1-git-send-email-zajec5@gmail.com>
+	<m2vcwr9pn8.fsf@linux-m68k.org> <4DE505C6.8020601@lwfinger.net>
+	<m3wrh6hnmn.fsf@linux-m68k.org> <4DE51487.1000808@lwfinger.net>
+Date: Tue, 31 May 2011 19:07:19 +0200
+In-Reply-To: <4DE51487.1000808@lwfinger.net> (Larry Finger's message of "Tue,
+	31 May 2011 11:17:11 -0500")
+Message-ID: <m239jukddk.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: =?utf-8?Q?Rafa=C5=82_Mi=C5=82ecki?=
 	<public-zajec5-Re5JQEeQqe8AvxtiuMwx3w@plane.gmane.org>,
-	=?UTF-8?B?TWljaGE=?= =?UTF-8?B?ZWwgQsO8c2No?=
+	Michael =?utf-8?Q?B=C3=BCsch?=
 	<public-mb-fseUSCV1ubazQB+pC5nmwQ@plane.gmane.org>,
 	public-b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@plane.gmane.org,
-	linuxppc-dev@ozlabs.org, "John W. Linville"
-	<public-linville-2XuSBdqkA4R54TAoqtyWWQ@plane.gmane.org>,
+	linuxppc-dev@ozlabs.org, "John W.
+	Linville" <public-linville-2XuSBdqkA4R54TAoqtyWWQ@plane.gmane.org>,
 	public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@plane.gmane.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,16 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2011 10:54 AM, Andreas Schwab wrote:
-> Larry Finger<Larry.Finger@lwfinger.net>  writes:
+Larry Finger <Larry.Finger@lwfinger.net> writes:
+
+> On 05/31/2011 10:54 AM, Andreas Schwab wrote:
+>> Larry Finger<Larry.Finger@lwfinger.net>  writes:
+>>
+>>>  From the traceback, it must be the serdes_pll_device read that failed.
+>>
+>> Why not ssb_pcicore_polarity_workaround (note r4 == 0x134)?
 >
->>  From the traceback, it must be the serdes_pll_device read that failed.
+> Mainly because the last two steps in the traceback are
 >
-> Why not ssb_pcicore_polarity_workaround (note r4 == 0x134)?
+> [c2ca5c40] [f2146244] ssb_pcie_read+0x4c/0x54 [ssb]
+> [c2ca5c50] [f2146440] ssb_pcicore_serdes_workaround+0x1c/0x170 [ssb]
 
-Mainly because the last two steps in the traceback are
+Which exactly is what ssb_pcicore_polarity_workaround is doing.
 
-[c2ca5c40] [f2146244] ssb_pcie_read+0x4c/0x54 [ssb]
-[c2ca5c50] [f2146440] ssb_pcicore_serdes_workaround+0x1c/0x170 [ssb]
+Andreas.
 
-Larry
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
