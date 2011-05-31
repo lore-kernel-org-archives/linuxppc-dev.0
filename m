@@ -1,28 +1,14 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id EDB15B6F75
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 03:32:54 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH] ssb: pci: implement serdes workaround
-References: <1301657212-12126-1-git-send-email-zajec5@gmail.com>
-	<m2vcwr9pn8.fsf@linux-m68k.org> <4DE505C6.8020601@lwfinger.net>
-	<m3wrh6hnmn.fsf@linux-m68k.org> <4DE51487.1000808@lwfinger.net>
-	<m239jukddk.fsf@igel.home>
-Date: Tue, 31 May 2011 19:32:50 +0200
-In-Reply-To: <m239jukddk.fsf@igel.home> (Andreas Schwab's message of "Tue, 31
-	May 2011 19:07:19 +0200")
-Message-ID: <m2vcwqixml.fsf@igel.home>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: PCI EDAC on MPC85xx
+Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
-Cc: =?utf-8?Q?Rafa=C5=82_Mi=C5=82ecki?=
-	<public-zajec5-Re5JQEeQqe8AvxtiuMwx3w@plane.gmane.org>,
-	Michael =?utf-8?Q?B=C3=BCsch?=
-	<public-mb-fseUSCV1ubazQB+pC5nmwQ@plane.gmane.org>,
-	public-b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@plane.gmane.org,
-	linuxppc-dev@ozlabs.org, "John W.
-	Linville" <public-linville-2XuSBdqkA4R54TAoqtyWWQ@plane.gmane.org>,
-	public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@plane.gmane.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20110531131737.GA29164@doriath.ww600.siemens.net>
+Date: Tue, 31 May 2011 13:41:04 -0500
+Message-Id: <7373D079-743D-4D49-BDC6-2BEAF14C43DF@kernel.crashing.org>
+References: <20110531131737.GA29164@doriath.ww600.siemens.net>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andreas Schwab <schwab@linux-m68k.org> writes:
 
-> Larry Finger <Larry.Finger@lwfinger.net> writes:
->
->> On 05/31/2011 10:54 AM, Andreas Schwab wrote:
->>> Larry Finger<Larry.Finger@lwfinger.net>  writes:
->>>
->>>>  From the traceback, it must be the serdes_pll_device read that failed.
->>>
->>> Why not ssb_pcicore_polarity_workaround (note r4 == 0x134)?
->>
->> Mainly because the last two steps in the traceback are
->>
->> [c2ca5c40] [f2146244] ssb_pcie_read+0x4c/0x54 [ssb]
->> [c2ca5c50] [f2146440] ssb_pcicore_serdes_workaround+0x1c/0x170 [ssb]
->
-> Which exactly is what ssb_pcicore_polarity_workaround is doing.
+On May 31, 2011, at 8:17 AM, Dmitry Eremin-Solenikov wrote:
 
-0000022c <ssb_pcicore_serdes_workaround>:
- 22c:   94 21 ff e0     stwu    r1,-32(r1)
- 230:   7c 08 02 a6     mflr    r0
- 234:   38 80 02 04     li      r4,516
- 238:   90 01 00 24     stw     r0,36(r1)
- 23c:   bf a1 00 14     stmw    r29,20(r1)
- 240:   7c 7f 1b 78     mr      r31,r3
- 244:   4b ff fd bd     bl      0 <ssb_pcie_read>
+> Hello,
+>=20
+> Long time ago (around July of 2010), I've reported a problem of =
+binding
+> pci error reporting driver to the hardware (See
+> http://thread.gmane.org/gmane.linux.kernel.edac/181). Grant Likely has
+> come with a patch to create platform devices (of_platform at that =
+time),
+> for device_nodes which have "compatible" properties
+> (http://article.gmane.org/gmane.linux.ports.ppc.embedded/36981).
+>=20
+> The patch was not applied at that time and the problem still arises at
+> 3.0-rc1. Should the patch in question be applied, or is there any new
+> solution?
+> Current version of that patch which I have in my tree is attached
+> to this mail (no original signoff by Grant).
+>=20
+> --=20
+> With best wishes
+> Dmitry
+>=20
+> <0001-of-device-Register-children-with-a-compatible-value-.patch>
 
-Andreas.
+I think the desired solution here was to create a new node in the =
+fsl_pci code that the edac code would bind against.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+- k=
