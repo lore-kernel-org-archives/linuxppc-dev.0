@@ -1,9 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 31 May 2011 20:17:58 +1000
+Date: Tue, 31 May 2011 20:16:50 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 07/12] powerpc: Set up LPCR for running guest partitions
-Message-ID: <20110531101758.GE2505@brick.ozlabs.ibm.com>
+Subject: [PATCH v2 05/12] kvm/powerpc: Pass init/destroy vm and
+	prepare/commit memory region ops down
+Message-ID: <20110531101650.GC2505@brick.ozlabs.ibm.com>
 References: <20110531064028.GA2533@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -17,81 +18,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In hypervisor mode, the LPCR controls several aspects of guest
-partitions, including virtual partition memory mode, and also controls
-whether the hypervisor decrementer interrupts are enabled.  This sets
-up LPCR at boot time so that guest partitions will use a virtual real
-memory area (VRMA) composed of 16MB large pages, and hypervisor
-decrementer interrupts are disabled.
+This arranges for the top-level arch/powerpc/kvm/powerpc.c file to
+pass down some of the calls it gets to the lower-level subarchitecture
+specific code.  The lower-level implementations (in booke.c and book3s.c)
+are no-ops.  The coming book3s_hv.c will need this.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/reg.h         |    4 ++++
- arch/powerpc/kernel/cpu_setup_power7.S |   18 +++++++++++-------
- 2 files changed, 15 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h |    7 +++++++
+ arch/powerpc/kvm/book3s_pr.c       |   20 ++++++++++++++++++++
+ arch/powerpc/kvm/booke.c           |   20 ++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c         |    9 ++++++---
+ 4 files changed, 53 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index c5cae0d..d879a6b 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -232,10 +232,12 @@
- #define   LPCR_VPM0	(1ul << (63-0))
- #define   LPCR_VPM1	(1ul << (63-1))
- #define   LPCR_ISL	(1ul << (63-2))
-+#define   LPCR_VC_SH	(63-2)
- #define   LPCR_DPFD_SH	(63-11)
- #define   LPCR_VRMA_L	(1ul << (63-12))
- #define   LPCR_VRMA_LP0	(1ul << (63-15))
- #define   LPCR_VRMA_LP1	(1ul << (63-16))
-+#define   LPCR_VRMASD_SH (63-16)
- #define   LPCR_RMLS    0x1C000000      /* impl dependent rmo limit sel */
- #define   LPCR_ILE     0x02000000      /* !HV irqs set MSR:LE */
- #define   LPCR_PECE	0x00007000	/* powersave exit cause enable */
-@@ -243,8 +245,10 @@
- #define     LPCR_PECE1	0x00002000	/* decrementer can cause exit */
- #define     LPCR_PECE2	0x00001000	/* machine check etc can cause exit */
- #define   LPCR_MER	0x00000800	/* Mediated External Exception */
-+#define   LPCR_LPES    0x0000000c
- #define   LPCR_LPES0   0x00000008      /* LPAR Env selector 0 */
- #define   LPCR_LPES1   0x00000004      /* LPAR Env selector 1 */
-+#define   LPCR_LPES_SH	2
- #define   LPCR_RMI     0x00000002      /* real mode is cache inhibit */
- #define   LPCR_HDICE   0x00000001      /* Hyp Decr enable (HV,PR,EE) */
- #define SPRN_LPID	0x13F	/* Logical Partition Identifier */
-diff --git a/arch/powerpc/kernel/cpu_setup_power7.S b/arch/powerpc/kernel/cpu_setup_power7.S
-index 4f9a93f..2ef6749 100644
---- a/arch/powerpc/kernel/cpu_setup_power7.S
-+++ b/arch/powerpc/kernel/cpu_setup_power7.S
-@@ -61,19 +61,23 @@ __init_LPCR:
- 	 *   LPES = 0b01 (HSRR0/1 used for 0x500)
- 	 *   PECE = 0b111
- 	 *   DPFD = 4
-+	 *   HDICE = 0
-+	 *   VC = 0b100 (VPM0=1, VPM1=0, ISL=0)
-+	 *   VRMASD = 0b10000 (L=1, LP=00)
- 	 *
- 	 * Other bits untouched for now
- 	 */
- 	mfspr	r3,SPRN_LPCR
--	ori	r3,r3,(LPCR_LPES0|LPCR_LPES1)
--	xori	r3,r3, LPCR_LPES0
-+	li	r5,1
-+	rldimi	r3,r5, LPCR_LPES_SH, 64-LPCR_LPES_SH-2
- 	ori	r3,r3,(LPCR_PECE0|LPCR_PECE1|LPCR_PECE2)
--	li	r5,7
--	sldi	r5,r5,LPCR_DPFD_SH
--	andc	r3,r3,r5
- 	li	r5,4
--	sldi	r5,r5,LPCR_DPFD_SH
--	or	r3,r3,r5
-+	rldimi	r3,r5, LPCR_DPFD_SH, 64-LPCR_DPFD_SH-3
-+	clrrdi	r3,r3,1		/* clear HDICE */
-+	li	r5,4
-+	rldimi	r3,r5, LPCR_VC_SH, 0
-+	li	r5,0x10
-+	rldimi	r3,r5, LPCR_VRMASD_SH, 64-LPCR_VRMASD_SH-5
- 	mtspr	SPRN_LPCR,r3
- 	isync
- 	blr
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 9345238..3a925fa 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -110,6 +110,13 @@ extern void kvmppc_booke_exit(void);
+ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
+ extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
+ 
++extern int kvmppc_core_init_vm(struct kvm *kvm);
++extern void kvmppc_core_destroy_vm(struct kvm *kvm);
++extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem);
++extern void kvmppc_core_commit_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem);
++
+ /*
+  * Cuts out inst bits with ordering according to spec.
+  * That means the leftmost bit is zero. All given bits are included.
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 82df775..82aaf65 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -984,6 +984,26 @@ int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	return ret;
+ }
+ 
++int kvmppc_core_prepare_memory_region(struct kvm *kvm,
++				      struct kvm_userspace_memory_region *mem)
++{
++	return 0;
++}
++
++void kvmppc_core_commit_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem)
++{
++}
++
++int kvmppc_core_init_vm(struct kvm *kvm)
++{
++	return 0;
++}
++
++void kvmppc_core_destroy_vm(struct kvm *kvm)
++{
++}
++
+ static int kvmppc_book3s_init(void)
+ {
+ 	int r;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 8462b3a..7a0bc11 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -770,6 +770,26 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+ 	return -ENOTSUPP;
+ }
+ 
++int kvmppc_core_prepare_memory_region(struct kvm *kvm,
++				      struct kvm_userspace_memory_region *mem)
++{
++	return 0;
++}
++
++void kvmppc_core_commit_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem)
++{
++}
++
++int kvmppc_core_init_vm(struct kvm *kvm)
++{
++	return 0;
++}
++
++void kvmppc_core_destroy_vm(struct kvm *kvm)
++{
++}
++
+ int __init kvmppc_booke_init(void)
+ {
+ 	unsigned long ivor[16];
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 616dd51..216905b 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -147,7 +147,7 @@ void kvm_arch_check_processor_compat(void *rtn)
+ 
+ int kvm_arch_init_vm(struct kvm *kvm)
+ {
+-	return 0;
++	return kvmppc_core_init_vm(kvm);
+ }
+ 
+ void kvm_arch_destroy_vm(struct kvm *kvm)
+@@ -163,6 +163,9 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+ 		kvm->vcpus[i] = NULL;
+ 
+ 	atomic_set(&kvm->online_vcpus, 0);
++
++	kvmppc_core_destroy_vm(kvm);
++
+ 	mutex_unlock(&kvm->lock);
+ }
+ 
+@@ -211,7 +214,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+                                    struct kvm_userspace_memory_region *mem,
+                                    int user_alloc)
+ {
+-	return 0;
++	return kvmppc_core_prepare_memory_region(kvm, mem);
+ }
+ 
+ void kvm_arch_commit_memory_region(struct kvm *kvm,
+@@ -219,7 +222,7 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+                struct kvm_memory_slot old,
+                int user_alloc)
+ {
+-       return;
++	kvmppc_core_commit_memory_region(kvm, mem);
+ }
+ 
+ 
 -- 
 1.7.5.3
