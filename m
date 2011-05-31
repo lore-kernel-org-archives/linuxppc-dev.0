@@ -1,18 +1,18 @@
-Return-Path: <meador_inge@mentor.com>
-Message-ID: <4DE53F57.2050402@mentor.com>
-Date: Tue, 31 May 2011 14:19:51 -0500
-From: Meador Inge <meador_inge@mentor.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc: document the FSL MPIC message register
+Return-Path: <B07421@freescale.com>
+Date: Tue, 31 May 2011 14:23:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Meador Inge <meador_inge@mentor.com>
+Subject: Re: [PATCH v3 1/2] powerpc: document the FSL MPIC message register
 	binding
-References: <1305909399-26969-1-git-send-email-meador_inge@mentor.com>	<1305909399-26969-2-git-send-email-meador_inge@mentor.com>
-	<20110526150643.3e01f9a6@schlenkerla.am.freescale.net>
-In-Reply-To: <20110526150643.3e01f9a6@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: openmcapi-dev@googlegroups.com,
+Message-ID: <20110531142352.2c272483@schlenkerla.am.freescale.net>
+In-Reply-To: <1306869543-18812-2-git-send-email-meador_inge@mentor.com>
+References: <1306869543-18812-1-git-send-email-meador_inge@mentor.com>
+	<1306869543-18812-2-git-send-email-meador_inge@mentor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: devicetree-discuss@lists.ozlabs.org,
 	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/26/2011 03:06 PM, Scott Wood wrote:
->> > +    - interrupts: Specifies a list of interrupt source and level-sense pairs.
->> > +      The type shall be <prop-encoded-array>.  The length shall be equal to
->> > +      the number of bits set in the 'msg-receive-mask' property value.
-> Oh, just noticed -- mismatch between msg-receive-mask here...
-> 
->> > +
->> > +Optional properties:
->> > +
->> > +    - mpic-msgr-receive-mask: Specifies what registers in the containing block
->> > +      are allowed to receive interrupts.  The value is a bit mask where a set
->> > +      bit at bit 'n' indicates that message register 'n' can receive interrupts.
->> > +      The type shall be <prop-encoded-array>.  If not present, then all of
->> > +      the message registers in the block are available.
-> ...and mpic-msgr-receive-mask here.
-> 
-> Might want to just say "equal to the number of registers that are
-> available for receiving interrupts", to more clearly apply to the case where
-> mpic-msgr-receive-mask is missing.
-> 
+On Tue, 31 May 2011 14:19:02 -0500
+Meador Inge <meador_inge@mentor.com> wrote:
 
-Thanks; fixed.
+> This binding documents how the message register blocks found in some FSL
+> MPIC implementations shall be represented in a device tree.
+> 
+> Signed-off-by: Meador Inge <meador_inge@mentor.com>
+> Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Scott Wood <scottwood@freescale.com>
+> ---
+>  .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 ++++++++++++++++++++
+>  1 files changed, 62 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
 
--- 
-Meador Inge
-CodeSourcery / Mentor Embedded
-http://www.mentor.com/embedded-software
+ACK
+
+-Scott
