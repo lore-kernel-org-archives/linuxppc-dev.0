@@ -1,10 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 31 May 2011 20:20:36 +1000
+Date: Tue, 31 May 2011 20:18:31 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 11/12] kvm/powerpc: Accelerate H_PUT_TCE by implementing
-	it in real mode
-Message-ID: <20110531102036.GI2505@brick.ozlabs.ibm.com>
+Subject: [PATCH v2 08/12] kvm/powerpc: Split host-state fields out of
+	kvmppc_book3s_shadow_vcpu
+Message-ID: <20110531101831.GF2505@brick.ozlabs.ibm.com>
 References: <20110531064028.GA2533@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,470 +18,510 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Gibson <dwg@au1.ibm.com>
+There are several fields in struct kvmppc_book3s_shadow_vcpu that
+temporarily store bits of host state while a guest is running,
+rather than anything relating to the particular guest or vcpu.
+This splits them out into a new kvmppc_host_state structure and
+modifies the definitions in asm-offsets.c to suit.
 
-This improves I/O performance for guests using the PAPR
-paravirtualization interface by making the H_PUT_TCE hcall faster, by
-implementing it in real mode.  H_PUT_TCE is used for updating virtual
-IOMMU tables, and is used both for virtual I/O and for real I/O in the
-PAPR interface.
+On 32-bit, we have a kvmppc_host_state structure inside the
+kvmppc_book3s_shadow_vcpu since the assembly code needs to be able
+to get to them both with one pointer.  On 64-bit they are separate
+fields in the PACA.  This means that on 64-bit we don't need to
+copy the kvmppc_host_state in and out on vcpu load/unload, and
+in future will mean that the book3s_hv code doesn't need a
+shadow_vcpu struct in the PACA at all.
 
-Since this moves the IOMMU tables into the kernel, we define a new
-KVM_CREATE_SPAPR_TCE ioctl to allow qemu to create the tables.  The
-ioctl returns a file descriptor which can be used to mmap the newly
-created table.  The qemu driver models use them in the same way as
-userspace managed tables, but they can be updated directly by the
-guest with a real-mode H_PUT_TCE implementation, reducing the number
-of host/guest context switches during guest IO.
-
-There are certain circumstances where it is useful for userland qemu
-to write to the TCE table even if the kernel H_PUT_TCE path is used
-most of the time.  Specifically, allowing this will avoid awkwardness
-when we need to reset the table.  More importantly, we will in the
-future need to write the table in order to restore its state after a
-checkpoint resume or migration.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- Documentation/virtual/kvm/api.txt        |   35 +++++++++
- arch/powerpc/include/asm/kvm.h           |    9 +++
- arch/powerpc/include/asm/kvm_book3s_64.h |    2 +
- arch/powerpc/include/asm/kvm_host.h      |    9 +++
- arch/powerpc/include/asm/kvm_ppc.h       |    2 +
- arch/powerpc/kvm/Makefile                |    3 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c      |   73 +++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c             |  116 +++++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  |    2 +-
- arch/powerpc/kvm/powerpc.c               |   18 +++++
- include/linux/kvm.h                      |    3 +
- 11 files changed, 269 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_64_vio_hv.c
+ arch/powerpc/include/asm/exception-64s.h  |   10 ++--
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   27 ++++++---
+ arch/powerpc/include/asm/paca.h           |    1 +
+ arch/powerpc/kernel/asm-offsets.c         |   94 ++++++++++++++--------------
+ arch/powerpc/kvm/book3s_interrupts.S      |   17 +++---
+ arch/powerpc/kvm/book3s_rmhandlers.S      |   18 +++---
+ arch/powerpc/kvm/book3s_segment.S         |   72 +++++++++++-----------
+ 7 files changed, 124 insertions(+), 115 deletions(-)
 
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index f61e986..acf0fcd 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -1291,6 +1291,41 @@ Returns the tsc frequency of the guest. The unit of the return value is
- KHz. If the host has unstable tsc this ioctl returns -EIO instead as an
- error.
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index b6a3a44..296c9b6 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -96,16 +96,16 @@
+ 	EXCEPTION_PROLOG_PSERIES_1(label, h);
  
-+4.56 KVM_CREATE_SPAPR_TCE
-+
-+Capability: KVM_CAP_SPAPR_TCE
-+Architectures: powerpc
-+Type: vm ioctl
-+Parameters: struct kvm_create_spapr_tce (in)
-+Returns: file descriptor for manipulating the created TCE table
-+
-+This creates a virtual TCE (translation control entry) table, which
-+is an IOMMU for PAPR-style virtual I/O.  It is used to translate
-+logical addresses used in virtual I/O into guest physical addresses,
-+and provides a scatter/gather capability for PAPR virtual I/O.
-+
-+/* for KVM_CAP_SPAPR_TCE */
-+struct kvm_create_spapr_tce {
-+	__u64 liobn;
-+	__u32 window_size;
-+};
-+
-+The liobn field gives the logical IO bus number for which to create a
-+TCE table.  The window_size field specifies the size of the DMA window
-+which this TCE table will translate - the table will contain one 64
-+bit TCE entry for every 4kiB of the DMA window.
-+
-+When the guest issues an H_PUT_TCE hcall on a liobn for which a TCE
-+table has been created using this ioctl(), the kernel will handle it
-+in real mode, updating the TCE table.  H_PUT_TCE calls for other
-+liobns will cause a vm exit and must be handled by userspace.
-+
-+The return value is a file descriptor which can be passed to mmap(2)
-+to map the created TCE table into userspace.  This lets userspace read
-+the entries written by kernel-handled H_PUT_TCE calls, and also lets
-+userspace update the TCE table directly which is useful in some
-+circumstances.
-+
- 5. The kvm_run structure
+ #define __KVMTEST(n)							\
+-	lbz	r10,PACA_KVM_SVCPU+SVCPU_IN_GUEST(r13);			\
++	lbz	r10,HSTATE_IN_GUEST(r13);			\
+ 	cmpwi	r10,0;							\
+ 	bne	do_kvm_##n
  
- Application code obtains a pointer to the kvm_run structure by
-diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
-index d2ca5ed..c3ec990 100644
---- a/arch/powerpc/include/asm/kvm.h
-+++ b/arch/powerpc/include/asm/kvm.h
-@@ -22,6 +22,9 @@
+ #define __KVM_HANDLER(area, h, n)					\
+ do_kvm_##n:								\
+ 	ld	r10,area+EX_R10(r13);					\
+-	stw	r9,PACA_KVM_SVCPU+SVCPU_SCRATCH1(r13);			\
++	stw	r9,HSTATE_SCRATCH1(r13);			\
+ 	ld	r9,area+EX_R9(r13);					\
+-	std	r12,PACA_KVM_SVCPU+SVCPU_SCRATCH0(r13);			\
++	std	r12,HSTATE_SCRATCH0(r13);			\
+ 	li	r12,n;							\
+ 	b	kvmppc_interrupt
  
- #include <linux/types.h>
+@@ -114,9 +114,9 @@ do_kvm_##n:								\
+ 	cmpwi	r10,KVM_GUEST_MODE_SKIP;				\
+ 	ld	r10,area+EX_R10(r13);					\
+ 	beq	89f;							\
+-	stw	r9,PACA_KVM_SVCPU+SVCPU_SCRATCH1(r13);			\
++	stw	r9,HSTATE_SCRATCH1(r13);			\
+ 	ld	r9,area+EX_R9(r13);					\
+-	std	r12,PACA_KVM_SVCPU+SVCPU_SCRATCH0(r13);			\
++	std	r12,HSTATE_SCRATCH0(r13);			\
+ 	li	r12,n;							\
+ 	b	kvmppc_interrupt;					\
+ 89:	mtocrf	0x80,r9;						\
+diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+index d5a8a38..3126175 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_asm.h
++++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+@@ -60,6 +60,22 @@ kvmppc_resume_\intno:
  
-+/* Select powerpc specific features in <linux/kvm.h> */
-+#define __KVM_HAVE_SPAPR_TCE
-+
- struct kvm_regs {
- 	__u64 pc;
- 	__u64 cr;
-@@ -272,4 +275,10 @@ struct kvm_guest_debug_arch {
- #define KVM_INTERRUPT_UNSET	-2U
- #define KVM_INTERRUPT_SET_LEVEL	-3U
+ #else  /*__ASSEMBLY__ */
  
-+/* for KVM_CAP_SPAPR_TCE */
-+struct kvm_create_spapr_tce {
-+	__u64 liobn;
-+	__u32 window_size;
-+};
-+
- #endif /* __LINUX_KVM_POWERPC_H */
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 5f73388..e43fe42 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -27,4 +27,6 @@ static inline struct kvmppc_book3s_shadow_vcpu *to_svcpu(struct kvm_vcpu *vcpu)
- }
- #endif
- 
-+#define SPAPR_TCE_SHIFT		12
-+
- #endif /* __ASM_KVM_BOOK3S_64_H__ */
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 359db37..2225718 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -144,6 +144,14 @@ struct kvmppc_pginfo {
- 	atomic_t refcnt;
- };
- 
-+struct kvmppc_spapr_tce_table {
-+	struct list_head list;
-+	struct kvm *kvm;
-+	u64 liobn;
-+	u32 window_size;
-+	struct page *pages[0];
-+};
-+
- struct kvm_arch {
- #ifdef CONFIG_KVM_BOOK3S_64_HV
- 	unsigned long hpt_virt;
-@@ -157,6 +165,7 @@ struct kvm_arch {
- 	unsigned long sdr1;
- 	unsigned long host_sdr1;
- 	int tlbie_lock;
-+	struct list_head spapr_tce_tables;
- 	unsigned short last_vcpu[NR_CPUS];
- #endif /* CONFIG_KVM_BOOK3S_64_HV */
- };
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index d809e58..7655703 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -118,6 +118,8 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
- extern void kvmppc_map_vrma(struct kvm *kvm,
- 			    struct kvm_userspace_memory_region *mem);
- extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
-+extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
-+				struct kvm_create_spapr_tce *args);
- extern int kvmppc_core_init_vm(struct kvm *kvm);
- extern void kvmppc_core_destroy_vm(struct kvm *kvm);
- extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index ca7ed27..ef37969 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -59,7 +59,8 @@ kvm-book3s_64_hv-objs := \
- 	book3s.o \
- 	book3s_hv.o \
- 	book3s_hv_interrupts.o \
--	book3s_64_mmu_hv.o
-+	book3s_64_mmu_hv.o \
-+	book3s_64_vio_hv.o
- kvm-objs-$(CONFIG_KVM_BOOK3S_64_HV) := $(kvm-book3s_64_hv-objs)
- 
- kvm-book3s_32-objs := \
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-new file mode 100644
-index 0000000..ea0f8c5
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -0,0 +1,73 @@
 +/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright 2010 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-+ * Copyright 2011 David Gibson, IBM Corporation <dwg@au1.ibm.com>
++ * This struct goes in the PACA on 64-bit processors.  It is used
++ * to store host state that needs to be saved when we enter a guest
++ * and restored when we exit, but isn't specific to any particular
++ * guest or vcpu.  It also has some scratch fields used by the guest
++ * exit code.
 + */
-+
-+#include <linux/types.h>
-+#include <linux/string.h>
-+#include <linux/kvm.h>
-+#include <linux/kvm_host.h>
-+#include <linux/highmem.h>
-+#include <linux/gfp.h>
-+#include <linux/slab.h>
-+#include <linux/hugetlb.h>
-+#include <linux/list.h>
-+
-+#include <asm/tlbflush.h>
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/mmu-hash64.h>
-+#include <asm/hvcall.h>
-+#include <asm/synch.h>
-+#include <asm/ppc-opcode.h>
-+#include <asm/kvm_host.h>
-+#include <asm/udbg.h>
-+
-+#define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
-+
-+long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-+		      unsigned long ioba, unsigned long tce)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvmppc_spapr_tce_table *stt;
-+
-+	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
-+	/* 	    liobn, ioba, tce); */
-+
-+	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-+		if (stt->liobn == liobn) {
-+			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
-+			struct page *page;
-+			u64 *tbl;
-+
-+			/* udbg_printf("H_PUT_TCE: liobn 0x%lx => stt=%p  window_size=0x%x\n", */
-+			/* 	    liobn, stt, stt->window_size); */
-+			if (ioba >= stt->window_size)
-+				return H_PARAMETER;
-+
-+			page = stt->pages[idx / TCES_PER_PAGE];
-+			tbl = (u64 *)page_address(page);
-+
-+			/* FIXME: Need to validate the TCE itself */
-+			/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
-+			tbl[idx % TCES_PER_PAGE] = tce;
-+			return H_SUCCESS;
-+		}
-+	}
-+
-+	/* Didn't find the liobn, punt it to userspace */
-+	return H_TOO_HARD;
-+}
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index d565a9f..aee457c 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -523,6 +523,116 @@ int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	return r;
- }
- 
-+static long kvmppc_stt_npages(unsigned long window_size)
-+{
-+	return ALIGN((window_size >> SPAPR_TCE_SHIFT)
-+		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
-+}
-+
-+static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
-+{
-+	struct kvm *kvm = stt->kvm;
-+	int i;
-+
-+	mutex_lock(&kvm->lock);
-+	list_del(&stt->list);
-+	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
-+		__free_page(stt->pages[i]);
-+	kfree(stt);
-+	mutex_unlock(&kvm->lock);
-+
-+	kvm_put_kvm(kvm);
-+}
-+
-+static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	struct kvmppc_spapr_tce_table *stt = vma->vm_file->private_data;
-+	struct page *page;
-+
-+	if (vmf->pgoff >= kvmppc_stt_npages(stt->window_size))
-+		return VM_FAULT_SIGBUS;
-+
-+	page = stt->pages[vmf->pgoff];
-+	get_page(page);
-+	vmf->page = page;
-+	return 0;
-+}
-+
-+static const struct vm_operations_struct kvm_spapr_tce_vm_ops = {
-+	.fault = kvm_spapr_tce_fault,
++struct kvmppc_host_state {
++	ulong host_r1;
++	ulong host_r2;
++	ulong vmhandler;
++	ulong scratch0;
++	ulong scratch1;
++	u8 in_guest;
 +};
 +
-+static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_ops = &kvm_spapr_tce_vm_ops;
-+	return 0;
-+}
-+
-+static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
-+{
-+	struct kvmppc_spapr_tce_table *stt = filp->private_data;
-+
-+	release_spapr_tce_table(stt);
-+	return 0;
-+}
-+
-+static struct file_operations kvm_spapr_tce_fops = {
-+	.mmap           = kvm_spapr_tce_mmap,
-+	.release	= kvm_spapr_tce_release,
-+};
-+
-+long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
-+				   struct kvm_create_spapr_tce *args)
-+{
-+	struct kvmppc_spapr_tce_table *stt = NULL;
-+	long npages;
-+	int ret = -ENOMEM;
-+	int i;
-+
-+	/* Check this LIOBN hasn't been previously allocated */
-+	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-+		if (stt->liobn == args->liobn)
-+			return -EBUSY;
-+	}
-+
-+	npages = kvmppc_stt_npages(args->window_size);
-+
-+	stt = kzalloc(sizeof(*stt) + npages* sizeof(struct page *),
-+		      GFP_KERNEL);
-+	if (!stt)
-+		goto fail;
-+
-+	stt->liobn = args->liobn;
-+	stt->window_size = args->window_size;
-+	stt->kvm = kvm;
-+
-+	for (i = 0; i < npages; i++) {
-+		stt->pages[i] = alloc_page(GFP_KERNEL | __GFP_ZERO);
-+		if (!stt->pages[i])
-+			goto fail;
-+	}
-+
-+	kvm_get_kvm(kvm);
-+
-+	mutex_lock(&kvm->lock);
-+	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
-+
-+	mutex_unlock(&kvm->lock);
-+
-+	return anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
-+				stt, O_RDWR);
-+
-+fail:
-+	if (stt) {
-+		for (i = 0; i < npages; i++)
-+			if (stt->pages[i])
-+				__free_page(stt->pages[i]);
-+
-+		kfree(stt);
-+	}
-+	return ret;
-+}
-+
- int kvmppc_core_prepare_memory_region(struct kvm *kvm,
- 				struct kvm_userspace_memory_region *mem)
- {
-@@ -544,13 +654,17 @@ int kvmppc_core_init_vm(struct kvm *kvm)
+ struct kvmppc_book3s_shadow_vcpu {
+ 	ulong gpr[14];
+ 	u32 cr;
+@@ -73,17 +89,12 @@ struct kvmppc_book3s_shadow_vcpu {
+ 	ulong shadow_srr1;
+ 	ulong fault_dar;
  
- 	/* Allocate hashed page table */
- 	r = kvmppc_alloc_hpt(kvm);
-+	if (r)
-+		return r;
- 
--	return r;
-+	INIT_LIST_HEAD(&kvm->arch.spapr_tce_tables);
-+	return 0;
- }
- 
- void kvmppc_core_destroy_vm(struct kvm *kvm)
- {
- 	kvmppc_free_hpt(kvm);
-+	WARN_ON(!list_empty(&kvm->arch.spapr_tce_tables));
- }
- 
- /* These are stubs for now */
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index e0643b3..f63a884 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -732,7 +732,7 @@ hcall_real_table:
- 	.long	0		/* 0x14 - H_CLEAR_REF */
- 	.long	.kvmppc_h_protect - hcall_real_table
- 	.long	0		/* 0x1c - H_GET_TCE */
--	.long	0		/* 0x20 - H_SET_TCE */
-+	.long	.kvmppc_h_put_tce - hcall_real_table
- 	.long	0		/* 0x24 - H_SET_SPRG0 */
- 	.long	.kvmppc_h_set_dabr - hcall_real_table
- 	.long	0		/* 0x2c */
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 985ee72..7343051 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -202,6 +202,11 @@ int kvm_dev_ioctl_check_extension(long ext)
- 		r = KVM_COALESCED_MMIO_PAGE_OFFSET;
- 		break;
+-	ulong host_r1;
+-	ulong host_r2;
+-	ulong handler;
+-	ulong scratch0;
+-	ulong scratch1;
+-	ulong vmhandler;
+-	u8 in_guest;
+-
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	u32     sr[16];			/* Guest SRs */
++
++	struct kvmppc_host_state hstate;
  #endif
-+#ifdef CONFIG_KVM_BOOK3S_64_HV
-+	case KVM_CAP_SPAPR_TCE:
-+		r = 1;
-+		break;
++
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	u8 slb_max;			/* highest used guest slb entry */
+ 	struct  {
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 7412676..58f4a18 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -149,6 +149,7 @@ struct paca_struct {
+ #ifdef CONFIG_KVM_BOOK3S_HANDLER
+ 	/* We use this to store guest state in */
+ 	struct kvmppc_book3s_shadow_vcpu shadow_vcpu;
++	struct kvmppc_host_state kvm_hstate;
+ #endif
+ };
+ 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 36e1c8a..61064207 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -198,11 +198,6 @@ int main(void)
+ 	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
+ 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+ 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+-#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-	DEFINE(PACA_KVM_SVCPU, offsetof(struct paca_struct, shadow_vcpu));
+-	DEFINE(SVCPU_SLB, offsetof(struct kvmppc_book3s_shadow_vcpu, slb));
+-	DEFINE(SVCPU_SLB_MAX, offsetof(struct kvmppc_book3s_shadow_vcpu, slb_max));
+-#endif
+ #endif /* CONFIG_PPC64 */
+ 
+ 	/* RTAS */
+@@ -415,49 +410,54 @@ int main(void)
+ 	DEFINE(VCPU_HIGHMEM_HANDLER, offsetof(struct kvm_vcpu, arch.highmem_handler));
+ 	DEFINE(VCPU_RMCALL, offsetof(struct kvm_vcpu, arch.rmcall));
+ 	DEFINE(VCPU_HFLAGS, offsetof(struct kvm_vcpu, arch.hflags));
+-	DEFINE(VCPU_SVCPU, offsetof(struct kvmppc_vcpu_book3s, shadow_vcpu) -
+-			   offsetof(struct kvmppc_vcpu_book3s, vcpu));
+-	DEFINE(SVCPU_CR, offsetof(struct kvmppc_book3s_shadow_vcpu, cr));
+-	DEFINE(SVCPU_XER, offsetof(struct kvmppc_book3s_shadow_vcpu, xer));
+-	DEFINE(SVCPU_CTR, offsetof(struct kvmppc_book3s_shadow_vcpu, ctr));
+-	DEFINE(SVCPU_LR, offsetof(struct kvmppc_book3s_shadow_vcpu, lr));
+-	DEFINE(SVCPU_PC, offsetof(struct kvmppc_book3s_shadow_vcpu, pc));
+-	DEFINE(SVCPU_R0, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[0]));
+-	DEFINE(SVCPU_R1, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[1]));
+-	DEFINE(SVCPU_R2, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[2]));
+-	DEFINE(SVCPU_R3, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[3]));
+-	DEFINE(SVCPU_R4, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[4]));
+-	DEFINE(SVCPU_R5, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[5]));
+-	DEFINE(SVCPU_R6, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[6]));
+-	DEFINE(SVCPU_R7, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[7]));
+-	DEFINE(SVCPU_R8, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[8]));
+-	DEFINE(SVCPU_R9, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[9]));
+-	DEFINE(SVCPU_R10, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[10]));
+-	DEFINE(SVCPU_R11, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[11]));
+-	DEFINE(SVCPU_R12, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[12]));
+-	DEFINE(SVCPU_R13, offsetof(struct kvmppc_book3s_shadow_vcpu, gpr[13]));
+-	DEFINE(SVCPU_HOST_R1, offsetof(struct kvmppc_book3s_shadow_vcpu, host_r1));
+-	DEFINE(SVCPU_HOST_R2, offsetof(struct kvmppc_book3s_shadow_vcpu, host_r2));
+-	DEFINE(SVCPU_VMHANDLER, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					 vmhandler));
+-	DEFINE(SVCPU_SCRATCH0, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					scratch0));
+-	DEFINE(SVCPU_SCRATCH1, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					scratch1));
+-	DEFINE(SVCPU_IN_GUEST, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					in_guest));
+-	DEFINE(SVCPU_FAULT_DSISR, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					   fault_dsisr));
+-	DEFINE(SVCPU_FAULT_DAR, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					 fault_dar));
+-	DEFINE(SVCPU_LAST_INST, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					 last_inst));
+-	DEFINE(SVCPU_SHADOW_SRR1, offsetof(struct kvmppc_book3s_shadow_vcpu,
+-					   shadow_srr1));
++
++#ifdef CONFIG_PPC_BOOK3S_64
++# define SVCPU_FIELD(x, f)	DEFINE(x, offsetof(struct paca_struct, shadow_vcpu.f))
++# define HSTATE_FIELD(x, f)	DEFINE(x, offsetof(struct paca_struct, kvm_hstate.f))
++#else	/* 32-bit */
++# define SVCPU_FIELD(x, f)	DEFINE(x, offsetof(struct kvmppc_book3s_shadow_vcpu, f))
++# define HSTATE_FIELD(x, f)	DEFINE(x, offsetof(struct kvmppc_book3s_shadow_vcpu, hstate.f))
 +#endif
- 	default:
- 		r = 0;
- 		break;
-@@ -652,6 +657,19 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 
- 		break;
- 	}
-+#ifdef CONFIG_KVM_BOOK3S_64_HV
-+	case KVM_CREATE_SPAPR_TCE: {
-+		struct kvm_create_spapr_tce create_tce;
-+		struct kvm *kvm = filp->private_data;
 +
-+		r = -EFAULT;
-+		if (copy_from_user(&create_tce, argp, sizeof(create_tce)))
-+			goto out;
-+		r = kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce);
-+		goto out;
-+	}
-+#endif /* CONFIG_KVM_BOOK3S_64_HV */
++	SVCPU_FIELD(SVCPU_CR, cr);
++	SVCPU_FIELD(SVCPU_XER, xer);
++	SVCPU_FIELD(SVCPU_CTR, ctr);
++	SVCPU_FIELD(SVCPU_LR, lr);
++	SVCPU_FIELD(SVCPU_PC, pc);
++	SVCPU_FIELD(SVCPU_R0, gpr[0]);
++	SVCPU_FIELD(SVCPU_R1, gpr[1]);
++	SVCPU_FIELD(SVCPU_R2, gpr[2]);
++	SVCPU_FIELD(SVCPU_R3, gpr[3]);
++	SVCPU_FIELD(SVCPU_R4, gpr[4]);
++	SVCPU_FIELD(SVCPU_R5, gpr[5]);
++	SVCPU_FIELD(SVCPU_R6, gpr[6]);
++	SVCPU_FIELD(SVCPU_R7, gpr[7]);
++	SVCPU_FIELD(SVCPU_R8, gpr[8]);
++	SVCPU_FIELD(SVCPU_R9, gpr[9]);
++	SVCPU_FIELD(SVCPU_R10, gpr[10]);
++	SVCPU_FIELD(SVCPU_R11, gpr[11]);
++	SVCPU_FIELD(SVCPU_R12, gpr[12]);
++	SVCPU_FIELD(SVCPU_R13, gpr[13]);
++	SVCPU_FIELD(SVCPU_FAULT_DSISR, fault_dsisr);
++	SVCPU_FIELD(SVCPU_FAULT_DAR, fault_dar);
++	SVCPU_FIELD(SVCPU_LAST_INST, last_inst);
++	SVCPU_FIELD(SVCPU_SHADOW_SRR1, shadow_srr1);
+ #ifdef CONFIG_PPC_BOOK3S_32
+-	DEFINE(SVCPU_SR, offsetof(struct kvmppc_book3s_shadow_vcpu, sr));
++	SVCPU_FIELD(SVCPU_SR, sr);
+ #endif
+-#else
++#ifdef CONFIG_PPC64
++	SVCPU_FIELD(SVCPU_SLB, slb);
++	SVCPU_FIELD(SVCPU_SLB_MAX, slb_max);
++#endif
 +
- 	default:
- 		r = -ENOTTY;
- 	}
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index bea0116..0836366 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -550,6 +550,7 @@ struct kvm_ppc_pvinfo {
- #define KVM_CAP_TSC_CONTROL 60
- #define KVM_CAP_GET_TSC_KHZ 61
- #define KVM_CAP_PPC_BOOKE_SREGS 62
-+#define KVM_CAP_SPAPR_TCE 63
++	HSTATE_FIELD(HSTATE_HOST_R1, host_r1);
++	HSTATE_FIELD(HSTATE_HOST_R2, host_r2);
++	HSTATE_FIELD(HSTATE_VMHANDLER, vmhandler);
++	HSTATE_FIELD(HSTATE_SCRATCH0, scratch0);
++	HSTATE_FIELD(HSTATE_SCRATCH1, scratch1);
++	HSTATE_FIELD(HSTATE_IN_GUEST, in_guest);
++
++#else /* CONFIG_PPC_BOOK3S */
+ 	DEFINE(VCPU_CR, offsetof(struct kvm_vcpu, arch.cr));
+ 	DEFINE(VCPU_XER, offsetof(struct kvm_vcpu, arch.xer));
+ 	DEFINE(VCPU_LR, offsetof(struct kvm_vcpu, arch.lr));
+@@ -467,7 +467,7 @@ int main(void)
+ 	DEFINE(VCPU_FAULT_DEAR, offsetof(struct kvm_vcpu, arch.fault_dear));
+ 	DEFINE(VCPU_FAULT_ESR, offsetof(struct kvm_vcpu, arch.fault_esr));
+ #endif /* CONFIG_PPC_BOOK3S */
+-#endif
++#endif /* CONFIG_KVM */
  
- #ifdef KVM_CAP_IRQ_ROUTING
+ #ifdef CONFIG_KVM_GUEST
+ 	DEFINE(KVM_MAGIC_SCRATCH1, offsetof(struct kvm_vcpu_arch_shared,
+diff --git a/arch/powerpc/kvm/book3s_interrupts.S b/arch/powerpc/kvm/book3s_interrupts.S
+index 8c5e0e1..91c6de6 100644
+--- a/arch/powerpc/kvm/book3s_interrupts.S
++++ b/arch/powerpc/kvm/book3s_interrupts.S
+@@ -29,8 +29,7 @@
+ #define ULONG_SIZE 		8
+ #define FUNC(name) 		GLUE(.,name)
  
-@@ -752,6 +753,8 @@ struct kvm_clock_data {
- /* Available with KVM_CAP_XCRS */
- #define KVM_GET_XCRS		  _IOR(KVMIO,  0xa6, struct kvm_xcrs)
- #define KVM_SET_XCRS		  _IOW(KVMIO,  0xa7, struct kvm_xcrs)
-+/* Available with KVM_CAP_SPAPR_TCE */
-+#define KVM_CREATE_SPAPR_TCE	  _IOW(KVMIO,  0xa8, struct kvm_create_spapr_tce)
+-#define GET_SHADOW_VCPU(reg)    \
+-        addi    reg, r13, PACA_KVM_SVCPU
++#define GET_SHADOW_VCPU_R13
  
- #define KVM_DEV_ASSIGN_ENABLE_IOMMU	(1 << 0)
+ #define DISABLE_INTERRUPTS	\
+ 	mfmsr   r0;		\
+@@ -43,8 +42,8 @@
+ #define ULONG_SIZE              4
+ #define FUNC(name)		name
  
+-#define GET_SHADOW_VCPU(reg)    \
+-        lwz     reg, (THREAD + THREAD_KVM_SVCPU)(r2)
++#define GET_SHADOW_VCPU_R13	\
++	lwz	r13, (THREAD + THREAD_KVM_SVCPU)(r2)
+ 
+ #define DISABLE_INTERRUPTS	\
+ 	mfmsr   r0;		\
+@@ -107,15 +106,15 @@ kvm_start_entry:
+ 	/* Load non-volatile guest state from the vcpu */
+ 	VCPU_LOAD_NVGPRS(r4)
+ 
+-	GET_SHADOW_VCPU(r5)
++	GET_SHADOW_VCPU_R13
+ 
+-	/* Save R1/R2 in the PACA */
+-	PPC_STL	r1, SVCPU_HOST_R1(r5)
+-	PPC_STL	r2, SVCPU_HOST_R2(r5)
++	/* Save R1/R2 in the PACA (64-bit) or shadow_vcpu (32-bit) */
++	PPC_STL	r1, HSTATE_HOST_R1(r13)
++	PPC_STL	r2, HSTATE_HOST_R2(r13)
+ 
+ 	/* XXX swap in/out on load? */
+ 	PPC_LL	r3, VCPU_HIGHMEM_HANDLER(r4)
+-	PPC_STL	r3, SVCPU_VMHANDLER(r5)
++	PPC_STL	r3, HSTATE_VMHANDLER(r13)
+ 
+ kvm_start_lightweight:
+ 
+diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
+index 6c14efa..789f050 100644
+--- a/arch/powerpc/kvm/book3s_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_rmhandlers.S
+@@ -36,7 +36,6 @@
+ #if defined(CONFIG_PPC_BOOK3S_64)
+ 
+ #define LOAD_SHADOW_VCPU(reg)	GET_PACA(reg)					
+-#define SHADOW_VCPU_OFF		PACA_KVM_SVCPU
+ #define MSR_NOIRQ		MSR_KERNEL & ~(MSR_IR | MSR_DR)
+ #define FUNC(name) 		GLUE(.,name)
+ 
+@@ -66,7 +65,6 @@ kvmppc_skip_Hinterrupt:
+ 
+ #elif defined(CONFIG_PPC_BOOK3S_32)
+ 
+-#define SHADOW_VCPU_OFF		0
+ #define MSR_NOIRQ		MSR_KERNEL
+ #define FUNC(name)		name
+ 
+@@ -96,14 +94,14 @@ kvmppc_trampoline_\intno:
+ 	b	kvmppc_resume_\intno		/* Get back original handler */
+ 
+ 1:	tophys(r13, r13)
+-	stw	r12, (SHADOW_VCPU_OFF + SVCPU_SCRATCH1)(r13)
++	stw	r12, HSTATE_SCRATCH1(r13)
+ 	mfspr	r12, SPRN_SPRG_SCRATCH1
+-	stw	r12, (SHADOW_VCPU_OFF + SVCPU_SCRATCH0)(r13)
+-	lbz	r12, (SHADOW_VCPU_OFF + SVCPU_IN_GUEST)(r13)
++	stw	r12, HSTATE_SCRATCH0(r13)
++	lbz	r12, HSTATE_IN_GUEST(r13)
+ 	cmpwi	r12, KVM_GUEST_MODE_NONE
+ 	bne	..kvmppc_handler_hasmagic_\intno
+ 	/* No KVM guest? Then jump back to the Linux handler! */
+-	lwz	r12, (SHADOW_VCPU_OFF + SVCPU_SCRATCH1)(r13)
++	lwz	r12, HSTATE_SCRATCH1(r13)
+ 	b	2b
+ 
+ 	/* Now we know we're handling a KVM guest */
+@@ -146,8 +144,8 @@ INTERRUPT_TRAMPOLINE	BOOK3S_INTERRUPT_ALTIVEC
+  *
+  * R12            = free
+  * R13            = Shadow VCPU (PACA)
+- * SVCPU.SCRATCH0 = guest R12
+- * SVCPU.SCRATCH1 = guest CR
++ * HSTATE.SCRATCH0 = guest R12
++ * HSTATE.SCRATCH1 = guest CR
+  * SPRG_SCRATCH0  = guest R13
+  *
+  */
+@@ -159,9 +157,9 @@ kvmppc_handler_skip_ins:
+ 	mtsrr0	r12
+ 
+ 	/* Clean up all state */
+-	lwz	r12, (SHADOW_VCPU_OFF + SVCPU_SCRATCH1)(r13)
++	lwz	r12, HSTATE_SCRATCH1(r13)
+ 	mtcr	r12
+-	PPC_LL	r12, (SHADOW_VCPU_OFF + SVCPU_SCRATCH0)(r13)
++	PPC_LL	r12, HSTATE_SCRATCH0(r13)
+ 	GET_SCRATCH0(r13)
+ 
+ 	/* And get back into the code */
+diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+index 4a623eb..b0ae527 100644
+--- a/arch/powerpc/kvm/book3s_segment.S
++++ b/arch/powerpc/kvm/book3s_segment.S
+@@ -22,7 +22,7 @@
+ #if defined(CONFIG_PPC_BOOK3S_64)
+ 
+ #define GET_SHADOW_VCPU(reg)    \
+-	addi    reg, r13, PACA_KVM_SVCPU
++	mr	reg, r13
+ 
+ #elif defined(CONFIG_PPC_BOOK3S_32)
+ 
+@@ -78,7 +78,7 @@ kvmppc_handler_trampoline_enter:
+ 
+ 	/* Activate guest mode, so faults get handled by KVM */
+ 	li	r11, KVM_GUEST_MODE_GUEST
+-	stb	r11, SVCPU_IN_GUEST(r3)
++	stb	r11, HSTATE_IN_GUEST(r3)
+ 
+ 	/* Switch to guest segment. This is subarch specific. */
+ 	LOAD_GUEST_SEGMENTS
+@@ -132,30 +132,30 @@ kvmppc_interrupt:
+ 	 *
+ 	 * SPRG_SCRATCH0  = guest R13
+ 	 * R12            = exit handler id
+-	 * R13            = shadow vcpu - SHADOW_VCPU_OFF [=PACA on PPC64]
+-	 * SVCPU.SCRATCH0 = guest R12
+-	 * SVCPU.SCRATCH1 = guest CR
++	 * R13            = shadow vcpu (32-bit) or PACA (64-bit)
++	 * HSTATE.SCRATCH0 = guest R12
++	 * HSTATE.SCRATCH1 = guest CR
+ 	 *
+ 	 */
+ 
+ 	/* Save registers */
+ 
+-	PPC_STL	r0, (SHADOW_VCPU_OFF + SVCPU_R0)(r13)
+-	PPC_STL	r1, (SHADOW_VCPU_OFF + SVCPU_R1)(r13)
+-	PPC_STL	r2, (SHADOW_VCPU_OFF + SVCPU_R2)(r13)
+-	PPC_STL	r3, (SHADOW_VCPU_OFF + SVCPU_R3)(r13)
+-	PPC_STL	r4, (SHADOW_VCPU_OFF + SVCPU_R4)(r13)
+-	PPC_STL	r5, (SHADOW_VCPU_OFF + SVCPU_R5)(r13)
+-	PPC_STL	r6, (SHADOW_VCPU_OFF + SVCPU_R6)(r13)
+-	PPC_STL	r7, (SHADOW_VCPU_OFF + SVCPU_R7)(r13)
+-	PPC_STL	r8, (SHADOW_VCPU_OFF + SVCPU_R8)(r13)
+-	PPC_STL	r9, (SHADOW_VCPU_OFF + SVCPU_R9)(r13)
+-	PPC_STL	r10, (SHADOW_VCPU_OFF + SVCPU_R10)(r13)
+-	PPC_STL	r11, (SHADOW_VCPU_OFF + SVCPU_R11)(r13)
++	PPC_STL	r0, SVCPU_R0(r13)
++	PPC_STL	r1, SVCPU_R1(r13)
++	PPC_STL	r2, SVCPU_R2(r13)
++	PPC_STL	r3, SVCPU_R3(r13)
++	PPC_STL	r4, SVCPU_R4(r13)
++	PPC_STL	r5, SVCPU_R5(r13)
++	PPC_STL	r6, SVCPU_R6(r13)
++	PPC_STL	r7, SVCPU_R7(r13)
++	PPC_STL	r8, SVCPU_R8(r13)
++	PPC_STL	r9, SVCPU_R9(r13)
++	PPC_STL	r10, SVCPU_R10(r13)
++	PPC_STL	r11, SVCPU_R11(r13)
+ 
+ 	/* Restore R1/R2 so we can handle faults */
+-	PPC_LL	r1, (SHADOW_VCPU_OFF + SVCPU_HOST_R1)(r13)
+-	PPC_LL	r2, (SHADOW_VCPU_OFF + SVCPU_HOST_R2)(r13)
++	PPC_LL	r1, HSTATE_HOST_R1(r13)
++	PPC_LL	r2, HSTATE_HOST_R2(r13)
+ 
+ 	/* Save guest PC and MSR */
+ #ifdef CONFIG_PPC64
+@@ -171,17 +171,17 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE_206)
+ 1:	mfsrr0	r3
+ 	mfsrr1	r4
+ 2:
+-	PPC_STL	r3, (SHADOW_VCPU_OFF + SVCPU_PC)(r13)
+-	PPC_STL	r4, (SHADOW_VCPU_OFF + SVCPU_SHADOW_SRR1)(r13)
++	PPC_STL	r3, SVCPU_PC(r13)
++	PPC_STL	r4, SVCPU_SHADOW_SRR1(r13)
+ 
+ 	/* Get scratch'ed off registers */
+ 	GET_SCRATCH0(r9)
+-	PPC_LL	r8, (SHADOW_VCPU_OFF + SVCPU_SCRATCH0)(r13)
+-	lwz	r7, (SHADOW_VCPU_OFF + SVCPU_SCRATCH1)(r13)
++	PPC_LL	r8, HSTATE_SCRATCH0(r13)
++	lwz	r7, HSTATE_SCRATCH1(r13)
+ 
+-	PPC_STL	r9, (SHADOW_VCPU_OFF + SVCPU_R13)(r13)
+-	PPC_STL	r8, (SHADOW_VCPU_OFF + SVCPU_R12)(r13)
+-	stw	r7, (SHADOW_VCPU_OFF + SVCPU_CR)(r13)
++	PPC_STL	r9, SVCPU_R13(r13)
++	PPC_STL	r8, SVCPU_R12(r13)
++	stw	r7, SVCPU_CR(r13)
+ 
+ 	/* Save more register state  */
+ 
+@@ -191,11 +191,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE_206)
+ 	mfctr	r8
+ 	mflr	r9
+ 
+-	stw	r5, (SHADOW_VCPU_OFF + SVCPU_XER)(r13)
+-	PPC_STL	r6, (SHADOW_VCPU_OFF + SVCPU_FAULT_DAR)(r13)
+-	stw	r7, (SHADOW_VCPU_OFF + SVCPU_FAULT_DSISR)(r13)
+-	PPC_STL	r8, (SHADOW_VCPU_OFF + SVCPU_CTR)(r13)
+-	PPC_STL	r9, (SHADOW_VCPU_OFF + SVCPU_LR)(r13)
++	stw	r5, SVCPU_XER(r13)
++	PPC_STL	r6, SVCPU_FAULT_DAR(r13)
++	stw	r7, SVCPU_FAULT_DSISR(r13)
++	PPC_STL	r8, SVCPU_CTR(r13)
++	PPC_STL	r9, SVCPU_LR(r13)
+ 
+ 	/*
+ 	 * In order for us to easily get the last instruction,
+@@ -225,7 +225,7 @@ ld_last_inst:
+ 	/* Set guest mode to 'jump over instruction' so if lwz faults
+ 	 * we'll just continue at the next IP. */
+ 	li	r9, KVM_GUEST_MODE_SKIP
+-	stb	r9, (SHADOW_VCPU_OFF + SVCPU_IN_GUEST)(r13)
++	stb	r9, HSTATE_IN_GUEST(r13)
+ 
+ 	/*    1) enable paging for data */
+ 	mfmsr	r9
+@@ -239,13 +239,13 @@ ld_last_inst:
+ 	sync
+ 
+ #endif
+-	stw	r0, (SHADOW_VCPU_OFF + SVCPU_LAST_INST)(r13)
++	stw	r0, SVCPU_LAST_INST(r13)
+ 
+ no_ld_last_inst:
+ 
+ 	/* Unset guest mode */
+ 	li	r9, KVM_GUEST_MODE_NONE
+-	stb	r9, (SHADOW_VCPU_OFF + SVCPU_IN_GUEST)(r13)
++	stb	r9, HSTATE_IN_GUEST(r13)
+ 
+ 	/* Switch back to host MMU */
+ 	LOAD_HOST_SEGMENTS
+@@ -255,7 +255,7 @@ no_ld_last_inst:
+ 	 * R1       = host R1
+ 	 * R2       = host R2
+ 	 * R12      = exit handler id
+-	 * R13      = shadow vcpu - SHADOW_VCPU_OFF [=PACA on PPC64]
++	 * R13      = shadow vcpu (32-bit) or PACA (64-bit)
+ 	 * SVCPU.*  = guest *
+ 	 *
+ 	 */
+@@ -265,7 +265,7 @@ no_ld_last_inst:
+ 	ori	r7, r7, MSR_IR|MSR_DR|MSR_RI|MSR_ME	/* Enable paging */
+ 	mtsrr1	r7
+ 	/* Load highmem handler address */
+-	PPC_LL	r8, (SHADOW_VCPU_OFF + SVCPU_VMHANDLER)(r13)
++	PPC_LL	r8, HSTATE_VMHANDLER(r13)
+ 	mtsrr0	r8
+ 
+ 	RFI
 -- 
 1.7.5.3
