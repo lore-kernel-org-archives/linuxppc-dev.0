@@ -1,15 +1,12 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20110531131737.GA29164@doriath.ww600.siemens.net>
-References: <20110531131737.GA29164@doriath.ww600.siemens.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 31 May 2011 13:12:18 -0600
-Message-ID: <BANLkTi=k+mPXDmNJK=EVK23X9=rBoTedRg@mail.gmail.com>
-Subject: Re: PCI EDAC on MPC85xx
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <meador_inge@mentor.com>
+From: Meador Inge <meador_inge@mentor.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 0/2] powerpc: define and implement MPIC message register
+	support
+Date: Tue, 31 May 2011 14:19:01 -0500
+Message-Id: <1306869543-18812-1-git-send-email-meador_inge@mentor.com>
+Cc: openmcapi-dev@googlegroups.com, devicetree-discuss@lists.ozlabs.org,
+	Hollis Blanchard <hollis_blanchard@mentor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,30 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 31, 2011 at 7:17 AM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
-> Hello,
->
-> Long time ago (around July of 2010), I've reported a problem of binding
-> pci error reporting driver to the hardware (See
-> http://thread.gmane.org/gmane.linux.kernel.edac/181). Grant Likely has
-> come with a patch to create platform devices (of_platform at that time),
-> for device_nodes which have "compatible" properties
-> (http://article.gmane.org/gmane.linux.ports.ppc.embedded/36981).
->
-> The patch was not applied at that time and the problem still arises at
-> 3.0-rc1. Should the patch in question be applied, or is there any new
-> solution?
-> Current version of that patch which I have in my tree is attached
-> to this mail (no original signoff by Grant).
+This patch set defines a binding for FSL MPIC message registers and implements
+an API for accessing those message registers.  Testing was done on a MPC8572DS
+in an Linux-Linux AMP setup using OpenMCAPI (www.openmcapi.org) to communicate
+between OS instances.  The message register API is used by the OpenMCAPI shared 
+memory driver to send notifications between cores.
 
-Hi Dmitry,
+* v3 - Clarified a point in the binding concerning the length of the
+       'interrupts' property.  Pointed out by Scott Wood.
 
-I've since looked at the problem more, and I've been working on
-refactoring both of_platform_bus_probe(), and creating a new function,
-of_platform_populate(), which implements the symantics that I think
-are needed for your use case.  The work isn't done yet, but it has
-gone out for at least one round of review, and I hope to get it into
-the 3.1 merge window.
+* v2 - Incorporate feedback from Scott Wood
+   * Make binding less implementation specific.
+   * Add 'mpic-' prefix to message register node properties and aliases.
+   * Remove 'interrupt-parent' from binding.
+   * Fixed some example bugs with receive masks.
 
-g.
+Signed-off-by: Meador Inge <meador_inge@mentor.com>
+Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
+
+Meador Inge (2):
+  powerpc: document the FSL MPIC message register binding
+  powerpc: add support for MPIC message register API
+
+ .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 +++++
+ arch/powerpc/include/asm/mpic_msgr.h               |   35 +++
+ arch/powerpc/platforms/Kconfig                     |    8 +
+ arch/powerpc/sysdev/Makefile                       |    3 +-
+ arch/powerpc/sysdev/mpic_msgr.c                    |  279 ++++++++++++++++++++
+ 5 files changed, 386 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+ create mode 100644 arch/powerpc/include/asm/mpic_msgr.h
+ create mode 100644 arch/powerpc/sysdev/mpic_msgr.c
