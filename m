@@ -1,18 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Date: Tue, 31 May 2011 14:23:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Meador Inge <meador_inge@mentor.com>
-Subject: Re: [PATCH v3 1/2] powerpc: document the FSL MPIC message register
-	binding
-Message-ID: <20110531142352.2c272483@schlenkerla.am.freescale.net>
-In-Reply-To: <1306869543-18812-2-git-send-email-meador_inge@mentor.com>
-References: <1306869543-18812-1-git-send-email-meador_inge@mentor.com>
-	<1306869543-18812-2-git-send-email-meador_inge@mentor.com>
+Return-Path: <dbaryshkov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <7373D079-743D-4D49-BDC6-2BEAF14C43DF@kernel.crashing.org>
+References: <20110531131737.GA29164@doriath.ww600.siemens.net>
+	<7373D079-743D-4D49-BDC6-2BEAF14C43DF@kernel.crashing.org>
+Date: Tue, 31 May 2011 23:25:05 +0400
+Message-ID: <BANLkTikNxFktd6c4rM9E0Xc+f6mQ=FGu7A@mail.gmail.com>
+Subject: Re: PCI EDAC on MPC85xx
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 31 May 2011 14:19:02 -0500
-Meador Inge <meador_inge@mentor.com> wrote:
+On 5/31/11, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On May 31, 2011, at 8:17 AM, Dmitry Eremin-Solenikov wrote:
+>
+>> Hello,
+>>
+>> Long time ago (around July of 2010), I've reported a problem of binding
+>> pci error reporting driver to the hardware (See
+>> http://thread.gmane.org/gmane.linux.kernel.edac/181). Grant Likely has
+>> come with a patch to create platform devices (of_platform at that time),
+>> for device_nodes which have "compatible" properties
+>> (http://article.gmane.org/gmane.linux.ports.ppc.embedded/36981).
+>>
+>> The patch was not applied at that time and the problem still arises at
+>> 3.0-rc1. Should the patch in question be applied, or is there any new
+>> solution?
+>> Current version of that patch which I have in my tree is attached
+>> to this mail (no original signoff by Grant).
+>>
+>> --
+>> With best wishes
+>> Dmitry
+>>
+>> <0001-of-device-Register-children-with-a-compatible-value-.patch>
+>
+> I think the desired solution here was to create a new node in the fsl_pci
+> code that the edac code would bind against.
 
-> This binding documents how the message register blocks found in some FSL
-> MPIC implementations shall be represented in a device tree.
-> 
-> Signed-off-by: Meador Inge <meador_inge@mentor.com>
-> Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Scott Wood <scottwood@freescale.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 ++++++++++++++++++++
->  1 files changed, 62 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+Sorry, got mistaken then by Grant=B4s patch. Will provide an update on this=
+ topic
+soon.
 
-ACK
 
--Scott
+--=20
+With best wishes
+Dmitry
