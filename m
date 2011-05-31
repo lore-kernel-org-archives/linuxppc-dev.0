@@ -1,21 +1,11 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0FDFBB6F75
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 May 2011 22:50:27 +1000 (EST)
-Subject: Re: [PATCH v2 0/12] Hypervisor-mode KVM on POWER7
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20110531123521.GL2505@brick.ozlabs.ibm.com>
-Date: Tue, 31 May 2011 14:50:20 +0200
-Message-Id: <A857E6BF-D88C-46E3-BF09-268A43B7F7CF@suse.de>
-References: <20110531064028.GA2533@brick.ozlabs.ibm.com>
-	<B84695B5-5DD2-4962-AADB-A0B29009FF13@suse.de>
-	<20110531123521.GL2505@brick.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Return-Path: <dbaryshkov@gmail.com>
+Date: Tue, 31 May 2011 17:17:37 +0400
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Subject: PCI EDAC on MPC85xx
+Message-ID: <20110531131737.GA29164@doriath.ww600.siemens.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +16,84 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 31.05.2011, at 14:35, Paul Mackerras wrote:
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> On Tue, May 31, 2011 at 12:40:31PM +0200, Alexander Graf wrote:
->=20
->> Thinking about the testability of this a bit more ... how much
->> effort would it be to get this code running on a 970MP with SLOF?
->> There should only be a few POWER7 specific pieces, right?
->=20
-> Do you have a 970MP that has a usable hypervisor mode, i.e. not an
-> Apple machine?  The 970s in Apple machines have the HV hard-wired to
-> 1, which means they do have a hypervisor mode but it isn't any use.
->=20
-> If you do have such a machine, then we would have to look at some
-> details like the instruction sequence for the partition switch, and
-> make sure we don't try to use SMT4 mode.  Also, I believe we will have
-> to flush the TLB on partition switches, since Power processors prior
-> to POWER7 didn't tag the TLB entries with the partition ID.
->=20
-> So it should be quite feasible if you have a non-Apple machine.
-> I will check whether the 970MP machines that Terrasoft were
-> distributing would be suitable.  We have one of them in the lab.
+Hello,
 
-That's the one I was thinking of and yes, I have one available. That way =
-I could test 99% of your code, you don't have to release hardware, and =
-everyone's happy :).
+Long time ago (around July of 2010), I've reported a problem of binding
+pci error reporting driver to the hardware (See
+http://thread.gmane.org/gmane.linux.kernel.edac/181). Grant Likely has
+come with a patch to create platform devices (of_platform at that time),
+for device_nodes which have "compatible" properties
+(http://article.gmane.org/gmane.linux.ports.ppc.embedded/36981).
+
+The patch was not applied at that time and the problem still arises at
+3.0-rc1. Should the patch in question be applied, or is there any new
+solution?
+Current version of that patch which I have in my tree is attached
+to this mail (no original signoff by Grant).
+
+-- 
+With best wishes
+Dmitry
 
 
-Alex
+--LQksG6bCIzRHxTLp
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0001-of-device-Register-children-with-a-compatible-value-.patch"
+
+>From 511ce78e6aeeb9562cff0f0bbc186419b53bc209 Mon Sep 17 00:00:00 2001
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 22 Jul 2010 13:01:11 -0600
+Subject: [PATCH] of/device: Register children with a compatible value in
+ of_platform_bus_probe()
+
+Currently, of_platform_bus_probe() completely skips nodes which do not
+explicitly match the 'matches' table passed in.  Or, if the root node
+matches, then it registers all the children unconditionally.  However,
+there are situations, such as registering devices from the root node,
+when it is desirable to register child nodes, but only if they actually
+represent devices.  For example, the root node may contain both a local
+bus and a PCI device, but it also contains the chosen, aliases and cpus
+nodes which don't represent real devices.
+
+This patch changes of_platform_bus_probe() to register all nodes at the
+top level if they either match the matches table (the current behaviour),
+or if they have a 'compatible' value (indicating it represents a device).
+
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/of/platform.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 63d3cb7..80f0682 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -269,7 +269,18 @@ int of_platform_bus_probe(struct device_node *root,
+ 	if (of_match_node(matches, root)) {
+ 		rc = of_platform_bus_create(root, matches, parent);
+ 	} else for_each_child_of_node(root, child) {
+-		if (!of_match_node(matches, child))
++
++		/* Register each child node if either:
++		 *  a) it has a 'compatible' value indicating they are a device, or
++		 *  b) it is specified by the 'matches' table (by name or device_type)
++		 * If a node is specified in the matches table, then all its children
++		 * also get registered.
++		 */
++		const void *compat = of_get_property(child, "compatible", NULL);
++		const struct of_device_id *match = of_match_node(matches, child);
++
++		/* Skip if node neither matches nor has a compatible property */
++		if (!compat && !match)
+ 			continue;
+ 		rc = of_platform_bus_create(child, matches, parent);
+ 		if (rc)
+-- 
+1.7.4.4
+
+
+--LQksG6bCIzRHxTLp--
