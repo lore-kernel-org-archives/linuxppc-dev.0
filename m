@@ -1,34 +1,25 @@
-Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5E9A6B6F89
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DB69AB6F7B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 08:03:56 +1000 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p51Lgf8b001904
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 17:42:41 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p51M3rB4123406
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 18:03:53 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p51M3rdM028150
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 19:03:53 -0300
-Received: from manic8ball.ltc.austin.ibm.com ([9.12.225.18])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	p51M3qD2028127
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 19:03:52 -0300
-Message-ID: <4DE6B748.3010109@linux.vnet.ibm.com>
-Date: Wed, 01 Jun 2011 17:03:52 -0500
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+	Thu,  2 Jun 2011 08:24:21 +1000 (EST)
+Date: Wed, 1 Jun 2011 17:24:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
+	management driver
+Message-ID: <20110601172412.761ff799@schlenkerla.am.freescale.net>
+In-Reply-To: <201106012340.14237.arnd@arndb.de>
+References: <1306953337-15698-1-git-send-email-timur@freescale.com>
+	<201106012340.14237.arnd@arndb.de>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] document udbg-immortal
-References: <alpine.DEB.2.01.1105311817240.21697@trent.utfs.org>
-In-Reply-To: <alpine.DEB.2.01.1105311817240.21697@trent.utfs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
+Cc: greg@kroah.com, kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
+	akpm@kernel.org, linux-console@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,25 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2011 08:22 PM, Christian Kujau wrote:
+On Wed, 1 Jun 2011 23:40:14 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> +	udbg-immortal	[PPC] When debugging early kernel crashes that
-> +			happen after console_init() and before a proper 
-> +			console driver takes over, this boot options might
-> +			help "seeing" what's going on.
-> +
+> > +static long ioctl_dtprop(struct fsl_hv_ioctl_prop __user *p, int set)
+> > +{
+> > +	struct fsl_hv_ioctl_prop param;
+> > +	char __user *upath, *upropname;
+> > +	void __user *upropval;
+> > +	char *path = NULL, *propname = NULL;
+> > +	void *propval = NULL;
+> > +	int ret = 0;
+> > +
+> 
+> I'm not convinced that an ioctl interface is the right way to work with
+> device tree properties. A more natural way would be to export it as
+> a file system, or maybe as a flattened device tree blob (the latter option
+> would require changing the hypervisor interface, which might not be
+> possible).
 
-Thanks for documenting this!
+I wanted to have the hypervisor take an update dtb (we already have special
+meta-properties for things like deletion as part of the hv config
+mechanism).  But others on the project wanted to keep it simple, and so
+get/set property it was. :-/
 
-Suggested grammatical tweaks:
+It's unlikely to change at this point without a real need.
 
-s/options/option/
-s/help "seeing"/help to "see"/
+As for a filesystem interface, it's not a good match either.  You can't
+iterate over anything to read out the full tree from the hv.  You can't
+delete anything.  You can't create empty nodes.  The hv interface was meant
+to enable some specific management actions, rather than to provide general
+device tree access.  This driver is a thin wrapper around the management
+hcalls.
 
--- 
+There would still be other ioctls needed for starting/stopping the
+partition, etc.
 
-Jesse Larrew
-Software Engineer, Linux on Power Kernel Team
-IBM Linux Technology Center
-Phone: (512) 973-2052 (T/L: 363-2052)
-jlarrew@linux.vnet.ibm.com
+> > +/**
+> > + * fsl_hv_ioctl: ioctl main entry point
+> > + */
+> > +static long fsl_hv_ioctl(struct file *file, unsigned int cmd,
+> > +			 unsigned long argaddr)
+> > +{
+> > +	union fsl_hv_ioctl_param __user *arg =
+> > +		(union fsl_hv_ioctl_param __user *)argaddr;
+> > +	long ret;
+> > +
+> 
+> For an ioctl, please follow the normal pattern of defining a separate
+> structure for each case, no union.
+
+And have fsl_hypervisor.h provide the full set of proper ioctl numbers, with
+the specific struct for each ioctl referenced, rather than having the client program do
+"ioctl(f, _IOWR(0, cmd, union fsl_hv_ioctl_param), p)".
+
+-Scott
