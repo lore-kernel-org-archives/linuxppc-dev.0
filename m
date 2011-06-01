@@ -1,22 +1,23 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 94B0FB6F7E
+Return-Path: <geert@linux-m68k.org>
+Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
+	by ozlabs.org (Postfix) with ESMTP id 9B422B6F7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 18:22:57 +1000 (EST)
-Message-Id: <20110601081142.418428890@blue.kroah.org>
-Date: Wed, 01 Jun 2011 17:10:58 +0900
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: [088/165] seqlock: Dont smp_rmb in seqlock reader spin loop
-In-Reply-To: <20110601081349.GA10017@kroah.com>
-Cc: Nick Piggin <npiggin@kernel.dk>, Eric Dumazet <eric.dumazet@gmail.com>,
-	torvalds@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	Milton Miller <miltonm@bga.com>, Andi Kleen <andi@firstfloor.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Anton Blanchard <anton@samba.org>, akpm@linux-foundation.org,
-	Paul McKenney <paulmck@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, stable-review@kernel.org,
-	alan@lxorguk.ukuu.org.uk
+	Wed,  1 Jun 2011 18:44:14 +1000 (EST)
+Received: from juliette.telenet-ops.be (unknown [195.130.137.74])
+	by wilson.telenet-ops.be (Postfix) with ESMTP id 46ED47285F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  1 Jun 2011 10:44:10 +0200 (CEST)
+Date: Wed, 1 Jun 2011 10:44:07 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/fsl: Use irq_data_get_irq_handler_data() in chain
+	handler
+Message-ID: <alpine.DEB.2.00.1106011042080.30334@ayla.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.39-stable review patch.  If anyone has any objections, please let us know.
+If you already have a pointer to a struct irq_data , it's more efficient
+to use irq_data_get_irq_handler_data().
+irq_get_handler_data() has to look up the struct irq_desc pointer again,
+which was already passed to the chain handler.
 
-------------------
-Content-Length: 2553
-Lines: 71
-
-From: Milton Miller <miltonm@bga.com>
-
-commit 5db1256a5131d3b133946fa02ac9770a784e6eb2 upstream.
-
-Move the smp_rmb after cpu_relax loop in read_seqlock and add
-ACCESS_ONCE to make sure the test and return are consistent.
-
-A multi-threaded core in the lab didn't like the update
-from 2.6.35 to 2.6.36, to the point it would hang during
-boot when multiple threads were active.  Bisection showed
-af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
-Remove the per cpu tick skew) as the culprit and it is
-supported with stack traces showing xtime_lock waits including
-tick_do_update_jiffies64 and/or update_vsyscall.
-
-Experimentation showed the combination of cpu_relax and smp_rmb
-was significantly slowing the progress of other threads sharing
-the core, and this patch is effective in avoiding the hang.
-
-A theory is the rmb is affecting the whole core while the
-cpu_relax is causing a resource rebalance flush, together they
-cause an interfernce cadance that is unbroken when the seqlock
-reader has interrupts disabled.
-
-At first I was confused why the refactor in
-3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
-seqlock) didn't affect this patch application, but after some
-study that affected seqcount not seqlock. The new seqcount was
-not factored back into the seqlock.  I defer that the future.
-
-While the removal of the timer interrupt offset created
-contention for the xtime lock while a cpu does the
-additonal work to update the system clock, the seqlock
-implementation with the tight rmb spin loop goes back much
-further, and is just waiting for the right trigger.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@kernel.dk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
-Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- include/linux/seqlock.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Completely untested, not even compile-tested.
+If this is correct, there are probably more of these?
 
---- a/include/linux/seqlock.h
-+++ b/include/linux/seqlock.h
-@@ -88,12 +88,12 @@ static __always_inline unsigned read_seq
- 	unsigned ret;
+ arch/powerpc/sysdev/fsl_msi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 92e7833..9b92c82 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -193,7 +193,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 	u32 have_shift = 0;
+ 	struct fsl_msi_cascade_data *cascade_data;
  
- repeat:
--	ret = sl->sequence;
--	smp_rmb();
-+	ret = ACCESS_ONCE(sl->sequence);
- 	if (unlikely(ret & 1)) {
- 		cpu_relax();
- 		goto repeat;
- 	}
-+	smp_rmb();
+-	cascade_data = irq_get_handler_data(irq);
++	cascade_data = irq_data_get_irq_handler_data(idata);
+ 	msi_data = cascade_data->msi_data;
  
- 	return ret;
- }
+ 	raw_spin_lock(&desc->lock);
+-- 
+1.7.0.4
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
