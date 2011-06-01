@@ -1,27 +1,24 @@
-Return-Path: <zajec5@gmail.com>
-Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
-	[209.85.216.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D4FEBB6F99
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2011 05:14:53 +1000 (EST)
-Received: by qwi4 with SMTP id 4so78515qwi.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jun 2011 12:14:50 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1306918871-16965-1-git-send-email-zajec5@gmail.com>
-References: <1306918871-16965-1-git-send-email-zajec5@gmail.com>
-Date: Wed, 1 Jun 2011 21:14:50 +0200
-Message-ID: <BANLkTinSdDZv7gshYfi4mK5N9K-E7vk3Yw@mail.gmail.com>
-Subject: Re: [RFT][PATCH 3.0] ssb: fix PCI(e) driver regression causing oops
-	on PCI cards
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: Andreas Schwab <schwab@linux-m68k.org>, linux-wireless@vger.kernel.org,
-	"John W. Linville" <linville@tuxdriver.com>,
-	=?UTF-8?Q?Michael_B=C3=BCsch?= <mb@bu3sch.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org,
-	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-	b43-dev@lists.infradead.org
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1B9ACB6F9A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Jun 2011 05:44:49 +1000 (EST)
+Date: Wed, 1 Jun 2011 20:46:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
+	management driver
+Message-ID: <20110601204618.32190be9@lxorguk.ukuu.org.uk>
+In-Reply-To: <1306953337-15698-1-git-send-email-timur@freescale.com>
+References: <1306953337-15698-1-git-send-email-timur@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
+	linux-console@vger.kernel.org, greg@kroah.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +28,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/6/1 Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>:
-> We were incorrectly executing PCIe specific workarounds on PCI cards.
-> This resulted in:
-> Machine check in kernel mode.
-> Caused by (from SRR1=3D149030): Transfer error ack signal
-> Oops: Machine check, sig: 7 [#1]
+O> +	/* One partition must be local, the other must be remote.  In other
+> +	   words, if source and target are both -1, or are both not -1, then
+> +	   return an error. */
+> +	if ((param.source == -1) == (param.target == -1))
+> +		return -EINVAL;
 
-John, I've tested this patch myself on my PCI BCM4318, including
-checking for 0xFFFFFFFF reads in MMIO dumps.
+Excess brackets (I just mention that one in passing)
 
-The patch is correct, please take it for 3.0.
+> +	/* pages is an array of struct page pointers that's initialized by
+> +	   get_user_pages() */
+> +	pages = kzalloc(nr_pages * sizeof(struct page *), GFP_KERNEL);
+> +	if (!pages) {
+> +		pr_debug("fsl-hv: could not allocate page list\n");
+> +		return -ENOMEM;
+> +	}
 
---=20
-Rafa=C5=82
+pages allocated
+
+> +
+> +	/* sg_list is the list of fh_sg_list objects that we pass to the
+> +	   hypervisor */
+> +	sg_list_unaligned = kmalloc(nr_pages * sizeof(struct fh_sg_list) +
+> +		sizeof(struct fh_sg_list) - 1, GFP_KERNEL);
+> +	if (!sg_list_unaligned) {
+> +		pr_debug("fsl-hv: could not allocate S/G list\n");
+
+but not freed on this path
+
+Although the other paths look fine.
+
+> +exit:
+> +	if (pages) {
+> +		for (i = 0; i < nr_pages; i++)
+> +			if (pages[i])
+> +				page_cache_release(pages[i]);
+> +	}
+> +
+> +	kfree(sg_list_unaligned);
+> +	kfree(pages);
+
+> +static char *strdup_from_user(const char __user *ustr, size_t max)
+> +{
+> +	size_t len;
+> +	char *str;
+> +
+> +	len = strnlen_user(ustr, max);
+> +	if (len > max)
+> +		return ERR_PTR(-ENAMETOOLONG);
+> +
+> +	str = kmalloc(len, GFP_KERNEL);
+> +	if (!str)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	if (copy_from_user(str, ustr, len))
+> +		return ERR_PTR(-EFAULT);
+> +
+> +	return str;
+> +}
+
+This belongs on lib/ if its of general use which I think it perhaps is
+and if we don't have one already.
+
+
+> +	default:
+> +		pr_debug("fsl-hv: unknown ioctl %u\n", cmd);
+> +		ret = -ENOIOCTLCMD;
+
+-ENOTTY
+
+(-ENOIOCTLCMD is an internal indicator designed so driver layers can say
+'dunno, try the next layer up')
+
+> +/* Linked list of processes that have us open */
+> +struct list_head db_list;
+
+static ?
+
+
+> + * We use the same interrupt handler for all doorbells.  Whenever a doorbell
+> + * is rung, and we receive an interrupt, we just put the handle for that
+> + * doorbell (passed to us as *data) into all of the queues.
+
+I wonder if these should be presented as IRQs or whether that makes no
+sense ?
+
+
+> +static irqreturn_t fsl_hv_state_change_isr(int irq, void *data)
+> +{
+> +	unsigned int status;
+> +	struct doorbell_isr *dbisr = data;
+> +	int ret;
+> +
+> +	/* Determine the new state, and if it's stopped, notify the clients. */
+> +	ret = fh_partition_get_status(dbisr->partition, &status);
+> +	if (!ret && (status == FH_PARTITION_STOPPED))
+> +		schedule_work(&dbisr->work);
+> +
+> +	/* Call the normal handler */
+> +	return fsl_hv_isr(irq, (void *) (uintptr_t) dbisr->doorbell);
+> +}
+
+Would a threaded IRQ clean this up by avoiding the queue/work stuff ?
+
+
+> +static irqreturn_t fsl_hv_shutdown_isr(int irq, void *data)
+> +{
+> +	schedule_work(&power_off);
+> +
+> +	/* We should never get here */
+
+Probably worth printing something if you do (panic(...) ?)
