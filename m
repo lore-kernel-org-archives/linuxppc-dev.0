@@ -1,28 +1,25 @@
-Return-Path: <wanlong.gao@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
-	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 916BEB6F8A
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06333B6F8E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 02:30:16 +1000 (EST)
-Received: by pzk26 with SMTP id 26so2698641pzk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 01 Jun 2011 09:30:13 -0700 (PDT)
-From: Wanlong Gao <wanlong.gao@gmail.com>
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	uclinux-dist-devel@blackfin.uclinux.org, linux-mips@linux-mips.org,
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
-Subject: [PATCH] Fix build warning of the defconfigs
-Date: Thu,  2 Jun 2011 00:29:23 +0800
-Message-Id: <1306945763-6583-1-git-send-email-wanlong.gao@gmail.com>
-Cc: rientjes@google.com, vapier@gentoo.org, david.woodhouse@intel.com,
-	arnd@arndb.de, Wanlong Gao <wanlong.gao@gmail.com>,
-	mingo@elte.hu, ralf@linux-mips.org, manuel.lauss@googlemail.com,
-	lethal@linux-sh.org, paulus@samba.org, anton@samba.org,
-	u.kleine-koenig@pengutronix.de, linux@arm.linux.org.uk,
-	akpm@linux-foundation.org, gxt@mprc.pku.edu.cn, sam@ravnborg.org,
-	hans-christian.egtvedt@atmel.com
+	Thu,  2 Jun 2011 02:48:38 +1000 (EST)
+Date: Wed, 1 Jun 2011 11:48:23 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
+Message-ID: <20110601114823.2e57c691@schlenkerla.am.freescale.net>
+In-Reply-To: <BANLkTi=xFcZRd4x1FQSKJzmt3A7_tZs+sQ@mail.gmail.com>
+References: <1306931292-2313-1-git-send-email-dbaryshkov@gmail.com>
+	<20110601132519.GA16125@oksana.dev.rtsoft.ru>
+	<BANLkTi=xFcZRd4x1FQSKJzmt3A7_tZs+sQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Paul Mackerras <paulus@samba.org>, Anton Vorontsov <avorontsov@mvista.com>,
+	linuxppc-dev@lists.ozlabs.org, bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,194 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RTC_CLASS is changed to bool.
-So value 'm' is invalid.
+On Wed, 1 Jun 2011 18:55:35 +0400
+Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
 
-Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
----
- arch/arm/configs/davinci_all_defconfig     |    2 +-
- arch/arm/configs/mxs_defconfig             |    2 +-
- arch/arm/configs/netx_defconfig            |    2 +-
- arch/arm/configs/viper_defconfig           |    2 +-
- arch/arm/configs/xcep_defconfig            |    2 +-
- arch/arm/configs/zeus_defconfig            |    2 +-
- arch/avr32/configs/atngw100_mrmt_defconfig |    2 +-
- arch/blackfin/configs/CM-BF548_defconfig   |    2 +-
- arch/mips/configs/mtx1_defconfig           |    2 +-
- arch/powerpc/configs/52xx/pcm030_defconfig |    2 +-
- arch/powerpc/configs/ps3_defconfig         |    2 +-
- arch/sh/configs/titan_defconfig            |    2 +-
- arch/unicore32/configs/debug_defconfig     |    2 +-
- 13 files changed, 13 insertions(+), 13 deletions(-)
+> On 6/1/11, Anton Vorontsov <avorontsov@mvista.com> wrote:
+> > On Wed, Jun 01, 2011 at 04:28:11PM +0400, Dmitry Eremin-Solenikov wrote:
+> > [...]
+> > Also, why not add this call to the fsl_add_bridge(), so you
+> > won't need to touch board files at all.
+> 
+> Because fsl_add_bridge is called too early, so allocation
+> of platform device fails.
 
-diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
-index 889922a..67b5abb6 100644
---- a/arch/arm/configs/davinci_all_defconfig
-+++ b/arch/arm/configs/davinci_all_defconfig
-@@ -157,7 +157,7 @@ CONFIG_LEDS_GPIO=m
- CONFIG_LEDS_TRIGGERS=y
- CONFIG_LEDS_TRIGGER_TIMER=m
- CONFIG_LEDS_TRIGGER_HEARTBEAT=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- CONFIG_XFS_FS=m
-diff --git a/arch/arm/configs/mxs_defconfig b/arch/arm/configs/mxs_defconfig
-index 2bf2243..5a6ff7c 100644
---- a/arch/arm/configs/mxs_defconfig
-+++ b/arch/arm/configs/mxs_defconfig
-@@ -89,7 +89,7 @@ CONFIG_DISPLAY_SUPPORT=m
- # CONFIG_USB_SUPPORT is not set
- CONFIG_MMC=y
- CONFIG_MMC_MXS=y
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_DS1307=m
- CONFIG_DMADEVICES=y
- CONFIG_MXS_DMA=y
-diff --git a/arch/arm/configs/netx_defconfig b/arch/arm/configs/netx_defconfig
-index 316af54..9c0ad79 100644
---- a/arch/arm/configs/netx_defconfig
-+++ b/arch/arm/configs/netx_defconfig
-@@ -60,7 +60,7 @@ CONFIG_FB_ARMCLCD=y
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_FRAMEBUFFER_CONSOLE=y
- CONFIG_LOGO=y
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_INOTIFY=y
- CONFIG_TMPFS=y
- CONFIG_JFFS2_FS=y
-diff --git a/arch/arm/configs/viper_defconfig b/arch/arm/configs/viper_defconfig
-index 8b0c717..1d01ddd 100644
---- a/arch/arm/configs/viper_defconfig
-+++ b/arch/arm/configs/viper_defconfig
-@@ -142,7 +142,7 @@ CONFIG_USB_GADGETFS=m
- CONFIG_USB_FILE_STORAGE=m
- CONFIG_USB_G_SERIAL=m
- CONFIG_USB_G_PRINTER=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_DS1307=m
- CONFIG_RTC_DRV_SA1100=m
- CONFIG_EXT2_FS=m
-diff --git a/arch/arm/configs/xcep_defconfig b/arch/arm/configs/xcep_defconfig
-index 5b55041..721832f 100644
---- a/arch/arm/configs/xcep_defconfig
-+++ b/arch/arm/configs/xcep_defconfig
-@@ -73,7 +73,7 @@ CONFIG_SENSORS_MAX6650=m
- # CONFIG_VGA_CONSOLE is not set
- # CONFIG_HID_SUPPORT is not set
- # CONFIG_USB_SUPPORT is not set
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_SA1100=m
- CONFIG_DMADEVICES=y
- # CONFIG_DNOTIFY is not set
-diff --git a/arch/arm/configs/zeus_defconfig b/arch/arm/configs/zeus_defconfig
-index 960f655..59577ad 100644
---- a/arch/arm/configs/zeus_defconfig
-+++ b/arch/arm/configs/zeus_defconfig
-@@ -158,7 +158,7 @@ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
- CONFIG_LEDS_TRIGGER_BACKLIGHT=m
- CONFIG_LEDS_TRIGGER_GPIO=m
- CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_ISL1208=m
- CONFIG_RTC_DRV_PXA=m
- CONFIG_EXT2_FS=y
-diff --git a/arch/avr32/configs/atngw100_mrmt_defconfig b/arch/avr32/configs/atngw100_mrmt_defconfig
-index 19f6cee..fb6dab8 100644
---- a/arch/avr32/configs/atngw100_mrmt_defconfig
-+++ b/arch/avr32/configs/atngw100_mrmt_defconfig
-@@ -109,7 +109,7 @@ CONFIG_LEDS_GPIO=y
- CONFIG_LEDS_TRIGGERS=y
- CONFIG_LEDS_TRIGGER_TIMER=y
- CONFIG_LEDS_TRIGGER_HEARTBEAT=y
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_S35390A=m
- CONFIG_RTC_DRV_AT32AP700X=m
- CONFIG_DMADEVICES=y
-diff --git a/arch/blackfin/configs/CM-BF548_defconfig b/arch/blackfin/configs/CM-BF548_defconfig
-index 31d9542..9f1d084 100644
---- a/arch/blackfin/configs/CM-BF548_defconfig
-+++ b/arch/blackfin/configs/CM-BF548_defconfig
-@@ -112,7 +112,7 @@ CONFIG_USB_G_SERIAL=m
- CONFIG_USB_G_PRINTER=m
- CONFIG_MMC=m
- CONFIG_SDH_BFIN=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_BFIN=m
- CONFIG_EXT2_FS=m
- # CONFIG_DNOTIFY is not set
-diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
-index 37862b2..807c97e 100644
---- a/arch/mips/configs/mtx1_defconfig
-+++ b/arch/mips/configs/mtx1_defconfig
-@@ -678,7 +678,7 @@ CONFIG_LEDS_TRIGGERS=y
- CONFIG_LEDS_TRIGGER_TIMER=y
- CONFIG_LEDS_TRIGGER_HEARTBEAT=y
- CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_INTF_DEV_UIE_EMUL=y
- CONFIG_RTC_DRV_TEST=m
- CONFIG_RTC_DRV_DS1307=m
-diff --git a/arch/powerpc/configs/52xx/pcm030_defconfig b/arch/powerpc/configs/52xx/pcm030_defconfig
-index 7f7e4a8..22e7195 100644
---- a/arch/powerpc/configs/52xx/pcm030_defconfig
-+++ b/arch/powerpc/configs/52xx/pcm030_defconfig
-@@ -85,7 +85,7 @@ CONFIG_USB_OHCI_HCD=m
- CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
- # CONFIG_USB_OHCI_HCD_PCI is not set
- CONFIG_USB_STORAGE=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_PCF8563=m
- CONFIG_EXT2_FS=m
- CONFIG_EXT3_FS=m
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index 6472322..185c292 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -141,7 +141,7 @@ CONFIG_USB_EHCI_TT_NEWSCHED=y
- # CONFIG_USB_EHCI_HCD_PPC_OF is not set
- CONFIG_USB_OHCI_HCD=m
- CONFIG_USB_STORAGE=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_PS3=m
- CONFIG_EXT2_FS=m
- CONFIG_EXT3_FS=m
-diff --git a/arch/sh/configs/titan_defconfig b/arch/sh/configs/titan_defconfig
-index 0f55891..e2cbd92 100644
---- a/arch/sh/configs/titan_defconfig
-+++ b/arch/sh/configs/titan_defconfig
-@@ -227,7 +227,7 @@ CONFIG_USB_SERIAL=m
- CONFIG_USB_SERIAL_GENERIC=y
- CONFIG_USB_SERIAL_ARK3116=m
- CONFIG_USB_SERIAL_PL2303=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_SH=m
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
-diff --git a/arch/unicore32/configs/debug_defconfig b/arch/unicore32/configs/debug_defconfig
-index b5fbde9..1c367f0 100644
---- a/arch/unicore32/configs/debug_defconfig
-+++ b/arch/unicore32/configs/debug_defconfig
-@@ -168,7 +168,7 @@ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
- 
- #	Real Time Clock
- CONFIG_RTC_LIB=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_CLASS=y
- 
- ### File systems
- CONFIG_EXT2_FS=m
--- 
-1.7.4.1
+That doesn't seem like a good reason for putting more stuff in board
+files that isn't board-specific.  Why not just make fsl_add_pci_err() an
+initcall?  It already only works when a compatible device tree node is
+found.  Is there any case where a board would not want this PCI code to be
+used, even if the device tree node is present?  If so, fsl_add_bridge could
+set a flag that fsl_add_pci_err() could check -- but I doubt it's needed.
+
+-Scott
