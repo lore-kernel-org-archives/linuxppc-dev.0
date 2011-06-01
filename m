@@ -1,22 +1,26 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
-	by ozlabs.org (Postfix) with ESMTP id A9601B6F88
+Return-Path: <wad@chromium.org>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+	[209.85.161.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 878DCB6F7A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 13:02:52 +1000 (EST)
-Date: Tue, 31 May 2011 20:02:47 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
-In-Reply-To: <alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
-Message-ID: <alpine.DEB.2.01.1105311959000.21697@trent.utfs.org>
-References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
-	<1306887942.29297.10.camel@pasglop>
-	<alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Wed,  1 Jun 2011 13:11:05 +1000 (EST)
+Received: by gxk1 with SMTP id 1so2362166gxk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 31 May 2011 20:11:01 -0700 (PDT)
+From: Will Drewry <wad@chromium.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 11/13] powerpc: select HAVE_SECCOMP_FILTER and provide
+	seccomp_execve
+Date: Tue, 31 May 2011 22:10:43 -0500
+Message-Id: <1306897845-9393-11-git-send-email-wad@chromium.org>
+In-Reply-To: <BANLkTimNcag-ZmVTXjUoTyiuJm6jtW0DgA@mail.gmail.com>
+References: <BANLkTimNcag-ZmVTXjUoTyiuJm6jtW0DgA@mail.gmail.com>
+Cc: Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+	jmorris@namei.org, rostedt@goodmis.org, tglx@linutronix.de,
+	Paul Mackerras <paulus@samba.org>, kees.cook@canonical.com,
+	torvalds@linux-foundation.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(Cc'in Linus)
+Facilitate the use of CONFIG_SECCOMP_FILTER by wrapping compatibility
+system call numbering for execve and selecting HAVE_SECCOMP_FILTER.
 
-On Tue, 31 May 2011 at 17:48, Christian Kujau wrote:
-> In the meantime, "git bisect" behaves kinda weird, I don't know what went 
-> wrong here:
-> 
->  $ git bisect start
->  $ git bisect good         # Linux 2.6.39
->  $ git bisect bad v3.0-rc1 # Linux 3.0-rc1
->  $ git bisect bad          # c44dead70a...
->  $ git bisect bad          # d93515611b..
-> 
-> ...yet the ./Makefile shows[0] that I'm already way behind: 2.6.39-rc2. 
-> Maybe "git bisect" got confused with that whole 2.6.x -> 3.0 renaming?
+Signed-off-by: Will Drewry <wad@chromium.org>
+---
+ arch/powerpc/Kconfig               |    1 +
+ arch/powerpc/include/asm/seccomp.h |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-Hm, I tried again, from a clean v3.0-rc1 (git reset --hard), but after the 
-2nd "git bad" I'm at 2.6.39-rc2 again - while I /should/ be somwhere 
-inbetween v2.6.39..v3.0-rc1, right?
-
-Help, please!
-Christian.
-
-[0] http://nerdbynature.de/bits/3.0-rc1/
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8f4d50b..0bd4574 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -137,6 +137,7 @@ config PPC
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select HAVE_SPARSE_IRQ
++	select HAVE_SECCOMP_FILTER
+ 	select IRQ_PER_CPU
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+diff --git a/arch/powerpc/include/asm/seccomp.h b/arch/powerpc/include/asm/seccomp.h
+index 00c1d91..3cb9cc1 100644
+--- a/arch/powerpc/include/asm/seccomp.h
++++ b/arch/powerpc/include/asm/seccomp.h
+@@ -7,10 +7,12 @@
+ #define __NR_seccomp_write __NR_write
+ #define __NR_seccomp_exit __NR_exit
+ #define __NR_seccomp_sigreturn __NR_rt_sigreturn
++#define __NR_seccomp_execve __NR_execve
+ 
+ #define __NR_seccomp_read_32 __NR_read
+ #define __NR_seccomp_write_32 __NR_write
+ #define __NR_seccomp_exit_32 __NR_exit
+ #define __NR_seccomp_sigreturn_32 __NR_sigreturn
++#define __NR_seccomp_execve_32 __NR_execve
+ 
+ #endif	/* _ASM_POWERPC_SECCOMP_H */
 -- 
-BOFH excuse #54:
-
-Evil dogs hypnotised the night shift
+1.7.0.4
