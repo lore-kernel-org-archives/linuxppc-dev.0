@@ -1,23 +1,28 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ww0-f41.google.com (mail-ww0-f41.google.com [74.125.82.41])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <wanlong.gao@gmail.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+	[209.85.210.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8103FB6F7E
+	by ozlabs.org (Postfix) with ESMTPS id 916BEB6F8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 02:08:15 +1000 (EST)
-Received: by wwi18 with SMTP id 18so3543804wwi.2
+	Thu,  2 Jun 2011 02:30:16 +1000 (EST)
+Received: by pzk26 with SMTP id 26so2698641pzk.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 01 Jun 2011 09:08:09 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
-Date: Wed,  1 Jun 2011 20:08:12 +0400
-Message-Id: <1306944492-13054-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <20110601145911.GA30312@oksana.dev.rtsoft.ru>
-References: <20110601145911.GA30312@oksana.dev.rtsoft.ru>
+	Wed, 01 Jun 2011 09:30:13 -0700 (PDT)
+From: Wanlong Gao <wanlong.gao@gmail.com>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	uclinux-dist-devel@blackfin.uclinux.org, linux-mips@linux-mips.org,
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
+Subject: [PATCH] Fix build warning of the defconfigs
+Date: Thu,  2 Jun 2011 00:29:23 +0800
+Message-Id: <1306945763-6583-1-git-send-email-wanlong.gao@gmail.com>
+Cc: rientjes@google.com, vapier@gentoo.org, david.woodhouse@intel.com,
+	arnd@arndb.de, Wanlong Gao <wanlong.gao@gmail.com>,
+	mingo@elte.hu, ralf@linux-mips.org, manuel.lauss@googlemail.com,
+	lethal@linux-sh.org, paulus@samba.org, anton@samba.org,
+	u.kleine-koenig@pengutronix.de, linux@arm.linux.org.uk,
+	akpm@linux-foundation.org, gxt@mprc.pku.edu.cn, sam@ravnborg.org,
+	hans-christian.egtvedt@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,276 +32,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As a device for pci node isn't created, create a special platform_device
-for PCI EDAC device on MPC85xx.
+RTC_CLASS is changed to bool.
+So value 'm' is invalid.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
 ---
- arch/powerpc/platforms/85xx/ksi8560.c     |    2 +
- arch/powerpc/platforms/85xx/mpc8536_ds.c  |    2 +
- arch/powerpc/platforms/85xx/mpc85xx_ads.c |    2 +
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |    2 +
- arch/powerpc/platforms/85xx/mpc85xx_ds.c  |    2 +
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |    4 +++
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c |    2 +
- arch/powerpc/platforms/85xx/p1022_ds.c    |    2 +
- arch/powerpc/platforms/85xx/sbc8548.c     |    2 +
- arch/powerpc/platforms/85xx/sbc8560.c     |    2 +
- arch/powerpc/platforms/85xx/socrates.c    |    2 +
- arch/powerpc/platforms/85xx/stx_gp3.c     |    2 +
- arch/powerpc/platforms/85xx/tqm85xx.c     |    2 +
- arch/powerpc/platforms/85xx/xes_mpc85xx.c |    2 +
- arch/powerpc/sysdev/fsl_pci.c             |   30 +++++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_pci.h             |    5 ++++
- 16 files changed, 65 insertions(+), 0 deletions(-)
+ arch/arm/configs/davinci_all_defconfig     |    2 +-
+ arch/arm/configs/mxs_defconfig             |    2 +-
+ arch/arm/configs/netx_defconfig            |    2 +-
+ arch/arm/configs/viper_defconfig           |    2 +-
+ arch/arm/configs/xcep_defconfig            |    2 +-
+ arch/arm/configs/zeus_defconfig            |    2 +-
+ arch/avr32/configs/atngw100_mrmt_defconfig |    2 +-
+ arch/blackfin/configs/CM-BF548_defconfig   |    2 +-
+ arch/mips/configs/mtx1_defconfig           |    2 +-
+ arch/powerpc/configs/52xx/pcm030_defconfig |    2 +-
+ arch/powerpc/configs/ps3_defconfig         |    2 +-
+ arch/sh/configs/titan_defconfig            |    2 +-
+ arch/unicore32/configs/debug_defconfig     |    2 +-
+ 13 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
-index c46f935..288fc4686 100644
---- a/arch/powerpc/platforms/85xx/ksi8560.c
-+++ b/arch/powerpc/platforms/85xx/ksi8560.c
-@@ -228,6 +228,8 @@ static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
+index 889922a..67b5abb6 100644
+--- a/arch/arm/configs/davinci_all_defconfig
++++ b/arch/arm/configs/davinci_all_defconfig
+@@ -157,7 +157,7 @@ CONFIG_LEDS_GPIO=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ CONFIG_XFS_FS=m
+diff --git a/arch/arm/configs/mxs_defconfig b/arch/arm/configs/mxs_defconfig
+index 2bf2243..5a6ff7c 100644
+--- a/arch/arm/configs/mxs_defconfig
++++ b/arch/arm/configs/mxs_defconfig
+@@ -89,7 +89,7 @@ CONFIG_DISPLAY_SUPPORT=m
+ # CONFIG_USB_SUPPORT is not set
+ CONFIG_MMC=y
+ CONFIG_MMC_MXS=y
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=m
+ CONFIG_DMADEVICES=y
+ CONFIG_MXS_DMA=y
+diff --git a/arch/arm/configs/netx_defconfig b/arch/arm/configs/netx_defconfig
+index 316af54..9c0ad79 100644
+--- a/arch/arm/configs/netx_defconfig
++++ b/arch/arm/configs/netx_defconfig
+@@ -60,7 +60,7 @@ CONFIG_FB_ARMCLCD=y
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_LOGO=y
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_INOTIFY=y
+ CONFIG_TMPFS=y
+ CONFIG_JFFS2_FS=y
+diff --git a/arch/arm/configs/viper_defconfig b/arch/arm/configs/viper_defconfig
+index 8b0c717..1d01ddd 100644
+--- a/arch/arm/configs/viper_defconfig
++++ b/arch/arm/configs/viper_defconfig
+@@ -142,7 +142,7 @@ CONFIG_USB_GADGETFS=m
+ CONFIG_USB_FILE_STORAGE=m
+ CONFIG_USB_G_SERIAL=m
+ CONFIG_USB_G_PRINTER=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=m
+ CONFIG_RTC_DRV_SA1100=m
+ CONFIG_EXT2_FS=m
+diff --git a/arch/arm/configs/xcep_defconfig b/arch/arm/configs/xcep_defconfig
+index 5b55041..721832f 100644
+--- a/arch/arm/configs/xcep_defconfig
++++ b/arch/arm/configs/xcep_defconfig
+@@ -73,7 +73,7 @@ CONFIG_SENSORS_MAX6650=m
+ # CONFIG_VGA_CONSOLE is not set
+ # CONFIG_HID_SUPPORT is not set
+ # CONFIG_USB_SUPPORT is not set
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_SA1100=m
+ CONFIG_DMADEVICES=y
+ # CONFIG_DNOTIFY is not set
+diff --git a/arch/arm/configs/zeus_defconfig b/arch/arm/configs/zeus_defconfig
+index 960f655..59577ad 100644
+--- a/arch/arm/configs/zeus_defconfig
++++ b/arch/arm/configs/zeus_defconfig
+@@ -158,7 +158,7 @@ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_LEDS_TRIGGER_BACKLIGHT=m
+ CONFIG_LEDS_TRIGGER_GPIO=m
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_ISL1208=m
+ CONFIG_RTC_DRV_PXA=m
+ CONFIG_EXT2_FS=y
+diff --git a/arch/avr32/configs/atngw100_mrmt_defconfig b/arch/avr32/configs/atngw100_mrmt_defconfig
+index 19f6cee..fb6dab8 100644
+--- a/arch/avr32/configs/atngw100_mrmt_defconfig
++++ b/arch/avr32/configs/atngw100_mrmt_defconfig
+@@ -109,7 +109,7 @@ CONFIG_LEDS_GPIO=y
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_S35390A=m
+ CONFIG_RTC_DRV_AT32AP700X=m
+ CONFIG_DMADEVICES=y
+diff --git a/arch/blackfin/configs/CM-BF548_defconfig b/arch/blackfin/configs/CM-BF548_defconfig
+index 31d9542..9f1d084 100644
+--- a/arch/blackfin/configs/CM-BF548_defconfig
++++ b/arch/blackfin/configs/CM-BF548_defconfig
+@@ -112,7 +112,7 @@ CONFIG_USB_G_SERIAL=m
+ CONFIG_USB_G_PRINTER=m
+ CONFIG_MMC=m
+ CONFIG_SDH_BFIN=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_BFIN=m
+ CONFIG_EXT2_FS=m
+ # CONFIG_DNOTIFY is not set
+diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
+index 37862b2..807c97e 100644
+--- a/arch/mips/configs/mtx1_defconfig
++++ b/arch/mips/configs/mtx1_defconfig
+@@ -678,7 +678,7 @@ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_INTF_DEV_UIE_EMUL=y
+ CONFIG_RTC_DRV_TEST=m
+ CONFIG_RTC_DRV_DS1307=m
+diff --git a/arch/powerpc/configs/52xx/pcm030_defconfig b/arch/powerpc/configs/52xx/pcm030_defconfig
+index 7f7e4a8..22e7195 100644
+--- a/arch/powerpc/configs/52xx/pcm030_defconfig
++++ b/arch/powerpc/configs/52xx/pcm030_defconfig
+@@ -85,7 +85,7 @@ CONFIG_USB_OHCI_HCD=m
+ CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
+ # CONFIG_USB_OHCI_HCD_PCI is not set
+ CONFIG_USB_STORAGE=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_PCF8563=m
+ CONFIG_EXT2_FS=m
+ CONFIG_EXT3_FS=m
+diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
+index 6472322..185c292 100644
+--- a/arch/powerpc/configs/ps3_defconfig
++++ b/arch/powerpc/configs/ps3_defconfig
+@@ -141,7 +141,7 @@ CONFIG_USB_EHCI_TT_NEWSCHED=y
+ # CONFIG_USB_EHCI_HCD_PPC_OF is not set
+ CONFIG_USB_OHCI_HCD=m
+ CONFIG_USB_STORAGE=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_PS3=m
+ CONFIG_EXT2_FS=m
+ CONFIG_EXT3_FS=m
+diff --git a/arch/sh/configs/titan_defconfig b/arch/sh/configs/titan_defconfig
+index 0f55891..e2cbd92 100644
+--- a/arch/sh/configs/titan_defconfig
++++ b/arch/sh/configs/titan_defconfig
+@@ -227,7 +227,7 @@ CONFIG_USB_SERIAL=m
+ CONFIG_USB_SERIAL_GENERIC=y
+ CONFIG_USB_SERIAL_ARK3116=m
+ CONFIG_USB_SERIAL_PL2303=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_SH=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+diff --git a/arch/unicore32/configs/debug_defconfig b/arch/unicore32/configs/debug_defconfig
+index b5fbde9..1c367f0 100644
+--- a/arch/unicore32/configs/debug_defconfig
++++ b/arch/unicore32/configs/debug_defconfig
+@@ -168,7 +168,7 @@ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
  
-+	fsl_add_pci_err();
-+
- 	return 0;
- }
- machine_device_initcall(ksi8560, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index f79f2f1..cfcbd88 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -114,6 +114,8 @@ static struct of_device_id __initdata mpc8536_ds_ids[] = {
+ #	Real Time Clock
+ CONFIG_RTC_LIB=m
+-CONFIG_RTC_CLASS=m
++CONFIG_RTC_CLASS=y
  
- static int __init mpc8536_ds_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, mpc8536_ds_ids, NULL);
- }
- machine_device_initcall(mpc8536_ds, mpc8536_ds_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 3b2c9bb..6af50d4 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -235,6 +235,8 @@ static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 
-+	fsl_add_pci_err();
-+
- 	return 0;
- }
- machine_device_initcall(mpc85xx_ads, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 6299a2a..2785c75 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -341,6 +341,8 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, of_bus_ids, NULL);
- }
- machine_device_initcall(mpc85xx_cds, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index c7b97f7..2d0a138 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -228,6 +228,8 @@ static struct of_device_id __initdata mpc85xxds_ids[] = {
- 
- static int __init mpc85xxds_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, mpc85xxds_ids, NULL);
- }
- machine_device_initcall(mpc8544_ds, mpc85xxds_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 747d1ee..2ff879a 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -455,6 +455,8 @@ static int __init mpc85xx_publish_devices(void)
- 	if (machine_is(mpc8569_mds))
- 		simple_gpiochip_init("fsl,mpc8569mds-bcsr-gpio");
- 
-+	fsl_add_pci_err();
-+
- 	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
- 	mpc85xx_publish_qe_devices();
- 
-@@ -463,6 +465,8 @@ static int __init mpc85xx_publish_devices(void)
- 
- static int __init p1021_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	of_platform_bus_probe(NULL, p1021_ids, NULL);
- 	mpc85xx_publish_qe_devices();
- 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 088f30b..511a86c 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -118,6 +118,8 @@ static struct of_device_id __initdata mpc85xxrdb_ids[] = {
- 
- static int __init mpc85xxrdb_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, mpc85xxrdb_ids, NULL);
- }
- machine_device_initcall(p2020_rdb, mpc85xxrdb_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 7eb5c40..249f302 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -326,6 +326,8 @@ static struct of_device_id __initdata p1022_ds_ids[] = {
- 
- static int __init p1022_ds_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, p1022_ds_ids, NULL);
- }
- machine_device_initcall(p1022_ds, p1022_ds_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
-index ecdd8c0..f3dcd88 100644
---- a/arch/powerpc/platforms/85xx/sbc8548.c
-+++ b/arch/powerpc/platforms/85xx/sbc8548.c
-@@ -162,6 +162,8 @@ static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 
-+	fsl_add_pci_err();
-+
- 	return 0;
- }
- machine_device_initcall(sbc8548, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
-index d2dfd46..6abdda7 100644
---- a/arch/powerpc/platforms/85xx/sbc8560.c
-+++ b/arch/powerpc/platforms/85xx/sbc8560.c
-@@ -222,6 +222,8 @@ static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 
-+	fsl_add_pci_err();
-+
- 	return 0;
- }
- machine_device_initcall(sbc8560, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
-index 747d8fb..d1546a3 100644
---- a/arch/powerpc/platforms/85xx/socrates.c
-+++ b/arch/powerpc/platforms/85xx/socrates.c
-@@ -104,6 +104,8 @@ static struct of_device_id __initdata socrates_of_bus_ids[] = {
- 
- static int __init socrates_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, socrates_of_bus_ids, NULL);
- }
- machine_device_initcall(socrates, socrates_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
-index 5387e9f..b5bf6b0 100644
---- a/arch/powerpc/platforms/85xx/stx_gp3.c
-+++ b/arch/powerpc/platforms/85xx/stx_gp3.c
-@@ -154,6 +154,8 @@ static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 
-+	fsl_add_pci_err();
-+
- 	return 0;
- }
- machine_device_initcall(stx_gp3, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 325de77..88d8bb8 100644
---- a/arch/powerpc/platforms/85xx/tqm85xx.c
-+++ b/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -183,6 +183,8 @@ static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 
-+	fsl_add_pci_err();
-+
- 	return 0;
- }
- machine_device_initcall(tqm85xx, declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-index 0125604..3771a2c 100644
---- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-+++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-@@ -187,6 +187,8 @@ static struct of_device_id __initdata xes_mpc85xx_ids[] = {
- 
- static int __init xes_mpc85xx_publish_devices(void)
- {
-+	fsl_add_pci_err();
-+
- 	return of_platform_bus_probe(NULL, xes_mpc85xx_ids, NULL);
- }
- machine_device_initcall(xes_mpc8572, xes_mpc85xx_publish_devices);
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 68ca929..8c64b91 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -381,6 +381,36 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	return 0;
- }
- 
-+void __init fsl_add_pci_err(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_node_by_type(np, "pci") {
-+		/* Only PCI, not PCI Express! */
-+		if (of_device_is_compatible(np, "fsl,mpc8540-pci")) {
-+			struct resource r[2];
-+
-+			r[0].parent = NULL;
-+			r[1].parent = NULL;
-+
-+			if (of_address_to_resource(np, 0, &r[0])) {
-+				printk(KERN_WARNING
-+						"Can't get register base for PCI EDAC!\n");
-+				continue;
-+			}
-+			r[0].start += 0xe00;
-+
-+			if (of_irq_to_resource(np, 0, &r[1]) == NO_IRQ) {
-+				printk(KERN_WARNING
-+						"Can't get irq for PCI EDAC!\n");
-+				continue;
-+			}
-+			platform_device_register_simple("mpc85xx_pci_err", -1,
-+					r, ARRAY_SIZE(r));
-+		}
-+	}
-+}
-+
- DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8548E, quirk_fsl_pcie_header);
- DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8548, quirk_fsl_pcie_header);
- DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8543E, quirk_fsl_pcie_header);
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index a39ed5c..e7abc37 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -92,6 +92,11 @@ extern int fsl_add_bridge(struct device_node *dev, int is_primary);
- extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
- extern int mpc83xx_add_bridge(struct device_node *dev);
- u64 fsl_pci_immrbar_base(struct pci_controller *hose);
-+#ifdef CONFIG_PCI
-+void fsl_add_pci_err(void);
-+#else
-+static inline void fsl_add_pci_err(void) {}
-+#endif
- 
- #endif /* __POWERPC_FSL_PCI_H */
- #endif /* __KERNEL__ */
+ ### File systems
+ CONFIG_EXT2_FS=m
 -- 
-1.7.4.4
+1.7.4.1
