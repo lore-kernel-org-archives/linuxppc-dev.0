@@ -1,26 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 1 Jun 2011 15:11:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 10/13] kvm/powerpc: Add support for Book3S processors in
-	hypervisor mode
-Message-ID: <20110601051145.GB6773@brick.ozlabs.ibm.com>
-References: <20110511104456.GK2837@brick.ozlabs.ibm.com>
-	<BDD550B2-02CA-4B1A-A05B-6CB3EF89B7B3@suse.de>
-	<20110516055809.GA3590@drongo>
-	<D8CAE971-9A97-4C02-8908-2B199C81947A@suse.de>
-	<20110527103334.GA4236@brick.ozlabs.ibm.com>
-	<b833d9df4fc8e1e6a8b6a56311c6f344@kernel.crashing.org>
-	<6A1CA2C8-8032-4D67-9C14-4ABD81ABCDD7@suse.de>
-	<10cc079a31947ec4b6d39f30f2ac50f2@kernel.crashing.org>
-	<A052DEF7-7DA0-4573-89EC-0A685ED4B498@pobox.com>
-	<c71b71560e43813012b6f293230dc78e@kernel.crashing.org>
+Return-Path: <josh@joshtriplett.org>
+Date: Tue, 31 May 2011 22:07:01 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Hooking up SM501 on TQM5200 (MPC5200) board via device tree?
+Message-ID: <20110601050659.GA7789@leaf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c71b71560e43813012b6f293230dc78e@kernel.crashing.org>
-Cc: kvm-ppc@vger.kernel.org, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Alexander Graf <agraf@suse.de>, KVM list <kvm@vger.kernel.org>,
-	Jimi Xenidis <jimix@pobox.com>
+Cc: Jamey Sharp <jamey@minilop.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +17,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 01, 2011 at 12:34:43AM +0200, Segher Boessenkool wrote:
+We have a TQM5200 board, which has GPIO lines hooked up to an SM501.
+I've managed to come up with the following patch to the tqm5200 device
+tree, which manages to convince the sm501 driver to attach an sm501-fb:
 
-> There's a loop of 128 iterations of 3 insns.
-> 
-> I'm not saying it is actually bad, just that that 50 is slightly off ;-)
+--- a/arch/powerpc/boot/dts/tqm5200.dts  2009-11-23 03:13:27.000000000 -0800
++++ b/arch/powerpc/boot/dts/tqm5200.dts  2011-05-31 22:00:28.000580627 -0700
+@@ -177,7 +177,8 @@
+                compatible = "fsl,mpc5200-lpb","simple-bus";
+                #address-cells = <2>;
+                #size-cells = <1>;
+-               ranges = <0 0 0xfc000000 0x02000000>;
++               ranges = <0 0 0xfc000000 0x02000000
++                         1 0 0xe0000000 0x04000000>;
+ 
+                flash@0,0 {
+                        compatible = "cfi-flash";
+@@ -187,6 +188,13 @@
+                        #size-cells = <1>;
+                        #address-cells = <1>;
+                };
++
++               display@1,0 {
++                       compatible = "smi,sm501";
++                       reg = <1 0x00000000 0x00800000
++                              1 0x03e00000 0x00200000>;
++                       interrupts = <1 1 3>;
++               };
+        };
+ 
+        pci@f0000d00 {
 
-That would be the TLB invalidation.  On POWER7 we only need to do that
-if the virtual cpu last ran on a different physical cpu, or if this
-physical cpu last ran a different virtual cpu in the same partition.
-So hopefully we don't have to do it very often.
 
-The reason we have to do it in that case is to allow the optimization
-where we use tlbiel for TLB invalidations if the guest claims that
-the translation being invalidated was only ever used on this virtual
-cpu.  That means that we have to guard against stale TLB entries left
-behind when a virtual cpu moves from one physical cpu to another.
+However, this doesn't hook up the sm501-gpio bits.  Reading the sm501
+driver carefully, it looks like it only hooks up sm501-gpio if it has
+platform_data available which sets some flags and other information.
+So, if I understand correctly, hooking up sm501-gpio would require
+adding functionality the driver to get the GPIO information from the
+device tree in preference to the platform_data, if available, and fall
+back to the platform_data for existing users?
 
-Paul.
+What should the necessary device tree properties look like to replace
+sm501_initdata?
+
+- Josh Triplett
