@@ -1,25 +1,34 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
-	[213.199.154.143])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06333B6F8E
+Return-Path: <vapier.adi@gmail.com>
+Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
+	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 307A9B6F94
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 02:48:38 +1000 (EST)
-Date: Wed, 1 Jun 2011 11:48:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
-Message-ID: <20110601114823.2e57c691@schlenkerla.am.freescale.net>
-In-Reply-To: <BANLkTi=xFcZRd4x1FQSKJzmt3A7_tZs+sQ@mail.gmail.com>
-References: <1306931292-2313-1-git-send-email-dbaryshkov@gmail.com>
-	<20110601132519.GA16125@oksana.dev.rtsoft.ru>
-	<BANLkTi=xFcZRd4x1FQSKJzmt3A7_tZs+sQ@mail.gmail.com>
+	Thu,  2 Jun 2011 03:00:52 +1000 (EST)
+Received: by fxm5 with SMTP id 5so224456fxm.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 01 Jun 2011 10:00:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Paul Mackerras <paulus@samba.org>, Anton Vorontsov <avorontsov@mvista.com>,
-	linuxppc-dev@lists.ozlabs.org, bluesmoke-devel@lists.sourceforge.net
+Sender: vapier.adi@gmail.com
+In-Reply-To: <1306945763-6583-1-git-send-email-wanlong.gao@gmail.com>
+References: <1306945763-6583-1-git-send-email-wanlong.gao@gmail.com>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Wed, 1 Jun 2011 13:00:28 -0400
+Message-ID: <BANLkTinEc8OLHnkVCZVpHK4ZnC1DHbEsvw@mail.gmail.com>
+Subject: Re: [PATCH] Fix build warning of the defconfigs
+To: Wanlong Gao <wanlong.gao@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-mips@linux-mips.org, david.woodhouse@intel.com,
+	linux-sh@vger.kernel.org, paulus@samba.org, gxt@mprc.pku.edu.cn,
+	sam@ravnborg.org, linux@arm.linux.org.uk,
+	manuel.lauss@googlemail.com, rientjes@google.com, mingo@elte.hu,
+	arnd@arndb.de, u.kleine-koenig@pengutronix.de, anton@samba.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+	lethal@linux-sh.org, uclinux-dist-devel@blackfin.uclinux.org,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+	hans-christian.egtvedt@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +38,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Jun 2011 18:55:35 +0400
-Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+On Wed, Jun 1, 2011 at 12:29, Wanlong Gao wrote:
+> =C2=A0arch/blackfin/configs/CM-BF548_defconfig =C2=A0 | =C2=A0 =C2=A02 +-
 
-> On 6/1/11, Anton Vorontsov <avorontsov@mvista.com> wrote:
-> > On Wed, Jun 01, 2011 at 04:28:11PM +0400, Dmitry Eremin-Solenikov wrote:
-> > [...]
-> > Also, why not add this call to the fsl_add_bridge(), so you
-> > won't need to touch board files at all.
-> 
-> Because fsl_add_bridge is called too early, so allocation
-> of platform device fails.
-
-That doesn't seem like a good reason for putting more stuff in board
-files that isn't board-specific.  Why not just make fsl_add_pci_err() an
-initcall?  It already only works when a compatible device tree node is
-found.  Is there any case where a board would not want this PCI code to be
-used, even if the device tree node is present?  If so, fsl_add_bridge could
-set a flag that fsl_add_pci_err() could check -- but I doubt it's needed.
-
--Scott
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+-mike
