@@ -1,17 +1,26 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Wed, 1 Jun 2011 15:20:54 +1000
+Date: Wed, 1 Jun 2011 15:11:45 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH v2 0/12] Hypervisor-mode KVM on POWER7
-Message-ID: <20110601052054.GC6773@brick.ozlabs.ibm.com>
-References: <20110531064028.GA2533@brick.ozlabs.ibm.com>
-	<B84695B5-5DD2-4962-AADB-A0B29009FF13@suse.de>
-	<20110531123521.GL2505@brick.ozlabs.ibm.com>
-	<A857E6BF-D88C-46E3-BF09-268A43B7F7CF@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 10/13] kvm/powerpc: Add support for Book3S processors in
+	hypervisor mode
+Message-ID: <20110601051145.GB6773@brick.ozlabs.ibm.com>
+References: <20110511104456.GK2837@brick.ozlabs.ibm.com>
+	<BDD550B2-02CA-4B1A-A05B-6CB3EF89B7B3@suse.de>
+	<20110516055809.GA3590@drongo>
+	<D8CAE971-9A97-4C02-8908-2B199C81947A@suse.de>
+	<20110527103334.GA4236@brick.ozlabs.ibm.com>
+	<b833d9df4fc8e1e6a8b6a56311c6f344@kernel.crashing.org>
+	<6A1CA2C8-8032-4D67-9C14-4ABD81ABCDD7@suse.de>
+	<10cc079a31947ec4b6d39f30f2ac50f2@kernel.crashing.org>
+	<A052DEF7-7DA0-4573-89EC-0A685ED4B498@pobox.com>
+	<c71b71560e43813012b6f293230dc78e@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A857E6BF-D88C-46E3-BF09-268A43B7F7CF@suse.de>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+In-Reply-To: <c71b71560e43813012b6f293230dc78e@kernel.crashing.org>
+Cc: kvm-ppc@vger.kernel.org, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Alexander Graf <agraf@suse.de>, KVM list <kvm@vger.kernel.org>,
+	Jimi Xenidis <jimix@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,51 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 31, 2011 at 02:50:20PM +0200, Alexander Graf wrote:
-> 
-> On 31.05.2011, at 14:35, Paul Mackerras wrote:
-> 
-> > On Tue, May 31, 2011 at 12:40:31PM +0200, Alexander Graf wrote:
-> > 
-> >> Thinking about the testability of this a bit more ... how much
-> >> effort would it be to get this code running on a 970MP with SLOF?
-> >> There should only be a few POWER7 specific pieces, right?
-> > 
-> > Do you have a 970MP that has a usable hypervisor mode, i.e. not an
-> > Apple machine?  The 970s in Apple machines have the HV hard-wired to
-> > 1, which means they do have a hypervisor mode but it isn't any use.
-> > 
-> > If you do have such a machine, then we would have to look at some
-> > details like the instruction sequence for the partition switch, and
-> > make sure we don't try to use SMT4 mode.  Also, I believe we will have
-> > to flush the TLB on partition switches, since Power processors prior
-> > to POWER7 didn't tag the TLB entries with the partition ID.
-> > 
-> > So it should be quite feasible if you have a non-Apple machine.
-> > I will check whether the 970MP machines that Terrasoft were
-> > distributing would be suitable.  We have one of them in the lab.
-> 
-> That's the one I was thinking of and yes, I have one available. That
-> way I could test 99% of your code, you don't have to release
-> hardware, and everyone's happy :).
+On Wed, Jun 01, 2011 at 12:34:43AM +0200, Segher Boessenkool wrote:
 
-I checked our YDL PowerStation and it does appear to have a usable
-hypervisor mode. :)
+> There's a loop of 128 iterations of 3 insns.
+> 
+> I'm not saying it is actually bad, just that that 50 is slightly off ;-)
 
-As Jimi X pointed out, there are a few things that POWER7 has that 970
-doesn't.  In particular the lack of VRMA mode means that we will have
-to find 64MB of physically contiguous memory, aligned on a 64MB
-address boundary, for the real mode area (RMO) for the guest.  64MB is
-the smallest RMO size that the 970 supports; it also supports 128MB,
-256MB, 1GB, 16GB and 256GB.  I think we'll have to reserve some memory
-at boot.  We may get away with bumping up CONFIG_FORCE_MAX_ZONEORDER,
-but relying on allocating a physically contiguous 64MB at runtime
-seems somewhat fragile.  Also, we'll need some qemu changes since it
-won't be able to allocate the RMO itself.
+That would be the TLB invalidation.  On POWER7 we only need to do that
+if the virtual cpu last ran on a different physical cpu, or if this
+physical cpu last ran a different virtual cpu in the same partition.
+So hopefully we don't have to do it very often.
 
-The other thing is that we have to flush the TLB on every partitions
-switch, plus make sure that we're not switching the partition ID while
-any other cpu in the same partition is doing a tlbie or tlbsync.
-Still, it should all be doable.
+The reason we have to do it in that case is to allow the optimization
+where we use tlbiel for TLB invalidations if the guest claims that
+the translation being invalidated was only ever used on this virtual
+cpu.  That means that we have to guard against stale TLB entries left
+behind when a virtual cpu moves from one physical cpu to another.
 
 Paul.
