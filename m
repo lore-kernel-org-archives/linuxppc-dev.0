@@ -1,15 +1,22 @@
 Return-Path: <lists@nerdbynature.de>
 Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
-	by ozlabs.org (Postfix) with ESMTP id 1F626B6F7E
+	by ozlabs.org (Postfix) with ESMTP id A9601B6F88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 11:22:09 +1000 (EST)
-Date: Tue, 31 May 2011 18:22:05 -0700 (PDT)
+	Wed,  1 Jun 2011 13:02:52 +1000 (EST)
+Date: Tue, 31 May 2011 20:02:47 -0700 (PDT)
 From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] document udbg-immortal
-Message-ID: <alpine.DEB.2.01.1105311817240.21697@trent.utfs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
+In-Reply-To: <alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
+Message-ID: <alpine.DEB.2.01.1105311959000.21697@trent.utfs.org>
+References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
+	<1306887942.29297.10.camel@pasglop>
+	<alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,39 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Back in 2006 the "udbg-immortal" kernel option has been introduced:
+(Cc'in Linus)
 
-  > commit 3b5e905ee3bd23e9311951890aba57a0dbc81ca4
-  > Author: Benjamin Herrenschmidt <benh@au1.ibm.com>
-  > Date:   Wed Jun 7 12:06:20 2006 +1000
-  >
-  >  [PATCH] powerpc: Add udbg-immortal kernel option
+On Tue, 31 May 2011 at 17:48, Christian Kujau wrote:
+> In the meantime, "git bisect" behaves kinda weird, I don't know what went 
+> wrong here:
+> 
+>  $ git bisect start
+>  $ git bisect good         # Linux 2.6.39
+>  $ git bisect bad v3.0-rc1 # Linux 3.0-rc1
+>  $ git bisect bad          # c44dead70a...
+>  $ git bisect bad          # d93515611b..
+> 
+> ...yet the ./Makefile shows[0] that I'm already way behind: 2.6.39-rc2. 
+> Maybe "git bisect" got confused with that whole 2.6.x -> 3.0 renaming?
 
-...but I could not find it documented anywhere in the sources. 
-This patch adds it to Documentation/kernel-parameters.txt.
+Hm, I tried again, from a clean v3.0-rc1 (git reset --hard), but after the 
+2nd "git bad" I'm at 2.6.39-rc2 again - while I /should/ be somwhere 
+inbetween v2.6.39..v3.0-rc1, right?
 
-Signed-off-by: Christian Kujau <lists@nerdbynature.de>
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index cc85a92..5d0df23 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2520,6 +2520,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			<port#>,<js1>,<js2>,<js3>,<js4>,<js5>,<js6>,<js7>
- 			See also Documentation/input/joystick-parport.txt
- 
-+	udbg-immortal	[PPC] When debugging early kernel crashes that
-+			happen after console_init() and before a proper 
-+			console driver takes over, this boot options might
-+			help "seeing" what's going on.
-+
- 	uhash_entries=	[KNL,NET]
- 			Set number of hash buckets for UDP/UDP-Lite connections
- 
-
-Thanks,
+Help, please!
 Christian.
--- 
-BOFH excuse #45:
 
-virus attack, luser responsible
+[0] http://nerdbynature.de/bits/3.0-rc1/
+-- 
+BOFH excuse #54:
+
+Evil dogs hypnotised the night shift
