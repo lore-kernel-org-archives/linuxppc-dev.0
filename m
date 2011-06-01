@@ -1,21 +1,15 @@
 Return-Path: <lists@nerdbynature.de>
 Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
-	by ozlabs.org (Postfix) with ESMTP id 0E92EB6F7F
+	by ozlabs.org (Postfix) with ESMTP id 1F626B6F7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 11:08:55 +1000 (EST)
-Date: Tue, 31 May 2011 18:08:51 -0700 (PDT)
+	Wed,  1 Jun 2011 11:22:09 +1000 (EST)
+Date: Tue, 31 May 2011 18:22:05 -0700 (PDT)
 From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
-In-Reply-To: <alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
-Message-ID: <alpine.DEB.2.01.1105311806220.21697@trent.utfs.org>
-References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
-	<1306887942.29297.10.camel@pasglop>
-	<alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] document udbg-immortal
+Message-ID: <alpine.DEB.2.01.1105311817240.21697@trent.utfs.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 31 May 2011 at 17:48, Christian Kujau wrote:
-> On Wed, 1 Jun 2011 at 10:25, Benjamin Herrenschmidt wrote:
-> > Hrm, I had it working on a pair of powerbooks yesterday. Can you try
-> > something like "udbg-immortal" on your kernel command line to see if
-> > that makes a difference in the output ?
-> 
-> I'll try in a minute.
+Back in 2006 the "udbg-immortal" kernel option has been introduced:
 
-Wow, it really did make a difference:
+  > commit 3b5e905ee3bd23e9311951890aba57a0dbc81ca4
+  > Author: Benjamin Herrenschmidt <benh@au1.ibm.com>
+  > Date:   Wed Jun 7 12:06:20 2006 +1000
+  >
+  >  [PATCH] powerpc: Add udbg-immortal kernel option
 
-  http://nerdbynature.de/bits/3.0-rc1/
-  * linux-3.0_powerpc_2.jpg
-  * linux-3.0_powerpc_2.mp4 (only a few(!) seconds long,
-    best to view with the slider in VLC oder Quicktime, to
-    get at least a grasp what lead to linux-3.0_powerpc_2.jpg)
+...but I could not find it documented anywhere in the sources. 
+This patch adds it to Documentation/kernel-parameters.txt.
+
+Signed-off-by: Christian Kujau <lists@nerdbynature.de>
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index cc85a92..5d0df23 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2520,6 +2520,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			<port#>,<js1>,<js2>,<js3>,<js4>,<js5>,<js6>,<js7>
+ 			See also Documentation/input/joystick-parport.txt
+ 
++	udbg-immortal	[PPC] When debugging early kernel crashes that
++			happen after console_init() and before a proper 
++			console driver takes over, this boot options might
++			help "seeing" what's going on.
++
+ 	uhash_entries=	[KNL,NET]
+ 			Set number of hash buckets for UDP/UDP-Lite connections
+ 
 
 Thanks,
 Christian.
