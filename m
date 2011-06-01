@@ -1,24 +1,29 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AEF5FB6F80
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 22:28:21 +1000 (EST)
-Received: by wyg36 with SMTP id 36so4558336wyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 01 Jun 2011 05:28:17 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] mpc85xx_edac: adapt to ppc/85xx changes for
-	mpc85xx_pci_err
-Date: Wed,  1 Jun 2011 16:28:12 +0400
-Message-Id: <1306931292-2313-2-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1306931292-2313-1-git-send-email-dbaryshkov@gmail.com>
-References: <1306931292-2313-1-git-send-email-dbaryshkov@gmail.com>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9CC5AB6F80
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 22:36:03 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p51CUtpw013397
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2011 22:30:55 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p51CZTX01261568
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2011 22:35:29 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p51Ca269012201
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2011 22:36:02 +1000
+Date: Wed, 1 Jun 2011 18:05:54 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_events: Enable idle state tracing for pseries (ppc64)
+Message-ID: <20110601123554.GA12492@deepthi.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Reply-To: deepthi@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,104 +33,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently mpc85xx_edac fails to bind to PCI host device node. Adapt it
-to bind to special platform device mpc85xx_pci_err.
+Hi,
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/edac/mpc85xx_edac.c |   33 ++++++++++++---------------------
- 1 files changed, 12 insertions(+), 21 deletions(-)
+Please find below a patch, which has perf_events added for pseries (ppc64)
+platform in order to emit the trace required for perf timechart. 
+It essentially enables perf timechart for pseries platfrom to analyse
+power savings events like cpuidle states.
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index c42e483..e91e8fb 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -204,7 +204,7 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
--	struct resource r;
-+	struct resource *r;
- 	int res = 0;
+Steps to enable and disable the trace;
+1) Mount  debugfs;
+   mount -t debugfs none /sys/kernel/debug
+2) Then, enable the event using;
+    echo 1 > /sys/kernel/debug/tracing/events/power/cpu_idle/enable
+3) The output of the trace can be seen in /sys/kernel/debug/tracing/trace
+4) To disable the trace use;
+    echo 0 > sys/kernel/debug/tracing/events/power/cpu_idle/enable
+
+Trace .svg o/p can be viewed for pseries (ppc64) systems showing various 
+cpu-idle states as a part of perf timechart tool. 
+References: http://blog.fenrus.org/?p=5
+
+Issue command 'perf timechart record' to enable tracing. 
+This generates the trace and records in  perf.data file by default.
+One can generate output.svg file by issuing 'perf timechart'. 
+
+Sample o/p from the trace file: 
+===============================
+
+State 1 -> Snooze
+State 2 -> Cede
+
+# tracer: nop
+#
+TASK-PID    CPU#    TIMESTAMP  FUNCTION
+  | |       |          |         |
+<idle>-0     [000]   292.482314: cpu_idle: state=1 cpu_id=0 
+						^^ Enter Snooze
+<idle>-0     [001]   292.482363: cpu_idle: state=1 cpu_id=1
+<idle>-0     [000]   292.492315: cpu_idle: state=4294967295 cpu_id=0
+						^^ Exit Snooze 	
+<idle>-0     [000]   292.492316: cpu_idle: state=2 cpu_id=0 
+						^^ Enter  Cede 
+<idle>-0     [001]   292.492364: cpu_idle: state=4294967295 cpu_id=1
+<idle>-0     [001]   292.492364: cpu_idle: state=2 cpu_id=1	
+<idle>-0     [000]   292.504198: cpu_idle: state=4294967295 cpu_id=0 
+						^^Exit Cede 
+<idle>-0     [000]   292.504204: cpu_idle: state=1 cpu_id=0
+<idle>-0     [001]   292.504921: cpu_idle: state=4294967295 cpu_id=1
+<idle>-0     [001]   292.504936: cpu_idle: state=1 cpu_id=1
+<idle>-0     [000]   292.514205: cpu_idle: state=4294967295 cpu_id=0    
+
+This patch applies on 2.6.39 and tested on a IBM POWER7 machine.  
+
+-Deepthi
+
+Adding perf events to trace various cpu idle states on ppc64 (pseries) platform.
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+
+pseries.h |    4 ++++
+setup.c   |   14 ++++++++++++++
+2 files changed, 18 insertions(+)
+
+Index: linux-2.6.39/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux-2.6.39.orig/arch/powerpc/platforms/pseries/setup.c	2011-05-19 00:06:34.000000000 -0400
++++ linux-2.6.39/arch/powerpc/platforms/pseries/setup.c	2011-06-01 07:46:00.000000000 -0400
+@@ -39,6 +39,7 @@
+ #include <linux/irq.h>
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
++#include <trace/events/power.h>
  
- 	if (!devres_open_group(&op->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
-@@ -228,17 +228,15 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 
- 	pdata->edac_idx = edac_pci_idx++;
- 
--	res = of_address_to_resource(op->dev.of_node, 0, &r);
--	if (res) {
-+	r = platform_get_resource(op, IORESOURCE_MEM, 0);
-+	if (!r) {
- 		printk(KERN_ERR "%s: Unable to get resource for "
- 		       "PCI err regs\n", __func__);
-+		res = -ENODEV;
- 		goto err;
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+@@ -582,6 +583,10 @@
+ 	 * while, do so.
+ 	 */
+ 	if (snooze) {
++
++		trace_power_start(POWER_CSTATE, CPU_IDLE_SNOOZE, cpu);
++		trace_cpu_idle(CPU_IDLE_SNOOZE, cpu);
++
+ 		start_snooze = get_tb() + snooze * tb_ticks_per_usec;
+ 		local_irq_enable();
+ 		set_thread_flag(TIF_POLLING_NRFLAG);
+@@ -602,9 +607,19 @@
+ 			goto out;
  	}
  
--	/* we only need the error registers */
--	r.start += 0xe00;
--
--	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
-+	if (!devm_request_mem_region(&op->dev, r->start, resource_size(r),
- 					pdata->name)) {
- 		printk(KERN_ERR "%s: Error while requesting mem region\n",
- 		       __func__);
-@@ -246,7 +244,7 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 		goto err;
- 	}
++	trace_power_end(cpu);
++	trace_cpu_idle(PWR_EVENT_EXIT, cpu);
++
++	trace_power_start(POWER_CSTATE, CPU_IDLE_CEDE, cpu);
++	trace_cpu_idle(CPU_IDLE_CEDE, cpu);
++
+ 	cede_processor();
  
--	pdata->pci_vbase = devm_ioremap(&op->dev, r.start, resource_size(&r));
-+	pdata->pci_vbase = devm_ioremap(&op->dev, r->start, resource_size(r));
- 	if (!pdata->pci_vbase) {
- 		printk(KERN_ERR "%s: Unable to setup PCI err regs\n", __func__);
- 		res = -ENOMEM;
-@@ -273,7 +271,11 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 	}
+ out:
++
++	trace_power_end(cpu);
++	trace_cpu_idle(PWR_EVENT_EXIT, cpu);
++
+ 	HMT_medium();
+ 	out_purr = mfspr(SPRN_PURR);
+ 	get_lppaca()->wait_state_cycles += out_purr - in_purr;
+Index: linux-2.6.39/arch/powerpc/platforms/pseries/pseries.h
+===================================================================
+--- linux-2.6.39.orig/arch/powerpc/platforms/pseries/pseries.h	2011-05-19 00:06:34.000000000 -0400
++++ linux-2.6.39/arch/powerpc/platforms/pseries/pseries.h	2011-06-01 07:53:24.000000000 -0400
+@@ -12,6 +12,9 @@
  
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
--		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
-+		res =  platform_get_irq(op, 0);
-+		if (res >= 0)
-+			pdata->irq = res;
-+		else
-+			goto err2;
- 		res = devm_request_irq(&op->dev, pdata->irq,
- 				       mpc85xx_pci_isr, IRQF_DISABLED,
- 				       "[EDAC] PCI err", pci);
-@@ -281,7 +283,6 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 			printk(KERN_ERR
- 			       "%s: Unable to requiest irq %d for "
- 			       "MPC85xx PCI err\n", __func__, pdata->irq);
--			irq_dispose_mapping(pdata->irq);
- 			res = -ENODEV;
- 			goto err2;
- 		}
-@@ -326,16 +327,7 @@ static int mpc85xx_pci_err_remove(struct platform_device *op)
- 	return 0;
- }
+ #include <linux/interrupt.h>
  
--static struct of_device_id mpc85xx_pci_err_of_match[] = {
--	{
--	 .compatible = "fsl,mpc8540-pcix",
--	 },
--	{
--	 .compatible = "fsl,mpc8540-pci",
--	},
--	{},
--};
--MODULE_DEVICE_TABLE(of, mpc85xx_pci_err_of_match);
-+MODULE_ALIAS("platform:mpc85xx_pci_err");
++#define CPU_IDLE_SNOOZE 1
++#define CPU_IDLE_CEDE	 2
++
+ struct device_node;
  
- static struct platform_driver mpc85xx_pci_err_driver = {
- 	.probe = mpc85xx_pci_err_probe,
-@@ -343,7 +335,6 @@ static struct platform_driver mpc85xx_pci_err_driver = {
- 	.driver = {
- 		.name = "mpc85xx_pci_err",
- 		.owner = THIS_MODULE,
--		.of_match_table = mpc85xx_pci_err_of_match,
- 	},
- };
+ extern void request_event_sources_irqs(struct device_node *np,
+@@ -56,4 +59,5 @@
+ extern int dlpar_attach_node(struct device_node *);
+ extern int dlpar_detach_node(struct device_node *);
  
--- 
-1.7.4.4
++
+ #endif /* _PSERIES_PSERIES_H */
