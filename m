@@ -1,21 +1,25 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from duck.linux-mips.net (h5.dl5rb.org.uk [81.2.74.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6FE11B773B
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E388B6F94
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 05:47:51 +1000 (EST)
-Message-Id: <20110601180610.984881988@duck.linux-mips.net>
-Date: Wed, 01 Jun 2011 19:05:09 +0100
-From: ralf@linux-mips.org
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [patch 13/14] PCSPKR: Cleanup Kconfig dependencies
-References: <20110601180456.801265664@duck.linux-mips.net>
-Cc: linux-mips@linux-mips.org, linux-alpha@vger.kernel.org, x86@kernel.org,
-	Ingo Molnar <mingo@redhat.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	"H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>,
-	Matt Turner <mattst88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>
+	Thu,  2 Jun 2011 06:26:46 +1000 (EST)
+Message-ID: <4DE6A013.409@freescale.com>
+Date: Wed, 1 Jun 2011 15:24:51 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
+	management driver
+References: <1306953337-15698-1-git-send-email-timur@freescale.com>
+	<20110601204618.32190be9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20110601204618.32190be9@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
+	linux-console@vger.kernel.org, greg@kroah.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,123 +29,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lenghty lists of the kind "depends on ARCH1 || ARCH2 ... || ARCH123" are
-usually either wrong or too coarse grained.  Or plain an ugly sin.
+Alan Cox wrote:
+> O> +	/* One partition must be local, the other must be remote.  In other
+>> +	   words, if source and target are both -1, or are both not -1, then
+>> +	   return an error. */
+>> +	if ((param.source == -1) == (param.target == -1))
+>> +		return -EINVAL;
+> 
+> Excess brackets (I just mention that one in passing)'
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-To: linux-kernel@vger.kernel.org
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matt Turner <mattst88@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-mips@linux-mips.org
-Cc: linuxppc-dev@lists.ozlabs.org
+Do you mean excess parentheses?  If so, then I don't see how.  "(param.source ==
+-1)" and "(param.target == -1)" are expressions that return a boolean.  I'm
+comparing the two boolean results to see if they're equal.  I want to make sure
+that the compiler doesn't do something like this:
 
- arch/alpha/Kconfig                     |    1 +
- arch/mips/Kconfig                      |    1 +
- arch/powerpc/platforms/chrp/Kconfig    |    1 +
- arch/powerpc/platforms/prep/Kconfig    |    1 +
- arch/powerpc/platforms/pseries/Kconfig |    1 +
- arch/x86/Kconfig                       |    1 +
- init/Kconfig                           |    5 ++++-
- 7 files changed, 10 insertions(+), 1 deletion(-)
+	if (param.source == (-1 == (param.target == -1)))
 
-Index: linux-mips/arch/alpha/Kconfig
-===================================================================
---- linux-mips.orig/arch/alpha/Kconfig
-+++ linux-mips/arch/alpha/Kconfig
-@@ -6,6 +6,7 @@ config ALPHA
- 	select HAVE_OPROFILE
- 	select HAVE_SYSCALL_WRAPPERS
- 	select HAVE_IRQ_WORK
-+	select HAVE_PCSPKR_PLATFORM
- 	select HAVE_PERF_EVENTS
- 	select HAVE_DMA_ATTRS
- 	select HAVE_GENERIC_HARDIRQS
-Index: linux-mips/arch/mips/Kconfig
-===================================================================
---- linux-mips.orig/arch/mips/Kconfig
-+++ linux-mips/arch/mips/Kconfig
-@@ -5,6 +5,7 @@ config MIPS
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_IRQ_WORK
-+	select HAVE_PCSPKR_PLATFORM
- 	select HAVE_PERF_EVENTS
- 	select PERF_USE_VMALLOC
- 	select HAVE_ARCH_KGDB
-Index: linux-mips/arch/powerpc/platforms/chrp/Kconfig
-===================================================================
---- linux-mips.orig/arch/powerpc/platforms/chrp/Kconfig
-+++ linux-mips/arch/powerpc/platforms/chrp/Kconfig
-@@ -1,6 +1,7 @@
- config PPC_CHRP
- 	bool "Common Hardware Reference Platform (CHRP) based machines"
- 	depends on 6xx
-+	select HAVE_PCSPKR_PLATFORM
- 	select MPIC
- 	select PPC_I8259
- 	select PPC_INDIRECT_PCI
-Index: linux-mips/arch/powerpc/platforms/prep/Kconfig
-===================================================================
---- linux-mips.orig/arch/powerpc/platforms/prep/Kconfig
-+++ linux-mips/arch/powerpc/platforms/prep/Kconfig
-@@ -1,6 +1,7 @@
- config PPC_PREP
- 	bool "PowerPC Reference Platform (PReP) based machines"
- 	depends on 6xx && BROKEN
-+	select HAVE_PCSPKR_PLATFORM
- 	select MPIC
- 	select PPC_I8259
- 	select PPC_INDIRECT_PCI
-Index: linux-mips/arch/powerpc/platforms/pseries/Kconfig
-===================================================================
---- linux-mips.orig/arch/powerpc/platforms/pseries/Kconfig
-+++ linux-mips/arch/powerpc/platforms/pseries/Kconfig
-@@ -1,6 +1,7 @@
- config PPC_PSERIES
- 	depends on PPC64 && PPC_BOOK3S
- 	bool "IBM pSeries & new (POWER5-based) iSeries"
-+	select HAVE_PCSPKR_PLATFORM
- 	select MPIC
- 	select PCI_MSI
- 	select PPC_XICS
-Index: linux-mips/arch/x86/Kconfig
-===================================================================
---- linux-mips.orig/arch/x86/Kconfig
-+++ linux-mips/arch/x86/Kconfig
-@@ -20,6 +20,7 @@ config X86
- 	select HAVE_UNSTABLE_SCHED_CLOCK
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
-+	select HAVE_PCSPKR_PLATFORM
- 	select HAVE_PERF_EVENTS
- 	select HAVE_IRQ_WORK
- 	select HAVE_IOREMAP_PROT
-Index: linux-mips/init/Kconfig
-===================================================================
---- linux-mips.orig/init/Kconfig
-+++ linux-mips/init/Kconfig
-@@ -1001,12 +1001,15 @@ config ELF_CORE
- 
- config PCSPKR_PLATFORM
- 	bool "Enable PC-Speaker support" if EXPERT
--	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
-+	depends on HAVE_PCSPKR_PLATFORM
- 	default y
- 	help
-           This option allows to disable the internal PC-Speaker
-           support, saving some memory.
- 
-+config HAVE_PCSPKR_PLATFORM
-+	bool
-+
- config BASE_FULL
- 	default y
- 	bool "Enable full-sized data structures for core" if EXPERT
+I don't even know what that means, but it's not what I want.
+
+>> +static char *strdup_from_user(const char __user *ustr, size_t max)
+>> +{
+>> +	size_t len;
+>> +	char *str;
+>> +
+>> +	len = strnlen_user(ustr, max);
+>> +	if (len > max)
+>> +		return ERR_PTR(-ENAMETOOLONG);
+>> +
+>> +	str = kmalloc(len, GFP_KERNEL);
+>> +	if (!str)
+>> +		return ERR_PTR(-ENOMEM);
+>> +
+>> +	if (copy_from_user(str, ustr, len))
+>> +		return ERR_PTR(-EFAULT);
+>> +
+>> +	return str;
+>> +}
+> 
+> This belongs on lib/ if its of general use which I think it perhaps is
+> and if we don't have one already.
+
+Where exactly in lib/ should it go?  lib/strings.c seems too low-level for a
+function like this.  lib/string_helpers.c is for sprintf-like functions.  And
+it's too generic for lib/powerpc/
+
+>> +	default:
+>> +		pr_debug("fsl-hv: unknown ioctl %u\n", cmd);
+>> +		ret = -ENOIOCTLCMD;
+> 
+> -ENOTTY
+> 
+> (-ENOIOCTLCMD is an internal indicator designed so driver layers can say
+> 'dunno, try the next layer up')
+> 
+>> +/* Linked list of processes that have us open */
+>> +struct list_head db_list;
+> 
+> static ?
+> 
+> 
+>> + * We use the same interrupt handler for all doorbells.  Whenever a doorbell
+>> + * is rung, and we receive an interrupt, we just put the handle for that
+>> + * doorbell (passed to us as *data) into all of the queues.
+> 
+> I wonder if these should be presented as IRQs or whether that makes no
+> sense ?
+
+Well, the "handles" are supposed to be just unique numbers.  In this case, they
+are IRQs, but we don't want to expose that.  The application is supposed to scan
+the device tree looking for the doorbell nodes that it wants, and in those nodes
+there is a 'reg' property that contains the handle for that doorbell.  So the
+numbers just need to match.  What they represent is not relevant.
+
+>> +static irqreturn_t fsl_hv_state_change_isr(int irq, void *data)
+>> +{
+>> +	unsigned int status;
+>> +	struct doorbell_isr *dbisr = data;
+>> +	int ret;
+>> +
+>> +	/* Determine the new state, and if it's stopped, notify the clients. */
+>> +	ret = fh_partition_get_status(dbisr->partition, &status);
+>> +	if (!ret && (status == FH_PARTITION_STOPPED))
+>> +		schedule_work(&dbisr->work);
+>> +
+>> +	/* Call the normal handler */
+>> +	return fsl_hv_isr(irq, (void *) (uintptr_t) dbisr->doorbell);
+>> +}
+> 
+> Would a threaded IRQ clean this up by avoiding the queue/work stuff ?
+
+Yes, I think so.  V3 coming up.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
