@@ -1,20 +1,34 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 31EE2B6F7C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2011 07:56:53 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Date: Wed, 1 Jun 2011 21:56:35 +0000
-Message-ID: <BANLkTi==R2ZQOePpDHjhjLbH18EhfnWFaw@mail.gmail.com>
-References: <alpine.LFD.2.00.1105200934580.11641@right.am.freescale.net>
-In-Reply-To: <alpine.LFD.2.00.1105200934580.11641@right.am.freescale.net>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E9A6B6F89
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Jun 2011 08:03:56 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p51Lgf8b001904
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 17:42:41 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p51M3rB4123406
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 18:03:53 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p51M3rdM028150
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 19:03:53 -0300
+Received: from manic8ball.ltc.austin.ibm.com ([9.12.225.18])
+	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	p51M3qD2028127
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Jun 2011 19:03:52 -0300
+Message-ID: <4DE6B748.3010109@linux.vnet.ibm.com>
+Date: Wed, 01 Jun 2011 17:03:52 -0500
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] document udbg-immortal
+References: <alpine.DEB.2.01.1105311817240.21697@trent.utfs.org>
+In-Reply-To: <alpine.DEB.2.01.1105311817240.21697@trent.utfs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 20, 2011 at 9:35 AM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
+On 05/31/2011 08:22 PM, Christian Kujau wrote:
 
-> Shaohui Xie (2):
-> =A0 =A0 =A0powerpc/fsl_rio: move machine_check handler
+> +	udbg-immortal	[PPC] When debugging early kernel crashes that
+> +			happen after console_init() and before a proper 
+> +			console driver takes over, this boot options might
+> +			help "seeing" what's going on.
+> +
 
-This patch causes a build failure if CONFIG_FSL_RIO is not defined:
+Thanks for documenting this!
 
-arch/powerpc/kernel/built-in.o: In function `machine_check_e500mc':
-/home/b04825/git/linux.hv/arch/powerpc/kernel/traps.c:429: undefined
-reference to `fsl_rio_mcheck_exception'
-arch/powerpc/kernel/built-in.o: In function `machine_check_e500':
-/home/b04825/git/linux.hv/arch/powerpc/kernel/traps.c:519: undefined
-reference to `fsl_rio_mcheck_exception'
+Suggested grammatical tweaks:
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+s/options/option/
+s/help "seeing"/help to "see"/
+
+-- 
+
+Jesse Larrew
+Software Engineer, Linux on Power Kernel Team
+IBM Linux Technology Center
+Phone: (512) 973-2052 (T/L: 363-2052)
+jlarrew@linux.vnet.ibm.com
