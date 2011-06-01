@@ -1,22 +1,25 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D5F17B6F80
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 20:14:46 +1000 (EST)
-Date: Wed, 1 Jun 2011 12:14:40 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] powerpc/fsl: Use irq_data_get_irq_handler_data() in
-	chain handler
-In-Reply-To: <alpine.DEB.2.00.1106011042080.30334@ayla.of.borg>
-Message-ID: <alpine.LFD.2.02.1106011213120.3078@ionos>
-References: <alpine.DEB.2.00.1106011042080.30334@ayla.of.borg>
+Return-Path: <zajec5@gmail.com>
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9B78CB6F7E
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2011 19:00:57 +1000 (EST)
+Received: by ewy2 with SMTP id 2so2356146ewy.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jun 2011 02:00:53 -0700 (PDT)
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+To: Andreas Schwab <schwab@linux-m68k.org>, linux-wireless@vger.kernel.org,
+	"John W. Linville" <linville@tuxdriver.com>,
+	=?UTF-8?q?Michael=20B=C3=BCsch?= <mb@bu3sch.de>
+Subject: [RFT][PATCH 3.0] ssb: fix PCI(e) driver regression causing oops on
+	PCI cards
+Date: Wed,  1 Jun 2011 11:01:11 +0200
+Message-Id: <1306918871-16965-1-git-send-email-zajec5@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org,
+	=?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+	b43-dev@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Jun 2011, Geert Uytterhoeven wrote:
+We were incorrectly executing PCIe specific workarounds on PCI cards.
+This resulted in:
+Machine check in kernel mode.
+Caused by (from SRR1=149030): Transfer error ack signal
+Oops: Machine check, sig: 7 [#1]
 
-> If you already have a pointer to a struct irq_data , it's more efficient
-> to use irq_data_get_irq_handler_data().
-> irq_get_handler_data() has to look up the struct irq_desc pointer again,
-> which was already passed to the chain handler.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> Completely untested, not even compile-tested.
-> If this is correct, there are probably more of these?
-> 
->  arch/powerpc/sysdev/fsl_msi.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-> index 92e7833..9b92c82 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.c
-> +++ b/arch/powerpc/sysdev/fsl_msi.c
-> @@ -193,7 +193,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
->  	u32 have_shift = 0;
->  	struct fsl_msi_cascade_data *cascade_data;
->  
-> -	cascade_data = irq_get_handler_data(irq);
-> +	cascade_data = irq_data_get_irq_handler_data(idata);
+Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
+---
+ drivers/ssb/driver_pcicore.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-  cascade_data = irq_desc_get_handler_data(desc);
-
-Might compile and work :)
+diff --git a/drivers/ssb/driver_pcicore.c b/drivers/ssb/driver_pcicore.c
+index 82feb34..2a20dab 100644
+--- a/drivers/ssb/driver_pcicore.c
++++ b/drivers/ssb/driver_pcicore.c
+@@ -539,10 +539,12 @@ void ssb_pcicore_init(struct ssb_pcicore *pc)
+ 	if (!pc->hostmode)
+ 		ssb_pcicore_init_clientmode(pc);
+ 
+-	/* Additional always once-executed workarounds */
+-	ssb_pcicore_serdes_workaround(pc);
+-	/* TODO: ASPM */
+-	/* TODO: Clock Request Update */
++	/* Additional PCIe always once-executed workarounds */
++	if (dev->id.coreid == SSB_DEV_PCIE) {
++		ssb_pcicore_serdes_workaround(pc);
++		/* TODO: ASPM */
++		/* TODO: Clock Request Update */
++	}
+ }
+ 
+ static u32 ssb_pcie_read(struct ssb_pcicore *pc, u32 address)
+-- 
+1.7.1
