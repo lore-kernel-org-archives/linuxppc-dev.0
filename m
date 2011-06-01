@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 58B77B6F7C
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
+	by ozlabs.org (Postfix) with ESMTP id 726CAB6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 10:25:49 +1000 (EST)
+	Wed,  1 Jun 2011 10:48:20 +1000 (EST)
+Date: Tue, 31 May 2011 17:48:17 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Kujau <lists@nerdbynature.de>
-In-Reply-To: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
+In-Reply-To: <1306887942.29297.10.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1105311744000.21697@trent.utfs.org>
 References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 01 Jun 2011 10:25:42 +1000
-Message-ID: <1306887942.29297.10.camel@pasglop>
-Mime-Version: 1.0
+	<1306887942.29297.10.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,47 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-05-31 at 16:50 -0700, Christian Kujau wrote:
-> Hi,
-> 
-> trying to boot 3.0-rc1 on powerpc32 only progresses until:
-> 
->   > Kernel virtual memory layout:
->   >   * 0xfffcf000..0xfffff000  : fixmap
-> 
-> And then the system hangs, does not respond to keyboard (sysrq does not 
-> seem to work on this PowerBook G4). But after a while the system reboots 
-> itself, so I guess the machine panicked but did not print anything on the 
-> screen.
-> 
-> Full messages (picture), config & (working) dmesg:
-> 
->    http://nerdbynature.de/bits/3.0-rc1/
-> 
-> I'm currently trying to bisect this, so far I have:
+On Wed, 1 Jun 2011 at 10:25, Benjamin Herrenschmidt wrote:
+> Hrm, I had it working on a pair of powerbooks yesterday. Can you try
+> something like "udbg-immortal" on your kernel command line to see if
+> that makes a difference in the output ?
 
-Hrm, I had it working on a pair of powerbooks yesterday. Can you try
-something like "udbg-immortal" on your kernel command line to see if
-that makes a difference in the output ?
+I'll try in a minute.
 
-Cheers,
-Ben.
+In the meantime, "git bisect" behaves kinda weird, I don't know what went 
+wrong here:
 
-> ----------------------
-> git bisect start
-> # good: [61c4f2c81c61f73549928dfd9f3e8f26aa36a8cf] Linux 2.6.39
-> git bisect good 61c4f2c81c61f73549928dfd9f3e8f26aa36a8cf
-> # bad: [55922c9d1b84b89cb946c777fddccb3247e7df2c] Linux 3.0-rc1
-> git bisect bad 55922c9d1b84b89cb946c777fddccb3247e7df2c
-> # bad: [c44dead70a841d90ddc01968012f323c33217c9e] Merge branch 'usb-next' 
-> of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb-2.6
-> git bisect bad c44dead70a841d90ddc01968012f323c33217c9e
-> # bad: [d93515611bbc70c2fe4db232e5feb448ed8e4cc9] macvlan: fix panic if 
-> lowerdev in a bond
-> git bisect bad d93515611bbc70c2fe4db232e5feb448ed8e4cc9
-> ----------------------
-> 
-> Any ideas?
-> 
-> Thanks,
-> Christian.
+ $ git bisect start
+ $ git bisect good         # Linux 2.6.39
+ $ git bisect bad v3.0-rc1 # Linux 3.0-rc1
+ $ git bisect bad          # c44dead70a...
+ $ git bisect bad          # d93515611b..
+
+...yet the ./Makefile shows[0] that I'm already way behind: 2.6.39-rc2. 
+Maybe "git bisect" got confused with that whole 2.6.x -> 3.0 renaming?
+
+Christian.
+
+[0] http://nerdbynature.de/bits/3.0-rc1/
+-- 
+BOFH excuse #383:
+
+Your processor has taken a ride to Heaven's Gate on the UFO behind Hale-Bopp's comet.
