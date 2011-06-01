@@ -1,16 +1,14 @@
 Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3CC99B6F7E
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 94B0FB6F7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jun 2011 18:14:02 +1000 (EST)
-Message-Id: <20110601080351.475337651@blue.kroah.org>
-Date: Wed, 01 Jun 2011 17:00:22 +0900
+	Wed,  1 Jun 2011 18:22:57 +1000 (EST)
+Message-Id: <20110601081142.418428890@blue.kroah.org>
+Date: Wed, 01 Jun 2011 17:10:58 +0900
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: [086/146] seqlock: Dont smp_rmb in seqlock reader spin loop
-In-Reply-To: <20110601080606.GA522@kroah.com>
+Subject: [088/165] seqlock: Dont smp_rmb in seqlock reader spin loop
+In-Reply-To: <20110601081349.GA10017@kroah.com>
 Cc: Nick Piggin <npiggin@kernel.dk>, Eric Dumazet <eric.dumazet@gmail.com>,
 	torvalds@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
 	Milton Miller <miltonm@bga.com>, Andi Kleen <andi@firstfloor.org>,
@@ -28,9 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.38-stable review patch.  If anyone has any objections, please let us know.
+2.6.39-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+Content-Length: 2553
+Lines: 71
 
 From: Milton Miller <miltonm@bga.com>
 
