@@ -1,25 +1,31 @@
-Return-Path: <B04825@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3FFDAB6F9F
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EB737B6FAB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jun 2011 07:28:57 +1000 (EST)
-Message-ID: <4DE8008E.9030008@freescale.com>
-Date: Thu, 2 Jun 2011 16:28:46 -0500
-From: Timur Tabi <timur@freescale.com>
+	Fri,  3 Jun 2011 08:02:49 +1000 (EST)
+Message-ID: <4DE7FE2A.10107@zytor.com>
+Date: Thu, 02 Jun 2011 14:18:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
-	management driver
-References: <1306953337-15698-1-git-send-email-timur@freescale.com>
-	<201106012340.14237.arnd@arndb.de>
-In-Reply-To: <201106012340.14237.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
-	linux-console@vger.kernel.org, greg@kroah.com,
-	linuxppc-dev@lists.ozlabs.org
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH] Audit: push audit success and retcode into arch ptrace.h
+References: <20110602210458.23613.24076.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20110602210458.23613.24076.stgit@paris.rdu.redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
+	oleg@redhat.com, paulus@samba.org, sparclinux@vger.kernel.org,
+	linux-s390@vger.kernel.org, richard@nod.at, x86@kernel.org,
+	mingo@redhat.com, fenghua.yu@intel.com,
+	user-mode-linux-devel@lists.sourceforge.net,
+	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
+	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
+	tony.luck@intel.com, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
+	linux390@de.ibm.com, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> I think drivers/misc is not the right place for this, but I'm not completely
-> sure what is. drivers/firmware would be better at least, but virt/fsl might
-> also be ok.
+On 06/02/2011 02:04 PM, Eric Paris wrote:
+> The audit system previously expected arches calling to audit_syscall_exit to
+> supply as arguments if the syscall was a success and what the return code was.
+> Audit also provides a helper AUDITSC_RESULT which was supposed to simplify by
+> converting from negative retcodes to an audit internal magic value stating
+> success or failure.  This helper was wrong and could indicate that a valid
+> pointer returned to userspace was a failed syscall.  The fix is to fix the
+> layering foolishness.  We now pass audit_syscall_exit a struct pt_reg and it
+> in turns calls back into arch code to collect the return value and to
+> determine if the syscall was a success or failure.
+> 
+> In arch/sh/kernel/ptrace_64.c I see that we were using regs[9] in the old
+> audit code.  But the ptrace_64.h code was previously using regs[3] for the
+> regs_return_value().  I have no idea which one is correct, but this patch now
+> uses regs[3].
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-I don't think it's correct to think of a hypervisor as firmware, so I don't
-think drivers/firmware is better.
+For the x86 portions:
 
-I'm not sure that creating virt/fsl and putting the driver in there is a good
-idea, because it will be the only driver in that directory.  Unlike KVM, this
-driver is just a collection of front-ends to our hypervisor API.  The actual
-hypervisor is completely separate.  That's why I put it in drivers/misc, because
-it's just a single driver with a miscellaneous collection of interfaces.
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-We also don't want to have any Kconfig options that "turn on" hypervisor
-support.  I've intentionally made support for the hypervisor part of the normal
-platform code, and the device tree is used to determine whether that code is
-active or not.
-
-So virt/fsl seems like overkill to me.
-
-> I'm not convinced that an ioctl interface is the right way to work with
-> device tree properties. A more natural way would be to export it as
-> a file system, or maybe as a flattened device tree blob (the latter option
-> would require changing the hypervisor interface, which might not be
-> possible).
-
-As Scott said, this is just a front-end to the hypervisor API, and we already
-have applications that depend on the ioctl interface.  Considering that this
-driver is specific to the Freescale hypervisor, so I don't see any harm in using
-ioctls.
-
-> For an ioctl, please follow the normal pattern of defining a separate
-> structure for each case, no union.
-
-Ok.  This will break our existing applications, but it's a minor fix.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+	-hpa
