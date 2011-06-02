@@ -1,18 +1,20 @@
-Return-Path: <meador_inge@mentor.com>
-Message-ID: <4DE79F3A.9010805@mentor.com>
-Date: Thu, 02 Jun 2011 09:33:30 -0500
-From: Meador Inge <meador_inge@mentor.com>
+Return-Path: <avorontsov@mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 4B9C8B6FBF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Jun 2011 01:14:16 +1000 (EST)
+Date: Thu, 2 Jun 2011 19:14:13 +0400
+From: Anton Vorontsov <avorontsov@mvista.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
+Message-ID: <20110602151413.GA6590@oksana.dev.rtsoft.ru>
+References: <20110601114823.2e57c691@schlenkerla.am.freescale.net>
+	<1307017502-3965-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 1/2] powerpc: document the FSL MPIC message register
-	binding
-References: <1306869543-18812-1-git-send-email-meador_inge@mentor.com>	<1306869543-18812-2-git-send-email-meador_inge@mentor.com>
-	<20110531142352.2c272483@schlenkerla.am.freescale.net>
-In-Reply-To: <20110531142352.2c272483@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	openmcapi-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1307017502-3965-1-git-send-email-dbaryshkov@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2011 02:23 PM, Scott Wood wrote:
-
-> On Tue, 31 May 2011 14:19:02 -0500
-> Meador Inge <meador_inge@mentor.com> wrote:
+On Thu, Jun 02, 2011 at 04:25:02PM +0400, Dmitry Eremin-Solenikov wrote:
+> As a device for pci node isn't created, create a special platform_device
+> for PCI EDAC device on MPC85xx.
 > 
->> This binding documents how the message register blocks found in some FSL
->> MPIC implementations shall be represented in a device tree.
->>
->> Signed-off-by: Meador Inge <meador_inge@mentor.com>
->> Cc: Hollis Blanchard <hollis_blanchard@mentor.com>
->> Cc: Grant Likely <grant.likely@secretlab.ca>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Scott Wood <scottwood@freescale.com>
->> ---
->>  .../devicetree/bindings/powerpc/fsl/mpic-msgr.txt  |   62 ++++++++++++++++++++
->>  1 files changed, 62 insertions(+), 0 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpic-msgr.txt
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> ---
+>  arch/powerpc/sysdev/fsl_pci.c |   33 +++++++++++++++++++++++++++++++++
+>  1 files changed, 33 insertions(+), 0 deletions(-)
 > 
-> ACK
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 68ca929..0e37259 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -381,6 +381,39 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+>  	return 0;
+>  }
+>  
+> +int __init fsl_add_pci_err(void)
 
-Thanks.  Any comments on the implementation side:
-http://patchwork.ozlabs.org/patch/98075/ ?
+static :-)
+
+> +{
+> +	struct device_node *np;
+> +
+> +	for_each_node_by_type(np, "pci") {
+> +		/* Only PCI, not PCI Express! */
+> +		if (of_device_is_compatible(np, "fsl,mpc8540-pci")) {
+> +			struct resource r[2];
+
+How about '= {};' initializer instead of the '= NULL's down below?
+
+> +
+> +			r[0].parent = NULL;
+> +			r[1].parent = NULL;
+
+Thanks,
 
 -- 
-Meador Inge
-CodeSourcery / Mentor Embedded
-http://www.mentor.com/embedded-software
+Anton Vorontsov
+Email: cbouatmailru@gmail.com
