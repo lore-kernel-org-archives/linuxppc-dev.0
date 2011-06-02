@@ -1,29 +1,21 @@
-Return-Path: <zajec5@gmail.com>
-Received: from mail-qy0-f177.google.com (mail-qy0-f177.google.com
-	[209.85.216.177]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D2F4B6F70
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2011 16:13:53 +1000 (EST)
-Received: by qyl38 with SMTP id 38so316285qyl.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jun 2011 23:13:50 -0700 (PDT)
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
+	by ozlabs.org (Postfix) with ESMTP id B8790B6FA8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Jun 2011 16:16:59 +1000 (EST)
+Date: Wed, 1 Jun 2011 23:16:55 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
+Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
+In-Reply-To: <BANLkTi=JRDrzn=-d8jVqZLPGtV1osa1eiw@mail.gmail.com>
+Message-ID: <alpine.DEB.2.01.1106012310580.21697@trent.utfs.org>
+References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
+	<alpine.DEB.2.01.1106011712270.21697@trent.utfs.org>
+	<BANLkTi=JRDrzn=-d8jVqZLPGtV1osa1eiw@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <BANLkTinSdDZv7gshYfi4mK5N9K-E7vk3Yw@mail.gmail.com>
-References: <1306918871-16965-1-git-send-email-zajec5@gmail.com>
-	<BANLkTinSdDZv7gshYfi4mK5N9K-E7vk3Yw@mail.gmail.com>
-Date: Thu, 2 Jun 2011 08:13:49 +0200
-Message-ID: <BANLkTi=mbBiSOGbEZ4AEYqZgyvgW0oXKtw@mail.gmail.com>
-Subject: Re: [RFT][PATCH 3.0] ssb: fix PCI(e) driver regression causing oops
-	on PCI cards
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: Andreas Schwab <schwab@linux-m68k.org>, linux-wireless@vger.kernel.org,
-	"John W. Linville" <linville@tuxdriver.com>,
-	=?UTF-8?Q?Michael_B=C3=BCsch?= <mb@bu3sch.de>,
-	Christian Kujau <lists@nerdbynature.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org,
-	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-	b43-dev@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/6/1 Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>:
-> 2011/6/1 Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>:
->> We were incorrectly executing PCIe specific workarounds on PCI cards.
->> This resulted in:
->> Machine check in kernel mode.
->> Caused by (from SRR1=3D149030): Transfer error ack signal
->> Oops: Machine check, sig: 7 [#1]
->
-> John, I've tested this patch myself on my PCI BCM4318, including
-> checking for 0xFFFFFFFF reads in MMIO dumps.
->
-> The patch is correct, please take it for 3.0.
+On Thu, 2 Jun 2011 at 08:07, Rafał Miłecki wrote:
+> 1) You didn't see (like Andres):
+> Machine check in kernel mode.
+>  Caused by (from SRR1=149030): Transfer error ack signal
+>  Oops: Machine check, sig: 7 [#1]
+> But, OK, maybe machine check requires something additional in kernel,
+> I don't know...
+> 
+> 2) You didn't see SSB messages
+> This is confusing. You should see SSB messages that appear before my
+> invalid read happens. Did you somehow disable most of the important
+> logs, or sth? Having ssb messages and the end of hung boot would
+> directly point you to ssb module.
 
-John, I'm afraid more and more people get angry at me because of this ;)
+BenH advised to boot with udbg-immortal and out came:
 
-Christian Kujau confirmed this problem and fix.
+ http://nerdbynature.de/bits/3.0-rc1/linux-3.0_powerpc_2.jpg
+ http://nerdbynature.de/bits/3.0-rc1/linux-3.0_powerpc_2.mp4
+ (watch it at very slow speed, as it's only 3sec long)
 
---=20
-Rafa=C5=82
+I've enabled[0] FB_NVIDIA and during normal booting the screen flickers 
+after the "... : fixmap" message and the screen clears and is filled again 
+from the top - maybe the messages would've been there if booted w/o the 
+framebuffer enabled.
+
+Right now I'm happy that Ben's fix helped to get past this message, but 
+the system remains unsuable[1] with the latest -git, but more debugging 
+has to wait until tomorrow...
+
+Thanks,
+Christian.
+
+[0] http://nerdbynature.de/bits/3.0-rc1/config-2.6.39.txt
+[1] https://lkml.org/lkml/2011/6/2/6
+-- 
+BOFH excuse #230:
+
+Lusers learning curve appears to be fractal
