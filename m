@@ -1,19 +1,19 @@
 Return-Path: <lists@nerdbynature.de>
 Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
-	by ozlabs.org (Postfix) with ESMTP id 0D1EEB6F88
+	by ozlabs.org (Postfix) with ESMTP id DA6D5B6F9A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 13:06:50 +1000 (EST)
-Date: Wed, 1 Jun 2011 20:06:46 -0700 (PDT)
+	Thu,  2 Jun 2011 14:27:14 +1000 (EST)
+Date: Wed, 1 Jun 2011 21:27:10 -0700 (PDT)
 From: Christian Kujau <lists@nerdbynature.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
 In-Reply-To: <1306983467.29297.51.camel@pasglop>
-Message-ID: <alpine.DEB.2.01.1106012003370.21697@trent.utfs.org>
+Message-ID: <alpine.DEB.2.01.1106012057130.21697@trent.utfs.org>
 References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
 	<alpine.DEB.2.01.1106011712270.21697@trent.utfs.org>
 	<1306983467.29297.51.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Cc: zajec5@gmail.com, linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,17 +30,59 @@ On Thu, 2 Jun 2011 at 12:57, Benjamin Herrenschmidt wrote:
 > is PCIe specific but is called unconditionally, and will do bad things
 > non-PCIe implementations.
 
-Indeed. This PowerBook G4 does not has PCIe, yet the whole SSB thingy gets 
-enabled in my .config somehow. Thanks for the quick fix, I tried to revert 
-ccc7c28af2... from Linus' current tree, but I had to rip out some more to 
-make it compile.
+OK, with your patch applied to Linus' latest git tree the machine 
+continues to boot. Also, with the latest tree, the "machine is stuck after 
+ide-cd init" problem[0] went away.
 
-I'll try your fix in a minute and get back to you with those cdrom init 
-problems as well.
+For this particular problem and patch, feel free to add:
+
+Tested-by: Christian Kujau <lists@nerdbynature.de>
+
+However, shortly after boot and loggin in to the box remotely, the bux did 
+not respond any more. I'm not sure if these are related to those SSB/PCIe 
+changes, but somehow I hope they are - bisecting those would take much 
+longer, as it's not an "instant" death:
+
+ * http://nerdbynature.de/bits/3.0-rc1/linux-3.0-rc1_stuck1.jpg
+ * http://nerdbynature.de/bits/3.0-rc1/linux-3.0-rc1_stuck2.jpg
+
+This is what an OCR program made of it:
+
+irq euent stamp: 185804850
+hardirqs last enabled at (185904849): [<c04005b0>] _raw_spin_unlock_irqrestore+0x40/0x?e
+hardirqs last disabled at (185904850): [<c00120b8>] reenable_mmu+0x24/0x78
+Softirqs last enabled at (185892414): [<c000fe8c>] call_do_softirq+0x14/0x24
+softirqs last disabled at (18589240?): [<c000fe8c>] call_do_softirq+0x14/0x24
+NIP: e04005b4 LR: e04005b0 CTR: 00000000
+REGS: ef92be10 TRHP: 0901 Not tainted (3.0.0-rel-00049-g1fa?b6a-dirtg)
+MSB: 00009032 <EE.ME.IR.DR> CR: 42002084
+TRSK = ef8d0000[38B] ’kuorker/0:2’ THREAD:
+GPR00: c04005b0 ef92bec0 efBd0000 00000001
+GPR08: 00000000 0b14aed0 0049a306 00030600
+HIP [c01005b1] _rau_spin_unlock_irqrestore+0x44/0x?c
+LR [c04005b0] _rau_spin_unlock_irqrestore+0x40/0x?c
+Call Trace:
+[ef92bec0] [c04005b0] _raw_spin_unlock_irqrestore+0x40/0x?c (unreliable)
+[ef92bed0] [c029c504] flush_tu_ldisc+0x121/0x230
+[ef92bf10] [c001c86c] process_one_uork+0x1c1/0x4cB
+[ef92bfS0] [c004efac] worker_thread+0x1?8/0x3c1
+[ef92bf90] [c0051148] kthread+0x81/0x88
+[ef92hff0] [c0810390] kernel_thread+0x1c/0x68
+
+XER: 20000000
+ef92a000 ef8d0660 00000006 00000000 18614000 22002088
+Instruction dump:
+??? 93e1060c ?c9f23?B 38800001 90010011 4bc6e9a9 ?fc3i`3?8 4be61a69
+?3e08080 11820021 1bc6b515 ?fe00124
+B8c16008 ?c0803a6 83c1000c
+
+Well, the picture is way better :-\
 
 Thanks,
 Christian.
--- 
-BOFH excuse #166:
 
-/pub/lunch
+[0] http://nerdbynature.de/bits/3.0-rc1/linux-3.0-rc1-cdrom.jpg
+-- 
+BOFH excuse #399:
+
+We are a 100% Microsoft Shop.
