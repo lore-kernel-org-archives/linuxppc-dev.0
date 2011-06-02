@@ -1,25 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DB69AB6F7B
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
+	by ozlabs.org (Postfix) with ESMTP id A5AE7B6F8D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 08:24:21 +1000 (EST)
-Date: Wed, 1 Jun 2011 17:24:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
-	management driver
-Message-ID: <20110601172412.761ff799@schlenkerla.am.freescale.net>
-In-Reply-To: <201106012340.14237.arnd@arndb.de>
-References: <1306953337-15698-1-git-send-email-timur@freescale.com>
-	<201106012340.14237.arnd@arndb.de>
+	Thu,  2 Jun 2011 10:16:28 +1000 (EST)
+Date: Wed, 1 Jun 2011 17:16:23 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
+In-Reply-To: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
+Message-ID: <alpine.DEB.2.01.1106011712270.21697@trent.utfs.org>
+References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: greg@kroah.com, kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	akpm@kernel.org, linux-console@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: zajec5@gmail.com, linux ppc dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Jun 2011 23:40:14 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
-
-> > +static long ioctl_dtprop(struct fsl_hv_ioctl_prop __user *p, int set)
-> > +{
-> > +	struct fsl_hv_ioctl_prop param;
-> > +	char __user *upath, *upropname;
-> > +	void __user *upropval;
-> > +	char *path = NULL, *propname = NULL;
-> > +	void *propval = NULL;
-> > +	int ret = 0;
-> > +
+On Tue, 31 May 2011 at 16:50, Christian Kujau wrote:
+> trying to boot 3.0-rc1 on powerpc32 only progresses until:
 > 
-> I'm not convinced that an ioctl interface is the right way to work with
-> device tree properties. A more natural way would be to export it as
-> a file system, or maybe as a flattened device tree blob (the latter option
-> would require changing the hypervisor interface, which might not be
-> possible).
+>   > Kernel virtual memory layout:
+>   >   * 0xfffcf000..0xfffff000  : fixmap
 
-I wanted to have the hypervisor take an update dtb (we already have special
-meta-properties for things like deletion as part of the hv config
-mechanism).  But others on the project wanted to keep it simple, and so
-get/set property it was. :-/
+After hours (and hours!) of git-bisecting, it said:
 
-It's unlikely to change at this point without a real need.
+-----------------------
+ccc7c28af205888798b51b6cbc0b557ac1170a49 is the first bad commit
+commit ccc7c28af205888798b51b6cbc0b557ac1170a49
+Author: Rafał Miłecki <zajec5@gmail.com>
+Date:   Fri Apr 1 13:26:52 2011 +0200
 
-As for a filesystem interface, it's not a good match either.  You can't
-iterate over anything to read out the full tree from the hv.  You can't
-delete anything.  You can't create empty nodes.  The hv interface was meant
-to enable some specific management actions, rather than to provide general
-device tree access.  This driver is a thin wrapper around the management
-hcalls.
+    ssb: pci: implement serdes workaround
+    
+    Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+-----------------------
 
-There would still be other ioctls needed for starting/stopping the
-partition, etc.
+When I reverted this one from the gi-bisected tree, the box continued to 
+boot (until it got stuck again during IDE/CDROM init, but that may be a 
+different story). I'l; try to revert this from a vanilla 3.0-rc1 and see 
+if it helps
 
-> > +/**
-> > + * fsl_hv_ioctl: ioctl main entry point
-> > + */
-> > +static long fsl_hv_ioctl(struct file *file, unsigned int cmd,
-> > +			 unsigned long argaddr)
-> > +{
-> > +	union fsl_hv_ioctl_param __user *arg =
-> > +		(union fsl_hv_ioctl_param __user *)argaddr;
-> > +	long ret;
-> > +
+Thanks,
+Christian.
+
+Full gist-bisect-log: http://nerdbynature.de/bits/3.0-rc1/
+
+> And then the system hangs, does not respond to keyboard (sysrq does not 
+> seem to work on this PowerBook G4). But after a while the system reboots 
+> itself, so I guess the machine panicked but did not print anything on the 
+> screen.
 > 
-> For an ioctl, please follow the normal pattern of defining a separate
-> structure for each case, no union.
+> Full messages (picture), config & (working) dmesg:
+> 
+>    http://nerdbynature.de/bits/3.0-rc1/
+> 
+-- 
+BOFH excuse #406:
 
-And have fsl_hypervisor.h provide the full set of proper ioctl numbers, with
-the specific struct for each ioctl referenced, rather than having the client program do
-"ioctl(f, _IOWR(0, cmd, union fsl_hv_ioctl_param), p)".
-
--Scott
+Bad cafeteria food landed all the sysadmins in the hospital.
