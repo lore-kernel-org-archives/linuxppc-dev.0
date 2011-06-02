@@ -1,20 +1,25 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 4B9C8B6FBF
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id 008B8B6FC0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jun 2011 01:14:16 +1000 (EST)
-Date: Thu, 2 Jun 2011 19:14:13 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
-Message-ID: <20110602151413.GA6590@oksana.dev.rtsoft.ru>
-References: <20110601114823.2e57c691@schlenkerla.am.freescale.net>
-	<1307017502-3965-1-git-send-email-dbaryshkov@gmail.com>
+	Fri,  3 Jun 2011 01:17:09 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP
+	id 04389-03 for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Jun 2011 16:16:57 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1307017502-3965-1-git-send-email-dbaryshkov@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
+Date: Thu, 2 Jun 2011 16:15:38 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD6B@saturn3.aculab.com>
+In-Reply-To: <20110602151413.GA6590@oksana.dev.rtsoft.ru>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Anton Vorontsov" <avorontsov@mvista.com>,
+	"Dmitry Eremin-Solenikov" <dbaryshkov@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 02, 2011 at 04:25:02PM +0400, Dmitry Eremin-Solenikov wrote:
-> As a device for pci node isn't created, create a special platform_device
-> for PCI EDAC device on MPC85xx.
-> 
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> ---
->  arch/powerpc/sysdev/fsl_pci.c |   33 +++++++++++++++++++++++++++++++++
->  1 files changed, 33 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 68ca929..0e37259 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -381,6 +381,39 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
->  	return 0;
->  }
->  
-> +int __init fsl_add_pci_err(void)
+=20
+> > +int __init fsl_add_pci_err(void)
+>=20
+> static :-)
 
-static :-)
+and why __ ?
+aren't such names reserved in the C language for some purpose.
 
-> +{
-> +	struct device_node *np;
-> +
-> +	for_each_node_by_type(np, "pci") {
-> +		/* Only PCI, not PCI Express! */
-> +		if (of_device_is_compatible(np, "fsl,mpc8540-pci")) {
-> +			struct resource r[2];
-
-How about '= {};' initializer instead of the '= NULL's down below?
-
-> +
-> +			r[0].parent = NULL;
-> +			r[1].parent = NULL;
-
-Thanks,
-
--- 
-Anton Vorontsov
-Email: cbouatmailru@gmail.com
+	David
