@@ -1,31 +1,21 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 02948B6F94
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 57ECCB6F98
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 16:34:50 +1000 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p526DYvv022095
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jun 2011 02:13:34 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p526YlPg113352
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jun 2011 02:34:47 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p526Yka1006442
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jun 2011 02:34:47 -0400
-Message-ID: <4DE72EFE.8080502@in.ibm.com>
-Date: Thu, 02 Jun 2011 12:04:38 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+	Thu,  2 Jun 2011 17:26:13 +1000 (EST)
 Subject: Re: [RFC][PATCH] Kexec support for PPC440x
-References: <4DE345B0.8020505@in.ibm.com> <4DE50617.7090509@linutronix.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 In-Reply-To: <4DE50617.7090509@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <4DE345B0.8020505@in.ibm.com>  <4DE50617.7090509@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 02 Jun 2011 17:25:51 +1000
+Message-ID: <1306999551.29297.57.camel@pasglop>
+Mime-Version: 1.0
 Cc: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+	Suzuki Poulose <suzuki@in.ibm.com>,
 	linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
 	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,52 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/11 20:45, Sebastian Andrzej Siewior wrote:
->
+On Tue, 2011-05-31 at 17:15 +0200, Sebastian Andrzej Siewior wrote:
 > Suzuki Poulose wrote:
->> Index: powerpc/arch/powerpc/kernel/44x_kexec_mapping.S
->> ===================================================================
->> --- /dev/null
->> +++ powerpc/arch/powerpc/kernel/44x_kexec_mapping.S
+> > Index: powerpc/arch/powerpc/kernel/44x_kexec_mapping.S
+> > ===================================================================
+> > --- /dev/null
+> > +++ powerpc/arch/powerpc/kernel/44x_kexec_mapping.S
 > ....
->
->> + *
->> + */
->> + bl nxtins /* Find our address */
->> +nxtins: mflr r5 /* Make it accessible */
->
+> 
+> > + *
+> > + */
+> > +    bl    nxtins                /* Find our address */
+> > +nxtins:    mflr    r5                /* Make it accessible */
+> 
 > Please don't mix labels and instructions.
-OK.
->
->> + tlbsx r23,0,r5 /* Find entry we are in */
->
-> using tabs instead of spaces would make it look nice. Please also separate the arguments of the instruction i.e.
-> tlbsx r23, 0, r5
 
-Sure.
->
->
->> Index: powerpc/arch/powerpc/kernel/misc_32.S
->> ===================================================================
->> --- powerpc.orig/arch/powerpc/kernel/misc_32.S
->> +++ powerpc/arch/powerpc/kernel/misc_32.S
->> @@ -736,6 +736,28 @@ relocate_new_kernel:
->> mr r5, r31
->>
->> li r0, 0
->> +#elif defined(CONFIG_44x) && !defined(CONFIG_47x)
->> +
->> + mr r29, r3
->> + mr r30, r4
->> + mr r31, r5
->> +
->> +#include "44x_kexec_mapping.S"
->
+With proper indent it's fine as long as he uses numerical relative
+labels which should be the case here. For example, the above, it should
+look like:
+
+	bl	1f
+1:	mflr	r5
+
+> > +    tlbsx    r23,0,r5            /* Find entry we are in */
+> 
+> using tabs instead of spaces would make it look nice. Please also separate 
+> the arguments of the instruction i.e.
+> 	tlbsx	r23, 0, r5
+
+That's arguable. If you look at arch/powerpc, we tend not to separate
+the arguments ;-)
+
+Actually I used to, others didn't and I changed my own style.
+
+> > Index: powerpc/arch/powerpc/kernel/misc_32.S
+> > ===================================================================
+> > --- powerpc.orig/arch/powerpc/kernel/misc_32.S
+> > +++ powerpc/arch/powerpc/kernel/misc_32.S
+> > @@ -736,6 +736,28 @@ relocate_new_kernel:
+> >      mr      r5, r31
+> >  
+> >      li    r0, 0
+> > +#elif defined(CONFIG_44x)  && !defined(CONFIG_47x)
+> > +
+> > +    mr    r29, r3
+> > +    mr    r30, r4
+> > +    mr    r31, r5
+> > +
+> > +#include "44x_kexec_mapping.S"
+> 
 > The way you setup the 1:1 mapping should be close to what you are doing on
-> kernel entry.Isn't it possible to include the file here and in the entry
+> kernel entry. Isn't it possible to include the file here and in the entry
 > code?
-I will make this change and resend the patch.
 
-Thanks
+It should just not be #included, what about branching out instead ?
 
-Suzuki
+Cheers,
+Ben.
