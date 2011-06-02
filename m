@@ -1,25 +1,17 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 008B8B6FC0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jun 2011 01:17:09 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 04389-03 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jun 2011 16:16:57 +0100 (BST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
-Date: Thu, 2 Jun 2011 16:15:38 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD6B@saturn3.aculab.com>
-In-Reply-To: <20110602151413.GA6590@oksana.dev.rtsoft.ru>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Anton Vorontsov" <avorontsov@mvista.com>,
-	"Dmitry Eremin-Solenikov" <dbaryshkov@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	bluesmoke-devel@lists.sourceforge.net
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 501C9B6FA5
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jun 2011 02:26:00 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p52GPucX023448
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Jun 2011 11:25:57 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl_rio: Fix compile error when CONFIG_FSL_RIO not set
+Date: Thu,  2 Jun 2011 11:25:56 -0500
+Message-Id: <1307031956-11686-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> > +int __init fsl_add_pci_err(void)
->=20
-> static :-)
+arch/powerpc/kernel/built-in.o: In function `machine_check_e500mc':
+arch/powerpc/kernel/traps.c:429: undefined reference to `fsl_rio_mcheck_exception'
+arch/powerpc/kernel/built-in.o: In function `machine_check_e500': arch/powerpc/kernel/traps.c:519:
+undefined reference to `fsl_rio_mcheck_exception'
+make: *** [.tmp_vmlinux1] Error 1
 
-and why __ ?
-aren't such names reserved in the C language for some purpose.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/rio.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	David
+diff --git a/arch/powerpc/include/asm/rio.h b/arch/powerpc/include/asm/rio.h
+index d902abd..b1d2dec 100644
+--- a/arch/powerpc/include/asm/rio.h
++++ b/arch/powerpc/include/asm/rio.h
+@@ -14,7 +14,7 @@
+ #define ASM_PPC_RIO_H
+ 
+ extern void platform_rio_init(void);
+-#ifdef CONFIG_RAPIDIO
++#ifdef CONFIG_FSL_RIO
+ extern int fsl_rio_mcheck_exception(struct pt_regs *);
+ #else
+ static inline int fsl_rio_mcheck_exception(struct pt_regs *regs) {return 0; }
+-- 
+1.7.3.4
