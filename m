@@ -1,23 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35964B6FA7
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jun 2011 05:11:27 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/fsl_rio: Fix compile error when CONFIG_FSL_RIO
-	not set
-Date: Thu, 2 Jun 2011 19:11:18 +0000
-Message-ID: <BANLkTikyOf5xYHy1pCbcg06BkyST4QNyXA@mail.gmail.com>
-References: <1307031956-11686-1-git-send-email-galak@kernel.crashing.org>
-	<BANLkTinQxjxefrCC0HDVGChzAKXoTBch7g@mail.gmail.com>
-In-Reply-To: <BANLkTinQxjxefrCC0HDVGChzAKXoTBch7g@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
+	by ozlabs.org (Postfix) with SMTP id 1A947B6FB0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  3 Jun 2011 05:18:02 +1000 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Thu, 02 Jun 2011 21:11:19 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <20110601180456.801265664@duck.linux-mips.net>
+Message-ID: <20110602191119.302850@gmx.net>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+References: <20110601180456.801265664@duck.linux-mips.net>
+Subject: Re: [patch 00/14] Sort out i8253 and PC speaker locking and headers
+To: ralf@linux-mips.org, linux-mips@linux-mips.org,
+	linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 2, 2011 at 12:32 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wr=
-ote:
-> Should be Reported-by Timur, right?
 
-Technically, yes.  For the record, I don't care about these things.
-It implies that only willing to report the problem, but too lazy to
-fix it; which is true, but I'd hate to see that fact permanently
-etched in the git history. :-)
+-------- Original-Nachricht --------
+> Datum: Wed, 01 Jun 2011 19:04:56 +0100
+> Von: ralf@linux-mips.org
+> An: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org
+> Betreff: [patch 00/14] Sort out i8253 and PC speaker locking and headers
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+> No longer terribly relevant these days but still broken and just an
+> eyesore mess of neglience just as I've already raised it a few days 
+> ago.  Time to sort this.
+> 
+> drivers/input/misc/pcspkr.c:
+> 
+> #if defined(CONFIG_MIPS) || defined(CONFIG_X86)
+> /* Use the global PIT lock ! */
+> #include <asm/i8253.h>
+> #else
+> #include <asm/8253pit.h>
+> static DEFINE_RAW_SPINLOCK(i8253_lock);
+> #endif
+> 
+> sound/drivers/pcsp/pcsp.h:
+> 
+> #if defined(CONFIG_MIPS) || defined(CONFIG_X86)
+> /* Use the global PIT lock ! */
+> #include <asm/i8253.h>
+> #else
+> #include <asm/8253pit.h>
+> static DEFINE_RAW_SPINLOCK(i8253_lock);
+> 
+> $ git grep -F pcsp.h sound/drivers/pcsp
+> sound/drivers/pcsp/pcsp.c:#include "pcsp.h"
+> sound/drivers/pcsp/pcsp_input.c:#include "pcsp.h"
+> sound/drivers/pcsp/pcsp_lib.c:#include "pcsp.h"
+> sound/drivers/pcsp/pcsp_mixer.c:#include "pcsp.h"
+> $ git grep -w i8253_lock sound/drivers/pcsp/
+> sound/drivers/pcsp/pcsp.h:static DEFINE_RAW_SPINLOCK(i8253_lock);
+> sound/drivers/pcsp/pcsp_input.c:        raw_spin_lock_irqsave(&i8253_lock,
+> flags
+> sound/drivers/pcsp/pcsp_input.c:       
+> raw_spin_unlock_irqrestore(&i8253_lock, 
+> sound/drivers/pcsp/pcsp_lib.c:          raw_spin_lock_irqsave(&i8253_lock,
+> flags
+> sound/drivers/pcsp/pcsp_lib.c:         
+> raw_spin_unlock_irqrestore(&i8253_lock, 
+> sound/drivers/pcsp/pcsp_lib.c:  raw_spin_lock(&i8253_lock);
+> sound/drivers/pcsp/pcsp_lib.c:  raw_spin_unlock(&i8253_lock);
+> sound/drivers/pcsp/pcsp_lib.c:  raw_spin_lock(&i8253_lock);
+> sound/drivers/pcsp/pcsp_lib.c:  raw_spin_unlock(&i8253_lock);
+> 
+> Locks are great, everybody should have their own lock!
+> 
+> $ find . -name 8253pit.h
+> ./arch/powerpc/include/asm/8253pit.h
+> ./arch/alpha/include/asm/8253pit.h
+> $ cat arch/*/include/asm/8253pit.h
+> /*
+>  * 8253/8254 Programmable Interval Timer
+>  */
+> /*
+>  * 8253/8254 Programmable Interval Timer
+>  */
+> $
+> 
+> Eh...
+> 
+> $ git grep -w PCSPKR_PLATFORM 
+> arch/mips/Kconfig:      select PCSPKR_PLATFORM
+> arch/mips/Kconfig:      select PCSPKR_PLATFORM
+> arch/mips/Kconfig:      select PCSPKR_PLATFORM
+> arch/powerpc/platforms/amigaone/Kconfig:        select PCSPKR_PLATFORM
+> drivers/input/misc/Kconfig:     depends on PCSPKR_PLATFORM
+> init/Kconfig:config PCSPKR_PLATFORM
+> sound/drivers/Kconfig:  depends on PCSPKR_PLATFORM && X86 &&
+> HIGH_RES_TIMERS
+> 
+> So the status is:
+> 
+>  Alpha:	There is no PCSPKR_PLATFORM so while a platform device is
+> 		being installed no drivers will be built.  I don't know
+> 		which Alpha platforms or even if all of Alpha should be
+> 		doing a PCSPKR_PLATFORM so I haven't even tried to sort
+> 		this.
+>  ARM:		No PC speaker supported, yeah :)
+>  PowerPC:	Should compile but the locking is wrong but only the 
+>    		AmigaOne platforms should be affected.
+The Kconfig dependencies cleanup patch for CHRP, PSERIES, etc. should
+also apply to the AmigaOne. Can you resend it with a fix for the
+AmigaOne, or should I send a patch?
+I'll check next week, if the PC speaker is still working on my AmigaOne.
+
+Thanks,
+Gerhard
+
+-- 
+Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
+belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
