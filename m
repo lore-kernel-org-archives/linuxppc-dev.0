@@ -1,31 +1,21 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id A9371B6FC4
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DE3AEB6FAF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jun 2011 09:08:45 +1000 (EST)
-Message-ID: <4DE817CC.80404@redhat.com>
-Date: Thu, 02 Jun 2011 19:07:56 -0400
-From: Eric Paris <eparis@redhat.com>
-MIME-Version: 1.0
-To: Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH] Audit: push audit success and retcode into arch ptrace.h
-References: <20110602210458.23613.24076.stgit@paris.rdu.redhat.com>	<201106030032.17398.richard@nod.at>
-	<BANLkTik9kCs_06=7HKo44cWqpS0zB9fr+A@mail.gmail.com>
-In-Reply-To: <BANLkTik9kCs_06=7HKo44cWqpS0zB9fr+A@mail.gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
-	oleg@redhat.com, paulus@samba.org, hpa@zytor.com,
-	sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
-	Richard Weinberger <richard@nod.at>, x86@kernel.org,
-	mingo@redhat.com, fenghua.yu@intel.com,
-	user-mode-linux-devel@lists.sourceforge.net,
-	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
-	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	lethal@linux-sh.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-	davem@davemloft.net
+	Fri,  3 Jun 2011 12:41:46 +1000 (EST)
+Subject: Re: PROBLEM: 2.6.39 =?UTF-8?Q?doesn=E2=80=99t?= boot on POWER MAC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Giuliano Pochini <pochini@shiny.it>
+In-Reply-To: <20110603000012.4ce5c45f@Jay>
+References: <4DE0AA62.4070909@list.ru>  <20110603000012.4ce5c45f@Jay>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 03 Jun 2011 12:41:31 +1000
+Message-ID: <1307068891.23876.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Andrey Gusev <ronne@list.ru>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/2011 07:00 PM, Tony Luck wrote:
->> But there seems to be another problem.
->> Why is pt_regs of type void *?
->>
->> gcc complains:
->> In file included from include/linux/fsnotify.h:15:0,
->>                 from include/linux/security.h:26,
->>                 from init/main.c:32:
->> include/linux/audit.h: In function ‘audit_syscall_exit’:
->> include/linux/audit.h:440:17: warning: dereferencing ‘void *’ pointer
->> include/linux/audit.h:440:3: error: invalid use of void expression
->> include/linux/audit.h:441:21: warning: dereferencing ‘void *’ pointer
->> include/linux/audit.h:441:21: error: void value not ignored as it ought to be
+On Fri, 2011-06-03 at 00:00 +0200, Giuliano Pochini wrote:
+> On Sat, 28 May 2011 11:55:14 +0400
+> Andrey Gusev <ronne@list.ru> wrote:
 > 
-> Perhaps same issue on ia64 - but symptoms are different:
+> > Hi!
+> > A kernel 2.6.39 doesn't boot on my POWER MAC G4.
 > 
->   CC      crypto/cipher.o
-> In file included from include/linux/fsnotify.h:15,
->                  from include/linux/security.h:26,
->                  from init/do_mounts.c:8:
-> include/linux/audit.h: In function ‘audit_syscall_exit’:
-> include/linux/audit.h:440: warning: dereferencing ‘void *’ pointer
-> include/linux/audit.h:440: error: request for member ‘r10’ in
-> something not a structure or union
-> include/linux/audit.h:441: error: request for member ‘r10’ in
-> something not a structure or union
-> include/linux/audit.h:441: error: request for member ‘r8’ in something
-> not a structure or union
-> include/linux/audit.h:441: error: request for member ‘r8’ in something
-> not a structure or union
-> include/linux/audit.h:441: error: expected ‘;’ before ‘}’ token
-> include/linux/audit.h:441: error: void value not ignored as it ought to be
+> Same problem with my dual-G4 MDD. A few more infos:
+> The machine hangs just after the message "Returning from prom_init" (still
+> in the OF screen).
+> The kernel works fine with the option maxcpus=1, but it locks up as soon as
+> I try to enable the second CPU with echo 1 > /sys.../online.
 
-I think it is the same problem.  I'll redo the patch with typed static
-inlines instead of #defines and all of this should hopefully work out.
+I just verified that current upstream 3.0-rc1+ does boot fine.
 
--Eric
+Cheers,
+Ben.
