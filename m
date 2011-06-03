@@ -1,37 +1,27 @@
-Return-Path: <tony.luck@gmail.com>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <zajec5@gmail.com>
+Received: from mail-qy0-f177.google.com (mail-qy0-f177.google.com
+	[209.85.216.177]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AB463B6FB7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Jun 2011 08:52:13 +1000 (EST)
-Received: by iwc10 with SMTP id 10so2375332iwc.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 03 Jun 2011 15:52:10 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTPS id 8100EB6FB8
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Jun 2011 07:24:58 +1000 (EST)
+Received: by qyl38 with SMTP id 38so1352205qyl.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 03 Jun 2011 14:24:55 -0700 (PDT)
 MIME-Version: 1.0
-Sender: tony.luck@gmail.com
-In-Reply-To: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-Date: Fri, 3 Jun 2011 15:52:09 -0700
-Message-ID: <BANLkTik4qRe--C6L5WU3XvpP-TMEZ6RQ-w@mail.gmail.com>
-Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
-	ptrace.h
-From: Tony Luck <tony.luck@intel.com>
-To: Eric Paris <eparis@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
-	oleg@redhat.com, paulus@samba.org, hpa@zytor.com,
-	sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
-	richard@nod.at, x86@kernel.org, mingo@redhat.com, fenghua.yu@intel.com,
-	user-mode-linux-devel@lists.sourceforge.net,
-	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
-	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	lethal@linux-sh.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-	davem@davemloft.net
+In-Reply-To: <BANLkTinSdDZv7gshYfi4mK5N9K-E7vk3Yw@mail.gmail.com>
+References: <1306918871-16965-1-git-send-email-zajec5@gmail.com>
+	<BANLkTinSdDZv7gshYfi4mK5N9K-E7vk3Yw@mail.gmail.com>
+Date: Fri, 3 Jun 2011 23:24:54 +0200
+Message-ID: <BANLkTinq-Rn1zaS06ki4OD7DDV42bME-2Q@mail.gmail.com>
+Subject: Re: [RFT][PATCH 3.0] ssb: fix PCI(e) driver regression causing oops
+	on PCI cards
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: linux-wireless@vger.kernel.org,
+	=?UTF-8?Q?Michael_B=C3=BCsch?= <mb@bu3sch.de>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Andreas Schwab <schwab@linux-m68k.org>
+Content-Type: multipart/alternative; boundary=0016368319a08cc66504a4d562e1
+Cc: linuxppc-dev@ozlabs.org, b43-dev@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,21 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 3, 2011 at 3:04 PM, Eric Paris <eparis@redhat.com> wrote:
-> The other major change is that on some arches, like ia64, we change
-> regs_return_value() to give us the negative value on syscall failure. =A0=
-The
-> only other user of this macro, kretprobe_example.c, won't notice and it m=
-akes
-> the value signed consistently for the audit functions across all archs.
+--0016368319a08cc66504a4d562e1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-v2 builds and boots on ia64 now
-Acked-by: Tony Luck <tony.luck@intel.com>
+On Jun 1, 2011 9:14 PM, "Rafa=C5=82 Mi=C5=82ecki" <zajec5@gmail.com> wrote:
+>
+> 2011/6/1 Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>:
+> > We were incorrectly executing PCIe specific workarounds on PCI cards.
+> > This resulted in:
+> > Machine check in kernel mode.
+> > Caused by (from SRR1=3D149030): Transfer error ack signal
+> > Oops: Machine check, sig: 7 [#1]
+>
+> John, I've tested this patch myself on my PCI BCM4318, including
+> checking for 0xFFFFFFFF reads in MMIO dumps.
+>
+> The patch is correct, please take it for 3.0.
 
+Ping, ping, ping John.
 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> Acked-by: Acked-by: H. Peter Anvin <hpa@zytor.com> [for x86 portion]
+--0016368319a08cc66504a4d562e1
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-  ^^^^^^^^^^^^^^^^^^^^  :-)
+<p><br>
+On Jun 1, 2011 9:14 PM, &quot;Rafa=C5=82 Mi=C5=82ecki&quot; &lt;<a href=3D"=
+mailto:zajec5@gmail.com">zajec5@gmail.com</a>&gt; wrote:<br>
+&gt;<br>
+&gt; 2011/6/1 Rafa=C5=82 Mi=C5=82ecki &lt;<a href=3D"mailto:zajec5@gmail.co=
+m">zajec5@gmail.com</a>&gt;:<br>
+&gt; &gt; We were incorrectly executing PCIe specific workarounds on PCI ca=
+rds.<br>
+&gt; &gt; This resulted in:<br>
+&gt; &gt; Machine check in kernel mode.<br>
+&gt; &gt; Caused by (from SRR1=3D149030): Transfer error ack signal<br>
+&gt; &gt; Oops: Machine check, sig: 7 [#1]<br>
+&gt;<br>
+&gt; John, I&#39;ve tested this patch myself on my PCI BCM4318, including<b=
+r>
+&gt; checking for 0xFFFFFFFF reads in MMIO dumps.<br>
+&gt;<br>
+&gt; The patch is correct, please take it for 3.0.</p>
+<p>Ping, ping, ping John.</p>
 
--Tony
+--0016368319a08cc66504a4d562e1--
