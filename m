@@ -1,23 +1,25 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85811B6FB0
+Return-Path: <B04825@freescale.com>
+Received: from CH1EHSOBE003.bigfish.com (ch1ehsobe002.messaging.microsoft.com
+	[216.32.181.182]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C2F04B6FAC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jun 2011 23:53:19 +1000 (EST)
-Message-ID: <4DE8E746.2080100@linutronix.de>
-Date: Fri, 03 Jun 2011 15:53:10 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+	Sat,  4 Jun 2011 00:44:34 +1000 (EST)
+Message-ID: <4DE8F347.9060104@freescale.com>
+Date: Fri, 3 Jun 2011 09:44:23 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Suzuki Poulose <suzuki@in.ibm.com>
-Subject: Re: [RFC][PATCH] Kexec support for PPC440x
-References: <4DE345B0.8020505@in.ibm.com> <4DE50617.7090509@linutronix.de>
-	<4DE72EFE.8080502@in.ibm.com> <4DE8CA76.2060303@in.ibm.com>
-In-Reply-To: <4DE8CA76.2060303@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
-	"kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-	lkml <linux-kernel@vger.kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
+	management driver
+References: <1306953337-15698-1-git-send-email-timur@freescale.com>
+	<201106012340.14237.arnd@arndb.de>
+In-Reply-To: <201106012340.14237.arnd@arndb.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
+	linux-console@vger.kernel.org, greg@kroah.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Suzuki Poulose wrote:
->>> The way you setup the 1:1 mapping should be close to what you are 
->>> doing on
->>> kernel entry.Isn't it possible to include the file here and in the entry
->>> code?
+Arnd Bergmann wrote:
+> For an ioctl, please follow the normal pattern of defining a separate
+> structure for each case, no union.
 > 
->> I will make this change and resend the patch.
-> 
-> I took a look at the way we do it at kernel entry. It looks more cleaner 
-> to leave
-> it untouched. Especially, when we add the support for 47x in the future, 
-> the code
->  will become more unreadable.
-> 
-> What do you think ?
+> You can use a void __user * in the common ioctl function, and pass that
+> to the typed argument list in the specific functions.
 
-So the entry code has one 256MiB mapping, you need 8 of those. Entry goes 
-for TLB 63 and you need to be flexible and avoid TLB 63 :).
-So after all you don't have that much in common with the entry code. If
-you look at the FSL-book code then you will notice that I tried to share
-some code.
+I have a GPL question.  This header file is currently licensed under the  GPL v2
+only.  Does that mean that any application that includes this header file so
+that it can talk to the driver/hypervisor also needs to be licensed under the GPL?
 
-I don't understand why you don't flip the address space bit. On fsl we
-setup the tmp mapping in the "other address" space so we don't have two
-mappings for the same address. The entry code could be doing this with STS
-bit, I'm not sure.
-
-If you want to keep your tiny mmu flip code instead of merging with the
-entry code then please don't put it into a separate file. The only reason
-why I did it, is to have the code once since I can't branch to it and I
-wanted to share code.
-
-> 
-> Thanks
-> 
-> Suzuki
-
-Sebastian
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
