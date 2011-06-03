@@ -1,21 +1,26 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
-	by ozlabs.org (Postfix) with SMTP id E4848B6FB5
+Return-Path: <wad@chromium.org>
+Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53A62B6FB2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Jun 2011 05:22:36 +1000 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Fri, 03 Jun 2011 21:22:30 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <20110603180038.GA13239@linux-mips.org>
-Message-ID: <20110603192230.246630@gmx.net>
-MIME-Version: 1.0
-References: <20110601180456.801265664@duck.linux-mips.net>
-	<20110602191119.302850@gmx.net> <20110603180038.GA13239@linux-mips.org>
-Subject: Re: [patch 00/14] Sort out i8253 and PC speaker locking and headers
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-	tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+	Sat,  4 Jun 2011 06:32:36 +1000 (EST)
+Received: by gwj17 with SMTP id 17so1072116gwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 03 Jun 2011 13:32:32 -0700 (PDT)
+From: Will Drewry <wad@chromium.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v4 11/13] powerpc: select HAVE_SECCOMP_FILTER and provide
+	seccomp_execve
+Date: Fri,  3 Jun 2011 15:34:10 -0500
+Message-Id: <1307133252-23259-11-git-send-email-wad@chromium.org>
+In-Reply-To: <1307133252-23259-1-git-send-email-wad@chromium.org>
+References: <1307133252-23259-1-git-send-email-wad@chromium.org>
+Cc: Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+	jmorris@namei.org, rostedt@goodmis.org, tglx@linutronix.de,
+	Paul Mackerras <paulus@samba.org>, kees.cook@canonical.com,
+	paulmck@linux.vnet.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,133 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Facilitate the use of CONFIG_SECCOMP_FILTER by wrapping compatibility
+system call numbering for execve and selecting HAVE_SECCOMP_FILTER.
 
--------- Original-Nachricht --------
-> Datum: Fri, 3 Jun 2011 19:00:38 +0100
-> Von: Ralf Baechle <ralf@linux-mips.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Betreff: Re: [patch 00/14] Sort out i8253 and PC speaker locking and headers
+Signed-off-by: Will Drewry <wad@chromium.org>
+---
+ arch/powerpc/Kconfig               |    1 +
+ arch/powerpc/include/asm/seccomp.h |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-> On Thu, Jun 02, 2011 at 09:11:19PM +0200, Gerhard Pircher wrote:
-> 
-> > > #if defined(CONFIG_MIPS) || defined(CONFIG_X86)
-> > > /* Use the global PIT lock ! */
-> > > #include <asm/i8253.h>
-> > > #else
-> > > #include <asm/8253pit.h>
-> > > static DEFINE_RAW_SPINLOCK(i8253_lock);
-> > > #endif
-> > > 
-> > > sound/drivers/pcsp/pcsp.h:
-> > > 
-> > > #if defined(CONFIG_MIPS) || defined(CONFIG_X86)
-> > > /* Use the global PIT lock ! */
-> > > #include <asm/i8253.h>
-> > > #else
-> > > #include <asm/8253pit.h>
-> > > static DEFINE_RAW_SPINLOCK(i8253_lock);
-> > > 
-> > > $ git grep -F pcsp.h sound/drivers/pcsp
-> > > sound/drivers/pcsp/pcsp.c:#include "pcsp.h"
-> > > sound/drivers/pcsp/pcsp_input.c:#include "pcsp.h"
-> > > sound/drivers/pcsp/pcsp_lib.c:#include "pcsp.h"
-> > > sound/drivers/pcsp/pcsp_mixer.c:#include "pcsp.h"
-> > > $ git grep -w i8253_lock sound/drivers/pcsp/
-> > > sound/drivers/pcsp/pcsp.h:static DEFINE_RAW_SPINLOCK(i8253_lock);
-> > > sound/drivers/pcsp/pcsp_input.c:       
-> raw_spin_lock_irqsave(&i8253_lock,
-> > > flags
-> > > sound/drivers/pcsp/pcsp_input.c:       
-> > > raw_spin_unlock_irqrestore(&i8253_lock, 
-> > > sound/drivers/pcsp/pcsp_lib.c:         
-> raw_spin_lock_irqsave(&i8253_lock,
-> > > flags
-> > > sound/drivers/pcsp/pcsp_lib.c:         
-> > > raw_spin_unlock_irqrestore(&i8253_lock, 
-> > > sound/drivers/pcsp/pcsp_lib.c:  raw_spin_lock(&i8253_lock);
-> > > sound/drivers/pcsp/pcsp_lib.c:  raw_spin_unlock(&i8253_lock);
-> > > sound/drivers/pcsp/pcsp_lib.c:  raw_spin_lock(&i8253_lock);
-> > > sound/drivers/pcsp/pcsp_lib.c:  raw_spin_unlock(&i8253_lock);
-> > > 
-> > > Locks are great, everybody should have their own lock!
-> > > 
-> > > $ find . -name 8253pit.h
-> > > ./arch/powerpc/include/asm/8253pit.h
-> > > ./arch/alpha/include/asm/8253pit.h
-> > > $ cat arch/*/include/asm/8253pit.h
-> > > /*
-> > >  * 8253/8254 Programmable Interval Timer
-> > >  */
-> > > /*
-> > >  * 8253/8254 Programmable Interval Timer
-> > >  */
-> > > $
-> > > 
-> > > Eh...
-> > > 
-> > > $ git grep -w PCSPKR_PLATFORM 
-> > > arch/mips/Kconfig:      select PCSPKR_PLATFORM
-> > > arch/mips/Kconfig:      select PCSPKR_PLATFORM
-> > > arch/mips/Kconfig:      select PCSPKR_PLATFORM
-> > > arch/powerpc/platforms/amigaone/Kconfig:        select PCSPKR_PLATFORM
-> > > drivers/input/misc/Kconfig:     depends on PCSPKR_PLATFORM
-> > > init/Kconfig:config PCSPKR_PLATFORM
-> > > sound/drivers/Kconfig:  depends on PCSPKR_PLATFORM && X86 &&
-> > > HIGH_RES_TIMERS
-> > > 
-> > > So the status is:
-> > > 
-> > >  Alpha:	There is no PCSPKR_PLATFORM so while a platform device is
-> > > 		being installed no drivers will be built.  I don't know
-> > > 		which Alpha platforms or even if all of Alpha should be
-> > > 		doing a PCSPKR_PLATFORM so I haven't even tried to sort
-> > > 		this.
-> > >  ARM:		No PC speaker supported, yeah :)
-> > >  PowerPC:	Should compile but the locking is wrong but only the 
-> > >    		AmigaOne platforms should be affected.
-> > The Kconfig dependencies cleanup patch for CHRP, PSERIES, etc. should
-> > also apply to the AmigaOne. Can you resend it with a fix for the
-> > AmigaOne, or should I send a patch?
-> 
-> I can sort that; it's easy enough.
-Thanks a lot!
-
-> > I'll check next week, if the PC speaker is still working on my
-> > AmigaOne.
-> 
-> I can't imagine that it's going to break - the code is sorta simple ;-)
-That's true, but testing the most recent Linux kernel on the AmigaOne is
-never wrong. :-)
-
-> One obscurity I noticed is this bit in the amigaone.dts:
-> 
->         timer@40 {
->                 // Also adds pcspkr to platform devices.
->                 compatible = "pnpPNP,100";
->                 reg = <1 0x00000040 0x00000020>;
->         };
-> 
-> Shouldn't that rather be something like the following?
-> 
->         pcspeaker@61 {
->                 device_type = "sound";
->                 compatible = "pnpPNP,800";
->                 reg = <1 0x61 1>;
->         };
-> 
-> pnpPNP,100 is the i8253 timer as I understand and pnpPNP,800 the PC
-> speaker.
-> If you interpret pnpPNP,100 to imply the presence of a PC speaker you
-> can't express a system that has a i8253 but no PCspeaker in a DT so
-> maybe amigaone.dts and arch/powerpc/kernel/setup-common.c should be
-> changed to use pnpPNP,800 instead?
-
-That would be cleaner, but I guess it would break CHRP and PSERIES.
-These platforms probably only provide a pnpPNP,100 entry in the device
-tree (at least that's the case on the Pegasos2 CHRP machine AFAICT).
-
-Gerhard
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8f4d50b..0bd4574 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -137,6 +137,7 @@ config PPC
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select HAVE_SPARSE_IRQ
++	select HAVE_SECCOMP_FILTER
+ 	select IRQ_PER_CPU
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+diff --git a/arch/powerpc/include/asm/seccomp.h b/arch/powerpc/include/asm/seccomp.h
+index 00c1d91..3cb9cc1 100644
+--- a/arch/powerpc/include/asm/seccomp.h
++++ b/arch/powerpc/include/asm/seccomp.h
+@@ -7,10 +7,12 @@
+ #define __NR_seccomp_write __NR_write
+ #define __NR_seccomp_exit __NR_exit
+ #define __NR_seccomp_sigreturn __NR_rt_sigreturn
++#define __NR_seccomp_execve __NR_execve
+ 
+ #define __NR_seccomp_read_32 __NR_read
+ #define __NR_seccomp_write_32 __NR_write
+ #define __NR_seccomp_exit_32 __NR_exit
+ #define __NR_seccomp_sigreturn_32 __NR_sigreturn
++#define __NR_seccomp_execve_32 __NR_execve
+ 
+ #endif	/* _ASM_POWERPC_SECCOMP_H */
 -- 
-NEU: FreePhone - kostenlos mobil telefonieren!			
-Jetzt informieren: http://www.gmx.net/de/go/freephone
+1.7.0.4
