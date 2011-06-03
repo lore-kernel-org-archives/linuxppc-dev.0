@@ -1,21 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 8DD64B6FB4
+Return-Path: <B07421@freescale.com>
+Received: from CH1EHSOBE003.bigfish.com (ch1ehsobe005.messaging.microsoft.com
+	[216.32.181.185]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 90754B6FB3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Jun 2011 01:28:52 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Scott Wood <scottwood@freescale.com>
+	Sat,  4 Jun 2011 02:22:22 +1000 (EST)
+Date: Fri, 3 Jun 2011 11:22:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
 	management driver
-Date: Fri, 3 Jun 2011 17:28:43 +0200
+Message-ID: <20110603112213.4f4d1b4e@schlenkerla.am.freescale.net>
+In-Reply-To: <201106031728.43707.arnd@arndb.de>
 References: <1306953337-15698-1-git-send-email-timur@freescale.com>
 	<201106012340.14237.arnd@arndb.de>
 	<20110601172412.761ff799@schlenkerla.am.freescale.net>
-In-Reply-To: <20110601172412.761ff799@schlenkerla.am.freescale.net>
+	<201106031728.43707.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201106031728.43707.arnd@arndb.de>
+Content-Type: text/plain; charset="US-ASCII"
 Cc: greg@kroah.com, kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
 	akpm@kernel.org, linux-console@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
@@ -28,38 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 02 June 2011, Scott Wood wrote:
-> I wanted to have the hypervisor take an update dtb (we already have special
-> meta-properties for things like deletion as part of the hv config
-> mechanism).  But others on the project wanted to keep it simple, and so
-> get/set property it was. :-/
+On Fri, 3 Jun 2011 17:28:43 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
+
+> On Thursday 02 June 2011, Scott Wood wrote:
+> > I wanted to have the hypervisor take an update dtb (we already have special
+> > meta-properties for things like deletion as part of the hv config
+> > mechanism).  But others on the project wanted to keep it simple, and so
+> > get/set property it was. :-/
+> > 
+> > It's unlikely to change at this point without a real need.
+> > 
+> > As for a filesystem interface, it's not a good match either. 
+> > You can't iterate over anything to read out the full tree from the hv.
 > 
-> It's unlikely to change at this point without a real need.
+> kexec iterates over /proc/device-tree to create a dts blob.
+
+That's irrelevant, because we're not talking about that device tree.  We're
+talking about the device tree of another hypervisor guest.
+
+> > You can't delete anything. 
 > 
-> As for a filesystem interface, it's not a good match either. 
-> You can't iterate over anything to read out the full tree from the hv.
+> rm, rmdir
+> 
+> > You can't create empty nodes.
+> 
+> mkdir
 
-kexec iterates over /proc/device-tree to create a dts blob.
+I know how to operate a filesystem.  You can't do these operations *on
+another guest's device tree through the hv interface*.
 
-> You can't delete anything. 
+> > There would still be other ioctls needed for starting/stopping the
+> > partition, etc.
+> 
+> Right, although you could model them as a file interface as well.
+> KVMfs is one example doing that.
 
-rm, rmdir
+And what would be the benefit of this major restructuring and added
+complexity?
 
-> You can't create empty nodes.
-
-mkdir
-
-> The hv interface was meant to enable some specific management actions,
-> rather than to provide general device tree access.  This driver is a thin
-> wrapper around the management hcalls.
-
-A file system would be a slightly more abstract interface to do the
-same thing, I gues.
-
-> There would still be other ioctls needed for starting/stopping the
-> partition, etc.
-
-Right, although you could model them as a file interface as well.
-KVMfs is one example doing that.
-
-	Arnd
+-Scott
