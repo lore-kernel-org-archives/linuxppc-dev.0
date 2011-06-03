@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE3AEB6FAF
+Return-Path: <B21989@freescale.com>
+Received: from AM1EHSOBE004.bigfish.com (am1ehsobe004.messaging.microsoft.com
+	[213.199.154.207])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BE7CAB6FAA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jun 2011 12:41:46 +1000 (EST)
-Subject: Re: PROBLEM: 2.6.39 =?UTF-8?Q?doesn=E2=80=99t?= boot on POWER MAC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Giuliano Pochini <pochini@shiny.it>
-In-Reply-To: <20110603000012.4ce5c45f@Jay>
-References: <4DE0AA62.4070909@list.ru>  <20110603000012.4ce5c45f@Jay>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 03 Jun 2011 12:41:31 +1000
-Message-ID: <1307068891.23876.2.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Andrey Gusev <ronne@list.ru>,
-	paulus@samba.org
+	Fri,  3 Jun 2011 13:35:52 +1000 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/85xx: fix race bug of calling request_irq after
+	enable elbc interrupts
+Date: Fri, 3 Jun 2011 10:45:11 +0800
+Message-ID: <1307069111-24459-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: B07421@freescale.com, kumar.gala@freescale.com,
+	Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-06-03 at 00:00 +0200, Giuliano Pochini wrote:
-> On Sat, 28 May 2011 11:55:14 +0400
-> Andrey Gusev <ronne@list.ru> wrote:
-> 
-> > Hi!
-> > A kernel 2.6.39 doesn't boot on my POWER MAC G4.
-> 
-> Same problem with my dual-G4 MDD. A few more infos:
-> The machine hangs just after the message "Returning from prom_init" (still
-> in the OF screen).
-> The kernel works fine with the option maxcpus=1, but it locks up as soon as
-> I try to enable the second CPU with echo 1 > /sys.../online.
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/fsl_lbc.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-I just verified that current upstream 3.0-rc1+ does boot fine.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index e0292c3..9e7cb19 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -200,9 +200,6 @@ static int __devinit fsl_lbc_ctrl_init(struct fsl_lbc_ctrl *ctrl,
+ 	out_be32(&lbc->lteccr, LTECCR_CLEAR);
+ 	out_be32(&lbc->ltedr, LTEDR_ENABLE);
+ 
+-	/* Enable interrupts for any detected events */
+-	out_be32(&lbc->lteir, LTEIR_ENABLE);
+-
+ 	/* Set the monitor timeout value to the maximum for erratum A001 */
+ 	if (of_device_is_compatible(node, "fsl,elbc"))
+ 		clrsetbits_be32(&lbc->lbcr, LBCR_BMT, LBCR_BMTPS);
+@@ -340,6 +337,9 @@ static int __devinit fsl_lbc_ctrl_probe(struct of_device *ofdev,
+ 		goto err;
+ 	}
+ 
++	/* Enable interrupts for any detected events */
++	out_be32(&fsl_lbc_ctrl_dev->regs->lteir, LTEIR_ENABLE);
++
+ 	return 0;
+ 
+ err:
+-- 
+1.6.4
