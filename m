@@ -1,21 +1,37 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp208.alice.it (smtp208.alice.it [82.57.200.104])
-	by ozlabs.org (Postfix) with ESMTP id D67A9B6FBD
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AB463B6FB7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Jun 2011 08:36:23 +1000 (EST)
-Date: Sat, 4 Jun 2011 00:36:02 +0200
-From: Giuliano Pochini <pochini@shiny.it>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PROBLEM: 2.6.39 =?UTF-8?Q?doesn=E2=80=99t?= boot on POWER MAC
-Message-ID: <20110604003602.13bc1a55@Jay>
-In-Reply-To: <1307070645.23876.9.camel@pasglop>
-References: <4DE0AA62.4070909@list.ru> <20110603000012.4ce5c45f@Jay>
-	<1307068891.23876.2.camel@pasglop>
-	<1307070645.23876.9.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Andrey Gusev <ronne@list.ru>,
-	paulus@samba.org, stable@kernel.org
+	Sat,  4 Jun 2011 08:52:13 +1000 (EST)
+Received: by iwc10 with SMTP id 10so2375332iwc.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 03 Jun 2011 15:52:10 -0700 (PDT)
+MIME-Version: 1.0
+Sender: tony.luck@gmail.com
+In-Reply-To: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
+References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
+Date: Fri, 3 Jun 2011 15:52:09 -0700
+Message-ID: <BANLkTik4qRe--C6L5WU3XvpP-TMEZ6RQ-w@mail.gmail.com>
+Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
+	ptrace.h
+From: Tony Luck <tony.luck@intel.com>
+To: Eric Paris <eparis@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
+	oleg@redhat.com, paulus@samba.org, hpa@zytor.com,
+	sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+	richard@nod.at, x86@kernel.org, mingo@redhat.com, fenghua.yu@intel.com,
+	user-mode-linux-devel@lists.sourceforge.net,
+	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
+	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
+	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+	lethal@linux-sh.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +41,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 03 Jun 2011 13:10:45 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, Jun 3, 2011 at 3:04 PM, Eric Paris <eparis@redhat.com> wrote:
+> The other major change is that on some arches, like ia64, we change
+> regs_return_value() to give us the negative value on syscall failure. =A0=
+The
+> only other user of this macro, kretprobe_example.c, won't notice and it m=
+akes
+> the value signed consistently for the audit functions across all archs.
 
-> On Fri, 2011-06-03 at 12:41 +1000, Benjamin Herrenschmidt wrote:
-> > On Fri, 2011-06-03 at 00:00 +0200, Giuliano Pochini wrote:
-> > > On Sat, 28 May 2011 11:55:14 +0400
-> > > Andrey Gusev <ronne@list.ru> wrote:
-> > > 
-> > > > Hi!
-> > > > A kernel 2.6.39 doesn't boot on my POWER MAC G4.
-> > > 
-> > > Same problem with my dual-G4 MDD. A few more infos:
-> > > The machine hangs just after the message "Returning from prom_init" (still
-> > > in the OF screen).
-> > > The kernel works fine with the option maxcpus=1, but it locks up as soon as
-> > > I try to enable the second CPU with echo 1 > /sys.../online.
-> > 
-> > I just verified that current upstream 3.0-rc1+ does boot fine.
-> 
-> The fix is:
-> 
->   c560bbceaf6b06e52f1ef20131b76a3fdc0a2c19
->   powerpc/4xx: Fix regression in SMP on 476
-> [...]
-
-Yes, that patch fixed the problem. Thanks.
+v2 builds and boots on ia64 now
+Acked-by: Tony Luck <tony.luck@intel.com>
 
 
--- 
-Giuliano.
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> Acked-by: Acked-by: H. Peter Anvin <hpa@zytor.com> [for x86 portion]
+
+  ^^^^^^^^^^^^^^^^^^^^  :-)
+
+-Tony
