@@ -1,28 +1,23 @@
 Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B9A13B6FCA
+	by ozlabs.org (Postfix) with ESMTPS id 37FD2B6FCA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  4 Jun 2011 20:39:41 +1000 (EST)
-Received: by vxi40 with SMTP id 40so2160946vxi.38
+	Sat,  4 Jun 2011 20:42:04 +1000 (EST)
+Received: by wyg36 with SMTP id 36so2168490wyg.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 04 Jun 2011 03:39:37 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1307183381.23876.27.camel@pasglop>
-References: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
-	<BANLkTikGyV8aG1twBt7Jt_=j-fSBDiGzAg@mail.gmail.com>
-	<BANLkTik6Ln1JGmN7isQ1tWPAf0upzHMvkg@mail.gmail.com>
-	<1307183381.23876.27.camel@pasglop>
-Date: Sat, 4 Jun 2011 14:39:37 +0400
-Message-ID: <BANLkTi=ik-7jtNWfyzfxK-ds4C+TfL7Yhg@mail.gmail.com>
-Subject: Re: [PATCH] Add cpufreq driver for Momentum Maple boards
+	Sat, 04 Jun 2011 03:41:59 -0700 (PDT)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org
+To: bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] ppc/85xx: create a platform node for PCI EDAC device
+Date: Sat,  4 Jun 2011 14:42:03 +0400
+Message-Id: <1307184123-30977-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <20110602124823.3b814b3f@schlenkerla.am.freescale.net>
+References: <20110602124823.3b814b3f@schlenkerla.am.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/4/11, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Sat, 2011-06-04 at 13:00 +0400, Dmitry Eremin-Solenikov wrote:
->> On 5/30/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->> > Hello,
->> >
->> > On 5/21/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->> >> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
->> >> kit and others). Driver is based on a cpufreq driver for 64-bit
->> >> powermac
->> >> boxes with all pmac-dependant features removed and simple cleanup
->> >> applied.
->> >>
->> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->> >> ---
->> >>  arch/powerpc/kernel/misc_64.S          |    4 +-
->> >>  arch/powerpc/platforms/Kconfig         |    8 +
->> >>  arch/powerpc/platforms/maple/Makefile  |    1 +
->> >>  arch/powerpc/platforms/maple/cpufreq.c |  317
->> >> ++++++++++++++++++++++++++++++++
->> >>  4 files changed, 328 insertions(+), 2 deletions(-)
->> >>  create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
->> >
->> > What about this patch?
->>
->> Pinging again. Any problems/comments/objections to this patch?
->
-> Well, obviously nobody had time to review it yet....
+As a device for pci node isn't created, create a special platform_device
+for PCI EDAC device on MPC85xx.
 
-I'm just a bit impatient. It has been already two weeks...
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c |   28 ++++++++++++++++++++++++++++
+ 1 files changed, 28 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 68ca929..2498229 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -381,6 +381,34 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	return 0;
+ }
+ 
++static int __init fsl_add_pci_err(void)
++{
++	struct device_node *np;
++
++	/* Only PCI, not PCI Express! */
++	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci") {
++		struct resource r[2] = {};
++
++		if (of_address_to_resource(np, 0, &r[0])) {
++			printk(KERN_WARNING
++					"Can't get register base for PCI EDAC!\n");
++			continue;
++		}
++		r[0].start += 0xe00;
++
++		if (of_irq_to_resource(np, 0, &r[1]) == NO_IRQ) {
++			printk(KERN_WARNING
++					"Can't get irq for PCI EDAC!\n");
++			continue;
++		}
++		platform_device_register_simple("mpc85xx_pci_err", -1,
++				r, ARRAY_SIZE(r));
++	}
++
++	return 0;
++}
++device_initcall(fsl_add_pci_err);
++
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8548E, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8548, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8543E, quirk_fsl_pcie_header);
 -- 
-With best wishes
-Dmitry
+1.7.4.4
