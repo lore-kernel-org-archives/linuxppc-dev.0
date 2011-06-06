@@ -1,27 +1,32 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from USMAMAIL.TILERA.COM (usmamail.tilera.com [206.83.70.75])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "usmamail.tilera.com",
-	Issuer "Go Daddy Secure Certification Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 40CE2B6FB0
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 960ACB6F9B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jun 2011 07:01:46 +1000 (EST)
-Message-ID: <4DED4030.9050503@tilera.com>
-Date: Mon, 6 Jun 2011 17:01:36 -0400
-From: Chris Metcalf <cmetcalf@tilera.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
-	management driver
-References: <1306953337-15698-1-git-send-email-timur@freescale.com>
-	<201106061803.58531.arnd@arndb.de> <4DECFBC5.6070205@freescale.com>
-	<201106061824.53844.arnd@arndb.de>
-In-Reply-To: <201106061824.53844.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: kumar.gala@freescale.com, linux-kernel@vger.kernel.org, akpm@kernel.org,
-	Deepak Saxena <dsaxena@linaro.org>,
-	linux-console@vger.kernel.org, greg@kroah.com,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+	Tue,  7 Jun 2011 07:15:51 +1000 (EST)
+Date: Mon, 06 Jun 2011 13:17:18 -0700 (PDT)
+Message-Id: <20110606.131718.2215062170051315214.davem@davemloft.net>
+To: eparis@redhat.com
+Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
+	ptrace.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
+References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
+	oleg@redhat.com, paulus@samba.org, hpa@zytor.com,
+	sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+	richard@nod.at, x86@kernel.org, mingo@redhat.com, fenghua.yu@intel.com,
+	user-mode-linux-devel@lists.sourceforge.net,
+	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
+	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
+	tony.luck@intel.com, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
+	linux390@de.ibm.com, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +36,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/6/2011 12:24 PM, Arnd Bergmann wrote:
-> On Monday 06 June 2011, Timur Tabi wrote:.
->> And what about my concern that my driver will be the only one in drivers/virt?
-> I have no doubt that more of these will come. Chris Metcalf is currently
-> looking for a home for his tilera hypervisor drivers, and we have the
-> microsoft hyperv drivers in drivers/staging, so they will hopefully
-> move to a proper place later. We also have similar drivers in other
-> places, e.g. drivers/ps3/ps3-sys-manager.c, drivers/s390/char/vmcp.c
-> or parts of drivers/xen.
+From: Eric Paris <eparis@redhat.com>
+Date: Fri, 03 Jun 2011 18:04:51 -0400
 
-It might help if someone (Arnd?) wanted to propose a statement of what
-drivers/virt was really for.  If it's for any Linux driver that upcalls to
-a hypervisor for any reason, then the Tilera paravirtualized drivers fit in
-well.  If it's intended more for drivers that guests running under a
-hypervisor can use to talk to the hypervisor itself (e.g. managing
-notifications that a hypervisor delivers to a guest to cause it to shut
-down or take other actions), then it doesn't seem like the Tilera
-paravirtualized device drivers belong there, since they're just using the
-Tilera hypervisor synchronously to do I/O or get/set device and driver state.
+ ...
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> Acked-by: Acked-by: H. Peter Anvin <hpa@zytor.com> [for x86 portion]
 
--- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
+For sparc parts:
+
+Acked-by: David S. Miller <davem@davemloft.net>
