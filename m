@@ -1,26 +1,23 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from CH1EHSOBE010.bigfish.com (ch1ehsobe006.messaging.microsoft.com
-	[216.32.181.186]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90ABDB6FA7
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
+	by ozlabs.org (Postfix) with ESMTP id 7A5B4B6FB0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  6 Jun 2011 08:40:15 +1000 (EST)
-Received: from mail143-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail143-ch1-R.bigfish.com (Postfix) with ESMTP id 7F6962E02E1	for
-	<linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2011 22:40:10 +0000 (UTC)
-Received: from CH1EHSMHS015.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.253])	by mail143-ch1.bigfish.com (Postfix) with ESMTP id
-	628965E004B	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  5 Jun 2011 22:40:10 +0000 (UTC)
-Date: Sun, 5 Jun 2011 17:39:58 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/e5500: enable caam crypto driver by default
-Message-ID: <20110605173958.1073f245.kim.phillips@freescale.com>
+	Mon,  6 Jun 2011 12:11:23 +1000 (EST)
+Date: Sun, 5 Jun 2011 19:11:18 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
+In-Reply-To: <1307000008.29297.59.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1106051907190.21697@trent.utfs.org>
+References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
+	<alpine.DEB.2.01.1106011712270.21697@trent.utfs.org>
+	<1306983467.29297.51.camel@pasglop>
+	<alpine.DEB.2.01.1106012057130.21697@trent.utfs.org>
+	<1307000008.29297.59.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Kumar Gala <kumar.gala@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: zajec5@gmail.com, linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-e55xx based SoCs have SEC4 h/w, so enable the SEC4 driver,
-caam, and the algorithms it supports, and disable the
-SEC2/3 driver, talitos.
+On Thu, 2 Jun 2011 at 17:33, Benjamin Herrenschmidt wrote:
+> It -looks- to me that something goes wrong in the tty code when a large
+> file is piped through a pty, causing the kernel to hang for minutes in
+> the workqueue / ldisk flush code. I've just sent an initial report to
+> Alan Cox about it and am currently bisecting it.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/configs/e55xx_smp_defconfig |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+This was the "tty vs workqueue oddities" thread, right? FWIW, 
+55db4c64eddf37 ("Revert "tty: make receive_buf() return the amout of bytes 
+received"") seems to have fixed it on this powerpc machine as well.
 
-diff --git a/arch/powerpc/configs/e55xx_smp_defconfig b/arch/powerpc/configs/e55xx_smp_defconfig
-index d322835..c92c204 100644
---- a/arch/powerpc/configs/e55xx_smp_defconfig
-+++ b/arch/powerpc/configs/e55xx_smp_defconfig
-@@ -100,5 +100,8 @@ CONFIG_DEBUG_INFO=y
- CONFIG_SYSCTL_SYSCALL_CHECK=y
- CONFIG_VIRQ_DEBUG=y
- CONFIG_CRYPTO_PCBC=m
-+CONFIG_CRYPTO_SHA256=y
-+CONFIG_CRYPTO_SHA512=y
-+CONFIG_CRYPTO_AES=y
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
--CONFIG_CRYPTO_DEV_TALITOS=y
-+CONFIG_CRYPTO_DEV_FSL_CAAM=y
+With your "ssb: pci: Don't call PCIe specific workarounds on PCI cores" 
+patch applied, powerpc32 seems to be quite happy with 3.0-rc1+
+
+Thanks,
+Christian.
 -- 
-1.7.5.4
+BOFH excuse #382:
+
+Someone was smoking in the computer room and set off the halon systems.
