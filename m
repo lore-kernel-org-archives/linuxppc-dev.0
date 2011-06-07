@@ -1,25 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 78009B6FAC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jun 2011 17:08:32 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
-	management driver
-Date: Tue, 7 Jun 2011 09:08:16 +0200
-References: <1306953337-15698-1-git-send-email-timur@freescale.com>
-	<20110606212356.GA20112@dumpdata.com> <4DED5D08.3070704@tilera.com>
-In-Reply-To: <4DED5D08.3070704@tilera.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A4F4CB6FA7
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2011 22:55:45 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p57CtYZM022324
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jun 2011 07:55:36 -0500
+Date: Tue, 7 Jun 2011 07:55:34 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [git pull] Please pull powerpc.git merge branch (fwd)
+Message-ID: <alpine.LFD.2.00.1106070755230.10813@right.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201106070908.16301.arnd@arndb.de>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, greg@kroah.com,
-	kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	Chris Metcalf <cmetcalf@tilera.com>, akpm@kernel.org,
-	Deepak Saxena <dsaxena@linaro.org>,
-	linux-console@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 07 June 2011 01:04:40 Chris Metcalf wrote:
-> For context, the most recent patch for the tile driver in question is here:
-> 
-> https://patchwork.kernel.org/patch/843892/
-> 
-> On 6/6/2011 5:23 PM, Konrad Rzeszutek Wilk wrote:
-> > On Mon, Jun 06, 2011 at 05:01:36PM -0400, Chris Metcalf wrote:
->
-> >> a hypervisor for any reason, then the Tilera paravirtualized drivers fit in
-> >> well.  If it's intended more for drivers that guests running under a
-> >> hypervisor can use to talk to the hypervisor itself (e.g. managing
-> > I believe that the code that deals with specific subsystem (so block API
-> > for example) would reside in subsystem directory (so drivers/block would have
-> > your virtualization block driver). This allows the maintainer of block
-> > to make sure your driver is OK.
-> 
-> Sure, makes sense.  The new push (as I understand it) is to group primarily
-> by function, not by bus or architecture.
+[forgot to CC the list]
 
-Yes.
+---------- Forwarded message ----------
+Date: Mon, 6 Jun 2011 16:17:08 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
 
-> >> notifications that a hypervisor delivers to a guest to cause it to shut
-> >> down or take other actions), then it doesn't seem like the Tilera
-> > That looks to be arch/<x>/tilera/virt/ candidate?
-> 
-> Arnd, among others, has suggested that all drivers live in "drivers"
-> somewhere, so "arch/tile" may not be the best place.  (To be fair, I
-> originally had this driver in arch/tile/drivers/, so your idea is certainly
-> reasonable!)
-> 
-> >> paravirtualized device drivers belong there, since they're just using the
-> >> Tilera hypervisor synchronously to do I/O or get/set device and driver state.
-> > Well, I/O sounds like block API or network API. But then you are also
-> > doing management ioctl - which implies "drivers". "drivers/tilera" does not
-> > work?
-> 
-> There is certainly precedent for drivers that don't fit cleanly into an
-> existing category to go in drivers/<arch>, e.g. drivers/s390,
-> drivers/parisc, etc.  There is also drivers/platform/x86, though that seems
-> to be for the bus "platform drivers" rather than just a random character
-> driver like the one in question.
-> 
-> I don't have a particular opinion here; I'm just hoping to develop enough
-> consensus that I can ask Linus to pull the driver without generating
-> controversy :-)
+The following changes since commit 9693ebd4815eefa2b7c8fcc699061a0c8da0c1e7:
 
-The drivers/s390 and drivers/parisc directories are from a distant past,
-we should not add new ones like them. drivers/platform is controversial,
-but I think it's ok for stuff that manages platform specific quirks.
-The main problem with that is that it doesn't work for embedded systems,
-by extension every ARM specific driver could go into drivers/platform/...
-and we don't want that.
+  Merge remote branch 'kumar/merge' into merge (2011-05-27 09:58:22 +1000)
 
-You can probably argue that the tile drivers do fit in here as long as
-they are specific to the hypervisor and not to some SOC specific hardware.
+are available in the git repository at:
 
-	Arnd
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+
+Kumar Gala (2):
+      powerpc/fsl_rio: Fix compile error when CONFIG_FSL_RIO not set
+      powerpc/book3e: Fix CPU feature handling on e5500 in 32-bit mode
+
+Shaohui Xie (1):
+      powerpc/85xx: fix race bug of calling request_irq after enable elbc interrupts
+
+ arch/powerpc/include/asm/rio.h |    2 +-
+ arch/powerpc/kernel/cputable.c |    2 +-
+ arch/powerpc/sysdev/fsl_lbc.c  |    6 +++---
+ 3 files changed, 5 insertions(+), 5 deletions(-)
