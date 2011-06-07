@@ -1,26 +1,27 @@
 Return-Path: <trinabh@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com",
+	(Client CN "e23smtp02.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BF637B6FB4
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 02:29:32 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp04.in.ibm.com (8.14.4/8.13.1) with ESMTP id p57GTTf6009021
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jun 2011 21:59:29 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p57GTTn93657814
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jun 2011 21:59:29 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p57GTSZb008008
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jun 2011 21:59:28 +0530
+	by ozlabs.org (Postfix) with ESMTPS id B1D8BB6FB9
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 02:29:43 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id p57GNoJK031717
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:23:50 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p57GSqfe1302644
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:28:52 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p57GTgJ2022608
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:29:42 +1000
 From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 1/7] cpuidle: create bootparam "cpuidle.off=1"
+Subject: [RFC PATCH V1 2/7] cpuidle: replace xen access to x86 pm_idle and
+	default_idle
 To: linux-pm@lists.linux-foundation.org, linuxppc-dev@ozlabs.org
-Date: Tue, 07 Jun 2011 21:59:26 +0530
-Message-ID: <20110607162922.6848.71783.stgit@tringupt.in.ibm.com>
+Date: Tue, 07 Jun 2011 21:59:38 +0530
+Message-ID: <20110607162933.6848.14665.stgit@tringupt.in.ibm.com>
 In-Reply-To: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
 References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
 MIME-Version: 1.0
@@ -37,109 +38,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Len Brown <len.brown@intel.com>
 
-useful for disabling cpuidle to fall back
-to architecture-default idle loop
+When a Xen Dom0 kernel boots on a hypervisor, it gets access
+to the raw-hardware ACPI tables.  While it parses the idle tables
+for the hypervisor's beneift, it uses HLT for its own idle.
 
-cpuidle drivers and governors will fail to register.
-on x86 they'll say so:
+Rather than have xen scribble on pm_idle and access default_idle,
+have it simply disable_cpuidle() so acpi_idle will not load and
+architecture default HLT will be used.
 
-intel_idle: intel_idle yielding to (null)
-ACPI: acpi_idle yielding to (null)
-
+cc: xen-devel@lists.xensource.com
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
 
- Documentation/kernel-parameters.txt |    3 +++
- drivers/cpuidle/cpuidle.c           |   10 ++++++++++
- drivers/cpuidle/cpuidle.h           |    1 +
- drivers/cpuidle/driver.c            |    3 +++
- drivers/cpuidle/governor.c          |    3 +++
- 5 files changed, 20 insertions(+), 0 deletions(-)
+ arch/x86/xen/setup.c      |    3 ++-
+ drivers/cpuidle/cpuidle.c |    4 ++++
+ include/linux/cpuidle.h   |    2 ++
+ 3 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index d9a203b..5697faf 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -546,6 +546,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			/proc/<pid>/coredump_filter.
- 			See also Documentation/filesystems/proc.txt.
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index be1a464..ab1a916 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -9,6 +9,7 @@
+ #include <linux/mm.h>
+ #include <linux/pm.h>
+ #include <linux/memblock.h>
++#include <linux/cpuidle.h>
  
-+	cpuidle.off=1	[CPU_IDLE]
-+			disable the cpuidle sub-system
-+
- 	cpcihp_generic=	[HW,PCI] Generic port I/O CompactPCI driver
- 			Format:
- 			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
+ #include <asm/elf.h>
+ #include <asm/vdso.h>
+@@ -424,7 +425,7 @@ void __init xen_arch_setup(void)
+ #ifdef CONFIG_X86_32
+ 	boot_cpu_data.hlt_works_ok = 1;
+ #endif
+-	pm_idle = default_idle;
++	disable_cpuidle();
+ 	boot_option_idle_override = IDLE_HALT;
+ 
+ 	fiddle_vdso();
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 406be83..a171b9e 100644
+index a171b9e..8d7303b 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -28,6 +28,12 @@ LIST_HEAD(cpuidle_detected_devices);
- static void (*pm_idle_old)(void);
- 
- static int enabled_devices;
-+static int off __read_mostly;
-+
-+int cpuidle_disabled(void)
+@@ -34,6 +34,10 @@ int cpuidle_disabled(void)
+ {
+ 	return off;
+ }
++void disable_cpuidle(void)
 +{
-+	return off;
++	off = 1;
 +}
  
  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
  static void cpuidle_kick_cpus(void)
-@@ -397,6 +403,9 @@ static int __init cpuidle_init(void)
- {
- 	int ret;
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 1e85538..2786787 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -127,6 +127,7 @@ struct cpuidle_driver {
+ };
  
-+	if (cpuidle_disabled())
-+		return -ENODEV;
-+
- 	pm_idle_old = pm_idle;
+ #ifdef CONFIG_CPU_IDLE
++extern void disable_cpuidle(void);
  
- 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
-@@ -408,4 +417,5 @@ static int __init cpuidle_init(void)
- 	return 0;
- }
+ extern int cpuidle_register_driver(struct cpuidle_driver *drv);
+ struct cpuidle_driver *cpuidle_get_driver(void);
+@@ -140,6 +141,7 @@ extern int cpuidle_enable_device(struct cpuidle_device *dev);
+ extern void cpuidle_disable_device(struct cpuidle_device *dev);
  
-+module_param(off, int, 0444);
- core_initcall(cpuidle_init);
-diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-index 33e50d5..38c3fd8 100644
---- a/drivers/cpuidle/cpuidle.h
-+++ b/drivers/cpuidle/cpuidle.h
-@@ -13,6 +13,7 @@ extern struct list_head cpuidle_governors;
- extern struct list_head cpuidle_detected_devices;
- extern struct mutex cpuidle_lock;
- extern spinlock_t cpuidle_driver_lock;
-+extern int cpuidle_disabled(void);
+ #else
++static inline void disable_cpuidle(void) { }
  
- /* idle loop */
- extern void cpuidle_install_idle_handler(void);
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 33e3189..284d7af 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -50,6 +50,9 @@ int cpuidle_register_driver(struct cpuidle_driver *drv)
- 	if (!drv)
- 		return -EINVAL;
- 
-+	if (cpuidle_disabled())
-+		return -ENODEV;
-+
- 	spin_lock(&cpuidle_driver_lock);
- 	if (cpuidle_curr_driver) {
- 		spin_unlock(&cpuidle_driver_lock);
-diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
-index 724c164..ea2f8e7 100644
---- a/drivers/cpuidle/governor.c
-+++ b/drivers/cpuidle/governor.c
-@@ -81,6 +81,9 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
- 	if (!gov || !gov->select)
- 		return -EINVAL;
- 
-+	if (cpuidle_disabled())
-+		return -ENODEV;
-+
- 	mutex_lock(&cpuidle_lock);
- 	if (__cpuidle_find_governor(gov->name) == NULL) {
- 		ret = 0;
+ static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
+ {return -ENODEV; }
