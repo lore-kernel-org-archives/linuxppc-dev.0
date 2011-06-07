@@ -1,19 +1,19 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B804B6FAA
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2011 23:02:41 +1000 (EST)
-Received: by fxm1 with SMTP id 1so3794116fxm.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 07 Jun 2011 06:02:37 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 7 Jun 2011 18:32:37 +0530
-Message-ID: <BANLkTi=TVsXiWR1qS5upnM31kVk9qqXTmw@mail.gmail.com>
-Subject: [gianfar]bandwidth management problem on mpc8313 based board
-From: Vijay Nikam <vijay.t.nikam@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D8A74B6F98
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2011 23:59:57 +1000 (EST)
+Subject: Re: [PATCH] Fix doorbell type shift
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <23877.1307328527@neuling.org>
+Date: Tue, 7 Jun 2011 07:59:30 -0500
+Message-Id: <CC124840-E863-4D55-A28D-1A01C8A6BF10@kernel.crashing.org>
+References: <23877.1307328527@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear All,
 
-I have mpc8313 powerpc based board with silicon revision 2.1. the
-processor has two ETH ports (eTsec1 and eTsec2) i.e. eth0 and eth1.
-eth0 is 1Gbps port and eth1 is 100Mbps port. On board there is L2
-switch from TANTOS2G (psb6972) supports one port 1Gbps,
-and from switch there are 4 more eth ports derived which are 100Mbps
-ports and port based VLAN is configured for this purpose.
+On Jun 5, 2011, at 9:48 PM, Michael Neuling wrote:
 
-The interface between switch and eth0 (port of processor) is RGMII. So
-the processor port and switch port are connected on 1Gbps Link.
-The other 4 derived ports (100Mbps) are used to connect to external world.
-On this board Embedded Linux is running of kernel version 2.6.23 with HRT patch.
-The ethernet controller driver in use is "gianfar" version 1.3
-The driver is configured properly as it determines both links 1000Mbps
-(eth0) and 100Mbps (eth1) also verified with ethtool.
+> doorbell type is defined as bits 32:36 so should be shifted by 63-36 =
+> 27 rather than 28.
+> 
+> We never noticed this bug as we've only every used type PPC_DBELL = 0.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> arch/powerpc/include/asm/dbell.h |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
 
-After this I started to perform bandwidth test using iperf tool.
-When I performed this test on one port out of 4 derived ports I am
-getting bandwidth in the range of 80-85Mbps
-but when the same test is performed on 2 ports simultaneously then the
-per port bandwidth is reduced to 40-45Mbps.
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-But my understanding is all of the 4 ports should support 100Mbps
-bandwidth simultaneously (as base port is 1Gbps).
-Then why bandwidth gets reduced when more than one port are
-communicating simultaneously?
-Any reason or suggestion I should check for this problem?
-
-Kindly Please acknowledge, thanks
-
-Kind Regards,
-Vijay Nikam
+> 
+> Index: linux-ozlabs/arch/powerpc/include/asm/dbell.h
+> ===================================================================
+> --- linux-ozlabs.orig/arch/powerpc/include/asm/dbell.h
+> +++ linux-ozlabs/arch/powerpc/include/asm/dbell.h
+> @@ -18,7 +18,7 @@
+> #include <asm/ppc-opcode.h>
+> 
+> #define PPC_DBELL_MSG_BRDCAST	(0x04000000)
+> -#define PPC_DBELL_TYPE(x)	(((x) & 0xf) << 28)
+> +#define PPC_DBELL_TYPE(x)	(((x) & 0xf) << (63-36))
+> enum ppc_dbell {
+> 	PPC_DBELL = 0,		/* doorbell */
+> 	PPC_DBELL_CRIT = 1,	/* critical doorbell */
