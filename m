@@ -1,28 +1,30 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from USMAMAIL.TILERA.COM (usmamail.tilera.com [206.83.70.75])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "usmamail.tilera.com",
-	Issuer "Go Daddy Secure Certification Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 38717B6FA9
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id EC30EB6FBC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jun 2011 02:49:14 +1000 (EST)
-Message-ID: <4DEE567E.7080102@tilera.com>
-Date: Tue, 7 Jun 2011 12:49:02 -0400
-From: Chris Metcalf <cmetcalf@tilera.com>
+	Wed,  8 Jun 2011 03:22:07 +1000 (EST)
+Date: Tue, 7 Jun 2011 19:19:52 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
+	ptrace.h
+Message-ID: <20110607171952.GA25729@redhat.com>
+References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
-	management driver
-References: <1306953337-15698-1-git-send-email-timur@freescale.com>
-	<20110606212356.GA20112@dumpdata.com> <4DED5D08.3070704@tilera.com>
-	<201106070908.16301.arnd@arndb.de>
-In-Reply-To: <201106070908.16301.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, greg@kroah.com,
-	kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	akpm@kernel.org, Deepak Saxena <dsaxena@linaro.org>,
-	linux-console@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
+	paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
+	linux-s390@vger.kernel.org, richard@nod.at, x86@kernel.org,
+	mingo@redhat.com, fenghua.yu@intel.com,
+	user-mode-linux-devel@lists.sourceforge.net,
+	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
+	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
+	tony.luck@intel.com, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
+	linux390@de.ibm.com, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +34,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/7/2011 3:08 AM, Arnd Bergmann wrote:
-> On Tuesday 07 June 2011 01:04:40 Chris Metcalf wrote:
->> There is certainly precedent for drivers that don't fit cleanly into an
->> existing category to go in drivers/<arch>, e.g. drivers/s390,
->> drivers/parisc, etc.  There is also drivers/platform/x86, though that seems
->> to be for the bus "platform drivers" rather than just a random character
->> driver like the one in question.
-> The drivers/s390 and drivers/parisc directories are from a distant past,
-> we should not add new ones like them. drivers/platform is controversial,
-> but I think it's ok for stuff that manages platform specific quirks.
-> The main problem with that is that it doesn't work for embedded systems,
-> by extension every ARM specific driver could go into drivers/platform/...
-> and we don't want that.
+On 06/03, Eric Paris wrote:
 >
-> You can probably argue that the tile drivers do fit in here as long as
-> they are specific to the hypervisor and not to some SOC specific hardware.
+> The audit system previously expected arches calling to audit_syscall_exit to
+> supply as arguments if the syscall was a success and what the return code was.
+> Audit also provides a helper AUDITSC_RESULT which was supposed to simplify things
+> by converting from negative retcodes to an audit internal magic value stating
+> success or failure.  This helper was wrong and could indicate that a valid
+> pointer returned to userspace was a failed syscall.  The fix is to fix the
+> layering foolishness.  We now pass audit_syscall_exit a struct pt_reg and it
+> in turns calls back into arch code to collect the return value and to
+> determine if the syscall was a success or failure.  We also define a generic
+> is_syscall_success() macro which determines success/failure based on if the
+> value is < -MAX_ERRNO.  This works for arches like x86 which do not use a
+> separate mechanism to indicate syscall failure.
 
-Can you clarify that?   I think you're contrasting something like an ARM
-core that was licensed and put in a SoC by some random vendor, and you
-could have an endless stream of drivers for that case.  The Tilera core
-isn't being licensed; it's sold more like an Intel chip with a fixed set of
-interfaces available only from Tilera.  The particular interface in
-question here is SPI, and the core itself knows how to boot the chip over
-SPI by finding an SPI ROM and reading the boot stream out of it directly
-after power-up.
+I know nothing about audit, but the patch looks fine to me.
 
-So does that match with your model of "drivers/platform/tile"?  Maybe we
-have a winner!  :-)
 
--- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
+But I have a bit off-topic question,
+
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index 8a445a0..b7b1f88 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -53,6 +53,7 @@
+>  #include <asm/paravirt.h>
+>  #include <asm/ftrace.h>
+>  #include <asm/percpu.h>
+> +#include <linux/err.h>
+>
+>  /* Avoid __ASSEMBLER__'ifying <linux/audit.h> just for this.  */
+>  #include <linux/elf-em.h>
+> @@ -564,17 +565,16 @@ auditsys:
+>  	jmp system_call_fastpath
+>
+>  	/*
+> -	 * Return fast path for syscall audit.  Call audit_syscall_exit()
+> +	 * Return fast path for syscall audit.  Call __audit_syscall_exit()
+>  	 * directly and then jump back to the fast path with TIF_SYSCALL_AUDIT
+>  	 * masked off.
+>  	 */
+>  sysret_audit:
+>  	movq RAX-ARGOFFSET(%rsp),%rsi	/* second arg, syscall return value */
+> -	cmpq $0,%rsi		/* is it < 0? */
+> -	setl %al		/* 1 if so, 0 if not */
+> +	cmpq $-MAX_ERRNO,%rsi	/* is it < -MAX_ERRNO? */
+> +	setbe %al		/* 1 if so, 0 if not */
+>  	movzbl %al,%edi		/* zero-extend that into %edi */
+> -	inc %edi /* first arg, 0->1(AUDITSC_SUCCESS), 1->2(AUDITSC_FAILURE) */
+> -	call audit_syscall_exit
+> +	call __audit_syscall_exit
+
+With or without this patch, can't we call audit_syscall_exit() twice
+if there is something else in _TIF_WORK_SYSCALL_EXIT mask apart from
+SYSCALL_AUDIT ? First time it is called from asm, then from
+syscall_trace_leave(), no?
+
+For example. The task has TIF_SYSCALL_AUDIT and nothing else, it does
+system_call->auditsys->system_call_fastpath. What if it gets, say,
+TIF_SYSCALL_TRACE before ret_from_sys_call?
+
+Oleg.
