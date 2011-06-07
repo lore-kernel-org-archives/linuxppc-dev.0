@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A4F4CB6FA7
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2011 22:55:45 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p57CtYZM022324
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jun 2011 07:55:36 -0500
-Date: Tue, 7 Jun 2011 07:55:34 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [git pull] Please pull powerpc.git merge branch (fwd)
-Message-ID: <alpine.LFD.2.00.1106070755230.10813@right.am.freescale.net>
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3B804B6FAA
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2011 23:02:41 +1000 (EST)
+Received: by fxm1 with SMTP id 1so3794116fxm.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 07 Jun 2011 06:02:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 7 Jun 2011 18:32:37 +0530
+Message-ID: <BANLkTi=TVsXiWR1qS5upnM31kVk9qqXTmw@mail.gmail.com>
+Subject: [gianfar]bandwidth management problem on mpc8313 based board
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[forgot to CC the list]
+Dear All,
 
----------- Forwarded message ----------
-Date: Mon, 6 Jun 2011 16:17:08 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
+I have mpc8313 powerpc based board with silicon revision 2.1. the
+processor has two ETH ports (eTsec1 and eTsec2) i.e. eth0 and eth1.
+eth0 is 1Gbps port and eth1 is 100Mbps port. On board there is L2
+switch from TANTOS2G (psb6972) supports one port 1Gbps,
+and from switch there are 4 more eth ports derived which are 100Mbps
+ports and port based VLAN is configured for this purpose.
 
-The following changes since commit 9693ebd4815eefa2b7c8fcc699061a0c8da0c1e7:
+The interface between switch and eth0 (port of processor) is RGMII. So
+the processor port and switch port are connected on 1Gbps Link.
+The other 4 derived ports (100Mbps) are used to connect to external world.
+On this board Embedded Linux is running of kernel version 2.6.23 with HRT patch.
+The ethernet controller driver in use is "gianfar" version 1.3
+The driver is configured properly as it determines both links 1000Mbps
+(eth0) and 100Mbps (eth1) also verified with ethtool.
 
-  Merge remote branch 'kumar/merge' into merge (2011-05-27 09:58:22 +1000)
+After this I started to perform bandwidth test using iperf tool.
+When I performed this test on one port out of 4 derived ports I am
+getting bandwidth in the range of 80-85Mbps
+but when the same test is performed on 2 ports simultaneously then the
+per port bandwidth is reduced to 40-45Mbps.
 
-are available in the git repository at:
+But my understanding is all of the 4 ports should support 100Mbps
+bandwidth simultaneously (as base port is 1Gbps).
+Then why bandwidth gets reduced when more than one port are
+communicating simultaneously?
+Any reason or suggestion I should check for this problem?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+Kindly Please acknowledge, thanks
 
-Kumar Gala (2):
-      powerpc/fsl_rio: Fix compile error when CONFIG_FSL_RIO not set
-      powerpc/book3e: Fix CPU feature handling on e5500 in 32-bit mode
-
-Shaohui Xie (1):
-      powerpc/85xx: fix race bug of calling request_irq after enable elbc interrupts
-
- arch/powerpc/include/asm/rio.h |    2 +-
- arch/powerpc/kernel/cputable.c |    2 +-
- arch/powerpc/sysdev/fsl_lbc.c  |    6 +++---
- 3 files changed, 5 insertions(+), 5 deletions(-)
+Kind Regards,
+Vijay Nikam
