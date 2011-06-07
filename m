@@ -1,31 +1,28 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 13983B6FD5
+Return-Path: <B04825@freescale.com>
+Received: from CH1EHSOBE005.bigfish.com (ch1ehsobe001.messaging.microsoft.com
+	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 926BFB6FD6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jun 2011 04:54:03 +1000 (EST)
-Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
-	ptrace.h
-From: Eric Paris <eparis@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Date: Tue, 07 Jun 2011 14:53:11 -0400
-In-Reply-To: <20110607171952.GA25729@redhat.com>
-References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-	<20110607171952.GA25729@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1307472796.2052.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
-	paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
-	linux-s390@vger.kernel.org, richard@nod.at, x86@kernel.org,
-	mingo@redhat.com, fenghua.yu@intel.com,
-	user-mode-linux-devel@lists.sourceforge.net,
-	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
-	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
-	tony.luck@intel.com, linux-kernel@vger.kernel.org,
-	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
-	linux390@de.ibm.com, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+	Wed,  8 Jun 2011 05:21:01 +1000 (EST)
+Message-ID: <4DEE7A12.80302@freescale.com>
+Date: Tue, 7 Jun 2011 14:20:50 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 7/7] [v2] drivers/misc: introduce Freescale hypervisor
+	management driver
+References: <1306953337-15698-1-git-send-email-timur@freescale.com>
+	<201106070908.16301.arnd@arndb.de> <4DEE567E.7080102@tilera.com>
+	<201106072116.21469.arnd@arndb.de>
+In-Reply-To: <201106072116.21469.arnd@arndb.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, greg@kroah.com,
+	kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
+	Chris Metcalf <cmetcalf@tilera.com>, akpm@kernel.org,
+	Deepak Saxena <dsaxena@linaro.org>,
+	linux-console@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,71 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-06-07 at 19:19 +0200, Oleg Nesterov wrote:
-> On 06/03, Eric Paris wrote:
-> >
-> > The audit system previously expected arches calling to audit_syscall_exit to
-> > supply as arguments if the syscall was a success and what the return code was.
-> > Audit also provides a helper AUDITSC_RESULT which was supposed to simplify things
-> > by converting from negative retcodes to an audit internal magic value stating
-> > success or failure.  This helper was wrong and could indicate that a valid
-> > pointer returned to userspace was a failed syscall.  The fix is to fix the
-> > layering foolishness.  We now pass audit_syscall_exit a struct pt_reg and it
-> > in turns calls back into arch code to collect the return value and to
-> > determine if the syscall was a success or failure.  We also define a generic
-> > is_syscall_success() macro which determines success/failure based on if the
-> > value is < -MAX_ERRNO.  This works for arches like x86 which do not use a
-> > separate mechanism to indicate syscall failure.
-> 
-> I know nothing about audit, but the patch looks fine to me.
-> 
-> 
-> But I have a bit off-topic question,
-> 
-> > diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-> > index 8a445a0..b7b1f88 100644
-> > --- a/arch/x86/kernel/entry_64.S
-> > +++ b/arch/x86/kernel/entry_64.S
-> > @@ -53,6 +53,7 @@
-> >  #include <asm/paravirt.h>
-> >  #include <asm/ftrace.h>
-> >  #include <asm/percpu.h>
-> > +#include <linux/err.h>
-> >
-> >  /* Avoid __ASSEMBLER__'ifying <linux/audit.h> just for this.  */
-> >  #include <linux/elf-em.h>
-> > @@ -564,17 +565,16 @@ auditsys:
-> >  	jmp system_call_fastpath
-> >
-> >  	/*
-> > -	 * Return fast path for syscall audit.  Call audit_syscall_exit()
-> > +	 * Return fast path for syscall audit.  Call __audit_syscall_exit()
-> >  	 * directly and then jump back to the fast path with TIF_SYSCALL_AUDIT
-> >  	 * masked off.
-> >  	 */
-> >  sysret_audit:
-> >  	movq RAX-ARGOFFSET(%rsp),%rsi	/* second arg, syscall return value */
-> > -	cmpq $0,%rsi		/* is it < 0? */
-> > -	setl %al		/* 1 if so, 0 if not */
-> > +	cmpq $-MAX_ERRNO,%rsi	/* is it < -MAX_ERRNO? */
-> > +	setbe %al		/* 1 if so, 0 if not */
-> >  	movzbl %al,%edi		/* zero-extend that into %edi */
-> > -	inc %edi /* first arg, 0->1(AUDITSC_SUCCESS), 1->2(AUDITSC_FAILURE) */
-> > -	call audit_syscall_exit
-> > +	call __audit_syscall_exit
-> 
-> With or without this patch, can't we call audit_syscall_exit() twice
-> if there is something else in _TIF_WORK_SYSCALL_EXIT mask apart from
-> SYSCALL_AUDIT ? First time it is called from asm, then from
-> syscall_trace_leave(), no?
-> 
-> For example. The task has TIF_SYSCALL_AUDIT and nothing else, it does
-> system_call->auditsys->system_call_fastpath. What if it gets, say,
-> TIF_SYSCALL_TRACE before ret_from_sys_call?
+Arnd Bergmann wrote:
+> For the spi flash driver that goes through the hypervisor abstraction,
+> I think drivers/virt/tile would be better than driver/platform/tile,
+> but we should really have a new "abstract flash character driver" subsystem
+> for that.
 
-No harm is done calling twice.  The first call will do the real work and
-cleanup.  It will set a flag in the audit data that the work has been
-done (in_syscall == 0) thus the second call will then not do any real
-work and won't have anything to clean up.
+Why should it matter that the SPI flash driver goes through the hypervisor
+abstration?  One of the patches in this patchset is a TTY driver that goes
+through the Freescale hypervisor.  I put the drivers in drivers/tty.
 
--Eric
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
