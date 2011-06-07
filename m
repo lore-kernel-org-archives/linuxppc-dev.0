@@ -1,30 +1,20 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id EC30EB6FBC
+Return-Path: <ericvh@gmail.com>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E6E98B6F90
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jun 2011 03:22:07 +1000 (EST)
-Date: Tue, 7 Jun 2011 19:19:52 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
-	ptrace.h
-Message-ID: <20110607171952.GA25729@redhat.com>
-References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
-	paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
-	linux-s390@vger.kernel.org, richard@nod.at, x86@kernel.org,
-	mingo@redhat.com, fenghua.yu@intel.com,
-	user-mode-linux-devel@lists.sourceforge.net,
-	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
-	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
-	tony.luck@intel.com, linux-kernel@vger.kernel.org,
-	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
-	linux390@de.ibm.com, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+	Wed,  8 Jun 2011 04:47:51 +1000 (EST)
+Received: by pxi19 with SMTP id 19so3679360pxi.15
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 07 Jun 2011 11:47:48 -0700 (PDT)
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] [RFC][V3] bluegene: add entry to cpu table
+Date: Tue,  7 Jun 2011 13:47:27 -0500
+Message-Id: <1307472447-1656-1-git-send-email-ericvh@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, bg-linux@lists.anl-external.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,65 +24,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/03, Eric Paris wrote:
->
-> The audit system previously expected arches calling to audit_syscall_exit to
-> supply as arguments if the syscall was a success and what the return code was.
-> Audit also provides a helper AUDITSC_RESULT which was supposed to simplify things
-> by converting from negative retcodes to an audit internal magic value stating
-> success or failure.  This helper was wrong and could indicate that a valid
-> pointer returned to userspace was a failed syscall.  The fix is to fix the
-> layering foolishness.  We now pass audit_syscall_exit a struct pt_reg and it
-> in turns calls back into arch code to collect the return value and to
-> determine if the syscall was a success or failure.  We also define a generic
-> is_syscall_success() macro which determines success/failure based on if the
-> value is < -MAX_ERRNO.  This works for arches like x86 which do not use a
-> separate mechanism to indicate syscall failure.
+Create an entry for the BG/P chips, include bits to accomodate
+the double fp2 fpu and the special MMU considerations like L1
+writethrough.
 
-I know nothing about audit, but the patch looks fine to me.
+RFC Note: this patch fails scripts/checkpatch.pl because I
+matched coding style of the surrounding existing code.  Would
+you rather have something checkpatch.pl clean or something
+which is consistent with the surrounding code style?
 
+The three I got were:
+ERROR: Macros with complex values should be enclosed in parenthesis
+ERROR: "foo* bar" should be "foo *bar"
+WARNING: externs should be avoided in .c files
+and I got these by copying other code as an example.
 
-But I have a bit off-topic question,
+Thanks for any feedback.
 
-> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-> index 8a445a0..b7b1f88 100644
-> --- a/arch/x86/kernel/entry_64.S
-> +++ b/arch/x86/kernel/entry_64.S
-> @@ -53,6 +53,7 @@
->  #include <asm/paravirt.h>
->  #include <asm/ftrace.h>
->  #include <asm/percpu.h>
-> +#include <linux/err.h>
->
->  /* Avoid __ASSEMBLER__'ifying <linux/audit.h> just for this.  */
->  #include <linux/elf-em.h>
-> @@ -564,17 +565,16 @@ auditsys:
->  	jmp system_call_fastpath
->
->  	/*
-> -	 * Return fast path for syscall audit.  Call audit_syscall_exit()
-> +	 * Return fast path for syscall audit.  Call __audit_syscall_exit()
->  	 * directly and then jump back to the fast path with TIF_SYSCALL_AUDIT
->  	 * masked off.
->  	 */
->  sysret_audit:
->  	movq RAX-ARGOFFSET(%rsp),%rsi	/* second arg, syscall return value */
-> -	cmpq $0,%rsi		/* is it < 0? */
-> -	setl %al		/* 1 if so, 0 if not */
-> +	cmpq $-MAX_ERRNO,%rsi	/* is it < -MAX_ERRNO? */
-> +	setbe %al		/* 1 if so, 0 if not */
->  	movzbl %al,%edi		/* zero-extend that into %edi */
-> -	inc %edi /* first arg, 0->1(AUDITSC_SUCCESS), 1->2(AUDITSC_FAILURE) */
-> -	call audit_syscall_exit
-> +	call __audit_syscall_exit
+Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
+---
+ arch/powerpc/include/asm/cputable.h |    1 +
+ arch/powerpc/include/asm/mmu.h      |    9 +++++++++
+ arch/powerpc/kernel/cpu_setup_44x.S |    1 +
+ arch/powerpc/kernel/cputable.c      |   16 ++++++++++++++++
+ 4 files changed, 27 insertions(+), 0 deletions(-)
 
-With or without this patch, can't we call audit_syscall_exit() twice
-if there is something else in _TIF_WORK_SYSCALL_EXIT mask apart from
-SYSCALL_AUDIT ? First time it is called from asm, then from
-syscall_trace_leave(), no?
-
-For example. The task has TIF_SYSCALL_AUDIT and nothing else, it does
-system_call->auditsys->system_call_fastpath. What if it gets, say,
-TIF_SYSCALL_TRACE before ret_from_sys_call?
-
-Oleg.
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index c0d842c..ce709b5 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -26,6 +26,7 @@
+ #define PPC_FEATURE_POWER6_EXT		0x00000200
+ #define PPC_FEATURE_ARCH_2_06		0x00000100
+ #define PPC_FEATURE_HAS_VSX		0x00000080
++#define PPC_FEATURE_HAS_FPU_FP2		0x00000040
+ 
+ #define PPC_FEATURE_PSERIES_PERFMON_COMPAT \
+ 					0x00000040
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 4138b21..97f9502 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -56,6 +56,13 @@
+  */
+ #define MMU_FTR_NEED_DTLB_SW_LRU	ASM_CONST(0x00200000)
+ 
++/* This indicates that the processor must using writethrough with
++ * the L1 in order to maintain SMP coherence on systems like the
++ * IBM BlueGene/L and IBM BlueGene/P.
++ */
++
++#define MMU_FTR_NEED_L1_WRITETHROUGH	ASM_CONST(0x00400000)
++
+ /* Enable use of TLB reservation.  Processor should support tlbsrx.
+  * instruction and MAS0[WQ].
+  */
+@@ -112,6 +119,8 @@
+ 				MMU_FTR_USE_PAIRED_MAS | \
+ 				MMU_FTR_TLBIEL | \
+ 				MMU_FTR_16M_PAGE
++#define MMU_FTRS_BGP		MMU_FTR_TYPE_44x | MMU_FTR_16M_PAGE | \
++				MMU_FTR_NEED_L1_WRITETHROUGH
+ #ifndef __ASSEMBLY__
+ #include <asm/cputable.h>
+ 
+diff --git a/arch/powerpc/kernel/cpu_setup_44x.S b/arch/powerpc/kernel/cpu_setup_44x.S
+index e32b4a9..920aed6 100644
+--- a/arch/powerpc/kernel/cpu_setup_44x.S
++++ b/arch/powerpc/kernel/cpu_setup_44x.S
+@@ -35,6 +35,7 @@ _GLOBAL(__setup_cpu_440grx)
+ _GLOBAL(__setup_cpu_460ex)
+ _GLOBAL(__setup_cpu_460gt)
+ _GLOBAL(__setup_cpu_460sx)
++_GLOBAL(__setup_cpu_bgp)
+ _GLOBAL(__setup_cpu_apm821xx)
+ 	mflr	r4
+ 	bl	__init_fpu_44x
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 34d2722..550a078 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -57,6 +57,7 @@ extern void __setup_cpu_750fx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_7400(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_7410(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_745x(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_bgp(unsigned long offset, struct cpu_spec* spec);
+ #endif /* CONFIG_PPC32 */
+ #ifdef CONFIG_PPC64
+ extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
+@@ -1737,6 +1738,21 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_440A,
+ 		.platform		= "ppc440",
+ 	},
++	{ /* Blue Gene/P */
++		.pvr_mask		= 0xfffffff0,
++		.pvr_value		= 0x52131880,
++		.cpu_name		= "450 Blue Gene/P",
++		.cpu_features		= CPU_FTRS_440x6,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++						PPC_FEATURE_HAS_FPU |
++						PPC_FEATURE_HAS_FPU_FP2,
++		.mmu_features		= MMU_FTRS_BGP,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_bgp,
++		.machine_check		= machine_check_440A,
++		.platform		= "ppc440",
++	},
+ 	{ /* 460EX */
+ 		.pvr_mask		= 0xffff0006,
+ 		.pvr_value		= 0x13020002,
+-- 
+1.7.4.1
