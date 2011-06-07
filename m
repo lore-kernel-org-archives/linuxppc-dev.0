@@ -1,27 +1,26 @@
 Return-Path: <trinabh@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com",
+	(Client CN "e23smtp03.au.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B1D8BB6FB9
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 02:29:43 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id ABFBDB6FBA
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 02:29:54 +1000 (EST)
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id p57GNoJK031717
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:23:50 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p57GOrs0021287
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:24:53 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
 	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p57GSqfe1302644
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:28:52 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p57GTgJ2022608
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:29:42 +1000
+	p57GT4GB1302678
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:29:04 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p57GTrgM012825
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2011 02:29:54 +1000
 From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 2/7] cpuidle: replace xen access to x86 pm_idle and
-	default_idle
+Subject: [RFC PATCH V1 3/7] cpuidle: stop using pm_idle
 To: linux-pm@lists.linux-foundation.org, linuxppc-dev@ozlabs.org
-Date: Tue, 07 Jun 2011 21:59:38 +0530
-Message-ID: <20110607162933.6848.14665.stgit@tringupt.in.ibm.com>
+Date: Tue, 07 Jun 2011 21:59:50 +0530
+Message-ID: <20110607162947.6848.79430.stgit@tringupt.in.ibm.com>
 In-Reply-To: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
 References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
 MIME-Version: 1.0
@@ -38,76 +37,247 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Len Brown <len.brown@intel.com>
 
-When a Xen Dom0 kernel boots on a hypervisor, it gets access
-to the raw-hardware ACPI tables.  While it parses the idle tables
-for the hypervisor's beneift, it uses HLT for its own idle.
+pm_idle does not scale as an idle handler registration mechanism.
+Don't use it for cpuidle.  Instead, call cpuidle directly, and
+allow architectures to use pm_idle as an arch-specific default
+if they need it.  ie.
 
-Rather than have xen scribble on pm_idle and access default_idle,
-have it simply disable_cpuidle() so acpi_idle will not load and
-architecture default HLT will be used.
+cpu_idle()
+	...
+	if(cpuidle_call_idle())
+		pm_idle();
 
-cc: xen-devel@lists.xensource.com
+cc: x86@kernel.org
+cc: Kevin Hilman <khilman@deeprootsystems.com>
+cc: Paul Mundt <lethal@linux-sh.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
 
- arch/x86/xen/setup.c      |    3 ++-
- drivers/cpuidle/cpuidle.c |    4 ++++
- include/linux/cpuidle.h   |    2 ++
- 3 files changed, 8 insertions(+), 1 deletions(-)
+ arch/arm/kernel/process.c    |    4 +++-
+ arch/sh/kernel/idle.c        |    6 ++++--
+ arch/x86/kernel/process_32.c |    4 +++-
+ arch/x86/kernel/process_64.c |    4 +++-
+ drivers/cpuidle/cpuidle.c    |   39 ++++++++++++++++++---------------------
+ include/linux/cpuidle.h      |    2 ++
+ 6 files changed, 33 insertions(+), 26 deletions(-)
 
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index be1a464..ab1a916 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -9,6 +9,7 @@
- #include <linux/mm.h>
- #include <linux/pm.h>
- #include <linux/memblock.h>
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index 5e1e541..d7ee0d4 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -30,6 +30,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/random.h>
+ #include <linux/hw_breakpoint.h>
 +#include <linux/cpuidle.h>
  
- #include <asm/elf.h>
- #include <asm/vdso.h>
-@@ -424,7 +425,7 @@ void __init xen_arch_setup(void)
- #ifdef CONFIG_X86_32
- 	boot_cpu_data.hlt_works_ok = 1;
- #endif
--	pm_idle = default_idle;
-+	disable_cpuidle();
- 	boot_option_idle_override = IDLE_HALT;
+ #include <asm/cacheflush.h>
+ #include <asm/leds.h>
+@@ -196,7 +197,8 @@ void cpu_idle(void)
+ 				cpu_relax();
+ 			} else {
+ 				stop_critical_timings();
+-				pm_idle();
++				if (cpuidle_call_idle())
++					pm_idle();
+ 				start_critical_timings();
+ 				/*
+ 				 * This will eventually be removed - pm_idle
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 425d604..9c7099e 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -16,12 +16,13 @@
+ #include <linux/thread_info.h>
+ #include <linux/irqflags.h>
+ #include <linux/smp.h>
++#include <linux/cpuidle.h>
+ #include <asm/pgalloc.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/smp.h>
  
- 	fiddle_vdso();
+-void (*pm_idle)(void) = NULL;
++static void (*pm_idle)(void);
+ 
+ static int hlt_counter;
+ 
+@@ -100,7 +101,8 @@ void cpu_idle(void)
+ 			local_irq_disable();
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (cpuidle_call_idle())
++				pm_idle();
+ 			/*
+ 			 * Sanity check to ensure that pm_idle() returns
+ 			 * with IRQs enabled
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 8d12878..61fadbe 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -38,6 +38,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/kdebug.h>
++#include <linux/cpuidle.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+@@ -109,7 +110,8 @@ void cpu_idle(void)
+ 			local_irq_disable();
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (cpuidle_idle_call())
++				pm_idle();
+ 			start_critical_timings();
+ 		}
+ 		tick_nohz_restart_sched_tick();
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 6c9dd92..62c219a 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -37,6 +37,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/ftrace.h>
++#include <linux/cpuidle.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+@@ -136,7 +137,8 @@ void cpu_idle(void)
+ 			enter_idle();
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (cpuidle_idle_call())
++				pm_idle();
+ 			start_critical_timings();
+ 
+ 			/* In many cases the interrupt that ended idle
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index a171b9e..8d7303b 100644
+index 8d7303b..304e378 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -34,6 +34,10 @@ int cpuidle_disabled(void)
- {
- 	return off;
- }
-+void disable_cpuidle(void)
-+{
-+	off = 1;
-+}
+@@ -25,10 +25,10 @@ DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
  
- #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
- static void cpuidle_kick_cpus(void)
+ DEFINE_MUTEX(cpuidle_lock);
+ LIST_HEAD(cpuidle_detected_devices);
+-static void (*pm_idle_old)(void);
+ 
+ static int enabled_devices;
+ static int off __read_mostly;
++static int initialized __read_mostly;
+ 
+ int cpuidle_disabled(void)
+ {
+@@ -56,27 +56,24 @@ static int __cpuidle_register_device(struct cpuidle_device *dev);
+  * cpuidle_idle_call - the main idle loop
+  *
+  * NOTE: no locks or semaphores should be used here
++ * return non-zero on failure
+  */
+-static void cpuidle_idle_call(void)
++int cpuidle_idle_call(void)
+ {
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_driver();
+ 	struct cpuidle_state *target_state;
+ 	int next_state, entered_state;
+ 
+-	/* check if the device is ready */
+-	if (!dev || !dev->enabled) {
+-		if (pm_idle_old)
+-			pm_idle_old();
+-		else
+-#if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+-			default_idle();
+-#else
+-			local_irq_enable();
+-#endif
+-		return;
+-	}
++	if (off)
++		return -ENODEV;
++
++	if (!initialized)
++		return -ENODEV;
+ 
++	/* check if the device is ready */
++	if (!dev || !dev->enabled)
++		return -EBUSY;
+ #if 0
+ 	/* shows regressions, re-enable for 2.6.29 */
+ 	/*
+@@ -90,7 +87,7 @@ static void cpuidle_idle_call(void)
+ 	next_state = cpuidle_curr_governor->select(drv, dev);
+ 	if (need_resched()) {
+ 		local_irq_enable();
+-		return;
++		return 0;
+ 	}
+ 
+ 	target_state = &drv->states[next_state];
+@@ -116,6 +113,8 @@ static void cpuidle_idle_call(void)
+ 	/* give the governor an opportunity to reflect on the outcome */
+ 	if (cpuidle_curr_governor->reflect)
+ 		cpuidle_curr_governor->reflect(dev, entered_state);
++
++	return 0;
+ }
+ 
+ /**
+@@ -123,10 +122,10 @@ static void cpuidle_idle_call(void)
+  */
+ void cpuidle_install_idle_handler(void)
+ {
+-	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
++	if (enabled_devices) {
+ 		/* Make sure all changes finished before we switch to new idle */
+ 		smp_wmb();
+-		pm_idle = cpuidle_idle_call;
++		initialized = 1;
+ 	}
+ }
+ 
+@@ -135,8 +134,8 @@ void cpuidle_install_idle_handler(void)
+  */
+ void cpuidle_uninstall_idle_handler(void)
+ {
+-	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+-		pm_idle = pm_idle_old;
++	if (enabled_devices) {
++		initialized = 0;
+ 		cpuidle_kick_cpus();
+ 	}
+ }
+@@ -410,8 +409,6 @@ static int __init cpuidle_init(void)
+ 	if (cpuidle_disabled())
+ 		return -ENODEV;
+ 
+-	pm_idle_old = pm_idle;
+-
+ 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+ 	if (ret)
+ 		return ret;
 diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1e85538..2786787 100644
+index 2786787..c904188 100644
 --- a/include/linux/cpuidle.h
 +++ b/include/linux/cpuidle.h
-@@ -127,6 +127,7 @@ struct cpuidle_driver {
- };
+@@ -128,6 +128,7 @@ struct cpuidle_driver {
  
  #ifdef CONFIG_CPU_IDLE
-+extern void disable_cpuidle(void);
+ extern void disable_cpuidle(void);
++extern int cpuidle_idle_call(void);
  
  extern int cpuidle_register_driver(struct cpuidle_driver *drv);
  struct cpuidle_driver *cpuidle_get_driver(void);
-@@ -140,6 +141,7 @@ extern int cpuidle_enable_device(struct cpuidle_device *dev);
- extern void cpuidle_disable_device(struct cpuidle_device *dev);
+@@ -142,6 +143,7 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
  
  #else
-+static inline void disable_cpuidle(void) { }
+ static inline void disable_cpuidle(void) { }
++static inline int cpuidle_idle_call(void) { return -ENODEV; }
  
  static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
  {return -ENODEV; }
