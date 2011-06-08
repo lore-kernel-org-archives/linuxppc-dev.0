@@ -1,26 +1,12 @@
-Return-Path: <ericvh@gmail.com>
-Received: from mail-fx0-f51.google.com (mail-fx0-f51.google.com
-	[209.85.161.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE27EB6FA9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jun 2011 12:10:36 +1000 (EST)
-Received: by fxm5 with SMTP id 5so31666fxm.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 07 Jun 2011 19:10:31 -0700 (PDT)
+Return-Path: <B32579@freescale.com>
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree-discuss@lists.ozlabs.org>
+Subject: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
+Date: Wed, 8 Jun 2011 08:19:39 +0530
+Message-ID: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1307494181.2874.214.camel@pasglop>
-References: <1307472447-1656-1-git-send-email-ericvh@gmail.com>
-	<1307494181.2874.214.camel@pasglop>
-Date: Tue, 7 Jun 2011 21:10:31 -0500
-Message-ID: <BANLkTik596Oo4MTmKO62pmF2yXhYv8Nsvg@mail.gmail.com>
-Subject: Re: [PATCH] [RFC][V3] bluegene: add entry to cpu table
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	bg-linux@lists.anl-external.org
+Content-Type: text/plain
+Cc: meet2prabhu@gmail.com, Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,13 +16,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> +#define PPC_FEATURE_HAS_FPU_FP2 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00000040
->
-> Any chance for a better name ?
->
+ten-bit interface (TBI) module is part of SoC not board.
 
-That's the official external name,  it sucks.  I'm happy to
-PPC_FEATURE_DOUBLE_HUMMER if you'd prefer, otherwise I'm not feeling
-too creative, but am open to artistic suggestions.
+Move tbi entries from board related dts files to Si dts.
 
-       -eric
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+---
+ Based upon http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
+
+ arch/powerpc/boot/dts/p1020rdb.dts            |    9 ---------
+ arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    8 --------
+ arch/powerpc/boot/dts/p1020si.dtsi            |    6 +++++-
+ arch/powerpc/boot/dts/p2020rdb.dts            |    8 --------
+ arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 --------
+ arch/powerpc/boot/dts/p2020si.dtsi            |    6 +++++-
+ 6 files changed, 10 insertions(+), 35 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
+index d6a8ae4..a4e5d6c 100644
+--- a/arch/powerpc/boot/dts/p1020rdb.dts
++++ b/arch/powerpc/boot/dts/p1020rdb.dts
+@@ -211,14 +211,6 @@
+ 			};
+ 		};
+ 
+-		mdio@25000 {
+-
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@b0000 {
+ 			fixed-link = <1 1 1000 0 0>;
+ 			phy-connection-type = "rgmii-id";
+@@ -227,7 +219,6 @@
+ 
+ 		enet1: ethernet@b1000 {
+ 			phy-handle = <&phy0>;
+-			tbi-handle = <&tbi0>;
+ 			phy-connection-type = "sgmii";
+ 
+ 		};
+diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
+index f0bf7f4..abab234 100644
+--- a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
+@@ -114,20 +114,12 @@
+ 			};
+ 		};
+ 
+-		mdio@25000 {
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@b0000 {
+ 			status = "disabled";
+ 		};
+ 
+ 		enet1: ethernet@b1000 {
+ 			phy-handle = <&phy0>;
+-			tbi-handle = <&tbi0>;
+ 			phy-connection-type = "sgmii";
+ 		};
+ 
+diff --git a/arch/powerpc/boot/dts/p1020si.dtsi b/arch/powerpc/boot/dts/p1020si.dtsi
+index 5c5acb6..7844d2e 100644
+--- a/arch/powerpc/boot/dts/p1020si.dtsi
++++ b/arch/powerpc/boot/dts/p1020si.dtsi
+@@ -190,7 +190,10 @@
+ 			#size-cells = <0>;
+ 			compatible = "fsl,etsec2-tbi";
+ 			reg = <0x25000 0x1000 0xb1030 0x4>;
+-
++			tbi0: tbi-phy@11 {
++				reg = <0x11>;
++				device_type = "tbi-phy";
++			};
+ 		};
+ 
+ 		enet0: ethernet@b0000 {
+@@ -229,6 +232,7 @@
+ 			fsl,num_tx_queues = <0x8>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi0>;
+ 
+ 			queue-group@0 {
+ 				#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+index 1d7a05f..2941cbb 100644
+--- a/arch/powerpc/boot/dts/p2020rdb.dts
++++ b/arch/powerpc/boot/dts/p2020rdb.dts
+@@ -213,13 +213,6 @@
+ 				};
+ 		};
+ 
+-		mdio@25520 {
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		mdio@26520 {
+ 			status = "disabled";
+ 		};
+@@ -243,7 +236,6 @@
+ 		};
+ 
+ 		enet1: ethernet@25000 {
+-			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
+ 			phy-connection-type = "sgmii";
+ 		};
+diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+index fc8dddd..4641f3d 100644
+--- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
++++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+@@ -124,13 +124,6 @@
+ 			};
+ 		};
+ 
+-		mdio@25520 {
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		mdio@26520 {
+ 			status = "disabled";
+ 		};
+@@ -140,7 +133,6 @@
+ 		};
+ 
+ 		enet1: ethernet@25000 {
+-			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
+ 			phy-connection-type = "sgmii";
+ 
+diff --git a/arch/powerpc/boot/dts/p2020si.dtsi b/arch/powerpc/boot/dts/p2020si.dtsi
+index 6def17f..9317075 100644
+--- a/arch/powerpc/boot/dts/p2020si.dtsi
++++ b/arch/powerpc/boot/dts/p2020si.dtsi
+@@ -235,6 +235,10 @@
+ 			#size-cells = <0>;
+ 			compatible = "fsl,gianfar-tbi";
+ 			reg = <0x26520 0x20>;
++			tbi0: tbi-phy@11 {
++				reg = <0x11>;
++				device_type = "tbi-phy";
++			};
+ 		};
+ 
+ 		mdio@26520 {
+@@ -270,7 +274,7 @@
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+-
++			tbi-handle = <&tbi0>;
+ 		};
+ 
+ 		enet2: ethernet@26000 {
+-- 
+1.7.3
