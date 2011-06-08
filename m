@@ -1,19 +1,23 @@
-Return-Path: <B06378@freescale.com>
-Received: from CH1EHSOBE013.bigfish.com (ch1ehsobe002.messaging.microsoft.com
-	[216.32.181.182]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A07C8B7006
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jun 2011 18:39:16 +1000 (EST)
-From: Jiajun Wu <b06378@freescale.com>
-To: <netdev@vger.kernel.org>, <davem@davemloft.net>
-Subject: [PATCH] gianfar:localized filer table
-Date: Wed, 8 Jun 2011 15:46:51 +0800
-Message-ID: <1307519211-3540-1-git-send-email-b06378@freescale.com>
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 797FBB700B
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 20:51:08 +1000 (EST)
+Received: by fxm1 with SMTP id 1so288510fxm.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Jun 2011 03:51:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Jiajun Wu <b06378@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20110607142213.2851f92e@schlenkerla.am.freescale.net>
+References: <BANLkTi=TVsXiWR1qS5upnM31kVk9qqXTmw@mail.gmail.com>
+	<20110607142213.2851f92e@schlenkerla.am.freescale.net>
+Date: Wed, 8 Jun 2011 16:21:03 +0530
+Message-ID: <BANLkTino1HgB2SL=S6ZeZ-z3o1MczWJ+8w@mail.gmail.com>
+Subject: Re: [gianfar]bandwidth management problem on mpc8313 based board
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,281 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Each eTSEC device should own localized filer table.
+Hello Scott,
 
-Signed-off-by: Jiajun Wu <b06378@freescale.com>
----
- drivers/net/gianfar.c         |   29 ++++++++----------
- drivers/net/gianfar.h         |    8 +++--
- drivers/net/gianfar_ethtool.c |   64 +++++++++++++++++++++--------------------
- 3 files changed, 51 insertions(+), 50 deletions(-)
+Thanks for the prompt reply.
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index ff60b23..2dfcc80 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -10,7 +10,7 @@
-  * Maintainer: Kumar Gala
-  * Modifier: Sandeep Gopalpet <sandeep.kumar@freescale.com>
-  *
-- * Copyright 2002-2009 Freescale Semiconductor, Inc.
-+ * Copyright 2002-2009, 2011 Freescale Semiconductor, Inc.
-  * Copyright 2007 MontaVista Software, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-@@ -476,9 +476,6 @@ static const struct net_device_ops gfar_netdev_ops = {
- #endif
- };
- 
--unsigned int ftp_rqfpr[MAX_FILER_IDX + 1];
--unsigned int ftp_rqfcr[MAX_FILER_IDX + 1];
--
- void lock_rx_qs(struct gfar_private *priv)
- {
- 	int i = 0x0;
-@@ -868,28 +865,28 @@ static u32 cluster_entry_per_class(struct gfar_private *priv, u32 rqfar,
- 
- 	rqfar--;
- 	rqfcr = RQFCR_CLE | RQFCR_PID_MASK | RQFCR_CMP_EXACT;
--	ftp_rqfpr[rqfar] = rqfpr;
--	ftp_rqfcr[rqfar] = rqfcr;
-+	priv->ftp_rqfpr[rqfar] = rqfpr;
-+	priv->ftp_rqfcr[rqfar] = rqfcr;
- 	gfar_write_filer(priv, rqfar, rqfcr, rqfpr);
- 
- 	rqfar--;
- 	rqfcr = RQFCR_CMP_NOMATCH;
--	ftp_rqfpr[rqfar] = rqfpr;
--	ftp_rqfcr[rqfar] = rqfcr;
-+	priv->ftp_rqfpr[rqfar] = rqfpr;
-+	priv->ftp_rqfcr[rqfar] = rqfcr;
- 	gfar_write_filer(priv, rqfar, rqfcr, rqfpr);
- 
- 	rqfar--;
- 	rqfcr = RQFCR_CMP_EXACT | RQFCR_PID_PARSE | RQFCR_CLE | RQFCR_AND;
- 	rqfpr = class;
--	ftp_rqfcr[rqfar] = rqfcr;
--	ftp_rqfpr[rqfar] = rqfpr;
-+	priv->ftp_rqfcr[rqfar] = rqfcr;
-+	priv->ftp_rqfpr[rqfar] = rqfpr;
- 	gfar_write_filer(priv, rqfar, rqfcr, rqfpr);
- 
- 	rqfar--;
- 	rqfcr = RQFCR_CMP_EXACT | RQFCR_PID_MASK | RQFCR_AND;
- 	rqfpr = class;
--	ftp_rqfcr[rqfar] = rqfcr;
--	ftp_rqfpr[rqfar] = rqfpr;
-+	priv->ftp_rqfcr[rqfar] = rqfcr;
-+	priv->ftp_rqfpr[rqfar] = rqfpr;
- 	gfar_write_filer(priv, rqfar, rqfcr, rqfpr);
- 
- 	return rqfar;
-@@ -904,8 +901,8 @@ static void gfar_init_filer_table(struct gfar_private *priv)
- 
- 	/* Default rule */
- 	rqfcr = RQFCR_CMP_MATCH;
--	ftp_rqfcr[rqfar] = rqfcr;
--	ftp_rqfpr[rqfar] = rqfpr;
-+	priv->ftp_rqfcr[rqfar] = rqfcr;
-+	priv->ftp_rqfpr[rqfar] = rqfpr;
- 	gfar_write_filer(priv, rqfar, rqfcr, rqfpr);
- 
- 	rqfar = cluster_entry_per_class(priv, rqfar, RQFPR_IPV6);
-@@ -921,8 +918,8 @@ static void gfar_init_filer_table(struct gfar_private *priv)
- 	/* Rest are masked rules */
- 	rqfcr = RQFCR_CMP_NOMATCH;
- 	for (i = 0; i < rqfar; i++) {
--		ftp_rqfcr[i] = rqfcr;
--		ftp_rqfpr[i] = rqfpr;
-+		priv->ftp_rqfcr[i] = rqfcr;
-+		priv->ftp_rqfpr[i] = rqfpr;
- 		gfar_write_filer(priv, i, rqfcr, rqfpr);
- 	}
- }
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index fc86f51..ba36dc7 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -9,7 +9,7 @@
-  * Maintainer: Kumar Gala
-  * Modifier: Sandeep Gopalpet <sandeep.kumar@freescale.com>
-  *
-- * Copyright 2002-2009 Freescale Semiconductor, Inc.
-+ * Copyright 2002-2009, 2011 Freescale Semiconductor, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -1107,10 +1107,12 @@ struct gfar_private {
- 	/* HW time stamping enabled flag */
- 	int hwts_rx_en;
- 	int hwts_tx_en;
-+
-+	/*Filer table*/
-+	unsigned int ftp_rqfpr[MAX_FILER_IDX + 1];
-+	unsigned int ftp_rqfcr[MAX_FILER_IDX + 1];
- };
- 
--extern unsigned int ftp_rqfpr[MAX_FILER_IDX + 1];
--extern unsigned int ftp_rqfcr[MAX_FILER_IDX + 1];
- 
- static inline int gfar_has_errata(struct gfar_private *priv,
- 				  enum gfar_errata err)
-diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
-index 493d743..239e333 100644
---- a/drivers/net/gianfar_ethtool.c
-+++ b/drivers/net/gianfar_ethtool.c
-@@ -9,7 +9,7 @@
-  *  Maintainer: Kumar Gala
-  *  Modifier: Sandeep Gopalpet <sandeep.kumar@freescale.com>
-  *
-- *  Copyright 2003-2006, 2008-2009 Freescale Semiconductor, Inc.
-+ *  Copyright 2003-2006, 2008-2009, 2011 Freescale Semiconductor, Inc.
-  *
-  *  This software may be used and distributed according to
-  *  the terms of the GNU Public License, Version 2, incorporated herein
-@@ -609,15 +609,15 @@ static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- 	if (ethflow & RXH_L2DA) {
- 		fcr = RQFCR_PID_DAH |RQFCR_CMP_NOMATCH |
- 			RQFCR_HASH | RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 
- 		fcr = RQFCR_PID_DAL | RQFCR_AND | RQFCR_CMP_NOMATCH |
- 				RQFCR_HASH | RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
-@@ -626,16 +626,16 @@ static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- 		fcr = RQFCR_PID_VID | RQFCR_CMP_NOMATCH | RQFCR_HASH |
- 				RQFCR_AND | RQFCR_HASHTBL_0;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
- 
- 	if (ethflow & RXH_IP_SRC) {
- 		fcr = RQFCR_PID_SIA | RQFCR_CMP_NOMATCH | RQFCR_HASH |
- 			RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
-@@ -643,8 +643,8 @@ static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- 	if (ethflow & (RXH_IP_DST)) {
- 		fcr = RQFCR_PID_DIA | RQFCR_CMP_NOMATCH | RQFCR_HASH |
- 			RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
-@@ -652,8 +652,8 @@ static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- 	if (ethflow & RXH_L3_PROTO) {
- 		fcr = RQFCR_PID_L4P | RQFCR_CMP_NOMATCH | RQFCR_HASH |
- 			RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
-@@ -661,8 +661,8 @@ static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- 	if (ethflow & RXH_L4_B_0_1) {
- 		fcr = RQFCR_PID_SPT | RQFCR_CMP_NOMATCH | RQFCR_HASH |
- 			RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
-@@ -670,8 +670,8 @@ static void ethflow_to_filer_rules (struct gfar_private *priv, u64 ethflow)
- 	if (ethflow & RXH_L4_B_2_3) {
- 		fcr = RQFCR_PID_DPT | RQFCR_CMP_NOMATCH | RQFCR_HASH |
- 			RQFCR_AND | RQFCR_HASHTBL_0;
--		ftp_rqfpr[priv->cur_filer_idx] = fpr;
--		ftp_rqfcr[priv->cur_filer_idx] = fcr;
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = fpr;
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = fcr;
- 		gfar_write_filer(priv, priv->cur_filer_idx, fcr, fpr);
- 		priv->cur_filer_idx = priv->cur_filer_idx - 1;
- 	}
-@@ -705,12 +705,12 @@ static int gfar_ethflow_to_filer_table(struct gfar_private *priv, u64 ethflow, u
- 	}
- 
- 	for (i = 0; i < MAX_FILER_IDX + 1; i++) {
--		local_rqfpr[j] = ftp_rqfpr[i];
--		local_rqfcr[j] = ftp_rqfcr[i];
-+		local_rqfpr[j] = priv->ftp_rqfpr[i];
-+		local_rqfcr[j] = priv->ftp_rqfcr[i];
- 		j--;
--		if ((ftp_rqfcr[i] == (RQFCR_PID_PARSE |
-+		if ((priv->ftp_rqfcr[i] == (RQFCR_PID_PARSE |
- 			RQFCR_CLE |RQFCR_AND)) &&
--			(ftp_rqfpr[i] == cmp_rqfpr))
-+			(priv->ftp_rqfpr[i] == cmp_rqfpr))
- 			break;
- 	}
- 
-@@ -724,20 +724,22 @@ static int gfar_ethflow_to_filer_table(struct gfar_private *priv, u64 ethflow, u
- 	 * if it was already programmed, we need to overwrite these rules
- 	 */
- 	for (l = i+1; l < MAX_FILER_IDX; l++) {
--		if ((ftp_rqfcr[l] & RQFCR_CLE) &&
--			!(ftp_rqfcr[l] & RQFCR_AND)) {
--			ftp_rqfcr[l] = RQFCR_CLE | RQFCR_CMP_EXACT |
-+		if ((priv->ftp_rqfcr[l] & RQFCR_CLE) &&
-+			!(priv->ftp_rqfcr[l] & RQFCR_AND)) {
-+			priv->ftp_rqfcr[l] = RQFCR_CLE | RQFCR_CMP_EXACT |
- 				RQFCR_HASHTBL_0 | RQFCR_PID_MASK;
--			ftp_rqfpr[l] = FPR_FILER_MASK;
--			gfar_write_filer(priv, l, ftp_rqfcr[l], ftp_rqfpr[l]);
-+			priv->ftp_rqfpr[l] = FPR_FILER_MASK;
-+			gfar_write_filer(priv, l, priv->ftp_rqfcr[l],
-+				priv->ftp_rqfpr[l]);
- 			break;
- 		}
- 
--		if (!(ftp_rqfcr[l] & RQFCR_CLE) && (ftp_rqfcr[l] & RQFCR_AND))
-+		if (!(priv->ftp_rqfcr[l] & RQFCR_CLE) &&
-+			(priv->ftp_rqfcr[l] & RQFCR_AND))
- 			continue;
- 		else {
--			local_rqfpr[j] = ftp_rqfpr[l];
--			local_rqfcr[j] = ftp_rqfcr[l];
-+			local_rqfpr[j] = priv->ftp_rqfpr[l];
-+			local_rqfcr[j] = priv->ftp_rqfcr[l];
- 			j--;
- 		}
- 	}
-@@ -750,8 +752,8 @@ static int gfar_ethflow_to_filer_table(struct gfar_private *priv, u64 ethflow, u
- 
- 	/* Write back the popped out rules again */
- 	for (k = j+1; k < MAX_FILER_IDX; k++) {
--		ftp_rqfpr[priv->cur_filer_idx] = local_rqfpr[k];
--		ftp_rqfcr[priv->cur_filer_idx] = local_rqfcr[k];
-+		priv->ftp_rqfpr[priv->cur_filer_idx] = local_rqfpr[k];
-+		priv->ftp_rqfcr[priv->cur_filer_idx] = local_rqfcr[k];
- 		gfar_write_filer(priv, priv->cur_filer_idx,
- 				local_rqfcr[k], local_rqfpr[k]);
- 		if (!priv->cur_filer_idx)
--- 
-1.5.6.5
+> What's your CPU utilization?  The CPU may just not be able to keep up wit=
+h
+> that much traffic, with the software you're running.
+The software I am using to check bandwidth is 'iperf'. Without running iper=
+f the
+CPU utilization varies around 30-50% and with iperf running it shoots
+upto 99.9%.
+
+> What packet size are you using?
+The packet size is - 1518 + VLAN_Tag (4Bytes) =3D 1522 Bytes
+
+Another point which I would like to clear is that mpc8313 has eth0 (eTsec1)=
+ of
+1Gbps, if more than 50% of CPU Time is available then why the total bandwid=
+th
+should limit to less than 100 Mbps?  At least 400Mbps should be expected, p=
+lease
+correct if I am wrong!
+
+Please acknowledge, thanks.
+
+Kind Regards,
+Vijay Nikam
+
+
+On Wed, Jun 8, 2011 at 12:52 AM, Scott Wood <scottwood@freescale.com> wrote=
+:
+> On Tue, 7 Jun 2011 18:32:37 +0530
+> Vijay Nikam <vijay.t.nikam@gmail.com> wrote:
+>
+>> Dear All,
+>>
+>> I have mpc8313 powerpc based board with silicon revision 2.1. the
+>> processor has two ETH ports (eTsec1 and eTsec2) i.e. eth0 and eth1.
+>> eth0 is 1Gbps port and eth1 is 100Mbps port. On board there is L2
+>> switch from TANTOS2G (psb6972) supports one port 1Gbps,
+>> and from switch there are 4 more eth ports derived which are 100Mbps
+>> ports and port based VLAN is configured for this purpose.
+>>
+>> The interface between switch and eth0 (port of processor) is RGMII. So
+>> the processor port and switch port are connected on 1Gbps Link.
+>> The other 4 derived ports (100Mbps) are used to connect to external worl=
+d.
+>> On this board Embedded Linux is running of kernel version 2.6.23 with HR=
+T patch.
+>
+> That's rather old.
+>
+>> The ethernet controller driver in use is "gianfar" version 1.3
+>> The driver is configured properly as it determines both links 1000Mbps
+>> (eth0) and 100Mbps (eth1) also verified with ethtool.
+>>
+>> After this I started to perform bandwidth test using iperf tool.
+>> When I performed this test on one port out of 4 derived ports I am
+>> getting bandwidth in the range of 80-85Mbps
+>> but when the same test is performed on 2 ports simultaneously then the
+>> per port bandwidth is reduced to 40-45Mbps.
+>>
+>> But my understanding is all of the 4 ports should support 100Mbps
+>> bandwidth simultaneously (as base port is 1Gbps).
+>> Then why bandwidth gets reduced when more than one port are
+>> communicating simultaneously?
+>> Any reason or suggestion I should check for this problem?
+>
+> What's your CPU utilization? =A0The CPU may just not be able to keep up w=
+ith
+> that much traffic, with the software you're running.
+>
+> What packet size are you using?
+>
+> -Scott
+>
+>
