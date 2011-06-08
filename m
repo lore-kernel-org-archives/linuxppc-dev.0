@@ -1,35 +1,24 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id BFE84B6FDA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Jun 2011 05:22:01 +1000 (EST)
-Date: Wed, 8 Jun 2011 21:19:10 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
-	ptrace.h
-Message-ID: <20110608191910.GA18698@redhat.com>
-References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-	<20110607171952.GA25729@redhat.com>
-	<1307472796.2052.12.camel@localhost.localdomain>
-	<20110608163653.GA9592@redhat.com>
-	<1307556823.2577.5.camel@localhost.localdomain>
-	<20110608183720.GA16883@redhat.com>
+Return-Path: <B04825@freescale.com>
+Received: from CH1EHSOBE008.bigfish.com (ch1ehsobe001.messaging.microsoft.com
+	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 426F6B6FD3
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jun 2011 06:02:06 +1000 (EST)
+Received: from mail197-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail197-ch1-R.bigfish.com (Postfix) with ESMTP id EDA6F17B04EA	for
+	<linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 20:02:02 +0000 (UTC)
+Received: from CH1EHSMHS025.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.252])	by mail197-ch1.bigfish.com (Postfix) with ESMTP id
+	C68B67804B
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 20:02:02 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: powerpc/p1022ds: add missing iounmap calls to platform file
+Date: Wed, 8 Jun 2011 15:01:57 -0500
+Message-ID: <1307563317-13009-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110608183720.GA16883@redhat.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
-	paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
-	linux-s390@vger.kernel.org, richard@nod.at, x86@kernel.org,
-	mingo@redhat.com, fenghua.yu@intel.com,
-	user-mode-linux-devel@lists.sourceforge.net,
-	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
-	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
-	tony.luck@intel.com, linux-kernel@vger.kernel.org,
-	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
-	linux390@de.ibm.com, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,48 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/08, Oleg Nesterov wrote:
->
-> OK. Thanks a lot Eric for your explanations.
+The platform file for the Freecale P1022DS reference board is not freeing
+the ioremap() mapping of the PIXIS and global utilities nodes it creates.
 
-Yes. but may I ask another one?
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/platforms/85xx/p1022_ds.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-Shouldn't copy_process()->audit_alloc(tsk) path do
-clear_tsk_thread_flag(tsk, TIF_SYSCALL_AUDIT) if it doesn't
-set tsk->audit_context?
-
-I can be easily wrong, but afaics otherwise the child can run
-with TIF_SYSCALL_AUDIT bit copied from parent's thread_info by
-dup_task_struct()->setup_thread_stack() and without ->audit_context,
-right? For what?
-
-Any other reason why audit_syscall_entry() checks context != NULL?
-
-IOW. Any reason the patch below is wrong?
-
-I am just curious, thanks.
-
-Oleg.
-
---- x/kernel/auditsc.c
-+++ x/kernel/auditsc.c
-@@ -885,6 +885,8 @@ int audit_alloc(struct task_struct *tsk)
- 	if (likely(!audit_ever_enabled))
- 		return 0; /* Return if not auditing. */
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index 7eb5c40..e083e1f 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -129,6 +129,7 @@ static void p1022ds_set_gamma_table(int monitor_port, char *gamma_table_base)
+ static void p1022ds_set_monitor_port(int monitor_port)
+ {
+ 	struct device_node *pixis_node;
++	void __iomem *pixis;
+ 	u8 __iomem *brdcfg1;
  
-+	clear_tsk_thread_flag(tsk, TIF_SYSCALL_AUDIT);
+ 	pixis_node = of_find_compatible_node(NULL, NULL, "fsl,p1022ds-pixis");
+@@ -137,12 +138,12 @@ static void p1022ds_set_monitor_port(int monitor_port)
+ 		return;
+ 	}
+ 
+-	brdcfg1 = of_iomap(pixis_node, 0);
+-	if (!brdcfg1) {
++	pixis = of_iomap(pixis_node, 0);
++	if (!pixis) {
+ 		pr_err("p1022ds: could not map ngPIXIS registers\n");
+ 		return;
+ 	}
+-	brdcfg1 += 9;	/* BRDCFG1 is at offset 9 in the ngPIXIS */
++	brdcfg1 = pixis + 9;	/* BRDCFG1 is at offset 9 in the ngPIXIS */
+ 
+ 	switch (monitor_port) {
+ 	case 0: /* DVI */
+@@ -158,6 +159,8 @@ static void p1022ds_set_monitor_port(int monitor_port)
+ 	default:
+ 		pr_err("p1022ds: unsupported monitor port %i\n", monitor_port);
+ 	}
 +
- 	state = audit_filter_task(tsk, &key);
- 	if (likely(state == AUDIT_DISABLED))
- 		return 0;
-@@ -1591,9 +1593,7 @@ void audit_syscall_entry(int arch, int m
- 	struct audit_context *context = tsk->audit_context;
- 	enum audit_state     state;
++	iounmap(pixis);
+ }
  
--	if (unlikely(!context))
--		return;
--
-+	BUG_ON(!context);
- 	/*
- 	 * This happens only on certain architectures that make system
- 	 * calls in kernel_thread via the entry.S interface, instead of
+ /**
+@@ -201,6 +204,8 @@ void p1022ds_set_pixel_clock(unsigned int pixclock)
+ 
+ 	/* Enable the clock and set the pxclk */
+ 	setbits32(&guts->clkdvdr, CLKDVDR_PXCKEN | (pxclk << 16));
++
++	iounmap(guts);
+ }
+ 
+ /**
+-- 
+1.7.3.4
