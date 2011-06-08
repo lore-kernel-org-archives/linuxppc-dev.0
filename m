@@ -1,34 +1,25 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id A2EEFB6FD5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Jun 2011 04:39:36 +1000 (EST)
-Date: Wed, 8 Jun 2011 20:37:20 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH -v2] Audit: push audit success and retcode into arch
-	ptrace.h
-Message-ID: <20110608183720.GA16883@redhat.com>
-References: <20110603220451.23134.47368.stgit@paris.rdu.redhat.com>
-	<20110607171952.GA25729@redhat.com>
-	<1307472796.2052.12.camel@localhost.localdomain>
-	<20110608163653.GA9592@redhat.com>
-	<1307556823.2577.5.camel@localhost.localdomain>
+Return-Path: <B04825@freescale.com>
+Received: from CH1EHSOBE013.bigfish.com (ch1ehsobe002.messaging.microsoft.com
+	[216.32.181.182]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3C1F2B6FD9
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jun 2011 05:03:12 +1000 (EST)
+Received: from mail125-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail125-ch1-R.bigfish.com (Postfix) with ESMTP id EB37717082A0	for
+	<linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 19:03:08 +0000 (UTC)
+Received: from CH1EHSMHS011.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.248])	by mail125-ch1.bigfish.com (Postfix) with ESMTP id
+	C94B41BE804B	for <linuxppc-dev@ozlabs.org>;
+	Wed,  8 Jun 2011 19:03:08 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] [v2] powerpc/p1022ds: fix audio-related properties in the
+	device tree
+Date: Wed, 8 Jun 2011 14:03:05 -0500
+Message-ID: <1307559785-11007-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1307556823.2577.5.camel@localhost.localdomain>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	linux-sh@vger.kernel.org, heiko.carstens@de.ibm.com,
-	paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
-	linux-s390@vger.kernel.org, richard@nod.at, x86@kernel.org,
-	mingo@redhat.com, fenghua.yu@intel.com,
-	user-mode-linux-devel@lists.sourceforge.net,
-	microblaze-uclinux@itee.uq.edu.au, jdike@addtoit.com,
-	viro@zeniv.linux.org.uk, tglx@linutronix.de, monstr@monstr.eu,
-	tony.luck@intel.com, linux-kernel@vger.kernel.org,
-	ralf@linux-mips.org, lethal@linux-sh.org, schwidefsky@de.ibm.com,
-	linux390@de.ibm.com, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,26 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/08, Eric Paris wrote:
->
-> On Wed, 2011-06-08 at 18:36 +0200, Oleg Nesterov wrote:
-> > And I guess, all CONFIG_AUDITSYSCALL code in entry.S is only needed to
-> > microoptimize the case when TIF_SYSCALL_AUDIT is the only reason for the
-> > slow path. I wonder if it really makes the measureble difference...
->
-> All I know is what Roland put in the changelog:
->
-> Avoiding the iret return path when syscall audit is enabled helps
-> performance a lot.
->
-> I believe this was a result of Fedora starting auditd by default and
-> then Linus bitching about how slow a null syscall in a tight loop was.
-> It was an optimization for a microbenchmark.  How much it affects things
-> on a real syscall that does real work is probably going to be determined
-> by how much work is done in the syscall.
+On the Freescale P1022DS reference board, the SSI audio controller is
+connected in "asynchronous" mode to the codec's clocks, so the device tree
+needs an "fsl,ssi-asynchronous" property.
 
-and probably by how much work is done in audit_syscall_entry/exit.
+Also remove the clock-frequency property from the wm8776 node, because
+the clock is enabled only if U-Boot enables it, and U-Boot will set the
+property if the clock is enabled.  A future version of the P1022DS audio
+driver will configure the clock itself, but for now, the driver should
+not be told that the clock is running when it isn't.
 
-OK. Thanks a lot Eric for your explanations.
+Also fix the FIFO depth to 15, instead of 16.
 
-Oleg.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/boot/dts/p1022ds.dts |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/p1022ds.dts b/arch/powerpc/boot/dts/p1022ds.dts
+index 4f685a7..98d9426 100644
+--- a/arch/powerpc/boot/dts/p1022ds.dts
++++ b/arch/powerpc/boot/dts/p1022ds.dts
+@@ -209,8 +209,10 @@
+ 			wm8776:codec@1a {
+ 				compatible = "wlf,wm8776";
+ 				reg = <0x1a>;
+-				/* MCLK source is a stand-alone oscillator */
+-				clock-frequency = <12288000>;
++				/*
++				 * clock-frequency will be set by U-Boot if
++				 * the clock is enabled.
++				 */
+ 			};
+ 		};
+ 
+@@ -280,7 +282,8 @@
+ 			codec-handle = <&wm8776>;
+ 			fsl,playback-dma = <&dma00>;
+ 			fsl,capture-dma = <&dma01>;
+-			fsl,fifo-depth = <16>;
++			fsl,fifo-depth = <15>;
++			fsl,ssi-asynchronous;
+ 		};
+ 
+ 		dma@c300 {
+-- 
+1.7.3.4
