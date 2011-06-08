@@ -1,24 +1,22 @@
-Return-Path: <B04825@freescale.com>
-Received: from CH1EHSOBE008.bigfish.com (ch1ehsobe001.messaging.microsoft.com
-	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 426F6B6FD3
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jun 2011 06:02:06 +1000 (EST)
-Received: from mail197-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail197-ch1-R.bigfish.com (Postfix) with ESMTP id EDA6F17B04EA	for
-	<linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 20:02:02 +0000 (UTC)
-Received: from CH1EHSMHS025.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.252])	by mail197-ch1.bigfish.com (Postfix) with ESMTP id
-	C68B67804B
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2011 20:02:02 +0000 (UTC)
-From: Timur Tabi <timur@freescale.com>
-To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
-Subject: powerpc/p1022ds: add missing iounmap calls to platform file
-Date: Wed, 8 Jun 2011 15:01:57 -0500
-Message-ID: <1307563317-13009-1-git-send-email-timur@freescale.com>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E1CEB6FD0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  9 Jun 2011 06:50:04 +1000 (EST)
+Date: Wed, 8 Jun 2011 22:49:47 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc: dtc: remove obsolete .gitignore entries
+Message-ID: <20110608204947.GG21996@pengutronix.de>
+References: <1299948250-32084-1-git-send-email-w.sang@pengutronix.de>
+	<20110331155834.GE26709@ponder.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bO4vSxwwZtUjUWHo"
+In-Reply-To: <20110331155834.GE26709@ponder.secretlab.ca>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The platform file for the Freecale P1022DS reference board is not freeing
-the ioremap() mapping of the PIXIS and global utilities nodes it creates.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/platforms/85xx/p1022_ds.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+--bO4vSxwwZtUjUWHo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 7eb5c40..e083e1f 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -129,6 +129,7 @@ static void p1022ds_set_gamma_table(int monitor_port, char *gamma_table_base)
- static void p1022ds_set_monitor_port(int monitor_port)
- {
- 	struct device_node *pixis_node;
-+	void __iomem *pixis;
- 	u8 __iomem *brdcfg1;
- 
- 	pixis_node = of_find_compatible_node(NULL, NULL, "fsl,p1022ds-pixis");
-@@ -137,12 +138,12 @@ static void p1022ds_set_monitor_port(int monitor_port)
- 		return;
- 	}
- 
--	brdcfg1 = of_iomap(pixis_node, 0);
--	if (!brdcfg1) {
-+	pixis = of_iomap(pixis_node, 0);
-+	if (!pixis) {
- 		pr_err("p1022ds: could not map ngPIXIS registers\n");
- 		return;
- 	}
--	brdcfg1 += 9;	/* BRDCFG1 is at offset 9 in the ngPIXIS */
-+	brdcfg1 = pixis + 9;	/* BRDCFG1 is at offset 9 in the ngPIXIS */
- 
- 	switch (monitor_port) {
- 	case 0: /* DVI */
-@@ -158,6 +159,8 @@ static void p1022ds_set_monitor_port(int monitor_port)
- 	default:
- 		pr_err("p1022ds: unsupported monitor port %i\n", monitor_port);
- 	}
-+
-+	iounmap(pixis);
- }
- 
- /**
-@@ -201,6 +204,8 @@ void p1022ds_set_pixel_clock(unsigned int pixclock)
- 
- 	/* Enable the clock and set the pxclk */
- 	setbits32(&guts->clkdvdr, CLKDVDR_PXCKEN | (pxclk << 16));
-+
-+	iounmap(guts);
- }
- 
- /**
--- 
-1.7.3.4
+On Thu, Mar 31, 2011 at 09:58:34AM -0600, Grant Likely wrote:
+> On Sat, Mar 12, 2011 at 05:44:10PM +0100, Wolfram Sang wrote:
+> > dtc was moved and .gitignores have been added to the new location. So, =
+we can
+> > delete the old, forgotten ones.
+> >=20
+> > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>=20
+> It's Ben's jurisdiction, but I've picked it up into my
+> devicetree/merge branch anyway.  If I don't hear from Ben either way
+> then I'll push it out to Linus next week.
+
+I can't find it there?
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--bO4vSxwwZtUjUWHo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEARECAAYFAk3v4GsACgkQD27XaX1/VRuZdwCdFOGGE4l0NcJnIoyJjWEDIruL
+aS8An2knlc9jKrV0FqLZvN4Z1p4fgpAD
+=6Q7Q
+-----END PGP SIGNATURE-----
+
+--bO4vSxwwZtUjUWHo--
