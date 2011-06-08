@@ -1,16 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
-Date: Wed, 8 Jun 2011 08:57:46 -0600
+Date: Wed, 8 Jun 2011 09:00:52 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
-Message-ID: <20110608145746.GD8499@ponder.secretlab.ca>
-References: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
+To: Josh Triplett <josh@joshtriplett.org>
+Subject: Re: Hooking up SM501 on TQM5200 (MPC5200) board via device tree?
+Message-ID: <20110608150052.GE8499@ponder.secretlab.ca>
+References: <20110601050659.GA7789@leaf>
+	<20110603205138.GI17972@ponder.secretlab.ca>
+	<20110608030940.GA18383@leaf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
-Cc: meet2prabhu@gmail.com, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20110608030940.GA18383@leaf>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Jamey Sharp <jamey@minilop.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,185 +22,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 08, 2011 at 08:19:39AM +0530, Prabhakar Kushwaha wrote:
-> ten-bit interface (TBI) module is part of SoC not board.
+On Tue, Jun 07, 2011 at 08:09:40PM -0700, Josh Triplett wrote:
+> On Fri, Jun 03, 2011 at 02:51:38PM -0600, Grant Likely wrote:
+> > On Tue, May 31, 2011 at 10:07:01PM -0700, Josh Triplett wrote:
+> > > We have a TQM5200 board, which has GPIO lines hooked up to an SM501.
+> > > I've managed to come up with the following patch to the tqm5200 device
+> > > tree, which manages to convince the sm501 driver to attach an sm501-fb:
+> > > 
+> > > --- a/arch/powerpc/boot/dts/tqm5200.dts  2009-11-23 03:13:27.000000000 -0800
+> > > +++ b/arch/powerpc/boot/dts/tqm5200.dts  2011-05-31 22:00:28.000580627 -0700
+> > > @@ -177,7 +177,8 @@
+> > >                 compatible = "fsl,mpc5200-lpb","simple-bus";
+> > >                 #address-cells = <2>;
+> > >                 #size-cells = <1>;
+> > > -               ranges = <0 0 0xfc000000 0x02000000>;
+> > > +               ranges = <0 0 0xfc000000 0x02000000
+> > > +                         1 0 0xe0000000 0x04000000>;
+> > >  
+> > >                 flash@0,0 {
+> > >                         compatible = "cfi-flash";
+> > > @@ -187,6 +188,13 @@
+> > >                         #size-cells = <1>;
+> > >                         #address-cells = <1>;
+> > >                 };
+> > > +
+> > > +               display@1,0 {
+> > > +                       compatible = "smi,sm501";
+> > > +                       reg = <1 0x00000000 0x00800000
+> > > +                              1 0x03e00000 0x00200000>;
+> > > +                       interrupts = <1 1 3>;
+> > > +               };
+> > >         };
+> > >  
+> > >         pci@f0000d00 {
+> > > 
+> > > 
+> > > However, this doesn't hook up the sm501-gpio bits.  Reading the sm501
+> > > driver carefully, it looks like it only hooks up sm501-gpio if it has
+> > > platform_data available which sets some flags and other information.
+> > > So, if I understand correctly, hooking up sm501-gpio would require
+> > > adding functionality the driver to get the GPIO information from the
+> > > device tree in preference to the platform_data, if available, and fall
+> > > back to the platform_data for existing users?
+> > > 
+> > > What should the necessary device tree properties look like to replace
+> > > sm501_initdata?
+> > > 
+> > > - Josh Triplett
+> > 
+> > You need to look at Documentation/devicetree/bindings/gpio/gpio.txt.
+> > 
+> > Also, you need to add bits to the sm501-gpio driver to register a
+> > dynamically allocated range of gpio pins and to populate the
+> > gpiochip->of_node pointer.  If that points at a device tree node, then
+> > the core code will take care of setting up translation for you.
 > 
-> Move tbi entries from board related dts files to Si dts.
+> What would the resulting device tree look like, given that the sm501
+> driver handles several different types of devices?  sm501 doesn't have a
+> separate gpio driver; it just has a flag to enable GPIO.  The GPIO
+> controller also doesn't have independent resources; as far as I can
+> tell, the sm501 knows everything it needs to know in order to drive the
+> gpio, except the boolean presence or absence of gpio.
 > 
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> Currently, to get the sm501 hooked up at all, I wrote this:
+> 
+> display@1,0 {
+>     compatible = "smi,sm501";
+>     reg = <1 0x00000000 0x00800000
+>            1 0x03e00000 0x00200000>;
+>     interrupts = <1 1 3>;
+> };
+> 
+> To hook up the gpio, would I nest an entire gpio@... { ...;
+> gpio-controller; } stanza inside that or next to that, or just add the
+> gpio-controller; and #gpio-cells lines inside the existing stanza for
+> the sm501?
 
-Looks okay to me.
+Just add gpio-controller and #gpio-cells.
+
+> 
+> Does the gpio@ bit have any semantic significance, or just the
+> gpio-controller line and the compatible line?
+
+Nope, that's just the name and address of the device.  It doesn't
+affect the gpio binding (although 'pure' gpio controllers should use
+the name 'gpio' as a recommended practice).
 
 g.
-
-> ---
->  Based upon http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch next)
-> 
->  arch/powerpc/boot/dts/p1020rdb.dts            |    9 ---------
->  arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    8 --------
->  arch/powerpc/boot/dts/p1020si.dtsi            |    6 +++++-
->  arch/powerpc/boot/dts/p2020rdb.dts            |    8 --------
->  arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 --------
->  arch/powerpc/boot/dts/p2020si.dtsi            |    6 +++++-
->  6 files changed, 10 insertions(+), 35 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/p1020rdb.dts
-> index d6a8ae4..a4e5d6c 100644
-> --- a/arch/powerpc/boot/dts/p1020rdb.dts
-> +++ b/arch/powerpc/boot/dts/p1020rdb.dts
-> @@ -211,14 +211,6 @@
->  			};
->  		};
->  
-> -		mdio@25000 {
-> -
-> -			tbi0: tbi-phy@11 {
-> -				reg = <0x11>;
-> -				device_type = "tbi-phy";
-> -			};
-> -		};
-> -
->  		enet0: ethernet@b0000 {
->  			fixed-link = <1 1 1000 0 0>;
->  			phy-connection-type = "rgmii-id";
-> @@ -227,7 +219,6 @@
->  
->  		enet1: ethernet@b1000 {
->  			phy-handle = <&phy0>;
-> -			tbi-handle = <&tbi0>;
->  			phy-connection-type = "sgmii";
->  
->  		};
-> diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
-> index f0bf7f4..abab234 100644
-> --- a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
-> +++ b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
-> @@ -114,20 +114,12 @@
->  			};
->  		};
->  
-> -		mdio@25000 {
-> -			tbi0: tbi-phy@11 {
-> -				reg = <0x11>;
-> -				device_type = "tbi-phy";
-> -			};
-> -		};
-> -
->  		enet0: ethernet@b0000 {
->  			status = "disabled";
->  		};
->  
->  		enet1: ethernet@b1000 {
->  			phy-handle = <&phy0>;
-> -			tbi-handle = <&tbi0>;
->  			phy-connection-type = "sgmii";
->  		};
->  
-> diff --git a/arch/powerpc/boot/dts/p1020si.dtsi b/arch/powerpc/boot/dts/p1020si.dtsi
-> index 5c5acb6..7844d2e 100644
-> --- a/arch/powerpc/boot/dts/p1020si.dtsi
-> +++ b/arch/powerpc/boot/dts/p1020si.dtsi
-> @@ -190,7 +190,10 @@
->  			#size-cells = <0>;
->  			compatible = "fsl,etsec2-tbi";
->  			reg = <0x25000 0x1000 0xb1030 0x4>;
-> -
-> +			tbi0: tbi-phy@11 {
-> +				reg = <0x11>;
-> +				device_type = "tbi-phy";
-> +			};
->  		};
->  
->  		enet0: ethernet@b0000 {
-> @@ -229,6 +232,7 @@
->  			fsl,num_tx_queues = <0x8>;
->  			local-mac-address = [ 00 00 00 00 00 00 ];
->  			interrupt-parent = <&mpic>;
-> +			tbi-handle = <&tbi0>;
->  
->  			queue-group@0 {
->  				#address-cells = <1>;
-> diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
-> index 1d7a05f..2941cbb 100644
-> --- a/arch/powerpc/boot/dts/p2020rdb.dts
-> +++ b/arch/powerpc/boot/dts/p2020rdb.dts
-> @@ -213,13 +213,6 @@
->  				};
->  		};
->  
-> -		mdio@25520 {
-> -			tbi0: tbi-phy@11 {
-> -				reg = <0x11>;
-> -				device_type = "tbi-phy";
-> -			};
-> -		};
-> -
->  		mdio@26520 {
->  			status = "disabled";
->  		};
-> @@ -243,7 +236,6 @@
->  		};
->  
->  		enet1: ethernet@25000 {
-> -			tbi-handle = <&tbi0>;
->  			phy-handle = <&phy0>;
->  			phy-connection-type = "sgmii";
->  		};
-> diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-> index fc8dddd..4641f3d 100644
-> --- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-> +++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-> @@ -124,13 +124,6 @@
->  			};
->  		};
->  
-> -		mdio@25520 {
-> -			tbi0: tbi-phy@11 {
-> -				reg = <0x11>;
-> -				device_type = "tbi-phy";
-> -			};
-> -		};
-> -
->  		mdio@26520 {
->  			status = "disabled";
->  		};
-> @@ -140,7 +133,6 @@
->  		};
->  
->  		enet1: ethernet@25000 {
-> -			tbi-handle = <&tbi0>;
->  			phy-handle = <&phy0>;
->  			phy-connection-type = "sgmii";
->  
-> diff --git a/arch/powerpc/boot/dts/p2020si.dtsi b/arch/powerpc/boot/dts/p2020si.dtsi
-> index 6def17f..9317075 100644
-> --- a/arch/powerpc/boot/dts/p2020si.dtsi
-> +++ b/arch/powerpc/boot/dts/p2020si.dtsi
-> @@ -235,6 +235,10 @@
->  			#size-cells = <0>;
->  			compatible = "fsl,gianfar-tbi";
->  			reg = <0x26520 0x20>;
-> +			tbi0: tbi-phy@11 {
-> +				reg = <0x11>;
-> +				device_type = "tbi-phy";
-> +			};
->  		};
->  
->  		mdio@26520 {
-> @@ -270,7 +274,7 @@
->  			local-mac-address = [ 00 00 00 00 00 00 ];
->  			interrupts = <35 2 36 2 40 2>;
->  			interrupt-parent = <&mpic>;
-> -
-> +			tbi-handle = <&tbi0>;
->  		};
->  
->  		enet2: ethernet@26000 {
-> -- 
-> 1.7.3
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
