@@ -1,27 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB12BB6F86
+	by ozlabs.org (Postfix) with ESMTPS id 5A4A6B6FDD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Jun 2011 15:26:45 +1000 (EST)
-Subject: Re: [patch 13/14] PCSPKR: Cleanup Kconfig dependencies
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: ralf@linux-mips.org
-In-Reply-To: <20110601180610.984881988@duck.linux-mips.net>
-References: <20110601180456.801265664@duck.linux-mips.net>
-	<20110601180610.984881988@duck.linux-mips.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 09 Jun 2011 15:09:32 +1000
-Message-ID: <1307596172.2874.268.camel@pasglop>
+	Thu,  9 Jun 2011 17:15:30 +1000 (EST)
+Date: Thu, 09 Jun 2011 00:13:24 -0700 (PDT)
+Message-Id: <20110609.001324.1040447148005837831.davem@davemloft.net>
+To: b06378@freescale.com
+Subject: Re: [PATCH] gianfar:localized filer table
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1307519211-3540-1-git-send-email-b06378@freescale.com>
+References: <1307519211-3540-1-git-send-email-b06378@freescale.com>
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
-	linux-alpha@vger.kernel.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, "H. Peter
-	Anvin" <hpa@zytor.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Matt Turner <mattst88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-06-01 at 19:05 +0100, ralf@linux-mips.org wrote:
-> plain text document attachment
-> (i8253-use-aux-symbol-for-pcspkr-config.patch)
-> Lenghty lists of the kind "depends on ARCH1 || ARCH2 ... || ARCH123" are
-> usually either wrong or too coarse grained.  Or plain an ugly sin.
+From: Jiajun Wu <b06378@freescale.com>
+Date: Wed, 8 Jun 2011 15:46:51 +0800
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> Each eTSEC device should own localized filer table.
+> 
+> Signed-off-by: Jiajun Wu <b06378@freescale.com>
 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-> To: linux-kernel@vger.kernel.org
-> Cc: Richard Henderson <rth@twiddle.net>
-> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> Cc: Matt Turner <mattst88@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: x86@kernel.org
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-mips@linux-mips.org
-> Cc: linuxppc-dev@lists.ozlabs.org
+Applied, thanks.
