@@ -1,27 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from CH1EHSOBE013.bigfish.com (ch1ehsobe003.messaging.microsoft.com
-	[216.32.181.183]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2B0D0B6FFD
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id D9C9DB7021
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jun 2011 06:24:46 +1000 (EST)
-Message-ID: <4DF12BFB.5030102@freescale.com>
-Date: Thu, 9 Jun 2011 15:24:27 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v4] drivers/virt: introduce Freescale hypervisor
+	Fri, 10 Jun 2011 06:25:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 7/7] [v5] drivers/virt: introduce Freescale hypervisor
 	management driver
-References: <1307573154-15838-1-git-send-email-timur@freescale.com>
-	<201106090929.23671.arnd@arndb.de> <4DF11715.5030001@freescale.com>
-	<201106092220.22246.arnd@arndb.de>
-In-Reply-To: <201106092220.22246.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: konrad.wilk@oracle.com, kumar.gala@freescale.com,
+Date: Thu, 9 Jun 2011 22:25:07 +0200
+References: <1307646794-26374-1-git-send-email-timur@freescale.com>
+	<4DF12345.1040409@freescale.com> <4DF123AA.6070402@oracle.com>
+In-Reply-To: <4DF123AA.6070402@oracle.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201106092225.08090.arnd@arndb.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, konrad.wilk@oracle.com,
+	greg@kroah.com, kumar.gala@freescale.com,
 	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	akpm@kernel.org, linux-console@vger.kernel.org, greg@kroah.com,
-	linuxppc-dev@lists.ozlabs.org, alan@lxorguk.ukuu.org.uk
+	akpm@kernel.org, dsaxena@linaro.org, linux-console@vger.kernel.org,
+	virtualization@lists.linux-foundation.org,
+	Timur Tabi <timur@freescale.com>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> The lesson to learn here is obviously not to ship binaries of applications
-> to customers before the driver has been merged in a mainline kernel.
+On Thursday 09 June 2011 21:48:58 Randy Dunlap wrote:
+> > So is it okay to stick with 0, or do I need to pick a new number?
+> 
+> I wasn't suggesting that you change the 0, just note that it has conflicts,
+> like other ioctls do.
 
-Believe me, I know this, but unfortunately I have no control over every aspect
-of our development cycle.
+We normally don't try to maintain binary compatibility with out of tree
+kernel patches. That only leads to inferior interfaces finding their way
+into the kernel.
 
-> The best way out that I can see is to make the driver carry the proper
-> interface in the upstream version, but to have a private patch to support
-> both interface versions in the kernel you ship on machines that require
-> backwards compatibility. Once you have phased out the user application,
-> you can then drop that patch and use the upstream version of the
-> interfaces.
-
-I think I can make that work.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+	Arnd
