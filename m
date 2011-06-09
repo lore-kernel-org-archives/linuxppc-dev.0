@@ -1,26 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D88BB6FE8
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id E3952B7056
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jun 2011 06:20:28 +1000 (EST)
-Message-ID: <4DF12A94.6070605@freescale.com>
-Date: Thu, 9 Jun 2011 15:18:28 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v5] drivers/virt: introduce Freescale hypervisor
+	Fri, 10 Jun 2011 06:20:31 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Timur Tabi <timur@freescale.com>,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] [v4] drivers/virt: introduce Freescale hypervisor
 	management driver
-References: <1307646794-26374-1-git-send-email-timur@freescale.com>
-	<201106092213.13755.arnd@arndb.de>
-In-Reply-To: <201106092213.13755.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: konrad.wilk@oracle.com, kumar.gala@freescale.com,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+Date: Thu, 9 Jun 2011 22:20:22 +0200
+References: <1307573154-15838-1-git-send-email-timur@freescale.com>
+	<201106090929.23671.arnd@arndb.de> <4DF11715.5030001@freescale.com>
+In-Reply-To: <4DF11715.5030001@freescale.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201106092220.22246.arnd@arndb.de>
+Cc: konrad.wilk@oracle.com, kumar.gala@freescale.com, cmetcalf@tilera.com,
 	akpm@kernel.org, linux-console@vger.kernel.org, greg@kroah.com,
-	virtualization@lists.linux-foundation.org,
 	linuxppc-dev@lists.ozlabs.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,51 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> As mentioned, it would be easier and more readable to just do
+On Thursday 09 June 2011 20:55:17 Timur Tabi wrote:
+> Arnd Bergmann wrote:
+> > Then get rid of all the code that takes apart the ioctl command numbers
+> > again and just do a switch/case based on the command.
 > 
-> 	switch(cmd) {
-> 	case FSL_HV_IOCTL_PARTITION_RESTART:
-> 		...
+> I still need to keep that code to maintain binary compatibility with existing
+> applications that pass the union as a parameter.
 > 
-> 	case FSL_HV_IOCTL_PARTITION_GET_STATUS;
-> 		...
-> 
-> There is no need to check the bits individually when you can simply
-> compare the command number.
+> I'll fix that after we've updated the applications.  But we have a
+> chicken-or-the-egg problem where we need the same application to work with the
+> new and old ioctl interface for a period of time.
 
-But this will break backwards compatibility with older applications that used
-the union as the size parameter.  Although these applications won't compile with
-the new header file, older already-compiled applications still work.
+The lesson to learn here is obviously not to ship binaries of applications
+to customers before the driver has been merged in a mainline kernel.
 
-I will eventually update the applications to use the new header file, and at
-that point I will modify the switch statement as you suggest.  But until then,
-I'd like to keep the code as-is.
+The best way out that I can see is to make the driver carry the proper
+interface in the upstream version, but to have a private patch to support
+both interface versions in the kernel you ship on machines that require
+backwards compatibility. Once you have phased out the user application,
+you can then drop that patch and use the upstream version of the
+interfaces.
 
->> > +enum fsl_hv_ioctl_cmd {
->> > +       FSL_HV_IOCTL_PARTITION_RESTART = _IOWR(0, 1, struct fsl_hv_ioctl_restart),
->> > +       FSL_HV_IOCTL_PARTITION_GET_STATUS = _IOWR(0, 2, struct fsl_hv_ioctl_status),
->> > +       FSL_HV_IOCTL_PARTITION_START = _IOWR(0, 3, struct fsl_hv_ioctl_start),
->> > +       FSL_HV_IOCTL_PARTITION_STOP = _IOWR(0, 4, struct fsl_hv_ioctl_stop),
->> > +       FSL_HV_IOCTL_MEMCPY = _IOWR(0, 5, struct fsl_hv_ioctl_memcpy),
->> > +       FSL_HV_IOCTL_DOORBELL = _IOWR(0, 6, struct fsl_hv_ioctl_doorbell),
->> > +       FSL_HV_IOCTL_GETPROP = _IOWR(0, 7, struct fsl_hv_ioctl_prop),
->> > +       FSL_HV_IOCTL_SETPROP = _IOWR(0, 8, struct fsl_hv_ioctl_prop),
->> > +};
-
-> Using a #define here is usually preferred because then you can use #ifdef in a user
-> application to check if a given value has been assigned.
-
-You're right -- I had enum on the brain.
-
-> More importantly, the code you have chose (0) conflicts with existing drivers
-> (frame buffer, scsi and wavefront among others). Please chose a free one and
-> add it to Documentation/ioctl/ioctl-number.txt in the same patch.
-
-Ok, I was really hoping to avoid doing this.  Like I said, binary compatibility
-is important, and changing the type will break my existing apps.  Are you
-insisting that I pick a new number?
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+	Arnd
