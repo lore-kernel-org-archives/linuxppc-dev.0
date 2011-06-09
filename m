@@ -1,31 +1,27 @@
 Return-Path: <B04825@freescale.com>
-Received: from CH1EHSOBE004.bigfish.com (ch1ehsobe002.messaging.microsoft.com
-	[216.32.181.182]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B8D9B6FE9
+	by ozlabs.org (Postfix) with ESMTPS id 0DA0CB6FEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jun 2011 02:48:59 +1000 (EST)
-Message-ID: <4DF0F973.6050008@freescale.com>
-Date: Thu, 9 Jun 2011 11:48:51 -0500
+	Fri, 10 Jun 2011 04:55:26 +1000 (EST)
+Message-ID: <4DF11715.5030001@freescale.com>
+Date: Thu, 9 Jun 2011 13:55:17 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 7/7] [v4] drivers/virt: introduce Freescale hypervisor
 	management driver
 References: <1307573154-15838-1-git-send-email-timur@freescale.com>
-	<20110608161009.7b05d305.randy.dunlap@oracle.com>
-	<201106090938.23027.arnd@arndb.de>
-	<4DF0F5A1.5080008@oracle.com> <4DF0F672.8040206@freescale.com>
-	<4DF0F7F5.5050107@oracle.com>
-In-Reply-To: <4DF0F7F5.5050107@oracle.com>
+	<201106090929.23671.arnd@arndb.de>
+In-Reply-To: <201106090929.23671.arnd@arndb.de>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Arnd Bergmann <arnd@arndb.de>, konrad.wilk@oracle.com, greg@kroah.com,
-	kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	cmetcalf@tilera.com,
-	Linux Virtualization <virtualization@lists.linux-foundation.org>,
-	dsaxena@linaro.org, linux-console@vger.kernel.org,
-	akpm@kernel.org, linuxppc-dev@lists.ozlabs.org, alan@lxorguk.ukuu.org.uk
+Cc: konrad.wilk@oracle.com, kumar.gala@freescale.com,
+	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+	akpm@kernel.org, dsaxena@linaro.org,
+	linux-console@vger.kernel.org, greg@kroah.com,
+	linuxppc-dev@lists.ozlabs.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,20 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Randy Dunlap wrote:
->> > I'm okay with that idea, except there's a consensus that drivers should be in
->> > drivers/.
->> > 
-> Like sound/ ?
+Arnd Bergmann wrote:
+> Then get rid of all the code that takes apart the ioctl command numbers
+> again and just do a switch/case based on the command.
 
-My understanding is that this is something that's considered broken and should
-be fixed, but I don't know what the holdup is.
+I still need to keep that code to maintain binary compatibility with existing
+applications that pass the union as a parameter.
 
-> but what makes it a "driver"?
-
-That's a good point.
-
-Ok, so maybe I don't have any really good answers here. :-)
+I'll fix that after we've updated the applications.  But we have a
+chicken-or-the-egg problem where we need the same application to work with the
+new and old ioctl interface for a period of time.
 
 -- 
 Timur Tabi
