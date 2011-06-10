@@ -1,20 +1,27 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [194.246.123.103])
-	by ozlabs.org (Postfix) with ESMTP id 4D526B7048
+Return-Path: <zajec5@gmail.com>
+Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
+	[209.85.216.172]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 77D03B700E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Jun 2011 08:54:38 +1000 (EST)
-Date: Fri, 10 Jun 2011 15:54:31 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
-In-Reply-To: <1306983467.29297.51.camel@pasglop>
-Message-ID: <alpine.DEB.2.01.1106101552460.9183@trent.utfs.org>
+	Sat, 11 Jun 2011 08:59:15 +1000 (EST)
+Received: by qyk29 with SMTP id 29so116308qyk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 10 Jun 2011 15:59:11 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.01.1106101552460.9183@trent.utfs.org>
 References: <alpine.DEB.2.01.1105311644010.21697@trent.utfs.org>
 	<alpine.DEB.2.01.1106011712270.21697@trent.utfs.org>
 	<1306983467.29297.51.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: zajec5@gmail.com, linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
+	<alpine.DEB.2.01.1106101552460.9183@trent.utfs.org>
+Date: Sat, 11 Jun 2011 00:59:10 +0200
+Message-ID: <BANLkTimbt6wz_Wye8atkDbkGqh+KOfm9cg@mail.gmail.com>
+Subject: Re: 3.0-rc1: powerpc hangs at Kernel virtual memory layout
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,39 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2 Jun 2011 at 12:57, Benjamin Herrenschmidt wrote:
-> John, care to send the patch below to Linus ASAP ? I could reproduce and
-> verify it fixes it. Thanks !
-> 
-> ssb: pci: Don't call PCIe specific workarounds on PCI cores
-> 
-> Otherwise it can/will crash....
+2011/6/11 Christian Kujau <lists@nerdbynature.de>:
+> On Thu, 2 Jun 2011 at 12:57, Benjamin Herrenschmidt wrote:
+>> John, care to send the patch below to Linus ASAP ? I could reproduce and
+>> verify it fixes it. Thanks !
+>>
+>> ssb: pci: Don't call PCIe specific workarounds on PCI cores
+>>
+>> Otherwise it can/will crash....
+>
+> The patch did not make it into -rc2, it's not in today's git tree either,
+> AFAICS. Can anyone push this, please?
 
-The patch did not make it into -rc2, it's not in today's git tree either, 
-AFAICS. Can anyone push this, please?
+Yeah, I noticed it wasn't in the pull for rc2. I pinged John, he told
+me to just wait.
 
-Thanks,
-Christian.
+Patch was taken with the recent pull, it should go into rc3.
 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> diff --git a/drivers/ssb/driver_pcicore.c b/drivers/ssb/driver_pcicore.c
-> index 82feb34..eddf1b9 100644
-> --- a/drivers/ssb/driver_pcicore.c
-> +++ b/drivers/ssb/driver_pcicore.c
-> @@ -540,7 +540,8 @@ void ssb_pcicore_init(struct ssb_pcicore *pc)
->  		ssb_pcicore_init_clientmode(pc);
->  
->  	/* Additional always once-executed workarounds */
-> -	ssb_pcicore_serdes_workaround(pc);
-> +	if (dev->id.coreid == SSB_DEV_PCIE)
-> +		ssb_pcicore_serdes_workaround(pc);
->  	/* TODO: ASPM */
->  	/* TODO: Clock Request Update */
->  }
-> 
--- 
-BOFH excuse #312:
-
-incompatible bit-registration operators
+--=20
+Rafa=C5=82
