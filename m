@@ -1,26 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id 9E3F5B702F
+Return-Path: <ccano@interfaceconcept.com>
+Received: from smtp-out06.msg.oleane.net (smtp-out06.msg.oleane.net
+	[62.161.7.4]) by ozlabs.org (Postfix) with ESMTP id BBCF5B702D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Jun 2011 01:36:24 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Chris Metcalf <cmetcalf@tilera.com>
-Subject: Re: [PATCH 7/7] [v4] drivers/virt: introduce Freescale hypervisor
-	management driver
-Date: Fri, 10 Jun 2011 17:36:14 +0200
-References: <1307573154-15838-1-git-send-email-timur@freescale.com>
-	<201106090938.23027.arnd@arndb.de> <4DF22770.4010103@tilera.com>
-In-Reply-To: <4DF22770.4010103@tilera.com>
+	Sat, 11 Jun 2011 03:51:49 +1000 (EST)
+Received: from smtp06.msg.oleane.net (smtp06.mail.priv [172.17.20.115])
+	by smtp-out06.msg.oleane.net with ESMTP id p5AEGlQv007279
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2011 16:16:48 +0200
+Received: from ic.fr (iconcept-gw.rain.fr [194.2.96.216])
+	by smtp06.msg.oleane.net (MTA) with ESMTP id p5ADuV3v020722
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2011 15:56:31 +0200
+Received: from [192.168.1.33] (unknown [192.168.1.33])
+	by ic.fr (Postfix) with ESMTPA id D363822DE3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 10 Jun 2011 15:56:35 +0200 (CEST)
+Message-ID: <4DF2228E.7060806@ic.fr>
+Date: Fri, 10 Jun 2011 15:56:30 +0200
+From: =?ISO-8859-1?Q?C=E9dric_Cano?= <ccano@interfaceconcept.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201106101736.14850.arnd@arndb.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, konrad.wilk@oracle.com,
-	greg@kroah.com, kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	Linux Virtualization <virtualization@lists.linux-foundation.org>,
-	dsaxena@linaro.org, linux-console@vger.kernel.org,
-	akpm@kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>, alan@lxorguk.ukuu.org.uk
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1] Big endian swap for Marvell 6440 SAS driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 10 June 2011, Chris Metcalf wrote:
-> This still leaves open the question of what really should go in this new
-> directory. Is it just for drivers that manage/control the hypervisor?  Or
-> is it also for drivers that just use the hypervisor to do I/O of some kind,
-> but aren't related to any other "family" of drivers, i.e., a driver that
-> would have been dumped in drivers/char or drivers/misc in the old days?
-> 
-> My specific interest at the moment is the proposed tile-srom.c driver
-> (https://patchwork.kernel.org/patch/843892/), which uses a simple
-> hypervisor read/write API to access the portion of the SPI ROM used to hold
-> the boot stream for a TILE processor.
+Hi,
 
-I'd still put that driver in drivers/char for now, because it already contains
-similar drivers. We can probaby group them in a subdirectory of drivers/char
-at some point or move them out to a new directory.
+Marvell SAS driver doesn't work on powerpc architecture due to big 
+endian swap. I've tested it with the MV6440 chip.
+Here you can find the patch for Linux 2.6.39.1.
 
-For your raw hcall passthrough driver, that would be something that should
-go into drivers/virt/ IMHO.
+Cedric Cano
 
-	Arnd
+Signed-off-by: Cedric Cano <ccano@interfaceconcept.com>
+---
+--- drivers/scsi/mvsas/mv_sas.c    2011-06-10 15:50:04.000000000 +0200
++++ drivers/scsi/mvsas/mv_sas.c    2011-06-10 15:50:12.000000000 +0200
+@@ -1143,6 +1143,14 @@
+      MVS_CHIP_DISP->write_port_cfg_addr(mvi, i, PHYR_SATA_SIG0);
+      s[0] = MVS_CHIP_DISP->read_port_cfg_data(mvi, i);
+
++    /* swap for big endian devices because of use of these data in bytes */
++#ifdef __BIG_ENDIAN
++    s[0] = swab32(s[0]);
++    s[1] = swab32(s[1]);
++    s[2] = swab32(s[2]);
++    s[3] = swab32(s[3]);
++#endif /* __BIG_ENDIAN */
++
+      /* Workaround: take some ATAPI devices for ATA */
+      if (((s[1] & 0x00FFFFFF) == 0x00EB1401) && (*(u8 *)&s[3] == 0x01))
+          s[1] = 0x00EB1401 | (*((u8 *)&s[1] + 3) & 0x10);
+
+---
