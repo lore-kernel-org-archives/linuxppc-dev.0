@@ -1,28 +1,21 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5EB53B6FF4
+Return-Path: <minipli@r00tworld.net>
+Received: from mail.r00tworld.net (grimli.r00tworld.net [83.169.44.195])
+	by ozlabs.org (Postfix) with ESMTP id 5C7FEB6FB9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jun 2011 21:13:44 +1000 (EST)
-Date: Fri, 10 Jun 2011 11:45:51 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v5] drivers/virt: introduce Freescale hypervisor
-	management driver
-Message-ID: <20110610104551.GB26441@sirena.org.uk>
-References: <1307646794-26374-1-git-send-email-timur@freescale.com>
-	<201106092213.13755.arnd@arndb.de> <4DF12A94.6070605@freescale.com>
-	<201106092233.08030.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201106092233.08030.arnd@arndb.de>
-Cc: konrad.wilk@oracle.com, kumar.gala@freescale.com,
-	linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
-	akpm@kernel.org, linux-console@vger.kernel.org, greg@kroah.com,
-	virtualization@lists.linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>,
-	alan@lxorguk.ukuu.org.uk
+	Fri, 10 Jun 2011 23:20:10 +1000 (EST)
+From: Mathias Krause <minipli@googlemail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] ppc, exec: remove redundant set_fs(USER_DS)
+Date: Fri, 10 Jun 2011 15:10:22 +0200
+Message-Id: <1307711422-14327-1-git-send-email-minipli@googlemail.com>
+In-Reply-To: <BANLkTinv1teZEHMK0qymaVdcxPOErpqSyg@mail.gmail.com>
+References: <BANLkTinv1teZEHMK0qymaVdcxPOErpqSyg@mail.gmail.com>
+References: <BANLkTiknCeAxe30MJdVTxDom+ko8+EDQ4A@mail.gmail.com>
+	<1307642718-22257-1-git-send-email-minipli@googlemail.com>
+	<20110609155630.0f734351.akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Mathias Krause <minipli@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 09, 2011 at 10:33:07PM +0200, Arnd Bergmann wrote:
-> On Thursday 09 June 2011 22:18:28 Timur Tabi wrote:
+The address limit is already set in flush_old_exec() so this
+set_fs(USER_DS) is redundant.
 
-> > Ok, I was really hoping to avoid doing this.  Like I said, binary compatibility
-> > is important, and changing the type will break my existing apps.  Are you
-> > insisting that I pick a new number?
+Signed-off-by: Mathias Krause <minipli@googlemail.com>
+---
+ arch/powerpc/kernel/process.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-> I definitely insist that you have a proper interface in the driver at the
-> time that it gets merged, and that probably includes a collision-free
-> ioctl code.
-
-This sort of stuff is one of the issues that should be being factored in
-to any decision not to publish and submit the kernel code - ABIs that
-haven't been reviewed upstream may well have this sort of issue.
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 91e52df..885a2dd 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -831,8 +831,6 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+ 	unsigned long load_addr = regs->gpr[2];	/* saved by ELF_PLAT_INIT */
+ #endif
+ 
+-	set_fs(USER_DS);
+-
+ 	/*
+ 	 * If we exec out of a kernel thread then thread.regs will not be
+ 	 * set.  Do it now.
+-- 
+1.5.6.5
