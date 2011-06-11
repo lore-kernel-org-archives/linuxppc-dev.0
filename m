@@ -1,25 +1,20 @@
-Return-Path: <dtcarroll@gmail.com>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D8EBB7108
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8AD87B7051
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Jun 2011 11:57:58 +1000 (EST)
-Received: by pwi9 with SMTP id 9so1550515pwi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jun 2011 18:57:55 -0700 (PDT)
-From: Dave Carroll <dtcarroll@gmail.com>
-To: Milton Miller <miltonm@bga.com>,
-	BenH <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc: Add printk companion for ppc_md.progress
-Date: Fri, 10 Jun 2011 19:38:11 -0600
-Message-Id: <1307756291-26513-2-git-send-email-dcarroll@astekcorp.com>
-In-Reply-To: <1307756291-26513-1-git-send-email-dcarroll@astekcorp.com>
-References: <initrd-align-v5-reply@mdm.bga.com>
-	<1307756291-26513-1-git-send-email-dcarroll@astekcorp.com>
-Cc: Dave Carroll <dcarroll@astekcorp.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Sun, 12 Jun 2011 08:46:09 +1000 (EST)
+Subject: Re: [PATCH 1/1] Big endian swap for Marvell 6440 SAS driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?C=E9dric?= Cano <ccano@interfaceconcept.com>
+In-Reply-To: <4DF2228E.7060806@ic.fr>
+References: <4DF2228E.7060806@ic.fr>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 12 Jun 2011 08:45:56 +1000
+Message-ID: <1307832356.2874.312.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Carroll <dcarroll@astekcorp.com>
+On Fri, 2011-06-10 at 15:56 +0200, Cédric Cano wrote:
+> Hi,
+> 
+> Marvell SAS driver doesn't work on powerpc architecture due to big 
+> endian swap. I've tested it with the MV6440 chip.
+> Here you can find the patch for Linux 2.6.39.1.
+> 
+> Cedric Cano
+> 
+> Signed-off-by: Cedric Cano <ccano@interfaceconcept.com>
+> ---
+> --- drivers/scsi/mvsas/mv_sas.c    2011-06-10 15:50:04.000000000 +0200
+> +++ drivers/scsi/mvsas/mv_sas.c    2011-06-10 15:50:12.000000000 +0200
+> @@ -1143,6 +1143,14 @@
+>       MVS_CHIP_DISP->write_port_cfg_addr(mvi, i, PHYR_SATA_SIG0);
+>       s[0] = MVS_CHIP_DISP->read_port_cfg_data(mvi, i);
+> 
+> +    /* swap for big endian devices because of use of these data in bytes */
+> +#ifdef __BIG_ENDIAN
+> +    s[0] = swab32(s[0]);
+> +    s[1] = swab32(s[1]);
+> +    s[2] = swab32(s[2]);
+> +    s[3] = swab32(s[3]);
+> +#endif /* __BIG_ENDIAN */
 
-This patch adds a printk companion to replace the udbg progress function
-when initmem is freed.
+Hi Cedric !
 
-Suggested-by: Milton Miller <miltonm@bga.com>
-Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
----
- arch/powerpc/include/asm/setup.h   |    2 ++
- arch/powerpc/kernel/setup-common.c |    5 +++++
- arch/powerpc/mm/mem.c              |    2 +-
- 3 files changed, 8 insertions(+), 1 deletions(-)
+Thanks for this. CC'ing linux-scsi.
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index dae1934..c77cb7a 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -3,4 +3,6 @@
- 
- #include <asm-generic/setup.h>
- 
-+extern void ppc_printk_progress(char *s, unsigned short hex);
-+
- #endif	/* _ASM_POWERPC_SETUP_H */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 79fca26..e053b16 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -704,6 +704,11 @@ static int powerpc_debugfs_init(void)
- arch_initcall(powerpc_debugfs_init);
- #endif
- 
-+void ppc_printk_progress(char *s, unsigned short hex)
-+{
-+	pr_info("%s\n", s);
-+}
-+
- static int ppc_dflt_bus_notify(struct notifier_block *nb,
- 				unsigned long action, void *data)
- {
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f4e6408..e0d2aa0 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -386,7 +386,7 @@ void free_initmem(void)
- {
- 	unsigned long addr;
- 
--	ppc_md.progress = NULL;
-+	ppc_md.progress = ppc_printk_progress;
- 
- 	addr = (unsigned long)__init_begin;
- 	for (; addr < (unsigned long)__init_end; addr += PAGE_SIZE) {
--- 
-1.7.4
+Note that it would probably have been better to use le32_to_cpu, which
+avoids the ifdef completely.
+
+Cheers,
+Ben.
+
+>       /* Workaround: take some ATAPI devices for ATA */
+>       if (((s[1] & 0x00FFFFFF) == 0x00EB1401) && (*(u8 *)&s[3] == 0x01))
+>           s[1] = 0x00EB1401 | (*((u8 *)&s[1] + 3) & 0x10);
+> 
+> ---
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
