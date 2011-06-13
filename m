@@ -1,20 +1,29 @@
-Return-Path: <cl@linux.com>
-Received: from smtp108.prem.mail.ac4.yahoo.com
-	(smtp108.prem.mail.ac4.yahoo.com [76.13.13.47])
-	by ozlabs.org (Postfix) with SMTP id 7DA50B6FBF
+Return-Path: <tlinder@codeaurora.org>
+Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
+	[199.106.114.254])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wolverine01.qualcomm.com",
+	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B0213B6FB1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jun 2011 04:00:03 +1000 (EST)
-Date: Mon, 13 Jun 2011 12:59:57 -0500 (CDT)
-From: Christoph Lameter <cl@linux.com>
-To: Hugh Dickins <hughd@google.com>
-Subject: Re: [PATCH] slub: fix kernel BUG at mm/slub.c:1950!
-In-Reply-To: <alpine.LSU.2.00.1106121842250.31463@sister.anvils>
-Message-ID: <alpine.DEB.2.00.1106131258300.3108@router.home>
-References: <alpine.LSU.2.00.1106121842250.31463@sister.anvils>
+	Tue, 14 Jun 2011 04:08:03 +1000 (EST)
+From: "Tanya Brokhman" <tlinder@codeaurora.org>
+To: "'Alan Stern'" <stern@rowland.harvard.edu>
+References: <03b901cc29c0$6538e970$2faabc50$@org>
+	<Pine.LNX.4.44L0.1106131036430.1983-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1106131036430.1983-100000@iolanthe.rowland.org>
+Subject: RE: [PATCH] usb:gadget: use min_t() macro instead of min()
+Date: Mon, 13 Jun 2011 21:07:52 +0300
+Message-ID: <03db01cc29f4$d472bcb0$7d583610$@org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: "'open list:FREESCALE USB PER...'" <linuxppc-dev@lists.ozlabs.org>,
+	greg@kroah.com, linux-usb@vger.kernel.org,
+	'open list' <linux-kernel@vger.kernel.org>, balbi@ti.com,
+	linux-arm-msm@vger.kernel.org,
+	"'open list:OMAP USB SUPPORT'" <linux-omap@vger.kernel.org>,
+	ablay@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 12 Jun 2011, Hugh Dickins wrote:
+> 
+> The change I suggested involved replacing two typecasts with a single
+> min_t.  All (or almost all) the places this patch touches currently
+> contain only one typecast, so the motivation for changing them is a lot
+> weaker.
+> 
+You're right. So what's the final call on this one? Do you think it can be
+merged or you prefer not change anything? I personally think the code looks
+nicer using min_t instead of min with casting but that's just my opinion and
+of course there are arguments against this patch.
 
-> 3.0-rc won't boot with SLUB on my PowerPC G5: kernel BUG at mm/slub.c:1950!
-> Bisected to 1759415e630e "slub: Remove CONFIG_CMPXCHG_LOCAL ifdeffery".
->
-> After giving myself a medal for finding the BUG on line 1950 of mm/slub.c
-> (it's actually the
-> 	VM_BUG_ON((unsigned long)(&pcp1) % (2 * sizeof(pcp1)));
-> on line 268 of the morass that is include/linux/percpu.h)
-> I tried the following alignment patch and found it to work.
 
-Hmmm.. The allocpercpu in alloc_kmem_cache_cpus should take care of the
-alignment. Uhh.. I see that a patch that removes the #ifdef CMPXCHG_LOCAL
-was not applied? Pekka?
+Thanks,
+Tanya Brokhman
+---
+Sent by an consultant of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
