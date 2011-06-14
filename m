@@ -1,18 +1,22 @@
-Return-Path: <w@1wt.eu>
-Received: from 1wt.eu (1wt.eu [62.212.114.60])
-	by ozlabs.org (Postfix) with ESMTP id 5B186B6F5C
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 05:47:19 +1000 (EST)
-Date: Tue, 14 Jun 2011 21:31:06 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 00/15]  Backport 8xx TLB to 2.4
-Message-ID: <20110614193106.GA15583@1wt.eu>
-References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <B04825@freescale.com>
+Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
+	[213.199.154.142])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 20B70B6F77
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 06:02:25 +1000 (EST)
+Message-ID: <4DF7BE43.1010407@freescale.com>
+Date: Tue, 14 Jun 2011 15:02:11 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
+Subject: Re: Mapping an executable page
+References: <BANLkTikd3ZtNRcz=ZWSsDL9OoeV0Wndy1g@mail.gmail.com>	<BANLkTinOxqF=TcBxQOsfJSot-1XH3iErXA@mail.gmail.com>
+	<BANLkTimhKOvY8XA=_20rjtkZ0Um45o2Bow@mail.gmail.com>
+In-Reply-To: <BANLkTimhKOvY8XA=_20rjtkZ0Um45o2Bow@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joakim,
+Thomas De Schampheleire wrote:
 
-On Tue, Jun 14, 2011 at 03:54:45PM +0200, Joakim Tjernlund wrote:
-> This is a backport from 2.6 which I did to overcome 8xx CPU
-> bugs. 8xx does not update the DAR register when taking a TLB
-> error caused by dcbX and icbi insns which makes it very
-> tricky to use these insns. Also the dcbst wrongly sets the
-> the store bit when faulting into DTLB error.
-> A few more bugs very found during development.
+> * However, if you jump to an address in that page, you'll have to make
+> sure that the entire code that executes is mapped (make map_size large
+> enough).
+
+Well, that seems obvious.
+
+> * When that range spanned multiple pages, I faced the issue of only
+> one page being actually mapped in the TLBs. My assumption is that the
+> call to __ioremap not necessarily updates the TLBs, but mainly some
+> kernel-internal tables. The actual TLB mapping presumably happens when
+> a data exception occurs.
+
+Hmmm.... I find that surprising.  Memory allocated via ioremap() is supposed to
+be available in interrupt handlers, where TLB mappings can't be created
+on-the-fly.  I'm not sure that your observation is correct.
+
+> * Therefore, to make sure that the mapping I intended with __ioremap()
+> is actually reflected in the TLB tables, I added dummy reads of each
+> page in the TLB, prior to jumping to the boot code, as follows:
+>                 /* make sure memory is read, once every 4Kbyte is enough */
+>                 for (p = vaddr; p < vaddr + map_size; p += 0x1000) {
+
+You should at least use PAGE_SIZE instead of 0x1000.
+
+>                         unsigned long dummy = *(volatile unsigned long *)p;
+>                         (void)dummy;
+>                 }
 > 
-> I know 2.4 is in strict maintenance mode and 8xx is obsolete
-> but as it is still in use I wanted 8xx to age with grace.
+> * After these changes (make sure all code is mapped + make sure to
+> read all pages so that the TLBs are updated), my scenario works fine.
 
-OK, I'm not opposed to merge these patches and I really welcome your
-work and want to thank you for having done it. However, I have
-absolutely *zero* skills on ppc, so I want to ensure that someone
-(possibly you) will be able to back me up in case of reported
-regressions once these patches are merged. Since you say that the
-code works on your board, I'm not much worried but at least Dan's
-comment about the risk of performance regression has to be considered.
-If we all agree that it's a tradeoff between performance and stability
-or security, then that's a different matter of course !
+I still find it hard to believe that this is necessary.
 
-Thanks !
-Willy
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
