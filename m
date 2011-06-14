@@ -1,17 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
-	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ppc6dev@digitaldans.com>
+Received: from digitaldans.com (digitaldans.com [69.36.177.99])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D735CB6FF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 00:05:45 +1000 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Willy Tarreau <w@1wt.eu>, Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 01/15] 8xx: Use a macro to simpliy CPU6 errata code.
-Date: Tue, 14 Jun 2011 15:54:46 +0200
-Message-Id: <1308059700-10839-2-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	by ozlabs.org (Postfix) with ESMTPS id C5DFFB6F9E
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 02:16:04 +1000 (EST)
+Message-Id: <53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
+From: Dan Malek <ppc6dev@digitaldans.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <1308059700-10839-7-git-send-email-Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH 06/15] 8xx: Always pin kernel instruction TLB
+Date: Tue, 14 Jun 2011 09:06:45 -0700
 References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1308059700-10839-7-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,191 +26,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
- arch/ppc/kernel/head_8xx.S |   84 +++++++++++--------------------------------
- 1 files changed, 22 insertions(+), 62 deletions(-)
+Hi Joakim.
 
-diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-index f9a30f3..ba05a57 100644
---- a/arch/ppc/kernel/head_8xx.S
-+++ b/arch/ppc/kernel/head_8xx.S
-@@ -31,6 +31,15 @@
- #include <asm/ppc_asm.h>
- #include "ppc_defs.h"
- 
-+/* Macro to make the code more readable. */
-+#ifdef CONFIG_8xx_CPU6
-+  #define DO_8xx_CPU6(val, reg) \
-+	li	reg, val; \
-+	stw	reg, 12(r0); \
-+	lwz	reg, 12(r0);
-+#else
-+  #define DO_8xx_CPU6(val, reg)
-+#endif
- 	.text
- 	.globl	_stext
- _stext:
-@@ -310,20 +319,14 @@ SystemCall:
- InstructionTLBMiss:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
--	li	r3, 0x3f80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
- #endif
-+	DO_8xx_CPU6(0x3f80, r3)
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
- 	mfcr	r20
- 	stw	r20, 0(r0)
- 	stw	r21, 4(r0)
- 	mfspr	r20, SRR0	/* Get effective address of fault */
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3780
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3780, r3)
- 	mtspr	MD_EPN, r20	/* Have to use MD_EPN for walk, MI_EPN can't */
- 	mfspr	r20, M_TWB	/* Get level 1 table entry address */
- 
-@@ -345,17 +348,9 @@ InstructionTLBMiss:
- 	tophys(r21,r21)
- 	ori	r21,r21,1		/* Set valid bit */
- 	beq-	2f			/* If zero, don't try to find a pte */
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x2b80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x2b80, r3)
- 	mtspr	MI_TWC, r21	/* Set segment attributes */
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3b80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	MD_TWC, r21	/* Load pte table base address */
- 	mfspr	r21, MD_TWC	/* ....and get the pte address */
- 	lwz	r20, 0(r21)	/* Get the pte */
-@@ -371,12 +366,7 @@ InstructionTLBMiss:
- 	 */
- 2:	li	r21, 0x00f0
- 	rlwimi	r20, r21, 0, 24, 28	/* Set 24-27, clear 28 */
--
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x2d80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x2d80, r3)
- 	mtspr	MI_RPN, r20	/* Update TLB entry */
- 
- 	mfspr	r20, M_TW	/* Restore registers */
-@@ -392,10 +382,8 @@ InstructionTLBMiss:
- DataStoreTLBMiss:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
--	li	r3, 0x3f80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
- #endif
-+	DO_8xx_CPU6(0x3f80, r3)
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
- 	mfcr	r20
- 	stw	r20, 0(r0)
-@@ -419,11 +407,7 @@ DataStoreTLBMiss:
- 	tophys(r21, r21)
- 	ori	r21, r21, 1	/* Set valid bit in physical L2 page */
- 	beq-	2f		/* If zero, don't try to find a pte */
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3b80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	MD_TWC, r21	/* Load pte table base address */
- 	mfspr	r20, MD_TWC	/* ....and get the pte address */
- 	lwz	r20, 0(r20)	/* Get the pte */
-@@ -435,11 +419,7 @@ DataStoreTLBMiss:
- 	 * above.
- 	 */
- 	rlwimi	r21, r20, 0, 27, 27
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3b80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	MD_TWC, r21
- 
- 	mfspr	r21, MD_TWC	/* get the pte address again */
-@@ -454,12 +434,7 @@ DataStoreTLBMiss:
- 	 */
- 2:	li	r21, 0x00f0
- 	rlwimi	r20, r21, 0, 24, 28	/* Set 24-27, clear 28 */
--
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3d80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	MD_RPN, r20	/* Update TLB entry */
- 
- 	mfspr	r20, M_TW	/* Restore registers */
-@@ -491,10 +466,8 @@ InstructionTLBError:
- DataTLBError:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
--	li	r3, 0x3f80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
- #endif
-+	DO_8xx_CPU6(0x3f80, r3)
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
- 	mfcr	r20
- 	stw	r20, 0(r0)
-@@ -527,11 +500,7 @@ DataTLBError:
- 	ori	r21, r21, MD_EVALID
- 	mfspr	r20, M_CASID
- 	rlwimi	r21, r20, 0, 28, 31
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3780
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3780, r3)
- 	mtspr	MD_EPN, r21
- 
- 	mfspr	r20, M_TWB	/* Get level 1 table entry address */
-@@ -553,11 +522,7 @@ DataTLBError:
- 	 */
- 	tophys(r21, r21)
- 	ori	r21, r21, 1		/* Set valid bit in physical L2 page */
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3b80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	MD_TWC, r21		/* Load pte table base address */
- 	mfspr	r21, MD_TWC		/* ....and get the pte address */
- 	lwz	r20, 0(r21)		/* Get the pte */
-@@ -579,12 +544,7 @@ DataTLBError:
- 	 */
- 	li	r21, 0x00f0
- 	rlwimi	r20, r21, 0, 24, 28	/* Set 24-27, clear 28 */
--
--#ifdef CONFIG_8xx_CPU6
--	li	r3, 0x3d80
--	stw	r3, 12(r0)
--	lwz	r3, 12(r0)
--#endif
-+	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	MD_RPN, r20	/* Update TLB entry */
- 
- 	mfspr	r20, M_TW	/* Restore registers */
--- 
-1.7.3.4
+On Jun 14, 2011, at 6:54 AM, Joakim Tjernlund wrote:
+
+> Various kernel asm modifies SRR0/SRR1 just before executing
+> a rfi. .....
+
+I'm going to argue we can easily visually inspect for this
+since the code is static with just a couple of RFIs in these
+exception handlers.
+
+Some 8xx processors have few TLB entries, and always taking
+one for the kernel, especially if it isn't needed, could have a
+detrimental effect on the application performance.  Even the
+"big" 8xx processors don't have that many entries.  Some
+benchmarks run on an MPC850 would likely show this.
+
+Anyone making modifications to this level of software should
+know of this problem, or make it known in a comment.  If you
+are making changes, just compile the code and manually
+check it with the couple of configuration options that affect
+the placement of the instructions.
+
+The better solution would be supporting large page sizes,
+at least for the kernel.
+
+Thanks.
+
+	-- Dan
