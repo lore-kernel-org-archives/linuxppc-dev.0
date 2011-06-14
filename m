@@ -1,24 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 43400B6F92
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 05:04:45 +1000 (EST)
-Date: Tue, 14 Jun 2011 14:04:31 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Steve Best <sfbest@us.ibm.com>
-Subject: Re: [PATCH] powerpc/mm: add devmem_is_allowed() for STRICT_DEVMEM
-	checking
-Message-ID: <20110614140431.31ae4357@schlenkerla.am.freescale.net>
-In-Reply-To: <1308075422.13495.8.camel@dhcp-100-2-27.bos.redhat.com>
-References: <20110614165011.23034.66685.sendpatchset@squad5-lp1.lab.bos.redhat.com>
-	<1308072658.2452.10.camel@orca.stoopid.dyndns.org>
-	<1308075422.13495.8.camel@dhcp-100-2-27.bos.redhat.com>
+	by ozlabs.org (Postfix) with ESMTPS id 2F0AFB6F92
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 05:07:30 +1000 (EST)
+Received: from mail39-va3 (localhost.localdomain [127.0.0.1])	by
+	mail39-va3-R.bigfish.com (Postfix) with ESMTP id D98BF1138396	for
+	<linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 19:07:25 +0000 (UTC)
+Received: from VA3EHSMHS011.bigfish.com (unknown [10.7.14.236])	by
+	mail39-va3.bigfish.com (Postfix) with ESMTP id 3EDB66E027C	for
+	<linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 19:06:19 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: add hypervisor config entries to
+	corenet_smp_defconfig
+Date: Tue, 14 Jun 2011 14:06:15 -0500
+Message-ID: <1308078375-27245-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, Nathan Lynch <ntl@pobox.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Jun 2011 14:17:01 -0400
-Steve Best <sfbest@us.ibm.com> wrote:
+CONFIG_PPC_EPAPR_HV_BYTECHAN adds support for the Freescale hypervisor
+byte channel tty driver.
 
-> On Tue, 2011-06-14 at 12:30 -0500, Nathan Lynch wrote:
-> > Hi Steve,
-> > 
-> > On Tue, 2011-06-14 at 12:58 -0400, Steve Best wrote:
-> > > +/*
-> > > + * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-> > > + * is valid. The argument is a physical page number.
-> > > + *
-> > > + * On PowerPC, access has to be given to data regions used by X. We have to
-> > > + * disallow access to device-exclusive MMIO regions and system RAM. 
-> > > + */
-> > > +int devmem_is_allowed(unsigned long pfn)
-> > > +{
-> > > +        if ((pfn >= 57360 || pfn <= 57392))
-> > > +                return 1;
-> > 
-> > That seems... fragile.  Where do these numbers come from, and are they
-> > appropriate for all platforms and configurations?
-> 
-> This is the range I got from testing pseries blades and servers. maybe
-> there is a better way to get this range anyone know of a way?
+CONFIG_VIRT_DRIVERS and CONFIG_FSL_HV_MANAGER add support for the Freescale
+hypervisor management driver.
 
-Use iomem_is_exclusive(), as other architectures (e.g. x86, arm) do.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Anything else is both platform-specific, and inappropriate hardcoding of
-policy.
-
--Scott
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index de9bd16..75fd124 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -108,6 +108,7 @@ CONFIG_FSL_PQ_MDIO=y
+ # CONFIG_INPUT_MOUSE is not set
+ CONFIG_SERIO_LIBPS2=y
+ # CONFIG_LEGACY_PTYS is not set
++CONFIG_PPC_EPAPR_HV_BYTECHAN=y
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_8250_EXTENDED=y
+@@ -149,6 +150,8 @@ CONFIG_STAGING=y
+ CONFIG_HUGETLBFS=y
+ CONFIG_HUGETLB_PAGE=y
+ # CONFIG_STAGING_EXCLUDE_BUILD is not set
++CONFIG_VIRT_DRIVERS=y
++CONFIG_FSL_HV_MANAGER=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-- 
+1.7.4.4
