@@ -1,28 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 58EBFB6F6C
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9AF8DB6FAB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jun 2011 15:00:13 +1000 (EST)
-Subject: Re: [PATCH] slub: fix kernel BUG at mm/slub.c:1950!
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>
-In-Reply-To: <BANLkTik-KGtuoVFKvy_rk7voBRAxSsR9FRg0fhb0k3NCSg-fWQ@mail.gmail.com>
-References: <alpine.LSU.2.00.1106121842250.31463@sister.anvils>
-	<alpine.DEB.2.00.1106131258300.3108@router.home>
-	<1307990048.11288.3.camel@jaguar>
-	<alpine.DEB.2.00.1106131428560.5601@router.home>
-	<BANLkTi=RYq0Dd210VC+NeTXWWuFbz7cxeg@mail.gmail.com>
-	<BANLkTik-KGtuoVFKvy_rk7voBRAxSsR9FRg0fhb0k3NCSg-fWQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 14 Jun 2011 14:51:18 +1000
-Message-ID: <1308027078.2874.1005.camel@pasglop>
-Mime-Version: 1.0
-Cc: Pekka Enberg <penberg@kernel.org>, linux-mm <linux-mm@kvack.org>,
-	Christoph Lameter <cl@linux.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
+	Tue, 14 Jun 2011 15:22:31 +1000 (EST)
+Received: by eyg5 with SMTP id 5so1855952eyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 13 Jun 2011 22:22:25 -0700 (PDT)
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] tqm8540: add description for onboard flash
+Date: Tue, 14 Jun 2011 09:22:27 +0400
+Message-Id: <1308028947-8738-1-git-send-email-dbaryshkov@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-06-13 at 14:00 -0700, Hugh Dickins wrote:
-> On Mon, Jun 13, 2011 at 1:34 PM, Pekka Enberg <penberg@kernel.org> wrote:
-> > On Mon, Jun 13, 2011 at 10:29 PM, Christoph Lameter <cl@linux.com> wrote:
-> >> On Mon, 13 Jun 2011, Pekka Enberg wrote:
-> >>
-> >>> > Hmmm.. The allocpercpu in alloc_kmem_cache_cpus should take care of the
-> >>> > alignment. Uhh.. I see that a patch that removes the #ifdef CMPXCHG_LOCAL
-> >>> > was not applied? Pekka?
-> >>>
-> >>> This patch?
-> >>>
-> >>> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=d4d84fef6d0366b585b7de13527a0faeca84d9ce
-> >>>
-> >>> It's queued and will be sent to Linus soon.
-> >>
-> >> Ok it will also fix Hugh's problem then.
-> >
-> > It's in Linus' tree now. Hugh, can you please confirm it fixes your machine too?
-> 
-> I expect it to, thanks: I'll confirm tonight.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/powerpc/boot/dts/tqm8540.dts |   40 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 40 insertions(+), 0 deletions(-)
 
->From report to resolution before I got to read the thread, that's how I
-like them ! Thanks guys :-)
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/boot/dts/tqm8540.dts b/arch/powerpc/boot/dts/tqm8540.dts
+index b5c0940..987c862 100644
+--- a/arch/powerpc/boot/dts/tqm8540.dts
++++ b/arch/powerpc/boot/dts/tqm8540.dts
+@@ -278,6 +278,46 @@
+ 		};
+ 	};
+ 
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8540-localbus", "fsl,pq3-localbus",
++			     "simple-bus";
++		reg = <0xe0005000 0x1000>;
++
++		ranges = <0x0 0x0 0xfe000000 0x02000000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x02000000>;
++			bank-width = <4>;
++			device-width = <2>;
++			partition@0 {
++				label = "kernel";
++				reg = <0x00000000 0x00180000>;
++			};
++			partition@180000 {
++				label = "root";
++				reg = <0x00180000 0x01dc0000>;
++			};
++			partition@1f40000 {
++				label = "env1";
++				reg = <0x01f40000 0x00040000>;
++			};
++			partition@1f80000 {
++				label = "env2";
++				reg = <0x01f80000 0x00040000>;
++			};
++			partition@1fc0000 {
++				label = "u-boot";
++				reg = <0x01fc0000 0x00040000>;
++				read-only;
++			};
++		};
++	};
++
+ 	pci0: pci@e0008000 {
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+-- 
+1.7.5.3
