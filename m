@@ -1,19 +1,22 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-pb-sasl-sd.pobox.com [64.74.157.62])
-	by ozlabs.org (Postfix) with ESMTP id CA430B6F99
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 03:36:47 +1000 (EST)
-Subject: Re: [PATCH] powerpc/mm: add devmem_is_allowed() for STRICT_DEVMEM
-	checking
-From: Nathan Lynch <ntl@pobox.com>
-To: Steve Best <sfbest@us.ibm.com>
-Date: Tue, 14 Jun 2011 12:30:57 -0500
-In-Reply-To: <20110614165011.23034.66685.sendpatchset@squad5-lp1.lab.bos.redhat.com>
-References: <20110614165011.23034.66685.sendpatchset@squad5-lp1.lab.bos.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1308072658.2452.10.camel@orca.stoopid.dyndns.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6BFF1B6FA7
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 04:00:14 +1000 (EST)
+In-Reply-To: <53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
+References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1308059700-10839-7-git-send-email-Joakim.Tjernlund@transmode.se>
+	<53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
+Subject: Re: [PATCH 06/15] 8xx: Always pin kernel instruction TLB
+To: Dan Malek <ppc6dev@digitaldans.com>
+Message-ID: <OF75A64D65.5ABAA9A9-ONC12578AF.0062124A-C12578AF.0062E416@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 14 Jun 2011 20:00:09 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Steve,
+Dan Malek <ppc6dev@digitaldans.com> wrote on 2011/06/14 18:06:45:
+>
+>
+> Hi Joakim.
+>
+> On Jun 14, 2011, at 6:54 AM, Joakim Tjernlund wrote:
+>
+> > Various kernel asm modifies SRR0/SRR1 just before executing
+> > a rfi. .....
+>
+> I'm going to argue we can easily visually inspect for this
+> since the code is static with just a couple of RFIs in these
+> exception handlers.
 
-On Tue, 2011-06-14 at 12:58 -0400, Steve Best wrote:
-> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> index e72dcf6..e1aab6b 100644
-> --- a/arch/powerpc/Kconfig.debug
-> +++ b/arch/powerpc/Kconfig.debug
-> @@ -283,4 +283,15 @@ config PPC_EARLY_DEBUG_CPM_ADDR
->  	  platform probing is done, all platforms selected must
->  	  share the same address.
->  
-> +config STRICT_DEVMEM
-> +        def_bool y
+Yes, but then you also miss out on 8xx: Optimize ITLBMiss handler.
 
-Default new config items to n, please.
+>
+> Some 8xx processors have few TLB entries, and always taking
+> one for the kernel, especially if it isn't needed, could have a
+> detrimental effect on the application performance.  Even the
+> "big" 8xx processors don't have that many entries.  Some
+> benchmarks run on an MPC850 would likely show this.
 
+I don't have a mpc850, do you?
 
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -520,3 +520,21 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
->  	hash_preload(vma->vm_mm, address, access, trap);
->  #endif /* CONFIG_PPC_STD_MMU */
->  }
-> +
-> +/*
-> + * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-> + * is valid. The argument is a physical page number.
-> + *
-> + * On PowerPC, access has to be given to data regions used by X. We have to
-> + * disallow access to device-exclusive MMIO regions and system RAM. 
-> + */
-> +int devmem_is_allowed(unsigned long pfn)
-> +{
-> +        if ((pfn >= 57360 || pfn <= 57392))
-> +                return 1;
+>
+> Anyone making modifications to this level of software should
+> know of this problem, or make it known in a comment.  If you
+> are making changes, just compile the code and manually
+> check it with the couple of configuration options that affect
+> the placement of the instructions.
 
-That seems... fragile.  Where do these numbers come from, and are they
-appropriate for all platforms and configurations?
+Very fragile but then again, not much are expected to change
+in this area for 8xx.
+
+>
+> The better solution would be supporting large page sizes,
+> at least for the kernel.
+
+Probably but that is another matter. You could continue with that
+if you like but I am stopping here ATM.
