@@ -2,14 +2,16 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
 	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A840B709E
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 00:05:41 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 53A86B7106
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 00:05:42 +1000 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: Willy Tarreau <w@1wt.eu>, Scott Wood <scottwood@freescale.com>,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 00/15]  Backport 8xx TLB to 2.4
-Date: Tue, 14 Jun 2011 15:54:45 +0200
-Message-Id: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 14/15] 8xx: Optimize ITLBMiss handler.
+Date: Tue, 14 Jun 2011 15:54:59 +0200
+Message-Id: <1308059700-10839-15-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,42 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a backport from 2.6 which I did to overcome 8xx CPU
-bugs. 8xx does not update the DAR register when taking a TLB
-error caused by dcbX and icbi insns which makes it very
-tricky to use these insns. Also the dcbst wrongly sets the
-the store bit when faulting into DTLB error.
-A few more bugs very found during development.
+Don't check for kernel space if no modules.
 
-I know 2.4 is in strict maintenance mode and 8xx is obsolete
-but as it is still in use I wanted 8xx to age with grace.
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+---
+ arch/ppc/kernel/head_8xx.S |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Addendum:
-I have now ported our 8xx custom board to 2.4.37.11 and
-tested these patches there.
-
-Joakim Tjernlund (15):
-  8xx: Use a macro to simpliy CPU6 errata code.
-  8xx: Tag DAR with 0x00f0 to catch buggy instructions.
-  8xx: invalidate non present TLBs
-  8xx: Fix CONFIG_PIN_TLB
-  8xx: Update TLB asm so it behaves as linux mm expects.
-  8xx: Always pin kernel instruction TLB
-  8xx: Fixup DAR from buggy dcbX instructions.
-  8xx: CPU6 errata make DTLB error too big to fit.
-  8xx: Add missing Guarded setting in DTLB Error.
-  8xx: Restore _PAGE_WRITETHRU
-  8xx: Set correct HW pte flags in DTLB Error too
-  8xx: start using dcbX instructions in various copy routines
-  8xx: Use symbolic constants in TLB asm
-  8xx: Optimize ITLBMiss handler.
-  8xx: Optimize TLB Miss handlers
-
- arch/ppc/kernel/head_8xx.S |  381 ++++++++++++++++++++++++++++++-------------
- arch/ppc/kernel/misc.S     |   18 --
- arch/ppc/lib/string.S      |   17 --
- include/asm-ppc/pgtable.h  |   16 +-
- 4 files changed, 274 insertions(+), 158 deletions(-)
-
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index a4290b5..7f9e647 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -355,12 +355,17 @@ InstructionTLBMiss:
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
++#ifdef CONFIG_MODULES
++	/* Since we PIN the first 8MB text, we only get ITLB misses
++	 * for modules
++	 */
+ 	andi.	r21, r20, 0x0800	/* Address >= 0x80000000 */
+ 	beq	3f
+ 	lis	r21, swapper_pg_dir@h
+ 	ori	r21, r21, swapper_pg_dir@l
+ 	rlwimi	r20, r21, 0, 2, 19
+ 3:
++#endif
+ 	lwz	r21, 0(r20)	/* Get the level 1 entry */
+ 	rlwinm.	r20, r21,0,0,19	/* Extract page descriptor page address */
+ 
 -- 
 1.7.3.4
