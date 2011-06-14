@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 62554B6FC4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jun 2011 17:05:32 +1000 (EST)
-Subject: Re: [PATCH 1/1] Big endian swap for Marvell 6440 SAS driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?C=E9dric?= Cano <ccano@interfaceconcept.com>
-In-Reply-To: <4DF702F3.704@interfaceconcept.com>
-References: <4DF2228E.7060806@ic.fr> <1307832356.2874.312.camel@pasglop>
-	<4DF702F3.704@interfaceconcept.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 14 Jun 2011 17:05:23 +1000
-Message-ID: <1308035123.2874.1055.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org
+Return-Path: <patrickdepinguin@gmail.com>
+Received: from mail-yi0-f42.google.com (mail-yi0-f42.google.com
+	[209.85.218.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8A2FEB6FB4
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 18:56:35 +1000 (EST)
+Received: by yih10 with SMTP id 10so3710167yih.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 01:56:31 -0700 (PDT)
+MIME-Version: 1.0
+Sender: patrickdepinguin@gmail.com
+In-Reply-To: <BANLkTinOxqF=TcBxQOsfJSot-1XH3iErXA@mail.gmail.com>
+References: <BANLkTikd3ZtNRcz=ZWSsDL9OoeV0Wndy1g@mail.gmail.com>
+	<BANLkTinOxqF=TcBxQOsfJSot-1XH3iErXA@mail.gmail.com>
+Date: Tue, 14 Jun 2011 10:56:31 +0200
+Message-ID: <BANLkTimhKOvY8XA=_20rjtkZ0Um45o2Bow@mail.gmail.com>
+Subject: Re: Mapping an executable page
+From: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-06-14 at 08:42 +0200, Cédric Cano wrote:
-> Hi Ben,
-> 
-> You're alright! I hadn't thought to use le32_to_cpu.
-> Do you want I make a new patch?
+Hi,
 
-Well, I'm not the maintainer of the subsystem or of the driver, so I'm
-not going to be the one accepting/merging it :-)
+On Sun, May 29, 2011 at 4:53 PM, Tabi Timur-B04825 <B04825@freescale.com> w=
+rote:
+> On Fri, May 27, 2011 at 8:25 AM, Thomas De Schampheleire
+> <patrickdepinguin+linuxppc@gmail.com> wrote:
+>
+>> Although I realize that what I need to achieve is unconventional, what
+>> is the correct way of mapping a certain address range into memory, and
+>> be able to execute from it?
+>
+> Have you tried looking at the actual TLB entry for this page to see if
+> it's correct? =A0Also, you might need to do some kind of instruction
+> cache flushing before you jump to that page.
 
-I'm just reviewing the patch, but yes, I think you should, and you
-should send it to the right people, ie, I think at least linux-scsi and
-possibly the author/maintainer of the driver itself.
+Sorry to have delayed this so long.
+I had to do quite some experimentation to get it finally working. Here
+are my findings:
+* to map a page as executable, the following does indeed work:
+void __iomem *vaddr =3D __ioremap(map_start, map_size, (_PAGE_BASE |
+_PAGE_KERNEL_RWX));
 
-Cheers,
-Ben.
+* However, if you jump to an address in that page, you'll have to make
+sure that the entire code that executes is mapped (make map_size large
+enough).
 
-> Cedric
-> 
-> Le 12/06/2011 00:45, Benjamin Herrenschmidt a écrit :
-> > On Fri, 2011-06-10 at 15:56 +0200, Cédric Cano wrote:
-> >> Hi,
-> >>
-> >> Marvell SAS driver doesn't work on powerpc architecture due to big
-> >> endian swap. I've tested it with the MV6440 chip.
-> >> Here you can find the patch for Linux 2.6.39.1.
-> >>
-> >> Cedric Cano
-> >>
-> >> Signed-off-by: Cedric Cano<ccano@interfaceconcept.com>
-> >> ---
-> >> --- drivers/scsi/mvsas/mv_sas.c    2011-06-10 15:50:04.000000000 +0200
-> >> +++ drivers/scsi/mvsas/mv_sas.c    2011-06-10 15:50:12.000000000 +0200
-> >> @@ -1143,6 +1143,14 @@
-> >>        MVS_CHIP_DISP->write_port_cfg_addr(mvi, i, PHYR_SATA_SIG0);
-> >>        s[0] = MVS_CHIP_DISP->read_port_cfg_data(mvi, i);
-> >>
-> >> +    /* swap for big endian devices because of use of these data in bytes */
-> >> +#ifdef __BIG_ENDIAN
-> >> +    s[0] = swab32(s[0]);
-> >> +    s[1] = swab32(s[1]);
-> >> +    s[2] = swab32(s[2]);
-> >> +    s[3] = swab32(s[3]);
-> >> +#endif /* __BIG_ENDIAN */
-> > Hi Cedric !
-> >
-> > Thanks for this. CC'ing linux-scsi.
-> >
-> > Note that it would probably have been better to use le32_to_cpu, which
-> > avoids the ifdef completely.
-> >
-> > Cheers,
-> > Ben.
-> >
-> >>        /* Workaround: take some ATAPI devices for ATA */
-> >>        if (((s[1]&  0x00FFFFFF) == 0x00EB1401)&&  (*(u8 *)&s[3] == 0x01))
-> >>            s[1] = 0x00EB1401 | (*((u8 *)&s[1] + 3)&  0x10);
-> >>
-> >> ---
-> >> _______________________________________________
-> >> Linuxppc-dev mailing list
-> >> Linuxppc-dev@lists.ozlabs.org
-> >> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> >
-> >
+* When that range spanned multiple pages, I faced the issue of only
+one page being actually mapped in the TLBs. My assumption is that the
+call to __ioremap not necessarily updates the TLBs, but mainly some
+kernel-internal tables. The actual TLB mapping presumably happens when
+a data exception occurs.
+Unfortunately, since I left the Linux kernel and jumped to other
+(boot) code that reassigns the exception vectors, the kernel-internal
+tables are not used anymore, and the exception handler cannot update
+the TLBs correctly.
+
+* Therefore, to make sure that the mapping I intended with __ioremap()
+is actually reflected in the TLB tables, I added dummy reads of each
+page in the TLB, prior to jumping to the boot code, as follows:
+                /* make sure memory is read, once every 4Kbyte is enough */
+                for (p =3D vaddr; p < vaddr + map_size; p +=3D 0x1000) {
+                        unsigned long dummy =3D *(volatile unsigned long *)=
+p;
+                        (void)dummy;
+                }
+
+* After these changes (make sure all code is mapped + make sure to
+read all pages so that the TLBs are updated), my scenario works fine.
+
+Best regards,
+Thomas
