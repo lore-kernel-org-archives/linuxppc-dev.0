@@ -2,14 +2,14 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
 	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 115EBB716F
+	by ozlabs.org (Postfix) with ESMTPS id 2A3F5B717E
 	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 00:05:43 +1000 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: Willy Tarreau <w@1wt.eu>, Scott Wood <scottwood@freescale.com>,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 10/15] 8xx: Restore _PAGE_WRITETHRU
-Date: Tue, 14 Jun 2011 15:54:55 +0200
-Message-Id: <1308059700-10839-11-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 04/15] 8xx: Fix CONFIG_PIN_TLB
+Date: Tue, 14 Jun 2011 15:54:49 +0200
+Message-Id: <1308059700-10839-5-git-send-email-Joakim.Tjernlund@transmode.se>
 In-Reply-To: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
 References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,61 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-8xx has not had WRITETHRU due to lack of bits in the pte.
-After the recent rewrite of the 8xx TLB code, there are
-two bits left. Use one of them to WRITETHRU.
+The wrong register was loaded into MD_RPN.
 
 Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 ---
- arch/ppc/kernel/head_8xx.S |    8 ++++++++
- include/asm-ppc/pgtable.h  |    5 +++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ arch/ppc/kernel/head_8xx.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-index 199ede5..a29a011 100644
+index b3aff21..9d8a1b5 100644
 --- a/arch/ppc/kernel/head_8xx.S
 +++ b/arch/ppc/kernel/head_8xx.S
-@@ -443,6 +443,10 @@ DataStoreTLBMiss:
- 	 * above.
- 	 */
- 	rlwimi	r21, r20, 0, 27, 27
-+	/* Insert the WriteThru flag into the TWC from the Linux PTE.
-+	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
-+	 */
-+	rlwimi	r21, r20, 32-5, 30, 30
- 	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	MD_TWC, r21
+@@ -848,13 +848,13 @@ initial_mmu:
+ 	mtspr	MD_TWC, r9
+ 	li	r11, MI_BOOTINIT	/* Create RPN for address 0 */
+ 	addis	r11, r11, 0x0080	/* Add 8M */
+-	mtspr	MD_RPN, r8
++	mtspr	MD_RPN, r11
  
-@@ -579,6 +583,10 @@ DARFixed:
- 	 * It is bit 27 of both the Linux PTE and the TWC
- 	 */
- 	rlwimi	r21, r20, 0, 27, 27
-+	/* Insert the WriteThru flag into the TWC from the Linux PTE.
-+	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
-+	 */
-+	rlwimi	r21, r20, 32-5, 30, 30
- 	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	MD_TWC, r21
- 	mfspr	r21, MD_TWC		/* get the pte address again */
-diff --git a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
-index 2ba37d3..6cfc5fc 100644
---- a/include/asm-ppc/pgtable.h
-+++ b/include/asm-ppc/pgtable.h
-@@ -298,12 +298,13 @@ extern unsigned long vmalloc_start;
- #define _PAGE_NO_CACHE	0x0002	/* I: cache inhibit */
- #define _PAGE_SHARED	0x0004	/* No ASID (context) compare */
+ 	addis	r8, r8, 0x0080		/* Add 8M */
+ 	mtspr	MD_EPN, r8
+ 	mtspr	MD_TWC, r9
+ 	addis	r11, r11, 0x0080	/* Add 8M */
+-	mtspr	MD_RPN, r8
++	mtspr	MD_RPN, r11
+ #endif
  
--/* These three software bits must be masked out when the entry is loaded
-- * into the TLB, 2 SW bits free.
-+/* These four software bits must be masked out when the entry is loaded
-+ * into the TLB, 1 SW bits left(0x0080).
-  */
- #define _PAGE_EXEC	0x0008	/* software: i-cache coherency required */
- #define _PAGE_GUARDED	0x0010	/* software: guarded access */
- #define _PAGE_ACCESSED	0x0020	/* software: page referenced */
-+#define _PAGE_WRITETHRU	0x0040	/* software: caching is write through */
- 
- /* Setting any bits in the nibble with the follow two controls will
-  * require a TLB exception handler change.  It is assumed unused bits
+ 	/* Since the cache is enabled according to the information we
 -- 
 1.7.3.4
