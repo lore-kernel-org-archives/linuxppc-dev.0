@@ -1,47 +1,25 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	by ozlabs.org (Postfix) with ESMTP id A96BCB6F88
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 08:18:37 +1000 (EST)
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Ralf Baechle <ralf@linux-mips.org>, "linux-arch@vger.kernel.org"
-	<linux-arch@vger.kernel.org>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>, Chen Liqin <liqin.chen@sunplusct.com>, Chris
-	Metcalf <cmetcalf@tilera.com>, Chris Zankel <chris@zankel.net>, "David S.
-	Miller" <davem@davemloft.net>, "Yu, Fenghua" <fenghua.yu@intel.com>, Geert
-	Uytterhoeven <geert@linux-m68k.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
-	Helge Deller <deller@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar
-	<mingo@redhat.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, "James E.J.
-	Bottomley" <jejb@parisc-linux.org>,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Kyle McMartin <kyle@mcmartin.ca>, Lennox Wu <lennox.wu@gmail.com>, Matt
-	Turner <mattst88@gmail.com>, Michal Simek <monstr@monstr.eu>,
-	Mikael Starvik
-	<starvik@axis.com>, Paul Mackerras <paulus@samba.org>, Paul Mundt
-	<lethal@linux-sh.org>, Richard Henderson <rth@twiddle.net>, Russell King
-	<linux@arm.linux.org.uk>, "sparclinux@vger.kernel.org"
-	<sparclinux@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-	"x86@kernel.org" <x86@kernel.org>, Yoshinori Sato
-	<ysato@users.sourceforge.jp>
-Date: Tue, 14 Jun 2011 15:08:37 -0700
-Subject: RE: [RFC,PATCH] Cleanup PC parallel port Kconfig
-Message-ID: <987664A83D2D224EAE907B061CE93D5301E7281306@orsmsx505.amr.corp.intel.com>
-References: <20110614190850.GA13526@linux-mips.org>
-In-Reply-To: <20110614190850.GA13526@linux-mips.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B04825@freescale.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 74391B6F92
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 09:04:43 +1000 (EST)
+Received: from mail158-va3 (localhost.localdomain [127.0.0.1])	by
+	mail158-va3-R.bigfish.com (Postfix) with ESMTP id 54E3F19B8224	for
+	<linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 23:04:38 +0000 (UTC)
+Received: from VA3EHSMHS030.bigfish.com (unknown [10.7.14.244])	by
+	mail158-va3.bigfish.com (Postfix) with ESMTP id 0FBC3163004E	for
+	<linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 23:04:38 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <scottwood@freescale.com>,
+	<B29882@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: disable timebase synchronization under the
+	hypervisor
+Date: Tue, 14 Jun 2011 18:04:33 -0500
+Message-ID: <1308092673-13045-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
-	"linux-m68k@vger.kernel.org" <linux-m68k@vger.kernel.org>,
-	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-	"linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
-	"linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
-	"linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
-	"microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,24 +29,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 38280ef..849805a 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -23,6 +23,7 @@ config IA64
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_DMA_API_DEBUG
- 	select HAVE_GENERIC_HARDIRQS
-+	select HAVE_PC_PARPORT
- 	select GENERIC_IRQ_PROBE
- 	select GENERIC_PENDING_IRQ if SMP
- 	select IRQ_PER_CPU
+The Freescale hypervisor does not allow guests to write to the timebase
+registers (virtualizing the timebase register was deemed too complicated),
+so don't try to synchronize the timebase registers when we're running
+under the hypervisor.
 
-I took a look at the back of all my ia64 systems - none of them
-have a parallel port.  It seems unlikely that new systems will
-start adding parallel ports :-)
+This typically happens when kexec support is enabled.
 
-So even if I had a printer (or other device) that used a parallel
-port, I have no way to test it.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/platforms/85xx/p3041_ds.c |   11 +++++++++++
+ arch/powerpc/platforms/85xx/p4080_ds.c |   11 +++++++++++
+ arch/powerpc/platforms/85xx/p5020_ds.c |   11 +++++++++++
+ 3 files changed, 33 insertions(+), 0 deletions(-)
 
--Tony
+diff --git a/arch/powerpc/platforms/85xx/p3041_ds.c b/arch/powerpc/platforms/85xx/p3041_ds.c
+index c0242bc..8b651dfe 100644
+--- a/arch/powerpc/platforms/85xx/p3041_ds.c
++++ b/arch/powerpc/platforms/85xx/p3041_ds.c
+@@ -40,6 +40,9 @@
+ static int __init p3041_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
++#ifdef CONFIG_SMP
++	extern struct smp_ops_t smp_85xx_ops;
++#endif
+ 
+ 	if (of_flat_dt_is_compatible(root, "fsl,P3041DS"))
+ 		return 1;
+@@ -51,6 +54,14 @@ static int __init p3041_ds_probe(void)
+ 		ppc_md.restart = fsl_hv_restart;
+ 		ppc_md.power_off = fsl_hv_halt;
+ 		ppc_md.halt = fsl_hv_halt;
++#ifdef CONFIG_SMP
++		/*
++		 * Disable the timebase sync operations because we can't write
++		 * to the timebase registers under the hypervisor.
++		  */
++		smp_85xx_ops.give_timebase = NULL;
++		smp_85xx_ops.take_timebase = NULL;
++#endif
+ 		return 1;
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/85xx/p4080_ds.c b/arch/powerpc/platforms/85xx/p4080_ds.c
+index 32ea5eb..ae859ab 100644
+--- a/arch/powerpc/platforms/85xx/p4080_ds.c
++++ b/arch/powerpc/platforms/85xx/p4080_ds.c
+@@ -39,6 +39,9 @@
+ static int __init p4080_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
++#ifdef CONFIG_SMP
++	extern struct smp_ops_t smp_85xx_ops;
++#endif
+ 
+ 	if (of_flat_dt_is_compatible(root, "fsl,P4080DS"))
+ 		return 1;
+@@ -50,6 +53,14 @@ static int __init p4080_ds_probe(void)
+ 		ppc_md.restart = fsl_hv_restart;
+ 		ppc_md.power_off = fsl_hv_halt;
+ 		ppc_md.halt = fsl_hv_halt;
++#ifdef CONFIG_SMP
++		/*
++		 * Disable the timebase sync operations because we can't write
++		 * to the timebase registers under the hypervisor.
++		  */
++		smp_85xx_ops.give_timebase = NULL;
++		smp_85xx_ops.take_timebase = NULL;
++#endif
+ 		return 1;
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
+index 2ea9ccc..d951618 100644
+--- a/arch/powerpc/platforms/85xx/p5020_ds.c
++++ b/arch/powerpc/platforms/85xx/p5020_ds.c
+@@ -40,6 +40,9 @@
+ static int __init p5020_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
++#ifdef CONFIG_SMP
++	extern struct smp_ops_t smp_85xx_ops;
++#endif
+ 
+ 	if (of_flat_dt_is_compatible(root, "fsl,P5020DS"))
+ 		return 1;
+@@ -51,6 +54,14 @@ static int __init p5020_ds_probe(void)
+ 		ppc_md.restart = fsl_hv_restart;
+ 		ppc_md.power_off = fsl_hv_halt;
+ 		ppc_md.halt = fsl_hv_halt;
++#ifdef CONFIG_SMP
++		/*
++		 * Disable the timebase sync operations because we can't write
++		 * to the timebase registers under the hypervisor.
++		  */
++		smp_85xx_ops.give_timebase = NULL;
++		smp_85xx_ops.take_timebase = NULL;
++#endif
+ 		return 1;
+ 	}
+ 
+-- 
+1.7.3.4
