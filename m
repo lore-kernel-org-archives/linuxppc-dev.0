@@ -1,24 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
-	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1FE26B6F18
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 04:19:50 +1000 (EST)
-In-Reply-To: <792A171E-D1E1-4F35-8AC2-40C5A7519D78@digitaldans.com>
-References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1308059700-10839-7-git-send-email-Joakim.Tjernlund@transmode.se>
-	<53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
-	<OF75A64D65.5ABAA9A9-ONC12578AF.0062124A-C12578AF.0062E416@transmode.se>
-	<792A171E-D1E1-4F35-8AC2-40C5A7519D78@digitaldans.com>
-Subject: Re: [PATCH 06/15] 8xx: Always pin kernel instruction TLB
-To: Dan Malek <ppc6dev@digitaldans.com>
-Message-ID: <OFE1C7A791.6FB58D10-ONC12578AF.00643E11-C12578AF.0064AFEB@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 14 Jun 2011 20:19:46 +0200
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 29140B6F68
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Jun 2011 04:23:15 +1000 (EST)
+Received: by vws20 with SMTP id 20so5281007vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Jun 2011 11:23:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
+Date: Tue, 14 Jun 2011 13:23:12 -0500
+Message-ID: <BANLkTikLbhPhT=1LDK8qD1Hh32C0=Z0yiQ@mail.gmail.com>
+Subject: g4 cube [off topic query]
+From: kevin diggs <diggskevin38@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Malek <ppc6dev@digitaldans.com> wrote on 2011/06/14 20:11:18:
->
->
-> Hi Joakim.
->
-> On Jun 14, 2011, at 11:00 AM, Joakim Tjernlund wrote:
->
-> > I don't have a mpc850, do you?
->
-> I have to say I do :-)
+Hi,
 
-Good, you get to beat the crap out of it then :)
+Sorry for the noise ... But if anyone knows what a "Cube power button
+gasket" is made of please share! Is it conductive?
 
->
-> > Probably but that is another matter. You could continue with that
-> > if you like but I am stopping here ATM.
->
-> Oh, come on...  I've been thinking about this for years, wouldn't
-> you like to work on it?  It will be fun :-)
+Again, sorry for the noise. But I figured there might be some cube
+owners out here.
 
-Me too, but I didn't get very far though. Just had it in my mind but
-never got to actually looking at the code. Do you have some pointers?
+Thanks!
 
- Jocke
+kevin
