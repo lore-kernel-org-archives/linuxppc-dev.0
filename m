@@ -2,17 +2,16 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
 	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6BFF1B6FA7
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 04:00:14 +1000 (EST)
-In-Reply-To: <53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
+	by ozlabs.org (Postfix) with ESMTPS id 816B7B6F9B
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 04:10:40 +1000 (EST)
+In-Reply-To: <3BAC0423-7BD1-4BF2-8E5F-FCA7333CFCF5@digitaldans.com>
 References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1308059700-10839-7-git-send-email-Joakim.Tjernlund@transmode.se>
-	<53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
-Subject: Re: [PATCH 06/15] 8xx: Always pin kernel instruction TLB
-To: Dan Malek <ppc6dev@digitaldans.com>
-Message-ID: <OF75A64D65.5ABAA9A9-ONC12578AF.0062124A-C12578AF.0062E416@transmode.se>
+	<3BAC0423-7BD1-4BF2-8E5F-FCA7333CFCF5@digitaldans.com>
+Subject: Re: [PATCH 00/15]  Backport 8xx TLB to 2.4
+To: Dan Malek <digitaldans@digitaldans.com>
+Message-ID: <OFF583741A.88EB5253-ONC12578AF.00638C53-C12578AF.0063D920@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 14 Jun 2011 20:00:09 +0200
+Date: Tue, 14 Jun 2011 20:10:36 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -26,44 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Malek <ppc6dev@digitaldans.com> wrote on 2011/06/14 18:06:45:
+Dan Malek <digitaldans@digitaldans.com> wrote on 2011/06/14 18:11:51:
 >
 >
 > Hi Joakim.
 >
 > On Jun 14, 2011, at 6:54 AM, Joakim Tjernlund wrote:
 >
-> > Various kernel asm modifies SRR0/SRR1 just before executing
-> > a rfi. .....
+> > I know 2.4 is in strict maintenance mode and 8xx is obsolete
+> > but as it is still in use I wanted 8xx to age with grace.
 >
-> I'm going to argue we can easily visually inspect for this
-> since the code is static with just a couple of RFIs in these
-> exception handlers.
+> Thanks for your continued support.  I have recently become
+> involved in some 8xx development again, and have noticed
+> it is still used more than some may realize.
 
-Yes, but then you also miss out on 8xx: Optimize ITLBMiss handler.
+hehe, 8xx is still hanging on here to. The app. is still in development.
 
->
-> Some 8xx processors have few TLB entries, and always taking
-> one for the kernel, especially if it isn't needed, could have a
-> detrimental effect on the application performance.  Even the
-> "big" 8xx processors don't have that many entries.  Some
-> benchmarks run on an MPC850 would likely show this.
+I hope you will give these patches a go and let us know how it went?
 
-I don't have a mpc850, do you?
-
->
-> Anyone making modifications to this level of software should
-> know of this problem, or make it known in a comment.  If you
-> are making changes, just compile the code and manually
-> check it with the couple of configuration options that affect
-> the placement of the instructions.
-
-Very fragile but then again, not much are expected to change
-in this area for 8xx.
-
->
-> The better solution would be supporting large page sizes,
-> at least for the kernel.
-
-Probably but that is another matter. You could continue with that
-if you like but I am stopping here ATM.
+ Jocke
