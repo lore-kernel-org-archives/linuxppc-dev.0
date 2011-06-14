@@ -1,18 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
-	by ozlabs.org (Postfix) with ESMTP id D1C9BB6F80
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B6413B6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 06:24:02 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
-Date: Tue, 14 Jun 2011 22:22:43 +0200
-References: <20110614190850.GA13526@linux-mips.org>
-In-Reply-To: <20110614190850.GA13526@linux-mips.org>
+	Wed, 15 Jun 2011 06:32:15 +1000 (EST)
+Received: by bwz10 with SMTP id 10so4751910bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Jun 2011 13:32:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201106142222.43553.arnd@arndb.de>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20110614190850.GA13526@linux-mips.org>
+References: <20110614190850.GA13526@linux-mips.org>
+Date: Tue, 14 Jun 2011 22:32:08 +0200
+Message-ID: <BANLkTikuVsFS-UbS+Dap2Zy-f1+qLc1TLw@mail.gmail.com>
+Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
@@ -24,19 +30,18 @@ Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	Yoshinori Sato <ysato@users.sourceforge.jp>,
 	Helge Deller <deller@gmx.de>, x86@kernel.org,
 	"James E.J. Bottomley" <jejb@parisc-linux.org>,
-	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
-	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
-	microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
-	Mikael Starvik <starvik@axis.com>,
+	Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
+	Fenghua Yu <fenghua.yu@intel.com>, microblaze-uclinux@itee.uq.edu.au,
+	Chris Metcalf <cmetcalf@tilera.com>, Mikael Starvik <starvik@axis.com>,
 	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
 	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
 	Richard Henderson <rth@twiddle.net>,
 	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
-	Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
-	linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+	linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
+	Kyle McMartin <kyle@mcmartin.ca>,
 	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
-	"David S. Miller" <davem@davemloft.net>
+	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,138 +51,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 14 June 2011 21:08:50 Ralf Baechle wrote:
+On Tue, Jun 14, 2011 at 21:08, Ralf Baechle <ralf@linux-mips.org> wrote:
+> The PC parallel port Kconfig as acquired one of those messy terms to
+> describe it's architecture dependencies:
+>
+> =C2=A0 =C2=A0 =C2=A0 depends on (!SPARC64 || PCI) && !SPARC32 && !M32R &&=
+ !FRV && \
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 (!M68K || ISA) && !MN103=
+00 && !AVR32 && !BLACKFIN
+>
+> This isn't just ugly - it also almost certainly describes the dependencie=
+s
+> too coarse grainedly. =C2=A0This is an attempt at cleaing the mess up.
 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 9adc278..2968751f 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -21,6 +21,7 @@ config ARM
->  	select HAVE_KERNEL_LZO
->  	select HAVE_KERNEL_LZMA
->  	select HAVE_IRQ_WORK
-> +	select HAVE_PC_PARPORT
->  	select HAVE_PERF_EVENTS
->  	select PERF_USE_VMALLOC
->  	select HAVE_REGS_AND_STACK_ACCESS_API
+> --- a/arch/m68k/Kconfig.mmu
+> +++ b/arch/m68k/Kconfig.mmu
+> @@ -399,6 +399,7 @@ config ISA
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0bool
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0depends on Q40 || AMIGA_PCMCIA
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0default y
+> + =C2=A0 =C2=A0 =C2=A0 select PARPORT_PC
 
-On arm that should only be set on a couple of subarchitectures, but
-we can fan that out after your patch goes in, just like you do for Mips
+Why do you select PARPORT_PC here instead of HAVE_PC_PARPORT?
 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2729c66..b8328df 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -128,6 +128,7 @@ config PPC
->  	select HAVE_REGS_AND_STACK_ACCESS_API
->  	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
->  	select HAVE_GENERIC_HARDIRQS
-> +	select HAVE_PC_PARPORT
->  	select HAVE_SPARSE_IRQ
->  	select IRQ_PER_CPU
->  	select GENERIC_IRQ_SHOW
+Gr{oetje,eeting}s,
 
-Similar to ARM and Mips.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
 
-> index e446bab..ceac9b5 100644
-> --- a/arch/microblaze/Kconfig
-> +++ b/arch/microblaze/Kconfig
-> @@ -15,6 +15,7 @@ config MICROBLAZE
->  	select OF
->  	select OF_EARLY_FLATTREE
->  	select HAVE_GENERIC_HARDIRQS
-> +	select HAVE_PC_PARPORT
->  	select GENERIC_IRQ_PROBE
->  	select GENERIC_IRQ_SHOW
->  
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-Highly unlikely, except through PCI.
-
-> diff --git a/arch/score/Kconfig b/arch/score/Kconfig
-> index 288add8..ba078d0 100644
-> --- a/arch/score/Kconfig
-> +++ b/arch/score/Kconfig
-> @@ -1,9 +1,10 @@
->  menu "Machine selection"
->  
->  config SCORE
-> -       def_bool y
-> -       select HAVE_GENERIC_HARDIRQS
-> -       select GENERIC_IRQ_SHOW
-> +	def_bool y
-> +	select HAVE_GENERIC_HARDIRQS
-> +	select HAVE_PC_PARPORT
-> +	select GENERIC_IRQ_SHOW
->  
->  choice
->  	prompt "System type"
-
-Certainly not, no PIO support
-
-> diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
-> index 0249b8b..3e96eff 100644
-> --- a/arch/tile/Kconfig
-> +++ b/arch/tile/Kconfig
-> @@ -8,6 +8,7 @@ config TILE
->  	select USE_GENERIC_SMP_HELPERS
->  	select CC_OPTIMIZE_FOR_SIZE
->  	select HAVE_GENERIC_HARDIRQS
-> +	select HAVE_PC_PARPORT
->  	select GENERIC_IRQ_PROBE
->  	select GENERIC_PENDING_IRQ if SMP
->  	select GENERIC_IRQ_SHOW
-
-Only through PCI
-
-> diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
-> index e57dcce..3832e7e 100644
-> --- a/arch/unicore32/Kconfig
-> +++ b/arch/unicore32/Kconfig
-> @@ -8,6 +8,7 @@ config UNICORE32
->  	select HAVE_KERNEL_BZIP2
->  	select HAVE_KERNEL_LZO
->  	select HAVE_KERNEL_LZMA
-> +	select HAVE_PC_PARPORT
->  	select GENERIC_FIND_FIRST_BIT
->  	select GENERIC_IRQ_PROBE
->  	select GENERIC_IRQ_SHOW
-
-Probably not.
-
-I think you can leave these four out right away, provided you add
-the section below:
-
-> --- a/drivers/parport/Kconfig
-> +++ b/drivers/parport/Kconfig
-> @@ -35,8 +35,7 @@ if PARPORT
-> 
->  config PARPORT_PC
->  
->         tristate "PC-style hardware"
-> 
-> -       depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV && \
-> -               (!M68K || ISA) && !MN10300 && !AVR32 && !BLACKFIN
-> +       depends on HAVE_PC_PARPORT
-> 
->         ---help---
->         
->           You should say Y here if you have a PC-style parallel port. All
->           IBM PC compatible computers and some Alphas have PC-style
-> 
-> @@ -48,6 +47,9 @@ config PARPORT_PC
-> 
->           If unsure, say Y.
-> 
-> +config HAVE_PC_PARPORT
-> +       bool
-> +
-
-As you write, anything that has PCI can theoretically take parallel ports,
-so I would always list PCI here as a way to get it anyway. Probably also
-ISA and PCMCIA. How about adding this?
-
-config HAVE_PC_PARPORT
-	bool
-	default (PCI || ISA || PCMCIA)
-
-	Arnd
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
