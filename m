@@ -1,28 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
-	[209.85.214.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B6413B6F83
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 10097B6F7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 06:32:15 +1000 (EST)
-Received: by bwz10 with SMTP id 10so4751910bwz.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jun 2011 13:32:10 -0700 (PDT)
+	Wed, 15 Jun 2011 06:57:10 +1000 (EST)
+Message-ID: <4DF7C3CA.9050902@zytor.com>
+Date: Tue, 14 Jun 2011 13:25:46 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20110614190850.GA13526@linux-mips.org>
-References: <20110614190850.GA13526@linux-mips.org>
-Date: Tue, 14 Jun 2011 22:32:08 +0200
-Message-ID: <BANLkTikuVsFS-UbS+Dap2Zy-f1+qLc1TLw@mail.gmail.com>
-Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
-From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Ralf Baechle <ralf@linux-mips.org>
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
+References: <20110614190850.GA13526@linux-mips.org>
+In-Reply-To: <20110614190850.GA13526@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Chen Liqin <liqin.chen@sunplusct.com>,
+	Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
 	Guan Xuetao <gxt@mprc.pku.edu.cn>,
 	Lennox Wu <lennox.wu@gmail.com>, linux-arch@vger.kernel.org,
 	Jesper Nilsson <jesper.nilsson@axis.com>,
@@ -30,9 +25,10 @@ Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	Yoshinori Sato <ysato@users.sourceforge.jp>,
 	Helge Deller <deller@gmx.de>, x86@kernel.org,
 	"James E.J. Bottomley" <jejb@parisc-linux.org>,
-	Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
-	Fenghua Yu <fenghua.yu@intel.com>, microblaze-uclinux@itee.uq.edu.au,
-	Chris Metcalf <cmetcalf@tilera.com>, Mikael Starvik <starvik@axis.com>,
+	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+	microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
+	Mikael Starvik <starvik@axis.com>,
 	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
 	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
 	Richard Henderson <rth@twiddle.net>,
@@ -51,41 +47,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 14, 2011 at 21:08, Ralf Baechle <ralf@linux-mips.org> wrote:
+On 06/14/2011 12:08 PM, Ralf Baechle wrote:
 > The PC parallel port Kconfig as acquired one of those messy terms to
 > describe it's architecture dependencies:
->
-> =C2=A0 =C2=A0 =C2=A0 depends on (!SPARC64 || PCI) && !SPARC32 && !M32R &&=
- !FRV && \
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 (!M68K || ISA) && !MN103=
-00 && !AVR32 && !BLACKFIN
->
-> This isn't just ugly - it also almost certainly describes the dependencie=
-s
-> too coarse grainedly. =C2=A0This is an attempt at cleaing the mess up.
+> 
+>        depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV && \
+>                (!M68K || ISA) && !MN10300 && !AVR32 && !BLACKFIN
+> 
+> This isn't just ugly - it also almost certainly describes the dependencies
+> too coarse grainedly.  This is an attempt at cleaing the mess up.
+> 
+> I tried to faithfully aproximate the old behaviour but the existing
+> behaviour seems inacurate if not wrong for some architectures or platforms.
+> To improve on this I rely on comments from other arch and platforms
+> maintainers.  Any system that can take PCI multi-IO card or has a PC-style
+> parallel port on the mainboard should probably should now do a
+> select HAVE_PC_PARPORT.  And some arch Kconfig files should further
+> restrict the use of HAVE_PC_PARPORT to only those platforms that actually
+> need it.
+> 
 
-> --- a/arch/m68k/Kconfig.mmu
-> +++ b/arch/m68k/Kconfig.mmu
-> @@ -399,6 +399,7 @@ config ISA
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0bool
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0depends on Q40 || AMIGA_PCMCIA
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0default y
-> + =C2=A0 =C2=A0 =C2=A0 select PARPORT_PC
+Why on earth restrict it like that?  It's just a device driver, like
+more or less any other device driver...
 
-Why do you select PARPORT_PC here instead of HAVE_PC_PARPORT?
-
-Gr{oetje,eeting}s,
-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+	-hpa
