@@ -1,23 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
-	[213.199.154.143])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B07421@freescale.com>
+Received: from CH1EHSOBE012.bigfish.com (ch1ehsobe004.messaging.microsoft.com
+	[216.32.181.184]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EA0F2B6F9B
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 06:07:52 +1000 (EST)
-Message-ID: <4DF7BF84.8030000@freescale.com>
-Date: Tue, 14 Jun 2011 15:07:32 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id D8217B6F72
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 06:26:06 +1000 (EST)
+Date: Tue, 14 Jun 2011 15:26:01 -0500
+From: Scott Wood <scottwood@freescale.com>
 To: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
 Subject: Re: Mapping an executable page
-References: <BANLkTikd3ZtNRcz=ZWSsDL9OoeV0Wndy1g@mail.gmail.com>	<BANLkTinOxqF=TcBxQOsfJSot-1XH3iErXA@mail.gmail.com>
+Message-ID: <20110614152601.6258d3a6@schlenkerla.am.freescale.net>
+In-Reply-To: <BANLkTimhKOvY8XA=_20rjtkZ0Um45o2Bow@mail.gmail.com>
+References: <BANLkTikd3ZtNRcz=ZWSsDL9OoeV0Wndy1g@mail.gmail.com>
+	<BANLkTinOxqF=TcBxQOsfJSot-1XH3iErXA@mail.gmail.com>
 	<BANLkTimhKOvY8XA=_20rjtkZ0Um45o2Bow@mail.gmail.com>
-	<4DF7BE43.1010407@freescale.com>
-In-Reply-To: <4DF7BE43.1010407@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Tabi Timur-B04825 <B04825@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Hmmm.... I find that surprising.  Memory allocated via ioremap() is supposed to
-> be available in interrupt handlers, where TLB mappings can't be created
-> on-the-fly.  I'm not sure that your observation is correct.
+On Tue, 14 Jun 2011 10:56:31 +0200
+Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com> wrote:
 
-Ok, it turns out I'm wrong.  As long as the page is in the page tables (i.e.
-physically present in RAM), you can take a TLB miss in an interrupt handler, and
-the TLB miss handler will create a TLB for you.
-
-This means that ...
-
+> * Therefore, to make sure that the mapping I intended with __ioremap()
+> is actually reflected in the TLB tables, I added dummy reads of each
+> page in the TLB, prior to jumping to the boot code, as follows:
+>                 /* make sure memory is read, once every 4Kbyte is enough */
+>                 for (p = vaddr; p < vaddr + map_size; p += 0x1000) {
 >                         unsigned long dummy = *(volatile unsigned long *)p;
 >                         (void)dummy;
 >                 }
@@ -45,12 +42,14 @@ This means that ...
 > * After these changes (make sure all code is mapped + make sure to
 > read all pages so that the TLBs are updated), my scenario works fine.
 
-is not going to work reliably, because it assumes that the TLBs created by your
-multiple ioremap() calls will still be there when your code is called.
+This is fragile -- you are assuming that it's possible to fit this
+set of pages in TLB0 all at once, and that none of them will be
+evicted/invalidated by the time you're done.
 
-If you use just a single ioremap() call, but still touch every page, that should
-work for you just as well.
+If you really need to do this, I sugest using settlbcam() from
+arch/powerpc/mm/fsl_booke_mmu.c to create TLB1 entries with IPROT set.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Better still if you could live with whatever memory the kernel has already
+pinned.
+
+-Scott
