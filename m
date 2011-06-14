@@ -2,19 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0801B7416
+	by ozlabs.org (Postfix) with ESMTPS id 58EBFB6F6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jun 2011 10:59:22 +1000 (EST)
-Subject: [PATCH 2/2] powerpc/mm: Fix memory_block_size_bytes() for non-pseries
+	Tue, 14 Jun 2011 15:00:13 +1000 (EST)
+Subject: Re: [PATCH] slub: fix kernel BUG at mm/slub.c:1950!
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Hugh Dickins <hughd@google.com>
+In-Reply-To: <BANLkTik-KGtuoVFKvy_rk7voBRAxSsR9FRg0fhb0k3NCSg-fWQ@mail.gmail.com>
+References: <alpine.LSU.2.00.1106121842250.31463@sister.anvils>
+	<alpine.DEB.2.00.1106131258300.3108@router.home>
+	<1307990048.11288.3.camel@jaguar>
+	<alpine.DEB.2.00.1106131428560.5601@router.home>
+	<BANLkTi=RYq0Dd210VC+NeTXWWuFbz7cxeg@mail.gmail.com>
+	<BANLkTik-KGtuoVFKvy_rk7voBRAxSsR9FRg0fhb0k3NCSg-fWQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 14 Jun 2011 10:57:51 +1000
-Message-ID: <1308013071.2874.785.camel@pasglop>
+Date: Tue, 14 Jun 2011 14:51:18 +1000
+Message-ID: <1308027078.2874.1005.camel@pasglop>
 Mime-Version: 1.0
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Cc: Pekka Enberg <penberg@kernel.org>, linux-mm <linux-mm@kvack.org>,
+	Christoph Lameter <cl@linux.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,92 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just compiling pseries in the kernel causes it to override
-memory_block_size_bytes() regardless of what is the runtime
-platform.
+On Mon, 2011-06-13 at 14:00 -0700, Hugh Dickins wrote:
+> On Mon, Jun 13, 2011 at 1:34 PM, Pekka Enberg <penberg@kernel.org> wrote:
+> > On Mon, Jun 13, 2011 at 10:29 PM, Christoph Lameter <cl@linux.com> wrote:
+> >> On Mon, 13 Jun 2011, Pekka Enberg wrote:
+> >>
+> >>> > Hmmm.. The allocpercpu in alloc_kmem_cache_cpus should take care of the
+> >>> > alignment. Uhh.. I see that a patch that removes the #ifdef CMPXCHG_LOCAL
+> >>> > was not applied? Pekka?
+> >>>
+> >>> This patch?
+> >>>
+> >>> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=d4d84fef6d0366b585b7de13527a0faeca84d9ce
+> >>>
+> >>> It's queued and will be sent to Linus soon.
+> >>
+> >> Ok it will also fix Hugh's problem then.
+> >
+> > It's in Linus' tree now. Hugh, can you please confirm it fixes your machine too?
+> 
+> I expect it to, thanks: I'll confirm tonight.
 
-This cleans up the implementation of that function, fixing
-a bug or two while at it, so that it's harmless (and potentially
-useful) for other platforms. Without this, bugs in that code
-would trigger a WARN_ON() in drivers/base/memory.c when
-booting some different platforms. 
+>From report to resolution before I got to read the thread, that's how I
+like them ! Thanks guys :-)
 
-If/when we have another platform supporting memory hotplug we
-might want to either move that out to a generic place or
-make it a ppc_md. callback.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 33867ec..9d6a8ef 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -12,6 +12,8 @@
- #include <linux/of.h>
- #include <linux/memblock.h>
- #include <linux/vmalloc.h>
-+#include <linux/memory.h>
-+
- #include <asm/firmware.h>
- #include <asm/machdep.h>
- #include <asm/pSeries_reconfig.h>
-@@ -20,24 +22,25 @@
- static unsigned long get_memblock_size(void)
- {
- 	struct device_node *np;
--	unsigned int memblock_size = 0;
-+	unsigned int memblock_size = MIN_MEMORY_BLOCK_SIZE;
-+	struct resource r;
- 
- 	np = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (np) {
--		const unsigned long *size;
-+		const __be64 *size;
- 
- 		size = of_get_property(np, "ibm,lmb-size", NULL);
--		memblock_size = size ? *size : 0;
--
-+		if (size)
-+			memblock_size = be64_to_cpup(size);
- 		of_node_put(np);
--	} else {
-+	} else  if (machine_is(pseries)) {
-+		/* This fallback really only applies to pseries */
- 		unsigned int memzero_size = 0;
--		const unsigned int *regs;
- 
- 		np = of_find_node_by_path("/memory@0");
- 		if (np) {
--			regs = of_get_property(np, "reg", NULL);
--			memzero_size = regs ? regs[3] : 0;
-+			if (!of_address_to_resource(np, 0, &r))
-+				memzero_size = resource_size(&r);
- 			of_node_put(np);
- 		}
- 
-@@ -50,16 +53,21 @@ static unsigned long get_memblock_size(void)
- 			sprintf(buf, "/memory@%x", memzero_size);
- 			np = of_find_node_by_path(buf);
- 			if (np) {
--				regs = of_get_property(np, "reg", NULL);
--				memblock_size = regs ? regs[3] : 0;
-+				if (!of_address_to_resource(np, 0, &r))
-+					memblock_size = resource_size(&r);
- 				of_node_put(np);
- 			}
- 		}
- 	}
--
- 	return memblock_size;
- }
- 
-+/* WARNING: This is going to override the generic definition whenever
-+ * pseries is built-in regardless of what platform is active at boot
-+ * time. This is fine for now as this is the only "option" and it
-+ * should work everywhere. If not, we'll have to turn this into a
-+ * ppc_md. callback
-+ */
- unsigned long memory_block_size_bytes(void)
- {
- 	return get_memblock_size();
+Cheers,
+Ben.
