@@ -1,48 +1,22 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from duck.linux-mips.net
-	(1.7.f.1.4.3.b.f.f.7.8.8.9.1.0.7.0.0.0.0.a.e.3.0.0.b.8.0.1.0.0.2.ip6.arpa
-	[IPv6:2001:8b0:3ea:0:7019:887f:fb34:1f71])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 292CDB6FA3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 19:23:06 +1000 (EST)
-Date: Wed, 15 Jun 2011 09:34:37 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
-Message-ID: <20110615083437.GA32624@linux-mips.org>
-References: <20110614190850.GA13526@linux-mips.org>
-	<4DF7C3CA.9050902@zytor.com>
-	<20110614223404.GA30057@linux-mips.org>
-	<4DF8329C.7000904@zytor.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+	by ozlabs.org (Postfix) with SMTP id D534BB6F93
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 19:32:42 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
+	port 10024) with SMTP id 27342-02 for <linuxppc-dev@ozlabs.org>;
+	Wed, 15 Jun 2011 10:32:32 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4DF8329C.7000904@zytor.com>
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
-	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-	Chen Liqin <liqin.chen@sunplusct.com>,
-	Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
-	Guan Xuetao <gxt@mprc.pku.edu.cn>,
-	Lennox Wu <lennox.wu@gmail.com>, linux-arch@vger.kernel.org,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Russell King <linux@arm.linux.org.uk>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Helge Deller <deller@gmx.de>, x86@kernel.org,
-	"James E.J. Bottomley" <jejb@parisc-linux.org>,
-	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
-	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
-	microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
-	Mikael Starvik <starvik@axis.com>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
-	Richard Henderson <rth@twiddle.net>,
-	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
-	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
-	linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
-	Kyle McMartin <kyle@mcmartin.ca>,
-	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Relocatable kernel for ppc44x
+Date: Wed, 15 Jun 2011 10:30:58 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8AD9E@saturn3.aculab.com>
+In-Reply-To: <4DF84D92.2030803@in.ibm.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Suzuki Poulose" <suzuki@in.ibm.com>,
+	<monstr@monstr.eu>
+Cc: linuxppc-dev@ozlabs.org, John Williams <john.williams@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,19 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 14, 2011 at 09:18:36PM -0700, H. Peter Anvin wrote:
+=20
+> The PPC440X currently uses 256M TLB entries to pin the=20
+> lowmem. When we go for a relocatable kernel we have to :
+>=20
+> 1) Restrict the kernel load address to be 256M aligned
+>=20
+> OR
+>=20
+> 2) Use 16M TLB(the next possible TLB page size supported)=20
+> entries till the first
+> 256M and then use the 256M TLB entries for the rest of lowmem.
 
-> On 06/14/2011 03:34 PM, Ralf Baechle wrote:
-> > 
-> > There is no point in offering to build something that couldn't possibly be
-> > used.  It just makes the kernel harder to configure and inflates the test
-> > matrix for no good reason.
-> > 
-> 
-> I see... that's why a bunch of devices that only exist on ARM and MIPS
-> SoCs are offered on x86 platforms?
+What is wrong with:
 
-Well, if you notice one of those, yell.  Or send patches.  Most of those
-have been fixed.
+3) Use 256M TLB entries with the lowest one including
+   addresses below the kernel base.
 
-  Ralf
+Clearly the kernel shouldn't be accessing the addresses
+below its base address - but that is true of a lot of
+address space mapped into the kernel.
+
+	David
