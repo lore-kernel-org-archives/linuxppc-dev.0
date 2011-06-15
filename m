@@ -1,31 +1,44 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
-	[213.199.154.205])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E253FB6F86
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 09:25:37 +1000 (EST)
-Received: from mail60-am1 (localhost.localdomain [127.0.0.1])	by
-	mail60-am1-R.bigfish.com (Postfix) with ESMTP id A1D5C177828A	for
-	<linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 23:25:32 +0000 (UTC)
-Received: from AM1EHSMHS011.bigfish.com (unknown [10.3.201.249])	by
-	mail60-am1.bigfish.com (Postfix) with ESMTP id 604DF2A0050	for
-	<linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2011 23:25:22 +0000 (UTC)
-Date: Tue, 14 Jun 2011 18:25:17 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
-	the hypervisor
-Message-ID: <20110614182517.776d7e77@schlenkerla.am.freescale.net>
-In-Reply-To: <4DF7EB8E.8020308@freescale.com>
-References: <1308092673-13045-1-git-send-email-timur@freescale.com>
-	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
-	<4DF7EB8E.8020308@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Matthew McClintock <msm@freescale.com>, kumar.gala@freescale.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <gxt@mprc.pku.edu.cn>
+Received: from mprc.pku.edu.cn (mprc.pku.edu.cn [162.105.203.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9AA06B6F7C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Jun 2011 11:33:05 +1000 (EST)
+Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
+From: Guan Xuetao <gxt@mprc.pku.edu.cn>
+To: Ralf Baechle <ralf@linux-mips.org>
+In-Reply-To: <20110614190850.GA13526@linux-mips.org>
+References: <20110614190850.GA13526@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 15 Jun 2011 09:24:06 +0800
+Message-ID: <1308101046.4727.10.camel@epip-laptop>
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+	Chen Liqin <liqin.chen@sunplusct.com>,
+	Paul Mackerras <paulus@samba.org>, "H.
+	Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Lennox Wu <lennox.wu@gmail.com>, linux-arch@vger.kernel.org,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Russell King <linux@arm.linux.org.uk>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Helge Deller <deller@gmx.de>, x86@kernel.org,
+	"James E.J. Bottomley" <jejb@parisc-linux.org>,
+	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+	microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
+	Mikael Starvik <starvik@axis.com>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+	Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+	linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Reply-To: gxt@mprc.pku.edu.cn
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,22 +48,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 14 Jun 2011 18:15:26 -0500
-Timur Tabi <timur@freescale.com> wrote:
-
-> Scott Wood wrote:
-> > FWIW, it's not supported under KVM either -- though we don't support an SMP
-> > guest under KVM yet, and KVM silently ignores it rather than logs errors as
-> > the FSL HV does.
+On Tue, 2011-06-14 at 20:08 +0100, Ralf Baechle wrote:
+> The PC parallel port Kconfig as acquired one of those messy terms to
+> describe it's architecture dependencies:
 > 
-> Does KVM set the root compatible to "fsl,P4080DS-hv"?
+>        depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV && \
+>                (!M68K || ISA) && !MN10300 && !AVR32 && !BLACKFIN
+> 
+> This isn't just ugly - it also almost certainly describes the dependencies
+> too coarse grainedly.  This is an attempt at cleaing the mess up.
+> 
+> I tried to faithfully aproximate the old behaviour but the existing
+> behaviour seems inacurate if not wrong for some architectures or platforms.
+> To improve on this I rely on comments from other arch and platforms
+> maintainers.  Any system that can take PCI multi-IO card or has a PC-style
+> parallel port on the mainboard should probably should now do a
+> select HAVE_PC_PARPORT.  And some arch Kconfig files should further
+> restrict the use of HAVE_PC_PARPORT to only those platforms that actually
+> need it.
+> 
+> Thanks,
+> 
+>   Ralf
 
-No, Qemu/KVM like to pretend they're fully emulating concrete hardware,
-even though there's stuff missing.
+> diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
+> index e57dcce..3832e7e 100644
+> --- a/arch/unicore32/Kconfig
+> +++ b/arch/unicore32/Kconfig
+> @@ -8,6 +8,7 @@ config UNICORE32
+>  	select HAVE_KERNEL_BZIP2
+>  	select HAVE_KERNEL_LZO
+>  	select HAVE_KERNEL_LZMA
+> +	select HAVE_PC_PARPORT
+>  	select GENERIC_FIND_FIRST_BIT
+>  	select GENERIC_IRQ_PROBE
+>  	select GENERIC_IRQ_SHOW
+In UniCore32, only some debug-boards need to support parport.
+So I'd like to add HAVE_PC_PARPORT and related configs to certian
+*_defconfig, but not in Kconfig.
 
-The only upstream e500 KVM platform is currently mpc8544ds.
+Thanks Ralf.
 
-For now, there's no SMP KVM guest support.  Maybe kexec can be fixed to not
-hard-reset the core by the time that changes. :-)
-
--Scott
+Guan Xuetao
