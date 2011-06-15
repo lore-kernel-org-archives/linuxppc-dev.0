@@ -1,32 +1,55 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <groeck@ericsson.com>
+Received: from imr3.ericy.com (imr3.ericy.com [198.24.6.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 69FB2B6F9B
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 00:40:49 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id p5FEed8c023944
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 00:40:39 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p5FEda8e909426
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 00:39:38 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p5FEeasp010909
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 00:40:36 +1000
-Message-ID: <4DF8C453.70500@in.ibm.com>
-Date: Wed, 15 Jun 2011 20:10:19 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 672FAB6F9E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 16 Jun 2011 00:46:30 +1000 (EST)
+Date: Wed, 15 Jun 2011 07:36:34 -0700
+From: Guenter Roeck <guenter.roeck@ericsson.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
+Message-ID: <20110615143634.GA12757@ericsson.com>
+References: <20110614190850.GA13526@linux-mips.org>
+	<4DF7C3CA.9050902@zytor.com>
+	<20110614223404.GA30057@linux-mips.org>
+	<4DF8329C.7000904@zytor.com>
+	<20110615083437.GA32624@linux-mips.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Relocatable kernel for ppc44x
-References: <4DF74E5D.9020908@monstr.eu> <4DF84D92.2030803@in.ibm.com>
-	<1308132715.2516.1.camel@pasglop>
-In-Reply-To: <1308132715.2516.1.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, monstr@monstr.eu,
-	John Williams <john.williams@petalogix.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20110615083437.GA32624@linux-mips.org>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+	"linux-m68k@vger.kernel.org" <linux-m68k@vger.kernel.org>,
+	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+	"linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+	Guan Xuetao <gxt@mprc.pku.edu.cn>, Lennox Wu <lennox.wu@gmail.com>,
+	"linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Russell King <linux@arm.linux.org.uk>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
+	"James E.J. Bottomley" <jejb@parisc-linux.org>,
+	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+	"microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
+	Chris Metcalf <cmetcalf@tilera.com>, Mikael Starvik <starvik@axis.com>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>,
+	Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+	Tony Luck <tony.luck@intel.com>,
+	"linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+	"linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
+	"linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +59,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/15/11 15:41, Benjamin Herrenschmidt wrote:
-> On Wed, 2011-06-15 at 11:43 +0530, Suzuki Poulose wrote:
->> On 06/14/11 17:34, Michal Simek wrote:
->>> Hi,
->>>
->>> have someone tried to support RELOCATABLE kernel on ppc44x?
->> As Josh, mentioned, I will be working on this. In fact I was trying a couple of
->> patches towards this on PPC440x. But, I am stuck in debugging the hang that I am
->> experiencing with the changes. I am setting up a RISCWatch processor probe to
->> debug the same.
->>
->> Here is some information that I wanted to share :
->>
->> The PPC440X currently uses 256M TLB entries to pin the lowmem. When we go for a
->> relocatable kernel we have to :
->>
->> 1) Restrict the kernel load address to be 256M aligned
->
-> Wait a minute ... :-)
->
-> There's a difference between having the kernel run from any address and
-> mapping the linear mapping not starting at 0.
->
-> Those are completely orthogonal.
->
-> I don't see why off hand you are changing the way the TLB is used.
+On Wed, Jun 15, 2011 at 04:34:37AM -0400, Ralf Baechle wrote:
+> On Tue, Jun 14, 2011 at 09:18:36PM -0700, H. Peter Anvin wrote:
+> 
+> > On 06/14/2011 03:34 PM, Ralf Baechle wrote:
+> > > 
+> > > There is no point in offering to build something that couldn't possibly be
+> > > used.  It just makes the kernel harder to configure and inflates the test
+> > > matrix for no good reason.
+> > > 
+> > 
+> > I see... that's why a bunch of devices that only exist on ARM and MIPS
+> > SoCs are offered on x86 platforms?
+> 
+> Well, if you notice one of those, yell.  Or send patches.  Most of those
+> have been fixed.
+> 
+I think he was being sarcastic, and wanted to say that it should be that way.
 
-I started off with PHYSICAL_START support and that kind of hogged me into
-this approach :-).
-The
-> only possible change needed is to make sure the initial bolted entry set
-> by the asm code properly covers the kernel in whatever it's "current"
-> location is. The rest is a matter of fixing up the relocations...
-Could we do something like,
-
-If kernel is loaded at X,
-
-1. map : ((X-1) & ~256M) to PAGE_OFFSET and so on to cover the kernel in 256M
-chunks.
-2. Then process the relocations with (X % 256M)
-
-Thanks
-
-Suzuki
+Guenter
