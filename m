@@ -1,24 +1,20 @@
-Return-Path: <john.williams@petalogix.com>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A7465B6F95
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 19:38:50 +1000 (EST)
-Received: by pvh10 with SMTP id 10so163215pvh.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 02:38:47 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6D8AD9E@saturn3.aculab.com>
-References: <4DF84D92.2030803@in.ibm.com>
-	<AE90C24D6B3A694183C094C60CF0A2F6D8AD9E@saturn3.aculab.com>
-From: John Williams <john.williams@petalogix.com>
-Date: Wed, 15 Jun 2011 11:38:27 +0200
-Message-ID: <BANLkTimzWn+cp5q=thHmcWz9jz+bp6tLC7CU2GBnDvEWM8jUbQ@mail.gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5ABEEB6FA4
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 20:12:11 +1000 (EST)
 Subject: Re: Relocatable kernel for ppc44x
-To: David Laight <David.Laight@aculab.com>
-Content-Type: multipart/alternative; boundary=000e0cd23d865221b004a5bcebd4
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Suzuki Poulose <suzuki@in.ibm.com>
+In-Reply-To: <4DF84D92.2030803@in.ibm.com>
+References: <4DF74E5D.9020908@monstr.eu>  <4DF84D92.2030803@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 15 Jun 2011 20:11:55 +1000
+Message-ID: <1308132715.2516.1.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, monstr@monstr.eu,
-	Suzuki Poulose <suzuki@in.ibm.com>
+	John Williams <john.williams@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,95 +24,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd23d865221b004a5bcebd4
-Content-Type: text/plain; charset=ISO-8859-1
-
-On Wed, Jun 15, 2011 at 11:30 AM, David Laight <David.Laight@aculab.com>wrote:
-
->
-> > The PPC440X currently uses 256M TLB entries to pin the
-> > lowmem. When we go for a relocatable kernel we have to :
+On Wed, 2011-06-15 at 11:43 +0530, Suzuki Poulose wrote:
+> On 06/14/11 17:34, Michal Simek wrote:
+> > Hi,
 > >
-> > 1) Restrict the kernel load address to be 256M aligned
-> >
-> > OR
-> >
-> > 2) Use 16M TLB(the next possible TLB page size supported)
-> > entries till the first
-> > 256M and then use the 256M TLB entries for the rest of lowmem.
->
-> What is wrong with:
->
-> 3) Use 256M TLB entries with the lowest one including
->   addresses below the kernel base.
->
-> Clearly the kernel shouldn't be accessing the addresses
-> below its base address - but that is true of a lot of
-> address space mapped into the kernel.
->
+> > have someone tried to support RELOCATABLE kernel on ppc44x?
+> As Josh, mentioned, I will be working on this. In fact I was trying a couple of
+> patches towards this on PPC440x. But, I am stuck in debugging the hang that I am
+> experiencing with the changes. I am setting up a RISCWatch processor probe to
+> debug the same.
+> 
+> Here is some information that I wanted to share :
+> 
+> The PPC440X currently uses 256M TLB entries to pin the lowmem. When we go for a
+> relocatable kernel we have to :
+> 
+> 1) Restrict the kernel load address to be 256M aligned
 
-It gets mucky since we will then need need to assess how much of that 256M
-mapping will be above the kernel base, determine if that is sufficient to
-boot the kernel, if not then setup additional 16MB mappings and so on.  It
-might be cleaner to just use multiple 16MB mappings directly?
+Wait a minute ... :-)
 
-By the way we have some patches to support a non-zero (but fixed) boot
-address for PPC440.  They are against 2.6.31, it's pretty simple stuff
-except also requires changes in the simpleboot wrapper.  We will post them
-shortly since they are relevant to this discussion.
+There's a difference between having the kernel run from any address and
+mapping the linear mapping not starting at 0.
 
-John
--- 
-John Williams, PhD, B. Eng, B. IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+Those are completely orthogonal.
 
---000e0cd23d865221b004a5bcebd4
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+I don't see why off hand you are changing the way the TLB is used. The
+only possible change needed is to make sure the initial bolted entry set
+by the asm code properly covers the kernel in whatever it's "current"
+location is. The rest is a matter of fixing up the relocations...
 
-<br><br><div class=3D"gmail_quote">On Wed, Jun 15, 2011 at 11:30 AM, David =
-Laight <span dir=3D"ltr">&lt;<a href=3D"mailto:David.Laight@aculab.com">Dav=
-id.Laight@aculab.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_qu=
-ote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex=
-;">
+Cheers,
+Ben.
 
-<div class=3D"im"><br>
-&gt; The PPC440X currently uses 256M TLB entries to pin the<br>
-&gt; lowmem. When we go for a relocatable kernel we have to :<br>
-&gt;<br>
-&gt; 1) Restrict the kernel load address to be 256M aligned<br>
-&gt;<br>
-&gt; OR<br>
-&gt;<br>
-&gt; 2) Use 16M TLB(the next possible TLB page size supported)<br>
-&gt; entries till the first<br>
-&gt; 256M and then use the 256M TLB entries for the rest of lowmem.<br>
-<br>
-</div>What is wrong with:<br>
-<br>
-3) Use 256M TLB entries with the lowest one including<br>
- =A0 addresses below the kernel base.<br>
-<br>
-Clearly the kernel shouldn&#39;t be accessing the addresses<br>
-below its base address - but that is true of a lot of<br>
-address space mapped into the kernel.<br></blockquote><div><br></div><div>I=
-t gets mucky since we will then need need to assess how much of that 256M m=
-apping will be above the kernel base, determine if that is sufficient to bo=
-ot the kernel, if not then setup additional 16MB mappings and so on. =A0It =
-might be cleaner to just use multiple 16MB mappings directly?</div>
-
-<div><br></div><div>By the way we have some patches to support a non-zero (=
-but fixed) boot address for PPC440. =A0They are against 2.6.31, it&#39;s pr=
-etty simple stuff except also requires changes in the simpleboot wrapper. =
-=A0We will post them shortly since they are relevant to this discussion.</d=
-iv>
-
-<div><br></div><div>John</div><div>--=A0</div></div>John Williams, PhD, B. =
-Eng, B. IT<br>PetaLogix - Linux Solutions for a Reconfigurable World<br>w: =
-<a href=3D"http://www.petalogix.com" target=3D"_blank">www.petalogix.com</a=
->=A0=A0p: +61-7-30090663=A0 f: +61-7-30090663<br>
-
-
-
---000e0cd23d865221b004a5bcebd4--
+> OR
+> 
+> 2) Use 16M TLB(the next possible TLB page size supported) entries till the first
+> 256M and then use the 256M TLB entries for the rest of lowmem.
+> 
+> Option 1 is not feasible.
+> 
+> Towards this, I have tried a patch which uses 16M TLB entries to map the entire
+> lowmem on an ebony board. But that doesn't seem to work. I am setting up the JTAG
+> to debug the state.
+> 
+> I have attached the patch below for your reference. Any suggestions/comments would
+> be really helpful.
+> 
+> 
+> Thanks
+> Suzuki
+> 
+> ==============================
+> 
+> 
+> Use 16M TLB pages to pin the lowmem on PPC440x.
+> 
+> ---
+>   arch/powerpc/include/asm/mmu-44x.h |    9 +++++++++
+>   arch/powerpc/kernel/head_44x.S     |    2 +-
+>   arch/powerpc/mm/44x_mmu.c          |    2 +-
+>   3 files changed, 11 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.38.1/arch/powerpc/include/asm/mmu-44x.h
+> ===================================================================
+> --- linux-2.6.38.1.orig/arch/powerpc/include/asm/mmu-44x.h
+> +++ linux-2.6.38.1/arch/powerpc/include/asm/mmu-44x.h
+> @@ -121,7 +121,12 @@ typedef struct {
+>   #endif
+>   
+>   /* Size of the TLBs used for pinning in lowmem */
+> +#define PPC_PIN_SIZE	(1 << 24)	/* 16M */
+> +#define PPC44x_TLB_PIN_SIZE	PPC44x_TLB_16M
+> +#if 0
+>   #define PPC_PIN_SIZE	(1 << 28)	/* 256M */
+> +#define PPC44x_TLB_PIN_SIZE	PPC44x_TLB_256M
+> +#endif
+>   
+>   #if (PAGE_SHIFT == 12)
+>   #define PPC44x_TLBE_SIZE	PPC44x_TLB_4K
+> @@ -142,7 +147,11 @@ typedef struct {
+>   #error "Unsupported PAGE_SIZE"
+>   #endif
+>   
+> +#if 0
+>   #define mmu_linear_psize	MMU_PAGE_256M
+> +#else
+> +#define mmu_linear_psize	MMU_PAGE_16M
+> +#endif
+>   
+>   #define PPC44x_PGD_OFF_SHIFT	(32 - PGDIR_SHIFT + PGD_T_LOG2)
+>   #define PPC44x_PGD_OFF_MASK_BIT	(PGDIR_SHIFT - PGD_T_LOG2)
+> Index: linux-2.6.38.1/arch/powerpc/kernel/head_44x.S
+> ===================================================================
+> --- linux-2.6.38.1.orig/arch/powerpc/kernel/head_44x.S
+> +++ linux-2.6.38.1/arch/powerpc/kernel/head_44x.S
+> @@ -805,7 +805,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+>   
+>   	/* pageid fields */
+>   	clrrwi	r3,r3,10		/* Mask off the effective page number */
+> -	ori	r3,r3,PPC44x_TLB_VALID | PPC44x_TLB_256M
+> +	ori	r3,r3,PPC44x_TLB_VALID | PPC44x_TLB_PIN_SIZE
+>   
+>   	/* xlat fields */
+>   	clrrwi	r4,r4,10		/* Mask off the real page number */
+> Index: linux-2.6.38.1/arch/powerpc/mm/44x_mmu.c
+> ===================================================================
+> --- linux-2.6.38.1.orig/arch/powerpc/mm/44x_mmu.c
+> +++ linux-2.6.38.1/arch/powerpc/mm/44x_mmu.c
+> @@ -84,7 +84,7 @@ static void __init ppc44x_pin_tlb(unsign
+>   	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
+>   #endif
+>   	  "r" (phys),
+> -	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
+> +	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_PIN_SIZE),
+>   	  "r" (entry),
+>   	  "i" (PPC44x_TLB_PAGEID),
+>   	  "i" (PPC44x_TLB_XLAT),
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
