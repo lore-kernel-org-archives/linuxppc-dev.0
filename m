@@ -1,25 +1,24 @@
-Return-Path: <b32167@nmglablinux21.freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5E148B6FA3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 19:00:25 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: <akpm@linux-foundation.org>, <w.sang@pengutronix.de>,
-	<cbouatmailru@gmail.com>, <a.zummo@towertech.it>,
-	<benh@kernel.crashing.org>,
-	<galak@gate.crashing.org>, <grant.likely@secretlab.ca>,
-	<b04825@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<rtc-linux@googlegroups.com>, <p_gortmaker@yahoo.com>,
-	<linuxppc-release@linux.freescale.net>
-Subject: [PATCH][v2] Add support for RTC device: pt7c4338 in rtc-ds1307.c
-Date: Wed, 15 Jun 2011 14:29:50 +0530
-Message-ID: <1308128390-23347-1-git-send-email-Priyanka.Jain@freescale.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+	(using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F170EB6F76
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 19:22:05 +1000 (EST)
+In-Reply-To: <792A171E-D1E1-4F35-8AC2-40C5A7519D78@digitaldans.com>
+References: <1308059700-10839-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1308059700-10839-7-git-send-email-Joakim.Tjernlund@transmode.se>
+	<53DBBA1E-BD8C-4856-9E35-028C8BB0911F@digitaldans.com>
+	<OF75A64D65.5ABAA9A9-ONC12578AF.0062124A-C12578AF.0062E416@transmode.se>
+	<792A171E-D1E1-4F35-8AC2-40C5A7519D78@digitaldans.com>
+Subject: Re: [PATCH 06/15] 8xx: Always pin kernel instruction TLB
+To: Dan Malek <ppc6dev@digitaldans.com>
+Message-ID: <OF949E8D99.19E0C41B-ONC12578B0.00332603-C12578B0.003373B3@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 15 Jun 2011 11:21:59 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Willy Tarreau <w@1wt.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +28,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PT7C4338 chip is being manufactured by Pericom Technology Inc.
-It is a serial real-time clock which provides:
-1)Low-power clock/calendar.
-2)Programmable square-wave output.
-It has 56 bytes of nonvolatile RAM.
-Its register set is same as that of rtc device: DS1307.
+Dan Malek <ppc6dev@digitaldans.com> wrote on 2011/06/14 20:11:18:
+>
+> Hi Joakim.
+>
+> On Jun 14, 2011, at 11:00 AM, Joakim Tjernlund wrote:
+>
+> > I don't have a mpc850, do you?
+>
+> I have to say I do :-)
+>
+> > Probably but that is another matter. You could continue with that
+> > if you like but I am stopping here ATM.
+>
+> Oh, come on...  I've been thinking about this for years, wouldn't
+> you like to work on it?  It will be fun :-)
 
+OK, it was fun :) This is a quick impl. for kernel ITLBs. What do
+you think?
 
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
----
- Change for v2:
-	 Incorporting Andrew Morton's comments to shorten patch by using
-         hunk: { "pt7c4338", ds_1307 }
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index 0f9080c..88278b4 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -33,6 +33,7 @@
+ #include <asm/ppc_asm.h>
+ #include "ppc_defs.h"
 
- Changes :
-	 This patch will supersede patch:
-		"RTC driver(Linux) for PT7C4338 chip"
-	 Incorporting Wolfram Sang's comments to reuse ds1307 driver.
++#undef CONFIG_PIN_TLB
+ /* Macro to make the code more readable. */
+ #ifdef CONFIG_8xx_CPU6
+   #define DO_8xx_CPU6(val, reg) \
+@@ -357,17 +358,23 @@ InstructionTLBMiss:
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+-#ifdef CONFIG_MODULES
+-	/* Since we PIN the first 8MB text, we only get ITLB misses
+-	 * for modules
+-	 */
+ 	andi.	r21, r20, 0x0800	/* Address >= 0x80000000 */
+ 	beq	3f
++#ifdef CONFIG_MODULES
+ 	lis	r21, swapper_pg_dir@h
+ 	ori	r21, r21, swapper_pg_dir@l
+ 	rlwimi	r20, r21, 0, 2, 19
+-3:
++	lwz	r21, 0(r20)	/* Get the level 1 entry */
++	tophys(r21,r21)
++	ori	r21, r21, MI_PS8MEG | MI_SVALID	/* Set 8M byte page */
++#else
++	li	r21, MI_PS8MEG | MI_SVALID	/* Set 8M byte page */
+ #endif
++	DO_8xx_CPU6(0x2b80, r3)
++	mtspr	MI_TWC, r21		/* Set segment attributes */
++	li	r20, MI_BOOTINIT
++	b	5f
++3:
+ 	lwz	r21, 0(r20)	/* Get the level 1 entry */
+ 	rlwinm.	r20, r21,0,0,19	/* Extract page descriptor page address */
 
- drivers/rtc/Kconfig      |    6 +++---
- drivers/rtc/rtc-ds1307.c |    3 +++
- 2 files changed, 6 insertions(+), 3 deletions(-)
+@@ -401,7 +408,7 @@ InstructionTLBMiss:
+ 	 */
+ 2:	li	r21, 0x00f0
+ 	rlwimi	r20, r21, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
+-	DO_8xx_CPU6(0x2d80, r3)
++5:	DO_8xx_CPU6(0x2d80, r3)
+ 	mtspr	MI_RPN, r20	/* Update TLB entry */
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index b8f4e9e..c6045dd 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -126,13 +126,13 @@ comment "I2C RTC drivers"
- if I2C
- 
- config RTC_DRV_DS1307
--	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025"
-+	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025, PT7C4338"
- 	help
- 	  If you say yes here you get support for various compatible RTC
- 	  chips (often with battery backup) connected with I2C. This driver
- 	  should handle DS1307, DS1337, DS1338, DS1339, DS1340, ST M41T00,
--	  EPSON RX-8025 and probably other chips. In some cases the RTC
--	  must already have been initialized (by manufacturing or a
-+	  EPSON RX-8025, PT7C4338 and probably other chips. In some cases 
-+	  the RTC  must already have been initialized (by manufacturing or a
- 	  bootloader).
- 
- 	  The first seven registers on these chips hold an RTC, and other
-diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
-index 4724ba3..e851394 100644
---- a/drivers/rtc/rtc-ds1307.c
-+++ b/drivers/rtc/rtc-ds1307.c
-@@ -4,6 +4,8 @@
-  *  Copyright (C) 2005 James Chapman (ds1337 core)
-  *  Copyright (C) 2006 David Brownell
-  *  Copyright (C) 2009 Matthias Fuchs (rx8025 support)
-+ *  Copyright (C) 2011 Priyanka Jain (Priyanka.Jain@freescale.com)
-+ *                                   (pt7c4338 support)
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -149,6 +151,7 @@ static const struct i2c_device_id ds1307_id[] = {
- 	{ "ds1340", ds_1340 },
- 	{ "ds3231", ds_3231 },
- 	{ "m41t00", m41t00 },
-+	{ "pt7c4338", ds_1307 },
- 	{ "rx8025", rx_8025 },
- 	{ }
- };
--- 
-1.6.5.6
+ 	mfspr	r20, M_TW	/* Restore registers */
+@@ -942,13 +949,16 @@ start_here:
+  */
+ initial_mmu:
+ 	tlbia			/* Invalidate all TLB entries */
+-
++#ifdef CONFIG_PIN_TLB
++//#if 1
+ /* Always pin the first 8 MB ITLB to prevent ITLB
+    misses while mucking around with SRR0/SRR1 in asm
+ */
+ 	lis	r8, MI_RSV4I@h
+ 	ori	r8, r8, 0x1c00
+-
++#else
++	li	r8, 0
++#endif
+ 	mtspr	MI_CTR, r8	/* Set instruction MMU control */
+
+ #ifdef CONFIG_PIN_TLB
