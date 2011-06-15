@@ -1,47 +1,25 @@
-Return-Path: <lennox.wu@gmail.com>
-Received: from mail-qw0-f51.google.com (mail-qw0-f51.google.com
-	[209.85.216.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AB552B6F92
+Return-Path: <b32167@nmglablinux21.freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E148B6FA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 18:02:58 +1000 (EST)
-Received: by qwf7 with SMTP id 7so67875qwf.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 01:02:55 -0700 (PDT)
+	Wed, 15 Jun 2011 19:00:25 +1000 (EST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: <akpm@linux-foundation.org>, <w.sang@pengutronix.de>,
+	<cbouatmailru@gmail.com>, <a.zummo@towertech.it>,
+	<benh@kernel.crashing.org>,
+	<galak@gate.crashing.org>, <grant.likely@secretlab.ca>,
+	<b04825@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+	<rtc-linux@googlegroups.com>, <p_gortmaker@yahoo.com>,
+	<linuxppc-release@linux.freescale.net>
+Subject: [PATCH][v2] Add support for RTC device: pt7c4338 in rtc-ds1307.c
+Date: Wed, 15 Jun 2011 14:29:50 +0530
+Message-ID: <1308128390-23347-1-git-send-email-Priyanka.Jain@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <201106142222.43553.arnd@arndb.de>
-References: <20110614190850.GA13526@linux-mips.org>
-	<201106142222.43553.arnd@arndb.de>
-Date: Wed, 15 Jun 2011 16:02:53 +0800
-Message-ID: <BANLkTikpax09bQqwuP1dJYRtSO+c0DdUgg@mail.gmail.com>
-Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
-From: Lennox Wu <lennox.wu@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/alternative; boundary=0016364ecb745fc9a204a5bb94b9
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
-	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Russell King <linux@arm.linux.org.uk>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Helge Deller <deller@gmx.de>, x86@kernel.org,
-	"James E.J. Bottomley" <jejb@parisc-linux.org>,
-	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
-	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
-	microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
-	Mikael Starvik <starvik@axis.com>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
-	Richard Henderson <rth@twiddle.net>,
-	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
-	Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
-	linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,52 +29,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016364ecb745fc9a204a5bb94b9
-Content-Type: text/plain; charset=ISO-8859-1
+PT7C4338 chip is being manufactured by Pericom Technology Inc.
+It is a serial real-time clock which provides:
+1)Low-power clock/calendar.
+2)Programmable square-wave output.
+It has 56 bytes of nonvolatile RAM.
+Its register set is same as that of rtc device: DS1307.
 
-2011/6/15 Arnd Bergmann <arnd@arndb.de>
->
-> >  config SCORE
-> > -       def_bool y
-> > -       select HAVE_GENERIC_HARDIRQS
-> > -       select GENERIC_IRQ_SHOW
-> > +     def_bool y
-> > +     select HAVE_GENERIC_HARDIRQS
-> > +     select HAVE_PC_PARPORT
-> > +     select GENERIC_IRQ_SHOW
-> >
-> >  choice
-> >       prompt "System type"
->
-> Certainly not, no PIO support
->
->  Yes, there is no platform of the Score supports PIO.
-Best,
-Lennox
 
---0016364ecb745fc9a204a5bb94b9
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+---
+ Change for v2:
+	 Incorporting Andrew Morton's comments to shorten patch by using
+         hunk: { "pt7c4338", ds_1307 }
 
-<br><br><div class=3D"gmail_quote">2011/6/15 Arnd Bergmann <span dir=3D"ltr=
-">&lt;<a href=3D"mailto:arnd@arndb.de">arnd@arndb.de</a>&gt;</span><blockqu=
-ote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc s=
-olid;padding-left:1ex;">
-<div class=3D"im">
-&gt; =A0config SCORE<br>
-&gt; - =A0 =A0 =A0 def_bool y<br>
-&gt; - =A0 =A0 =A0 select HAVE_GENERIC_HARDIRQS<br>
-&gt; - =A0 =A0 =A0 select GENERIC_IRQ_SHOW<br>
-&gt; + =A0 =A0 def_bool y<br>
-&gt; + =A0 =A0 select HAVE_GENERIC_HARDIRQS<br>
-&gt; + =A0 =A0 select HAVE_PC_PARPORT<br>
-&gt; + =A0 =A0 select GENERIC_IRQ_SHOW<br>
-&gt;<br>
-&gt; =A0choice<br>
-&gt; =A0 =A0 =A0 prompt &quot;System type&quot;<br>
-<br>
-</div>Certainly not, no PIO support<br>
-<div class=3D"im"><br></div></blockquote><div>=A0Yes, there is no platform =
-of the Score supports PIO.</div><div>Best,</div><div>Lennox</div></div>
+ Changes :
+	 This patch will supersede patch:
+		"RTC driver(Linux) for PT7C4338 chip"
+	 Incorporting Wolfram Sang's comments to reuse ds1307 driver.
 
---0016364ecb745fc9a204a5bb94b9--
+ drivers/rtc/Kconfig      |    6 +++---
+ drivers/rtc/rtc-ds1307.c |    3 +++
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index b8f4e9e..c6045dd 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -126,13 +126,13 @@ comment "I2C RTC drivers"
+ if I2C
+ 
+ config RTC_DRV_DS1307
+-	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025"
++	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025, PT7C4338"
+ 	help
+ 	  If you say yes here you get support for various compatible RTC
+ 	  chips (often with battery backup) connected with I2C. This driver
+ 	  should handle DS1307, DS1337, DS1338, DS1339, DS1340, ST M41T00,
+-	  EPSON RX-8025 and probably other chips. In some cases the RTC
+-	  must already have been initialized (by manufacturing or a
++	  EPSON RX-8025, PT7C4338 and probably other chips. In some cases 
++	  the RTC  must already have been initialized (by manufacturing or a
+ 	  bootloader).
+ 
+ 	  The first seven registers on these chips hold an RTC, and other
+diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
+index 4724ba3..e851394 100644
+--- a/drivers/rtc/rtc-ds1307.c
++++ b/drivers/rtc/rtc-ds1307.c
+@@ -4,6 +4,8 @@
+  *  Copyright (C) 2005 James Chapman (ds1337 core)
+  *  Copyright (C) 2006 David Brownell
+  *  Copyright (C) 2009 Matthias Fuchs (rx8025 support)
++ *  Copyright (C) 2011 Priyanka Jain (Priyanka.Jain@freescale.com)
++ *                                   (pt7c4338 support)
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+@@ -149,6 +151,7 @@ static const struct i2c_device_id ds1307_id[] = {
+ 	{ "ds1340", ds_1340 },
+ 	{ "ds3231", ds_3231 },
+ 	{ "m41t00", m41t00 },
++	{ "pt7c4338", ds_1307 },
+ 	{ "rx8025", rx_8025 },
+ 	{ }
+ };
+-- 
+1.6.5.6
