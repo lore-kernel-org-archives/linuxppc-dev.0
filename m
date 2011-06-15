@@ -1,28 +1,45 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99049B6F80
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2011 12:33:24 +1000 (EST)
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
-	the hypervisor
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-In-Reply-To: <4DF814A3.7070209@freescale.com>
-References: <1308092673-13045-1-git-send-email-timur@freescale.com>
-	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
-	<4DF7EB8E.8020308@freescale.com>
-	<20110614182517.776d7e77@schlenkerla.am.freescale.net>
-	<1308103091.2635.13.camel@pasglop>  <4DF814A3.7070209@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 15 Jun 2011 12:33:16 +1000
-Message-ID: <1308105196.2635.16.camel@pasglop>
-Mime-Version: 1.0
-Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
-	Wood Scott-B07421 <B07421@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	"paulus@samba.org" <paulus@samba.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id BC802B6F62
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 15 Jun 2011 14:20:21 +1000 (EST)
+Message-ID: <4DF8329C.7000904@zytor.com>
+Date: Tue, 14 Jun 2011 21:18:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
+References: <20110614190850.GA13526@linux-mips.org>
+	<4DF7C3CA.9050902@zytor.com>
+	<20110614223404.GA30057@linux-mips.org>
+In-Reply-To: <20110614223404.GA30057@linux-mips.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+	Chen Liqin <liqin.chen@sunplusct.com>,
+	Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+	Guan Xuetao <gxt@mprc.pku.edu.cn>,
+	Lennox Wu <lennox.wu@gmail.com>, linux-arch@vger.kernel.org,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Russell King <linux@arm.linux.org.uk>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Helge Deller <deller@gmx.de>, x86@kernel.org,
+	"James E.J. Bottomley" <jejb@parisc-linux.org>,
+	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+	microblaze-uclinux@itee.uq.edu.au, Chris Metcalf <cmetcalf@tilera.com>,
+	Mikael Starvik <starvik@axis.com>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+	Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+	linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +49,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-06-15 at 02:10 +0000, Tabi Timur-B04825 wrote:
-> Benjamin Herrenschmidt wrote:
-> > We might want to generically have a CPU feature bit indicating we are
-> > running in guest vs. HV mode. I know Paulus is planning to introduce one
-> > so you may want to sync with him.
+On 06/14/2011 03:34 PM, Ralf Baechle wrote:
 > 
-> Are you talking about CPU_FTR_HVMODE_206?
+> There is no point in offering to build something that couldn't possibly be
+> used.  It just makes the kernel harder to configure and inflates the test
+> matrix for no good reason.
+> 
 
-Well, not exactly. Paul wants to break that up since we're adding some
-primitive support for 201 HV mode too (for 970's). Last we discussed,
-the plan was to go for a generic HV mode bit and a separate bit for the
-version.
+I see... that's why a bunch of devices that only exist on ARM and MIPS
+SoCs are offered on x86 platforms?
 
-Cheers,
-Ben.
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
