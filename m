@@ -1,20 +1,22 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+Return-Path: <groeck@ericsson.com>
+Received: from imr4.ericy.com (imr4.ericy.com [198.24.6.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1F27EB6F62
+	by ozlabs.org (Postfix) with ESMTPS id 584D8B6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jun 2011 14:32:04 +1000 (EST)
-Message-ID: <4DF8359F.10809@zytor.com>
-Date: Tue, 14 Jun 2011 21:31:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
+	Wed, 15 Jun 2011 14:53:06 +1000 (EST)
+Date: Tue, 14 Jun 2011 21:40:16 -0700
+From: Guenter Roeck <guenter.roeck@ericsson.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [RFC,PATCH] Cleanup PC parallel port Kconfig
+Message-ID: <20110615044016.GC10553@ericsson.com>
 References: <20110614190850.GA13526@linux-mips.org>
-	<987664A83D2D224EAE907B061CE93D5301E7281306@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <987664A83D2D224EAE907B061CE93D5301E7281306@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=UTF-8
+	<4DF7C3CA.9050902@zytor.com>
+	<20110614223404.GA30057@linux-mips.org>
+	<4DF8329C.7000904@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4DF8329C.7000904@zytor.com>
 Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
 	"linux-m68k@vger.kernel.org" <linux-m68k@vger.kernel.org>,
 	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
@@ -29,7 +31,7 @@ Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
 	Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
 	"James E.J. Bottomley" <jejb@parisc-linux.org>,
 	Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
-	Matt Turner <mattst88@gmail.com>, "Yu, Fenghua" <fenghua.yu@intel.com>,
+	Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
 	"microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
 	Chris Metcalf <cmetcalf@tilera.com>, Mikael Starvik <starvik@axis.com>,
 	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -38,6 +40,7 @@ Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
 	<linux-arm-kernel@lists.infradead.org>,
 	Richard Henderson <rth@twiddle.net>,
 	Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+	Tony Luck <tony.luck@intel.com>,
 	"linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
 	"linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
 	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -55,32 +58,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/14/2011 03:08 PM, Luck, Tony wrote:
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index 38280ef..849805a 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -23,6 +23,7 @@ config IA64
->  	select HAVE_ARCH_TRACEHOOK
->  	select HAVE_DMA_API_DEBUG
->  	select HAVE_GENERIC_HARDIRQS
-> +	select HAVE_PC_PARPORT
->  	select GENERIC_IRQ_PROBE
->  	select GENERIC_PENDING_IRQ if SMP
->  	select IRQ_PER_CPU
+On Wed, Jun 15, 2011 at 12:18:36AM -0400, H. Peter Anvin wrote:
+> On 06/14/2011 03:34 PM, Ralf Baechle wrote:
+> > 
+> > There is no point in offering to build something that couldn't possibly be
+> > used.  It just makes the kernel harder to configure and inflates the test
+> > matrix for no good reason.
+> > 
 > 
-> I took a look at the back of all my ia64 systems - none of them
-> have a parallel port.  It seems unlikely that new systems will
-> start adding parallel ports :-)
+> I see... that's why a bunch of devices that only exist on ARM and MIPS
+> SoCs are offered on x86 platforms?
 > 
-> So even if I had a printer (or other device) that used a parallel
-> port, I have no way to test it.
-> 
+http://en.wikipedia.org/wiki/Two_wrongs_make_a_right
 
-If it has PCI slots, it can have a parallel port.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Guenter
