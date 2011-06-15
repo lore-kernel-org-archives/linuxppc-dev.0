@@ -1,31 +1,24 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98286B6F99
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jun 2011 05:18:14 +1000 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5FIs1Cv022974
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2011 14:54:01 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p5FJI9I1051488
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2011 15:18:09 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p5FDHtwf027335
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2011 07:17:55 -0600
-Date: Wed, 15 Jun 2011 12:17:47 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: jgarzik@pobox.com
-Subject: libata/ipr/powerpc: regression between 2.6.39-rc4 and 2.6.39-rc5
-Message-ID: <20110615191747.GA6324@us.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from AM1EHSOBE002.bigfish.com (am1ehsobe002.messaging.microsoft.com
+	[213.199.154.205])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6AF4FB6F83
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 05:47:21 +1000 (EST)
+Date: Wed, 15 Jun 2011 14:47:09 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Relocatable kernel for ppc44x
+Message-ID: <20110615144709.0061dbca@schlenkerla.am.freescale.net>
+In-Reply-To: <1308132715.2516.1.camel@pasglop>
+References: <4DF74E5D.9020908@monstr.eu> <4DF84D92.2030803@in.ibm.com>
+	<1308132715.2516.1.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: wayneb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, tj@kernel.org, mbizon@freebox.fr,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, monstr@monstr.eu,
+	Suzuki Poulose <suzuki@in.ibm.com>,
+	John Williams <john.williams@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,80 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jeff,
+On Wed, 15 Jun 2011 20:11:55 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-It appears that commit 7b3a24c57d2eeda8dba9c205342b12689c4679f9 broke
-CD-ROMs on the IPR SATA bus on powerpc machines:
+> On Wed, 2011-06-15 at 11:43 +0530, Suzuki Poulose wrote:
+> > On 06/14/11 17:34, Michal Simek wrote:
+> > > Hi,
+> > >
+> > > have someone tried to support RELOCATABLE kernel on ppc44x?
+> > As Josh, mentioned, I will be working on this. In fact I was trying a couple of
+> > patches towards this on PPC440x. But, I am stuck in debugging the hang that I am
+> > experiencing with the changes. I am setting up a RISCWatch processor probe to
+> > debug the same.
+> > 
+> > Here is some information that I wanted to share :
+> > 
+> > The PPC440X currently uses 256M TLB entries to pin the lowmem. When we go for a
+> > relocatable kernel we have to :
+> > 
+> > 1) Restrict the kernel load address to be 256M aligned
+> 
+> Wait a minute ... :-)
+> 
+> There's a difference between having the kernel run from any address and
+> mapping the linear mapping not starting at 0.
+> 
+> Those are completely orthogonal.
+> 
+> I don't see why off hand you are changing the way the TLB is used. The
+> only possible change needed is to make sure the initial bolted entry set
+> by the asm code properly covers the kernel in whatever it's "current"
+> location is. The rest is a matter of fixing up the relocations...
 
- ata_port_alloc: ENTER
- ata_port_probe: ata1: bus probe begin
- ata1.00: ata_dev_read_id: ENTER
- ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
- ata1.00: ata_dev_read_id: ENTER
- ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
- ata1.00: limiting speed to UDMA7:PIO5
- ata1.00: ata_dev_read_id: ENTER
- ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
- ata1.00: disabled
- ata_port_probe: ata1: bus probe end
- scsi_alloc_sdev: Allocation failure during SCSI scanning, some SCSI devices might not be configured
+Changing where the linear mapping points to is useful for AMP configurations
+where you're supposed to be considering your memory to be a subset of the
+real memory.  This is implemented on e500 as CONFIG_RELOCATABLE, though
+it should have been called something different since it's not really
+building a relocatable kernel (unlike what 64-bit does with
+CONFIG_RELOCATABLE).
 
-The commit in question is tagged as AHCI, but does touch the libata
-core. I'm not well-versed with this code, but here's what I think I know
-:)
-
->From __scsi_add_device, we first allocate the target:
-
- scsi_alloc_target ->
-  shost->hostt->target_alloc ->
-   ipr_target_alloc ->
-    ata_port_alloc ->
-     sets FROZEN
-
-We error out when we allocate the sdev:
-
- scsi_alloc_sdev ->
-  shost->hostt->slave_alloc ->
-   ipr_slave_alloc ->
-    ipr_ata_slave_alloc ->
-     ata_sas_port_init ->
-      ata_port_probe
-
->From what I can tell, the only place that explicitly clears the FROZEN
-flag is the error-handling code via ata_eh_thaw_port().
-
-So I thought either we're not invoking the error-handler at probe time
-correctly to kick the port or perhaps the SAS code is not clearing the
-flag?
-
-I tried the following patch:
-
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index d51f979..abd0e0b 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -3797,6 +3797,7 @@ EXPORT_SYMBOL_GPL(ata_sas_port_alloc);
-  */
- int ata_sas_port_start(struct ata_port *ap)
- {
-+       ap->pflags &= ~ATA_PFLAG_FROZEN;
-        return 0;
- }
- EXPORT_SYMBOL_GPL(ata_sas_port_start);
-
-and the CD-ROM drive works, but I have no idea if it's the right thing
-to do. I chose this particular change, FWIW, because we call
-ata_sas_port_start before we probe in ata_sas_port_init and it seems
-like we need to mark the port as not frozen before we init it? Perhaps
-that should really be a call to a thaw function, not sure. Let's just
-say the ATA/SAS/SCSI interactions are a bit hard to follow at first :)
-
-Any insight you can provide would be great!
-
-Thanks,
-Nish
-
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+-Scott
