@@ -1,24 +1,25 @@
-Return-Path: <b32167@nmglablinux21.freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B259CB6F89
+Return-Path: <greg@kroah.com>
+Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
+	[66.111.4.28])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AB045B6FA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jun 2011 14:05:33 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: <akpm@linux-foundation.org>, <w.sang@pengutronix.de>,
-	<cbouatmailru@gmail.com>, <a.zummo@towertech.it>,
-	<benh@kernel.crashing.org>,
-	<galak@gate.crashing.org>, <grant.likely@secretlab.ca>,
-	<b04825@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<rtc-linux@googlegroups.com>, <p_gortmaker@yahoo.com>
-Subject: [PATCH][v3] Add support for RTC device: pt7c4338 in rtc-ds1307.c
-Date: Thu, 16 Jun 2011 09:35:17 +0530
-Message-ID: <1308197117-3586-1-git-send-email-Priyanka.Jain@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
+	Thu, 16 Jun 2011 17:05:33 +1000 (EST)
+Message-Id: <20110616001611.375030180@clark.kroah.org>
+Date: Wed, 15 Jun 2011 17:15:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org,
+ stable@kernel.org
+Subject: [21/91] seqlock: Dont smp_rmb in seqlock reader spin loop
+In-Reply-To: <20110616001900.GA25375@kroah.com>
+Cc: Nick Piggin <npiggin@kernel.dk>, Eric Dumazet <eric.dumazet@gmail.com>,
+	torvalds@linux-foundation.org, Milton Miller <miltonm@bga.com>,
+	Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Anton Blanchard <anton@samba.org>, akpm@linux-foundation.org,
+	Paul McKenney <paulmck@linux.vnet.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, stable-review@kernel.org,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +29,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PT7C4338 chip is being manufactured by Pericom Technology Inc.
-It is a serial real-time clock which provides:
-1)Low-power clock/calendar.
-2)Programmable square-wave output.
-It has 56 bytes of nonvolatile RAM.
-Its register set is same as that of rtc device: DS1307.
+2.6.32-longterm review patch.  If anyone has any objections, please let us know.
 
+------------------
 
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+From: Milton Miller <miltonm@bga.com>
+
+commit 5db1256a5131d3b133946fa02ac9770a784e6eb2 upstream.
+
+Move the smp_rmb after cpu_relax loop in read_seqlock and add
+ACCESS_ONCE to make sure the test and return are consistent.
+
+A multi-threaded core in the lab didn't like the update
+from 2.6.35 to 2.6.36, to the point it would hang during
+boot when multiple threads were active.  Bisection showed
+af5ab277ded04bd9bc6b048c5a2f0e7d70ef0867 (clockevents:
+Remove the per cpu tick skew) as the culprit and it is
+supported with stack traces showing xtime_lock waits including
+tick_do_update_jiffies64 and/or update_vsyscall.
+
+Experimentation showed the combination of cpu_relax and smp_rmb
+was significantly slowing the progress of other threads sharing
+the core, and this patch is effective in avoiding the hang.
+
+A theory is the rmb is affecting the whole core while the
+cpu_relax is causing a resource rebalance flush, together they
+cause an interfernce cadance that is unbroken when the seqlock
+reader has interrupts disabled.
+
+At first I was confused why the refactor in
+3c22cd5709e8143444a6d08682a87f4c57902df3 (kernel: optimise
+seqlock) didn't affect this patch application, but after some
+study that affected seqcount not seqlock. The new seqcount was
+not factored back into the seqlock.  I defer that the future.
+
+While the removal of the timer interrupt offset created
+contention for the xtime lock while a cpu does the
+additonal work to update the system clock, the seqlock
+implementation with the tight rmb spin loop goes back much
+further, and is just waiting for the right trigger.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@kernel.dk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
+Link: http://lkml.kernel.org/r/%3Cseqlock-rmb%40mdm.bga.com%3E
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- Change for v3:
-	 Incorporting Timur Tabi's comments to drop Kconfig and copyright
-         changes 
+ include/linux/seqlock.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- Change for v2:
-	 Incorporting Andrew Morton's comments to shorten patch by using
-         hunk: { "pt7c4338", ds_1307 }
-
- Changes :
-	 This patch will supersede patch:
-		"RTC driver(Linux) for PT7C4338 chip"
-	 Incorporting Wolfram Sang's comments to reuse ds1307 driver.
-
- drivers/rtc/rtc-ds1307.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
-index 4724ba3..b2005b4 100644
---- a/drivers/rtc/rtc-ds1307.c
-+++ b/drivers/rtc/rtc-ds1307.c
-@@ -149,6 +149,7 @@ static const struct i2c_device_id ds1307_id[] = {
- 	{ "ds1340", ds_1340 },
- 	{ "ds3231", ds_3231 },
- 	{ "m41t00", m41t00 },
-+	{ "pt7c4338", ds_1307 },
- 	{ "rx8025", rx_8025 },
- 	{ }
- };
--- 
-1.6.5.6
+--- a/include/linux/seqlock.h
++++ b/include/linux/seqlock.h
+@@ -88,12 +88,12 @@ static __always_inline unsigned read_seq
+ 	unsigned ret;
+ 
+ repeat:
+-	ret = sl->sequence;
+-	smp_rmb();
++	ret = ACCESS_ONCE(sl->sequence);
+ 	if (unlikely(ret & 1)) {
+ 		cpu_relax();
+ 		goto repeat;
+ 	}
++	smp_rmb();
+ 
+ 	return ret;
+ }
