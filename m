@@ -3,16 +3,16 @@ Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
 	[66.111.4.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB045B6FA3
+	by ozlabs.org (Postfix) with ESMTPS id D4643B6F87
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jun 2011 17:05:33 +1000 (EST)
-Message-Id: <20110616001611.375030180@clark.kroah.org>
-Date: Wed, 15 Jun 2011 17:15:18 -0700
+	Thu, 16 Jun 2011 17:10:32 +1000 (EST)
+Message-Id: <20110616002905.872520968@clark.kroah.org>
+Date: Wed, 15 Jun 2011 17:28:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org,
  stable@kernel.org
-Subject: [21/91] seqlock: Dont smp_rmb in seqlock reader spin loop
-In-Reply-To: <20110616001900.GA25375@kroah.com>
+Subject: [21/85] seqlock: Dont smp_rmb in seqlock reader spin loop
+In-Reply-To: <20110616002917.GA3627@kroah.com>
 Cc: Nick Piggin <npiggin@kernel.dk>, Eric Dumazet <eric.dumazet@gmail.com>,
 	torvalds@linux-foundation.org, Milton Miller <miltonm@bga.com>,
 	Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
@@ -29,7 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.32-longterm review patch.  If anyone has any objections, please let us know.
+2.6.33-longterm review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
