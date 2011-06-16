@@ -3,18 +3,19 @@ Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
 	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6FE00B6FE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2011 00:14:37 +1000 (EST)
-Received: by fxm1 with SMTP id 1so1329329fxm.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 07:14:33 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTPS id C524EB7170
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2011 00:14:39 +1000 (EST)
+Received: by fxm1 with SMTP id 1so1329371fxm.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 07:14:35 -0700 (PDT)
 From: Michal Simek <monstr@monstr.eu>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 1/7] powerpc: ppc440 remove zero physical memory base
-	assumption
-Date: Thu, 16 Jun 2011 16:14:22 +0200
-Message-Id: <1308233668-24166-2-git-send-email-monstr@monstr.eu>
-In-Reply-To: <1308233668-24166-1-git-send-email-monstr@monstr.eu>
+Subject: [RFC PATCH 2/7] powerpc: Permit non-zero physical start address for
+	PPC44x
+Date: Thu, 16 Jun 2011 16:14:23 +0200
+Message-Id: <1308233668-24166-3-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1308233668-24166-2-git-send-email-monstr@monstr.eu>
 References: <1308233668-24166-1-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-2-git-send-email-monstr@monstr.eu>
 Cc: arnd@arndb.de, tmarri@apm.com, suzuki@in.ibm.com,
 	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,47 +29,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: John Williams <john.williams@petalogix.com>
 
-The macro PHYSICAL_START is available in this context, currently always with
-the value zero.  However, that will change in a future patchset.
-
-For now, just remove the zero physical address start assumption in head_44x.S
-where we setup the initial TLB, and in the later MMU setup where we map in
-the remainder of low mem if required.
+The initial TLB entry is 256M, meaning that the physical base address must be
+256M aligned.
 
 Signed-off-by: John Williams <john.williams@petalogix.com>
 ---
- arch/powerpc/kernel/head_44x.S |    5 +++--
- arch/powerpc/mm/44x_mmu.c      |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 18d8a16..d80ce05 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -135,8 +135,9 @@ skpinv:	addi	r4,r4,1				/* Increment */
- 	lis	r3,PAGE_OFFSET@h
- 	ori	r3,r3,PAGE_OFFSET@l
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d00131c..45c9683 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -845,7 +845,7 @@ config KERNEL_START
  
--	/* Kernel is at the base of RAM */
--	li r4, 0			/* Load the kernel physical address */
-+	/* Kernel is at PHYSICAL_START */
-+	lis	r4,PHYSICAL_START@h
-+	ori	r4,r4,PHYSICAL_START@l
+ config PHYSICAL_START_BOOL
+ 	bool "Set physical address where the kernel is loaded"
+-	depends on ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
++	depends on ADVANCED_OPTIONS && FLATMEM && (FSL_BOOKE || 44x)
+ 	help
+ 	  This gives the physical address where the kernel is loaded.
  
- 	/* Load the kernel PID = 0 */
- 	li	r0,0
-diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
-index 98052ac..4a55061 100644
---- a/arch/powerpc/mm/44x_mmu.c
-+++ b/arch/powerpc/mm/44x_mmu.c
-@@ -94,7 +94,7 @@ unsigned long __init mmu_mapin_ram(void)
+@@ -858,6 +858,7 @@ config PHYSICAL_START
  
- 	/* Pin in enough TLBs to cover any lowmem not covered by the
- 	 * initial 256M mapping established in head_44x.S */
--	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
-+	for (addr = PHYSICAL_START + PPC_PIN_SIZE; addr < lowmem_end_addr;
- 	     addr += PPC_PIN_SIZE)
- 		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
- 
+ config PHYSICAL_ALIGN
+ 	hex
++	default "0x10000000" if 44x
+ 	default "0x04000000" if FSL_BOOKE
+ 	help
+ 	  This value puts the alignment restrictions on physical address
 -- 
 1.5.5.6
