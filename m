@@ -1,28 +1,28 @@
 Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com",
+	(Client CN "e28smtp05.in.ibm.com",
 	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BAC74B6FBB
+	by ozlabs.org (Postfix) with ESMTPS id DE1B4B6FB4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jun 2011 20:45:20 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id p5GAeGTj019753
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2011 20:40:16 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p5GAjHr7659510
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2011 20:45:19 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p5GAjHJ7024147
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2011 20:45:17 +1000
+	Thu, 16 Jun 2011 21:26:39 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp05.in.ibm.com (8.14.4/8.13.1) with ESMTP id p5GBQOte002687
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2011 16:56:24 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5GBQLkV3354632
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2011 16:56:22 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p5GBQKPp027167
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2011 16:56:21 +0530
 From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
 Subject: [PATCH v2] kexec-tools: powerpc: Use the #address-cells information
 	to parsememory/reg
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Date: Thu, 16 Jun 2011 16:15:13 +0530
-Message-ID: <20110616104441.8065.46187.stgit@suzukikp.in.ibm.com>
+To: Simon Horman<horms@verge.net.au>
+Date: Thu, 16 Jun 2011 16:56:20 +0530
+Message-ID: <20110616112445.12515.72987.stgit@suzukikp.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux ppc dev <linuxppc-dev@lists.ozlabs.org>,
@@ -39,6 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+
+The problem was with the mail client. Also, mistyped the "To" field in the previous
+one. Resending.
+
+ChangeLog from V1:
+	* Changed the interface for read_memory_region_limits to use 'int fd'
+	* Use sizeof(variable) for read(, instead of sizeof(type).
+
+---
 The format of memory/reg is based on the #address-cells,#size-cells. Currently,
 the kexec-tools doesn't use the above values in parsing the memory/reg values.
 Hence the kexec cannot handle cases where #address-cells, #size-cells are
