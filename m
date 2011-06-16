@@ -3,24 +3,25 @@ Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
 	[209.85.161.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95D9FB7049
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2011 00:14:42 +1000 (EST)
-Received: by mail-fx0-f42.google.com with SMTP id 1so1329329fxm.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 07:14:42 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTPS id F297EB75C0
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2011 00:14:47 +1000 (EST)
+Received: by mail-fx0-f42.google.com with SMTP id 1so1329371fxm.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2011 07:14:47 -0700 (PDT)
 From: Michal Simek <monstr@monstr.eu>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 5/7] powerpc: Consider a non-zero boot address when
-	computing the bootwrapper start
-Date: Thu, 16 Jun 2011 16:14:26 +0200
-Message-Id: <1308233668-24166-6-git-send-email-monstr@monstr.eu>
-In-Reply-To: <1308233668-24166-5-git-send-email-monstr@monstr.eu>
+Subject: [RFC PATCH 7/7] powerpc: Support RELOCATABLE kernel for PPC44x
+Date: Thu, 16 Jun 2011 16:14:28 +0200
+Message-Id: <1308233668-24166-8-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1308233668-24166-7-git-send-email-monstr@monstr.eu>
 References: <1308233668-24166-1-git-send-email-monstr@monstr.eu>
 	<1308233668-24166-2-git-send-email-monstr@monstr.eu>
 	<1308233668-24166-3-git-send-email-monstr@monstr.eu>
 	<1308233668-24166-4-git-send-email-monstr@monstr.eu>
 	<1308233668-24166-5-git-send-email-monstr@monstr.eu>
-Cc: arnd@arndb.de, tmarri@apm.com, suzuki@in.ibm.com,
-	john.williams@petalogix.com
+	<1308233668-24166-6-git-send-email-monstr@monstr.eu>
+	<1308233668-24166-7-git-send-email-monstr@monstr.eu>
+Cc: Michal Simek <monstr@monstr.eu>, arnd@arndb.de, tmarri@apm.com,
+	suzuki@in.ibm.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +31,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: John Williams <john.williams@petalogix.com>
+Changes:
+- Find out address where kernel runs
+- Create the first 256MB TLB from online detected address
 
-There's no fundamental reason the bootwrapper can't boot off a non-zero base,
-we just need to make sure we account for it in the link.
+Limitations:
+- Kernel must be aligned to 256MB
 
-Do this by adding the (up-aligned) kernel size to membase, and using that as
-the link address.
+Backport:
+- Changes in page.h are backported from newer kernel version
 
-Signed-off-by: John Williams <john.williams@petalogix.com>
+mmu_mapin_ram function has to reflect offset in memory start.
+memstart_addr and kernstart_addr are setup directly from asm
+code to ensure that only ppc44x is affected.
+
+Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/powerpc/boot/wrapper |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
+ arch/powerpc/Kconfig            |    3 ++-
+ arch/powerpc/include/asm/page.h |    7 ++++++-
+ arch/powerpc/kernel/head_44x.S  |   28 ++++++++++++++++++++++++++++
+ arch/powerpc/mm/44x_mmu.c       |    6 +++++-
+ 4 files changed, 41 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index e148053..594aa02 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -139,9 +139,16 @@ tmp=$tmpdir/zImage.$$.o
- ksection=.kernel:vmlinux.strip
- isection=.kernel:initrd
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 45c9683..34c521e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -796,7 +796,8 @@ config LOWMEM_CAM_NUM
  
--# default auto-calculate link_address to make room for the kernel
-+# physical offset of kernel image
-+membase=`${CROSS}objdump -p "$kernel" | grep -m 1 LOAD | awk '{print $7}'`
-+
-+# auto-calculate link_address to make room for the kernel
- # round up kernel image size to nearest megabyte
--link_address=`${CROSS}size -x ${kernel} | grep ${kernel} | awk '{printf("0x%08x", and($4 + 0x0fffff, 0xfffe0000))}'`
-+
-+# don't forget to add membase for non-zero kernel boot
-+membase_dec=`printf "%d" $membase`
-+
-+link_address=`${CROSS}size -x ${kernel} | grep ${kernel} | awk -v membase=$membase_dec '{printf("0x%08x", membase + and($4 + 0x0fffff, 0xfffe0000))}'`
+ config RELOCATABLE
+ 	bool "Build a relocatable kernel (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
++	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM
++	depends on FSL_BOOKE || (44x && !SMP)
+ 	help
+ 	  This builds a kernel image that is capable of running at the
+ 	  location the kernel is loaded at (some alignment restrictions may
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 4940662..e813cc2 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -108,8 +108,13 @@ extern phys_addr_t kernstart_addr;
+ #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
  
- case "$platform" in
- pseries)
-@@ -259,9 +266,6 @@ if [ -n "$version" ]; then
-     uboot_version="-n Linux-$version"
- fi
+-#define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET - MEMORY_START))
++#ifdef CONFIG_BOOKE
++#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + KERNELBASE))
++#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - KERNELBASE)
++#else
++#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + PAGE_OFFSET - MEMORY_START))
+ #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
++#endif
  
--# physical offset of kernel image
--membase=`${CROSS}objdump -p "$kernel" | grep -m 1 LOAD | awk '{print $7}'`
--
- case "$platform" in
- uboot)
-     rm -f "$ofile"
+ /*
+  * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index d80ce05..6a63d32 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -59,6 +59,17 @@ _ENTRY(_start);
+ 	 * of abatron_pteptrs
+ 	 */
+ 	nop
++
++#ifdef CONFIG_RELOCATABLE
++	bl	jump                            /* Find our address */
++	nop
++jump:	mflr	r25                              /* Make it accessible */
++	/* just for and */
++	lis     r26, 0xfffffff0@h
++	ori     r26, r26, 0xfffffff0@l
++	and.	r21, r25, r26
++#endif
++
+ /*
+  * Save parameters we are passed
+  */
+@@ -135,9 +146,14 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 	lis	r3,PAGE_OFFSET@h
+ 	ori	r3,r3,PAGE_OFFSET@l
+ 
++#ifdef CONFIG_RELOCATABLE
++	/* load physical address where kernel runs */
++	mr	r4,r21
++#else
+ 	/* Kernel is at PHYSICAL_START */
+ 	lis	r4,PHYSICAL_START@h
+ 	ori	r4,r4,PHYSICAL_START@l
++#endif
+ 
+ 	/* Load the kernel PID = 0 */
+ 	li	r0,0
+@@ -258,6 +274,18 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 	mr	r5,r29
+ 	mr	r6,r28
+ 	mr	r7,r27
++
++#ifdef CONFIG_RELOCATABLE
++	/* save kernel and memory start */
++	lis	r25,kernstart_addr@h
++	ori	r25,r25,kernstart_addr@l
++	stw	r21,4(r25)
++
++	lis	r25,memstart_addr@h
++	ori	r25,r25,memstart_addr@l
++	stw	r21,4(r25)
++#endif
++
+ 	bl	machine_init
+ 	bl	MMU_init
+ 
+diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+index 4a55061..ecf4a20 100644
+--- a/arch/powerpc/mm/44x_mmu.c
++++ b/arch/powerpc/mm/44x_mmu.c
+@@ -91,12 +91,16 @@ void __init MMU_init_hw(void)
+ unsigned long __init mmu_mapin_ram(void)
+ {
+ 	unsigned long addr;
++	unsigned long offset = 0;
+ 
++#if defined(CONFIG_RELOCATABLE)
++	offset = memstart_addr;
++#endif
+ 	/* Pin in enough TLBs to cover any lowmem not covered by the
+ 	 * initial 256M mapping established in head_44x.S */
+ 	for (addr = PHYSICAL_START + PPC_PIN_SIZE; addr < lowmem_end_addr;
+ 	     addr += PPC_PIN_SIZE)
+-		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
++		ppc44x_pin_tlb(addr + PAGE_OFFSET - offset, addr);
+ 
+ 	return total_lowmem;
+ }
 -- 
 1.5.5.6
