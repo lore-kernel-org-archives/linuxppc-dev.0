@@ -1,22 +1,19 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (unknown [IPv6:2406:a000:f000:9500::1])
-	by ozlabs.org (Postfix) with ESMTP id 623EDB6F7E
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 24642B6F7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 08:00:57 +1000 (EST)
-Date: Fri, 17 Jun 2011 07:00:43 +0900
-From: Simon Horman <horms@verge.net.au>
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: Re: [PATCH v2] kexec-tools: powerpc: Use the #address-cells
-	information to parsememory/reg
-Message-ID: <20110616220043.GA2434@verge.net.au>
-References: <20110616104441.8065.46187.stgit@suzukikp.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20110616104441.8065.46187.stgit@suzukikp.in.ibm.com>
-Cc: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	David Laight <David.Laight@ACULAB.COM>,
-	linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+	Fri, 17 Jun 2011 11:08:22 +1000 (EST)
+Subject: [PATCH 1/5] powerpc/hvsi: Move HVSI protocol definitions to a
+	header file
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 17 Jun 2011 11:08:12 +1000
+Message-ID: <1308272892.2516.105.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +23,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 16, 2011 at 04:15:13PM +0530, Suzuki K. Poulose wrote:
-> The format of memory/reg is based on the #address-cells,#size-cells. Currently,
-> the kexec-tools doesn't use the above values in parsing the memory/reg values.
-> Hence the kexec cannot handle cases where #address-cells, #size-cells are
-> different, (for e.g, PPC440X ).
-> 
-> This patch introduces a read_memory_region_limits(), which parses the
-> memory/reg contents based on the values of #address-cells and #size-cells.
+This moves various HVSI protocol definitions from the hvsi.c
+driver to a header file that can be used later on by a udbg
+implementation
 
-Thanks, applied.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/hvsi.h |   68 +++++++++++++++++++++++++++++++++++++++
+ drivers/tty/hvc/hvsi.c          |   63 +-----------------------------------
+ 2 files changed, 69 insertions(+), 62 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/hvsi.h
+
+diff --git a/arch/powerpc/include/asm/hvsi.h b/arch/powerpc/include/asm/hvsi.h
+new file mode 100644
+index 0000000..f13125a
+--- /dev/null
++++ b/arch/powerpc/include/asm/hvsi.h
+@@ -0,0 +1,68 @@
++#ifndef _HVSI_H
++#define _HVSI_H
++
++#define VS_DATA_PACKET_HEADER           0xff
++#define VS_CONTROL_PACKET_HEADER        0xfe
++#define VS_QUERY_PACKET_HEADER          0xfd
++#define VS_QUERY_RESPONSE_PACKET_HEADER 0xfc
++
++/* control verbs */
++#define VSV_SET_MODEM_CTL    1 /* to service processor only */
++#define VSV_MODEM_CTL_UPDATE 2 /* from service processor only */
++#define VSV_CLOSE_PROTOCOL   3
++
++/* query verbs */
++#define VSV_SEND_VERSION_NUMBER 1
++#define VSV_SEND_MODEM_CTL_STATUS 2
++
++/* yes, these masks are not consecutive. */
++#define HVSI_TSDTR 0x01
++#define HVSI_TSCD  0x20
++
++#define HVSI_MAX_OUTGOING_DATA 12
++#define HVSI_VERSION 1
++
++struct hvsi_header {
++	uint8_t  type;
++	uint8_t  len;
++	uint16_t seqno;
++} __attribute__((packed));
++
++struct hvsi_data {
++	uint8_t  type;
++	uint8_t  len;
++	uint16_t seqno;
++	uint8_t  data[HVSI_MAX_OUTGOING_DATA];
++} __attribute__((packed));
++
++struct hvsi_control {
++	uint8_t  type;
++	uint8_t  len;
++	uint16_t seqno;
++	uint16_t verb;
++	/* optional depending on verb: */
++	uint32_t word;
++	uint32_t mask;
++} __attribute__((packed));
++
++struct hvsi_query {
++	uint8_t  type;
++	uint8_t  len;
++	uint16_t seqno;
++	uint16_t verb;
++} __attribute__((packed));
++
++struct hvsi_query_response {
++	uint8_t  type;
++	uint8_t  len;
++	uint16_t seqno;
++	uint16_t verb;
++	uint16_t query_seqno;
++	union {
++		uint8_t  version;
++		uint32_t mctrl_word;
++	} u;
++} __attribute__((packed));
++
++
++#endif /* _HVSI_H */
+diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
+index 8a8d637..0b35793 100644
+--- a/drivers/tty/hvc/hvsi.c
++++ b/drivers/tty/hvc/hvsi.c
+@@ -49,6 +49,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/vio.h>
+ #include <asm/param.h>
++#include <asm/hvsi.h>
+ 
+ #define HVSI_MAJOR	229
+ #define HVSI_MINOR	128
+@@ -109,68 +110,6 @@ enum HVSI_PROTOCOL_STATE {
+ };
+ #define HVSI_CONSOLE 0x1
+ 
+-#define VS_DATA_PACKET_HEADER           0xff
+-#define VS_CONTROL_PACKET_HEADER        0xfe
+-#define VS_QUERY_PACKET_HEADER          0xfd
+-#define VS_QUERY_RESPONSE_PACKET_HEADER 0xfc
+-
+-/* control verbs */
+-#define VSV_SET_MODEM_CTL    1 /* to service processor only */
+-#define VSV_MODEM_CTL_UPDATE 2 /* from service processor only */
+-#define VSV_CLOSE_PROTOCOL   3
+-
+-/* query verbs */
+-#define VSV_SEND_VERSION_NUMBER 1
+-#define VSV_SEND_MODEM_CTL_STATUS 2
+-
+-/* yes, these masks are not consecutive. */
+-#define HVSI_TSDTR 0x01
+-#define HVSI_TSCD  0x20
+-
+-struct hvsi_header {
+-	uint8_t  type;
+-	uint8_t  len;
+-	uint16_t seqno;
+-} __attribute__((packed));
+-
+-struct hvsi_data {
+-	uint8_t  type;
+-	uint8_t  len;
+-	uint16_t seqno;
+-	uint8_t  data[HVSI_MAX_OUTGOING_DATA];
+-} __attribute__((packed));
+-
+-struct hvsi_control {
+-	uint8_t  type;
+-	uint8_t  len;
+-	uint16_t seqno;
+-	uint16_t verb;
+-	/* optional depending on verb: */
+-	uint32_t word;
+-	uint32_t mask;
+-} __attribute__((packed));
+-
+-struct hvsi_query {
+-	uint8_t  type;
+-	uint8_t  len;
+-	uint16_t seqno;
+-	uint16_t verb;
+-} __attribute__((packed));
+-
+-struct hvsi_query_response {
+-	uint8_t  type;
+-	uint8_t  len;
+-	uint16_t seqno;
+-	uint16_t verb;
+-	uint16_t query_seqno;
+-	union {
+-		uint8_t  version;
+-		uint32_t mctrl_word;
+-	} u;
+-} __attribute__((packed));
+-
+-
+-
+ static inline int is_console(struct hvsi_struct *hp)
+ {
+ 	return hp->flags & HVSI_CONSOLE;
