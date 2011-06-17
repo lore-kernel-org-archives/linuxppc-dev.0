@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0ABFCB6F9F
+	by ozlabs.org (Postfix) with ESMTPS id A94FFB6FA2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 15:58:26 +1000 (EST)
-Subject: Re: [PATCH 3/3] powerpc: POWER7 optimised
-	copy_to_user/copy_from_user using VMX
+	Fri, 17 Jun 2011 16:21:15 +1000 (EST)
+Subject: RE: powerpc: Add printk companion for ppc_md.progress
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20110617045421.700411944@samba.org>
-References: <20110617045358.544896830@samba.org>
-	<20110617045421.700411944@samba.org>
+To: dtcarroll@gmail.com
+In-Reply-To: <1308289144.32158.33.camel@pasglop>
+References: <1308289144.32158.33.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 17 Jun 2011 15:58:20 +1000
-Message-ID: <1308290300.32158.48.camel@pasglop>
+Date: Fri, 17 Jun 2011 16:21:07 +1000
+Message-ID: <1308291667.32158.51.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, paulus@samba.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-06-17 at 14:54 +1000, Anton Blanchard wrote:
-> plain text document attachment (power7_copy_tofrom_user)
-> Implement a POWER7 optimised copy_to_user/copy_from_user using VMX.
-> For large aligned copies this new loop is over 10% faster, and for
-> large unaligned copies it is over 200% faster.
+On Fri, 2011-06-17 at 15:39 +1000, Benjamin Herrenschmidt wrote:
+> (Original mail lost in my email cleanup so this isn't a proper reply)
 > 
-> If we take a fault we fall back to the old version, this keeps
-> things relatively simple and easy to verify.
+> I'll apply that for now, but I'd very much like somebody to just get rid
+> of the whole ppc_md.progress business.
+> 
+> We have printk working early enough nowadays (and we can use udbg for
+> debugging).
+> 
+> It was meant to display magic numbers on the panel of IBM machines, I
+> don't think it was every useful...
 
-Same re-entrancy comment as the other ones. preempt & interrupts...
-Except here is worse since you may page fault and thus lose the vmx
-state completely.
+Hrm.. none of your 2 pending patches applies cleanly (factoring
+free_initmem & that one). Haven't had a chance to check why yet, can you
+check on your side ?
 
 Cheers,
 Ben.
