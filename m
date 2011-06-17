@@ -1,25 +1,21 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
-	by ozlabs.org (Postfix) with SMTP id 72B10B6FA2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 20:18:10 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
-	by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new,
-	port 10024) with SMTP
-	id 03687-04 for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 11:17:59 +0100 (BST)
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6C73B6FBE
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2011 20:19:35 +1000 (EST)
+Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
+	p5H9JmqK025574
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2011 11:19:48 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+To: linuxppc-dev@ozlabs.org
+Subject: Changes to of_device ?
+Date: Fri, 17 Jun 2011 11:19:48 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] fs_enet: fix freescale FCC ethernet dp buffer alignment
-Date: Fri, 17 Jun 2011 11:16:24 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6D8ADA6@saturn3.aculab.com>
-In-Reply-To: <007701cc2cce$42342320$2804000a@yangyong>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: <yangyong@neusoft.com>, "Holger Brunck" <holger.brunck@keymile.com>,
-	<linuxppc-dev@lists.ozlabs.org>
-Cc: netdev@vger.kernel.org, Clive Stubbings <clive.stubbings@xentech.co.uk>,
-	Vitaly Bordug <vbordug@ru.mvista.com>
+  charset="us-ascii"
+Message-Id: <201106171119.48178.dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> Hello,
-> Motioned to the memory aligned, now there is such requirement:
-> When the driver send an packet to hardware, the skb's address passed
-by
-> stack do a dma map into hardware, the skb's dma address must=20
-> be 64-byte aligned.
+A couple linux versions ago, I had the following working code in my driver:
 
-Does the hardware support buffer chaining?
-In which case you only need to copy the data upto the first
-64 byte boundary into another buffer.
+static int xad_driver_probe(struct of_device* dev, const struct of_device_id *match) {
+	struct device_node *dn = dev->dev.of_node;
 
-Actually, given that you are likely to have to fixup every
-fragment of the frame being transmitted, if might be worth
-allocating a fixed transmnit buffer area and copying the
-frames into it prior to sending.
-Certainly you need to allow for transmits made up of a
-significant number of small buffers linked together.
+But now it won't compile and I can't figure out how to get the device_node structure from the of_device one ?
+dev->dev is a struct device and there's no device_node info in it...
+What has changed ?
 
-Really you should beat up the hardware designers!
-
-Copying the data to even a 4 byte boundary is almost
-always a misaligned copy. Typically this only applies
-to the receive dma - when writing a 2 byte pad before
-the frame data would be much better.
-
-	David
+[I'm on the latest Xilinx tree, FWIW, so that's 2.6.25 still ?]
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
