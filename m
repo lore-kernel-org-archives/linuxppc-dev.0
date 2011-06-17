@@ -1,19 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Date: Fri, 17 Jun 2011 11:58:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/2] powerpc: add support for MPIC message register API
-Message-ID: <20110617115828.3cebd5c9@schlenkerla.am.freescale.net>
-In-Reply-To: <1308288784.32158.30.camel@pasglop>
-References: <1306869543-18812-1-git-send-email-meador_inge@mentor.com>
-	<1306869543-18812-3-git-send-email-meador_inge@mentor.com>
-	<1308288784.32158.30.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Meador Inge <meador_inge@mentor.com>, openmcapi-dev@googlegroups.com,
-	devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4E49BB6FD3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 18 Jun 2011 05:23:35 +1000 (EST)
+Date: Fri, 17 Jun 2011 15:21:23 -0400 (EDT)
+Message-Id: <20110617.152123.620960460056800771.davem@davemloft.net>
+To: holger.brunck@keymile.com
+Subject: Re: [PATCH] fs_enet: fix freescale FCC ethernet dp buffer alignment
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1308299439-5975-1-git-send-email-holger.brunck@keymile.com>
+References: <1308299439-5975-1-git-send-email-holger.brunck@keymile.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: clive.stubbings@xentech.co.uk, netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 17 Jun 2011 15:33:04 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+From: Holger Brunck <holger.brunck@keymile.com>
+Date: Fri, 17 Jun 2011 10:30:39 +0200
 
-> On Tue, 2011-05-31 at 14:19 -0500, Meador Inge wrote:
-> > +void mpic_msgr_enable(struct mpic_msgr *msgr)
-> > +{
-> > +	out_be32(msgr->mer, in_be32(msgr->mer) | (1 << msgr->num));
-> > +}
-> > +EXPORT_SYMBOL(mpic_msgr_enable);
->=20
-> Why are all those exported non-GPL ? We have a policy of making new
-> in-kernel APIs generally GPL only.
+> From: Clive Stubbings <clive.stubbings@xentech.co.uk>
+> 
+> The RIPTR and TIPTR  (receive/transmit internal temporary data pointer),
+> used by microcode as a temporary buffer for data, must be 32-byte aligned
+> according to the RM for MPC8247.
+> 
+> Tested on mgcoge.
+> 
+> Signed-off-by: Clive Stubbings <clive.stubbings@xentech.co.uk>
+> Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
+> cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+> cc: Vitaly Bordug <vbordug@ru.mvista.com>
+> cc: netdev@vger.kernel.org
 
-=46rom Documentation/DocBook/kernel-hacking.tmpl:
-
-  <sect1 id=3D"sym-exportsymbols-gpl">
-   <title><function>EXPORT_SYMBOL_GPL()</function>  =20
-    <filename class=3D"headerfile">include/linux/module.h</filename></title>
-                                                    =20
-   <para>                                           =20
-    Similar to <function>EXPORT_SYMBOL()</function> except that the
-    symbols exported by <function>EXPORT_SYMBOL_GPL()</function> can
-    only be seen by modules with a                  =20
-    <function>MODULE_LICENSE()</function> that specifies a GPL
-    compatible license.  It implies that the function is considered
-    an internal implementation issue, and not really an interface.
-   </para>                                          =20
-  </sect1>
-
-When did this change from "considered an internal implementation issue, and
-not really an interface" to "all new interfaces"?
-
--Scott
+Applied, thanks.
