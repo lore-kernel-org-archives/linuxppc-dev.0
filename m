@@ -1,11 +1,12 @@
 Return-Path: <anton@samba.org>
-Message-Id: <20110617045421.615463021@samba.org>
-Date: Fri, 17 Jun 2011 14:54:00 +1000
+Message-Id: <20110617045421.700411944@samba.org>
+Date: Fri, 17 Jun 2011 14:54:01 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
  paulus@samba.org,
  mikey@neuling.org
-Subject: [PATCH 2/3] powerpc: POWER7 optimised memcpy using VMX
+Subject: [PATCH 3/3] powerpc: POWER7 optimised copy_to_user/copy_from_user
+	using VMX
 References: <20110617045358.544896830@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,9 +18,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement a POWER7 optimised memcpy using VMX. For large aligned
-copies this new loop is over 10% faster and for large unaligned
-copies it is over 200% faster.
+Implement a POWER7 optimised copy_to_user/copy_from_user using VMX.
+For large aligned copies this new loop is over 10% faster, and for
+large unaligned copies it is over 200% faster.
+
+If we take a fault we fall back to the old version, this keeps
+things relatively simple and easy to verify.
+
+(The detailed comments below are copied from the POWER7 optimised
+memcpy patch for completeness).
 
 On POWER7 unaligned stores rarely slow down - they only flush when
 a store crosses a 4KB page boundary. Furthermore this flush is
@@ -71,12 +78,6 @@ cacheline sized chunks.
 The VMX breakpoint of 4096 bytes was chosen using this microbenchmark:
 
 http://ozlabs.org/~anton/junkcode/copy_to_user.c
-
-(Note that the breakpoint analysis was done with the copy_tofrom_user
-version of the loop and using varying sizes and alignments to read(). 
-It's much easier to create a benchmark using read() that can control
-the size and alignment of a kernel copy loop and synchronise it with
-userspace doing optional VMX instructions).
 
 Since we are using VMX and there is a cost to saving and restoring
 the user VMX state there are two broad cases we need to benchmark:
@@ -137,40 +138,26 @@ Some future optimisations we can look at:
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-powerpc/arch/powerpc/lib/Makefile
+Index: linux-powerpc/arch/powerpc/lib/copyuser_64.S
 ===================================================================
---- linux-powerpc.orig/arch/powerpc/lib/Makefile	2011-06-17 08:38:25.786110167 +1000
-+++ linux-powerpc/arch/powerpc/lib/Makefile	2011-06-17 14:05:30.023020417 +1000
-@@ -17,7 +17,7 @@ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
- obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
- 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
- 			   checksum_wrappers_64.o hweight_64.o \
--			   copypage_power7.o
-+			   copypage_power7.o memcpy_power7.o
- obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
- obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
-Index: linux-powerpc/arch/powerpc/lib/memcpy_64.S
-===================================================================
---- linux-powerpc.orig/arch/powerpc/lib/memcpy_64.S	2011-06-17 08:32:33.670110896 +1000
-+++ linux-powerpc/arch/powerpc/lib/memcpy_64.S	2011-06-17 08:38:25.806110507 +1000
-@@ -11,7 +11,11 @@
+--- linux-powerpc.orig/arch/powerpc/lib/copyuser_64.S	2011-06-17 14:05:30.013020235 +1000
++++ linux-powerpc/arch/powerpc/lib/copyuser_64.S	2011-06-17 14:27:43.026572962 +1000
+@@ -11,6 +11,10 @@
  
  	.align	7
- _GLOBAL(memcpy)
+ _GLOBAL(__copy_tofrom_user)
 +BEGIN_FTR_SECTION
- 	std	r3,48(r1)	/* save destination pointer for return value */
-+FTR_SECTION_ELSE
-+	b	memcpy_power7
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER7)
- 	PPC_MTOCRF	0x01,r5
++	b	__copy_tofrom_user_power7
++END_FTR_SECTION_IFSET(CPU_FTR_POWER7)
++_GLOBAL(__copy_tofrom_user_base)
+ 	/* first check for a whole page copy on a page boundary */
  	cmpldi	cr1,r5,16
- 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
-Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
+ 	cmpdi	cr6,r5,4096
+Index: linux-powerpc/arch/powerpc/lib/copyuser_power7.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-powerpc/arch/powerpc/lib/memcpy_power7.S	2011-06-17 08:38:25.806110507 +1000
-@@ -0,0 +1,596 @@
++++ linux-powerpc/arch/powerpc/lib/copyuser_power7.S	2011-06-17 14:41:47.901277096 +1000
+@@ -0,0 +1,654 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -195,11 +182,66 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +#define STACKFRAMESIZE	256
 +#define STK_REG(i)	(112 + ((i)-14)*8)
 +
-+_GLOBAL(memcpy_power7)
++	.macro err1
++100:
++	.section __ex_table,"a"
++	.align 3
++	.llong 100b,.Ldo_err1
++	.previous
++	.endm
++
++	.macro err2
++200:
++	.section __ex_table,"a"
++	.align 3
++	.llong 200b,.Ldo_err2
++	.previous
++	.endm
++
++	.macro err3
++300:
++	.section __ex_table,"a"
++	.align 3
++	.llong 300b,.Ldo_err3
++	.previous
++	.endm
++
++	.macro err4
++400:
++	.section __ex_table,"a"
++	.align 3
++	.llong 400b,.Ldo_err4
++	.previous
++	.endm
++
++
++.Ldo_err2:
++	ld	r22,STK_REG(r22)(r1)
++	ld	r21,STK_REG(r21)(r1)
++	ld	r20,STK_REG(r20)(r1)
++	ld	r19,STK_REG(r19)(r1)
++	ld	r18,STK_REG(r18)(r1)
++	ld	r17,STK_REG(r17)(r1)
++.Ldo_err4:
++	ld	r16,STK_REG(r16)(r1)
++	ld	r15,STK_REG(r15)(r1)
++	ld	r14,STK_REG(r14)(r1)
++.Ldo_err3:
++	addi	r1,r1,STACKFRAMESIZE
++.Ldo_err1:
++	ld	r3,48(r1)
++	ld	r4,56(r1)
++	ld	r5,64(r1)
++	b	__copy_tofrom_user_base
++
++
++_GLOBAL(__copy_tofrom_user_power7)
 +	cmpldi	r5,16
 +	cmpldi	cr1,r5,4096
 +
 +	std	r3,48(r1)
++	std	r4,56(r1)
++	std	r5,64(r1)
 +
 +	blt	.Lshort_copy
 +	bgt	cr1,.Lvmx_copy
@@ -210,21 +252,21 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	clrldi	r6,r6,(64-3)
 +
 +	bf	cr7*4+3,1f
-+	lbz	r0,0(r4)
++err1;	lbz	r0,0(r4)
 +	addi	r4,r4,1
-+	stb	r0,0(r3)
++err1;	stb	r0,0(r3)
 +	addi	r3,r3,1
 +
 +1:	bf	cr7*4+2,2f
-+	lhz	r0,0(r4)
++err1;	lhz	r0,0(r4)
 +	addi	r4,r4,2
-+	sth	r0,0(r3)
++err1;	sth	r0,0(r3)
 +	addi	r3,r3,2
 +
 +2:	bf	cr7*4+1,3f
-+	lwz	r0,0(r4)
++err1;	lwz	r0,0(r4)
 +	addi	r4,r4,4
-+	stw	r0,0(r3)
++err1;	stw	r0,0(r3)
 +	addi	r3,r3,4
 +
 +3:	sub	r5,r5,r6
@@ -247,39 +289,40 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +
 +	/* Now do cacheline (128B) sized loads and stores. */
 +	.align	5
-+4:	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	ld	r7,16(r4)
-+	ld	r8,24(r4)
-+	ld	r9,32(r4)
-+	ld	r10,40(r4)
-+	ld	r11,48(r4)
-+	ld	r12,56(r4)
-+	ld	r14,64(r4)
-+	ld	r15,72(r4)
-+	ld	r16,80(r4)
-+	ld	r17,88(r4)
-+	ld	r18,96(r4)
-+	ld	r19,104(r4)
-+	ld	r20,112(r4)
-+	ld	r21,120(r4)
++4:
++err2;	ld	r0,0(r4)
++err2;	ld	r6,8(r4)
++err2;	ld	r7,16(r4)
++err2;	ld	r8,24(r4)
++err2;	ld	r9,32(r4)
++err2;	ld	r10,40(r4)
++err2;	ld	r11,48(r4)
++err2;	ld	r12,56(r4)
++err2;	ld	r14,64(r4)
++err2;	ld	r15,72(r4)
++err2;	ld	r16,80(r4)
++err2;	ld	r17,88(r4)
++err2;	ld	r18,96(r4)
++err2;	ld	r19,104(r4)
++err2;	ld	r20,112(r4)
++err2;	ld	r21,120(r4)
 +	addi	r4,r4,128
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	std	r7,16(r3)
-+	std	r8,24(r3)
-+	std	r9,32(r3)
-+	std	r10,40(r3)
-+	std	r11,48(r3)
-+	std	r12,56(r3)
-+	std	r14,64(r3)
-+	std	r15,72(r3)
-+	std	r16,80(r3)
-+	std	r17,88(r3)
-+	std	r18,96(r3)
-+	std	r19,104(r3)
-+	std	r20,112(r3)
-+	std	r21,120(r3)
++err2;	std	r0,0(r3)
++err2;	std	r6,8(r3)
++err2;	std	r7,16(r3)
++err2;	std	r8,24(r3)
++err2;	std	r9,32(r3)
++err2;	std	r10,40(r3)
++err2;	std	r11,48(r3)
++err2;	std	r12,56(r3)
++err2;	std	r14,64(r3)
++err2;	std	r15,72(r3)
++err2;	std	r16,80(r3)
++err2;	std	r17,88(r3)
++err2;	std	r18,96(r3)
++err2;	std	r19,104(r3)
++err2;	std	r20,112(r3)
++err2;	std	r21,120(r3)
 +	addi	r3,r3,128
 +	bdnz	4b
 +
@@ -301,45 +344,45 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	mtocrf	0x01,r6
 +
 +6:	bf	cr7*4+1,7f
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	ld	r7,16(r4)
-+	ld	r8,24(r4)
-+	ld	r9,32(r4)
-+	ld	r10,40(r4)
-+	ld	r11,48(r4)
-+	ld	r12,56(r4)
++err1;	ld	r0,0(r4)
++err1;	ld	r6,8(r4)
++err1;	ld	r7,16(r4)
++err1;	ld	r8,24(r4)
++err1;	ld	r9,32(r4)
++err1;	ld	r10,40(r4)
++err1;	ld	r11,48(r4)
++err1;	ld	r12,56(r4)
 +	addi	r4,r4,64
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	std	r7,16(r3)
-+	std	r8,24(r3)
-+	std	r9,32(r3)
-+	std	r10,40(r3)
-+	std	r11,48(r3)
-+	std	r12,56(r3)
++err1;	std	r0,0(r3)
++err1;	std	r6,8(r3)
++err1;	std	r7,16(r3)
++err1;	std	r8,24(r3)
++err1;	std	r9,32(r3)
++err1;	std	r10,40(r3)
++err1;	std	r11,48(r3)
++err1;	std	r12,56(r3)
 +	addi	r3,r3,64
 +
 +	/* Up to 63B to go */
 +7:	bf	cr7*4+2,8f
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	ld	r7,16(r4)
-+	ld	r8,24(r4)
++err1;	ld	r0,0(r4)
++err1;	ld	r6,8(r4)
++err1;	ld	r7,16(r4)
++err1;	ld	r8,24(r4)
 +	addi	r4,r4,32
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	std	r7,16(r3)
-+	std	r8,24(r3)
++err1;	std	r0,0(r3)
++err1;	std	r6,8(r3)
++err1;	std	r7,16(r3)
++err1;	std	r8,24(r3)
 +	addi	r3,r3,32
 +
 +	/* Up to 31B to go */
 +8:	bf	cr7*4+3,9f
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
++err1;	ld	r0,0(r4)
++err1;	ld	r6,8(r4)
 +	addi	r4,r4,16
-+	std	r0,0(r3)
-+	std	r6,8(r3)
++err1;	std	r0,0(r3)
++err1;	std	r6,8(r3)
 +	addi	r3,r3,16
 +
 +9:	clrldi	r5,r5,(64-4)
@@ -348,30 +391,30 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +.Lshort_copy:
 +	mtocrf	0x01,r5
 +	bf	cr7*4+0,12f
-+	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+	lwz	r6,4(r4)
++err1;	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
++err1;	lwz	r6,4(r4)
 +	addi	r4,r4,8
-+	stw	r0,0(r3)
-+	stw	r6,4(r3)
++err1;	stw	r0,0(r3)
++err1;	stw	r6,4(r3)
 +	addi	r3,r3,8
 +
 +12:	bf	cr7*4+1,13f
-+	lwz	r0,0(r4)
++err1;	lwz	r0,0(r4)
 +	addi	r4,r4,4
-+	stw	r0,0(r3)
++err1;	stw	r0,0(r3)
 +	addi	r3,r3,4
 +
 +13:	bf	cr7*4+2,14f
-+	lhz	r0,0(r4)
++err1;	lhz	r0,0(r4)
 +	addi	r4,r4,2
-+	sth	r0,0(r3)
++err1;	sth	r0,0(r3)
 +	addi	r3,r3,2
 +
 +14:	bf	cr7*4+3,15f
-+	lbz	r0,0(r4)
-+	stb	r0,0(r3)
++err1;	lbz	r0,0(r4)
++err1;	stb	r0,0(r3)
 +
-+15:	ld	r3,48(r1)
++15:	li	r3,0
 +	blr
 +
 +.Lvmx_copy:
@@ -401,27 +444,27 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	clrldi	r6,r6,(64-4)
 +
 +	bf	cr7*4+3,1f
-+	lbz	r0,0(r4)
++err3;	lbz	r0,0(r4)
 +	addi	r4,r4,1
-+	stb	r0,0(r3)
++err3;	stb	r0,0(r3)
 +	addi	r3,r3,1
 +
 +1:	bf	cr7*4+2,2f
-+	lhz	r0,0(r4)
++err3;	lhz	r0,0(r4)
 +	addi	r4,r4,2
-+	sth	r0,0(r3)
++err3;	sth	r0,0(r3)
 +	addi	r3,r3,2
 +
 +2:	bf	cr7*4+1,3f
-+	lwz	r0,0(r4)
++err3;	lwz	r0,0(r4)
 +	addi	r4,r4,4
-+	stw	r0,0(r3)
++err3;	stw	r0,0(r3)
 +	addi	r3,r3,4
 +
 +3:	bf	cr7*4+0,4f
-+	ld	r0,0(r4)
++err3;	ld	r0,0(r4)
 +	addi	r4,r4,8
-+	std	r0,0(r3)
++err3;	std	r0,0(r3)
 +	addi	r3,r3,8
 +
 +4:	sub	r5,r5,r6
@@ -437,29 +480,29 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	li	r11,48
 +
 +	bf	cr7*4+3,5f
-+	lvx	vr1,r0,r4
++err3;	lvx	vr1,r0,r4
 +	addi	r4,r4,16
-+	stvx	vr1,r0,r3
++err3;	stvx	vr1,r0,r3
 +	addi	r3,r3,16
 +
 +5:	bf	cr7*4+2,6f
-+	lvx	vr1,r0,r4
-+	lvx	vr0,r4,r9
++err3;	lvx	vr1,r0,r4
++err3;	lvx	vr0,r4,r9
 +	addi	r4,r4,32
-+	stvx	vr1,r0,r3
-+	stvx	vr0,r3,r9
++err3;	stvx	vr1,r0,r3
++err3;	stvx	vr0,r3,r9
 +	addi	r3,r3,32
 +
 +6:	bf	cr7*4+1,7f
-+	lvx	vr3,r0,r4
-+	lvx	vr2,r4,r9
-+	lvx	vr1,r4,r10
-+	lvx	vr0,r4,r11
++err3;	lvx	vr3,r0,r4
++err3;	lvx	vr2,r4,r9
++err3;	lvx	vr1,r4,r10
++err3;	lvx	vr0,r4,r11
 +	addi	r4,r4,64
-+	stvx	vr3,r0,r3
-+	stvx	vr2,r3,r9
-+	stvx	vr1,r3,r10
-+	stvx	vr0,r3,r11
++err3;	stvx	vr3,r0,r3
++err3;	stvx	vr2,r3,r9
++err3;	stvx	vr1,r3,r10
++err3;	stvx	vr0,r3,r11
 +	addi	r3,r3,64
 +
 +7:	sub	r5,r5,r6
@@ -481,23 +524,24 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	 * cacheline stores are also cacheline aligned.
 +	 */
 +	.align	5
-+8:	lvx	vr7,r0,r4
-+	lvx	vr6,r4,r9
-+	lvx	vr5,r4,r10
-+	lvx	vr4,r4,r11
-+	lvx	vr3,r4,r12
-+	lvx	vr2,r4,r14
-+	lvx	vr1,r4,r15
-+	lvx	vr0,r4,r16
++8:
++err4;	lvx	vr7,r0,r4
++err4;	lvx	vr6,r4,r9
++err4;	lvx	vr5,r4,r10
++err4;	lvx	vr4,r4,r11
++err4;	lvx	vr3,r4,r12
++err4;	lvx	vr2,r4,r14
++err4;	lvx	vr1,r4,r15
++err4;	lvx	vr0,r4,r16
 +	addi	r4,r4,128
-+	stvx	vr7,r0,r3
-+	stvx	vr6,r3,r9
-+	stvx	vr5,r3,r10
-+	stvx	vr4,r3,r11
-+	stvx	vr3,r3,r12
-+	stvx	vr2,r3,r14
-+	stvx	vr1,r3,r15
-+	stvx	vr0,r3,r16
++err4;	stvx	vr7,r0,r3
++err4;	stvx	vr6,r3,r9
++err4;	stvx	vr5,r3,r10
++err4;	stvx	vr4,r3,r11
++err4;	stvx	vr3,r3,r12
++err4;	stvx	vr2,r3,r14
++err4;	stvx	vr1,r3,r15
++err4;	stvx	vr0,r3,r16
 +	addi	r3,r3,128
 +	bdnz	8b
 +
@@ -511,58 +555,58 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	mtocrf	0x01,r6
 +
 +	bf	cr7*4+1,9f
-+	lvx	vr3,r0,r4
-+	lvx	vr2,r4,r9
-+	lvx	vr1,r4,r10
-+	lvx	vr0,r4,r11
++err3;	lvx	vr3,r0,r4
++err3;	lvx	vr2,r4,r9
++err3;	lvx	vr1,r4,r10
++err3;	lvx	vr0,r4,r11
 +	addi	r4,r4,64
-+	stvx	vr3,r0,r3
-+	stvx	vr2,r3,r9
-+	stvx	vr1,r3,r10
-+	stvx	vr0,r3,r11
++err3;	stvx	vr3,r0,r3
++err3;	stvx	vr2,r3,r9
++err3;	stvx	vr1,r3,r10
++err3;	stvx	vr0,r3,r11
 +	addi	r3,r3,64
 +
 +9:	bf	cr7*4+2,10f
-+	lvx	vr1,r0,r4
-+	lvx	vr0,r4,r9
++err3;	lvx	vr1,r0,r4
++err3;	lvx	vr0,r4,r9
 +	addi	r4,r4,32
-+	stvx	vr1,r0,r3
-+	stvx	vr0,r3,r9
++err3;	stvx	vr1,r0,r3
++err3;	stvx	vr0,r3,r9
 +	addi	r3,r3,32
 +
 +10:	bf	cr7*4+3,11f
-+	lvx	vr1,r0,r4
++err3;	lvx	vr1,r0,r4
 +	addi	r4,r4,16
-+	stvx	vr1,r0,r3
++err3;	stvx	vr1,r0,r3
 +	addi	r3,r3,16
 +
 +	/* Up to 15B to go */
 +11:	clrldi	r5,r5,(64-4)
 +	mtocrf	0x01,r5
 +	bf	cr7*4+0,12f
-+	ld	r0,0(r4)
++err3;	ld	r0,0(r4)
 +	addi	r4,r4,8
-+	std	r0,0(r3)
++err3;	std	r0,0(r3)
 +	addi	r3,r3,8
 +
 +12:	bf	cr7*4+1,13f
-+	lwz	r0,0(r4)
++err3;	lwz	r0,0(r4)
 +	addi	r4,r4,4
-+	stw	r0,0(r3)
++err3;	stw	r0,0(r3)
 +	addi	r3,r3,4
 +
 +13:	bf	cr7*4+2,14f
-+	lhz	r0,0(r4)
++err3;	lhz	r0,0(r4)
 +	addi	r4,r4,2
-+	sth	r0,0(r3)
++err3;	sth	r0,0(r3)
 +	addi	r3,r3,2
 +
 +14:	bf	cr7*4+3,15f
-+	lbz	r0,0(r4)
-+	stb	r0,0(r3)
++err3;	lbz	r0,0(r4)
++err3;	stb	r0,0(r3)
 +
 +15:	addi	r1,r1,STACKFRAMESIZE
-+	ld	r3,48(r1)
++	li	r3,0
 +	blr
 +
 +.Lvmx_unaligned_copy:
@@ -572,29 +616,29 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	clrldi	r6,r6,(64-4)
 +
 +	bf	cr7*4+3,1f
-+	lbz	r0,0(r4)
++err3;	lbz	r0,0(r4)
 +	addi	r4,r4,1
-+	stb	r0,0(r3)
++err3;	stb	r0,0(r3)
 +	addi	r3,r3,1
 +
 +1:	bf	cr7*4+2,2f
-+	lhz	r0,0(r4)
++err3;	lhz	r0,0(r4)
 +	addi	r4,r4,2
-+	sth	r0,0(r3)
++err3;	sth	r0,0(r3)
 +	addi	r3,r3,2
 +
 +2:	bf	cr7*4+1,3f
-+	lwz	r0,0(r4)
++err3;	lwz	r0,0(r4)
 +	addi	r4,r4,4
-+	stw	r0,0(r3)
++err3;	stw	r0,0(r3)
 +	addi	r3,r3,4
 +
 +3:	bf	cr7*4+0,4f
-+	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+	lwz	r7,4(r4)
++err3;	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
++err3;	lwz	r7,4(r4)
 +	addi	r4,r4,8
-+	stw	r0,0(r3)
-+	stw	r7,4(r3)
++err3;	stw	r0,0(r3)
++err3;	stw	r7,4(r3)
 +	addi	r3,r3,8
 +
 +4:	sub	r5,r5,r6
@@ -610,41 +654,41 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	li	r11,48
 +
 +	lvsl	vr16,0,r4	/* Setup permute control vector */
-+	lvx	vr0,0,r4
++err3;	lvx	vr0,0,r4
 +	addi	r4,r4,16
 +
 +	bf	cr7*4+3,5f
-+	lvx	vr1,r0,r4
++err3;	lvx	vr1,r0,r4
 +	vperm	vr8,vr0,vr1,vr16
 +	addi	r4,r4,16
-+	stvx	vr8,r0,r3
++err3;	stvx	vr8,r0,r3
 +	addi	r3,r3,16
 +	vor	vr0,vr1,vr1
 +
 +5:	bf	cr7*4+2,6f
-+	lvx	vr1,r0,r4
++err3;	lvx	vr1,r0,r4
 +	vperm	vr8,vr0,vr1,vr16
-+	lvx	vr0,r4,r9
++err3;	lvx	vr0,r4,r9
 +	vperm	vr9,vr1,vr0,vr16
 +	addi	r4,r4,32
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
++err3;	stvx	vr8,r0,r3
++err3;	stvx	vr9,r3,r9
 +	addi	r3,r3,32
 +
 +6:	bf	cr7*4+1,7f
-+	lvx	vr3,r0,r4
++err3;	lvx	vr3,r0,r4
 +	vperm	vr8,vr0,vr3,vr16
-+	lvx	vr2,r4,r9
++err3;	lvx	vr2,r4,r9
 +	vperm	vr9,vr3,vr2,vr16
-+	lvx	vr1,r4,r10
++err3;	lvx	vr1,r4,r10
 +	vperm	vr10,vr2,vr1,vr16
-+	lvx	vr0,r4,r11
++err3;	lvx	vr0,r4,r11
 +	vperm	vr11,vr1,vr0,vr16
 +	addi	r4,r4,64
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	stvx	vr10,r3,r10
-+	stvx	vr11,r3,r11
++err3;	stvx	vr8,r0,r3
++err3;	stvx	vr9,r3,r9
++err3;	stvx	vr10,r3,r10
++err3;	stvx	vr11,r3,r11
 +	addi	r3,r3,64
 +
 +7:	sub	r5,r5,r6
@@ -666,31 +710,32 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	 * cacheline stores are also cacheline aligned.
 +	 */
 +	.align	5
-+8:	lvx	vr7,r0,r4
++8:
++err4;	lvx	vr7,r0,r4
 +	vperm	vr8,vr0,vr7,vr16
-+	lvx	vr6,r4,r9
++err4;	lvx	vr6,r4,r9
 +	vperm	vr9,vr7,vr6,vr16
-+	lvx	vr5,r4,r10
++err4;	lvx	vr5,r4,r10
 +	vperm	vr10,vr6,vr5,vr16
-+	lvx	vr4,r4,r11
++err4;	lvx	vr4,r4,r11
 +	vperm	vr11,vr5,vr4,vr16
-+	lvx	vr3,r4,r12
++err4;	lvx	vr3,r4,r12
 +	vperm	vr12,vr4,vr3,vr16
-+	lvx	vr2,r4,r14
++err4;	lvx	vr2,r4,r14
 +	vperm	vr13,vr3,vr2,vr16
-+	lvx	vr1,r4,r15
++err4;	lvx	vr1,r4,r15
 +	vperm	vr14,vr2,vr1,vr16
-+	lvx	vr0,r4,r16
++err4;	lvx	vr0,r4,r16
 +	vperm	vr15,vr1,vr0,vr16
 +	addi	r4,r4,128
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	stvx	vr10,r3,r10
-+	stvx	vr11,r3,r11
-+	stvx	vr12,r3,r12
-+	stvx	vr13,r3,r14
-+	stvx	vr14,r3,r15
-+	stvx	vr15,r3,r16
++err4;	stvx	vr8,r0,r3
++err4;	stvx	vr9,r3,r9
++err4;	stvx	vr10,r3,r10
++err4;	stvx	vr11,r3,r11
++err4;	stvx	vr12,r3,r12
++err4;	stvx	vr13,r3,r14
++err4;	stvx	vr14,r3,r15
++err4;	stvx	vr15,r3,r16
 +	addi	r3,r3,128
 +	bdnz	8b
 +
@@ -704,36 +749,36 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	mtocrf	0x01,r6
 +
 +	bf	cr7*4+1,9f
-+	lvx	vr3,r0,r4
++err3;	lvx	vr3,r0,r4
 +	vperm	vr8,vr0,vr3,vr16
-+	lvx	vr2,r4,r9
++err3;	lvx	vr2,r4,r9
 +	vperm	vr9,vr3,vr2,vr16
-+	lvx	vr1,r4,r10
++err3;	lvx	vr1,r4,r10
 +	vperm	vr10,vr2,vr1,vr16
-+	lvx	vr0,r4,r11
++err3;	lvx	vr0,r4,r11
 +	vperm	vr11,vr1,vr0,vr16
 +	addi	r4,r4,64
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	stvx	vr10,r3,r10
-+	stvx	vr11,r3,r11
++err3;	stvx	vr8,r0,r3
++err3;	stvx	vr9,r3,r9
++err3;	stvx	vr10,r3,r10
++err3;	stvx	vr11,r3,r11
 +	addi	r3,r3,64
 +
 +9:	bf	cr7*4+2,10f
-+	lvx	vr1,r0,r4
++err3;	lvx	vr1,r0,r4
 +	vperm	vr8,vr0,vr1,vr16
-+	lvx	vr0,r4,r9
++err3;	lvx	vr0,r4,r9
 +	vperm	vr9,vr1,vr0,vr16
 +	addi	r4,r4,32
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
++err3;	stvx	vr8,r0,r3
++err3;	stvx	vr9,r3,r9
 +	addi	r3,r3,32
 +
 +10:	bf	cr7*4+3,11f
-+	lvx	vr1,r0,r4
++err3;	lvx	vr1,r0,r4
 +	vperm	vr8,vr0,vr1,vr16
 +	addi	r4,r4,16
-+	stvx	vr8,r0,r3
++err3;	stvx	vr8,r0,r3
 +	addi	r3,r3,16
 +
 +	/* Up to 15B to go */
@@ -741,29 +786,42 @@ Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 +	addi	r4,r4,-16	/* Unwind the +16 load offset */
 +	mtocrf	0x01,r5
 +	bf	cr7*4+0,12f
-+	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+	lwz	r6,4(r4)
++err3;	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
++err3;	lwz	r6,4(r4)
 +	addi	r4,r4,8
-+	stw	r0,0(r3)
-+	stw	r6,4(r3)
++err3;	stw	r0,0(r3)
++err3;	stw	r6,4(r3)
 +	addi	r3,r3,8
 +
 +12:	bf	cr7*4+1,13f
-+	lwz	r0,0(r4)
++err3;	lwz	r0,0(r4)
 +	addi	r4,r4,4
-+	stw	r0,0(r3)
++err3;	stw	r0,0(r3)
 +	addi	r3,r3,4
 +
 +13:	bf	cr7*4+2,14f
-+	lhz	r0,0(r4)
++err3;	lhz	r0,0(r4)
 +	addi	r4,r4,2
-+	sth	r0,0(r3)
++err3;	sth	r0,0(r3)
 +	addi	r3,r3,2
 +
 +14:	bf	cr7*4+3,15f
-+	lbz	r0,0(r4)
-+	stb	r0,0(r3)
++err3;	lbz	r0,0(r4)
++err3;	stb	r0,0(r3)
 +
 +15:	addi	r1,r1,STACKFRAMESIZE
-+	ld	r3,48(r1)
++	li	r3,0
 +	blr
+Index: linux-powerpc/arch/powerpc/lib/Makefile
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/lib/Makefile	2011-06-17 14:27:42.396562026 +1000
++++ linux-powerpc/arch/powerpc/lib/Makefile	2011-06-17 14:27:43.026572962 +1000
+@@ -17,7 +17,7 @@ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+ 			   checksum_wrappers_64.o hweight_64.o \
+-			   copypage_power7.o memcpy_power7.o
++			   copypage_power7.o memcpy_power7.o copyuser_power7.o
+ obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
+ obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
