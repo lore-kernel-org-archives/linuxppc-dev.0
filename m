@@ -1,21 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id C49CEB6F9E
+Return-Path: <prvs=1428af389=yangyong@neusoft.com>
+Received: from mailgate.neusoft.com (mailgate.neusoft.com [210.83.25.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mailgate.neusoft.com", Issuer "Neusoft" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7BC09B6FA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 19:17:47 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] Add cpufreq driver for Momentum Maple boards
-Date: Fri, 17 Jun 2011 11:17:14 +0200
-References: <1308284088.32158.0.camel@pasglop>
-	<1308300556-4463-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1308300556-4463-1-git-send-email-dbaryshkov@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201106171117.14794.arnd@arndb.de>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, davej@redhat.com,
-	paulus@samba.org, cpufreq@vger.kernel.org
+	Fri, 17 Jun 2011 19:22:21 +1000 (EST)
+Date: Fri, 17 Jun 2011 17:09:22 +0800
+From: =?gb2312?B?0e7Twg==?= <yangyong@neusoft.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIXSBmc19lbmV0OiBmaXggZnJlZXNjYWxlIEZDQw==?=
+	=?gb2312?B?IGV0aGVybmV0IGRwIGJ1ZmZlciBhbGlnbm1lbnQ=?=
+In-reply-to: <1308299439-5975-1-git-send-email-holger.brunck@keymile.com>
+Sender: yangyong@neusoft.com
+To: 'Holger Brunck' <holger.brunck@keymile.com>, linuxppc-dev@lists.ozlabs.org
+Message-id: <007701cc2cce$42342320$2804000a@yangyong>
+MIME-version: 1.0
+Content-Type: text/plain; charset="gb2312"
+Cc: netdev@vger.kernel.org, 'Clive Stubbings' <clive.stubbings@xentech.co.uk>,
+	'Vitaly Bordug' <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 17 June 2011 10:49:16 Dmitry Eremin-Solenikov wrote:
-> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
-> kit and others). Driver is based on a cpufreq driver for 64-bit powermac
-> boxes with all pmac-dependant features removed and simple cleanup
-> applied.
-> 
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> ---
->  arch/powerpc/kernel/misc_64.S          |    4 +-
->  arch/powerpc/platforms/Kconfig         |    8 +
->  arch/powerpc/platforms/maple/Makefile  |    1 +
->  arch/powerpc/platforms/maple/cpufreq.c |  317 ++++++++++++++++++++++++++++++++
->  4 files changed, 328 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
-> 
-
-
-I think new cpufreq drivers should live in drivers/cpufreq, not in arch/. We've
-started moving other drivers away from arch/x86 and arch/arm already.
-
-The code itself looks good.
-
-	Arnd
+SGVsbG8sCk1vdGlvbmVkIHRvIHRoZSBtZW1vcnkgYWxpZ25lZCwgbm93IHRoZXJlIGlzIHN1Y2gg
+cmVxdWlyZW1lbnQ6CldoZW4gdGhlIGRyaXZlciBzZW5kIGFuIHBhY2tldCB0byBoYXJkd2FyZSwg
+dGhlIHNrYidzIGFkZHJlc3MgcGFzc2VkIGJ5CnN0YWNrIGRvIGEgZG1hIG1hcCBpbnRvIGhhcmR3
+YXJlLCB0aGUgc2tiJ3MgZG1hIGFkZHJlc3MgbXVzdCBiZSA2NC1ieXRlCmFsaWduZWQuCk15IG1l
+dGhvZDoKIEFsbG9jYXRlIGEgbmV3IHNrYiB3aGljaCBpcyA2NC1ieXRlIGFsaWduZWQsIHRoZW4g
+Y29weSB0aGUgcGFzc2VkIHNrYiB0bwpuZXcgb25lCkFmdGVyIHRlc3QsIHRoZSBkcml2ZXIgY2Fu
+IHdvcmsgYW5kIG92ZXJjb21lIHRoaXMgaXNzdWUuCkJ1dCBJIGVhZ2VyIHRvIGdldCBhIHBlcmZl
+Y3Qgc29sdXRpb24gYWJvdXQgdGhhdCwgY291bGQgeW91IG9mZmVyIG1lIGEgbmljZQpvbmU/IFRo
+YW5rcyBzbyBtdWNofn4KCkNvZGWjugpzdGF0aWMgc3RydWN0IHNrX2J1ZmYgKiBza2JfYWxpZ25f
+Y29weShjb25zdCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLCBnZnBfdApnZnBfbWFzaykKewogICAgaWYo
+KHNrYi0+bGVuICsgTEVOX0lORk9fQllURVMpID4gMjAwMCApewogICAgICAgIGF0b21pY19pbmMo
+JnByb2Nfc3RhdFtQUk9DX1NUQVRfSlVNQk9fQ05UXSk7CiAgICAgICAgcmV0dXJuIE5VTEw7CiAg
+ICB9ICAgIAoKICAgIHN0cnVjdCBza19idWZmICpuOwogICAgbiA9IGFsbG9jX3NrYigyMDQ4LCBn
+ZnBfbWFzayk7ICAvLzAgaGVhZHJvb20KICAgIGlmKCFuKQogICAgICAgIHJldHVybiBOVUxMOwoK
+ICAgIGF0b21pY19pbmMoJnByb2Nfc3RhdFtQUk9DX1NUQVRfU0tCX0FMTE9DXSk7CiAgICBza2Jf
+cHV0KG4sIHNrYi0+bGVuICsgTEVOX0lORk9fQllURVMpOwoKICAgIGlmKChza2ItPmRhdGEgLSBM
+RU5fSU5GT19CWVRFUykgPT0gTlVMTCl7CiAgICAgICAgY19lcnIoInNrYi0+ZGF0YSAtIExFTl9J
+TkZPX0JZVEVTIGlzIE5VTEwhXG4iKTsKICAgICAgICByZXR1cm4gTlVMTDsKICAgIH0gICAgCiAg
+ICBtZW1jcHkobi0+ZGF0YSwgc2tiLT5kYXRhIC0gTEVOX0lORk9fQllURVMsIHNrYi0+bGVuICsg
+TEVOX0lORk9fQllURVMpOwogICAgcmV0dXJuIG47Cn0Kc3RhdGljIGludCBuZV9wY2llX3R4X21h
+cChzdHJ1Y3QgbmVfcGNpZV9yaW5nKiB0eF9yaW5nLCBzdHJ1Y3Qgc2tfYnVmZiogc2tiKQp7CiAg
+ICBzdHJ1Y3QgbmVfcGNpZV9idWZmKiBidWZmOwogICAgc3RydWN0IHNrX2J1ZmYqIGFsaWduX3Nr
+YjsKICAgIGludCBpID0gdHhfcmluZy0+bmV4dF90b191c2U7CiAgICBpbnQgbGVuID0gc2tiLT5s
+ZW47CiAgICBpbnQgY291bnQgPSAwOwoKICAgIGFsaWduX3NrYiA9IHNrYl9hbGlnbl9jb3B5KHNr
+YiwgR0ZQX0FUT01JQyk7CiAgICBpZighYWxpZ25fc2tiKXsKICAgICAgICBnb3RvIGRtYV9tYXBf
+ZXJyb3I7CiAgICB9CgogICAgYnVmZiA9ICZ0eF9yaW5nLT5idWZmZXJbaV07CiAgICBidWZmLT5s
+ZW5ndGggPSBsZW4rTEVOX0lORk9fQllURVM7CiAgICBidWZmLT5kbWEgPSBwY2lfbWFwX3Npbmds
+ZSh0eF9yaW5nLT5wY2lfZGV2LCBhbGlnbl9za2ItPmRhdGEsCiAgICAgICAgICAgIGxlbitMRU5f
+SU5GT19CWVRFUywgUENJX0RNQV9UT0RFVklDRSk7CiAgICBpZiAocGNpX2RtYV9tYXBwaW5nX2Vy
+cm9yKHR4X3JpbmctPnBjaV9kZXYsIGJ1ZmYtPmRtYSkpIHsKICAgICAgICBnb3RvIGRtYV9tYXBf
+ZXJyb3I7CiAgICB9CgoKCi0tLS0t08q8/tStvP4tLS0tLQq3orz+yMs6IG5ldGRldi1vd25lckB2
+Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpuZXRkZXYtb3duZXJAdmdlci5rZXJuZWwub3JnXQq0+rHt
+IEhvbGdlciBCcnVuY2sKt6LLzcqxvOQ6IDIwMTHE6jbUwjE3yNUgMTY6MzEKytW8/sjLOiBsaW51
+eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwqzrcvNOiBDbGl2ZSBTdHViYmluZ3M7IEhvbGdlciBC
+cnVuY2s7IFBhbnRlbGlzIEFudG9uaW91OyBWaXRhbHkgQm9yZHVnOwpuZXRkZXZAdmdlci5rZXJu
+ZWwub3JnCtb3zOI6IFtQQVRDSF0gZnNfZW5ldDogZml4IGZyZWVzY2FsZSBGQ0MgZXRoZXJuZXQg
+ZHAgYnVmZmVyIGFsaWdubWVudAoKRnJvbTogQ2xpdmUgU3R1YmJpbmdzIDxjbGl2ZS5zdHViYmlu
+Z3NAeGVudGVjaC5jby51az4KClRoZSBSSVBUUiBhbmQgVElQVFIgIChyZWNlaXZlL3RyYW5zbWl0
+IGludGVybmFsIHRlbXBvcmFyeSBkYXRhIHBvaW50ZXIpLAp1c2VkIGJ5IG1pY3JvY29kZSBhcyBh
+IHRlbXBvcmFyeSBidWZmZXIgZm9yIGRhdGEsIG11c3QgYmUgMzItYnl0ZSBhbGlnbmVkCmFjY29y
+ZGluZyB0byB0aGUgUk0gZm9yIE1QQzgyNDcuCgpUZXN0ZWQgb24gbWdjb2dlLgoKU2lnbmVkLW9m
+Zi1ieTogQ2xpdmUgU3R1YmJpbmdzIDxjbGl2ZS5zdHViYmluZ3NAeGVudGVjaC5jby51az4KU2ln
+bmVkLW9mZi1ieTogSG9sZ2VyIEJydW5jayA8aG9sZ2VyLmJydW5ja0BrZXltaWxlLmNvbT4KY2M6
+IFBhbnRlbGlzIEFudG9uaW91IDxwYW50ZWxpcy5hbnRvbmlvdUBnbWFpbC5jb20+CmNjOiBWaXRh
+bHkgQm9yZHVnIDx2Ym9yZHVnQHJ1Lm12aXN0YS5jb20+CmNjOiBuZXRkZXZAdmdlci5rZXJuZWwu
+b3JnCi0tLQpUaGlzIGZpeGVzIGEga2VybmVsIGNyYXNoIG9uIG1nY29nZSB3aGVuIHVzaW5nIFNQ
+SSBvbiBDUE0yIGFuZApldGhlcm5ldCBvdmVyIEZDQy4gTm93IGZpeGVkIGJlY2F1c2UgdGhlIGZj
+YyBkcml2ZXIgbm93IGFsbG9jYXRlcwp0aGUgc3BhY2UgaGUgcmVhbGx5IG5lZWRzLgoKIGRyaXZl
+cnMvbmV0L2ZzX2VuZXQvbWFjLWZjYy5jIHwgICAgMiArLQogMSBmaWxlcyBjaGFuZ2VkLCAxIGlu
+c2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZnNf
+ZW5ldC9tYWMtZmNjLmMgYi9kcml2ZXJzL25ldC9mc19lbmV0L21hYy1mY2MuYwppbmRleCA3YTg0
+ZTQ1Li43NTgzYTk1IDEwMDY0NAotLS0gYS9kcml2ZXJzL25ldC9mc19lbmV0L21hYy1mY2MuYwor
+KysgYi9kcml2ZXJzL25ldC9mc19lbmV0L21hYy1mY2MuYwpAQCAtMTA1LDcgKzEwNSw3IEBAIHN0
+YXRpYyBpbnQgZG9fcGRfc2V0dXAoc3RydWN0IGZzX2VuZXRfcHJpdmF0ZSAqZmVwKQogCQlnb3Rv
+IG91dF9lcDsKIAogCWZlcC0+ZmNjLm1lbSA9ICh2b2lkIF9faW9tZW0gKiljcG0yX2ltbXI7Ci0J
+ZnBpLT5kcHJhbV9vZmZzZXQgPSBjcG1fZHBhbGxvYygxMjgsIDgpOworCWZwaS0+ZHByYW1fb2Zm
+c2V0ID0gY3BtX2RwYWxsb2MoMTI4LCAzMik7CiAJaWYgKElTX0VSUl9WQUxVRShmcGktPmRwcmFt
+X29mZnNldCkpIHsKIAkJcmV0ID0gZnBpLT5kcHJhbV9vZmZzZXQ7CiAJCWdvdG8gb3V0X2ZjY2Nw
+OwotLSAKMS43LjEKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBs
+aW5lICJ1bnN1YnNjcmliZSBuZXRkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpv
+cmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2Vy
+Lmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tCkNvbmZpZGVudGlhbGl0eSBOb3RpY2U6IFRoZSBpbmZvcm1hdGlv
+biBjb250YWluZWQgaW4gdGhpcyBlLW1haWwgYW5kIGFueSBhY2NvbXBhbnlpbmcgYXR0YWNobWVu
+dChzKSAKaXMgaW50ZW5kZWQgb25seSBmb3IgdGhlIHVzZSBvZiB0aGUgaW50ZW5kZWQgcmVjaXBp
+ZW50IGFuZCBtYXkgYmUgY29uZmlkZW50aWFsIGFuZC9vciBwcml2aWxlZ2VkIG9mIApOZXVzb2Z0
+IENvcnBvcmF0aW9uLCBpdHMgc3Vic2lkaWFyaWVzIGFuZC9vciBpdHMgYWZmaWxpYXRlcy4gSWYg
+YW55IHJlYWRlciBvZiB0aGlzIGNvbW11bmljYXRpb24gaXMgCm5vdCB0aGUgaW50ZW5kZWQgcmVj
+aXBpZW50LCB1bmF1dGhvcml6ZWQgdXNlLCBmb3J3YXJkaW5nLCBwcmludGluZywgIHN0b3Jpbmcs
+IGRpc2Nsb3N1cmUgb3IgY29weWluZyAKaXMgc3RyaWN0bHkgcHJvaGliaXRlZCwgYW5kIG1heSBi
+ZSB1bmxhd2Z1bC5JZiB5b3UgaGF2ZSByZWNlaXZlZCB0aGlzIGNvbW11bmljYXRpb24gaW4gZXJy
+b3IscGxlYXNlIAppbW1lZGlhdGVseSBub3RpZnkgdGhlIHNlbmRlciBieSByZXR1cm4gZS1tYWls
+LCBhbmQgZGVsZXRlIHRoZSBvcmlnaW5hbCBtZXNzYWdlIGFuZCBhbGwgY29waWVzIGZyb20gCnlv
+dXIgc3lzdGVtLiBUaGFuayB5b3UuIAotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0K
