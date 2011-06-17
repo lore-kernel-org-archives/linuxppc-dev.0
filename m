@@ -1,25 +1,20 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77B8DB6F8F
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69203B6FC2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 22:17:43 +1000 (EST)
-Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
-	p5HBMJcV028181
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2011 13:22:19 +0200
-From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+	Fri, 17 Jun 2011 22:51:55 +1000 (EST)
+Received: by wyg36 with SMTP id 36so1915745wyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 17 Jun 2011 05:51:48 -0700 (PDT)
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Changes to of_device ?
-Date: Fri, 17 Jun 2011 13:22:19 +0200
-References: <201106171119.48178.dargaud@lpsc.in2p3.fr>
-	<4DFB329A.7010104@gate-nine.de>
-In-Reply-To: <4DFB329A.7010104@gate-nine.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201106171322.19067.dargaud@lpsc.in2p3.fr>
+Subject: [PATCH V3 0/2] Improve CPC925 EDAC handling code on Maple
+Date: Fri, 17 Jun 2011 16:51:45 +0400
+Message-Id: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Not answering your primary question here, but in order to print the most
-> recent tag (along with a uniqe suffix, see man page) that is reachable
-> from your current branch, you can use "git describe". It will print out
-> the kernel version on your latest Xilinx tree.
+Hello, colleagues,
 
-$ git describe
-v2.6.37-719-gecf08a4
+Another respin of this patchset.
 
-$ cat ./include/linux/version.h
-#define LINUX_VERSION_CODE 132645
-#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
+Changes since previous version:
+* Fix comments in cpc925_edac.c
+* Rename cpc925_cpu_getmask() to cpc925_cpu_mask_disabled()
+* Don't return an error from init code if it's a U3 and not U3H
 
-$ printf "%x\n" 132645
-20625
+ arch/powerpc/platforms/maple/setup.c |   41 +++++++++------------
+ drivers/edac/cpc925_edac.c           |   67 +++++++++++++++++++++++++++++++++--
+ 2 files changed, 83 insertions(+), 25 deletions(-)
 
-Something doesn't quite match here... But my original question about how do you declare a probe function in the latest 
-kernels still stand...
 -- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+With best wishes
+Dmitry
