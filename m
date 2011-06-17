@@ -1,11 +1,11 @@
 Return-Path: <anton@samba.org>
-Message-Id: <20110617045421.538184870@samba.org>
-Date: Fri, 17 Jun 2011 14:53:59 +1000
+Message-Id: <20110617045421.615463021@samba.org>
+Date: Fri, 17 Jun 2011 14:54:00 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
  paulus@samba.org,
  mikey@neuling.org
-Subject: [PATCH 1/3] powerpc: POWER7 optimised copy_page using VMX
+Subject: [PATCH 2/3] powerpc: POWER7 optimised memcpy using VMX
 References: <20110617045358.544896830@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,42 +17,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement a POWER7 optimised copy_page using VMX. We copy a cacheline
-at a time using VMX loads and stores.
+Implement a POWER7 optimised memcpy using VMX. For large aligned
+copies this new loop is over 10% faster and for large unaligned
+copies it is over 200% faster.
+
+On POWER7 unaligned stores rarely slow down - they only flush when
+a store crosses a 4KB page boundary. Furthermore this flush is
+handled completely in hardware and should be 20-30 cycles.
+
+Unaligned loads on the other hand flush much more often - whenever
+crossing a 128 byte cache line, or a 32 byte sector if either sector
+is an L1 miss.
+
+Considering this information we really want to get the loads aligned
+and not worry about the alignment of the stores. Microbenchmarks
+confirm that this approach is much faster than the current unaligned
+copy loop that uses shifts and rotates to ensure both loads and
+stores are aligned.
+
+We also want to try and do the stores in cacheline aligned, cacheline
+sized chunks. If the store queue is unable to merge an entire
+cacheline of stores then the L2 cache will have to do a
+read/modify/write. Even worse, we will serialise this with the stores
+in the next iteration of the copy loop since both iterations hit
+the same cacheline.
+
+Based on this, the new loop does the following things:
+
+
+1 - 127 bytes
+Get the source 8 byte aligned and use 8 byte loads and stores. Pretty
+boring and similar to how the current loop works.
+
+128 - 4095 bytes
+Get the source 8 byte aligned and use 8 byte loads and stores,
+1 cacheline at a time. We aren't doing the stores in cacheline
+aligned chunks so we will potentially serialise once per cacheline.
+Even so it is much better than the loop we have today.
+
+4096 - bytes
+If both source and destination have the same alignment get them both
+16 byte aligned, then get the destination cacheline aligned. Do
+cacheline sized loads and stores using VMX.
+
+If source and destination do not have the same alignment, we get the
+destination cacheline aligned, and use permute to do aligned loads.
+
+In both cases the VMX loop should be optimal - we always do aligned
+loads and stores and are always doing stores in cacheline aligned,
+cacheline sized chunks.
+
+
+The VMX breakpoint of 4096 bytes was chosen using this microbenchmark:
+
+http://ozlabs.org/~anton/junkcode/copy_to_user.c
+
+(Note that the breakpoint analysis was done with the copy_tofrom_user
+version of the loop and using varying sizes and alignments to read(). 
+It's much easier to create a benchmark using read() that can control
+the size and alignment of a kernel copy loop and synchronise it with
+userspace doing optional VMX instructions).
+
+Since we are using VMX and there is a cost to saving and restoring
+the user VMX state there are two broad cases we need to benchmark:
+
+- Best case - userspace never uses VMX
+
+- Worst case - userspace always uses VMX
+
+In reality a userspace process will sit somewhere between these two
+extremes. Since we need to test both aligned and unaligned copies we
+end up with 4 combinations. The point at which the VMX loop begins to
+win is:
+
+0% VMX
+aligned		2048 bytes
+unaligned	2048 bytes
+
+100% VMX
+aligned		16384 bytes
+unaligned	8192 bytes
+
+Considering this is a microbenchmark, the data is hot in cache and
+the VMX loop has better store queue merging properties we set the
+breakpoint to 4096 bytes, a little below the unaligned breakpoints.
+
+Some future optimisations we can look at:
+
+- Looking at the perf data, a significant part of the cost when a task
+  is always using VMX is the extra exception we take to restore the
+  VMX state. As such we should do something similar to the x86
+  optimisation that restores FPU state for heavy users. ie:
+
+        /*
+         * If the task has used fpu the last 5 timeslices, just do a full
+         * restore of the math state immediately to avoid the trap; the
+         * chances of needing FPU soon are obviously high now
+         */
+        preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter > 5;
+
+  and 
+
+        /*
+         * fpu_counter contains the number of consecutive context switches
+         * that the FPU is used. If this is over a threshold, the lazy fpu
+         * saving becomes unlazy to save the trap. This is an unsigned char
+         * so that after 256 times the counter wraps and the behavior turns
+         * lazy again; this to deal with bursty apps that only use FPU for
+         * a short time
+         */
+
+- We could create a paca bit to mirror the VMX enabled MSR bit and check
+  that first, avoiding multiple calls to calling enable_kernel_altivec.
+
+- We could have two VMX breakpoints, one for when we know the user VMX
+  state is loaded into the registers and one when it isn't. This could
+  be a second bit in the paca so we can calculate the break points quickly.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-How do we want to handle per machine optimised functions? I create
-yet another feature bit, but feature bits might get out of control
-at some point.
-
-Index: linux-powerpc/arch/powerpc/include/asm/cputable.h
+Index: linux-powerpc/arch/powerpc/lib/Makefile
 ===================================================================
---- linux-powerpc.orig/arch/powerpc/include/asm/cputable.h	2011-06-06 08:07:35.128707749 +1000
-+++ linux-powerpc/arch/powerpc/include/asm/cputable.h	2011-06-17 07:39:58.996165527 +1000
-@@ -200,6 +200,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0400000000000000)
- #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
- #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
-+#define CPU_FTR_POWER7			LONG_ASM_CONST(0x2000000000000000)
+--- linux-powerpc.orig/arch/powerpc/lib/Makefile	2011-06-17 08:38:25.786110167 +1000
++++ linux-powerpc/arch/powerpc/lib/Makefile	2011-06-17 14:05:30.023020417 +1000
+@@ -17,7 +17,7 @@ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+ 			   checksum_wrappers_64.o hweight_64.o \
+-			   copypage_power7.o
++			   copypage_power7.o memcpy_power7.o
+ obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
+ obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
+Index: linux-powerpc/arch/powerpc/lib/memcpy_64.S
+===================================================================
+--- linux-powerpc.orig/arch/powerpc/lib/memcpy_64.S	2011-06-17 08:32:33.670110896 +1000
++++ linux-powerpc/arch/powerpc/lib/memcpy_64.S	2011-06-17 08:38:25.806110507 +1000
+@@ -11,7 +11,11 @@
  
- #ifndef __ASSEMBLY__
- 
-@@ -423,7 +424,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
- 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
--	    CPU_FTR_ICSWX | CPU_FTR_CFAR)
-+	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_POWER7)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-Index: linux-powerpc/arch/powerpc/lib/copypage_power7.S
+ 	.align	7
+ _GLOBAL(memcpy)
++BEGIN_FTR_SECTION
+ 	std	r3,48(r1)	/* save destination pointer for return value */
++FTR_SECTION_ELSE
++	b	memcpy_power7
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER7)
+ 	PPC_MTOCRF	0x01,r5
+ 	cmpldi	cr1,r5,16
+ 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+Index: linux-powerpc/arch/powerpc/lib/memcpy_power7.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-powerpc/arch/powerpc/lib/copypage_power7.S	2011-06-17 07:39:58.996165527 +1000
-@@ -0,0 +1,70 @@
++++ linux-powerpc/arch/powerpc/lib/memcpy_power7.S	2011-06-17 08:38:25.806110507 +1000
+@@ -0,0 +1,596 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -72,84 +190,580 @@ Index: linux-powerpc/arch/powerpc/lib/copypage_power7.S
 + *
 + * Author: Anton Blanchard <anton@au.ibm.com>
 + */
-+#include <asm/page.h>
 +#include <asm/ppc_asm.h>
 +
-+#define STACKFRAMESIZE	112
++#define STACKFRAMESIZE	256
++#define STK_REG(i)	(112 + ((i)-14)*8)
 +
-+_GLOBAL(copypage_power7)
-+	mflr	r0
++_GLOBAL(memcpy_power7)
++	cmpldi	r5,16
++	cmpldi	cr1,r5,4096
++
 +	std	r3,48(r1)
-+	std	r4,56(r1)
-+	std	r0,16(r1)
++
++	blt	.Lshort_copy
++	bgt	cr1,.Lvmx_copy
++
++	/* Get the source 8B aligned */
++	neg	r6,r4
++	mtocrf	0x01,r6
++	clrldi	r6,r6,(64-3)
++
++	bf	cr7*4+3,1f
++	lbz	r0,0(r4)
++	addi	r4,r4,1
++	stb	r0,0(r3)
++	addi	r3,r3,1
++
++1:	bf	cr7*4+2,2f
++	lhz	r0,0(r4)
++	addi	r4,r4,2
++	sth	r0,0(r3)
++	addi	r3,r3,2
++
++2:	bf	cr7*4+1,3f
++	lwz	r0,0(r4)
++	addi	r4,r4,4
++	stw	r0,0(r3)
++	addi	r3,r3,4
++
++3:	sub	r5,r5,r6
++	cmpldi	r5,128
++	blt	5f
++
 +	stdu	r1,-STACKFRAMESIZE(r1)
++	std	r14,STK_REG(r14)(r1)
++	std	r15,STK_REG(r15)(r1)
++	std	r16,STK_REG(r16)(r1)
++	std	r17,STK_REG(r17)(r1)
++	std	r18,STK_REG(r18)(r1)
++	std	r19,STK_REG(r19)(r1)
++	std	r20,STK_REG(r20)(r1)
++	std	r21,STK_REG(r21)(r1)
++	std	r22,STK_REG(r22)(r1)
 +
-+	bl	.enable_kernel_altivec
++	srdi	r6,r5,7
++	mtctr	r6
 +
-+	ld	r12,STACKFRAMESIZE+16(r1)
-+	ld	r4,STACKFRAMESIZE+56(r1)
-+	li	r0,(PAGE_SIZE/128)
-+	li	r6,16
-+	ld	r3,STACKFRAMESIZE+48(r1)
-+	li	r7,32
-+	li	r8,48
-+	mtctr	r0
-+	li	r9,64
-+	li	r10,80
-+	mtlr	r12
-+	li	r11,96
-+	li	r12,112
++	/* Now do cacheline (128B) sized loads and stores. */
++	.align	5
++4:	ld	r0,0(r4)
++	ld	r6,8(r4)
++	ld	r7,16(r4)
++	ld	r8,24(r4)
++	ld	r9,32(r4)
++	ld	r10,40(r4)
++	ld	r11,48(r4)
++	ld	r12,56(r4)
++	ld	r14,64(r4)
++	ld	r15,72(r4)
++	ld	r16,80(r4)
++	ld	r17,88(r4)
++	ld	r18,96(r4)
++	ld	r19,104(r4)
++	ld	r20,112(r4)
++	ld	r21,120(r4)
++	addi	r4,r4,128
++	std	r0,0(r3)
++	std	r6,8(r3)
++	std	r7,16(r3)
++	std	r8,24(r3)
++	std	r9,32(r3)
++	std	r10,40(r3)
++	std	r11,48(r3)
++	std	r12,56(r3)
++	std	r14,64(r3)
++	std	r15,72(r3)
++	std	r16,80(r3)
++	std	r17,88(r3)
++	std	r18,96(r3)
++	std	r19,104(r3)
++	std	r20,112(r3)
++	std	r21,120(r3)
++	addi	r3,r3,128
++	bdnz	4b
++
++	clrldi	r5,r5,(64-7)
++
++	ld	r14,STK_REG(r14)(r1)
++	ld	r15,STK_REG(r15)(r1)
++	ld	r16,STK_REG(r16)(r1)
++	ld	r17,STK_REG(r17)(r1)
++	ld	r18,STK_REG(r18)(r1)
++	ld	r19,STK_REG(r19)(r1)
++	ld	r20,STK_REG(r20)(r1)
++	ld	r21,STK_REG(r21)(r1)
++	ld	r22,STK_REG(r22)(r1)
 +	addi	r1,r1,STACKFRAMESIZE
 +
++	/* Up to 127B to go */
++5:	srdi	r6,r5,4
++	mtocrf	0x01,r6
++
++6:	bf	cr7*4+1,7f
++	ld	r0,0(r4)
++	ld	r6,8(r4)
++	ld	r7,16(r4)
++	ld	r8,24(r4)
++	ld	r9,32(r4)
++	ld	r10,40(r4)
++	ld	r11,48(r4)
++	ld	r12,56(r4)
++	addi	r4,r4,64
++	std	r0,0(r3)
++	std	r6,8(r3)
++	std	r7,16(r3)
++	std	r8,24(r3)
++	std	r9,32(r3)
++	std	r10,40(r3)
++	std	r11,48(r3)
++	std	r12,56(r3)
++	addi	r3,r3,64
++
++	/* Up to 63B to go */
++7:	bf	cr7*4+2,8f
++	ld	r0,0(r4)
++	ld	r6,8(r4)
++	ld	r7,16(r4)
++	ld	r8,24(r4)
++	addi	r4,r4,32
++	std	r0,0(r3)
++	std	r6,8(r3)
++	std	r7,16(r3)
++	std	r8,24(r3)
++	addi	r3,r3,32
++
++	/* Up to 31B to go */
++8:	bf	cr7*4+3,9f
++	ld	r0,0(r4)
++	ld	r6,8(r4)
++	addi	r4,r4,16
++	std	r0,0(r3)
++	std	r6,8(r3)
++	addi	r3,r3,16
++
++9:	clrldi	r5,r5,(64-4)
++
++	/* Up to 15B to go */
++.Lshort_copy:
++	mtocrf	0x01,r5
++	bf	cr7*4+0,12f
++	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
++	lwz	r6,4(r4)
++	addi	r4,r4,8
++	stw	r0,0(r3)
++	stw	r6,4(r3)
++	addi	r3,r3,8
++
++12:	bf	cr7*4+1,13f
++	lwz	r0,0(r4)
++	addi	r4,r4,4
++	stw	r0,0(r3)
++	addi	r3,r3,4
++
++13:	bf	cr7*4+2,14f
++	lhz	r0,0(r4)
++	addi	r4,r4,2
++	sth	r0,0(r3)
++	addi	r3,r3,2
++
++14:	bf	cr7*4+3,15f
++	lbz	r0,0(r4)
++	stb	r0,0(r3)
++
++15:	ld	r3,48(r1)
++	blr
++
++.Lvmx_copy:
++	mflr	r0
++	std	r4,56(r1)
++	std	r5,64(r1)
++	std	r0,16(r1)
++	stdu	r1,-STACKFRAMESIZE(r1)
++	bl	.enable_kernel_altivec
++	ld	r0,STACKFRAMESIZE+16(r1)
++	ld	r3,STACKFRAMESIZE+48(r1)
++	ld	r4,STACKFRAMESIZE+56(r1)
++	ld	r5,STACKFRAMESIZE+64(r1)
++	mtlr	r0
++
++	/*
++	 * If source and destination are not relatively aligned we use a
++	 * slower permute loop.
++	 */
++	xor	r6,r4,r3
++	rldicl.	r6,r6,0,(64-4)
++	bne	.Lvmx_unaligned_copy
++
++	/* Get the destination 16B aligned */
++	neg	r6,r3
++	mtocrf	0x01,r6
++	clrldi	r6,r6,(64-4)
++
++	bf	cr7*4+3,1f
++	lbz	r0,0(r4)
++	addi	r4,r4,1
++	stb	r0,0(r3)
++	addi	r3,r3,1
++
++1:	bf	cr7*4+2,2f
++	lhz	r0,0(r4)
++	addi	r4,r4,2
++	sth	r0,0(r3)
++	addi	r3,r3,2
++
++2:	bf	cr7*4+1,3f
++	lwz	r0,0(r4)
++	addi	r4,r4,4
++	stw	r0,0(r3)
++	addi	r3,r3,4
++
++3:	bf	cr7*4+0,4f
++	ld	r0,0(r4)
++	addi	r4,r4,8
++	std	r0,0(r3)
++	addi	r3,r3,8
++
++4:	sub	r5,r5,r6
++
++	/* Get the desination 128B aligned */
++	neg	r6,r3
++	srdi	r7,r6,4
++	mtocrf	0x01,r7
++	clrldi	r6,r6,(64-7)
++
++	li	r9,16
++	li	r10,32
++	li	r11,48
++
++	bf	cr7*4+3,5f
++	lvx	vr1,r0,r4
++	addi	r4,r4,16
++	stvx	vr1,r0,r3
++	addi	r3,r3,16
++
++5:	bf	cr7*4+2,6f
++	lvx	vr1,r0,r4
++	lvx	vr0,r4,r9
++	addi	r4,r4,32
++	stvx	vr1,r0,r3
++	stvx	vr0,r3,r9
++	addi	r3,r3,32
++
++6:	bf	cr7*4+1,7f
++	lvx	vr3,r0,r4
++	lvx	vr2,r4,r9
++	lvx	vr1,r4,r10
++	lvx	vr0,r4,r11
++	addi	r4,r4,64
++	stvx	vr3,r0,r3
++	stvx	vr2,r3,r9
++	stvx	vr1,r3,r10
++	stvx	vr0,r3,r11
++	addi	r3,r3,64
++
++7:	sub	r5,r5,r6
++	srdi	r6,r5,7
++
++	std	r14,STK_REG(r14)(r1)
++	std	r15,STK_REG(r15)(r1)
++	std	r16,STK_REG(r16)(r1)
++
++	li	r12,64
++	li	r14,80
++	li	r15,96
++	li	r16,112
++
++	mtctr	r6
++
++	/*
++	 * Now do cacheline sized loads and stores. By this stage the
++	 * cacheline stores are also cacheline aligned.
++	 */
 +	.align	5
-+1:	lvx	vr7,r0,r4
-+	lvx	vr6,r4,r6
-+	lvx	vr5,r4,r7
-+	lvx	vr4,r4,r8
-+	lvx	vr3,r4,r9
-+	lvx	vr2,r4,r10
-+	lvx	vr1,r4,r11
-+	lvx	vr0,r4,r12
++8:	lvx	vr7,r0,r4
++	lvx	vr6,r4,r9
++	lvx	vr5,r4,r10
++	lvx	vr4,r4,r11
++	lvx	vr3,r4,r12
++	lvx	vr2,r4,r14
++	lvx	vr1,r4,r15
++	lvx	vr0,r4,r16
 +	addi	r4,r4,128
 +	stvx	vr7,r0,r3
-+	stvx	vr6,r3,r6
-+	stvx	vr5,r3,r7
-+	stvx	vr4,r3,r8
-+	stvx	vr3,r3,r9
-+	stvx	vr2,r3,r10
-+	stvx	vr1,r3,r11
-+	stvx	vr0,r3,r12
++	stvx	vr6,r3,r9
++	stvx	vr5,r3,r10
++	stvx	vr4,r3,r11
++	stvx	vr3,r3,r12
++	stvx	vr2,r3,r14
++	stvx	vr1,r3,r15
++	stvx	vr0,r3,r16
 +	addi	r3,r3,128
-+	bdnz	1b
++	bdnz	8b
 +
++	ld	r14,STK_REG(r14)(r1)
++	ld	r15,STK_REG(r15)(r1)
++	ld	r16,STK_REG(r16)(r1)
++
++	/* Up to 127B to go */
++	clrldi	r5,r5,(64-7)
++	srdi	r6,r5,4
++	mtocrf	0x01,r6
++
++	bf	cr7*4+1,9f
++	lvx	vr3,r0,r4
++	lvx	vr2,r4,r9
++	lvx	vr1,r4,r10
++	lvx	vr0,r4,r11
++	addi	r4,r4,64
++	stvx	vr3,r0,r3
++	stvx	vr2,r3,r9
++	stvx	vr1,r3,r10
++	stvx	vr0,r3,r11
++	addi	r3,r3,64
++
++9:	bf	cr7*4+2,10f
++	lvx	vr1,r0,r4
++	lvx	vr0,r4,r9
++	addi	r4,r4,32
++	stvx	vr1,r0,r3
++	stvx	vr0,r3,r9
++	addi	r3,r3,32
++
++10:	bf	cr7*4+3,11f
++	lvx	vr1,r0,r4
++	addi	r4,r4,16
++	stvx	vr1,r0,r3
++	addi	r3,r3,16
++
++	/* Up to 15B to go */
++11:	clrldi	r5,r5,(64-4)
++	mtocrf	0x01,r5
++	bf	cr7*4+0,12f
++	ld	r0,0(r4)
++	addi	r4,r4,8
++	std	r0,0(r3)
++	addi	r3,r3,8
++
++12:	bf	cr7*4+1,13f
++	lwz	r0,0(r4)
++	addi	r4,r4,4
++	stw	r0,0(r3)
++	addi	r3,r3,4
++
++13:	bf	cr7*4+2,14f
++	lhz	r0,0(r4)
++	addi	r4,r4,2
++	sth	r0,0(r3)
++	addi	r3,r3,2
++
++14:	bf	cr7*4+3,15f
++	lbz	r0,0(r4)
++	stb	r0,0(r3)
++
++15:	addi	r1,r1,STACKFRAMESIZE
++	ld	r3,48(r1)
 +	blr
-Index: linux-powerpc/arch/powerpc/lib/Makefile
-===================================================================
---- linux-powerpc.orig/arch/powerpc/lib/Makefile	2011-05-19 19:57:38.058570608 +1000
-+++ linux-powerpc/arch/powerpc/lib/Makefile	2011-06-17 07:39:58.996165527 +1000
-@@ -16,7 +16,8 @@ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
- 
- obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
- 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
--			   checksum_wrappers_64.o hweight_64.o
-+			   checksum_wrappers_64.o hweight_64.o \
-+			   copypage_power7.o
- obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
- obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
-Index: linux-powerpc/arch/powerpc/lib/copypage_64.S
-===================================================================
---- linux-powerpc.orig/arch/powerpc/lib/copypage_64.S	2011-06-06 08:07:35.000000000 +1000
-+++ linux-powerpc/arch/powerpc/lib/copypage_64.S	2011-06-17 07:39:58.996165527 +1000
-@@ -17,7 +17,11 @@ PPC64_CACHES:
-         .section        ".text"
- 
- _GLOBAL(copy_page)
-+BEGIN_FTR_SECTION
- 	lis	r5,PAGE_SIZE@h
-+FTR_SECTION_ELSE
-+        b       .copypage_power7
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER7)
- 	ori	r5,r5,PAGE_SIZE@l
- BEGIN_FTR_SECTION
- 	ld      r10,PPC64_CACHES@toc(r2)
++
++.Lvmx_unaligned_copy:
++	/* Get the destination 16B aligned */
++	neg	r6,r3
++	mtocrf	0x01,r6
++	clrldi	r6,r6,(64-4)
++
++	bf	cr7*4+3,1f
++	lbz	r0,0(r4)
++	addi	r4,r4,1
++	stb	r0,0(r3)
++	addi	r3,r3,1
++
++1:	bf	cr7*4+2,2f
++	lhz	r0,0(r4)
++	addi	r4,r4,2
++	sth	r0,0(r3)
++	addi	r3,r3,2
++
++2:	bf	cr7*4+1,3f
++	lwz	r0,0(r4)
++	addi	r4,r4,4
++	stw	r0,0(r3)
++	addi	r3,r3,4
++
++3:	bf	cr7*4+0,4f
++	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
++	lwz	r7,4(r4)
++	addi	r4,r4,8
++	stw	r0,0(r3)
++	stw	r7,4(r3)
++	addi	r3,r3,8
++
++4:	sub	r5,r5,r6
++
++	/* Get the desination 128B aligned */
++	neg	r6,r3
++	srdi	r7,r6,4
++	mtocrf	0x01,r7
++	clrldi	r6,r6,(64-7)
++
++	li	r9,16
++	li	r10,32
++	li	r11,48
++
++	lvsl	vr16,0,r4	/* Setup permute control vector */
++	lvx	vr0,0,r4
++	addi	r4,r4,16
++
++	bf	cr7*4+3,5f
++	lvx	vr1,r0,r4
++	vperm	vr8,vr0,vr1,vr16
++	addi	r4,r4,16
++	stvx	vr8,r0,r3
++	addi	r3,r3,16
++	vor	vr0,vr1,vr1
++
++5:	bf	cr7*4+2,6f
++	lvx	vr1,r0,r4
++	vperm	vr8,vr0,vr1,vr16
++	lvx	vr0,r4,r9
++	vperm	vr9,vr1,vr0,vr16
++	addi	r4,r4,32
++	stvx	vr8,r0,r3
++	stvx	vr9,r3,r9
++	addi	r3,r3,32
++
++6:	bf	cr7*4+1,7f
++	lvx	vr3,r0,r4
++	vperm	vr8,vr0,vr3,vr16
++	lvx	vr2,r4,r9
++	vperm	vr9,vr3,vr2,vr16
++	lvx	vr1,r4,r10
++	vperm	vr10,vr2,vr1,vr16
++	lvx	vr0,r4,r11
++	vperm	vr11,vr1,vr0,vr16
++	addi	r4,r4,64
++	stvx	vr8,r0,r3
++	stvx	vr9,r3,r9
++	stvx	vr10,r3,r10
++	stvx	vr11,r3,r11
++	addi	r3,r3,64
++
++7:	sub	r5,r5,r6
++	srdi	r6,r5,7
++
++	std	r14,STK_REG(r14)(r1)
++	std	r15,STK_REG(r15)(r1)
++	std	r16,STK_REG(r16)(r1)
++
++	li	r12,64
++	li	r14,80
++	li	r15,96
++	li	r16,112
++
++	mtctr	r6
++
++	/*
++	 * Now do cacheline sized loads and stores. By this stage the
++	 * cacheline stores are also cacheline aligned.
++	 */
++	.align	5
++8:	lvx	vr7,r0,r4
++	vperm	vr8,vr0,vr7,vr16
++	lvx	vr6,r4,r9
++	vperm	vr9,vr7,vr6,vr16
++	lvx	vr5,r4,r10
++	vperm	vr10,vr6,vr5,vr16
++	lvx	vr4,r4,r11
++	vperm	vr11,vr5,vr4,vr16
++	lvx	vr3,r4,r12
++	vperm	vr12,vr4,vr3,vr16
++	lvx	vr2,r4,r14
++	vperm	vr13,vr3,vr2,vr16
++	lvx	vr1,r4,r15
++	vperm	vr14,vr2,vr1,vr16
++	lvx	vr0,r4,r16
++	vperm	vr15,vr1,vr0,vr16
++	addi	r4,r4,128
++	stvx	vr8,r0,r3
++	stvx	vr9,r3,r9
++	stvx	vr10,r3,r10
++	stvx	vr11,r3,r11
++	stvx	vr12,r3,r12
++	stvx	vr13,r3,r14
++	stvx	vr14,r3,r15
++	stvx	vr15,r3,r16
++	addi	r3,r3,128
++	bdnz	8b
++
++	ld	r14,STK_REG(r14)(r1)
++	ld	r15,STK_REG(r15)(r1)
++	ld	r16,STK_REG(r16)(r1)
++
++	/* Up to 127B to go */
++	clrldi	r5,r5,(64-7)
++	srdi	r6,r5,4
++	mtocrf	0x01,r6
++
++	bf	cr7*4+1,9f
++	lvx	vr3,r0,r4
++	vperm	vr8,vr0,vr3,vr16
++	lvx	vr2,r4,r9
++	vperm	vr9,vr3,vr2,vr16
++	lvx	vr1,r4,r10
++	vperm	vr10,vr2,vr1,vr16
++	lvx	vr0,r4,r11
++	vperm	vr11,vr1,vr0,vr16
++	addi	r4,r4,64
++	stvx	vr8,r0,r3
++	stvx	vr9,r3,r9
++	stvx	vr10,r3,r10
++	stvx	vr11,r3,r11
++	addi	r3,r3,64
++
++9:	bf	cr7*4+2,10f
++	lvx	vr1,r0,r4
++	vperm	vr8,vr0,vr1,vr16
++	lvx	vr0,r4,r9
++	vperm	vr9,vr1,vr0,vr16
++	addi	r4,r4,32
++	stvx	vr8,r0,r3
++	stvx	vr9,r3,r9
++	addi	r3,r3,32
++
++10:	bf	cr7*4+3,11f
++	lvx	vr1,r0,r4
++	vperm	vr8,vr0,vr1,vr16
++	addi	r4,r4,16
++	stvx	vr8,r0,r3
++	addi	r3,r3,16
++
++	/* Up to 15B to go */
++11:	clrldi	r5,r5,(64-4)
++	addi	r4,r4,-16	/* Unwind the +16 load offset */
++	mtocrf	0x01,r5
++	bf	cr7*4+0,12f
++	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
++	lwz	r6,4(r4)
++	addi	r4,r4,8
++	stw	r0,0(r3)
++	stw	r6,4(r3)
++	addi	r3,r3,8
++
++12:	bf	cr7*4+1,13f
++	lwz	r0,0(r4)
++	addi	r4,r4,4
++	stw	r0,0(r3)
++	addi	r3,r3,4
++
++13:	bf	cr7*4+2,14f
++	lhz	r0,0(r4)
++	addi	r4,r4,2
++	sth	r0,0(r3)
++	addi	r3,r3,2
++
++14:	bf	cr7*4+3,15f
++	lbz	r0,0(r4)
++	stb	r0,0(r3)
++
++15:	addi	r1,r1,STACKFRAMESIZE
++	ld	r3,48(r1)
++	blr
