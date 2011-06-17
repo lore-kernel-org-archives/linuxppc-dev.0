@@ -1,22 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
-	[213.199.154.204])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F35FEB6FD3
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DC143B6FDD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jun 2011 07:34:52 +1000 (EST)
-Date: Fri, 17 Jun 2011 16:34:42 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Matthew L. Creech" <mlcreech@gmail.com>
-Subject: Re: NAND BBT corruption on MPC83xx
-Message-ID: <20110617163442.204348a0@schlenkerla.am.freescale.net>
-In-Reply-To: <BANLkTikyKObukzVw+c10HyDz+Q=PH4jozA@mail.gmail.com>
-References: <BANLkTikyKObukzVw+c10HyDz+Q=PH4jozA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+	Sat, 18 Jun 2011 08:43:34 +1000 (EST)
+Subject: RE: powerpc: Add printk companion for ppc_md.progress
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Carroll <dcarroll@astekcorp.com>
+In-Reply-To: <522F24EF533FC546962ECFA2054FF777373072AB9B@MAILSERVER2.cos.astekcorp.com>
+References: <522F24EF533FC546962ECFA2054FF777373072AB9B@MAILSERVER2.cos.astekcorp.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 18 Jun 2011 08:43:04 +1000
+Message-ID: <1308350584.32158.58.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"dtcarroll@gmail.com" <dtcarroll@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 17 Jun 2011 16:54:27 -0400
-"Matthew L. Creech" <mlcreech@gmail.com> wrote:
-
-> Hi, I posted this on the Linux-MTD list but haven't gotten any hits.
-> Since it looks like it could be MPC83xx-specific, I'm reposting here.
-> Rick Johnson noted a problem in fsl_elbc_nand.c back in May which
-> might be related:
+On Fri, 2011-06-17 at 10:03 -0600, Dave Carroll wrote:
+> > On Fri, 2011-06-17 at 15:39 +1000, Benjamin Herrenschmidt wrote:
+> >
+> > Hrm.. none of your 2 pending patches applies cleanly (factoring
+> > free_initmem & that one). Haven't had a chance to check why yet, can you
+> > check on your side ?
+> >
+> Hi Ben,
 > 
-> http://lists.infradead.org/pipermail/linux-mtd/2011-May/035372.html
+> I rebased with Linus' current tree, and the patches are identical. Is there another tree
+> that I should use to get the patches clean?
 
-It seems that the generic code always passes -1 with PAGEPROG, and only
-provides the actual page address on SEQIN.
+Maybe they got corrupted by your mailer ? I will double check on monday.
 
-I don't think the ECC readback is needed, and the fact that it looks like
-it has always been broken would seem to confirm that.  It's broken in
-other ways, too -- it assumes a particular ECC layout.  Let's get rid of it.
-
-As for the corruption, could it be degradation from repeated reads of that
-one page?
-
-> More info on this board:
-> - MPC 8313 SoC
-> - 1GB Samsung NAND flash (K9K8G08U0B)
-> - Linux 2.6.31
-> - U-Boot 2009.06
-
-Hmm, 2.6.31... it's probably not related to this problem, but you
-should cherry pick b3a70f0bc32d1b70584bcaa6019fa4260b0da92e and
-476459a6cf46d20ec73d9b211f3894ced5f9871e.
-
--Scott
+Cheers,
+Ben.
