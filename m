@@ -3,21 +3,21 @@ Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
 	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D70BBB6FC8
+	by ozlabs.org (Postfix) with ESMTPS id 76E61B6FC8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 22:52:19 +1000 (EST)
-Received: by wwi36 with SMTP id 36so1976565wwi.14
+	Fri, 17 Jun 2011 22:52:21 +1000 (EST)
+Received: by mail-ww0-f45.google.com with SMTP id 36so1976565wwi.14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 05:52:15 -0700 (PDT)
+	Fri, 17 Jun 2011 05:52:20 -0700 (PDT)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V3 1/2] Maple: register CPC925 EDAC device on all boards with
-	CPC925
-Date: Fri, 17 Jun 2011 16:51:46 +0400
-Message-Id: <1308315107-29182-2-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH V3 2/2] cpc925_edac: support single-processor configurations
+Date: Fri, 17 Jun 2011 16:51:47 +0400
+Message-Id: <1308315107-29182-3-git-send-email-dbaryshkov@gmail.com>
 In-Reply-To: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
 References: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
+	Doug Thompson <dougthompson@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +27,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently Maple setup code creates cpc925_edac device only on
-Motorola ATCA-6101 blade. Make setup code check bridge revision
-and enable EDAC on all U3H bridges.
-
-Verified on Momentum MapleD (ppc970fx kit) board.
+If second CPU is not enabled, CPC925 EDAC driver will spill out warnings
+about errors on second Processor Interface. Support masking that out,
+by detecting at runtime which CPUs are present in device tree.
 
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Harry Ciao <qingtao.cao@windriver.com>
+Cc: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- arch/powerpc/platforms/maple/setup.c |   41 +++++++++++++++------------------
- 1 files changed, 19 insertions(+), 22 deletions(-)
+ drivers/edac/cpc925_edac.c |   67 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 64 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index fe34c3d..5b3388b 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -338,35 +338,16 @@ define_machine(maple) {
- #ifdef CONFIG_EDAC
- /*
-  * Register a platform device for CPC925 memory controller on
-- * Motorola ATCA-6101 blade.
-+ * all boards with U3H (CPC925) bridge.
-  */
--#define MAPLE_CPC925_MODEL	"Motorola,ATCA-6101"
- static int __init maple_cpc925_edac_setup(void)
- {
- 	struct platform_device *pdev;
- 	struct device_node *np = NULL;
- 	struct resource r;
--	const unsigned char *model;
- 	int ret;
--
--	np = of_find_node_by_path("/");
--	if (!np) {
--		printk(KERN_ERR "%s: Unable to get root node\n", __func__);
--		return -ENODEV;
--	}
--
--	model = (const unsigned char *)of_get_property(np, "model", NULL);
--	if (!model) {
--		printk(KERN_ERR "%s: Unabel to get model info\n", __func__);
--		of_node_put(np);
--		return -ENODEV;
--	}
--
--	ret = strcmp(model, MAPLE_CPC925_MODEL);
--	of_node_put(np);
--
--	if (ret != 0)
--		return 0;
-+	volatile void __iomem *mem;
-+	u32 rev;
+diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
+index a687a0d..a774c0d 100644
+--- a/drivers/edac/cpc925_edac.c
++++ b/drivers/edac/cpc925_edac.c
+@@ -90,6 +90,7 @@ enum apimask_bits {
+ 	ECC_MASK_ENABLE = (APIMASK_ECC_UE_H | APIMASK_ECC_CE_H |
+ 			   APIMASK_ECC_UE_L | APIMASK_ECC_CE_L),
+ };
++#define APIMASK_ADI(n)		CPC925_BIT(((n)+1))
  
- 	np = of_find_node_by_type(NULL, "memory-controller");
- 	if (!np) {
-@@ -384,6 +365,22 @@ static int __init maple_cpc925_edac_setup(void)
- 		return -ENODEV;
- 	}
+ /************************************************************
+  *	Processor Interface Exception Register (APIEXCP)
+@@ -581,16 +582,73 @@ static void cpc925_mc_check(struct mem_ctl_info *mci)
+ }
  
-+	mem = ioremap(r.start, resource_size(&r));
-+	if (!mem) {
-+		printk(KERN_ERR "%s: Unable to map memory-controller memory\n",
-+				__func__);
-+		return -ENOMEM;
-+	}
+ /******************** CPU err device********************************/
++static u32 cpc925_cpu_mask_disabled(void)
++{
++	struct device_node *cpus;
++	struct device_node *cpunode = NULL;
++	static u32 mask = 0;
 +
-+	rev = __raw_readl(mem);
-+	iounmap(mem);
++	/* use cached value if available */
++	if (mask != 0)
++		return mask;
 +
-+	if (rev < 0x34 || rev > 0x3f) { /* U3H */
-+		printk(KERN_ERR "%s: Non-CPC925(U3H) bridge revision: %02x\n",
-+			__func__, rev);
++	mask = APIMASK_ADI0 | APIMASK_ADI1;
++
++	cpus = of_find_node_by_path("/cpus");
++	if (cpus == NULL) {
++		cpc925_printk(KERN_DEBUG, "No /cpus node !\n");
 +		return 0;
 +	}
 +
- 	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
- 	if (IS_ERR(pdev))
- 		return PTR_ERR(pdev);
++	while ((cpunode = of_get_next_child(cpus, cpunode)) != NULL) {
++		const u32 *reg = of_get_property(cpunode, "reg", NULL);
++
++		if (strcmp(cpunode->type, "cpu")) {
++			cpc925_printk(KERN_ERR, "Not a cpu node in /cpus: %s\n", cpunode->name);
++			continue;
++		}
++
++		if (reg == NULL || *reg > 2) {
++			cpc925_printk(KERN_ERR, "Bad reg value at %s\n", cpunode->full_name);
++			continue;
++		}
++
++		mask &= ~APIMASK_ADI(*reg);
++	}
++
++	if (mask != (APIMASK_ADI0 | APIMASK_ADI1)) {
++		/* We assume that each CPU sits on it's own PI and that
++		 * for present CPUs the reg property equals to the PI
++		 * interface id */
++		cpc925_printk(KERN_WARNING,
++				"Assuming PI id is equal to CPU MPIC id!\n");
++	}
++
++	of_node_put(cpunode);
++	of_node_put(cpus);
++
++	return mask;
++}
++
+ /* Enable CPU Errors detection */
+ static void cpc925_cpu_init(struct cpc925_dev_info *dev_info)
+ {
+ 	u32 apimask;
++	u32 cpumask;
+ 
+ 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
+-	if ((apimask & CPU_MASK_ENABLE) == 0) {
+-		apimask |= CPU_MASK_ENABLE;
+-		__raw_writel(apimask, dev_info->vbase + REG_APIMASK_OFFSET);
++
++	cpumask = cpc925_cpu_mask_disabled();
++	if (apimask & cpumask) {
++		cpc925_printk(KERN_WARNING, "CPU(s) not present, "
++				"but enabled in APIMASK, disabling\n");
++		apimask &= ~cpumask;
+ 	}
++
++	if ((apimask & CPU_MASK_ENABLE) == 0)
++		apimask |= CPU_MASK_ENABLE;
++
++	__raw_writel(apimask, dev_info->vbase + REG_APIMASK_OFFSET);
+ }
+ 
+ /* Disable CPU Errors detection */
+@@ -622,6 +680,9 @@ static void cpc925_cpu_check(struct edac_device_ctl_info *edac_dev)
+ 	if ((apiexcp & CPU_EXCP_DETECTED) == 0)
+ 		return;
+ 
++	if ((apiexcp & ~cpc925_cpu_mask_disabled()) == 0)
++		return;
++
+ 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
+ 	cpc925_printk(KERN_INFO, "Processor Interface Fault\n"
+ 				 "Processor Interface register dump:\n");
 -- 
 1.7.5.3
