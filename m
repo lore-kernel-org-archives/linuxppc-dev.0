@@ -1,23 +1,20 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 76E61B6FC8
+Return-Path: <lists@gate-nine.de>
+Received: from csmtp3.one.com (csmtp3.one.com [91.198.169.23])
+	by ozlabs.org (Postfix) with ESMTP id 92F20B6FD6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 22:52:21 +1000 (EST)
-Received: by mail-ww0-f45.google.com with SMTP id 36so1976565wwi.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jun 2011 05:52:20 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V3 2/2] cpc925_edac: support single-processor configurations
-Date: Fri, 17 Jun 2011 16:51:47 +0400
-Message-Id: <1308315107-29182-3-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
-References: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>, Paul Mackerras <paulus@samba.org>,
-	Doug Thompson <dougthompson@xmission.com>
+	Fri, 17 Jun 2011 23:03:22 +1000 (EST)
+Message-ID: <4DFB4F51.1090509@gate-nine.de>
+Date: Fri, 17 Jun 2011 14:57:53 +0200
+From: Philipp Ittershagen <lists@gate-nine.de>
+MIME-Version: 1.0
+To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+Subject: Re: Changes to of_device ?
+References: <201106171119.48178.dargaud@lpsc.in2p3.fr>
+	<4DFB329A.7010104@gate-nine.de>
+	<201106171322.19067.dargaud@lpsc.in2p3.fr>
+In-Reply-To: <201106171322.19067.dargaud@lpsc.in2p3.fr>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,116 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If second CPU is not enabled, CPC925 EDAC driver will spill out warnings
-about errors on second Processor Interface. Support masking that out,
-by detecting at runtime which CPUs are present in device tree.
+On 06/17/2011 01:22 PM, Guillaume Dargaud wrote:
+>> Not answering your primary question here, but in order to print the most
+>> recent tag (along with a uniqe suffix, see man page) that is reachable
+>> from your current branch, you can use "git describe". It will print out
+>> the kernel version on your latest Xilinx tree.
+> 
+> $ git describe
+> v2.6.37-719-gecf08a4
+> 
+> $ cat ./include/linux/version.h
+> #define LINUX_VERSION_CODE 132645
+> #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
+> 
+> $ printf "%x\n" 132645
+> 20625
+> Something doesn't quite match here... 
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>
-Cc: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/edac/cpc925_edac.c |   67 ++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 64 insertions(+), 3 deletions(-)
+It is hexadecimal. 0x25 = 37.
 
-diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
-index a687a0d..a774c0d 100644
---- a/drivers/edac/cpc925_edac.c
-+++ b/drivers/edac/cpc925_edac.c
-@@ -90,6 +90,7 @@ enum apimask_bits {
- 	ECC_MASK_ENABLE = (APIMASK_ECC_UE_H | APIMASK_ECC_CE_H |
- 			   APIMASK_ECC_UE_L | APIMASK_ECC_CE_L),
- };
-+#define APIMASK_ADI(n)		CPC925_BIT(((n)+1))
- 
- /************************************************************
-  *	Processor Interface Exception Register (APIEXCP)
-@@ -581,16 +582,73 @@ static void cpc925_mc_check(struct mem_ctl_info *mci)
- }
- 
- /******************** CPU err device********************************/
-+static u32 cpc925_cpu_mask_disabled(void)
-+{
-+	struct device_node *cpus;
-+	struct device_node *cpunode = NULL;
-+	static u32 mask = 0;
-+
-+	/* use cached value if available */
-+	if (mask != 0)
-+		return mask;
-+
-+	mask = APIMASK_ADI0 | APIMASK_ADI1;
-+
-+	cpus = of_find_node_by_path("/cpus");
-+	if (cpus == NULL) {
-+		cpc925_printk(KERN_DEBUG, "No /cpus node !\n");
-+		return 0;
-+	}
-+
-+	while ((cpunode = of_get_next_child(cpus, cpunode)) != NULL) {
-+		const u32 *reg = of_get_property(cpunode, "reg", NULL);
-+
-+		if (strcmp(cpunode->type, "cpu")) {
-+			cpc925_printk(KERN_ERR, "Not a cpu node in /cpus: %s\n", cpunode->name);
-+			continue;
-+		}
-+
-+		if (reg == NULL || *reg > 2) {
-+			cpc925_printk(KERN_ERR, "Bad reg value at %s\n", cpunode->full_name);
-+			continue;
-+		}
-+
-+		mask &= ~APIMASK_ADI(*reg);
-+	}
-+
-+	if (mask != (APIMASK_ADI0 | APIMASK_ADI1)) {
-+		/* We assume that each CPU sits on it's own PI and that
-+		 * for present CPUs the reg property equals to the PI
-+		 * interface id */
-+		cpc925_printk(KERN_WARNING,
-+				"Assuming PI id is equal to CPU MPIC id!\n");
-+	}
-+
-+	of_node_put(cpunode);
-+	of_node_put(cpus);
-+
-+	return mask;
-+}
-+
- /* Enable CPU Errors detection */
- static void cpc925_cpu_init(struct cpc925_dev_info *dev_info)
- {
- 	u32 apimask;
-+	u32 cpumask;
- 
- 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
--	if ((apimask & CPU_MASK_ENABLE) == 0) {
--		apimask |= CPU_MASK_ENABLE;
--		__raw_writel(apimask, dev_info->vbase + REG_APIMASK_OFFSET);
-+
-+	cpumask = cpc925_cpu_mask_disabled();
-+	if (apimask & cpumask) {
-+		cpc925_printk(KERN_WARNING, "CPU(s) not present, "
-+				"but enabled in APIMASK, disabling\n");
-+		apimask &= ~cpumask;
- 	}
-+
-+	if ((apimask & CPU_MASK_ENABLE) == 0)
-+		apimask |= CPU_MASK_ENABLE;
-+
-+	__raw_writel(apimask, dev_info->vbase + REG_APIMASK_OFFSET);
- }
- 
- /* Disable CPU Errors detection */
-@@ -622,6 +680,9 @@ static void cpc925_cpu_check(struct edac_device_ctl_info *edac_dev)
- 	if ((apiexcp & CPU_EXCP_DETECTED) == 0)
- 		return;
- 
-+	if ((apiexcp & ~cpc925_cpu_mask_disabled()) == 0)
-+		return;
-+
- 	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
- 	cpc925_printk(KERN_INFO, "Processor Interface Fault\n"
- 				 "Processor Interface register dump:\n");
--- 
-1.7.5.3
+> But my original question about how do you declare a probe function in
+> the latest kernels still stand...
+
+The struct device_node was moved to struct device in order to make the
+CONFIG_OF more generic. See
+
+commit d706c1b050274b3bf97d7cb0542c0d070c9ccb8b
+Author: Grant Likely <grant.likely@secretlab.ca>
+Date:   Tue Apr 13 16:12:28 2010 -0700
+
+    driver-core: Add device node pointer to struct device
+
+
+Hope this helps,
+
+  Philipp
