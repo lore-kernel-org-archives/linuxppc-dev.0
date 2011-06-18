@@ -1,10 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Sat, 18 Jun 2011 18:38:51 +1000
+Date: Sat, 18 Jun 2011 18:39:23 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 14/15] powerpc, KVM: Split HVMODE_206 cpu feature bit into
-	separate HV and architecture bits
-Message-ID: <20110618083851.GO28413@bloggs.ozlabs.ibm.com>
+Subject: [PATCH 15/15] KVM: PPC: book3s_hv: Add support for PPC970-family
+	processors
+Message-ID: <20110618083923.GP28413@bloggs.ozlabs.ibm.com>
 References: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,338 +18,877 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This replaces the single CPU_FTR_HVMODE_206 bit with two bits, one to
-indicate that we have a usable hypervisor mode, and another to indicate
-that the processor conforms to PowerISA version 2.06.  We also add
-another bit to indicate that the processor conforms to ISA version 2.01
-and set that for PPC970 and derivatives.
+This adds support for running KVM guests in supervisor mode on those
+PPC970 processors that have a usable hypervisor mode.  Unfortunately,
+Apple G5 machines have supervisor mode disabled (MSR[HV] is forced to
+1), but the YDL PowerStation does have a usable hypervisor mode.
 
-Some PPC970 chips (specifically those in Apple machines) have a
-hypervisor mode in that MSR[HV] is always 1, but the hypervisor mode
-is not useful in the sense that there is no way to run any code in
-supervisor mode (HV=0 PR=0).  On these processors, the LPES0 and LPES1
-bits in HID4 are always 0, and we use that as a way of detecting that
-hypervisor mode is not useful.
+There are several differences between the PPC970 and POWER7 in how
+guests are managed.  These differences are accommodated using the
+CPU_FTR_ARCH_201 (PPC970) and CPU_FTR_ARCH_206 (POWER7) CPU feature
+bits.  Notably, on PPC970:
 
-Where we have a feature section in assembly code around code that
-only applies on POWER7 in hypervisor mode, we use a construct like
+* The LPCR, LPID or RMOR registers don't exist, and the functions of
+  those registers are provided by bits in HID4 and one bit in HID0.
 
-END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+* External interrupts can be directed to the hypervisor, but unlike
+  POWER7 they are masked by MSR[EE] in non-hypervisor modes and use
+  SRR0/1 not HSRR0/1.
 
-The definition of END_FTR_SECTION_IFSET is such that the code will
-be enabled (not overwritten with nops) only if all bits in the
-provided mask are set.
+* There is no virtual RMA (VRMA) mode; the guest must use an RMO
+  (real mode offset) area.
 
-Note that the CPU feature check in __tlbie() only needs to check the
-ARCH_206 bit, not the HVMODE bit, because __tlbie() can only get called
-if we are running bare-metal, i.e. in hypervisor mode.
+* The TLB entries are not tagged with the LPID, so it is necessary to
+  flush the whole TLB on partition switch.  Furthermore, when switching
+  partitions we have to ensure that no other CPU is executing the tlbie
+  or tlbsync instructions in either the old or the new partition,
+  otherwise undefined behaviour can occur.
+
+* The PMU has 8 counters (PMC registers) rather than 6.
+
+* The DSCR, PURR, SPURR, AMR, AMOR, UAMOR registers don't exist.
+
+* The SLB has 64 entries rather than 32.
+
+* There is no mediated external interrupt facility, so if we switch to
+  a guest that has a virtual external interrupt pending but the guest
+  has MSR[EE] = 0, we have to arrange to have an interrupt pending for
+  it so that we can get control back once it re-enables interrupts.  We
+  do that by sending ourselves an IPI with smp_send_reschedule after
+  hard-disabling interrupts.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/cputable.h    |   14 ++++++++------
- arch/powerpc/include/asm/reg.h         |   16 ++++++++++++----
- arch/powerpc/kernel/cpu_setup_power7.S |    4 ++--
- arch/powerpc/kernel/cpu_setup_ppc970.S |   26 ++++++++++++++++++++++----
- arch/powerpc/kernel/exceptions-64s.S   |    4 ++--
- arch/powerpc/kernel/paca.c             |    2 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c    |    3 ++-
- arch/powerpc/kvm/book3s_hv.c           |    7 ++++---
- arch/powerpc/kvm/book3s_segment.S      |    2 +-
- arch/powerpc/mm/hash_native_64.c       |    4 ++--
- 10 files changed, 56 insertions(+), 26 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h  |    4 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |    2 +-
+ arch/powerpc/include/asm/kvm_host.h       |    2 +-
+ arch/powerpc/kernel/asm-offsets.c         |    1 +
+ arch/powerpc/kernel/exceptions-64s.S      |    2 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c       |   36 ++++--
+ arch/powerpc/kvm/book3s_hv.c              |   65 +++++++--
+ arch/powerpc/kvm/book3s_hv_interrupts.S   |   57 +++++++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  216 ++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/powerpc.c                |    3 +
+ arch/powerpc/mm/hash_native_64.c          |    2 +-
+ 11 files changed, 353 insertions(+), 37 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index c0d842c..e30442c 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -179,8 +179,9 @@ extern const char *powerpc_base_platform;
- #define LONG_ASM_CONST(x)		0
- #endif
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 69435da..8057f4f 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -246,6 +246,10 @@ label##_hv:						\
+ 	KVMTEST(vec);							\
+ 	_SOFTEN_TEST(EXC_HV)
  
--
--#define CPU_FTR_HVMODE_206		LONG_ASM_CONST(0x0000000800000000)
-+#define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000200000000)
-+#define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000400000000)
-+#define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000800000000)
- #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0000001000000000)
- #define CPU_FTR_IABR			LONG_ASM_CONST(0x0000002000000000)
- #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000004000000000)
-@@ -401,9 +402,10 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_201 | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
--	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS)
-+	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS | \
-+	    CPU_FTR_HVMODE)
- #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -417,13 +419,13 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR)
- #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_HVMODE_206 |\
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
- 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
--	    CPU_FTR_ICSWX | CPU_FTR_CFAR)
-+	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 20a053c..ddbe57a 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -307,6 +307,7 @@
- #define SPRN_HASH1	0x3D2		/* Primary Hash Address Register */
- #define SPRN_HASH2	0x3D3		/* Secondary Hash Address Resgister */
- #define SPRN_HID0	0x3F0		/* Hardware Implementation Register 0 */
-+#define HID0_HDICE_SH	(63 - 23)	/* 970 HDEC interrupt enable */
- #define HID0_EMCP	(1<<31)		/* Enable Machine Check pin */
- #define HID0_EBA	(1<<29)		/* Enable Bus Address Parity */
- #define HID0_EBD	(1<<28)		/* Enable Bus Data Parity */
-@@ -362,6 +363,13 @@
- #define SPRN_IABR2	0x3FA		/* 83xx */
- #define SPRN_IBCR	0x135		/* 83xx Insn Breakpoint Control Reg */
- #define SPRN_HID4	0x3F4		/* 970 HID4 */
-+#define  HID4_LPES0	 (1ul << (63-0)) /* LPAR env. sel. bit 0 */
-+#define	 HID4_RMLS2_SH	 (63 - 2)	/* Real mode limit bottom 2 bits */
-+#define	 HID4_LPID5_SH	 (63 - 6)	/* partition ID bottom 4 bits */
-+#define	 HID4_RMOR_SH	 (63 - 22)	/* real mode offset (16 bits) */
-+#define  HID4_LPES1	 (1 << (63-57))	/* LPAR env. sel. bit 1 */
-+#define  HID4_RMLS0_SH	 (63 - 58)	/* Real mode limit top bit */
-+#define	 HID4_LPID1_SH	 0		/* partition ID top 2 bits */
- #define SPRN_HID4_GEKKO	0x3F3		/* Gekko HID4 */
- #define SPRN_HID5	0x3F6		/* 970 HID5 */
- #define SPRN_HID6	0x3F9	/* BE HID 6 */
-@@ -811,28 +819,28 @@
- 	mfspr	rX,SPRN_SPRG_PACA;			\
- 	FTR_SECTION_ELSE_NESTED(66);			\
- 	mfspr	rX,SPRN_SPRG_HPACA;			\
--	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE_206, 66)
-+	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE, 66)
- 
- #define SET_PACA(rX)					\
- 	BEGIN_FTR_SECTION_NESTED(66);			\
- 	mtspr	SPRN_SPRG_PACA,rX;			\
- 	FTR_SECTION_ELSE_NESTED(66);			\
- 	mtspr	SPRN_SPRG_HPACA,rX;			\
--	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE_206, 66)
-+	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE, 66)
- 
- #define GET_SCRATCH0(rX)				\
- 	BEGIN_FTR_SECTION_NESTED(66);			\
- 	mfspr	rX,SPRN_SPRG_SCRATCH0;			\
- 	FTR_SECTION_ELSE_NESTED(66);			\
- 	mfspr	rX,SPRN_SPRG_HSCRATCH0;			\
--	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE_206, 66)
-+	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE, 66)
- 
- #define SET_SCRATCH0(rX)				\
- 	BEGIN_FTR_SECTION_NESTED(66);			\
- 	mtspr	SPRN_SPRG_SCRATCH0,rX;			\
- 	FTR_SECTION_ELSE_NESTED(66);			\
- 	mtspr	SPRN_SPRG_HSCRATCH0,rX;			\
--	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE_206, 66)
-+	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_HVMODE, 66)
- 
- #else /* CONFIG_PPC_BOOK3S_64 */
- #define GET_SCRATCH0(rX)	mfspr	rX,SPRN_SPRG_SCRATCH0
-diff --git a/arch/powerpc/kernel/cpu_setup_power7.S b/arch/powerpc/kernel/cpu_setup_power7.S
-index 2ef6749..76797c5 100644
---- a/arch/powerpc/kernel/cpu_setup_power7.S
-+++ b/arch/powerpc/kernel/cpu_setup_power7.S
-@@ -45,12 +45,12 @@ _GLOBAL(__restore_cpu_power7)
- 	blr
- 
- __init_hvmode_206:
--	/* Disable CPU_FTR_HVMODE_206 and exit if MSR:HV is not set */
-+	/* Disable CPU_FTR_HVMODE and exit if MSR:HV is not set */
- 	mfmsr	r3
- 	rldicl.	r0,r3,4,63
- 	bnelr
- 	ld	r5,CPU_SPEC_FEATURES(r4)
--	LOAD_REG_IMMEDIATE(r6,CPU_FTR_HVMODE_206)
-+	LOAD_REG_IMMEDIATE(r6,CPU_FTR_HVMODE)
- 	xor	r5,r5,r6
- 	std	r5,CPU_SPEC_FEATURES(r4)
- 	blr
-diff --git a/arch/powerpc/kernel/cpu_setup_ppc970.S b/arch/powerpc/kernel/cpu_setup_ppc970.S
-index 27f2507..12fac8d 100644
---- a/arch/powerpc/kernel/cpu_setup_ppc970.S
-+++ b/arch/powerpc/kernel/cpu_setup_ppc970.S
-@@ -76,7 +76,7 @@ _GLOBAL(__setup_cpu_ppc970)
- 	/* Do nothing if not running in HV mode */
- 	mfmsr	r0
- 	rldicl.	r0,r0,4,63
--	beqlr
-+	beq	no_hv_mode
- 
- 	mfspr	r0,SPRN_HID0
- 	li	r11,5			/* clear DOZE and SLEEP */
-@@ -90,7 +90,7 @@ _GLOBAL(__setup_cpu_ppc970MP)
- 	/* Do nothing if not running in HV mode */
- 	mfmsr	r0
- 	rldicl.	r0,r0,4,63
--	beqlr
-+	beq	no_hv_mode
- 
- 	mfspr	r0,SPRN_HID0
- 	li	r11,0x15		/* clear DOZE and SLEEP */
-@@ -109,6 +109,14 @@ load_hids:
- 	sync
- 	isync
- 
-+	/* Try to set LPES = 01 in HID4 */
-+	mfspr	r0,SPRN_HID4
-+	clrldi	r0,r0,1			/* clear LPES0 */
-+	ori	r0,r0,HID4_LPES1	/* set LPES1 */
-+	sync
-+	mtspr	SPRN_HID4,r0
-+	isync
++#define SOFTEN_TEST_HV_201(vec)						\
++	KVMTEST(vec);							\
++	_SOFTEN_TEST(EXC_STD)
 +
- 	/* Save away cpu state */
- 	LOAD_REG_ADDR(r5,cpu_state_storage)
+ #define __MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra)		\
+ 	HMT_MEDIUM;							\
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+index 3ac82f1..7b37a5b 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_asm.h
++++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+@@ -81,7 +81,7 @@ struct kvmppc_host_state {
+ 	unsigned long xics_phys;
+ 	u64 dabr;
+ 	u64 host_mmcr[3];
+-	u32 host_pmc[6];
++	u32 host_pmc[8];
+ 	u64 host_purr;
+ 	u64 host_spurr;
+ 	u64 host_dscr;
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index f572d9c..cc22b28 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -353,7 +353,7 @@ struct kvm_vcpu_arch {
+ 	u32 dbsr;
  
-@@ -117,11 +125,21 @@ load_hids:
- 	std	r3,CS_HID0(r5)
- 	mfspr	r3,SPRN_HID1
- 	std	r3,CS_HID1(r5)
--	mfspr	r3,SPRN_HID4
--	std	r3,CS_HID4(r5)
-+	mfspr	r4,SPRN_HID4
-+	std	r4,CS_HID4(r5)
- 	mfspr	r3,SPRN_HID5
- 	std	r3,CS_HID5(r5)
+ 	u64 mmcr[3];
+-	u32 pmc[6];
++	u32 pmc[8];
  
-+	/* See if we successfully set LPES1 to 1; if not we are in Apple mode */
-+	andi.	r4,r4,HID4_LPES1
-+	bnelr
-+
-+no_hv_mode:
-+	/* Disable CPU_FTR_HVMODE and exit, since we don't have HV mode */
-+	ld	r5,CPU_SPEC_FEATURES(r4)
-+	LOAD_REG_IMMEDIATE(r6,CPU_FTR_HVMODE)
-+	andc	r5,r5,r6
-+	std	r5,CPU_SPEC_FEATURES(r4)
- 	blr
- 
- /* Called with no MMU context (typically MSR:IR/DR off) to
+ #ifdef CONFIG_KVM_EXIT_TIMING
+ 	struct mutex exit_timing_lock;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 6832a06..0062875 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -128,6 +128,7 @@ int main(void)
+ 	DEFINE(ICACHEL1LINESPERPAGE, offsetof(struct ppc64_caches, ilines_per_page));
+ 	/* paca */
+ 	DEFINE(PACA_SIZE, sizeof(struct paca_struct));
++	DEFINE(PACA_LOCK_TOKEN, offsetof(struct paca_struct, lock_token));
+ 	DEFINE(PACAPACAINDEX, offsetof(struct paca_struct, paca_index));
+ 	DEFINE(PACAPROCSTART, offsetof(struct paca_struct, cpu_start));
+ 	DEFINE(PACAKSAVE, offsetof(struct paca_struct, kstack));
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0771606..e654165 100644
+index e654165..8301bfd 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -75,7 +75,7 @@ BEGIN_FTR_SECTION
- 	b	.power7_wakeup_noloss
- 2:	b	.power7_wakeup_loss
- 9:
--END_FTR_SECTION_IFSET(CPU_FTR_HVMODE_206)
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
- #endif /* CONFIG_PPC_P7_NAP */
- 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common, EXC_STD,
- 				 NOTEST, 0x100)
-@@ -173,7 +173,7 @@ hardware_interrupt_hv:
+@@ -171,7 +171,7 @@ hardware_interrupt_hv:
+ 		KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x502)
+ 	FTR_SECTION_ELSE
  		_MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt,
- 					    EXC_STD, SOFTEN_TEST_PR)
+-					    EXC_STD, SOFTEN_TEST_PR)
++					    EXC_STD, SOFTEN_TEST_HV_201)
  		KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x500)
--	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE_206)
-+	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
  
- 	STD_EXCEPTION_PSERIES(0x600, 0x600, alignment)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x600)
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index efeb881..0a5a899 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -167,7 +167,7 @@ void setup_paca(struct paca_struct *new_paca)
- 	 * if we do a GET_PACA() before the feature fixups have been
- 	 * applied
- 	 */
--	if (cpu_has_feature(CPU_FTR_HVMODE_206))
-+	if (cpu_has_feature(CPU_FTR_HVMODE))
- 		mtspr(SPRN_SPRG_HPACA, local_paca);
- #endif
- 	mtspr(SPRN_SPRG_PACA, local_paca);
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index a57b40d..3f773b3 100644
+index 3f773b3..2cdc202 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -470,7 +470,8 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
+@@ -42,6 +42,8 @@
+ #define VRMA_PAGE_ORDER	24
+ #define VRMA_VSID	0x1ffffffUL	/* 1TB VSID reserved for VRMA */
+ 
++/* POWER7 has 10-bit LPIDs, PPC970 has 6-bit LPIDs */
++#define MAX_LPID_970	63
+ #define NR_LPIDS	(LPID_RSVD + 1)
+ unsigned long lpid_inuse[BITS_TO_LONGS(NR_LPIDS)];
+ 
+@@ -69,9 +71,6 @@ long kvmppc_alloc_hpt(struct kvm *kvm)
+ 
+ 	kvm->arch.sdr1 = __pa(hpt) | (HPT_ORDER - 18);
+ 	kvm->arch.lpid = lpid;
+-	kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
+-	kvm->arch.host_lpid = mfspr(SPRN_LPID);
+-	kvm->arch.host_lpcr = mfspr(SPRN_LPCR);
+ 
+ 	pr_info("KVM guest htab at %lx, LPID %lx\n", hpt, lpid);
+ 	return 0;
+@@ -157,7 +156,8 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	/* only handle 4k, 64k and 16M pages for now */
+ 	porder = 12;
+ 	if (pteh & HPTE_V_LARGE) {
+-		if ((ptel & 0xf000) == 0x1000) {
++		if (cpu_has_feature(CPU_FTR_ARCH_206) &&
++		    (ptel & 0xf000) == 0x1000) {
+ 			/* 64k page */
+ 			porder = 16;
+ 		} else if ((ptel & 0xff000) == 0) {
+@@ -227,7 +227,8 @@ static unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+ 	va_low &= 0x7ff;
+ 	if (v & HPTE_V_LARGE) {
+ 		rb |= 1;			/* L field */
+-		if (r & 0xff000) {
++		if (cpu_has_feature(CPU_FTR_ARCH_206) &&
++		    (r & 0xff000)) {
+ 			/* non-16MB large page, must be 64k */
+ 			/* (masks depend on page size) */
+ 			rb |= 0x1000;		/* page encoding in LP field */
+@@ -470,12 +471,24 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
  
  int kvmppc_mmu_hv_init(void)
  {
--	if (!cpu_has_feature(CPU_FTR_HVMODE_206))
-+	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
-+	    !cpu_has_feature(CPU_FTR_ARCH_206))
+-	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
+-	    !cpu_has_feature(CPU_FTR_ARCH_206))
++	unsigned long host_lpid, rsvd_lpid;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
  		return -EINVAL;
++
  	memset(lpid_inuse, 0, sizeof(lpid_inuse));
- 	set_bit(mfspr(SPRN_LPID), lpid_inuse);
+-	set_bit(mfspr(SPRN_LPID), lpid_inuse);
+-	set_bit(LPID_RSVD, lpid_inuse);
++
++	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
++		host_lpid = mfspr(SPRN_LPID);	/* POWER7 */
++		rsvd_lpid = LPID_RSVD;
++	} else {
++		host_lpid = 0;			/* PPC970 */
++		rsvd_lpid = MAX_LPID_970;
++	}
++
++	set_bit(host_lpid, lpid_inuse);
++	/* rsvd_lpid is reserved for use in partition switching */
++	set_bit(rsvd_lpid, lpid_inuse);
+ 
+ 	return 0;
+ }
+@@ -499,7 +512,10 @@ void kvmppc_mmu_book3s_hv_init(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_mmu *mmu = &vcpu->arch.mmu;
+ 
+-	vcpu->arch.slb_nr = 32;		/* Assume POWER7 for now */
++	if (cpu_has_feature(CPU_FTR_ARCH_206))
++		vcpu->arch.slb_nr = 32;		/* POWER7 */
++	else
++		vcpu->arch.slb_nr = 64;
+ 
+ 	mmu->xlate = kvmppc_mmu_book3s_64_hv_xlate;
+ 	mmu->reset_msr = kvmppc_mmu_book3s_64_hv_reset_msr;
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index ca40ef0..ebc097d 100644
+index ebc097d..1ae1693 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -444,7 +444,8 @@ int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
+@@ -444,8 +444,7 @@ int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
  
  int kvmppc_core_check_processor_compat(void)
  {
--	if (cpu_has_feature(CPU_FTR_HVMODE_206))
-+	if (cpu_has_feature(CPU_FTR_HVMODE) &&
-+	    cpu_has_feature(CPU_FTR_ARCH_206))
+-	if (cpu_has_feature(CPU_FTR_HVMODE) &&
+-	    cpu_has_feature(CPU_FTR_ARCH_206))
++	if (cpu_has_feature(CPU_FTR_HVMODE))
  		return 0;
  	return -EIO;
  }
-@@ -999,8 +1000,8 @@ void kvm_rma_init(void)
+@@ -739,6 +738,10 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		return -EINTR;
+ 	}
+ 
++	/* On PPC970, check that we have an RMA region */
++	if (!vcpu->kvm->arch.rma && cpu_has_feature(CPU_FTR_ARCH_201))
++		return -EPERM;
++
+ 	kvm_run->exit_reason = 0;
+ 	vcpu->arch.ret = RESUME_GUEST;
+ 	vcpu->arch.trap = 0;
+@@ -965,12 +968,14 @@ static LIST_HEAD(free_rmas);
+ static DEFINE_SPINLOCK(rma_lock);
+ 
+ /* Work out RMLS (real mode limit selector) field value for a given RMA size.
+-   Assumes POWER7. */
++   Assumes POWER7 or PPC970. */
+ static int lpcr_rmls(unsigned long rma_size)
+ {
+ 	switch (rma_size) {
+ 	case 32ul << 20:	/* 32 MB */
+-		return 8;
++		if (cpu_has_feature(CPU_FTR_ARCH_206))
++			return 8;	/* only supported on POWER7 */
++		return -1;
+ 	case 64ul << 20:	/* 64 MB */
+ 		return 3;
+ 	case 128ul << 20:	/* 128 MB */
+@@ -1000,8 +1005,9 @@ void kvm_rma_init(void)
  	void *rma;
  	struct page *pg;
  
--	/* Only do this on POWER7 in HV mode */
--	if (!cpu_has_feature(CPU_FTR_HVMODE_206))
-+	/* Only do this in HV mode */
-+	if (!cpu_has_feature(CPU_FTR_HVMODE))
+-	/* Only do this in HV mode */
+-	if (!cpu_has_feature(CPU_FTR_HVMODE))
++	/* Only do this on PPC970 in HV mode */
++	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
++	    !cpu_has_feature(CPU_FTR_ARCH_201))
  		return;
  
  	if (!kvm_rma_size || !kvm_rma_count)
-diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-index 174d59c..2410f81 100644
---- a/arch/powerpc/kvm/book3s_segment.S
-+++ b/arch/powerpc/kvm/book3s_segment.S
-@@ -166,7 +166,7 @@ BEGIN_FTR_SECTION
- 	mfspr	r4,SPRN_HSRR1
- 	andi.	r12,r12,0x3ffd
- 	b	2f
--END_FTR_SECTION_IFSET(CPU_FTR_HVMODE_206)
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+@@ -1166,6 +1172,10 @@ int kvmppc_core_prepare_memory_region(struct kvm *kvm,
+ 		    mem->userspace_addr == vma->vm_start)
+ 			ri = vma->vm_file->private_data;
+ 		up_read(&current->mm->mmap_sem);
++		if (!ri && cpu_has_feature(CPU_FTR_ARCH_201)) {
++			pr_err("CPU requires an RMO\n");
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	if (ri) {
+@@ -1184,10 +1194,25 @@ int kvmppc_core_prepare_memory_region(struct kvm *kvm,
+ 		atomic_inc(&ri->use_count);
+ 		kvm->arch.rma = ri;
+ 		kvm->arch.n_rma_pages = rma_size >> porder;
+-		lpcr = kvm->arch.lpcr & ~(LPCR_VPM0 | LPCR_VRMA_L);
+-		lpcr |= rmls << LPCR_RMLS_SH;
++
++		/* Update LPCR and RMOR */
++		lpcr = kvm->arch.lpcr;
++		if (cpu_has_feature(CPU_FTR_ARCH_201)) {
++			/* PPC970; insert RMLS value (split field) in HID4 */
++			lpcr &= ~((1ul << HID4_RMLS0_SH) |
++				  (3ul << HID4_RMLS2_SH));
++			lpcr |= ((rmls >> 2) << HID4_RMLS0_SH) |
++				((rmls & 3) << HID4_RMLS2_SH);
++			/* RMOR is also in HID4 */
++			lpcr |= ((ri->base_pfn >> (26 - PAGE_SHIFT)) & 0xffff)
++				<< HID4_RMOR_SH;
++		} else {
++			/* POWER7 */
++			lpcr &= ~(LPCR_VPM0 | LPCR_VRMA_L);
++			lpcr |= rmls << LPCR_RMLS_SH;
++			kvm->arch.rmor = kvm->arch.rma->base_pfn << PAGE_SHIFT;
++		}
+ 		kvm->arch.lpcr = lpcr;
+-		kvm->arch.rmor = kvm->arch.rma->base_pfn << PAGE_SHIFT;
+ 		pr_info("Using RMO at %lx size %lx (LPCR = %lx)\n",
+ 			ri->base_pfn << PAGE_SHIFT, rma_size, lpcr);
+ 	}
+@@ -1258,11 +1283,25 @@ int kvmppc_core_init_vm(struct kvm *kvm)
+ 	kvm->arch.rma = NULL;
+ 	kvm->arch.n_rma_pages = 0;
+ 
+-	lpcr = kvm->arch.host_lpcr & (LPCR_PECE | LPCR_LPES);
+-	lpcr |= (4UL << LPCR_DPFD_SH) | LPCR_HDICE |
+-		LPCR_VPM0 | LPCR_VRMA_L;
+-	kvm->arch.lpcr = lpcr;
++	kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
+ 
++	if (cpu_has_feature(CPU_FTR_ARCH_201)) {
++		/* PPC970; HID4 is effectively the LPCR */
++		unsigned long lpid = kvm->arch.lpid;
++		kvm->arch.host_lpid = 0;
++		kvm->arch.host_lpcr = lpcr = mfspr(SPRN_HID4);
++		lpcr &= ~((3 << HID4_LPID1_SH) | (0xful << HID4_LPID5_SH));
++		lpcr |= ((lpid >> 4) << HID4_LPID1_SH) |
++			((lpid & 0xf) << HID4_LPID5_SH);
++	} else {
++		/* POWER7; init LPCR for virtual RMA mode */
++		kvm->arch.host_lpid = mfspr(SPRN_LPID);
++		kvm->arch.host_lpcr = lpcr = mfspr(SPRN_LPCR);
++		lpcr &= LPCR_PECE | LPCR_LPES;
++		lpcr |= (4UL << LPCR_DPFD_SH) | LPCR_HDICE |
++			LPCR_VPM0 | LPCR_VRMA_L;
++	}
++	kvm->arch.lpcr = lpcr;
+ 
+ 	return 0;
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 5c6a387..527ea6e 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -77,17 +77,27 @@ _GLOBAL(__kvmppc_vcore_entry)
+ 	mfspr	r7, SPRN_PMC4
+ 	mfspr	r8, SPRN_PMC5
+ 	mfspr	r9, SPRN_PMC6
++BEGIN_FTR_SECTION
++	mfspr	r10, SPRN_PMC7
++	mfspr	r11, SPRN_PMC8
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	stw	r3, HSTATE_PMC(r13)
+ 	stw	r5, HSTATE_PMC + 4(r13)
+ 	stw	r6, HSTATE_PMC + 8(r13)
+ 	stw	r7, HSTATE_PMC + 12(r13)
+ 	stw	r8, HSTATE_PMC + 16(r13)
+ 	stw	r9, HSTATE_PMC + 20(r13)
++BEGIN_FTR_SECTION
++	stw	r10, HSTATE_PMC + 24(r13)
++	stw	r11, HSTATE_PMC + 28(r13)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 31:
+ 
+ 	/* Save host DSCR */
++BEGIN_FTR_SECTION
+ 	mfspr	r3, SPRN_DSCR
+ 	std	r3, HSTATE_DSCR(r13)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/* Save host DABR */
+ 	mfspr	r3, SPRN_DABR
+@@ -106,6 +116,25 @@ _GLOBAL(__kvmppc_vcore_entry)
+ 	add	r8,r8,r7
+ 	std	r8,HSTATE_DECEXP(r13)
+ 
++	/*
++	 * On PPC970, if the guest vcpu has an external interrupt pending,
++	 * send ourselves an IPI so as to interrupt the guest once it
++	 * enables interrupts.  (It must have interrupts disabled,
++	 * otherwise we would already have delivered the interrupt.)
++	 */
++BEGIN_FTR_SECTION
++	ld	r0, VCPU_PENDING_EXC(r4)
++	li	r7, (1 << BOOK3S_IRQPRIO_EXTERNAL)
++	oris	r7, r7, (1 << BOOK3S_IRQPRIO_EXTERNAL_LEVEL)@h
++	and.	r0, r0, r7
++	beq	32f
++	mr	r31, r4
++	lhz	r3, PACAPACAINDEX(r13)
++	bl	smp_send_reschedule
++	mr	r4, r31
++32:
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
++
+ 	ld	r5, VCPU_TRAMPOLINE_ENTER(r4)
+ 	LOAD_REG_IMMEDIATE(r6, MSR_KERNEL & ~(MSR_IR | MSR_DR))
+ 
+@@ -153,12 +182,20 @@ kvmppc_handler_highmem:
+ 	lwz	r6, HSTATE_PMC + 12(r13)
+ 	lwz	r8, HSTATE_PMC + 16(r13)
+ 	lwz	r9, HSTATE_PMC + 20(r13)
++BEGIN_FTR_SECTION
++	lwz	r10, HSTATE_PMC + 24(r13)
++	lwz	r11, HSTATE_PMC + 28(r13)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	mtspr	SPRN_PMC1, r3
+ 	mtspr	SPRN_PMC2, r4
+ 	mtspr	SPRN_PMC3, r5
+ 	mtspr	SPRN_PMC4, r6
+ 	mtspr	SPRN_PMC5, r8
+ 	mtspr	SPRN_PMC6, r9
++BEGIN_FTR_SECTION
++	mtspr	SPRN_PMC7, r10
++	mtspr	SPRN_PMC8, r11
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	ld	r3, HSTATE_MMCR(r13)
+ 	ld	r4, HSTATE_MMCR + 8(r13)
+ 	ld	r5, HSTATE_MMCR + 16(r13)
+@@ -221,11 +258,14 @@ _GLOBAL(kvmppc_save_fp)
+ 	mfmsr	r9
+ 	ori	r8,r9,MSR_FP
+ #ifdef CONFIG_ALTIVEC
+-#ifdef CONFIG_VSX
+-	oris	r8,r8,(MSR_VEC|MSR_VSX)@h
+-#else
++BEGIN_FTR_SECTION
+ 	oris	r8,r8,MSR_VEC@h
++END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
  #endif
- 1:	mfsrr0	r3
- 	mfsrr1	r4
++#ifdef CONFIG_VSX
++BEGIN_FTR_SECTION
++	oris	r8,r8,MSR_VSX@h
++END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif
+ 	mtmsrd	r8
+ 	isync
+@@ -278,11 +318,14 @@ kvmppc_load_fp:
+ 	mfmsr	r9
+ 	ori	r8,r9,MSR_FP
+ #ifdef CONFIG_ALTIVEC
+-#ifdef CONFIG_VSX
+-	oris	r8,r8,(MSR_VEC|MSR_VSX)@h
+-#else
++BEGIN_FTR_SECTION
+ 	oris	r8,r8,MSR_VEC@h
++END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
++#ifdef CONFIG_VSX
++BEGIN_FTR_SECTION
++	oris	r8,r8,MSR_VSX@h
++END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif
+ 	mtmsrd	r8
+ 	isync
+@@ -308,10 +351,10 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
+ #endif
+ 
+ #ifdef CONFIG_ALTIVEC
++BEGIN_FTR_SECTION
+ 	li	r7,VCPU_VSCR
+ 	lvx	vr0,r7,r4
+ 	mtvscr	vr0
+-BEGIN_FTR_SECTION
+ 	reg = 0
+ 	.rept	32
+ 	li	r7,reg*16+VCPU_VRS
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 697ef88..c3121cc 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -64,8 +64,10 @@ kvmppc_skip_Hinterrupt:
+  */
+ .global kvmppc_handler_lowmem_trampoline
+ kvmppc_handler_lowmem_trampoline:
++BEGIN_FTR_SECTION
+ 	cmpwi	r12,BOOK3S_INTERRUPT_EXTERNAL
+ 	beq	1f
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_201)
+ 	mtsrr0	r3
+ 	mtsrr1	r4
+ 	blr
+@@ -178,12 +180,20 @@ kvmppc_handler_trampoline_enter:
+ 	lwz	r7, VCPU_PMC + 12(r4)
+ 	lwz	r8, VCPU_PMC + 16(r4)
+ 	lwz	r9, VCPU_PMC + 20(r4)
++BEGIN_FTR_SECTION
++	lwz	r10, VCPU_PMC + 24(r4)
++	lwz	r11, VCPU_PMC + 28(r4)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	mtspr	SPRN_PMC1, r3
+ 	mtspr	SPRN_PMC2, r5
+ 	mtspr	SPRN_PMC3, r6
+ 	mtspr	SPRN_PMC4, r7
+ 	mtspr	SPRN_PMC5, r8
+ 	mtspr	SPRN_PMC6, r9
++BEGIN_FTR_SECTION
++	mtspr	SPRN_PMC7, r10
++	mtspr	SPRN_PMC8, r11
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	ld	r3, VCPU_MMCR(r4)
+ 	ld	r5, VCPU_MMCR + 8(r4)
+ 	ld	r6, VCPU_MMCR + 16(r4)
+@@ -195,9 +205,11 @@ kvmppc_handler_trampoline_enter:
+ 	/* Load up FP, VMX and VSX registers */
+ 	bl	kvmppc_load_fp
+ 
++BEGIN_FTR_SECTION
+ 	/* Switch DSCR to guest value */
+ 	ld	r5, VCPU_DSCR(r4)
+ 	mtspr	SPRN_DSCR, r5
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/*
+ 	 * Set the decrementer to the guest decrementer.
+@@ -240,6 +252,7 @@ kvmppc_handler_trampoline_enter:
+ 	mtspr	SPRN_DABRX,r5
+ 	mtspr	SPRN_DABR,r6
+ 
++BEGIN_FTR_SECTION
+ 	/* Restore AMR and UAMOR, set AMOR to all 1s */
+ 	ld	r5,VCPU_AMR(r4)
+ 	ld	r6,VCPU_UAMOR(r4)
+@@ -247,6 +260,7 @@ kvmppc_handler_trampoline_enter:
+ 	mtspr	SPRN_AMR,r5
+ 	mtspr	SPRN_UAMOR,r6
+ 	mtspr	SPRN_AMOR,r7
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/* Clear out SLB */
+ 	li	r6,0
+@@ -254,6 +268,14 @@ kvmppc_handler_trampoline_enter:
+ 	slbia
+ 	ptesync
+ 
++BEGIN_FTR_SECTION
++	b	30f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
++	/*
++	 * POWER7 host -> guest partition switch code.
++	 * We don't have to lock against concurrent tlbies,
++	 * but we do have to coordinate across hardware threads.
++	 */
+ 	/* Increment entry count iff exit count is zero. */
+ 	ld	r5,HSTATE_KVM_VCORE(r13)
+ 	addi	r9,r5,VCORE_ENTRY_EXIT
+@@ -345,9 +367,94 @@ kvmppc_handler_trampoline_enter:
+ 	ld	r8,VCPU_SPURR(r4)
+ 	mtspr	SPRN_PURR,r7
+ 	mtspr	SPRN_SPURR,r8
++	b	31f
++
++	/*
++	 * PPC970 host -> guest partition switch code.
++	 * We have to lock against concurrent tlbies,
++	 * using native_tlbie_lock to lock against host tlbies
++	 * and kvm->arch.tlbie_lock to lock against guest tlbies.
++	 * We also have to invalidate the TLB since its
++	 * entries aren't tagged with the LPID.
++	 */
++30:	ld	r9,VCPU_KVM(r4)		/* pointer to struct kvm */
++
++	/* first take native_tlbie_lock */
++	.section ".toc","aw"
++toc_tlbie_lock:
++	.tc	native_tlbie_lock[TC],native_tlbie_lock
++	.previous
++	ld	r3,toc_tlbie_lock@toc(2)
++	lwz	r8,PACA_LOCK_TOKEN(r13)
++24:	lwarx	r0,0,r3
++	cmpwi	r0,0
++	bne	24b
++	stwcx.	r8,0,r3
++	bne	24b
++	isync
++
++	ld	r7,KVM_LPCR(r9)		/* use kvm->arch.lpcr to store HID4 */
++	li	r0,0x18f
++	rotldi	r0,r0,HID4_LPID5_SH	/* all lpid bits in HID4 = 1 */
++	or	r0,r7,r0
++	ptesync
++	sync
++	mtspr	SPRN_HID4,r0		/* switch to reserved LPID */
++	isync
++	li	r0,0
++	stw	r0,0(r3)		/* drop native_tlbie_lock */
++
++	/* invalidate the whole TLB */
++	li	r0,256
++	mtctr	r0
++	li	r6,0
++25:	tlbiel	r6
++	addi	r6,r6,0x1000
++	bdnz	25b
++	ptesync
++
++	/* Take the guest's tlbie_lock */
++	addi	r3,r9,KVM_TLBIE_LOCK
++24:	lwarx	r0,0,r3
++	cmpwi	r0,0
++	bne	24b
++	stwcx.	r8,0,r3
++	bne	24b
++	isync
++	ld	r6,KVM_SDR1(r9)
++	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
++
++	/* Set up HID4 with the guest's LPID etc. */
++	sync
++	mtspr	SPRN_HID4,r7
++	isync
++
++	/* drop the guest's tlbie_lock */
++	li	r0,0
++	stw	r0,0(r3)
++
++	/* Check if HDEC expires soon */
++	mfspr	r3,SPRN_HDEC
++	cmpwi	r3,10
++	li	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
++	mr	r9,r4
++	blt	hdec_soon
++
++	/* Enable HDEC interrupts */
++	mfspr	r0,SPRN_HID0
++	li	r3,1
++	rldimi	r0,r3, HID0_HDICE_SH, 64-HID0_HDICE_SH-1
++	sync
++	mtspr	SPRN_HID0,r0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
+ 
+ 	/* Load up guest SLB entries */
+-	lwz	r5,VCPU_SLB_MAX(r4)
++31:	lwz	r5,VCPU_SLB_MAX(r4)
+ 	cmpwi	r5,0
+ 	beq	9f
+ 	mtctr	r5
+@@ -504,6 +611,7 @@ kvmppc_interrupt:
+ hcall_real_cont:
+ 
+ 	/* Check for mediated interrupts (could be done earlier really ...) */
++BEGIN_FTR_SECTION
+ 	cmpwi	r12,BOOK3S_INTERRUPT_EXTERNAL
+ 	bne+	1f
+ 	ld	r5,VCPU_KVM(r9)
+@@ -513,6 +621,7 @@ hcall_real_cont:
+ 	andi.	r0,r5,LPCR_MER
+ 	bne	bounce_ext_interrupt
+ 1:
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/* Save DEC */
+ 	mfspr	r5,SPRN_DEC
+@@ -524,9 +633,11 @@ hcall_real_cont:
+ 	/* Save HEIR (HV emulation assist reg) in last_inst
+ 	   if this is an HEI (HV emulation interrupt, e40) */
+ 	li	r3,-1
++BEGIN_FTR_SECTION
+ 	cmpwi	r12,BOOK3S_INTERRUPT_H_EMUL_ASSIST
+ 	bne	11f
+ 	mfspr	r3,SPRN_HEIR
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 11:	stw	r3,VCPU_LAST_INST(r9)
+ 
+ 	/* Save more register state  */
+@@ -540,8 +651,10 @@ hcall_real_cont:
+ 	stw	r7, VCPU_DSISR(r9)
+ 	std	r8, VCPU_CTR(r9)
+ 	/* grab HDAR & HDSISR if HV data storage interrupt (HDSI) */
++BEGIN_FTR_SECTION
+ 	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
+ 	beq	6f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 7:	std	r6, VCPU_FAULT_DAR(r9)
+ 	stw	r7, VCPU_FAULT_DSISR(r9)
+ 
+@@ -575,6 +688,7 @@ hcall_real_cont:
+ 	/*
+ 	 * Save the guest PURR/SPURR
+ 	 */
++BEGIN_FTR_SECTION
+ 	mfspr	r5,SPRN_PURR
+ 	mfspr	r6,SPRN_SPURR
+ 	ld	r7,VCPU_PURR(r9)
+@@ -594,6 +708,7 @@ hcall_real_cont:
+ 	add	r4,r4,r6
+ 	mtspr	SPRN_PURR,r3
+ 	mtspr	SPRN_SPURR,r4
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_201)
+ 
+ 	/* Clear out SLB */
+ 	li	r5,0
+@@ -602,6 +717,14 @@ hcall_real_cont:
+ 	ptesync
+ 
+ hdec_soon:
++BEGIN_FTR_SECTION
++	b	32f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
++	/*
++	 * POWER7 guest -> host partition switch code.
++	 * We don't have to lock against tlbies but we do
++	 * have to coordinate the hardware threads.
++	 */
+ 	/* Increment the threads-exiting-guest count in the 0xff00
+ 	   bits of vcore->entry_exit_count */
+ 	lwsync
+@@ -672,9 +795,82 @@ hdec_soon:
+ 16:	ld	r8,KVM_HOST_LPCR(r4)
+ 	mtspr	SPRN_LPCR,r8
+ 	isync
++	b	33f
++
++	/*
++	 * PPC970 guest -> host partition switch code.
++	 * We have to lock against concurrent tlbies, and
++	 * we have to flush the whole TLB.
++	 */
++32:	ld	r4,VCPU_KVM(r9)		/* pointer to struct kvm */
++
++	/* Take the guest's tlbie_lock */
++	lwz	r8,PACA_LOCK_TOKEN(r13)
++	addi	r3,r4,KVM_TLBIE_LOCK
++24:	lwarx	r0,0,r3
++	cmpwi	r0,0
++	bne	24b
++	stwcx.	r8,0,r3
++	bne	24b
++	isync
++
++	ld	r7,KVM_HOST_LPCR(r4)	/* use kvm->arch.host_lpcr for HID4 */
++	li	r0,0x18f
++	rotldi	r0,r0,HID4_LPID5_SH	/* all lpid bits in HID4 = 1 */
++	or	r0,r7,r0
++	ptesync
++	sync
++	mtspr	SPRN_HID4,r0		/* switch to reserved LPID */
++	isync
++	li	r0,0
++	stw	r0,0(r3)		/* drop guest tlbie_lock */
++
++	/* invalidate the whole TLB */
++	li	r0,256
++	mtctr	r0
++	li	r6,0
++25:	tlbiel	r6
++	addi	r6,r6,0x1000
++	bdnz	25b
++	ptesync
++
++	/* take native_tlbie_lock */
++	ld	r3,toc_tlbie_lock@toc(2)
++24:	lwarx	r0,0,r3
++	cmpwi	r0,0
++	bne	24b
++	stwcx.	r8,0,r3
++	bne	24b
++	isync
++
++	ld	r6,KVM_HOST_SDR1(r4)
++	mtspr	SPRN_SDR1,r6		/* switch to host page table */
++
++	/* Set up host HID4 value */
++	sync
++	mtspr	SPRN_HID4,r7
++	isync
++	li	r0,0
++	stw	r0,0(r3)		/* drop native_tlbie_lock */
++
++	lis	r8,0x7fff		/* MAX_INT@h */
++	mtspr	SPRN_HDEC,r8
++
++	/* Disable HDEC interrupts */
++	mfspr	r0,SPRN_HID0
++	li	r3,0
++	rldimi	r0,r3, HID0_HDICE_SH, 64-HID0_HDICE_SH-1
++	sync
++	mtspr	SPRN_HID0,r0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
+ 
+ 	/* load host SLB entries */
+-	ld	r8,PACA_SLBSHADOWPTR(r13)
++33:	ld	r8,PACA_SLBSHADOWPTR(r13)
+ 
+ 	.rept	SLB_NUM_BOLTED
+ 	ld	r5,SLBSHADOW_SAVEAREA(r8)
+@@ -686,12 +882,14 @@ hdec_soon:
+ 	.endr
+ 
+ 	/* Save and reset AMR and UAMOR before turning on the MMU */
++BEGIN_FTR_SECTION
+ 	mfspr	r5,SPRN_AMR
+ 	mfspr	r6,SPRN_UAMOR
+ 	std	r5,VCPU_AMR(r9)
+ 	std	r6,VCPU_UAMOR(r9)
+ 	li	r6,0
+ 	mtspr	SPRN_AMR,r6
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/* Restore host DABR and DABRX */
+ 	ld	r5,HSTATE_DABR(r13)
+@@ -700,10 +898,12 @@ hdec_soon:
+ 	mtspr	SPRN_DABRX,r6
+ 
+ 	/* Switch DSCR back to host value */
++BEGIN_FTR_SECTION
+ 	mfspr	r8, SPRN_DSCR
+ 	ld	r7, HSTATE_DSCR(r13)
+ 	std	r8, VCPU_DSCR(r7)
+ 	mtspr	SPRN_DSCR, r7
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/* Save non-volatile GPRs */
+ 	std	r14, VCPU_GPR(r14)(r9)
+@@ -767,21 +967,31 @@ hdec_soon:
+ 	mfspr	r6, SPRN_PMC4
+ 	mfspr	r7, SPRN_PMC5
+ 	mfspr	r8, SPRN_PMC6
++BEGIN_FTR_SECTION
++	mfspr	r10, SPRN_PMC7
++	mfspr	r11, SPRN_PMC8
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	stw	r3, VCPU_PMC(r9)
+ 	stw	r4, VCPU_PMC + 4(r9)
+ 	stw	r5, VCPU_PMC + 8(r9)
+ 	stw	r6, VCPU_PMC + 12(r9)
+ 	stw	r7, VCPU_PMC + 16(r9)
+ 	stw	r8, VCPU_PMC + 20(r9)
++BEGIN_FTR_SECTION
++	stw	r10, VCPU_PMC + 24(r9)
++	stw	r11, VCPU_PMC + 28(r9)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 22:
+ 	/* save FP state */
+ 	mr	r3, r9
+ 	bl	.kvmppc_save_fp
+ 
+-	/* Secondary threads go off to take a nap */
++	/* Secondary threads go off to take a nap on POWER7 */
++BEGIN_FTR_SECTION
+ 	lwz	r0,VCPU_PTID(r3)
+ 	cmpwi	r0,0
+ 	bne	secondary_nap
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 
+ 	/* RFI into the highmem handler */
+ 	mfmsr	r7
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 72c5065..a107c9b 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -213,6 +213,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 		break;
+ 	case KVM_CAP_PPC_RMA:
+ 		r = 1;
++		/* PPC970 requires an RMA */
++		if (cpu_has_feature(CPU_FTR_ARCH_201))
++			r = 2;
+ 		break;
+ #endif
+ 	default:
 diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index dfd7648..b44f5f8 100644
+index b44f5f8..90039bc 100644
 --- a/arch/powerpc/mm/hash_native_64.c
 +++ b/arch/powerpc/mm/hash_native_64.c
-@@ -51,7 +51,7 @@ static inline void __tlbie(unsigned long va, int psize, int ssize)
- 		va &= ~0xffful;
- 		va |= ssize << 8;
- 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
--			     : : "r" (va), "r"(0), "i" (CPU_FTR_HVMODE_206)
-+			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
- 			     : "memory");
- 		break;
- 	default:
-@@ -61,7 +61,7 @@ static inline void __tlbie(unsigned long va, int psize, int ssize)
- 		va |= ssize << 8;
- 		va |= 1; /* L */
- 		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
--			     : : "r" (va), "r"(0), "i" (CPU_FTR_HVMODE_206)
-+			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
- 			     : "memory");
- 		break;
- 	}
+@@ -37,7 +37,7 @@
+ 
+ #define HPTE_LOCK_BIT 3
+ 
+-static DEFINE_RAW_SPINLOCK(native_tlbie_lock);
++DEFINE_RAW_SPINLOCK(native_tlbie_lock);
+ 
+ static inline void __tlbie(unsigned long va, int psize, int ssize)
+ {
 -- 
 1.7.5.4
