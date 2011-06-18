@@ -1,10 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Sat, 18 Jun 2011 18:32:58 +1000
+Date: Sat, 18 Jun 2011 18:33:34 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 04/15] KVM: PPC: Deliver program interrupts right away
-	instead of queueing them
-Message-ID: <20110618083258.GE28413@bloggs.ozlabs.ibm.com>
+Subject: [PATCH 05/15] KVM: PPC: Pass init/destroy vm and prepare/commit
+	memory region ops down
+Message-ID: <20110618083334.GF28413@bloggs.ozlabs.ibm.com>
 References: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,66 +18,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Doing so means that we don't have to save the flags anywhere and gets
-rid of the last reference to to_book3s(vcpu) in arch/powerpc/kvm/book3s.c.
-
-Doing so is OK because a program interrupt won't be generated at the
-same time as any other synchronous interrupt.  If a program interrupt
-and an asynchronous interrupt (external or decrementer) are generated
-at the same time, the program interrupt will be delivered, which is
-correct because it has a higher priority, and then the asynchronous
-interrupt will be masked.
-
-We don't ever generate system reset or machine check interrupts to the
-guest, but if we did, then we would need to make sure they got delivered
-rather than the program interrupt.  The current code would be wrong in
-this situation anyway since it would deliver the program interrupt as
-well as the reset/machine check interrupt.
+This arranges for the top-level arch/powerpc/kvm/powerpc.c file to
+pass down some of the calls it gets to the lower-level subarchitecture
+specific code.  The lower-level implementations (in booke.c and book3s.c)
+are no-ops.  The coming book3s_hv.c will need this.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kvm/book3s.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h |    7 +++++++
+ arch/powerpc/kvm/book3s_pr.c       |   20 ++++++++++++++++++++
+ arch/powerpc/kvm/booke.c           |   20 ++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c         |    9 ++++++---
+ 4 files changed, 53 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index af63de3..096c711 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -128,8 +128,8 @@ void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index c662f14..9b6f3f9 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -111,6 +111,13 @@ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
+ extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
+ extern void kvmppc_map_magic(struct kvm_vcpu *vcpu);
  
- void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong flags)
- {
--	to_book3s(vcpu)->prog_flags = flags;
--	kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_PROGRAM);
-+	/* might as well deliver this straight away */
-+	kvmppc_inject_interrupt(vcpu, BOOK3S_INTERRUPT_PROGRAM, flags);
++extern int kvmppc_core_init_vm(struct kvm *kvm);
++extern void kvmppc_core_destroy_vm(struct kvm *kvm);
++extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem);
++extern void kvmppc_core_commit_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem);
++
+ /*
+  * Cuts out inst bits with ordering according to spec.
+  * That means the leftmost bit is zero. All given bits are included.
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 0663e1f..54fa336 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -984,6 +984,26 @@ int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	return ret;
  }
  
- void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu)
-@@ -169,7 +169,6 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
++int kvmppc_core_prepare_memory_region(struct kvm *kvm,
++				      struct kvm_userspace_memory_region *mem)
++{
++	return 0;
++}
++
++void kvmppc_core_commit_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem)
++{
++}
++
++int kvmppc_core_init_vm(struct kvm *kvm)
++{
++	return 0;
++}
++
++void kvmppc_core_destroy_vm(struct kvm *kvm)
++{
++}
++
+ static int kvmppc_book3s_init(void)
  {
- 	int deliver = 1;
- 	int vec = 0;
--	ulong flags = 0ULL;
- 	bool crit = kvmppc_critical_section(vcpu);
- 
- 	switch (priority) {
-@@ -205,7 +204,6 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
- 		break;
- 	case BOOK3S_IRQPRIO_PROGRAM:
- 		vec = BOOK3S_INTERRUPT_PROGRAM;
--		flags = to_book3s(vcpu)->prog_flags;
- 		break;
- 	case BOOK3S_IRQPRIO_VSX:
- 		vec = BOOK3S_INTERRUPT_VSX;
-@@ -236,7 +234,7 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
- #endif
- 
- 	if (deliver)
--		kvmppc_inject_interrupt(vcpu, vec, flags);
-+		kvmppc_inject_interrupt(vcpu, vec, 0);
- 
- 	return deliver;
+ 	int r;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 9f2e4a5..9066325 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -865,6 +865,26 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+ 	return -ENOTSUPP;
  }
+ 
++int kvmppc_core_prepare_memory_region(struct kvm *kvm,
++				      struct kvm_userspace_memory_region *mem)
++{
++	return 0;
++}
++
++void kvmppc_core_commit_memory_region(struct kvm *kvm,
++				struct kvm_userspace_memory_region *mem)
++{
++}
++
++int kvmppc_core_init_vm(struct kvm *kvm)
++{
++	return 0;
++}
++
++void kvmppc_core_destroy_vm(struct kvm *kvm)
++{
++}
++
+ int __init kvmppc_booke_init(void)
+ {
+ 	unsigned long ivor[16];
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 24e2b64..0c80e15 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -148,7 +148,7 @@ void kvm_arch_check_processor_compat(void *rtn)
+ 
+ int kvm_arch_init_vm(struct kvm *kvm)
+ {
+-	return 0;
++	return kvmppc_core_init_vm(kvm);
+ }
+ 
+ void kvm_arch_destroy_vm(struct kvm *kvm)
+@@ -164,6 +164,9 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+ 		kvm->vcpus[i] = NULL;
+ 
+ 	atomic_set(&kvm->online_vcpus, 0);
++
++	kvmppc_core_destroy_vm(kvm);
++
+ 	mutex_unlock(&kvm->lock);
+ }
+ 
+@@ -212,7 +215,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+                                    struct kvm_userspace_memory_region *mem,
+                                    int user_alloc)
+ {
+-	return 0;
++	return kvmppc_core_prepare_memory_region(kvm, mem);
+ }
+ 
+ void kvm_arch_commit_memory_region(struct kvm *kvm,
+@@ -220,7 +223,7 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+                struct kvm_memory_slot old,
+                int user_alloc)
+ {
+-       return;
++	kvmppc_core_commit_memory_region(kvm, mem);
+ }
+ 
+ 
 -- 
 1.7.5.4
