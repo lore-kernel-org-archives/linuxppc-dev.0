@@ -1,10 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Sat, 18 Jun 2011 18:33:34 +1000
+Date: Sat, 18 Jun 2011 18:34:04 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/15] KVM: PPC: Pass init/destroy vm and prepare/commit
-	memory region ops down
-Message-ID: <20110618083334.GF28413@bloggs.ozlabs.ibm.com>
+Subject: [PATCH 06/15] KVM: PPC: Move guest enter/exit down into
+	subarch-specific code
+Message-ID: <20110618083404.GG28413@bloggs.ozlabs.ibm.com>
 References: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,139 +18,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This arranges for the top-level arch/powerpc/kvm/powerpc.c file to
-pass down some of the calls it gets to the lower-level subarchitecture
-specific code.  The lower-level implementations (in booke.c and book3s.c)
-are no-ops.  The coming book3s_hv.c will need this.
+Instead of doing the kvm_guest_enter/exit() and local_irq_dis/enable()
+calls in powerpc.c, this moves them down into the subarch-specific
+book3s_pr.c and booke.c.  This eliminates an extra local_irq_enable()
+call in book3s_pr.c, and will be needed for when we do SMT4 guest
+support in the book3s hypervisor mode code.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/kvm_ppc.h |    7 +++++++
- arch/powerpc/kvm/book3s_pr.c       |   20 ++++++++++++++++++++
- arch/powerpc/kvm/booke.c           |   20 ++++++++++++++++++++
- arch/powerpc/kvm/powerpc.c         |    9 ++++++---
- 4 files changed, 53 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h   |    1 +
+ arch/powerpc/kvm/book3s_interrupts.S |    2 +-
+ arch/powerpc/kvm/book3s_pr.c         |   12 ++++++------
+ arch/powerpc/kvm/booke.c             |   13 +++++++++++++
+ arch/powerpc/kvm/powerpc.c           |    6 +-----
+ 5 files changed, 22 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index c662f14..9b6f3f9 100644
+index 9b6f3f9..48b7ab7 100644
 --- a/arch/powerpc/include/asm/kvm_ppc.h
 +++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -111,6 +111,13 @@ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
- extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
- extern void kvmppc_map_magic(struct kvm_vcpu *vcpu);
+@@ -42,6 +42,7 @@ enum emulation_result {
+ 	EMULATE_AGAIN,        /* something went wrong. go again */
+ };
  
-+extern int kvmppc_core_init_vm(struct kvm *kvm);
-+extern void kvmppc_core_destroy_vm(struct kvm *kvm);
-+extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
-+				struct kvm_userspace_memory_region *mem);
-+extern void kvmppc_core_commit_memory_region(struct kvm *kvm,
-+				struct kvm_userspace_memory_region *mem);
-+
- /*
-  * Cuts out inst bits with ordering according to spec.
-  * That means the leftmost bit is zero. All given bits are included.
++extern int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+ extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+ extern char kvmppc_handlers_start[];
+ extern unsigned long kvmppc_handler_len;
+diff --git a/arch/powerpc/kvm/book3s_interrupts.S b/arch/powerpc/kvm/book3s_interrupts.S
+index 2f0bc92..8c5e0e1 100644
+--- a/arch/powerpc/kvm/book3s_interrupts.S
++++ b/arch/powerpc/kvm/book3s_interrupts.S
+@@ -85,7 +85,7 @@
+  *  r3: kvm_run pointer
+  *  r4: vcpu pointer
+  */
+-_GLOBAL(__kvmppc_vcpu_entry)
++_GLOBAL(__kvmppc_vcpu_run)
+ 
+ kvm_start_entry:
+ 	/* Write correct stack frame */
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 0663e1f..54fa336 100644
+index 54fa336..1389dd0 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -984,6 +984,26 @@ int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	return ret;
+@@ -891,8 +891,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	vfree(vcpu_book3s);
  }
  
-+int kvmppc_core_prepare_memory_region(struct kvm *kvm,
-+				      struct kvm_userspace_memory_region *mem)
-+{
-+	return 0;
-+}
-+
-+void kvmppc_core_commit_memory_region(struct kvm *kvm,
-+				struct kvm_userspace_memory_region *mem)
-+{
-+}
-+
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
-+
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- static int kvmppc_book3s_init(void)
+-extern int __kvmppc_vcpu_entry(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+-int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
++int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
  {
- 	int r;
+ 	int ret;
+ 	double fpr[32][TS_FPRWIDTH];
+@@ -944,14 +943,15 @@ int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	/* Remember the MSR with disabled extensions */
+ 	ext_msr = current->thread.regs->msr;
+ 
+-	/* XXX we get called with irq disabled - change that! */
+-	local_irq_enable();
+-
+ 	/* Preload FPU if it's enabled */
+ 	if (vcpu->arch.shared->msr & MSR_FP)
+ 		kvmppc_handle_ext(vcpu, BOOK3S_INTERRUPT_FP_UNAVAIL, MSR_FP);
+ 
+-	ret = __kvmppc_vcpu_entry(kvm_run, vcpu);
++	kvm_guest_enter();
++
++	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
++
++	kvm_guest_exit();
+ 
+ 	local_irq_disable();
+ 
 diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 9f2e4a5..9066325 100644
+index 9066325..ee45fa0 100644
 --- a/arch/powerpc/kvm/booke.c
 +++ b/arch/powerpc/kvm/booke.c
-@@ -865,6 +865,26 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
- 	return -ENOTSUPP;
+@@ -312,6 +312,19 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
+ 		vcpu->arch.shared->int_pending = 0;
  }
  
-+int kvmppc_core_prepare_memory_region(struct kvm *kvm,
-+				      struct kvm_userspace_memory_region *mem)
++int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
 +{
-+	return 0;
++	int ret;
++
++	local_irq_disable();
++	kvm_guest_enter();
++	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
++	kvm_guest_exit();
++	local_irq_enable();
++
++	return ret;
 +}
 +
-+void kvmppc_core_commit_memory_region(struct kvm *kvm,
-+				struct kvm_userspace_memory_region *mem)
-+{
-+}
-+
-+int kvmppc_core_init_vm(struct kvm *kvm)
-+{
-+	return 0;
-+}
-+
-+void kvmppc_core_destroy_vm(struct kvm *kvm)
-+{
-+}
-+
- int __init kvmppc_booke_init(void)
- {
- 	unsigned long ivor[16];
+ /**
+  * kvmppc_handle_exit
+  *
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 24e2b64..0c80e15 100644
+index 0c80e15..026036e 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -148,7 +148,7 @@ void kvm_arch_check_processor_compat(void *rtn)
+@@ -500,11 +500,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
  
- int kvm_arch_init_vm(struct kvm *kvm)
- {
--	return 0;
-+	return kvmppc_core_init_vm(kvm);
- }
+ 	kvmppc_core_deliver_interrupts(vcpu);
  
- void kvm_arch_destroy_vm(struct kvm *kvm)
-@@ -164,6 +164,9 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
- 		kvm->vcpus[i] = NULL;
+-	local_irq_disable();
+-	kvm_guest_enter();
+-	r = __kvmppc_vcpu_run(run, vcpu);
+-	kvm_guest_exit();
+-	local_irq_enable();
++	r = kvmppc_vcpu_run(run, vcpu);
  
- 	atomic_set(&kvm->online_vcpus, 0);
-+
-+	kvmppc_core_destroy_vm(kvm);
-+
- 	mutex_unlock(&kvm->lock);
- }
- 
-@@ -212,7 +215,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
-                                    struct kvm_userspace_memory_region *mem,
-                                    int user_alloc)
- {
--	return 0;
-+	return kvmppc_core_prepare_memory_region(kvm, mem);
- }
- 
- void kvm_arch_commit_memory_region(struct kvm *kvm,
-@@ -220,7 +223,7 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
-                struct kvm_memory_slot old,
-                int user_alloc)
- {
--       return;
-+	kvmppc_core_commit_memory_region(kvm, mem);
- }
- 
- 
+ 	if (vcpu->sigset_active)
+ 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
 -- 
 1.7.5.4
