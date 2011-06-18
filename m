@@ -1,25 +1,23 @@
-Return-Path: <dtcarroll@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9782DB6FF8
+Return-Path: <prvs=11509943cb=mhench@elutions.com>
+Received: from mail.elutions.com (mail.elutions.com [64.31.159.3])
+	by ozlabs.org (Postfix) with ESMTP id 2A85BB7008
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 19 Jun 2011 03:55:55 +1000 (EST)
-Received: by pvg18 with SMTP id 18so1964879pvg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jun 2011 10:55:53 -0700 (PDT)
-From: Dave Carroll <dtcarroll@gmail.com>
-To: Milton Miller <miltonm@bga.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2][v2] powerpc: Add printk companion for ppc_md.progress
-Date: Sat, 18 Jun 2011 11:36:40 -0600
-Message-Id: <1308418600-9167-2-git-send-email-dcarroll@astekcorp.com>
-In-Reply-To: <1308418600-9167-1-git-send-email-dcarroll@astekcorp.com>
-References: <1308350584.32158.58.camel@pasglop>
-	<1308418600-9167-1-git-send-email-dcarroll@astekcorp.com>
-Cc: Dave Carroll <dcarroll@astekcorp.com>, LPPC <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Sun, 19 Jun 2011 04:10:07 +1000 (EST)
+Received: from mail.elutions.com (127.0.0.1) by mail.elutions.com (MlfMTA
+	v3.2r9) id hvjcdc0171sb for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 18 Jun 2011 12:41:49 -0400 (envelope-from
+	<prvs=11509943cb=mhench@elutions.com>)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: NAND BBT corruption on MPC83xx
+Date: Sat, 18 Jun 2011 13:55:01 -0400
+Message-ID: <F87D23B7E1F84E4AB52E4FA4A55F85DC0259E343@tpamail.elutions.com>
+In-Reply-To: <20110617163442.204348a0@schlenkerla.am.freescale.net>
+From: "Mike Hench" <mhench@elutions.com>
+To: "Scott Wood" <scottwood@freescale.com>,
+	"Matthew L. Creech" <mlcreech@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Carroll <dcarroll@astekcorp.com>
+Scott Wood wrote:
+> As for the corruption, could it be degradation from repeated reads of
+that
+> one page?
 
-This patch adds a printk companion to replace the udbg progress function
-when initmem is freed.
+Read Disturb. I Did not know SLC did that.
+It just takes 10x as long as MLC, on the order of a million reads.
+Supposedly erasing the block fixes it.
+It is not a permanent damage thing.
+I was seeing ~9 hours before failure with heavy writes.
+~4GByte/hour =3D 2M pages, total ~18 million reads before errors in that
+last block showed up.
 
-Suggested-by: Milton Miller <miltonm@bga.com>
-Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Dave Carroll <dcarroll@astekcorp.com>
----
- [v2] This is a rebase of the original patch to Linus' current tree
- 
- arch/powerpc/include/asm/setup.h   |    2 ++
- arch/powerpc/kernel/setup-common.c |    5 +++++
- arch/powerpc/mm/mem.c              |    2 +-
- 3 files changed, 8 insertions(+), 1 deletions(-)
+Cool. Now we know.
+Thanks.
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index dae1934..c77cb7a 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -3,4 +3,6 @@
- 
- #include <asm-generic/setup.h>
- 
-+extern void ppc_printk_progress(char *s, unsigned short hex);
-+
- #endif	/* _ASM_POWERPC_SETUP_H */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 79fca26..e053b16 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -704,6 +704,11 @@ static int powerpc_debugfs_init(void)
- arch_initcall(powerpc_debugfs_init);
- #endif
- 
-+void ppc_printk_progress(char *s, unsigned short hex)
-+{
-+	pr_info("%s\n", s);
-+}
-+
- static int ppc_dflt_bus_notify(struct notifier_block *nb,
- 				unsigned long action, void *data)
- {
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f4e6408..e0d2aa0 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -386,7 +386,7 @@ void free_initmem(void)
- {
- 	unsigned long addr;
- 
--	ppc_md.progress = NULL;
-+	ppc_md.progress = ppc_printk_progress;
- 
- 	addr = (unsigned long)__init_begin;
- 	for (; addr < (unsigned long)__init_end; addr += PAGE_SIZE) {
--- 
-1.7.5
+Mike Hench
