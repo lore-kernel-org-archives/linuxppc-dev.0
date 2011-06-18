@@ -1,9 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Sat, 18 Jun 2011 18:36:31 +1000
+Date: Sat, 18 Jun 2011 18:38:13 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 10/15] KVM: PPC: Handle some PAPR hcalls in the kernel
-Message-ID: <20110618083631.GK28413@bloggs.ozlabs.ibm.com>
+Subject: [PATCH 13/15] KVM: PPC: Allocate RMAs (Real Mode Areas) at boot for
+	use by guests
+Message-ID: <20110618083813.GN28413@bloggs.ozlabs.ibm.com>
 References: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -17,886 +18,933 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the infrastructure for handling PAPR hcalls in the kernel,
-either early in the guest exit path while we are still in real mode,
-or later once the MMU has been turned back on and we are in the full
-kernel context.  The advantage of handling hcalls in real mode if
-possible is that we avoid two partition switches -- and this will
-become more important when we support SMT4 guests, since a partition
-switch means we have to pull all of the threads in the core out of
-the guest.  The disadvantage is that we can only access the kernel
-linear mapping, not anything vmalloced or ioremapped, since the MMU
-is off.
+This adds infrastructure which will be needed to allow book3s_hv KVM to
+run on older POWER processors, including PPC970, which don't support
+the Virtual Real Mode Area (VRMA) facility, but only the Real Mode
+Offset (RMO) facility.  These processors require a physically
+contiguous, aligned area of memory for each guest.  When the guest does
+an access in real mode (MMU off), the address is compared against a
+limit value, and if it is lower, the address is ORed with an offset
+value (from the Real Mode Offset Register (RMOR)) and the result becomes
+the real address for the access.  The size of the RMA has to be one of
+a set of supported values, which usually includes 64MB, 128MB, 256MB
+and some larger powers of 2.
 
-This also adds code to handle the following hcalls in real mode:
+Since we are unlikely to be able to allocate 64MB or more of physically
+contiguous memory after the kernel has been running for a while, we
+allocate a pool of RMAs at boot time using the bootmem allocator.  The
+size and number of the RMAs can be set using the kvm_rma_size=xx and
+kvm_rma_count=xx kernel command line options.
 
-H_ENTER       Add an HPTE to the hashed page table
-H_REMOVE      Remove an HPTE from the hashed page table
-H_READ        Read HPTEs from the hashed page table
-H_PROTECT     Change the protection bits in an HPTE
-H_BULK_REMOVE Remove up to 4 HPTEs from the hashed page table
-H_SET_DABR    Set the data address breakpoint register
+KVM exports a new capability, KVM_CAP_PPC_RMA, to signal the availability
+of the pool of preallocated RMAs.  The capability value is 1 if the
+processor can use an RMA but doesn't require one (because it supports
+the VRMA facility), or 2 if the processor requires an RMA for each guest.
 
-Plus code to handle the following hcalls in the kernel:
+This adds a new ioctl, KVM_ALLOCATE_RMA, which allocates an RMA from the
+pool and returns a file descriptor which can be used to map the RMA.  It
+also returns the size of the RMA in the argument structure.
 
-H_CEDE        Idle the vcpu until an interrupt or H_PROD hcall arrives
-H_PROD        Wake up a ceded vcpu
-H_REGISTER_VPA Register a virtual processor area (VPA)
+Having an RMA means we will get multiple KMV_SET_USER_MEMORY_REGION
+ioctl calls from userspace.  To cope with this, we now preallocate the
+kvm->arch.ram_pginfo array when the VM is created with a size sufficient
+for up to 64GB of guest memory.  Subsequently we will get rid of this
+array and use memory associated with each memslot instead.
+
+This moves most of the code that translates the user addresses into
+host pfns (page frame numbers) out of kvmppc_prepare_vrma up one level
+to kvmppc_core_prepare_memory_region.  Also, instead of having to look
+up the VMA for each page in order to check the page size, we now check
+that the pages we get are compound pages of 16MB.  However, if we are
+adding memory that is mapped to an RMA, we don't bother with calling
+get_user_pages_fast and instead just offset from the base pfn for the
+RMA.
+
+Typically the RMA gets added after vcpus are created, which makes it
+inconvenient to have the LPCR (logical partition control register) value
+in the vcpu->arch struct, since the LPCR controls whether the processor
+uses RMA or VRMA for the guest.  This moves the LPCR value into the
+kvm->arch struct and arranges for the MER (mediated external request)
+bit, which is the only bit that varies between vcpus, to be set in
+assembly code when going into the guest if there is a pending external
+interrupt request.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/hvcall.h       |    5 +
- arch/powerpc/include/asm/kvm_host.h     |   11 +
- arch/powerpc/include/asm/kvm_ppc.h      |    1 +
- arch/powerpc/kernel/asm-offsets.c       |    2 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c     |  342 +++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c            |  170 +++++++++++++++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |  156 ++++++++++++++-
- arch/powerpc/kvm/powerpc.c              |    2 +-
- 8 files changed, 685 insertions(+), 4 deletions(-)
+ Documentation/virtual/kvm/api.txt       |   32 +++
+ arch/powerpc/include/asm/kvm.h          |    5 +
+ arch/powerpc/include/asm/kvm_book3s.h   |    8 -
+ arch/powerpc/include/asm/kvm_host.h     |   15 ++-
+ arch/powerpc/include/asm/kvm_ppc.h      |    8 +
+ arch/powerpc/include/asm/reg.h          |    1 +
+ arch/powerpc/kernel/asm-offsets.c       |    4 +-
+ arch/powerpc/kernel/setup_64.c          |    3 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c     |   97 +--------
+ arch/powerpc/kvm/book3s_hv.c            |  359 ++++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   19 ++-
+ arch/powerpc/kvm/powerpc.c              |   13 ++
+ include/linux/kvm.h                     |    3 +
+ 13 files changed, 449 insertions(+), 118 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index fd8201d..1c324ff 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -29,6 +29,10 @@
- #define H_LONG_BUSY_ORDER_100_SEC	9905  /* Long busy, hint that 100sec \
- 						 is a good time to retry */
- #define H_LONG_BUSY_END_RANGE		9905  /* End of long busy range */
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index 02254ce..3a12fc7 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -1396,6 +1396,38 @@ the entries written by kernel-handled H_PUT_TCE calls, and also lets
+ userspace update the TCE table directly which is useful in some
+ circumstances.
+ 
++4.63 KVM_ALLOCATE_RMA
 +
-+/* Internal value used in book3s_hv kvm support; not returned to guests */
-+#define H_TOO_HARD	9999
++Capability: KVM_CAP_PPC_RMA
++Architectures: powerpc
++Type: vm ioctl
++Parameters: struct kvm_allocate_rma (out)
++Returns: file descriptor for mapping the allocated RMA
 +
- #define H_HARDWARE	-1	/* Hardware error */
- #define H_FUNCTION	-2	/* Function not supported */
- #define H_PRIVILEGE	-3	/* Caller not privileged */
-@@ -100,6 +104,7 @@
- #define H_PAGE_SET_ACTIVE	H_PAGE_STATE_CHANGE
- #define H_AVPN			(1UL<<(63-32))	/* An avpn is provided as a sanity test */
- #define H_ANDCOND		(1UL<<(63-33))
-+#define H_LOCAL			(1UL<<(63-35))
- #define H_ICACHE_INVALIDATE	(1UL<<(63-40))	/* icbi, etc.  (ignored for IO pages) */
- #define H_ICACHE_SYNCHRONIZE	(1UL<<(63-41))	/* dcbst, icbi, etc (ignored for IO pages */
- #define H_COALESCE_CAND	(1UL<<(63-42))	/* page is a good candidate for coalescing */
++This allocates a Real Mode Area (RMA) from the pool allocated at boot
++time by the kernel.  An RMA is a physically-contiguous, aligned region
++of memory used on older POWER processors to provide the memory which
++will be accessed by real-mode (MMU off) accesses in a KVM guest.
++POWER processors support a set of sizes for the RMA that usually
++includes 64MB, 128MB, 256MB and some larger powers of two.
++
++/* for KVM_ALLOCATE_RMA */
++struct kvm_allocate_rma {
++	__u64 rma_size;
++};
++
++The return value is a file descriptor which can be passed to mmap(2)
++to map the allocated RMA into userspace.  The mapped area can then be
++passed to the KVM_SET_USER_MEMORY_REGION ioctl to establish it as the
++RMA for a virtual machine.  The size of the RMA in bytes (which is
++fixed at host kernel boot time) is returned in the rma_size field of
++the argument structure.
++
++The KVM_CAP_PPC_RMA capability is 1 or 2 if the KVM_ALLOCATE_RMA ioctl
++is supported; 2 if the processor requires all virtual machines to have
++an RMA, or 1 if the processor can use an RMA but doesn't require it,
++because it supports the Virtual RMA (VRMA) facility.
++
+ 5. The kvm_run structure
+ 
+ Application code obtains a pointer to the kvm_run structure by
+diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
+index 471bb3d..a4f6c85 100644
+--- a/arch/powerpc/include/asm/kvm.h
++++ b/arch/powerpc/include/asm/kvm.h
+@@ -282,4 +282,9 @@ struct kvm_create_spapr_tce {
+ 	__u32 window_size;
+ };
+ 
++/* for KVM_ALLOCATE_RMA */
++struct kvm_allocate_rma {
++	__u64 rma_size;
++};
++
+ #endif /* __LINUX_KVM_POWERPC_H */
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 6135a98..51216e5 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -297,14 +297,6 @@ static inline unsigned long kvmppc_interrupt_offset(struct kvm_vcpu *vcpu)
+ static inline void kvmppc_update_int_pending(struct kvm_vcpu *vcpu,
+ 			unsigned long pending_now, unsigned long old_pending)
+ {
+-	/* Recalculate LPCR:MER based on the presence of
+-	 * a pending external interrupt
+-	 */
+-	if (test_bit(BOOK3S_IRQPRIO_EXTERNAL, &pending_now) ||
+-	    test_bit(BOOK3S_IRQPRIO_EXTERNAL_LEVEL, &pending_now))
+-		vcpu->arch.lpcr |= LPCR_MER;
+-	else
+-		vcpu->arch.lpcr &= ~((u64)LPCR_MER);
+ }
+ 
+ static inline void kvmppc_set_gpr(struct kvm_vcpu *vcpu, int num, ulong val)
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 4a3f790..6ebf172 100644
+index 0d6d569..f572d9c 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -59,6 +59,10 @@ struct kvm;
- struct kvm_run;
- struct kvm_vcpu;
+@@ -28,6 +28,8 @@
+ #include <linux/threads.h>
+ #include <linux/spinlock.h>
+ #include <linux/kvm_para.h>
++#include <linux/list.h>
++#include <linux/atomic.h>
+ #include <asm/kvm_asm.h>
+ #include <asm/processor.h>
  
-+struct lppaca;
-+struct slb_shadow;
-+struct dtl;
-+
- struct kvm_vm_stat {
- 	u32 remote_tlb_flush;
+@@ -156,6 +158,14 @@ struct kvmppc_spapr_tce_table {
+ 	struct page *pages[0];
  };
-@@ -344,7 +348,14 @@ struct kvm_vcpu_arch {
- 	u64 dec_expires;
- 	unsigned long pending_exceptions;
- 	u16 last_cpu;
-+	u8 ceded;
-+	u8 prodded;
- 	u32 last_inst;
+ 
++struct kvmppc_rma_info {
++	void		*base_virt;
++	unsigned long	 base_pfn;
++	unsigned long	 npages;
++	struct list_head list;
++	atomic_t 	 use_count;
++};
 +
-+	struct lppaca *vpa;
-+	struct slb_shadow *slb_shadow;
-+	struct dtl *dtl;
-+	struct dtl *dtl_end;
- 	int trap;
- 	struct kvm_vcpu_arch_shared *shared;
- 	unsigned long magic_page_pa; /* phys addr to map the magic page to */
+ struct kvm_arch {
+ #ifdef CONFIG_KVM_BOOK3S_64_HV
+ 	unsigned long hpt_virt;
+@@ -169,6 +179,10 @@ struct kvm_arch {
+ 	unsigned long sdr1;
+ 	unsigned long host_sdr1;
+ 	int tlbie_lock;
++	int n_rma_pages;
++	unsigned long lpcr;
++	unsigned long rmor;
++	struct kvmppc_rma_info *rma;
+ 	struct list_head spapr_tce_tables;
+ 	unsigned short last_vcpu[NR_CPUS];
+ 	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
+@@ -295,7 +309,6 @@ struct kvm_vcpu_arch {
+ 	ulong guest_owned_ext;
+ 	ulong purr;
+ 	ulong spurr;
+-	ulong lpcr;
+ 	ulong dscr;
+ 	ulong amr;
+ 	ulong uamor;
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 0dafd53..2afe92e 100644
+index 6ef7344..d16dbee 100644
 --- a/arch/powerpc/include/asm/kvm_ppc.h
 +++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -118,6 +118,7 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
- 				struct kvm_userspace_memory_region *mem);
- extern void kvmppc_map_vrma(struct kvm *kvm,
- 			    struct kvm_userspace_memory_region *mem);
-+extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+@@ -124,6 +124,8 @@ extern void kvmppc_map_vrma(struct kvm *kvm,
+ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce *args);
++extern long kvm_vm_ioctl_allocate_rma(struct kvm *kvm,
++				struct kvm_allocate_rma *rma);
  extern int kvmppc_core_init_vm(struct kvm *kvm);
  extern void kvmppc_core_destroy_vm(struct kvm *kvm);
  extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
+@@ -177,9 +179,15 @@ static inline void kvmppc_set_xics_phys(int cpu, unsigned long addr)
+ {
+ 	paca[cpu].kvm_hstate.xics_phys = addr;
+ }
++
++extern void kvm_rma_init(void);
++
+ #else
+ static inline void kvmppc_set_xics_phys(int cpu, unsigned long addr)
+ {}
++
++static inline void kvm_rma_init(void)
++{}
+ #endif
+ 
+ #endif /* __POWERPC_KVM_PPC_H__ */
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 36a611b..20a053c 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -242,6 +242,7 @@
+ #define   LPCR_VRMA_LP1	(1ul << (63-16))
+ #define   LPCR_VRMASD_SH (63-16)
+ #define   LPCR_RMLS    0x1C000000      /* impl dependent rmo limit sel */
++#define	  LPCR_RMLS_SH	(63-37)
+ #define   LPCR_ILE     0x02000000      /* !HV irqs set MSR:LE */
+ #define   LPCR_PECE	0x00007000	/* powersave exit cause enable */
+ #define     LPCR_PECE0	0x00004000	/* ext. exceptions can cause exit */
 diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4f73572..24bb2e1 100644
+index 9a364c1..6832a06 100644
 --- a/arch/powerpc/kernel/asm-offsets.c
 +++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -189,6 +189,7 @@ int main(void)
- 	DEFINE(LPPACADECRINT, offsetof(struct lppaca, int_dword.fields.decr_int));
- 	DEFINE(LPPACA_PMCINUSE, offsetof(struct lppaca, pmcregs_in_use));
- 	DEFINE(LPPACA_DTLIDX, offsetof(struct lppaca, dtl_idx));
-+	DEFINE(LPPACA_YIELDCOUNT, offsetof(struct lppaca, yield_count));
- 	DEFINE(PACA_DTL_RIDX, offsetof(struct paca_struct, dtl_ridx));
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 	DEFINE(PACAEMERGSP, offsetof(struct paca_struct, emergency_sp));
-@@ -459,6 +460,7 @@ int main(void)
+@@ -437,6 +437,8 @@ int main(void)
+ 	DEFINE(KVM_TLBIE_LOCK, offsetof(struct kvm, arch.tlbie_lock));
+ 	DEFINE(KVM_ONLINE_CPUS, offsetof(struct kvm, online_vcpus.counter));
+ 	DEFINE(KVM_LAST_VCPU, offsetof(struct kvm, arch.last_vcpu));
++	DEFINE(KVM_LPCR, offsetof(struct kvm, arch.lpcr));
++	DEFINE(KVM_RMOR, offsetof(struct kvm, arch.rmor));
+ 	DEFINE(VCPU_DSISR, offsetof(struct kvm_vcpu, arch.shregs.dsisr));
+ 	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
+ #endif
+@@ -459,7 +461,7 @@ int main(void)
+ 	DEFINE(VCPU_HFLAGS, offsetof(struct kvm_vcpu, arch.hflags));
  	DEFINE(VCPU_DEC, offsetof(struct kvm_vcpu, arch.dec));
  	DEFINE(VCPU_DEC_EXPIRES, offsetof(struct kvm_vcpu, arch.dec_expires));
- 	DEFINE(VCPU_LPCR, offsetof(struct kvm_vcpu, arch.lpcr));
-+	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa));
+-	DEFINE(VCPU_LPCR, offsetof(struct kvm_vcpu, arch.lpcr));
++	DEFINE(VCPU_PENDING_EXC, offsetof(struct kvm_vcpu, arch.pending_exceptions));
+ 	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa));
  	DEFINE(VCPU_MMCR, offsetof(struct kvm_vcpu, arch.mmcr));
  	DEFINE(VCPU_PMC, offsetof(struct kvm_vcpu, arch.pmc));
- 	DEFINE(VCPU_SLB, offsetof(struct kvm_vcpu, arch.slb));
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 4a4fbec..f6fc4e5 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -219,6 +219,348 @@ void kvmppc_map_vrma(struct kvm *kvm, struct kvm_userspace_memory_region *mem)
- 	}
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index a88bf27..532054f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -63,6 +63,7 @@
+ #include <asm/kexec.h>
+ #include <asm/mmu_context.h>
+ #include <asm/code-patching.h>
++#include <asm/kvm_ppc.h>
+ 
+ #include "setup.h"
+ 
+@@ -580,6 +581,8 @@ void __init setup_arch(char **cmdline_p)
+ 	/* Initialize the MMU context management stuff */
+ 	mmu_context_init();
+ 
++	kvm_rma_init();
++
+ 	ppc64_boot_msg(0x15, "Setup Done");
  }
  
-+#define HPTE_V_HVLOCK	0x40UL
-+
-+static inline long lock_hpte(unsigned long *hpte, unsigned long bits)
-+{
-+	unsigned long tmp, old;
-+
-+	asm volatile("	ldarx	%0,0,%2\n"
-+		     "	and.	%1,%0,%3\n"
-+		     "	bne	2f\n"
-+		     "	ori	%0,%0,%4\n"
-+		     "  stdcx.	%0,0,%2\n"
-+		     "	beq+	2f\n"
-+		     "	li	%1,%3\n"
-+		     "2:	isync"
-+		     : "=&r" (tmp), "=&r" (old)
-+		     : "r" (hpte), "r" (bits), "i" (HPTE_V_HVLOCK)
-+		     : "cc", "memory");
-+	return old == 0;
-+}
-+
-+long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
-+		    long pte_index, unsigned long pteh, unsigned long ptel)
-+{
-+	unsigned long porder;
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long i, lpn, pa;
-+	unsigned long *hpte;
-+
-+	/* only handle 4k, 64k and 16M pages for now */
-+	porder = 12;
-+	if (pteh & HPTE_V_LARGE) {
-+		if ((ptel & 0xf000) == 0x1000) {
-+			/* 64k page */
-+			porder = 16;
-+		} else if ((ptel & 0xff000) == 0) {
-+			/* 16M page */
-+			porder = 24;
-+			/* lowest AVA bit must be 0 for 16M pages */
-+			if (pteh & 0x80)
-+				return H_PARAMETER;
-+		} else
-+			return H_PARAMETER;
-+	}
-+	lpn = (ptel & HPTE_R_RPN) >> kvm->arch.ram_porder;
-+	if (lpn >= kvm->arch.ram_npages || porder > kvm->arch.ram_porder)
-+		return H_PARAMETER;
-+	pa = kvm->arch.ram_pginfo[lpn].pfn << PAGE_SHIFT;
-+	if (!pa)
-+		return H_PARAMETER;
-+	/* Check WIMG */
-+	if ((ptel & HPTE_R_WIMG) != HPTE_R_M &&
-+	    (ptel & HPTE_R_WIMG) != (HPTE_R_W | HPTE_R_I | HPTE_R_M))
-+		return H_PARAMETER;
-+	pteh &= ~0x60UL;
-+	ptel &= ~(HPTE_R_PP0 - kvm->arch.ram_psize);
-+	ptel |= pa;
-+	if (pte_index >= (HPT_NPTEG << 3))
-+		return H_PARAMETER;
-+	if (likely((flags & H_EXACT) == 0)) {
-+		pte_index &= ~7UL;
-+		hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+		for (i = 0; ; ++i) {
-+			if (i == 8)
-+				return H_PTEG_FULL;
-+			if ((*hpte & HPTE_V_VALID) == 0 &&
-+			    lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID))
-+				break;
-+			hpte += 2;
-+		}
-+	} else {
-+		i = 0;
-+		hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+		if (!lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID))
-+			return H_PTEG_FULL;
-+	}
-+	hpte[1] = ptel;
-+	eieio();
-+	hpte[0] = pteh;
-+	asm volatile("ptesync" : : : "memory");
-+	atomic_inc(&kvm->arch.ram_pginfo[lpn].refcnt);
-+	vcpu->arch.gpr[4] = pte_index + i;
-+	return H_SUCCESS;
-+}
-+
-+static unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
-+				      unsigned long pte_index)
-+{
-+	unsigned long rb, va_low;
-+
-+	rb = (v & ~0x7fUL) << 16;		/* AVA field */
-+	va_low = pte_index >> 3;
-+	if (v & HPTE_V_SECONDARY)
-+		va_low = ~va_low;
-+	/* xor vsid from AVA */
-+	if (!(v & HPTE_V_1TB_SEG))
-+		va_low ^= v >> 12;
-+	else
-+		va_low ^= v >> 24;
-+	va_low &= 0x7ff;
-+	if (v & HPTE_V_LARGE) {
-+		rb |= 1;			/* L field */
-+		if (r & 0xff000) {
-+			/* non-16MB large page, must be 64k */
-+			/* (masks depend on page size) */
-+			rb |= 0x1000;		/* page encoding in LP field */
-+			rb |= (va_low & 0x7f) << 16; /* 7b of VA in AVA/LP field */
-+			rb |= (va_low & 0xfe);	/* AVAL field (P7 doesn't seem to care) */
-+		}
-+	} else {
-+		/* 4kB page */
-+		rb |= (va_low & 0x7ff) << 12;	/* remaining 11b of VA */
-+	}
-+	rb |= (v >> 54) & 0x300;		/* B field */
-+	return rb;
-+}
-+
-+#define LOCK_TOKEN	(*(u32 *)(&get_paca()->lock_token))
-+
-+static inline int try_lock_tlbie(unsigned int *lock)
-+{
-+	unsigned int tmp, old;
-+	unsigned int token = LOCK_TOKEN;
-+
-+	asm volatile("1:lwarx	%1,0,%2\n"
-+		     "	cmpwi	cr0,%1,0\n"
-+		     "	bne	2f\n"
-+		     "  stwcx.	%3,0,%2\n"
-+		     "	bne-	1b\n"
-+		     "  isync\n"
-+		     "2:"
-+		     : "=&r" (tmp), "=&r" (old)
-+		     : "r" (lock), "r" (token)
-+		     : "cc", "memory");
-+	return old == 0;
-+}
-+
-+long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
-+		     unsigned long pte_index, unsigned long avpn,
-+		     unsigned long va)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long *hpte;
-+	unsigned long v, r, rb;
-+
-+	if (pte_index >= (HPT_NPTEG << 3))
-+		return H_PARAMETER;
-+	hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+	while (!lock_hpte(hpte, HPTE_V_HVLOCK))
-+		cpu_relax();
-+	if ((hpte[0] & HPTE_V_VALID) == 0 ||
-+	    ((flags & H_AVPN) && (hpte[0] & ~0x7fUL) != avpn) ||
-+	    ((flags & H_ANDCOND) && (hpte[0] & avpn) != 0)) {
-+		hpte[0] &= ~HPTE_V_HVLOCK;
-+		return H_NOT_FOUND;
-+	}
-+	if (atomic_read(&kvm->online_vcpus) == 1)
-+		flags |= H_LOCAL;
-+	vcpu->arch.gpr[4] = v = hpte[0] & ~HPTE_V_HVLOCK;
-+	vcpu->arch.gpr[5] = r = hpte[1];
-+	rb = compute_tlbie_rb(v, r, pte_index);
-+	hpte[0] = 0;
-+	if (!(flags & H_LOCAL)) {
-+		while(!try_lock_tlbie(&kvm->arch.tlbie_lock))
-+			cpu_relax();
-+		asm volatile("ptesync" : : : "memory");
-+		asm volatile(PPC_TLBIE(%1,%0)"; eieio; tlbsync"
-+			     : : "r" (rb), "r" (kvm->arch.lpid));
-+		asm volatile("ptesync" : : : "memory");
-+		kvm->arch.tlbie_lock = 0;
-+	} else {
-+		asm volatile("ptesync" : : : "memory");
-+		asm volatile("tlbiel %0" : : "r" (rb));
-+		asm volatile("ptesync" : : : "memory");
-+	}
-+	return H_SUCCESS;
-+}
-+
-+long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long *args = &vcpu->arch.gpr[4];
-+	unsigned long *hp, tlbrb[4];
-+	long int i, found;
-+	long int n_inval = 0;
-+	unsigned long flags, req, pte_index;
-+	long int local = 0;
-+	long int ret = H_SUCCESS;
-+
-+	if (atomic_read(&kvm->online_vcpus) == 1)
-+		local = 1;
-+	for (i = 0; i < 4; ++i) {
-+		pte_index = args[i * 2];
-+		flags = pte_index >> 56;
-+		pte_index &= ((1ul << 56) - 1);
-+		req = flags >> 6;
-+		flags &= 3;
-+		if (req == 3)
-+			break;
-+		if (req != 1 || flags == 3 ||
-+		    pte_index >= (HPT_NPTEG << 3)) {
-+			/* parameter error */
-+			args[i * 2] = ((0xa0 | flags) << 56) + pte_index;
-+			ret = H_PARAMETER;
-+			break;
-+		}
-+		hp = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+		while (!lock_hpte(hp, HPTE_V_HVLOCK))
-+			cpu_relax();
-+		found = 0;
-+		if (hp[0] & HPTE_V_VALID) {
-+			switch (flags & 3) {
-+			case 0:		/* absolute */
-+				found = 1;
-+				break;
-+			case 1:		/* andcond */
-+				if (!(hp[0] & args[i * 2 + 1]))
-+					found = 1;
-+				break;
-+			case 2:		/* AVPN */
-+				if ((hp[0] & ~0x7fUL) == args[i * 2 + 1])
-+					found = 1;
-+				break;
-+			}
-+		}
-+		if (!found) {
-+			hp[0] &= ~HPTE_V_HVLOCK;
-+			args[i * 2] = ((0x90 | flags) << 56) + pte_index;
-+			continue;
-+		}
-+		/* insert R and C bits from PTE */
-+		flags |= (hp[1] >> 5) & 0x0c;
-+		args[i * 2] = ((0x80 | flags) << 56) + pte_index;
-+		tlbrb[n_inval++] = compute_tlbie_rb(hp[0], hp[1], pte_index);
-+		hp[0] = 0;
-+	}
-+	if (n_inval == 0)
-+		return ret;
-+
-+	if (!local) {
-+		while(!try_lock_tlbie(&kvm->arch.tlbie_lock))
-+			cpu_relax();
-+		asm volatile("ptesync" : : : "memory");
-+		for (i = 0; i < n_inval; ++i)
-+			asm volatile(PPC_TLBIE(%1,%0)
-+				     : : "r" (tlbrb[i]), "r" (kvm->arch.lpid));
-+		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
-+		kvm->arch.tlbie_lock = 0;
-+	} else {
-+		asm volatile("ptesync" : : : "memory");
-+		for (i = 0; i < n_inval; ++i)
-+			asm volatile("tlbiel %0" : : "r" (tlbrb[i]));
-+		asm volatile("ptesync" : : : "memory");
-+	}
-+	return ret;
-+}
-+
-+long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
-+		      unsigned long pte_index, unsigned long avpn,
-+		      unsigned long va)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long *hpte;
-+	unsigned long v, r, rb;
-+
-+	if (pte_index >= (HPT_NPTEG << 3))
-+		return H_PARAMETER;
-+	hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+	while (!lock_hpte(hpte, HPTE_V_HVLOCK))
-+		cpu_relax();
-+	if ((hpte[0] & HPTE_V_VALID) == 0 ||
-+	    ((flags & H_AVPN) && (hpte[0] & ~0x7fUL) != avpn)) {
-+		hpte[0] &= ~HPTE_V_HVLOCK;
-+		return H_NOT_FOUND;
-+	}
-+	if (atomic_read(&kvm->online_vcpus) == 1)
-+		flags |= H_LOCAL;
-+	v = hpte[0];
-+	r = hpte[1] & ~(HPTE_R_PP0 | HPTE_R_PP | HPTE_R_N |
-+			HPTE_R_KEY_HI | HPTE_R_KEY_LO);
-+	r |= (flags << 55) & HPTE_R_PP0;
-+	r |= (flags << 48) & HPTE_R_KEY_HI;
-+	r |= flags & (HPTE_R_PP | HPTE_R_N | HPTE_R_KEY_LO);
-+	rb = compute_tlbie_rb(v, r, pte_index);
-+	hpte[0] = v & ~HPTE_V_VALID;
-+	if (!(flags & H_LOCAL)) {
-+		while(!try_lock_tlbie(&kvm->arch.tlbie_lock))
-+			cpu_relax();
-+		asm volatile("ptesync" : : : "memory");
-+		asm volatile(PPC_TLBIE(%1,%0)"; eieio; tlbsync"
-+			     : : "r" (rb), "r" (kvm->arch.lpid));
-+		asm volatile("ptesync" : : : "memory");
-+		kvm->arch.tlbie_lock = 0;
-+	} else {
-+		asm volatile("ptesync" : : : "memory");
-+		asm volatile("tlbiel %0" : : "r" (rb));
-+		asm volatile("ptesync" : : : "memory");
-+	}
-+	hpte[1] = r;
-+	eieio();
-+	hpte[0] = v & ~HPTE_V_HVLOCK;
-+	asm volatile("ptesync" : : : "memory");
-+	return H_SUCCESS;
-+}
-+
-+static unsigned long reverse_xlate(struct kvm *kvm, unsigned long realaddr)
-+{
-+	long int i;
-+	unsigned long offset, rpn;
-+
-+	offset = realaddr & (kvm->arch.ram_psize - 1);
-+	rpn = (realaddr - offset) >> PAGE_SHIFT;
-+	for (i = 0; i < kvm->arch.ram_npages; ++i)
-+		if (rpn == kvm->arch.ram_pginfo[i].pfn)
-+			return (i << PAGE_SHIFT) + offset;
-+	return HPTE_R_RPN;	/* all 1s in the RPN field */
-+}
-+
-+long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
-+		   unsigned long pte_index)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long *hpte, r;
-+	int i, n = 1;
-+
-+	if (pte_index >= (HPT_NPTEG << 3))
-+		return H_PARAMETER;
-+	if (flags & H_READ_4) {
-+		pte_index &= ~3;
-+		n = 4;
-+	}
-+	for (i = 0; i < n; ++i, ++pte_index) {
-+		hpte = (unsigned long *)(kvm->arch.hpt_virt + (pte_index << 4));
-+		r = hpte[1];
-+		if ((flags & H_R_XLATE) && (hpte[0] & HPTE_V_VALID))
-+			r = reverse_xlate(kvm, r & HPTE_R_RPN) |
-+				(r & ~HPTE_R_RPN);
-+		vcpu->arch.gpr[4 + i * 2] = hpte[0];
-+		vcpu->arch.gpr[5 + i * 2] = r;
-+	}
-+	return H_SUCCESS;
-+}
-+
- int kvmppc_mmu_hv_init(void)
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index f6fc4e5..a57b40d 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -79,103 +79,8 @@ long kvmppc_alloc_hpt(struct kvm *kvm)
+ 
+ void kvmppc_free_hpt(struct kvm *kvm)
  {
- 	if (!cpu_has_feature(CPU_FTR_HVMODE_206))
+-	unsigned long i;
+-	struct kvmppc_pginfo *pginfo;
+-
+ 	clear_bit(kvm->arch.lpid, lpid_inuse);
+ 	free_pages(kvm->arch.hpt_virt, HPT_ORDER - PAGE_SHIFT);
+-
+-	if (kvm->arch.ram_pginfo) {
+-		pginfo = kvm->arch.ram_pginfo;
+-		kvm->arch.ram_pginfo = NULL;
+-		for (i = 0; i < kvm->arch.ram_npages; ++i)
+-			put_page(pfn_to_page(pginfo[i].pfn));
+-		kfree(pginfo);
+-	}
+-}
+-
+-static unsigned long user_page_size(unsigned long addr)
+-{
+-	struct vm_area_struct *vma;
+-	unsigned long size = PAGE_SIZE;
+-
+-	down_read(&current->mm->mmap_sem);
+-	vma = find_vma(current->mm, addr);
+-	if (vma)
+-		size = vma_kernel_pagesize(vma);
+-	up_read(&current->mm->mmap_sem);
+-	return size;
+-}
+-
+-static pfn_t hva_to_pfn(unsigned long addr)
+-{
+-	struct page *page[1];
+-	int npages;
+-
+-	might_sleep();
+-
+-	npages = get_user_pages_fast(addr, 1, 1, page);
+-
+-	if (unlikely(npages != 1))
+-		return 0;
+-
+-	return page_to_pfn(page[0]);
+-}
+-
+-long kvmppc_prepare_vrma(struct kvm *kvm,
+-			 struct kvm_userspace_memory_region *mem)
+-{
+-	unsigned long psize, porder;
+-	unsigned long i, npages;
+-	struct kvmppc_pginfo *pginfo;
+-	pfn_t pfn;
+-	unsigned long hva;
+-
+-	/* First see what page size we have */
+-	psize = user_page_size(mem->userspace_addr);
+-	/* For now, only allow 16MB pages */
+-	if (psize != 1ul << VRMA_PAGE_ORDER || (mem->memory_size & (psize - 1))) {
+-		pr_err("bad psize=%lx memory_size=%llx @ %llx\n",
+-		       psize, mem->memory_size, mem->userspace_addr);
+-		return -EINVAL;
+-	}
+-	porder = __ilog2(psize);
+-
+-	npages = mem->memory_size >> porder;
+-	pginfo = kzalloc(npages * sizeof(struct kvmppc_pginfo), GFP_KERNEL);
+-	if (!pginfo) {
+-		pr_err("kvmppc_prepare_vrma: couldn't alloc %lu bytes\n",
+-		       npages * sizeof(struct kvmppc_pginfo));
+-		return -ENOMEM;
+-	}
+-
+-	for (i = 0; i < npages; ++i) {
+-		hva = mem->userspace_addr + (i << porder);
+-		if (user_page_size(hva) != psize)
+-			goto err;
+-		pfn = hva_to_pfn(hva);
+-		if (pfn == 0) {
+-			pr_err("oops, no pfn for hva %lx\n", hva);
+-			goto err;
+-		}
+-		if (pfn & ((1ul << (porder - PAGE_SHIFT)) - 1)) {
+-			pr_err("oops, unaligned pfn %llx\n", pfn);
+-			put_page(pfn_to_page(pfn));
+-			goto err;
+-		}
+-		pginfo[i].pfn = pfn;
+-	}
+-
+-	kvm->arch.ram_npages = npages;
+-	kvm->arch.ram_psize = psize;
+-	kvm->arch.ram_porder = porder;
+-	kvm->arch.ram_pginfo = pginfo;
+-
+-	return 0;
+-
+- err:
+-	kfree(pginfo);
+-	return -EINVAL;
+ }
+ 
+ void kvmppc_map_vrma(struct kvm *kvm, struct kvm_userspace_memory_region *mem)
+@@ -199,6 +104,8 @@ void kvmppc_map_vrma(struct kvm *kvm, struct kvm_userspace_memory_region *mem)
+ 
+ 	for (i = 0; i < npages; ++i) {
+ 		pfn = pginfo[i].pfn;
++		if (!pfn)
++			break;
+ 		/* can't use hpt_hash since va > 64 bits */
+ 		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25))) & HPT_HASH_MASK;
+ 		/*
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 321bf38..67215ac 100644
+index c4861ac..ca40ef0 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -124,6 +124,158 @@ void kvmppc_dump_regs(struct kvm_vcpu *vcpu)
+@@ -27,6 +27,9 @@
+ #include <linux/fs.h>
+ #include <linux/anon_inodes.h>
+ #include <linux/cpumask.h>
++#include <linux/spinlock.h>
++#include <linux/bootmem.h>
++#include <linux/page-flags.h>
+ 
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+@@ -40,11 +43,22 @@
+ #include <asm/lppaca.h>
+ #include <asm/processor.h>
+ #include <asm/cputhreads.h>
++#include <asm/page.h>
+ #include <linux/gfp.h>
+ #include <linux/sched.h>
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
+ 
++/*
++ * For now, limit memory to 64GB and require it to be large pages.
++ * This value is chosen because it makes the ram_pginfo array be
++ * 64kB in size, which is about as large as we want to be trying
++ * to allocate with kmalloc.
++ */
++#define MAX_MEM_ORDER		36
++
++#define LARGE_PAGE_ORDER	24	/* 16MB pages */
++
+ /* #define EXIT_DEBUG */
+ /* #define EXIT_DEBUG_SIMPLE */
+ /* #define EXIT_DEBUG_INT */
+@@ -129,7 +143,7 @@ void kvmppc_dump_regs(struct kvm_vcpu *vcpu)
+ 		pr_err("  ESID = %.16llx VSID = %.16llx\n",
+ 		       vcpu->arch.slb[r].orige, vcpu->arch.slb[r].origv);
+ 	pr_err("lpcr = %.16lx sdr1 = %.16lx last_inst = %.8x\n",
+-	       vcpu->arch.lpcr, vcpu->kvm->arch.sdr1,
++	       vcpu->kvm->arch.lpcr, vcpu->kvm->arch.sdr1,
  	       vcpu->arch.last_inst);
  }
  
-+struct kvm_vcpu *kvmppc_find_vcpu(struct kvm *kvm, int id)
-+{
-+	int r;
-+	struct kvm_vcpu *v, *ret = NULL;
-+
-+	mutex_lock(&kvm->lock);
-+	kvm_for_each_vcpu(r, v, kvm) {
-+		if (v->vcpu_id == id) {
-+			ret = v;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&kvm->lock);
-+	return ret;
-+}
-+
-+static void init_vpa(struct kvm_vcpu *vcpu, struct lppaca *vpa)
-+{
-+	vpa->shared_proc = 1;
-+	vpa->yield_count = 1;
-+}
-+
-+static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
-+				       unsigned long flags,
-+				       unsigned long vcpuid, unsigned long vpa)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long pg_index, ra, len;
-+	unsigned long pg_offset;
-+	void *va;
-+	struct kvm_vcpu *tvcpu;
-+
-+	tvcpu = kvmppc_find_vcpu(kvm, vcpuid);
-+	if (!tvcpu)
-+		return H_PARAMETER;
-+
-+	flags >>= 63 - 18;
-+	flags &= 7;
-+	if (flags == 0 || flags == 4)
-+		return H_PARAMETER;
-+	if (flags < 4) {
-+		if (vpa & 0x7f)
-+			return H_PARAMETER;
-+		/* registering new area; convert logical addr to real */
-+		pg_index = vpa >> kvm->arch.ram_porder;
-+		pg_offset = vpa & (kvm->arch.ram_psize - 1);
-+		if (pg_index >= kvm->arch.ram_npages)
-+			return H_PARAMETER;
-+		if (kvm->arch.ram_pginfo[pg_index].pfn == 0)
-+			return H_PARAMETER;
-+		ra = kvm->arch.ram_pginfo[pg_index].pfn << PAGE_SHIFT;
-+		ra |= pg_offset;
-+		va = __va(ra);
-+		if (flags <= 1)
-+			len = *(unsigned short *)(va + 4);
-+		else
-+			len = *(unsigned int *)(va + 4);
-+		if (pg_offset + len > kvm->arch.ram_psize)
-+			return H_PARAMETER;
-+		switch (flags) {
-+		case 1:		/* register VPA */
-+			if (len < 640)
-+				return H_PARAMETER;
-+			tvcpu->arch.vpa = va;
-+			init_vpa(vcpu, va);
-+			break;
-+		case 2:		/* register DTL */
-+			if (len < 48)
-+				return H_PARAMETER;
-+			if (!tvcpu->arch.vpa)
-+				return H_RESOURCE;
-+			len -= len % 48;
-+			tvcpu->arch.dtl = va;
-+			tvcpu->arch.dtl_end = va + len;
-+			break;
-+		case 3:		/* register SLB shadow buffer */
-+			if (len < 8)
-+				return H_PARAMETER;
-+			if (!tvcpu->arch.vpa)
-+				return H_RESOURCE;
-+			tvcpu->arch.slb_shadow = va;
-+			len = (len - 16) / 16;
-+			tvcpu->arch.slb_shadow = va;
-+			break;
-+		}
-+	} else {
-+		switch (flags) {
-+		case 5:		/* unregister VPA */
-+			if (tvcpu->arch.slb_shadow || tvcpu->arch.dtl)
-+				return H_RESOURCE;
-+			tvcpu->arch.vpa = NULL;
-+			break;
-+		case 6:		/* unregister DTL */
-+			tvcpu->arch.dtl = NULL;
-+			break;
-+		case 7:		/* unregister SLB shadow buffer */
-+			tvcpu->arch.slb_shadow = NULL;
-+			break;
-+		}
-+	}
-+	return H_SUCCESS;
-+}
-+
-+int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
-+{
-+	unsigned long req = kvmppc_get_gpr(vcpu, 3);
-+	unsigned long target, ret = H_SUCCESS;
-+	struct kvm_vcpu *tvcpu;
-+
-+	switch (req) {
-+	case H_CEDE:
-+		vcpu->arch.shregs.msr |= MSR_EE;
-+		vcpu->arch.ceded = 1;
-+		smp_mb();
-+		if (!vcpu->arch.prodded)
-+			kvmppc_vcpu_block(vcpu);
-+		else
-+			vcpu->arch.prodded = 0;
-+		smp_mb();
-+		vcpu->arch.ceded = 0;
-+		break;
-+	case H_PROD:
-+		target = kvmppc_get_gpr(vcpu, 4);
-+		tvcpu = kvmppc_find_vcpu(vcpu->kvm, target);
-+		if (!tvcpu) {
-+			ret = H_PARAMETER;
-+			break;
-+		}
-+		tvcpu->arch.prodded = 1;
-+		smp_mb();
-+		if (vcpu->arch.ceded) {
-+			if (waitqueue_active(&vcpu->wq)) {
-+				wake_up_interruptible(&vcpu->wq);
-+				vcpu->stat.halt_wakeup++;
-+			}
-+		}
-+		break;
-+	case H_CONFER:
-+		break;
-+	case H_REGISTER_VPA:
-+		ret = do_h_register_vpa(vcpu, kvmppc_get_gpr(vcpu, 4),
-+					kvmppc_get_gpr(vcpu, 5),
-+					kvmppc_get_gpr(vcpu, 6));
-+		break;
-+	default:
-+		return RESUME_HOST;
-+	}
-+	kvmppc_set_gpr(vcpu, 3, ret);
-+	vcpu->arch.hcall_needed = 0;
-+	return RESUME_GUEST;
-+}
-+
- static int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			      struct task_struct *tsk)
- {
-@@ -325,7 +477,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+@@ -441,7 +455,6 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	int err = -EINVAL;
+ 	int core;
+ 	struct kvmppc_vcore *vcore;
+-	unsigned long lpcr;
  
- extern int __kvmppc_vcore_entry(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
+ 	core = id / threads_per_core;
+ 	if (core >= KVM_MAX_VCORES)
+@@ -471,10 +484,6 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	vcpu->arch.highmem_handler = (ulong)kvmppc_handler_highmem;
+ 	vcpu->arch.rmcall = *(ulong*)kvmppc_rmcall;
  
--int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
-+static int kvmppc_run_vcpu(struct kvm_run *run, struct kvm_vcpu *vcpu)
- {
- 	u64 now;
+-	lpcr = kvm->arch.host_lpcr & (LPCR_PECE | LPCR_LPES);
+-	lpcr |= LPCR_VPM0 | LPCR_VRMA_L | (4UL << LPCR_DPFD_SH) | LPCR_HDICE;
+-	vcpu->arch.lpcr = lpcr;
+-
+ 	kvmppc_mmu_book3s_hv_init(vcpu);
  
-@@ -377,6 +529,22 @@ int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	return -EBUSY;
+ 	/*
+@@ -917,24 +926,315 @@ fail:
+ 	return ret;
  }
  
-+int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
++/*
++ * This maintains a list of RMAs (real mode areas) for KVM guests to use.
++ * Each RMA has to be physically contiguous and of a size that the
++ * hardware supports.  PPC970 and POWER7 support 64MB, 128MB and 256MB,
++ * and other larger sizes.  Since we are unlikely to be allocate that
++ * much physically contiguous memory after the system is up and running,
++ * we preallocate a set of RMAs in early boot for KVM to use.
++ */
++static unsigned long kvm_rma_size = 64 << 20;	/* 64MB */
++static unsigned long kvm_rma_count = 4;
++
++static int __init early_parse_rma_size(char *p)
 +{
-+	int r;
++	if (!p)
++		return 1;
 +
-+	do {
-+		r = kvmppc_run_vcpu(run, vcpu);
++	kvm_rma_size = memparse(p, &p);
 +
-+		if (run->exit_reason == KVM_EXIT_PAPR_HCALL &&
-+		    !(vcpu->arch.shregs.msr & MSR_PR)) {
-+			r = kvmppc_pseries_do_hcall(vcpu);
-+			kvmppc_core_deliver_interrupts(vcpu);
++	return 0;
++}
++early_param("kvm_rma_size", early_parse_rma_size);
++
++static int __init early_parse_rma_count(char *p)
++{
++	if (!p)
++		return 1;
++
++	kvm_rma_count = simple_strtoul(p, NULL, 0);
++
++	return 0;
++}
++early_param("kvm_rma_count", early_parse_rma_count);
++
++static struct kvmppc_rma_info *rma_info;
++static LIST_HEAD(free_rmas);
++static DEFINE_SPINLOCK(rma_lock);
++
++/* Work out RMLS (real mode limit selector) field value for a given RMA size.
++   Assumes POWER7. */
++static int lpcr_rmls(unsigned long rma_size)
++{
++	switch (rma_size) {
++	case 32ul << 20:	/* 32 MB */
++		return 8;
++	case 64ul << 20:	/* 64 MB */
++		return 3;
++	case 128ul << 20:	/* 128 MB */
++		return 7;
++	case 256ul << 20:	/* 256 MB */
++		return 4;
++	case 1ul << 30:		/* 1 GB */
++		return 2;
++	case 16ul << 30:	/* 16 GB */
++		return 1;
++	case 256ul << 30:	/* 256 GB */
++		return 0;
++	default:
++		return -1;
++	}
++}
++
++/*
++ * Called at boot time while the bootmem allocator is active,
++ * to allocate contiguous physical memory for the real memory
++ * areas for guests.
++ */
++void kvm_rma_init(void)
++{
++	unsigned long i;
++	unsigned long j, npages;
++	void *rma;
++	struct page *pg;
++
++	/* Only do this on POWER7 in HV mode */
++	if (!cpu_has_feature(CPU_FTR_HVMODE_206))
++		return;
++
++	if (!kvm_rma_size || !kvm_rma_count)
++		return;
++
++	/* Check that the requested size is one supported in hardware */
++	if (lpcr_rmls(kvm_rma_size) < 0) {
++		pr_err("RMA size of 0x%lx not supported\n", kvm_rma_size);
++		return;
++	}
++
++	npages = kvm_rma_size >> PAGE_SHIFT;
++	rma_info = alloc_bootmem(kvm_rma_count * sizeof(struct kvmppc_rma_info));
++	for (i = 0; i < kvm_rma_count; ++i) {
++		rma = alloc_bootmem_align(kvm_rma_size, kvm_rma_size);
++		pr_info("Allocated KVM RMA at %p (%ld MB)\n", rma,
++			kvm_rma_size >> 20);
++		rma_info[i].base_virt = rma;
++		rma_info[i].base_pfn = __pa(rma) >> PAGE_SHIFT;
++		rma_info[i].npages = npages;
++		list_add_tail(&rma_info[i].list, &free_rmas);
++		atomic_set(&rma_info[i].use_count, 0);
++
++		pg = pfn_to_page(rma_info[i].base_pfn);
++		for (j = 0; j < npages; ++j) {
++			atomic_inc(&pg->_count);
++			++pg;
 +		}
-+	} while (r == RESUME_GUEST);
-+	return r;
++	}
++}
++
++static void kvm_release_rma(struct kvmppc_rma_info *ri)
++{
++	if (atomic_dec_and_test(&ri->use_count)) {
++		spin_lock(&rma_lock);
++		list_add_tail(&ri->list, &free_rmas);
++		spin_unlock(&rma_lock);
++
++	}
++}
++
++static int kvm_rma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct kvmppc_rma_info *ri = vma->vm_file->private_data;
++	struct page *page;
++
++	if (vmf->pgoff >= ri->npages)
++		return VM_FAULT_SIGBUS;
++
++	page = pfn_to_page(ri->base_pfn + vmf->pgoff);
++	get_page(page);
++	vmf->page = page;
++	return 0;
++}
++
++static const struct vm_operations_struct kvm_rma_vm_ops = {
++	.fault = kvm_rma_fault,
++};
++
++static int kvm_rma_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	vma->vm_flags |= VM_RESERVED;
++	vma->vm_ops = &kvm_rma_vm_ops;
++	return 0;
++}
++
++static int kvm_rma_release(struct inode *inode, struct file *filp)
++{
++	struct kvmppc_rma_info *ri = filp->private_data;
++
++	kvm_release_rma(ri);
++	return 0;
++}
++
++static struct file_operations kvm_rma_fops = {
++	.mmap           = kvm_rma_mmap,
++	.release	= kvm_rma_release,
++};
++
++long kvm_vm_ioctl_allocate_rma(struct kvm *kvm, struct kvm_allocate_rma *ret)
++{
++	struct kvmppc_rma_info *ri;
++	long fd;
++
++	ri = NULL;
++	spin_lock(&rma_lock);
++	if (!list_empty(&free_rmas)) {
++		ri = list_first_entry(&free_rmas, struct kvmppc_rma_info, list);
++		list_del(&ri->list);
++		atomic_inc(&ri->use_count);
++	}
++	spin_unlock(&rma_lock);
++	if (!ri)
++		return -ENOMEM;
++
++	fd = anon_inode_getfd("kvm-rma", &kvm_rma_fops, ri, O_RDWR);
++	if (fd < 0)
++		kvm_release_rma(ri);
++
++	ret->rma_size = ri->npages << PAGE_SHIFT;
++	return fd;
++}
++
++static struct page *hva_to_page(unsigned long addr)
++{
++	struct page *page[1];
++	int npages;
++
++	might_sleep();
++
++	npages = get_user_pages_fast(addr, 1, 1, page);
++
++	if (unlikely(npages != 1))
++		return 0;
++
++	return page[0];
 +}
 +
  int kvmppc_core_prepare_memory_region(struct kvm *kvm,
  				struct kvm_userspace_memory_region *mem)
  {
+-	if (mem->guest_phys_addr == 0 && mem->memory_size != 0)
+-		return kvmppc_prepare_vrma(kvm, mem);
++	unsigned long psize, porder;
++	unsigned long i, npages, totalpages;
++	unsigned long pg_ix;
++	struct kvmppc_pginfo *pginfo;
++	unsigned long hva;
++	struct kvmppc_rma_info *ri = NULL;
++	struct page *page;
++
++	/* For now, only allow 16MB pages */
++	porder = LARGE_PAGE_ORDER;
++	psize = 1ul << porder;
++	if ((mem->memory_size & (psize - 1)) ||
++	    (mem->guest_phys_addr & (psize - 1))) {
++		pr_err("bad memory_size=%llx @ %llx\n",
++		       mem->memory_size, mem->guest_phys_addr);
++		return -EINVAL;
++	}
++
++	npages = mem->memory_size >> porder;
++	totalpages = (mem->guest_phys_addr + mem->memory_size) >> porder;
++
++	/* More memory than we have space to track? */
++	if (totalpages > (1ul << (MAX_MEM_ORDER - LARGE_PAGE_ORDER)))
++		return -EINVAL;
++
++	/* Do we already have an RMA registered? */
++	if (mem->guest_phys_addr == 0 && kvm->arch.rma)
++		return -EINVAL;
++
++	if (totalpages > kvm->arch.ram_npages)
++		kvm->arch.ram_npages = totalpages;
++
++	/* Is this one of our preallocated RMAs? */
++	if (mem->guest_phys_addr == 0) {
++		struct vm_area_struct *vma;
++
++		down_read(&current->mm->mmap_sem);
++		vma = find_vma(current->mm, mem->userspace_addr);
++		if (vma && vma->vm_file &&
++		    vma->vm_file->f_op == &kvm_rma_fops &&
++		    mem->userspace_addr == vma->vm_start)
++			ri = vma->vm_file->private_data;
++		up_read(&current->mm->mmap_sem);
++	}
++
++	if (ri) {
++		unsigned long rma_size;
++		unsigned long lpcr;
++		long rmls;
++
++		rma_size = ri->npages << PAGE_SHIFT;
++		if (rma_size > mem->memory_size)
++			rma_size = mem->memory_size;
++		rmls = lpcr_rmls(rma_size);
++		if (rmls < 0) {
++			pr_err("Can't use RMA of 0x%lx bytes\n", rma_size);
++			return -EINVAL;
++		}
++		atomic_inc(&ri->use_count);
++		kvm->arch.rma = ri;
++		kvm->arch.n_rma_pages = rma_size >> porder;
++		lpcr = kvm->arch.lpcr & ~(LPCR_VPM0 | LPCR_VRMA_L);
++		lpcr |= rmls << LPCR_RMLS_SH;
++		kvm->arch.lpcr = lpcr;
++		kvm->arch.rmor = kvm->arch.rma->base_pfn << PAGE_SHIFT;
++		pr_info("Using RMO at %lx size %lx (LPCR = %lx)\n",
++			ri->base_pfn << PAGE_SHIFT, rma_size, lpcr);
++	}
++
++	pg_ix = mem->guest_phys_addr >> porder;
++	pginfo = kvm->arch.ram_pginfo + pg_ix;
++	for (i = 0; i < npages; ++i, ++pg_ix) {
++		if (ri && pg_ix < kvm->arch.n_rma_pages) {
++			pginfo[i].pfn = ri->base_pfn +
++				(pg_ix << (porder - PAGE_SHIFT));
++			continue;
++		}
++		hva = mem->userspace_addr + (i << porder);
++		page = hva_to_page(hva);
++		if (!page) {
++			pr_err("oops, no pfn for hva %lx\n", hva);
++			goto err;
++		}
++		/* Check it's a 16MB page */
++		if (!PageHead(page) ||
++		    compound_order(page) != (LARGE_PAGE_ORDER - PAGE_SHIFT)) {
++			pr_err("page at %lx isn't 16MB (o=%d)\n",
++			       hva, compound_order(page));
++			goto err;
++		}
++		pginfo[i].pfn = page_to_pfn(page);
++	}
++
+ 	return 0;
++
++ err:
++	return -EINVAL;
+ }
+ 
+ void kvmppc_core_commit_memory_region(struct kvm *kvm,
+ 				struct kvm_userspace_memory_region *mem)
+ {
+-	if (mem->guest_phys_addr == 0 && mem->memory_size != 0)
++	if (mem->guest_phys_addr == 0 && mem->memory_size != 0 &&
++	    !kvm->arch.rma)
+ 		kvmppc_map_vrma(kvm, mem);
+ }
+ 
+ int kvmppc_core_init_vm(struct kvm *kvm)
+ {
+ 	long r;
++	unsigned long npages = 1ul << (MAX_MEM_ORDER - LARGE_PAGE_ORDER);
++	long err = -ENOMEM;
++	unsigned long lpcr;
+ 
+ 	/* Allocate hashed page table */
+ 	r = kvmppc_alloc_hpt(kvm);
+@@ -942,11 +1242,52 @@ int kvmppc_core_init_vm(struct kvm *kvm)
+ 		return r;
+ 
+ 	INIT_LIST_HEAD(&kvm->arch.spapr_tce_tables);
++
++	kvm->arch.ram_pginfo = kzalloc(npages * sizeof(struct kvmppc_pginfo),
++				       GFP_KERNEL);
++	if (!kvm->arch.ram_pginfo) {
++		pr_err("kvmppc_core_init_vm: couldn't alloc %lu bytes\n",
++		       npages * sizeof(struct kvmppc_pginfo));
++		goto out_free;
++	}
++
++	kvm->arch.ram_npages = 0;
++	kvm->arch.ram_psize = 1ul << LARGE_PAGE_ORDER;
++	kvm->arch.ram_porder = LARGE_PAGE_ORDER;
++	kvm->arch.rma = NULL;
++	kvm->arch.n_rma_pages = 0;
++
++	lpcr = kvm->arch.host_lpcr & (LPCR_PECE | LPCR_LPES);
++	lpcr |= (4UL << LPCR_DPFD_SH) | LPCR_HDICE |
++		LPCR_VPM0 | LPCR_VRMA_L;
++	kvm->arch.lpcr = lpcr;
++
++
+ 	return 0;
++
++ out_free:
++	kvmppc_free_hpt(kvm);
++	return err;
+ }
+ 
+ void kvmppc_core_destroy_vm(struct kvm *kvm)
+ {
++	struct kvmppc_pginfo *pginfo;
++	unsigned long i;
++
++	if (kvm->arch.ram_pginfo) {
++		pginfo = kvm->arch.ram_pginfo;
++		kvm->arch.ram_pginfo = NULL;
++		for (i = kvm->arch.n_rma_pages; i < kvm->arch.ram_npages; ++i)
++			if (pginfo[i].pfn)
++				put_page(pfn_to_page(pginfo[i].pfn));
++		kfree(pginfo);
++	}
++	if (kvm->arch.rma) {
++		kvm_release_rma(kvm->arch.rma);
++		kvm->arch.rma = NULL;
++	}
++
+ 	kvmppc_free_hpt(kvm);
+ 	WARN_ON(!list_empty(&kvm->arch.spapr_tce_tables));
+ }
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index f0dc0ff..e0643b3 100644
+index e5d286f..697ef88 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -196,6 +196,14 @@ kvmppc_handler_trampoline_enter:
- 	/* Save R1 in the PACA */
- 	std	r1, HSTATE_HOST_R1(r13)
+@@ -265,10 +265,10 @@ kvmppc_handler_trampoline_enter:
+ 	bne	21b
  
-+	/* Increment yield count if they have a VPA */
-+	ld	r3, VCPU_VPA(r4)
-+	cmpdi	r3, 0
-+	beq	25f
-+	lwz	r5, LPPACA_YIELDCOUNT(r3)
-+	addi	r5, r5, 1
-+	stw	r5, LPPACA_YIELDCOUNT(r3)
-+25:
- 	/* Load up DAR and DSISR */
- 	ld	r5, VCPU_DAR(r4)
- 	lwz	r6, VCPU_DSISR(r4)
-@@ -433,6 +441,10 @@ kvmppc_interrupt:
- 	cmpwi	r3,0
- 	bge	ignore_hdec
- 2:
-+	/* See if this is something we can handle in real mode */
-+	cmpwi	r12,BOOK3S_INTERRUPT_SYSCALL
-+	beq	hcall_try_real_mode
-+hcall_real_cont:
+ 	/* Primary thread switches to guest partition. */
++	ld	r9,VCPU_KVM(r4)		/* pointer to struct kvm */
+ 	lwz	r6,VCPU_PTID(r4)
+ 	cmpwi	r6,0
+ 	bne	20f
+-	ld	r9,VCPU_KVM(r4)		/* pointer to struct kvm */
+ 	ld	r6,KVM_SDR1(r9)
+ 	lwz	r7,KVM_LPID(r9)
+ 	li	r0,LPID_RSVD		/* switch to reserved LPID */
+@@ -285,8 +285,18 @@ kvmppc_handler_trampoline_enter:
+ 20:	lbz	r0,VCORE_IN_GUEST(r5)
+ 	cmpwi	r0,0
+ 	beq	20b
+-10:	ld	r8,VCPU_LPCR(r4)
+-	mtspr	SPRN_LPCR,r8
++
++	/* Set LPCR.  Set the MER bit if there is a pending external irq. */
++10:	ld	r8,KVM_LPCR(r9)
++	ld	r0,VCPU_PENDING_EXC(r4)
++	li	r7,(1 << BOOK3S_IRQPRIO_EXTERNAL)
++	oris	r7,r7,(1 << BOOK3S_IRQPRIO_EXTERNAL_LEVEL)@h
++	and.	r0,r0,r7
++	beq	11f
++	ori	r8,r8,LPCR_MER
++11:	mtspr	SPRN_LPCR,r8
++	ld	r8,KVM_RMOR(r9)
++	mtspr	SPRN_RMOR,r8
+ 	isync
  
+ 	/* Check if HDEC expires soon */
+@@ -496,7 +506,8 @@ hcall_real_cont:
  	/* Check for mediated interrupts (could be done earlier really ...) */
  	cmpwi	r12,BOOK3S_INTERRUPT_EXTERNAL
-@@ -611,13 +623,28 @@ hdec_soon:
- 	std	r5, VCPU_SPRG2(r9)
- 	std	r6, VCPU_SPRG3(r9)
- 
--	/* Save PMU registers */
-+	/* Increment yield count if they have a VPA */
-+	ld	r8, VCPU_VPA(r9)	/* do they have a VPA? */
-+	cmpdi	r8, 0
-+	beq	25f
-+	lwz	r3, LPPACA_YIELDCOUNT(r8)
-+	addi	r3, r3, 1
-+	stw	r3, LPPACA_YIELDCOUNT(r8)
-+25:
-+	/* Save PMU registers if requested */
-+	/* r8 and cr0.eq are live here */
- 	li	r3, 1
- 	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
- 	mfspr	r4, SPRN_MMCR0		/* save MMCR0 */
- 	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
- 	isync
--	mfspr	r5, SPRN_MMCR1
-+	beq	21f			/* if no VPA, save PMU stuff anyway */
-+	lbz	r7, LPPACA_PMCINUSE(r8)
-+	cmpwi	r7, 0			/* did they ask for PMU stuff to be saved? */
-+	bne	21f
-+	std	r3, VCPU_MMCR(r9)	/* if not, set saved MMCR0 to FC */
-+	b	22f
-+21:	mfspr	r5, SPRN_MMCR1
- 	mfspr	r6, SPRN_MMCRA
- 	std	r4, VCPU_MMCR(r9)
- 	std	r5, VCPU_MMCR + 8(r9)
-@@ -654,6 +681,125 @@ kvmppc_handler_trampoline_exit_end:
- 	mfspr	r7,SPRN_HDSISR
- 	b	7b
- 
-+/*
-+ * Try to handle an hcall in real mode.
-+ * Returns to the guest if we handle it, or continues on up to
-+ * the kernel if we can't (i.e. if we don't have a handler for
-+ * it, or if the handler returns H_TOO_HARD).
-+ */
-+	.globl	hcall_try_real_mode
-+hcall_try_real_mode:
-+	ld	r3,VCPU_GPR(r3)(r9)
-+	andi.	r0,r11,MSR_PR
-+	bne	hcall_real_cont
-+	clrrdi	r3,r3,2
-+	cmpldi	r3,hcall_real_table_end - hcall_real_table
-+	bge	hcall_real_cont
-+	LOAD_REG_ADDR(r4, hcall_real_table)
-+	lwzx	r3,r3,r4
-+	cmpwi	r3,0
-+	beq	hcall_real_cont
-+	add	r3,r3,r4
-+	mtctr	r3
-+	mr	r3,r9		/* get vcpu pointer */
-+	ld	r4,VCPU_GPR(r4)(r9)
-+	bctrl
-+	cmpdi	r3,H_TOO_HARD
-+	beq	hcall_real_fallback
-+	ld	r4,HSTATE_KVM_VCPU(r13)
-+	std	r3,VCPU_GPR(r3)(r4)
-+	ld	r10,VCPU_PC(r4)
-+	ld	r11,VCPU_MSR(r4)
-+	b	fast_guest_return
-+
-+	/* We've attempted a real mode hcall, but it's punted it back
-+	 * to userspace.  We need to restore some clobbered volatiles
-+	 * before resuming the pass-it-to-qemu path */
-+hcall_real_fallback:
-+	li	r12,BOOK3S_INTERRUPT_SYSCALL
-+	ld	r9, HSTATE_KVM_VCPU(r13)
-+	ld	r11, VCPU_MSR(r9)
-+
-+	b	hcall_real_cont
-+
-+	.globl	hcall_real_table
-+hcall_real_table:
-+	.long	0		/* 0 - unused */
-+	.long	.kvmppc_h_remove - hcall_real_table
-+	.long	.kvmppc_h_enter - hcall_real_table
-+	.long	.kvmppc_h_read - hcall_real_table
-+	.long	0		/* 0x10 - H_CLEAR_MOD */
-+	.long	0		/* 0x14 - H_CLEAR_REF */
-+	.long	.kvmppc_h_protect - hcall_real_table
-+	.long	0		/* 0x1c - H_GET_TCE */
-+	.long	0		/* 0x20 - H_SET_TCE */
-+	.long	0		/* 0x24 - H_SET_SPRG0 */
-+	.long	.kvmppc_h_set_dabr - hcall_real_table
-+	.long	0		/* 0x2c */
-+	.long	0		/* 0x30 */
-+	.long	0		/* 0x34 */
-+	.long	0		/* 0x38 */
-+	.long	0		/* 0x3c */
-+	.long	0		/* 0x40 */
-+	.long	0		/* 0x44 */
-+	.long	0		/* 0x48 */
-+	.long	0		/* 0x4c */
-+	.long	0		/* 0x50 */
-+	.long	0		/* 0x54 */
-+	.long	0		/* 0x58 */
-+	.long	0		/* 0x5c */
-+	.long	0		/* 0x60 */
-+	.long	0		/* 0x64 */
-+	.long	0		/* 0x68 */
-+	.long	0		/* 0x6c */
-+	.long	0		/* 0x70 */
-+	.long	0		/* 0x74 */
-+	.long	0		/* 0x78 */
-+	.long	0		/* 0x7c */
-+	.long	0		/* 0x80 */
-+	.long	0		/* 0x84 */
-+	.long	0		/* 0x88 */
-+	.long	0		/* 0x8c */
-+	.long	0		/* 0x90 */
-+	.long	0		/* 0x94 */
-+	.long	0		/* 0x98 */
-+	.long	0		/* 0x9c */
-+	.long	0		/* 0xa0 */
-+	.long	0		/* 0xa4 */
-+	.long	0		/* 0xa8 */
-+	.long	0		/* 0xac */
-+	.long	0		/* 0xb0 */
-+	.long	0		/* 0xb4 */
-+	.long	0		/* 0xb8 */
-+	.long	0		/* 0xbc */
-+	.long	0		/* 0xc0 */
-+	.long	0		/* 0xc4 */
-+	.long	0		/* 0xc8 */
-+	.long	0		/* 0xcc */
-+	.long	0		/* 0xd0 */
-+	.long	0		/* 0xd4 */
-+	.long	0		/* 0xd8 */
-+	.long	0		/* 0xdc */
-+	.long	0		/* 0xe0 */
-+	.long	0		/* 0xe4 */
-+	.long	0		/* 0xe8 */
-+	.long	0		/* 0xec */
-+	.long	0		/* 0xf0 */
-+	.long	0		/* 0xf4 */
-+	.long	0		/* 0xf8 */
-+	.long	0		/* 0xfc */
-+	.long	0		/* 0x100 */
-+	.long	0		/* 0x104 */
-+	.long	0		/* 0x108 */
-+	.long	0		/* 0x10c */
-+	.long	0		/* 0x110 */
-+	.long	0		/* 0x114 */
-+	.long	0		/* 0x118 */
-+	.long	0		/* 0x11c */
-+	.long	0		/* 0x120 */
-+	.long	.kvmppc_h_bulk_remove - hcall_real_table
-+hcall_real_table_end:
-+
- ignore_hdec:
- 	mr	r4,r9
- 	b	fast_guest_return
-@@ -665,3 +811,9 @@ bounce_ext_interrupt:
- 	li	r10,BOOK3S_INTERRUPT_EXTERNAL
- 	LOAD_REG_IMMEDIATE(r11,MSR_SF | MSR_ME);
- 	b	fast_guest_return
-+
-+_GLOBAL(kvmppc_h_set_dabr)
-+	std	r4,VCPU_DABR(r3)
-+	mtspr	SPRN_DABR,r4
-+	li	r3,0
-+	blr
+ 	bne+	1f
+-	ld	r5,VCPU_LPCR(r9)
++	ld	r5,VCPU_KVM(r9)
++	ld	r5,KVM_LPCR(r5)
+ 	andi.	r0,r11,MSR_EE
+ 	beq	1f
+ 	andi.	r0,r5,LPCR_MER
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 3a4f379..6fc9ee4 100644
+index 4c54966..72c5065 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -42,7 +42,7 @@ int kvm_arch_vcpu_runnable(struct kvm_vcpu *v)
- 	return !(v->arch.shared->msr & MSR_WE) ||
- 	       !!(v->arch.pending_exceptions);
- #else
--	return 1;
-+	return !(v->arch.ceded) || !!(v->arch.pending_exceptions);
+@@ -211,6 +211,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_PPC_SMT:
+ 		r = threads_per_core;
+ 		break;
++	case KVM_CAP_PPC_RMA:
++		r = 1;
++		break;
  #endif
- }
+ 	default:
+ 		r = 0;
+@@ -673,6 +676,16 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 		r = kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce);
+ 		goto out;
+ 	}
++
++	case KVM_ALLOCATE_RMA: {
++		struct kvm *kvm = filp->private_data;
++		struct kvm_allocate_rma rma;
++
++		r = kvm_vm_ioctl_allocate_rma(kvm, &rma);
++		if (r >= 0 && copy_to_user(argp, &rma, sizeof(rma)))
++			r = -EFAULT;
++		break;
++	}
+ #endif /* CONFIG_KVM_BOOK3S_64_HV */
+ 
+ 	default:
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index e2a378d..2c366b5 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -552,6 +552,7 @@ struct kvm_ppc_pvinfo {
+ #define KVM_CAP_PPC_BOOKE_SREGS 62
+ #define KVM_CAP_SPAPR_TCE 63
+ #define KVM_CAP_PPC_SMT 64
++#define KVM_CAP_PPC_RMA	65
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -755,6 +756,8 @@ struct kvm_clock_data {
+ #define KVM_GET_XCRS		  _IOR(KVMIO,  0xa6, struct kvm_xcrs)
+ #define KVM_SET_XCRS		  _IOW(KVMIO,  0xa7, struct kvm_xcrs)
+ #define KVM_CREATE_SPAPR_TCE	  _IOW(KVMIO,  0xa8, struct kvm_create_spapr_tce)
++/* Available with KVM_CAP_RMA */
++#define KVM_ALLOCATE_RMA	  _IOR(KVMIO,  0xa9, struct kvm_allocate_rma)
+ 
+ #define KVM_DEV_ASSIGN_ENABLE_IOMMU	(1 << 0)
  
 -- 
 1.7.5.4
