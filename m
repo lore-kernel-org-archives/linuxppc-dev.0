@@ -1,10 +1,10 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Sat, 18 Jun 2011 18:37:10 +1000
+Date: Sat, 18 Jun 2011 18:37:41 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 11/15] KVM: PPC: Accelerate H_PUT_TCE by implementing it in
-	real mode
-Message-ID: <20110618083710.GL28413@bloggs.ozlabs.ibm.com>
+Subject: [PATCH 12/15] KVM: PPC: Allow book3s_hv guests to use SMT processor
+	modes
+Message-ID: <20110618083741.GM28413@bloggs.ozlabs.ibm.com>
 References: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,469 +18,1040 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Gibson <dwg@au1.ibm.com>
+This lifts the restriction that book3s_hv guests can only run one
+hardware thread per core, and allows them to use up to 4 threads
+per core on POWER7.  The host still has to run single-threaded.
 
-This improves I/O performance for guests using the PAPR
-paravirtualization interface by making the H_PUT_TCE hcall faster, by
-implementing it in real mode.  H_PUT_TCE is used for updating virtual
-IOMMU tables, and is used both for virtual I/O and for real I/O in the
-PAPR interface.
+This capability is advertised to qemu through a new KVM_CAP_PPC_SMT
+capability.  The return value of the ioctl querying this capability
+is the number of vcpus per virtual CPU core (vcore), currently 4.
 
-Since this moves the IOMMU tables into the kernel, we define a new
-KVM_CREATE_SPAPR_TCE ioctl to allow qemu to create the tables.  The
-ioctl returns a file descriptor which can be used to mmap the newly
-created table.  The qemu driver models use them in the same way as
-userspace managed tables, but they can be updated directly by the
-guest with a real-mode H_PUT_TCE implementation, reducing the number
-of host/guest context switches during guest IO.
+To use this, the host kernel should be booted with all threads
+active, and then all the secondary threads should be offlined.
+This will put the secondary threads into nap mode.  KVM will then
+wake them from nap mode and use them for running guest code (while
+they are still offline).  To wake the secondary threads, we send
+them an IPI using a new xics_wake_cpu() function, implemented in
+arch/powerpc/sysdev/xics/icp-native.c.  In other words, at this stage
+we assume that the platform has a XICS interrupt controller and
+we are using icp-native.c to drive it.  Since the woken thread will
+need to acknowledge and clear the IPI, we also export the base
+physical address of the XICS registers using kvmppc_set_xics_phys()
+for use in the low-level KVM book3s code.
 
-There are certain circumstances where it is useful for userland qemu
-to write to the TCE table even if the kernel H_PUT_TCE path is used
-most of the time.  Specifically, allowing this will avoid awkwardness
-when we need to reset the table.  More importantly, we will in the
-future need to write the table in order to restore its state after a
-checkpoint resume or migration.
+When a vcpu is created, it is assigned to a virtual CPU core.
+The vcore number is obtained by dividing the vcpu number by the
+number of threads per core in the host.  This number is exported
+to userspace via the KVM_CAP_PPC_SMT capability.  If qemu wishes
+to run the guest in single-threaded mode, it should make all vcpu
+numbers be multiples of the number of threads per core.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+We distinguish three states of a vcpu: runnable (i.e., ready to execute
+the guest), blocked (that is, idle), and busy in host.  We currently
+implement a policy that the vcore can run only when all its threads
+are runnable or blocked.  This way, if a vcpu needs to execute elsewhere
+in the kernel or in qemu, it can do so without being starved of CPU
+by the other vcpus.
+
+When a vcore starts to run, it executes in the context of one of the
+vcpu threads.  The other vcpu threads all go to sleep and stay asleep
+until something happens requiring the vcpu thread to return to qemu,
+or to wake up to run the vcore (this can happen when another vcpu
+thread goes from busy in host state to blocked).
+
+It can happen that a vcpu goes from blocked to runnable state (e.g.
+because of an interrupt), and the vcore it belongs to is already
+running.  In that case it can start to run immediately as long as
+the none of the vcpus in the vcore have started to exit the guest.
+We send the next free thread in the vcore an IPI to get it to start
+to execute the guest.  It synchronizes with the other threads via
+the vcore->entry_exit_count field to make sure that it doesn't go
+into the guest if the other vcpus are exiting by the time that it
+is ready to actually enter the guest.
+
+Note that there is no fixed relationship between the hardware thread
+number and the vcpu number.  Hardware threads are assigned to vcpus
+as they become runnable, so we will always use the lower-numbered
+hardware threads in preference to higher-numbered threads if not all
+the vcpus in the vcore are runnable, regardless of which vcpus are
+runnable.
+
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- Documentation/virtual/kvm/api.txt        |   35 +++++++++
- arch/powerpc/include/asm/kvm.h           |    9 +++
- arch/powerpc/include/asm/kvm_book3s_64.h |    2 +
- arch/powerpc/include/asm/kvm_host.h      |    9 +++
- arch/powerpc/include/asm/kvm_ppc.h       |    2 +
- arch/powerpc/kvm/Makefile                |    3 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c      |   73 +++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c             |  116 +++++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  |    2 +-
- arch/powerpc/kvm/powerpc.c               |   18 +++++
- include/linux/kvm.h                      |    2 +
- 11 files changed, 268 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_64_vio_hv.c
+ Documentation/virtual/kvm/api.txt         |   13 ++
+ arch/powerpc/include/asm/kvm.h            |    1 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |    2 +
+ arch/powerpc/include/asm/kvm_host.h       |   46 ++++-
+ arch/powerpc/include/asm/kvm_ppc.h        |   13 ++
+ arch/powerpc/kernel/asm-offsets.c         |    6 +
+ arch/powerpc/kernel/exceptions-64s.S      |   31 ++-
+ arch/powerpc/kernel/idle_power7.S         |    2 -
+ arch/powerpc/kvm/book3s_hv.c              |  316 ++++++++++++++++++++++++++---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  168 +++++++++++++++-
+ arch/powerpc/kvm/powerpc.c                |    4 +
+ arch/powerpc/sysdev/xics/icp-native.c     |    7 +
+ include/linux/kvm.h                       |    1 +
+ 13 files changed, 565 insertions(+), 45 deletions(-)
 
 diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index cc5064c..a3050ff 100644
+index a3050ff..02254ce 100644
 --- a/Documentation/virtual/kvm/api.txt
 +++ b/Documentation/virtual/kvm/api.txt
-@@ -1348,6 +1348,41 @@ The following flags are defined:
- If datamatch flag is set, the event will be signaled only if the written value
- to the registered address is equal to datamatch in struct kvm_ioeventfd.
+@@ -180,6 +180,19 @@ KVM_CHECK_EXTENSION ioctl() to determine the value for max_vcpus at run-time.
+ If the KVM_CAP_NR_VCPUS does not exist, you should assume that max_vcpus is 4
+ cpus max.
  
-+4.62 KVM_CREATE_SPAPR_TCE
++On powerpc using book3s_hv mode, the vcpus are mapped onto virtual
++threads in one or more virtual CPU cores.  (This is because the
++hardware requires all the hardware threads in a CPU core to be in the
++same partition.)  The KVM_CAP_PPC_SMT capability indicates the number
++of vcpus per virtual core (vcore).  The vcore id is obtained by
++dividing the vcpu id by the number of vcpus per vcore.  The vcpus in a
++given vcore will always be in the same physical core as each other
++(though that might be a different physical core from time to time).
++Userspace can control the threading (SMT) mode of the guest by its
++allocation of vcpu ids.  For example, if userspace wants
++single-threaded guest vcpus, it should make all vcpu ids be a multiple
++of the number of vcpus per vcore.
 +
-+Capability: KVM_CAP_SPAPR_TCE
-+Architectures: powerpc
-+Type: vm ioctl
-+Parameters: struct kvm_create_spapr_tce (in)
-+Returns: file descriptor for manipulating the created TCE table
-+
-+This creates a virtual TCE (translation control entry) table, which
-+is an IOMMU for PAPR-style virtual I/O.  It is used to translate
-+logical addresses used in virtual I/O into guest physical addresses,
-+and provides a scatter/gather capability for PAPR virtual I/O.
-+
-+/* for KVM_CAP_SPAPR_TCE */
-+struct kvm_create_spapr_tce {
-+	__u64 liobn;
-+	__u32 window_size;
-+};
-+
-+The liobn field gives the logical IO bus number for which to create a
-+TCE table.  The window_size field specifies the size of the DMA window
-+which this TCE table will translate - the table will contain one 64
-+bit TCE entry for every 4kiB of the DMA window.
-+
-+When the guest issues an H_PUT_TCE hcall on a liobn for which a TCE
-+table has been created using this ioctl(), the kernel will handle it
-+in real mode, updating the TCE table.  H_PUT_TCE calls for other
-+liobns will cause a vm exit and must be handled by userspace.
-+
-+The return value is a file descriptor which can be passed to mmap(2)
-+to map the created TCE table into userspace.  This lets userspace read
-+the entries written by kernel-handled H_PUT_TCE calls, and also lets
-+userspace update the TCE table directly which is useful in some
-+circumstances.
-+
- 5. The kvm_run structure
+ 4.8 KVM_GET_DIRTY_LOG (vm ioctl)
  
- Application code obtains a pointer to the kvm_run structure by
+ Capability: basic
 diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
-index d2ca5ed..c3ec990 100644
+index c3ec990..471bb3d 100644
 --- a/arch/powerpc/include/asm/kvm.h
 +++ b/arch/powerpc/include/asm/kvm.h
-@@ -22,6 +22,9 @@
+@@ -24,6 +24,7 @@
  
- #include <linux/types.h>
+ /* Select powerpc specific features in <linux/kvm.h> */
+ #define __KVM_HAVE_SPAPR_TCE
++#define __KVM_HAVE_PPC_SMT
  
-+/* Select powerpc specific features in <linux/kvm.h> */
-+#define __KVM_HAVE_SPAPR_TCE
-+
  struct kvm_regs {
  	__u64 pc;
- 	__u64 cr;
-@@ -272,4 +275,10 @@ struct kvm_guest_debug_arch {
- #define KVM_INTERRUPT_UNSET	-2U
- #define KVM_INTERRUPT_SET_LEVEL	-3U
+diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+index 550cf07..3ac82f1 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_asm.h
++++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+@@ -77,6 +77,8 @@ struct kvmppc_host_state {
  
-+/* for KVM_CAP_SPAPR_TCE */
-+struct kvm_create_spapr_tce {
-+	__u64 liobn;
-+	__u32 window_size;
-+};
-+
- #endif /* __LINUX_KVM_POWERPC_H */
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 5f73388..e43fe42 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -27,4 +27,6 @@ static inline struct kvmppc_book3s_shadow_vcpu *to_svcpu(struct kvm_vcpu *vcpu)
- }
- #endif
- 
-+#define SPAPR_TCE_SHIFT		12
-+
- #endif /* __ASM_KVM_BOOK3S_64_H__ */
+ #ifdef CONFIG_KVM_BOOK3S_64_HV
+ 	struct kvm_vcpu *kvm_vcpu;
++	struct kvmppc_vcore *kvm_vcore;
++	unsigned long xics_phys;
+ 	u64 dabr;
+ 	u64 host_mmcr[3];
+ 	u32 host_pmc[6];
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 6ebf172..5616e39 100644
+index 5616e39..0d6d569 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -144,6 +144,14 @@ struct kvmppc_pginfo {
- 	atomic_t refcnt;
- };
+@@ -25,10 +25,14 @@
+ #include <linux/interrupt.h>
+ #include <linux/types.h>
+ #include <linux/kvm_types.h>
++#include <linux/threads.h>
++#include <linux/spinlock.h>
+ #include <linux/kvm_para.h>
+ #include <asm/kvm_asm.h>
++#include <asm/processor.h>
  
-+struct kvmppc_spapr_tce_table {
-+	struct list_head list;
-+	struct kvm *kvm;
-+	u64 liobn;
-+	u32 window_size;
-+	struct page *pages[0];
-+};
-+
- struct kvm_arch {
- #ifdef CONFIG_KVM_BOOK3S_64_HV
- 	unsigned long hpt_virt;
-@@ -157,6 +165,7 @@ struct kvm_arch {
- 	unsigned long sdr1;
- 	unsigned long host_sdr1;
+-#define KVM_MAX_VCPUS 1
++#define KVM_MAX_VCPUS		NR_CPUS
++#define KVM_MAX_VCORES		NR_CPUS
+ #define KVM_MEMORY_SLOTS 32
+ /* memory slots that does not exposed to userspace */
+ #define KVM_PRIVATE_MEM_SLOTS 4
+@@ -167,9 +171,34 @@ struct kvm_arch {
  	int tlbie_lock;
-+	struct list_head spapr_tce_tables;
+ 	struct list_head spapr_tce_tables;
  	unsigned short last_vcpu[NR_CPUS];
++	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
  #endif /* CONFIG_KVM_BOOK3S_64_HV */
  };
+ 
++/*
++ * Struct for a virtual core.
++ * Note: entry_exit_count combines an entry count in the bottom 8 bits
++ * and an exit count in the next 8 bits.  This is so that we can
++ * atomically increment the entry count iff the exit count is 0
++ * without taking the lock.
++ */
++struct kvmppc_vcore {
++	int n_runnable;
++	int n_blocked;
++	int num_threads;
++	int entry_exit_count;
++	int n_woken;
++	int nap_count;
++	u16 pcpu;
++	u8 vcore_running;
++	u8 in_guest;
++	struct list_head runnable_threads;
++	spinlock_t lock;
++};
++
++#define VCORE_ENTRY_COUNT(vc)	((vc)->entry_exit_count & 0xff)
++#define VCORE_EXIT_COUNT(vc)	((vc)->entry_exit_count >> 8)
++
+ struct kvmppc_pte {
+ 	ulong eaddr;
+ 	u64 vpage;
+@@ -365,14 +394,29 @@ struct kvm_vcpu_arch {
+ 	struct slb_shadow *slb_shadow;
+ 	struct dtl *dtl;
+ 	struct dtl *dtl_end;
++
++	struct kvmppc_vcore *vcore;
++	int ret;
+ 	int trap;
++	int state;
++	int ptid;
++	wait_queue_head_t cpu_run;
++
+ 	struct kvm_vcpu_arch_shared *shared;
+ 	unsigned long magic_page_pa; /* phys addr to map the magic page to */
+ 	unsigned long magic_page_ea; /* effect. addr to map the magic page to */
+ 
+ #ifdef CONFIG_KVM_BOOK3S_64_HV
+ 	struct kvm_vcpu_arch_shared shregs;
++
++	struct list_head run_list;
++	struct task_struct *run_task;
++	struct kvm_run *kvm_run;
+ #endif
+ };
+ 
++#define KVMPPC_VCPU_BUSY_IN_HOST	0
++#define KVMPPC_VCPU_BLOCKED		1
++#define KVMPPC_VCPU_RUNNABLE		2
++
+ #endif /* __POWERPC_KVM_HOST_H__ */
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 2afe92e..99f6fcf 100644
+index 99f6fcf..6ef7344 100644
 --- a/arch/powerpc/include/asm/kvm_ppc.h
 +++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -119,6 +119,8 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
- extern void kvmppc_map_vrma(struct kvm *kvm,
- 			    struct kvm_userspace_memory_region *mem);
- extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
-+extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
-+				struct kvm_create_spapr_tce *args);
- extern int kvmppc_core_init_vm(struct kvm *kvm);
- extern void kvmppc_core_destroy_vm(struct kvm *kvm);
- extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index ca7ed27..ef37969 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -59,7 +59,8 @@ kvm-book3s_64_hv-objs := \
- 	book3s.o \
- 	book3s_hv.o \
- 	book3s_hv_interrupts.o \
--	book3s_64_mmu_hv.o
-+	book3s_64_mmu_hv.o \
-+	book3s_64_vio_hv.o
- kvm-objs-$(CONFIG_KVM_BOOK3S_64_HV) := $(kvm-book3s_64_hv-objs)
+@@ -33,6 +33,9 @@
+ #else
+ #include <asm/kvm_booke.h>
+ #endif
++#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++#include <asm/paca.h>
++#endif
  
- kvm-book3s_32-objs := \
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-new file mode 100644
-index 0000000..ea0f8c5
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -0,0 +1,73 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright 2010 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-+ * Copyright 2011 David Gibson, IBM Corporation <dwg@au1.ibm.com>
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/string.h>
-+#include <linux/kvm.h>
-+#include <linux/kvm_host.h>
-+#include <linux/highmem.h>
-+#include <linux/gfp.h>
-+#include <linux/slab.h>
-+#include <linux/hugetlb.h>
-+#include <linux/list.h>
-+
-+#include <asm/tlbflush.h>
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/mmu-hash64.h>
-+#include <asm/hvcall.h>
-+#include <asm/synch.h>
-+#include <asm/ppc-opcode.h>
-+#include <asm/kvm_host.h>
-+#include <asm/udbg.h>
-+
-+#define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
-+
-+long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-+		      unsigned long ioba, unsigned long tce)
+ enum emulation_result {
+ 	EMULATE_DONE,         /* no further processing */
+@@ -169,4 +172,14 @@ int kvmppc_set_sregs_ivor(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
+ 
+ void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 pid);
+ 
++#ifdef CONFIG_KVM_BOOK3S_64_HV
++static inline void kvmppc_set_xics_phys(int cpu, unsigned long addr)
 +{
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvmppc_spapr_tce_table *stt;
++	paca[cpu].kvm_hstate.xics_phys = addr;
++}
++#else
++static inline void kvmppc_set_xics_phys(int cpu, unsigned long addr)
++{}
++#endif
 +
-+	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
-+	/* 	    liobn, ioba, tce); */
+ #endif /* __POWERPC_KVM_PPC_H__ */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 24bb2e1..9a364c1 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -471,6 +471,10 @@ int main(void)
+ 	DEFINE(VCPU_FAULT_DAR, offsetof(struct kvm_vcpu, arch.fault_dar));
+ 	DEFINE(VCPU_LAST_INST, offsetof(struct kvm_vcpu, arch.last_inst));
+ 	DEFINE(VCPU_TRAP, offsetof(struct kvm_vcpu, arch.trap));
++	DEFINE(VCPU_PTID, offsetof(struct kvm_vcpu, arch.ptid));
++	DEFINE(VCORE_ENTRY_EXIT, offsetof(struct kvmppc_vcore, entry_exit_count));
++	DEFINE(VCORE_NAP_COUNT, offsetof(struct kvmppc_vcore, nap_count));
++	DEFINE(VCORE_IN_GUEST, offsetof(struct kvmppc_vcore, in_guest));
+ 	DEFINE(VCPU_SVCPU, offsetof(struct kvmppc_vcpu_book3s, shadow_vcpu) -
+ 			   offsetof(struct kvmppc_vcpu_book3s, vcpu));
+ 	DEFINE(VCPU_SLB_E, offsetof(struct kvmppc_slb, orige));
+@@ -529,6 +533,8 @@ int main(void)
+ 
+ #ifdef CONFIG_KVM_BOOK3S_64_HV
+ 	HSTATE_FIELD(HSTATE_KVM_VCPU, kvm_vcpu);
++	HSTATE_FIELD(HSTATE_KVM_VCORE, kvm_vcore);
++	HSTATE_FIELD(HSTATE_XICS_PHYS, xics_phys);
+ 	HSTATE_FIELD(HSTATE_MMCR, host_mmcr);
+ 	HSTATE_FIELD(HSTATE_PMC, host_pmc);
+ 	HSTATE_FIELD(HSTATE_PURR, host_purr);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index a4a89fc..0771606 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -49,19 +49,32 @@ BEGIN_FTR_SECTION
+ 	 * state loss at this time.
+ 	 */
+ 	mfspr	r13,SPRN_SRR1
+-	rlwinm	r13,r13,47-31,30,31
+-	cmpwi	cr0,r13,1
+-	bne	1f
+-	b	.power7_wakeup_noloss
+-1:	cmpwi	cr0,r13,2
+-	bne	1f
+-	b	.power7_wakeup_loss
++	rlwinm.	r13,r13,47-31,30,31
++	beq	9f
 +
-+	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-+		if (stt->liobn == liobn) {
-+			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
-+			struct page *page;
-+			u64 *tbl;
++	/* waking up from powersave (nap) state */
++	cmpwi	cr1,r13,2
+ 	/* Total loss of HV state is fatal, we could try to use the
+ 	 * PIR to locate a PACA, then use an emergency stack etc...
+ 	 * but for now, let's just stay stuck here
+ 	 */
+-1:	cmpwi	cr0,r13,3
+-	beq	.
++	bgt	cr1,.
++	GET_PACA(r13)
 +
-+			/* udbg_printf("H_PUT_TCE: liobn 0x%lx => stt=%p  window_size=0x%x\n", */
-+			/* 	    liobn, stt, stt->window_size); */
-+			if (ioba >= stt->window_size)
-+				return H_PARAMETER;
++#ifdef CONFIG_KVM_BOOK3S_64_HV
++	lbz	r0,PACAPROCSTART(r13)
++	cmpwi	r0,0x80
++	bne	1f
++	li	r0,0
++	stb	r0,PACAPROCSTART(r13)
++	b	kvm_start_guest
++1:
++#endif
 +
-+			page = stt->pages[idx / TCES_PER_PAGE];
-+			tbl = (u64 *)page_address(page);
++	beq	cr1,2f
++	b	.power7_wakeup_noloss
++2:	b	.power7_wakeup_loss
++9:
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE_206)
+ #endif /* CONFIG_PPC_P7_NAP */
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common, EXC_STD,
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index f8f0bc7..3a70845 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -73,7 +73,6 @@ _GLOBAL(power7_idle)
+ 	b	.
+ 
+ _GLOBAL(power7_wakeup_loss)
+-	GET_PACA(r13)
+ 	ld	r1,PACAR1(r13)
+ 	REST_NVGPRS(r1)
+ 	REST_GPR(2, r1)
+@@ -87,7 +86,6 @@ _GLOBAL(power7_wakeup_loss)
+ 	rfid
+ 
+ _GLOBAL(power7_wakeup_noloss)
+-	GET_PACA(r13)
+ 	ld	r1,PACAR1(r13)
+ 	ld	r4,_MSR(r1)
+ 	ld	r5,_NIP(r1)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 48a784e..c4861ac 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -39,6 +39,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/lppaca.h>
+ #include <asm/processor.h>
++#include <asm/cputhreads.h>
+ #include <linux/gfp.h>
+ #include <linux/sched.h>
+ #include <linux/vmalloc.h>
+@@ -51,12 +52,16 @@
+ void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
+ 	local_paca->kvm_hstate.kvm_vcpu = vcpu;
++	local_paca->kvm_hstate.kvm_vcore = vcpu->arch.vcore;
+ }
+ 
+ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ }
+ 
++static void kvmppc_vcpu_blocked(struct kvm_vcpu *vcpu);
++static void kvmppc_vcpu_unblocked(struct kvm_vcpu *vcpu);
 +
-+			/* FIXME: Need to validate the TCE itself */
-+			/* udbg_printf("tce @ %p\n", &tbl[idx % TCES_PER_PAGE]); */
-+			tbl[idx % TCES_PER_PAGE] = tce;
-+			return H_SUCCESS;
+ void kvmppc_vcpu_block(struct kvm_vcpu *vcpu)
+ {
+ 	u64 now;
+@@ -74,11 +79,15 @@ void kvmppc_vcpu_block(struct kvm_vcpu *vcpu)
+ 			      HRTIMER_MODE_REL);
+ 	}
+ 
++	kvmppc_vcpu_blocked(vcpu);
++
+ 	kvm_vcpu_block(vcpu);
+ 	vcpu->stat.halt_wakeup++;
+ 
+ 	if (vcpu->arch.dec_expires != ~(u64)0)
+ 		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
++
++	kvmppc_vcpu_unblocked(vcpu);
+ }
+ 
+ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
+@@ -429,9 +438,16 @@ int kvmppc_core_check_processor_compat(void)
+ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ {
+ 	struct kvm_vcpu *vcpu;
+-	int err = -ENOMEM;
++	int err = -EINVAL;
++	int core;
++	struct kvmppc_vcore *vcore;
+ 	unsigned long lpcr;
+ 
++	core = id / threads_per_core;
++	if (core >= KVM_MAX_VCORES)
++		goto out;
++
++	err = -ENOMEM;
+ 	vcpu = kzalloc(sizeof(struct kvm_vcpu), GFP_KERNEL);
+ 	if (!vcpu)
+ 		goto out;
+@@ -461,6 +477,38 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 
+ 	kvmppc_mmu_book3s_hv_init(vcpu);
+ 
++	/*
++	 * Some vcpus may start out in stopped state.  If we initialize
++	 * them to busy-in-host state they will stop other vcpus in the
++	 * vcore from running.  Instead we initialize them to blocked
++	 * state, effectively considering them to be stopped until we
++	 * see the first run ioctl for them.
++	 */
++	vcpu->arch.state = KVMPPC_VCPU_BLOCKED;
++
++	init_waitqueue_head(&vcpu->arch.cpu_run);
++
++	mutex_lock(&kvm->lock);
++	vcore = kvm->arch.vcores[core];
++	if (!vcore) {
++		vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
++		if (vcore) {
++			INIT_LIST_HEAD(&vcore->runnable_threads);
++			spin_lock_init(&vcore->lock);
++		}
++		kvm->arch.vcores[core] = vcore;
++	}
++	mutex_unlock(&kvm->lock);
++
++	if (!vcore)
++		goto free_vcpu;
++
++	spin_lock(&vcore->lock);
++	++vcore->num_threads;
++	++vcore->n_blocked;
++	spin_unlock(&vcore->lock);
++	vcpu->arch.vcore = vcore;
++
+ 	return vcpu;
+ 
+ free_vcpu:
+@@ -475,21 +523,121 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	kfree(vcpu);
+ }
+ 
++static void kvmppc_vcpu_blocked(struct kvm_vcpu *vcpu)
++{
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++
++	spin_lock(&vc->lock);
++	vcpu->arch.state = KVMPPC_VCPU_BLOCKED;
++	++vc->n_blocked;
++	if (vc->n_runnable > 0 &&
++	    vc->n_runnable + vc->n_blocked == vc->num_threads) {
++		vcpu = list_first_entry(&vc->runnable_threads, struct kvm_vcpu,
++					arch.run_list);
++		wake_up(&vcpu->arch.cpu_run);
++	}
++	spin_unlock(&vc->lock);
++}
++
++static void kvmppc_vcpu_unblocked(struct kvm_vcpu *vcpu)
++{
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++
++	spin_lock(&vc->lock);
++	vcpu->arch.state = KVMPPC_VCPU_BUSY_IN_HOST;
++	--vc->n_blocked;
++	spin_unlock(&vc->lock);
++}
++
+ extern int __kvmppc_vcore_entry(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
++extern void xics_wake_cpu(int cpu);
+ 
+-static int kvmppc_run_vcpu(struct kvm_run *run, struct kvm_vcpu *vcpu)
++static void kvmppc_remove_runnable(struct kvmppc_vcore *vc,
++				   struct kvm_vcpu *vcpu)
+ {
+-	u64 now;
++	struct kvm_vcpu *v;
+ 
+-	if (signal_pending(current)) {
+-		run->exit_reason = KVM_EXIT_INTR;
+-		return -EINTR;
++	if (vcpu->arch.state != KVMPPC_VCPU_RUNNABLE)
++		return;
++	vcpu->arch.state = KVMPPC_VCPU_BUSY_IN_HOST;
++	--vc->n_runnable;
++	/* decrement the physical thread id of each following vcpu */
++	v = vcpu;
++	list_for_each_entry_continue(v, &vc->runnable_threads, arch.run_list)
++		--v->arch.ptid;
++	list_del(&vcpu->arch.run_list);
++}
++
++static void kvmppc_start_thread(struct kvm_vcpu *vcpu)
++{
++	int cpu;
++	struct paca_struct *tpaca;
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++
++	cpu = vc->pcpu + vcpu->arch.ptid;
++	tpaca = &paca[cpu];
++	tpaca->kvm_hstate.kvm_vcpu = vcpu;
++	tpaca->kvm_hstate.kvm_vcore = vc;
++	smp_wmb();
++#ifdef CONFIG_PPC_ICP_NATIVE
++	if (vcpu->arch.ptid) {
++		tpaca->cpu_start = 0x80;
++		tpaca->kvm_hstate.in_guest = KVM_GUEST_MODE_GUEST;
++		wmb();
++		xics_wake_cpu(cpu);
++		++vc->n_woken;
+ 	}
++#endif
++}
+ 
+-	flush_fp_to_thread(current);
+-	flush_altivec_to_thread(current);
+-	flush_vsx_to_thread(current);
+-	preempt_disable();
++static void kvmppc_wait_for_nap(struct kvmppc_vcore *vc)
++{
++	int i;
++
++	HMT_low();
++	i = 0;
++	while (vc->nap_count < vc->n_woken) {
++		if (++i >= 1000000) {
++			pr_err("kvmppc_wait_for_nap timeout %d %d\n",
++			       vc->nap_count, vc->n_woken);
++			break;
++		}
++		cpu_relax();
++	}
++	HMT_medium();
++}
++
++/*
++ * Check that we are on thread 0 and that any other threads in
++ * this core are off-line.
++ */
++static int on_primary_thread(void)
++{
++	int cpu = smp_processor_id();
++	int thr = cpu_thread_in_core(cpu);
++
++	if (thr)
++		return 0;
++	while (++thr < threads_per_core)
++		if (cpu_online(cpu + thr))
++			return 0;
++	return 1;
++}
++
++/*
++ * Run a set of guest threads on a physical core.
++ * Called with vc->lock held.
++ */
++static int kvmppc_run_core(struct kvmppc_vcore *vc)
++{
++	struct kvm_vcpu *vcpu, *vnext;
++	long ret;
++	u64 now;
++
++	/* don't start if any threads have a signal pending */
++	list_for_each_entry(vcpu, &vc->runnable_threads, arch.run_list)
++		if (signal_pending(vcpu->arch.run_task))
++			return 0;
+ 
+ 	/*
+ 	 * Make sure we are running on thread 0, and that
+@@ -497,36 +645,150 @@ static int kvmppc_run_vcpu(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 	 * XXX we should also block attempts to bring any
+ 	 * secondary threads online.
+ 	 */
+-	if (threads_per_core > 1) {
+-		int cpu = smp_processor_id();
+-		int thr = cpu_thread_in_core(cpu);
+-
+-		if (thr)
+-			goto out;
+-		while (++thr < threads_per_core)
+-			if (cpu_online(cpu + thr))
+-				goto out;
++	if (threads_per_core > 1 && !on_primary_thread()) {
++		list_for_each_entry(vcpu, &vc->runnable_threads, arch.run_list)
++			vcpu->arch.ret = -EBUSY;
++		goto out;
+ 	}
+ 
+-	kvm_guest_enter();
++	vc->n_woken = 0;
++	vc->nap_count = 0;
++	vc->entry_exit_count = 0;
++	vc->vcore_running = 1;
++	vc->in_guest = 0;
++	vc->pcpu = smp_processor_id();
++	list_for_each_entry(vcpu, &vc->runnable_threads, arch.run_list)
++		kvmppc_start_thread(vcpu);
++	vcpu = list_first_entry(&vc->runnable_threads, struct kvm_vcpu,
++				arch.run_list);
++
++	spin_unlock(&vc->lock);
+ 
++	preempt_disable();
++	kvm_guest_enter();
+ 	__kvmppc_vcore_entry(NULL, vcpu);
+ 
++	/* wait for secondary threads to finish writing their state to memory */
++	spin_lock(&vc->lock);
++	if (vc->nap_count < vc->n_woken)
++		kvmppc_wait_for_nap(vc);
++	/* prevent other vcpu threads from doing kvmppc_start_thread() now */
++	vc->vcore_running = 2;
++	spin_unlock(&vc->lock);
++
++	/* make sure updates to secondary vcpu structs are visible now */
++	smp_mb();
+ 	kvm_guest_exit();
+ 
+ 	preempt_enable();
+ 	kvm_resched(vcpu);
+ 
+ 	now = get_tb();
+-	/* cancel pending dec exception if dec is positive */
+-	if (now < vcpu->arch.dec_expires && kvmppc_core_pending_dec(vcpu))
+-		kvmppc_core_dequeue_dec(vcpu);
+-
+-	return kvmppc_handle_exit(run, vcpu, current);
++	list_for_each_entry(vcpu, &vc->runnable_threads, arch.run_list) {
++		/* cancel pending dec exception if dec is positive */
++		if (now < vcpu->arch.dec_expires &&
++		    kvmppc_core_pending_dec(vcpu))
++			kvmppc_core_dequeue_dec(vcpu);
++		if (!vcpu->arch.trap) {
++			if (signal_pending(vcpu->arch.run_task)) {
++				vcpu->arch.kvm_run->exit_reason = KVM_EXIT_INTR;
++				vcpu->arch.ret = -EINTR;
++			}
++			continue;		/* didn't get to run */
++		}
++		ret = kvmppc_handle_exit(vcpu->arch.kvm_run, vcpu,
++					 vcpu->arch.run_task);
++		vcpu->arch.ret = ret;
++		vcpu->arch.trap = 0;
++	}
+ 
++	spin_lock(&vc->lock);
+  out:
+-	preempt_enable();
+-	return -EBUSY;
++	vc->vcore_running = 0;
++	list_for_each_entry_safe(vcpu, vnext, &vc->runnable_threads,
++				 arch.run_list) {
++		if (vcpu->arch.ret != RESUME_GUEST) {
++			kvmppc_remove_runnable(vc, vcpu);
++			wake_up(&vcpu->arch.cpu_run);
 +		}
 +	}
 +
-+	/* Didn't find the liobn, punt it to userspace */
-+	return H_TOO_HARD;
-+}
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 67215ac..48a784e 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -545,6 +545,116 @@ int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	return r;
- }
- 
-+static long kvmppc_stt_npages(unsigned long window_size)
-+{
-+	return ALIGN((window_size >> SPAPR_TCE_SHIFT)
-+		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
++	return 1;
 +}
 +
-+static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
++static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
 +{
-+	struct kvm *kvm = stt->kvm;
-+	int i;
++	int ptid;
++	int wait_state;
++	struct kvmppc_vcore *vc;
++	DEFINE_WAIT(wait);
 +
-+	mutex_lock(&kvm->lock);
-+	list_del(&stt->list);
-+	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
-+		__free_page(stt->pages[i]);
-+	kfree(stt);
-+	mutex_unlock(&kvm->lock);
-+
-+	kvm_put_kvm(kvm);
-+}
-+
-+static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	struct kvmppc_spapr_tce_table *stt = vma->vm_file->private_data;
-+	struct page *page;
-+
-+	if (vmf->pgoff >= kvmppc_stt_npages(stt->window_size))
-+		return VM_FAULT_SIGBUS;
-+
-+	page = stt->pages[vmf->pgoff];
-+	get_page(page);
-+	vmf->page = page;
-+	return 0;
-+}
-+
-+static const struct vm_operations_struct kvm_spapr_tce_vm_ops = {
-+	.fault = kvm_spapr_tce_fault,
-+};
-+
-+static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_ops = &kvm_spapr_tce_vm_ops;
-+	return 0;
-+}
-+
-+static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
-+{
-+	struct kvmppc_spapr_tce_table *stt = filp->private_data;
-+
-+	release_spapr_tce_table(stt);
-+	return 0;
-+}
-+
-+static struct file_operations kvm_spapr_tce_fops = {
-+	.mmap           = kvm_spapr_tce_mmap,
-+	.release	= kvm_spapr_tce_release,
-+};
-+
-+long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
-+				   struct kvm_create_spapr_tce *args)
-+{
-+	struct kvmppc_spapr_tce_table *stt = NULL;
-+	long npages;
-+	int ret = -ENOMEM;
-+	int i;
-+
-+	/* Check this LIOBN hasn't been previously allocated */
-+	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-+		if (stt->liobn == args->liobn)
-+			return -EBUSY;
++	/* No need to go into the guest when all we do is going out */
++	if (signal_pending(current)) {
++		kvm_run->exit_reason = KVM_EXIT_INTR;
++		return -EINTR;
 +	}
 +
-+	npages = kvmppc_stt_npages(args->window_size);
++	kvm_run->exit_reason = 0;
++	vcpu->arch.ret = RESUME_GUEST;
++	vcpu->arch.trap = 0;
 +
-+	stt = kzalloc(sizeof(*stt) + npages* sizeof(struct page *),
-+		      GFP_KERNEL);
-+	if (!stt)
-+		goto fail;
++	flush_fp_to_thread(current);
++	flush_altivec_to_thread(current);
++	flush_vsx_to_thread(current);
 +
-+	stt->liobn = args->liobn;
-+	stt->window_size = args->window_size;
-+	stt->kvm = kvm;
++	/*
++	 * Synchronize with other threads in this virtual core
++	 */
++	vc = vcpu->arch.vcore;
++	spin_lock(&vc->lock);
++	/* This happens the first time this is called for a vcpu */
++	if (vcpu->arch.state == KVMPPC_VCPU_BLOCKED)
++		--vc->n_blocked;
++	vcpu->arch.state = KVMPPC_VCPU_RUNNABLE;
++	ptid = vc->n_runnable;
++	vcpu->arch.run_task = current;
++	vcpu->arch.kvm_run = kvm_run;
++	vcpu->arch.ptid = ptid;
++	list_add_tail(&vcpu->arch.run_list, &vc->runnable_threads);
++	++vc->n_runnable;
 +
-+	for (i = 0; i < npages; i++) {
-+		stt->pages[i] = alloc_page(GFP_KERNEL | __GFP_ZERO);
-+		if (!stt->pages[i])
-+			goto fail;
++	wait_state = TASK_INTERRUPTIBLE;
++	while (vcpu->arch.state == KVMPPC_VCPU_RUNNABLE) {
++		if (signal_pending(current)) {
++			if (!vc->vcore_running) {
++				kvm_run->exit_reason = KVM_EXIT_INTR;
++				vcpu->arch.ret = -EINTR;
++				break;
++			}
++			/* have to wait for vcore to stop executing guest */
++			wait_state = TASK_UNINTERRUPTIBLE;
++			smp_send_reschedule(vc->pcpu);
++		}
++
++		if (!vc->vcore_running &&
++		    vc->n_runnable + vc->n_blocked == vc->num_threads) {
++			/* we can run now */
++			if (kvmppc_run_core(vc))
++				continue;
++		}
++
++		if (vc->vcore_running == 1 && VCORE_EXIT_COUNT(vc) == 0)
++			kvmppc_start_thread(vcpu);
++
++		/* wait for other threads to come in, or wait for vcore */
++		prepare_to_wait(&vcpu->arch.cpu_run, &wait, wait_state);
++		spin_unlock(&vc->lock);
++		schedule();
++		finish_wait(&vcpu->arch.cpu_run, &wait);
++		spin_lock(&vc->lock);
 +	}
 +
-+	kvm_get_kvm(kvm);
++	if (vcpu->arch.state == KVMPPC_VCPU_RUNNABLE)
++		kvmppc_remove_runnable(vc, vcpu);
++	spin_unlock(&vc->lock);
 +
-+	mutex_lock(&kvm->lock);
-+	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
-+
-+	mutex_unlock(&kvm->lock);
-+
-+	return anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
-+				stt, O_RDWR);
-+
-+fail:
-+	if (stt) {
-+		for (i = 0; i < npages; i++)
-+			if (stt->pages[i])
-+				__free_page(stt->pages[i]);
-+
-+		kfree(stt);
-+	}
-+	return ret;
-+}
-+
- int kvmppc_core_prepare_memory_region(struct kvm *kvm,
- 				struct kvm_userspace_memory_region *mem)
- {
-@@ -566,13 +676,17 @@ int kvmppc_core_init_vm(struct kvm *kvm)
- 
- 	/* Allocate hashed page table */
- 	r = kvmppc_alloc_hpt(kvm);
-+	if (r)
-+		return r;
- 
--	return r;
-+	INIT_LIST_HEAD(&kvm->arch.spapr_tce_tables);
-+	return 0;
++	return vcpu->arch.ret;
  }
  
- void kvmppc_core_destroy_vm(struct kvm *kvm)
- {
- 	kvmppc_free_hpt(kvm);
-+	WARN_ON(!list_empty(&kvm->arch.spapr_tce_tables));
- }
- 
- /* These are stubs for now */
+ int kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu)
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index e0643b3..f63a884 100644
+index f63a884..e5d286f 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -732,7 +732,7 @@ hcall_real_table:
- 	.long	0		/* 0x14 - H_CLEAR_REF */
- 	.long	.kvmppc_h_protect - hcall_real_table
- 	.long	0		/* 0x1c - H_GET_TCE */
--	.long	0		/* 0x20 - H_SET_TCE */
-+	.long	.kvmppc_h_put_tce - hcall_real_table
- 	.long	0		/* 0x24 - H_SET_SPRG0 */
- 	.long	.kvmppc_h_set_dabr - hcall_real_table
- 	.long	0		/* 0x2c */
+@@ -30,8 +30,6 @@
+  *                                                                           *
+  ****************************************************************************/
+ 
+-#define SHADOW_VCPU_OFF		PACA_KVM_SVCPU
+-
+ 	.globl	kvmppc_skip_interrupt
+ kvmppc_skip_interrupt:
+ 	mfspr	r13,SPRN_SRR0
+@@ -112,6 +110,32 @@ kvmppc_trampoline_enter:
+  *                                                                            *
+  *****************************************************************************/
+ 
++#define XICS_XIRR		4
++#define XICS_QIRR		0xc
++
++/*
++ * We come in here when wakened from nap mode on a secondary hw thread.
++ * Relocation is off and most register values are lost.
++ * r13 points to the PACA.
++ */
++	.globl	kvm_start_guest
++kvm_start_guest:
++	ld	r1,PACAEMERGSP(r13)
++	subi	r1,r1,STACK_FRAME_OVERHEAD
++
++	/* get vcpu pointer */
++	ld	r4, HSTATE_KVM_VCPU(r13)
++
++	/* We got here with an IPI; clear it */
++	ld	r5, HSTATE_XICS_PHYS(r13)
++	li	r0, 0xff
++	li	r6, XICS_QIRR
++	li	r7, XICS_XIRR
++	lwzcix	r8, r5, r7		/* ack the interrupt */
++	sync
++	stbcix	r0, r5, r6		/* clear it */
++	stwcix	r8, r5, r7		/* EOI it */
++
+ .global kvmppc_handler_trampoline_enter
+ kvmppc_handler_trampoline_enter:
+ 
+@@ -230,7 +254,20 @@ kvmppc_handler_trampoline_enter:
+ 	slbia
+ 	ptesync
+ 
+-	/* Switch to guest partition. */
++	/* Increment entry count iff exit count is zero. */
++	ld	r5,HSTATE_KVM_VCORE(r13)
++	addi	r9,r5,VCORE_ENTRY_EXIT
++21:	lwarx	r3,0,r9
++	cmpwi	r3,0x100		/* any threads starting to exit? */
++	bge	secondary_too_late	/* if so we're too late to the party */
++	addi	r3,r3,1
++	stwcx.	r3,0,r9
++	bne	21b
++
++	/* Primary thread switches to guest partition. */
++	lwz	r6,VCPU_PTID(r4)
++	cmpwi	r6,0
++	bne	20f
+ 	ld	r9,VCPU_KVM(r4)		/* pointer to struct kvm */
+ 	ld	r6,KVM_SDR1(r9)
+ 	lwz	r7,KVM_LPID(r9)
+@@ -240,7 +277,15 @@ kvmppc_handler_trampoline_enter:
+ 	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
+ 	mtspr	SPRN_LPID,r7
+ 	isync
+-	ld	r8,VCPU_LPCR(r4)
++	li	r0,1
++	stb	r0,VCORE_IN_GUEST(r5)	/* signal secondaries to continue */
++	b	10f
++
++	/* Secondary threads wait for primary to have done partition switch */
++20:	lbz	r0,VCORE_IN_GUEST(r5)
++	cmpwi	r0,0
++	beq	20b
++10:	ld	r8,VCPU_LPCR(r4)
+ 	mtspr	SPRN_LPCR,r8
+ 	isync
+ 
+@@ -255,10 +300,12 @@ kvmppc_handler_trampoline_enter:
+ 	 * Invalidate the TLB if we could possibly have stale TLB
+ 	 * entries for this partition on this core due to the use
+ 	 * of tlbiel.
++	 * XXX maybe only need this on primary thread?
+ 	 */
+ 	ld	r9,VCPU_KVM(r4)		/* pointer to struct kvm */
+ 	lwz	r5,VCPU_VCPUID(r4)
+ 	lhz	r6,PACAPACAINDEX(r13)
++	rldimi	r6,r5,0,62		/* XXX map as if threads 1:1 p:v */
+ 	lhz	r8,VCPU_LAST_CPU(r4)
+ 	sldi	r7,r6,1			/* see if this is the same vcpu */
+ 	add	r7,r7,r9		/* as last ran on this pcpu */
+@@ -544,8 +591,60 @@ hcall_real_cont:
+ 	ptesync
+ 
+ hdec_soon:
+-	/* Switch back to host partition */
++	/* Increment the threads-exiting-guest count in the 0xff00
++	   bits of vcore->entry_exit_count */
++	lwsync
++	ld	r5,HSTATE_KVM_VCORE(r13)
++	addi	r6,r5,VCORE_ENTRY_EXIT
++41:	lwarx	r3,0,r6
++	addi	r0,r3,0x100
++	stwcx.	r0,0,r6
++	bne	41b
++
++	/*
++	 * At this point we have an interrupt that we have to pass
++	 * up to the kernel or qemu; we can't handle it in real mode.
++	 * Thus we have to do a partition switch, so we have to
++	 * collect the other threads, if we are the first thread
++	 * to take an interrupt.  To do this, we set the HDEC to 0,
++	 * which causes an HDEC interrupt in all threads within 2ns
++	 * because the HDEC register is shared between all 4 threads.
++	 * However, we don't need to bother if this is an HDEC
++	 * interrupt, since the other threads will already be on their
++	 * way here in that case.
++	 */
++	cmpwi	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
++	beq	40f
++	cmpwi	r3,0x100	/* Are we the first here? */
++	bge	40f
++	cmpwi	r3,1
++	ble	40f
++	li	r0,0
++	mtspr	SPRN_HDEC,r0
++40:
++
++	/* Secondary threads wait for primary to do partition switch */
+ 	ld	r4,VCPU_KVM(r9)		/* pointer to struct kvm */
++	ld	r5,HSTATE_KVM_VCORE(r13)
++	lwz	r3,VCPU_PTID(r9)
++	cmpwi	r3,0
++	beq	15f
++	HMT_LOW
++13:	lbz	r3,VCORE_IN_GUEST(r5)
++	cmpwi	r3,0
++	bne	13b
++	HMT_MEDIUM
++	b	16f
++
++	/* Primary thread waits for all the secondaries to exit guest */
++15:	lwz	r3,VCORE_ENTRY_EXIT(r5)
++	srwi	r0,r3,8
++	clrldi	r3,r3,56
++	cmpw	r3,r0
++	bne	15b
++	isync
++
++	/* Primary thread switches back to host partition */
+ 	ld	r6,KVM_HOST_SDR1(r4)
+ 	lwz	r7,KVM_HOST_LPID(r4)
+ 	li	r8,LPID_RSVD		/* switch to reserved LPID */
+@@ -554,10 +653,12 @@ hdec_soon:
+ 	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
+ 	mtspr	SPRN_LPID,r7
+ 	isync
++	li	r0,0
++	stb	r0,VCORE_IN_GUEST(r5)
+ 	lis	r8,0x7fff		/* MAX_INT@h */
+ 	mtspr	SPRN_HDEC,r8
+ 
+-	ld	r8,KVM_HOST_LPCR(r4)
++16:	ld	r8,KVM_HOST_LPCR(r4)
+ 	mtspr	SPRN_LPCR,r8
+ 	isync
+ 
+@@ -666,6 +767,11 @@ hdec_soon:
+ 	mr	r3, r9
+ 	bl	.kvmppc_save_fp
+ 
++	/* Secondary threads go off to take a nap */
++	lwz	r0,VCPU_PTID(r3)
++	cmpwi	r0,0
++	bne	secondary_nap
++
+ 	/* RFI into the highmem handler */
+ 	mfmsr	r7
+ 	ori	r7, r7, MSR_IR|MSR_DR|MSR_RI|MSR_ME	/* Enable paging */
+@@ -817,3 +923,53 @@ _GLOBAL(kvmppc_h_set_dabr)
+ 	mtspr	SPRN_DABR,r4
+ 	li	r3,0
+ 	blr
++
++secondary_too_late:
++	ld	r5,HSTATE_KVM_VCORE(r13)
++	HMT_LOW
++13:	lbz	r3,VCORE_IN_GUEST(r5)
++	cmpwi	r3,0
++	bne	13b
++	HMT_MEDIUM
++	ld	r11,PACA_SLBSHADOWPTR(r13)
++
++	.rept	SLB_NUM_BOLTED
++	ld	r5,SLBSHADOW_SAVEAREA(r11)
++	ld	r6,SLBSHADOW_SAVEAREA+8(r11)
++	andis.	r7,r5,SLB_ESID_V@h
++	beq	1f
++	slbmte	r6,r5
++1:	addi	r11,r11,16
++	.endr
++	b	50f
++
++secondary_nap:
++	/* Clear any pending IPI */
++50:	ld	r5, HSTATE_XICS_PHYS(r13)
++	li	r0, 0xff
++	li	r6, XICS_QIRR
++	stbcix	r0, r5, r6
++
++	/* increment the nap count and then go to nap mode */
++	ld	r4, HSTATE_KVM_VCORE(r13)
++	addi	r4, r4, VCORE_NAP_COUNT
++	lwsync				/* make previous updates visible */
++51:	lwarx	r3, 0, r4
++	addi	r3, r3, 1
++	stwcx.	r3, 0, r4
++	bne	51b
++	isync
++
++	mfspr	r4, SPRN_LPCR
++	li	r0, LPCR_PECE
++	andc	r4, r4, r0
++	ori	r4, r4, LPCR_PECE0	/* exit nap on interrupt */
++	mtspr	SPRN_LPCR, r4
++	li	r0, 0
++	std	r0, HSTATE_SCRATCH0(r13)
++	ptesync
++	ld	r0, HSTATE_SCRATCH0(r13)
++1:	cmpd	r0, r0
++	bne	1b
++	nap
++	b	.
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 6fc9ee4..c78ceb9 100644
+index c78ceb9..4c54966 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -203,6 +203,11 @@ int kvm_dev_ioctl_check_extension(long ext)
- 		r = KVM_COALESCED_MMIO_PAGE_OFFSET;
+@@ -30,6 +30,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/tlbflush.h>
++#include <asm/cputhreads.h>
+ #include "timing.h"
+ #include "../mm/mmu_decl.h"
+ 
+@@ -207,6 +208,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_SPAPR_TCE:
+ 		r = 1;
  		break;
- #endif
-+#ifdef CONFIG_KVM_BOOK3S_64_HV
-+	case KVM_CAP_SPAPR_TCE:
-+		r = 1;
++	case KVM_CAP_PPC_SMT:
++		r = threads_per_core;
 +		break;
-+#endif
+ #endif
  	default:
  		r = 0;
- 		break;
-@@ -653,6 +658,19 @@ long kvm_arch_vm_ioctl(struct file *filp,
+diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
+index 1f15ad4..96b0c5b 100644
+--- a/arch/powerpc/sysdev/xics/icp-native.c
++++ b/arch/powerpc/sysdev/xics/icp-native.c
+@@ -24,6 +24,7 @@
+ #include <asm/irq.h>
+ #include <asm/errno.h>
+ #include <asm/xics.h>
++#include <asm/kvm_ppc.h>
  
- 		break;
- 	}
-+#ifdef CONFIG_KVM_BOOK3S_64_HV
-+	case KVM_CREATE_SPAPR_TCE: {
-+		struct kvm_create_spapr_tce create_tce;
-+		struct kvm *kvm = filp->private_data;
+ struct icp_ipl {
+ 	union {
+@@ -139,6 +140,11 @@ static void icp_native_cause_ipi(int cpu, unsigned long data)
+ 	icp_native_set_qirr(cpu, IPI_PRIORITY);
+ }
+ 
++void xics_wake_cpu(int cpu)
++{
++	icp_native_set_qirr(cpu, IPI_PRIORITY);
++}
 +
-+		r = -EFAULT;
-+		if (copy_from_user(&create_tce, argp, sizeof(create_tce)))
-+			goto out;
-+		r = kvm_vm_ioctl_create_spapr_tce(kvm, &create_tce);
-+		goto out;
-+	}
-+#endif /* CONFIG_KVM_BOOK3S_64_HV */
-+
- 	default:
- 		r = -ENOTTY;
+ static irqreturn_t icp_native_ipi_action(int irq, void *dev_id)
+ {
+ 	int cpu = smp_processor_id();
+@@ -185,6 +191,7 @@ static int __init icp_native_map_one_cpu(int hw_id, unsigned long addr,
  	}
+ 
+ 	icp_native_regs[cpu] = ioremap(addr, size);
++	kvmppc_set_xics_phys(cpu, addr);
+ 	if (!icp_native_regs[cpu]) {
+ 		pr_warning("icp_native: Failed ioremap for CPU %d, "
+ 			   "interrupt server #0x%x, addr %#lx\n",
 diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index a156294..61f5650 100644
+index 61f5650..e2a378d 100644
 --- a/include/linux/kvm.h
 +++ b/include/linux/kvm.h
-@@ -550,6 +550,7 @@ struct kvm_ppc_pvinfo {
- #define KVM_CAP_TSC_CONTROL 60
+@@ -551,6 +551,7 @@ struct kvm_ppc_pvinfo {
  #define KVM_CAP_GET_TSC_KHZ 61
  #define KVM_CAP_PPC_BOOKE_SREGS 62
-+#define KVM_CAP_SPAPR_TCE 63
+ #define KVM_CAP_SPAPR_TCE 63
++#define KVM_CAP_PPC_SMT 64
  
  #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -752,6 +753,7 @@ struct kvm_clock_data {
- /* Available with KVM_CAP_XCRS */
- #define KVM_GET_XCRS		  _IOR(KVMIO,  0xa6, struct kvm_xcrs)
- #define KVM_SET_XCRS		  _IOW(KVMIO,  0xa7, struct kvm_xcrs)
-+#define KVM_CREATE_SPAPR_TCE	  _IOW(KVMIO,  0xa8, struct kvm_create_spapr_tce)
- 
- #define KVM_DEV_ASSIGN_ENABLE_IOMMU	(1 << 0)
  
 -- 
 1.7.5.4
