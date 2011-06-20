@@ -1,22 +1,17 @@
-Return-Path: <prvs=1459f5405=yangyong@neusoft.com>
-Received: from mailgate.neusoft.com (mailgate.neusoft.com [210.83.25.69])
+Return-Path: <baruch@tkos.co.il>
+Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mailgate.neusoft.com", Issuer "Neusoft" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6F8F3B6FD5
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A89C3B6FB1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Jun 2011 14:01:51 +1000 (EST)
-Date: Mon, 20 Jun 2011 12:01:19 +0800
-From: ?? <yangyong@neusoft.com>
-Subject: ??: [PATCH] fs_enet: fix freescale FCC ethernet dp buffer alignment
-In-reply-to: <AE90C24D6B3A694183C094C60CF0A2F6D8ADA6@saturn3.aculab.com>
-Sender: yangyong@neusoft.com
-To: 'David Laight' <David.Laight@ACULAB.COM>,
-	'Holger Brunck' <holger.brunck@keymile.com>, linuxppc-dev@lists.ozlabs.org
-Message-id: <003801cc2efe$b70571e0$2804000a@yangyong>
-MIME-version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: netdev@vger.kernel.org, 'Clive Stubbings' <clive.stubbings@xentech.co.uk>,
-	'Vitaly Bordug' <vbordug@ru.mvista.com>
+	Mon, 20 Jun 2011 15:43:11 +1000 (EST)
+From: Baruch Siach <baruch@tkos.co.il>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] MAINTAINERS: add arch/powerpc/platforms/85xx/ to the 85xx
+	entry
+Date: Mon, 20 Jun 2011 08:00:22 +0300
+Message-Id: <f05e0f3cb5925c980c1f3b764a2e70d999419937.1308545941.git.baruch@tkos.co.il>
+Cc: Baruch Siach <baruch@tkos.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David Laight, Thank you so much~~
-1. Hardware based on FPGA, it dose not support buffer chaining.
-2. How dose the dma map support buffer chaining function?
-3. On the align issue, the hardware designer start to fix it, maybe it's a
-better way.  
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
+ MAINTAINERS |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
------????-----
-???: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org] ??
-David Laight
-????: 2011?6?17? 18:16
-???: yangyong@neusoft.com; Holger Brunck; linuxppc-dev@lists.ozlabs.org
-??: netdev@vger.kernel.org; Clive Stubbings; Vitaly Bordug
-??: RE: [PATCH] fs_enet: fix freescale FCC ethernet dp buffer alignment
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e50fc6e..8294613 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3904,6 +3904,7 @@ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Maintained
+ F:	arch/powerpc/platforms/83xx/
++F:	arch/powerpc/platforms/85xx/
  
-> Hello,
-> Motioned to the memory aligned, now there is such requirement:
-> When the driver send an packet to hardware, the skb's address passed
-by
-> stack do a dma map into hardware, the skb's dma address must 
-> be 64-byte aligned.
-
-Does the hardware support buffer chaining?
-In which case you only need to copy the data upto the first
-64 byte boundary into another buffer.
-
-Actually, given that you are likely to have to fixup every
-fragment of the frame being transmitted, if might be worth
-allocating a fixed transmnit buffer area and copying the
-frames into it prior to sending.
-Certainly you need to allow for transmits made up of a
-significant number of small buffers linked together.
-
-Really you should beat up the hardware designers!
-
-Copying the data to even a 4 byte boundary is almost
-always a misaligned copy. Typically this only applies
-to the receive dma - when writing a 2 byte pad before
-the frame data would be much better.
-
-	David
-
-
---
-To unsubscribe from this list: send the line "unsubscribe netdev" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
----------------------------------------------------------------------------------------------------
-Confidentiality Notice: The information contained in this e-mail and any accompanying attachment(s) 
-is intended only for the use of the intended recipient and may be confidential and/or privileged of 
-Neusoft Corporation, its subsidiaries and/or its affiliates. If any reader of this communication is 
-not the intended recipient, unauthorized use, forwarding, printing,  storing, disclosure or copying 
-is strictly prohibited, and may be unlawful.If you have received this communication in error,please 
-immediately notify the sender by return e-mail, and delete the original message and all copies from 
-your system. Thank you. 
----------------------------------------------------------------------------------------------------
+ LINUX FOR POWERPC PA SEMI PWRFICIENT
+ M:	Olof Johansson <olof@lixom.net>
+-- 
+1.7.5.3
