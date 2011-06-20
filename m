@@ -1,21 +1,26 @@
-Return-Path: <aschmidt@dekaresearch.com>
-Received: from dekaexchange07.deka.local (mail.dekaresearch.com
-	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id 37A0CB6F75
+Return-Path: <mlcreech@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5EE56B6F73
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Jun 2011 21:28:25 +1000 (EST)
-From: Atlant Schmidt <aschmidt@dekaresearch.com>
-To: 'Mike Hench' <mhench@elutions.com>, Scott Wood <scottwood@freescale.com>,
-	"Matthew L. Creech" <mlcreech@gmail.com>
-Date: Mon, 20 Jun 2011 07:22:26 -0400
-Subject: RE: NAND BBT corruption on MPC83xx
-Message-ID: <0A40042D85E7C84DB443060EC44B3FD32A7208F91B@dekaexchange07.deka.local>
-References: <20110617163442.204348a0@schlenkerla.am.freescale.net>
-	<F87D23B7E1F84E4AB52E4FA4A55F85DC0259E343@tpamail.elutions.com>
-In-Reply-To: <F87D23B7E1F84E4AB52E4FA4A55F85DC0259E343@tpamail.elutions.com>
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 21 Jun 2011 01:20:49 +1000 (EST)
+Received: by vws20 with SMTP id 20so2728226vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 20 Jun 2011 08:20:45 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20110617163442.204348a0@schlenkerla.am.freescale.net>
+References: <BANLkTikyKObukzVw+c10HyDz+Q=PH4jozA@mail.gmail.com>
+	<20110617163442.204348a0@schlenkerla.am.freescale.net>
+Date: Mon, 20 Jun 2011 11:20:45 -0400
+Message-ID: <BANLkTik7W-9mLOAUCU20O9+KXCimL6Y1+g@mail.gmail.com>
+Subject: Re: NAND BBT corruption on MPC83xx
+From: "Matthew L. Creech" <mlcreech@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	mhench@elutions.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,71 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mike:
-
-> It is not a permanent damage thing.
-
-  A "read disturb" does no permanent damage to the chip
-  but if the read disturb event involves more bits than
-  can be corrected by your ECC code, it can do permanent
-  damage to the *DATA* you've stored in that block.
-
-  For this reason, a good flash management system manages
-  to at least occasionally read through *ALL* of the in-use
-  blocks in the device so that single-bit errors can be
-  scrubbed out (read and successfully corrected) before
-  an adjacent bit in the block also fails (which would
-  eventually lead to a multi-bit error that might be
-  beyond the ability to be corrected by the ECC).
-
-  As far as I know (and I'm sure the list will correct
-  me if I'm wrong! ;-) ), neither UBI nor UBIFS nor any
-  Linux layer provides this routine scrubbing; you have
-  to code it up yourself, probably by accessing the
-  device at the UBI (underlying block device/LEB) layer.
-
-                        Atlant
-
------Original Message-----
-From: linux-mtd-bounces@lists.infradead.org [mailto:linux-mtd-bounces@lists=
-.infradead.org] On Behalf Of Mike Hench
-Sent: Saturday, June 18, 2011 13:55
-To: Scott Wood; Matthew L. Creech
-Cc: linuxppc-dev@lists.ozlabs.org; linux-mtd@lists.infradead.org
-Subject: RE: NAND BBT corruption on MPC83xx
-
-Scott Wood wrote:
-> As for the corruption, could it be degradation from repeated reads of
-that
+On Fri, Jun 17, 2011 at 5:34 PM, Scott Wood <scottwood@freescale.com> wrote:
+>
+> As for the corruption, could it be degradation from repeated reads of that
 > one page?
+>
 
-Read Disturb. I Did not know SLC did that.
-It just takes 10x as long as MLC, on the order of a million reads.
-Supposedly erasing the block fixes it.
-It is not a permanent damage thing.
-I was seeing ~9 hours before failure with heavy writes.
-~4GByte/hour =3D 2M pages, total ~18 million reads before errors in that
-last block showed up.
+Could be.  I think Mike's theory was that the -1 page_addr sort of
+"wrapped around", and caused us to read in the last block on flash
+each time NAND_CMD_PAGEPROG was performed.  So with a lot of writes
+happening, we could end up with a BBT that looks like this.
 
-Cool. Now we know.
-Thanks.
+That makes sense I guess, since set_addr() in fsl_elbc_nand.c uses
+page_addr to set FBAR.  I don't see anything about it in the manual,
+but if FBAR wraps beyond the end of the chip, maybe the bits that
+don't make sense are simply ignored.  (In which case we should
+probably add a check in set_addr() to prevent anything like this in
+the future)
 
-Mike Hench
+In theory I should be able to prove it out by running 2 devices in
+parallel - one with that block of code still there, and one with it
+removed.  If the former device sees bit-flips in the BBT and the
+latter one doesn't, we'll be sure of the culprit.  I'll try this and
+come back with the results.
 
+Thanks!
 
-
-______________________________________________________
-Linux MTD discussion mailing list
-http://lists.infradead.org/mailman/listinfo/linux-mtd/
-
-This e-mail and the information, including any attachments, it contains are=
- intended to be a confidential communication only to the person or entity t=
-o whom it is addressed and may contain information that is privileged. If t=
-he reader of this message is not the intended recipient, you are hereby not=
-ified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, =
-please immediately notify the sender and destroy the original message.
-
-Thank you.
-
-Please consider the environment before printing this email.
+-- 
+Matthew L. Creech
