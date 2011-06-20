@@ -1,15 +1,32 @@
-Return-Path: <holger.brunck@keymile.com>
-Received: from mail.de.keymile.com (mail.de.keymile.com [195.8.104.1])
-	by ozlabs.org (Postfix) with SMTP id 7C03FB6F7D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jun 2011 02:43:03 +1000 (EST)
-From: Holger Brunck <holger.brunck@keymile.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] spi/fsl_spi: fix CPM spi driver
-Date: Mon, 20 Jun 2011 18:31:57 +0200
-Message-Id: <1308587517-20640-1-git-send-email-holger.brunck@keymile.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-	Holger Brunck <holger.brunck@keymile.com>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1EC2CB6F83
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2011 03:19:44 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5KGtXZT013195
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jun 2011 12:55:33 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5KHJfIW144818
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jun 2011 13:19:41 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p5KDJSZP023861
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jun 2011 10:19:29 -0300
+Message-ID: <4DFF80FD.8080600@linux.vnet.ibm.com>
+Date: Mon, 20 Jun 2011 22:48:53 +0530
+From: deepthi <deepthi@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] perf_events: Enable idle state tracing for pseries (ppc64)
+References: <20110601123554.GA12492@deepthi.in.ibm.com>
+	<1308284659.32158.4.camel@pasglop>
+In-Reply-To: <1308284659.32158.4.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,83 +36,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes the freescale spi driver for CPM. Without this
-patch SPI on CPM failed because cpm_muram_alloc_fixed tries to
-allocate muram in an preserved area. The error reported was:
+On Friday 17 June 2011 09:54 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2011-06-01 at 18:05 +0530, Deepthi Dharwar wrote:
+>> Hi,
+>>
+>> Please find below a patch, which has perf_events added for pseries (ppc64)
+>> platform in order to emit the trace required for perf timechart. 
+>> It essentially enables perf timechart for pseries platfrom to analyse
+>> power savings events like cpuidle states.
+> 
+> Unless I'm mistaken, you added traces to dedicated CPU idle sleep but
+> not shared processor. Any reason ?
+> 
+Yes, the traces were added only to dedicated CPU idle sleep and not for 
+shared processor. This was added only for RFC purpose, and looking for 
+comments from trace implementation point of view. This can be
+easily extended to the latter too.
 
-mpc8xxx_spi f0011a80.spi: can't allocate spi parameter ram
-mpc8xxx_spi: probe of f0011a80.spi failed with error -12
+> Also I don't really know that tracing stuff but what's the point of
+> having start/end _and trace_cpu_idle if you're going to always start &
+> end around a single occurence of trace_cpu_idle ?
+> 
+power_start/end are the APIs that were used initially
+and they are going to be deprecated in the upcoming kernel releases.
+trace_cpu_idle call is going to replace power start/end routines. 
+To maintain backward compatibility and uniformity, both the routines 
+have been used.
+(ref:https://lkml.org/lkml/2010/11/14/60)
 
-Now the driver uses of_iomap to get access to this area
-similar to i2c driver driver in the i2c-cpm.c which has a
-similar device tree node. This is tested on a MPC8247 with CPM2.
+> Wouldn't there be a way to start/end and then trace the snooze and
+> subsequent cede within the same start/end section or that makes no
+> sense ?
+> 
+We wanted to find the residency time of both Snooze as well as cede 
+separately. Knowing this will help us tweak our cpuidle code. So, both 
+have been captured separately.
 
-Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
-cc: Grant Likely <grant.likely@secretlab.ca>
-cc: spi-devel-general@lists.sourceforge.net
----
-This was the same problem reported and discussed on ppc-dev for CPM1:
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-September/085739.html
+> Also would there be any interest in doing the tracing more generically
+> in idle.c ?
+> 
+Yes, this tracing is already implemented for Intel platform. This would
+be a part of cpuidle framework. Going further, once the power cpuidle 
+framework is ported and ready, we will extend this trace there as well.
+(ref:https://lkml.org/lkml/2011/6/7/375)
 
- drivers/spi/spi_fsl_spi.c |   28 +++++++++++-----------------
- 1 files changed, 11 insertions(+), 17 deletions(-)
+> Cheers,
+> Ben.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-diff --git a/drivers/spi/spi_fsl_spi.c b/drivers/spi/spi_fsl_spi.c
-index 7963c9b..ca57edf 100644
---- a/drivers/spi/spi_fsl_spi.c
-+++ b/drivers/spi/spi_fsl_spi.c
-@@ -684,7 +684,7 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
- 	struct device_node *np = dev->of_node;
- 	const u32 *iprop;
- 	int size;
--	unsigned long spi_base_ofs;
-+	void __iomem *spi_base;
- 	unsigned long pram_ofs = -ENOMEM;
- 
- 	/* Can't use of_address_to_resource(), QE muram isn't at 0. */
-@@ -702,33 +702,27 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
- 		return pram_ofs;
- 	}
- 
--	/* CPM1 and CPM2 pram must be at a fixed addr. */
--	if (!iprop || size != sizeof(*iprop) * 4)
--		return -ENOMEM;
--
--	spi_base_ofs = cpm_muram_alloc_fixed(iprop[2], 2);
--	if (IS_ERR_VALUE(spi_base_ofs))
--		return -ENOMEM;
-+	spi_base = of_iomap(np, 1);
-+	if (spi_base == NULL)
-+		return -EINVAL;
- 
- 	if (mspi->flags & SPI_CPM2) {
- 		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
--		if (!IS_ERR_VALUE(pram_ofs)) {
--			u16 __iomem *spi_base = cpm_muram_addr(spi_base_ofs);
--
--			out_be16(spi_base, pram_ofs);
--		}
-+		out_be16(spi_base, pram_ofs);
- 	} else {
--		struct spi_pram __iomem *pram = cpm_muram_addr(spi_base_ofs);
-+		struct spi_pram __iomem *pram = spi_base;
- 		u16 rpbase = in_be16(&pram->rpbase);
- 
- 		/* Microcode relocation patch applied? */
- 		if (rpbase)
- 			pram_ofs = rpbase;
--		else
--			return spi_base_ofs;
-+		else {
-+			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
-+			out_be16(spi_base, pram_ofs);
-+		}
- 	}
- 
--	cpm_muram_free(spi_base_ofs);
-+	iounmap(spi_base);
- 	return pram_ofs;
- }
- 
--- 
-1.7.1
+Regards,
+Deepthi
