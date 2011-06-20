@@ -2,15 +2,14 @@ Return-Path: <baruch@tkos.co.il>
 Received: from tango.tkos.co.il (tango.tkos.co.il [62.219.50.35])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A89C3B6FB1
+	by ozlabs.org (Postfix) with ESMTPS id EA811B6FE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Jun 2011 15:43:11 +1000 (EST)
+	Mon, 20 Jun 2011 15:43:13 +1000 (EST)
 From: Baruch Siach <baruch@tkos.co.il>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] MAINTAINERS: add arch/powerpc/platforms/85xx/ to the 85xx
-	entry
-Date: Mon, 20 Jun 2011 08:00:22 +0300
-Message-Id: <f05e0f3cb5925c980c1f3b764a2e70d999419937.1308545941.git.baruch@tkos.co.il>
+Subject: [RFC PATCH] powerpc: 85xx: Make e500/e500v2 depend on !E500MC
+Date: Mon, 20 Jun 2011 07:56:10 +0300
+Message-Id: <fef1cfc9a418ec5aa3302915dcb392882f7dd5d2.1308545584.git.baruch@tkos.co.il>
 Cc: Baruch Siach <baruch@tkos.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,23 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+CONFIG_E500MC breaks e500/e500v2 systems. It defines L1_CACHE_SHIFT to 6, thus
+breaking clear_pages(), probably others too.
+
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Signed-off-by: Baruch Siach <baruch@tkos.co.il>
 ---
- MAINTAINERS |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Is this the right approach?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e50fc6e..8294613 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3904,6 +3904,7 @@ W:	http://www.penguinppc.org/
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Maintained
- F:	arch/powerpc/platforms/83xx/
-+F:	arch/powerpc/platforms/85xx/
+ arch/powerpc/platforms/85xx/Kconfig |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index b6976e1..5b8546d 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -13,6 +13,8 @@ if FSL_SOC_BOOKE
  
- LINUX FOR POWERPC PA SEMI PWRFICIENT
- M:	Olof Johansson <olof@lixom.net>
+ if PPC32
+ 
++if !PPC_E500MC
++
+ config MPC8540_ADS
+ 	bool "Freescale MPC8540 ADS"
+ 	select DEFAULT_UIMAGE
+@@ -155,6 +157,8 @@ config SBC8560
+ 	help
+ 	  This option enables support for the Wind River SBC8560 board
+ 
++endif # !PPC_E500MC
++
+ config P3041_DS
+ 	bool "Freescale P3041 DS"
+ 	select DEFAULT_UIMAGE
 -- 
 1.7.5.3
