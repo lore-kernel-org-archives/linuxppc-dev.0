@@ -1,21 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Date: Mon, 20 Jun 2011 10:59:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/2] powerpc: add support for MPIC message register API
-Message-ID: <20110620105946.23708a43@schlenkerla.am.freescale.net>
-In-Reply-To: <1308351533.32158.61.camel@pasglop>
-References: <1306869543-18812-1-git-send-email-meador_inge@mentor.com>
-	<1306869543-18812-3-git-send-email-meador_inge@mentor.com>
-	<1308288784.32158.30.camel@pasglop>
-	<20110617115828.3cebd5c9@schlenkerla.am.freescale.net>
-	<1308351533.32158.61.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Meador Inge <meador_inge@mentor.com>, openmcapi-dev@googlegroups.com,
-	devicetree-discuss@lists.ozlabs.org,
-	Hollis Blanchard <hollis_blanchard@mentor.com>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <holger.brunck@keymile.com>
+Received: from mail.de.keymile.com (mail.de.keymile.com [195.8.104.1])
+	by ozlabs.org (Postfix) with SMTP id 7C03FB6F7D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 21 Jun 2011 02:43:03 +1000 (EST)
+From: Holger Brunck <holger.brunck@keymile.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] spi/fsl_spi: fix CPM spi driver
+Date: Mon, 20 Jun 2011 18:31:57 +0200
+Message-Id: <1308587517-20640-1-git-send-email-holger.brunck@keymile.com>
+Cc: spi-devel-general@lists.sourceforge.net,
+	Holger Brunck <holger.brunck@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +19,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 18 Jun 2011 08:58:53 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+This patch fixes the freescale spi driver for CPM. Without this
+patch SPI on CPM failed because cpm_muram_alloc_fixed tries to
+allocate muram in an preserved area. The error reported was:
 
-> On Fri, 2011-06-17 at 11:58 -0500, Scott Wood wrote:
-> > When did this change from "considered an internal implementation
-> > issue, and not really an interface" to "all new interfaces"?
-> 
-> Interesting blurb... that's not everybody's opinion and I would argue
-> that supporting AMP kernels isn't something we want to do with closed
-> source crap.
+mpc8xxx_spi f0011a80.spi: can't allocate spi parameter ram
+mpc8xxx_spi: probe of f0011a80.spi failed with error -12
 
-I'm not advocating "closed source crap", just that if something is
-"policy" (as opposed to opinion), it'd be nice if the documentation
-actually matched.
+Now the driver uses of_iomap to get access to this area
+similar to i2c driver driver in the i2c-cpm.c which has a
+similar device tree node. This is tested on a MPC8247 with CPM2.
 
--Scott
+Signed-off-by: Holger Brunck <holger.brunck@keymile.com>
+cc: Grant Likely <grant.likely@secretlab.ca>
+cc: spi-devel-general@lists.sourceforge.net
+---
+This was the same problem reported and discussed on ppc-dev for CPM1:
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-September/085739.html
+
+ drivers/spi/spi_fsl_spi.c |   28 +++++++++++-----------------
+ 1 files changed, 11 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/spi/spi_fsl_spi.c b/drivers/spi/spi_fsl_spi.c
+index 7963c9b..ca57edf 100644
+--- a/drivers/spi/spi_fsl_spi.c
++++ b/drivers/spi/spi_fsl_spi.c
+@@ -684,7 +684,7 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+ 	struct device_node *np = dev->of_node;
+ 	const u32 *iprop;
+ 	int size;
+-	unsigned long spi_base_ofs;
++	void __iomem *spi_base;
+ 	unsigned long pram_ofs = -ENOMEM;
+ 
+ 	/* Can't use of_address_to_resource(), QE muram isn't at 0. */
+@@ -702,33 +702,27 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+ 		return pram_ofs;
+ 	}
+ 
+-	/* CPM1 and CPM2 pram must be at a fixed addr. */
+-	if (!iprop || size != sizeof(*iprop) * 4)
+-		return -ENOMEM;
+-
+-	spi_base_ofs = cpm_muram_alloc_fixed(iprop[2], 2);
+-	if (IS_ERR_VALUE(spi_base_ofs))
+-		return -ENOMEM;
++	spi_base = of_iomap(np, 1);
++	if (spi_base == NULL)
++		return -EINVAL;
+ 
+ 	if (mspi->flags & SPI_CPM2) {
+ 		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+-		if (!IS_ERR_VALUE(pram_ofs)) {
+-			u16 __iomem *spi_base = cpm_muram_addr(spi_base_ofs);
+-
+-			out_be16(spi_base, pram_ofs);
+-		}
++		out_be16(spi_base, pram_ofs);
+ 	} else {
+-		struct spi_pram __iomem *pram = cpm_muram_addr(spi_base_ofs);
++		struct spi_pram __iomem *pram = spi_base;
+ 		u16 rpbase = in_be16(&pram->rpbase);
+ 
+ 		/* Microcode relocation patch applied? */
+ 		if (rpbase)
+ 			pram_ofs = rpbase;
+-		else
+-			return spi_base_ofs;
++		else {
++			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
++			out_be16(spi_base, pram_ofs);
++		}
+ 	}
+ 
+-	cpm_muram_free(spi_base_ofs);
++	iounmap(spi_base);
+ 	return pram_ofs;
+ }
+ 
+-- 
+1.7.1
