@@ -1,30 +1,30 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A5F6BB6F7A
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 70BFDB6F90
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jun 2011 22:11:51 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5LBhjtc003514
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 07:43:45 -0400
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p5LCBkwg1482786
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 08:11:46 -0400
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p5LCBiim012270
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 06:11:45 -0600
-Date: Tue, 21 Jun 2011 08:13:21 -0400
+	Tue, 21 Jun 2011 22:18:32 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e32.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5LC6WqW029560
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 06:06:32 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5LCIHBb204034
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 06:18:17 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p5L6IFme023975
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 00:18:16 -0600
+Date: Tue, 21 Jun 2011 08:19:55 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: James Hsiao <jhsiao@amcc.com>, linux-crypto@vger.kernel.org
-Subject: [PATCH] crypto: crypto4xx - Perform read/modify/write on device
-	control register
-Message-ID: <20110621121321.GA2414@zod.rchland.ibm.com>
+To: Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH] hwrng: ppc4xx - add support for ppc4xx TRNG
+Message-ID: <20110621121955.GB2414@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +34,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Security function on the AMCC SoCs has multiple engines within a
-single MMIO range.  The crypto driver currently enables the 3DES
-functionality by doing a blind write to the device control register.
-This can unintentionally disable other functions like the PKA or TRNG
-when the driver is loaded.
-
-Perform a read/modify/write to enable the 3DES function instead.
+Various PowerPC 4xx SoCs contain a TRNG embedded in the Security function.
+This adds a device driver for that TRNG.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
+ drivers/char/hw_random/Kconfig      |   12 +++
+ drivers/char/hw_random/Makefile     |    1 +
+ drivers/char/hw_random/ppc4xx-rng.c |  156 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 169 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/char/hw_random/ppc4xx-rng.c
 
-diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
-index 1891252..1d103f9 100644
---- a/drivers/crypto/amcc/crypto4xx_core.c
-+++ b/drivers/crypto/amcc/crypto4xx_core.c
-@@ -51,6 +51,7 @@ static void crypto4xx_hw_init(struct crypto4xx_device *dev)
- 	union ce_io_threshold io_threshold;
- 	u32 rand_num;
- 	union ce_pe_dma_cfg pe_dma_cfg;
-+	u32 device_ctrl;
+diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
+index a60043b..1d2ebc7 100644
+--- a/drivers/char/hw_random/Kconfig
++++ b/drivers/char/hw_random/Kconfig
+@@ -210,3 +210,15 @@ config HW_RANDOM_PICOXCELL
+ 	  module will be called picoxcell-rng.
  
- 	writel(PPC4XX_BYTE_ORDER, dev->ce_base + CRYPTO4XX_BYTE_ORDER_CFG);
- 	/* setup pe dma, include reset sg, pdr and pe, then release reset */
-@@ -84,7 +85,9 @@ static void crypto4xx_hw_init(struct crypto4xx_device *dev)
- 	writel(ring_size.w, dev->ce_base + CRYPTO4XX_RING_SIZE);
- 	ring_ctrl.w = 0;
- 	writel(ring_ctrl.w, dev->ce_base + CRYPTO4XX_RING_CTRL);
--	writel(PPC4XX_DC_3DES_EN, dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
-+	device_ctrl = readl(dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
-+	device_ctrl |= PPC4XX_DC_3DES_EN;
-+	writel(device_ctrl, dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
- 	writel(dev->gdr_pa, dev->ce_base + CRYPTO4XX_GATH_RING_BASE);
- 	writel(dev->sdr_pa, dev->ce_base + CRYPTO4XX_SCAT_RING_BASE);
- 	part_ring_size.w = 0;
+ 	  If unsure, say Y.
++
++config HW_RANDOM_PPC4XX
++	tristate "PowerPC 4xx generic true random number generator support"
++	depends on HW_RANDOM && PPC && 4xx
++	---help---
++	 This driver provides the kernel-side support for the TRNG hardware
++	 found in the security function of some PowerPC 4xx SoCs.
++
++	 To compile this driver as a module, choose M here: the
++	 module will be called ppc4xx-rng.
++
++	 If unsure, say N.
+diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
+index 3db4eb8..c88f244 100644
+--- a/drivers/char/hw_random/Makefile
++++ b/drivers/char/hw_random/Makefile
+@@ -20,3 +20,4 @@ obj-$(CONFIG_HW_RANDOM_MXC_RNGA) += mxc-rnga.o
+ obj-$(CONFIG_HW_RANDOM_OCTEON) += octeon-rng.o
+ obj-$(CONFIG_HW_RANDOM_NOMADIK) += nomadik-rng.o
+ obj-$(CONFIG_HW_RANDOM_PICOXCELL) += picoxcell-rng.o
++obj-$(CONFIG_HW_RANDOM_PPC4XX) += ppc4xx-rng.o
+diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
+new file mode 100644
+index 0000000..b8afa6a
+--- /dev/null
++++ b/drivers/char/hw_random/ppc4xx-rng.c
+@@ -0,0 +1,156 @@
++/*
++ * Generic PowerPC 44x RNG driver
++ *
++ * Copyright 2011 IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; version 2 of the License.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/hw_random.h>
++#include <linux/delay.h>
++#include <linux/of_platform.h>
++#include <asm/io.h>
++
++#define PPC4XX_TRNG_DEV_CTRL 0x60080
++
++#define PPC4XX_TRNGE 0x00020000
++#define PPC4XX_TRNG_CTRL 0x0008
++#define PPC4XX_TRNG_CTRL_DALM 0x20
++#define PPC4XX_TRNG_STAT 0x0004
++#define PPC4XX_TRNG_STAT_B 0x1
++#define PPC4XX_TRNG_DATA 0x0000
++
++#define MODULE_NAME "ppc4xx_rng"
++
++static int ppc4xx_rng_data_present(struct hwrng *rng, int wait)
++{
++	void __iomem *rng_regs = (void __iomem *) rng->priv;
++	int busy, i, present = 0;
++
++	for (i = 0; i < 20; i++) {
++		busy = (in_le32(rng_regs + PPC4XX_TRNG_STAT) & PPC4XX_TRNG_STAT_B);
++		if (!busy || !wait) {
++			present = 1;
++			break;
++		}
++		udelay(10);
++	}
++	return present;
++}
++
++static int ppc4xx_rng_data_read(struct hwrng *rng, u32 *data)
++{
++	void __iomem *rng_regs = (void __iomem *) rng->priv;
++	*data = in_le32(rng_regs + PPC4XX_TRNG_DATA);
++	return 4;
++}
++
++static int ppc4xx_rng_enable(int enable)
++{
++	struct device_node *ctrl;
++	void __iomem *ctrl_reg;
++	int err = 0;
++	u32 val;
++
++	/* Find the main crypto device node and map it to turn the TRNG on */
++	ctrl = of_find_compatible_node(NULL, NULL, "amcc,ppc4xx-crypto");
++	if (!ctrl)
++		return -ENODEV;
++
++	ctrl_reg = of_iomap(ctrl, 0);
++	if (!ctrl_reg) {
++		err = -ENODEV;
++		goto out;
++	}
++
++	val = in_le32(ctrl_reg + PPC4XX_TRNG_DEV_CTRL);
++
++	if (enable)
++		val |= PPC4XX_TRNGE;
++	else
++		val = val & ~PPC4XX_TRNGE;
++
++	out_le32(ctrl_reg + PPC4XX_TRNG_DEV_CTRL, val);
++	iounmap(ctrl_reg);
++
++out:
++	of_node_put(ctrl);
++
++	return err;
++}
++
++static struct hwrng ppc4xx_rng = {
++	.name = MODULE_NAME,
++	.data_present = ppc4xx_rng_data_present,
++	.data_read = ppc4xx_rng_data_read,
++};
++
++static int __devinit ppc4xx_rng_probe(struct platform_device *dev)
++{
++	void __iomem *rng_regs;
++	int err = 0;
++
++	rng_regs = of_iomap(dev->dev.of_node, 0);
++	if (!rng_regs)
++		return -ENODEV;
++
++	err = ppc4xx_rng_enable(1);
++	if (err)
++		return err;
++
++	out_le32(rng_regs + PPC4XX_TRNG_CTRL, PPC4XX_TRNG_CTRL_DALM);
++	ppc4xx_rng.priv = (unsigned long) rng_regs;
++
++	err = hwrng_register(&ppc4xx_rng);
++
++	return err;
++}
++
++static int __devexit ppc4xx_rng_remove(struct platform_device *dev)
++{
++	void __iomem *rng_regs = (void __iomem *) ppc4xx_rng.priv;
++
++	hwrng_unregister(&ppc4xx_rng);
++	ppc4xx_rng_enable(0);
++	iounmap(rng_regs);
++
++	return 0;
++}
++
++static struct of_device_id ppc4xx_rng_match[] = {
++	{ .compatible = "ppc4xx-rng", },
++	{ .compatible = "amcc,ppc460ex-rng", },
++	{ .compatible = "amcc,ppc440epx-rng", },
++	{},
++};
++
++static struct platform_driver ppc4xx_rng_driver = {
++	.driver = {
++		.name = MODULE_NAME,
++		.owner = THIS_MODULE,
++		.of_match_table = ppc4xx_rng_match,
++	},
++	.probe = ppc4xx_rng_probe,
++	.remove = ppc4xx_rng_remove,
++};
++
++static int __init ppc4xx_rng_init(void)
++{
++	return platform_driver_register(&ppc4xx_rng_driver);
++}
++module_init(ppc4xx_rng_init);
++
++static void __exit ppc4xx_rng_exit(void)
++{
++	platform_driver_unregister(&ppc4xx_rng_driver);
++}
++module_exit(ppc4xx_rng_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Josh Boyer <jwboyer@linux.vnet.ibm.com>");
++MODULE_DESCRIPTION("HW RNG driver for PPC 4xx processors");
+-- 
+1.7.4.4
