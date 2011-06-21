@@ -1,19 +1,22 @@
 Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
-	[209.85.210.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 23FC4B6F75
+	by ozlabs.org (Postfix) with ESMTPS id C0E12B6FD5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jun 2011 23:34:37 +1000 (EST)
-Received: by pzk37 with SMTP id 37so4729057pzk.15
+	Tue, 21 Jun 2011 23:34:40 +1000 (EST)
+Received: by pwi18 with SMTP id 18so1024095pwi.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jun 2011 06:34:34 -0700 (PDT)
+	Tue, 21 Jun 2011 06:34:37 -0700 (PDT)
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc: introduce pSeries_reconfig_notify()
-Date: Tue, 21 Jun 2011 22:35:55 +0900
-Message-Id: <1308663356-20957-1-git-send-email-akinobu.mita@gmail.com>
+Subject: [PATCH 2/2] powerpc: improve error code on reconfiguration notifier
+	failure
+Date: Tue, 21 Jun 2011 22:35:56 +0900
+Message-Id: <1308663356-20957-2-git-send-email-akinobu.mita@gmail.com>
+In-Reply-To: <1308663356-20957-1-git-send-email-akinobu.mita@gmail.com>
+References: <1308663356-20957-1-git-send-email-akinobu.mita@gmail.com>
 Cc: Paul Mackerras <paulus@samba.org>, Akinobu Mita <akinobu.mita@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,134 +27,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This introduces pSeries_reconfig_notify() as a just wrapper of
-blocking_notifier_call_chain() for pSeries_reconfig_chain.
+Reconfiguration notifier call for device node may fail by several reasons,
+but it always assumes kmalloc failures.
 
-This is a preparation to improvement of error code on reconfiguration
-notifier failure.
+This enables reconfiguration notifier call chain to get the actual error
+code rather than -ENOMEM by converting all reconfiguration notifier calls
+to return encapsulate error code with notifier_from_errno().
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/include/asm/pSeries_reconfig.h |    2 +-
- arch/powerpc/platforms/pseries/dlpar.c      |   10 +++-----
- arch/powerpc/platforms/pseries/reconfig.c   |   30 ++++++++++++++++----------
- 3 files changed, 23 insertions(+), 19 deletions(-)
+ arch/powerpc/kernel/prom.c                      |    8 +++-----
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |   10 +++-------
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +++++-----------
+ arch/powerpc/platforms/pseries/reconfig.c       |    4 +---
+ 4 files changed, 12 insertions(+), 26 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pSeries_reconfig.h b/arch/powerpc/include/asm/pSeries_reconfig.h
-index 89d2f99..23cd6cc 100644
---- a/arch/powerpc/include/asm/pSeries_reconfig.h
-+++ b/arch/powerpc/include/asm/pSeries_reconfig.h
-@@ -17,7 +17,7 @@
- #ifdef CONFIG_PPC_PSERIES
- extern int pSeries_reconfig_notifier_register(struct notifier_block *);
- extern void pSeries_reconfig_notifier_unregister(struct notifier_block *);
--extern struct blocking_notifier_head pSeries_reconfig_chain;
-+extern int pSeries_reconfig_notify(unsigned long action, void *p);
- /* Not the best place to put this, will be fixed when we move some
-  * of the rtas suspend-me stuff to pseries */
- extern void pSeries_coalesce_init(void);
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 57ceb92..e9be25b 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -262,12 +262,11 @@ int dlpar_attach_node(struct device_node *dn)
- 	if (!dn->parent)
- 		return -ENOMEM;
- 
--	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
--					  PSERIES_RECONFIG_ADD, dn);
--	if (rc == NOTIFY_BAD) {
-+	rc = pSeries_reconfig_notify(PSERIES_RECONFIG_ADD, dn);
-+	if (rc) {
- 		printk(KERN_ERR "Failed to add device node %s\n",
- 		       dn->full_name);
--		return -ENOMEM; /* For now, safe to assume kmalloc failure */
-+		return rc;
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 8c3112a..86677ba 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -862,16 +862,14 @@ static int prom_reconfig_notifier(struct notifier_block *nb,
+ 	switch (action) {
+ 	case PSERIES_RECONFIG_ADD:
+ 		err = of_finish_dynamic_node(node);
+-		if (err < 0) {
++		if (err < 0)
+ 			printk(KERN_ERR "finish_node returned %d\n", err);
+-			err = NOTIFY_BAD;
+-		}
+ 		break;
+ 	default:
+-		err = NOTIFY_DONE;
++		err = 0;
+ 		break;
  	}
+-	return err;
++	return notifier_from_errno(err);
+ }
  
- 	of_attach_node(dn);
-@@ -297,8 +296,7 @@ int dlpar_detach_node(struct device_node *dn)
- 		remove_proc_entry(dn->pde->name, parent->pde);
- #endif
+ static struct notifier_block prom_reconfig_nb = {
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 46f13a3..bc02885 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -330,21 +330,17 @@ static void pseries_remove_processor(struct device_node *np)
+ static int pseries_smp_notifier(struct notifier_block *nb,
+ 				unsigned long action, void *node)
+ {
+-	int err = NOTIFY_OK;
++	int err = 0;
  
--	blocking_notifier_call_chain(&pSeries_reconfig_chain,
--			    PSERIES_RECONFIG_REMOVE, dn);
-+	pSeries_reconfig_notify(PSERIES_RECONFIG_REMOVE, dn);
- 	of_detach_node(dn);
- 	of_node_put(dn); /* Must decrement the refcount */
+ 	switch (action) {
+ 	case PSERIES_RECONFIG_ADD:
+-		if (pseries_add_processor(node))
+-			err = NOTIFY_BAD;
++		err = pseries_add_processor(node);
+ 		break;
+ 	case PSERIES_RECONFIG_REMOVE:
+ 		pseries_remove_processor(node);
+ 		break;
+-	default:
+-		err = NOTIFY_DONE;
+-		break;
+ 	}
+-	return err;
++	return notifier_from_errno(err);
+ }
  
+ static struct notifier_block pseries_smp_nb = {
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 33867ec..1eaefd6 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -197,27 +197,21 @@ static int pseries_drconf_memory(unsigned long *base, unsigned int action)
+ static int pseries_memory_notifier(struct notifier_block *nb,
+ 				unsigned long action, void *node)
+ {
+-	int err = NOTIFY_OK;
++	int err = 0;
+ 
+ 	switch (action) {
+ 	case PSERIES_RECONFIG_ADD:
+-		if (pseries_add_memory(node))
+-			err = NOTIFY_BAD;
++		err = pseries_add_memory(node);
+ 		break;
+ 	case PSERIES_RECONFIG_REMOVE:
+-		if (pseries_remove_memory(node))
+-			err = NOTIFY_BAD;
++		err = pseries_remove_memory(node);
+ 		break;
+ 	case PSERIES_DRCONF_MEM_ADD:
+ 	case PSERIES_DRCONF_MEM_REMOVE:
+-		if (pseries_drconf_memory(node, action))
+-			err = NOTIFY_BAD;
+-		break;
+-	default:
+-		err = NOTIFY_DONE;
++		err = pseries_drconf_memory(node, action);
+ 		break;
+ 	}
+-	return err;
++	return notifier_from_errno(err);
+ }
+ 
+ static struct notifier_block pseries_mem_nb = {
 diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 1de2cbb..286b6af 100644
+index 286b6af..168651a 100644
 --- a/arch/powerpc/platforms/pseries/reconfig.c
 +++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -97,7 +97,7 @@ static struct device_node *derive_parent(const char *path)
- 	return parent;
+@@ -114,9 +114,7 @@ int pSeries_reconfig_notify(unsigned long action, void *p)
+ 	int err = blocking_notifier_call_chain(&pSeries_reconfig_chain,
+ 						action, p);
+ 
+-	if (err == NOTIFY_BAD)
+-		return -ENOMEM; /* For now, safe to assume kmalloc failure */
+-	return 0;
++	return notifier_to_errno(err);
  }
  
--BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
-+static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
- 
- int pSeries_reconfig_notifier_register(struct notifier_block *nb)
- {
-@@ -109,6 +109,16 @@ void pSeries_reconfig_notifier_unregister(struct notifier_block *nb)
- 	blocking_notifier_chain_unregister(&pSeries_reconfig_chain, nb);
- }
- 
-+int pSeries_reconfig_notify(unsigned long action, void *p)
-+{
-+	int err = blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+						action, p);
-+
-+	if (err == NOTIFY_BAD)
-+		return -ENOMEM; /* For now, safe to assume kmalloc failure */
-+	return 0;
-+}
-+
  static int pSeries_reconfig_add_node(const char *path, struct property *proplist)
- {
- 	struct device_node *np;
-@@ -132,11 +142,9 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 		goto out_err;
- 	}
- 
--	err = blocking_notifier_call_chain(&pSeries_reconfig_chain,
--				  PSERIES_RECONFIG_ADD, np);
--	if (err == NOTIFY_BAD) {
-+	err = pSeries_reconfig_notify(PSERIES_RECONFIG_ADD, np);
-+	if (err) {
- 		printk(KERN_ERR "Failed to add device node %s\n", path);
--		err = -ENOMEM; /* For now, safe to assume kmalloc failure */
- 		goto out_err;
- 	}
- 
-@@ -173,8 +181,7 @@ static int pSeries_reconfig_remove_node(struct device_node *np)
- 
- 	remove_node_proc_entries(np);
- 
--	blocking_notifier_call_chain(&pSeries_reconfig_chain,
--			    PSERIES_RECONFIG_REMOVE, np);
-+	pSeries_reconfig_notify(PSERIES_RECONFIG_REMOVE, np);
- 	of_detach_node(np);
- 
- 	of_node_put(parent);
-@@ -472,11 +479,10 @@ static int do_update_property(char *buf, size_t bufsize)
- 		else
- 			action = PSERIES_DRCONF_MEM_REMOVE;
- 
--		rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
--						  action, value);
--		if (rc == NOTIFY_BAD) {
--			rc = prom_update_property(np, oldprop, newprop);
--			return -ENOMEM;
-+		rc = pSeries_reconfig_notify(action, value);
-+		if (rc) {
-+			prom_update_property(np, oldprop, newprop);
-+			return rc;
- 		}
- 	}
- 
 -- 
 1.7.4.4
