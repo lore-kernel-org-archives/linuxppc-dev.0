@@ -1,18 +1,26 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1EC44B6F84
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 08:39:04 +1000 (EST)
-Date: Wed, 22 Jun 2011 00:38:53 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Timur Tabi <timur@freescale.com>
+Return-Path: <B04825@freescale.com>
+Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
+	[213.199.154.209])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 145A5B6F86
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 09:13:19 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Anatolij Gustschin <agust@denx.de>
 Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
-Message-ID: <20110622003853.1041385c@wker>
-In-Reply-To: <1308691655-3416-1-git-send-email-timur@freescale.com>
+Date: Tue, 21 Jun 2011 23:13:11 +0000
+Message-ID: <4E012586.7050808@freescale.com>
 References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org,
-	yorksun@freescale.com
+	<20110622003853.1041385c@wker>
+In-Reply-To: <20110622003853.1041385c@wker>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: sun york-R58495 <R58495@freescale.com>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"lethal@linux-sh.org" <lethal@linux-sh.org>,
+	Tabi Timur-B04825 <B04825@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Jun 2011 16:27:35 -0500
-Timur Tabi <timur@freescale.com> wrote:
+Anatolij Gustschin wrote:
+> No! We are using ioctl interface of this driver in many video
+> rendering applications on overlay planes on huge number of boards.
+> So, please don't remove it.
 
-> The ioctl interface in the Freescale DIU framebuffer driver is just a
-> collection of miscellaneous functions which were only used in a one-time
-> demo application that was never distributed.  Plus, the ioctls were spread
-> across two types (both conflicting), and the demo app didn't even use all
-> of them.
-> 
-> Removing the ioctl interface also allows us to clean up the header file and
-> remove other unusued stuff.
+Ok, I had no idea anyone was using it.
 
-No! We are using ioctl interface of this driver in many video
-rendering applications on overlay planes on huge number of boards.
-So, please don't remove it.
+Can you email me details about how you use the ioctl interface?  If I can't=
+=20
+remove it, maybe I can clean it up.
 
-Anatolij
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
