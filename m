@@ -1,19 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BFDC9B6F8E
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2011 19:53:19 +1000 (EST)
-Subject: Re: [PATCH 0/15] Hypervisor-mode KVM on POWER7 and PPC970
-Mime-Version: 1.0 (Apple Message framework v1084)
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A5F6BB6F7A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 21 Jun 2011 22:11:51 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5LBhjtc003514
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 07:43:45 -0400
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5LCBkwg1482786
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 08:11:46 -0400
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p5LCBiim012270
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 06:11:45 -0600
+Date: Tue, 21 Jun 2011 08:13:21 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: James Hsiao <jhsiao@amcc.com>, linux-crypto@vger.kernel.org
+Subject: [PATCH] crypto: crypto4xx - Perform read/modify/write on device
+	control register
+Message-ID: <20110621121321.GA2414@zod.rchland.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
-Date: Tue, 21 Jun 2011 11:53:13 +0200
-Message-Id: <76643C33-517F-4E52-8DD9-BC1D923D925E@suse.de>
-References: <20110618082705.GA28413@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The Security function on the AMCC SoCs has multiple engines within a
+single MMIO range.  The crypto driver currently enables the 3DES
+functionality by doing a blind write to the device control register.
+This can unintentionally disable other functions like the PKA or TRNG
+when the driver is loaded.
 
-On 18.06.2011, at 10:27, Paul Mackerras wrote:
+Perform a read/modify/write to enable the 3DES function instead.
 
-> The following series of patches enable KVM to exploit the hardware
-> hypervisor mode on 64-bit Power ISA Book3S machines.  At present,
-> POWER7 and PPC970 processors are supported.  (Note that the PPC970
-> processors in Apple G5 machines don't have a usable hypervisor mode
-> and are not supported by these patches.)
->=20
-> Running the KVM host in hypervisor mode means that the guest can use
-> both supervisor mode and user mode.  That means that the guest can
-> execute supervisor-privilege instructions and access supervisor-
-> privilege registers.  In addition the hardware directs most exceptions
-> to the guest.  Thus we don't need to emulate any instructions in the
-> host.  Generally, the only times we need to exit the guest are when it
-> does a hypercall or when an external interrupt or host timer
-> (decrementer) interrupt occurs.
->=20
-> The focus of this KVM implementation is to run guests that use the
-> PAPR (Power Architecture Platform Requirements) paravirtualization
-> interface, which is the interface supplied by PowerVM on IBM pSeries
-> machines.  Currently the "pseries" machine type in qemu is only
-> supported by book3s_hv KVM, and book3s_hv KVM only supports the
-> "pseries" machine type.  That will hopefully change in future.
->=20
-> These patches are against Alex Graf's kvm-ppc-next branch.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Could you please also add some mechanism that sets the guest machine =
-type? We currently support 2:
+---
 
-  * bare metal
-  * PAPR
-
-BOOK3S_PR can't do PAPR (yet), BOOK3S_HV can't do bare metal (ever). =
-User space needs to know about these limitations, so it can set the type =
-accordingly and fail to start if kernel space can't provide it.
-
-Since we might end up supporting PAPR even with _pr, it can't just be as =
-simple as a CAP bitmap, since we really need to set the type.
-
-
-Alex
+diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
+index 1891252..1d103f9 100644
+--- a/drivers/crypto/amcc/crypto4xx_core.c
++++ b/drivers/crypto/amcc/crypto4xx_core.c
+@@ -51,6 +51,7 @@ static void crypto4xx_hw_init(struct crypto4xx_device *dev)
+ 	union ce_io_threshold io_threshold;
+ 	u32 rand_num;
+ 	union ce_pe_dma_cfg pe_dma_cfg;
++	u32 device_ctrl;
+ 
+ 	writel(PPC4XX_BYTE_ORDER, dev->ce_base + CRYPTO4XX_BYTE_ORDER_CFG);
+ 	/* setup pe dma, include reset sg, pdr and pe, then release reset */
+@@ -84,7 +85,9 @@ static void crypto4xx_hw_init(struct crypto4xx_device *dev)
+ 	writel(ring_size.w, dev->ce_base + CRYPTO4XX_RING_SIZE);
+ 	ring_ctrl.w = 0;
+ 	writel(ring_ctrl.w, dev->ce_base + CRYPTO4XX_RING_CTRL);
+-	writel(PPC4XX_DC_3DES_EN, dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
++	device_ctrl = readl(dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
++	device_ctrl |= PPC4XX_DC_3DES_EN;
++	writel(device_ctrl, dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
+ 	writel(dev->gdr_pa, dev->ce_base + CRYPTO4XX_GATH_RING_BASE);
+ 	writel(dev->sdr_pa, dev->ce_base + CRYPTO4XX_SCAT_RING_BASE);
+ 	part_ring_size.w = 0;
