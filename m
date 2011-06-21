@@ -1,18 +1,38 @@
-Return-Path: <mpm@selenic.com>
-Received: from waste.org (waste.org [173.11.57.241])
-	by ozlabs.org (Postfix) with ESMTP id B708AB6F83
+Return-Path: <nacc@us.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6AD92B6F82
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 02:06:20 +1000 (EST)
-Subject: Re: [PATCH] hwrng: ppc4xx - add support for ppc4xx TRNG
-From: Matt Mackall <mpm@selenic.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20110621121955.GB2414@zod.rchland.ibm.com>
-References: <20110621121955.GB2414@zod.rchland.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 21 Jun 2011 10:56:02 -0500
-Message-ID: <1308671762.4954.0.camel@calx>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Herbert Xu <herbert@gondor.apana.org.au>
+	Wed, 22 Jun 2011 02:07:59 +1000 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5LFaYA0003330
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 11:36:34 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5LG7WuL104700
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 12:07:32 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p5LC7AJJ016050
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2011 09:07:10 -0300
+Date: Tue, 21 Jun 2011 09:07:14 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH] libata/sas: only set FROZEN flag if new EH is supported
+Message-ID: <20110621160714.GA14174@us.ibm.com>
+References: <20110615191747.GA6324@us.ibm.com>
+	<4DF90FCA.1040706@linux.vnet.ibm.com>
+	<20110615233417.GB6324@us.ibm.com>
+	<20110616075114.GH8141@htj.dyndns.org>
+	<4DFA0507.3090609@linux.vnet.ibm.com>
+	<20110616152836.GA15268@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20110616152836.GA15268@us.ibm.com>
+Cc: jgarzik@pobox.com, wayneb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+	mbizon@freebox.fr, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,215 +42,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-06-21 at 08:19 -0400, Josh Boyer wrote:
-> Various PowerPC 4xx SoCs contain a TRNG embedded in the Security function.
-> This adds a device driver for that TRNG.
+Ping on this -- Tejun, Brian, Jeff, this is a pretty annoying 2.6.39
+regression which it would be good to have fixed in 3.0.
+
+Thanks,
+Nish
+
+On 16.06.2011 [08:28:36 -0700], Nishanth Aravamudan wrote:
+> On 16.06.2011 [08:28:39 -0500], Brian King wrote:
+> > On 06/16/2011 02:51 AM, Tejun Heo wrote:
+> > > On Wed, Jun 15, 2011 at 04:34:17PM -0700, Nishanth Aravamudan wrote:
+> > >>> That looks like the right thing to do. For ipr's usage of
+> > >>> libata, we don't have the concept of a port frozen state, so this flag
+> > >>> should really never get set. The alternate way to fix this would be to
+> > >>> only set ATA_PFLAG_FROZEN in ata_port_alloc if ap->ops->error_handler
+> > >>> is not NULL.
+> > >>
+> > >> It seemed like ipr is as you say, but I wasn't sure if it was
+> > >> appropriate to make the change above in the common libata-scis code or
+> > >> not. I don't want to break some other device on accident.
+> > >>
+> > >> Also, I tried your suggestion, but I don't think that can happen in
+> > >> ata_port_alloc? ata_port_alloc is allocated ap itself, and it seems like
+> > >> ap->ops typically gets set only after ata_port_alloc returns?
+> > > 
+> > > Maybe we can test error_handler in ata_sas_port_start()?
+> > 
+> > Good point. Since libsas is converted to the new eh now, we would need to have
+> > this test.
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
-Looks good.
-
-Acked-by: Matt Mackall <mpm@selenic.com>
-
-> ---
->  drivers/char/hw_random/Kconfig      |   12 +++
->  drivers/char/hw_random/Makefile     |    1 +
->  drivers/char/hw_random/ppc4xx-rng.c |  156 +++++++++++++++++++++++++++++++++++
->  3 files changed, 169 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/char/hw_random/ppc4xx-rng.c
+> Commit 7b3a24c57d2eeda8dba9c205342b12689c4679f9 ("ahci: don't enable
+> port irq before handler is registered") caused a regression for CD-ROMs
+> attached to the IPR SATA bus on Power machines:
 > 
-> diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
-> index a60043b..1d2ebc7 100644
-> --- a/drivers/char/hw_random/Kconfig
-> +++ b/drivers/char/hw_random/Kconfig
-> @@ -210,3 +210,15 @@ config HW_RANDOM_PICOXCELL
->  	  module will be called picoxcell-rng.
->  
->  	  If unsure, say Y.
-> +
-> +config HW_RANDOM_PPC4XX
-> +	tristate "PowerPC 4xx generic true random number generator support"
-> +	depends on HW_RANDOM && PPC && 4xx
-> +	---help---
-> +	 This driver provides the kernel-side support for the TRNG hardware
-> +	 found in the security function of some PowerPC 4xx SoCs.
-> +
-> +	 To compile this driver as a module, choose M here: the
-> +	 module will be called ppc4xx-rng.
-> +
-> +	 If unsure, say N.
-> diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
-> index 3db4eb8..c88f244 100644
-> --- a/drivers/char/hw_random/Makefile
-> +++ b/drivers/char/hw_random/Makefile
-> @@ -20,3 +20,4 @@ obj-$(CONFIG_HW_RANDOM_MXC_RNGA) += mxc-rnga.o
->  obj-$(CONFIG_HW_RANDOM_OCTEON) += octeon-rng.o
->  obj-$(CONFIG_HW_RANDOM_NOMADIK) += nomadik-rng.o
->  obj-$(CONFIG_HW_RANDOM_PICOXCELL) += picoxcell-rng.o
-> +obj-$(CONFIG_HW_RANDOM_PPC4XX) += ppc4xx-rng.o
-> diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
-> new file mode 100644
-> index 0000000..b8afa6a
-> --- /dev/null
-> +++ b/drivers/char/hw_random/ppc4xx-rng.c
-> @@ -0,0 +1,156 @@
-> +/*
-> + * Generic PowerPC 44x RNG driver
-> + *
-> + * Copyright 2011 IBM Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the
-> + * Free Software Foundation; version 2 of the License.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/hw_random.h>
-> +#include <linux/delay.h>
-> +#include <linux/of_platform.h>
-> +#include <asm/io.h>
-> +
-> +#define PPC4XX_TRNG_DEV_CTRL 0x60080
-> +
-> +#define PPC4XX_TRNGE 0x00020000
-> +#define PPC4XX_TRNG_CTRL 0x0008
-> +#define PPC4XX_TRNG_CTRL_DALM 0x20
-> +#define PPC4XX_TRNG_STAT 0x0004
-> +#define PPC4XX_TRNG_STAT_B 0x1
-> +#define PPC4XX_TRNG_DATA 0x0000
-> +
-> +#define MODULE_NAME "ppc4xx_rng"
-> +
-> +static int ppc4xx_rng_data_present(struct hwrng *rng, int wait)
-> +{
-> +	void __iomem *rng_regs = (void __iomem *) rng->priv;
-> +	int busy, i, present = 0;
-> +
-> +	for (i = 0; i < 20; i++) {
-> +		busy = (in_le32(rng_regs + PPC4XX_TRNG_STAT) & PPC4XX_TRNG_STAT_B);
-> +		if (!busy || !wait) {
-> +			present = 1;
-> +			break;
-> +		}
-> +		udelay(10);
-> +	}
-> +	return present;
-> +}
-> +
-> +static int ppc4xx_rng_data_read(struct hwrng *rng, u32 *data)
-> +{
-> +	void __iomem *rng_regs = (void __iomem *) rng->priv;
-> +	*data = in_le32(rng_regs + PPC4XX_TRNG_DATA);
-> +	return 4;
-> +}
-> +
-> +static int ppc4xx_rng_enable(int enable)
-> +{
-> +	struct device_node *ctrl;
-> +	void __iomem *ctrl_reg;
-> +	int err = 0;
-> +	u32 val;
-> +
-> +	/* Find the main crypto device node and map it to turn the TRNG on */
-> +	ctrl = of_find_compatible_node(NULL, NULL, "amcc,ppc4xx-crypto");
-> +	if (!ctrl)
-> +		return -ENODEV;
-> +
-> +	ctrl_reg = of_iomap(ctrl, 0);
-> +	if (!ctrl_reg) {
-> +		err = -ENODEV;
-> +		goto out;
-> +	}
-> +
-> +	val = in_le32(ctrl_reg + PPC4XX_TRNG_DEV_CTRL);
-> +
-> +	if (enable)
-> +		val |= PPC4XX_TRNGE;
-> +	else
-> +		val = val & ~PPC4XX_TRNGE;
-> +
-> +	out_le32(ctrl_reg + PPC4XX_TRNG_DEV_CTRL, val);
-> +	iounmap(ctrl_reg);
-> +
-> +out:
-> +	of_node_put(ctrl);
-> +
-> +	return err;
-> +}
-> +
-> +static struct hwrng ppc4xx_rng = {
-> +	.name = MODULE_NAME,
-> +	.data_present = ppc4xx_rng_data_present,
-> +	.data_read = ppc4xx_rng_data_read,
-> +};
-> +
-> +static int __devinit ppc4xx_rng_probe(struct platform_device *dev)
-> +{
-> +	void __iomem *rng_regs;
-> +	int err = 0;
-> +
-> +	rng_regs = of_iomap(dev->dev.of_node, 0);
-> +	if (!rng_regs)
-> +		return -ENODEV;
-> +
-> +	err = ppc4xx_rng_enable(1);
-> +	if (err)
-> +		return err;
-> +
-> +	out_le32(rng_regs + PPC4XX_TRNG_CTRL, PPC4XX_TRNG_CTRL_DALM);
-> +	ppc4xx_rng.priv = (unsigned long) rng_regs;
-> +
-> +	err = hwrng_register(&ppc4xx_rng);
-> +
-> +	return err;
-> +}
-> +
-> +static int __devexit ppc4xx_rng_remove(struct platform_device *dev)
-> +{
-> +	void __iomem *rng_regs = (void __iomem *) ppc4xx_rng.priv;
-> +
-> +	hwrng_unregister(&ppc4xx_rng);
-> +	ppc4xx_rng_enable(0);
-> +	iounmap(rng_regs);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct of_device_id ppc4xx_rng_match[] = {
-> +	{ .compatible = "ppc4xx-rng", },
-> +	{ .compatible = "amcc,ppc460ex-rng", },
-> +	{ .compatible = "amcc,ppc440epx-rng", },
-> +	{},
-> +};
-> +
-> +static struct platform_driver ppc4xx_rng_driver = {
-> +	.driver = {
-> +		.name = MODULE_NAME,
-> +		.owner = THIS_MODULE,
-> +		.of_match_table = ppc4xx_rng_match,
-> +	},
-> +	.probe = ppc4xx_rng_probe,
-> +	.remove = ppc4xx_rng_remove,
-> +};
-> +
-> +static int __init ppc4xx_rng_init(void)
-> +{
-> +	return platform_driver_register(&ppc4xx_rng_driver);
-> +}
-> +module_init(ppc4xx_rng_init);
-> +
-> +static void __exit ppc4xx_rng_exit(void)
-> +{
-> +	platform_driver_unregister(&ppc4xx_rng_driver);
-> +}
-> +module_exit(ppc4xx_rng_exit);
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR("Josh Boyer <jwboyer@linux.vnet.ibm.com>");
-> +MODULE_DESCRIPTION("HW RNG driver for PPC 4xx processors");
-
+>   ata_port_alloc: ENTER
+>   ata_port_probe: ata1: bus probe begin
+>   ata1.00: ata_dev_read_id: ENTER
+>   ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+>   ata1.00: ata_dev_read_id: ENTER
+>   ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+>   ata1.00: limiting speed to UDMA7:PIO5
+>   ata1.00: ata_dev_read_id: ENTER
+>   ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+>   ata1.00: disabled
+>   ata_port_probe: ata1: bus probe end
+>   scsi_alloc_sdev: Allocation failure during SCSI scanning, some SCSI devices might not be configured
+> 
+> The FROZEN flag added in that commit is only cleared by the new EH code,
+> which is not used by ipr. Clear this flag in the SAS code if we don't
+> support new EH.
+> 
+> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> 
+> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> index d51f979..ebe1685 100644
+> --- a/drivers/ata/libata-scsi.c
+> +++ b/drivers/ata/libata-scsi.c
+> @@ -3797,6 +3797,12 @@ EXPORT_SYMBOL_GPL(ata_sas_port_alloc);
+>   */
+>  int ata_sas_port_start(struct ata_port *ap)
+>  {
+> +	/*
+> +	 * the port is marked as frozen at allocation time, but if we don't
+> +	 * have new eh, we won't thaw it
+> +	 */
+> +	if (!ap->ops->error_handler)
+> +		ap->pflags &= ~ATA_PFLAG_FROZEN;
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(ata_sas_port_start);
+> 
+> 
+> -- 
+> Nishanth Aravamudan <nacc@us.ibm.com>
+> IBM Linux Technology Center
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
