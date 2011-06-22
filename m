@@ -1,20 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C221EB6F7A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 21:28:56 +1000 (EST)
-Subject: Re: [PATCH] powerpc/e500: fix breakage with fsl_rio_mcheck_exception
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20110616190916.GA31367@schlenkerla.am.freescale.net>
-Date: Wed, 22 Jun 2011 06:28:44 -0500
-Message-Id: <F7376A37-E830-49DD-A614-749889D53517@kernel.crashing.org>
-References: <20110616190916.GA31367@schlenkerla.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B11780@freescale.com>
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
+	[216.32.180.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BDB15B6F7A
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 21:28:57 +1000 (EST)
+Received: from mail12-va3 (localhost.localdomain [127.0.0.1])	by
+	mail12-va3-R.bigfish.com (Postfix) with ESMTP id 7FB12AE0064	for
+	<linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 11:28:52 +0000 (UTC)
+Received: from VA3EHSMHS016.bigfish.com (unknown [10.7.14.241])	by
+	mail12-va3.bigfish.com (Postfix) with ESMTP id 62B35194004E	for
+	<linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 11:28:52 +0000 (UTC)
+Subject: Re: [PATCH] [v2] powerpc/p1022ds: fix audio-related properties in the
+	device tree
+MIME-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1307559785-11007-1-git-send-email-timur@freescale.com>
+Date: Wed, 22 Jun 2011 06:28:38 -0500
+Message-ID: <003F1DCD-06E3-4F15-8861-D80FF683648D@freescale.com>
+References: <1307559785-11007-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +32,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 16, 2011, at 2:09 PM, Scott Wood wrote:
+On Jun 8, 2011, at 2:03 PM, Timur Tabi wrote:
 
-> The wrong MCSR bit was being used on e500mc.  MCSR_BUS_RBERR only exists
-> on e500v1/v2.  Use MCSR_LD on e500mc, and remove all MCSR checking
-> in fsl_rio_mcheck_exception as we now no longer call that function
-> if the appropriate bit in MCSR is not set.
+> On the Freescale P1022DS reference board, the SSI audio controller is
+> connected in "asynchronous" mode to the codec's clocks, so the device tree
+> needs an "fsl,ssi-asynchronous" property.
 > 
-> If RIO support was enabled at compile-time, but was never probed, just
-> return from fsl_rio_mcheck_exception rather than dereference a NULL
-> pointer.
+> Also remove the clock-frequency property from the wm8776 node, because
+> the clock is enabled only if U-Boot enables it, and U-Boot will set the
+> property if the clock is enabled.  A future version of the P1022DS audio
+> driver will configure the clock itself, but for now, the driver should
+> not be told that the clock is running when it isn't.
 > 
-> TODO: There is still a remaining, though comparitively minor, issue in
-> that this recovery mechanism will falsely engage if there's an unrelated
-> MCSR_LD event at the same time as a RIO error.
+> Also fix the FIFO depth to 15, instead of 16.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/kernel/traps.c   |    2 +-
-> arch/powerpc/sysdev/fsl_rio.c |   33 +++++++++++++++++----------------
-> 2 files changed, 18 insertions(+), 17 deletions(-)
+> arch/powerpc/boot/dts/p1022ds.dts |    9 ++++++---
+> 1 files changed, 6 insertions(+), 3 deletions(-)
 
 applied to merge
 
