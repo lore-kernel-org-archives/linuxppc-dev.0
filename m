@@ -1,14 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
-Date: Wed, 22 Jun 2011 06:34:11 -0500
-Message-Id: <F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
-References: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Cc: meet2prabhu@gmail.com, devicetree-discuss@lists.ozlabs.org,
+Return-Path: <B11780@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 56FF9B6F97
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 22 Jun 2011 21:41:39 +1000 (EST)
+Subject: Re: [PATCH 1/7] powerpc: make irq_choose_cpu() available to all PIC
+	drivers
+MIME-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1305813272-31826-2-git-send-email-timur@freescale.com>
+Date: Wed, 22 Jun 2011 06:41:26 -0500
+Message-ID: <9215F3F9-AA0A-4C76-B2F0-DF18A9FAAB35@freescale.com>
+References: <1305813272-31826-1-git-send-email-timur@freescale.com>
+	<1305813272-31826-2-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-kernel@vger.kernel.org, akpm@kernel.org,
+	linux-console@vger.kernel.org, greg@kroah.com,
 	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,56 +30,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 7, 2011, at 9:49 PM, Prabhakar Kushwaha wrote:
+On May 19, 2011, at 8:54 AM, Timur Tabi wrote:
 
-> ten-bit interface (TBI) module is part of SoC not board.
->=20
-> Move tbi entries from board related dts files to Si dts.
->=20
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> From: Stuart Yoder <stuart.yoder@freescale.com>
+> 
+> Move irq_choose_cpu() into arch/powerpc/kernel/irq.c so that it can be used
+> by other PIC drivers.  The function is not MPIC-specific.
+> 
+> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> Based upon =
-http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch =
-next)
->=20
-> arch/powerpc/boot/dts/p1020rdb.dts            |    9 ---------
-> arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    8 --------
-> arch/powerpc/boot/dts/p1020si.dtsi            |    6 +++++-
-> arch/powerpc/boot/dts/p2020rdb.dts            |    8 --------
-> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 --------
-> arch/powerpc/boot/dts/p2020si.dtsi            |    6 +++++-
-> 6 files changed, 10 insertions(+), 35 deletions(-)
->=20
-> diff --git a/arch/powerpc/boot/dts/p1020rdb.dts =
-b/arch/powerpc/boot/dts/p1020rdb.dts
-> index d6a8ae4..a4e5d6c 100644
-> --- a/arch/powerpc/boot/dts/p1020rdb.dts
-> +++ b/arch/powerpc/boot/dts/p1020rdb.dts
-> @@ -211,14 +211,6 @@
-> 			};
-> 		};
->=20
-> -		mdio@25000 {
-> -
-> -			tbi0: tbi-phy@11 {
-> -				reg =3D <0x11>;
-> -				device_type =3D "tbi-phy";
-> -			};
-> -		};
-> -
-> 		enet0: ethernet@b0000 {
-> 			fixed-link =3D <1 1 1000 0 0>;
-> 			phy-connection-type =3D "rgmii-id";
-> @@ -227,7 +219,6 @@
->=20
-> 		enet1: ethernet@b1000 {
-> 			phy-handle =3D <&phy0>;
-> -			tbi-handle =3D <&tbi0>;
-> 			phy-connection-type =3D "sgmii";
->=20
-> 		};
+> arch/powerpc/include/asm/irq.h |    2 ++
+> arch/powerpc/kernel/irq.c      |   35 +++++++++++++++++++++++++++++++++++
+> arch/powerpc/sysdev/mpic.c     |   36 ------------------------------------
+> 3 files changed, 37 insertions(+), 36 deletions(-)
 
-I'm not sure we should do this.  The phy address we pick is board =
-specific so it should NOT be in .dtsi
+applied to next
 
-- k=
+- k
