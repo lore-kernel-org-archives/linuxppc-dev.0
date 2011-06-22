@@ -1,22 +1,21 @@
-Return-Path: <mike@mikebwilliams.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 72F7FB6F85
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jun 2011 05:31:10 +1000 (EST)
-Received: by vxb40 with SMTP id 40so933918vxb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 12:31:07 -0700 (PDT)
-From: Mike Williams <mike@mikebwilliams.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc,
-	460gt: Add 460gt as compatible in the check for 460ex-compatible
-	crypto
-Date: Wed, 22 Jun 2011 15:30:51 -0400
-Message-Id: <1308771051-30861-1-git-send-email-mike@mikebwilliams.com>
-Cc: Mike Williams <mike@mikebwilliams.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 18F5AB6F75
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 06:11:53 +1000 (EST)
+Date: Wed, 22 Jun 2011 22:11:43 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
+Message-ID: <20110622221143.503add74@wker>
+In-Reply-To: <4E012586.7050808@freescale.com>
+References: <1308691655-3416-1-git-send-email-timur@freescale.com>
+	<20110622003853.1041385c@wker> <4E012586.7050808@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"lethal@linux-sh.org" <lethal@linux-sh.org>,
+	sun york-R58495 <R58495@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 21 Jun 2011 23:13:11 +0000
+Tabi Timur-B04825 <B04825@freescale.com> wrote:
 
-Signed-off-by: Mike Williams <mike@mikebwilliams.com>
----
- drivers/crypto/amcc/crypto4xx_core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> Anatolij Gustschin wrote:
+> > No! We are using ioctl interface of this driver in many video
+> > rendering applications on overlay planes on huge number of boards.
+> > So, please don't remove it.
+> 
+> Ok, I had no idea anyone was using it.
+> 
+> Can you email me details about how you use the ioctl interface?  If I can't 
+> remove it, maybe I can clean it up.
 
-diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
-index 1891252..4895be5 100644
---- a/drivers/crypto/amcc/crypto4xx_core.c
-+++ b/drivers/crypto/amcc/crypto4xx_core.c
-@@ -1161,7 +1161,8 @@ static int __init crypto4xx_probe(struct platform_device *ofdev)
- 	if (rc)
- 		return -ENODEV;
- 
--	if (of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-crypto")) {
-+	if (of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-crypto") ||
-+	    of_find_compatible_node(NULL, NULL, "amcc,ppc460gt-crypto")) {
- 		mtdcri(SDR0, PPC460EX_SDR0_SRST,
- 		       mfdcri(SDR0, PPC460EX_SDR0_SRST) | PPC460EX_CE_RESET);
- 		mtdcri(SDR0, PPC460EX_SDR0_SRST,
--- 
-1.7.3.4
+Following DIU specific ioctls are used:
+
+MFB_SET_CHROMA_KEY
+MFB_SET_PIXFMT
+MFB_GET_PIXFMT
+MFB_SET_AOID
+MFB_GET_AOID
+MFB_GET_ALPHA
+MFB_SET_ALPHA
+
+Other ioctls can be removed. I'm not sure if someone
+uses FBIOGET_GWINFO. If there are no objections from
+other people, it can also be dropped.
