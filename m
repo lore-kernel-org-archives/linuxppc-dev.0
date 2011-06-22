@@ -1,25 +1,21 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from USA7109MR003.ACS-INC.COM (usa7109mr003.acs-inc.com
-	[63.101.151.12])
-	(using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
-	(Client CN "usa7109mr.acs-inc.com",
-	Issuer "GeoTrust DV SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7B68BB6FCC
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 20:52:04 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] fsl-diu-fb: remove the ioctl interface
-Date: Wed, 22 Jun 2011 11:39:49 +0100
-Message-ID: <929D3CED81F34E43887A393170D66FB90484A280@GBRSUN01MS002.eu.xerox.net>
-In-Reply-To: <20110622003853.1041385c@wker>
-References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-	<20110622003853.1041385c@wker>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Anatolij Gustschin" <agust@denx.de>,
-	"Timur Tabi" <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org,
-	yorksun@freescale.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 46ED4B6F53
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 22 Jun 2011 21:09:07 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: fix NAND_CMD_READID read bytes number
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1307931792-30386-1-git-send-email-Shaohui.Xie@freescale.com>
+Date: Wed, 22 Jun 2011 06:08:49 -0500
+Message-Id: <A930A3E6-3999-4240-A40B-03F3A9A5B481@kernel.crashing.org>
+References: <1307931792-30386-1-git-send-email-Shaohui.Xie@freescale.com>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: scottwood@freescale.com, linux-mtd@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > The ioctl interface in the Freescale DIU framebuffer driver is just
-a
-> > collection of miscellaneous functions which were only used in a
-one-time
-> > demo application that was never distributed.  Plus, the ioctls were
-spread
-> > across two types (both conflicting), and the demo app didn't even
-use all
-> > of them.
-> >=20
-> > Removing the ioctl interface also allows us to clean up the header
-file and
-> > remove other unusued stuff.
->=20
-> No! We are using ioctl interface of this driver in many video
-> rendering applications on overlay planes on huge number of boards.
-> So, please don't remove it.
->=20
-> Anatolij
 
-Can you make available your application code by posting a link to it?
+On Jun 12, 2011, at 9:23 PM, Shaohui Xie wrote:
 
-Thanks,
-Clive
+> when nand_get_flash_type() is called, it will read 8 bytes of ID =
+instead of 5,
+> but the driver only read 5 bytes, so kernel will dump error messages =
+like:
+>=20
+> fsl-lbc ffe124000.localbus: read_byte beyond end of buffer
+> fsl-lbc ffe124000.localbus: read_byte beyond end of buffer
+> fsl-lbc ffe124000.localbus: read_byte beyond end of buffer
+>=20
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> ---
+> drivers/mtd/nand/fsl_elbc_nand.c |    6 +++---
+> 1 files changed, 3 insertions(+), 3 deletions(-)
+
+applied to merge
+
+- k=
