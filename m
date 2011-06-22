@@ -1,17 +1,25 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B98F5B6F83
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 20:39:18 +1000 (EST)
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/4] powerpc, mpc52xx: add a4m072 board support
-Date: Wed, 22 Jun 2011 12:39:10 +0200
-Message-Id: <1308739150-31527-1-git-send-email-hs@denx.de>
-In-Reply-To: <1308729311-15375-3-git-send-email-hs@denx.de>
-References: <1308729311-15375-3-git-send-email-hs@denx.de>
-Cc: Heiko Schocher <hs@denx.de>, Wolfgang Denk <wd@denx.de>,
-	devicetree-discuss@ozlabs.org
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from USA7109MR003.ACS-INC.COM (usa7109mr003.acs-inc.com
+	[63.101.151.12])
+	(using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+	(Client CN "usa7109mr.acs-inc.com",
+	Issuer "GeoTrust DV SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7B68BB6FCC
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 20:52:04 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] fsl-diu-fb: remove the ioctl interface
+Date: Wed, 22 Jun 2011 11:39:49 +0100
+Message-ID: <929D3CED81F34E43887A393170D66FB90484A280@GBRSUN01MS002.eu.xerox.net>
+In-Reply-To: <20110622003853.1041385c@wker>
+References: <1308691655-3416-1-git-send-email-timur@freescale.com>
+	<20110622003853.1041385c@wker>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "Anatolij Gustschin" <agust@denx.de>,
+	"Timur Tabi" <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org,
+	yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,216 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: Grant Likely <grant.likely@secretlab.ca>
-cc: devicetree-discuss@ozlabs.org
-cc: Wolfgang Denk <wd@denx.de>
-cc: Wolfram Sang <w.sang@pengutronix.de>
----
-For this patchseries following patch is needed:
+> > The ioctl interface in the Freescale DIU framebuffer driver is just
+a
+> > collection of miscellaneous functions which were only used in a
+one-time
+> > demo application that was never distributed.  Plus, the ioctls were
+spread
+> > across two types (both conflicting), and the demo app didn't even
+use all
+> > of them.
+> >=20
+> > Removing the ioctl interface also allows us to clean up the header
+file and
+> > remove other unusued stuff.
+>=20
+> No! We are using ioctl interface of this driver in many video
+> rendering applications on overlay planes on huge number of boards.
+> So, please don't remove it.
+>=20
+> Anatolij
 
-http://patchwork.ozlabs.org/patch/91919/
+Can you make available your application code by posting a link to it?
 
-Grant? Do you have some comments on that patch?
-
-changes for v2:
-  add comment from Wolfram Sang:
-  use mpc5200.dtsi
-
- arch/powerpc/boot/dts/a4m072.dts             |  172 ++++++++++++++++++++++++++
- arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
- 2 files changed, 173 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/a4m072.dts
-
-diff --git a/arch/powerpc/boot/dts/a4m072.dts b/arch/powerpc/boot/dts/a4m072.dts
-new file mode 100644
-index 0000000..adb6746
---- /dev/null
-+++ b/arch/powerpc/boot/dts/a4m072.dts
-@@ -0,0 +1,172 @@
-+/*
-+ * a4m072 board Device Tree Source
-+ *
-+ * Copyright (C) 2011 DENX Software Engineering GmbH
-+ * Heiko Schocher <hs@denx.de>
-+ *
-+ * Copyright (C) 2007 Semihalf
-+ * Marian Balakowicz <m8@semihalf.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/include/ "mpc5200b.dtsi"
-+
-+/ {
-+	model = "anonymous,a4m072";
-+	compatible = "anonymous,a4m072";
-+
-+	soc5200@f0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,mpc5200b-immr";
-+		ranges = <0 0xf0000000 0x0000c000>;
-+		reg = <0xf0000000 0x00000100>;
-+		bus-frequency = <0>; /* From boot loader */
-+		system-frequency = <0>; /* From boot loader */
-+
-+		cdm@200 {
-+			fsl,ext_48mhz_en = <0x0>;
-+			fsl,fd_enable = <0x01>;
-+			fsl,fd_counters = <0xbbbb>;
-+		};
-+
-+		timer@600 {
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-+			reg = <0x600 0x80>;
-+			interrupts = <1 9 0>;
-+			fsl,has-wdt;
-+		};
-+
-+		gpt3: timer@630 { /* General Purpose Timer in GPIO mode */
-+			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
-+
-+		gpt4: timer@640 { /* General Purpose Timer in GPIO mode */
-+			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
-+
-+		gpt5: timer@650 { /* General Purpose Timer in GPIO mode */
-+			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
-+
-+		spi@f00 {
-+			status = "disabled";
-+		};
-+
-+		psc@2000 {
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2000 0x100>;
-+			interrupts = <2 1 0>;
-+		};
-+
-+		psc@2200 {
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2200 0x100>;
-+			interrupts = <2 2 0>;
-+		};
-+
-+		psc@2400 {
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2400 0x100>;
-+			interrupts = <2 3 0>;
-+		};
-+
-+		psc@2600 {
-+			status = "disabled";
-+		};
-+
-+		psc@2800 {
-+			status = "disabled";
-+		};
-+
-+		psc@2c00 {
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2c00 0x100>;
-+			interrupts = <2 4 0>;
-+		};
-+
-+		ethernet@3000 {
-+			phy-handle = <&phy0>;
-+		};
-+
-+		mdio@3000 {
-+			phy0: ethernet-phy@1f {
-+				reg = <0x1f>;
-+				interrupts = <1 2 0>; /* IRQ 2 active low */
-+			};
-+		};
-+
-+		i2c@3d00 {
-+			status = "disabled";
-+		};
-+
-+		i2c@3d40 {
-+			 hwmon@2e {
-+				compatible = "nsc,lm87";
-+				reg = <0x2e>;
-+			};
-+			 rtc@51 {
-+				compatible = "nxp,rtc8564";
-+				reg = <0x51>;
-+			};
-+		};
-+	};
-+
-+	localbus {
-+		compatible = "fsl,mpc5200b-lpb","simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges = <0 0 0xfe000000 0x02000000
-+			  1 0 0x62000000 0x00400000
-+			  2 0 0x64000000 0x00200000
-+			  3 0 0x66000000 0x01000000
-+			  6 0 0x68000000 0x01000000
-+			  7 0 0x6a000000 0x00000004
-+			 >;
-+
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0 0 0x02000000>;
-+			bank-width = <2>;
-+			#size-cells = <1>;
-+			#address-cells = <1>;
-+		};
-+		sram0@1,0 {
-+			compatible = "mtd-ram";
-+			reg = <1 0x00000 0x00400000>;
-+			bank-width = <2>;
-+		};
-+	};
-+
-+	pci@f0000d00 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc5200-pci";
-+		reg = <0xf0000d00 0x100>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+				 /* IDSEL 0x16 */
-+				 0xc000 0 0 1 &mpc5200_pic 1 3 3
-+				 0xc000 0 0 2 &mpc5200_pic 1 3 3
-+				 0xc000 0 0 3 &mpc5200_pic 1 3 3
-+				 0xc000 0 0 4 &mpc5200_pic 1 3 3>;
-+		clock-frequency = <0>; /* From boot loader */
-+		interrupts = <2 8 0 2 9 0 2 10 0>;
-+		bus-range = <0 0>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
-+			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+	};
-+};
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index e36d6e2..192b4ff 100644
---- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -50,6 +50,7 @@ static void __init mpc5200_simple_setup_arch(void)
- 
- /* list of the supported boards */
- static const char *board[] __initdata = {
-+	"anonymous,a4m072",
- 	"intercontrol,digsy-mtc",
- 	"manroland,mucmc52",
- 	"manroland,uc101",
--- 
-1.7.5.4
+Thanks,
+Clive
