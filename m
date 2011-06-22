@@ -1,29 +1,23 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 5DB9DB6FB9
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E57AB6FC5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 17:55:22 +1000 (EST)
-Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
-	by mail-out.m-online.net (Postfix) with ESMTP id BE4A61C01A2A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 09:55:20 +0200 (CEST)
-Received: from mail.denx.de (host-82-135-33-74.customer.m-online.net
-	[82.135.33.74])
-	by smtp-auth.mnet-online.de (Postfix) with ESMTPA id B97A81C000AF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 09:55:20 +0200 (CEST)
-Received: from pollux.denx.de (pollux [192.168.1.1])
-	by mail.denx.de (Postfix) with ESMTP id A485134006D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 09:55:20 +0200 (CEST)
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4] powerpc, mpc5200: add options to mpc5200_defconfig
-Date: Wed, 22 Jun 2011 09:55:11 +0200
-Message-Id: <1308729311-15375-5-git-send-email-hs@denx.de>
-In-Reply-To: <1308729311-15375-1-git-send-email-hs@denx.de>
+	Wed, 22 Jun 2011 18:10:13 +1000 (EST)
+Date: Wed, 22 Jun 2011 10:09:59 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH 2/4] powerpc, mpc52xx: add a4m072 board support
+Message-ID: <20110622080959.GA16605@pengutronix.de>
 References: <1308729311-15375-1-git-send-email-hs@denx.de>
-Cc: Heiko Schocher <hs@denx.de>, Wolfgang Denk <wd@denx.de>
+	<1308729311-15375-3-git-send-email-hs@denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="pWyiEgJYm5f9v55/"
+In-Reply-To: <1308729311-15375-3-git-send-email-hs@denx.de>
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,60 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the following options to the mpc5200_defconfig, needed
-for the a4m072 board support:
 
-CONFIG_AMD_PHY=y
-CONFIG_MTD_PLATRAM=y -> this deletes CONFIG_MTD_RAM=y
-CONFIG_GPIO_SYSFS=y
-CONFIG_SENSORS_LM87=m
-CONFIG_RTC_DRV_PCF8563=m
+--pWyiEgJYm5f9v55/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: Wolfgang Denk <wd@denx.de>
----
- arch/powerpc/configs/mpc5200_defconfig |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+On Wed, Jun 22, 2011 at 09:55:09AM +0200, Heiko Schocher wrote:
+> Signed-off-by: Heiko Schocher <hs@denx.de>
+> cc: Grant Likely <grant.likely@secretlab.ca>
+> cc: devicetree-discuss@ozlabs.org
+> cc: Wolfgang Denk <wd@denx.de>
+> ---
+> For this patchseries following patch is needed:
+>=20
+> http://patchwork.ozlabs.org/patch/91919/
+>=20
+> Grant? Do you have some comments on that patch?
 
-diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
-index b3e27f6..1e64591 100644
---- a/arch/powerpc/configs/mpc5200_defconfig
-+++ b/arch/powerpc/configs/mpc5200_defconfig
-@@ -39,9 +39,9 @@ CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLOCK=y
- CONFIG_MTD_CFI=y
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_RAM=y
- CONFIG_MTD_ROM=y
- CONFIG_MTD_PHYSMAP_OF=y
-+CONFIG_MTD_PLATRAM=y
- CONFIG_MTD_UBI=m
- CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
-@@ -56,6 +56,7 @@ CONFIG_ATA=y
- CONFIG_PATA_MPC52xx=y
- CONFIG_PATA_PLATFORM=y
- CONFIG_NETDEVICES=y
-+CONFIG_AMD_PHY=y
- CONFIG_LXT_PHY=y
- CONFIG_NET_ETHERNET=y
- CONFIG_FEC_MPC52xx=y
-@@ -75,6 +76,8 @@ CONFIG_SPI_GPIO=m
- CONFIG_SPI_MPC52xx=m
- CONFIG_SPI_MPC52xx_PSC=m
- CONFIG_SPI_SPIDEV=m
-+CONFIG_GPIO_SYSFS=y
-+CONFIG_SENSORS_LM87=m
- CONFIG_WATCHDOG=y
- CONFIG_DRM=y
- CONFIG_VIDEO_OUTPUT_CONTROL=y
-@@ -107,6 +110,7 @@ CONFIG_USB_STORAGE=y
- CONFIG_NEW_LEDS=y
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_PCF8563=m
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--- 
-1.7.5.4
+Can you use the mpc5200-include?
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--pWyiEgJYm5f9v55/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEARECAAYFAk4Bo1cACgkQD27XaX1/VRsUJQCgkrL4qZKLnO+uL9Limm0ld1eZ
+OuAAoJCn8hnvuEbZMqQjTgMkpk3+Q9a9
+=OHiN
+-----END PGP SIGNATURE-----
+
+--pWyiEgJYm5f9v55/--
