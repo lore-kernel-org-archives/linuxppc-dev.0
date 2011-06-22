@@ -1,17 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <felix@embedded-sol.com>
+Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 601F5B6FC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 03:13:06 +1000 (EST)
+Message-ID: <4E02229B.50707@embedded-sol.com>
+Date: Wed, 22 Jun 2011 20:12:59 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
-References: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
-	<F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 22 Jun 2011 10:34:34 -0600
-Message-ID: <BANLkTi=zjnaFWbSAxj0Cr3_FpGxNcqvQ9Q@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: meet2prabhu@gmail.com, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, Prabhakar Kushwaha <prabhakar@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Connecting SGMII PHY to eTSEC1 on P1022
+References: <4E021113.10909@embedded-sol.com> <4E0215E5.5060606@freescale.com>
+In-Reply-To: <4E0215E5.5060606@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,70 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 22, 2011 at 5:34 AM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
->
-> On Jun 7, 2011, at 9:49 PM, Prabhakar Kushwaha wrote:
->
->> ten-bit interface (TBI) module is part of SoC not board.
->>
->> Move tbi entries from board related dts files to Si dts.
->>
->> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
->> ---
->> Based upon http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.=
-git (branch next)
->>
->> arch/powerpc/boot/dts/p1020rdb.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A09 ---=
-------
->> arch/powerpc/boot/dts/p1020rdb_camp_core0.dts | =A0 =A08 --------
->> arch/powerpc/boot/dts/p1020si.dtsi =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A06 +++=
-++-
->> arch/powerpc/boot/dts/p2020rdb.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A08 ---=
------
->> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts | =A0 =A08 --------
->> arch/powerpc/boot/dts/p2020si.dtsi =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A06 +++=
-++-
->> 6 files changed, 10 insertions(+), 35 deletions(-)
->>
->> diff --git a/arch/powerpc/boot/dts/p1020rdb.dts b/arch/powerpc/boot/dts/=
-p1020rdb.dts
->> index d6a8ae4..a4e5d6c 100644
->> --- a/arch/powerpc/boot/dts/p1020rdb.dts
->> +++ b/arch/powerpc/boot/dts/p1020rdb.dts
->> @@ -211,14 +211,6 @@
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
->>
->> - =A0 =A0 =A0 =A0 =A0 =A0 mdio@25000 {
->> -
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tbi0: tbi-phy@11 {
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x11>=
-;
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_type =
-=3D "tbi-phy";
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
->> - =A0 =A0 =A0 =A0 =A0 =A0 };
->> -
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 enet0: ethernet@b0000 {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 fixed-link =3D <1 1 1000 0 0=
->;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy-connection-type =3D "rgm=
-ii-id";
->> @@ -227,7 +219,6 @@
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 enet1: ethernet@b1000 {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy-handle =3D <&phy0>;
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tbi-handle =3D <&tbi0>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy-connection-type =3D "sgm=
-ii";
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
->
-> I'm not sure we should do this. =A0The phy address we pick is board speci=
-fic so it should NOT be in .dtsi
+Hi Timur,
 
-Ah, okay.  I was under the impression that the tbi address was
-internal to the SoC, and not configurable.
+On 06/22/2011 07:18 PM, Timur Tabi wrote:
+> Felix Radensky wrote:
+>> What am I doing wrong ?
+> Can you debug the PHY driver to see if it's getting called and trying to talk to
+> the PHY itself?
+>
+I'll do that tomorrow and report back.
 
-g.
+Thanks.
+
+Felix.
