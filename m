@@ -1,26 +1,15 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE006.bigfish.com (am1ehsobe006.messaging.microsoft.com
-	[213.199.154.209])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 145A5B6F86
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2011 09:13:19 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
-Date: Tue, 21 Jun 2011 23:13:11 +0000
-Message-ID: <4E012586.7050808@freescale.com>
-References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-	<20110622003853.1041385c@wker>
-In-Reply-To: <20110622003853.1041385c@wker>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 22 Jun 2011 13:20:13 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 0/15] Hypervisor-mode KVM on POWER7 and PPC970
+Message-ID: <20110622032013.GA28610@bloggs.ozlabs.ibm.com>
+References: <20110618082705.GA28413__14973.6630417921$1308385948$gmane$org@bloggs.ozlabs.ibm.com>
+	<itq97v$dc$1@dough.gmane.org>
 MIME-Version: 1.0
-Cc: sun york-R58495 <R58495@freescale.com>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"lethal@linux-sh.org" <lethal@linux-sh.org>,
-	Tabi Timur-B04825 <B04825@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <itq97v$dc$1@dough.gmane.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anatolij Gustschin wrote:
-> No! We are using ioctl interface of this driver in many video
-> rendering applications on overlay planes on huge number of boards.
-> So, please don't remove it.
+On Tue, Jun 21, 2011 at 02:18:39PM +0000, Dmitry Eremin-Solenikov wrote:
 
-Ok, I had no idea anyone was using it.
+> I have a Maple board (dual PPC970FX). Will this patchset work on it?
+> Should I add any additional changes to add support for this platform?
 
-Can you email me details about how you use the ioctl interface?  If I can't=
-=20
-remove it, maybe I can clean it up.
+Provided the firmware gives you control in hypervisor mode, yes it
+should work, and I don't know of any extra changes you would need.
+I don't recall what firmware the Maple boards had on them, though.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Paul.
