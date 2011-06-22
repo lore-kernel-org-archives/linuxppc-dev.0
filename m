@@ -1,19 +1,23 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from sh78.surpasshosting.com (sh78.surpasshosting.com [72.29.64.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 601F5B6FC5
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 03:13:06 +1000 (EST)
-Message-ID: <4E02229B.50707@embedded-sol.com>
-Date: Wed, 22 Jun 2011 20:12:59 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <B07421@freescale.com>
+Received: from CH1EHSOBE003.bigfish.com (ch1ehsobe004.messaging.microsoft.com
+	[216.32.181.184]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2BA7EB6FCA
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 03:53:00 +1000 (EST)
+Date: Wed, 22 Jun 2011 12:52:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 1/3] driver core: Add ability for arch code to setup
+	pdev_archdata
+Message-ID: <20110622125252.66eceb46@schlenkerla.am.freescale.net>
+In-Reply-To: <1308755396-17988-1-git-send-email-galak@kernel.crashing.org>
+References: <1308744176-24491-1-git-send-email-galak@kernel.crashing.org>
+	<1308755396-17988-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Connecting SGMII PHY to eTSEC1 on P1022
-References: <4E021113.10909@embedded-sol.com> <4E0215E5.5060606@freescale.com>
-In-Reply-To: <4E0215E5.5060606@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Timur,
+On Wed, 22 Jun 2011 10:09:56 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-On 06/22/2011 07:18 PM, Timur Tabi wrote:
-> Felix Radensky wrote:
->> What am I doing wrong ?
-> Can you debug the PHY driver to see if it's getting called and trying to talk to
-> the PHY itself?
->
-I'll do that tomorrow and report back.
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index 1c291af..c25e0c0 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/err.h>
+>  #include <linux/slab.h>
+>  #include <linux/pm_runtime.h>
+> +#include <asm/platform_device.h>
+>  
+>  #include "base.h"
+>  
+> @@ -173,6 +174,7 @@ struct platform_device *platform_device_alloc(const char *name, int id)
+>  		pa->pdev.id = id;
+>  		device_initialize(&pa->pdev.dev);
+>  		pa->pdev.dev.release = platform_device_release;
+> +		arch_setup_pdev_archdata(&pa->pdev);
+>  	}
+>  
+>  	return pa ? &pa->pdev : NULL;
 
-Thanks.
+Need to call this from platform_device_register() as well, for devices
+which are not dynamically allocated.
 
-Felix.
+> +/*
+> + * an architecture can override to define arch_setup_pdev_archdata
+> + */
+> +#ifndef arch_setup_pdev_archdata
+> +static inline void arch_setup_pdev_archdata(struct platform_device *pdev) { }
+> +#endif
+
+That's not a particularly useful comment.  More useful would be a statement
+of when this hook is called, examples of what it's meant to be used for,
+etc.
+
+-Scott
