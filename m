@@ -1,20 +1,15 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AC57AB7450
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jun 2011 21:30:29 +1000 (EST)
-Subject: Re: [PATCH] ppc/85xx: specify interrupt for pq3-localbus devices
+Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
 Mime-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1306941318-5771-1-git-send-email-dbaryshkov@gmail.com>
-Date: Wed, 22 Jun 2011 06:30:16 -0500
-Message-Id: <07159B8F-2EC4-43EE-95DF-74BB8B2D457D@kernel.crashing.org>
-References: <1306941318-5771-1-git-send-email-dbaryshkov@gmail.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
+Date: Wed, 22 Jun 2011 06:34:11 -0500
+Message-Id: <F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
+References: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: meet2prabhu@gmail.com, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +20,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 1, 2011, at 10:15 AM, Dmitry Eremin-Solenikov wrote:
+On Jun 7, 2011, at 9:49 PM, Prabhakar Kushwaha wrote:
 
-> fsl-lbc driver requires an interrupt to bind to localbus device.
-> Populate 85xx boards' dts trees with lbc interrupt info.
-> 
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> ten-bit interface (TBI) module is part of SoC not board.
+>=20
+> Move tbi entries from board related dts files to Si dts.
+>=20
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 > ---
-> arch/powerpc/boot/dts/mpc8568mds.dts       |    2 ++
-> arch/powerpc/boot/dts/socrates.dts         |    2 ++
-> arch/powerpc/boot/dts/tqm8540.dts          |    2 ++
-> arch/powerpc/boot/dts/tqm8548-bigflash.dts |    2 ++
-> arch/powerpc/boot/dts/tqm8548.dts          |    2 ++
-> arch/powerpc/boot/dts/tqm8560.dts          |    2 ++
-> arch/powerpc/boot/dts/xpedite5200.dts      |    2 ++
-> arch/powerpc/boot/dts/xpedite5200_xmon.dts |    2 ++
-> 8 files changed, 16 insertions(+), 0 deletions(-)
+> Based upon =
+http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch =
+next)
+>=20
+> arch/powerpc/boot/dts/p1020rdb.dts            |    9 ---------
+> arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    8 --------
+> arch/powerpc/boot/dts/p1020si.dtsi            |    6 +++++-
+> arch/powerpc/boot/dts/p2020rdb.dts            |    8 --------
+> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 --------
+> arch/powerpc/boot/dts/p2020si.dtsi            |    6 +++++-
+> 6 files changed, 10 insertions(+), 35 deletions(-)
+>=20
+> diff --git a/arch/powerpc/boot/dts/p1020rdb.dts =
+b/arch/powerpc/boot/dts/p1020rdb.dts
+> index d6a8ae4..a4e5d6c 100644
+> --- a/arch/powerpc/boot/dts/p1020rdb.dts
+> +++ b/arch/powerpc/boot/dts/p1020rdb.dts
+> @@ -211,14 +211,6 @@
+> 			};
+> 		};
+>=20
+> -		mdio@25000 {
+> -
+> -			tbi0: tbi-phy@11 {
+> -				reg =3D <0x11>;
+> -				device_type =3D "tbi-phy";
+> -			};
+> -		};
+> -
+> 		enet0: ethernet@b0000 {
+> 			fixed-link =3D <1 1 1000 0 0>;
+> 			phy-connection-type =3D "rgmii-id";
+> @@ -227,7 +219,6 @@
+>=20
+> 		enet1: ethernet@b1000 {
+> 			phy-handle =3D <&phy0>;
+> -			tbi-handle =3D <&tbi0>;
+> 			phy-connection-type =3D "sgmii";
+>=20
+> 		};
 
-applied to next
+I'm not sure we should do this.  The phy address we pick is board =
+specific so it should NOT be in .dtsi
 
-- k
+- k=
