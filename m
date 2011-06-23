@@ -1,17 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F230DB6F84
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 12:41:56 +1000 (EST)
-Date: Wed, 22 Jun 2011 21:41:49 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <alpine.LFD.2.00.1106222141060.2926@right.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id AA781B6F83
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Jun 2011 14:31:29 +1000 (EST)
+Subject: Re: [PATCH] libata/sas: only set FROZEN flag if new EH is supported
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Brian King <brking@linux.vnet.ibm.com>
+In-Reply-To: <4E00FF58.7070802@linux.vnet.ibm.com>
+References: <20110615191747.GA6324@us.ibm.com>
+	<4DF90FCA.1040706@linux.vnet.ibm.com>
+	<20110615233417.GB6324@us.ibm.com>
+	<20110616075114.GH8141@htj.dyndns.org>
+	<4DFA0507.3090609@linux.vnet.ibm.com>
+	<20110616152836.GA15268@us.ibm.com>
+	<20110621160714.GA14174@us.ibm.com>
+	<4E00FF58.7070802@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 23 Jun 2011 14:31:01 +1000
+Message-ID: <1308803461.32158.191.camel@pasglop>
+Mime-Version: 1.0
+Cc: jgarzik@pobox.com, wayneb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, mbizon@freebox.fr,
+	Tejun Heo <tj@kernel.org>, Nishanth Aravamudan <nacc@us.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +34,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit 56299378726d5f2ba8d3c8cbbd13cb280ba45e4f:
-  Linus Torvalds (1):
-        Linux 3.0-rc4
+On Tue, 2011-06-21 at 15:30 -0500, Brian King wrote:
+> Looks good to me. Jeff/Tejun - any issues with merging this?
 
-are available in the git repository at:
+BTW. Current upstream with that patch applied on a machine here leads to
+several oddities, I don't know at this point whether any of that is
+actually a regression :
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-Scott Wood (1):
-      powerpc/e500: fix breakage with fsl_rio_mcheck_exception
 
-Shaohui Xie (1):
-      powerpc/85xx: fix NAND_CMD_READID read bytes number
 
-Timur Tabi (1):
-      powerpc/p1022ds: fix audio-related properties in the device tree
-
- arch/powerpc/boot/dts/p1022ds.dts |    9 ++++++---
- arch/powerpc/kernel/traps.c       |    2 +-
- arch/powerpc/sysdev/fsl_rio.c     |   33 +++++++++++++++++----------------
- drivers/mtd/nand/fsl_elbc_nand.c  |    6 +++---
- 4 files changed, 27 insertions(+), 23 deletions(-)
+> Thanks,
+> 
+> Brian
+> 
+> On 06/21/2011 11:07 AM, Nishanth Aravamudan wrote:
+> > Ping on this -- Tejun, Brian, Jeff, this is a pretty annoying 2.6.39
+> > regression which it would be good to have fixed in 3.0.
+> > 
+> > Thanks,
+> > Nish
+> > 
+> > On 16.06.2011 [08:28:36 -0700], Nishanth Aravamudan wrote:
+> >> On 16.06.2011 [08:28:39 -0500], Brian King wrote:
+> >>> On 06/16/2011 02:51 AM, Tejun Heo wrote:
+> >>>> On Wed, Jun 15, 2011 at 04:34:17PM -0700, Nishanth Aravamudan wrote:
+> >>>>>> That looks like the right thing to do. For ipr's usage of
+> >>>>>> libata, we don't have the concept of a port frozen state, so this flag
+> >>>>>> should really never get set. The alternate way to fix this would be to
+> >>>>>> only set ATA_PFLAG_FROZEN in ata_port_alloc if ap->ops->error_handler
+> >>>>>> is not NULL.
+> >>>>>
+> >>>>> It seemed like ipr is as you say, but I wasn't sure if it was
+> >>>>> appropriate to make the change above in the common libata-scis code or
+> >>>>> not. I don't want to break some other device on accident.
+> >>>>>
+> >>>>> Also, I tried your suggestion, but I don't think that can happen in
+> >>>>> ata_port_alloc? ata_port_alloc is allocated ap itself, and it seems like
+> >>>>> ap->ops typically gets set only after ata_port_alloc returns?
+> >>>>
+> >>>> Maybe we can test error_handler in ata_sas_port_start()?
+> >>>
+> >>> Good point. Since libsas is converted to the new eh now, we would need to have
+> >>> this test.
+> >>
+> >> Commit 7b3a24c57d2eeda8dba9c205342b12689c4679f9 ("ahci: don't enable
+> >> port irq before handler is registered") caused a regression for CD-ROMs
+> >> attached to the IPR SATA bus on Power machines:
+> >>
+> >>   ata_port_alloc: ENTER
+> >>   ata_port_probe: ata1: bus probe begin
+> >>   ata1.00: ata_dev_read_id: ENTER
+> >>   ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+> >>   ata1.00: ata_dev_read_id: ENTER
+> >>   ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+> >>   ata1.00: limiting speed to UDMA7:PIO5
+> >>   ata1.00: ata_dev_read_id: ENTER
+> >>   ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+> >>   ata1.00: disabled
+> >>   ata_port_probe: ata1: bus probe end
+> >>   scsi_alloc_sdev: Allocation failure during SCSI scanning, some SCSI devices might not be configured
+> >>
+> >> The FROZEN flag added in that commit is only cleared by the new EH code,
+> >> which is not used by ipr. Clear this flag in the SAS code if we don't
+> >> support new EH.
+> >>
+> >> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> >>
+> >> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> >> index d51f979..ebe1685 100644
+> >> --- a/drivers/ata/libata-scsi.c
+> >> +++ b/drivers/ata/libata-scsi.c
+> >> @@ -3797,6 +3797,12 @@ EXPORT_SYMBOL_GPL(ata_sas_port_alloc);
+> >>   */
+> >>  int ata_sas_port_start(struct ata_port *ap)
+> >>  {
+> >> +	/*
+> >> +	 * the port is marked as frozen at allocation time, but if we don't
+> >> +	 * have new eh, we won't thaw it
+> >> +	 */
+> >> +	if (!ap->ops->error_handler)
+> >> +		ap->pflags &= ~ATA_PFLAG_FROZEN;
+> >>  	return 0;
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(ata_sas_port_start);
+> >>
+> >>
+> >> -- 
+> >> Nishanth Aravamudan <nacc@us.ibm.com>
+> >> IBM Linux Technology Center
+> > 
+> 
+> 
