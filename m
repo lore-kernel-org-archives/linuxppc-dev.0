@@ -1,22 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9444BB6F5F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jun 2011 09:23:10 +1000 (EST)
-In-Reply-To: <1308771051-30861-1-git-send-email-mike@mikebwilliams.com>
-References: <1308771051-30861-1-git-send-email-mike@mikebwilliams.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <14e6cd940efae1704f5908757f81f627@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc,
-	460gt: Add 460gt as compatible in the check for 460ex-compatible
-	crypto
-Date: Thu, 23 Jun 2011 01:24:54 +0200
-To: Mike Williams <mike@mikebwilliams.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id F230DB6F84
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 12:41:56 +1000 (EST)
+Date: Wed, 22 Jun 2011 21:41:49 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Message-ID: <alpine.LFD.2.00.1106222141060.2926@right.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,12 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -	if (of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-crypto")) {
-> +	if (of_find_compatible_node(NULL, NULL, "amcc,ppc460ex-crypto") ||
-> +	    of_find_compatible_node(NULL, NULL, "amcc,ppc460gt-crypto")) {
+The following changes since commit 56299378726d5f2ba8d3c8cbbd13cb280ba45e4f:
+  Linus Torvalds (1):
+        Linux 3.0-rc4
 
-If the device is actually compatible, the device tree node should claim
-it is, and you do not need this code change.
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-Segher
+Scott Wood (1):
+      powerpc/e500: fix breakage with fsl_rio_mcheck_exception
+
+Shaohui Xie (1):
+      powerpc/85xx: fix NAND_CMD_READID read bytes number
+
+Timur Tabi (1):
+      powerpc/p1022ds: fix audio-related properties in the device tree
+
+ arch/powerpc/boot/dts/p1022ds.dts |    9 ++++++---
+ arch/powerpc/kernel/traps.c       |    2 +-
+ arch/powerpc/sysdev/fsl_rio.c     |   33 +++++++++++++++++----------------
+ drivers/mtd/nand/fsl_elbc_nand.c  |    6 +++---
+ 4 files changed, 27 insertions(+), 23 deletions(-)
