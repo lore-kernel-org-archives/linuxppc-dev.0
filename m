@@ -1,35 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
-	[213.199.154.143])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <B04825@freescale.com>
+Received: from CH1EHSOBE009.bigfish.com (ch1ehsobe003.messaging.microsoft.com
+	[216.32.181.183]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F5C8B6F91
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2011 03:49:51 +1000 (EST)
-Date: Thu, 23 Jun 2011 12:48:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
-	the hypervisor
-Message-ID: <20110623124802.7aeb6b66@schlenkerla.am.freescale.net>
-In-Reply-To: <4E0378F4.5010501@freescale.com>
-References: <1308092673-13045-1-git-send-email-timur@freescale.com>
-	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
-	<4DF7EB8E.8020308@freescale.com>
-	<20110614182517.776d7e77@schlenkerla.am.freescale.net>
-	<1308103091.2635.13.camel@pasglop> <4DF814A3.7070209@freescale.com>
-	<1308105196.2635.16.camel@pasglop>
-	<083792FF-81CD-407C-B6B8-6D0481A0D65D@kernel.crashing.org>
-	<4E020268.2020809@freescale.com>
-	<20110623122210.06ee9f55@schlenkerla.am.freescale.net>
-	<4E0378F4.5010501@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id B8E2CB6FA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2011 05:49:01 +1000 (EST)
+Received: from mail77-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail77-ch1-R.bigfish.com (Postfix) with ESMTP id B4275CB024A	for
+	<linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2011 19:48:57 +0000 (UTC)
+Received: from CH1EHSMHS029.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.243])	by mail77-ch1.bigfish.com (Postfix) with ESMTP id
+	8DAE016F804F	for <linuxppc-dev@ozlabs.org>;
+	Thu, 23 Jun 2011 19:48:57 +0000 (UTC)
+From: Timur Tabi <timur@freescale.com>
+To: <kumar.gala@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: enable the framebuffer console for the
+	defconfigs
+Date: Thu, 23 Jun 2011 14:48:55 -0500
+Message-ID: <1308858535-17396-2-git-send-email-timur@freescale.com>
+In-Reply-To: <1308858535-17396-1-git-send-email-timur@freescale.com>
+References: <1308858535-17396-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"paulus@samba.org" <paulus@samba.org>,
-	McClintock Matthew-B29882 <B29882@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,48 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Jun 2011 12:33:40 -0500
-Timur Tabi <timur@freescale.com> wrote:
+Enable framebuffer console support by default in the defconfigs for the
+Freescale 85xx-based reference board.  This allows the boot messages to
+be shown on the video display on the P1022DS.
 
-> Scott Wood wrote:
-> > From Power ISA 2.06B, book III-E, section 9.2.1:
-> > 
-> > Virtualized Implementation Note:
-> > 
-> > In virtualized implementations, TBU and TBL are
-> > read-only.
-> 
-> But does that mean that a guest should never be allowed to modify a virtualized
-> timebase register, even if the hypervisor can support it?
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/configs/mpc85xx_defconfig     |    4 ++++
+ arch/powerpc/configs/mpc85xx_smp_defconfig |    4 ++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-The book3e mtspr writeup doesn't appear to specify the behavior when
-writing to a read-only SPR, so perhaps you could argue that something other
-than a no-op is implementation-specific behavior.
-
-For a guest, the safe thing is to not write to those registers unless you
-specifically know it's going to do what you want under a particular
-implementation.  It's not specifically a Topaz limitation.
-
-> >> > So a generic HV mode bit is not going to help me, unless there's also a bit
-> >> > that's specific to our hypervisor.  And even then, we would need some way to
-> >> > differentiate among different versions of our hypervisor, in case some future
-> >> > version adds timebase support. 
-> 
-> > That's very unlikely to happen.
-> 
-> I know. I was just being architecturally pedantic.
-
-It's not as if it would hurt anything to ignore such a capability.
-
-> > Ideally we would avoid doing this sync even when not running under a
-> > hypervisor, as long as firmware has done the sync, and kexec hasn't messed
-> > it up.  Besides being a waste of boot time, the firmware's sync is
-> > probably tighter since it can use a platform-specific mechanism to start all
-> > the timebases at once.
-> 
-> I agree with that, but for now, I need to work around that kexec "limitation".
-
-Is there any way we can detect whether we booted via kexec (as opposed to
-just having kexec support enabled), and only do the sync in that case?
-
--Scott
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index 96b89df..b212e3d 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -128,6 +128,10 @@ CONFIG_VIDEO_OUTPUT_CONTROL=y
+ CONFIG_FB=y
+ CONFIG_FB_FSL_DIU=y
+ # CONFIG_VGA_CONSOLE is not set
++CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FONTS=y
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
+ CONFIG_SOUND=y
+ CONFIG_SND=y
+ # CONFIG_SND_SUPPORT_OLD_API is not set
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index de65841..87fbb2e 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -130,6 +130,10 @@ CONFIG_VIDEO_OUTPUT_CONTROL=y
+ CONFIG_FB=y
+ CONFIG_FB_FSL_DIU=y
+ # CONFIG_VGA_CONSOLE is not set
++CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FONTS=y
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
+ CONFIG_SOUND=y
+ CONFIG_SND=y
+ # CONFIG_SND_SUPPORT_OLD_API is not set
+-- 
+1.7.3.4
