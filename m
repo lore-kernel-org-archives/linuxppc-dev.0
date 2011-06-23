@@ -1,43 +1,19 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B741B6F88
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jun 2011 15:10:28 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp08.au.ibm.com (8.14.4/8.13.1) with ESMTP id p5N55CpP002781
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2011 15:05:12 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p5N59A281040636
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2011 15:09:10 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p5N5AK9u031003
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2011 15:10:20 +1000
-Subject: Re: [PATCH] libata/sas: only set FROZEN flag if new EH is supported
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Brian King <brking@linux.vnet.ibm.com>
-In-Reply-To: <1308804120.32158.202.camel@pasglop>
-References: <20110615191747.GA6324@us.ibm.com>
-	<4DF90FCA.1040706@linux.vnet.ibm.com>
-	<20110615233417.GB6324@us.ibm.com>
-	<20110616075114.GH8141@htj.dyndns.org>
-	<4DFA0507.3090609@linux.vnet.ibm.com>
-	<20110616152836.GA15268@us.ibm.com>
-	<20110621160714.GA14174@us.ibm.com>
-	<4E00FF58.7070802@linux.vnet.ibm.com>
-	<1308803461.32158.191.camel@pasglop>
-	<1308804120.32158.202.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 23 Jun 2011 15:10:17 +1000
-Message-ID: <1308805817.32158.204.camel@pasglop>
-Mime-Version: 1.0
-Cc: jgarzik@pobox.com, wayneb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, mbizon@freebox.fr,
-	Tejun Heo <tj@kernel.org>, Nishanth Aravamudan <nacc@us.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <B10812@freescale.com>
+From: Aggrwal Poonam-B10812 <B10812@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Kushwaha Prabhakar-B32579
+	<B32579@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
+Date: Thu, 23 Jun 2011 07:24:06 +0000
+Message-ID: <45903308677306428B6EE7E6FF5A52041419B6@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
+	<F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
+In-Reply-To: <F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "meet2prabhu@gmail.com" <meet2prabhu@gmail.com>,
+	"devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,23 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-06-23 at 14:42 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2011-06-23 at 14:31 +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2011-06-21 at 15:30 -0500, Brian King wrote:
-> > > Looks good to me. Jeff/Tejun - any issues with merging this?
-> > 
-> > BTW. Current upstream with that patch applied on a machine here leads to
-> > several oddities, I don't know at this point whether any of that is
-> > actually a regression :
-> 
-> Ooops... pressed "send" too quickly. Here's a log excerpt with some
-> comments:
 
- .../...
 
-Ok so most of that is already in 2.6.39, including the odd LUN, so
-nothing new under the sun.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.or=
+g
+> [mailto:linuxppc-dev-
+> bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Kum=
+ar
+> Gala
+> Sent: Wednesday, June 22, 2011 5:04 PM
+> To: Kushwaha Prabhakar-B32579
+> Cc: meet2prabhu@gmail.com; devicetree-discuss@lists.ozlabs.org; linuxppc-
+> dev@lists.ozlabs.org
+> Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
+>=20
+>=20
+> On Jun 7, 2011, at 9:49 PM, Prabhakar Kushwaha wrote:
+>=20
+> > ten-bit interface (TBI) module is part of SoC not board.
+> >
+> > Move tbi entries from board related dts files to Si dts.
+> >
+> > Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> > ---
+> > Based upon
+> http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git (branch
+> next)
+> >
+> > arch/powerpc/boot/dts/p1020rdb.dts            |    9 ---------
+> > arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    8 --------
+> > arch/powerpc/boot/dts/p1020si.dtsi            |    6 +++++-
+> > arch/powerpc/boot/dts/p2020rdb.dts            |    8 --------
+> > arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 --------
+> > arch/powerpc/boot/dts/p2020si.dtsi            |    6 +++++-
+> > 6 files changed, 10 insertions(+), 35 deletions(-)
+> >
+> > diff --git a/arch/powerpc/boot/dts/p1020rdb.dts
+> b/arch/powerpc/boot/dts/p1020rdb.dts
+> > index d6a8ae4..a4e5d6c 100644
+> > --- a/arch/powerpc/boot/dts/p1020rdb.dts
+> > +++ b/arch/powerpc/boot/dts/p1020rdb.dts
+> > @@ -211,14 +211,6 @@
+> > 			};
+> > 		};
+> >
+> > -		mdio@25000 {
+> > -
+> > -			tbi0: tbi-phy@11 {
+> > -				reg =3D <0x11>;
+> > -				device_type =3D "tbi-phy";
+> > -			};
+> > -		};
+> > -
+> > 		enet0: ethernet@b0000 {
+> > 			fixed-link =3D <1 1 1000 0 0>;
+> > 			phy-connection-type =3D "rgmii-id";
+> > @@ -227,7 +219,6 @@
+> >
+> > 		enet1: ethernet@b1000 {
+> > 			phy-handle =3D <&phy0>;
+> > -			tbi-handle =3D <&tbi0>;
+> > 			phy-connection-type =3D "sgmii";
+> >
+> > 		};
+>=20
+> I'm not sure we should do this.  The phy address we pick is board
+> specific so it should NOT be in .dtsi
+The TBI phy and it's address is internal to SOC.
 
-I'll do more digging / bisection...
-
-Ben.
+Regards
+Poonam
+>=20
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
