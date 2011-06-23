@@ -1,31 +1,20 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3C1D8B6F88
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jun 2011 18:30:45 +1000 (EST)
-Received: by pvg18 with SMTP id 18so1065083pvg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jun 2011 01:30:41 -0700 (PDT)
-Subject: RE: NAND BBT corruption on MPC83xx
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Atlant Schmidt <aschmidt@dekaresearch.com>
-Date: Thu, 23 Jun 2011 11:31:25 +0300
-In-Reply-To: <0A40042D85E7C84DB443060EC44B3FD32A7208F91B@dekaexchange07.deka.local>
-References: <20110617163442.204348a0@schlenkerla.am.freescale.net>
-	<F87D23B7E1F84E4AB52E4FA4A55F85DC0259E343@tpamail.elutions.com>
-	<0A40042D85E7C84DB443060EC44B3FD32A7208F91B@dekaexchange07.deka.local>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <1308817889.18119.98.camel@sauron>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for Px020RDB
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <45903308677306428B6EE7E6FF5A52041419B6@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Thu, 23 Jun 2011 05:27:52 -0500
+Message-Id: <D87CB1B7-71DF-4667-985A-0E8126DA8BFB@kernel.crashing.org>
+References: <1307501379-3160-1-git-send-email-prabhakar@freescale.com>
+	<F9CD495E-12BF-467D-BE96-CC11486F70B8@kernel.crashing.org>
+	<45903308677306428B6EE7E6FF5A52041419B6@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Aggrwal Poonam-B10812 <B10812@freescale.com>
+Cc: "meet2prabhu@gmail.com" <meet2prabhu@gmail.com>,
+	"devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
 	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	"Matthew L. Creech" <mlcreech@gmail.com>,
-	'Mike Hench' <mhench@elutions.com>
-Reply-To: dedekind1@gmail.com
+	Kushwaha Prabhakar-B32579 <B32579@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,25 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2011-06-20 at 07:22 -0400, Atlant Schmidt wrote:
-> 
->   As far as I know (and I'm sure the list will correct
->   me if I'm wrong! ;-) ), neither UBI nor UBIFS nor any
->   Linux layer provides this routine scrubbing; you have
->   to code it up yourself, probably by accessing the
->   device at the UBI (underlying block device/LEB) layer. 
 
-UBI will scrub all LEBs with bit-flips once they are read.
-But if you have bit-flips in an LEB and it is never read, it will never
-be scrubbed. And erasures of the neighboring PEBs may turn bit-flips
-into hard errors.
+On Jun 23, 2011, at 2:24 AM, Aggrwal Poonam-B10812 wrote:
 
-To force scrubbing, the easies way is to just read all volumes, like
+>=20
+>=20
+>> -----Original Message-----
+>> From: =
+linuxppc-dev-bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org
+>> [mailto:linuxppc-dev-
+>> bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org] On Behalf Of =
+Kumar
+>> Gala
+>> Sent: Wednesday, June 22, 2011 5:04 PM
+>> To: Kushwaha Prabhakar-B32579
+>> Cc: meet2prabhu@gmail.com; devicetree-discuss@lists.ozlabs.org; =
+linuxppc-
+>> dev@lists.ozlabs.org
+>> Subject: Re: [PATCH] powerpc/85xx:DTS: Fix tbi node location for =
+Px020RDB
+>>=20
+>>=20
+>> On Jun 7, 2011, at 9:49 PM, Prabhakar Kushwaha wrote:
+>>=20
+>>> ten-bit interface (TBI) module is part of SoC not board.
+>>>=20
+>>> Move tbi entries from board related dts files to Si dts.
+>>>=20
+>>> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+>>> ---
+>>> Based upon
+>> http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git =
+(branch
+>> next)
+>>>=20
+>>> arch/powerpc/boot/dts/p1020rdb.dts            |    9 ---------
+>>> arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |    8 --------
+>>> arch/powerpc/boot/dts/p1020si.dtsi            |    6 +++++-
+>>> arch/powerpc/boot/dts/p2020rdb.dts            |    8 --------
+>>> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |    8 --------
+>>> arch/powerpc/boot/dts/p2020si.dtsi            |    6 +++++-
+>>> 6 files changed, 10 insertions(+), 35 deletions(-)
+>>>=20
+>>> diff --git a/arch/powerpc/boot/dts/p1020rdb.dts
+>> b/arch/powerpc/boot/dts/p1020rdb.dts
+>>> index d6a8ae4..a4e5d6c 100644
+>>> --- a/arch/powerpc/boot/dts/p1020rdb.dts
+>>> +++ b/arch/powerpc/boot/dts/p1020rdb.dts
+>>> @@ -211,14 +211,6 @@
+>>> 			};
+>>> 		};
+>>>=20
+>>> -		mdio@25000 {
+>>> -
+>>> -			tbi0: tbi-phy@11 {
+>>> -				reg =3D <0x11>;
+>>> -				device_type =3D "tbi-phy";
+>>> -			};
+>>> -		};
+>>> -
+>>> 		enet0: ethernet@b0000 {
+>>> 			fixed-link =3D <1 1 1000 0 0>;
+>>> 			phy-connection-type =3D "rgmii-id";
+>>> @@ -227,7 +219,6 @@
+>>>=20
+>>> 		enet1: ethernet@b1000 {
+>>> 			phy-handle =3D <&phy0>;
+>>> -			tbi-handle =3D <&tbi0>;
+>>> 			phy-connection-type =3D "sgmii";
+>>>=20
+>>> 		};
+>>=20
+>> I'm not sure we should do this.  The phy address we pick is board
+>> specific so it should NOT be in .dtsi
+> The TBI phy and it's address is internal to SOC.
 
-dd if=/dev/ubi0_i of=/dev/null bs=4096
+But it is configured to NOT conflict with external PHY addresses.  This =
+the setting is board specific in my opinion.
 
-for each i.
-
--- 
-Best Regards,
-Artem Bityutskiy
+- k=
