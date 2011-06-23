@@ -2,33 +2,30 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9604B6F75
+	by ozlabs.org (Postfix) with ESMTPS id 00C1AB6F75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jun 2011 07:43:50 +1000 (EST)
-Subject: Re: [PATCH] libata/sas: only set FROZEN flag if new EH is supported
+	Fri, 24 Jun 2011 08:02:16 +1000 (EST)
+Subject: Re: [PATCH] STAGING: Comedi: Build only on arches providing
+	PAGE_KERNEL_NOCACHE
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Brian King <brking@linux.vnet.ibm.com>
-In-Reply-To: <4E039C95.3070907@linux.vnet.ibm.com>
-References: <20110615191747.GA6324@us.ibm.com>
-	<4DF90FCA.1040706@linux.vnet.ibm.com>
-	<20110615233417.GB6324@us.ibm.com>
-	<20110616075114.GH8141@htj.dyndns.org>
-	<4DFA0507.3090609@linux.vnet.ibm.com>
-	<20110616152836.GA15268@us.ibm.com>
-	<20110621160714.GA14174@us.ibm.com>
-	<4E00FF58.7070802@linux.vnet.ibm.com>
-	<1308803461.32158.191.camel@pasglop>
-	<1308804120.32158.202.camel@pasglop>
-	<20110623171502.GA11855@us.ibm.com>
-	<4E039C95.3070907@linux.vnet.ibm.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+In-Reply-To: <20110623120234.GA22524@linux-mips.org>
+References: <20110623114536.GA14011@linux-mips.org>
+	<4E032940.5010205@ge.com>  <20110623120234.GA22524@linux-mips.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 24 Jun 2011 07:43:33 +1000
-Message-ID: <1308865413.32158.214.camel@pasglop>
+Date: Fri, 24 Jun 2011 08:01:39 +1000
+Message-ID: <1308866499.32158.216.camel@pasglop>
 Mime-Version: 1.0
-Cc: jgarzik@pobox.com, wayneb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, mbizon@freebox.fr,
-	Tejun Heo <tj@kernel.org>, Nishanth Aravamudan <nacc@us.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: devel@driverdev.osuosl.org, David Howells <dhowells@redhat.com>,
+	linux-m32r@ml.linux-m32r.org, Paul Mundt <lethal@linux-sh.org>,
+	linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>,
+	Martyn Welch <martyn.welch@ge.com>, linux-am33-list@redhat.com,
+	Paul Mackerras <paulus@samba.org>, linux-m32r-ja@ml.linux-m32r.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+	x86@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-06-23 at 15:05 -0500, Brian King wrote:
+On Thu, 2011-06-23 at 13:02 +0100, Ralf Baechle wrote:
+> On Thu, Jun 23, 2011 at 12:53:36PM +0100, Martyn Welch wrote:
 > 
-> Same here.
-> 
-> When did this last work on this system? It seems like this is
-> completely
-> separate from the libata issue. 
+> > On 23/06/11 12:45, Ralf Baechle wrote:
+> > > On architectures that don't define PAGE_KERNEL_NOCACHE, the Comedi driver turns
+> > > into tragedy:
+> > > 
+> > >   CC [M]  drivers/staging/comedi/drivers.o
+> > > drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
+> > > drivers/staging/comedi/drivers.c:505:41: error: ‘PAGE_KERNEL_NOCACHE’ undeclared (first use in this function)
+> > > drivers/staging/comedi/drivers.c:505:41: note: each undeclared identifier is rep orted only once for each function it appears in
+> > > make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
+> > > 
+> > > Restrict the driver to only those architectures that define PAGE_KERNEL_NOCACHE.
+> > > 
+> > > PAGE_KERNEL_NOCACHE is a kludge - some system architectures such as SGI IP27
+> > > are even uable to offer uncached operation - at least in the way an unwitting
+> > > driver might assume.  I haven't looked in details how the driver is using
+> > > the area vmaped with PAGE_KERNEL_NOCACHE but maybe doing it XFS-style using
+> > > cached memory and the flush_kernel_vmap_range / invalidate_kernel_vmap_range
+> > > APIs in conjunction with the DMA API is a practical alternative.
+> > > 
+> > > Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> > > 
+> > >  drivers/staging/comedi/Kconfig |    1 +
+> > >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/drivers/staging/comedi/Kconfig b/drivers/staging/comedi/Kconfig
+> > > index 1502d80..bccdc12 100644
+> > > --- a/drivers/staging/comedi/Kconfig
+> > > +++ b/drivers/staging/comedi/Kconfig
+> > > @@ -2,6 +2,7 @@ config COMEDI
+> > >  	tristate "Data acquisition support (comedi)"
+> > >  	default N
+> > >  	depends on m
+> > > +	depends on BROKEN || FRV || M32R || MN10300 || SUPERH || TILE || X86
+> > 
+> > I'm sure I got comedi to compile on a 32-bit PPC board not that long ago. Has
+> > something changed, or is this just not an exhaustive list?
 
-It's separate. See my other internal message. This is a BML system and
-it's broken as far as 2.6.36 but the BML "patched" kernel works,
-anyways, moving that off list for now.
+It went away. There's a proper API (pgprot_noncached), but it depends
+what this is used for and it's likely to be broken anyways... what is
+that driver trying to map non-cached ?
 
 Cheers,
 Ben.
+
+> (Adding the PPC folks to cc.)
+> 
+> A "git grep -w PAGE_KERNEL_NOCACHE arch/powerpc/" doesn't find anything so
+> I don't think the driver will build there.  I don't have a PPC toolchain
+> to verify that.
+> 
+>   Ralf
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
