@@ -1,34 +1,31 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB190B6F6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2011 12:34:26 +1000 (EST)
-In-Reply-To: <20110623124802.7aeb6b66@schlenkerla.am.freescale.net>
+Return-Path: <B04825@freescale.com>
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 42FE5B6F8E
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2011 12:39:02 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
+	the hypervisor
+Date: Fri, 24 Jun 2011 02:38:58 +0000
+Message-ID: <4E03F8C1.60706@freescale.com>
 References: <1308092673-13045-1-git-send-email-timur@freescale.com>
 	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
 	<4DF7EB8E.8020308@freescale.com>
 	<20110614182517.776d7e77@schlenkerla.am.freescale.net>
-	<1308103091.2635.13.camel@pasglop> <4DF814A3.7070209@freescale.com>
-	<1308105196.2635.16.camel@pasglop>
-	<083792FF-81CD-407C-B6B8-6D0481A0D65D@kernel.crashing.org>
-	<4E020268.2020809@freescale.com>
-	<20110623122210.06ee9f55@schlenkerla.am.freescale.net>
-	<4E0378F4.5010501@freescale.com>
-	<20110623124802.7aeb6b66@schlenkerla.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under the
-	hypervisor
-Date: Fri, 24 Jun 2011 04:36:00 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	<1308103091.2635.13.camel@pasglop>
+	<4DF814A37aeb6b66@schlenkerla.am.freescale.net>
+	<59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
+In-Reply-To: <59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
+	Wood Scott-B07421 <B07421@freescale.com>,
+	Gala Kumar-B11780 <B11780@freescale.com>,
 	"paulus@samba.org" <paulus@samba.org>,
-	McClintock Matthew-B29882 <B29882@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>, Timur Tabi <timur@freescale.com>
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> But does that mean that a guest should never be allowed to modify a 
->> virtualized
->> timebase register, even if the hypervisor can support it?
+Segher Boessenkool wrote:
 >
-> The book3e mtspr writeup doesn't appear to specify the behavior when
-> writing to a read-only SPR, so perhaps you could argue that something 
-> other
-> than a no-op is implementation-specific behavior.
+> v2.06 III-E 9.2.1:
+> "Writing the Time Base is hypervisor privileged."
+>
+> v2.06 III-E 2.1:
+> "If a hypervisor-privileged register is accessed in the guest supervisor
+> state (MSR[GS PR] =3D 0b10), an Embedded Hypervisor Privilege exception
+> occurs."
+>
+> (v2.06 III-E 5.4.1, the big SPR table, also shows the TB regs (for writin=
+g,
+> i.e. 284 and 285) to be hypervisor privileged.  Consistency, hurray :-) )
 
-v2.06 III-E 9.2.1:
-"Writing the Time Base is hypervisor privileged."
+To me, all this means that a guest cannot write to the actual timebase=20
+register.  I'm not interpreting this to mean that a hypervisor can't=20
+virtualize the timebase and allow a guest to read/write a virtual timebase=
+=20
+register, so that it thinks it's writing to the real hardware timebase regi=
+ster.
 
-v2.06 III-E 2.1:
-"If a hypervisor-privileged register is accessed in the guest supervisor
-state (MSR[GS PR] = 0b10), an Embedded Hypervisor Privilege exception 
-occurs."
-
-(v2.06 III-E 5.4.1, the big SPR table, also shows the TB regs (for 
-writing,
-i.e. 284 and 285) to be hypervisor privileged.  Consistency, hurray :-) 
-)
-
-
-Segher
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
