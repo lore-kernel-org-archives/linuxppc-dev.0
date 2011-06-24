@@ -1,21 +1,33 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 5EC98B6F87
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jun 2011 20:29:11 +1000 (EST)
-Subject: Re: [BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu'
-	lead to system crash/freeze
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Yong Zhang <yong.zhang0@gmail.com>
-In-Reply-To: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
-References: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Fri, 24 Jun 2011 06:29:07 -0400
-Message-ID: <1308911347.531.56.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, paulus@samba.org,
-	Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144])
+	(using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1090B6F88
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Jun 2011 01:16:42 +1000 (EST)
+Date: Fri, 24 Jun 2011 10:16:28 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
+	the hypervisor
+Message-ID: <20110624101628.49349c2d@schlenkerla.am.freescale.net>
+In-Reply-To: <4E03F8C1.60706@freescale.com>
+References: <1308092673-13045-1-git-send-email-timur@freescale.com>
+	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
+	<4DF7EB8E.8020308@freescale.com>
+	<20110614182517.776d7e77@schlenkerla.am.freescale.net>
+	<1308103091.2635.13.camel@pasglop>
+	<4DF814A37aeb6b66@schlenkerla.am.freescale.net>
+	<59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
+	<4E03F8C1.60706@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"paulus@samba.org" <paulus@samba.org>,
+	McClintock Matthew-B29882 <B29882@freescale.com>,
+	Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,97 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-06-24 at 17:21 +0800, Yong Zhang wrote:
-> Hi,
-> 
-> When I use kprobe to do something, I found some wired thing.
-> 
-> When CONFIG_FUNCTION_TRACER is disabled:
-> (gdb) disassemble do_fork
-> Dump of assembler code for function do_fork:
->    0xc0037390 <+0>:	mflr    r0
->    0xc0037394 <+4>:	stwu    r1,-64(r1)
->    0xc0037398 <+8>:	mfcr    r12
->    0xc003739c <+12>:	stmw    r27,44(r1)
-> 
-> Then I:
-> modprobe kprobe_example func=do_fork offset=4
-> ls
-> Things works well.
-> 
-> But when CONFIG_FUNCTION_TRACER is enabled:
-> (gdb) disassemble do_fork
-> Dump of assembler code for function do_fork:
->    0xc0040334 <+0>:	mflr    r0
->    0xc0040338 <+4>:	stw     r0,4(r1)
->    0xc004033c <+8>:	bl      0xc00109d4 <mcount>
->    0xc0040340 <+12>:	stwu    r1,-80(r1)
->    0xc0040344 <+16>:	mflr    r0
->    0xc0040348 <+20>:	stw     r0,84(r1)
->    0xc004034c <+24>:	mfcr    r12
-> Then I:
-> modprobe kprobe_example func=do_fork offset=12
-> ls
-> 'ls' will never retrun. system freeze.
+On Thu, 23 Jun 2011 21:38:58 -0500
+Tabi Timur-B04825 <B04825@freescale.com> wrote:
 
-I'm not sure if x86 had a similar issue.
+> Segher Boessenkool wrote:
+> >
+> > v2.06 III-E 9.2.1:
+> > "Writing the Time Base is hypervisor privileged."
+> >
+> > v2.06 III-E 2.1:
+> > "If a hypervisor-privileged register is accessed in the guest supervisor
+> > state (MSR[GS PR] = 0b10), an Embedded Hypervisor Privilege exception
+> > occurs."
+> >
+> > (v2.06 III-E 5.4.1, the big SPR table, also shows the TB regs (for writing,
+> > i.e. 284 and 285) to be hypervisor privileged.  Consistency, hurray :-) )
+> 
+> To me, all this means that a guest cannot write to the actual timebase 
+> register.  I'm not interpreting this to mean that a hypervisor can't 
+> virtualize the timebase and allow a guest to read/write a virtual timebase 
+> register, so that it thinks it's writing to the real hardware timebase register.
+> 
 
-Masami, have any ideas to why this happened?
+Right, I was referring to the virtualized implementation note added in
+2.06B.  The virtualized implementation notes apply to what happens in the
+guest as seen by the guest (considered as a separate implementation of the
+Power ISA), not to what happens at a hardware level in guest mode.
 
-I don't have a PPC32 to test on, but I can try it out on my PPC64.
-
--- Steve
-
-> 
-> I'm using toolchain from:http://www.denx.de/wiki/ELDK-5/WebHome
-> powerpc-linux-gcc -v
-> Using built-in specs.
-> COLLECT_GCC=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/bin/powerpc-linux/powerpc-linux-gcc
-> COLLECT_LTO_WRAPPER=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/libexec/powerpc-linux/gcc/powerpc-linux/4.5.1/lto-wrapper
-> Target: powerpc-linux
-> Configured with:
-> /opt/poky/build/eldk-2011-05-20-5cde06e-powerpc/tmp/work/i686-nativesdk-oesdk-linux/gcc-cross-canadian-powerpc-4.5.1-r4/gcc-4.5.1/configure
-> --build=x86_64-linux --host=i686-oesdk-linux --target=powerpc-linux
-> --prefix=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr
-> --exec_prefix=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr
-> --bindir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/bin/powerpc-linux
-> --sbindir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/bin/powerpc-linux
-> --libexecdir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/libexec/powerpc-linux
-> --datadir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/share
-> --sysconfdir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/etc
-> --sharedstatedir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/com
-> --localstatedir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/var
-> --libdir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/lib/powerpc-linux
-> --includedir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/include
-> --oldincludedir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/include
-> --infodir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/share/info
-> --mandir=/opt/eldk-5.0/powerpc/sysroots/i686-oesdk-linux/usr/share/man
-> --with-libtool-sysroot=/opt/poky/build/eldk-2011-05-20-5cde06e-powerpc/tmp/sysroots/i686-oesdk-linux-nativesdk
-> --with-gnu-ld --enable-shared --enable-languages=c,c++
-> --enable-threads=posix --disable-multilib --enable-c99
-> --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch
-> --program-prefix=powerpc-linux- --enable-lto --enable-libssp
-> --disable-bootstrap --disable-libgomp --disable-libmudflap
-> --enable-cheaders=c_global
-> --with-local-prefix=/opt/eldk-5.0/powerpc/sysroots/powerpc-linux/usr
-> --with-gxx-include-dir=/usr/include/c++
-> --with-build-time-tools=/opt/poky/build/eldk-2011-05-20-5cde06e-powerpc/tmp/sysroots/x86_64-linux/usr/powerpc-linux/bin
-> --with-sysroot=/opt/eldk-5.0/powerpc/sysroots/powerpc-linux
-> --with-build-sysroot=/opt/poky/build/eldk-2011-05-20-5cde06e-powerpc/tmp/sysroots/powerpc
-> --disable-libunwind-exceptions --disable-libssp --disable-libgomp
-> --disable-libmudflap
-> --with-mpfr=/opt/poky/build/eldk-2011-05-20-5cde06e-powerpc/tmp/sysroots/i686-oesdk-linux-nativesdk
-> --with-mpc=/opt/poky/build/eldk-2011-05-20-5cde06e-powerpc/tmp/sysroots/i686-oesdk-linux-nativesdk
-> --enable-__cxa_atexit
-> Thread model: posix
-> gcc version 4.5.1 (GCC)
-> 
-> 
-> And kernel config is attached.
-> 
-> BTW, I have made a patch to make kprobe_example set breakpoint easily,
-> attached too.
-> 
-> Thanks,
-> Yong
-> 
+-Scott
