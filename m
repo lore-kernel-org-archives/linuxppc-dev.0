@@ -1,31 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 00C1AB6F75
+Return-Path: <wad@chromium.org>
+Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D291B6F83
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jun 2011 08:02:16 +1000 (EST)
-Subject: Re: [PATCH] STAGING: Comedi: Build only on arches providing
-	PAGE_KERNEL_NOCACHE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <20110623120234.GA22524@linux-mips.org>
-References: <20110623114536.GA14011@linux-mips.org>
-	<4E032940.5010205@ge.com>  <20110623120234.GA22524@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 24 Jun 2011 08:01:39 +1000
-Message-ID: <1308866499.32158.216.camel@pasglop>
-Mime-Version: 1.0
-Cc: devel@driverdev.osuosl.org, David Howells <dhowells@redhat.com>,
-	linux-m32r@ml.linux-m32r.org, Paul Mundt <lethal@linux-sh.org>,
-	linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>,
-	Martyn Welch <martyn.welch@ge.com>, linux-am33-list@redhat.com,
-	Paul Mackerras <paulus@samba.org>, linux-m32r-ja@ml.linux-m32r.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>,
-	x86@kernel.org
+	Fri, 24 Jun 2011 10:38:20 +1000 (EST)
+Received: by gwj17 with SMTP id 17so1133171gwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 23 Jun 2011 17:38:17 -0700 (PDT)
+From: Will Drewry <wad@chromium.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v9 11/13] powerpc: select HAVE_SECCOMP_FILTER and provide
+	seccomp_execve
+Date: Thu, 23 Jun 2011 19:36:50 -0500
+Message-Id: <1308875813-20122-11-git-send-email-wad@chromium.org>
+In-Reply-To: <1308875813-20122-1-git-send-email-wad@chromium.org>
+References: <1308875813-20122-1-git-send-email-wad@chromium.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Will Drewry <wad@chromium.org>,
+	fweisbec@gmail.com, scarybeasts@gmail.com, djm@mindrot.org,
+	jmorris@namei.org, rostedt@goodmis.org, tglx@linutronix.de,
+	mingo@elte.hu, Paul Mackerras <paulus@samba.org>,
+	kees.cook@canonical.com, torvalds@linux-foundation.org, segoon@openwall.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,61 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-06-23 at 13:02 +0100, Ralf Baechle wrote:
-> On Thu, Jun 23, 2011 at 12:53:36PM +0100, Martyn Welch wrote:
-> 
-> > On 23/06/11 12:45, Ralf Baechle wrote:
-> > > On architectures that don't define PAGE_KERNEL_NOCACHE, the Comedi driver turns
-> > > into tragedy:
-> > > 
-> > >   CC [M]  drivers/staging/comedi/drivers.o
-> > > drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
-> > > drivers/staging/comedi/drivers.c:505:41: error: ‘PAGE_KERNEL_NOCACHE’ undeclared (first use in this function)
-> > > drivers/staging/comedi/drivers.c:505:41: note: each undeclared identifier is rep orted only once for each function it appears in
-> > > make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
-> > > 
-> > > Restrict the driver to only those architectures that define PAGE_KERNEL_NOCACHE.
-> > > 
-> > > PAGE_KERNEL_NOCACHE is a kludge - some system architectures such as SGI IP27
-> > > are even uable to offer uncached operation - at least in the way an unwitting
-> > > driver might assume.  I haven't looked in details how the driver is using
-> > > the area vmaped with PAGE_KERNEL_NOCACHE but maybe doing it XFS-style using
-> > > cached memory and the flush_kernel_vmap_range / invalidate_kernel_vmap_range
-> > > APIs in conjunction with the DMA API is a practical alternative.
-> > > 
-> > > Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-> > > 
-> > >  drivers/staging/comedi/Kconfig |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/drivers/staging/comedi/Kconfig b/drivers/staging/comedi/Kconfig
-> > > index 1502d80..bccdc12 100644
-> > > --- a/drivers/staging/comedi/Kconfig
-> > > +++ b/drivers/staging/comedi/Kconfig
-> > > @@ -2,6 +2,7 @@ config COMEDI
-> > >  	tristate "Data acquisition support (comedi)"
-> > >  	default N
-> > >  	depends on m
-> > > +	depends on BROKEN || FRV || M32R || MN10300 || SUPERH || TILE || X86
-> > 
-> > I'm sure I got comedi to compile on a 32-bit PPC board not that long ago. Has
-> > something changed, or is this just not an exhaustive list?
+Facilitate the use of CONFIG_SECCOMP_FILTER by wrapping compatibility
+system call numbering for execve and selecting HAVE_SECCOMP_FILTER.
 
-It went away. There's a proper API (pgprot_noncached), but it depends
-what this is used for and it's likely to be broken anyways... what is
-that driver trying to map non-cached ?
+v9: rebase on to bccaeafd7c117acee36e90d37c7e05c19be9e7bf
 
-Cheers,
-Ben.
+Signed-off-by: Will Drewry <wad@chromium.org>
+---
+ arch/powerpc/Kconfig               |    1 +
+ arch/powerpc/include/asm/seccomp.h |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-> (Adding the PPC folks to cc.)
-> 
-> A "git grep -w PAGE_KERNEL_NOCACHE arch/powerpc/" doesn't find anything so
-> I don't think the driver will build there.  I don't have a PPC toolchain
-> to verify that.
-> 
->   Ralf
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2729c66..030d392 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -129,6 +129,7 @@ config PPC
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select HAVE_SPARSE_IRQ
++	select HAVE_SECCOMP_FILTER
+ 	select IRQ_PER_CPU
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+diff --git a/arch/powerpc/include/asm/seccomp.h b/arch/powerpc/include/asm/seccomp.h
+index 00c1d91..3cb9cc1 100644
+--- a/arch/powerpc/include/asm/seccomp.h
++++ b/arch/powerpc/include/asm/seccomp.h
+@@ -7,10 +7,12 @@
+ #define __NR_seccomp_write __NR_write
+ #define __NR_seccomp_exit __NR_exit
+ #define __NR_seccomp_sigreturn __NR_rt_sigreturn
++#define __NR_seccomp_execve __NR_execve
+ 
+ #define __NR_seccomp_read_32 __NR_read
+ #define __NR_seccomp_write_32 __NR_write
+ #define __NR_seccomp_exit_32 __NR_exit
+ #define __NR_seccomp_sigreturn_32 __NR_sigreturn
++#define __NR_seccomp_execve_32 __NR_execve
+ 
+ #endif	/* _ASM_POWERPC_SECCOMP_H */
+-- 
+1.7.0.4
