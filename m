@@ -1,27 +1,25 @@
-Return-Path: <wad@chromium.org>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D291B6F83
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BCD68B6F86
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jun 2011 10:38:20 +1000 (EST)
-Received: by gwj17 with SMTP id 17so1133171gwj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jun 2011 17:38:17 -0700 (PDT)
-From: Will Drewry <wad@chromium.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v9 11/13] powerpc: select HAVE_SECCOMP_FILTER and provide
-	seccomp_execve
-Date: Thu, 23 Jun 2011 19:36:50 -0500
-Message-Id: <1308875813-20122-11-git-send-email-wad@chromium.org>
-In-Reply-To: <1308875813-20122-1-git-send-email-wad@chromium.org>
-References: <1308875813-20122-1-git-send-email-wad@chromium.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Will Drewry <wad@chromium.org>,
-	fweisbec@gmail.com, scarybeasts@gmail.com, djm@mindrot.org,
-	jmorris@namei.org, rostedt@goodmis.org, tglx@linutronix.de,
-	mingo@elte.hu, Paul Mackerras <paulus@samba.org>,
-	kees.cook@canonical.com, torvalds@linux-foundation.org, segoon@openwall.com
+	Fri, 24 Jun 2011 12:12:29 +1000 (EST)
+In-Reply-To: <BANLkTinisHPrEN8Xc_KoqFwxknMooE=H4w@mail.gmail.com>
+References: <1308771051-30861-1-git-send-email-mike@mikebwilliams.com>
+	<14e6cd940efae1704f5908757f81f627@kernel.crashing.org>
+	<BANLkTikKNqEoQxGA642h14eOUjZ3hGZaQw@mail.gmail.com>
+	<BANLkTinisHPrEN8Xc_KoqFwxknMooE=H4w@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <f3bf96d99dfc13e2ebc07d6ce2282f2e@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc,
+	460gt: Add 460gt as compatible in the check for 460ex-compatible
+	crypto
+Date: Fri, 24 Jun 2011 04:14:07 +0200
+To: Mike Williams <mikebwilliams@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Facilitate the use of CONFIG_SECCOMP_FILTER by wrapping compatibility
-system call numbering for execve and selecting HAVE_SECCOMP_FILTER.
+>>> - =A0 =A0 =A0 if (of_find_compatible_node(NULL, NULL,=20
+>>> "amcc,ppc460ex-crypto")) {
+>>> + =A0 =A0 =A0 if (of_find_compatible_node(NULL, NULL,=20
+>>> "amcc,ppc460ex-crypto") ||
+>>> + =A0 =A0 =A0 =A0 =A0 of_find_compatible_node(NULL, NULL,=20
+>>> "amcc,ppc460gt-crypto")) {
+>>
+>> If the device is actually compatible, the device tree node should=20
+>> claim
+>> it is, and you do not need this code change.
+>
+> That was actually my first instinct, however I tried to follow the
+> current convention in the glacier and canyonlands DTS files, which is
+> to set every device compatible to 460gt or 460ex, depending on the
+> processor. Many of the devices are identical between the two, since
+> they are variations of the same SoC, so which is the preferred method?
+> Follow the device tree convention and add the compatibility check in
+> the driver,
 
-v9: rebase on to bccaeafd7c117acee36e90d37c7e05c19be9e7bf
+That is not the convention.
 
-Signed-off-by: Will Drewry <wad@chromium.org>
----
- arch/powerpc/Kconfig               |    1 +
- arch/powerpc/include/asm/seccomp.h |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+> or alter the device trees? I'll send another patch if it's
+> the latter.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2729c66..030d392 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -129,6 +129,7 @@ config PPC
- 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
- 	select HAVE_GENERIC_HARDIRQS
- 	select HAVE_SPARSE_IRQ
-+	select HAVE_SECCOMP_FILTER
- 	select IRQ_PER_CPU
- 	select GENERIC_IRQ_SHOW
- 	select GENERIC_IRQ_SHOW_LEVEL
-diff --git a/arch/powerpc/include/asm/seccomp.h b/arch/powerpc/include/asm/seccomp.h
-index 00c1d91..3cb9cc1 100644
---- a/arch/powerpc/include/asm/seccomp.h
-+++ b/arch/powerpc/include/asm/seccomp.h
-@@ -7,10 +7,12 @@
- #define __NR_seccomp_write __NR_write
- #define __NR_seccomp_exit __NR_exit
- #define __NR_seccomp_sigreturn __NR_rt_sigreturn
-+#define __NR_seccomp_execve __NR_execve
- 
- #define __NR_seccomp_read_32 __NR_read
- #define __NR_seccomp_write_32 __NR_write
- #define __NR_seccomp_exit_32 __NR_exit
- #define __NR_seccomp_sigreturn_32 __NR_sigreturn
-+#define __NR_seccomp_execve_32 __NR_execve
- 
- #endif	/* _ASM_POWERPC_SECCOMP_H */
--- 
-1.7.0.4
+You say
+
+   compatible =3D "amcc,ppc460gt-crypto", "amcc,ppc460ex-crypto";
+
+So, a unique name for the actual device first, followed by the name of
+what it is compatible to.  The driver for 460ex-crypto will then work
+without any changes, but it can also do some 460gt-specific workarounds
+or enhancements; or you could even have a totally separate driver for
+the 460gt-crypto (you'll have to arrange for it to be used preferably
+then).
+
+You should document this 460gt-crypto binding, btw (a single line in
+the 460ex-crypto binding doc will do).
+
+
+Segher
