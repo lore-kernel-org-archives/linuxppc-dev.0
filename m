@@ -1,16 +1,10 @@
-Return-Path: <B04825@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 42FE5B6F8E
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2011 12:39:02 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
-	the hypervisor
-Date: Fri, 24 Jun 2011 02:38:58 +0000
-Message-ID: <4E03F8C1.60706@freescale.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E21F0B6F7D
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2011 13:49:01 +1000 (EST)
+In-Reply-To: <4E03F8C1.60706@freescale.com>
 References: <1308092673-13045-1-git-send-email-timur@freescale.com>
 	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
 	<4DF7EB8E.8020308@freescale.com>
@@ -18,9 +12,15 @@ References: <1308092673-13045-1-git-send-email-timur@freescale.com>
 	<1308103091.2635.13.camel@pasglop>
 	<4DF814A37aeb6b66@schlenkerla.am.freescale.net>
 	<59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
-In-Reply-To: <59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
+	<4E03F8C1.60706@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <53807ffa0f2275ffbf492a6d8905dc32@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under the
+	hypervisor
+Date: Fri, 24 Jun 2011 05:50:41 +0200
+To: Tabi Timur-B04825 <B04825@freescale.com>
 Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
 	Wood Scott-B07421 <B07421@freescale.com>,
 	Gala Kumar-B11780 <B11780@freescale.com>,
@@ -35,27 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->
-> v2.06 III-E 9.2.1:
-> "Writing the Time Base is hypervisor privileged."
->
-> v2.06 III-E 2.1:
-> "If a hypervisor-privileged register is accessed in the guest supervisor
-> state (MSR[GS PR] =3D 0b10), an Embedded Hypervisor Privilege exception
-> occurs."
->
-> (v2.06 III-E 5.4.1, the big SPR table, also shows the TB regs (for writin=
-g,
-> i.e. 284 and 285) to be hypervisor privileged.  Consistency, hurray :-) )
+(context put back:)
 
-To me, all this means that a guest cannot write to the actual timebase=20
-register.  I'm not interpreting this to mean that a hypervisor can't=20
-virtualize the timebase and allow a guest to read/write a virtual timebase=
-=20
-register, so that it thinks it's writing to the real hardware timebase regi=
-ster.
+>> But does that mean that a guest should never be allowed to modify a 
+>> virtualized
+>> timebase register, even if the hypervisor can support it?
+>
+> The book3e mtspr writeup doesn't appear to specify the behavior when
+> writing to a read-only SPR, so perhaps you could argue that something 
+> other
+> than a no-op is implementation-specific behavior.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+>> v2.06 III-E 9.2.1:
+>> "Writing the Time Base is hypervisor privileged."
+>>
+>> v2.06 III-E 2.1:
+>> "If a hypervisor-privileged register is accessed in the guest 
+>> supervisor
+>> state (MSR[GS PR] = 0b10), an Embedded Hypervisor Privilege exception
+>> occurs."
+>>
+>> (v2.06 III-E 5.4.1, the big SPR table, also shows the TB regs (for 
+>> writing,
+>> i.e. 284 and 285) to be hypervisor privileged.  Consistency, hurray 
+>> :-) )
+>
+> To me, all this means that a guest cannot write to the actual timebase
+> register.
+
+It also means that the hypervisor gets a trap when a guest tries to do 
+this.
+
+>   I'm not interpreting this to mean that a hypervisor can't
+> virtualize the timebase and allow a guest to read/write a virtual 
+> timebase
+> register, so that it thinks it's writing to the real hardware timebase 
+> register.
+
+Yes, a hypervisor can do this.  The behaviour of the hardware is not
+implementation-specific (modulo bugs ;-) ); when a guest tries to write
+to the timebase, the hypervisor gets a trap.  The hypervisor can then
+do whatever it wants with it.
+
+
+Segher
