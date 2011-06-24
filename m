@@ -1,33 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
-	[213.199.154.144])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C1090B6F88
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Jun 2011 01:16:42 +1000 (EST)
-Date: Fri, 24 Jun 2011 10:16:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
-	the hypervisor
-Message-ID: <20110624101628.49349c2d@schlenkerla.am.freescale.net>
-In-Reply-To: <4E03F8C1.60706@freescale.com>
-References: <1308092673-13045-1-git-send-email-timur@freescale.com>
-	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
-	<4DF7EB8E.8020308@freescale.com>
-	<20110614182517.776d7e77@schlenkerla.am.freescale.net>
-	<1308103091.2635.13.camel@pasglop>
-	<4DF814A37aeb6b66@schlenkerla.am.freescale.net>
-	<59f786bfaced051a14e2bb75d3d1ce77@kernel.crashing.org>
-	<4E03F8C1.60706@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"paulus@samba.org" <paulus@samba.org>,
-	McClintock Matthew-B29882 <B29882@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <nacc@us.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D2E6CB6F86
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 25 Jun 2011 05:05:58 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5OIvLPL007473
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2011 12:57:21 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5OJ5TUF175850
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2011 13:05:32 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p5OD51W6017605
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2011 07:05:02 -0600
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: [PATCH 0/4] pseries/iommu bug-fixes and cleanups for dynamic dma
+	windows
+Date: Fri, 24 Jun 2011 12:05:21 -0700
+Message-Id: <1308942325-4813-1-git-send-email-nacc@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 23 Jun 2011 21:38:58 -0500
-Tabi Timur-B04825 <B04825@freescale.com> wrote:
+In my last submission, 5/8 wasn't sent to Ben, so he only picked up 1-4.
+Re-sending 5-8, as such.
 
-> Segher Boessenkool wrote:
-> >
-> > v2.06 III-E 9.2.1:
-> > "Writing the Time Base is hypervisor privileged."
-> >
-> > v2.06 III-E 2.1:
-> > "If a hypervisor-privileged register is accessed in the guest supervisor
-> > state (MSR[GS PR] = 0b10), an Embedded Hypervisor Privilege exception
-> > occurs."
-> >
-> > (v2.06 III-E 5.4.1, the big SPR table, also shows the TB regs (for writing,
-> > i.e. 284 and 285) to be hypervisor privileged.  Consistency, hurray :-) )
-> 
-> To me, all this means that a guest cannot write to the actual timebase 
-> register.  I'm not interpreting this to mean that a hypervisor can't 
-> virtualize the timebase and allow a guest to read/write a virtual timebase 
-> register, so that it thinks it's writing to the real hardware timebase register.
-> 
+Milton Miller (4):
+  powerpc: override dma_get_required_mask by platform hook and ops
+  dma-mapping: add get_required_mask if arch overrides default
+  powerpc: use the newly added get_required_mask dma_map_ops hook
+  powerpc: tidy up dma_map_ops after adding new hook
 
-Right, I was referring to the virtualized implementation note added in
-2.06B.  The virtualized implementation notes apply to what happens in the
-guest as seen by the guest (considered as a separate implementation of the
-Power ISA), not to what happens at a hardware level in guest mode.
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: benh@kernel.crashing.org
 
--Scott
+ arch/powerpc/include/asm/device.h       |    2 +
+ arch/powerpc/include/asm/machdep.h      |    3 +-
+ arch/powerpc/kernel/dma-iommu.c         |   28 ++++++++++++++-----
+ arch/powerpc/kernel/dma-swiotlb.c       |   16 +++++++++++
+ arch/powerpc/kernel/dma.c               |   44 ++++++++++++++++++++++++++-----
+ arch/powerpc/kernel/ibmebus.c           |   22 ++++++++++-----
+ arch/powerpc/kernel/vio.c               |   21 +++++++++-----
+ arch/powerpc/platforms/cell/iommu.c     |   21 ++++++++++++++
+ arch/powerpc/platforms/ps3/system-bus.c |    7 +++++
+ arch/powerpc/platforms/pseries/iommu.c  |   27 +++++++++++++++++++
+ include/linux/dma-mapping.h             |    3 ++
+ 11 files changed, 163 insertions(+), 31 deletions(-)
+
+-- 
+1.7.4.1
