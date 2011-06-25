@@ -1,31 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D71B7B6FD7
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Jun 2011 09:36:20 +1000 (EST)
-Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under
-	the hypervisor
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <083792FF-81CD-407C-B6B8-6D0481A0D65D@kernel.crashing.org>
-References: <1308092673-13045-1-git-send-email-timur@freescale.com>
-	<20110614181406.294cdf5f@schlenkerla.am.freescale.net>
-	<4DF7EB8E.8020308@freescale.com>
-	<20110614182517.776d7e77@schlenkerla.am.freescale.net>
-	<1308103091.2635.13.camel@pasglop>  <4DF814A3.7070209@freescale.com>
-	<1308105196.2635.16.camel@pasglop>
-	<083792FF-81CD-407C-B6B8-6D0481A0D65D@kernel.crashing.org>
+Return-Path: <bhutchings@solarflare.com>
+Received: from exchange.solarflare.com (exchange.solarflare.com
+	[216.237.3.220]) by ozlabs.org (Postfix) with ESMTP id C7058B6F72
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 25 Jun 2011 12:10:46 +1000 (EST)
+Subject: Re: [RFC PATCH 1/1] BPF JIT for PPC64
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Matt Evans <matt@ozlabs.org>
+In-Reply-To: <4E04288F.4090201@ozlabs.org>
+References: <4E04288F.4090201@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 25 Jun 2011 09:36:07 +1000
-Message-ID: <1308958567.32158.336.camel@pasglop>
+Date: Sat, 25 Jun 2011 02:58:34 +0100
+Message-ID: <1308967114.3093.1379.camel@localhost>
 Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
-	Tabi Timur-B04825 <B04825@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"paulus@samba.org" <paulus@samba.org>,
-	McClintock Matthew-B29882 <B29882@freescale.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,12 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-06-22 at 06:44 -0500, Kumar Gala wrote:
-> 
-> Any ETA on Paul's intro of the FTR bit?  If not I'll pull this into my
-> 'next' tree and we can clean up later.
+On Fri, 2011-06-24 at 16:02 +1000, Matt Evans wrote:
+[...]
+> +		case BPF_S_ALU_ADD_K: /* A += K; */
+> +			if (!K)
+> +				break;
+> +			if (K < 32768)
+> +				PPC_ADDI(r_A, r_A, K);
+> +			else
+> +				PPC_ADDI(r_A, r_A, IMM_L(K));
+> +				PPC_ADDIS(r_A, r_A, IMM_HA(K));
+> +			break;
 
-His latest KVM patch set has that.
+Missing braces.
 
-Cheers,
+> +		case BPF_S_ALU_SUB_X: /* A -= X; */
+> +			ctx->seen |= SEEN_XREG;
+> +			PPC_SUB(r_A, r_A, r_X);
+> +			break;
+> +		case BPF_S_ALU_SUB_K: /* A -= K */
+> +			if (!K)
+> +				break;
+> +			if (K < 32768)
+> +				PPC_ADDI(r_A, r_A, -K);
+> +			else
+> +				PPC_ADDI(r_A, r_A, IMM_L(-K));
+> +				PPC_ADDIS(r_A, r_A, IMM_HA(-K));
+> +			break;
+[...]
+
+Here as well.
+
 Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
