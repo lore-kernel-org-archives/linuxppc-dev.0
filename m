@@ -1,17 +1,18 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from exchange.solarflare.com (exchange.solarflare.com
-	[216.237.3.220]) by ozlabs.org (Postfix) with ESMTP id C7058B6F72
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 07775B6FAD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Jun 2011 12:10:46 +1000 (EST)
-Subject: Re: [RFC PATCH 1/1] BPF JIT for PPC64
-From: Ben Hutchings <bhutchings@solarflare.com>
+	Sat, 25 Jun 2011 17:33:52 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
 To: Matt Evans <matt@ozlabs.org>
-In-Reply-To: <4E04288F.4090201@ozlabs.org>
+Subject: Re: [RFC PATCH 1/1] BPF JIT for PPC64
 References: <4E04288F.4090201@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 25 Jun 2011 02:58:34 +0100
-Message-ID: <1308967114.3093.1379.camel@localhost>
-Mime-Version: 1.0
+Date: Sat, 25 Jun 2011 09:33:46 +0200
+In-Reply-To: <4E04288F.4090201@ozlabs.org> (Matt Evans's message of "Fri, 24
+	Jun 2011 16:02:55 +1000")
+Message-ID: <m2boxmxt45.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,40 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2011-06-24 at 16:02 +1000, Matt Evans wrote:
-[...]
-> +		case BPF_S_ALU_ADD_K: /* A += K; */
-> +			if (!K)
-> +				break;
-> +			if (K < 32768)
-> +				PPC_ADDI(r_A, r_A, K);
-> +			else
-> +				PPC_ADDI(r_A, r_A, IMM_L(K));
-> +				PPC_ADDIS(r_A, r_A, IMM_HA(K));
-> +			break;
+Matt Evans <matt@ozlabs.org> writes:
 
-Missing braces.
+> +	stdu	r1, -128(r1);					\
 
-> +		case BPF_S_ALU_SUB_X: /* A -= X; */
-> +			ctx->seen |= SEEN_XREG;
-> +			PPC_SUB(r_A, r_A, r_X);
-> +			break;
-> +		case BPF_S_ALU_SUB_K: /* A -= K */
-> +			if (!K)
-> +				break;
-> +			if (K < 32768)
-> +				PPC_ADDI(r_A, r_A, -K);
-> +			else
-> +				PPC_ADDI(r_A, r_A, IMM_L(-K));
-> +				PPC_ADDIS(r_A, r_A, IMM_HA(-K));
-> +			break;
-[...]
+> +	addi	r5, r1, 128+BPF_PPC_STACK_BASIC+(2*8);		\
 
-Here as well.
+> +	addi	r1, r1, 128;					\
 
-Ben.
+> +					PPC_STD(r_M + i, 1, -128 + (8*i));
+
+> +					PPC_LD(r_M + i, 1, -128 + (8*i));
+
+s/128/BPF_PPC_STACK_SAVE/?
+
+Andreas.
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
