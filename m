@@ -1,25 +1,24 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
-	[74.125.82.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 47F29B6F7F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Jun 2011 17:49:48 +1000 (EST)
-Received: by wyh21 with SMTP id 21so290303wyh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Jun 2011 00:49:44 -0700 (PDT)
-Subject: Re: [RFC PATCH 1/1] BPF JIT for PPC64
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Andreas Schwab <schwab@linux-m68k.org>
-In-Reply-To: <m2boxmxt45.fsf@igel.home>
-References: <4E04288F.4090201@ozlabs.org>  <m2boxmxt45.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 25 Jun 2011 09:49:40 +0200
-Message-ID: <1308988180.2532.27.camel@edumazet-laptop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Matt Evans <matt@ozlabs.org>
+Return-Path: <geoff@infradead.org>
+Message-ID: <4E06019A.3070300@infradead.org>
+Date: Sat, 25 Jun 2011 08:41:14 -0700
+From: Geoff Levand <geoff@infradead.org>
+MIME-Version: 1.0
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: Re: [PATCH 3/4] powerpc: use the newly added get_required_mask
+	dma_map_ops hook
+References: <1308942325-4813-1-git-send-email-nacc@us.ibm.com>
+	<1308942325-4813-4-git-send-email-nacc@us.ibm.com>
+In-Reply-To: <1308942325-4813-4-git-send-email-nacc@us.ibm.com>
+Content-Type: multipart/mixed; boundary="------------030906000306090304070809"
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+	Milton Miller <miltonm@bga.com>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +28,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le samedi 25 juin 2011 à 09:33 +0200, Andreas Schwab a écrit :
-> Matt Evans <matt@ozlabs.org> writes:
-> 
-> > +	stdu	r1, -128(r1);					\
-> 
-> > +	addi	r5, r1, 128+BPF_PPC_STACK_BASIC+(2*8);		\
-> 
-> > +	addi	r1, r1, 128;					\
-> 
-> > +					PPC_STD(r_M + i, 1, -128 + (8*i));
-> 
-> > +					PPC_LD(r_M + i, 1, -128 + (8*i));
-> 
-> s/128/BPF_PPC_STACK_SAVE/?
-> 
+This is a multi-part message in MIME format.
+--------------030906000306090304070809
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I am not sure using registers to hold MEM[] is a win if MEM[idx] is used
-once in the filter
+On 06/24/2011 12:05 PM, Nishanth Aravamudan wrote:
+> From: Milton Miller <miltonm@bga.com>
+> 
+> Now that the generic code has dma_map_ops set, instead of having a
+> messy ifdef & if block in the base dma_get_required_mask hook push
+> the computation into the dma ops.
 
-# tcpdump "tcp[20]+tcp[21]=0" -d
-(000) ldh      [12]
-(001) jeq      #0x800           jt 2	jf 15
-(002) ldb      [23]
-(003) jeq      #0x6             jt 4	jf 15
-(004) ldh      [20]
-(005) jset     #0x1fff          jt 15	jf 6
-(006) ldxb     4*([14]&0xf)
-(007) ldb      [x + 34]
-(008) st       M[1]
-(009) ldb      [x + 35]
-(010) tax      
-(011) ld       M[1]
-(012) add      x
-(013) jeq      #0x0             jt 14	jf 15
-(014) ret      #65535
-(015) ret      #0
+>  arch/powerpc/platforms/ps3/system-bus.c |    7 +++++
 
-In this sample, we use M[1] once ( one store, one load)
+Looks OK for PS3.
 
-So saving previous register content on stack in prologue, and restoring
-it in epilogue actually slow down the code, and adds two instructions in filter asm code.
+Acked-by Geoff Levand <geoff@infradead.org>
 
-This also makes epilogue code not easy (not possible as a matter of fact)
-to unwind in helper function
+--------------030906000306090304070809
+Content-Type: application/pgp-keys;
+ name="0x2E141B16.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0x2E141B16.asc"
 
-In x86_64 implementation, I chose bpf_error be able to force
-an exception, not returning to JIT code but directly to bpf_func() caller
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-bpf_error:
-# force a return 0 from jit handler
-        xor             %eax,%eax
-        mov             -8(%rbp),%rbx
-        leaveq
-        ret
+mQGiBEvYoA8RBADGqP5emq65NjHKbh1LrxTv31gMPg7NROfl3I9T+Ha5AtKfcGHu
+U4DiDpT4+zW/k3U+JZxIW+BABv6Wjc76pXVgBAFdmOJIMmw+s3i+WqyxJZNFU3iJ
+djFZzgH6RCmkaaPOO2vCvXAkqAp4AbM1+B31JElJSDsDMnEOarAEVHGeWwCg37Tj
+B5yi07txOzo5yZzJFVDFIw8D/16SjXUcVtrliSpjbLOZuHxSSMOvxXUcFPfAnXnH
+21B9MvPZZFGCXKOy8Zb7/fCKbl1q9URTbKibZLk5EYvNvu1SdAOahBRGyGZdCeOv
+jAPIHdEV5kmxBZ8lDmSiUmI4lQDWaSmSX7MYYxd7Q9x5TckFXnHOsz5Z7Tnxetf1
+UEeIA/40P/1O6UJn9yEXrdwfouBjjgcGkvg+Xvf6+QN542FfT99cJt/PlM3QRH6O
+DK9lzy95Pq7Fu2yBoubsM8Bl5ASkUrCrodlPAmvRAAw1vGYxHeYsjzJa1oYj+hBs
+mOJbaeShr4Hlv20jhxC5XJgZiAuqso+adhL3zVWY3tET7/qp84hJBCARAgAJBQJM
+SwegAh0AAAoJEIz66pYuFBsWe70AniGKN80PALmAUHepEPrVU6ajFp+aAKDH+1eq
+Hz4X9Qri9QGzXKCykazRfbQiR2VvZmYgTGV2YW5kIDxnZW9mZkBpbmZyYWRlYWQu
+b3JnPohgBBMRAgAgBQJL2KAPAhsDBgsJCAcDAgQVAggDBBYCAwECHgECF4AACgkQ
+jPrqli4UGxZBvACgnab45AhwHS6anejdWh0iFK0sBGcAn23F4AgUICmP5DXsNtfn
+2PpInNqQ0dXe1dwBEAABAQAAAAAAAAAAAAAAAP/Y/+AAEEpGSUYAAQEBAEgASAAA
+/+EQIEV4aWYAAElJKgAIAAAACwAOAQIAIAAAAJIAAAAPAQIABQAAALIAAAAQAQIA
+BwAAALgAAAASAQMAAQAAAAEAAAAaAQUAAQAAAMAAAAAbAQUAAQAAAMgAAAAoAQMA
+AQAAAAIAAAAyAQIAFAAAANAAAAATAgMAAQAAAAIAAABphwQAAQAAAAABAAClxAcA
+HAAAAOQAAADcCQAAICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIABTT05Z
+AABEU0MtVDkAAEgAAAABAAAASAAAAAEAAAAyMDEwOjA0OjI4IDEzOjQ2OjEyAFBy
+aW50SU0AMDMwMAAAAgACAAEAAAABAQEAAAAeAJqCBQABAAAAbgIAAJ2CBQABAAAA
+dgIAACKIAwABAAAAAgAAACeIAwABAAAAQAEAAACQBwAEAAAAMDIyMAOQAgAUAAAA
+fgIAAASQAgAUAAAAkgIAAAGRBwAEAAAAAQIDAAKRBQABAAAApgIAAASSCgABAAAA
+rgIAAAWSBQABAAAAtgIAAAeSAwABAAAABQAAAAiSAwABAAAAAAAAAAmSAwABAAAA
+EAAAAAqSBQABAAAAvgIAAHySBwD4BgAAxgIAAACgBwAEAAAAMDEwMAGgAwABAAAA
+AQAAAAKgBAABAAAAQAAAAAOgBAABAAAASwAAAAWgBAABAAAAvgkAAACjBwABAAAA
+AwAAAAGjBwABAAAAAQAAAAGkAwABAAAAAAAAAAKkAwABAAAAAAAAAAOkAwABAAAA
+AAAAAAakAwABAAAAAAAAAAikAwABAAAAAAAAAAmkAwABAAAAAAAAAAqkAwABAAAA
+AAAAAAAAAAAKAAAAyAAAACMAAAAKAAAAMjAwNjowNzowNiAxMjowODo0OAAyMDA2
+OjA3OjA2IDEyOjA4OjQ4AAgAAAABAAAAAAAAAAoAAAA6AAAAEAAAAHkCAABkAAAA
+U09OWSBEU0MgAAAAGQAAIAcAAQAAAAAAAAAgsAIACQAAAAAEAABAsAMAAQAAAAAA
+AABBsAMAAQAAAAYAAABCsAMAAQAAAAEAAABDsAMAAQAAAAAAAABEsAMAAQAAAAEA
+AABFsAMAAQAAAAAAAABGsAMAAQAAAAAAAABHsAMAAQAAAAEAAABIsAgAAQAAAAAA
+AABJsAMAAQAAAAAAAABKsAMAAQAAAAAAAABLsAMAAQAAAAEAAABMsAUAAQAAABAE
+AABNsAMAAQAAAAAAAABOsAMAAQAAAAAAAAABkAcAlAAAABgEAAACkAcAyAAAAKwE
+AAADkAcAyAAAAHQFAAAEkAcAfAAAADwGAAAFkAcAegAAALgGAAAGkAcA/AAAADIH
+AAAHkAcAyAAAAC4IAAAIkAcAyAAAAPYIAABTdGFuZGFyZAAAAAAAAAAAAQAAAAEA
+AAAB1XAAAAgAMwAfAAAACx4SAAseEgAEsAAAAAAzAAAAAAAAADMAwqZ+/wAA2AAA
+DPC7dQBWYEx9CgRl/x4ABQAAAKEgn4hjBQAgn4hjBQAwcAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAQAAAAAoAIrNPwAAAAVwfXB9cH1wAHAAAAUEUOo+AAAAAAAAAABwwoom
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAABFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACsAedKfQBWAAAAffsAAAAA
+AMhAxwAAcBvHBQAAAAAB3HNGAMUAGgBFAMIAOQBcAE4AMwFjAQABtAEAAQABAAEA
+st/Z8nTjM069vb29AACgMFZc7JlWQ7YfiPZw9CAz/lgBmQDjYpDyxFuNCHAyvhEA
+PgDcAEYA03AAAAAAAAAAAABwAAAAAAAAAAAAcAAAAAAAAAAAAHAAvb1c88UQGqka
+qQdzViHQ0P4ArkwnTCdMJwdzTFi0XeA44DgaqQEAGqkAAAGIABsEwkAAGznAMeYB
+AAAAAAAHc7e+VDrEUV59AEDc3LxfEAEBAY0BPgFZAT4BPgE+AT4BPmwAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJUAOQB/AE0AlQA5AH8ATQAAAAGN0gAB
+Pp0AAVkwAAE+AwABjdIAAT6dAAFZMAABPgP////G////fP///87////3AAAAAAAA
+ABUBAQABAAAAAABAAAAAAAAAAAAAAAAAANgAAAAAABsAAAABAAEAAQAAAAAAAQAB
+AAAAAABAAEAAQAAA2IjC6K/M5s6MoAUOfUBAfQAAtgAAAF7//wD/AAAAAEYAAAAk
+2AAAJ/8AAM3hoAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAOqrAAC2DwAAkr4AAIiS
+AAC2SgAAMLsAAIiRAADNFAAAaYUAAIFLAAC+KAAAINsAAIh+AABp8QAAcNAAAIhg
+AACBuQAAgcIAANc4AAAg8gAAIHwAADCOAADXhwAAu74AAIcGAABdegAADFEAACAJ
+AAC7DgAA128AACgBAADsIQAAAi4AAOySAADXTQAAbL0AALtrAAAg7wAAaSIAAL7X
+AACVzwAAUckAAOyPAACSRgAAME4AAAV8AABw8QAADKQAAKDXDupwcHDqDupwgZWB
+cOpwgSQ4JIFwcJU4SjiVcHCBJDgkgXDqcIGVgXDqDupwcHDqDgAAAAEAgVGSzAwH
+u6cwCgCjkkDsqqDlKKOBCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAcC0gHDCltvXN1QCjtsW+6LvnMExwbAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8UHxQeRB5EHxQCjiiaKm3DN
+cAdwwgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AQAAAACpMa8AeSMJAHWAIwBXaJ0AACEbAL7AOQDNBLYA6pTVACCPUwAAVPoAvsA5
+AM0EtgDqlNUAII9TAABU+gBDAPMAdgA7AZoAlABvAREBUgDGADQBRAEuABIBfQGE
+ASUAPwD1AekBSQDtAMkBrwG4AHEAIQHHAWsAcQFdAYQb5QEpCCUb1EA/COwbiUCX
+AekA0QD8AbMB8gBnAbABQwESAbYBUQFDAKoAUgB3AKcIbQFbAaUInwhgAfYBKwgk
+CDMBTAFtCJYCAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAAAJAAMBAwABAAAA
+BgAAAA8BAgAFAAAATgoAABABAgAHAAAAVAoAABIBAwABAAAAAQAAABoBBQABAAAA
+XAoAABsBBQABAAAAZAoAACgBAwABAAAAAgAAAAECBAABAAAAbAoAAAICBAABAAAA
+rAUAAAAAAABTT05ZAABEU0MtVDkAAEgAAAABAAAASAAAAAEAAAD/2P/gABBKRklG
+AAEBAAABAAEAAP/bAEMACAYGBwYFCAcHBwkJCAoMFA0MCwsMGRITDxQdGh8eHRoc
+HCAkLicgIiwjHBwoNyksMDE0NDQfJzk9ODI8LjM0Mv/bAEMBCQkJDAsMGA0NGDIh
+HCEyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy
+MjIyMv/AABEIAEAANgMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQID
+BAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEU
+MoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNU
+VVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmq
+srO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/
+xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUE
+BAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXx
+FxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqC
+g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV
+1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AOOsrVbi0BULhGIz
+3P0rSEUSRjBKMqAHJ5zVSyjlh0qOR2ZIuGG05zWXe6sZJAiKAScBR602wSOgtr0R
+yBULPj0ArRtJLi6uRuiJjPtin6HpEFrAkl1iWdgCc9B7AV1lmYYwCiKPwppXNlSu
+r3OcliWcPCZGhkGMMo4FclqGktb60BdMVgdR+9AyX9ce9eq3+lQajAXt38m6HIde
+h+o71xn9qbLyTTdShCzIcdcBvcU5aK5EoWMq31eS0+VmDRBQEAUgj2IxRT5bWe7k
+aKSQLGh+WNSR+NFTYyKOr3BtdJSIlAAg2gDBwK5bQwb3XId3IVtx/Cp9ZuWkfYeO
+K0PC9hsvBIwxlcZ+tSbRjc9AguIFRdzqfb0rTgvbPAHmAGuRutFLOAs7Lg5yOc1q
+x6IZPD+FlPmh/wDWd8VWptGR2MMsLpmGVScdK8r+Icpg8QW8ynBKc/nW1pGkXpuD
+Gt2WPBTk/jWP8QrL/TYGkfLCMDg9eaPUmWuxchSC6ghluJ5FDICFRtvP50VX01Bc
+6VbqzJhFx8xxRULmtoYNanPeKrMLKJUx83UjjmrWi6rFL5Fuqssyr84x1xVDX5ZD
+MsCkME5YgYFUdEnJ1uNhxgHp6VRcZNM9RWRntTtxkipdJ1ee5Uaetq4I6t2FYqNL
+IpMcoXA4GM5qWyvNQDsIpIwQMElMZ/GhM3R1V1MbMbo1CMfvEVw/ie4W9i85yuUJ
+UZ65rXn1KQ2jPOclBk+9ebQTNe3kkspJLOWxmk2S5W0Ow0JRJp6q2eD2NFSacBZ2
+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
+srVHfw==
+=xmyo
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------030906000306090304070809--
