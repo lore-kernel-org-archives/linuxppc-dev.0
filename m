@@ -1,16 +1,29 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4E078437.5010708@grandegger.com>
-Date: Sun, 26 Jun 2011 21:10:47 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Bhaskar Upadhaya <Bhaskar.Upadhaya@freescale.com>
-Subject: Re: [PATCH][upstream] powerpc: Adding bindings for flexcan controller
-References: <1303221511-12903-1-git-send-email-Bhaskar.Upadhaya@freescale.com>
-In-Reply-To: <1303221511-12903-1-git-send-email-Bhaskar.Upadhaya@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: SocketCAN Core Mailing List <socketcan-core@lists.berlios.de>,
-	devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, inuxppc-dev@linux.freescale.net
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+	[88.96.1.126]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 06893B6F64
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 27 Jun 2011 08:51:51 +1000 (EST)
+Subject: Re: Bug#630845: linux-image-2.6.39-2-powerpc: CHRP Pegasos2 boot
+	failure
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Gabriel Paubert <paubert@iram.es>, Michael Ellerman
+	<michael@ellerman.id.au>
+In-Reply-To: <20110623203654.04f151e1.andrewb@zagam.net>
+References: <20110617222943.2188.34712.reportbug@chrp.ab.bgc.com.au>
+	<1308545397.11457.107.camel@localhost>
+	<20110620222812.6cd7e862.andrewb@zagam.net>
+	<1308711698.3093.285.camel@localhost>
+	<20110623203654.04f151e1.andrewb@zagam.net>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+	protocol="application/pgp-signature";
+	boundary="=-NWDrElkHd5rL4MG/st0E"
+Date: Sun, 26 Jun 2011 23:14:13 +0100
+Message-ID: <1309126453.3093.1555.camel@localhost>
+Mime-Version: 1.0
+Cc: 630845@bugs.debian.org, Andrew Buckeridge <andrewb@zagam.net>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,87 +33,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/19/2011 03:58 PM, Bhaskar Upadhaya wrote:
-> From: Bhaskar Upadhaya <bhaskar.upadhaya@freescale.com>
-> 
-> Signed-off-by: Bhaskar Upadhaya <bhaskar.upadhaya@freescale.com>
-> Acked-By: Scott Wood <scottwood@freescale.com>
-> ---
-> Based upon git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git (branch -> master)
-> 
->  .../devicetree/bindings/net/can/fsl-flexcan.txt    |   61 ++++++++++++++++++++
->  1 files changed, 61 insertions(+), 0 deletions(-)
->  create mode 100755 Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
-> new file mode 100755
-> index 0000000..1a729f0
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/net/can/fsl-flexcan.txt
-> @@ -0,0 +1,61 @@
-> +CAN Device Tree Bindings
-> +------------------------
-> +2011 Freescale Semiconductor, Inc.
-> +
-> +fsl,flexcan-v1.0 nodes
-> +-----------------------
-> +In addition to the required compatible-, reg- and interrupt-properties, you can
-> +also specify which clock source shall be used for the controller.
-> +
-> +CPI Clock- Can Protocol Interface Clock
-> +	This CLK_SRC bit of CTRL(control register) selects the clock source to
-> +	the CAN Protocol Interface(CPI) to be either the peripheral clock
-> +	(driven by the PLL) or the crystal oscillator clock. The selected clock
-> +	is the one fed to the prescaler to generate the Serial Clock (Sclock).
-> +	The PRESDIV field of CTRL(control register) controls a prescaler that
-> +	generates the Serial Clock (Sclock), whose period defines the
-> +	time quantum used to compose the CAN waveform.
-> +
-> +Can Engine Clock Source
-> +	There are two sources for CAN clock
-> +	- Platform Clock  It represents the bus clock
-> +	- Oscillator Clock
-> +
-> +	Peripheral Clock (PLL)
-> +	--------------
-> +		     |
-> +		    ---------		      -------------
-> +		    |       |CPI Clock	      | Prescaler |       Sclock
-> +		    |       |---------------->| (1.. 256) |------------>
-> +		    ---------		      -------------
-> +                     |  |
-> +	--------------  ---------------------CLK_SRC
-> +	Oscillator Clock
-> +
-> +- fsl,flexcan-clock-source : CAN Engine Clock Source.This property selects
-> +			     the peripheral clock. PLL clock is fed to the
-> +			     prescaler to generate the Serial Clock (Sclock).
-> +			     Valid values are "oscillator" and "platform"
-> +			     "oscillator": CAN engine clock source is oscillator clock.
-> +			     "platform" The CAN engine clock source is the bus clock
-> +		             (platform clock).
-> +
-> +- fsl,flexcan-clock-divider : for the reference and system clock, an additional
-> +			      clock divider can be specified.
-> +- clock-frequency: frequency required to calculate the bitrate for FlexCAN.
-> +
-> +Note:
-> +	- v1.0 of flexcan-v1.0 represent the IP block version for P1010 SOC.
-> +	- P1010 does not have oscillator as the Clock Source.So the default
-> +	  Clock Source is platform clock.
-> +Examples:
-> +
-> +	can0@1c000 {
-> +		compatible = "fsl,flexcan-v1.0";
-> +		reg = <0x1c000 0x1000>;
-> +		interrupts = <48 0x2>;
-> +		interrupt-parent = <&mpic>;
-> +		fsl,flexcan-clock-source = "platform";
-> +		fsl,flexcan-clock-divider = <2>;
-> +		clock-frequency = <fixed by u-boot>;
-> +	};
 
-I just realized that this patch has hit the mainline kernel but I do not
-find the implementation for that new binding. Have I missed something?
+--=-NWDrElkHd5rL4MG/st0E
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Wolfgang.
+On Thu, 2011-06-23 at 20:36 +0800, Andrew Buckeridge wrote:
+> Package: linux-image-3.0.0-rc3-powerpc
+> Version: 3.0.0~rc3-1~experimental.1
+>=20
+> On Wed, 22 Jun 2011 04:01:38 +0100
+> Ben Hutchings <ben@decadent.org.uk> wrote:
+>=20
+> > > linux-image-2.6.36-trunk-powerpc_2.6.36-1~experimental.1_powerpc.deb
+> > > linux-image-2.6.37-1-powerpc_2.6.37-1_powerpc.deb
+> > > linux-image-2.6.37-2-powerpc_2.6.37-2_powerpc.deb
+> > > These failed to boot. In all cases stuck at the spinner.
+> >=20
+> > At a guess, this may be fixed by a change in Linux 3.0-rc1:
+>=20
+> > Please can you test Linux 3.0-rc3, currently available in experimental?
+>=20
+> linux-image-3.0.0-rc3-powerpc_3.0.0~rc3-1~experimental.1_powerpc.deb
+> Also failed to boot and got stuck at spinner.
+
+Gabriel, Michael, do you recognise this bug?  Are there any fixes for
+Pegasos that are missing from 3.0-rc3?
+
+Ben.
+
+--=20
+Ben Hutchings
+If more than one person is responsible for a bug, no one is at fault.
+
+--=-NWDrElkHd5rL4MG/st0E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIVAwUATgevL+e/yOyVhhEJAQpf2g/6A6gp6abSJhCAte7eV5hoYhlscoE5LTaW
+7mAas5WAbHH7yAELUJusGU0QCblxKI5nWkR6r3PIRR0K+Brw9YhupKsElwxdcfu8
+AF65/Dv5Hx5ZG5Wa7KYBP8DYYSDvuYkK2SRTMcf0ISc5h9AUxa7EbMX0/nNui0H6
+O0VTC5xFtGECza6QwqqZIssYZbkPEUEsXCNfOmwoF4Sv2YxOHsdN5OYzyCTJcAEt
+wBxfMv3mwD0xTX6DStdEPcawik0v4BQgxq2XZjo0nZoCgIw7zZR5pRbbpvC2Atk5
+CYLpJyQcOkEThZBT/Fn5u4he4fxDAyjOJvVYFOZhw28ZifJVYXDfMzWfUrrg20yA
+LIEjHXuAB9yr7/cTe9Hs7FHaYQWiUTcqQAddIE1FPafeZ9cQm4XoaszaYCK5KCPL
+DjYGlakedbG8zFbUgANjWqj9cofNBjCmDyaeQwK5CYegBuX1VbFoaGsii7geUMTI
+hB29YHB8juG4yYSf9J9NQIOF9NbD8AAZj+F6tD72NfHRXdnZ7rbhpeatzLm1X5im
+K3Ou5JC4COq5BH2QafYJElNg27Qbfxw+XeoPkdor7Rs+vOcz5z5ANHkpIQD4sQ7J
+Ynr/JAZSXMymTwbaznQrbKh6UUpCQzMR6VX0eTZ1q31QI1LF4vItvuEkncI1oXjw
+ugDLQsyXR+4=
+=B8mn
+-----END PGP SIGNATURE-----
+
+--=-NWDrElkHd5rL4MG/st0E--
