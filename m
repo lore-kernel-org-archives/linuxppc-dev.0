@@ -1,24 +1,18 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8537AB6F90
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 63EAAB6F68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jun 2011 00:07:54 +1000 (EST)
-Received: by vws20 with SMTP id 20so3773903vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 27 Jun 2011 07:07:50 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
-References: <1308315107-29182-1-git-send-email-dbaryshkov@gmail.com>
-Date: Mon, 27 Jun 2011 18:07:50 +0400
-Message-ID: <BANLkTinFWxJM1LYXxkRv40ThZsa++bPVjg@mail.gmail.com>
-Subject: Re: [PATCH V3 0/2] Improve CPC925 EDAC handling code on Maple
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>
+	Tue, 28 Jun 2011 07:46:04 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/7] serial/8250: move UPIO_TSI to powerpc
+Date: Mon, 27 Jun 2011 23:45:16 +0200
+Message-Id: <1309211120-2803-4-git-send-email-arnd@arndb.de>
+In-Reply-To: <1309211120-2803-1-git-send-email-arnd@arndb.de>
+References: <1309211120-2803-1-git-send-email-arnd@arndb.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +22,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+This iotype is only used by the legacy_serial code in powerpc, so the
+code should live there, rather than be compiled in for every 8250
+driver.
 
-On 6/17/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
-> Hello, colleagues,
->
-> Another respin of this patchset.
->
-> Changes since previous version:
-> * Fix comments in cpc925_edac.c
-> * Rename cpc925_cpu_getmask() to cpc925_cpu_mask_disabled()
-> * Don't return an error from init code if it's a U3 and not U3H
->
->  arch/powerpc/platforms/maple/setup.c |   41 +++++++++------------
->  drivers/edac/cpc925_edac.c           |   67
-> +++++++++++++++++++++++++++++++++--
->  2 files changed, 83 insertions(+), 25 deletions(-)
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-serial@vger.kernel.org
+---
+ arch/powerpc/kernel/legacy_serial.c |   24 ++++++++++++++++++++++++
+ drivers/tty/serial/8250.c           |   23 -----------------------
+ 2 files changed, 24 insertions(+), 23 deletions(-)
 
-Any chance to get this version reviewed/merged? Sorry for being noisy.
-
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 2b97b80..b229e1e 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -47,6 +47,24 @@ static struct __initdata of_device_id legacy_serial_parents[] = {
+ static unsigned int legacy_serial_count;
+ static int legacy_serial_console = -1;
+ 
++static unsigned int tsi_serial_in(struct uart_port *p, int offset)
++{
++	unsigned int tmp;
++	offset = offset << p->regshift;
++	if (offset == UART_IIR) {
++		tmp = readl(p->membase + (UART_IIR & ~3));
++		return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
++	} else
++		return readb(p->membase + offset);
++}
++
++static void tsi_serial_out(struct uart_port *p, int offset, int value)
++{
++	offset = offset << p->regshift;
++	if (!((offset == UART_IER) && (value & UART_IER_UUE)))
++		writeb(value, p->membase + offset);
++}
++
+ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 				  int iotype, phys_addr_t base,
+ 				  phys_addr_t taddr, unsigned long irq,
+@@ -102,6 +120,7 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 		legacy_serial_ports[index].iobase = base;
+ 	else
+ 		legacy_serial_ports[index].mapbase = base;
++
+ 	legacy_serial_ports[index].iotype = iotype;
+ 	legacy_serial_ports[index].uartclk = clock;
+ 	legacy_serial_ports[index].irq = irq;
+@@ -112,6 +131,11 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 	legacy_serial_infos[index].speed = spd ? be32_to_cpup(spd) : 0;
+ 	legacy_serial_infos[index].irq_check_parent = irq_check_parent;
+ 
++	if (iotype == UPIO_TSI) {
++		legacy_serial_ports[index].serial_in = tsi_serial_in;
++		legacy_serial_ports[index].serial_out = tsi_serial_out;
++	}
++
+ 	printk(KERN_DEBUG "Found legacy serial port %d for %s\n",
+ 	       index, np->full_name);
+ 	printk(KERN_DEBUG "  %s=%llx, taddr=%llx, irq=%lx, clk=%d, speed=%d\n",
+diff --git a/drivers/tty/serial/8250.c b/drivers/tty/serial/8250.c
+index c8f107e..d575ccb 100644
+--- a/drivers/tty/serial/8250.c
++++ b/drivers/tty/serial/8250.c
+@@ -345,24 +345,6 @@ static unsigned int mem32_serial_in(struct uart_port *p, int offset)
+ 	return readl(p->membase + offset);
+ }
+ 
+-static unsigned int tsi_serial_in(struct uart_port *p, int offset)
+-{
+-	unsigned int tmp;
+-	offset = map_8250_in_reg(p, offset) << p->regshift;
+-	if (offset == UART_IIR) {
+-		tmp = readl(p->membase + (UART_IIR & ~3));
+-		return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
+-	} else
+-		return readb(p->membase + offset);
+-}
+-
+-static void tsi_serial_out(struct uart_port *p, int offset, int value)
+-{
+-	offset = map_8250_out_reg(p, offset) << p->regshift;
+-	if (!((offset == UART_IER) && (value & UART_IER_UUE)))
+-		writeb(value, p->membase + offset);
+-}
+-
+ /* Save the LCR value so it can be re-written when a Busy Detect IRQ occurs. */
+ static inline void dwapb_save_out_value(struct uart_port *p, int offset,
+ 					int value)
+@@ -431,11 +413,6 @@ static void set_io_from_upio(struct uart_port *p)
+ 		p->serial_out = mem32_serial_out;
+ 		break;
+ 
+-	case UPIO_TSI:
+-		p->serial_in = tsi_serial_in;
+-		p->serial_out = tsi_serial_out;
+-		break;
+-
+ 	case UPIO_DWAPB:
+ 		p->serial_in = mem_serial_in;
+ 		p->serial_out = dwapb_serial_out;
 -- 
-With best wishes
-Dmitry
+1.7.5.4
