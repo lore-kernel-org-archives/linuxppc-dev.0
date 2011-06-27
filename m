@@ -1,29 +1,28 @@
 Return-Path: <B11780@freescale.com>
-Received: from CH1EHSOBE006.bigfish.com (ch1ehsobe003.messaging.microsoft.com
-	[216.32.181.183]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from CH1EHSOBE017.bigfish.com (ch1ehsobe001.messaging.microsoft.com
+	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90CE5B6F6B
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 23:34:56 +1000 (EST)
-Received: from mail11-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail11-ch1-R.bigfish.com (Postfix) with ESMTP id 40FF35A0208	for
-	<linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 13:34:52 +0000 (UTC)
-Received: from CH1EHSMHS011.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.248])	by mail11-ch1.bigfish.com (Postfix) with ESMTP id
-	26FE4BC004F
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 13:34:52 +0000 (UTC)
-Subject: Re: [PATCH 2/2] powerpc/86xx: improve calculation of DIU pixel clock
-	on the MPC8610 HPCD
+	by ozlabs.org (Postfix) with ESMTPS id 8ECE8B6F6F
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 23:35:13 +1000 (EST)
+Received: from mail74-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail74-ch1-R.bigfish.com (Postfix) with ESMTP id 3B7DE1BE00F6	for
+	<linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 13:35:10 +0000 (UTC)
+Received: from CH1EHSMHS023.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.253])	by mail74-ch1.bigfish.com (Postfix) with ESMTP id
+	F1BCE1188051	for <linuxppc-dev@ozlabs.org>;
+	Mon, 27 Jun 2011 13:35:09 +0000 (UTC)
+Subject: Re: [PATCH] powerpc/85xx: disable timebase synchronization under the
+	hypervisor
 MIME-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset="us-ascii"
 From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1308845808-11392-2-git-send-email-timur@freescale.com>
-Date: Mon, 27 Jun 2011 08:34:53 -0500
-Message-ID: <43DC6D1C-E0DC-4CE1-91DD-BA1A059AD2D8@freescale.com>
-References: <1308845808-11392-1-git-send-email-timur@freescale.com>
-	<1308845808-11392-2-git-send-email-timur@freescale.com>
+In-Reply-To: <1308092673-13045-1-git-send-email-timur@freescale.com>
+Date: Mon, 27 Jun 2011 08:35:07 -0500
+Message-ID: <EE100AF8-3C64-4774-A717-0279057D94D5@freescale.com>
+References: <1308092673-13045-1-git-send-email-timur@freescale.com>
 To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: scottwood@freescale.com, B29882@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,23 +33,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 23, 2011, at 11:16 AM, Timur Tabi wrote:
+On Jun 14, 2011, at 6:04 PM, Timur Tabi wrote:
 
-> mpc8610hpcd_set_pixel_clock() calculates the correct value of the =
-PXCLK
-> bits in the CLKDVDR register for a given pixel clock rate.  The code =
-which
-> performs this calculation is overly complicated and includes an error
-> estimation routine that doesn't work most of the time anyway.  Replace =
-the
-> code with the simpler routine that's currently used on the P1022DS.
->=20
+> The Freescale hypervisor does not allow guests to write to the timebase
+> registers (virtualizing the timebase register was deemed too complicated),
+> so don't try to synchronize the timebase registers when we're running
+> under the hypervisor.
+> 
+> This typically happens when kexec support is enabled.
+> 
 > Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |  107 =
-++++++++++++---------------
-> 1 files changed, 48 insertions(+), 59 deletions(-)
+> arch/powerpc/platforms/85xx/p3041_ds.c |   11 +++++++++++
+> arch/powerpc/platforms/85xx/p4080_ds.c |   11 +++++++++++
+> arch/powerpc/platforms/85xx/p5020_ds.c |   11 +++++++++++
+> 3 files changed, 33 insertions(+), 0 deletions(-)
 
 applied to next
 
-- K=
+- K
