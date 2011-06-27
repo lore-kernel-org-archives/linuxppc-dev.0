@@ -1,18 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 63EAAB6F68
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D6945B6F53
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jun 2011 07:46:04 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/7] serial/8250: move UPIO_TSI to powerpc
-Date: Mon, 27 Jun 2011 23:45:16 +0200
-Message-Id: <1309211120-2803-4-git-send-email-arnd@arndb.de>
-In-Reply-To: <1309211120-2803-1-git-send-email-arnd@arndb.de>
-References: <1309211120-2803-1-git-send-email-arnd@arndb.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 28 Jun 2011 07:59:32 +1000 (EST)
+Date: Mon, 27 Jun 2011 16:56:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/timebase_read: don't return time older than cycle_last
+Message-ID: <20110627215613.GA13676@schlenkerla.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,109 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This iotype is only used by the legacy_serial code in powerpc, so the
-code should live there, rather than be compiled in for every 8250
-driver.
+As is done in read_tsc() on x86, make sure that we don't return a timebase
+value smaller than cycle_last, which can happen on SMP if the timebases are
+not perfectly synchronized.  It is less expensive than total enforcement of
+monotonicity, since we don't need to add another variable and update it on
+each read, but it will prevent core timekeeping functions from translating
+a small timebase regression into a large jump forward.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-serial@vger.kernel.org
+Based on commit d8bb6f4c1670c8324e4135c61ef07486f7f17379 for x86.
+
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/legacy_serial.c |   24 ++++++++++++++++++++++++
- drivers/tty/serial/8250.c           |   23 -----------------------
- 2 files changed, 24 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/time.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 2b97b80..b229e1e 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -47,6 +47,24 @@ static struct __initdata of_device_id legacy_serial_parents[] = {
- static unsigned int legacy_serial_count;
- static int legacy_serial_console = -1;
- 
-+static unsigned int tsi_serial_in(struct uart_port *p, int offset)
-+{
-+	unsigned int tmp;
-+	offset = offset << p->regshift;
-+	if (offset == UART_IIR) {
-+		tmp = readl(p->membase + (UART_IIR & ~3));
-+		return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
-+	} else
-+		return readb(p->membase + offset);
-+}
-+
-+static void tsi_serial_out(struct uart_port *p, int offset, int value)
-+{
-+	offset = offset << p->regshift;
-+	if (!((offset == UART_IER) && (value & UART_IER_UUE)))
-+		writeb(value, p->membase + offset);
-+}
-+
- static int __init add_legacy_port(struct device_node *np, int want_index,
- 				  int iotype, phys_addr_t base,
- 				  phys_addr_t taddr, unsigned long irq,
-@@ -102,6 +120,7 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
- 		legacy_serial_ports[index].iobase = base;
- 	else
- 		legacy_serial_ports[index].mapbase = base;
-+
- 	legacy_serial_ports[index].iotype = iotype;
- 	legacy_serial_ports[index].uartclk = clock;
- 	legacy_serial_ports[index].irq = irq;
-@@ -112,6 +131,11 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
- 	legacy_serial_infos[index].speed = spd ? be32_to_cpup(spd) : 0;
- 	legacy_serial_infos[index].irq_check_parent = irq_check_parent;
- 
-+	if (iotype == UPIO_TSI) {
-+		legacy_serial_ports[index].serial_in = tsi_serial_in;
-+		legacy_serial_ports[index].serial_out = tsi_serial_out;
-+	}
-+
- 	printk(KERN_DEBUG "Found legacy serial port %d for %s\n",
- 	       index, np->full_name);
- 	printk(KERN_DEBUG "  %s=%llx, taddr=%llx, irq=%lx, clk=%d, speed=%d\n",
-diff --git a/drivers/tty/serial/8250.c b/drivers/tty/serial/8250.c
-index c8f107e..d575ccb 100644
---- a/drivers/tty/serial/8250.c
-+++ b/drivers/tty/serial/8250.c
-@@ -345,24 +345,6 @@ static unsigned int mem32_serial_in(struct uart_port *p, int offset)
- 	return readl(p->membase + offset);
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index f33acfd..b66ce41 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -806,9 +806,22 @@ static cycle_t rtc_read(struct clocksource *cs)
+ 	return (cycle_t)get_rtc();
  }
  
--static unsigned int tsi_serial_in(struct uart_port *p, int offset)
--{
--	unsigned int tmp;
--	offset = map_8250_in_reg(p, offset) << p->regshift;
--	if (offset == UART_IIR) {
--		tmp = readl(p->membase + (UART_IIR & ~3));
--		return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
--	} else
--		return readb(p->membase + offset);
--}
--
--static void tsi_serial_out(struct uart_port *p, int offset, int value)
--{
--	offset = map_8250_out_reg(p, offset) << p->regshift;
--	if (!((offset == UART_IER) && (value & UART_IER_UUE)))
--		writeb(value, p->membase + offset);
--}
--
- /* Save the LCR value so it can be re-written when a Busy Detect IRQ occurs. */
- static inline void dwapb_save_out_value(struct uart_port *p, int offset,
- 					int value)
-@@ -431,11 +413,6 @@ static void set_io_from_upio(struct uart_port *p)
- 		p->serial_out = mem32_serial_out;
- 		break;
++/*
++ * We compare the timebase to the cycle_last value in the clocksource
++ * structure to avoid a nasty time-warp.  This can be observed in a very
++ * small window right after one CPU updated cycle_last under the xtime lock,
++ * and the other CPU reads a TSC value which is smaller than the cycle_last
++ * reference value due to a TSC which is slighty behind.  This delta is
++ * nowhere else observable, but in that case it results in a large forward
++ * time jump due to the unsigned delta calculation of the time keeping core
++ * code, which is necessary to support wrapping clocksources like pm timer.
++ */
+ static cycle_t timebase_read(struct clocksource *cs)
+ {
+-	return (cycle_t)get_tb();
++	cycle_t ret = (cycle_t)get_tb();
++
++	return ret >= clocksource_timebase.cycle_last ?
++	       ret : clocksource_timebase.cycle_last;
+ }
  
--	case UPIO_TSI:
--		p->serial_in = tsi_serial_in;
--		p->serial_out = tsi_serial_out;
--		break;
--
- 	case UPIO_DWAPB:
- 		p->serial_in = mem_serial_in;
- 		p->serial_out = dwapb_serial_out;
+ void update_vsyscall(struct timespec *wall_time, struct timespec *wtm,
 -- 
-1.7.5.4
+1.7.4.1
