@@ -1,27 +1,26 @@
 Return-Path: <B11780@freescale.com>
-Received: from CH1EHSOBE009.bigfish.com (ch1ehsobe004.messaging.microsoft.com
-	[216.32.181.184]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from CH1EHSOBE018.bigfish.com (ch1ehsobe001.messaging.microsoft.com
+	[216.32.181.181]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
 	(Client CN "mail.global.frontbridge.com",
 	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 25478B6F53
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 23:35:43 +1000 (EST)
-Received: from mail115-ch1 (localhost.localdomain [127.0.0.1])	by
-	mail115-ch1-R.bigfish.com (Postfix) with ESMTP id F1CD9510101	for
-	<linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 13:35:40 +0000 (UTC)
-Received: from CH1EHSMHS005.bigfish.com (snatpool1.int.messaging.microsoft.com
-	[10.43.68.247])	by mail115-ch1.bigfish.com (Postfix) with ESMTP id
-	CDE4D17C0051	for <linuxppc-dev@ozlabs.org>;
-	Mon, 27 Jun 2011 13:35:40 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/85xx: enable the framebuffer console for the
-	defconfigs
+	by ozlabs.org (Postfix) with ESMTPS id 11514B7445
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 23:35:47 +1000 (EST)
+Received: from mail101-ch1 (localhost.localdomain [127.0.0.1])	by
+	mail101-ch1-R.bigfish.com (Postfix) with ESMTP id 3FEB6110019A	for
+	<linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 13:35:45 +0000 (UTC)
+Received: from CH1EHSMHS026.bigfish.com (snatpool1.int.messaging.microsoft.com
+	[10.43.68.246])	by mail101-ch1.bigfish.com (Postfix) with ESMTP id
+	21F262004F
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2011 13:35:44 +0000 (UTC)
+Subject: Re: [PATCH] powerpc/85xx: clamp the P1022DS DIU pixel clock to
+	allowed values
 MIME-Version: 1.0 (Apple Message framework v1084)
 Content-Type: text/plain; charset="us-ascii"
 From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1308858535-17396-2-git-send-email-timur@freescale.com>
-Date: Mon, 27 Jun 2011 08:35:38 -0500
-Message-ID: <98369A9C-E6F6-4034-9BCA-5F12C5462078@freescale.com>
+In-Reply-To: <1308858535-17396-1-git-send-email-timur@freescale.com>
+Date: Mon, 27 Jun 2011 08:35:44 -0500
+Message-ID: <37B600B7-F0ED-4546-883B-9EF2655B38F6@freescale.com>
 References: <1308858535-17396-1-git-send-email-timur@freescale.com>
-	<1308858535-17396-2-git-send-email-timur@freescale.com>
 To: Timur Tabi <timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,15 +35,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jun 23, 2011, at 2:48 PM, Timur Tabi wrote:
 
-> Enable framebuffer console support by default in the defconfigs for the
-> Freescale 85xx-based reference board.  This allows the boot messages to
-> be shown on the video display on the P1022DS.
+> To ensure that the DIU pixel clock will not be set to an invalid value,
+> clamp the PXCLK divider to the allowed range (2-255).  This also acts as
+> a limiter for the pixel clock.
 > 
 > Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/configs/mpc85xx_defconfig     |    4 ++++
-> arch/powerpc/configs/mpc85xx_smp_defconfig |    4 ++++
-> 2 files changed, 8 insertions(+), 0 deletions(-)
+> arch/powerpc/platforms/85xx/p1022_ds.c |    7 ++++++-
+> 1 files changed, 6 insertions(+), 1 deletions(-)
+
 
 applied to next
 
