@@ -1,29 +1,29 @@
-Return-Path: <mikebwilliams@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BDE36B6F69
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7211BB6F72
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jun 2011 22:14:19 +1000 (EST)
-Received: by fxe23 with SMTP id 23so154090fxe.15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jun 2011 05:14:13 -0700 (PDT)
+	Tue, 28 Jun 2011 22:41:47 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5SCKuRc017022
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 08:20:56 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5SCNskM164402
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 08:41:39 -0400
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p5S67222020425
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 00:07:04 -0600
+Date: Tue, 28 Jun 2011 08:07:35 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'next' branch of 4xx tree
+Message-ID: <20110628120735.GB10237@zod.rchland.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20110628114810.GA10237@zod.rchland.ibm.com>
-References: <1308771051-30861-1-git-send-email-mike@mikebwilliams.com>
-	<14e6cd940efae1704f5908757f81f627@kernel.crashing.org>
-	<BANLkTikKNqEoQxGA642h14eOUjZ3hGZaQw@mail.gmail.com>
-	<BANLkTinisHPrEN8Xc_KoqFwxknMooE=H4w@mail.gmail.com>
-	<f3bf96d99dfc13e2ebc07d6ce2282f2e@kernel.crashing.org>
-	<20110628114810.GA10237@zod.rchland.ibm.com>
-Date: Tue, 28 Jun 2011 08:14:13 -0400
-Message-ID: <BANLkTim7XYdeRQQ2fgAyx4s8ezZTJyZQkA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc, 460gt: Add 460gt as compatible in the check for
-	460ex-compatible crypto
-From: Mike Williams <mikebwilliams@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 28, 2011 at 7:48 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wr=
-ote:
-> On Fri, Jun 24, 2011 at 04:14:07AM +0200, Segher Boessenkool wrote:
->>>>>- =A0 =A0 =A0 if (of_find_compatible_node(NULL, NULL,
->>>>>"amcc,ppc460ex-crypto")) {
->>>>>+ =A0 =A0 =A0 if (of_find_compatible_node(NULL, NULL,
->>>>>"amcc,ppc460ex-crypto") ||
->>>>>+ =A0 =A0 =A0 =A0 =A0 of_find_compatible_node(NULL, NULL,
->>>>>"amcc,ppc460gt-crypto")) {
->>>>
->>>>If the device is actually compatible, the device tree node should
->>>>claim
->>>>it is, and you do not need this code change.
->>>
->>>That was actually my first instinct, however I tried to follow the
->>>current convention in the glacier and canyonlands DTS files, which is
->>>to set every device compatible to 460gt or 460ex, depending on the
->>>processor. Many of the devices are identical between the two, since
->>>they are variations of the same SoC, so which is the preferred method?
->>>Follow the device tree convention and add the compatibility check in
->>>the driver,
->>
->>That is not the convention.
->>
->>>or alter the device trees? I'll send another patch if it's
->>>the latter.
->>
->>You say
->>
->> =A0compatible =3D "amcc,ppc460gt-crypto", "amcc,ppc460ex-crypto";
->
-> I went ahead and modified the addition of the node to the glacier DTS
-> file to do this instead. =A0I think this specific patch can be dropped.
->
-> josh
->
+Hi Ben,
 
-Thanks, go ahead and drop it. I got buried here at work with our
-fiscal year ending.
+A small pull request to add some DTS entries to bind to the new HW RNG
+driver for 4xx.
 
-Mike
+I know Eric has the Bluegene stuff being worked on, and there are
+patches from Michal Simek for relocatable kernel support out for RFC.  I
+need to review those a bit more closely, so they will probably be pushed
+out to the 3.2 merge window.
+
+josh
+
+The following changes since commit dc28518f7d7dfd93cd44edb44f9b8e961f5a5c1b:
+
+  powerpc: Fix doorbell type shift (2011-06-20 11:21:48 +1000)
+
+are available in the git repository at:
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+
+Josh Boyer (1):
+      ppc4xx: Add crypto and RNG entries to Sequoia DTS
+
+Mike Williams (1):
+      powerpc/4xx: Update Canyonlands and Glacier boards DTS to add HW RNG support
+
+ arch/powerpc/boot/dts/canyonlands.dts |    5 +++++
+ arch/powerpc/boot/dts/glacier.dts     |    8 +++++++-
+ arch/powerpc/boot/dts/sequoia.dts     |   12 ++++++++++++
+ 3 files changed, 24 insertions(+), 1 deletions(-)
