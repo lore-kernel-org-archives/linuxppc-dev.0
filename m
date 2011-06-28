@@ -1,23 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 875B6B6F65
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2011 02:30:44 +1000 (EST)
-Date: Tue, 28 Jun 2011 11:30:33 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Mike Hench <mhench@elutions.com>
-Subject: Re: [PATCH 2/2] mtd/nand : workaround for Freescale FCM to
-	supportlarge-page Nand chip
-Message-ID: <20110628113033.5e71a8ed@schlenkerla.am.freescale.net>
-In-Reply-To: <F87D23B7E1F84E4AB52E4FA4A55F85DC0262C53D@tpamail.elutions.com>
-References: <1309225852-1664-2-git-send-email-b35362@freescale.com>
-	<F87D23B7E1F84E4AB52E4FA4A55F85DC0262C53D@tpamail.elutions.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: dwmw2@infradead.org, b35362@freescale.com, linux-mtd@lists.infradead.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 57967B6F62
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Jun 2011 05:06:59 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id p5SJ6sIC009565
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 14:06:54 -0500
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Whitespace fix to include/asm/pgtable-ppc64.h
+Date: Tue, 28 Jun 2011 14:06:54 -0500
+Message-Id: <1309288014309-git-send-email-beckyb@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,14 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jun 2011 11:35:12 -0400
-Mike Hench <mhench@elutions.com> wrote:
+From: Becky Bruce <beckyb@kernel.crashing.org>
 
-> 
-> Any boot ideas ?
-> Will the FCM load 2k and run it?
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-The 4K boot region will have to be split over pages 0 and 2 (2k view) or
-the first half of pages 0 and 1 (4k view).
-
--Scott
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 81576ee..c420561 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -357,7 +357,8 @@ void pgtable_cache_init(void);
+ /*
+  * find_linux_pte returns the address of a linux pte for a given
+  * effective address and directory.  If not found, it returns zero.
+- */static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
++ */
++static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
+ {
+ 	pgd_t *pg;
+ 	pud_t *pu;
+-- 
+1.5.6.5
