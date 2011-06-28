@@ -1,29 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7211BB6F72
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 7C71BB6F67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jun 2011 22:41:47 +1000 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5SCKuRc017022
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 08:20:56 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p5SCNskM164402
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 08:41:39 -0400
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id p5S67222020425
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2011 00:07:04 -0600
-Date: Tue, 28 Jun 2011 08:07:35 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20110628120735.GB10237@zod.rchland.ibm.com>
+	Tue, 28 Jun 2011 22:51:52 +1000 (EST)
+Date: Tue, 28 Jun 2011 14:51:48 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Ben Hutchings <ben@decadent.org.uk>
+Subject: Re: Bug#630845: linux-image-2.6.39-2-powerpc: CHRP Pegasos2 boot
+	failure
+Message-ID: <20110628125148.GA10884@iram.es>
+References: <20110617222943.2188.34712.reportbug@chrp.ab.bgc.com.au>
+	<1308545397.11457.107.camel@localhost>
+	<20110620222812.6cd7e862.andrewb@zagam.net>
+	<1308711698.3093.285.camel@localhost>
+	<20110623203654.04f151e1.andrewb@zagam.net>
+	<1309126453.3093.1555.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1309126453.3093.1555.camel@localhost>
+Cc: Michael Ellerman <michael@ellerman.id.au>, 630845@bugs.debian.org,
+	linuxppc-dev@lists.ozlabs.org, Andrew Buckeridge <andrewb@zagam.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Sun, Jun 26, 2011 at 11:14:13PM +0100, Ben Hutchings wrote:
+> On Thu, 2011-06-23 at 20:36 +0800, Andrew Buckeridge wrote:
+> > Package: linux-image-3.0.0-rc3-powerpc
+> > Version: 3.0.0~rc3-1~experimental.1
+> > 
+> > On Wed, 22 Jun 2011 04:01:38 +0100
+> > Ben Hutchings <ben@decadent.org.uk> wrote:
+> > 
+> > > > linux-image-2.6.36-trunk-powerpc_2.6.36-1~experimental.1_powerpc.deb
+> > > > linux-image-2.6.37-1-powerpc_2.6.37-1_powerpc.deb
+> > > > linux-image-2.6.37-2-powerpc_2.6.37-2_powerpc.deb
+> > > > These failed to boot. In all cases stuck at the spinner.
+> > > 
+> > > At a guess, this may be fixed by a change in Linux 3.0-rc1:
+> > 
+> > > Please can you test Linux 3.0-rc3, currently available in experimental?
+> > 
+> > linux-image-3.0.0-rc3-powerpc_3.0.0~rc3-1~experimental.1_powerpc.deb
+> > Also failed to boot and got stuck at spinner.
+> 
+> Gabriel, Michael, do you recognise this bug?  Are there any fixes for
+> Pegasos that are missing from 3.0-rc3?
 
-A small pull request to add some DTS entries to bind to the new HW RNG
-driver for 4xx.
+What do you mean by the spinner? I've had very long boot times with 
+an apparently dead machine depending on graphics options.
 
-I know Eric has the Bluegene stuff being worked on, and there are
-patches from Michal Simek for relocatable kernel support out for RFC.  I
-need to review those a bit more closely, so they will probably be pushed
-out to the 3.2 merge window.
+For now I'm running 2.6.39 with one patch for keyboard/mouse handling
+which is now upstream.
 
-josh
+I can try a more recent kernel on Thursday.
 
-The following changes since commit dc28518f7d7dfd93cd44edb44f9b8e961f5a5c1b:
-
-  powerpc: Fix doorbell type shift (2011-06-20 11:21:48 +1000)
-
-are available in the git repository at:
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-Josh Boyer (1):
-      ppc4xx: Add crypto and RNG entries to Sequoia DTS
-
-Mike Williams (1):
-      powerpc/4xx: Update Canyonlands and Glacier boards DTS to add HW RNG support
-
- arch/powerpc/boot/dts/canyonlands.dts |    5 +++++
- arch/powerpc/boot/dts/glacier.dts     |    8 +++++++-
- arch/powerpc/boot/dts/sequoia.dts     |   12 ++++++++++++
- 3 files changed, 24 insertions(+), 1 deletions(-)
+	Gabriel
