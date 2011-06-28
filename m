@@ -1,23 +1,23 @@
-Return-Path: <prvs=1160450366=mhench@elutions.com>
-Received: from mail.elutions.com (mail.elutions.com [64.31.159.3])
-	by ozlabs.org (Postfix) with ESMTP id F2CDDB6F5F
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2011 01:50:16 +1000 (EST)
-Received: from mail.elutions.com (127.0.0.1) by mail.elutions.com (MlfMTA
-	v3.2r9) id h17j820171sl for <linuxppc-dev@ozlabs.org>;
-	Tue, 28 Jun 2011 10:19:36 -0400 (envelope-from
-	<prvs=1160450366=mhench@elutions.com>)
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DA008B6F65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Jun 2011 02:14:36 +1000 (EST)
+Date: Tue, 28 Jun 2011 11:14:20 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/timebase_read: don't return time older than
+	cycle_last
+Message-ID: <20110628111420.15052d9f@schlenkerla.am.freescale.net>
+In-Reply-To: <1309221943.32158.412.camel@pasglop>
+References: <20110627215613.GA13676@schlenkerla.am.freescale.net>
+	<1309221943.32158.412.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 2/2] mtd/nand : workaround for Freescale FCM to
-	supportlarge-page Nand chip
-Date: Tue, 28 Jun 2011 11:35:12 -0400
-Message-ID: <F87D23B7E1F84E4AB52E4FA4A55F85DC0262C53D@tpamail.elutions.com>
-In-Reply-To: <1309225852-1664-2-git-send-email-b35362@freescale.com>
-From: "Mike Hench" <mhench@elutions.com>
-To: <b35362@freescale.com>,
-	<dwmw2@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,8 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 28 Jun 2011 10:45:43 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Any boot ideas ?
-Will the FCM load 2k and run it?
+> On Mon, 2011-06-27 at 16:56 -0500, Scott Wood wrote:
+> > As is done in read_tsc() on x86, make sure that we don't return a timebase
+> > value smaller than cycle_last, which can happen on SMP if the timebases are
+> > not perfectly synchronized.  It is less expensive than total enforcement of
+> > monotonicity, since we don't need to add another variable and update it on
+> > each read, but it will prevent core timekeeping functions from translating
+> > a small timebase regression into a large jump forward.
+> > 
+> > Based on commit d8bb6f4c1670c8324e4135c61ef07486f7f17379 for x86.
+> 
+> You are applying a bandage on a wooden leg here .... userspace (vDSO)
+> will see the time going backward if you aren't well synchronized as
+> well, so you're stuffed anyways.
 
-Thanks for any insight you might have.
+Sure -- but we should avoid turning a slight backwards drift into a huge
+positive offset in the kernel's calculations.  One way to do that is for
+the generic timekeeping code to be robust against this, for all time
+sources.  The other is to apply this sort of hack on time sources that are
+known to possibly go backwards.  The former is the better fix IMHO, but the
+latter is what was already done for TSC on x86, so I went with the less
+intrusive change.
+
+-Scott
