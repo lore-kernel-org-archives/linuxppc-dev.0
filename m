@@ -2,17 +2,19 @@ Return-Path: <beckyb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 904EDB6F64
+	by ozlabs.org (Postfix) with ESMTPS id 30DDBB6F69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jun 2011 05:57:56 +1000 (EST)
+	Wed, 29 Jun 2011 05:58:56 +1000 (EST)
 From: Becky Bruce <beckyb@kernel.crashing.org>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/5] hugetlb: add phys addr to struct huge_bootmem_page
-Date: Tue, 28 Jun 2011 14:54:45 -0500
-Message-Id: <13092910103675-git-send-email-beckyb@kernel.crashing.org>
-In-Reply-To: <13092909493748-git-send-email-beckyb@kernel.crashing.org>
+Subject: [PATCH 3/5] powerpc: mem_init should call memblock_is_reserved with
+	phys_addr_t
+Date: Tue, 28 Jun 2011 14:54:46 -0500
+Message-Id: <13092910702553-git-send-email-beckyb@kernel.crashing.org>
+In-Reply-To: <13092910103675-git-send-email-beckyb@kernel.crashing.org>
 References: <1309290888309-git-send-email-beckyb@kernel.crashing.org>
 	<13092909493748-git-send-email-beckyb@kernel.crashing.org>
+	<13092910103675-git-send-email-beckyb@kernel.crashing.org>
 Cc: wli@holomorphy.com, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,48 +27,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Becky Bruce <beckyb@kernel.crashing.org>
 
-This is needed on HIGHMEM systems - we don't always have a virtual
-address so store the physical address and map it in as needed.
+This has been broken for a while but hasn't been an issue until
+now because nobody was reserving regions at high addresses.
 
 Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
 ---
- include/linux/hugetlb.h |    3 +++
- mm/hugetlb.c            |    8 +++++++-
- 2 files changed, 10 insertions(+), 1 deletions(-)
+ arch/powerpc/mm/mem.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 59225ef..19644e0 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -231,6 +231,9 @@ struct hstate {
- struct huge_bootmem_page {
- 	struct list_head list;
- 	struct hstate *hstate;
-+#ifdef CONFIG_HIGHMEM
-+	phys_addr_t phys;
-+#endif
- };
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 57e545b..097b288 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -337,8 +337,9 @@ void __init mem_init(void)
  
- struct page *alloc_huge_page_node(struct hstate *h, int nid);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 6402458..2db81ea 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -1105,8 +1105,14 @@ static void __init gather_bootmem_prealloc(void)
- 	struct huge_bootmem_page *m;
- 
- 	list_for_each_entry(m, &huge_boot_pages, list) {
--		struct page *page = virt_to_page(m);
- 		struct hstate *h = m->hstate;
-+#ifdef CONFIG_HIGHMEM
-+		struct page *page = pfn_to_page(m->phys >> PAGE_SHIFT);
-+		free_bootmem_late((unsigned long)m,
-+				  sizeof(struct huge_bootmem_page));
-+#else
-+		struct page *page = virt_to_page(m);
-+#endif
- 		__ClearPageReserved(page);
- 		WARN_ON(page_count(page) != 1);
- 		prep_compound_huge_page(page, h->order);
+ 		highmem_mapnr = lowmem_end_addr >> PAGE_SHIFT;
+ 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
++			phys_addr_t paddr = (phys_addr_t)pfn << PAGE_SHIFT;
+ 			struct page *page = pfn_to_page(pfn);
+-			if (memblock_is_reserved(pfn << PAGE_SHIFT))
++			if (memblock_is_reserved(paddr))
+ 				continue;
+ 			ClearPageReserved(page);
+ 			init_page_count(page);
 -- 
 1.5.6.5
