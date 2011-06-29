@@ -1,28 +1,34 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0CC30B6F5B
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 91EF4B6EE9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jun 2011 06:58:48 +1000 (EST)
-Received: by vws20 with SMTP id 20so1308718vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jun 2011 13:58:45 -0700 (PDT)
+	Thu, 30 Jun 2011 08:02:08 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p5TLbNeb018376
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2011 17:37:23 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	p5TM24vt1605742
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2011 18:02:04 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	p5TM24Yn016784
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2011 18:02:04 -0400
+Message-ID: <4E0BA0C3.6030805@linux.vnet.ibm.com>
+Date: Wed, 29 Jun 2011 15:01:39 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <BANLkTikD_x3QA8_q8+444QhA39SEW6hVfg@mail.gmail.com>
-References: <1308316207-9075-1-git-send-email-dbaryshkov@gmail.com>
-	<1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
-	<1309318110.32158.520.camel@pasglop>
-	<BANLkTikD_x3QA8_q8+444QhA39SEW6hVfg@mail.gmail.com>
-Date: Thu, 30 Jun 2011 00:58:44 +0400
-Message-ID: <BANLkTimjBfMBXEdH7k-6sTjb1P+Fq3-Fvg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] Add cpufreq driver for Momentum Maple boards
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: kevin diggs <diggskevin38@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/mm: add devmem_is_allowed() for STRICT_DEVMEM
+	checking
+References: <20110614165011.23034.66685.sendpatchset@squad5-lp1.lab.bos.redhat.com>	<1308072658.2452.10.camel@orca.stoopid.dyndns.org>	<1308075422.13495.8.camel@dhcp-100-2-27.bos.redhat.com>
+	<20110614140431.31ae4357__48367.5367352136$1308078343$gmane$org@schlenkerla.am.freescale.net>
+In-Reply-To: <20110614140431.31ae4357__48367.5367352136$1308078343$gmane$org@schlenkerla.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nathan Lynch <ntl@pobox.com>, linuxppc-dev@lists.ozlabs.org,
+	Steve Best <sfbest@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 29, 2011 at 10:09 PM, kevin diggs <diggskevin38@gmail.com> wrote:
-> Hi,
+On 06/14/2011 12:04 PM, Scott Wood wrote:
+> On Tue, 14 Jun 2011 14:17:01 -0400
+> Steve Best<sfbest@us.ibm.com>  wrote:
 >
-> On Tue, Jun 28, 2011 at 10:28 PM, Benjamin Herrenschmidt >
+>> On Tue, 2011-06-14 at 12:30 -0500, Nathan Lynch wrote:
+>>> Hi Steve,
+>>>
+>>> On Tue, 2011-06-14 at 12:58 -0400, Steve Best wrote:
+>>>> +/*
+>>>> + * devmem_is_allowed() checks to see if /dev/mem access to a certain address
+>>>> + * is valid. The argument is a physical page number.
+>>>> + *
+>>>> + * On PowerPC, access has to be given to data regions used by X. We have to
+>>>> + * disallow access to device-exclusive MMIO regions and system RAM.
+>>>> + */
+>>>> +int devmem_is_allowed(unsigned long pfn)
+>>>> +{
+>>>> +        if ((pfn>= 57360 || pfn<= 57392))
+>>>> +                return 1;
+>>>
+>>> That seems... fragile.  Where do these numbers come from, and are they
+>>> appropriate for all platforms and configurations?
 >>
->> If we're going to have a Kconfig.powerpc, should we maybe just have a
->> powerpc subdirectory instead with the driver in it ?
->>
-> Where would the powerpc subdirectory be? under drivers/cpufreq? Or
-> somewhere under arch/powerpc where it belongs (and I put my 750GX
-> stuff)?
+>> This is the range I got from testing pseries blades and servers. maybe
+>> there is a better way to get this range anyone know of a way?
+>
+> Use iomem_is_exclusive(), as other architectures (e.g. x86, arm) do.
+>
+> Anything else is both platform-specific, and inappropriate hardcoding of
+> policy.
 
-drivers/cpufreq/powerpc. However my current version (as suggested by Ben)
-goes directly to drivers/cpufreq
+x86 allows access to the first 256 pages. Are there other regions that 
+we should allow in power besides the !iomem_is_exclusive() region ?
 
--- 
-With best wishes
-Dmitry
+>
+> -Scott
