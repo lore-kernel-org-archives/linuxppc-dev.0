@@ -1,21 +1,22 @@
 Return-Path: <yong.zhang0@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from mail-yi0-f51.google.com (mail-yi0-f51.google.com
+	[209.85.218.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 967C8B6F6C
+	by ozlabs.org (Postfix) with ESMTPS id 806BDB6F6E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jun 2011 16:23:33 +1000 (EST)
-Received: by yxm34 with SMTP id 34so422899yxm.38
+	Wed, 29 Jun 2011 16:41:48 +1000 (EST)
+Received: by yib2 with SMTP id 2so420306yib.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jun 2011 23:23:29 -0700 (PDT)
+	Tue, 28 Jun 2011 23:41:44 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20110627100104.GA24705@in.ibm.com>
+In-Reply-To: <20110628104128.GA4310@in.ibm.com>
 References: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
 	<1308911347.531.56.camel@gandalf.stny.rr.com>
 	<4E074671.7060100@hitachi.com> <20110627100104.GA24705@in.ibm.com>
-Date: Wed, 29 Jun 2011 14:23:28 +0800
-Message-ID: <BANLkTimYej4_dmBqvPBCLej=JA5atLrZVA@mail.gmail.com>
+	<20110628104128.GA4310@in.ibm.com>
+Date: Wed, 29 Jun 2011 14:41:44 +0800
+Message-ID: <BANLkTikqXYWBzj9LgrRrN=iGhtAU0xzvXg@mail.gmail.com>
 Subject: Re: [BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu'
 	lead to system crash/freeze
 From: Yong Zhang <yong.zhang0@gmail.com>
@@ -36,118 +37,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 27, 2011 at 6:01 PM, Ananth N Mavinakayanahalli
+On Tue, Jun 28, 2011 at 6:41 PM, Ananth N Mavinakayanahalli
 <ananth@in.ibm.com> wrote:
-> On Sun, Jun 26, 2011 at 11:47:13PM +0900, Masami Hiramatsu wrote:
->> (2011/06/24 19:29), Steven Rostedt wrote:
->> > On Fri, 2011-06-24 at 17:21 +0800, Yong Zhang wrote:
->> >> Hi,
->> >>
->> >> When I use kprobe to do something, I found some wired thing.
->> >>
->> >> When CONFIG_FUNCTION_TRACER is disabled:
->> >> (gdb) disassemble do_fork
->> >> Dump of assembler code for function do_fork:
->> >> =C2=A0 =C2=A00xc0037390 <+0>: =C2=A0 =C2=A0 =C2=A0 =C2=A0mflr =C2=A0 =
-=C2=A0r0
->> >> =C2=A0 =C2=A00xc0037394 <+4>: =C2=A0 =C2=A0 =C2=A0 =C2=A0stwu =C2=A0 =
-=C2=A0r1,-64(r1)
->> >> =C2=A0 =C2=A00xc0037398 <+8>: =C2=A0 =C2=A0 =C2=A0 =C2=A0mfcr =C2=A0 =
-=C2=A0r12
->> >> =C2=A0 =C2=A00xc003739c <+12>: =C2=A0 =C2=A0 =C2=A0 stmw =C2=A0 =C2=
-=A0r27,44(r1)
->> >>
->> >> Then I:
->> >> modprobe kprobe_example func=3Ddo_fork offset=3D4
->> >> ls
->> >> Things works well.
->> >>
->> >> But when CONFIG_FUNCTION_TRACER is enabled:
->> >> (gdb) disassemble do_fork
->> >> Dump of assembler code for function do_fork:
->> >> =C2=A0 =C2=A00xc0040334 <+0>: =C2=A0 =C2=A0 =C2=A0 =C2=A0mflr =C2=A0 =
-=C2=A0r0
->> >> =C2=A0 =C2=A00xc0040338 <+4>: =C2=A0 =C2=A0 =C2=A0 =C2=A0stw =C2=A0 =
-=C2=A0 r0,4(r1)
->> >> =C2=A0 =C2=A00xc004033c <+8>: =C2=A0 =C2=A0 =C2=A0 =C2=A0bl =C2=A0 =
-=C2=A0 =C2=A00xc00109d4 <mcount>
->> >> =C2=A0 =C2=A00xc0040340 <+12>: =C2=A0 =C2=A0 =C2=A0 stwu =C2=A0 =C2=
-=A0r1,-80(r1)
->> >> =C2=A0 =C2=A00xc0040344 <+16>: =C2=A0 =C2=A0 =C2=A0 mflr =C2=A0 =C2=
-=A0r0
->> >> =C2=A0 =C2=A00xc0040348 <+20>: =C2=A0 =C2=A0 =C2=A0 stw =C2=A0 =C2=A0=
- r0,84(r1)
->> >> =C2=A0 =C2=A00xc004034c <+24>: =C2=A0 =C2=A0 =C2=A0 mfcr =C2=A0 =C2=
-=A0r12
->> >> Then I:
->> >> modprobe kprobe_example func=3Ddo_fork offset=3D12
->> >> ls
->> >> 'ls' will never retrun. system freeze.
->> >
->> > I'm not sure if x86 had a similar issue.
->> >
->> > Masami, have any ideas to why this happened?
->>
->> No, I don't familiar with ppc implementation. I guess
->> that single-step resume code failed to emulate the
->> instruction, but it strongly depends on ppc arch.
->> Maybe IBM people may know what happened.
->>
->> Ananth, Jim, would you have any ideas?
 >
-> On powerpc, we emulate sstep whenever possible. Only recently support to
-> emulate loads and stores got added. I don't have access to a powerpc box
-> today... but will try to recreate the problem ASAP and see what could be
-> happening in the presence of mcount.
+> My access to a 32bit powerpc box is very limited. Also, embedded powerpc
+> has had issues with gcc-4.6 while gcc-4.5 worked fine.
 
-After taking more testing on it, it looks like the issue doesn't
-depend on mcount
-(AKA. CONFIG_FUNCTION_TRACER)
+I think I can do some test if you have any ideas :)
 
-As I said in the first email, with eldk-5.0 CONFIG_FUNCTION_TRACER=3Dn
-will work well.
+>
+>> > > I'm not sure if x86 had a similar issue.
+>> > >
+>> > > Masami, have any ideas to why this happened?
+>> >
+>> > No, I don't familiar with ppc implementation. I guess
+>> > that single-step resume code failed to emulate the
+>> > instruction, but it strongly depends on ppc arch.
+>> > Maybe IBM people may know what happened.
+>> >
+>> > Ananth, Jim, would you have any ideas?
+>>
+>> On powerpc, we emulate sstep whenever possible. Only recently support to
+>> emulate loads and stores got added. I don't have access to a powerpc box
+>> today... but will try to recreate the problem ASAP and see what could be
+>> happening in the presence of mcount.
+>
+> I tried to recreate this problem on a 64-bit pSeries box without
+> success. Every one of the instructions in the stream at .do_fork are
+> emulated and work fine there -- no hangs/crashes with or without
+> function tracer.
+>
+> Yong,
+> I am copying Kumar to see if he knows of any issues with 32-bit kprobes
+> (he wrote it) or with the function tracer, or with the toolchain itself.
+>
+> You may want to check if, in the failure case, the instruction in
+> question is single-stepped or emulated (print out the value of
+> kprobe->ainsn.boostable in the post_handler)
 
-But when I'm using eldk-4.2[1], both will fail. But the funny thing is when=
- I
-set kprobe at several functions some works fine but some will fail. For exa=
-mple,
-at this time do_fork() works well, but show_interrupt() will crash.
-
-root@unknown:/root> insmod kprobe_example.ko func=3Dshow_interrupts
+It's emulated:
+root@unknown:/root> insmod kprobe_example.ko func=show_interrupts
 Planted kprobe at c009be18
 root@unknown:/root> cat /proc/interrupts
-pre_handler: p->addr =3D 0xc009be18, nip =3D 0xc009be18, msr =3D 0x29000
-post_handler: p->addr =3D 0xc009be18, msr =3D 0x29000,boostable =3D 1
-Oops: Exception in kernel mode, sig: 11 [#1]
-PREEMPT MPC8536 DS
-Modules linked in: kprobe_example
-NIP: df159e74 LR: c0106f40 CTR: c009be18
-REGS: df159d90 TRAP: 0700   Not tainted  (3.0.0-rc4-00001-ge8ffcca-dirty)
-MSR: 00029000 <EE,ME,CE>  CR: 20202688  XER: 00000000
-TASK =3D dfaa5340[613] 'cat' THREAD: df158000
-GPR00: fffff000 df159e40 dfaa5340 df024a00 df159e78 00000000 df159f20 00000=
-001
-GPR08: c10060d0 c009be18 00029000 df159e70 00000000 1001ca74 1ffb5f00 100a0=
-1cc
-GPR16: 00000000 00000000 00000000 00000000 df024a28 df159f20 00000000 dfbff=
-080
-GPR24: 10016000 00001000 df159f20 df159e78 dfbff080 df159e78 df024a00 df159=
-e70
-NIP [df159e74] 0xdf159e74
-LR [c0106f40] seq_read+0x2a4/0x568
+pre_handler: p->addr = 0xc009be18, nip = 0xc009be18, msr = 0x29000
+post_handler: p->addr = 0xc009be18, msr = 0x29000,boostable = 1
+
+Since commit 0016a4cf5582415849fafbf9f019dd9530824789 almost all
+of the instructions are emulated.
+
+But if we disable the emulation of stwu(so let single-stepped take it) like
+below:
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 9a52349..07f0d4a 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1486,7 +1486,7 @@ int __kprobes emulate_step(struct pt_regs *regs,
+unsigned int instr)
+ 		goto ldst_done;
+
+ 	case 36:	/* stw */
+-	case 37:	/* stwu */
++	//case 37:	/* stwu */
+ 		val = regs->gpr[rd];
+ 		err = write_mem(val, dform_ea(instr, regs), 4, regs);
+ 		goto ldst_done;
+
+The system will crash after single-step(looks
+like the stack is currupted from the preempt_count value of
+'cat/617/0x0000020a'):
+
+pre_handler: p->addr = 0xc00ab12c, nip = 0xc00ab12c, msr = 0x29000
+post_handler: p->addr = 0xc00ab12c, msr = 0x1000,boostable = -1
+pre_handler: p->addr = 0xc00ab12c, nip = 0xc00ab12c, msr = 0x29000
+post_handler: p->addr = 0xc00ab12c, msr = 0x1000,boostable = -1
+BUG: scheduling while atomic: cat/617/0x0000020a
+Modules linked in: kprobe_example [last unloaded: kprobe_example]
 Call Trace:
-[df159e40] [00029000] 0x29000 (unreliable)
-[df159e74] [00000000]   (null)
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
----[ end trace 60026bfc1fe79aed ]---
-Segmentation fault
+[df157e90] [c00087c0] show_stack+0x98/0x1e4 (unreliable)
+[df157ee0] [c0008938] dump_stack+0x2c/0x44
+[df157ef0] [c00377c0] __schedule_bug+0x6c/0x84
+[df157f00] [c060a364] schedule+0x398/0x48c
+[df157f40] [c00107f4] recheck+0x0/0x24
+--- Exception: c01 at 0xff1bbb8
+    LR = 0x1000310c
+Page fault in user mode with in_atomic() = 1 mm = df01c700
+NIP = ff29314  MSR = 2d000
+Oops: Weird page fault, sig: 11 [#1]
+PREEMPT MPC8536 DS
+Modules linked in: kprobe_example [last unloaded: kprobe_example]
+NIP: 0ff29314 LR: 10001944 CTR: 0ff29314
+REGS: df157f50 TRAP: 0401   Tainted: G        W
+(3.0.0-rc4-00001-ge8ffcca-dirty)
+MSR: 0002d000 <EE,PR,ME,CE>  CR: 88202682  XER: 20000000
+TASK = df237190[617] 'cat' THREAD: df156000
+GPR00: 100018b4 bfb5c060 48007ee0 00000000 0000000e 10004354 bfb5ccde 0ff1af28
+GPR08: 0202d000 48000ee8 00000000 0ff29314 1000192c
+NIP [0ff29314] 0xff29314
+LR [10001944] 0x10001944
+Call Trace:
+Kernel panic - not syncing: Fatal exception in interrupt
+Call Trace:
+[df157da0] [c00087c0] show_stack+0x98/0x1e4 (unreliable)
+[df157df0] [c0008938] dump_stack+0x2c/0x44
+[df157e00] [c0042a80] panic+0xc4/0x1f4
+[df157e60] [c000c4e0] die+0x1fc/0x22c
+[df157e90] [c060e4a4] do_page_fault+0x130/0x4c4
+[df157f40] [c00100fc] handle_page_fault+0xc/0x80
+--- Exception: 401 at 0xff29314
+    LR = 0x10001944
 
 Thanks,
 Yong
 
-[1]: http://ftp.denx.de/pub/eldk/4.2/
 
---=20
+-- 
 Only stand for myself
