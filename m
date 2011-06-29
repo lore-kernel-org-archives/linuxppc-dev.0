@@ -1,28 +1,25 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 36129B6F5A
+Return-Path: <ayman@elkhashab.com>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id EE16AB6F54
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jun 2011 04:09:34 +1000 (EST)
-Received: by vws20 with SMTP id 20so1187389vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jun 2011 11:09:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1309318110.32158.520.camel@pasglop>
-References: <1308316207-9075-1-git-send-email-dbaryshkov@gmail.com>
-	<1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
-	<1309318110.32158.520.camel@pasglop>
-Date: Wed, 29 Jun 2011 13:09:30 -0500
-Message-ID: <BANLkTikD_x3QA8_q8+444QhA39SEW6hVfg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] Add cpufreq driver for Momentum Maple boards
-From: kevin diggs <diggskevin38@gmail.com>
+	Thu, 30 Jun 2011 04:20:09 +1000 (EST)
+Received: from hrndva-omtalb.mail.rr.com ([10.128.143.52])
+	by hrndva-qmta02.mail.rr.com with ESMTP
+	id <20110629181507825.KHFU5185@hrndva-qmta02.mail.rr.com>
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2011 18:15:07 +0000
+Date: Wed, 29 Jun 2011 13:13:58 -0500
+From: Ayman El-Khashab <ayman@elkhashab.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org
+Subject: Re: powerpc/4xx: Regression failed on sil24 (and other) drivers
+Message-ID: <20110629181358.GA31618@crust.elkhashab.com>
+References: <20110625235259.GA18837@crust.elkhashab.com>
+	<1309169996.32158.390.camel@pasglop>
+	<20110627113137.GA10387@crust.elkhashab.com>
+	<1309311723.32158.514.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1309311723.32158.514.camel@pasglop>
+Cc: cam@cs.ualberta.ca, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, Jun 29, 2011 at 11:42:03AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2011-06-27 at 06:31 -0500, Ayman El-Khashab wrote:
+> > On Mon, Jun 27, 2011 at 08:19:56PM +1000, Benjamin Herrenschmidt wrote:
+> > > On Sat, 2011-06-25 at 18:52 -0500, Ayman El-Khashab wrote:
+> > > > I noticed during a recent development with the 460SX that a
+> > > > simple device that once worked stopped.  I did a bisect to
+> > > > find the offending commit and it turns out to be this one:
+> > > > 
+> > > > 0e52247a2ed1f211f0c4f682dc999610a368903f is the first bad
+> > > > commit
+> > > > commit 0e52247a2ed1f211f0c4f682dc999610a368903f
+> > > > Author: Cam Macdonell <cam@cs.ualberta.ca>
+> > > > Date:   Tue Sep 7 17:25:20 2010 -0700
+> > > > 
+> > > >     PCI: fix pci_resource_alignment prototype
+> > > > 
+> 
+....
+> 
+> I suspect you don't have CONFIG_PCI_QUIRKS enabled... I think that's the
+> cause of your problem.
+> 
+> It looks like this config option controls both compiling the "generic"
+> quirks in from drivers/pci/quirk.c, and the actually mechanism for
+> having quirks in the first place (pci_fixup_device() goes away without
+> that config option).
+> 
+> I think we probably want to unconditionally select that if CONFIG_PCI is
+> enabled in arch/powerpc...
+> 
+> Can you try changing it and tell us if that helps ?
 
-On Tue, Jun 28, 2011 at 10:28 PM, Benjamin Herrenschmidt >
->
-> If we're going to have a Kconfig.powerpc, should we maybe just have a
-> powerpc subdirectory instead with the driver in it ?
->
-Where would the powerpc subdirectory be? under drivers/cpufreq? Or
-somewhere under arch/powerpc where it belongs (and I put my 750GX
-stuff)?
+Yes, that fixed our problem, thanks for your time.  I am
+going to try to get the MSI to work.
 
->
->> + =A0 =A0 printk(KERN_INFO "Frequency method: SCOM, Voltage method: none=
-\n");
->
-> This is useless.
->
-Why?
-
-> Cheers,
-> Ben.
->
-kevin
+Ayman
