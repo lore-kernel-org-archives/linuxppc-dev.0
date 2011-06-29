@@ -1,21 +1,24 @@
-Return-Path: <ayman@elkhashab.com>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id B92A1B6F59
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2011 01:22:59 +1000 (EST)
-Date: Wed, 29 Jun 2011 10:22:54 -0500
-From: Ayman El-Khashab <ayman@elkhashab.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4]PPC4xx: Adding PCI(E) MSI support
-Message-ID: <20110629152254.GB29257@crust.elkhashab.com>
-References: <201103300910.p2U9AO8t024353@amcc.com>
-	<1306387484.7481.453.camel@pasglop>
-	<20110628223131.GA10267@crust.elkhashab.com>
-	<1309302928.32158.470.camel@pasglop>
+Return-Path: <B07421@freescale.com>
+Received: from CH1EHSOBE006.bigfish.com (ch1ehsobe005.messaging.microsoft.com
+	[216.32.181.185]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2F5E7B6F18
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2011 02:43:47 +1000 (EST)
+Date: Wed, 29 Jun 2011 11:43:29 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <dedekind1@gmail.com>
+Subject: Re: [PATCH 2/2] mtd/nand : workaround for Freescale FCM to support
+	large-page Nand chip
+Message-ID: <20110629114329.154aaef2@schlenkerla.am.freescale.net>
+In-Reply-To: <1309328529.23597.106.camel@sauron>
+References: <1309225852-1664-1-git-send-email-b35362@freescale.com>
+	<1309225852-1664-2-git-send-email-b35362@freescale.com>
+	<1309328529.23597.106.camel@sauron>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1309302928.32158.470.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
-	rsarmah@apm.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, b35362@freescale.com, dwmw2@infradead.org,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 29, 2011 at 09:15:28AM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2011-06-28 at 17:31 -0500, Ayman El-Khashab wrote:
-> > > > +static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
-> > > > +                            struct resource res, struct
-> > ppc4xx_msi *msi)
-> > > > +{
-> > > > +
-> > 
-> > <snip>
-> > 
-> > > > +
-> > > > +   msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
-> > > > +   if (msi->msi_dev)
-> > > > +           return -ENODEV;
-> > 
-> > This does not look correct. I guess it should probably read 
-> > 
-> > if (!msi->msi_dev) .....
-> 
-> Indeed, that looks bogus. Rupjyoti, please test and send fixes if
-> necessary, obviously this code has not been tested.
-> 
-> This is not part of the bits I fixed up so I looks to me like the
-> original patch was wrong (and thus obviously untested !!!)
-> 
+On Wed, 29 Jun 2011 09:22:04 +0300
+Artem Bityutskiy <dedekind1@gmail.com> wrote:
 
-Looking back through the mailing list, there have been
-various incarnations of this patch to add MSI support to the
-44x.  Every one that I looked at had this same line of code
-in it so I am not sure they worked.  In any case I am trying
-to make it work on my system (which is how I found the bug).
-When I enable the "sdr-base" line in the MSI section of my
-dts, it just reboots continuosly right after "Loading Device
-Tree ....".  I tried renaming it to "msi-sdr-base" just in
-case there was a conflict (since it is reading through the
-entire tree) but that did not help.  If I understand
-correctly, the ppc4xx_msi_probe function must be executing
-very early since I suspect something in setup_pcieh_hw is 
-what causes it to fail.  
+> On Tue, 2011-06-28 at 09:50 +0800, b35362@freescale.com wrote:
+> > +	/* Hack for supporting the flash chip whose writesize is
+> > +	 * larger than 2K bytes.
+> > +	 */
+> 
+> Please, use proper kernel multi-line comments. Please, make sure
+> checkpatch.pl does not generate 13 errors with this patch.
 
-ayman
+Most of the checkpatch complaints are about existing style in the file --
+particularly, the use of tabs only for indentation, with spaces used for
+alignment beyond the indentation point.
+
+-Scott
