@@ -1,23 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from CH1EHSOBE002.bigfish.com (ch1ehsobe005.messaging.microsoft.com
-	[216.32.181.185]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0750B6F53
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2011 02:46:05 +1000 (EST)
-Date: Wed, 29 Jun 2011 11:45:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <dedekind1@gmail.com>
-Subject: Re: [PATCH 1/2] mtd/nand : don't free the global data
-	fsl_lbc_ctrl_dev->nand in fsl_elbc_chip_remove()
-Message-ID: <20110629114558.13975519@schlenkerla.am.freescale.net>
-In-Reply-To: <1309328435.23597.104.camel@sauron>
-References: <1309225852-1664-1-git-send-email-b35362@freescale.com>
-	<1309328435.23597.104.camel@sauron>
+Return-Path: <diggskevin38@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 36129B6F5A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 30 Jun 2011 04:09:34 +1000 (EST)
+Received: by vws20 with SMTP id 20so1187389vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 29 Jun 2011 11:09:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, b35362@freescale.com, dwmw2@infradead.org,
-	linux-mtd@lists.infradead.org
+In-Reply-To: <1309318110.32158.520.camel@pasglop>
+References: <1308316207-9075-1-git-send-email-dbaryshkov@gmail.com>
+	<1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
+	<1309318110.32158.520.camel@pasglop>
+Date: Wed, 29 Jun 2011 13:09:30 -0500
+Message-ID: <BANLkTikD_x3QA8_q8+444QhA39SEW6hVfg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] Add cpufreq driver for Momentum Maple boards
+From: kevin diggs <diggskevin38@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Jun 2011 09:20:25 +0300
-Artem Bityutskiy <dedekind1@gmail.com> wrote:
+Hi,
 
-> On Tue, 2011-06-28 at 09:50 +0800, b35362@freescale.com wrote:
-> > From: Liu Shuo <b35362@freescale.com>
-> > 
-> > The global data fsl_lbc_ctrl_dev->nand don't have to be freed in
-> > fsl_elbc_chip_remove(). The right place to do that is in fsl_elbc_nand_remove()
-> > if elbc_fcm_ctrl->counter is zero.
-> > 
-> > Signed-off-by: Liu Shuo <b35362@freescale.com>
-> > ---
-> >  drivers/mtd/nand/fsl_elbc_nand.c |    1 -
-> >  1 files changed, 0 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-> > index 0bb254c..a212116 100644
-> > --- a/drivers/mtd/nand/fsl_elbc_nand.c
-> > +++ b/drivers/mtd/nand/fsl_elbc_nand.c
-> > @@ -829,7 +829,6 @@ static int fsl_elbc_chip_remove(struct fsl_elbc_mtd *priv)
-> >  
-> >  	elbc_fcm_ctrl->chips[priv->bank] = NULL;
-> >  	kfree(priv);
-> > -	kfree(elbc_fcm_ctrl);
-> >  	return 0;
-> >  }
-> 
-> Do we have to assign fsl_lbc_ctrl_dev->nand to NULL in
-> fsl_elbc_nand_remove() then? I think that assignment can be killed then.
-> 
->         if (!elbc_fcm_ctrl->counter) {
->                 fsl_lbc_ctrl_dev->nand = NULL;
->                 kfree(elbc_fcm_ctrl);
->         }
-> 
+On Tue, Jun 28, 2011 at 10:28 PM, Benjamin Herrenschmidt >
+>
+> If we're going to have a Kconfig.powerpc, should we maybe just have a
+> powerpc subdirectory instead with the driver in it ?
+>
+Where would the powerpc subdirectory be? under drivers/cpufreq? Or
+somewhere under arch/powerpc where it belongs (and I put my 750GX
+stuff)?
 
-If we're freeing fsl_lbc_ctrl, we'd better get rid of references to it...
+>
+>> + =A0 =A0 printk(KERN_INFO "Frequency method: SCOM, Voltage method: none=
+\n");
+>
+> This is useless.
+>
+Why?
 
--Scott
+> Cheers,
+> Ben.
+>
+kevin
