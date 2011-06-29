@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D249DB6F5C
+Return-Path: <davej@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id A172FB6F64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jun 2011 13:41:03 +1000 (EST)
-Subject: Re: [PATCH 1/2] mm: Move definition of MIN_MEMORY_BLOCK_SIZE to a
-	header
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1308013070.2874.784.camel@pasglop>
-References: <1308013070.2874.784.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 29 Jun 2011 13:40:40 +1000
-Message-ID: <1309318840.32158.522.camel@pasglop>
-Mime-Version: 1.0
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+	Wed, 29 Jun 2011 13:43:56 +1000 (EST)
+Date: Tue, 28 Jun 2011 23:43:49 -0400
+From: Dave Jones <davej@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Add cpufreq driver for Momentum Maple boards
+Message-ID: <20110629034348.GB30973@redhat.com>
+References: <1308316207-9075-1-git-send-email-dbaryshkov@gmail.com>
+	<1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
+	<1309318110.32158.520.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1309318110.32158.520.camel@pasglop>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+	cpufreq@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2011-06-14 at 10:57 +1000, Benjamin Herrenschmidt wrote:
-> The macro MIN_MEMORY_BLOCK_SIZE is currently defined twice in two .c
-> files, and I need it in a third one to fix a powerpc bug, so let's
-> first move it into a header
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Ingo, Thomas: Who needs to ack the x86 bit ? I'd like to send that
-> to Linus asap with the powerpc fix.
+On Wed, Jun 29, 2011 at 01:28:30PM +1000, Ben Herrenschmidt wrote:
+ > Before I comment on this last one, a quick Q. for Dave: Do you want to
+ > handle this or should I merge it via powerpc.git ? (It depends on
+ > another change to the arch code to expose the SCOM functions that it
+ > uses, and that patch is going to be in my -next branch).
 
-Anybody ? Allo ?
+If you're carrying the dependancy, it sounds like it would make more sense
+for you to carry this too. There are some changes to the Kconfig/Makefile
+in drivers/cpufreq in my tree for 3.1 already, so you might get a collision
+when both trees end up in next & subsequently Linus' tree. Just trivial changes though. 
 
-I'm happy to send that to Linus myself but I'd like at least on or two
-acks :-)
+ > > ---
+ > >  drivers/cpufreq/Kconfig         |    5 +
+ > >  drivers/cpufreq/Kconfig.powerpc |    7 +
+ > >  drivers/cpufreq/Makefile        |    5 +
+ > >  drivers/cpufreq/maple-cpufreq.c |  314 +++++++++++++++++++++++++++++++++++++++
+ > 
+ > If we're going to have a Kconfig.powerpc, should we maybe just have a
+ > powerpc subdirectory instead with the driver in it ?
+ > 
+ > I'm happy at some later point to try moving some of my other ones there.
 
-Cheers,
-Ben.
-
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index d865c4a..bbaaa00 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -28,6 +28,7 @@
->  #include <linux/poison.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/module.h>
-> +#include <linux/memory.h>
->  #include <linux/memory_hotplug.h>
->  #include <linux/nmi.h>
->  #include <linux/gfp.h>
-> @@ -895,8 +896,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
->  }
->  
->  #ifdef CONFIG_X86_UV
-> -#define MIN_MEMORY_BLOCK_SIZE   (1 << SECTION_SIZE_BITS)
-> -
->  unsigned long memory_block_size_bytes(void)
->  {
->  	if (is_uv_system()) {
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index 9f9b235..45d7c8f 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -30,7 +30,6 @@
->  static DEFINE_MUTEX(mem_sysfs_mutex);
->  
->  #define MEMORY_CLASS_NAME	"memory"
-> -#define MIN_MEMORY_BLOCK_SIZE	(1 << SECTION_SIZE_BITS)
->  
->  static int sections_per_block;
->  
-> diff --git a/include/linux/memory.h b/include/linux/memory.h
-> index e1e3b2b..935699b 100644
-> --- a/include/linux/memory.h
-> +++ b/include/linux/memory.h
-> @@ -20,6 +20,8 @@
->  #include <linux/compiler.h>
->  #include <linux/mutex.h>
->  
-> +#define MIN_MEMORY_BLOCK_SIZE     (1 << SECTION_SIZE_BITS)
-> +
->  struct memory_block {
->  	unsigned long start_section_nr;
->  	unsigned long end_section_nr;
-> 
+So far we haven't bothered with additional subarch drivers/ directories for x86/arm.
+I'm not against the idea. As more archs move over, I could see drivers/cpufreq/
+getting more cluttered.
+ 
+	Dave
