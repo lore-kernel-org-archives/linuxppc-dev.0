@@ -1,21 +1,24 @@
-Return-Path: <diggskevin38@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7DAECB6F00
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Jul 2011 05:11:06 +1000 (EST)
-Received: by vws20 with SMTP id 20so2056565vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jun 2011 12:11:03 -0700 (PDT)
-MIME-Version: 1.0
-Date: Thu, 30 Jun 2011 14:11:03 -0500
-Message-ID: <BANLkTimWupMZ6xoYiO7R+s72GfUionzeJg@mail.gmail.com>
-Subject: broken g5?
-From: kevin diggs <diggskevin38@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6C450B6F54
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jul 2011 09:13:24 +1000 (EST)
+Subject: Re: [RFC PATCH 17/17] KVM: PPC: Add an ioctl for userspace to
+	select which platform to emulate
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Avi Kivity <avi@redhat.com>
+In-Reply-To: <4E0C9339.2080601@redhat.com>
+References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
+	<20110629104103.GR25406@bloggs.ozlabs.ibm.com>
+	<4E0C9077.2060608@suse.de> <4E0C9339.2080601@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 01 Jul 2011 09:13:12 +1000
+Message-ID: <1309475592.14501.211.camel@pasglop>
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+	kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-I would like to figure out if my G5 is broken. And if so how to fix it?
+> Regarding that.  There's another option - the ioctl code embeds the 
+> structure size.  So if we extend the ioctl parsing to pad up (or 
+> truncate down) from the user's size to our size, and similarly in the 
+> other direction, we can get away from this ugliness.
 
-As I have previously posted it behaves strangely when using the cpufreq driver.
+I don't like relying on that much ... I prefer having an explicit
+version in the structure head (or use a flag).
 
-Anyone have suggestions to figure out what is going on?
+> Some years ago I posted a generic helper that did this (and also 
+> kmalloc'ed and kfree'd the data itself), but it wasn't received 
+> favourably.  Maybe I should try again (and we can possibly use it in kvm 
+> even if it is rejected for general use, though that's against our 
+> principles of pushing all generic infrastructure to the wider kernel).
 
-Thanks!
-
-kevin
+Cheers,
+Ben.
