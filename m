@@ -1,22 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 599E0B6F5C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jun 2011 17:09:35 +1000 (EST)
-Subject: Re: linux-next: build failure after merge of the final tree
-	(powerpc tree related)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20110630163659.374db7f9.sfr@canb.auug.org.au>
-References: <20110630163659.374db7f9.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 30 Jun 2011 17:09:21 +1000
-Message-ID: <1309417761.14501.206.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 1DAEDB6EE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2011 18:35:00 +1000 (EST)
+Message-ID: <4E0C352D.60008@redhat.com>
+Date: Thu, 30 Jun 2011 11:34:53 +0300
+From: Avi Kivity <avi@redhat.com>
+MIME-Version: 1.0
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 17/17] KVM: PPC: Add an ioctl for userspace to select
+	which platform to emulate
+References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
+	<20110629104103.GR25406@bloggs.ozlabs.ibm.com>
+	<20110629115346.GA17551@zod.rchland.ibm.com>
+	<B21FDD77-90CF-4A23-84E3-8C73CFF70B92@suse.de>
+	<20110629115857.GB17551@zod.rchland.ibm.com>
+In-Reply-To: <20110629115857.GB17551@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2011-06-30 at 16:36 +1000, Stephen Rothwell wrote:
-> Hi all,
-> 
-> After merging the final tree, today's linux-next build (powerpc
-> allyesconfig) failed like this:
-> 
-> drivers/tty/hvc/hvsi.c:701:12: error: conflicting types for 'hvsi_put_chars'
-> arch/powerpc/include/asm/hvsi.h:92:12: note: previous declaration of 'hvsi_put_chars' was here
-> drivers/tty/hvc/hvsi.c:736:12: error: conflicting types for 'hvsi_open'
-> arch/powerpc/include/asm/hvsi.h:86:12: note: previous declaration of 'hvsi_open' was here
-> drivers/tty/hvc/hvsi.c:802:13: error: conflicting types for 'hvsi_close'
-> arch/powerpc/include/asm/hvsi.h:87:13: note: previous declaration of 'hvsi_close' was here
-> drivers/tty/hvc/hvsi.c:1083:19: error: conflicting types for 'hvsi_init'
-> arch/powerpc/include/asm/hvsi.h:81:13: note: previous declaration of 'hvsi_init' was here
-> 
-> Caused by commit 17bdc6c0e979 ("powerpc/pseries: Move hvsi support into a
-> library").
-> 
-> I have reverted that commit for today.
+On 06/29/2011 02:58 PM, Josh Boyer wrote:
+> >>  This makes me wonder if a similar thing might eventually be usable for
+> >>  running an i686 or x32 guest on an x86_64 KVM host.  I have no idea if
+> >>  that is even theoretically possible, but if it is it might be better to
+> >>  rename the ioctl to be architecture agnostic.
+> >
+> >On x86 this is not required unless we want to "virtualize" pre-CPUID CPUs. Everything as of Pentium has a full bitmap of feature capabilities that KVM gets from user space, including information such as "Can we do 64-bit mode?".
+>
+> Ah.  Thank you for the explanation.
 
-Ooops, that seems to be entirely my fault, not sure what happened, I
-might have merged the wrong patch version (I had some problem locally
-with screwing up the git repo where those patches were originally).
+To clarify a bit further, running an i686 guest on an x86_64 host is not 
+only theoretically possible, but is done regularly.  First, x86_64 is 
+backwards compatible with i686 (so you can install a 32-bit OS on 64-bit 
+hardware), and second, you can impersonate 32-bit guest hardware on a 
+64-bit host.
 
-I'll push a fix tomorrow.
-
-Cheers,
-Ben.
+-- 
+error compiling committee.c: too many arguments to function
