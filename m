@@ -1,25 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 43F6AB6F53
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jul 2011 02:28:38 +1000 (EST)
-Date: Thu, 30 Jun 2011 11:26:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <dedekind1@gmail.com>
-Subject: Re: [PATCH 1/2] mtd/nand : don't free the global data
-	fsl_lbc_ctrl_dev->nand in fsl_elbc_chip_remove()
-Message-ID: <20110630112656.3257116a@schlenkerla.am.freescale.net>
-In-Reply-To: <1309434797.23597.178.camel@sauron>
-References: <1309225852-1664-1-git-send-email-b35362@freescale.com>
-	<1309328435.23597.104.camel@sauron>
-	<20110629114558.13975519@schlenkerla.am.freescale.net>
-	<1309434797.23597.178.camel@sauron>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, b35362@freescale.com, dwmw2@infradead.org,
-	linux-mtd@lists.infradead.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B08D4B6F18
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jul 2011 02:34:54 +1000 (EST)
+References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
+	<20110629104103.GR25406@bloggs.ozlabs.ibm.com>
+	<4E0C9077.2060608@suse.de> <4E0C9339.2080601@redhat.com>
+	<4E0C94A0.3090301@suse.de> <4E0C9D98.5000904@redhat.com>
+In-Reply-To: <4E0C9D98.5000904@redhat.com>
+Mime-Version: 1.0 (iPhone Mail 8G4)
+Content-Type: text/plain;
+	charset=us-ascii
+Message-Id: <2EDDAC02-4BDC-4007-82E1-2C6D732C24D5@suse.de>
+From: Alexander Graf <agraf@suse.de>
+Subject: Re: [RFC PATCH 17/17] KVM: PPC: Add an ioctl for userspace to select
+	which platform to emulate
+Date: Thu, 30 Jun 2011 18:33:21 +0200
+To: Avi Kivity <avi@redhat.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 30 Jun 2011 14:53:13 +0300
-Artem Bityutskiy <dedekind1@gmail.com> wrote:
 
-> On Wed, 2011-06-29 at 11:45 -0500, Scott Wood wrote:
-> > If we're freeing fsl_lbc_ctrl, we'd better get rid of references to it...
-> 
-> Yes, on the one hand this is a good defensive programming practice, on
-> the other hand it hides double-free bugs. Like this patch fixes a
-> double-free bug, and why it was noticed before? I thought may be because
-> of this NULL assignment?
+On 30.06.2011, at 18:00, Avi Kivity <avi@redhat.com> wrote:
 
-I'm not sure how the NULL assignment was hiding anything here.  It was
-probably hidden only because nobody tested it with suitable debug options
-enabled since the code was last reorganized.
+> On 06/30/2011 06:22 PM, Alexander Graf wrote:
+>>> Regarding that.  There's another option - the ioctl code embeds the stru=
+cture size.  So if we extend the ioctl parsing to pad up (or truncate down) f=
+rom the user's size to our size, and similarly in the other direction, we ca=
+n get away from this ugliness.
+>>>=20
+>>> Some years ago I posted a generic helper that did this (and also kmalloc=
+'ed and kfree'd the data itself), but it wasn't received favourably.  Maybe I=
+ should try again (and we can possibly use it in kvm even if it is rejected f=
+or general use, though that's against our principles of pushing all generic i=
+nfrastructure to the wider kernel).
+>>=20
+>>=20
+>> That does sound interesting, but requires a lot more thought to be put in=
+to the actual code, as we basically need to read out the feature bitmap, the=
+n provide a minimum size for the chosen features and then decide if they fit=
+ in.
+>=20
+>=20
+> Why? just put the things you want in the structure.
+>=20
+> old userspace -> new kernel: we auto-zero the parts userspace left out, an=
+d zero means old behaviour, so everthing works
+> new userspace -> old kernel: truncate.  Userspace shouldn't have used any n=
+ew features (KVM_CAP), and we can -EINVAL if the truncated section contains a=
+ nonzero bit.
 
-If the NULL assignment is dropped, consider what happens if the
-fsl_elbc_nand module is removed then reinserted.  On reinsertion, it will
-see a non-NULL fsl_lbc_ctrl_dev->nand, and will skip allocating a new one.
-Then you're referencing freed memory.
+Yup, which requires knowledge in the code on what actually fits :). Logic we=
+ don't have today.
 
-Looking more closely, the MAX_BANKS loop should be removed.  Since the
-reorganization, the platform device represents one chip, not the
-controller, so we should only be removing that one chip.
 
--Scott
+Alex
