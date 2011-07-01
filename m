@@ -1,19 +1,33 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <rlary@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B8B12B6F62
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jul 2011 04:24:59 +1000 (EST)
-Subject: Re: [PATCH 0/17] Hypervisor-mode KVM on POWER7 and PPC970
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
-Date: Fri, 1 Jul 2011 20:24:53 +0200
-Message-Id: <01A65531-0F0C-4246-A7D6-CC8384257C88@suse.de>
-References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F1560B6F64
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  2 Jul 2011 04:31:19 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id p61IOsxn005066
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2011 12:24:54 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	p61IUvJ0170130
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2011 12:30:57 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id p61CUtAC011476
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2011 06:30:56 -0600
+Message-ID: <4E0E1253.1000909@linux.vnet.ibm.com>
+Date: Fri, 01 Jul 2011 11:30:43 -0700
+From: Richard A Lary <rlary@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Jon Mason <jdmason@kudzu.us>
+Subject: Re: pci_pcie_cap invalid on AER/EEH enabled PPC?
+References: <BANLkTinZSeq5H=K4K4s_cuC2tOwsTZEDJg@mail.gmail.com>
+In-Reply-To: <BANLkTinZSeq5H=K4K4s_cuC2tOwsTZEDJg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Richard Lary <rlary@us.ibm.com>, James Smart <james.smart@emulex.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +37,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 7/1/2011 8:24 AM, Jon Mason wrote:
+> I recently sent out a number of patches to migrate drivers calling
+> `pci_find_capability(pdef, PCI_CAP_ID_EXP)` to pci_pcie_cap.  This
+> function takes uses a PCI-E capability offset that was determined by
+> calling pci_find_capability during the PCI bus walking.  In response
+> to one of the patches, James Smart posted:
+>
+> "The reason is due to an issue on PPC platforms whereby use of
+> "pdev->is_pcie" and pci_is_pcie() will erroneously fail under some
+> conditions, but explicit search for the capability struct via
+> pci_find_capability() is always successful.   I expect this to be due
+> a shadowing of pci config space in the hal/platform that isn't
+> sufficiently built up.  We detected this issue while testing AER/EEH,
+> and are functional only if the pci_find_capability() option is used."
+>
+> See http://marc.info/?l=linux-scsi&m=130946649427828&w=2 for the whole post.
+>
+> Based on his description above pci_pcie_cap
+> andpci_find_capability(pdef, PCI_CAP_ID_EXP) should be functionally
+> equivalent.  If this is not safe, then the PCI bus walking code is
+> most likely busted on EEH enabled PPC systems (and that is a BIG
+> problem).  Can anyone confirm this is still an issue?
 
-On 29.06.2011, at 12:15, Paul Mackerras wrote:
+Jon,
 
-> The first patch of the following series is a pure bug-fix for 32-bit
-> kernels.
->=20
-> The remainder of the following series of patches enable KVM to exploit
-> the hardware hypervisor mode on 64-bit Power ISA Book3S machines.  At
-> present, POWER7 and PPC970 processors are supported.  (Note that the
-> PPC970 processors in Apple G5 machines don't have a usable hypervisor
-> mode and are not supported by these patches.)
->=20
-> Running the KVM host in hypervisor mode means that the guest can use
-> both supervisor mode and user mode.  That means that the guest can
-> execute supervisor-privilege instructions and access supervisor-
-> privilege registers.  In addition the hardware directs most exceptions
-> to the guest.  Thus we don't need to emulate any instructions in the
-> host.  Generally, the only times we need to exit the guest are when it
-> does a hypercall or when an external interrupt or host timer
-> (decrementer) interrupt occurs.
->=20
-> The focus of this KVM implementation is to run guests that use the
-> PAPR (Power Architecture Platform Requirements) paravirtualization
-> interface, which is the interface supplied by PowerVM on IBM pSeries
-> machines.  Currently the "pseries" machine type in qemu is only
-> supported by book3s_hv KVM, and book3s_hv KVM only supports the
-> "pseries" machine type.  That will hopefully change in future.
->=20
-> These patches are against the master branch of the kvm tree.
+I applied the following debug patch to lpfc driver in a 2.6.32 distro
+kernel ( I had this one handy, I can try with mainline later today )
 
-Something seems to be broken with signals. When running without =
-io-thread, I can't even do ctrl-c on -nographic while the guest is in =
-sleep mode. But that might not be related to your patches.
+---
+  drivers/scsi/lpfc/lpfc_init.c |   10 	10 +	0 -	0 !
+  1 file changed, 10 insertions(+)
 
-I've applied 01-16 now. Sending them through some more testing and if =
-they're good, sending a pull request.
+Index: b/drivers/scsi/lpfc/lpfc_init.c
+===================================================================
+--- a/drivers/scsi/lpfc/lpfc_init.c
++++ b/drivers/scsi/lpfc/lpfc_init.c
+@@ -3958,6 +3958,16 @@ lpfc_enable_pci_dev(struct lpfc_hba *phb
+  	pci_try_set_mwi(pdev);
+  	pci_save_state(pdev);
 
++	printk(KERN_WARNING "pcicap: is_pcie=%x pci_cap=%x pcie_type=%x\n",
++		pdev->is_pcie,
++		pdev->pcie_cap,
++		pdev->pcie_type);
++
++	if (pci_is_pcie(pdev))
++		printk(KERN_WARNING "pcicap: true\n");
++	else
++		printk(KERN_WARNING "pcicap: false\n");
++
+  	/* PCIe EEH recovery on powerpc platforms needs fundamental reset */
+  	if (pci_find_capability(pdev, PCI_CAP_ID_EXP))
+  		pdev->needs_freset = 1;
 
-Alex
+This is output upon driver load on an IBM Power 7 model 8233-E8B server.
+
+dmesg | grep pcicap
+Linux version 2.6.32.42-pcicap-ppc64 (geeko@buildhost) (gcc version 4.3.4 
+[gcc-4_3-branch revision 152973] (SUSE Linux) ) #1 SMP Fri Jul 1 09:31:27 PDT 2011
+pcicap: is_pcie=0 pci_cap=0 pcie_type=0
+pcicap: false
+pcicap: is_pcie=0 pci_cap=0 pcie_type=0
+pcicap: false
+pcicap: is_pcie=0 pci_cap=0 pcie_type=0
+pcicap: false
+pcicap: is_pcie=0 pci_cap=0 pcie_type=0
+pcicap: false
+
+It would appear that the pcie information is not set in pci_dev structure for
+this device at the time the driver is being initialized during boot.
+
+-rich
