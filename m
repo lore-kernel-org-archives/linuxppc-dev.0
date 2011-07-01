@@ -1,33 +1,26 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CF597B6F62
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jul 2011 04:37:59 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id p61IDnIb014904
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jul 2011 14:13:49 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	p61IbuNi156202
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jul 2011 14:37:56 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	p61Ibuvd031955
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Jul 2011 15:37:56 -0300
-Subject: Re: [PATCH 10/17] KVM: PPC: Add support for Book3S processors in
-	hypervisor mode
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20110629102134.GK25406@bloggs.ozlabs.ibm.com>
-References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
-	<20110629102134.GK25406@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 01 Jul 2011 11:37:42 -0700
-Message-ID: <1309545462.16582.12.camel@nimitz>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
-	Alexander Graf <agraf@suse.de>
+Return-Path: <jdmason@kudzu.us>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 10F26B6F54
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  2 Jul 2011 05:02:25 +1000 (EST)
+Received: by eyg5 with SMTP id 5so1177110eyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 01 Jul 2011 12:02:21 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4E0E1253.1000909@linux.vnet.ibm.com>
+References: <BANLkTinZSeq5H=K4K4s_cuC2tOwsTZEDJg@mail.gmail.com>
+	<4E0E1253.1000909@linux.vnet.ibm.com>
+Date: Fri, 1 Jul 2011 14:02:19 -0500
+Message-ID: <BANLkTinTEk2SgBwVUHc49cDLEwH_a-XsJg@mail.gmail.com>
+Subject: Re: pci_pcie_cap invalid on AER/EEH enabled PPC?
+From: Jon Mason <jdmason@kudzu.us>
+To: Richard A Lary <rlary@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Richard Lary <rlary@us.ibm.com>, James Smart <james.smart@emulex.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,96 +30,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2011-06-29 at 20:21 +1000, Paul Mackerras wrote: 
-> +struct kvmppc_pginfo {
-> +	unsigned long pfn;
-> +	atomic_t refcnt;
-> +};
-
-I only see this refcnt inc'd in one spot and never decremented or read.
-Is the refcnt just the number of hptes we have for this particular page
-at the moment?  
-
-> +long kvmppc_alloc_hpt(struct kvm *kvm)
-> +{
-> +	unsigned long hpt;
-> +	unsigned long lpid;
+On Fri, Jul 1, 2011 at 1:30 PM, Richard A Lary <rlary@linux.vnet.ibm.com> w=
+rote:
+> On 7/1/2011 8:24 AM, Jon Mason wrote:
+>>
+>> I recently sent out a number of patches to migrate drivers calling
+>> `pci_find_capability(pdef, PCI_CAP_ID_EXP)` to pci_pcie_cap. =A0This
+>> function takes uses a PCI-E capability offset that was determined by
+>> calling pci_find_capability during the PCI bus walking. =A0In response
+>> to one of the patches, James Smart posted:
+>>
+>> "The reason is due to an issue on PPC platforms whereby use of
+>> "pdev->is_pcie" and pci_is_pcie() will erroneously fail under some
+>> conditions, but explicit search for the capability struct via
+>> pci_find_capability() is always successful. =A0 I expect this to be due
+>> a shadowing of pci config space in the hal/platform that isn't
+>> sufficiently built up. =A0We detected this issue while testing AER/EEH,
+>> and are functional only if the pci_find_capability() option is used."
+>>
+>> See http://marc.info/?l=3Dlinux-scsi&m=3D130946649427828&w=3D2 for the w=
+hole
+>> post.
+>>
+>> Based on his description above pci_pcie_cap
+>> andpci_find_capability(pdef, PCI_CAP_ID_EXP) should be functionally
+>> equivalent. =A0If this is not safe, then the PCI bus walking code is
+>> most likely busted on EEH enabled PPC systems (and that is a BIG
+>> problem). =A0Can anyone confirm this is still an issue?
+>
+> Jon,
+>
+> I applied the following debug patch to lpfc driver in a 2.6.32 distro
+> kernel ( I had this one handy, I can try with mainline later today )
+>
+> ---
+> =A0drivers/scsi/lpfc/lpfc_init.c | =A0 10 =A0 10 + =A0 =A00 - =A0 =A0 0 !
+> =A01 file changed, 10 insertions(+)
+>
+> Index: b/drivers/scsi/lpfc/lpfc_init.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/drivers/scsi/lpfc/lpfc_init.c
+> +++ b/drivers/scsi/lpfc/lpfc_init.c
+> @@ -3958,6 +3958,16 @@ lpfc_enable_pci_dev(struct lpfc_hba *phb
+> =A0 =A0 =A0 =A0pci_try_set_mwi(pdev);
+> =A0 =A0 =A0 =A0pci_save_state(pdev);
+>
+> + =A0 =A0 =A0 printk(KERN_WARNING "pcicap: is_pcie=3D%x pci_cap=3D%x pcie=
+_type=3D%x\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->is_pcie,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->pcie_cap,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->pcie_type);
 > +
-> +	hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT|__GFP_NOWARN,
-> +			       HPT_ORDER - PAGE_SHIFT);
-> +	if (!hpt) {
-> +		pr_err("kvm_alloc_hpt: Couldn't alloc HPT\n");
-> +		return -ENOMEM;
-> +	}
-> +	kvm->arch.hpt_virt = hpt;
+> + =A0 =A0 =A0 if (pci_is_pcie(pdev))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_WARNING "pcicap: true\n");
+> + =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_WARNING "pcicap: false\n");
 > +
-> +	do {
-> +		lpid = find_first_zero_bit(lpid_inuse, NR_LPIDS);
-> +		if (lpid >= NR_LPIDS) {
-> +			pr_err("kvm_alloc_hpt: No LPIDs free\n");
-> +			free_pages(hpt, HPT_ORDER - PAGE_SHIFT);
-> +			return -ENOMEM;
-> +		}
-> +	} while (test_and_set_bit(lpid, lpid_inuse));
-> +
-> +	kvm->arch.sdr1 = __pa(hpt) | (HPT_ORDER - 18);
-> +	kvm->arch.lpid = lpid;
-> +	kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
-> +	kvm->arch.host_lpid = mfspr(SPRN_LPID);
-> +	kvm->arch.host_lpcr = mfspr(SPRN_LPCR);
-> +
-> +	pr_info("KVM guest htab at %lx, LPID %lx\n", hpt, lpid);
-> +	return 0;
-> +}
+> =A0 =A0 =A0 =A0/* PCIe EEH recovery on powerpc platforms needs fundamenta=
+l reset */
+> =A0 =A0 =A0 =A0if (pci_find_capability(pdev, PCI_CAP_ID_EXP))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pdev->needs_freset =3D 1;
+>
+> This is output upon driver load on an IBM Power 7 model 8233-E8B server.
+>
+> dmesg | grep pcicap
+> Linux version 2.6.32.42-pcicap-ppc64 (geeko@buildhost) (gcc version 4.3.4
+> [gcc-4_3-branch revision 152973] (SUSE Linux) ) #1 SMP Fri Jul 1 09:31:27
+> PDT 2011
+> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
+> pcicap: false
+> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
+> pcicap: false
+> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
+> pcicap: false
+> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
+> pcicap: false
+>
+> It would appear that the pcie information is not set in pci_dev structure
+> for
+> this device at the time the driver is being initialized during boot.
 
-> +static unsigned long user_page_size(unsigned long addr)
-> +{
-> +	struct vm_area_struct *vma;
-> +	unsigned long size = PAGE_SIZE;
-> +
-> +	down_read(&current->mm->mmap_sem);
-> +	vma = find_vma(current->mm, addr);
-> +	if (vma)
-> +		size = vma_kernel_pagesize(vma);
-> +	up_read(&current->mm->mmap_sem);
-> +	return size;
-> +}
+Thanks for trying this.  Can you confirm that the other devices in the
+system have this issue as well (or show that it is isolated to the lpr
+device)?  You can add printks in set_pcie_port_type() to verify what
+is being set on bus walking and to see when it is being called with
+respect to when it is being populated by firmware.
 
-That one looks pretty arch-independent and like it could use some
-consolidation with: virt/kvm/kvm_main.c::kvm_host_page_size()
+Thanks,
+Jon
 
-> +void kvmppc_map_vrma(struct kvm *kvm, struct kvm_userspace_memory_region *mem)
-> +{
-> +	unsigned long i;
-> +	unsigned long npages = kvm->arch.ram_npages;
-> +	unsigned long pfn;
-> +	unsigned long *hpte;
-> +	unsigned long hash;
-> +	struct kvmppc_pginfo *pginfo = kvm->arch.ram_pginfo;
-> +
-> +	if (!pginfo)
-> +		return;
-> +
-> +	/* VRMA can't be > 1TB */
-> +	if (npages > 1ul << (40 - kvm->arch.ram_porder))
-> +		npages = 1ul << (40 - kvm->arch.ram_porder);
-
-Is that because it can only be a single segment?  Does that mean that we
-can't ever have guests larger than 1TB?  Or just that they have to live
-with 1TB until they get their own page tables up?
-
-> +	/* Can't use more than 1 HPTE per HPTEG */
-> +	if (npages > HPT_NPTEG)
-> +		npages = HPT_NPTEG;
-> +
-> +	for (i = 0; i < npages; ++i) {
-> +		pfn = pginfo[i].pfn;
-> +		/* can't use hpt_hash since va > 64 bits */
-> +		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25))) & HPT_HASH_MASK;
-
-Is that because 'i' could potentially have a very large pfn?  Nish
-thought it might have something to do with the hpte entries being larger
-than 64-bits themselves with the vsid included, but we got thoroughly
-confused. :)
-
--- Dave
+>
+> -rich
+>
+>
+>
