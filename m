@@ -1,22 +1,27 @@
-Return-Path: <jdmason@kudzu.us>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D6567B6F59
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Jul 2011 01:24:11 +1000 (EST)
-Received: by eyg5 with SMTP id 5so1118708eyg.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Jul 2011 08:24:06 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+	(Client CN "mail.global.frontbridge.com",
+	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 10975B6EDF
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jul 2011 02:14:55 +1000 (EST)
+Date: Fri, 1 Jul 2011 11:14:49 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <dedekind1@gmail.com>
+Subject: Re: [PATCH 1/2] mtd/nand : don't free the global data
+	fsl_lbc_ctrl_dev->nand in fsl_elbc_chip_remove()
+Message-ID: <20110701111449.1f6a6f7a@schlenkerla.am.freescale.net>
+In-Reply-To: <1309498826.23597.200.camel@sauron>
+References: <1309225852-1664-1-git-send-email-b35362@freescale.com>
+	<1309328435.23597.104.camel@sauron>
+	<20110629114558.13975519@schlenkerla.am.freescale.net>
+	<1309434797.23597.178.camel@sauron>
+	<20110630112656.3257116a@schlenkerla.am.freescale.net>
+	<1309498826.23597.200.camel@sauron>
 MIME-Version: 1.0
-Date: Fri, 1 Jul 2011 10:24:05 -0500
-Message-ID: <BANLkTinZSeq5H=K4K4s_cuC2tOwsTZEDJg@mail.gmail.com>
-Subject: pci_pcie_cap invalid on AER/EEH enabled PPC?
-From: Jon Mason <jdmason@kudzu.us>
-To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Richard Lary <rlary@us.ibm.com>, James Smart <james.smart@emulex.com>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, b35362@freescale.com, dwmw2@infradead.org,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I recently sent out a number of patches to migrate drivers calling
-`pci_find_capability(pdef, PCI_CAP_ID_EXP)` to pci_pcie_cap.  This
-function takes uses a PCI-E capability offset that was determined by
-calling pci_find_capability during the PCI bus walking.  In response
-to one of the patches, James Smart posted:
+On Fri, 1 Jul 2011 08:40:21 +0300
+Artem Bityutskiy <dedekind1@gmail.com> wrote:
 
-"The reason is due to an issue on PPC platforms whereby use of
-"pdev->is_pcie" and pci_is_pcie() will erroneously fail under some
-conditions, but explicit search for the capability struct via
-pci_find_capability() is always successful.   I expect this to be due
-a shadowing of pci config space in the hal/platform that isn't
-sufficiently built up.  We detected this issue while testing AER/EEH,
-and are functional only if the pci_find_capability() option is used."
+> On Thu, 2011-06-30 at 11:26 -0500, Scott Wood wrote:
+> > If the NULL assignment is dropped, consider what happens if the
+> > fsl_elbc_nand module is removed then reinserted.  On reinsertion, it
+> > will
+> > see a non-NULL fsl_lbc_ctrl_dev->nand, and will skip allocating a new
+> > one.
+> > Then you're referencing freed memory.
+> 
+> Oh, then this sounds like a separate bug. Removing the module should
+> kill everything, and re-inserging the module should have zero
+> dependencies on the previous states...
 
-See http://marc.info/?l=linux-scsi&m=130946649427828&w=2 for the whole post.
+fsl_lbc_ctrl_dev (and thus the fsl_lbc_ctrl_dev->nand pointer) is not part
+of the module, it is part of arch/powerpc/sysdev/fsl_lbc.c.  NAND isn't the
+only thing that elbc does.  Since there can be multiple NAND chips, which
+are separately probed, the first chip (under a lock) creates the NAND state
+that is shared among the chips, and the last one removed destroys it.
 
-Based on his description above pci_pcie_cap
-andpci_find_capability(pdef, PCI_CAP_ID_EXP) should be functionally
-equivalent.  If this is not safe, then the PCI bus walking code is
-most likely busted on EEH enabled PPC systems (and that is a BIG
-problem).  Can anyone confirm this is still an issue?
+> Anyway, if you think the original patch is OK, I can put it to my tree.
 
-Thanks,
-Jon
+I think it's OK.  The loop also needs to be removed, so the remove callback
+operates only on the particular chip it's called on, but that's a separate
+bug.
+
+-Scott
