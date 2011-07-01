@@ -1,35 +1,19 @@
-Return-Path: <B04825@freescale.com>
-Received: from AM1EHSOBE001.bigfish.com (am1ehsobe001.messaging.microsoft.com
-	[213.199.154.204])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3FB55B6F54
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.tip.net.au [IPv6:2402:b800:7003:1::44])
+	by ozlabs.org (Postfix) with ESMTP id 27350B6F59
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Jul 2011 11:18:28 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/7] [v6] drivers/virt: introduce Freescale hypervisor
-	management driver
-Date: Fri, 1 Jul 2011 01:18:15 +0000
-Message-ID: <BANLkTi=3r=UQYJVqRLRe-eu7rdkXQS-ESQ@mail.gmail.com>
-References: <1307652726-4356-1-git-send-email-timur@freescale.com>
-	<201106092304.55479.arnd@arndb.de>
-In-Reply-To: <201106092304.55479.arnd@arndb.de>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "konrad.wilk@oracle.com" <konrad.wilk@oracle.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"cmetcalf@tilera.com" <cmetcalf@tilera.com>,
-	"akpm@kernel.org" <akpm@kernel.org>,
-	"dsaxena@linaro.org" <dsaxena@linaro.org>,
-	"linux-console@vger.kernel.org" <linux-console@vger.kernel.org>,
-	"greg@kroah.com" <greg@kroah.com>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	"virtualization@lists.linux-foundation.org"
-	<virtualization@lists.linux-foundation.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+	Fri,  1 Jul 2011 11:39:49 +1000 (EST)
+Date: Fri, 1 Jul 2011 11:39:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the powerpc tree
+Message-Id: <20110701113942.5cfed9a3.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__1_Jul_2011_11_39_42_+1000_ew7+5yst42mNdnGK"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 9, 2011 at 4:04 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thursday 09 June 2011 22:52:06 Timur Tabi wrote:
->> Add the drivers/virt directory, which houses drivers that support
->> virtualization environments, and add the Freescale hypervisor management
->> driver.
-....
->>
->> Signed-off-by: Timur Tabi <timur@freescale.com>
->
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+--Signature=_Fri__1_Jul_2011_11_39_42_+1000_ew7+5yst42mNdnGK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So I've made the changes that people have asked for, and Arnd has
-acked this driver.  Who's going to pick it up?  Who will be the
-maintainer for drivers/virt?  I'd really like to see this driver in
-3.1, and there's not much time left.
+Hi all,
+
+After merging the powerpc tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
+
+arch/powerpc/include/asm/setup.h: Assembler messages:
+arch/powerpc/include/asm/setup.h:6: Error: Unrecognized opcode: `extern'
+make[2]: *** [arch/powerpc/kernel/head_64.o] Error 1
+
+Caused by commit a9c0f41b3a64 ("powerpc: Add printk companion for
+ppc_md.progress").  Clearly not build tested for 64 but powerpc :-(
+
+I have used the version of the powerpc tree from next-20110630 for today.
 
 --=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__1_Jul_2011_11_39_42_+1000_ew7+5yst42mNdnGK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJODSVeAAoJEDMEi1NhKgbsweoIAJ2bnrJWPwtkzJjEzmTLlyZV
+Yqqm2DBnGdEtx4Bqq1setmV/D2TNNEwslE0KTHcz48657TSHtjPBaCD3bctRDZau
+YCyTMEX6uXOPFTN9KXEh95nm4+PSsVWDhLMQPqYnAEu0Bqtw1hmOc/B10yHwvLUb
+ac68mXcnU89gG40GBZiSWZdpxLPvT0w0mDCKRc9POsVd25MNjQpW+qgEqx1i7fsC
+SBjc9rDtZXbg7RsBZQW1LG/NW1rBN8VCTp4hU8dXyD++kNmdRjLsc9Bgg+hAMs9h
+nL6edqrf83eE4wvl5xMEdhViFyXS4jxwvAks1p4oDb50bKdf1SuzoNJ7Q+3wc1s=
+=dii8
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__1_Jul_2011_11_39_42_+1000_ew7+5yst42mNdnGK--
