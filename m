@@ -1,24 +1,22 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5E4CDB6F54
+Return-Path: <jdmason@kudzu.us>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "smtp.gmail.com",
+	Issuer "Google Internet Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D6567B6F59
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Jul 2011 01:19:01 +1000 (EST)
-Received: from lpsc0174x.localnet (lpsc0174x.in2p3.fr [134.158.40.174])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id
-	p61FIwsn028316
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2011 17:18:58 +0200
-From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Serial messages on boot
-Date: Fri, 1 Jul 2011 17:18:57 +0200
-References: <201107011606.50425.dargaud@lpsc.in2p3.fr>
-In-Reply-To: <201107011606.50425.dargaud@lpsc.in2p3.fr>
+	Sat,  2 Jul 2011 01:24:11 +1000 (EST)
+Received: by eyg5 with SMTP id 5so1118708eyg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 01 Jul 2011 08:24:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201107011718.57639.dargaud@lpsc.in2p3.fr>
+Date: Fri, 1 Jul 2011 10:24:05 -0500
+Message-ID: <BANLkTinZSeq5H=K4K4s_cuC2tOwsTZEDJg@mail.gmail.com>
+Subject: pci_pcie_cap invalid on AER/EEH enabled PPC?
+From: Jon Mason <jdmason@kudzu.us>
+To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Richard Lary <rlary@us.ibm.com>, James Smart <james.smart@emulex.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,12 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> in the most recent versions of the [xilinx powerpc] kernel, there are no
-> boot messages printed, which make it hard to debug early problems. What
-> has changed and what can I do in order to get all the habitual boot
-> messages on the serial port ?
+I recently sent out a number of patches to migrate drivers calling
+`pci_find_capability(pdef, PCI_CAP_ID_EXP)` to pci_pcie_cap.  This
+function takes uses a PCI-E capability offset that was determined by
+calling pci_find_capability during the PCI bus walking.  In response
+to one of the patches, James Smart posted:
 
-My bad, as usual: wrong console in the dts file.
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+"The reason is due to an issue on PPC platforms whereby use of
+"pdev->is_pcie" and pci_is_pcie() will erroneously fail under some
+conditions, but explicit search for the capability struct via
+pci_find_capability() is always successful.   I expect this to be due
+a shadowing of pci config space in the hal/platform that isn't
+sufficiently built up.  We detected this issue while testing AER/EEH,
+and are functional only if the pci_find_capability() option is used."
+
+See http://marc.info/?l=linux-scsi&m=130946649427828&w=2 for the whole post.
+
+Based on his description above pci_pcie_cap
+andpci_find_capability(pdef, PCI_CAP_ID_EXP) should be functionally
+equivalent.  If this is not safe, then the PCI bus walking code is
+most likely busted on EEH enabled PPC systems (and that is a BIG
+problem).  Can anyone confirm this is still an issue?
+
+Thanks,
+Jon
