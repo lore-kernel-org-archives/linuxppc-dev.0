@@ -1,22 +1,25 @@
-Return-Path: <greg@kroah.com>
-Received: from out3.smtp.messagingengine.com (out3.smtp.messagingengine.com
-	[66.111.4.27])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09BA1B6F5B
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jul 2011 08:26:23 +1000 (EST)
-Date: Fri, 1 Jul 2011 15:09:00 -0700
-From: Greg KH <greg@kroah.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/3] driver core: Add ability for arch code to setup
-	pdev_archdata
-Message-ID: <20110701220900.GA28971@kroah.com>
-References: <1308744176-24491-1-git-send-email-galak@kernel.crashing.org>
-	<1308828839-27349-1-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1308828839-27349-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 5AFE2B6F5B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  2 Jul 2011 09:11:32 +1000 (EST)
+Subject: Re: [PATCH 1/2] mm: Move definition of MIN_MEMORY_BLOCK_SIZE to a
+	header
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20110701121408.GC28008@elte.hu>
+References: <1308013070.2874.784.camel@pasglop>
+	<20110701121408.GC28008@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 02 Jul 2011 09:11:06 +1000
+Message-ID: <1309561866.14501.254.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 23, 2011 at 06:33:57AM -0500, Kumar Gala wrote:
-> On some architectures we need to setup pdev_archdata before we add the
-> device.  Waiting til a bus_notifier is too late since we might need the
-> pdev_archdata in the bus notifier.  One example is setting up of dma_mask
-> pointers such that it can be used in a bus_notifier.
+On Fri, 2011-07-01 at 14:14 +0200, Ingo Molnar wrote:
+> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> We add noop version of arch_setup_pdev_archdata() in
-> <asm-generic/platform_device.h> and allow the arch code to override with
-> access the full definitions of struct device, struct platform_device, and
-> struct pdev_archdata.
+> > The macro MIN_MEMORY_BLOCK_SIZE is currently defined twice in two .c
+> > files, and I need it in a third one to fix a powerpc bug, so let's
+> > first move it into a header
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > Ingo, Thomas: Who needs to ack the x86 bit ? I'd like to send that
+> > to Linus asap with the powerpc fix.
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+> 
+> (btw., you can consider obvious cleanups as being implicitly acked by 
+> me and don't need to block fixes on me.)
 
-Isn't there some way to use "weak" symbols to keep us from having to
-create this .h file in every single arch and then if the arch wants to
-define it, it does so?
+Ok thanks !
 
-That should make this patch simpler, right?
-
-thanks,
-
-greg k-h
+Cheers,
+Ben.
