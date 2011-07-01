@@ -1,26 +1,25 @@
-Return-Path: <jdmason@kudzu.us>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
+	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 10F26B6F54
+	by ozlabs.org (Postfix) with ESMTPS id C8595B6F5A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Jul 2011 05:02:25 +1000 (EST)
-Received: by eyg5 with SMTP id 5so1177110eyg.38
+	Sat,  2 Jul 2011 05:11:13 +1000 (EST)
+Received: by vxb40 with SMTP id 40so2828580vxb.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Jul 2011 12:02:21 -0700 (PDT)
+	Fri, 01 Jul 2011 12:11:10 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <4E0E1253.1000909@linux.vnet.ibm.com>
-References: <BANLkTinZSeq5H=K4K4s_cuC2tOwsTZEDJg@mail.gmail.com>
-	<4E0E1253.1000909@linux.vnet.ibm.com>
-Date: Fri, 1 Jul 2011 14:02:19 -0500
-Message-ID: <BANLkTinTEk2SgBwVUHc49cDLEwH_a-XsJg@mail.gmail.com>
-Subject: Re: pci_pcie_cap invalid on AER/EEH enabled PPC?
-From: Jon Mason <jdmason@kudzu.us>
-To: Richard A Lary <rlary@linux.vnet.ibm.com>
+In-Reply-To: <F4E7EABC-B63F-4776-A8EB-8C93F64C2A3C@kernel.crashing.org>
+References: <1309357060-20872-1-git-send-email-dbaryshkov@gmail.com>
+	<F4E7EABC-B63F-4776-A8EB-8C93F64C2A3C@kernel.crashing.org>
+Date: Fri, 1 Jul 2011 23:11:09 +0400
+Message-ID: <BANLkTinarWc6n5KLJdx=kFC5wysw+8VQtw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: enable access to HT Host-Bridge on Maple
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Richard Lary <rlary@us.ibm.com>, James Smart <james.smart@emulex.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,99 +29,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 1, 2011 at 1:30 PM, Richard A Lary <rlary@linux.vnet.ibm.com> w=
-rote:
-> On 7/1/2011 8:24 AM, Jon Mason wrote:
->>
->> I recently sent out a number of patches to migrate drivers calling
->> `pci_find_capability(pdef, PCI_CAP_ID_EXP)` to pci_pcie_cap. =A0This
->> function takes uses a PCI-E capability offset that was determined by
->> calling pci_find_capability during the PCI bus walking. =A0In response
->> to one of the patches, James Smart posted:
->>
->> "The reason is due to an issue on PPC platforms whereby use of
->> "pdev->is_pcie" and pci_is_pcie() will erroneously fail under some
->> conditions, but explicit search for the capability struct via
->> pci_find_capability() is always successful. =A0 I expect this to be due
->> a shadowing of pci config space in the hal/platform that isn't
->> sufficiently built up. =A0We detected this issue while testing AER/EEH,
->> and are functional only if the pci_find_capability() option is used."
->>
->> See http://marc.info/?l=3Dlinux-scsi&m=3D130946649427828&w=3D2 for the w=
-hole
->> post.
->>
->> Based on his description above pci_pcie_cap
->> andpci_find_capability(pdef, PCI_CAP_ID_EXP) should be functionally
->> equivalent. =A0If this is not safe, then the PCI bus walking code is
->> most likely busted on EEH enabled PPC systems (and that is a BIG
->> problem). =A0Can anyone confirm this is still an issue?
->
-> Jon,
->
-> I applied the following debug patch to lpfc driver in a 2.6.32 distro
-> kernel ( I had this one handy, I can try with mainline later today )
->
-> ---
-> =A0drivers/scsi/lpfc/lpfc_init.c | =A0 10 =A0 10 + =A0 =A00 - =A0 =A0 0 !
-> =A01 file changed, 10 insertions(+)
->
-> Index: b/drivers/scsi/lpfc/lpfc_init.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- a/drivers/scsi/lpfc/lpfc_init.c
-> +++ b/drivers/scsi/lpfc/lpfc_init.c
-> @@ -3958,6 +3958,16 @@ lpfc_enable_pci_dev(struct lpfc_hba *phb
-> =A0 =A0 =A0 =A0pci_try_set_mwi(pdev);
-> =A0 =A0 =A0 =A0pci_save_state(pdev);
->
-> + =A0 =A0 =A0 printk(KERN_WARNING "pcicap: is_pcie=3D%x pci_cap=3D%x pcie=
-_type=3D%x\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->is_pcie,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->pcie_cap,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->pcie_type);
-> +
-> + =A0 =A0 =A0 if (pci_is_pcie(pdev))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_WARNING "pcicap: true\n");
-> + =A0 =A0 =A0 else
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_WARNING "pcicap: false\n");
-> +
-> =A0 =A0 =A0 =A0/* PCIe EEH recovery on powerpc platforms needs fundamenta=
-l reset */
-> =A0 =A0 =A0 =A0if (pci_find_capability(pdev, PCI_CAP_ID_EXP))
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pdev->needs_freset =3D 1;
->
-> This is output upon driver load on an IBM Power 7 model 8233-E8B server.
->
-> dmesg | grep pcicap
-> Linux version 2.6.32.42-pcicap-ppc64 (geeko@buildhost) (gcc version 4.3.4
-> [gcc-4_3-branch revision 152973] (SUSE Linux) ) #1 SMP Fri Jul 1 09:31:27
-> PDT 2011
-> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
-> pcicap: false
-> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
-> pcicap: false
-> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
-> pcicap: false
-> pcicap: is_pcie=3D0 pci_cap=3D0 pcie_type=3D0
-> pcicap: false
->
-> It would appear that the pcie information is not set in pci_dev structure
-> for
-> this device at the time the driver is being initialized during boot.
+Hello,
 
-Thanks for trying this.  Can you confirm that the other devices in the
-system have this issue as well (or show that it is isolated to the lpr
-device)?  You can add printks in set_pcie_port_type() to verify what
-is being set on bus walking and to see when it is being called with
-respect to when it is being populated by firmware.
+Thanks for the review.
 
-Thanks,
-Jon
+On 7/1/11, Segher Boessenkool <segher@kernel.crashing.org> wrote:
+>> CPC925/CPC945 use special window to access host bridge
+>> functionality of
+>> u3-ht. Provide a way to access this device.
+>
+> Why?  Is anything going to use it?
+
+Hmmm. Why not? Initially I stumbled upon the fact that powermac provides
+such acces. Then I discovered that it provides configuration for memory windows
+and other parts. (I needed it for my hack to add AGP bridge on U3 in Linux,
+as I didn't want to change firmware).
+
+>> +static int u3_ht_root_read_config(struct pci_controller *hose, u8
+>> offset,
+>> +				  int len, u32 *val)
+>> +{
+>> +	volatile void __iomem *addr;
+>> +
+>> +	addr = hose->cfg_addr;
+>> +	addr += ((offset & ~3) << 2) + (4 - len - (offset & 3));
+>
+> This will only work for len 1,2,4 with offset a multiple of len, is that
+> guaranteed here?
+
+I have to check. I think there is no guarantee, but standard accessors
+are created exactly for 1, 2 and 4-byte access. And IIRC according
+to PCI specs, offset should be len-aligned.
+
+>> +static int u3_ht_root_write_config(struct pci_controller *hose, u8
+>> offset,
+>> +				  int len, u32 val)
+>> +{
+>> +	volatile void __iomem *addr;
+>> +
+>> +	addr = hose->cfg_addr + ((offset & ~3) << 2) + (4 - len - (offset
+>> & 3));
+>> +
+>> +	if (offset >= PCI_BASE_ADDRESS_0 && offset < PCI_CAPABILITY_LIST)
+>> +		return PCIBIOS_SUCCESSFUL;
+>
+> This is a workaround for something; at the very least it needs a
+> comment,
+> but probably it shouldn't be here at all.
+
+I'll add a comment. Basically these registers are unimplemented on u3/u4
+bridges and at least some kinds of access to them cause system freeze.
+I'll try to check what triggers what this night.
+
+>>  static int u3_ht_read_config(struct pci_bus *bus, unsigned int devfn,
+>>  			     int offset, int len, u32 *val)
+>>  {
+>> @@ -217,6 +265,9 @@ static int u3_ht_read_config(struct pci_bus
+>> *bus, unsigned int devfn,
+>>  	if (hose == NULL)
+>>  		return PCIBIOS_DEVICE_NOT_FOUND;
+>>
+>> +	if (bus->number == hose->first_busno && devfn == PCI_DEVFN(0, 0))
+>> +		return u3_ht_root_read_config(hose, offset, len, val);
+>> +
+>>  	if (offset > 0xff)
+>>  		return PCIBIOS_BAD_REGISTER_NUMBER;
+>
+> u3_ht_root_read_config() can get an offset out of range this way.
+
+Yes, as offsets for this host bridge can be larger then 0xff. U3/U4 have
+some HT configuration there, and I didn't want to impose a limit there.
+If you are against this, I can change the order of calls.
 
 >
-> -rich
+>>  	hose->cfg_data = ioremap(0xf2000000, 0x02000000);
+>> +	hose->cfg_addr = ioremap(0xf8070000, 0x1000);
 >
->
->
+> Eww.  You could just make a global instead of abusing existing fields,
+> there can be only one CPC9x5 in a system anyway.
+
+This was a copy-paste of corresponding PowerMac code. Do you really want
+for me to change this to global variable?
+
+
+BTW: I see a lot of code duplication between PowerMac and Maple pci.c
+files. Would you like a patch that merges those files to something
+like arch/powerpc/sysdev/u3-pci.c? I can try merging them...
+
+-- 
+With best wishes
+Dmitry
