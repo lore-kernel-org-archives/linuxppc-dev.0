@@ -1,25 +1,23 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vx0-f179.google.com (mail-vx0-f179.google.com
-	[209.85.220.179]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C8595B6F5A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Jul 2011 05:11:13 +1000 (EST)
-Received: by vxb40 with SMTP id 40so2828580vxb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 01 Jul 2011 12:11:10 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <F4E7EABC-B63F-4776-A8EB-8C93F64C2A3C@kernel.crashing.org>
-References: <1309357060-20872-1-git-send-email-dbaryshkov@gmail.com>
-	<F4E7EABC-B63F-4776-A8EB-8C93F64C2A3C@kernel.crashing.org>
-Date: Fri, 1 Jul 2011 23:11:09 +0400
-Message-ID: <BANLkTinarWc6n5KLJdx=kFC5wysw+8VQtw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: enable access to HT Host-Bridge on Maple
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 64081B6F5C
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jul 2011 05:12:33 +1000 (EST)
+Subject: Re: [PATCH 10/17] KVM: PPC: Add support for Book3S processors in
+	hypervisor mode
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1309545462.16582.12.camel@nimitz>
+Date: Fri, 1 Jul 2011 21:12:28 +0200
+Message-Id: <9F7C3B4B-A39A-453D-95BC-6630638A0C56@suse.de>
+References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
+	<20110629102134.GK25406@bloggs.ozlabs.ibm.com>
+	<1309545462.16582.12.camel@nimitz>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,93 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
 
-Thanks for the review.
+On 01.07.2011, at 20:37, Dave Hansen wrote:
 
-On 7/1/11, Segher Boessenkool <segher@kernel.crashing.org> wrote:
->> CPC925/CPC945 use special window to access host bridge
->> functionality of
->> u3-ht. Provide a way to access this device.
->
-> Why?  Is anything going to use it?
-
-Hmmm. Why not? Initially I stumbled upon the fact that powermac provides
-such acces. Then I discovered that it provides configuration for memory windows
-and other parts. (I needed it for my hack to add AGP bridge on U3 in Linux,
-as I didn't want to change firmware).
-
->> +static int u3_ht_root_read_config(struct pci_controller *hose, u8
->> offset,
->> +				  int len, u32 *val)
+> On Wed, 2011-06-29 at 20:21 +1000, Paul Mackerras wrote:=20
+>> +struct kvmppc_pginfo {
+>> +	unsigned long pfn;
+>> +	atomic_t refcnt;
+>> +};
+>=20
+> I only see this refcnt inc'd in one spot and never decremented or =
+read.
+> Is the refcnt just the number of hptes we have for this particular =
+page
+> at the moment? =20
+>=20
+>> +long kvmppc_alloc_hpt(struct kvm *kvm)
 >> +{
->> +	volatile void __iomem *addr;
+>> +	unsigned long hpt;
+>> +	unsigned long lpid;
 >> +
->> +	addr = hose->cfg_addr;
->> +	addr += ((offset & ~3) << 2) + (4 - len - (offset & 3));
->
-> This will only work for len 1,2,4 with offset a multiple of len, is that
-> guaranteed here?
-
-I have to check. I think there is no guarantee, but standard accessors
-are created exactly for 1, 2 and 4-byte access. And IIRC according
-to PCI specs, offset should be len-aligned.
-
->> +static int u3_ht_root_write_config(struct pci_controller *hose, u8
->> offset,
->> +				  int len, u32 val)
+>> +	hpt =3D =
+__get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT|__GFP_NOWARN,
+>> +			       HPT_ORDER - PAGE_SHIFT);
+>> +	if (!hpt) {
+>> +		pr_err("kvm_alloc_hpt: Couldn't alloc HPT\n");
+>> +		return -ENOMEM;
+>> +	}
+>> +	kvm->arch.hpt_virt =3D hpt;
+>> +
+>> +	do {
+>> +		lpid =3D find_first_zero_bit(lpid_inuse, NR_LPIDS);
+>> +		if (lpid >=3D NR_LPIDS) {
+>> +			pr_err("kvm_alloc_hpt: No LPIDs free\n");
+>> +			free_pages(hpt, HPT_ORDER - PAGE_SHIFT);
+>> +			return -ENOMEM;
+>> +		}
+>> +	} while (test_and_set_bit(lpid, lpid_inuse));
+>> +
+>> +	kvm->arch.sdr1 =3D __pa(hpt) | (HPT_ORDER - 18);
+>> +	kvm->arch.lpid =3D lpid;
+>> +	kvm->arch.host_sdr1 =3D mfspr(SPRN_SDR1);
+>> +	kvm->arch.host_lpid =3D mfspr(SPRN_LPID);
+>> +	kvm->arch.host_lpcr =3D mfspr(SPRN_LPCR);
+>> +
+>> +	pr_info("KVM guest htab at %lx, LPID %lx\n", hpt, lpid);
+>> +	return 0;
+>> +}
+>=20
+>> +static unsigned long user_page_size(unsigned long addr)
 >> +{
->> +	volatile void __iomem *addr;
+>> +	struct vm_area_struct *vma;
+>> +	unsigned long size =3D PAGE_SIZE;
 >> +
->> +	addr = hose->cfg_addr + ((offset & ~3) << 2) + (4 - len - (offset
->> & 3));
+>> +	down_read(&current->mm->mmap_sem);
+>> +	vma =3D find_vma(current->mm, addr);
+>> +	if (vma)
+>> +		size =3D vma_kernel_pagesize(vma);
+>> +	up_read(&current->mm->mmap_sem);
+>> +	return size;
+>> +}
+>=20
+> That one looks pretty arch-independent and like it could use some
+> consolidation with: virt/kvm/kvm_main.c::kvm_host_page_size()
+
+Yep, I'd deem that a cleanup for later though. Good point however! We =
+have similar code in e500 kvm today.
+
+>=20
+>> +void kvmppc_map_vrma(struct kvm *kvm, struct =
+kvm_userspace_memory_region *mem)
+>> +{
+>> +	unsigned long i;
+>> +	unsigned long npages =3D kvm->arch.ram_npages;
+>> +	unsigned long pfn;
+>> +	unsigned long *hpte;
+>> +	unsigned long hash;
+>> +	struct kvmppc_pginfo *pginfo =3D kvm->arch.ram_pginfo;
 >> +
->> +	if (offset >= PCI_BASE_ADDRESS_0 && offset < PCI_CAPABILITY_LIST)
->> +		return PCIBIOS_SUCCESSFUL;
->
-> This is a workaround for something; at the very least it needs a
-> comment,
-> but probably it shouldn't be here at all.
-
-I'll add a comment. Basically these registers are unimplemented on u3/u4
-bridges and at least some kinds of access to them cause system freeze.
-I'll try to check what triggers what this night.
-
->>  static int u3_ht_read_config(struct pci_bus *bus, unsigned int devfn,
->>  			     int offset, int len, u32 *val)
->>  {
->> @@ -217,6 +265,9 @@ static int u3_ht_read_config(struct pci_bus
->> *bus, unsigned int devfn,
->>  	if (hose == NULL)
->>  		return PCIBIOS_DEVICE_NOT_FOUND;
->>
->> +	if (bus->number == hose->first_busno && devfn == PCI_DEVFN(0, 0))
->> +		return u3_ht_root_read_config(hose, offset, len, val);
+>> +	if (!pginfo)
+>> +		return;
 >> +
->>  	if (offset > 0xff)
->>  		return PCIBIOS_BAD_REGISTER_NUMBER;
->
-> u3_ht_root_read_config() can get an offset out of range this way.
+>> +	/* VRMA can't be > 1TB */
+>> +	if (npages > 1ul << (40 - kvm->arch.ram_porder))
+>> +		npages =3D 1ul << (40 - kvm->arch.ram_porder);
+>=20
+> Is that because it can only be a single segment?  Does that mean that =
+we
+> can't ever have guests larger than 1TB?  Or just that they have to =
+live
+> with 1TB until they get their own page tables up?
 
-Yes, as offsets for this host bridge can be larger then 0xff. U3/U4 have
-some HT configuration there, and I didn't want to impose a limit there.
-If you are against this, I can change the order of calls.
-
->
->>  	hose->cfg_data = ioremap(0xf2000000, 0x02000000);
->> +	hose->cfg_addr = ioremap(0xf8070000, 0x1000);
->
-> Eww.  You could just make a global instead of abusing existing fields,
-> there can be only one CPC9x5 in a system anyway.
-
-This was a copy-paste of corresponding PowerMac code. Do you really want
-for me to change this to global variable?
+The VRMA is only important in real mode, so this part looks good. The =
+RMA is usually a lot smaller than 1TB ;).
 
 
-BTW: I see a lot of code duplication between PowerMac and Maple pci.c
-files. Would you like a patch that merges those files to something
-like arch/powerpc/sysdev/u3-pci.c? I can try merging them...
-
--- 
-With best wishes
-Dmitry
+Alex
