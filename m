@@ -1,22 +1,22 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80BA1B6F5B
+	by ozlabs.org (Postfix) with ESMTPS id DF843B6F5A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  2 Jul 2011 20:23:52 +1000 (EST)
-Date: Sat, 2 Jul 2011 12:23:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Sun,  3 Jul 2011 00:15:23 +1000 (EST)
 Subject: Re: [PATCH 2/2] powerpc/mm: Fix memory_block_size_bytes() for
 	non-pseries
-Message-ID: <20110702102333.GC17482@elte.hu>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20110702102333.GC17482@elte.hu>
 References: <1308013071.2874.785.camel@pasglop>
-	<20110701121516.GD28008@elte.hu>
-	<1309562112.14501.257.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1309562112.14501.257.camel@pasglop>
+	<20110701121516.GD28008@elte.hu> <1309562112.14501.257.camel@pasglop>
+	<20110702102333.GC17482@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 03 Jul 2011 00:15:01 +1000
+Message-ID: <1309616101.14501.262.camel@pasglop>
+Mime-Version: 1.0
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -30,60 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Fri, 2011-07-01 at 14:15 +0200, Ingo Molnar wrote:
+On Sat, 2011-07-02 at 12:23 +0200, Ingo Molnar wrote:
+> It's certainly not a hard rule - but note that the file in question 
+> (arch/powerpc/platforms/pseries/hotplug-memory.c) has a rather 
+> inconsistent comment style, sometimes even within the same function:
 > 
-> > > +/* WARNING: This is going to override the generic definition whenever
-> > > + * pseries is built-in regardless of what platform is active at boot
-> > > + * time. This is fine for now as this is the only "option" and it
-> > > + * should work everywhere. If not, we'll have to turn this into a
-> > > + * ppc_md. callback
-> > > + */
-> > 
-> > Just a small nit, please use the customary (multi-line) comment 
-> > style:
-> > 
-> >   /*
-> >    * Comment .....
-> >    * ...... goes here.
-> >    */
-> > 
-> > specified in Documentation/CodingStyle.
+>         /*
+>          * Remove htab bolted mappings for this section of memory
+>          */
+> ...
 > 
-> Ah ! Here goes my sneak attempts at violating coding style while 
-> nobody notices :-)
+>         /* Ensure all vmalloc mappings are flushed in case they also
+>          * hit that section of memory
+>          */
 > 
-> No seriously, that sort of stuff shouldn't be such a hard rule... 
-> In some cases the "official" way looks nicer, on some cases it's 
-> just a waste of space, and I've grown to prefer my slightly more 
-> compact form, at least depending on how the surrounding code looks 
-> like.
->
-> Since that's all powerpc arch code, I believe I'm entitled to that 
-> little bit of flexibility in how the code looks like :-) It's not 
-> like I'm GoingToPlayWithCaps() or switching to 3-char tabs :-)
+> That kind of inconsistency within the same .c file and within the 
+> same function is not defensible with a "style is a matter of taste" 
+> argument.
 
-It's certainly not a hard rule - but note that the file in question 
-(arch/powerpc/platforms/pseries/hotplug-memory.c) has a rather 
-inconsistent comment style, sometimes even within the same function:
+Right, that's a matter of different people with different taste mucking
+around with the same file I suppose.
 
-        /*
-         * Remove htab bolted mappings for this section of memory
-         */
-...
+Most of this probably predates my involvement as a maintainer but even
+if not (and I really can't be bothered digging into the history), it
+might very well be something I didn't pay attention to while reviewing.
 
-        /* Ensure all vmalloc mappings are flushed in case they also
-         * hit that section of memory
-         */
+Seriously, it's so low on the scale of what matters ... I'm sure we both
+have more valuable stuff to spend our time and energy on :-)
 
-That kind of inconsistency within the same .c file and within the 
-same function is not defensible with a "style is a matter of taste" 
-argument.
-
-As i said, it's just a small nit.
-
-Thanks,
-
-	Ingo
+Cheers,
+Ben.
