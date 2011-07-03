@@ -1,29 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(Client CN "mail.global.frontbridge.com",
-	Issuer "Cybertrust SureServer Standard Validation CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 358ADB6F53
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  3 Jul 2011 11:44:02 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH 6/7] [v2] tty/powerpc: introduce the ePAPR embedded
-	hypervisor byte channel driver
-Date: Sun, 3 Jul 2011 01:43:52 +0000
-Message-ID: <CAOZdJXVyujA0fsnvYnCcqDYhmgYMk0DwBTh-wEkFN4fCDVYdcA@mail.gmail.com>
-References: <1305830092-20104-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1305830092-20104-1-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 98D52B6F00
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jul 2011 18:15:26 +1000 (EST)
+Message-ID: <4E102516.1040805@redhat.com>
+Date: Sun, 03 Jul 2011 11:15:18 +0300
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-Cc: "arnd@arndb.de" <arnd@arndb.de>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"akpm@kernel.org" <akpm@kernel.org>,
-	"linux-console@vger.kernel.org" <linux-console@vger.kernel.org>,
-	Gala Kumar-B11780 <B11780@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [RFC PATCH 17/17] KVM: PPC: Add an ioctl for userspace to select
+	which platform to emulate
+References: <20110629101552.GA25406@bloggs.ozlabs.ibm.com>
+	<20110629104103.GR25406@bloggs.ozlabs.ibm.com>
+	<4E0C9077.2060608@suse.de> <4E0C9339.2080601@redhat.com>
+	<4E0C94A0.3090301@suse.de> <4E0C9D98.5000904@redhat.com>
+	<2EDDAC02-4BDC-4007-82E1-2C6D732C24D5@suse.de>
+In-Reply-To: <2EDDAC02-4BDC-4007-82E1-2C6D732C24D5@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,37 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2011 at 1:34 PM, Timur Tabi <timur@freescale.com> wrote:
-> The ePAPR embedded hypervisor specification provides an API for "byte
-> channels", which are serial-like virtual devices for sending and receivin=
-g
-> streams of bytes. =A0This driver provides Linux kernel support for byte
-> channels via three distinct interfaces:
+On 06/30/2011 07:33 PM, Alexander Graf wrote:
+> On 30.06.2011, at 18:00, Avi Kivity<avi@redhat.com>  wrote:
 >
-> 1) An early-console (udbg) driver. =A0This provides early console output
-> through a byte channel. =A0The byte channel handle must be specified in a
-> Kconfig option.
+> >  On 06/30/2011 06:22 PM, Alexander Graf wrote:
+> >>>  Regarding that.  There's another option - the ioctl code embeds the structure size.  So if we extend the ioctl parsing to pad up (or truncate down) from the user's size to our size, and similarly in the other direction, we can get away from this ugliness.
+> >>>
+> >>>  Some years ago I posted a generic helper that did this (and also kmalloc'ed and kfree'd the data itself), but it wasn't received favourably.  Maybe I should try again (and we can possibly use it in kvm even if it is rejected for general use, though that's against our principles of pushing all generic infrastructure to the wider kernel).
+> >>
+> >>
+> >>  That does sound interesting, but requires a lot more thought to be put into the actual code, as we basically need to read out the feature bitmap, then provide a minimum size for the chosen features and then decide if they fit in.
+> >
+> >
+> >  Why? just put the things you want in the structure.
+> >
+> >  old userspace ->  new kernel: we auto-zero the parts userspace left out, and zero means old behaviour, so everthing works
+> >  new userspace ->  old kernel: truncate.  Userspace shouldn't have used any new features (KVM_CAP), and we can -EINVAL if the truncated section contains a nonzero bit.
 >
-> 2) A normal console driver. =A0Output is sent to the byte channel designa=
-ted
-> for stdout in the device tree. =A0The console driver is for handling kern=
-el
-> printk calls.
->
-> 3) A tty driver, which is used to handle user-space input and output. =A0=
-The
-> byte channel used for the console is designated as the default tty.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Yup, which requires knowledge in the code on what actually fits :). Logic we don't have today.
 
-Greg, would you please pick up this patch for 3.1?  Patches 1-5 are
-already queued through the PowerPC tree.
+I don't follow.  What knowledge is required?  Please give an example.
 
-Thank you.
-
-The patch is available here if you need to download it:
-http://patchwork.ozlabs.org/patch/96443/
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+-- 
+error compiling committee.c: too many arguments to function
