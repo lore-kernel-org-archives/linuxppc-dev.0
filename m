@@ -1,22 +1,14 @@
-Return-Path: <pavel@ucw.cz>
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
-	[195.113.26.193]) by ozlabs.org (Postfix) with ESMTP id 1E8D3B6F54
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Jul 2011 03:26:00 +1000 (EST)
-Date: Sun, 3 Jul 2011 19:16:26 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 3/7] fault-injection: notifier error injection
-Message-ID: <20110703171626.GG21127@elf.ucw.cz>
-References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
-	<1309702581-16863-4-git-send-email-akinobu.mita@gmail.com>
+Return-Path: <wd@denx.de>
+To: bourkeb idir <bourkeb.idir@yahoo.fr>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: linux tqm8260
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1309702581-16863-4-git-send-email-akinobu.mita@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
-	Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, linux-pm@lists.linux-foundation.org
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1309510675.9518.YahooMailNeo@web29503.mail.ird.yahoo.com>
+References: <1309510675.9518.YahooMailNeo@web29503.mail.ird.yahoo.com>
+Date: Sun, 03 Jul 2011 21:01:03 +0200
+Message-Id: <20110703190103.ADE301222337@gemini.denx.de>
+Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +18,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Dear bourkeb idir,
 
-> +	for (action = enb->actions; action->name; action++) {
-> +		struct dentry *file = debugfs_create_int(action->name, mode,
-> +						enb->dir, &action->error);
-> +
-> +		if (!file) {
-> +			debugfs_remove_recursive(enb->dir);
-> +			return -ENOMEM;
-> +		}
+In message <1309510675.9518.YahooMailNeo@web29503.mail.ird.yahoo.com> you wrote:
 
-Few lines how this work would be welcome...?
+> i'm trying to port linux in a tqm8260 fresscale card with an mpc8260
+> cpu .i've already ported u-boot and it seems working but now i'm
+> trying to cross compile a linux kernel 2.4.4 (which have a config
+> file for tqm8260) and i always get trouble when i try to make a
+> zImage . can anyone help me ,please?
+
+This statement makes little sense to me.
+
+First, the TQM8260 is not a Freescare card.  The manufacturer is (or
+rather was) TQ Systems.
+
+Second, I wonder why you would spend any efforts into such a system -
+the product was EOLed a long time ago.
+
+Third, when the product was still alive, it was pretty well supported
+by U-Boot and Linux.  U-Boot sopport for it is still available in
+mainline.  Linux support was available in our linuxppc_2_4_devel tree
+up to and including Linux version 2.4.25.  So using 2.4.4 as a
+starting point for such a work is even more incomprehensible to me.
+
+
+If you really have a TQM8260 board, then just use the mainline U-Boot
+code (current release, i. e. v20100.06) and the old 2.4.25 based
+source tree mentioned above.
+
+But be warned: this is ancient hardware, and so is the kernel code.
+There is no guarantee it will even compile using recent tool chains.
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+You've no idea of what a poor opinion  I  have  of  myself,  and  how
+little I deserve it.                                  - W. S. Gilbert
