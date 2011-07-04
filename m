@@ -1,29 +1,12 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "smtp.gmail.com",
-	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A94C6B6F57
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Jul 2011 15:35:08 +1000 (EST)
-Received: by vws20 with SMTP id 20so3834114vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 03 Jul 2011 22:35:05 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20110703171626.GG21127@elf.ucw.cz>
-References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
-	<1309702581-16863-4-git-send-email-akinobu.mita@gmail.com>
-	<20110703171626.GG21127@elf.ucw.cz>
-Date: Mon, 4 Jul 2011 14:35:04 +0900
-Message-ID: <CAC5umyhKafTgUe6T2vfLupwmBwt5COj6X2nUH2b5ekhzQNi5mg@mail.gmail.com>
-Subject: Re: [PATCH 3/7] fault-injection: notifier error injection
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
-	Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org, linux-pm@lists.linux-foundation.org
+Return-Path: <anton@samba.org>
+Date: Mon, 4 Jul 2011 20:57:38 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, brueckner@linux.vnet.ibm.com,
+	borntraeger@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: hvc_console change results in corrupt oops output
+Message-ID: <20110704205738.742e56d0@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,25 +16,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2011/7/4 Pavel Machek <pavel@ucw.cz>:
->
->> + =A0 =A0 for (action =3D enb->actions; action->name; action++) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 struct dentry *file =3D debugfs_create_int(act=
-ion->name, mode,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 enb->dir, &action->error);
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!file) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 debugfs_remove_recursive(enb->=
-dir);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->
-> Few lines how this work would be welcome...?
 
-OK, I'll add a comment like below.
+Hi,
 
-/*
- * Create debugfs r/w file containing action->error. If notifier call
- * chain is called with action->val, it will fail with the error code
- */
+We've been struggling to debug a hang on a large ppc64 box. Every time
+we collect oops output there are pieces of the oops output missing and
+in some cases entire CPUs are missing.
+
+Eventually I realised the hvc_console driver is dropping characters.
+The commit that caused this is:
+
+
+commit 3feebbb5492e9e463467cefb633e23a3dfcec132
+Author: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Date:   Mon Oct 13 23:12:50 2008 +0000
+
+    hvc_console: Fix loop if put_char() returns 0
+    
+    If put_char() routine of a hvc console backend returns 0, then the
+    hvc console starts looping in the following scenarios:
+    
+    1. hvc_console_print()
+        If put_char() returns 0 then the while loop may loop forever.
+        I have added the missing check for 0 to throw away console
+        messages.
+
+
+The hypervisor gives us a busy return, so we could retry a number of
+times instead of dropping it on the floor. We'd need to do it in the
+hvc_console driver - the tty drivers share the same backend
+functions so we can't hide it in the pseries put_chars function.
+
+Anton
