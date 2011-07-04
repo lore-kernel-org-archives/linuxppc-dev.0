@@ -1,27 +1,34 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <yong.zhang0@gmail.com>
+Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "smtp.gmail.com",
 	Issuer "Google Internet Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06381B6F00
+	by ozlabs.org (Postfix) with ESMTPS id DF570B6F54
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Jul 2011 09:31:22 +1000 (EST)
-Received: by vws20 with SMTP id 20so3728667vws.38
+	Mon,  4 Jul 2011 12:23:29 +1000 (EST)
+Received: by gwj17 with SMTP id 17so2056088gwj.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 03 Jul 2011 16:31:19 -0700 (PDT)
+	Sun, 03 Jul 2011 19:23:25 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <288B47E0-3869-486D-B753-62EFA1EEF66D@kernel.crashing.org>
-References: <1309357060-20872-1-git-send-email-dbaryshkov@gmail.com>
-	<F4E7EABC-B63F-4776-A8EB-8C93F64C2A3C@kernel.crashing.org>
-	<BANLkTinarWc6n5KLJdx=kFC5wysw+8VQtw@mail.gmail.com>
-	<288B47E0-3869-486D-B753-62EFA1EEF66D@kernel.crashing.org>
-Date: Mon, 4 Jul 2011 03:31:18 +0400
-Message-ID: <CALT56yNFuJMWYTJc6WTWcDBug9KzPysMJ48CVUBgyzom5rqp8A@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: enable access to HT Host-Bridge on Maple
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4E0D9B5E.3010901@windriver.com>
+References: <BANLkTi=gx73d6-s-jqeke05SQYorpnzLVw@mail.gmail.com>
+	<1308911347.531.56.camel@gandalf.stny.rr.com>
+	<4E074671.7060100@hitachi.com> <20110627100104.GA24705@in.ibm.com>
+	<BANLkTimYej4_dmBqvPBCLej=JA5atLrZVA@mail.gmail.com>
+	<4E0D9B5E.3010901@windriver.com>
+Date: Mon, 4 Jul 2011 10:23:25 +0800
+Message-ID: <CAM2zO=AO2bxvBgZopZAkhhr++VNby9MvvLv-dae8t=QUu8_C0w@mail.gmail.com>
+Subject: Re: [BUG?]3.0-rc4+ftrace+kprobe: set kprobe at instruction 'stwu'
+	lead to system crash/freeze
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, paulus@samba.org,
+	yrl.pp-manager.tt@hitachi.com,
+	Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,175 +38,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/3/11, Segher Boessenkool <segher@kernel.crashing.org> wrote:
->>>> CPC925/CPC945 use special window to access host bridge
->>>> functionality of
->>>> u3-ht. Provide a way to access this device.
->>>
->>> Why?  Is anything going to use it?
->>
->> Hmmm. Why not?
+On Fri, Jul 1, 2011 at 6:03 PM, tiejun.chen <tiejun.chen@windriver.com> wro=
+te:
+>> root@unknown:/root> insmod kprobe_example.ko func=3Dshow_interrupts
+>> Planted kprobe at c009be18
+>> root@unknown:/root> cat /proc/interrupts
+>> pre_handler: p->addr =3D 0xc009be18, nip =3D 0xc009be18, msr =3D 0x29000
+>> post_handler: p->addr =3D 0xc009be18, msr =3D 0x29000,boostable =3D 1
+>> Oops: Exception in kernel mode, sig: 11 [#1]
+>> PREEMPT MPC8536 DS
+>> Modules linked in: kprobe_example
+>> NIP: df159e74 LR: c0106f40 CTR: c009be18
+>> REGS: df159d90 TRAP: 0700 =C2=A0 Not tainted =C2=A0(3.0.0-rc4-00001-ge8f=
+fcca-dirty)
+>> MSR: 00029000 <EE,ME,CE> =C2=A0CR: 20202688 =C2=A0XER: 00000000
+>> TASK =3D dfaa5340[613] 'cat' THREAD: df158000
+>> GPR00: fffff000 df159e40 dfaa5340 df024a00 df159e78 00000000 df159f20 00=
+000001
+>> GPR08: c10060d0 c009be18 00029000 df159e70 00000000 1001ca74 1ffb5f00 10=
+0a01cc
+>> GPR16: 00000000 00000000 00000000 00000000 df024a28 df159f20 00000000 df=
+bff080
+>> GPR24: 10016000 00001000 df159f20 df159e78 dfbff080 df159e78 df024a00 df=
+159e70
+>> NIP [df159e74] 0xdf159e74
+>> LR [c0106f40] seq_read+0x2a4/0x568
+>> Call Trace:
+>> [df159e40] [00029000] 0x29000 (unreliable)
+>> [df159e74] [00000000] =C2=A0 (null)
+>> Instruction dump:
+>> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+>> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+>> ---[ end trace 60026bfc1fe79aed ]---
+>> Segmentation fault
 >
-> Because if nothing uses it it is essentially dead code.
-
-1) It provides some (possibly debug) information to users
-2) It provides a way to configure (e.g. HT address mask (reg 80),
-   some bridge control regs (around c0-ff), etc.
-
->> Initially I stumbled upon the fact that powermac provides
->> such acces. Then I discovered that it provides configuration for
->> memory windows
->> and other parts.
+> Maybe I can understand this problem.
 >
-> There are no memory windows in there afaik.  The main use is the HT
-> link config stuff, which in a few places needs special handling to
-> work :-/
-
-Register 80 (0xf8070200) is an HT1 address mask, which configures
-which memory belongs to HT bridge & devices (contrary to AGP/PCIe)
-
->> (I needed it for my hack to add AGP bridge on U3 in Linux,
->> as I didn't want to change firmware).
+> When we kprobe these operations such as store-and-update-word for SP(r1),
 >
-> Can you tell more about this?
-
-I have a Mapple-D board (aka IBM PPC970FX ev. kit). It has an AGP slot,
-which I would like to use. The slot is unsupported in PIBS (the original
-firmware) (it doesn't enumerate devices behind the slot, it doesn't setup it,
-it doesn't put u3-agp in device tree).
-
-I didn't want to hack the PIBS (at least while it's possible and for initial
-debug of the hardware setup),
-so I had to develop a patch for Linux kernel which would:
-1) configure hardware (memory windows, IRQs, etc).
-2) tell Linux about the AGP bridge.
-
-Second part is more or less complete (with some hacks though). Basically
-I register an u3-agp slot if there is no u3-agp and u4-pcie devices. This still
-needs an improvement before I'd submit this code anywhere.
-
-I've mostly finished the HW setup (I can see devices behind the bridge).
-The radeon plugged into AGP slot starts to warm up, but it fails somewhere.
-The thing I still miss (or at least one of them) is the IRQ routing. Ben gave me
-some possible pointers, so I'll have to check if he is right or not.
-Unfortunately
-I still hand't time to accomplish this. I can show my (possibly a bit
-ugly) code,
-but it still doesn't fully work.
-
->>>> +static int u3_ht_root_read_config(struct pci_controller *hose, u8
->>>> offset,
->>>> +				  int len, u32 *val)
->>>> +{
->>>> +	volatile void __iomem *addr;
->>>> +
->>>> +	addr = hose->cfg_addr;
->>>> +	addr += ((offset & ~3) << 2) + (4 - len - (offset & 3));
->>>
->>> This will only work for len 1,2,4 with offset a multiple of len,
->>> is that
->>> guaranteed here?
->>
->> I have to check. I think there is no guarantee, but standard accessors
->> are created exactly for 1, 2 and 4-byte access. And IIRC according
->> to PCI specs, offset should be len-aligned.
+> stwu r1, -A(r1)
 >
-> If other places that need it do not do an alignment check, you don't
-> need
-> to either I suppose.  But could you make the switch for length have
-> explicit 1,2,4 and default error?
-
-Yes, of course. I wanted to overcome this, but of course I can split it
-back to the switch.
-
-BTW: the corresponding PowerMac code has a bug: try reading
-VID/DID as a byte. word and dword and compare the outcome
-with the output from typical PCI device.
-
->>>> +static int u3_ht_root_write_config(struct pci_controller *hose, u8
->>>> offset,
->>>> +				  int len, u32 val)
->>>> +{
->>>> +	volatile void __iomem *addr;
->>>> +
->>>> +	addr = hose->cfg_addr + ((offset & ~3) << 2) + (4 - len - (offset
->>>> & 3));
->>>> +
->>>> +	if (offset >= PCI_BASE_ADDRESS_0 && offset < PCI_CAPABILITY_LIST)
->>>> +		return PCIBIOS_SUCCESSFUL;
->>>
->>> This is a workaround for something; at the very least it needs a
->>> comment,
->>> but probably it shouldn't be here at all.
->>
->> I'll add a comment. Basically these registers are unimplemented on
->> u3/u4
->> bridges and at least some kinds of access to them cause system freeze.
->> I'll try to check what triggers what this night.
+> The program exception is triggered then PPC always allocate an exception =
+frame
+> as shown as the follows:
 >
-> I don't think the hardware freezes, but probably Linux isn't happy
-> when it
-> tries to write to the non-existent BARs.  Or something like that.
-
-IIRC I've had problems even when reading. Will run an experiment tomorrow.
-
->>>>  static int u3_ht_read_config(struct pci_bus *bus, unsigned int
->>>> devfn,
->>>>  			     int offset, int len, u32 *val)
->>>>  {
->>>> @@ -217,6 +265,9 @@ static int u3_ht_read_config(struct pci_bus
->>>> *bus, unsigned int devfn,
->>>>  	if (hose == NULL)
->>>>  		return PCIBIOS_DEVICE_NOT_FOUND;
->>>>
->>>> +	if (bus->number == hose->first_busno && devfn == PCI_DEVFN(0, 0))
->>>> +		return u3_ht_root_read_config(hose, offset, len, val);
->>>> +
->>>>  	if (offset > 0xff)
->>>>  		return PCIBIOS_BAD_REGISTER_NUMBER;
->>>
->>> u3_ht_root_read_config() can get an offset out of range this way.
->>
->> Yes, as offsets for this host bridge can be larger then 0xff. U3/U4
->> have
->> some HT configuration there, and I didn't want to impose a limit
->> there.
->> If you are against this, I can change the order of calls.
+> old r1 --------
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 ...
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 nip
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 gpr[2]~gpr[31]
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 gpr[1] <--------- old r1 is stored here.
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 gpr[0]
+> =C2=A0 =C2=A0 =C2=A0 -------- <-- pr_regs @offset 16 bytes
+> =C2=A0 =C2=A0 =C2=A0 padding
+> =C2=A0 =C2=A0 =C2=A0 STACK_FRAME_REGS_MARKER
+> =C2=A0 =C2=A0 =C2=A0 LR
+> =C2=A0 =C2=A0 =C2=A0 back chain
+> new r1 --------
 >
-> The HT config is at (PCI) offset 0x40.  There are no implemented
-> registers
-> at PCI offset >= 0x100.  That corresponds to f8070000..f80703ff, there's
-> one 4-byte PCI reg per 16 byte U3 bus address.
-
-Hmmm. I saw the "HT Performance Monitor" part of the U4 spec, but
-didn't notice that all regs are marked as "not implemented".
-
->>>>  	hose->cfg_data = ioremap(0xf2000000, 0x02000000);
->>>> +	hose->cfg_addr = ioremap(0xf8070000, 0x1000);
->>>
->>> Eww.  You could just make a global instead of abusing existing
->>> fields,
->>> there can be only one CPC9x5 in a system anyway.
->>
->> This was a copy-paste of corresponding PowerMac code. Do you really
->> want
->> for me to change this to global variable?
+> Here emulate_step() is called to emulate 'stwu'. Actually this is equival=
+ent to
+> 1> update pr_regs->gpr[1] =3D mem(old r1 + (-A))
+> 2> 'stw <old r1>, mem<(old r1 + (-A)) >
 >
-> It could use a comment at least.  The addresses aren't "cfg_data" and
-> "cfg_addr" at all.
-
-Fine, I'll add a comment here.
-
->> BTW: I see a lot of code duplication between PowerMac and Maple pci.c
->> files. Would you like a patch that merges those files to something
->> like arch/powerpc/sysdev/u3-pci.c? I can try merging them...
+> You should notice the stack based on new r1 would be covered with mem<old=
+ r1
+> +(-A)>. So after this, the kernel exit from post_krpobe, something would =
+be
+> broken. This should depend on sizeof(-A).
 >
-> That would be most excellent!  I hope there isn't much pmac special-
-> casing
-> needed for that.
+> For kprobe show_interrupts, you can see pregs->nip is re-written violentl=
+y so
+> kernel issued.
 
-Still have to check. Please don't expect a patch soon.
+Yeah, my debug also show this, so this is the root cause.
+Thanks for your explanation.
 
--- 
-With best wishes
-Dmitry
+>
+> But sometimes we may only re-write some violate registers the kernel stil=
+l
+> alive. And so this is just why the kernel works well for some kprobed poi=
+nt
+> after you change some kernel options/toolchains.
+>
+> If I'm correct its difficult to kprobe these stwu sp operation since the
+> sizeof(-A) is undermined for the kernel. So we have to implement in-depen=
+d
+> interrupt stack like PPC64.
+
+Hmmm, a dedicated exception stack will smooth the concern IMHO,
+Ben, Kuma?
+
+Thanks,
+Yong
+
+
+--=20
+Only stand for myself
